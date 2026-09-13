@@ -4,7 +4,7 @@ name: Deploy mobile web
 # Renderer CanvasKit nên giao diện vẽ giống hệt bản Android/iOS.
 on:
   push:
-    branches: [main, develop]
+    branches: [main]   # GitHub Flow: main là production, không có develop (docs ADR-0001)
     paths-ignore:
       - 'DEPLOY-LOG.md'   # tránh vòng lặp: bước ghi nhật ký bên dưới tự commit file này
       - 'docs/**'
