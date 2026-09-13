@@ -1,0 +1,132 @@
+name: Deploy mobile web
+
+# Bản Flutter Web của app mobile — để xem app trên trình duyệt mà không cần máy ảo.
+# Renderer CanvasKit nên giao diện vẽ giống hệt bản Android/iOS.
+on:
+  push:
+    branches: [main, develop]
+    paths-ignore:
+      - 'DEPLOY-LOG.md'   # tránh vòng lặp: bước ghi nhật ký bên dưới tự commit file này
+      - 'docs/**'
+      - '**.md'
+  workflow_dispatch:
+
+concurrency:
+  group: mobile-web-deploy
+  cancel-in-progress: true
+
+permissions:
+  contents: write        # cần để commit DEPLOY-LOG.md
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.44.2'   # khớp bản đang dùng ở máy dev
+          channel: stable
+          cache: true
+
+      - name: Cài dependency
+        run: flutter pub get
+
+      - name: Kiểm tra tĩnh
+        run: flutter analyze --no-pub || true   # analyze hiện còn nhiều info cũ, không chặn deploy
+
+      - name: Chạy test
+        run: flutter test --no-pub
+
+      # env_config.g.dart đã commit sẵn với https://api.locker-drone.tech nên
+      # không cần .env ở đây; build_runner chỉ chạy khi đổi .env ở máy dev.
+      - name: Build web
+        run: flutter build web --release
+
+      # Secret khong dung duoc trong `if:` cua step, phai anh xa qua output truoc.
+      - name: Có đủ secret Cloudflare chưa?
+        id: co_secret
+        env:
+          TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          ACCOUNT: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          if [ -n "$TOKEN" ] && [ -n "$ACCOUNT" ]; then
+            echo 'du=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'du=false' >> "$GITHUB_OUTPUT"
+            echo 'Chưa có CLOUDFLARE_API_TOKEN / CLOUDFLARE_ACCOUNT_ID — bỏ qua bước deploy.'
+          fi
+
+      # Gọi wrangler thẳng thay vì cloudflare/wrangler-action@v3: action chạy npx
+      # thiếu --yes nên bị huỷ ở bước tải gói, rồi rơi về một bản wrangler cũ không
+      # hiểu cấu hình assets-only và báo "Missing entry-point". Repo frontend đã
+      # chuyển sang cách này từ trước và deploy được.
+      - name: Deploy lên Cloudflare
+        id: deploy
+        if: steps.co_secret.outputs.du == 'true'
+        run: npx --yes wrangler@4.114.0 deploy
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+      - name: Ghi tóm tắt vào trang Actions
+        if: always()
+        run: |
+          {
+            echo "## Deploy mobile web — ${{ job.status }}"
+            echo ""
+            echo "| | |"
+            echo "|---|---|"
+            echo "| Commit | \`${{ github.sha }}\` |"
+            echo "| Nhánh | \`${{ github.ref_name }}\` |"
+            echo "| Người đẩy | @${{ github.actor }} |"
+            echo "| Thời điểm | $(date -u '+%Y-%m-%d %H:%M UTC') |"
+            if [ -d build/web ]; then
+              echo "| Kích thước build | $(du -sh build/web | cut -f1) |"
+            fi
+            echo ""
+            if [ "${{ steps.co_secret.outputs.du }}" != "true" ]; then
+              echo "### Đã build xong nhưng CHƯA deploy"
+              echo "Repo này còn thiếu secret \`CLOUDFLARE_API_TOKEN\` và/hoặc \`CLOUDFLARE_ACCOUNT_ID\`."
+              echo "Thêm vào **Settings → Secrets and variables → Actions** rồi chạy lại workflow;"
+              echo "bước deploy sẽ tự bật, không cần sửa file nào."
+            elif [ "${{ job.status }}" != "success" ]; then
+              echo "### Deploy THẤT BẠI"
+              echo "Xem log các bước phía trên. Nguyên nhân hay gặp:"
+              echo "- thiếu secret \`CLOUDFLARE_API_TOKEN\` / \`CLOUDFLARE_ACCOUNT_ID\`"
+              echo "- \`flutter test\` đỏ (workflow cố ý chặn deploy khi test hỏng)"
+              echo "- lỗi biên dịch web: thường do code mới import \`dart:io\` (không có trên web)"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Ghi nhật ký deploy vào repo
+        if: always()
+        run: |
+          LOG=DEPLOY-LOG.md
+          if [ ! -f "$LOG" ]; then
+            {
+              echo "# Nhật ký deploy — mobile web"
+              echo ""
+              echo "Do workflow \`deploy-web.yml\` tự ghi sau mỗi lần chạy, kể cả khi thất bại."
+              echo "Đây là chỗ để theo dõi lịch sử deploy mà không cần mở tab Actions."
+              echo ""
+              echo "| Thời điểm (UTC) | Kết quả | Commit | Người đẩy | Ghi chú |"
+              echo "|---|---|---|---|---|"
+            } > "$LOG"
+          fi
+          NOTE="build $( [ -d build/web ] && du -sh build/web | cut -f1 || echo 'không tạo được' )"
+          if [ "${{ job.status }}" != "success" ]; then
+            NOTE="THẤT BẠI — xem run ${{ github.run_id }}"
+          elif [ "${{ steps.co_secret.outputs.du }}" != "true" ]; then
+            NOTE="build xong, CHƯA deploy — thiếu secret Cloudflare"
+          fi
+          # chèn dòng mới ngay dưới hàng tiêu đề để bản ghi mới nhất nằm trên cùng
+          ROW="| $(date -u '+%Y-%m-%d %H:%M') | ${{ job.status }} | [\`$(echo ${{ github.sha }} | cut -c1-7)\`](${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}) | @${{ github.actor }} | $NOTE |"
+          awk -v row="$ROW" '/^\|---\|/ && !done { print; print row; done=1; next } { print }' "$LOG" > "$LOG.tmp" && mv "$LOG.tmp" "$LOG"
+
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add "$LOG"
+          git diff --cached --quiet || git commit -m "chore(deploy): ghi nhật ký deploy mobile web [skip ci]"
+          git push origin HEAD:${{ github.ref_name }} || echo "không push được nhật ký (nhánh có thể được bảo vệ) — bỏ qua"

@@ -1,0 +1,16 @@
+{
+  // Cloudflare Worker phục vụ bản Flutter Web của app mobile — xem app trên trình
+  // duyệt, không cần máy ảo. Dùng renderer CanvasKit nên giao diện vẽ giống hệt
+  // bản Android/iOS (Flutter tự vẽ toàn bộ widget, không map sang HTML).
+  //
+  // Deploy tự động: .github/workflows/deploy-web.yml chạy khi push vào develop/main.
+  // Deploy tay:      flutter build web --release && npx wrangler deploy
+  "name": "laundry-locker-mobile-web",
+  "compatibility_date": "2026-06-01",
+  "assets": {
+    "directory": "./build/web",
+    // Flutter Web dùng router phía client (go_router) — mọi đường dẫn không khớp
+    // file tĩnh đều phải trả index.html, nếu không F5 ở /orders sẽ ra 404.
+    "not_found_handling": "single-page-application"
+  }
+}

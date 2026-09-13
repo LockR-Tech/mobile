@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Facebook Login (flutter_facebook_auth).
+         facebook_app_id and facebook_client_token are PUBLIC client credentials
+         required by the Facebook SDK to be embedded in the app binary.
+         They are NOT the App Secret. The App Secret never leaves the server (Firebase).
+         See: https://developers.facebook.com/docs/facebook-login/security -->
+    <string name="facebook_app_id">1767424237196097</string>
+    <string name="fb_login_protocol_scheme">fb1767424237196097</string>
+    <string name="facebook_client_token">ddaed405081124fc03ba5f6886b4edc6</string>
+</resources>

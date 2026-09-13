@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "1007589685877",
+    "project_id": "laundry-locker-19a9d",
+    "storage_bucket": "laundry-locker-19a9d.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1007589685877:android:1afa036d6ef7aba040963c",
+        "android_client_info": {
+          "package_name": "com.laundrylocker.mobile"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1007589685877-k8d7cldra6oq8f2op0o4ke28ntrjtqvq.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.laundrylocker.mobile",
+            "certificate_hash": "a31a755ec416e8d97d4c750e864ce06308b84585"
+          }
+        },
+        {
+          "client_id": "1007589685877-oe40k7162lf86uljlp6v4vjvqta0v106.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.laundrylocker.mobile",
+            "certificate_hash": "b1a88fbfe70865c629b0b0e51d5d6b8bbed9112d"
+          }
+        },
+        {
+          "client_id": "1007589685877-s8jcspo0fsils3f97sqgrmfaqhakrsam.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCqdITzgaApbsPeFn2aAbtKbOEVLIQvYo8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1007589685877-s8jcspo0fsils3f97sqgrmfaqhakrsam.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
