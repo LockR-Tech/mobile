@@ -305,6 +305,10 @@ class LockerOpsService {
   Future<Map<String, dynamic>> myRatingAverage() =>
       _map('GET', '/api/maintenance/my-rating-average');
 
+  /// Thống kê hiệu suất & trạng thái chế tài SLA của chính KTV đang đăng nhập.
+  Future<Map<String, dynamic>> myPerformance() =>
+      _map('GET', '/api/maintenance/my-performance');
+
   /// Box-health cho bảo trì: trạng thái logic (theo đơn) đặt cạnh trạng thái
   /// phần cứng cửa cabinet báo lên (GAP 2). Mỗi phần tử:
   /// `{boxId, boxNumber, cellType, logicalStatus, hwState, lastReportedAt,
