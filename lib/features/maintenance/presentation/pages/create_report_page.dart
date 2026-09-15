@@ -9,7 +9,7 @@ import 'package:smart_laundry_locker/features/maintenance/presentation/providers
 import 'package:smart_laundry_locker/features/maintenance/presentation/providers/maintenance_provider.dart';
 import 'package:smart_laundry_locker/shared/widgets/app_bar.dart';
 import 'package:flutter/material.dart';
-import 'package:lucide_icons_flutter/lucide_icons.dart';
+
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:smart_laundry_locker/shared/widgets/custom_input.dart';
 import 'package:smart_laundry_locker/shared/widgets/custom_textarea.dart';
@@ -221,8 +221,8 @@ class _CreateReportPageState extends State<CreateReportPage> {
       SmartDialog.showToast('Vui lòng chọn tủ đồ bị lỗi');
       return;
     }
-    if (_capturedPhotos.length != 2) {
-      SmartDialog.showToast('Vui lòng chụp đủ 2 ảnh sự cố');
+    if (_capturedPhotos.isEmpty) {
+      SmartDialog.showToast('Vui lòng đính kèm ít nhất 1 ảnh sự cố');
       return;
     }
 
@@ -258,25 +258,30 @@ class _CreateReportPageState extends State<CreateReportPage> {
     }
   }
 
+  /// Chụp ảnh bằng camera (1 ảnh)
   Future<void> _capturePhoto() async {
-    if (_capturedPhotos.length >= 2) {
-      SmartDialog.showToast('Bạn chỉ có thể chụp tối đa 2 ảnh');
-      return;
-    }
-
     final image = await _picker.pickImage(
       source: ImageSource.camera,
-      maxWidth: 1024,
-      maxHeight: 1024,
-      imageQuality: 70,
+      maxWidth: 1280,
+      maxHeight: 1280,
+      imageQuality: 80,
     );
-
-    if (image == null) {
-      return;
-    }
-
+    if (image == null) return;
     setState(() {
       _capturedPhotos.add(File(image.path));
+    });
+  }
+
+  /// Chọn nhiều ảnh cùng lúc từ thư viện
+  Future<void> _pickMultiplePhotos() async {
+    final images = await _picker.pickMultiImage(
+      maxWidth: 1280,
+      maxHeight: 1280,
+      imageQuality: 80,
+    );
+    if (images.isEmpty) return;
+    setState(() {
+      _capturedPhotos.addAll(images.map((x) => File(x.path)));
     });
   }
 
@@ -504,88 +509,142 @@ class _CreateReportPageState extends State<CreateReportPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Ảnh sự cố (chụp 2 ảnh)',
-          style: TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
-            color: Colors.black87,
-          ),
-        ),
-        const SizedBox(height: 8),
         Row(
-          children: List.generate(2, (index) {
-            final hasImage = index < _capturedPhotos.length;
-            return Expanded(
-              child: Container(
-                margin: EdgeInsets.only(right: index == 0 ? 12 : 0),
-                child: InkWell(
-                  onTap: hasImage ? null : _capturePhoto,
-                  borderRadius: BorderRadius.circular(12),
-                  child: Container(
-                    height: 108,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.grey.shade300),
-                    ),
-                    child: hasImage
-                        ? Stack(
-                            fit: StackFit.expand,
-                            children: [
-                              ClipRRect(
-                                borderRadius: BorderRadius.circular(11),
-                                child: Image.file(
-                                  _capturedPhotos[index],
-                                  fit: BoxFit.cover,
-                                ),
-                              ),
-                              Positioned(
-                                top: 4,
-                                right: 4,
-                                child: InkWell(
-                                  onTap: () => _removePhoto(index),
-                                  child: Container(
-                                    padding: const EdgeInsets.all(2),
-                                    decoration: const BoxDecoration(
-                                      color: Colors.black54,
-                                      shape: BoxShape.circle,
-                                    ),
-                                    child: const Icon(
-                                      Icons.close,
-                                      size: 14,
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          )
-                        : Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                LucideIcons.camera,
-                                color: Colors.grey.shade500,
-                                size: 22,
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                'Chụp ảnh ${index + 1}',
-                                style: TextStyle(
-                                  color: Colors.grey.shade600,
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                            ],
-                          ),
+          children: [
+            const Text(
+              'Ảnh hiện trường sự cố',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: Colors.black87,
+              ),
+            ),
+            const SizedBox(width: 8),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+              decoration: BoxDecoration(
+                color: const Color(0xFFE8F5E9),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Text(
+                '${_capturedPhotos.length} ảnh',
+                style: const TextStyle(
+                  fontSize: 11,
+                  color: Color(0xFF2E7D32),
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 4),
+        const Text(
+          'Có thể thêm nhiều ảnh cùng lúc từ thư viện hoặc dùng camera chụp từng ảnh',
+          style: TextStyle(fontSize: 12, color: Colors.grey),
+        ),
+        const SizedBox(height: 10),
+        // Action buttons: Camera + Gallery
+        Row(
+          children: [
+            Expanded(
+              child: OutlinedButton.icon(
+                onPressed: _capturePhoto,
+                icon: const Icon(Icons.camera_alt_rounded, size: 18),
+                label: const Text('Chụp ảnh'),
+                style: OutlinedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  foregroundColor: const Color(0xFF1A237E),
+                  side: const BorderSide(color: Color(0xFF1A237E)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
                   ),
                 ),
               ),
-            );
-          }),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: OutlinedButton.icon(
+                onPressed: _pickMultiplePhotos,
+                icon: const Icon(Icons.photo_library_rounded, size: 18),
+                label: const Text('Chọn nhiều ảnh'),
+                style: OutlinedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  foregroundColor: const Color(0xFF1A237E),
+                  side: const BorderSide(color: Color(0xFF1A237E)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
+        if (_capturedPhotos.isNotEmpty) ...[
+          const SizedBox(height: 10),
+          SizedBox(
+            height: 110,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              itemCount: _capturedPhotos.length,
+              separatorBuilder: (_, __) => const SizedBox(width: 8),
+              itemBuilder: (context, index) {
+                return Stack(
+                  children: [
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(10),
+                      child: Image.file(
+                        _capturedPhotos[index],
+                        width: 110,
+                        height: 110,
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                    // Photo count badge
+                    Positioned(
+                      bottom: 4,
+                      left: 4,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: Colors.black54,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          'Ảnh ${index + 1}',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 10,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ),
+                    // Remove button
+                    Positioned(
+                      top: 3,
+                      right: 3,
+                      child: InkWell(
+                        onTap: () => _removePhoto(index),
+                        child: Container(
+                          padding: const EdgeInsets.all(3),
+                          decoration: const BoxDecoration(
+                            color: Colors.black54,
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.close,
+                            size: 13,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                );
+              },
+            ),
+          ),
+        ],
       ],
     );
   }
