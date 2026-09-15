@@ -23,15 +23,21 @@ class AuthInterceptor extends Interceptor {
   // Marks a request we have already retried so we never loop on it.
   static const _retriedFlag = '__auth_retried__';
 
+  /// Đặt `extra[skipAuthRefresh] = true` cho request tới endpoint công khai
+  /// (không cần đăng nhập): 401 khi đó KHÔNG được làm mới token hay đăng xuất
+  /// người dùng — chỉ trả lỗi về cho nơi gọi tự xử lý.
+  static const skipAuthRefresh = 'skipAuthRefresh';
+
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) async {
     final requestOptions = err.requestOptions;
     final isAuthFailure = err.response?.statusCode == 401;
     final alreadyRetried = requestOptions.extra[_retriedFlag] == true;
+    final skipRefresh = requestOptions.extra[skipAuthRefresh] == true;
     final isRefreshCall =
         requestOptions.path.contains('/api/auth/refresh-token');
 
-    if (!isAuthFailure || alreadyRetried || isRefreshCall) {
+    if (!isAuthFailure || alreadyRetried || skipRefresh || isRefreshCall) {
       return handler.next(err);
     }
 
