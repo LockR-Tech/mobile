@@ -7,6 +7,7 @@ import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service
 import 'package:smart_laundry_locker/features/locker_ops/presentation/pages/rent_locker_page.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/pages/send_parcel_page.dart';
 import 'package:smart_laundry_locker/features/stores/domain/entities/store.dart';
+import 'package:smart_laundry_locker/features/maintenance/presentation/pages/create_report_page.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
 
@@ -71,6 +72,26 @@ class _StoreLockerGridPageState extends State<StoreLockerGridPage> {
     );
   }
 
+  void _openReportLocker([Map<String, dynamic>? locker]) {
+    final target = locker ?? (_lockers.isNotEmpty ? _lockers.first : null);
+    final lockerId = target != null ? (target['id']?.toString() ?? '') : '';
+    final lockerName = target != null
+        ? (target['name'] as String? ?? target['code'] as String? ?? 'Tủ Kiosk')
+        : 'Tủ Kiosk';
+
+    Navigator.of(context, rootNavigator: true).push<void>(
+      MaterialPageRoute(
+        builder: (_) => CreateReportPage(
+          cabinetId: lockerId,
+          lockerId: lockerId,
+          cabinetName: lockerName,
+          lockerName: lockerName,
+          locationName: widget.store.name,
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -81,6 +102,12 @@ class _StoreLockerGridPageState extends State<StoreLockerGridPage> {
             title: 'Tủ locker',
             subtitle: widget.store.name,
             onBack: () => Navigator.pop(context),
+            trailing: BrandCircleIconButton(
+              icon: LucideIcons.triangleAlert,
+              iconColor: const Color(0xFFE11D48),
+              iconSize: 18,
+              onTap: () => _openReportLocker(),
+            ),
           ),
           if (widget.store.hasLocation)
             _AddressBar(
@@ -426,6 +453,53 @@ class _LockerCardState extends State<_LockerCard> {
                         fg: isActive
                             ? const Color(0xFF046C4E)
                             : const Color(0xFF9B1C1C),
+                      ),
+                      const SizedBox(width: 6),
+                      InkWell(
+                        borderRadius: BorderRadius.circular(20),
+                        onTap: () {
+                          Navigator.of(context, rootNavigator: true).push<void>(
+                            MaterialPageRoute(
+                              builder: (_) => CreateReportPage(
+                                cabinetId: '$_lockerId',
+                                lockerId: '$_lockerId',
+                                cabinetName: _lockerName,
+                                lockerName: _lockerName,
+                                locationName: widget.storeName,
+                              ),
+                            ),
+                          );
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 2.5,
+                          ),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFFFF1F2),
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(color: const Color(0xFFFECDD3)),
+                          ),
+                          child: const Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                LucideIcons.triangleAlert,
+                                size: 10,
+                                color: Color(0xFFE11D48),
+                              ),
+                              SizedBox(width: 3),
+                              Text(
+                                'Báo sự cố',
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w600,
+                                  color: Color(0xFFE11D48),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
                     ],
                   ),
