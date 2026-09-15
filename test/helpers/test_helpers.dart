@@ -4,6 +4,8 @@ import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http_mock_adapter/http_mock_adapter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:smart_laundry_locker/core/config/business_config.dart';
+import 'package:smart_laundry_locker/core/config/business_config_service.dart';
 import 'package:smart_laundry_locker/core/network/api_client.dart';
 import 'package:smart_laundry_locker/core/network/dio_client.dart';
 
@@ -58,6 +60,30 @@ void _ensureSingleton() => DioClient.instance.init(baseUrl: kTestBaseUrl);
 /// Initialises SharedPreferences with an empty in-memory store.
 Future<void> mockSharedPreferences([Map<String, Object> initial = const {}]) async {
   SharedPreferences.setMockInitialValues(initial);
+}
+
+// ── Business config (ADR-0005) ─────────────────────────────────────────────
+
+class _MemoryBusinessConfigStore implements BusinessConfigStore {
+  String? _value;
+
+  @override
+  Future<String?> read() async => _value;
+
+  @override
+  Future<void> write(String value) async => _value = value;
+}
+
+/// Thay [BusinessConfigService.instance] bằng bản không gọi mạng thật
+/// (mock Dio không có route ⇒ giữ nguyên [config], mặc định = defaults).
+BusinessConfigService useBusinessConfig([BusinessConfig? config]) {
+  final service = BusinessConfigService(
+    dio: createMockDio().dio,
+    store: _MemoryBusinessConfigStore(),
+    initial: config,
+  );
+  BusinessConfigService.instance = service;
+  return service;
 }
 
 // ── Secure Storage ─────────────────────────────────────────────────────────

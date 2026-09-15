@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
+import 'package:smart_laundry_locker/core/config/business_config_provider.dart';
 import 'package:smart_laundry_locker/core/routing/app_router.dart';
 import 'package:smart_laundry_locker/core/theme/shadcn_theme.dart';
 import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
+import 'package:smart_laundry_locker/features/locker_ops/presentation/utils/business_rules_text.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/locker_picker.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/ops_widgets.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/order_extras.dart';
@@ -50,16 +52,18 @@ class RentLockerPage extends StatefulWidget {
   State<RentLockerPage> createState() => _RentLockerPageState();
 }
 
-class _RentLockerPageState extends State<RentLockerPage> {
-  static const _rates = {'STANDARD': 5000, 'XL': 10000};
-  static const _quickHours = [2, 4, 8, 12, 24];
-
+class _RentLockerPageState extends State<RentLockerPage>
+    with BusinessConfigStateMixin {
   final _noteCtrl = TextEditingController();
 
   List<Map<String, dynamic>> _lockers = [];
   int? _lockerId;
   String _cellType = 'STANDARD';
-  double _hours = 4;
+  late double _hours;
+
+  /// Người dùng đã tự chọn số giờ — khi cấu hình đổi thì chỉ kéo về trong
+  /// giới hạn mới, không ghi đè bằng số giờ mặc định.
+  bool _hoursTouched = false;
   bool _loadingLockers = true;
   bool _loading = false;
   Map<String, dynamic>? _order;
@@ -70,6 +74,7 @@ class _RentLockerPageState extends State<RentLockerPage> {
   @override
   void initState() {
     super.initState();
+    _hours = businessConfig.rentalDefaultHours.toDouble();
     if (widget.initialCellType != null) _cellType = widget.initialCellType!;
     if (widget.initialLockerId != null) {
       // Đến từ lưới ô — tủ đã xác định, bỏ qua gọi API load danh sách tủ.
@@ -79,6 +84,21 @@ class _RentLockerPageState extends State<RentLockerPage> {
     } else {
       _loadLockers();
     }
+  }
+
+  @override
+  void onBusinessConfigChanged(BusinessConfig config) {
+    _hours = (_hoursTouched
+            ? config.clampRentalHours(_hours)
+            : config.rentalDefaultHours)
+        .toDouble();
+  }
+
+  void _setHours(num hours) {
+    setState(() {
+      _hoursTouched = true;
+      _hours = businessConfig.clampRentalHours(hours).toDouble();
+    });
   }
 
   @override
@@ -142,7 +162,8 @@ class _RentLockerPageState extends State<RentLockerPage> {
     }
   }
 
-  int get _price => (_rates[_cellType] ?? 5000) * _hours.round();
+  /// Tạm tính hiển thị theo giá admin cấu hình — server tự tính tiền thật.
+  int get _price => businessConfig.rentalRateFor(_cellType) * _hours.round();
 
   int get _netPrice => (_price - _discount).clamp(0, _price);
 
@@ -275,6 +296,9 @@ class _RentLockerPageState extends State<RentLockerPage> {
     if (_loadingLockers) {
       return const Center(child: CircularProgressIndicator());
     }
+    final config = businessConfig;
+    final minHours = config.rentalMinHours;
+    final maxHours = config.rentalMaxHours;
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
@@ -315,16 +339,16 @@ class _RentLockerPageState extends State<RentLockerPage> {
                 value: 'STANDARD',
                 icon: LucideIcons.box,
                 title: 'Ô thường',
-                size: '45 × 30 × 50 cm',
-                rate: '5.000đ/giờ',
+                size: config.cellDimensionsFor('STANDARD'),
+                rate: hourlyRateLabel(config.rentalRateFor('STANDARD')),
               ),
               const SizedBox(width: 12),
               _cellCard(
                 value: 'XL',
                 icon: LucideIcons.luggage,
                 title: 'Ô vali (XL)',
-                size: '30 × 80 × 40 cm',
-                rate: '10.000đ/giờ',
+                size: config.cellDimensionsFor('XL'),
+                rate: hourlyRateLabel(config.rentalRateFor('XL')),
               ),
             ],
           ),
@@ -333,22 +357,28 @@ class _RentLockerPageState extends State<RentLockerPage> {
         Wrap(
           spacing: 8,
           children: [
-            for (final h in _quickHours) _quickChip(h),
+            for (final h in config.rentalQuickHours) _quickChip(h),
           ],
         ),
         const SizedBox(height: 4),
         Row(
           children: [
             Expanded(
-              child: Slider(
-                value: _hours,
-                min: 1,
-                max: 72,
-                divisions: 71,
-                activeColor: opsPrimary,
-                label: '${_hours.round()}h',
-                onChanged: (v) => setState(() => _hours = v),
-              ),
+              // min == max thì không có gì để kéo — chỉ hiện số giờ cố định.
+              child: maxHours > minHours
+                  ? Slider(
+                      value: _hours.clamp(
+                        minHours.toDouble(),
+                        maxHours.toDouble(),
+                      ),
+                      min: minHours.toDouble(),
+                      max: maxHours.toDouble(),
+                      divisions: maxHours - minHours,
+                      activeColor: opsPrimary,
+                      label: '${_hours.round()}h',
+                      onChanged: _setHours,
+                    )
+                  : const SizedBox.shrink(),
             ),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
@@ -365,6 +395,10 @@ class _RentLockerPageState extends State<RentLockerPage> {
               ),
             ),
           ],
+        ),
+        Text(
+          'Thuê từ $minHours đến $maxHours giờ. ${overtimePolicyText(config)}',
+          style: const TextStyle(fontSize: 12, color: opsMutedText, height: 1.4),
         ),
         const SizedBox(height: 16),
         const OpsSectionLabel('Ghi chú', icon: LucideIcons.stickyNote),
@@ -473,7 +507,7 @@ class _RentLockerPageState extends State<RentLockerPage> {
         color: selected ? Colors.white : opsDark,
         fontWeight: FontWeight.w700,
       ),
-      onSelected: (_) => setState(() => _hours = h.toDouble()),
+      onSelected: (_) => _setHours(h),
     );
   }
 
@@ -598,8 +632,8 @@ class _RentLockerPageState extends State<RentLockerPage> {
     final isXl = cellType == 'XL';
     final icon = isXl ? LucideIcons.luggage : LucideIcons.box;
     final title = isXl ? 'Ô vali (XL)' : 'Ô thường';
-    final size = isXl ? '30 × 80 × 40 cm' : '45 × 30 × 50 cm';
-    final rate = isXl ? '10.000đ/giờ' : '5.000đ/giờ';
+    final size = businessConfig.cellDimensionsFor(cellType);
+    final rate = hourlyRateLabel(businessConfig.rentalRateFor(cellType));
     
     final available = _availableCounts?[cellType] ?? -1;
     final disabled = available == 0;
@@ -658,6 +692,7 @@ class _RentLockerPageState extends State<RentLockerPage> {
     final status = order['status'] as String?;
     final started = status == 'STORING';
     final unpaid = (order['paymentStatus'] as String?) != 'PAID';
+    final config = businessConfig;
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
@@ -713,14 +748,15 @@ class _RentLockerPageState extends State<RentLockerPage> {
                   icon: LucideIcons.clock,
                   text: 'Hết hạn thuê: ${fmtDateTime(order['pickupDeadline'])} '
                       '(${fmtRemaining(order['pickupDeadline'])}). '
-                      'Trả ô trễ sẽ phát sinh phí quá giờ.',
+                      'Trả ô trễ: ${overtimePolicyText(config)}',
                 ),
               ],
             ],
           ),
         ).animate().fadeIn(duration: 300.ms).slideY(begin: 0.05),
         const SizedBox(height: 16),
-        if (!started || unpaid) ...[
+        // Nút mock trả bằng CASH — ẩn khi admin tắt phương thức tiền mặt.
+        if ((!started || unpaid) && config.isPaymentMethodEnabled('CASH')) ...[
           OpsPrimaryButton(
             label: 'Đã thanh toán (Mock Ví)',
             icon: LucideIcons.wallet,
@@ -729,6 +765,14 @@ class _RentLockerPageState extends State<RentLockerPage> {
           ),
         ],
         if (!started) ...[
+          if (unpaid && config.requirePaymentBeforeDrop) ...[
+            const SizedBox(height: 12),
+            const OpsBanner(
+              tone: OpsBannerTone.warning,
+              icon: LucideIcons.badgeAlert,
+              text: 'Cần thanh toán đơn trước khi bỏ đồ vào ô.',
+            ),
+          ],
           const SizedBox(height: 12),
           OpsPrimaryButton(
             label: 'Tôi đã bỏ đồ — bắt đầu kỳ thuê',

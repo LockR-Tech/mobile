@@ -3,12 +3,14 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
+import 'package:smart_laundry_locker/core/config/business_config_provider.dart';
 import 'package:smart_laundry_locker/core/config/env_config.dart';
 import 'package:smart_laundry_locker/core/media/media.dart';
 import 'package:smart_laundry_locker/core/routing/app_router.dart';
 import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
 import 'package:smart_laundry_locker/features/transactions/presentation/pages/top_up_page.dart'
     show TopUpWebViewPage;
+import 'package:smart_laundry_locker/features/locker_ops/presentation/utils/business_rules_text.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/utils/locker_maps.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/ops_widgets.dart';
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
@@ -25,7 +27,8 @@ class MyLockerOrdersPage extends StatefulWidget {
   State<MyLockerOrdersPage> createState() => _MyLockerOrdersPageState();
 }
 
-class _MyLockerOrdersPageState extends State<MyLockerOrdersPage> {
+class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
+    with BusinessConfigStateMixin {
   late final LockerOpsService _service = widget.service ?? LockerOpsService();
   List<Map<String, dynamic>> _orders = [];
   Map<int, Map<int, int>> _lockerBoxesMap = {};
@@ -231,7 +234,12 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage> {
   }
 
   Future<void> _extendDialog(int orderId) async {
-    var hours = 2.0;
+    // Giới hạn gia hạn do admin cấu hình; làm mới nền để lần sau dùng giá trị
+    // mới nhất mà không bắt người dùng chờ mạng.
+    businessConfigService.refresh();
+    final config = businessConfig;
+    final maxHours = config.extendMaxHours;
+    var hours = config.extendDefaultHours.clamp(1, maxHours).toDouble();
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => StatefulBuilder(
@@ -251,14 +259,20 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage> {
                   color: opsDark,
                 ),
               ),
-              Slider(
-                value: hours,
-                min: 1,
-                max: 24,
-                divisions: 23,
-                activeColor: opsPrimary,
-                label: '${hours.round()}h',
-                onChanged: (v) => setSheet(() => hours = v),
+              if (maxHours > 1)
+                Slider(
+                  value: hours,
+                  min: 1,
+                  max: maxHours.toDouble(),
+                  divisions: maxHours - 1,
+                  activeColor: opsPrimary,
+                  label: '${hours.round()}h',
+                  onChanged: (v) => setSheet(() => hours = v),
+                ),
+              Text(
+                'Tối đa $maxHours giờ mỗi lần gia hạn',
+                textAlign: TextAlign.center,
+                style: const TextStyle(fontSize: 12, color: opsMutedText),
               ),
             ],
           ),
@@ -1451,12 +1465,14 @@ class _DetailSheet extends StatelessWidget {
         ),
         const SizedBox(height: 16),
         if (overdue)
-          const Padding(
-            padding: EdgeInsets.only(bottom: 12),
+          Padding(
+            padding: const EdgeInsets.only(bottom: 12),
             child: OpsBanner(
               tone: OpsBannerTone.danger,
               icon: LucideIcons.triangleAlert,
-              text: 'Đơn đã quá hạn lấy — có thể phát sinh phí quá giờ.',
+              text:
+                  'Đơn đã quá hạn lấy — có thể phát sinh phí quá giờ. '
+                  '${overtimePolicyText(BusinessConfigService.instance.current)}',
             ),
           ),
         Container(

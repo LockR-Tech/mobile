@@ -3,9 +3,11 @@ import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
+import 'package:smart_laundry_locker/core/config/business_config_provider.dart';
 import 'package:smart_laundry_locker/core/routing/app_router.dart';
 import 'package:smart_laundry_locker/core/theme/shadcn_theme.dart';
 import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
+import 'package:smart_laundry_locker/features/locker_ops/presentation/utils/business_rules_text.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/locker_picker.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/ops_widgets.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/order_extras.dart';
@@ -37,14 +39,16 @@ class SendParcelPage extends StatefulWidget {
   State<SendParcelPage> createState() => _SendParcelPageState();
 }
 
-class _SendParcelPageState extends State<SendParcelPage> {
+class _SendParcelPageState extends State<SendParcelPage>
+    with BusinessConfigStateMixin {
   final _service = LockerOpsService();
   final _formKey = GlobalKey<FormState>();
   final _phoneCtrl = TextEditingController();
   final _nameCtrl = TextEditingController();
   final _noteCtrl = TextEditingController();
 
-  static const _fee = 15000;
+  /// Phí gửi hiển thị (admin cấu hình) — server tự tính tiền thật.
+  int get _fee => businessConfig.sendBaseFee;
 
   static const _sizes = ['SMALL', 'MEDIUM', 'LARGE'];
 
@@ -301,6 +305,12 @@ class _SendParcelPageState extends State<SendParcelPage> {
             icon: LucideIcons.pencil,
             maxLines: 2,
           ),
+          const SizedBox(height: 12),
+          OpsBanner(
+            tone: OpsBannerTone.info,
+            icon: LucideIcons.clock,
+            text: sendPickupPolicyText(businessConfig),
+          ),
           const SizedBox(height: 20),
           const OpsSectionLabel('Mã giảm giá', icon: LucideIcons.ticket),
           PromoCodeField(
@@ -374,9 +384,17 @@ class _SendParcelPageState extends State<SendParcelPage> {
     setState(() => _loading = true);
     try {
       // Dùng CASH thay cho WALLET để mock thành công mà không cần số dư trong DB thật
-      final order = await _service.checkout(id, 'CASH');
+      final payment = await _service.checkout(id, 'CASH');
       if (!mounted) return;
-      setState(() => _order = order);
+      // checkout trả về bản ghi thanh toán, không phải đơn — chỉ gộp trạng
+      // thái thanh toán để giữ nguyên id/PIN của đơn cho bước confirmDrop.
+      setState(() {
+        _order = {
+          ...?_order,
+          'paymentStatus': 'PAID',
+          if (payment['paidAt'] != null) 'paidAt': payment['paidAt'],
+        };
+      });
       _snack('Đã mock thanh toán (CASH) thành công');
       // Tự động gọi confirmDrop sau khi thanh toán thành công
       await _confirmDrop();
@@ -393,6 +411,8 @@ class _SendParcelPageState extends State<SendParcelPage> {
     final status = order['status'] as String?;
     final isDropped = status == 'STORING';
     final hasReceiverAccount = order['receiverId'] != null;
+    final unpaid = (order['paymentStatus'] as String?) != 'PAID';
+    final config = businessConfig;
 
     return ListView(
       padding: const EdgeInsets.all(16),
@@ -457,7 +477,8 @@ class _SendParcelPageState extends State<SendParcelPage> {
                   icon: LucideIcons.clock,
                   text: 'Người nhận cần lấy hàng trước '
                       '${fmtDateTime(order['pickupDeadline'])} '
-                      '(${fmtRemaining(order['pickupDeadline'])}).',
+                      '(${fmtRemaining(order['pickupDeadline'])}). '
+                      '${overtimePolicyText(config)}',
                 ),
               ],
             ],
@@ -465,13 +486,24 @@ class _SendParcelPageState extends State<SendParcelPage> {
         ).animate().fadeIn(duration: 300.ms).slideY(begin: 0.05),
         const SizedBox(height: 16),
         if (!isDropped) ...[
-          OpsPrimaryButton(
-            label: 'Đã thanh toán (Mock Ví)',
-            icon: LucideIcons.wallet,
-            loading: _loading,
-            onPressed: _mockPayment,
-          ),
-          const SizedBox(height: 12),
+          if (unpaid && config.requirePaymentBeforeDrop) ...[
+            const OpsBanner(
+              tone: OpsBannerTone.warning,
+              icon: LucideIcons.badgeAlert,
+              text: 'Cần thanh toán đơn trước khi bỏ hàng vào ô.',
+            ),
+            const SizedBox(height: 12),
+          ],
+          // Nút mock trả bằng CASH — ẩn khi admin tắt phương thức tiền mặt.
+          if (config.isPaymentMethodEnabled('CASH')) ...[
+            OpsPrimaryButton(
+              label: 'Đã thanh toán (Mock Ví)',
+              icon: LucideIcons.wallet,
+              loading: _loading,
+              onPressed: _mockPayment,
+            ),
+            const SizedBox(height: 12),
+          ],
           OpsPrimaryButton(
             label: 'Tôi đã bỏ hàng vào ô',
             icon: LucideIcons.check,
