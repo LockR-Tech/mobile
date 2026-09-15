@@ -8,11 +8,15 @@ abstract class ProfileRemoteDataSource {
 
   Future<Map<String, dynamic>> getCourierProfile(String userId);
 
-  /// Upload avatar lên backend, trả về profile đã update
+  /// Upload avatar (Cloudinary signed upload → PUT /api/user/avatar),
+  /// trả về profile đã update
   Future<Map<String, dynamic>> uploadAvatar({
     required String userId,
     required String filePath,
   });
+
+  /// Xoá ảnh đại diện (DELETE /api/user/avatar), trả về profile đã update
+  Future<Map<String, dynamic>> deleteAvatar();
 
   Future<bool> verifyCurrentPassword({
     required String email,

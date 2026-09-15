@@ -79,6 +79,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
   Future<void> _handlePickAvatar() async {
     if (_isUploadingAvatar) return;
 
+    final currentAvatar =
+        (_profileProvider.profile ?? widget.profile)?.avatarUrl ?? '';
     final source = await showModalBottomSheet<ImageSource>(
       context: context,
       shape: const RoundedRectangleBorder(
@@ -99,6 +101,21 @@ class _EditProfilePageState extends State<EditProfilePage> {
                 title: const Text('Chọn từ thư viện'),
                 onTap: () => Navigator.of(context).pop(ImageSource.gallery),
               ),
+              if (currentAvatar.isNotEmpty)
+                ListTile(
+                  leading: const Icon(
+                    Icons.delete_outline,
+                    color: AppColors.error,
+                  ),
+                  title: const Text(
+                    'Xoá ảnh đại diện',
+                    style: TextStyle(color: AppColors.error),
+                  ),
+                  onTap: () {
+                    Navigator.of(context).pop();
+                    _handleDeleteAvatar();
+                  },
+                ),
             ],
           ),
         );
@@ -156,6 +173,47 @@ class _EditProfilePageState extends State<EditProfilePage> {
       _isUploadingAvatar = false;
       _localAvatarFile = null;
     });
+  }
+
+  Future<void> _handleDeleteAvatar() async {
+    if (_isUploadingAvatar) return;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Xoá ảnh đại diện?'),
+        content: const Text('Ảnh đại diện hiện tại sẽ bị gỡ khỏi tài khoản.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Hủy'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Xoá', style: TextStyle(color: AppColors.error)),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+
+    setState(() => _isUploadingAvatar = true);
+    SmartDialog.showLoading(msg: 'Đang xoá ảnh đại diện...');
+    final repository = ProfileRepositoryImpl(
+      remoteDataSource: ProfileRemoteDataSourceImpl(ApiClient()),
+    );
+    final result = await repository.deleteAvatar();
+    SmartDialog.dismiss();
+    if (!mounted) return;
+
+    await result.fold(
+      (failure) async => SmartDialog.showToast(failure.message),
+      (_) async {
+        await _profileProvider.loadProfile();
+        SmartDialog.showToast('Đã xoá ảnh đại diện');
+      },
+    );
+    if (!mounted) return;
+    setState(() => _isUploadingAvatar = false);
   }
 
   @override

@@ -136,6 +136,24 @@ class ProfileRepositoryImpl implements ProfileRepository {
   }
 
   @override
+  Future<Either<Failure, UserProfile>> deleteAvatar() async {
+    try {
+      final response = await _remoteDataSource.deleteAvatar();
+      return Right(UserProfileModel.fromJson(response).toEntity());
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
+    } on NetworkException catch (e) {
+      return Left(NetworkFailure(e.message));
+    } on AuthenticationException catch (e) {
+      return Left(AuthenticationFailure(e.message));
+    } on AuthorizationException catch (e) {
+      return Left(AuthorizationFailure(e.message));
+    } catch (e) {
+      return Left(UnknownFailure(e.toString()));
+    }
+  }
+
+  @override
   Future<Either<Failure, bool>> verifyCurrentPassword({
     required String email,
     required String currentPassword,
