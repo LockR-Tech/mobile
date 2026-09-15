@@ -114,11 +114,11 @@ DateTime? _parseDate(dynamic value) {
 
 String _two(int n) => n.toString().padLeft(2, '0');
 
-/// ISO timestamp -> `HH:mm dd/MM`.
+/// ISO timestamp -> `HH:mm:ss dd/MM/yyyy`.
 String fmtDateTime(dynamic value) {
   final d = _parseDate(value);
   if (d == null) return '—';
-  return '${_two(d.hour)}:${_two(d.minute)} ${_two(d.day)}/${_two(d.month)}';
+  return '${_two(d.hour)}:${_two(d.minute)}:${_two(d.second)} ${_two(d.day)}/${_two(d.month)}/${d.year}';
 }
 
 bool isOverdue(dynamic deadline) {
