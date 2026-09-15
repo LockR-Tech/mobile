@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:smart_laundry_locker/core/config/business_config.dart';
 import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/pages/my_locker_orders_page.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/ops_widgets.dart';
@@ -75,8 +76,11 @@ class _FakeRentalExtendLockerOpsService extends LockerOpsService {
     ],
   };
 
+  int? lastExtendHours;
+
   @override
   Future<Map<String, dynamic>> extendRental(int orderId, int hours) async {
+    lastExtendHours = hours;
     _order['paymentStatus'] = 'UNPAID';
     _order['totalPrice'] = (_order['totalPrice'] as int) + 5000 * hours;
     return Map.of(_order);
@@ -205,6 +209,48 @@ void main() {
     mockSecureStorage({
       'access_token': makeFakeJwt(sub: '99', roles: ['CUSTOMER']),
     });
+    useBusinessConfig();
+  });
+
+  testWidgets('gia hạn dùng số giờ mặc định và tối đa theo cấu hình admin', (
+    tester,
+  ) async {
+    useBusinessConfig(
+      BusinessConfig.fromPublicMaps(
+        order: {
+          'app.order.extend-default-hours': 3,
+          'app.order.extend-max-hours': 6,
+        },
+      ),
+    );
+    final service = _FakeRentalExtendLockerOpsService();
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: MediaQuery(
+          data: const MediaQueryData(size: Size(390, 844)),
+          child: MyLockerOrdersPage(service: service),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Tủ thuê'));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.text('Gia hạn thuê'));
+    await tester.tap(find.text('Gia hạn thuê'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Thêm 3 giờ'), findsOneWidget);
+    expect(find.text('Tối đa 6 giờ mỗi lần gia hạn'), findsOneWidget);
+    final slider = tester.widget<Slider>(find.byType(Slider));
+    expect(slider.min, 1);
+    expect(slider.max, 6);
+
+    await tester.tap(find.text('Gia hạn'));
+    await tester.pumpAndSettle();
+
+    expect(service.lastExtendHours, 3);
   });
 
   testWidgets('wraps drone order header and hides unpaid credentials', (
