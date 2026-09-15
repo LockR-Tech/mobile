@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:intl/intl.dart';
+import 'package:smart_laundry_locker/core/config/business_config_provider.dart';
 import 'package:smart_laundry_locker/core/constants/app_assets.dart';
 import 'package:smart_laundry_locker/core/network/api_client.dart';
 import 'package:smart_laundry_locker/core/theme/shadcn_theme.dart';
@@ -18,9 +19,13 @@ class TopUpPage extends StatefulWidget {
   State<TopUpPage> createState() => _TopUpPageState();
 }
 
-class _TopUpPageState extends State<TopUpPage> {
-  final List<int> _amounts = [20000, 50000, 100000, 200000, 500000, 1000000];
-  int _selectedAmount = 100000;
+class _TopUpPageState extends State<TopUpPage> with BusinessConfigStateMixin {
+  /// Mốc nạp nhanh + số tiền mặc định do admin cấu hình.
+  List<int> get _amounts => businessConfig.topupPresets;
+  late int _selectedAmount;
+
+  /// Người dùng đã tự chọn mốc — cấu hình đổi thì không ghi đè lựa chọn.
+  bool _amountTouched = false;
   late final TransactionProvider _provider;
 
   String _formatCurrency(int amount) {
@@ -33,7 +38,28 @@ class _TopUpPageState extends State<TopUpPage> {
   @override
   void initState() {
     super.initState();
+    _selectedAmount = businessConfig.topupDefaultAmount;
     _provider = TransactionInjection.provideTransactionProvider(ApiClient());
+  }
+
+  @override
+  void onBusinessConfigChanged(BusinessConfig config) {
+    if (!_amountTouched) _selectedAmount = config.topupDefaultAmount;
+  }
+
+  /// Kiểm tra trước khi gọi API. Trả `false` (và báo lỗi) nếu không nạp được.
+  bool _validateTopUp() {
+    final config = businessConfig;
+    if (!config.isPaymentMethodEnabled('VNPAY')) {
+      SmartDialog.showToast('Nạp tiền qua VNPAY đang tạm ngưng.');
+      return false;
+    }
+    final error = config.validateTopupAmount(_selectedAmount, _formatCurrency);
+    if (error != null) {
+      SmartDialog.showToast(error);
+      return false;
+    }
+    return true;
   }
 
   @override
@@ -77,12 +103,27 @@ class _TopUpPageState extends State<TopUpPage> {
                     selectedAmount: _selectedAmount,
                     formatCurrency: _formatCurrency,
                     onSelected: (value) {
-                      setState(() => _selectedAmount = value);
+                      setState(() {
+                        _amountTouched = true;
+                        _selectedAmount = value;
+                      });
                     },
                     screenH: screenH,
                   ),
+                  const SizedBox(height: 12),
+                  Text(
+                    'Số tiền nạp: ${_formatCurrency(_selectedAmount)} · '
+                    'Mỗi lần nạp từ '
+                    '${_formatCurrency(businessConfig.topupMinAmount)} đến '
+                    '${_formatCurrency(businessConfig.topupMaxAmount)}',
+                    style: const TextStyle(fontSize: 13, color: Colors.grey),
+                  ),
                   const SizedBox(height: 32),
-                  const _PaymentMethodSection(),
+                  _PaymentMethodSection(
+                    vnpayEnabled: businessConfig.isPaymentMethodEnabled(
+                      'VNPAY',
+                    ),
+                  ),
                   const SizedBox(height: 32),
                   SizedBox(height: screenH * 0.08),
                 ],
@@ -96,6 +137,7 @@ class _TopUpPageState extends State<TopUpPage> {
                   debugPrint(
                     '[TOPUP][page] pressed selectedAmount=$_selectedAmount',
                   );
+                  if (!_validateTopUp()) return;
                   final result = await provider.initiateTopUp(_selectedAmount);
                   if (!mounted) return;
                   if (result == null || result.paymentUrl.isEmpty) {
@@ -217,10 +259,28 @@ class _TopUpAmountGrid extends StatelessWidget {
 }
 
 class _PaymentMethodSection extends StatelessWidget {
-  const _PaymentMethodSection();
+  const _PaymentMethodSection({required this.vnpayEnabled});
+
+  /// Admin có thể tắt VNPAY (`app.payment.enabled-methods`).
+  final bool vnpayEnabled;
 
   @override
   Widget build(BuildContext context) {
+    if (!vnpayEnabled) {
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: const Color(0xFFFFFBEB),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: const Color(0xFFFCD34D)),
+        ),
+        child: const Text(
+          'Nạp tiền qua VNPAY đang tạm ngưng. Vui lòng thử lại sau.',
+          style: TextStyle(fontSize: 15, color: Color(0xFF92400E)),
+        ),
+      );
+    }
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
