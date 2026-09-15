@@ -1,13 +1,21 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
+import 'package:smart_laundry_locker/core/media/media.dart';
 import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/ops_widgets.dart';
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
 
-/// Read-only view of the customer's own locker fault reports
+/// Tối đa ảnh REPORT trên 1 phiếu / mỗi lần bổ sung (hợp đồng media-storage).
+const _maxReportPhotosPerReport = 10;
+const _maxReportPhotosPerRequest = 5;
+
+/// View of the customer's own locker fault reports
 /// (`GET /api/lockers/my-reports`), so they can see claim/resolve progress
-/// without having to ask maintenance directly.
+/// without having to ask maintenance directly. Shows the report photos by
+/// stage and lets the owner add more REPORT photos while not RESOLVED.
 class MyReportsPage extends StatefulWidget {
   const MyReportsPage({super.key});
 
@@ -79,7 +87,8 @@ class _MyReportsPageState extends State<MyReportsPage> {
                       padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
                       itemCount: _reports.length,
                       separatorBuilder: (_, _) => const SizedBox(height: 10),
-                      itemBuilder: (ctx, i) => _ReportCard(report: _reports[i]),
+                      itemBuilder: (ctx, i) =>
+                          _ReportCard(report: _reports[i], onChanged: _load),
                     ),
                   ),
           ),
@@ -90,8 +99,9 @@ class _MyReportsPageState extends State<MyReportsPage> {
 }
 
 class _ReportCard extends StatefulWidget {
-  const _ReportCard({required this.report});
+  const _ReportCard({required this.report, required this.onChanged});
   final Map<String, dynamic> report;
+  final Future<void> Function() onChanged;
 
   @override
   State<_ReportCard> createState() => _ReportCardState();
@@ -136,6 +146,34 @@ class _ReportCardState extends State<_ReportCard> {
     }
   }
 
+  Future<void> _addPhotos(int reportId, int existingReportPhotos) async {
+    final added = await showModalBottomSheet<bool>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      showDragHandle: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(26)),
+      ),
+      builder: (_) => _AddReportPhotosSheet(
+        reportId: reportId,
+        service: _service,
+        maxPhotos: math.min(
+          _maxReportPhotosPerRequest,
+          _maxReportPhotosPerReport - existingReportPhotos,
+        ),
+      ),
+    );
+    if (added == true && mounted) {
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          const SnackBar(content: Text('Đã bổ sung ảnh cho báo cáo')),
+        );
+      await widget.onChanged();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final report = widget.report;
@@ -143,6 +181,15 @@ class _ReportCardState extends State<_ReportCard> {
     final description = report['description'] as String?;
     final lockerLabel =
         report['lockerName'] ?? report['lockerCode'] ?? report['lockerId'];
+    final reportId = report['id'] is int ? report['id'] as int : null;
+    final attachments = ReportAttachment.listFrom(report['attachments']);
+    final reportPhotoCount = attachments
+        .where((a) => a.stage == ReportStage.report)
+        .length;
+    final canAddPhotos =
+        reportId != null &&
+        status != 'RESOLVED' &&
+        reportPhotoCount < _maxReportPhotosPerReport;
 
     return OpsCard(
       child: Column(
@@ -189,6 +236,33 @@ class _ReportCardState extends State<_ReportCard> {
             label: 'Gửi lúc',
             value: fmtDateTime(report['createdAt']),
           ),
+          if (attachments.isNotEmpty)
+            AttachmentStageGallery(
+              attachments: attachments,
+              stages: const [
+                ReportStage.report,
+                ReportStage.inspection,
+                ReportStage.resolution,
+              ],
+              labels: const {
+                ReportStage.report: 'Ảnh bạn gửi',
+                ReportStage.inspection: 'Ảnh kỹ thuật viên kiểm tra',
+                ReportStage.resolution: 'Ảnh nghiệm thu',
+              },
+              accentColor: AislBrand.navy,
+            ),
+          if (canAddPhotos)
+            Align(
+              alignment: Alignment.centerLeft,
+              child: TextButton.icon(
+                onPressed: () => _addPhotos(reportId, reportPhotoCount),
+                icon: const Icon(LucideIcons.imagePlus, size: 16),
+                label: Text(
+                  reportPhotoCount == 0 ? 'Thêm ảnh sự cố' : 'Bổ sung ảnh',
+                ),
+                style: TextButton.styleFrom(foregroundColor: AislBrand.navy),
+              ),
+            ),
           if (status == 'IN_PROGRESS')
             const Padding(
               padding: EdgeInsets.only(top: 10),
@@ -261,6 +335,133 @@ class _ReportCardState extends State<_ReportCard> {
               ),
           ],
         ],
+      ),
+    );
+  }
+}
+
+/// Sheet chọn ảnh → upload Cloudinary → `POST /api/lockers/reports/{id}/attachments`.
+class _AddReportPhotosSheet extends StatefulWidget {
+  const _AddReportPhotosSheet({
+    required this.reportId,
+    required this.service,
+    required this.maxPhotos,
+  });
+
+  final int reportId;
+  final LockerOpsService service;
+  final int maxPhotos;
+
+  @override
+  State<_AddReportPhotosSheet> createState() => _AddReportPhotosSheetState();
+}
+
+class _AddReportPhotosSheetState extends State<_AddReportPhotosSheet> {
+  late final PhotoPickerController _photos = PhotoPickerController(
+    maxPhotos: widget.maxPhotos,
+  );
+  bool _submitting = false;
+  String? _error;
+
+  @override
+  void dispose() {
+    _photos.dispose();
+    super.dispose();
+  }
+
+  Future<void> _submit() async {
+    if (_photos.isEmpty) {
+      setState(() => _error = 'Vui lòng chọn ít nhất 1 ảnh.');
+      return;
+    }
+    setState(() {
+      _submitting = true;
+      _error = null;
+    });
+    try {
+      final attachments = await _photos.uploadAll();
+      await widget.service.addMyReportAttachments(widget.reportId, attachments);
+      if (mounted) Navigator.pop(context, true);
+    } catch (e) {
+      if (mounted) {
+        setState(() => _error = LockerOpsService.errorMessage(e));
+      }
+    } finally {
+      if (mounted) setState(() => _submitting = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.only(
+        bottom: MediaQuery.of(context).viewInsets.bottom,
+      ),
+      child: SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Bổ sung ảnh sự cố',
+                style: TextStyle(
+                  fontWeight: FontWeight.w800,
+                  fontSize: 16,
+                  color: opsDark,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                'Tối đa ${widget.maxPhotos} ảnh mỗi lần. Ảnh giúp đội bảo trì '
+                'chuẩn bị đúng linh kiện trước khi tới.',
+                style: const TextStyle(fontSize: 12.5, color: opsMutedText),
+              ),
+              const SizedBox(height: 14),
+              PhotoPickerField(
+                controller: _photos,
+                enabled: !_submitting,
+                thumbSize: 80,
+                accentColor: AislBrand.navy,
+              ),
+              if (_error != null) ...[
+                const SizedBox(height: 10),
+                OpsBanner(
+                  tone: OpsBannerTone.danger,
+                  icon: LucideIcons.circleAlert,
+                  text: _error!,
+                ),
+              ],
+              const SizedBox(height: 16),
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton.icon(
+                  onPressed: _submitting ? null : _submit,
+                  style: FilledButton.styleFrom(
+                    backgroundColor: AislBrand.navy,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                  ),
+                  icon: _submitting
+                      ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
+                      : const Icon(LucideIcons.upload, size: 18),
+                  label: Text(_submitting ? 'Đang tải ảnh...' : 'Gửi ảnh'),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

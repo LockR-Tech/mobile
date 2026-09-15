@@ -1,7 +1,7 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:smart_laundry_locker/core/media/media.dart';
 import 'package:smart_laundry_locker/core/services/token_service.dart';
 import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/utils/locker_maps.dart';
@@ -1409,53 +1409,121 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
     }
   }
 
-  /// Dialog nhập lý do rồi báo hỏng ô.
+  /// Dialog nhập lý do (+ ảnh hiện trường tuỳ chọn) rồi báo hỏng ô.
+  /// Ảnh được upload ngay trong dialog để thấy tiến độ từng ảnh.
   Future<void> _reportFaultFlow(Map<String, dynamic> cell) async {
     final boxId = _asInt(cell['id']);
     if (boxId == null) return;
     final reasonCtrl = TextEditingController(text: 'Hỏng khóa');
+    final photos = PhotoPickerController(maxPhotos: 5);
+    var uploading = false;
+    String? dialogError;
+    List<Map<String, dynamic>> attachments = const [];
     final ok = await showDialog<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text('Báo hỏng ô #${cell['boxNumber']}'),
-        content: TextField(
-          controller: reasonCtrl,
-          decoration: const InputDecoration(labelText: 'Lý do hỏng'),
-          minLines: 1,
-          maxLines: 3,
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Hủy'),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFDC2626),
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      barrierDismissible: false,
+      // photos được huỷ khi dialog gỡ khỏi cây (sau hiệu ứng đóng).
+      builder: (ctx) => ControllerDisposer(
+        controller: photos,
+        child: StatefulBuilder(
+          builder: (ctx, setLocal) => AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
             ),
-            onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Báo hỏng'),
+            title: Text('Báo hỏng ô #${cell['boxNumber']}'),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  TextField(
+                    controller: reasonCtrl,
+                    enabled: !uploading,
+                    decoration: const InputDecoration(labelText: 'Lý do hỏng'),
+                    minLines: 1,
+                    maxLines: 3,
+                  ),
+                  const SizedBox(height: 14),
+                  const Text(
+                    'Ảnh hiện trường (tuỳ chọn, tối đa 5)',
+                    style: TextStyle(
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  PhotoPickerField(
+                    controller: photos,
+                    enabled: !uploading,
+                    thumbSize: 64,
+                    accentColor: opsPrimary,
+                  ),
+                  if (dialogError != null) ...[
+                    const SizedBox(height: 8),
+                    Text(
+                      dialogError!,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: Color(0xFFDC2626),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: uploading ? null : () => Navigator.pop(ctx, false),
+                child: const Text('Hủy'),
+              ),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFDC2626),
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                onPressed: uploading
+                    ? null
+                    : () async {
+                        if (reasonCtrl.text.trim().isEmpty) {
+                          setLocal(
+                            () => dialogError = 'Vui lòng nhập lý do hỏng.',
+                          );
+                          return;
+                        }
+                        setLocal(() {
+                          uploading = true;
+                          dialogError = null;
+                        });
+                        try {
+                          attachments = await photos.uploadAll();
+                          if (ctx.mounted) Navigator.pop(ctx, true);
+                        } catch (e) {
+                          if (ctx.mounted) {
+                            setLocal(() {
+                              uploading = false;
+                              dialogError = LockerOpsService.errorMessage(e);
+                            });
+                          }
+                        }
+                      },
+                child: Text(uploading ? 'Đang tải ảnh...' : 'Báo hỏng'),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
     final reason = reasonCtrl.text.trim();
     reasonCtrl.dispose();
-    if (ok != true) return;
-    if (reason.isEmpty) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Vui lòng nhập lý do hỏng.')),
-        );
-      }
-      return;
-    }
+    if (ok != true || reason.isEmpty) return;
     await _runCellAction(
-      () => _service.reportFault(boxId, reason),
-      'Đã báo hỏng ô',
+      () => _service.reportFault(boxId, reason, attachments: attachments),
+      attachments.isEmpty
+          ? 'Đã báo hỏng ô'
+          : 'Đã báo hỏng ô kèm ${attachments.length} ảnh',
     );
   }
 
@@ -2225,54 +2293,6 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
     return (cleaned, urls);
   }
 
-  void _viewFullPhoto(String url, String title) {
-    showDialog<void>(
-      context: context,
-      builder: (dialogCtx) => Dialog(
-        backgroundColor: Colors.black,
-        insetPadding: const EdgeInsets.all(12),
-        child: Stack(
-          children: [
-            Center(
-              child: InteractiveViewer(
-                child: Image.network(
-                  url,
-                  fit: BoxFit.contain,
-                  errorBuilder: (_, __, ___) => const Center(
-                    child: Text(
-                      'Không tải được ảnh',
-                      style: TextStyle(color: Colors.white),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            Positioned(
-              top: 10,
-              left: 14,
-              child: Text(
-                title,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 14,
-                ),
-              ),
-            ),
-            Positioned(
-              top: 4,
-              right: 4,
-              child: IconButton(
-                icon: const Icon(Icons.close, color: Colors.white),
-                onPressed: () => Navigator.pop(dialogCtx),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   Widget _reportCard(Map<String, dynamic> r) {
     final status = r['status'] as String? ?? '';
     final assignedToMe = '${r['assignedToUserId'] ?? ''}' == (_myUserId ?? '');
@@ -2284,6 +2304,13 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
       r['description'],
       r['photoUrls'] ?? r['photos'],
     );
+    // Ảnh Cloudinary theo stage + ảnh cũ (URL dán trong mô tả) coi như REPORT.
+    final attachments = [
+      ...userPhotos.map(ReportAttachment.legacyUrl),
+      ...ReportAttachment.listFrom(r['attachments']),
+    ];
+    final hasInspection =
+        attachments.any((a) => a.stage == ReportStage.inspection);
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
@@ -2313,79 +2340,13 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                 style: const TextStyle(fontSize: 12, color: opsMutedText),
               ),
             ],
-            if (userPhotos.isNotEmpty) ...[
-              const SizedBox(height: 8),
-              Row(
-                children: [
-                  const Icon(
-                    Icons.photo_library_outlined,
-                    size: 14,
-                    color: Color(0xFFE11D48),
-                  ),
-                  const SizedBox(width: 4),
-                  Text(
-                    'Ảnh từ User (${userPhotos.length} ảnh):',
-                    style: const TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w700,
-                      color: Color(0xFFE11D48),
-                    ),
-                  ),
-                ],
+            if (attachments.isNotEmpty)
+              AttachmentStageGallery(
+                attachments: attachments,
+                labels: const {ReportStage.report: 'Ảnh người báo'},
+                accentColor: opsPrimary,
+                thumbSize: 72,
               ),
-              const SizedBox(height: 6),
-              SizedBox(
-                height: 72,
-                child: ListView.separated(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: userPhotos.length,
-                  separatorBuilder: (_, __) => const SizedBox(width: 8),
-                  itemBuilder: (context, idx) {
-                    final photoUrl = userPhotos[idx];
-                    return GestureDetector(
-                      onTap: () => _viewFullPhoto(
-                        photoUrl,
-                        'Ảnh từ User (#${idx + 1})',
-                      ),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(10),
-                        child: Container(
-                          width: 72,
-                          height: 72,
-                          decoration: BoxDecoration(
-                            border: Border.all(color: const Color(0xFFFDA4AF)),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: Image.network(
-                            photoUrl,
-                            fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) => const Center(
-                              child: Icon(
-                                Icons.broken_image_outlined,
-                                size: 24,
-                                color: opsMutedText,
-                              ),
-                            ),
-                            loadingBuilder: (_, child, prog) {
-                              if (prog == null) return child;
-                              return const Center(
-                                child: SizedBox(
-                                  width: 18,
-                                  height: 18,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ),
-            ],
             const SizedBox(height: 8),
             Wrap(
               spacing: 8,
@@ -2484,6 +2445,23 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                     label: const Text('Nhận việc', style: TextStyle(color: opsPrimary)),
                   ),
                 if (status == 'IN_PROGRESS')
+                  TextButton.icon(
+                    onPressed: () => _inspectionFlow(r),
+                    icon: Icon(
+                      hasInspection
+                          ? Icons.fact_check
+                          : Icons.add_a_photo_outlined,
+                      size: 16,
+                      color: const Color(0xFFD97706),
+                    ),
+                    label: Text(
+                      hasInspection
+                          ? 'Bổ sung ảnh hiện trường'
+                          : 'Xác nhận hiện trường',
+                      style: const TextStyle(color: Color(0xFFD97706)),
+                    ),
+                  ),
+                if (status == 'IN_PROGRESS')
                   ElevatedButton.icon(
                     onPressed: () => _confirmResolveReport(r),
                     icon: const Icon(Icons.check, size: 16),
@@ -2502,6 +2480,31 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
         ),
       ),
     );
+  }
+
+  /// KTV tới nơi: chụp ảnh INSPECTION xác nhận hiện trạng (+ ghi chú tuỳ chọn).
+  Future<void> _inspectionFlow(Map<String, dynamic> report) async {
+    final reportId = _asInt(report['id']);
+    if (reportId == null) return;
+    final done = await showModalBottomSheet<bool>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (_) => _InspectionSheet(
+        reportId: reportId,
+        title: '#${report['id']} · ${report['title'] ?? ''}',
+        service: _service,
+      ),
+    );
+    if (done == true && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Đã lưu ảnh xác nhận hiện trường')),
+      );
+      await _load();
+    }
   }
 
   Future<void> _confirmResolveReport(Map<String, dynamic> report) async {
@@ -2916,8 +2919,8 @@ class _RepairLogSheet extends StatefulWidget {
 
 class _RepairLogSheetState extends State<_RepairLogSheet> {
   final _noteCtrl = TextEditingController();
-  final _picker = ImagePicker();
-  List<XFile> _attachedPhotos = [];
+  // Ảnh tiến độ (stage PROGRESS) gắn vào dòng nhật ký — backend nhận ≤10.
+  final _photos = PhotoPickerController(maxPhotos: 10);
   List<Map<String, dynamic>> _logs = const [];
   bool _loading = true;
   bool _sending = false;
@@ -2933,13 +2936,21 @@ class _RepairLogSheetState extends State<_RepairLogSheet> {
   @override
   void initState() {
     super.initState();
+    _photos.addListener(_onPhotosChanged);
     _load();
   }
 
   @override
   void dispose() {
+    _photos
+      ..removeListener(_onPhotosChanged)
+      ..dispose();
     _noteCtrl.dispose();
     super.dispose();
+  }
+
+  void _onPhotosChanged() {
+    if (mounted) setState(() {});
   }
 
   Future<void> _load() async {
@@ -2956,97 +2967,28 @@ class _RepairLogSheetState extends State<_RepairLogSheet> {
     }
   }
 
-  /// Chụp 1 ảnh bằng camera
-  Future<void> _pickCamera() async {
-    try {
-      final picked = await _picker.pickImage(
-        source: ImageSource.camera,
-        maxWidth: 1200,
-        maxHeight: 1200,
-        imageQuality: 80,
-      );
-      if (picked != null && mounted) {
-        setState(() => _attachedPhotos.add(picked));
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Không thể chụp ảnh: $e')),
-        );
-      }
-    }
-  }
+  void _showImagePickerOptions() => PhotoPickerField.pickWithSourceSheet(
+    context,
+    _photos,
+    accentColor: opsPrimary,
+  );
 
-  /// Chọn nhiều ảnh từ thư viện
-  Future<void> _pickGalleryMulti() async {
-    try {
-      final picked = await _picker.pickMultiImage(
-        maxWidth: 1200,
-        maxHeight: 1200,
-        imageQuality: 80,
-      );
-      if (picked.isNotEmpty && mounted) {
-        setState(() => _attachedPhotos.addAll(picked));
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Không thể chọn ảnh: $e')),
-        );
-      }
-    }
-  }
-
-  void _showImagePickerOptions() {
-    showModalBottomSheet<void>(
-      context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-      ),
-      builder: (ctx) => SafeArea(
-        child: Wrap(
-          children: [
-            ListTile(
-              leading: const Icon(Icons.camera_alt_outlined, color: opsPrimary),
-              title: const Text('Chụp ảnh từ máy ảnh'),
-              onTap: () {
-                Navigator.pop(ctx);
-                _pickCamera();
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.photo_library_outlined, color: opsPrimary),
-              title: const Text('Chọn nhiều ảnh từ thư viện'),
-              onTap: () {
-                Navigator.pop(ctx);
-                _pickGalleryMulti();
-              },
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
+  /// Upload ảnh tiến độ lên Cloudinary rồi gửi kèm dòng nhật ký (stage
+  /// PROGRESS). Upload lỗi giữa chừng: ảnh đã lên giữ lại, bấm gửi lại chỉ
+  /// upload phần còn thiếu.
   Future<void> _add() async {
     final note = _noteCtrl.text.trim();
-    if (note.isEmpty && _attachedPhotos.isEmpty) return;
+    if (note.isEmpty && _photos.isEmpty) return;
     setState(() => _sending = true);
     try {
-      String fullNote = note;
-      if (_attachedPhotos.isNotEmpty) {
-        final photoList = _attachedPhotos
-            .asMap()
-            .entries
-            .map((e) => 'Ảnh ${e.key + 1}: ${e.value.name}')
-            .join(', ');
-        fullNote = note.isNotEmpty
-            ? '$note\n[Ảnh hiện trường: $photoList]'
-            : '[Ảnh hiện trường: $photoList]';
-      }
-      await widget.service.addReportLog(widget.reportId, fullNote);
+      final attachments = await _photos.uploadAll();
+      await widget.service.addReportLog(
+        widget.reportId,
+        note.isNotEmpty ? note : 'Cập nhật ảnh tiến độ sửa chữa',
+        attachments: attachments,
+      );
       _noteCtrl.clear();
-      setState(() => _attachedPhotos = []);
+      _photos.clear();
       await _load();
     } catch (e) {
       if (mounted) {
@@ -3129,9 +3071,8 @@ class _RepairLogSheetState extends State<_RepairLogSheet> {
                       itemBuilder: (_, i) {
                         final log = _logs[i];
                         final noteText = '${log['note'] ?? ''}';
-                        final hasPhoto = noteText.contains('[Ảnh') ||
-                            noteText.contains('.jpg') ||
-                            noteText.contains('.png');
+                        final logPhotos =
+                            ReportAttachment.listFrom(log['attachments']);
                         return Container(
                           width: double.infinity,
                           padding: const EdgeInsets.all(12),
@@ -3144,36 +3085,12 @@ class _RepairLogSheetState extends State<_RepairLogSheet> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(noteText),
-                              if (hasPhoto) ...[
+                              if (logPhotos.isNotEmpty) ...[
                                 const SizedBox(height: 6),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 8,
-                                    vertical: 3,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: opsPrimary.withValues(alpha: 0.08),
-                                    borderRadius: BorderRadius.circular(6),
-                                  ),
-                                  child: const Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Icon(
-                                        Icons.photo_camera,
-                                        size: 13,
-                                        color: opsPrimary,
-                                      ),
-                                      SizedBox(width: 4),
-                                      Text(
-                                        'Đính kèm ảnh hiện trường',
-                                        style: TextStyle(
-                                          fontSize: 10.5,
-                                          fontWeight: FontWeight.w600,
-                                          color: opsPrimary,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
+                                AttachmentStrip(
+                                  attachments: logPhotos,
+                                  size: 56,
+                                  viewerTitle: 'Nhật ký · ${_fmt(log['createdAt'])}',
                                 ),
                               ],
                               const SizedBox(height: 4),
@@ -3214,7 +3131,7 @@ class _RepairLogSheetState extends State<_RepairLogSheet> {
                 ],
               ),
             ),
-            if (_attachedPhotos.isNotEmpty)
+            if (_photos.isNotEmpty)
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                 child: Column(
@@ -3225,7 +3142,7 @@ class _RepairLogSheetState extends State<_RepairLogSheet> {
                         const Icon(Icons.photo_library_outlined, size: 14, color: opsPrimary),
                         const SizedBox(width: 4),
                         Text(
-                          '${_attachedPhotos.length} ảnh đính kèm',
+                          '${_photos.length} ảnh tiến độ đính kèm',
                           style: const TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w600,
@@ -3235,56 +3152,11 @@ class _RepairLogSheetState extends State<_RepairLogSheet> {
                       ],
                     ),
                     const SizedBox(height: 6),
-                    SizedBox(
-                      height: 68,
-                      child: ListView.separated(
-                        scrollDirection: Axis.horizontal,
-                        itemCount: _attachedPhotos.length,
-                        separatorBuilder: (_, __) => const SizedBox(width: 6),
-                        itemBuilder: (_, idx) => Stack(
-                          children: [
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(8),
-                              child: Image.file(
-                                File(_attachedPhotos[idx].path),
-                                width: 68,
-                                height: 68,
-                                fit: BoxFit.cover,
-                              ),
-                            ),
-                            Positioned(
-                              top: 2,
-                              right: 2,
-                              child: GestureDetector(
-                                onTap: () => setState(() => _attachedPhotos.removeAt(idx)),
-                                child: Container(
-                                  padding: const EdgeInsets.all(2),
-                                  decoration: const BoxDecoration(
-                                    color: Colors.black54,
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: const Icon(Icons.close, size: 12, color: Colors.white),
-                                ),
-                              ),
-                            ),
-                            Positioned(
-                              bottom: 2,
-                              left: 2,
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
-                                decoration: BoxDecoration(
-                                  color: Colors.black54,
-                                  borderRadius: BorderRadius.circular(4),
-                                ),
-                                child: Text(
-                                  'Ảnh ${idx + 1}',
-                                  style: const TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.w600),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
+                    PhotoPickerField(
+                      controller: _photos,
+                      enabled: !_sending,
+                      thumbSize: 68,
+                      accentColor: opsPrimary,
                     ),
                   ],
                 ),
@@ -3360,10 +3232,22 @@ class _ResolveVerificationSheet extends StatefulWidget {
 
 class _ResolveVerificationSheetState extends State<_ResolveVerificationSheet> {
   final _noteCtrl = TextEditingController();
-  final _picker = ImagePicker();
-  XFile? _beforePhoto;
-  XFile? _afterPhoto;
+  // "Trước khi sửa" = ảnh INSPECTION (bỏ qua nếu phiếu đã có),
+  // "Sau khi xong" = ảnh RESOLUTION gửi cùng lệnh Hoàn tất.
+  final _beforePhotos = PhotoPickerController(maxPhotos: 5);
+  final _afterPhotos = PhotoPickerController(maxPhotos: 10);
+  late final List<ReportAttachment> _attachments =
+      ReportAttachment.listFrom(widget.report['attachments']);
+  late final List<ReportAttachment> _existingInspection = _attachments
+      .where((a) => a.stage == ReportStage.inspection)
+      .toList(growable: false);
+  late final List<ReportAttachment> _existingResolution = _attachments
+      .where((a) => a.stage == ReportStage.resolution)
+      .toList(growable: false);
   bool _submitting = false;
+  // Ảnh INSPECTION đã gắn nhưng resolve lỗi ⇒ lần thử lại không gắn lần 2.
+  bool _inspectionSaved = false;
+  String? _error;
 
   final _quickNotes = const [
     'Đã thay thế linh kiện khóa điện tử',
@@ -3373,96 +3257,69 @@ class _ResolveVerificationSheetState extends State<_ResolveVerificationSheet> {
   ];
 
   @override
+  void initState() {
+    super.initState();
+    _beforePhotos.addListener(_onPhotosChanged);
+    _afterPhotos.addListener(_onPhotosChanged);
+  }
+
+  @override
   void dispose() {
+    _beforePhotos
+      ..removeListener(_onPhotosChanged)
+      ..dispose();
+    _afterPhotos
+      ..removeListener(_onPhotosChanged)
+      ..dispose();
     _noteCtrl.dispose();
     super.dispose();
   }
 
-  Future<void> _pickImage(bool isBefore, ImageSource source) async {
-    try {
-      final picked = await _picker.pickImage(
-        source: source,
-        maxWidth: 1200,
-        maxHeight: 1200,
-        imageQuality: 80,
-      );
-      if (picked != null && mounted) {
-        setState(() {
-          if (isBefore) {
-            _beforePhoto = picked;
-          } else {
-            _afterPhoto = picked;
-          }
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Không chụp được ảnh: $e')),
-        );
-      }
-    }
+  void _onPhotosChanged() {
+    if (mounted) setState(() {});
   }
 
-  void _showImagePickerChoice(bool isBefore) {
-    showModalBottomSheet<void>(
-      context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (ctx) => SafeArea(
-        child: Wrap(
-          children: [
-            ListTile(
-              leading: const Icon(Icons.camera_alt_outlined, color: opsPrimary),
-              title: const Text('Chụp ảnh từ máy ảnh'),
-              onTap: () {
-                Navigator.pop(ctx);
-                _pickImage(isBefore, ImageSource.camera);
-              },
-            ),
-            ListTile(
-              leading:
-                  const Icon(Icons.photo_library_outlined, color: opsPrimary),
-              title: const Text('Chọn ảnh từ thư viện'),
-              onTap: () {
-                Navigator.pop(ctx);
-                _pickImage(isBefore, ImageSource.gallery);
-              },
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+  bool get _hasAfterPhoto =>
+      _afterPhotos.isNotEmpty || _existingResolution.isNotEmpty;
 
   Future<void> _submit() async {
-    final reportId = widget.report['id'] as int?;
+    final reportId = _asInt(widget.report['id']);
     if (reportId == null) return;
+    if (!_hasAfterPhoto) {
+      setState(
+        () => _error =
+            'Vui lòng chụp ít nhất 1 ảnh sau khi sửa xong để nghiệm thu.',
+      );
+      return;
+    }
 
-    setState(() => _submitting = true);
+    setState(() {
+      _submitting = true;
+      _error = null;
+    });
     try {
+      // Upload hết ảnh trước — lỗi mạng thì phiếu chưa bị thay đổi gì.
+      final inspection = _existingInspection.isEmpty && !_inspectionSaved
+          ? await _beforePhotos.uploadAll()
+          : const <Map<String, dynamic>>[];
+      final resolution = await _afterPhotos.uploadAll();
+
+      if (inspection.isNotEmpty) {
+        await widget.service.addReportAttachments(
+          reportId,
+          ReportStage.inspection,
+          inspection,
+        );
+        _inspectionSaved = true;
+      }
+
+      // Ảnh RESOLUTION + ghi chú đi cùng lệnh Hoàn tất (1 request).
       final noteText = _noteCtrl.text.trim();
-      final buffer = StringBuffer('[NGHIỆM THU HOÀN TẤT]');
-      if (noteText.isNotEmpty) {
-        buffer.write('\nGhi chú: $noteText');
-      } else {
-        buffer.write('\nGhi chú: Đã hoàn tất sửa chữa và kiểm tra ô tủ.');
-      }
-
-      if (_beforePhoto != null) {
-        buffer.write(
-            '\n- Ảnh trước sửa: [Ảnh hiện trường: ${_beforePhoto!.name}]');
-      }
-      if (_afterPhoto != null) {
-        buffer.write('\n- Ảnh sau sửa: [Ảnh hoàn tất: ${_afterPhoto!.name}]');
-      }
-
-      // Lưu nhật ký nghiệm thu
-      await widget.service.addReportLog(reportId, buffer.toString());
-
-      // Gọi resolve report để clear fault và đưa ô hoạt động lại
-      await widget.service.resolveReport(reportId);
+      await widget.service.resolveReport(
+        reportId,
+        note: noteText.isEmpty ? null : noteText,
+        attachments: resolution,
+      );
 
       if (mounted) {
         Navigator.pop(context);
@@ -3477,147 +3334,71 @@ class _ResolveVerificationSheetState extends State<_ResolveVerificationSheet> {
       await widget.onResolved();
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            backgroundColor: const Color(0xFFDC2626),
-            content: Text(LockerOpsService.errorMessage(e)),
-          ),
-        );
+        setState(() => _error = LockerOpsService.errorMessage(e));
       }
     } finally {
       if (mounted) setState(() => _submitting = false);
     }
   }
 
-  Widget _buildPhotoSlot({
+  Widget _buildPhotoSection({
     required String title,
-    required bool isBefore,
-    required XFile? photo,
+    required String subtitle,
+    required bool satisfied,
+    required Widget child,
+    bool required = false,
   }) {
-    return Expanded(
-      child: Container(
-        padding: const EdgeInsets.all(10),
-        decoration: BoxDecoration(
-          color: opsSurface,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(
-            color: photo != null ? const Color(0xFF16A34A) : opsBorder,
-            width: photo != null ? 1.5 : 1,
-          ),
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: opsSurface,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: satisfied ? const Color(0xFF16A34A) : opsBorder,
+          width: satisfied ? 1.5 : 1,
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Icon(
-                  photo != null ? Icons.check_circle : Icons.camera_alt_outlined,
-                  size: 16,
-                  color: photo != null ? const Color(0xFF16A34A) : opsMutedText,
-                ),
-                const SizedBox(width: 6),
-                Expanded(
-                  child: Text(
-                    title,
-                    style: TextStyle(
-                      fontSize: 12.5,
-                      fontWeight: FontWeight.bold,
-                      color: photo != null ? const Color(0xFF16A34A) : opsDark,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            if (photo != null) ...[
-              Stack(
-                children: [
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
-                    child: Image.file(
-                      File(photo.path),
-                      height: 90,
-                      width: double.infinity,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => Container(
-                        height: 90,
-                        color: Colors.grey[200],
-                        child: const Center(
-                          child: Icon(Icons.broken_image, color: opsMutedText),
-                        ),
-                      ),
-                    ),
-                  ),
-                  Positioned(
-                    top: 4,
-                    right: 4,
-                    child: GestureDetector(
-                      onTap: () {
-                        setState(() {
-                          if (isBefore) {
-                            _beforePhoto = null;
-                          } else {
-                            _afterPhoto = null;
-                          }
-                        });
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.all(4),
-                        decoration: const BoxDecoration(
-                          color: Colors.black54,
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(Icons.close,
-                            size: 14, color: Colors.white),
-                      ),
-                    ),
-                  ),
-                ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                satisfied ? Icons.check_circle : Icons.camera_alt_outlined,
+                size: 16,
+                color: satisfied ? const Color(0xFF16A34A) : opsMutedText,
               ),
-              const SizedBox(height: 4),
-              Text(
-                photo.name,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(fontSize: 10.5, color: opsMutedText),
-              ),
-            ] else ...[
-              InkWell(
-                onTap: () => _showImagePickerChoice(isBefore),
-                borderRadius: BorderRadius.circular(10),
-                child: Container(
-                  height: 90,
-                  decoration: BoxDecoration(
-                    color: opsPrimary.withValues(alpha: 0.05),
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(
-                      color: opsPrimary.withValues(alpha: 0.25),
-                      style: BorderStyle.solid,
-                    ),
-                  ),
-                  child: Center(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(Icons.add_a_photo_outlined,
-                            color: opsPrimary, size: 24),
-                        const SizedBox(height: 4),
-                        const Text(
-                          'Chụp ảnh',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: opsPrimary,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ],
-                    ),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.bold,
+                    color: satisfied ? const Color(0xFF16A34A) : opsDark,
                   ),
                 ),
               ),
+              if (required && !satisfied)
+                const Text(
+                  'Bắt buộc',
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFFDC2626),
+                  ),
+                ),
             ],
-          ],
-        ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            subtitle,
+            style: const TextStyle(fontSize: 11, color: opsMutedText),
+          ),
+          const SizedBox(height: 8),
+          child,
+        ],
       ),
     );
   }
@@ -3629,6 +3410,10 @@ class _ResolveVerificationSheetState extends State<_ResolveVerificationSheet> {
     final lockerLabel =
         widget.report['lockerName'] ?? 'Tủ #${widget.report['lockerId']}';
     final boxLabel = widget.report['boxNumber'] ?? widget.report['boxId'];
+    final uploading = _beforePhotos.isUploading || _afterPhotos.isUploading;
+    final hasBefore = _existingInspection.isNotEmpty ||
+        _beforePhotos.isNotEmpty ||
+        _inspectionSaved;
 
     return Padding(
       padding:
@@ -3691,20 +3476,48 @@ class _ResolveVerificationSheetState extends State<_ResolveVerificationSheet> {
                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
               ),
               const SizedBox(height: 8),
-              Row(
-                children: [
-                  _buildPhotoSlot(
-                    title: 'Trước khi sửa',
-                    isBefore: true,
-                    photo: _beforePhoto,
-                  ),
-                  const SizedBox(width: 10),
-                  _buildPhotoSlot(
-                    title: 'Sau khi xong',
-                    isBefore: false,
-                    photo: _afterPhoto,
-                  ),
-                ],
+              _buildPhotoSection(
+                title: 'Trước khi sửa',
+                subtitle: _existingInspection.isNotEmpty
+                    ? 'Đã xác nhận hiện trường (${_existingInspection.length} ảnh)'
+                    : 'Tuỳ chọn · lưu thành ảnh xác nhận hiện trường',
+                satisfied: hasBefore,
+                child: _existingInspection.isNotEmpty
+                    ? AttachmentStrip(
+                        attachments: _existingInspection,
+                        viewerTitle: ReportStage.label(ReportStage.inspection),
+                      )
+                    : PhotoPickerField(
+                        controller: _beforePhotos,
+                        enabled: !_submitting && !_inspectionSaved,
+                        accentColor: opsPrimary,
+                        addLabel: 'Chụp ảnh',
+                      ),
+              ),
+              const SizedBox(height: 10),
+              _buildPhotoSection(
+                title: 'Sau khi xong',
+                subtitle: 'Ảnh nghiệm thu — cần ít nhất 1 ảnh',
+                satisfied: _hasAfterPhoto,
+                required: true,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (_existingResolution.isNotEmpty) ...[
+                      AttachmentStrip(
+                        attachments: _existingResolution,
+                        viewerTitle: ReportStage.label(ReportStage.resolution),
+                      ),
+                      const SizedBox(height: 8),
+                    ],
+                    PhotoPickerField(
+                      controller: _afterPhotos,
+                      enabled: !_submitting,
+                      accentColor: const Color(0xFF16A34A),
+                      addLabel: 'Chụp ảnh',
+                    ),
+                  ],
+                ),
               ),
               const SizedBox(height: 16),
               const Text(
@@ -3744,6 +3557,14 @@ class _ResolveVerificationSheetState extends State<_ResolveVerificationSheet> {
                     ),
                 ],
               ),
+              if (_error != null) ...[
+                const SizedBox(height: 12),
+                OpsBanner(
+                  tone: OpsBannerTone.danger,
+                  icon: Icons.error_outline,
+                  text: _error!,
+                ),
+              ],
               const SizedBox(height: 20),
               SizedBox(
                 width: double.infinity,
@@ -3767,8 +3588,198 @@ class _ResolveVerificationSheetState extends State<_ResolveVerificationSheet> {
                       : const Icon(Icons.check_circle_outline),
                   label: Text(
                     _submitting
-                        ? 'Đang lưu nghiệm thu...'
+                        ? (uploading
+                            ? 'Đang tải ảnh...'
+                            : 'Đang lưu nghiệm thu...')
                         : 'Xác nhận & Hoàn tất sửa chữa',
+                    style: const TextStyle(
+                        fontWeight: FontWeight.bold, fontSize: 14),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Sheet "Xác nhận hiện trường": KTV tới nơi chụp ảnh INSPECTION (+ ghi chú)
+/// trước khi bắt tay vào sửa. Có ghi chú ⇒ backend tạo 1 dòng nhật ký gắn ảnh.
+class _InspectionSheet extends StatefulWidget {
+  const _InspectionSheet({
+    required this.reportId,
+    required this.title,
+    required this.service,
+  });
+
+  final int reportId;
+  final String title;
+  final LockerOpsService service;
+
+  @override
+  State<_InspectionSheet> createState() => _InspectionSheetState();
+}
+
+class _InspectionSheetState extends State<_InspectionSheet> {
+  static const _accent = Color(0xFFD97706);
+
+  final _noteCtrl = TextEditingController();
+  final _photos = PhotoPickerController(maxPhotos: 10);
+  bool _submitting = false;
+  String? _error;
+
+  @override
+  void dispose() {
+    _photos.dispose();
+    _noteCtrl.dispose();
+    super.dispose();
+  }
+
+  Future<void> _submit() async {
+    if (_photos.isEmpty) {
+      setState(() => _error = 'Vui lòng chụp ít nhất 1 ảnh hiện trường.');
+      return;
+    }
+    setState(() {
+      _submitting = true;
+      _error = null;
+    });
+    try {
+      final attachments = await _photos.uploadAll();
+      await widget.service.addReportAttachments(
+        widget.reportId,
+        ReportStage.inspection,
+        attachments,
+        note: _noteCtrl.text,
+      );
+      if (mounted) Navigator.pop(context, true);
+    } catch (e) {
+      if (mounted) setState(() => _error = LockerOpsService.errorMessage(e));
+    } finally {
+      if (mounted) setState(() => _submitting = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding:
+          EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+      child: SafeArea(
+        top: false,
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 44,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[300],
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 14),
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: _accent.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Icon(Icons.fact_check_outlined,
+                        color: _accent, size: 22),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Xác nhận hiện trường',
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold, fontSize: 16),
+                        ),
+                        Text(
+                          widget.title,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                              fontSize: 12, color: opsMutedText),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              const Text(
+                'Chụp hiện trạng ô tủ ngay khi tới nơi (cửa, khoá, bo mạch...). '
+                'Ảnh được lưu vào phiếu làm bằng chứng trước khi sửa.',
+                style: TextStyle(fontSize: 12, color: opsMutedText),
+              ),
+              const SizedBox(height: 12),
+              PhotoPickerField(
+                controller: _photos,
+                enabled: !_submitting,
+                thumbSize: 80,
+                accentColor: _accent,
+                addLabel: 'Chụp ảnh',
+                helperText: 'Tối đa 10 ảnh',
+              ),
+              const SizedBox(height: 14),
+              TextField(
+                controller: _noteCtrl,
+                enabled: !_submitting,
+                minLines: 1,
+                maxLines: 3,
+                decoration: InputDecoration(
+                  hintText: 'Ghi chú hiện trạng (tuỳ chọn)...',
+                  isDense: true,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(color: opsBorder),
+                  ),
+                ),
+              ),
+              if (_error != null) ...[
+                const SizedBox(height: 12),
+                OpsBanner(
+                  tone: OpsBannerTone.danger,
+                  icon: Icons.error_outline,
+                  text: _error!,
+                ),
+              ],
+              const SizedBox(height: 18),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: _submitting ? null : _submit,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: _accent,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  icon: _submitting
+                      ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(
+                              strokeWidth: 2, color: Colors.white),
+                        )
+                      : const Icon(Icons.cloud_upload_outlined),
+                  label: Text(
+                    _submitting ? 'Đang tải ảnh...' : 'Lưu ảnh hiện trường',
                     style: const TextStyle(
                         fontWeight: FontWeight.bold, fontSize: 14),
                   ),

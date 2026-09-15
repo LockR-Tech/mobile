@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
 
@@ -509,6 +510,236 @@ void main() {
       );
 
       expect(() => service.checkout(300, 'WALLET'), throwsA(isA<Exception>()));
+    });
+  });
+
+  // ── Report photos (Cloudinary attachments) ───────────────────────────────
+
+  group('report attachments', () {
+    late List<RequestOptions> captured;
+    const attachment = {
+      'publicId': 'lockr/reports/u42/abc',
+      'version': 1726390012,
+      'signature': 'sig',
+      'format': 'jpg',
+      'bytes': 1234,
+      'width': 1600,
+      'height': 1200,
+      'capturedAt': '2026-09-15T08:10:00',
+    };
+
+    setUp(() {
+      final mock = createMockDio();
+      adapter = mock.adapter;
+      captured = [];
+      mock.dio.interceptors.add(
+        InterceptorsWrapper(
+          onRequest: (options, handler) {
+            captured.add(options);
+            handler.next(options);
+          },
+        ),
+      );
+      service = LockerOpsService(dio: mock.dio);
+    });
+
+    test('reportFault() sends attachments only when provided', () async {
+      adapter.onPost(
+        '/api/boxes/5/fault',
+        (server) => server.reply(200, apiOk({'id': 1})),
+      );
+
+      await service.reportFault(5, 'Kẹt cửa');
+      await service.reportFault(5, 'Kẹt cửa', attachments: [attachment]);
+
+      expect(captured[0].method, 'POST');
+      expect(captured[0].data, {'reason': 'Kẹt cửa'});
+      expect(captured[1].data, {
+        'reason': 'Kẹt cửa',
+        'attachments': [attachment],
+      });
+    });
+
+    test('reportOrderFault() forwards attachments', () async {
+      adapter.onPost(
+        '/api/orders/9/report-box-fault',
+        (server) => server.reply(200, apiOk({'id': 9})),
+      );
+
+      await service.reportOrderFault(
+        9,
+        'Ô không mở',
+        attachments: [attachment],
+      );
+
+      expect(captured.single.path, '/api/orders/9/report-box-fault');
+      expect(captured.single.data, {
+        'reason': 'Ô không mở',
+        'attachments': [attachment],
+      });
+    });
+
+    test('addReportLog() posts note + PROGRESS attachments', () async {
+      adapter.onPost(
+        '/api/maintenance/reports/42/logs',
+        (server) => server.reply(200, apiOk({'id': 3})),
+      );
+
+      await service.addReportLog(42, 'Thay khoá', attachments: [attachment]);
+
+      expect(captured.single.method, 'POST');
+      expect(captured.single.data, {
+        'note': 'Thay khoá',
+        'attachments': [attachment],
+      });
+    });
+
+    test('resolveReport() sends body only with note/attachments', () async {
+      adapter.onPut(
+        '/api/maintenance/reports/42/resolve',
+        (server) => server.reply(200, apiOk({'id': 42, 'status': 'RESOLVED'})),
+      );
+
+      await service.resolveReport(42);
+      await service.resolveReport(42, note: '  ');
+      await service.resolveReport(
+        42,
+        note: ' Đã thay khoá ',
+        attachments: [attachment],
+      );
+
+      expect(captured, hasLength(3));
+      expect(captured[0].method, 'PUT');
+      expect(captured[0].data, isNull);
+      expect(captured[1].data, isNull);
+      expect(captured[2].data, {
+        'note': 'Đã thay khoá',
+        'attachments': [attachment],
+      });
+    });
+
+    test('reportAttachments() filters by stage', () async {
+      adapter.onGet(
+        '/api/maintenance/reports/42/attachments',
+        (server) => server.reply(
+          200,
+          apiOk([
+            {'id': 7, 'stage': 'INSPECTION', 'url': 'https://x/7.jpg'},
+          ]),
+        ),
+      );
+
+      final result = await service.reportAttachments(42, stage: 'INSPECTION');
+
+      expect(result.single['id'], 7);
+      expect(captured.single.queryParameters, {'stage': 'INSPECTION'});
+    });
+
+    test('addReportAttachments() posts stage, note and attachments', () async {
+      adapter.onPost(
+        '/api/maintenance/reports/42/attachments',
+        (server) => server.reply(
+          200,
+          apiOk([
+            {'id': 8, 'stage': 'INSPECTION', 'url': 'https://x/8.jpg'},
+          ]),
+        ),
+      );
+
+      final result = await service.addReportAttachments(42, 'INSPECTION', [
+        attachment,
+      ], note: 'Bản lề lệch');
+      await service.addReportAttachments(42, 'RESOLUTION', [attachment]);
+
+      expect(result.single['id'], 8);
+      expect(captured[0].data, {
+        'stage': 'INSPECTION',
+        'note': 'Bản lề lệch',
+        'attachments': [attachment],
+      });
+      expect(captured[1].data, {
+        'stage': 'RESOLUTION',
+        'attachments': [attachment],
+      });
+    });
+
+    test('deleteReportAttachment() calls DELETE', () async {
+      adapter.onDelete(
+        '/api/maintenance/reports/42/attachments/7',
+        (server) => server.reply(200, apiOk(null)),
+      );
+
+      await service.deleteReportAttachment(42, 7);
+
+      expect(captured.single.method, 'DELETE');
+      expect(captured.single.path, '/api/maintenance/reports/42/attachments/7');
+    });
+
+    test('myReportAttachments() and addMyReportAttachments()', () async {
+      adapter.onGet(
+        '/api/lockers/reports/12/attachments',
+        (server) => server.reply(
+          200,
+          apiOk([
+            {'id': 1, 'stage': 'REPORT', 'url': 'https://x/1.jpg'},
+          ]),
+        ),
+      );
+      await service.myReportAttachments(12);
+
+      adapter.onPost(
+        '/api/lockers/reports/12/attachments',
+        (server) => server.reply(
+          200,
+          apiOk({
+            'id': 12,
+            'attachments': [
+              {'id': 2, 'stage': 'REPORT', 'url': 'https://x/2.jpg'},
+            ],
+          }),
+        ),
+      );
+      final added = await service.addMyReportAttachments(12, [attachment]);
+
+      expect(captured[0].method, 'GET');
+      expect(captured[1].method, 'POST');
+      expect(captured[1].data, {
+        'attachments': [attachment],
+      });
+      expect(added.single['id'], 2);
+    });
+
+    test('getMaintenanceReport() returns the report', () async {
+      adapter.onGet(
+        '/api/maintenance/reports/42',
+        (server) =>
+            server.reply(200, apiOk({'id': 42, 'attachments': <Object>[]})),
+      );
+
+      final report = await service.getMaintenanceReport(42);
+
+      expect(report['id'], 42);
+      expect(captured.single.method, 'GET');
+    });
+
+    test('errorMessage() maps media error codes to Vietnamese', () {
+      final error = DioException(
+        requestOptions: RequestOptions(path: '/api/boxes/5/fault'),
+        response: Response(
+          requestOptions: RequestOptions(path: '/api/boxes/5/fault'),
+          statusCode: 503,
+          data: {
+            'success': false,
+            'code': 'MEDIA_STORAGE_DISABLED',
+            'message': 'Media storage is disabled',
+          },
+        ),
+      );
+
+      expect(
+        LockerOpsService.errorMessage(error),
+        contains('Hệ thống lưu ảnh đang tạm tắt'),
+      );
     });
   });
 }

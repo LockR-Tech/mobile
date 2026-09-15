@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import 'package:smart_laundry_locker/core/config/env_config.dart';
+import 'package:smart_laundry_locker/core/media/media.dart';
 import 'package:smart_laundry_locker/core/routing/app_router.dart';
 import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
 import 'package:smart_laundry_locker/features/transactions/presentation/pages/top_up_page.dart'
@@ -284,36 +285,117 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage> {
 
   Future<void> _reportDialog({required int orderId, int? boxId}) async {
     final reasonCtrl = TextEditingController();
+    final photos = PhotoPickerController(maxPhotos: 5);
+    // Trạng thái dialog giữ ngoài builder để không bị reset khi dialog rebuild
+    // (vd. bàn phím bật lên).
+    var uploading = false;
+    String? dialogError;
+    List<Map<String, dynamic>> attachments = const [];
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('Báo ô lỗi'),
-        content: TextField(
-          controller: reasonCtrl,
-          maxLines: 3,
-          decoration: const InputDecoration(
-            hintText: 'Mô tả sự cố (ô không mở, kẹt cửa...)',
+      barrierDismissible: false,
+      // photos được huỷ khi dialog gỡ khỏi cây (sau hiệu ứng đóng).
+      builder: (ctx) => ControllerDisposer(
+        controller: photos,
+        child: StatefulBuilder(
+          builder: (ctx, setLocal) => AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
+            title: const Text('Báo ô lỗi'),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  TextField(
+                    controller: reasonCtrl,
+                    maxLines: 3,
+                    enabled: !uploading,
+                    decoration: const InputDecoration(
+                      hintText: 'Mô tả sự cố (ô không mở, kẹt cửa...)',
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  const Text(
+                    'Ảnh hiện trường (không bắt buộc, tối đa 5)',
+                    style: TextStyle(
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.w700,
+                      color: opsDark,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  PhotoPickerField(
+                    controller: photos,
+                    enabled: !uploading,
+                    thumbSize: 64,
+                    accentColor: AislBrand.navy,
+                    helperText: 'Ảnh giúp đội bảo trì xử lý nhanh hơn.',
+                  ),
+                  if (dialogError != null) ...[
+                    const SizedBox(height: 8),
+                    Text(
+                      dialogError!,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: Color(0xFFDC2626),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: uploading ? null : () => Navigator.pop(ctx, false),
+                child: const Text('Hủy'),
+              ),
+              FilledButton(
+                style: FilledButton.styleFrom(
+                  backgroundColor: const Color(0xFFDC2626),
+                ),
+                onPressed: uploading
+                    ? null
+                    : () async {
+                        if (reasonCtrl.text.trim().isEmpty && photos.isEmpty) {
+                          setLocal(
+                            () => dialogError =
+                                'Vui lòng mô tả sự cố hoặc đính kèm ảnh.',
+                          );
+                          return;
+                        }
+                        setLocal(() {
+                          uploading = true;
+                          dialogError = null;
+                        });
+                        try {
+                          attachments = await photos.uploadAll();
+                          if (ctx.mounted) Navigator.pop(ctx, true);
+                        } catch (e) {
+                          if (ctx.mounted) {
+                            setLocal(() {
+                              uploading = false;
+                              dialogError = LockerOpsService.errorMessage(e);
+                            });
+                          }
+                        }
+                      },
+                child: Text(uploading ? 'Đang tải ảnh...' : 'Gửi báo lỗi'),
+              ),
+            ],
           ),
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Hủy'),
-          ),
-          FilledButton(
-            style: FilledButton.styleFrom(
-              backgroundColor: const Color(0xFFDC2626),
-            ),
-            onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Gửi báo lỗi'),
-          ),
-        ],
       ),
     );
-    if (confirmed == true && reasonCtrl.text.trim().isNotEmpty) {
+    final reason = reasonCtrl.text.trim();
+    if (confirmed == true && (reason.isNotEmpty || attachments.isNotEmpty)) {
       try {
-        await _service.reportOrderFault(orderId, reasonCtrl.text.trim());
+        await _service.reportOrderFault(
+          orderId,
+          reason.isNotEmpty ? reason : 'Ô tủ gặp sự cố (xem ảnh đính kèm)',
+          attachments: attachments,
+        );
         await _load();
         if (!mounted) return;
         ScaffoldMessenger.of(context)

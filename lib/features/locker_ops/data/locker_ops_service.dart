@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:smart_laundry_locker/core/media/media_upload.dart';
 import 'package:smart_laundry_locker/core/network/dio_client.dart';
 
 /// Thin typed gateway client for the locker flow (Phase 1+2 backend).
@@ -40,6 +41,26 @@ class LockerOpsService {
     );
     final data = res.data?['data'];
     return data is Map<String, dynamic> ? data : <String, dynamic>{};
+  }
+
+  /// POST trả về danh sách (hoặc object có `attachments[]`).
+  Future<List<Map<String, dynamic>>> _postList(
+    String path,
+    Map<String, dynamic> body,
+  ) async {
+    final res = await _dio.post<dynamic>(path, data: body);
+    final raw = res.data;
+    var data = raw is Map ? raw['data'] : null;
+    if (data is Map && data['attachments'] is List) {
+      data = data['attachments'];
+    }
+    if (data is List) {
+      return data
+          .whereType<Map>()
+          .map((e) => Map<String, dynamic>.from(e))
+          .toList(growable: false);
+    }
+    return const [];
   }
 
   // ---- Catalogue ----
@@ -194,19 +215,52 @@ class LockerOpsService {
     body: {'phone': phone, 'name': name, 'note': note},
   );
 
-  Future<Map<String, dynamic>> reportFault(int boxId, String reason) =>
-      _map('POST', '/api/boxes/$boxId/fault', body: {'reason': reason});
+  /// Báo hỏng ô. [attachments] = ReportAttachmentRequest[≤5] (stage REPORT),
+  /// dựng bằng `PhotoPickerController.uploadAll()` / `MediaUpload.toAttachmentJson`.
+  Future<Map<String, dynamic>> reportFault(
+    int boxId,
+    String reason, {
+    List<Map<String, dynamic>>? attachments,
+  }) => _map(
+    'POST',
+    '/api/boxes/$boxId/fault',
+    body: {
+      'reason': reason,
+      if (attachments != null && attachments.isNotEmpty)
+        'attachments': attachments,
+    },
+  );
 
-  Future<Map<String, dynamic>> reportOrderFault(int orderId, String reason) =>
-      _map(
-        'POST',
-        '/api/orders/$orderId/report-box-fault',
-        body: {'reason': reason},
-      );
+  Future<Map<String, dynamic>> reportOrderFault(
+    int orderId,
+    String reason, {
+    List<Map<String, dynamic>>? attachments,
+  }) => _map(
+    'POST',
+    '/api/orders/$orderId/report-box-fault',
+    body: {
+      'reason': reason,
+      if (attachments != null && attachments.isNotEmpty)
+        'attachments': attachments,
+    },
+  );
 
   /// All fault reports the signed-in customer has filed, newest first.
+  /// Mỗi phiếu có `attachments[]`.
   Future<List<Map<String, dynamic>>> myReports() =>
       _list('/api/lockers/my-reports');
+
+  /// Ảnh của phiếu do chính khách gửi (chỉ chủ phiếu).
+  Future<List<Map<String, dynamic>>> myReportAttachments(int reportId) =>
+      _list('/api/lockers/reports/$reportId/attachments');
+
+  /// Chủ phiếu bổ sung ảnh REPORT (1..5, phiếu chưa RESOLVED, ≤10 ảnh/phiếu).
+  Future<List<Map<String, dynamic>>> addMyReportAttachments(
+    int reportId,
+    List<Map<String, dynamic>> attachments,
+  ) => _postList('/api/lockers/reports/$reportId/attachments', {
+    'attachments': attachments,
+  });
 
   /// Recreate a COMPLETED/CANCELED order with the same parameters
   /// (locker, receiver, cell type/hours) and a fresh PIN/QR.
@@ -256,8 +310,59 @@ class LockerOpsService {
   Future<Map<String, dynamic>> claimReport(int reportId) =>
       _map('PUT', '/api/maintenance/reports/$reportId/claim');
 
-  Future<Map<String, dynamic>> resolveReport(int reportId) =>
-      _map('PUT', '/api/maintenance/reports/$reportId/resolve');
+  /// 1 phiếu (TECH/MAINT/ADMIN), có `attachments[]`.
+  Future<Map<String, dynamic>> getMaintenanceReport(int reportId) =>
+      _map('GET', '/api/maintenance/reports/$reportId');
+
+  /// Hoàn tất phiếu. Ảnh [attachments] lưu stage RESOLUTION trước khi đóng.
+  /// Không có [note]/[attachments] ⇒ PUT không body (như cũ).
+  Future<Map<String, dynamic>> resolveReport(
+    int reportId, {
+    String? note,
+    List<Map<String, dynamic>>? attachments,
+  }) {
+    final trimmedNote = note?.trim();
+    final hasNote = trimmedNote != null && trimmedNote.isNotEmpty;
+    final hasAttachments = attachments != null && attachments.isNotEmpty;
+    return _map(
+      'PUT',
+      '/api/maintenance/reports/$reportId/resolve',
+      body: hasNote || hasAttachments
+          ? {
+              if (hasNote) 'note': trimmedNote,
+              if (hasAttachments) 'attachments': attachments,
+            }
+          : null,
+    );
+  }
+
+  /// Ảnh của phiếu, lọc theo [stage] (REPORT/INSPECTION/PROGRESS/RESOLUTION).
+  Future<List<Map<String, dynamic>>> reportAttachments(
+    int reportId, {
+    String? stage,
+  }) => _list(
+    '/api/maintenance/reports/$reportId/attachments',
+    query: stage == null ? null : {'stage': stage},
+  );
+
+  /// KTV được giao gắn ảnh INSPECTION/PROGRESS/RESOLUTION (phiếu IN_PROGRESS).
+  /// Có [note] ⇒ backend tạo 1 dòng nhật ký và gắn ảnh vào đó.
+  Future<List<Map<String, dynamic>>> addReportAttachments(
+    int reportId,
+    String stage,
+    List<Map<String, dynamic>> attachments, {
+    String? note,
+  }) => _postList('/api/maintenance/reports/$reportId/attachments', {
+    'stage': stage,
+    if (note != null && note.trim().isNotEmpty) 'note': note.trim(),
+    'attachments': attachments,
+  });
+
+  Future<void> deleteReportAttachment(int reportId, int attachmentId) async {
+    await _dio.delete<dynamic>(
+      '/api/maintenance/reports/$reportId/attachments/$attachmentId',
+    );
+  }
 
   Future<Map<String, dynamic>> clearFault(int boxId) =>
       _map('POST', '/api/maintenance/boxes/$boxId/clear-fault');
@@ -282,10 +387,19 @@ class LockerOpsService {
   Future<List<Map<String, dynamic>>> reportLogs(int reportId) =>
       _list('/api/maintenance/reports/$reportId/logs');
 
-  Future<Map<String, dynamic>> addReportLog(int reportId, String note) => _map(
+  /// Dòng nhật ký; [attachments] (≤10) lưu stage PROGRESS gắn với dòng này.
+  Future<Map<String, dynamic>> addReportLog(
+    int reportId,
+    String note, {
+    List<Map<String, dynamic>>? attachments,
+  }) => _map(
     'POST',
     '/api/maintenance/reports/$reportId/logs',
-    body: {'note': note},
+    body: {
+      'note': note,
+      if (attachments != null && attachments.isNotEmpty)
+        'attachments': attachments,
+    },
   );
 
   /// Lịch bảo trì phòng ngừa (mỗi mục kèm cờ `due`).
@@ -499,8 +613,13 @@ class LockerOpsService {
 
   /// Human-readable message from an [ApiResponse] error payload.
   static String errorMessage(Object error) {
+    if (error is MediaUploadException) return error.message;
     if (error is DioException) {
       final data = error.response?.data;
+      final mediaMessage = data is Map
+          ? MediaErrorMessages.forCode(data['code']?.toString())
+          : null;
+      if (mediaMessage != null) return mediaMessage;
       if (data is Map && data['message'] is String) {
         return data['message'] as String;
       }
