@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:smart_laundry_locker/core/config/business_config_service.dart';
 import 'package:smart_laundry_locker/core/network/dio_client.dart';
 import 'package:smart_laundry_locker/core/routing/app_router.dart';
 import 'package:smart_laundry_locker/core/services/app_messenger_service.dart';
@@ -245,6 +248,9 @@ void main() async {
   DioClient.instance.init();
   // Initialize token service from secure storage
   await TokenService.initializeFromStorage();
+  // Quy tắc nghiệp vụ (giá, phí, giới hạn) do admin cấu hình: khôi phục
+  // last-known rồi làm mới nền, KHÔNG chặn khởi động (lỗi ⇒ giá trị mặc định).
+  unawaited(BusinessConfigService.instance.init());
 
   runApp(const ProviderScope(child: RestartableApp(child: AislApp())));
 }
