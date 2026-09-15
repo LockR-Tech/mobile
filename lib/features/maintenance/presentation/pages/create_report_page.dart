@@ -5,6 +5,7 @@ import 'package:smart_laundry_locker/core/network/api_client.dart';
 import 'package:smart_laundry_locker/core/theme/shadcn_theme.dart';
 import 'package:smart_laundry_locker/features/locker/presentation/providers/locker_injection.dart';
 import 'package:smart_laundry_locker/features/locker/presentation/providers/locker_provider.dart';
+import 'package:smart_laundry_locker/features/maintenance/infrastructure/data_sources/maintenance_remote_datasource.dart';
 import 'package:smart_laundry_locker/features/maintenance/presentation/providers/maintenance_injection.dart';
 import 'package:smart_laundry_locker/features/maintenance/presentation/providers/maintenance_provider.dart';
 import 'package:smart_laundry_locker/shared/widgets/app_bar.dart';
@@ -258,13 +259,22 @@ class _CreateReportPageState extends State<CreateReportPage> {
     }
   }
 
+  /// Backend nhận tối đa 5 ảnh khi tạo phiếu.
+  static const _maxPhotos = MaintenanceRemoteDataSourceImpl.maxReportPhotos;
+
+  int get _remainingPhotos => _maxPhotos - _capturedPhotos.length;
+
   /// Chụp ảnh bằng camera (1 ảnh)
   Future<void> _capturePhoto() async {
+    if (_remainingPhotos <= 0) {
+      SmartDialog.showToast('Tối đa $_maxPhotos ảnh');
+      return;
+    }
     final image = await _picker.pickImage(
       source: ImageSource.camera,
-      maxWidth: 1280,
-      maxHeight: 1280,
-      imageQuality: 80,
+      maxWidth: 1920,
+      maxHeight: 1920,
+      imageQuality: 85,
     );
     if (image == null) return;
     setState(() {
@@ -274,14 +284,26 @@ class _CreateReportPageState extends State<CreateReportPage> {
 
   /// Chọn nhiều ảnh cùng lúc từ thư viện
   Future<void> _pickMultiplePhotos() async {
+    if (_remainingPhotos <= 0) {
+      SmartDialog.showToast('Tối đa $_maxPhotos ảnh');
+      return;
+    }
     final images = await _picker.pickMultiImage(
-      maxWidth: 1280,
-      maxHeight: 1280,
-      imageQuality: 80,
+      maxWidth: 1920,
+      maxHeight: 1920,
+      imageQuality: 85,
+      limit: _remainingPhotos,
     );
     if (images.isEmpty) return;
+    if (images.length > _remainingPhotos) {
+      SmartDialog.showToast(
+        'Chỉ lấy $_remainingPhotos ảnh đầu (tối đa $_maxPhotos)',
+      );
+    }
     setState(() {
-      _capturedPhotos.addAll(images.map((x) => File(x.path)));
+      _capturedPhotos.addAll(
+        images.take(_remainingPhotos).map((x) => File(x.path)),
+      );
     });
   }
 
@@ -539,7 +561,7 @@ class _CreateReportPageState extends State<CreateReportPage> {
         ),
         const SizedBox(height: 4),
         const Text(
-          'Có thể thêm nhiều ảnh cùng lúc từ thư viện hoặc dùng camera chụp từng ảnh',
+          'Có thể thêm nhiều ảnh cùng lúc từ thư viện hoặc dùng camera chụp từng ảnh (tối đa $_maxPhotos ảnh)',
           style: TextStyle(fontSize: 12, color: Colors.grey),
         ),
         const SizedBox(height: 10),
