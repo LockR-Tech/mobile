@@ -1,4 +1,8 @@
 import 'dart:io';
+import 'package:image_picker/image_picker.dart';
+import 'package:smart_laundry_locker/core/media/media_upload.dart';
+import 'package:smart_laundry_locker/core/media/media_upload_service.dart';
+import 'package:smart_laundry_locker/core/media/report_attachment.dart';
 import 'package:smart_laundry_locker/core/network/api_client.dart';
 import 'package:smart_laundry_locker/core/services/token_service.dart';
 import 'package:smart_laundry_locker/features/maintenance/infrastructure/models/maintenance_report_model.dart';
@@ -17,8 +21,15 @@ abstract class MaintenanceRemoteDataSource {
 
 class MaintenanceRemoteDataSourceImpl implements MaintenanceRemoteDataSource {
   final ApiClient _apiClient;
+  final MediaUploadService? _mediaUploadService;
 
-  MaintenanceRemoteDataSourceImpl(this._apiClient);
+  /// Tối đa ảnh kèm khi tạo phiếu (hợp đồng media-storage).
+  static const maxReportPhotos = 5;
+
+  MaintenanceRemoteDataSourceImpl(
+    this._apiClient, {
+    MediaUploadService? mediaUploadService,
+  }) : _mediaUploadService = mediaUploadService;
 
   @override
   Future<MaintenanceReportModel> createReport({
@@ -34,11 +45,24 @@ class MaintenanceRemoteDataSourceImpl implements MaintenanceRemoteDataSource {
     final targetLockerId =
         int.tryParse(lockerId) ?? int.tryParse(cabinetId) ?? 1;
 
-    var formattedDescription = description.trim();
+    final formattedDescription = description.trim();
+
+    // Ảnh thật: xin chữ ký → upload thẳng Cloudinary → gửi MediaUpload kèm phiếu
+    // (stage REPORT). Lỗi upload ném MediaUploadException (message tiếng Việt).
+    final attachments = <Map<String, dynamic>>[];
     if (photos != null && photos.isNotEmpty) {
-      // Đính kèm URL ảnh minh chứng để Admin web trích xuất tự động qua extractPhotoList
-      formattedDescription +=
-          '\n\nẢnh minh chứng hiện trường:\nhttps://images.unsplash.com/photo-1581092160607-ee22621dd758?w=700&auto=format&fit=crop&q=80';
+      final capturedAt = DateTime.now();
+      final uploads = await (_mediaUploadService ?? MediaUploadService())
+          .uploadImages(
+            photos
+                .take(maxReportPhotos)
+                .map((p) => XFile(p.path))
+                .toList(growable: false),
+            MediaPurpose.reportEvidence,
+          );
+      attachments.addAll(
+        uploads.map((u) => u.toAttachmentJson(capturedAt: capturedAt)),
+      );
     }
 
     final response = await _apiClient.post<Map<String, dynamic>>(
@@ -47,6 +71,7 @@ class MaintenanceRemoteDataSourceImpl implements MaintenanceRemoteDataSource {
         'userId': userId,
         'title': title.trim(),
         'description': formattedDescription,
+        if (attachments.isNotEmpty) 'attachments': attachments,
       },
     );
 
@@ -72,9 +97,9 @@ class MaintenanceRemoteDataSourceImpl implements MaintenanceRemoteDataSource {
       cabinetId: cabinetId.isNotEmpty ? cabinetId : '$targetLockerId',
       title: data['title']?.toString() ?? title,
       description: data['description']?.toString() ?? formattedDescription,
-      photoUrls: photos != null && photos.isNotEmpty
-          ? photos.map((p) => p.path).toList()
-          : [],
+      photoUrls: ReportAttachment.listFrom(
+        data['attachments'],
+      ).map((a) => a.url).toList(),
       status: data['status']?.toString() ?? 'OPEN',
       createdAt: rawCreatedAt,
       updatedAt: rawCreatedAt,
