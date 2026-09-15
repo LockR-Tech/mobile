@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
+import 'package:smart_laundry_locker/core/config/business_config_provider.dart';
 import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/ops_widgets.dart';
 import 'package:smart_laundry_locker/features/promotions/data/models/promotion_model.dart';
@@ -355,16 +356,35 @@ class _VoucherPickerSheetState extends State<_VoucherPickerSheet> {
   }
 }
 
+/// Số điểm cần để lên hạng kế tiếp theo ngưỡng admin cấu hình
+/// (`app.loyalty.tier-*-points`). `null` khi đã ở hạng cao nhất.
+String? nextLoyaltyTierText(int points, BusinessConfig config) {
+  final tiers = [
+    (points: config.tierSilverPoints, name: 'Bạc'),
+    (points: config.tierGoldPoints, name: 'Vàng'),
+    (points: config.tierPlatinumPoints, name: 'Bạch kim'),
+  ]..sort((a, b) => a.points.compareTo(b.points));
+  for (final tier in tiers) {
+    if (points < tier.points) {
+      return 'còn ${tier.points - points} điểm lên hạng ${tier.name}';
+    }
+  }
+  return null;
+}
+
 /// Small informational chip showing the user's loyalty points balance.
 class LoyaltyPointsHint extends StatefulWidget {
-  const LoyaltyPointsHint({super.key});
+  const LoyaltyPointsHint({super.key, this.service});
+
+  final LockerOpsService? service;
 
   @override
   State<LoyaltyPointsHint> createState() => _LoyaltyPointsHintState();
 }
 
-class _LoyaltyPointsHintState extends State<LoyaltyPointsHint> {
-  final _service = LockerOpsService();
+class _LoyaltyPointsHintState extends State<LoyaltyPointsHint>
+    with BusinessConfigStateMixin {
+  late final LockerOpsService _service = widget.service ?? LockerOpsService();
   int? _points;
 
   @override
@@ -385,17 +405,23 @@ class _LoyaltyPointsHintState extends State<LoyaltyPointsHint> {
 
   @override
   Widget build(BuildContext context) {
-    if (_points == null) return const SizedBox.shrink();
+    final points = _points;
+    if (points == null) return const SizedBox.shrink();
+    final nextTier = nextLoyaltyTierText(points, businessConfig);
     return Row(
       children: [
         const Icon(LucideIcons.sparkles, size: 15, color: Color(0xFFCA8A04)),
         const SizedBox(width: 6),
-        Text(
-          'Bạn đang có $_points điểm tích lũy',
-          style: const TextStyle(
-            fontSize: 12.5,
-            color: opsMutedText,
-            fontWeight: FontWeight.w600,
+        Expanded(
+          child: Text(
+            nextTier == null
+                ? 'Bạn đang có $points điểm tích lũy'
+                : 'Bạn đang có $points điểm tích lũy · $nextTier',
+            style: const TextStyle(
+              fontSize: 12.5,
+              color: opsMutedText,
+              fontWeight: FontWeight.w600,
+            ),
           ),
         ),
       ],

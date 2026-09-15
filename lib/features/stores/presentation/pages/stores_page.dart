@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
+import 'package:smart_laundry_locker/core/config/business_config_service.dart';
 import 'package:smart_laundry_locker/core/network/api_client.dart';
 import 'package:smart_laundry_locker/core/routing/app_router.dart';
 import 'package:smart_laundry_locker/core/theme/shadcn_theme.dart';
@@ -49,6 +50,10 @@ class _StoresPageState extends State<StoresPage> {
       final stores = await _service.getStores(
         latitude: latitude,
         longitude: longitude,
+        // Bán kính "gần tôi" do admin cấu hình (app.store.nearby-default-radius-km).
+        radiusKm: latitude != null && longitude != null
+            ? BusinessConfigService.instance.current.nearbyDefaultRadiusKm
+            : null,
       );
       if (!mounted) return;
       setState(() {
@@ -82,6 +87,7 @@ class _StoresPageState extends State<StoresPage> {
 
   Future<void> _useMyLocation() async {
     setState(() => _nearbyLoading = true);
+    BusinessConfigService.instance.refresh();
     try {
       final serviceEnabled = await Geolocator.isLocationServiceEnabled();
       if (!serviceEnabled) {

@@ -367,6 +367,11 @@ void main() {
     tester,
   ) async {
     final service = _FakeFaultyOrderLockerOpsService();
+    useBusinessConfig(
+      BusinessConfig.fromPublicMaps(
+        locker: {'app.maintenance.report-photos-per-request-reporter': 3},
+      ),
+    );
 
     await tester.pumpWidget(
       MaterialApp(
@@ -384,6 +389,12 @@ void main() {
     await tester.ensureVisible(find.text('Báo ô lỗi'));
     await tester.tap(find.text('Báo ô lỗi'));
     await tester.pumpAndSettle();
+
+    // Giới hạn ảnh hiện trường lấy từ cấu hình admin.
+    expect(
+      find.text('Ảnh hiện trường (không bắt buộc, tối đa 3)'),
+      findsOneWidget,
+    );
 
     await tester.enterText(find.byType(TextField).last, 'Ô không mở được');
     await tester.tap(find.text('Gửi báo lỗi'));

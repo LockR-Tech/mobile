@@ -259,8 +259,9 @@ class _CreateReportPageState extends State<CreateReportPage> {
     }
   }
 
-  /// Backend nhận tối đa 5 ảnh khi tạo phiếu.
-  static const _maxPhotos = MaintenanceRemoteDataSourceImpl.maxReportPhotos;
+  /// Số ảnh tối đa khi tạo phiếu — admin cấu hình
+  /// (`app.maintenance.report-photos-per-request-reporter`).
+  int get _maxPhotos => MaintenanceRemoteDataSourceImpl.maxReportPhotos;
 
   int get _remainingPhotos => _maxPhotos - _capturedPhotos.length;
 
@@ -560,9 +561,9 @@ class _CreateReportPageState extends State<CreateReportPage> {
           ],
         ),
         const SizedBox(height: 4),
-        const Text(
+        Text(
           'Có thể thêm nhiều ảnh cùng lúc từ thư viện hoặc dùng camera chụp từng ảnh (tối đa $_maxPhotos ảnh)',
-          style: TextStyle(fontSize: 12, color: Colors.grey),
+          style: const TextStyle(fontSize: 12, color: Colors.grey),
         ),
         const SizedBox(height: 10),
         // Action buttons: Camera + Gallery

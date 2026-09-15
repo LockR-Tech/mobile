@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
+import 'package:smart_laundry_locker/core/config/business_config_service.dart';
 import 'package:smart_laundry_locker/core/media/media_upload.dart';
 import 'package:smart_laundry_locker/core/media/media_upload_service.dart';
 import 'package:smart_laundry_locker/core/media/report_attachment.dart';
@@ -23,8 +24,10 @@ class MaintenanceRemoteDataSourceImpl implements MaintenanceRemoteDataSource {
   final ApiClient _apiClient;
   final MediaUploadService? _mediaUploadService;
 
-  /// Tối đa ảnh kèm khi tạo phiếu (hợp đồng media-storage).
-  static const maxReportPhotos = 5;
+  /// Tối đa ảnh kèm khi tạo phiếu — admin cấu hình
+  /// (`app.maintenance.report-photos-per-request-reporter`, mặc định 5).
+  static int get maxReportPhotos =>
+      BusinessConfigService.instance.current.reportPhotosPerRequestReporter;
 
   MaintenanceRemoteDataSourceImpl(
     this._apiClient, {
