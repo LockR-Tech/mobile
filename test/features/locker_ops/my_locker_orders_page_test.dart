@@ -136,14 +136,19 @@ class _FakeFaultyOrderLockerOpsService extends LockerOpsService {
   @override
   Future<Map<String, dynamic>> reportOrderFault(
     int orderId,
-    String reason,
-  ) async {
+    String reason, {
+    List<Map<String, dynamic>>? attachments,
+  }) async {
     reportOrderFaultCalls++;
     return {'id': orderId, 'reason': reason};
   }
 
   @override
-  Future<Map<String, dynamic>> reportFault(int boxId, String reason) async {
+  Future<Map<String, dynamic>> reportFault(
+    int boxId,
+    String reason, {
+    List<Map<String, dynamic>>? attachments,
+  }) async {
     reportFaultCalls++;
     return {'boxId': boxId, 'reason': reason};
   }
