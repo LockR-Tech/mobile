@@ -1,16 +1,23 @@
+import 'package:image_picker/image_picker.dart';
+import 'package:smart_laundry_locker/core/media/media_upload.dart';
+import 'package:smart_laundry_locker/core/media/media_upload_service.dart';
 import 'package:smart_laundry_locker/core/network/api_client.dart';
 import 'package:smart_laundry_locker/features/profile/infrastructure/data_sources/profile_remote_data_source.dart';
 import 'package:dio/dio.dart';
 
 class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
   final ApiClient _apiClient;
+  final MediaUploadService? _mediaUploadService;
 
   // Current backend (laundry-locker-microservices) user-service endpoints.
   // Self profile lives under /api/user/** (singular); get-by-id is /api/users/{id}.
   static const String _basePath = '/api/user';
   static const String _courierBasePath = '/api/staff-applications';
 
-  ProfileRemoteDataSourceImpl(this._apiClient);
+  ProfileRemoteDataSourceImpl(
+    this._apiClient, {
+    MediaUploadService? mediaUploadService,
+  }) : _mediaUploadService = mediaUploadService;
 
   Map<String, dynamic> _extractData(Response<dynamic> response) {
     final responseData = response.data as Map<String, dynamic>;
@@ -75,16 +82,21 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
     required String userId,
     required String filePath,
   }) async {
-    final fileName = filePath.split('/').last.split('\\').last;
-    final formData = FormData.fromMap({
-      'files': await MultipartFile.fromFile(filePath, filename: fileName),
-    });
+    // Cloudinary signed upload (docs/01-overview/media-storage.md):
+    // chữ ký purpose AVATAR → upload thẳng Cloudinary (không JWT) →
+    // PUT /api/user/avatar với body MediaUpload (JSON).
+    final upload = await (_mediaUploadService ?? MediaUploadService())
+        .uploadImage(XFile(filePath), MediaPurpose.avatar);
+    final response = await _apiClient.put(
+      '$_basePath/avatar',
+      data: upload.toJson(),
+    );
+    return _extractData(response);
+  }
 
-    // NOTE: backend PUT /api/user/avatar expects a JSON {imageUrl} (a hosted URL),
-    // not a multipart file upload. Until an image-hosting endpoint exists this
-    // will not persist the avatar; path is aligned so it no longer 404s.
-    final response = await _apiClient.put('$_basePath/avatar', data: formData);
-
+  @override
+  Future<Map<String, dynamic>> deleteAvatar() async {
+    final response = await _apiClient.delete('$_basePath/avatar');
     return _extractData(response);
   }
 

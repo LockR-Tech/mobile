@@ -18,6 +18,8 @@ abstract class ProfileRepository {
     required String filePath,
   });
 
+  Future<Either<Failure, UserProfile>> deleteAvatar();
+
   Future<Either<Failure, bool>> verifyCurrentPassword({
     required String email,
     required String currentPassword,
