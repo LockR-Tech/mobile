@@ -236,12 +236,13 @@ class AppRouter {
         path: createReport,
         name: 'create_report',
         builder: (context, state) {
-          final params = state.extra as Map<String, dynamic>;
+          final params = (state.extra as Map<String, dynamic>?) ?? {};
           return CreateReportPage(
-            lockerId: params['lockerId'] as String,
-            cabinetId: params['cabinetId'] as String,
-            lockerName: params['lockerName'] as String?,
-            cabinetName: params['cabinetName'] as String?,
+            lockerId: params['lockerId']?.toString() ?? '',
+            cabinetId: params['cabinetId']?.toString() ?? '',
+            lockerName: params['lockerName']?.toString(),
+            cabinetName: params['cabinetName']?.toString(),
+            locationName: params['locationName']?.toString(),
           );
         },
       ),

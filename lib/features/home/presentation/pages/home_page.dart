@@ -421,6 +421,16 @@ class _HomePageState extends ConsumerState<HomePage>
         label: 'Ưu đãi',
         onTap: () => context.push(AppRouter.promotions),
       ),
+      BrandFilterChip(
+        icon: LucideIcons.triangleAlert,
+        label: 'Báo sự cố',
+        onTap: () => context.push(AppRouter.createReport),
+      ),
+      BrandFilterChip(
+        icon: LucideIcons.clipboardList,
+        label: 'Báo cáo của tôi',
+        onTap: () => context.push(AppRouter.myLockerReports),
+      ),
     ];
 
     return SizedBox(

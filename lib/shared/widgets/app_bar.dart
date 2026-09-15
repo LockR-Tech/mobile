@@ -1,5 +1,4 @@
 import 'dart:math' as math;
-import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -107,7 +106,7 @@ class CustomSliverAppBar extends StatelessWidget {
                       height: 1,
                       decoration: BoxDecoration(
                         color: (foregroundColor ?? AppColors.onSurface)
-                            .withOpacity(0.1),
+                            .withValues(alpha: 0.1),
                       ),
                     ),
                   ),
@@ -253,7 +252,10 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   Widget _buildBackButton(BuildContext context) {
     return IconButton(
-      icon: Icon(LucideIcons.arrowLeft, color: foregroundColorButton),
+      icon: Icon(
+        LucideIcons.arrowLeft,
+        color: foregroundColorButton ?? foregroundColor ?? AppColors.onSurface,
+      ),
       onPressed: onBackPressed ?? () => Navigator.of(context).pop(),
     );
   }
@@ -304,7 +306,7 @@ class SearchAppBar extends StatelessWidget implements PreferredSizeWidget {
     return Container(
       height: 40,
       decoration: BoxDecoration(
-        color: AppColors.surfaceVariant.withOpacity(0.3),
+        color: AppColors.surfaceVariant.withValues(alpha: 0.3),
         borderRadius: BorderRadius.circular(20),
       ),
       child: TextField(

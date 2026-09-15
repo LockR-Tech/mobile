@@ -53,6 +53,7 @@ class _MyReportsPageState extends State<MyReportsPage> {
           BrandHeroHeader(
             title: 'Báo cáo của tôi',
             subtitle: 'Theo dõi các báo lỗi ô tủ bạn đã gửi',
+            onBack: () => Navigator.of(context).maybePop(),
             trailing: BrandCircleIconButton(
               icon: LucideIcons.refreshCw,
               onTap: _load,

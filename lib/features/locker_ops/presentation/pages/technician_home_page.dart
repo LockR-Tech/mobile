@@ -355,12 +355,6 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
         (_layout?['cells'] as List?)?.cast<Map<String, dynamic>>() ?? [];
     final lockerOptions = _lockerOptions;
     final selectedLocker = _selectedLocker;
-    final rows = <int, List<Map<String, dynamic>>>{};
-    for (final c in cells) {
-      rows.putIfAbsent(_asInt(c['rowIndex']) ?? 0, () => []).add(c);
-    }
-    final sortedRows = rows.entries.toList()
-      ..sort((a, b) => a.key.compareTo(b.key));
     return RefreshIndicator(
       onRefresh: _load,
       child: ListView(
@@ -399,31 +393,27 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
             if (_layout?['landingPad'] == true) _landingPadCard(),
             OpsCard(
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  for (final row in sortedRows) ...[
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 4),
-                      child: Row(
-                        children: [
-                          Text(
-                            'Hàng ${row.key}',
-                            style: const TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w700,
-                              color: opsMutedText,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Row(
+                  const Padding(
+                    padding: EdgeInsets.only(bottom: 8),
+                    child: Row(
                       children: [
-                        for (final c in _sortCellsByColumn(row.value))
-                          Expanded(child: _cellTile(c)),
+                        Icon(Icons.grid_view_rounded, size: 16, color: opsPrimary),
+                        SizedBox(width: 6),
+                        Text(
+                          'Sơ đồ vật lý Kiosk (Cột vali XL & Hàng 1: Drone)',
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                            color: opsDark,
+                          ),
+                        ),
                       ],
                     ),
-                    const SizedBox(height: 8),
-                  ],
+                  ),
+                  _buildPhysicalCabinet(cells),
+                  const SizedBox(height: 10),
                   const OpsBanner(
                     tone: OpsBannerTone.info,
                     icon: Icons.touch_app_outlined,
@@ -435,6 +425,148 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
             const SizedBox(height: 12),
             _boxHealthCard(),
           ],
+        ],
+      ),
+    );
+  }
+
+  /// Dựng sơ đồ vật lý Kiosk đồng bộ với Admin:
+  /// Cột trái: khoang đứng XL (#10) cao suốt các hàng
+  /// Cột phải: các hàng 1 (Drone), 2, 3...
+  /// Bất cứ ô nào Admin thêm mới vào hàng/cột đều tự động render đúng vị trí!
+  Widget _buildPhysicalCabinet(List<Map<String, dynamic>> cells) {
+    if (cells.isEmpty) {
+      return const Padding(
+        padding: EdgeInsets.all(16),
+        child: Center(
+          child: Text(
+            'Chưa có ô tủ nào được cấu hình.',
+            style: TextStyle(color: opsMutedText),
+          ),
+        ),
+      );
+    }
+
+    // Lọc ô vali đứng XL
+    final xlCells = cells.where((c) {
+      final type = (c['cellType'] ?? '').toString().toUpperCase();
+      final col = _asInt(c['colIndex']);
+      final num = _asInt(c['boxNumber']);
+      return type == 'XL' || col == 0 || num == 10;
+    }).toList();
+
+    // Các ô thường và Drone
+    final standardCells = cells.where((c) => !xlCells.contains(c)).toList();
+
+    // Gom các ô theo rowIndex
+    final rowsMap = <int, List<Map<String, dynamic>>>{};
+    for (final c in standardCells) {
+      final r = _asInt(c['rowIndex']) ?? 1;
+      rowsMap.putIfAbsent(r, () => []).add(c);
+    }
+    final sortedRowKeys = rowsMap.keys.toList()..sort();
+
+    // Nếu không có ô XL thì render các hàng bình thường
+    if (xlCells.isEmpty) {
+      return Column(
+        children: [
+          for (final r in sortedRowKeys) ...[
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 4),
+              child: Row(
+                children: [
+                  Text(
+                    'Hàng $r ${r == 1 ? '(Drone)' : ''}',
+                    style: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      color: opsMutedText,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Row(
+              children: [
+                for (final c in _sortCellsByColumn(rowsMap[r]!))
+                  Expanded(child: _cellTile(c)),
+              ],
+            ),
+            const SizedBox(height: 8),
+          ],
+        ],
+      );
+    }
+
+    // Khi có ô XL, mô phỏng đúng cấu trúc tủ vật lý Kiosk như bên Admin:
+    // Cột trái: Ô XL cao
+    // Cột phải: Các hàng 1, 2, 3...
+    return IntrinsicHeight(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // Cột trái: Ô vali lớn XL
+          SizedBox(
+            width: 100,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 4),
+                  child: Text(
+                    'Cột vali XL',
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                      color: opsMutedText,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+                Expanded(
+                  child: Column(
+                    children: [
+                      for (final xl in xlCells)
+                        Expanded(child: _cellTile(xl, isTall: true)),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          // Cột phải: Các hàng ô thường / Drone
+          Expanded(
+            child: Column(
+              children: [
+                for (final r in sortedRowKeys) ...[
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 4),
+                    child: Row(
+                      children: [
+                        Text(
+                          'Hàng $r ${r == 1 ? '(Drone)' : ''}',
+                          style: const TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                            color: opsMutedText,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Row(
+                    children: [
+                      for (final c in _sortCellsByColumn(rowsMap[r]!)) ...[
+                        Expanded(child: _cellTile(c)),
+                      ],
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                ],
+              ],
+            ),
+          ),
         ],
       ),
     );
@@ -885,7 +1017,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
     );
   }
 
-  Widget _cellTile(Map<String, dynamic> cell) {
+  Widget _cellTile(Map<String, dynamic> cell, {bool isTall = false}) {
     final color = statusColor(cell['status'] as String?);
     final type = cell['cellType'] as String? ?? 'STANDARD';
     return Padding(
@@ -897,13 +1029,27 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
           borderRadius: BorderRadius.circular(14),
           onTap: () => _cellActions(cell),
           child: Container(
-            padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 6),
+            height: isTall ? double.infinity : null,
+            padding: EdgeInsets.symmetric(
+              vertical: isTall ? 16 : 10,
+              horizontal: 6,
+            ),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: color.withValues(alpha: 0.5)),
+              border: Border.all(
+                color: color.withValues(alpha: 0.6),
+                width: isTall ? 1.5 : 1.0,
+              ),
             ),
             child: Column(
+              mainAxisAlignment: isTall
+                  ? MainAxisAlignment.center
+                  : MainAxisAlignment.start,
               children: [
+                if (isTall) ...[
+                  Icon(Icons.luggage, size: 28, color: color),
+                  const SizedBox(height: 8),
+                ],
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -912,15 +1058,15 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         color: color,
-                        fontSize: 13,
+                        fontSize: isTall ? 16 : 13,
                       ),
                     ),
-                    if (type == 'DRONE')
+                    if (!isTall && type == 'DRONE')
                       const Padding(
                         padding: EdgeInsets.only(left: 2),
                         child: Icon(Icons.flight, size: 12),
                       ),
-                    if (type == 'XL')
+                    if (!isTall && type == 'XL')
                       const Padding(
                         padding: EdgeInsets.only(left: 2),
                         child: Icon(Icons.luggage, size: 12),
@@ -930,14 +1076,42 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                 const SizedBox(height: 2),
                 Text(
                   statusLabel(cell['status'] as String?),
-                  style: TextStyle(fontSize: 10, color: color),
+                  style: TextStyle(
+                    fontSize: isTall ? 11 : 10,
+                    fontWeight: isTall ? FontWeight.w600 : FontWeight.normal,
+                    color: color,
+                  ),
                 ),
                 Text(
                   _cellTypeLabel(type),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(fontSize: 9, color: opsMutedText),
+                  style: TextStyle(
+                    fontSize: isTall ? 10 : 9,
+                    color: opsMutedText,
+                  ),
                 ),
+                if (isTall) ...[
+                  const SizedBox(height: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 6,
+                      vertical: 2,
+                    ),
+                    decoration: BoxDecoration(
+                      color: color.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: const Text(
+                      'Khoang đứng XL',
+                      style: TextStyle(
+                        fontSize: 9,
+                        fontWeight: FontWeight.bold,
+                        color: opsDark,
+                      ),
+                    ),
+                  ),
+                ],
               ],
             ),
           ),
@@ -2017,6 +2191,88 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
         _ => opsMutedText,
       };
 
+  (String, List<String>) _extractUserPhotosAndClean(
+    dynamic desc,
+    dynamic photoField,
+  ) {
+    final rawDesc = (desc ?? '').toString();
+    final urls = <String>[];
+
+    if (photoField is List) {
+      for (final item in photoField) {
+        final s = item?.toString().trim() ?? '';
+        if (s.startsWith('http') && !urls.contains(s)) urls.add(s);
+      }
+    } else if (photoField is String && photoField.trim().startsWith('http')) {
+      urls.add(photoField.trim());
+    }
+
+    final urlRegex = RegExp(r'https?://[^\s)\]"]+');
+    for (final m in urlRegex.allMatches(rawDesc)) {
+      var u = m.group(0)!;
+      u = u.replaceAll(RegExp(r'[,.;:]$'), '');
+      if (!urls.contains(u)) urls.add(u);
+    }
+
+    var cleaned = rawDesc
+        .replaceAll(
+          RegExp(r'\n*Ảnh minh chứng.*$', multiLine: true, caseSensitive: false),
+          '',
+        )
+        .replaceAll(urlRegex, '')
+        .trim();
+
+    return (cleaned, urls);
+  }
+
+  void _viewFullPhoto(String url, String title) {
+    showDialog<void>(
+      context: context,
+      builder: (dialogCtx) => Dialog(
+        backgroundColor: Colors.black,
+        insetPadding: const EdgeInsets.all(12),
+        child: Stack(
+          children: [
+            Center(
+              child: InteractiveViewer(
+                child: Image.network(
+                  url,
+                  fit: BoxFit.contain,
+                  errorBuilder: (_, __, ___) => const Center(
+                    child: Text(
+                      'Không tải được ảnh',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            Positioned(
+              top: 10,
+              left: 14,
+              child: Text(
+                title,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                ),
+              ),
+            ),
+            Positioned(
+              top: 4,
+              right: 4,
+              child: IconButton(
+                icon: const Icon(Icons.close, color: Colors.white),
+                onPressed: () => Navigator.pop(dialogCtx),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _reportCard(Map<String, dynamic> r) {
     final status = r['status'] as String? ?? '';
     final assignedToMe = '${r['assignedToUserId'] ?? ''}' == (_myUserId ?? '');
@@ -2024,6 +2280,11 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
     final boxLabel = r['boxNumber'] ?? r['boxId'];
     final createdAt = _parseDate(r['createdAt']);
     final ageLabel = createdAt == null ? null : _ageLabel(createdAt);
+    final (cleanedDesc, userPhotos) = _extractUserPhotosAndClean(
+      r['description'],
+      r['photoUrls'] ?? r['photos'],
+    );
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
       child: OpsCard(
@@ -2045,11 +2306,86 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                 StatusChip(status),
               ],
             ),
-            const SizedBox(height: 4),
-            Text(
-              '${r['description'] ?? ''}',
-              style: const TextStyle(fontSize: 12, color: opsMutedText),
-            ),
+            if (cleanedDesc.isNotEmpty) ...[
+              const SizedBox(height: 4),
+              Text(
+                cleanedDesc,
+                style: const TextStyle(fontSize: 12, color: opsMutedText),
+              ),
+            ],
+            if (userPhotos.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  const Icon(
+                    Icons.photo_library_outlined,
+                    size: 14,
+                    color: Color(0xFFE11D48),
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    'Ảnh từ User (${userPhotos.length} ảnh):',
+                    style: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFFE11D48),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 6),
+              SizedBox(
+                height: 72,
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: userPhotos.length,
+                  separatorBuilder: (_, __) => const SizedBox(width: 8),
+                  itemBuilder: (context, idx) {
+                    final photoUrl = userPhotos[idx];
+                    return GestureDetector(
+                      onTap: () => _viewFullPhoto(
+                        photoUrl,
+                        'Ảnh từ User (#${idx + 1})',
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(10),
+                        child: Container(
+                          width: 72,
+                          height: 72,
+                          decoration: BoxDecoration(
+                            border: Border.all(color: const Color(0xFFFDA4AF)),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Image.network(
+                            photoUrl,
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, __, ___) => const Center(
+                              child: Icon(
+                                Icons.broken_image_outlined,
+                                size: 24,
+                                color: opsMutedText,
+                              ),
+                            ),
+                            loadingBuilder: (_, child, prog) {
+                              if (prog == null) return child;
+                              return const Center(
+                                child: SizedBox(
+                                  width: 18,
+                                  height: 18,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
             const SizedBox(height: 8),
             Wrap(
               spacing: 8,
@@ -2060,6 +2396,11 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                   text:
                       '$lockerLabel${boxLabel != null ? ' · ô $boxLabel' : ''}',
                 ),
+                if (createdAt != null)
+                  _MiniPill(
+                    icon: Icons.access_time,
+                    text: _formatFullDateTime(createdAt),
+                  ),
                 if ((r['reporterName'] ?? '').toString().isNotEmpty ||
                     (r['reporterPhone'] ?? '').toString().isNotEmpty)
                   _MiniPill(
@@ -2142,7 +2483,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                     icon: const Icon(Icons.pan_tool_alt, size: 16, color: opsPrimary),
                     label: const Text('Nhận việc', style: TextStyle(color: opsPrimary)),
                   ),
-                if (status != 'RESOLVED')
+                if (status == 'IN_PROGRESS')
                   ElevatedButton.icon(
                     onPressed: () => _confirmResolveReport(r),
                     icon: const Icon(Icons.check, size: 16),
@@ -2182,6 +2523,16 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
   DateTime? _parseDate(dynamic value) {
     if (value == null) return null;
     return DateTime.tryParse('$value')?.toLocal();
+  }
+
+  String _formatFullDateTime(DateTime dt) {
+    final d = dt.day.toString().padLeft(2, '0');
+    final m = dt.month.toString().padLeft(2, '0');
+    final y = dt.year.toString().padLeft(4, '0');
+    final hh = dt.hour.toString().padLeft(2, '0');
+    final mm = dt.minute.toString().padLeft(2, '0');
+    final ss = dt.second.toString().padLeft(2, '0');
+    return '$hh:$mm:$ss $d/$m/$y';
   }
 
   String _ageLabel(DateTime createdAt) {

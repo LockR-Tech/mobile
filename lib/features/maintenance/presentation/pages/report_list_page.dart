@@ -35,7 +35,7 @@ class _ReportListPageState extends State<ReportListPage> {
   }
 
   String _fmtDate(DateTime d) =>
-      DateFormat('dd/MM/yyyy HH:mm').format(d.toLocal());
+      DateFormat('HH:mm:ss dd/MM/yyyy').format(d.toLocal());
 
   @override
   Widget build(BuildContext context) {

@@ -1,0 +1,16 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Mobile (Default / Selected Device)",
+      "request": "launch",
+      "type": "dart"
+    },
+    {
+      "name": "Mobile (Android Emulator)",
+      "request": "launch",
+      "type": "dart",
+      "deviceId": "emulator-5554"
+    }
+  ]
+}

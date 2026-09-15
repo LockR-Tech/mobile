@@ -204,12 +204,14 @@ class BrandHeroHeader extends StatelessWidget {
     this.subtitle,
     this.onBack,
     this.trailing,
+    this.showBackButton,
   });
 
   final String title;
   final String? subtitle;
   final VoidCallback? onBack;
   final Widget? trailing;
+  final bool? showBackButton;
 
   @override
   Widget build(BuildContext context) {
@@ -221,6 +223,12 @@ class BrandHeroHeader extends StatelessWidget {
     final subtitleColor = isDark
         ? const Color(0xFF94A3B8)
         : AislBrand.navy.withValues(alpha: 0.8);
+
+    final canPop = Navigator.of(context).canPop();
+    final shouldShowBack = showBackButton ?? (onBack != null || canPop);
+    final effectiveOnBack = shouldShowBack
+        ? (onBack ?? (canPop ? () => Navigator.of(context).maybePop() : null))
+        : null;
 
     return Container(
       decoration: BoxDecoration(
@@ -246,10 +254,10 @@ class BrandHeroHeader extends StatelessWidget {
           padding: const EdgeInsets.fromLTRB(20, 14, 20, 22),
           child: Row(
             children: [
-              if (onBack != null) ...[
+              if (effectiveOnBack != null) ...[
                 BrandCircleIconButton(
                   icon: Icons.arrow_back,
-                  onTap: onBack!,
+                  onTap: effectiveOnBack,
                   size: 40,
                 ),
                 const SizedBox(width: 14),
