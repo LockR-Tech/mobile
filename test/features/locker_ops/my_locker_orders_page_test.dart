@@ -212,6 +212,36 @@ void main() {
     useBusinessConfig();
   });
 
+  testWidgets('chỉ hiện phương thức thanh toán admin đang bật', (tester) async {
+    useBusinessConfig(
+      BusinessConfig.fromPublicMaps(
+        payment: {'app.payment.enabled-methods': 'VNPAY,CASH'},
+      ),
+    );
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: MediaQuery(
+          data: const MediaQueryData(size: Size(390, 844)),
+          child: MyLockerOrdersPage(service: _FakeFaultyOrderLockerOpsService()),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Tủ lỗi'));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.text('Thanh toán 15.000đ'));
+    await tester.tap(find.text('Thanh toán 15.000đ'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Chọn phương thức thanh toán'), findsOneWidget);
+    expect(find.text('VNPay'), findsOneWidget);
+    expect(find.text('Tiền mặt'), findsOneWidget);
+    expect(find.text('Ví của tôi'), findsNothing);
+    expect(find.text('MoMo'), findsNothing);
+  });
+
   testWidgets('gia hạn dùng số giờ mặc định và tối đa theo cấu hình admin', (
     tester,
   ) async {

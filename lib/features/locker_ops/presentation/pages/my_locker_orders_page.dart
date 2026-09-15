@@ -519,6 +519,9 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
     if (orderId == null) return;
     final total = _asDouble(order['totalPrice']) ?? 0;
 
+    // Làm mới nền danh sách phương thức admin bật (trong TTL thì không gọi mạng).
+    businessConfigService.refresh();
+
     num balance = 0;
     try {
       balance = await _service.walletBalance();
@@ -533,8 +536,11 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(26)),
       ),
-      builder: (ctx) =>
-          _PaymentMethodPicker(total: total, walletBalance: balance),
+      builder: (ctx) => _PaymentMethodPicker(
+        total: total,
+        walletBalance: balance,
+        enabledMethods: businessConfig.enabledPaymentMethods,
+      ),
     );
     if (method == null) return;
     await _doCheckout(orderId, method);
@@ -1540,13 +1546,24 @@ class _PaymentMethodPicker extends StatelessWidget {
   const _PaymentMethodPicker({
     required this.total,
     required this.walletBalance,
+    required this.enabledMethods,
   });
   final double total;
   final num walletBalance;
 
+  /// Phương thức admin đang bật (`app.payment.enabled-methods`), viết hoa.
+  final List<String> enabledMethods;
+
   @override
   Widget build(BuildContext context) {
     final insufficient = walletBalance < total;
+    bool enabled(String method) => enabledMethods.contains(method);
+    final hasAnyMethod = const [
+      'WALLET',
+      'VNPAY',
+      'MOMO',
+      'CASH',
+    ].any(enabled);
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 4, 20, 24),
       child: Column(
@@ -1567,33 +1584,44 @@ class _PaymentMethodPicker extends StatelessWidget {
             style: const TextStyle(fontSize: 14, color: opsMutedText),
           ),
           const SizedBox(height: 16),
-          _MethodTile(
-            icon: LucideIcons.wallet,
-            title: 'Ví của tôi',
-            subtitle: insufficient
-                ? 'Số dư ${fmtPrice(walletBalance)} — không đủ, hãy nạp thêm'
-                : 'Số dư ${fmtPrice(walletBalance)} · thanh toán tức thì',
-            enabled: !insufficient,
-            onTap: () => Navigator.pop(context, 'WALLET'),
-          ),
-          _MethodTile(
-            icon: LucideIcons.creditCard,
-            title: 'VNPay',
-            subtitle: 'Thẻ ATM / QR ngân hàng',
-            onTap: () => Navigator.pop(context, 'VNPAY'),
-          ),
-          _MethodTile(
-            icon: LucideIcons.smartphone,
-            title: 'MoMo',
-            subtitle: 'Ví MoMo',
-            onTap: () => Navigator.pop(context, 'MOMO'),
-          ),
-          _MethodTile(
-            icon: LucideIcons.banknote,
-            title: 'Tiền mặt',
-            subtitle: 'Thanh toán tại quầy',
-            onTap: () => Navigator.pop(context, 'CASH'),
-          ),
+          if (!hasAnyMethod)
+            const OpsBanner(
+              tone: OpsBannerTone.warning,
+              icon: LucideIcons.badgeAlert,
+              text: 'Hiện chưa có phương thức thanh toán nào khả dụng. '
+                  'Vui lòng thử lại sau.',
+            ),
+          if (enabled('WALLET'))
+            _MethodTile(
+              icon: LucideIcons.wallet,
+              title: 'Ví của tôi',
+              subtitle: insufficient
+                  ? 'Số dư ${fmtPrice(walletBalance)} — không đủ, hãy nạp thêm'
+                  : 'Số dư ${fmtPrice(walletBalance)} · thanh toán tức thì',
+              enabled: !insufficient,
+              onTap: () => Navigator.pop(context, 'WALLET'),
+            ),
+          if (enabled('VNPAY'))
+            _MethodTile(
+              icon: LucideIcons.creditCard,
+              title: 'VNPay',
+              subtitle: 'Thẻ ATM / QR ngân hàng',
+              onTap: () => Navigator.pop(context, 'VNPAY'),
+            ),
+          if (enabled('MOMO'))
+            _MethodTile(
+              icon: LucideIcons.smartphone,
+              title: 'MoMo',
+              subtitle: 'Ví MoMo',
+              onTap: () => Navigator.pop(context, 'MOMO'),
+            ),
+          if (enabled('CASH'))
+            _MethodTile(
+              icon: LucideIcons.banknote,
+              title: 'Tiền mặt',
+              subtitle: 'Thanh toán tại quầy',
+              onTap: () => Navigator.pop(context, 'CASH'),
+            ),
         ],
       ),
     );
@@ -1620,27 +1648,35 @@ class _MethodTile extends StatelessWidget {
       opacity: enabled ? 1 : 0.5,
       child: Container(
         margin: const EdgeInsets.only(bottom: 10),
-        decoration: BoxDecoration(
+        // Nền/viền đặt trên Material (không phải DecoratedBox) để ListTile vẽ
+        // được hiệu ứng chạm — tránh assertion "ink splashes may be invisible".
+        child: Material(
           color: opsSurface,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: opsBorder),
-        ),
-        child: ListTile(
-          enabled: enabled,
-          onTap: enabled ? onTap : null,
-          leading: Icon(icon, color: opsPrimary),
-          title: Text(
-            title,
-            style: const TextStyle(fontWeight: FontWeight.w700, color: opsDark),
+          clipBehavior: Clip.antiAlias,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
+            side: const BorderSide(color: opsBorder),
           ),
-          subtitle: Text(
-            subtitle,
-            style: const TextStyle(fontSize: 12, color: opsMutedText),
-          ),
-          trailing: const Icon(
-            LucideIcons.chevronRight,
-            size: 18,
-            color: opsMutedText,
+          child: ListTile(
+            enabled: enabled,
+            onTap: enabled ? onTap : null,
+            leading: Icon(icon, color: opsPrimary),
+            title: Text(
+              title,
+              style: const TextStyle(
+                fontWeight: FontWeight.w700,
+                color: opsDark,
+              ),
+            ),
+            subtitle: Text(
+              subtitle,
+              style: const TextStyle(fontSize: 12, color: opsMutedText),
+            ),
+            trailing: const Icon(
+              LucideIcons.chevronRight,
+              size: 18,
+              color: opsMutedText,
+            ),
           ),
         ),
       ),
