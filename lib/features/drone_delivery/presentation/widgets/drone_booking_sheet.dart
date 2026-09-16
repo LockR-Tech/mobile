@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:smart_laundry_locker/core/config/business_config_provider.dart';
 import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
+import 'package:smart_laundry_locker/features/locker_ops/presentation/utils/business_rules_text.dart';
+import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/ops_widgets.dart';
 
 typedef DroneOrderCreator = Future<Map<String, dynamic>> Function({
   required int destinationLockerId,
@@ -40,7 +43,8 @@ class DroneBookingSheet extends StatefulWidget {
   State<DroneBookingSheet> createState() => _DroneBookingSheetState();
 }
 
-class _DroneBookingSheetState extends State<DroneBookingSheet> {
+class _DroneBookingSheetState extends State<DroneBookingSheet>
+    with BusinessConfigStateMixin {
   final _descController = TextEditingController();
   bool _submitting = false;
 
@@ -95,7 +99,7 @@ class _DroneBookingSheetState extends State<DroneBookingSheet> {
         destinationLockerId: lockerId,
         preferredBoxId: preferredBoxId,
         description: description,
-        parcelWeightGrams: 1200,
+        parcelWeightGrams: businessConfig.droneDefaultParcelWeightGrams,
         paymentMethod: 'CASH',
         idempotencyKey: 'drone-$lockerId-$preferredBoxId-${DateTime.now().microsecondsSinceEpoch}',
       );
@@ -253,9 +257,9 @@ class _DroneBookingSheetState extends State<DroneBookingSheet> {
                   color: Colors.green.shade50,
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: const Text(
-                  '15.000đ',
-                  style: TextStyle(
+                child: Text(
+                  fmtPrice(businessConfig.droneDeliveryFee),
+                  style: const TextStyle(
                     color: Colors.green,
                     fontWeight: FontWeight.w600,
                     fontSize: 12,
@@ -263,6 +267,11 @@ class _DroneBookingSheetState extends State<DroneBookingSheet> {
                 ),
               ),
             ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            dronePickupPolicyText(businessConfig),
+            style: const TextStyle(fontSize: 12, color: Colors.grey),
           ),
           const SizedBox(height: 20),
 

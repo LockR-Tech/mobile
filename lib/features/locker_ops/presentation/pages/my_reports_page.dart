@@ -3,14 +3,21 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
+import 'package:smart_laundry_locker/core/config/business_config_service.dart';
 import 'package:smart_laundry_locker/core/media/media.dart';
 import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/ops_widgets.dart';
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
 
-/// Tối đa ảnh REPORT trên 1 phiếu / mỗi lần bổ sung (hợp đồng media-storage).
+/// Tối đa ảnh REPORT trên 1 phiếu (hợp đồng media-storage). Backend không công
+/// khai quy tắc này qua `/api/settings/locker/public` nên app giữ mặc định;
+/// server vẫn chặn nếu admin đổi.
 const _maxReportPhotosPerReport = 10;
-const _maxReportPhotosPerRequest = 5;
+
+/// Tối đa ảnh mỗi lần bổ sung — admin cấu hình
+/// (`app.maintenance.report-photos-per-request-reporter`).
+int get _maxReportPhotosPerRequest =>
+    BusinessConfigService.instance.current.reportPhotosPerRequestReporter;
 
 /// View of the customer's own locker fault reports
 /// (`GET /api/lockers/my-reports`), so they can see claim/resolve progress
