@@ -43,6 +43,7 @@ class AttachmentStrip extends StatelessWidget {
 
   Widget _thumb(BuildContext context, int index) {
     final a = attachments[index];
+    final time = a.capturedAt ?? a.createdAt;
     return GestureDetector(
       onTap: () => showAttachmentViewer(
         context,
@@ -59,24 +60,63 @@ class AttachmentStrip extends StatelessWidget {
         ),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(9),
-          child: CachedNetworkImage(
-            imageUrl: a.previewUrl,
-            fit: BoxFit.cover,
-            memCacheWidth: (size * 3).round(),
-            placeholder: (_, _) => const Center(
-              child: SizedBox(
-                width: 18,
-                height: 18,
-                child: CircularProgressIndicator(strokeWidth: 2),
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              CachedNetworkImage(
+                imageUrl: a.previewUrl,
+                fit: BoxFit.cover,
+                memCacheWidth: (size * 3).round(),
+                placeholder: (_, _) => const Center(
+                  child: SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  ),
+                ),
+                errorWidget: (_, _, _) => const Center(
+                  child: Icon(
+                    Icons.broken_image_outlined,
+                    size: 22,
+                    color: _mutedText,
+                  ),
+                ),
               ),
-            ),
-            errorWidget: (_, _, _) => const Center(
-              child: Icon(
-                Icons.broken_image_outlined,
-                size: 22,
-                color: _mutedText,
-              ),
-            ),
+              if (time != null)
+                Positioned(
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 1.5),
+                    color: Colors.black.withValues(alpha: 0.75),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(
+                          Icons.access_time,
+                          size: 8,
+                          color: Colors.white,
+                        ),
+                        const SizedBox(width: 2),
+                        Flexible(
+                          child: Text(
+                            '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')} ${time.day.toString().padLeft(2, '0')}/${time.month.toString().padLeft(2, '0')}',
+                            style: const TextStyle(
+                              fontSize: 7.5,
+                              color: Colors.white,
+                              fontWeight: FontWeight.w600,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+            ],
           ),
         ),
       ),
