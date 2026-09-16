@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:smart_laundry_locker/core/config/business_config_service.dart';
@@ -2300,18 +2301,21 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
 
   Widget _reportCard(Map<String, dynamic> r) {
     final status = r['status'] as String? ?? '';
-    final assignedToMe = '${r['assignedToUserId'] ?? ''}' == (_myUserId ?? '');
     final lockerLabel = r['lockerName'] ?? 'Chưa tra được tên tủ';
     final boxLabel = r['boxNumber'] ?? r['boxId'];
     final createdAt = _parseDate(r['createdAt']);
-    final ageLabel = createdAt == null ? null : _ageLabel(createdAt);
     final (cleanedDesc, userPhotos) = _extractUserPhotosAndClean(
       r['description'],
       r['photoUrls'] ?? r['photos'],
     );
-    // Ảnh Cloudinary theo stage + ảnh cũ (URL dán trong mô tả) coi như REPORT.
+    final isNew = status == 'OPEN';
+    // Ảnh Cloudinary theo stage + ảnh cũ (URL dán trong mô tả) coi như REPORT kèm thời gian phiếu.
     final attachments = [
-      ...userPhotos.map(ReportAttachment.legacyUrl),
+      ...userPhotos.map((u) => ReportAttachment(
+            url: u,
+            stage: ReportStage.report,
+            createdAt: createdAt,
+          )),
       ...ReportAttachment.listFrom(r['attachments']),
     ];
     final hasInspection =
@@ -2320,19 +2324,62 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
       child: OpsCard(
+        onTap: () => _showReportDetailModal(r),
+        border: isNew
+            ? Border(
+                left: const BorderSide(color: Color(0xFFF59E0B), width: 5),
+                top: const BorderSide(color: Color(0xFFFDE68A)),
+                right: const BorderSide(color: Color(0xFFFDE68A)),
+                bottom: const BorderSide(color: Color(0xFFFDE68A)),
+              )
+            : null,
+        color: isNew ? const Color(0xFFFFFDF5) : null,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
                 Expanded(
-                  child: Text(
-                    '#${r['id']} · ${r['title'] ?? ''}',
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14,
-                      color: opsDark,
-                    ),
+                  child: Row(
+                    children: [
+                      if (isNew) ...[
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          margin: const EdgeInsets.only(right: 6),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF59E0B),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: const Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.bolt, color: Colors.white, size: 12),
+                              SizedBox(width: 2),
+                              Text(
+                                'MỚI',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 10,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                      Flexible(
+                        child: Text(
+                          '#${r['id']} · ${r['title'] ?? ''}',
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                            color: opsDark,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
                 StatusChip(status),
@@ -2342,46 +2389,35 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
               const SizedBox(height: 4),
               Text(
                 cleanedDesc,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
                 style: const TextStyle(fontSize: 12, color: opsMutedText),
               ),
             ],
-            if (attachments.isNotEmpty)
+            if (attachments.isNotEmpty) ...[
+              const SizedBox(height: 6),
               AttachmentStageGallery(
                 attachments: attachments,
                 labels: const {ReportStage.report: 'Ảnh người báo'},
                 accentColor: opsPrimary,
-                thumbSize: 72,
+                thumbSize: 64,
               ),
+            ],
             const SizedBox(height: 8),
+
+            // Tinh gọn pills cốt lõi trên danh sách
             Wrap(
               spacing: 8,
               runSpacing: 6,
               children: [
                 _MiniPill(
                   icon: Icons.inventory_2_outlined,
-                  text:
-                      '$lockerLabel${boxLabel != null ? ' · ô $boxLabel' : ''}',
+                  text: '$lockerLabel${boxLabel != null ? ' · ô $boxLabel' : ''}',
                 ),
                 if (createdAt != null)
                   _MiniPill(
                     icon: Icons.access_time,
                     text: _formatFullDateTime(createdAt),
-                  ),
-                if ((r['reporterName'] ?? '').toString().isNotEmpty ||
-                    (r['reporterPhone'] ?? '').toString().isNotEmpty)
-                  _MiniPill(
-                    icon: Icons.person_outline,
-                    text: [
-                      if ((r['reporterName'] ?? '').toString().isNotEmpty)
-                        r['reporterName'].toString(),
-                      if ((r['reporterPhone'] ?? '').toString().isNotEmpty)
-                        r['reporterPhone'].toString(),
-                    ].join(' · '),
-                  ),
-                if ((r['cellType'] ?? '').toString().isNotEmpty)
-                  _MiniPill(
-                    icon: Icons.grid_view_outlined,
-                    text: r['cellType'].toString(),
                   ),
                 if (r['overdue'] == true)
                   const _MiniPill(
@@ -2389,42 +2425,46 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                     text: 'Quá hạn SLA',
                     color: Color(0xFFDC2626),
                   ),
-                if (ageLabel != null)
-                  _MiniPill(
-                    icon: Icons.schedule,
-                    text: ageLabel,
-                    color: r['overdue'] == true
-                        ? const Color(0xFFDC2626)
-                        : _slaColor(createdAt!),
-                  ),
-                if (r['assignedToUserId'] != null)
-                  _MiniPill(
-                    icon: Icons.engineering_outlined,
-                    text:
-                        'KTV #${r['assignedToUserId']}${assignedToMe ? ' (bạn)' : ''}',
-                  ),
               ],
             ),
-            if ((r['lockerAddress'] ?? '').toString().isNotEmpty) ...[
-              const SizedBox(height: 8),
-              Row(
-                children: [
-                  const Icon(
-                    Icons.location_on_outlined,
-                    size: 15,
-                    color: opsMutedText,
-                  ),
-                  const SizedBox(width: 4),
-                  Expanded(
-                    child: Text(
-                      r['lockerAddress'].toString(),
-                      style: const TextStyle(fontSize: 12, color: opsMutedText),
+
+            // Gợi ý bấm mở modal chi tiết
+            Container(
+              margin: const EdgeInsets.only(top: 8),
+              decoration: BoxDecoration(
+                color: opsPrimary.withValues(alpha: 0.07),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: opsPrimary.withValues(alpha: 0.2)),
+              ),
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: () => _showReportDetailModal(r),
+                  borderRadius: BorderRadius.circular(8),
+                  child: const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                    child: Row(
+                      children: [
+                        Icon(Icons.info_outline, size: 14, color: opsPrimary),
+                        SizedBox(width: 6),
+                        Text(
+                          'Xem chi tiết đầy đủ thông tin phiếu',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: opsPrimary,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        Spacer(),
+                        Icon(Icons.chevron_right, size: 16, color: opsPrimary),
+                      ],
                     ),
                   ),
-                ],
+                ),
               ),
-            ],
-            const SizedBox(height: 8),
+            ),
+
+            const SizedBox(height: 6),
             Wrap(
               alignment: WrapAlignment.end,
               spacing: 8,
@@ -2441,13 +2481,24 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                   label: const Text('Nhật ký', style: TextStyle(color: opsPrimary)),
                 ),
                 if (status == 'OPEN')
-                  TextButton.icon(
+                  ElevatedButton.icon(
                     onPressed: () => _run(
                       () => _service.claimReport(r['id'] as int),
                       'Đã nhận việc',
                     ),
-                    icon: const Icon(Icons.pan_tool_alt, size: 16, color: opsPrimary),
-                    label: const Text('Nhận việc', style: TextStyle(color: opsPrimary)),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFF59E0B),
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      elevation: 1,
+                    ),
+                    icon: const Icon(Icons.pan_tool_alt, size: 15),
+                    label: const Text(
+                      'Nhận việc ngay',
+                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                    ),
                   ),
                 if (status == 'IN_PROGRESS')
                   TextButton.icon(
@@ -2485,6 +2536,480 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
         ),
       ),
     );
+  }
+
+  /// Modal BottomSheet hiển thị toàn bộ 100% thông tin chi tiết của phiếu sự cố
+  void _showReportDetailModal(Map<String, dynamic> r) {
+    final status = r['status'] as String? ?? '';
+    final assignedToMe = '${r['assignedToUserId'] ?? ''}' == (_myUserId ?? '');
+    final lockerLabel = r['lockerName'] ?? 'Chưa tra được tên tủ';
+    final boxLabel = r['boxNumber'] ?? r['boxId'];
+    final createdAt = _parseDate(r['createdAt']);
+    final ageLabel = createdAt == null ? null : _ageLabel(createdAt);
+    final (cleanedDesc, userPhotos) = _extractUserPhotosAndClean(
+      r['description'],
+      r['photoUrls'] ?? r['photos'],
+    );
+    final attachments = [
+      ...userPhotos.map((u) => ReportAttachment(
+            url: u,
+            stage: ReportStage.report,
+            createdAt: createdAt,
+          )),
+      ...ReportAttachment.listFrom(r['attachments']),
+    ];
+    final hasInspection =
+        attachments.any((a) => a.stage == ReportStage.inspection);
+    final reporterName = (r['reporterName'] ?? '').toString().trim();
+    final reporterPhone = (r['reporterPhone'] ?? '').toString().trim();
+    final lockerAddress = (r['lockerAddress'] ?? '').toString().trim();
+    final cellType = (r['cellType'] ?? '').toString().trim();
+    final overdue = r['overdue'] == true;
+
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (ctx) {
+        return SafeArea(
+          top: false,
+          child: SizedBox(
+            height: MediaQuery.of(ctx).size.height * 0.85,
+            child: Column(
+              children: [
+                // Drag handle
+                Center(
+                  child: Container(
+                    margin: const EdgeInsets.only(top: 12, bottom: 8),
+                    width: 44,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade300,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ),
+                // Header
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              '#${r['id']} · ${r['title'] ?? ''}',
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: opsDark,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              'Hồ sơ chi tiết phiếu sự cố kỹ thuật',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey.shade600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      StatusChip(status),
+                      IconButton(
+                        icon: const Icon(Icons.close),
+                        onPressed: () => Navigator.pop(ctx),
+                      ),
+                    ],
+                  ),
+                ),
+                const Divider(height: 1),
+                // Scrollable body
+                Expanded(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.all(18),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Badges row
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 6,
+                          children: [
+                            if (overdue)
+                              const _MiniPill(
+                                icon: Icons.warning_amber_rounded,
+                                text: 'Quá hạn SLA',
+                                color: Color(0xFFDC2626),
+                              ),
+                            if (ageLabel != null)
+                              _MiniPill(
+                                icon: Icons.schedule,
+                                text: ageLabel,
+                                color: overdue
+                                    ? const Color(0xFFDC2626)
+                                    : (createdAt != null ? _slaColor(createdAt) : opsPrimary),
+                              ),
+                          if (r['assignedToUserId'] != null)
+                            _MiniPill(
+                              icon: Icons.engineering_outlined,
+                              text: 'KTV #${r['assignedToUserId']}${assignedToMe ? ' (bạn)' : ''}',
+                            ),
+                          if (createdAt != null)
+                            _MiniPill(
+                              icon: Icons.access_time,
+                              text: 'Tạo lúc: ${_formatFullDateTime(createdAt)}',
+                            ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Location & Locker card
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(14),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF8FAFC),
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(color: const Color(0xFFE2E8F0)),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                const Icon(Icons.inventory_2_outlined, size: 16, color: opsPrimary),
+                                const SizedBox(width: 6),
+                                Expanded(
+                                  child: Text(
+                                    '$lockerLabel${boxLabel != null ? ' · Ô #$boxLabel' : ''}${cellType.isNotEmpty ? ' ($cellType)' : ''}',
+                                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: opsDark),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            if (lockerAddress.isNotEmpty) ...[
+                              const SizedBox(height: 8),
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Icon(Icons.location_on_outlined, size: 15, color: opsMutedText),
+                                  const SizedBox(width: 6),
+                                  Expanded(
+                                    child: Text(
+                                      lockerAddress,
+                                      style: const TextStyle(fontSize: 12, color: opsMutedText),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                            const SizedBox(height: 10),
+                            Align(
+                              alignment: Alignment.centerRight,
+                              child: OutlinedButton.icon(
+                                onPressed: () {
+                                  Navigator.pop(ctx);
+                                  _openDirections(r);
+                                },
+                                icon: const Icon(Icons.near_me_outlined, size: 14, color: opsPrimary),
+                                label: const Text(
+                                  'Chỉ đường tới tủ',
+                                  style: TextStyle(fontSize: 12, color: opsPrimary, fontWeight: FontWeight.w600),
+                                ),
+                                style: OutlinedButton.styleFrom(
+                                  visualDensity: VisualDensity.compact,
+                                  side: BorderSide(color: opsPrimary.withValues(alpha: 0.35)),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 14),
+
+                      // Reporter info card
+                      if (reporterName.isNotEmpty || reporterPhone.isNotEmpty) ...[
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(14),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF8FAFC),
+                            borderRadius: BorderRadius.circular(14),
+                            border: Border.all(color: const Color(0xFFE2E8F0)),
+                          ),
+                          child: Row(
+                            children: [
+                              CircleAvatar(
+                                radius: 18,
+                                backgroundColor: opsPrimary.withValues(alpha: 0.1),
+                                child: const Icon(Icons.person, size: 20, color: opsPrimary),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      reporterName.isNotEmpty ? reporterName : 'Khách hàng',
+                                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: opsDark),
+                                    ),
+                                    if (reporterPhone.isNotEmpty)
+                                      Text(
+                                        reporterPhone,
+                                        style: const TextStyle(fontSize: 12, color: opsMutedText, fontFamily: 'monospace'),
+                                      ),
+                                  ],
+                                ),
+                              ),
+                              if (reporterPhone.isNotEmpty)
+                                IconButton(
+                                  icon: const Icon(Icons.copy, size: 18, color: opsPrimary),
+                                  tooltip: 'Sao chép SĐT',
+                                  onPressed: () {
+                                    Clipboard.setData(ClipboardData(text: reporterPhone));
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(content: Text('Đã sao chép số điện thoại')),
+                                    );
+                                  },
+                                ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 14),
+                      ],
+
+                      // Description
+                      if (cleanedDesc.isNotEmpty) ...[
+                        const Text(
+                          'Nội dung khách phản ánh:',
+                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: opsDark),
+                        ),
+                        const SizedBox(height: 6),
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF1F5F9),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Text(
+                            cleanedDesc,
+                            style: const TextStyle(fontSize: 13, color: opsDark, height: 1.4),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                      ],
+
+                      // Full stage attachments with timestamps
+                      if (attachments.isNotEmpty) ...[
+                        const Text(
+                          'Hình ảnh minh chứng theo giai đoạn:',
+                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: opsDark),
+                        ),
+                        const SizedBox(height: 8),
+                        AttachmentStageGallery(
+                          attachments: attachments,
+                          labels: const {
+                            ReportStage.report: 'Ảnh người báo',
+                            ReportStage.inspection: 'Ảnh KTV xác nhận',
+                            ReportStage.progress: 'Ảnh quá trình sửa',
+                            ReportStage.resolution: 'Ảnh nghiệm thu',
+                          },
+                          accentColor: opsPrimary,
+                          thumbSize: 76,
+                        ),
+                        const SizedBox(height: 16),
+                      ],
+                    ],
+                  ),
+                ),
+              ),
+
+              // Bottom action buttons in modal
+              Container(
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  border: Border(top: BorderSide(color: Colors.grey.shade200)),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.04),
+                      blurRadius: 8,
+                      offset: const Offset(0, -3),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Hàng 1: Nút hành động nghiệp vụ chính (Primary Workflow)
+                    if (status == 'OPEN')
+                      SizedBox(
+                        width: double.infinity,
+                        height: 46,
+                        child: ElevatedButton.icon(
+                          onPressed: () {
+                            Navigator.pop(ctx);
+                            _run(
+                              () => _service.claimReport(r['id'] as int),
+                              'Đã nhận việc',
+                            );
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFFF59E0B),
+                            foregroundColor: Colors.white,
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          icon: const Icon(Icons.pan_tool_alt, size: 16),
+                          label: const Text(
+                            'Nhận việc ngay',
+                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                          ),
+                        ),
+                      ),
+                    if (status == 'IN_PROGRESS')
+                      Row(
+                        children: [
+                          Expanded(
+                            child: SizedBox(
+                              height: 46,
+                              child: ElevatedButton.icon(
+                                onPressed: () {
+                                  Navigator.pop(ctx);
+                                  _inspectionFlow(r);
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFFD97706),
+                                  foregroundColor: Colors.white,
+                                  elevation: 0,
+                                  padding: const EdgeInsets.symmetric(horizontal: 6),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                ),
+                                icon: const Icon(Icons.add_a_photo_outlined, size: 16),
+                                label: Text(
+                                  hasInspection ? 'Bổ sung ảnh' : 'Xác nhận hiện trường',
+                                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12.5),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: SizedBox(
+                              height: 46,
+                              child: ElevatedButton.icon(
+                                onPressed: () {
+                                  Navigator.pop(ctx);
+                                  _confirmResolveReport(r);
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFF16A34A),
+                                  foregroundColor: Colors.white,
+                                  elevation: 0,
+                                  padding: const EdgeInsets.symmetric(horizontal: 6),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                ),
+                                icon: const Icon(Icons.check_circle_outline, size: 16),
+                                label: const Text(
+                                  'Hoàn tất xử lý',
+                                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12.5),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    if (status == 'OPEN' || status == 'IN_PROGRESS')
+                      const SizedBox(height: 10),
+
+                    // Hàng 2: Nút tiện ích phụ (Chỉ đường + Nhật ký xử lý)
+                    Row(
+                      children: [
+                        Expanded(
+                          child: SizedBox(
+                            height: 38,
+                            child: OutlinedButton.icon(
+                              onPressed: () {
+                                Navigator.pop(ctx);
+                                _openDirections(r);
+                              },
+                              icon: const Icon(Icons.map_outlined, size: 15),
+                              label: const Text(
+                                'Chỉ đường',
+                                style: TextStyle(fontSize: 12.5),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: opsPrimary,
+                                side: BorderSide(color: opsPrimary.withValues(alpha: 0.35)),
+                                padding: const EdgeInsets.symmetric(horizontal: 6),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: SizedBox(
+                            height: 38,
+                            child: OutlinedButton.icon(
+                              onPressed: () {
+                                Navigator.pop(ctx);
+                                _reportLogSheet(r);
+                              },
+                              icon: const Icon(Icons.history_edu_outlined, size: 15),
+                              label: const Text(
+                                'Nhật ký xử lý',
+                                style: TextStyle(fontSize: 12.5),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: opsDark,
+                                side: BorderSide(color: Colors.grey.shade300),
+                                padding: const EdgeInsets.symmetric(horizontal: 6),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    },
+  );
   }
 
   /// KTV tới nơi: chụp ảnh INSPECTION xác nhận hiện trạng (+ ghi chú tuỳ chọn).
