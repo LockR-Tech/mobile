@@ -1638,7 +1638,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
-                          '${a['lockerName'] ?? 'Tủ ${a['lockerId']}'} · Ô #${a['boxNumber']} (${a['cellType']})',
+                          '${a['lockerName'] ?? 'Chưa tra được tên tủ'} · Ô #${a['boxNumber']} (${a['cellType']})',
                           style: const TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 14,
@@ -1715,7 +1715,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
-                              '${f['lockerName'] ?? 'Tủ ${f['lockerId']}'} · Ô #${f['boxNumber']} (${f['cellType']})',
+                              '${f['lockerName'] ?? 'Chưa tra được tên tủ'} · Ô #${f['boxNumber']} (${f['cellType']})',
                               style: const TextStyle(
                                 fontWeight: FontWeight.bold,
                                 fontSize: 14,
@@ -2065,7 +2065,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
     final isDrone = s['droneUnitId'] != null;
     final targetLabel = isDrone 
         ? 'Drone ${s['droneCode'] ?? s['droneUnitId']}' 
-        : (s['lockerName'] ?? 'Tủ ${s['lockerId']}');
+        : (s['lockerName'] ?? 'Chưa tra được tên tủ');
     final targetIcon = isDrone ? Icons.flight_takeoff : Icons.inventory_2_outlined;
     final nextDue = _fmtDate(s['nextDueAt']);
     final lastDone = _fmtDate(s['lastDoneAt']);
@@ -2301,7 +2301,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
   Widget _reportCard(Map<String, dynamic> r) {
     final status = r['status'] as String? ?? '';
     final assignedToMe = '${r['assignedToUserId'] ?? ''}' == (_myUserId ?? '');
-    final lockerLabel = r['lockerName'] ?? 'Tủ ${r['lockerId']}';
+    final lockerLabel = r['lockerName'] ?? 'Chưa tra được tên tủ';
     final boxLabel = r['boxNumber'] ?? r['boxId'];
     final createdAt = _parseDate(r['createdAt']);
     final ageLabel = createdAt == null ? null : _ageLabel(createdAt);

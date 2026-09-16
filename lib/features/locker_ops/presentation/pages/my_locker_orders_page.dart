@@ -121,6 +121,16 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
     return _activeReportsByBox[boxId];
   }
 
+  /// Số ô in trên tủ, tra từ sơ đồ tủ đã tải. Dùng cho MỌI câu thông báo cho người
+  /// dùng: `boxId` là mã nội bộ, nói "ô 701" thì người ta ra tủ không tìm thấy ô nào.
+  String _boxLabelFor(Map<String, dynamic> order, int? boxId) {
+    final lockerId = _asInt(order['lockerId']);
+    final number = (lockerId == null || boxId == null)
+        ? null
+        : _lockerBoxesMap[lockerId]?[boxId];
+    return number == null ? 'ô này' : 'ô số $number';
+  }
+
   static DateTime? _parseOrderDate(Map<String, dynamic> o) {
     final raw = o['createdAt'] ?? o['updatedAt'] ?? o['pickupDeadline'];
     if (raw == null) return null;
@@ -300,7 +310,11 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
     }
   }
 
-  Future<void> _reportDialog({required int orderId, int? boxId}) async {
+  Future<void> _reportDialog({
+    required int orderId,
+    /// Nhãn ô cho người đọc (`ô số 4`), đã tra sẵn từ sơ đồ tủ.
+    String boxLabel = 'ô này',
+  }) async {
     final reasonCtrl = TextEditingController();
     // Ảnh hiện trường stage REPORT — tối đa theo cấu hình admin.
     final photos = PhotoPickerController(
@@ -424,9 +438,7 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
           ..showSnackBar(
             SnackBar(
               content: Text(
-                boxId == null
-                    ? 'Đã gửi báo lỗi cho đơn này — đội bảo trì sẽ xử lý'
-                    : 'Đã gửi báo lỗi cho ô $boxId — đội bảo trì sẽ xử lý',
+                'Đã gửi báo lỗi cho $boxLabel — đội bảo trì sẽ xử lý',
               ),
               action: SnackBarAction(
                 label: 'Xem',
@@ -571,7 +583,8 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
       _snack('Đơn chưa có thông tin ô/PIN để mở tủ.');
       return;
     }
-    _snack('Đang gửi lệnh mở ô $boxId tới tủ...');
+    final boxLabel = _boxLabelFor(order, boxId);
+    _snack('Đang gửi lệnh mở $boxLabel tới tủ...');
     try {
       // Backend chờ phản hồi phần cứng qua MQTT rồi mới trả: accepted=true
       // nghĩa là cabinet đã xác nhận MỞ CỬA thật (không phải chỉ nhận lệnh).
@@ -580,8 +593,8 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
       final msg = res['message']?.toString();
       _snack(
         accepted
-            ? 'Tủ đã mở ô $boxId — mời bạn thao tác rồi đóng cửa.'
-            : 'Không mở được ô $boxId${msg != null && msg.isNotEmpty ? ': $msg' : ''}',
+            ? 'Tủ đã mở $boxLabel — mời bạn thao tác rồi đóng cửa.'
+            : 'Không mở được $boxLabel${msg != null && msg.isNotEmpty ? ': $msg' : ''}',
       );
       if (accepted) await _load();
     } catch (e) {
@@ -682,7 +695,10 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
               Navigator.pop(ctx);
               final orderId = _asInt(order['id']);
               if (orderId == null) return;
-              await _reportDialog(orderId: orderId, boxId: boxId);
+              await _reportDialog(
+                orderId: orderId,
+                boxLabel: _boxLabelFor(order, boxId),
+              );
             },
             onCancel: (id) async {
               Navigator.pop(ctx);
@@ -937,7 +953,6 @@ class _OrderCard extends StatelessWidget {
     final type = order['type'] as String?;
     final rawStatus = order['status'] as String?;
     final status = _displayStatus(order, rawStatus);
-    final boxId = order['sendBoxId'] ?? order['receiveBoxId'];
     final deadline = order['pickupDeadline'];
     final overdue =
         isOverdue(deadline) &&
@@ -1005,13 +1020,13 @@ class _OrderCard extends StatelessWidget {
                         // Route: Tủ and Ô
                         _RouteRow(
                           isOrigin: true,
-                          text: lockerName ?? 'Tủ ${order['lockerId'] ?? '-'}',
+                          text: lockerName ?? 'Chưa tra được tên tủ',
                         ),
                         const SizedBox(height: 8),
                         _RouteRow(
                           isOrigin: false,
                           text:
-                              'Ô ${sendBoxNumber ?? receiveBoxNumber ?? boxId ?? '-'}',
+                              _orderBoxLabel(sendBoxNumber: sendBoxNumber, receiveBoxNumber: receiveBoxNumber),
                         ),
                         const SizedBox(height: 14),
                         // Price + action
@@ -1109,7 +1124,6 @@ class _OrderCard extends StatelessWidget {
                   boxLabel: _orderBoxLabel(
                     sendBoxNumber: sendBoxNumber,
                     receiveBoxNumber: receiveBoxNumber,
-                    boxId: boxId,
                   ),
                 ),
               ),
@@ -1281,12 +1295,25 @@ Map<int, Map<String, dynamic>> _activeReportsByBoxMap(
   return active;
 }
 
+/// `4`, `4 → 7`, hoặc `Chưa gán ô` — cho dòng "Ô" ở bảng chi tiết.
+String _boxRouteLabel(int? sendBoxNumber, int? receiveBoxNumber) {
+  if (sendBoxNumber == null && receiveBoxNumber == null) return 'Chưa gán ô';
+  if (sendBoxNumber != null && receiveBoxNumber != null) {
+    return '$sendBoxNumber → $receiveBoxNumber';
+  }
+  return '${sendBoxNumber ?? receiveBoxNumber}';
+}
+
+/// `Ô số 4`, hoặc `Ô này` khi chưa gán ô.
+///
+/// CHỈ dùng số ô in trên tủ. Trước đây thiếu số ô thì rơi về `boxId` — mã nội bộ của
+/// bản ghi — nên màn hình hiện "Ô số 701" trong khi trên tủ không có ô nào số 701;
+/// người dùng đi tìm sẽ không thấy. Nói chung chung còn hơn nói một con số sai.
 String _orderBoxLabel({
   int? sendBoxNumber,
   int? receiveBoxNumber,
-  dynamic boxId,
 }) {
-  final label = sendBoxNumber ?? receiveBoxNumber ?? _asInt(boxId);
+  final label = sendBoxNumber ?? receiveBoxNumber;
   return label == null ? 'Ô này' : 'Ô số $label';
 }
 
@@ -1362,7 +1389,6 @@ class _DetailSheet extends StatelessWidget {
     final boxLabel = _orderBoxLabel(
       sendBoxNumber: sendBoxNumber,
       receiveBoxNumber: receiveBoxNumber,
-      boxId: boxId,
     );
     final rawAddress = locker?['address']?.toString().trim();
     final lockerAddress = (rawAddress == null || rawAddress.isEmpty)
@@ -1516,7 +1542,7 @@ class _DetailSheet extends StatelessWidget {
               OpsInfoRow(
                 icon: LucideIcons.warehouse,
                 label: 'Tủ',
-                value: lockerName ?? '${order['lockerId'] ?? '-'}',
+                value: lockerName ?? 'Chưa tra được tên tủ',
               ),
               // Địa chỉ nơi đặt tủ — người nhận cần biết đi đâu, không chỉ tủ tên gì.
               if (lockerAddress != null)
@@ -1525,11 +1551,12 @@ class _DetailSheet extends StatelessWidget {
                   label: 'Địa điểm',
                   value: lockerAddress,
                 ),
+              // Chỉ hiện SỐ Ô in trên tủ. Trước đây thiếu số ô thì rơi về `sendBoxId`
+              // — mã nội bộ — nên màn hình chỉ một con số không có trên tủ thật.
               OpsInfoRow(
                 icon: LucideIcons.grid3x3,
                 label: 'Ô',
-                value:
-                    '${sendBoxNumber ?? order['sendBoxId'] ?? '-'}${order['receiveBoxId'] != null ? ' → ${receiveBoxNumber ?? order['receiveBoxId']}' : ''}',
+                value: _boxRouteLabel(sendBoxNumber, receiveBoxNumber),
               ),
               if (deadline != null)
                 OpsInfoRow(
