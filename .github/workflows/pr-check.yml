@@ -1,0 +1,46 @@
+name: Kiểm tra PR
+
+# Chạy `flutter analyze` + `flutter test` trên mọi PR vào main.
+#
+# Trước đây repo chỉ kiểm tra SAU khi đã merge (`deploy-web.yml` chạy khi push vào
+# main), nên test hỏng chỉ chặn được deploy — code lỗi đã nằm trên `main` rồi.
+# Workflow này bắt lỗi trước khi merge.
+#
+# `analyze` không chặn merge vì kho còn nhiều cảnh báo cũ (baseline ~259 issue);
+# nó chỉ in ra để người review thấy PR có làm tăng thêm không. `test` thì chặn.
+on:
+  pull_request:
+    branches: [main]
+    paths-ignore:
+      - 'DEPLOY-LOG.md'
+      - 'docs/**'
+      - '**.md'
+  workflow_dispatch:
+
+concurrency:
+  group: mobile-pr-check-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.44.2'   # khớp deploy-web.yml và máy dev
+          channel: stable
+          cache: true
+
+      - name: Cài dependency
+        run: flutter pub get
+
+      - name: Kiểm tra tĩnh
+        run: flutter analyze --no-pub || true
+
+      - name: Chạy test
+        run: flutter test --no-pub
