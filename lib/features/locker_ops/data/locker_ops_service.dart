@@ -79,10 +79,19 @@ class LockerOpsService {
   Future<List<Map<String, dynamic>>> myOrders() =>
       _list('/api/orders/my-orders');
 
+  /// Lịch sử chuyển trạng thái của đơn, cũ trước mới sau.
+  /// Mỗi phần tử: `oldStatus`, `newStatus`, `changedByUserId`, `note`, `createdAt`
+  /// (`createdAt` là `LocalDateTime` UTC không offset, giống các trường thời gian khác).
+  Future<List<Map<String, dynamic>>> orderTimeline(int orderId) =>
+      _list('/api/orders/$orderId/timeline');
+
   Future<Map<String, dynamic>> createSend({
     required int lockerId,
     required String receiverPhone,
     String? receiverName,
+    /// Tuỳ chọn. Có email thì server gửi được mã mở tủ cho người nhận CHƯA có
+    /// tài khoản Lock.R, không phải chờ người gửi chuyển tay.
+    String? receiverEmail,
     String? note,
     String? promotionCode,
     String? size,
@@ -94,6 +103,7 @@ class LockerOpsService {
       'receiverPhone': receiverPhone,
       'receiverName': receiverName,
       'note': note,
+      if (receiverEmail != null) 'receiverEmail': receiverEmail,
       if (size != null) 'size': size,
       if (promotionCode != null) 'promotionCode': promotionCode,
     },

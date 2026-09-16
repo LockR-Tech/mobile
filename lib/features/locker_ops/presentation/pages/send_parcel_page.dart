@@ -45,6 +45,7 @@ class _SendParcelPageState extends State<SendParcelPage>
   final _formKey = GlobalKey<FormState>();
   final _phoneCtrl = TextEditingController();
   final _nameCtrl = TextEditingController();
+  final _emailCtrl = TextEditingController();
   final _noteCtrl = TextEditingController();
 
   /// Phí gửi hiển thị (admin cấu hình) — server tự tính tiền thật.
@@ -79,6 +80,7 @@ class _SendParcelPageState extends State<SendParcelPage>
   void dispose() {
     _phoneCtrl.dispose();
     _nameCtrl.dispose();
+    _emailCtrl.dispose();
     _noteCtrl.dispose();
     super.dispose();
   }
@@ -116,6 +118,8 @@ class _SendParcelPageState extends State<SendParcelPage>
         receiverPhone: _phoneCtrl.text.trim(),
         receiverName:
             _nameCtrl.text.trim().isEmpty ? null : _nameCtrl.text.trim(),
+        receiverEmail:
+            _emailCtrl.text.trim().isEmpty ? null : _emailCtrl.text.trim(),
         note: _noteCtrl.text.trim().isEmpty ? null : _noteCtrl.text.trim(),
         promotionCode: _promoCode,
         size: _size,
@@ -144,6 +148,11 @@ class _SendParcelPageState extends State<SendParcelPage>
       if (mounted) setState(() => _loading = false);
     }
   }
+
+  /// Kiểm tra sơ bộ ở phía app để bắt lỗi gõ nhầm ngay; server vẫn kiểm lại
+  /// (`@Email` trên `SendOrderRequest`) nên đây chỉ là lớp lọc cho dễ chịu.
+  static bool _looksLikeEmail(String value) =>
+      RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(value);
 
   String _sizeLabel(String size) => switch (size) {
         'SMALL' => 'Nhỏ',
@@ -296,6 +305,29 @@ class _SendParcelPageState extends State<SendParcelPage>
             controller: _nameCtrl,
             hint: 'Tên người nhận (tùy chọn)',
             icon: LucideIcons.idCard,
+          ),
+          const SizedBox(height: 10),
+          _field(
+            controller: _emailCtrl,
+            hint: 'Email người nhận (tùy chọn)',
+            icon: LucideIcons.mail,
+            keyboardType: TextInputType.emailAddress,
+            validator: (v) {
+              final email = v?.trim() ?? '';
+              if (email.isEmpty) return null;
+              return _looksLikeEmail(email) ? null : 'Email không hợp lệ';
+            },
+          ),
+          const SizedBox(height: 8),
+          // Nói thẳng người nhận có tự nhận được mã không: nếu không, người gửi
+          // phải chủ động chuyển mã, và họ chỉ làm vậy khi biết.
+          const OpsBanner(
+            tone: OpsBannerTone.info,
+            icon: LucideIcons.send,
+            text:
+                'Khi bạn bỏ hàng xong, hệ thống nhắn mã mở tủ tới số điện thoại '
+                'người nhận (và email nếu có). Người nhận đã có tài khoản Lock.R '
+                'còn nhận thêm thông báo trong app.',
           ),
           const SizedBox(height: 20),
           const OpsSectionLabel('Ghi chú', icon: LucideIcons.stickyNote),
