@@ -13,6 +13,7 @@ import 'package:smart_laundry_locker/features/transactions/presentation/pages/to
 import 'package:smart_laundry_locker/features/locker_ops/presentation/utils/business_rules_text.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/utils/locker_maps.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/ops_widgets.dart';
+import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/order_status_timeline.dart';
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
 
 /// All locker orders of the signed-in customer, with the full action set gated
@@ -32,7 +33,11 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
   late final LockerOpsService _service = widget.service ?? LockerOpsService();
   List<Map<String, dynamic>> _orders = [];
   Map<int, Map<int, int>> _lockerBoxesMap = {};
-  Map<int, String> _lockerNamesMap = {};
+
+  /// Bản ghi tủ đầy đủ theo `lockerId` (tên, địa chỉ, toạ độ) — trang vẫn gọi
+  /// `GET /api/lockers/{id}` sẵn, nên giữ cả bản ghi để bảng chi tiết hiện được
+  /// địa điểm đặt tủ mà không phải gọi mạng thêm lần nữa.
+  Map<int, Map<String, dynamic>> _lockersMap = {};
   Map<int, Map<String, dynamic>> _activeReportsByBox = {};
   bool _loading = true;
   String _typeFilter = 'ALL';
@@ -58,15 +63,13 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
       if (!mounted) return;
 
       final Map<int, Map<int, int>> lockerBoxesMap = {};
-      final Map<int, String> lockerNamesMap = {};
+      final Map<int, Map<String, dynamic>> lockersMap = {};
 
       for (final lId in lockerIds) {
         try {
           final info = await _service.locker(lId);
           debugPrint('Locker $lId info: $info');
-          if (info['name'] != null) {
-            lockerNamesMap[lId] = info['name'] as String;
-          }
+          lockersMap[lId] = info;
         } catch (e) {
           debugPrint('Locker $lId fetch error: $e');
         }
@@ -94,7 +97,7 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
       if (!mounted) return;
       setState(() {
         _lockerBoxesMap = lockerBoxesMap;
-        _lockerNamesMap = lockerNamesMap;
+        _lockersMap = lockersMap;
         _activeReportsByBox = _activeReportsByBoxMap(reports);
         _orders = orders;
       });
@@ -497,6 +500,13 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
     );
   }
 
+  /// Bản ghi tủ của đơn, `null` khi chưa tải được.
+  Map<String, dynamic>? _lockerOf(Map<String, dynamic> order) =>
+      _lockersMap[_asInt(order['lockerId'])];
+
+  String? _lockerNameOf(Map<String, dynamic> order) =>
+      _lockersMap[_asInt(order['lockerId'])]?['name']?.toString();
+
   Future<void> _openLockerDirections(Map<String, dynamic> order) async {
     final lockerId = _asInt(order['lockerId']);
     if (lockerId == null) {
@@ -504,7 +514,8 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
       return;
     }
     try {
-      final locker = await _service.locker(lockerId);
+      // Dùng bản ghi đã tải nếu có; chỉ gọi mạng khi cache chưa có tủ này.
+      final locker = _lockersMap[lockerId] ?? await _service.locker(lockerId);
       final opened = await openLockerDirections(
         latitude: _asDouble(locker['latitude']),
         longitude: _asDouble(locker['longitude']),
@@ -624,7 +635,8 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
           child: _DetailSheet(
             order: order,
             faultReport: _activeReportForOrder(order),
-            lockerName: _lockerNamesMap[_asInt(order['lockerId'])],
+            lockerName: _lockerNameOf(order),
+            locker: _lockerOf(order),
             sendBoxNumber:
                 _lockerBoxesMap[_asInt(order['lockerId'])]?[_asInt(
                   order['sendBoxId'],
@@ -794,8 +806,7 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
                               _OrderCard(
                                     order: o,
                                     faultReport: _activeReportForOrder(o),
-                                    lockerName:
-                                        _lockerNamesMap[_asInt(o['lockerId'])],
+                                    lockerName: _lockerNameOf(o),
                                     sendBoxNumber:
                                         _lockerBoxesMap[_asInt(
                                           o['lockerId'],
@@ -1284,6 +1295,7 @@ class _DetailSheet extends StatelessWidget {
     required this.order,
     this.faultReport,
     this.lockerName,
+    this.locker,
     this.sendBoxNumber,
     this.receiveBoxNumber,
     required this.onReorder,
@@ -1303,6 +1315,9 @@ class _DetailSheet extends StatelessWidget {
   final Map<String, dynamic> order;
   final Map<String, dynamic>? faultReport;
   final String? lockerName;
+
+  /// Bản ghi tủ đầy đủ để hiện địa điểm; `null` khi chưa tải được.
+  final Map<String, dynamic>? locker;
   final int? sendBoxNumber;
   final int? receiveBoxNumber;
   final void Function(int orderId) onReorder;
@@ -1349,6 +1364,10 @@ class _DetailSheet extends StatelessWidget {
       receiveBoxNumber: receiveBoxNumber,
       boxId: boxId,
     );
+    final rawAddress = locker?['address']?.toString().trim();
+    final lockerAddress = (rawAddress == null || rawAddress.isEmpty)
+        ? null
+        : rawAddress;
 
     final actions = <Widget>[
       if (isDroneDelivery &&
@@ -1499,6 +1518,13 @@ class _DetailSheet extends StatelessWidget {
                 label: 'Tủ',
                 value: lockerName ?? '${order['lockerId'] ?? '-'}',
               ),
+              // Địa chỉ nơi đặt tủ — người nhận cần biết đi đâu, không chỉ tủ tên gì.
+              if (lockerAddress != null)
+                OpsInfoRow(
+                  icon: LucideIcons.mapPin,
+                  label: 'Địa điểm',
+                  value: lockerAddress,
+                ),
               OpsInfoRow(
                 icon: LucideIcons.grid3x3,
                 label: 'Ô',
@@ -1538,6 +1564,10 @@ class _DetailSheet extends StatelessWidget {
           ),
         const SizedBox(height: 16),
         ...actions,
+        const SizedBox(height: 20),
+        const Divider(height: 1, color: opsBorder),
+        const SizedBox(height: 12),
+        OrderStatusTimeline(orderId: id),
         const SizedBox(height: 8),
       ],
     );
