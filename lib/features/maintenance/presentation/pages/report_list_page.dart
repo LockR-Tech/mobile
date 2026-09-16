@@ -1,3 +1,4 @@
+import 'package:smart_laundry_locker/core/media/media.dart';
 import 'package:smart_laundry_locker/core/network/api_client.dart';
 import 'package:smart_laundry_locker/features/maintenance/domain/entities/maintenance_report.dart';
 import 'package:smart_laundry_locker/features/maintenance/presentation/pages/create_report_page.dart';
@@ -279,6 +280,20 @@ class _ReportListPageState extends State<ReportListPage> {
                 ],
               ],
             ),
+            if (report.photoUrls.isNotEmpty) ...[
+              const SizedBox(height: 10),
+              AttachmentStageGallery(
+                attachments: report.photoUrls
+                    .map((u) => ReportAttachment(
+                          url: u,
+                          stage: ReportStage.report,
+                          createdAt: report.createdAt,
+                        ))
+                    .toList(),
+                accentColor: AISLShadcnTheme.navyPrimary,
+                thumbSize: 60,
+              ),
+            ],
             if (report.staffNote != null && report.staffNote!.isNotEmpty) ...[
               const Divider(height: 24),
               Container(
