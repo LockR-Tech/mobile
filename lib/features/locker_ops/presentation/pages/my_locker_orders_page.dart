@@ -299,7 +299,10 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
 
   Future<void> _reportDialog({required int orderId, int? boxId}) async {
     final reasonCtrl = TextEditingController();
-    final photos = PhotoPickerController(maxPhotos: 5);
+    // Ảnh hiện trường stage REPORT — tối đa theo cấu hình admin.
+    final photos = PhotoPickerController(
+      maxPhotos: businessConfig.reportPhotosPerRequestReporter,
+    );
     // Trạng thái dialog giữ ngoài builder để không bị reset khi dialog rebuild
     // (vd. bàn phím bật lên).
     var uploading = false;
@@ -331,9 +334,10 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
                     ),
                   ),
                   const SizedBox(height: 14),
-                  const Text(
-                    'Ảnh hiện trường (không bắt buộc, tối đa 5)',
-                    style: TextStyle(
+                  Text(
+                    'Ảnh hiện trường (không bắt buộc, tối đa '
+                    '${photos.maxPhotos})',
+                    style: const TextStyle(
                       fontSize: 12.5,
                       fontWeight: FontWeight.w700,
                       color: opsDark,

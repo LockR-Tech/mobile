@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:smart_laundry_locker/core/config/business_config_service.dart';
 import 'package:smart_laundry_locker/core/media/media.dart';
 import 'package:smart_laundry_locker/core/services/token_service.dart';
 import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
@@ -1415,7 +1416,11 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
     final boxId = _asInt(cell['id']);
     if (boxId == null) return;
     final reasonCtrl = TextEditingController(text: 'Hỏng khóa');
-    final photos = PhotoPickerController(maxPhotos: 5);
+    // Ảnh stage REPORT ⇒ giới hạn mỗi lần của người báo (admin cấu hình).
+    final photos = PhotoPickerController(
+      maxPhotos:
+          BusinessConfigService.instance.current.reportPhotosPerRequestReporter,
+    );
     var uploading = false;
     String? dialogError;
     List<Map<String, dynamic>> attachments = const [];
@@ -1444,9 +1449,9 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                     maxLines: 3,
                   ),
                   const SizedBox(height: 14),
-                  const Text(
-                    'Ảnh hiện trường (tuỳ chọn, tối đa 5)',
-                    style: TextStyle(
+                  Text(
+                    'Ảnh hiện trường (tuỳ chọn, tối đa ${photos.maxPhotos})',
+                    style: const TextStyle(
                       fontSize: 12.5,
                       fontWeight: FontWeight.bold,
                     ),
@@ -2917,10 +2922,16 @@ class _RepairLogSheet extends StatefulWidget {
   State<_RepairLogSheet> createState() => _RepairLogSheetState();
 }
 
+/// Số ảnh tối đa mỗi lần KTV gửi (INSPECTION/PROGRESS/RESOLUTION) — admin
+/// cấu hình qua `app.maintenance.report-photos-per-request-staff`.
+int get _staffPhotosPerRequest =>
+    BusinessConfigService.instance.current.reportPhotosPerRequestStaff;
+
 class _RepairLogSheetState extends State<_RepairLogSheet> {
   final _noteCtrl = TextEditingController();
-  // Ảnh tiến độ (stage PROGRESS) gắn vào dòng nhật ký — backend nhận ≤10.
-  final _photos = PhotoPickerController(maxPhotos: 10);
+  // Ảnh tiến độ (stage PROGRESS) gắn vào dòng nhật ký — tối đa theo cấu hình
+  // app.maintenance.report-photos-per-request-staff.
+  final _photos = PhotoPickerController(maxPhotos: _staffPhotosPerRequest);
   List<Map<String, dynamic>> _logs = const [];
   bool _loading = true;
   bool _sending = false;
@@ -3234,8 +3245,12 @@ class _ResolveVerificationSheetState extends State<_ResolveVerificationSheet> {
   final _noteCtrl = TextEditingController();
   // "Trước khi sửa" = ảnh INSPECTION (bỏ qua nếu phiếu đã có),
   // "Sau khi xong" = ảnh RESOLUTION gửi cùng lệnh Hoàn tất.
-  final _beforePhotos = PhotoPickerController(maxPhotos: 5);
-  final _afterPhotos = PhotoPickerController(maxPhotos: 10);
+  final _beforePhotos = PhotoPickerController(
+    maxPhotos: _staffPhotosPerRequest,
+  );
+  final _afterPhotos = PhotoPickerController(
+    maxPhotos: _staffPhotosPerRequest,
+  );
   late final List<ReportAttachment> _attachments =
       ReportAttachment.listFrom(widget.report['attachments']);
   late final List<ReportAttachment> _existingInspection = _attachments
@@ -3626,7 +3641,7 @@ class _InspectionSheetState extends State<_InspectionSheet> {
   static const _accent = Color(0xFFD97706);
 
   final _noteCtrl = TextEditingController();
-  final _photos = PhotoPickerController(maxPhotos: 10);
+  final _photos = PhotoPickerController(maxPhotos: _staffPhotosPerRequest);
   bool _submitting = false;
   String? _error;
 
@@ -3732,7 +3747,7 @@ class _InspectionSheetState extends State<_InspectionSheet> {
                 thumbSize: 80,
                 accentColor: _accent,
                 addLabel: 'Chụp ảnh',
-                helperText: 'Tối đa 10 ảnh',
+                helperText: 'Tối đa ${_photos.maxPhotos} ảnh',
               ),
               const SizedBox(height: 14),
               TextField(
