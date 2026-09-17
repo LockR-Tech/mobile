@@ -338,13 +338,11 @@ class _MBStyleTransactionItem extends StatelessWidget {
       decimalDigits: 0,
     ).format(transaction.balanceAfter);
 
-    final walletShort = transaction.walletId.length > 6
-        ? '${transaction.walletId.substring(0, 6)}xxx'
-        : transaction.walletId;
-
+    // Backend không trả walletId cho khách hàng (mỗi người chỉ có đúng một ví, không cần
+    // định danh) nên bỏ đoạn "VI xxxxxx|" khỏi mẫu tin nhắn kiểu SMS ngân hàng bên dưới.
     final title = isIncome ? 'Thông báo nạp tiền ví' : 'Thông báo biến động số dư';
     final content =
-        'VI $walletShort|GD: $amountSign$amountFmt|SD: $balanceFmt|ND: ${transaction.description}';
+        'GD: $amountSign$amountFmt|SD: $balanceFmt|ND: ${transaction.description}';
 
     return Container(
       decoration: BoxDecoration(

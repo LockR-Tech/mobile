@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
-import 'package:provider/provider.dart';
 import 'package:smart_laundry_locker/features/transactions/domain/entities/transaction.dart';
-import 'package:smart_laundry_locker/features/transactions/presentation/providers/transaction_provider.dart';
-import 'package:smart_laundry_locker/features/transactions/presentation/widgets/transaction_detail_skeleton.dart';
 import 'package:intl/intl.dart';
 
 class TransactionCard extends StatefulWidget {
@@ -17,35 +14,9 @@ class TransactionCard extends StatefulWidget {
 
 class _TransactionCardState extends State<TransactionCard> {
   bool _isExpanded = false;
-  bool _isLoadingDetail = false;
-
-  void _toggleExpand() async {
-    setState(() {
-      _isExpanded = !_isExpanded;
-    });
-
-    if (_isExpanded) {
-      final provider = Provider.of<TransactionProvider>(context, listen: false);
-      final cachedDetail = provider.getTransactionDetailFromCache(
-        widget.transaction.id,
-      );
-
-      if (cachedDetail == null) {
-        setState(() => _isLoadingDetail = true);
-        await provider.fetchTransactionDetail(widget.transaction.id);
-        if (mounted) {
-          setState(() => _isLoadingDetail = false);
-        }
-      }
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
-    final provider = Provider.of<TransactionProvider>(context);
-    final detail = provider.getTransactionDetailFromCache(
-      widget.transaction.id,
-    );
     final isIncome =
         widget.transaction.type == 'TOP_UP' ||
         widget.transaction.type == 'DEPOSIT';
@@ -61,7 +32,7 @@ class _TransactionCardState extends State<TransactionCard> {
       ),
       color: Colors.white,
       child: InkWell(
-        onTap: _toggleExpand,
+        onTap: () => setState(() => _isExpanded = !_isExpanded),
         borderRadius: BorderRadius.circular(12),
         child: Padding(
           padding: const EdgeInsets.all(16.0),
@@ -137,7 +108,8 @@ class _TransactionCardState extends State<TransactionCard> {
                 ],
               ),
 
-              // Expanded Content
+              // Expanded Content — dữ liệu đã có sẵn từ danh sách (GET /api/wallet/transactions
+              // trả đủ field cho mỗi giao dịch), không cần gọi lại API để lấy "chi tiết".
               if (_isExpanded)
                 AnimatedSize(
                   duration: const Duration(milliseconds: 300),
@@ -149,18 +121,10 @@ class _TransactionCardState extends State<TransactionCard> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Divider(),
-                        if (_isLoadingDetail)
-                          const TransactionDetailSkeleton()
-                        else if (detail != null)
-                          _buildDetailContent(detail)
-                        else
-                          const Padding(
-                            padding: EdgeInsets.symmetric(vertical: 16.0),
-                            child: Text(
-                              'Không thể tải chi tiết giao dịch',
-                              style: TextStyle(color: Colors.black87),
-                            ),
-                          ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 12.0),
+                          child: _buildDetailContent(widget.transaction),
+                        ),
                       ],
                     ),
                   ),
@@ -172,31 +136,30 @@ class _TransactionCardState extends State<TransactionCard> {
     );
   }
 
-  Widget _buildDetailContent(Transaction detail) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 12.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildDetailRow('Mã GD', detail.code),
+  Widget _buildDetailContent(Transaction tx) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (tx.referenceId != null && tx.referenceId!.isNotEmpty) ...[
+          _buildDetailRow('Mã GD', tx.referenceId!),
           const SizedBox(height: 8),
-          _buildDetailRow('Loại GD', detail.type),
-          const SizedBox(height: 8),
-          if (detail.orderId != null && detail.orderId!.isNotEmpty) ...[
-            _buildDetailRow('Mã Đơn hàng', detail.orderId!),
-            const SizedBox(height: 8),
-          ],
-          _buildDetailRow('Ví', detail.walletId),
-          const SizedBox(height: 8),
-          _buildDetailRow(
-            'Số dư sau GD',
-            NumberFormat.currency(
-              locale: 'vi_VN',
-              symbol: 'đ',
-            ).format(detail.balanceAfter),
-          ),
         ],
-      ),
+        _buildDetailRow('Loại GD', tx.type),
+        const SizedBox(height: 8),
+        // Mã đơn resolve sẵn từ order-service — cùng giá trị admin web thấy cho cùng
+        // biến động (xem WalletTransactionRefs / PaymentReferenceResolver ở payment-service).
+        if (tx.orderCode != null && tx.orderCode!.isNotEmpty) ...[
+          _buildDetailRow('Mã đơn hàng', tx.orderCode!),
+          const SizedBox(height: 8),
+        ],
+        _buildDetailRow(
+          'Số dư sau GD',
+          NumberFormat.currency(
+            locale: 'vi_VN',
+            symbol: 'đ',
+          ).format(tx.balanceAfter),
+        ),
+      ],
     );
   }
 

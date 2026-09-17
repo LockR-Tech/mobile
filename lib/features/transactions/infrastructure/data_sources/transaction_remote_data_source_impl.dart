@@ -1,7 +1,6 @@
 import 'package:smart_laundry_locker/core/network/api_client.dart';
 import 'package:flutter/foundation.dart';
 import '../models/paginated_transactions_model.dart';
-import '../models/transaction_model.dart';
 import 'transaction_remote_data_source.dart';
 
 class TransactionRemoteDataSourceImpl implements TransactionRemoteDataSource {
@@ -17,14 +16,12 @@ class TransactionRemoteDataSourceImpl implements TransactionRemoteDataSource {
     String? toDate,
     String? type,
   }) async {
-    final queryParams = <String, dynamic>{'page': page, 'limit': limit};
-    if (fromDate != null) queryParams['fromDate'] = fromDate;
-    if (toDate != null) queryParams['toDate'] = toDate;
-    if (type != null) queryParams['type'] = type;
-
+    // WalletController (payment-service) chỉ có GET /api/wallet/transactions, trả thẳng
+    // List<WalletTransactionResponse> — không phân trang, không lọc theo ngày/loại, không
+    // có endpoint chi tiết theo id. page/limit/fromDate/toDate/type giữ trong chữ ký hàm để
+    // không phải sửa toàn bộ tầng gọi phía trên, nhưng backend hiện bỏ qua hết.
     final response = await apiClient.get<Map<String, dynamic>>(
-      '/payments/transactions',
-      queryParameters: queryParams,
+      '/api/wallet/transactions',
     );
 
     if (response.data == null) {
@@ -32,30 +29,12 @@ class TransactionRemoteDataSourceImpl implements TransactionRemoteDataSource {
       throw ServerException('No data returned');
     }
 
-    debugPrint('[TX][ds] raw response body: ${response.data}');
-
-    final responseData = response.data!['data'] ?? response.data!;
-    debugPrint('[TX][ds] extracted responseData: $responseData');
-
-    return PaginatedTransactionsModel.fromJson(
-      responseData as Map<String, dynamic>,
-    );
-  }
-
-  @override
-  Future<TransactionModel> getTransactionDetail(String id) async {
-    final response = await apiClient.get<Map<String, dynamic>>(
-      '/payments/transactions/$id',
-    );
-
-    if (response.data == null) {
-      debugPrint('[TX][ds] detail ($id) response.data is NULL');
-      throw ServerException('No data returned');
+    final items = response.data!['data'];
+    if (items is! List) {
+      debugPrint('[TX][ds] unexpected response shape: ${response.data}');
+      throw ServerException('Unexpected response shape');
     }
 
-    debugPrint('[TX][ds] detail ($id) raw response body: ${response.data}');
-
-    final responseData = response.data!['data'] ?? response.data!;
-    return TransactionModel.fromJson(responseData as Map<String, dynamic>);
+    return PaginatedTransactionsModel.fromList(items);
   }
 }
