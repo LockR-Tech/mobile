@@ -248,18 +248,13 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
   }
 
   void _showKtvProfileSheet() {
-    final perf = _myPerformance;
     final calculatedOverdue = _myReports
         .where((r) => r['status'] == 'IN_PROGRESS' && _isReportOverdue(r))
         .length;
-    final myOverdue = (_asInt(perf?['overdue']) ?? calculatedOverdue);
-    final myResolved = (_asInt(perf?['resolved']) ??
-        _myReports.where((r) => r['status'] == 'RESOLVED').length);
-    final myInProgress = (_asInt(perf?['inProgress']) ??
-        _myReports.where((r) => r['status'] == 'IN_PROGRESS').length);
-    final myTotal = (_asInt(perf?['totalAssigned']) ??
-        _asInt(perf?['total']) ??
-        _myReports.length);
+    final myOverdue = calculatedOverdue;
+    final myResolved = _myReports.where((r) => r['status'] == 'RESOLVED').length;
+    final myInProgress = _myReports.where((r) => r['status'] == 'IN_PROGRESS').length;
+    final myTotal = _myReports.length;
     final avgRating = _ratingAverage?['average']?.toString() ?? '5.0';
     final ratingCount = _ratingAverage?['count']?.toString() ?? '0';
 
@@ -2160,27 +2155,14 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
   }
 
   Widget _buildShiftSummary() {
-    final perf = _myPerformance;
-    final calculatedOverdue = _myReports
+    // Đồng bộ chuẩn xác 100% với Web Admin Portal (technician-detail.tsx):
+    // Tính toán trực tiếp và nhất quán từ danh sách phiếu _myReports của KTV Kiosk
+    final totalAssigned = _myReports.length;
+    final inProgress = _myReports.where((r) => r['status'] == 'IN_PROGRESS').length;
+    final resolved = _myReports.where((r) => r['status'] == 'RESOLVED').length;
+    final overdue = _myReports
         .where((r) => r['status'] == 'IN_PROGRESS' && _isReportOverdue(r))
         .length;
-
-    // Đồng bộ 100% với Web Admin Portal (technician-detail.tsx):
-    // 1. Tổng ca phụ trách: ưu tiên từ myPerformance, hoặc tổng số phiếu phụ trách thực tế
-    final totalAssigned = (_asInt(perf?['totalAssigned']) ??
-        _asInt(perf?['total']) ??
-        _myReports.length);
-
-    // 2. Đang xử lý: các phiếu đang mở của KTV
-    final inProgress = (_asInt(perf?['inProgress']) ??
-        _myReports.where((r) => r['status'] == 'IN_PROGRESS').length);
-
-    // 3. Đã hoàn tất: số phiếu KTV đã giải quyết xong
-    final resolved = (_asInt(perf?['resolved']) ??
-        _myReports.where((r) => r['status'] == 'RESOLVED').length);
-
-    // 4. Trễ hạn SLA: số phiếu quá SLA (đồng bộ chuẩn xác với Admin portal)
-    final overdue = (_asInt(perf?['overdue']) ?? calculatedOverdue);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -2237,9 +2219,9 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
             tone: OpsBannerTone.success,
           ),
         ],
-        if (_myPerformance != null) ...[
+        if (_myReports.isNotEmpty || _myPerformance != null) ...[
           const SizedBox(height: 10),
-          _buildSlaPenaltyCard(_myPerformance!),
+          _buildSlaPenaltyCard(),
         ],
         const SizedBox(height: 10),
         const OpsBanner(
@@ -2252,19 +2234,16 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
     );
   }
 
-  Widget _buildSlaPenaltyCard(Map<String, dynamic> perf) {
-    // Đọc trực tiếp từ API myPerformance hoặc tính toán chuẩn xác từ danh sách phiếu
-    final calculatedOverdue = _myReports
+  Widget _buildSlaPenaltyCard() {
+    // Đồng bộ 100% với Web Admin Portal: tính toán chuẩn xác từ danh sách phiếu thực tế
+    final overdue = _myReports
         .where((r) => r['status'] == 'IN_PROGRESS' && _isReportOverdue(r))
         .length;
-    final overdue = (_asInt(perf['overdue']) ?? calculatedOverdue);
-    final inProgress = (_asInt(perf['inProgress']) ??
-        _myReports.where((r) => r['status'] == 'IN_PROGRESS').length);
-    final resolved = (_asInt(perf['resolved']) ??
-        _myReports.where((r) => r['status'] == 'RESOLVED').length);
+    final inProgress = _myReports.where((r) => r['status'] == 'IN_PROGRESS').length;
+    final resolved = _myReports.where((r) => r['status'] == 'RESOLVED').length;
 
     // Phân loại mức chế tài theo quy chuẩn Admin Portal:
-    String penaltyLevel = perf['penaltyLevel'] as String? ?? 'NORMAL';
+    String penaltyLevel = 'NORMAL';
     if (overdue >= 5) {
       penaltyLevel = 'SUSPENDED';
     } else if (overdue >= 3) {
@@ -2275,17 +2254,15 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
       penaltyLevel = 'NORMAL';
     }
 
-    String reason = perf['penaltyReason'] as String? ?? '';
-    if (reason.isEmpty || penaltyLevel == 'WARNING') {
-      if (overdue >= 5) {
-        reason = 'Vi phạm nghiêm trọng: có từ $overdue phiếu trễ hạn SLA. Đề xuất đình chỉ công tác & khóa tài khoản.';
-      } else if (overdue >= 3) {
-        reason = 'Hạn chế nhận việc: có $overdue phiếu trễ hạn SLA. Tạm ngưng phân công mới.';
-      } else if (overdue >= 1) {
-        reason = 'Cảnh báo thời gian SLA (Mức 1): Đang có $overdue phiếu sự cố bị quá hạn thời gian xử lý quy định (> 4 giờ). Cần đẩy nhanh tiến độ.';
-      } else {
-        reason = 'Hiệu suất hoạt động tốt, các sự cố phụ trách đều trong hạn SLA.';
-      }
+    String reason = '';
+    if (overdue >= 5) {
+      reason = 'Vi phạm nghiêm trọng: có từ $overdue phiếu trễ hạn SLA. Đề xuất đình chỉ công tác & khóa tài khoản.';
+    } else if (overdue >= 3) {
+      reason = 'Hạn chế nhận việc: có $overdue phiếu trễ hạn SLA. Tạm ngưng phân công mới.';
+    } else if (overdue >= 1) {
+      reason = 'Cảnh báo thời gian SLA (Mức 1): Đang có $overdue phiếu sự cố bị quá hạn thời gian xử lý quy định (> 4 giờ). Cần đẩy nhanh tiến độ.';
+    } else {
+      reason = 'Hiệu suất hoạt động tốt, các sự cố phụ trách đều trong hạn SLA (hoặc đã được phê duyệt gia hạn).';
     }
 
     Color bg;
@@ -2409,11 +2386,6 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
   Widget _buildMine() {
     final active = _myReports.where((r) => r['status'] != 'RESOLVED').toList();
     final done = _myReports.where((r) => r['status'] == 'RESOLVED').toList();
-    final overdueCount = _myReports
-        .where((r) => r['status'] == 'IN_PROGRESS' && _isReportOverdue(r))
-        .length;
-    final isRestricted =
-        _myPerformance?['penaltyLevel'] == 'RESTRICTED' || overdueCount >= 3;
     return RefreshIndicator(
       onRefresh: _load,
       child: ListView(
@@ -2422,17 +2394,6 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
           // 1. Toàn bộ tổng quan ca trực & thống kê KPI của KTV đưa về đây
           _buildShiftSummary(),
           const SizedBox(height: 14),
-
-          if (isRestricted) ...[
-            const OpsBanner(
-              tone: OpsBannerTone.danger,
-              icon: Icons.block,
-              text:
-                  'Tài khoản đang bị giới hạn nhận việc mới do có phiếu quá hạn. '
-                  'Vui lòng ưu tiên nghiệm thu và hoàn tất các phiếu dưới đây.',
-            ),
-            const SizedBox(height: 12),
-          ],
 
           if (active.isEmpty && done.isEmpty)
             const OpsEmptyState(
@@ -2843,32 +2804,35 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
       if (extDue != null) return extDue;
     }
 
-    final extHours = (r['slaExtendedHours'] as num? ?? 0).toInt();
+    final extHours = (_localSlaExtensions[reportId]?['extensionHours'] ??
+            r['slaExtendedHours'] as num? ??
+            0)
+        .toInt();
     final slaHours = (r['slaHours'] as num? ?? 4).toInt();
-    DateTime? dueAt = _parseDate(r['slaDueAt']);
+    final dueAt = _parseDate(r['slaDueAt']);
     final created = _parseDate(r['createdAt']);
+    final now = DateTime.now();
 
-    // 2. Nếu phiếu có số giờ gia hạn từ Admin (slaExtendedHours > 0)
+    // 2. Mốc gia hạn chuẩn xác từ Backend (Backend extendSla đã tính: now + extHours)
+    if (dueAt != null) {
+      return dueAt;
+    }
+
+    // 3. Nếu phiếu có số giờ gia hạn nhưng chưa có slaDueAt trong DB
     if (extHours > 0) {
-      if (dueAt != null) {
-        final baseDue = created != null
-            ? created.add(Duration(hours: slaHours + extHours))
-            : dueAt;
-        if (dueAt.isAfter(baseDue) || dueAt.isAtSameMomentAs(baseDue)) {
-          return dueAt;
-        }
-        return baseDue;
+      final reqAtStr = _localSlaExtensions[reportId]?['requestedAt'];
+      final reqAt = _parseDate(reqAtStr);
+      if (reqAt != null) {
+        return reqAt.add(Duration(hours: extHours));
       }
-      if (created != null) {
-        return created.add(Duration(hours: slaHours + extHours));
-      }
+      return now.add(Duration(hours: extHours));
     }
 
-    // 3. Chưa gia hạn: trả về slaDueAt hoặc createdAt + slaHours
-    if (dueAt == null && created != null) {
-      dueAt = created.add(Duration(hours: slaHours));
+    // 4. Chưa gia hạn: trả về createdAt + slaHours
+    if (created != null) {
+      return created.add(Duration(hours: slaHours));
     }
-    return dueAt;
+    return null;
   }
 
   bool _isReportOverdue(Map<String, dynamic> r) {
@@ -3338,12 +3302,11 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
     final lockerLabel = r['lockerName'] ?? 'Chưa tra được tên tủ';
     final boxLabel = r['boxNumber'] ?? r['boxId'];
     final createdAt = _parseDate(r['createdAt']);
-    final (cleanedDesc, userPhotos) = _extractUserPhotosAndClean(
+    final (_, userPhotos) = _extractUserPhotosAndClean(
       r['description'],
       r['photoUrls'] ?? r['photos'],
     );
     final isNew = status == 'OPEN';
-    // Ảnh Cloudinary theo stage + ảnh cũ (URL dán trong mô tả) coi như REPORT kèm thời gian phiếu.
     final attachments = [
       ...userPhotos.map((u) => ReportAttachment(
             url: u,
@@ -3361,350 +3324,356 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
     final isOverdue = _isReportOverdue(r);
 
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: OpsCard(
-        onTap: () => _showReportDetailModal(r),
-        border: isNew
-            ? Border(
-                left: const BorderSide(color: Color(0xFFF59E0B), width: 6),
-                top: const BorderSide(color: Color(0xFFFDE68A), width: 1.2),
-                right: const BorderSide(color: Color(0xFFFDE68A), width: 1.2),
-                bottom: const BorderSide(color: Color(0xFFFDE68A), width: 1.2),
-              )
-            : isOverdue
-                ? Border.all(color: const Color(0xFFFCA5A5), width: 1.2)
-                : isExtended
-                    ? Border.all(color: const Color(0xFFFDE68A), width: 1.4)
-                    : null,
-        color: isNew
-            ? const Color(0xFFFFFBEB)
-            : isOverdue
-                ? const Color(0xFFFEF2F2).withValues(alpha: 0.4)
-                : isExtended
-                    ? const Color(0xFFFFFBEB).withValues(alpha: 0.3)
-                    : null,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (isNew) ...[
-              Container(
-                margin: const EdgeInsets.only(bottom: 8),
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFFF59E0B), Color(0xFFD97706)],
-                  ),
-                  borderRadius: BorderRadius.circular(6),
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color(0xFFF59E0B).withValues(alpha: 0.3),
-                      blurRadius: 4,
-                      offset: const Offset(0, 1),
-                    ),
-                  ],
-                ),
-                child: const Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.bolt, color: Colors.white, size: 13),
-                    SizedBox(width: 3),
-                    Text(
-                      '⚡ MỚI PHÁT SINH · CẦN NHẬN VIỆC NGAY',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w800,
-                        fontSize: 10,
-                        letterSpacing: 0.4,
-                      ),
-                    ),
-                  ],
-                ),
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () => _showReportDetailModal(r),
+          borderRadius: BorderRadius.circular(16),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            decoration: BoxDecoration(
+              color: isNew
+                  ? const Color(0xFFFFFDF5)
+                  : isOverdue
+                      ? const Color(0xFFFFFBFB)
+                      : Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: isNew
+                    ? const Color(0xFFFDE68A)
+                    : isOverdue
+                        ? const Color(0xFFFECACA)
+                        : const Color(0xFFE2E8F0),
+                width: isOverdue || isNew ? 1.2 : 1,
               ),
-            ],
-            Row(
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.03),
+                  blurRadius: 6,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
               children: [
-                Expanded(
-                  child: Row(
-                    children: [
-                      Flexible(
-                        child: Text(
-                          '#${r['id']} · ${r['title'] ?? ''}',
+                // 1. Tiêu đề + SLA đếm ngược + Trạng thái
+                Row(
+                  children: [
+                    if (isNew) ...[
+                      Container(
+                        margin: const EdgeInsets.only(right: 6),
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF59E0B),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: const Text(
+                          'MỚI',
                           style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 14.5,
-                            color: isNew ? const Color(0xFF9A3412) : opsDark,
+                            color: Colors.white,
+                            fontWeight: FontWeight.w800,
+                            fontSize: 9.5,
                           ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
                     ],
-                  ),
+                    Expanded(
+                      child: Text(
+                        '#${r['id']} · ${r['title'] ?? ''}',
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14.5,
+                          color: opsDark,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    _SlaCountdownBadge(
+                      dueAt: effectiveDue,
+                      createdAt: createdAt,
+                      slaHours: (r['slaHours'] as num? ?? 4).toInt(),
+                      status: status,
+                      isExtended: isExtended,
+                      extendedHours: extHours,
+                    ),
+                    const SizedBox(width: 6),
+                    StatusChip(status),
+                  ],
                 ),
-                _SlaCountdownBadge(
-                  dueAt: effectiveDue,
-                  createdAt: createdAt,
-                  slaHours: (r['slaHours'] as num? ?? 4).toInt(),
-                  status: status,
-                ),
-                const SizedBox(width: 6),
-                StatusChip(status),
-              ],
-            ),
-            if (isExtended || isOverdue) ...[
-              const SizedBox(height: 6),
-              Wrap(
-                spacing: 6,
-                runSpacing: 4,
-                children: [
-                  if (isExtended && !isOverdue)
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2.5),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFFEF3C7),
-                        borderRadius: BorderRadius.circular(6),
-                        border: Border.all(color: const Color(0xFFFCD34D)),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(Icons.more_time, size: 13, color: Color(0xFFB45309)),
-                          const SizedBox(width: 4),
-                          Text(
-                            'Đã gia hạn SLA (+$extHours h)',
-                            style: const TextStyle(
-                              color: Color(0xFFB45309),
-                              fontWeight: FontWeight.w700,
-                              fontSize: 11,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  if (isExtended && isOverdue)
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2.5),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFFEE2E2),
-                        borderRadius: BorderRadius.circular(6),
-                        border: Border.all(color: const Color(0xFFFCA5A5)),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(Icons.warning_amber_rounded, size: 13, color: Color(0xFFB91C1C)),
-                          const SizedBox(width: 4),
-                          Text(
-                            'Quá hạn (sau gia hạn +$extHours h)',
-                            style: const TextStyle(
-                              color: Color(0xFFB91C1C),
-                              fontWeight: FontWeight.w700,
-                              fontSize: 11,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  if (!isExtended && isOverdue)
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2.5),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFFEE2E2),
-                        borderRadius: BorderRadius.circular(6),
-                        border: Border.all(color: const Color(0xFFFCA5A5)),
-                      ),
-                      child: const Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(Icons.warning_amber_rounded, size: 13, color: Color(0xFFB91C1C)),
-                          SizedBox(width: 4),
-                          Text(
-                            'Quá hạn SLA',
-                            style: TextStyle(
-                              color: Color(0xFFB91C1C),
-                              fontWeight: FontWeight.w700,
-                              fontSize: 11,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                ],
-              ),
-            ],
-            if (cleanedDesc.isNotEmpty) ...[
-              const SizedBox(height: 4),
-              Text(
-                cleanedDesc,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(fontSize: 12, color: opsMutedText),
-              ),
-            ],
-            if (attachments.isNotEmpty) ...[
-              const SizedBox(height: 6),
-              AttachmentStageGallery(
-                attachments: attachments,
-                labels: const {ReportStage.report: 'Ảnh người báo'},
-                accentColor: opsPrimary,
-                thumbSize: 64,
-              ),
-            ],
-            const SizedBox(height: 8),
+                const SizedBox(height: 8),
 
-            // Tinh gọn pills cốt lõi trên danh sách
-            Wrap(
-              spacing: 8,
-              runSpacing: 6,
-              children: [
-                _MiniPill(
-                  icon: Icons.inventory_2_outlined,
-                  text: '$lockerLabel${boxLabel != null ? ' · ô $boxLabel' : ''}',
-                ),
-                if (createdAt != null)
-                  _MiniPill(
-                    icon: Icons.access_time,
-                    text: 'Tạo: ${_formatFullDateTime(createdAt)}',
-                  ),
-                if (effectiveDue != null)
-                  _MiniPill(
-                    icon: Icons.timer_outlined,
-                    text: 'Hạn SLA: ${_formatFullDateTime(effectiveDue)}',
-                    color: isOverdue ? const Color(0xFFDC2626) : const Color(0xFF2563EB),
-                  ),
-                if (isExtended && (r['slaExtensionReason'] != null || _localSlaExtensions[r['id']]?['reason'] != null))
-                  _MiniPill(
-                    icon: Icons.edit_note,
-                    text: 'Lý do: ${_localSlaExtensions[r['id']]?['reason'] ?? r['slaExtensionReason']}',
-                    color: const Color(0xFF92400E),
-                  ),
-              ],
-            ),
-
-            // Gợi ý bấm mở modal chi tiết
-            Container(
-              margin: const EdgeInsets.only(top: 8),
-              decoration: BoxDecoration(
-                color: opsPrimary.withValues(alpha: 0.07),
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: opsPrimary.withValues(alpha: 0.2)),
-              ),
-              child: Material(
-                color: Colors.transparent,
-                child: InkWell(
-                  onTap: () => _showReportDetailModal(r),
-                  borderRadius: BorderRadius.circular(8),
-                  child: const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                    child: Row(
+                // 2. Dòng thông tin cốt lõi (Vị trí tủ, thời gian, số ảnh, gia hạn)
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 5,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: [
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.info_outline, size: 14, color: opsPrimary),
-                        SizedBox(width: 6),
+                        const Icon(Icons.inventory_2_outlined, size: 13.5, color: opsPrimary),
+                        const SizedBox(width: 4),
                         Text(
-                          'Xem chi tiết đầy đủ thông tin phiếu',
-                          style: TextStyle(
+                          '$lockerLabel${boxLabel != null ? ' · ô $boxLabel' : ''}',
+                          style: const TextStyle(
                             fontSize: 12,
-                            color: opsPrimary,
-                            fontWeight: FontWeight.w700,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF334155),
                           ),
                         ),
-                        Spacer(),
-                        Icon(Icons.chevron_right, size: 16, color: opsPrimary),
                       ],
                     ),
-                  ),
+                    if (createdAt != null) ...[
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.access_time, size: 13, color: Color(0xFF94A3B8)),
+                          const SizedBox(width: 3),
+                          Text(
+                            _formatCompactDateTime(createdAt),
+                            style: const TextStyle(fontSize: 11.5, color: Color(0xFF64748B)),
+                          ),
+                        ],
+                      ),
+                    ],
+                    if (attachments.isNotEmpty) ...[
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF1F5F9),
+                          borderRadius: BorderRadius.circular(6),
+                          border: Border.all(color: const Color(0xFFE2E8F0)),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.photo_library_outlined, size: 12, color: Color(0xFF64748B)),
+                            const SizedBox(width: 3),
+                            Text(
+                              '${attachments.length} ảnh',
+                              style: const TextStyle(
+                                fontSize: 10.5,
+                                fontWeight: FontWeight.w600,
+                                color: Color(0xFF475569),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                    if (isExtended) ...[
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFEF3C7),
+                          borderRadius: BorderRadius.circular(6),
+                          border: Border.all(color: const Color(0xFFFDE68A)),
+                        ),
+                        child: Text(
+                          '+$extHours h SLA',
+                          style: const TextStyle(
+                            fontSize: 10.5,
+                            fontWeight: FontWeight.w700,
+                            color: Color(0xFFB45309),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ],
                 ),
-              ),
-            ),
+                const SizedBox(height: 10),
 
-            const SizedBox(height: 6),
-            Wrap(
-              alignment: WrapAlignment.end,
-              spacing: 8,
-              runSpacing: 4,
-              children: [
-                TextButton.icon(
-                  onPressed: () => _openDirections(r),
-                  icon: const Icon(Icons.map_outlined, size: 16, color: opsPrimary),
-                  label: const Text('Chỉ đường', style: TextStyle(color: opsPrimary)),
+                // 3. Thanh thao tác nhanh và nút bấm chính
+                Wrap(
+                  alignment: WrapAlignment.spaceBetween,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  spacing: 6,
+                  runSpacing: 6,
+                  children: [
+                    // Nhóm công cụ: Chỉ đường, Nhật ký
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        InkWell(
+                          onTap: () => _openDirections(r),
+                          borderRadius: BorderRadius.circular(8),
+                          child: const Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 5, vertical: 4),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(Icons.near_me_outlined, size: 13.5, color: opsPrimary),
+                                SizedBox(width: 3),
+                                Text(
+                                  'Chỉ đường',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w600,
+                                    color: opsPrimary,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        InkWell(
+                          onTap: () => _reportLogSheet(r),
+                          borderRadius: BorderRadius.circular(8),
+                          child: const Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 5, vertical: 4),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(Icons.history_edu_outlined, size: 13.5, color: opsPrimary),
+                                SizedBox(width: 3),
+                                Text(
+                                  'Nhật ký',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w600,
+                                    color: opsPrimary,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    // Nhóm hành động
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // Nút nhận việc nếu OPEN
+                        if ((isQueueView || status == 'OPEN') && status == 'OPEN')
+                          ElevatedButton.icon(
+                            onPressed: () async {
+                              final success = await _run(
+                                () => _service.claimReport(r['id'] as int),
+                                'Đã nhận việc thành công',
+                              );
+                              if (success && mounted) {
+                                _tabs.animateTo(2);
+                              }
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFFF59E0B),
+                              foregroundColor: Colors.white,
+                              elevation: 0,
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                              visualDensity: VisualDensity.compact,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                            icon: const Icon(Icons.pan_tool_alt, size: 12.5),
+                            label: const Text(
+                              'Nhận việc',
+                              style: TextStyle(fontWeight: FontWeight.w700, fontSize: 11),
+                            ),
+                          ),
+                        // Nút gia hạn, nghiệm thu & hoàn tất nếu IN_PROGRESS của KTV
+                        if (!isQueueView && status == 'IN_PROGRESS' && isAssignedToMe) ...[
+                          // Nút gia hạn SLA nhanh
+                          InkWell(
+                            onTap: () => _openExtendSlaSheet(r),
+                            borderRadius: BorderRadius.circular(8),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFFFFBEB),
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(color: const Color(0xFFFDE68A)),
+                              ),
+                              child: const Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    Icons.more_time,
+                                    size: 13,
+                                    color: Color(0xFFD97706),
+                                  ),
+                                  SizedBox(width: 3),
+                                  Text(
+                                    'Gia hạn',
+                                    style: TextStyle(
+                                      fontSize: 10.5,
+                                      fontWeight: FontWeight.w700,
+                                      color: Color(0xFFD97706),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 5),
+                          InkWell(
+                            onTap: () => _inspectionFlow(r),
+                            borderRadius: BorderRadius.circular(8),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFFEF3C7),
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(color: const Color(0xFFFDE68A)),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    hasInspection ? Icons.fact_check : Icons.add_a_photo_outlined,
+                                    size: 13,
+                                    color: const Color(0xFFB45309),
+                                  ),
+                                  const SizedBox(width: 3),
+                                  Text(
+                                    hasInspection ? 'Ảnh (+)' : 'Nghiệm thu',
+                                    style: const TextStyle(
+                                      fontSize: 10.5,
+                                      fontWeight: FontWeight.w700,
+                                      color: Color(0xFFB45309),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 5),
+                          ElevatedButton.icon(
+                            onPressed: () => _confirmResolveReport(r),
+                            icon: const Icon(Icons.check, size: 13),
+                            label: const Text(
+                              'Hoàn tất',
+                              style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700),
+                            ),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF16A34A),
+                              foregroundColor: Colors.white,
+                              elevation: 0,
+                              visualDensity: VisualDensity.compact,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            ),
+                          ),
+                        ],
+                        const SizedBox(width: 3),
+                        const Icon(Icons.chevron_right, size: 16, color: Color(0xFF94A3B8)),
+                      ],
+                    ),
+                  ],
                 ),
-                TextButton.icon(
-                  onPressed: () => _reportLogSheet(r),
-                  icon: const Icon(Icons.history_edu_outlined, size: 16, color: opsPrimary),
-                  label: const Text('Nhật ký', style: TextStyle(color: opsPrimary)),
-                ),
-                // Chỉ hiển thị nút Nhận việc khi phiếu thực sự OPEN (chưa ai nhận)
-                if ((isQueueView || status == 'OPEN') && status == 'OPEN')
-                  ElevatedButton.icon(
-                    onPressed: () async {
-                      final success = await _run(
-                        () => _service.claimReport(r['id'] as int),
-                        'Đã nhận việc thành công',
-                      );
-                      if (success && mounted) {
-                        _tabs.animateTo(2); // Chuyển sang tab "Việc của tôi" khi nhận việc thành công
-                      }
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFF59E0B),
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      elevation: 1.5,
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                    ),
-                    icon: const Icon(Icons.pan_tool_alt, size: 16),
-                    label: const Text(
-                      '⚡ Nhận việc ngay',
-                      style: TextStyle(fontWeight: FontWeight.w800, fontSize: 13),
-                    ),
-                  ),
-                // Chỉ hiển thị nút hành động IN_PROGRESS khi phiếu đó là của chính KTV này
-                if (!isQueueView && status == 'IN_PROGRESS' && isAssignedToMe) ...[
-                  TextButton.icon(
-                    onPressed: () => _openExtendSlaSheet(r),
-                    icon: const Icon(Icons.more_time, size: 16, color: Color(0xFFD97706)),
-                    label: const Text(
-                      'Gia hạn SLA',
-                      style: TextStyle(
-                        color: Color(0xFFD97706),
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ),
-                  TextButton.icon(
-                    onPressed: () => _inspectionFlow(r),
-                    icon: Icon(
-                      hasInspection
-                          ? Icons.fact_check
-                          : Icons.add_a_photo_outlined,
-                      size: 16,
-                      color: const Color(0xFFD97706),
-                    ),
-                    label: Text(
-                      hasInspection
-                          ? 'Bổ sung ảnh'
-                          : 'Xác nhận hiện trường',
-                      style: const TextStyle(color: Color(0xFFD97706)),
-                    ),
-                  ),
-                  ElevatedButton.icon(
-                    onPressed: () => _confirmResolveReport(r),
-                    icon: const Icon(Icons.check, size: 16),
-                    label: const Text('Hoàn tất'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF16A34A),
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                  ),
-                ],
               ],
             ),
-          ],
+          ),
         ),
       ),
     );
@@ -3795,10 +3764,12 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                         ),
                       ),
                       _SlaCountdownBadge(
-                        dueAt: _getEffectiveDueAt(r),
+                        dueAt: effectiveDue,
                         createdAt: createdAt,
                         slaHours: (r['slaHours'] as num? ?? 4).toInt(),
                         status: status,
+                        isExtended: isExtended,
+                        extendedHours: extHours,
                       ),
                       const SizedBox(width: 6),
                       StatusChip(status),
@@ -3827,6 +3798,8 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                               createdAt: createdAt,
                               slaHours: (r['slaHours'] as num? ?? 4).toInt(),
                               status: status,
+                              isExtended: isExtended,
+                              extendedHours: extHours,
                             ),
                             if (isExtended && !overdue)
                               _MiniPill(
@@ -4310,6 +4283,14 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
     final mm = dt.minute.toString().padLeft(2, '0');
     final ss = dt.second.toString().padLeft(2, '0');
     return '$hh:$mm:$ss $d/$m/$y';
+  }
+
+  String _formatCompactDateTime(DateTime dt) {
+    final d = dt.day.toString().padLeft(2, '0');
+    final m = dt.month.toString().padLeft(2, '0');
+    final hh = dt.hour.toString().padLeft(2, '0');
+    final mm = dt.minute.toString().padLeft(2, '0');
+    return '$hh:$mm $d/$m';
   }
 
   String _ageLabel(DateTime createdAt) {
@@ -6196,12 +6177,16 @@ class _SlaCountdownBadge extends StatefulWidget {
   final DateTime? createdAt;
   final int slaHours;
   final String status;
+  final bool isExtended;
+  final int? extendedHours;
 
   const _SlaCountdownBadge({
     required this.dueAt,
     this.createdAt,
     this.slaHours = 4,
     required this.status,
+    this.isExtended = false,
+    this.extendedHours,
   });
 
   @override
@@ -6246,25 +6231,35 @@ class _SlaCountdownBadgeState extends State<_SlaCountdownBadge> {
       final h = diff.inHours;
       final m = diff.inMinutes.remainder(60);
       final s = diff.inSeconds.remainder(60);
+      final isExt = widget.isExtended && (widget.extendedHours ?? 0) > 0;
+
       return Container(
         padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
         decoration: BoxDecoration(
-          color: const Color(0xFFECFDF5),
+          color: isExt ? const Color(0xFFFFFBEB) : const Color(0xFFECFDF5),
           borderRadius: BorderRadius.circular(6),
-          border: Border.all(color: const Color(0xFFA7F3D0)),
+          border: Border.all(
+            color: isExt ? const Color(0xFFFDE68A) : const Color(0xFFA7F3D0),
+          ),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.timer_outlined, size: 12, color: Color(0xFF059669)),
+            Icon(
+              isExt ? Icons.update : Icons.timer_outlined,
+              size: 12,
+              color: isExt ? const Color(0xFFB45309) : const Color(0xFF059669),
+            ),
             const SizedBox(width: 3.5),
             Text(
-              'Còn ${pad(h)}:${pad(m)}:${pad(s)}',
-              style: const TextStyle(
+              isExt
+                  ? 'Còn ${pad(h)}:${pad(m)}:${pad(s)} (+${widget.extendedHours}h)'
+                  : 'Còn ${pad(h)}:${pad(m)}:${pad(s)}',
+              style: TextStyle(
                 fontFamily: 'monospace',
                 fontSize: 11,
                 fontWeight: FontWeight.w700,
-                color: Color(0xFF059669),
+                color: isExt ? const Color(0xFFB45309) : const Color(0xFF059669),
               ),
             ),
           ],
@@ -6275,6 +6270,8 @@ class _SlaCountdownBadgeState extends State<_SlaCountdownBadge> {
       final h = absDiff.inHours;
       final m = absDiff.inMinutes.remainder(60);
       final s = absDiff.inSeconds.remainder(60);
+      final isExt = widget.isExtended && (widget.extendedHours ?? 0) > 0;
+
       return Container(
         padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
         decoration: BoxDecoration(
@@ -6288,7 +6285,9 @@ class _SlaCountdownBadgeState extends State<_SlaCountdownBadge> {
             const Icon(Icons.warning_amber_rounded, size: 12, color: Color(0xFFDC2626)),
             const SizedBox(width: 3.5),
             Text(
-              'Quá hạn ${pad(h)}:${pad(m)}:${pad(s)}',
+              isExt
+                  ? 'Quá hạn ${pad(h)}:${pad(m)}:${pad(s)} (Sau gia hạn)'
+                  : 'Quá hạn ${pad(h)}:${pad(m)}:${pad(s)}',
               style: const TextStyle(
                 fontFamily: 'monospace',
                 fontSize: 11,
