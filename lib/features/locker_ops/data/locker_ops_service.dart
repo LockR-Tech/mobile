@@ -317,6 +317,11 @@ class LockerOpsService {
   Future<List<Map<String, dynamic>>> reports({bool mine = false}) =>
       _list('/api/maintenance/reports', query: {'mine': mine});
 
+  /// Tất cả phiếu sự cố Kiosk (OPEN + IN_PROGRESS + RESOLVED) — endpoint admin,
+  /// dùng cho tab "Sự cố" trên Mobile để KTV thấy toàn bộ hệ thống (giống Admin portal).
+  Future<List<Map<String, dynamic>>> allKioskReports() =>
+      _list('/api/admin/lockers/reports');
+
   Future<Map<String, dynamic>> claimReport(int reportId) =>
       _map('PUT', '/api/maintenance/reports/$reportId/claim');
 
@@ -432,6 +437,23 @@ class LockerOpsService {
   /// Thống kê hiệu suất & trạng thái chế tài SLA của chính KTV đang đăng nhập.
   Future<Map<String, dynamic>> myPerformance() =>
       _map('GET', '/api/maintenance/my-performance');
+
+  /// KTV xin gia hạn thêm thời gian xử lý sự cố (SLA extension).
+  Future<Map<String, dynamic>> extendReportSla(
+    int reportId, {
+    required int extensionHours,
+    String? reason,
+  }) async {
+    final body = {
+      'extensionHours': extensionHours,
+      if (reason != null && reason.isNotEmpty) 'reason': reason,
+    };
+    try {
+      return await _map('PUT', '/api/maintenance/reports/$reportId/extend-sla', body: body);
+    } catch (_) {
+      return await _map('PUT', '/api/admin/lockers/reports/$reportId/extend-sla', body: body);
+    }
+  }
 
   /// Box-health cho bảo trì: trạng thái logic (theo đơn) đặt cạnh trạng thái
   /// phần cứng cửa cabinet báo lên (GAP 2). Mỗi phần tử:
