@@ -1395,6 +1395,23 @@ class _DetailSheet extends StatelessWidget {
         ? null
         : rawAddress;
 
+    // Backend order-service trả thêm 5 trường này từ bản vá OrderResponse (trước đây có
+    // trên entity nhưng không trả về khách hàng) — receiverName/receiverPhone (SEND / uỷ
+    // quyền lấy hộ), customerNote (ghi chú lúc tạo đơn), deliveryAddress (SEND giao tận
+    // nơi), rentalDurationHours (RENTAL). Tất cả optional nên chỉ hiện dòng khi có giá trị.
+    final receiverName = (order['receiverName'] as String?)?.trim();
+    final receiverPhone = (order['receiverPhone'] as String?)?.trim();
+    final receiverLabel = [
+      if (receiverName != null && receiverName.isNotEmpty) receiverName,
+      if (receiverPhone != null && receiverPhone.isNotEmpty) receiverPhone,
+    ].join(' · ');
+    final customerNote = (order['customerNote'] as String?)?.trim();
+    final deliveryAddress = (order['deliveryAddress'] as String?)?.trim();
+    final rentalHours = _asInt(order['rentalDurationHours']);
+    final discountAmount = _asDouble(order['discount']) ?? 0;
+    final promotionCode = (order['promotionCode'] as String?)?.trim();
+    final createdAt = order['createdAt'];
+
     final actions = <Widget>[
       if (isDroneDelivery &&
           rawStatus != 'COMPLETED' &&
@@ -1558,12 +1575,36 @@ class _DetailSheet extends StatelessWidget {
                 label: 'Ô',
                 value: _boxRouteLabel(sendBoxNumber, receiveBoxNumber),
               ),
+              if (createdAt != null)
+                OpsInfoRow(
+                  icon: LucideIcons.calendar,
+                  label: 'Ngày đặt',
+                  value: fmtDateTime(createdAt),
+                ),
+              if (isRental && rentalHours != null)
+                OpsInfoRow(
+                  icon: LucideIcons.timer,
+                  label: 'Thời gian thuê',
+                  value: '$rentalHours giờ',
+                ),
               if (deadline != null)
                 OpsInfoRow(
                   icon: LucideIcons.clock,
                   label: 'Hạn',
                   value: '${fmtDateTime(deadline)} · ${fmtRemaining(deadline)}',
                   valueColor: overdue ? const Color(0xFFDC2626) : null,
+                ),
+              if (receiverLabel.isNotEmpty)
+                OpsInfoRow(
+                  icon: LucideIcons.userCheck,
+                  label: 'Người nhận',
+                  value: receiverLabel,
+                ),
+              if (deliveryAddress != null && deliveryAddress.isNotEmpty)
+                OpsInfoRow(
+                  icon: LucideIcons.truck,
+                  label: 'Địa chỉ giao',
+                  value: deliveryAddress,
                 ),
               if (hasExtra)
                 OpsInfoRow(
@@ -1572,12 +1613,41 @@ class _DetailSheet extends StatelessWidget {
                   value: fmtPrice(extraFee),
                   valueColor: const Color(0xFFB45309),
                 ),
+              if (discountAmount > 0)
+                OpsInfoRow(
+                  icon: LucideIcons.badgePercent,
+                  label: 'Giảm giá',
+                  value: promotionCode != null && promotionCode.isNotEmpty
+                      ? '-${fmtPrice(discountAmount)} ($promotionCode)'
+                      : '-${fmtPrice(discountAmount)}',
+                  valueColor: const Color(0xFF15803D),
+                ),
               OpsInfoRow(
                 icon: LucideIcons.wallet,
                 label: 'Tổng tiền',
                 value: fmtPrice(order['totalPrice']),
                 valueColor: opsDark,
               ),
+              OpsInfoRow(
+                icon: LucideIcons.checkCheck,
+                label: 'Thanh toán',
+                value: switch (paymentStatus) {
+                  'PAID' => 'Đã thanh toán',
+                  'REFUNDED' => 'Đã hoàn tiền',
+                  _ => 'Chưa thanh toán',
+                },
+                valueColor: paymentStatus == 'PAID'
+                    ? const Color(0xFF15803D)
+                    : (paymentStatus == 'REFUNDED'
+                          ? const Color(0xFF64748B)
+                          : const Color(0xFFB45309)),
+              ),
+              if (customerNote != null && customerNote.isNotEmpty)
+                OpsInfoRow(
+                  icon: LucideIcons.stickyNote,
+                  label: 'Ghi chú',
+                  value: customerNote,
+                ),
             ],
           ),
         ),
