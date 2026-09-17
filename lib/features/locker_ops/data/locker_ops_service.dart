@@ -317,10 +317,23 @@ class LockerOpsService {
   Future<List<Map<String, dynamic>>> reports({bool mine = false}) =>
       _list('/api/maintenance/reports', query: {'mine': mine});
 
-  /// Tất cả phiếu sự cố Kiosk (OPEN + IN_PROGRESS + RESOLVED) — endpoint admin,
+  /// Tất cả phiếu sự cố Kiosk (OPEN + IN_PROGRESS + RESOLVED) — ưu tiên endpoint maintenance,
   /// dùng cho tab "Sự cố" trên Mobile để KTV thấy toàn bộ hệ thống (giống Admin portal).
-  Future<List<Map<String, dynamic>>> allKioskReports() =>
-      _list('/api/admin/lockers/reports');
+  Future<List<Map<String, dynamic>>> allKioskReports() async {
+    try {
+      final list = await _list('/api/maintenance/reports', query: {'all': true});
+      if (list.isNotEmpty) return list;
+    } catch (_) {}
+    try {
+      final adminList = await _list('/api/admin/lockers/reports');
+      if (adminList.isNotEmpty) return adminList;
+    } catch (_) {}
+    try {
+      return await reports();
+    } catch (_) {
+      return const [];
+    }
+  }
 
   Future<Map<String, dynamic>> claimReport(int reportId) =>
       _map('PUT', '/api/maintenance/reports/$reportId/claim');

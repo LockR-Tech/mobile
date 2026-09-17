@@ -106,10 +106,25 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
     setState(() => _loading = true);
     try {
       _myUserId = await TokenService.getUserId();
-      final rawFaults = await _service.faults();
-      final rawReports = await _service.allKioskReports(); // Tất cả phiếu Kiosk (OPEN+IN_PROGRESS+RESOLVED) — khớp với Admin portal
-      final rawMine = await _service.reports(mine: true);
-      final lockers = await _service.lockers();
+      List<Map<String, dynamic>> rawFaults = [];
+      try {
+        rawFaults = await _service.faults();
+      } catch (_) {}
+
+      List<Map<String, dynamic>> rawReports = [];
+      try {
+        rawReports = await _service.allKioskReports();
+      } catch (_) {}
+
+      List<Map<String, dynamic>> rawMine = [];
+      try {
+        rawMine = await _service.reports(mine: true);
+      } catch (_) {}
+
+      List<Map<String, dynamic>> lockers = [];
+      try {
+        lockers = await _service.lockers();
+      } catch (_) {}
       if (!mounted) return;
       final kioskAllReports = rawReports.where((r) => !_isDroneReport(r)).toList();
       final Map<dynamic, Map<String, dynamic>> myReportsMap = {};
