@@ -1,19 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:smart_laundry_locker/features/transactions/application/use_cases/initiate_top_up_use_case.dart';
 import 'package:smart_laundry_locker/features/transactions/application/use_cases/get_transactions_use_case.dart';
-import 'package:smart_laundry_locker/features/transactions/application/use_cases/get_transaction_detail_use_case.dart';
 import 'package:smart_laundry_locker/features/transactions/domain/entities/transaction.dart';
 import 'package:smart_laundry_locker/features/transactions/domain/entities/top_up_result.dart';
 import 'package:flutter/foundation.dart';
 
 class TransactionProvider extends ChangeNotifier {
   final GetTransactionsUseCase getTransactionsUseCase;
-  final GetTransactionDetailUseCase getTransactionDetailUseCase;
   final InitiateTopUpUseCase initiateTopUpUseCase;
 
   TransactionProvider({
     required this.getTransactionsUseCase,
-    required this.getTransactionDetailUseCase,
     required this.initiateTopUpUseCase,
   });
 
@@ -43,9 +40,6 @@ class TransactionProvider extends ChangeNotifier {
   int _totalItems = 0;
   bool _hasReachedMax = false;
   bool get hasReachedMax => _hasReachedMax;
-
-  // Cache for transaction details
-  final Map<String, Transaction> _transactionDetails = {};
 
   Future<void> fetchTransactions({bool refresh = false}) async {
     if (refresh) {
@@ -81,7 +75,7 @@ class TransactionProvider extends ChangeNotifier {
           for (var i = 0; i < data.transactions.length; i++) {
             final t = data.transactions[i];
             debugPrint(
-              '[TX][provider]   #$i: ${t.id.substring(0, 8)} code=${t.code} type=${t.type} amount=${t.amount}',
+              '[TX][provider]   #$i: id=${t.id} ref=${t.referenceId} type=${t.type} amount=${t.amount}',
             );
           }
         } else {
@@ -106,27 +100,6 @@ class TransactionProvider extends ChangeNotifier {
           _isLoading = false;
         else
           _isLoadingMore = false;
-        notifyListeners();
-      },
-    );
-  }
-
-  Transaction? getTransactionDetailFromCache(String id) {
-    return _transactionDetails[id];
-  }
-
-  Future<void> fetchTransactionDetail(String id) async {
-    if (_transactionDetails.containsKey(id)) return;
-
-    final result = await getTransactionDetailUseCase(id);
-
-    result.fold(
-      (failure) {
-        // Error handling can be silent for individual detail expanding
-        // to avoid disruptive modals, or we could set a specific detailError map.
-      },
-      (transaction) {
-        _transactionDetails[id] = transaction;
         notifyListeners();
       },
     );

@@ -1,5 +1,4 @@
 import '../models/paginated_transactions_model.dart';
-import '../models/transaction_model.dart';
 
 abstract class TransactionRemoteDataSource {
   Future<PaginatedTransactionsModel> getTransactions({
@@ -9,6 +8,4 @@ abstract class TransactionRemoteDataSource {
     String? toDate,
     String? type,
   });
-
-  Future<TransactionModel> getTransactionDetail(String id);
 }
