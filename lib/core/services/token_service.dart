@@ -85,7 +85,7 @@ class TokenService {
       );
       if (payload is! Map<String, dynamic>) return const [];
 
-      print('DEBUG: Token Payload: $payload');
+      debugPrint('DEBUG: Token Payload: $payload');
 
       final List<String> extractedRoles = [];
 
@@ -113,7 +113,7 @@ class TokenService {
       }
 
       final uniqueRoles = extractedRoles.toSet().toList();
-      print('DEBUG: Extracted Roles: $uniqueRoles');
+      debugPrint('DEBUG: Extracted Roles: $uniqueRoles');
       return uniqueRoles;
     } catch (_) {
       return const [];
@@ -143,6 +143,56 @@ class TokenService {
       debugPrint('TokenService.getUserId error: $e');
       return null;
     }
+  }
+
+  static Future<Map<String, dynamic>?> getTokenPayload() async {
+    final token = await getAccessToken();
+    if (token == null || token.isEmpty) return null;
+    try {
+      final parts = token.split('.');
+      if (parts.length < 2) return null;
+      final payload = jsonDecode(
+        utf8.decode(base64Url.decode(base64Url.normalize(parts[1]))),
+      );
+      if (payload is Map<String, dynamic>) return payload;
+    } catch (_) {}
+    return null;
+  }
+
+  static Future<String?> getUserName() async {
+    try {
+      final payload = await getTokenPayload();
+      if (payload != null) {
+        final name = payload['name']?.toString().trim();
+        if (name != null && name.isNotEmpty) return name;
+
+        final familyName = payload['family_name']?.toString().trim();
+        final givenName = payload['given_name']?.toString().trim();
+        if (familyName != null && familyName.isNotEmpty && givenName != null && givenName.isNotEmpty) {
+          return '$familyName $givenName';
+        }
+        if (givenName != null && givenName.isNotEmpty) return givenName;
+        if (familyName != null && familyName.isNotEmpty) return familyName;
+
+        final preferred = payload['preferred_username']?.toString().trim();
+        if (preferred != null && preferred.isNotEmpty) return preferred;
+
+        final username = payload['username']?.toString().trim();
+        if (username != null && username.isNotEmpty) return username;
+      }
+    } catch (_) {}
+    return null;
+  }
+
+  static Future<String?> getUserEmail() async {
+    try {
+      final payload = await getTokenPayload();
+      if (payload != null) {
+        final email = payload['email']?.toString();
+        if (email != null && email.trim().isNotEmpty) return email.trim();
+      }
+    } catch (_) {}
+    return null;
   }
 
   static Future<void> saveActiveDispatchId(String id) async {
