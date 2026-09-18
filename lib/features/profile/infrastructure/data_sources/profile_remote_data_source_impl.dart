@@ -36,6 +36,11 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
   Map<String, dynamic> _normalize(Map<String, dynamic> raw) {
     final out = Map<String, dynamic>.from(raw);
     if (out['id'] != null) out['id'] = out['id'].toString();
+    final avatar =
+        out['avatarUrl'] ?? out['imageUrl'] ?? out['image_url'] ?? out['avatar'];
+    if (avatar != null && avatar.toString().isNotEmpty) {
+      out['avatarUrl'] = avatar.toString();
+    }
     return out;
   }
 

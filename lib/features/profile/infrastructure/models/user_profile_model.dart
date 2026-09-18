@@ -25,8 +25,15 @@ class UserProfileModel {
     this.isActive,
   });
 
-  factory UserProfileModel.fromJson(Map<String, dynamic> json) =>
-      _$UserProfileModelFromJson(json);
+  factory UserProfileModel.fromJson(Map<String, dynamic> json) {
+    final avatar =
+        json['avatarUrl'] ?? json['imageUrl'] ?? json['image_url'] ?? json['avatar'];
+    final normalized = Map<String, dynamic>.from(json);
+    if (avatar != null && avatar.toString().isNotEmpty) {
+      normalized['avatarUrl'] = avatar.toString();
+    }
+    return _$UserProfileModelFromJson(normalized);
+  }
 
   Map<String, dynamic> toJson() => _$UserProfileModelToJson(this);
 

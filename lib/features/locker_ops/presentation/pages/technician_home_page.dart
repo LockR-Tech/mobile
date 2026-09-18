@@ -12,8 +12,10 @@ import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service
 import 'package:smart_laundry_locker/features/locker_ops/presentation/utils/locker_maps.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/locker_picker.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/ops_widgets.dart';
+import 'package:provider/provider.dart';
+import 'package:smart_laundry_locker/features/profile/presentation/providers/profile_provider.dart';
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
-import 'package:smart_laundry_locker/core/routing/app_router.dart';
+import 'package:smart_laundry_locker/features/locker_ops/presentation/pages/technician_profile_page.dart';
 
 /// Home for the TECHNICIAN role: physical locker maintenance (fault cells,
 /// work queue, preventive schedules, landing pad) + IoT device management.
@@ -39,6 +41,8 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
   List<Map<String, dynamic>> _anomalies = [];
   bool _loading = true;
   String? _myUserId;
+  String? _jwtUserName;
+  String? _jwtUserEmail;
   Map<String, dynamic>? _ratingAverage;
   Map<String, dynamic>? _myPerformance;
 
@@ -99,6 +103,16 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
     _loadLocalSlaExtensions().then((_) {
       if (mounted) setState(() {});
     });
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        try {
+          final profileProvider = context.read<ProfileProvider>();
+          if (profileProvider.profile == null) {
+            profileProvider.loadProfile();
+          }
+        } catch (_) {}
+      }
+    });
     _load();
   }
 
@@ -106,6 +120,8 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
     setState(() => _loading = true);
     try {
       _myUserId = await TokenService.getUserId();
+      _jwtUserName = await TokenService.getUserName();
+      _jwtUserEmail = await TokenService.getUserEmail();
       List<Map<String, dynamic>> rawFaults = [];
       try {
         rawFaults = await _service.faults();
@@ -243,11 +259,46 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
   }
 
   Future<void> _logout() async {
-    await TokenService.clearTokens();
-    if (mounted) context.go('/onboarding');
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Row(
+          children: [
+            Icon(Icons.logout_rounded, color: Color(0xFFDC2626)),
+            SizedBox(width: 10),
+            Text('Đăng xuất ca trực'),
+          ],
+        ),
+        content: const Text(
+          'Bạn có chắc chắn muốn kết thúc ca trực và đăng xuất khỏi tài khoản KTV Kiosk không?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Hủy', style: TextStyle(color: Colors.grey)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFDC2626),
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text('Đăng xuất'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true) {
+      await TokenService.clearTokens();
+      if (mounted) context.go('/onboarding');
+    }
   }
 
-  void _showKtvProfileSheet() {
+  void _showKtvProfileSheet([String? resolvedName]) {
     final calculatedOverdue = _myReports
         .where((r) => r['status'] == 'IN_PROGRESS' && _isReportOverdue(r))
         .length;
@@ -258,20 +309,30 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
     final avgRating = _ratingAverage?['average']?.toString() ?? '5.0';
     final ratingCount = _ratingAverage?['count']?.toString() ?? '0';
 
-    String techName = 'ky thuat vien Kiosk';
-    String techPhone = '0123456789';
-    String techEmail = 'kiosk1@gmail.com';
+    String? profileName;
+    String? profileEmail;
+    String? profilePhone;
+    String? profileAvatar;
 
-    for (final r in _myReports) {
-      final name = (r['reporterName'] ?? '').toString().trim();
-      final phone = (r['reporterPhone'] ?? '').toString().trim();
-      if (name.isNotEmpty && name.toLowerCase().contains('kiosk')) {
-        techName = name;
+    try {
+      final profile = context.read<ProfileProvider>().profile;
+      if (profile != null) {
+        if (profile.fullName.trim().isNotEmpty && profile.fullName.trim() != 'Người dùng') {
+          profileName = profile.fullName.trim();
+        }
+        if (profile.email.trim().isNotEmpty) {
+          profileEmail = profile.email.trim();
+        }
+        if (profile.phoneNumber.trim().isNotEmpty) {
+          profilePhone = profile.phoneNumber.trim();
+        }
+        profileAvatar = profile.avatarUrl;
       }
-      if (phone.isNotEmpty) {
-        techPhone = phone;
-      }
-    }
+    } catch (_) {}
+
+    final techName = resolvedName ?? profileName ?? _jwtUserName ?? 'Kỹ thuật viên Kiosk';
+    final techEmail = profileEmail ?? _jwtUserEmail ?? 'ktv.kiosk@laundrylocker.vn';
+    final techPhone = profilePhone ?? 'Chưa cập nhật SĐT';
 
     showModalBottomSheet<void>(
       context: context,
@@ -307,20 +368,40 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                           width: 60,
                           height: 60,
                           decoration: BoxDecoration(
-                            color: opsPrimary.withValues(alpha: 0.12),
-                            shape: BoxShape.circle,
-                            border: Border.all(color: opsPrimary, width: 2),
-                          ),
-                          child: const Center(
-                            child: Text(
-                              'KT',
-                              style: TextStyle(
-                                fontSize: 22,
-                                fontWeight: FontWeight.bold,
-                                color: opsPrimary,
-                              ),
+                            gradient: const LinearGradient(
+                              colors: [Color(0xFF0077B6), Color(0xFF00B4D8)],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
                             ),
+                            shape: BoxShape.circle,
+                            border: Border.all(color: const Color(0xFF0077B6), width: 2),
                           ),
+                          clipBehavior: Clip.antiAlias,
+                          child: (profileAvatar != null && profileAvatar.isNotEmpty)
+                              ? Image.network(
+                                  profileAvatar,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (_, __, ___) => Center(
+                                    child: Text(
+                                      AislBrand.initials(techName),
+                                      style: const TextStyle(
+                                        fontSize: 22,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ),
+                                )
+                              : Center(
+                                  child: Text(
+                                    AislBrand.initials(techName),
+                                    style: const TextStyle(
+                                      fontSize: 22,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ),
                         ),
                         Positioned(
                           right: 0,
@@ -364,7 +445,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                                   borderRadius: BorderRadius.circular(6),
                                 ),
                                 child: const Text(
-                                  'Hoạt động',
+                                  'Trực ca',
                                   style: TextStyle(
                                     fontSize: 10,
                                     fontWeight: FontWeight.w700,
@@ -376,7 +457,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                           ),
                           const SizedBox(height: 4),
                           const Text(
-                            'KTV Kiosk (Tủ & Phần cứng) · KTV #17',
+                            'KTV Kiosk (Tủ & Phần cứng) · Sẵn sàng',
                             style: TextStyle(fontSize: 12.5, color: opsMutedText, fontWeight: FontWeight.w600),
                           ),
                           const SizedBox(height: 2),
@@ -485,7 +566,11 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                       child: ElevatedButton.icon(
                         onPressed: () {
                           Navigator.of(ctx).pop();
-                          context.push(AppRouter.profile);
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => const TechnicianProfilePage(),
+                            ),
+                          );
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: opsPrimary,
@@ -493,8 +578,8 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                           padding: const EdgeInsets.symmetric(vertical: 12),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                         ),
-                        icon: const Icon(Icons.badge_outlined, size: 18),
-                        label: const Text('Xem hồ sơ chi tiết', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13.5)),
+                        icon: const Icon(Icons.edit_note_rounded, size: 20),
+                        label: const Text('Xem & Chỉnh sửa hồ sơ', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13.5)),
                       ),
                     ),
                     const SizedBox(width: 10),
@@ -655,6 +740,523 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
     }
   }
 
+  String _greeting() {
+    final hour = DateTime.now().hour;
+    if (hour < 12) return '☀️ Chào buổi sáng';
+    if (hour < 14) return '🌤️ Chào buổi trưa';
+    if (hour < 18) return '🌅 Chào buổi chiều';
+    return '🌙 Chào ca tối';
+  }
+
+  String _getResolvedTechnicianName(BuildContext context) {
+    try {
+      final profile = context.watch<ProfileProvider>().profile;
+      final pName = profile?.fullName.trim();
+      if (pName != null && pName.isNotEmpty && pName != 'Người dùng') {
+        return pName;
+      }
+    } catch (_) {}
+    if (_jwtUserName != null && _jwtUserName!.trim().isNotEmpty) {
+      return _jwtUserName!.trim();
+    }
+    if (_jwtUserEmail != null && _jwtUserEmail!.trim().isNotEmpty) {
+      return _jwtUserEmail!.trim();
+    }
+    for (final r in _myReports) {
+      final name = (r['assigneeName'] ?? r['reporterName'] ?? '').toString().trim();
+      if (name.isNotEmpty && !name.toLowerCase().contains('customer')) {
+        return name;
+      }
+    }
+    return 'Kỹ thuật viên Kiosk';
+  }
+
+  Widget _avatarFallback(String name) {
+    return Center(
+      child: Text(
+        AislBrand.initials(name),
+        style: const TextStyle(
+          fontSize: 18,
+          fontWeight: FontWeight.w800,
+          color: Color(0xFFF1F5F9),
+          letterSpacing: 0.5,
+        ),
+      ),
+    );
+  }
+
+  Widget _headerActionButton({
+    required IconData icon,
+    required String tooltip,
+    required VoidCallback onTap,
+    bool isLoading = false,
+  }) {
+    return Tooltip(
+      message: tooltip,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: isLoading ? null : onTap,
+          borderRadius: BorderRadius.circular(12),
+          child: Container(
+            width: 38,
+            height: 38,
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.10),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: Colors.white.withValues(alpha: 0.18),
+                width: 1,
+              ),
+            ),
+            alignment: Alignment.center,
+            child: isLoading
+                ? const SizedBox(
+                    width: 17,
+                    height: 17,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF38BDF8)),
+                    ),
+                  )
+                : Icon(
+                    icon,
+                    size: 19,
+                    color: Colors.white.withValues(alpha: 0.95),
+                  ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHudChip({
+    required IconData icon,
+    required String value,
+    required String label,
+    required Color accentColor,
+    required VoidCallback onTap,
+    bool isAlert = false,
+  }) {
+    return Expanded(
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(13),
+          child: Container(
+            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+            decoration: BoxDecoration(
+              color: isAlert
+                  ? const Color(0xFFDC2626).withValues(alpha: 0.22)
+                  : Colors.white.withValues(alpha: 0.08),
+              borderRadius: BorderRadius.circular(13),
+              border: Border.all(
+                color: isAlert
+                    ? const Color(0xFFEF4444).withValues(alpha: 0.55)
+                    : Colors.white.withValues(alpha: 0.12),
+                width: 1,
+              ),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(icon, size: 13, color: accentColor),
+                    const SizedBox(width: 4),
+                    Text(
+                      value,
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w800,
+                        color: isAlert ? const Color(0xFFFCA5A5) : Colors.white,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white.withValues(alpha: 0.75),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTechnicianHeader({
+    required String displayName,
+    required List<Map<String, dynamic>> openReports,
+    required int openCount,
+    required int mineInProgress,
+    required int mineCount,
+    required List<Map<String, dynamic>> kioskSchedules,
+  }) {
+    String? avatarUrl;
+    try {
+      avatarUrl = context.watch<ProfileProvider>().profile?.avatarUrl;
+    } catch (_) {}
+
+    final overdueCount = _myReports
+        .where((r) => r['status'] == 'IN_PROGRESS' && _isReportOverdue(r))
+        .length;
+    final inProgressCount =
+        _myReports.where((r) => r['status'] == 'IN_PROGRESS').length;
+
+    final IconData slaIcon;
+    final Color slaColor;
+    final String slaText;
+    final Color slaTextColor;
+
+    if (overdueCount >= 5) {
+      slaIcon = Icons.cancel;
+      slaColor = const Color(0xFFEF4444);
+      slaText = 'SLA: Đình chỉ ($overdueCount ca trễ hạn)';
+      slaTextColor = const Color(0xFFFCA5A5);
+    } else if (overdueCount >= 3) {
+      slaIcon = Icons.block;
+      slaColor = const Color(0xFFF87171);
+      slaText = 'SLA: Hạn chế ($overdueCount ca trễ hạn)';
+      slaTextColor = const Color(0xFFFCA5A5);
+    } else if (overdueCount >= 1) {
+      slaIcon = Icons.warning_amber_rounded;
+      slaColor = const Color(0xFFFBBF24);
+      slaText = 'SLA: Cảnh báo ($overdueCount ca trễ hạn)';
+      slaTextColor = const Color(0xFFFDE68A);
+    } else {
+      slaIcon = Icons.verified_rounded;
+      slaColor = const Color(0xFF34D399);
+      slaTextColor = const Color(0xFFA7F3D0);
+      if (inProgressCount > 0) {
+        slaText = 'SLA: Bình thường ($inProgressCount ca trong hạn)';
+      } else {
+        slaText = 'SLA: Bình thường · Đạt chuẩn';
+      }
+    }
+
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Color(0xFF061A30), // Deep Dark Navy
+            Color(0xFF0A2544), // Brand Slate Navy
+            Color(0xFF103A63), // High-Tech Deep Cyan/Blue
+          ],
+          stops: [0.0, 0.52, 1.0],
+        ),
+        borderRadius: BorderRadius.vertical(bottom: Radius.circular(28)),
+        boxShadow: [
+          BoxShadow(
+            color: Color(0x38061A30),
+            blurRadius: 16,
+            offset: Offset(0, 6),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: const BorderRadius.vertical(bottom: Radius.circular(28)),
+        child: Stack(
+          children: [
+            // Decorative background glowing ambient orbs
+            Positioned(
+              top: -45,
+              right: -30,
+              child: Container(
+                width: 170,
+                height: 170,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: const Color(0xFF00B4D8).withValues(alpha: 0.14),
+                ),
+              ),
+            ),
+            Positioned(
+              bottom: -40,
+              left: -30,
+              child: Container(
+                width: 140,
+                height: 140,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: const Color(0xFF0077B6).withValues(alpha: 0.12),
+                ),
+              ),
+            ),
+            SafeArea(
+              bottom: false,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Top identity row
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        // Avatar with glowing ring & online dot
+                        GestureDetector(
+                          onTap: () => _showKtvProfileSheet(displayName),
+                          child: Stack(
+                            clipBehavior: Clip.none,
+                            children: [
+                              Container(
+                                width: 52,
+                                height: 52,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  gradient: const LinearGradient(
+                                    colors: [
+                                      Color(0xFF38BDF8),
+                                      Color(0xFF0284C7),
+                                      Color(0xFF10B981),
+                                    ],
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                  ),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: const Color(0xFF38BDF8).withValues(alpha: 0.35),
+                                      blurRadius: 10,
+                                      offset: const Offset(0, 2),
+                                    ),
+                                  ],
+                                ),
+                                padding: const EdgeInsets.all(2.5),
+                                child: Container(
+                                  decoration: const BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: Color(0xFF0A2342),
+                                  ),
+                                  clipBehavior: Clip.antiAlias,
+                                  child: (avatarUrl != null && avatarUrl.isNotEmpty)
+                                      ? Image.network(
+                                          avatarUrl,
+                                          fit: BoxFit.cover,
+                                          errorBuilder: (_, __, ___) =>
+                                              _avatarFallback(displayName),
+                                        )
+                                      : _avatarFallback(displayName),
+                                ),
+                              ),
+                              Positioned(
+                                bottom: 1,
+                                right: 1,
+                                child: Container(
+                                  width: 13,
+                                  height: 13,
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFF10B981),
+                                    shape: BoxShape.circle,
+                                    border: Border.all(
+                                      color: const Color(0xFF061A30),
+                                      width: 2,
+                                    ),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: const Color(0xFF10B981)
+                                            .withValues(alpha: 0.6),
+                                        blurRadius: 4,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        // Technician Name, Greeting & Status
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Row(
+                                children: [
+                                  Flexible(
+                                    child: Text(
+                                      _greeting(),
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w600,
+                                        color: Colors.white.withValues(alpha: 0.8),
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 6),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 6,
+                                      vertical: 1.5,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFF0284C7)
+                                          .withValues(alpha: 0.35),
+                                      borderRadius: BorderRadius.circular(6),
+                                      border: Border.all(
+                                        color: const Color(0xFF38BDF8)
+                                            .withValues(alpha: 0.5),
+                                        width: 0.8,
+                                      ),
+                                    ),
+                                    child: const Text(
+                                      'KIOSK',
+                                      style: TextStyle(
+                                        fontSize: 9.5,
+                                        fontWeight: FontWeight.w800,
+                                        color: Color(0xFFBAE6FD),
+                                        letterSpacing: 0.5,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                displayName,
+                                style: const TextStyle(
+                                  fontSize: 19,
+                                  fontWeight: FontWeight.w800,
+                                  color: Colors.white,
+                                  letterSpacing: -0.3,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              const SizedBox(height: 2),
+                              InkWell(
+                                onTap: () => _tabs.animateTo(2),
+                                borderRadius: BorderRadius.circular(6),
+                                child: Row(
+                                  children: [
+                                    Icon(
+                                      slaIcon,
+                                      size: 13,
+                                      color: slaColor,
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Expanded(
+                                      child: Text(
+                                        slaText,
+                                        style: TextStyle(
+                                          fontSize: 11.5,
+                                          fontWeight: overdueCount > 0
+                                              ? FontWeight.w700
+                                              : FontWeight.w600,
+                                          color: slaTextColor,
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        // Action buttons (Profile & Logout)
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            _headerActionButton(
+                              icon: Icons.person_outline_rounded,
+                              tooltip: 'Hồ sơ & Chỉnh sửa',
+                              onTap: () {
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (_) => const TechnicianProfilePage(),
+                                  ),
+                                );
+                              },
+                            ),
+                            const SizedBox(width: 6),
+                            _headerActionButton(
+                              icon: Icons.logout_rounded,
+                              tooltip: 'Đăng xuất',
+                              onTap: _logout,
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 14),
+                    // Quick Cockpit HUD Bar
+                    Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.08),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.12),
+                          width: 1,
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          _buildHudChip(
+                            icon: Icons.report_problem_outlined,
+                            value: '${openReports.length}',
+                            label: 'Chờ xử lý',
+                            accentColor: openReports.isNotEmpty
+                                ? const Color(0xFFEF4444)
+                                : const Color(0xFF10B981),
+                            isAlert: openReports.isNotEmpty,
+                            onTap: () => _tabs.animateTo(1),
+                          ),
+                          const SizedBox(width: 4),
+                          _buildHudChip(
+                            icon: Icons.handyman_outlined,
+                            value: '$mineInProgress',
+                            label: 'Đang làm',
+                            accentColor: const Color(0xFF38BDF8),
+                            onTap: () => _tabs.animateTo(2),
+                          ),
+                          const SizedBox(width: 4),
+                          _buildHudChip(
+                            icon: Icons.event_repeat_outlined,
+                            value: '${kioskSchedules.length}',
+                            label: 'Định kỳ',
+                            accentColor: const Color(0xFFA78BFA),
+                            onTap: () => _tabs.animateTo(3),
+                          ),
+                          const SizedBox(width: 4),
+                          _buildHudChip(
+                            icon: Icons.meeting_room_outlined,
+                            value: '${_lockers.length}',
+                            label: 'Trạm tủ',
+                            accentColor: const Color(0xFF34D399),
+                            onTap: () => _tabs.animateTo(0),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     // Tab Sự cố: Đếm tất cả sự cố Kiosk (OPEN + IN_PROGRESS + RESOLVED) — khớp với Admin portal
@@ -669,41 +1271,35 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
 
     // Tab định kỳ của KTV Kiosk chỉ đếm và hiển thị các việc của Kiosk
     final kioskSchedules = _schedules.where((s) => !_isDroneSchedule(s)).toList();
+    final resolvedTechName = _getResolvedTechnicianName(context);
+
     return Scaffold(
       backgroundColor: const Color(0xFFF6F8FA),
       body: Column(
         children: [
-          BrandHeroHeader(
-            title: 'Kỹ thuật viên',
-            subtitle: openReports.isNotEmpty
-                ? '${openReports.length} sự cố chờ tiếp nhận · ${_reports.length} tổng toàn hệ thống'
-                : _reports.isEmpty
-                    ? 'Không có sự cố nào đang chờ tiếp nhận'
-                    : 'Tất cả ${_reports.length} sự cố đã được tiếp nhận xử lý',
-            trailing: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                BrandCircleIconButton(
-                  icon: Icons.person_outline,
-                  onTap: _showKtvProfileSheet,
-                ),
-                const SizedBox(width: 8),
-                BrandCircleIconButton(icon: Icons.refresh, onTap: _load),
-                const SizedBox(width: 8),
-                BrandCircleIconButton(icon: Icons.logout, onTap: _logout),
-              ],
-            ),
+          _buildTechnicianHeader(
+            displayName: resolvedTechName,
+            openReports: openReports,
+            openCount: openCount,
+            mineInProgress: mineInProgress,
+            mineCount: mineCount,
+            kioskSchedules: kioskSchedules,
           ),
           Material(
             color: Colors.white,
+            elevation: 1,
+            shadowColor: Colors.black12,
             child: TabBar(
               controller: _tabs,
               isScrollable: true,
               tabAlignment: TabAlignment.start,
-              padding: EdgeInsets.zero,
-              indicatorColor: opsPrimary,
-              labelColor: opsDark,
-              unselectedLabelColor: opsMutedText,
+              padding: const EdgeInsets.symmetric(horizontal: 4),
+              indicatorColor: const Color(0xFF0077B6),
+              indicatorWeight: 3,
+              labelColor: const Color(0xFF0F172A),
+              labelStyle: const TextStyle(fontSize: 13.5, fontWeight: FontWeight.w700),
+              unselectedLabelColor: const Color(0xFF64748B),
+              unselectedLabelStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
               tabs: [
                 const Tab(text: 'Kiểm tra tủ'),
                 Tab(text: 'Sự cố ($openCount)'),
