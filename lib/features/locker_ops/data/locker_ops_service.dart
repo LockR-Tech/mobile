@@ -435,8 +435,8 @@ class LockerOpsService {
       _list('/api/maintenance/schedules');
 
   /// KTV đánh dấu đã kiểm tra xong 1 lịch → dời mốc đến hạn kế tiếp.
-  Future<Map<String, dynamic>> completeSchedule(int scheduleId) =>
-      _map('POST', '/api/maintenance/schedules/$scheduleId/complete');
+  Future<Map<String, dynamic>> completeSchedule(int scheduleId, {Map<String, dynamic>? data}) =>
+      _map('POST', '/api/maintenance/schedules/$scheduleId/complete', body: data);
 
   /// Mở ô khẩn cấp không cần PIN khách — luôn được ghi vào audit log
   /// (credential MASTER) ở backend.

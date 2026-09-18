@@ -3251,6 +3251,12 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                     text: 'Hạn tới: $nextDue',
                     color: due ? const Color(0xFFDC2626) : const Color(0xFF16A34A),
                   ),
+                if (s['scheduledTimeSlot'] != null && (s['scheduledTimeSlot'] as String).isNotEmpty)
+                  _MiniPill(
+                    icon: Icons.access_time_filled,
+                    text: 'Ca: ${s['scheduledTimeSlot']}',
+                    color: const Color(0xFFD97706),
+                  ),
                 if (lastDone != null)
                   _MiniPill(
                     icon: Icons.history,
@@ -3258,6 +3264,45 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                   ),
               ],
             ),
+            if (s['address'] != null && (s['address'] as String).isNotEmpty) ...[
+              const SizedBox(height: 6),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Icon(Icons.place_outlined, size: 14, color: Color(0xFF16A34A)),
+                  const SizedBox(width: 4),
+                  Expanded(
+                    child: Text(
+                      '${s['address']}${s['locationNote'] != null && (s['locationNote'] as String).isNotEmpty ? " · Vị trí: ${s['locationNote']}" : ""}',
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: opsDark,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ] else if (s['locationNote'] != null && (s['locationNote'] as String).isNotEmpty) ...[
+              const SizedBox(height: 6),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Icon(Icons.push_pin_outlined, size: 14, color: Color(0xFF4F46E5)),
+                  const SizedBox(width: 4),
+                  Expanded(
+                    child: Text(
+                      'Vị trí đặt tủ: ${s['locationNote']}',
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: opsDark,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
             const SizedBox(height: 10),
             Align(
               alignment: Alignment.centerRight,
@@ -6034,12 +6079,25 @@ class _CompleteInspectionSheetState extends State<_CompleteInspectionSheet> {
 
     try {
       // 1. Upload ảnh minh chứng nếu KTV có đính kèm (tuỳ chọn)
+      List<String> photoUrls = [];
       if (_photos.isNotEmpty) {
         await _photos.uploadAll(caption: 'Ảnh kiểm tra định kỳ');
+        photoUrls = _photos.photos
+            .map((p) => p.upload?.secureUrl)
+            .whereType<String>()
+            .toList();
       }
 
-      // 2. Gọi backend hoàn thành schedule (cập nhật lastDoneAt = now, nextDueAt = now + interval)
-      await widget.service.completeSchedule(id);
+      // 2. Gọi backend hoàn thành schedule (cập nhật lastDoneAt = now, nextDueAt = now + interval, lưu log)
+      await widget.service.completeSchedule(
+        id,
+        data: {
+          if (_noteCtrl.text.trim().isNotEmpty) 'note': _noteCtrl.text.trim(),
+          if (_selectedChecks.isNotEmpty) 'checklistResults': _selectedChecks.join('; '),
+          'status': 'PASSED',
+          if (photoUrls.isNotEmpty) 'photoUrls': photoUrls,
+        },
+      );
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -6182,6 +6240,33 @@ class _CompleteInspectionSheetState extends State<_CompleteInspectionSheet> {
                   ],
                 ),
               ),
+              if (s['address'] != null && (s['address'] as String).isNotEmpty) ...[
+                const SizedBox(height: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF0FDF4),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: const Color(0xFFBBF7D0)),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.place_outlined, size: 15, color: Color(0xFF16A34A)),
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: Text(
+                          '${s['address']}${s['locationNote'] != null && (s['locationNote'] as String).isNotEmpty ? " · ${s['locationNote']}" : ""}',
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: Color(0xFF166534),
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
               const SizedBox(height: 14),
 
               // Checklist kiểm tra nhanh
