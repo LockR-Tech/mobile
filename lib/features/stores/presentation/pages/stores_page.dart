@@ -9,6 +9,7 @@ import 'package:smart_laundry_locker/core/theme/shadcn_theme.dart';
 import 'package:smart_laundry_locker/features/stores/domain/entities/store.dart';
 import 'package:smart_laundry_locker/features/stores/infrastructure/services/store_service.dart';
 import 'package:smart_laundry_locker/features/stores/presentation/widgets/store_card.dart';
+import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
 
 /// Customer-facing list of stores. Supports text search and "near me"
 /// sorting by distance. Mirrors the legacy RN `user/stores` screen.
@@ -134,13 +135,18 @@ class _StoresPageState extends State<StoresPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AISLShadcnTheme.navySurface,
-      appBar: AppBar(
-        title: const Text('Cửa hàng'),
-        backgroundColor: AISLShadcnTheme.navyPrimary,
-        foregroundColor: Colors.white,
-      ),
       body: Column(
         children: [
+          BrandHeroHeader(
+            title: 'Cửa hàng',
+            subtitle: 'Khám phá điểm tủ & đối tác liên kết',
+            imageAsset: 'assets/images/box_stack_3d.png',
+            trailing: BrandCircleIconButton(
+              icon: LucideIcons.refreshCw,
+              onTap: _load,
+              iconSize: 18,
+            ),
+          ),
           _buildSearchBar(),
           Expanded(child: _buildBody()),
         ],

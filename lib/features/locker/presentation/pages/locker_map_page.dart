@@ -14,6 +14,7 @@ import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' as http;
 import 'package:latlong2/latlong.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
+import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
 
 class LockerMapPage extends ConsumerStatefulWidget {
   const LockerMapPage({super.key});
@@ -66,45 +67,73 @@ class _LockerMapPageState extends ConsumerState<LockerMapPage>
 
     if (state.isLoading && state.locations.isEmpty) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Bản đồ tủ khóa')),
-        body: const Center(child: CircularProgressIndicator()),
+        body: Column(
+          children: [
+            BrandHeroHeader(
+              title: 'Bản đồ tủ khóa',
+              subtitle: 'Tìm điểm tủ Lock.R gần bạn nhất',
+              onBack: () => Navigator.maybePop(context),
+            ),
+            const Expanded(child: Center(child: CircularProgressIndicator())),
+          ],
+        ),
       );
     }
 
     if (state.error != null && state.locations.isEmpty) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Bản đồ tủ khóa')),
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                state.error!,
-                style: const TextStyle(color: Colors.red),
-                textAlign: TextAlign.center,
+        body: Column(
+          children: [
+            BrandHeroHeader(
+              title: 'Bản đồ tủ khóa',
+              subtitle: 'Tìm điểm tủ Lock.R gần bạn nhất',
+              onBack: () => Navigator.maybePop(context),
+            ),
+            Expanded(
+              child: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      state.error!,
+                      style: const TextStyle(color: Colors.red),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 16),
+                    ElevatedButton(
+                      onPressed: () => ref
+                          .read<LockerProvider>(lockerNotifierProvider)
+                          .getLocations(),
+                      child: const Text('Thử lại'),
+                    ),
+                  ],
+                ),
               ),
-              const SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: () => ref
-                    .read<LockerProvider>(lockerNotifierProvider)
-                    .getLocations(),
-                child: const Text('Thử lại'),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       );
     }
 
     if (state.locations.isEmpty) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Bản đồ tủ khóa')),
-        body: Center(
-          child: Text(
-            'Hiện tại chưa có tủ nào!',
-            style: TextStyle(color: Colors.grey[600], fontSize: 16),
-            textAlign: TextAlign.center,
-          ),
+        body: Column(
+          children: [
+            BrandHeroHeader(
+              title: 'Bản đồ tủ khóa',
+              subtitle: 'Tìm điểm tủ Lock.R gần bạn nhất',
+              onBack: () => Navigator.maybePop(context),
+            ),
+            Expanded(
+              child: Center(
+                child: Text(
+                  'Hiện tại chưa có tủ nào!',
+                  style: TextStyle(color: Colors.grey[600], fontSize: 16),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ),
+          ],
         ),
       );
     }
@@ -327,25 +356,19 @@ class _LockerMapPageState extends ConsumerState<LockerMapPage>
     final int invalidCount = state.locations.length - activeLocations.length;
 
     return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new),
-          onPressed: () {
-            // Ưu tiên pop stack hiện tại (được mở từ LockerPage bằng Navigator.push)
-            if (Navigator.canPop(context)) {
-              Navigator.pop(context);
-            } else {
-              // Fallback: điều hướng cứng về trang danh sách locker
-              context.go(AppRouter.lockers);
-            }
-          },
-          splashRadius: 24,
-        ),
-        title: const Text('Bản đồ tủ khóa'),
-        centerTitle: false,
-      ),
       body: Column(
         children: [
+          BrandHeroHeader(
+            title: 'Bản đồ tủ khóa',
+            subtitle: 'Tìm điểm tủ Lock.R gần bạn nhất',
+            onBack: () {
+              if (Navigator.canPop(context)) {
+                Navigator.pop(context);
+              } else {
+                context.go(AppRouter.lockers);
+              }
+            },
+          ),
           if (_isLocating || (_currentAddress ?? '').isNotEmpty)
             _buildAddressBar(context),
           if (invalidCount > 0)

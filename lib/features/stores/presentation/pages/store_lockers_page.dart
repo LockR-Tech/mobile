@@ -1138,16 +1138,21 @@ class _BookingSheet extends StatelessWidget {
           Row(
             children: [
               Container(
-                width: 50,
-                height: 50,
+                width: 54,
+                height: 54,
+                padding: const EdgeInsets.all(4),
                 decoration: BoxDecoration(
                   color: AislBrand.cyan.withValues(alpha: 0.14),
                   borderRadius: BorderRadius.circular(16),
                 ),
-                child: const Icon(
-                  LucideIcons.boxes,
-                  color: AislBrand.cyan,
-                  size: 24,
+                child: Image.asset(
+                  'assets/images/box_stack_3d.png',
+                  fit: BoxFit.contain,
+                  errorBuilder: (context, error, stackTrace) => const Icon(
+                    LucideIcons.box,
+                    color: AislBrand.navy,
+                    size: 26,
+                  ),
                 ),
               ),
               const SizedBox(width: 14),
@@ -1227,7 +1232,7 @@ class _BookingSheet extends StatelessWidget {
             children: [
               Expanded(
                 child: _ServiceButton(
-                  icon: Icons.access_time_rounded,
+                  imageAsset: 'assets/images/box_stack_3d.png',
                   label: 'Thuê tủ',
                   sublabel: 'Tính theo giờ',
                   gradient: const LinearGradient(
@@ -1241,11 +1246,11 @@ class _BookingSheet extends StatelessWidget {
               const SizedBox(width: 12),
               Expanded(
                 child: _ServiceButton(
-                  icon: Icons.move_to_inbox_rounded,
+                  imageAsset: 'assets/images/air_delivery_3d.png',
                   label: 'Gửi hàng',
                   sublabel: 'Chuyển C2C',
                   gradient: const LinearGradient(
-                    colors: [AislBrand.blue, AislBrand.cyan],
+                    colors: [Color(0xFF1D4ED8), Color(0xFF0284C7)],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
@@ -1317,14 +1322,14 @@ class _VerticalDivider extends StatelessWidget {
 
 class _ServiceButton extends StatelessWidget {
   const _ServiceButton({
-    required this.icon,
+    required this.imageAsset,
     required this.label,
     required this.sublabel,
     required this.gradient,
     required this.onTap,
   });
 
-  final IconData icon;
+  final String imageAsset;
   final String label;
   final String sublabel;
   final LinearGradient gradient;
@@ -1333,17 +1338,34 @@ class _ServiceButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      borderRadius: BorderRadius.circular(18),
+      borderRadius: BorderRadius.circular(20),
       clipBehavior: Clip.antiAlias,
+      elevation: 4,
+      shadowColor: gradient.colors.first.withValues(alpha: 0.35),
       child: InkWell(
         onTap: onTap,
         child: Ink(
           decoration: BoxDecoration(gradient: gradient),
           child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 18),
+            padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 8),
             child: Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(icon, color: Colors.white, size: 26),
+                SizedBox(
+                  width: 52,
+                  height: 52,
+                  child: Image.asset(
+                    imageAsset,
+                    fit: BoxFit.contain,
+                    errorBuilder: (context, error, stackTrace) => Icon(
+                      imageAsset.contains('air')
+                          ? LucideIcons.send
+                          : LucideIcons.box,
+                      color: Colors.white,
+                      size: 28,
+                    ),
+                  ),
+                ),
                 const SizedBox(height: 8),
                 Text(
                   label,
@@ -1357,8 +1379,9 @@ class _ServiceButton extends StatelessWidget {
                 Text(
                   sublabel,
                   style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.75),
+                    color: Colors.white.withValues(alpha: 0.85),
                     fontSize: 11,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
               ],

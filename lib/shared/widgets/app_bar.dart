@@ -46,8 +46,8 @@ class CustomSliverAppBar extends StatelessWidget {
       floating: floating,
       pinned: pinned,
       stretch: stretch,
-      backgroundColor: backgroundColor ?? Colors.transparent,
-      foregroundColor: foregroundColor ?? AppColors.onSurface,
+      backgroundColor: backgroundColor ?? const Color(0xFF14171F),
+      foregroundColor: foregroundColor ?? Colors.white,
       elevation: 0,
       surfaceTintColor: Colors.transparent,
       // Prevents color change on scroll
@@ -60,7 +60,7 @@ class CustomSliverAppBar extends StatelessWidget {
           : null,
       systemOverlayStyle: const SystemUiOverlayStyle(
         statusBarColor: Colors.transparent,
-        statusBarIconBrightness: Brightness.dark,
+        statusBarIconBrightness: Brightness.light,
       ),
       onStretchTrigger: onStretch,
       flexibleSpace: Container(
@@ -171,19 +171,23 @@ class CustomSliverAppBar extends StatelessWidget {
     return Row(
       children: [
         const SizedBox(width: 8),
-        ShadButton.ghost(
-          onPressed: onBackPressed ?? () => Navigator.of(context).pop(),
-          decoration: const ShadDecoration(
-            color: Colors.white,
+        Container(
+          width: 36,
+          height: 36,
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.14),
             shape: BoxShape.circle,
           ),
-          width: 40,
-          height: 40,
-          padding: EdgeInsets.zero,
-          child: Icon(
-            LucideIcons.arrowLeft,
-            size: 16,
-            color: foregroundColor ?? Colors.black,
+          child: Center(
+            child: IconButton(
+              padding: EdgeInsets.zero,
+              icon: Icon(
+                LucideIcons.arrowLeft,
+                size: 16,
+                color: foregroundColor ?? Colors.white,
+              ),
+              onPressed: onBackPressed ?? () => Navigator.of(context).pop(),
+            ),
           ),
         ),
       ],
@@ -231,30 +235,45 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
             title,
             style: TextStyle(
               fontFamily: 'Manrope',
-              fontSize: 20,
-              fontWeight: FontWeight.w600,
-              color: foregroundColor ?? AppColors.onSurface,
+              fontSize: 18,
+              fontWeight: FontWeight.w700,
+              color: foregroundColor ?? Colors.white,
+              letterSpacing: -0.3,
             ),
           ),
-      backgroundColor: backgroundColor ?? AppColors.surface,
-      foregroundColor: foregroundColor ?? AppColors.onSurface,
+      backgroundColor: backgroundColor ?? const Color(0xFF14171F),
+      foregroundColor: foregroundColor ?? Colors.white,
       elevation: elevation ?? 0,
       centerTitle: centerTitle,
       leading: leading ?? (showBackButton ? _buildBackButton(context) : null),
       actions: actions,
       bottom: bottom,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(bottom: Radius.circular(20)),
+      ),
       systemOverlayStyle: const SystemUiOverlayStyle(
         statusBarColor: Colors.transparent,
-        statusBarIconBrightness: Brightness.dark,
+        statusBarIconBrightness: Brightness.light,
       ),
     );
   }
 
   Widget _buildBackButton(BuildContext context) {
     return IconButton(
-      icon: Icon(
-        LucideIcons.arrowLeft,
-        color: foregroundColorButton ?? foregroundColor ?? AppColors.onSurface,
+      icon: Container(
+        width: 36,
+        height: 36,
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.12),
+          shape: BoxShape.circle,
+        ),
+        child: Center(
+          child: Icon(
+            LucideIcons.arrowLeft,
+            size: 18,
+            color: foregroundColorButton ?? foregroundColor ?? Colors.white,
+          ),
+        ),
       ),
       onPressed: onBackPressed ?? () => Navigator.of(context).pop(),
     );

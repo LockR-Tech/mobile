@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -149,23 +150,22 @@ class BrandAvatar extends StatelessWidget {
   }
 }
 
-/// Circular icon button (white by default) used in hero headers and as
-/// floating actions over images (back button, favourite heart, etc.).
+/// Circular icon button with dark glass styling matching the Home page hero card.
 class BrandCircleIconButton extends StatelessWidget {
   const BrandCircleIconButton({
     super.key,
     required this.icon,
     required this.onTap,
-    this.iconColor = AislBrand.navy,
-    this.background = Colors.white,
+    this.iconColor = Colors.white,
+    this.background,
     this.size = 40,
-    this.iconSize = 22,
+    this.iconSize = 20,
   });
 
   final IconData icon;
   final VoidCallback onTap;
   final Color iconColor;
-  final Color background;
+  final Color? background;
   final double size;
   final double iconSize;
 
@@ -178,12 +178,16 @@ class BrandCircleIconButton extends StatelessWidget {
         width: size,
         height: size,
         decoration: BoxDecoration(
-          color: background,
+          color: background ?? Colors.white.withValues(alpha: 0.12),
           shape: BoxShape.circle,
+          border: Border.all(
+            color: Colors.white.withValues(alpha: 0.18),
+            width: 1,
+          ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.10),
-              blurRadius: 4,
+              color: Colors.black.withValues(alpha: 0.15),
+              blurRadius: 6,
               offset: const Offset(0, 2),
             ),
           ],
@@ -194,36 +198,36 @@ class BrandCircleIconButton extends StatelessWidget {
   }
 }
 
-/// Soft-gradient hero header with rounded bottom corners, an optional back
-/// button and an optional trailing action. Used at the top of the user
-/// screens in place of a plain [AppBar].
+/// Premium dark hero header with rounded bottom corners, styled to match the
+/// Home page hero card.
 class BrandHeroHeader extends StatelessWidget {
   const BrandHeroHeader({
     super.key,
     required this.title,
     this.subtitle,
+    this.eyebrow,
     this.onBack,
     this.trailing,
     this.showBackButton,
+    this.titleColor = Colors.white,
+    this.subtitleColor = const Color(0xFF94A3B8),
+    this.backgroundColor,
+    this.imageAsset = 'assets/images/box_stack_3d.png',
   });
 
   final String title;
   final String? subtitle;
+  final String? eyebrow;
   final VoidCallback? onBack;
   final Widget? trailing;
   final bool? showBackButton;
+  final Color titleColor;
+  final Color subtitleColor;
+  final Color? backgroundColor;
+  final String? imageAsset;
 
   @override
   Widget build(BuildContext context) {
-    final isDark = context.isDark;
-    final gradientColors = isDark
-        ? const <Color>[Color(0xFF061A30), Color(0xFF0A2342), Color(0xFF0D2B4A)]
-        : AislBrand.softHeaderGradient;
-    final titleColor = isDark ? const Color(0xFFF1F5F9) : AislBrand.navy;
-    final subtitleColor = isDark
-        ? const Color(0xFF94A3B8)
-        : AislBrand.navy.withValues(alpha: 0.8);
-
     final canPop = Navigator.of(context).canPop();
     final shouldShowBack = showBackButton ?? (onBack != null || canPop);
     final effectiveOnBack = shouldShowBack
@@ -232,71 +236,111 @@ class BrandHeroHeader extends StatelessWidget {
 
     return Container(
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: gradientColors,
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: const BorderRadius.vertical(bottom: Radius.circular(30)),
+        color: backgroundColor ?? const Color(0xFF14171F),
+        borderRadius: const BorderRadius.vertical(bottom: Radius.circular(28)),
         boxShadow: [
           BoxShadow(
-            color: isDark
-                ? const Color(0xFF000000).withValues(alpha: 0.4)
-                : const Color(0x1A000000),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+            color: Colors.black.withValues(alpha: 0.22),
+            blurRadius: 18,
+            offset: const Offset(0, 6),
           ),
         ],
       ),
-      child: SafeArea(
-        bottom: false,
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 14, 20, 22),
-          child: Row(
-            children: [
-              if (effectiveOnBack != null) ...[
-                BrandCircleIconButton(
-                  icon: Icons.arrow_back,
-                  onTap: effectiveOnBack,
-                  size: 40,
-                ),
-                const SizedBox(width: 14),
-              ],
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      title,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.w900,
-                        color: titleColor,
-                        letterSpacing: -0.5,
+      child: ClipRRect(
+        borderRadius: const BorderRadius.vertical(bottom: Radius.circular(28)),
+        child: Stack(
+          children: [
+            // Optional subtle decorative 3D asset in corner (like home hero card)
+            if (imageAsset != null)
+              Positioned(
+                right: -6,
+                bottom: -6,
+                child: IgnorePointer(
+                  child: Opacity(
+                    opacity: 0.35,
+                    child: SizedBox(
+                      width: 105,
+                      height: 90,
+                      child: Image.asset(
+                        imageAsset!,
+                        fit: BoxFit.contain,
+                        alignment: Alignment.bottomRight,
+                        errorBuilder: (context, error, stackTrace) =>
+                            const SizedBox.shrink(),
                       ),
                     ),
-                    if (subtitle != null) ...[
-                      const SizedBox(height: 4),
-                      Text(
-                        subtitle!,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w500,
-                          color: subtitleColor,
-                        ),
+                  ),
+                ),
+              ),
+            SafeArea(
+              bottom: false,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 14, 20, 22),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    if (effectiveOnBack != null) ...[
+                      BrandCircleIconButton(
+                        icon: Icons.arrow_back,
+                        onTap: effectiveOnBack,
+                        size: 40,
+                        iconSize: 20,
+                        background: Colors.white.withValues(alpha: 0.12),
+                        iconColor: Colors.white,
                       ),
+                      const SizedBox(width: 14),
+                    ],
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            eyebrow ?? 'LOCK.R • HỆ THỐNG TỦ THÔNG MINH',
+                            style: const TextStyle(
+                              color: Color(0xFF94A3B8),
+                              fontSize: 10,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: 1.0,
+                            ),
+                          ),
+                          const SizedBox(height: 5),
+                          Text(
+                            title,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: 22,
+                              fontWeight: FontWeight.w800,
+                              color: titleColor,
+                              letterSpacing: -0.4,
+                            ),
+                          ),
+                          if (subtitle != null) ...[
+                            const SizedBox(height: 3),
+                            Text(
+                              subtitle!,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 12.5,
+                                fontWeight: FontWeight.w400,
+                                color: subtitleColor,
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                    if (trailing != null) ...[
+                      const SizedBox(width: 10),
+                      trailing!,
                     ],
                   ],
                 ),
               ),
-              if (trailing != null) trailing!,
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
@@ -448,45 +492,57 @@ class BrandStatusBadge extends StatelessWidget {
     required this.label,
     this.dotColor = AislBrand.statusGreen,
     this.textColor = AislBrand.statusGreenText,
+    this.backgroundColor,
   });
 
   final String label;
   final Color dotColor;
   final Color textColor;
+  final Color? backgroundColor;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.95),
-        borderRadius: BorderRadius.circular(100),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            width: 8,
-            height: 8,
-            decoration: BoxDecoration(color: dotColor, shape: BoxShape.circle),
-          ),
-          const SizedBox(width: 6),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w700,
-              color: textColor,
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(100),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+          decoration: BoxDecoration(
+            color: backgroundColor ?? Colors.white.withValues(alpha: 0.65),
+            borderRadius: BorderRadius.circular(100),
+            border: Border.all(
+              color: Colors.white.withValues(alpha: 0.40),
+              width: 0.8,
             ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.08),
+                blurRadius: 6,
+                offset: const Offset(0, 2),
+              ),
+            ],
           ),
-        ],
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 7,
+                height: 7,
+                decoration: BoxDecoration(color: dotColor, shape: BoxShape.circle),
+              ),
+              const SizedBox(width: 5),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 11.5,
+                  fontWeight: FontWeight.w700,
+                  color: textColor,
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -509,7 +565,7 @@ class _HighlightBanner extends StatelessWidget {
   static const _textStyle = TextStyle(
     fontSize: 15,
     fontWeight: FontWeight.w800,
-    color: Color.fromARGB(255, 229, 255, 133),
+    color: Colors.white,
     letterSpacing: 0.3,
   );
 

@@ -11,6 +11,7 @@ import 'package:flutter/services.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
+import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
 
 class ProfileDetailPage extends StatefulWidget {
   const ProfileDetailPage({super.key});
@@ -47,56 +48,34 @@ class _ProfileDetailPageState extends State<ProfileDetailPage> {
       value: _profileProvider,
       child: Scaffold(
         backgroundColor: AppColors.white,
-        appBar: AppBar(
-          backgroundColor: const Color(0xFFFF9F43),
-          elevation: 2,
-          systemOverlayStyle: SystemUiOverlayStyle.light,
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back, color: Colors.white),
-            onPressed: () => Navigator.of(context).pop(),
-          ),
-          title: const Text(
-            'Thông tin cá nhân',
-            style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
-          ),
-          centerTitle: false,
-          actions: [
-            Consumer<ProfileProvider>(
-              builder: (context, provider, child) {
-                final enabled = !provider.isLoading && provider.profile != null;
-                return IconButton(
-                  onPressed: enabled
-                      ? () async {
-                          final updated = await context.push(
-                            AppRouter.editProfile,
-                            extra: provider.profile,
-                          );
-                          if (updated == true && mounted) {
-                            await provider.loadProfile();
-                          }
-                        }
-                      : null,
-                  icon: Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.2),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Icon(
-                      LucideIcons.pencil,
-                      size: 20,
-                      color: enabled
-                          ? Colors.white
-                          : Colors.white.withOpacity(0.5),
-                    ),
-                  ),
-                );
-              },
+        body: Column(
+          children: [
+            BrandHeroHeader(
+              title: 'Thông tin cá nhân',
+              subtitle: 'Chi tiết tài khoản của bạn',
+              onBack: () => Navigator.of(context).pop(),
+              trailing: Consumer<ProfileProvider>(
+                builder: (context, provider, child) {
+                  final enabled = !provider.isLoading && provider.profile != null;
+                  return BrandCircleIconButton(
+                    icon: LucideIcons.pencil,
+                    iconSize: 18,
+                    onTap: () async {
+                      if (!enabled) return;
+                      final updated = await context.push(
+                        AppRouter.editProfile,
+                        extra: provider.profile,
+                      );
+                      if (updated == true && mounted) {
+                        await provider.loadProfile();
+                      }
+                    },
+                  );
+                },
+              ),
             ),
-          ],
-        ),
-        body: SafeArea(
-          child: Consumer<ProfileProvider>(
+            Expanded(
+              child: Consumer<ProfileProvider>(
             builder: (context, provider, child) {
               if (provider.isLoading && provider.profile == null) {
                 return const Center(child: CircularProgressIndicator());
@@ -356,7 +335,9 @@ class _ProfileDetailPageState extends State<ProfileDetailPage> {
             },
           ),
         ),
-      ),
-    );
+      ],
+    ),
+  ),
+);
   }
 }

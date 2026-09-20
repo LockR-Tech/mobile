@@ -11,6 +11,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
+import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
 
 class EditProfilePage extends StatefulWidget {
   const EditProfilePage({super.key, this.profile});
@@ -222,46 +223,45 @@ class _EditProfilePageState extends State<EditProfilePage> {
       value: _profileProvider,
       child: Scaffold(
         backgroundColor: AppColors.white,
-        appBar: AppBar(
-          backgroundColor: AppColors.white,
-          elevation: 0,
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back, color: AppColors.onBackground),
-            onPressed: () => Navigator.of(context).pop(),
-          ),
-          title: const Text(
-            'Chỉnh sửa hồ sơ',
-            style: TextStyle(
-              color: AppColors.onBackground,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          centerTitle: false,
-          actions: [
-            Consumer<ProfileProvider>(
-              builder: (context, provider, child) {
-                return TextButton(
-                  onPressed: provider.isLoading ? null : _handleSave,
-                  style: TextButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                  ),
-                  child: Text(
-                    'Lưu',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: provider.isLoading
-                          ? AppColors.grey400
-                          : AppColors.primary,
+        body: Column(
+          children: [
+            BrandHeroHeader(
+              title: 'Chỉnh sửa hồ sơ',
+              subtitle: 'Cập nhật thông tin tài khoản',
+              onBack: () => Navigator.of(context).pop(),
+              trailing: Consumer<ProfileProvider>(
+                builder: (context, provider, child) {
+                  return GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTap: provider.isLoading ? null : _handleSave,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 8,
+                      ),
+                      decoration: BoxDecoration(
+                        color: provider.isLoading
+                            ? Colors.white.withValues(alpha: 0.1)
+                            : Colors.white,
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text(
+                        'Lưu',
+                        style: TextStyle(
+                          color: provider.isLoading
+                              ? Colors.white54
+                              : const Color(0xFF14171F),
+                          fontWeight: FontWeight.w700,
+                          fontSize: 14,
+                        ),
+                      ),
                     ),
-                  ),
-                );
-              },
+                  );
+                },
+              ),
             ),
-          ],
-        ),
-        body: SafeArea(
-          child: Consumer<ProfileProvider>(
+            Expanded(
+              child: Consumer<ProfileProvider>(
             builder: (context, provider, child) {
               final effectiveProfile = provider.profile ?? widget.profile;
 
@@ -456,7 +456,9 @@ class _EditProfilePageState extends State<EditProfilePage> {
             },
           ),
         ),
-      ),
-    );
+      ],
+    ),
+  ),
+);
   }
 }

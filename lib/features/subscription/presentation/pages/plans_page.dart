@@ -13,6 +13,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:intl/intl.dart';
+import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
 
 class PlansPage extends StatefulWidget {
   const PlansPage({super.key});
@@ -69,137 +70,139 @@ class _PlansPageState extends State<PlansPage> {
           }
         },
         child: Scaffold(
-          backgroundColor: const Color(0xFFFFFAF7),
-          appBar: AppBar(
-            title: const Text('Gói cước & Ưu đãi'),
-            backgroundColor: const Color(0xFFFFFAF7),
-            foregroundColor: AppColors.onBackground,
-            elevation: 0,
-            actions: [
-              Builder(
-                builder: (ctx) {
-                  return IconButton(
-                    icon: const Icon(Icons.refresh, size: 22),
-                    onPressed: () {
-                      ctx.read<SubscriptionBloc>().add(
-                        const FetchPlansCustomerEvent(),
-                      );
-                      ctx.read<SubscriptionBloc>().add(
-                        const FetchActiveSubscriptionEvent(),
-                      );
-                    },
-                  );
-                },
+          backgroundColor: const Color(0xFFF7FAFC),
+          body: Column(
+            children: [
+              BrandHeroHeader(
+                title: 'Gói cước & Ưu đãi',
+                subtitle: 'Tiết kiệm hơn với các gói thành viên Lock.R',
+                onBack: () => Navigator.of(context).pop(),
+                trailing: Builder(
+                  builder: (ctx) {
+                    return BrandCircleIconButton(
+                      icon: Icons.refresh,
+                      onTap: () {
+                        ctx.read<SubscriptionBloc>().add(
+                          const FetchPlansCustomerEvent(),
+                        );
+                        ctx.read<SubscriptionBloc>().add(
+                          const FetchActiveSubscriptionEvent(),
+                        );
+                      },
+                    );
+                  },
+                ),
               ),
-              const SizedBox(width: 8),
-            ],
-          ),
-          body: BlocBuilder<SubscriptionBloc, SubscriptionState>(
-            builder: (context, state) {
-              final plans = state.plans;
-              if (state is SubscriptionLoading && plans.isEmpty) {
-                return const Center(child: CircularProgressIndicator());
-              }
-              if (plans.isEmpty) {
-                return const Center(child: Text('Không có dữ liệu gói cước.'));
-              }
+              Expanded(
+                child: BlocBuilder<SubscriptionBloc, SubscriptionState>(
+                  builder: (context, state) {
+                    final plans = state.plans;
+                    if (state is SubscriptionLoading && plans.isEmpty) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+                    if (plans.isEmpty) {
+                      return const Center(child: Text('Không có dữ liệu gói cước.'));
+                    }
 
-              return Column(
-                children: [
-                  if (state.activeSubscription != null) ...[
-                    Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 8,
-                      ),
-                      child: Container(
-                        padding: const EdgeInsets.all(14),
-                        decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                            colors: [AppColors.success, Color(0xFF059669)],
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                          ),
-                          borderRadius: BorderRadius.circular(16),
-                          boxShadow: [
-                            BoxShadow(
-                              color: AppColors.success.withValues(alpha: 0.2),
-                              blurRadius: 10,
-                              offset: const Offset(0, 4),
+                    return Column(
+                      children: [
+                        if (state.activeSubscription != null) ...[
+                          Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 8,
                             ),
-                          ],
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                const Icon(
-                                  Icons.verified,
-                                  color: Colors.white,
-                                  size: 22,
+                            child: Container(
+                              padding: const EdgeInsets.all(14),
+                              decoration: BoxDecoration(
+                                gradient: const LinearGradient(
+                                  colors: [AppColors.success, Color(0xFF059669)],
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
                                 ),
-                                const SizedBox(width: 8),
-                                Expanded(
-                                  child: Text(
-                                    'GÓI ĐANG HOẠT ĐỘNG',
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      letterSpacing: 1,
-                                      fontWeight: FontWeight.w900,
-                                      color: Colors.white.withOpacity(0.9),
+                                borderRadius: BorderRadius.circular(16),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: AppColors.success.withValues(alpha: 0.2),
+                                    blurRadius: 10,
+                                    offset: const Offset(0, 4),
+                                  ),
+                                ],
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      const Icon(
+                                        Icons.verified,
+                                        color: Colors.white,
+                                        size: 22,
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Expanded(
+                                        child: Text(
+                                          'GÓI ĐANG HOẠT ĐỘNG',
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            letterSpacing: 1,
+                                            fontWeight: FontWeight.w900,
+                                            color: Colors.white.withOpacity(0.9),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 6),
+                                  Text(
+                                    state.activeSubscription?.plan?.name ?? '-',
+                                    style: const TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w800,
+                                      color: Colors.white,
                                     ),
                                   ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 6),
-                            Text(
-                              state.activeSubscription?.plan?.name ?? '-',
-                              style: const TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w800,
-                                color: Colors.white,
+                                  if (state.activeSubscription?.endDate != null) ...[
+                                    const SizedBox(height: 6),
+                                    Text(
+                                      'Hạn sử dụng: ${DateFormat('dd/MM/yyyy HH:mm').format(state.activeSubscription!.endDate!.toLocal())}',
+                                      style: TextStyle(
+                                        fontSize: 13,
+                                        color: Colors.white.withOpacity(0.85),
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ],
+                                ],
                               ),
                             ),
-                            if (state.activeSubscription?.endDate != null) ...[
-                              const SizedBox(height: 6),
-                              Text(
-                                'Hạn sử dụng: ${DateFormat('dd/MM/yyyy HH:mm').format(state.activeSubscription!.endDate!.toLocal())}',
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  color: Colors.white.withOpacity(0.85),
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                            ],
-                          ],
+                          ),
+                        ],
+                        const SizedBox(height: 10),
+                        const Text(
+                          'CHỌN GÓI CỦA BẠN',
+                          style: TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: -0.5,
+                          ),
                         ),
-                      ),
-                    ),
-                  ],
-                  const SizedBox(height: 10),
-                  const Text(
-                    'CHỌN GÓI CỦA BẠN',
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: -0.5,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  const Text(
-                    'Vuốt để khám phá các ưu đãi độc quyền',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: AppColors.grey600,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  const Expanded(child: _PlansCarousel()),
-                ],
-              );
-            },
+                        const SizedBox(height: 4),
+                        const Text(
+                          'Vuốt để khám phá các ưu đãi độc quyền',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: AppColors.grey600,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        const Expanded(child: _PlansCarousel()),
+                      ],
+                    );
+                  },
+                ),
+              ),
+            ],
           ),
         ),
       ),

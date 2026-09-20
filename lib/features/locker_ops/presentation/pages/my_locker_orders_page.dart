@@ -324,6 +324,7 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
 
   Future<void> _reportDialog({
     required int orderId,
+
     /// Nhãn ô cho người đọc (`ô số 4`), đã tra sẵn từ sơ đồ tủ.
     String boxLabel = 'ô này',
   }) async {
@@ -744,9 +745,9 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
                   order['sendBoxId'],
                 )],
             receiveBoxNumber:
-                _lockerBoxesMap[_asInt(order['destinationLockerId'] ?? order['lockerId'])]?[_asInt(
-                  order['receiveBoxId'],
-                )],
+                _lockerBoxesMap[_asInt(
+                  order['destinationLockerId'] ?? order['lockerId'],
+                )]?[_asInt(order['receiveBoxId'])],
             onReorder: (id) async {
               Navigator.pop(ctx);
               await _runAction(
@@ -832,6 +833,7 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
           BrandHeroHeader(
             title: 'Đơn tủ',
             subtitle: 'Quản lý các đơn hàng của bạn',
+            imageAsset: 'assets/images/box_stack_3d.png',
             trailing: BrandCircleIconButton(
               icon: LucideIcons.refreshCw,
               onTap: _load,
@@ -1020,6 +1022,14 @@ class _TypeChip extends StatelessWidget {
 
 // ── Order card (Grab style) ───────────────────────────────────────────────────
 
+bool _isDeliveryOrder(String? type) {
+  final upper = (type ?? '').toUpperCase();
+  return upper.contains('SEND') ||
+      upper.contains('DRONE') ||
+      upper.contains('DELIVERY') ||
+      upper.contains('PARCEL');
+}
+
 class _OrderCard extends StatelessWidget {
   const _OrderCard({
     required this.order,
@@ -1059,42 +1069,75 @@ class _OrderCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 14, 16, 0),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Left: content
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Service type + time
-                        Wrap(
-                          spacing: 8,
-                          runSpacing: 4,
-                          crossAxisAlignment: WrapCrossAlignment.center,
-                          children: [
-                            Text(
-                              typeLabel(type),
+            Stack(
+              clipBehavior: Clip.antiAlias,
+              children: [
+                // 3D asset nestled in bottom-right corner (matching sample image 2)
+                Positioned(
+                  bottom: -6,
+                  right: -4,
+                  child: IgnorePointer(
+                    child: SizedBox(
+                      width: 112,
+                      height: 100,
+                      child: Image.asset(
+                        _isDeliveryOrder(type)
+                            ? 'assets/images/air_delivery_3d.png'
+                            : 'assets/images/box_stack_3d.png',
+                        fit: BoxFit.contain,
+                        alignment: Alignment.bottomRight,
+                        errorBuilder: (context, error, stackTrace) =>
+                            const SizedBox.shrink(),
+                      ),
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Order Code + Status Badge Row
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Expanded(
+                            child: Text(
+                              order['orderCode'] != null &&
+                                      order['orderCode'].toString().isNotEmpty
+                                  ? '#${order['orderCode']}'
+                                  : '#ORD-${order['id'] ?? ''}',
                               style: TextStyle(
-                                fontSize: 13,
-                                color: context.textMuted,
-                                fontWeight: FontWeight.w500,
+                                fontSize: 14.5,
+                                fontWeight: FontWeight.w800,
+                                color: context.textPrimary,
+                                letterSpacing: -0.2,
                               ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
-                            if (deadline != null)
-                              Text(
-                                fmtDateTime(deadline),
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  color: context.textMuted,
-                                ),
-                              ),
-                            Text(
+                          ),
+                          const SizedBox(width: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 9,
+                              vertical: 3.5,
+                            ),
+                            decoration: BoxDecoration(
+                              color:
+                                  (isDone
+                                          ? const Color(0xFF16A34A)
+                                          : overdue
+                                          ? const Color(0xFFDC2626)
+                                          : sColor)
+                                      .withValues(alpha: 0.12),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Text(
                               statusLabel(status),
                               style: TextStyle(
-                                fontSize: 13,
+                                fontSize: 11.5,
                                 fontWeight: FontWeight.w700,
                                 color: isDone
                                     ? const Color(0xFF16A34A)
@@ -1103,76 +1146,113 @@ class _OrderCard extends StatelessWidget {
                                     : sColor,
                               ),
                             ),
-                          ],
-                        ),
-                        const SizedBox(height: 12),
-                        // Route: Tủ and Ô
-                        _RouteRow(
-                          isOrigin: true,
-                          text: lockerName ?? 'Chưa tra được tên tủ',
-                        ),
-                        const SizedBox(height: 8),
-                        _RouteRow(
-                          isOrigin: false,
-                          text:
-                              _orderBoxLabel(sendBoxNumber: sendBoxNumber, receiveBoxNumber: receiveBoxNumber),
-                        ),
-                        const SizedBox(height: 14),
-                        // Price + action
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 6),
+                      // Service type + deadline
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 4,
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        children: [
+                          Text(
+                            typeLabel(type),
+                            style: TextStyle(
+                              fontSize: 12.5,
+                              color: context.textMuted,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          if (deadline != null) ...[
                             Text(
-                              fmtPrice(order['totalPrice']),
+                              '•',
                               style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w800,
-                                color: context.textPrimary,
+                                fontSize: 12,
+                                color: context.textMuted,
                               ),
                             ),
-                            const Spacer(),
-                            GestureDetector(
-                              onTap: onTap,
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 14,
-                                  vertical: 7,
-                                ),
-                                decoration: BoxDecoration(
-                                  border: Border.all(
-                                    color: context.borderColor,
-                                    width: 1.5,
-                                  ),
-                                  borderRadius: BorderRadius.circular(20),
-                                ),
-                                child: Text(
-                                  'Xem lại',
-                                  style: TextStyle(
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w600,
-                                    color: context.textPrimary,
-                                  ),
-                                ),
+                            Text(
+                              'Hạn lấy: ${fmtDateTime(deadline)}',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: overdue
+                                    ? const Color(0xFFDC2626)
+                                    : context.textMuted,
+                                fontWeight: overdue
+                                    ? FontWeight.w700
+                                    : FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      // Route: Tủ and Ô
+                      Padding(
+                        padding: const EdgeInsets.only(right: 90),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _RouteRow(
+                              isOrigin: true,
+                              text: lockerName ?? 'Chưa tra được tên tủ',
+                            ),
+                            const SizedBox(height: 8),
+                            _RouteRow(
+                              isOrigin: false,
+                              text: _orderBoxLabel(
+                                sendBoxNumber: sendBoxNumber,
+                                receiveBoxNumber: receiveBoxNumber,
                               ),
                             ),
                           ],
                         ),
-                      ],
-                    ),
+                      ),
+                      const SizedBox(height: 14),
+                      // Price + action
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Text(
+                            fmtPrice(order['totalPrice']),
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w800,
+                              color: context.textPrimary,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          GestureDetector(
+                            onTap: onTap,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 14,
+                                vertical: 6,
+                              ),
+                              decoration: BoxDecoration(
+                                border: Border.all(
+                                  color: context.borderColor,
+                                  width: 1.5,
+                                ),
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: Text(
+                                'Xem lại',
+                                style: TextStyle(
+                                  fontSize: 12.5,
+                                  fontWeight: FontWeight.w600,
+                                  color: context.textPrimary,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
-                  const SizedBox(width: 14),
-                  // Right: service icon
-                  Container(
-                    width: 56,
-                    height: 56,
-                    decoration: BoxDecoration(
-                      color: sColor.withValues(alpha: 0.10),
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(typeIcon(type), color: sColor, size: 26),
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
             const SizedBox(height: 14),
             // Overdue banner
@@ -1508,8 +1588,11 @@ class _DetailSheet extends StatelessWidget {
     final promotionCode = (order['promotionCode'] as String?)?.trim();
     final createdAt = order['createdAt'];
 
-    final canDrop = rawStatus == 'INITIALIZED' &&
-        (paymentStatus == 'PAID' || totalNum <= 0 || order['paymentRequired'] == false) &&
+    final canDrop =
+        rawStatus == 'INITIALIZED' &&
+        (paymentStatus == 'PAID' ||
+            totalNum <= 0 ||
+            order['paymentRequired'] == false) &&
         boxId != null;
 
     final actions = <Widget>[
@@ -1551,7 +1634,8 @@ class _DetailSheet extends StatelessWidget {
           onTap: () => onConfirmDrop(id),
         ),
       if (canUsePickupActions &&
-          (rawStatus == 'RETURNED' || (rawStatus == 'STORING' && !isRental))) ...[
+          (rawStatus == 'RETURNED' ||
+              (rawStatus == 'STORING' && !isRental))) ...[
         OpsSheetAction(
           label: 'Mở $boxLabel để lấy đồ',
           icon: LucideIcons.doorOpen,
@@ -1620,16 +1704,27 @@ class _DetailSheet extends StatelessWidget {
         Row(
           children: [
             Container(
-              width: 44,
-              height: 44,
+              width: 48,
+              height: 48,
               decoration: BoxDecoration(
                 color: statusColor(status).withValues(alpha: 0.10),
                 borderRadius: BorderRadius.circular(14),
+                border: Border.all(
+                  color: statusColor(status).withValues(alpha: 0.18),
+                  width: 1,
+                ),
               ),
-              child: Icon(
-                typeIcon(order['type'] as String?),
-                color: statusColor(status),
-                size: 22,
+              padding: const EdgeInsets.all(4),
+              child: Image.asset(
+                _isDeliveryOrder(order['type'] as String?)
+                    ? 'assets/images/air_delivery_3d.png'
+                    : 'assets/images/box_stack_3d.png',
+                fit: BoxFit.contain,
+                errorBuilder: (context, error, stackTrace) => Icon(
+                  typeIcon(order['type'] as String?),
+                  color: statusColor(status),
+                  size: 24,
+                ),
               ),
             ),
             const SizedBox(width: 12),
@@ -1809,12 +1904,7 @@ class _PaymentMethodPicker extends StatelessWidget {
   Widget build(BuildContext context) {
     final insufficient = walletBalance < total;
     bool enabled(String method) => enabledMethods.contains(method);
-    final hasAnyMethod = const [
-      'WALLET',
-      'VNPAY',
-      'MOMO',
-      'CASH',
-    ].any(enabled);
+    final hasAnyMethod = const ['WALLET', 'VNPAY', 'MOMO', 'CASH'].any(enabled);
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 4, 20, 24),
       child: Column(
@@ -1839,7 +1929,8 @@ class _PaymentMethodPicker extends StatelessWidget {
             const OpsBanner(
               tone: OpsBannerTone.warning,
               icon: LucideIcons.badgeAlert,
-              text: 'Hiện chưa có phương thức thanh toán nào khả dụng. '
+              text:
+                  'Hiện chưa có phương thức thanh toán nào khả dụng. '
                   'Vui lòng thử lại sau.',
             ),
           if (enabled('WALLET'))

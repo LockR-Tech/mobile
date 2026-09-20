@@ -10,6 +10,7 @@ import 'package:smart_laundry_locker/features/transactions/presentation/provider
 import 'package:smart_laundry_locker/features/transactions/presentation/providers/transaction_provider.dart';
 import 'package:smart_laundry_locker/features/wallet/presentation/providers/wallet_provider.dart';
 import 'package:smart_laundry_locker/core/utils/currency_formatter.dart';
+import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
 
 class TransactionsPage extends StatefulWidget {
   const TransactionsPage({super.key});
@@ -44,64 +45,35 @@ class _TransactionsPageState extends State<TransactionsPage> {
   Widget build(BuildContext context) {
     final screenH = MediaQuery.sizeOf(context).height;
 
-    // Header navy cố định ~80, nhưng vẫn tương đối theo chiều cao màn
-    final expandedHeaderHeight = (screenH * 0.10).clamp(72.0, 80.0);
-
     return ChangeNotifierProvider.value(
       value: _provider,
       child: Scaffold(
         backgroundColor: Colors.grey.shade50,
         body: Consumer2<TransactionProvider, WalletProvider>(
           builder: (context, provider, walletProvider, child) {
-            return RefreshIndicator(
-              onRefresh: () async {
-                await provider.fetchTransactions(refresh: true);
-                if (!context.mounted) return;
-                await context.read<WalletProvider>().getWalletBalance();
-              },
-              child: CustomScrollView(
-                slivers: [
-                  SliverAppBar(
-                    pinned: true,
-                    expandedHeight: expandedHeaderHeight,
-                    backgroundColor: AISLShadcnTheme.navyPrimary,
-                    elevation: 0,
-                    centerTitle: true,
-                    title: const Text(
-                      'LỊCH SỬ GIAO DỊCH',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 20,
-                        letterSpacing: 0.5,
-                      ),
-                    ),
-                    actions: [
-                      IconButton(
-                        icon: const Icon(Icons.refresh, color: Colors.white),
-                        onPressed: () async {
-                          await provider.fetchTransactions(refresh: true);
-                          await walletProvider.getWalletBalance();
-                        },
-                      ),
-                      const SizedBox(width: 8),
-                    ],
-                    flexibleSpace: FlexibleSpaceBar(
-                      background: Container(
-                        decoration: const BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [
-                              AISLShadcnTheme.navyPrimary,
-                              AISLShadcnTheme.navyAccent,
-                            ],
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                          ),
-                        ),
-                      ),
-                    ),
+            return Column(
+              children: [
+                BrandHeroHeader(
+                  title: 'Lịch sử giao dịch',
+                  subtitle: 'Biến động số dư & chi tiết giao dịch ví',
+                  trailing: BrandCircleIconButton(
+                    icon: Icons.refresh,
+                    onTap: () async {
+                      await provider.fetchTransactions(refresh: true);
+                      await walletProvider.getWalletBalance();
+                    },
                   ),
-                  SliverToBoxAdapter(
+                ),
+                Expanded(
+                  child: RefreshIndicator(
+                    onRefresh: () async {
+                      await provider.fetchTransactions(refresh: true);
+                      if (!context.mounted) return;
+                      await context.read<WalletProvider>().getWalletBalance();
+                    },
+                    child: CustomScrollView(
+                      slivers: [
+                        SliverToBoxAdapter(
                     child: Column(
                       children: [
                         SizedBox(height: screenH * 0.015),
@@ -212,11 +184,14 @@ class _TransactionsPageState extends State<TransactionsPage> {
                   const SliverPadding(padding: EdgeInsets.only(bottom: 24)),
                 ],
               ),
-            );
-          },
-        ),
-      ),
-    );
+            ),
+          ),
+        ],
+      );
+    },
+  ),
+),
+);
   }
 }
 

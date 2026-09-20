@@ -193,12 +193,22 @@ class _LockerUnlockModalState extends State<LockerUnlockModal> with SingleTicker
           Row(
             children: [
               Container(
-                padding: const EdgeInsets.all(10),
+                width: 48,
+                height: 48,
+                padding: const EdgeInsets.all(4),
                 decoration: BoxDecoration(
                   color: opsPrimary.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(14),
                 ),
-                child: const Icon(LucideIcons.doorOpen, color: opsPrimary, size: 24),
+                child: Image.asset(
+                  'assets/images/mobile_pay_3d.png',
+                  fit: BoxFit.contain,
+                  errorBuilder: (context, error, stackTrace) => const Icon(
+                    LucideIcons.smartphone,
+                    color: opsPrimary,
+                    size: 26,
+                  ),
+                ),
               ),
               const SizedBox(width: 12),
               Expanded(

@@ -8,6 +8,7 @@ import 'package:smart_laundry_locker/features/profile/presentation/providers/sec
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:provider/provider.dart';
+import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
 
 class SecurityPage extends StatefulWidget {
   const SecurityPage({super.key});
@@ -341,17 +342,18 @@ class _SecurityPageState extends State<SecurityPage> {
       value: _securityProvider,
       child: Scaffold(
         backgroundColor: AppColors.background,
-        appBar: AppBar(
-          title: const Text('Bảo mật'),
-          backgroundColor: AppColors.background,
-          foregroundColor: AppColors.onBackground,
-          elevation: 0,
-        ),
-        body: SafeArea(
-          child: Consumer<SecurityProvider>(
-            builder: (context, provider, _) {
-              return Padding(
-                padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+        body: Column(
+          children: [
+            BrandHeroHeader(
+              title: 'Bảo mật',
+              subtitle: 'Bảo vệ tài khoản và thiết bị của bạn',
+              onBack: () => Navigator.of(context).pop(),
+            ),
+            Expanded(
+              child: Consumer<SecurityProvider>(
+                builder: (context, provider, _) {
+                  return Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
@@ -547,7 +549,9 @@ class _SecurityPageState extends State<SecurityPage> {
             },
           ),
         ),
-      ),
-    );
+      ],
+    ),
+  ),
+);
   }
 }

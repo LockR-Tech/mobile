@@ -14,6 +14,7 @@ import 'package:smart_laundry_locker/core/utils/enum_translator.dart';
 import 'package:smart_laundry_locker/features/vouchers/presentation/providers/voucher_provider.dart';
 import 'package:smart_laundry_locker/features/vouchers/data/models/voucher_model.dart';
 import 'package:provider/provider.dart';
+import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
 
 class ConfirmRentArgs {
   final String cabinetId;
@@ -670,23 +671,17 @@ class _ConfirmRentBodyState extends State<_ConfirmRentBody> {
       },
       child: Scaffold(
         backgroundColor: Colors.white,
-        appBar: AppBar(
-          elevation: 0,
-          backgroundColor: Colors.white,
-          foregroundColor: Colors.black,
-          centerTitle: true,
-          title: const Text(
-            'XÁC NHẬN THUÊ TỦ',
-            style: TextStyle(
-              fontSize: 17,
-              fontWeight: FontWeight.bold,
-              letterSpacing: 0.35,
+        body: Column(
+          children: [
+            BrandHeroHeader(
+              title: 'Xác nhận thuê tủ',
+              subtitle: 'Kiểm tra gói & thông tin thanh toán',
+              onBack: () => Navigator.of(context).pop(),
             ),
-          ),
-        ),
-        body: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
-          child: Column(
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
+                child: Column(
             children: [
               parentPage._buildPlanInfoCard(),
               const SizedBox(height: 16),
@@ -890,7 +885,10 @@ class _ConfirmRentBodyState extends State<_ConfirmRentBody> {
             ],
           ),
         ),
-        bottomNavigationBar: SafeArea(
+      ),
+    ],
+  ),
+  bottomNavigationBar: SafeArea(
           minimum: const EdgeInsets.fromLTRB(20, 8, 20, 16),
           child: SizedBox(
             width: double.infinity,
