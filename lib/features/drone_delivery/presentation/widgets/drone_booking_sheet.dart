@@ -164,15 +164,21 @@ class _DroneBookingSheetState extends State<DroneBookingSheet>
           Row(
             children: [
               Container(
-                padding: const EdgeInsets.all(10),
+                width: 52,
+                height: 52,
+                padding: const EdgeInsets.all(4),
                 decoration: BoxDecoration(
                   color: const Color(0xFF6366F1).withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(16),
                 ),
-                child: const Icon(
-                  Icons.flight,
-                  color: Color(0xFF6366F1),
-                  size: 26,
+                child: Image.asset(
+                  'assets/images/air_delivery_3d.png',
+                  fit: BoxFit.contain,
+                  errorBuilder: (context, error, stackTrace) => const Icon(
+                    Icons.flight_takeoff,
+                    color: Color(0xFF6366F1),
+                    size: 26,
+                  ),
                 ),
               ),
               const SizedBox(width: 12),

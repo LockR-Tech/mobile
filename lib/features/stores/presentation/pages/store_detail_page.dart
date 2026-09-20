@@ -10,6 +10,7 @@ import 'package:smart_laundry_locker/features/stores/domain/entities/store.dart'
 import 'package:smart_laundry_locker/features/stores/infrastructure/services/store_service.dart';
 import 'package:smart_laundry_locker/features/stores/presentation/pages/store_lockers_page.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
 
 /// Store detail screen: store info + customer ratings.
 ///
@@ -111,16 +112,22 @@ class _StoreDetailPageState extends State<StoreDetailPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AISLShadcnTheme.navySurface,
-      appBar: AppBar(
-        title: const Text('Chi tiết cửa hàng'),
-        backgroundColor: AISLShadcnTheme.navyPrimary,
-        foregroundColor: Colors.white,
+      body: Column(
+        children: [
+          BrandHeroHeader(
+            title: 'Chi tiết cửa hàng',
+            subtitle: _store?.name ?? 'Điểm tủ & đối tác liên kết',
+            onBack: () => Navigator.of(context).pop(),
+          ),
+          Expanded(
+            child: _loading
+                ? const Center(child: CircularProgressIndicator())
+                : _error != null
+                ? _buildError()
+                : _buildContent(_store!),
+          ),
+        ],
       ),
-      body: _loading
-          ? const Center(child: CircularProgressIndicator())
-          : _error != null
-          ? _buildError()
-          : _buildContent(_store!),
     );
   }
 

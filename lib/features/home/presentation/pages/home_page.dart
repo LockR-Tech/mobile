@@ -1,5 +1,4 @@
 import 'package:flutter/services.dart';
-import 'package:smart_laundry_locker/core/config/feature_flags.dart';
 import 'package:smart_laundry_locker/features/promotions/data/models/promotion_model.dart';
 import 'package:smart_laundry_locker/features/promotions/presentation/pages/promotion_detail_page.dart';
 import 'package:smart_laundry_locker/features/promotions/presentation/providers/promotion_provider.dart';
@@ -19,6 +18,9 @@ import 'package:smart_laundry_locker/features/locker/presentation/providers/lock
 import 'package:smart_laundry_locker/features/locker/presentation/providers/locker_providers.dart';
 import 'package:smart_laundry_locker/features/stores/domain/entities/store.dart';
 import 'package:smart_laundry_locker/features/stores/presentation/pages/store_lockers_page.dart';
+import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
+import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/ops_widgets.dart'
+    show statusLabel, typeLabel, statusColor, fmtDateTime;
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
 
 class HomePage extends ConsumerStatefulWidget {
@@ -30,6 +32,9 @@ class HomePage extends ConsumerStatefulWidget {
 
 class _HomePageState extends ConsumerState<HomePage>
     with SingleTickerProviderStateMixin {
+  final LockerOpsService _opsService = LockerOpsService();
+  Map<String, dynamic>? _activeOrder;
+
   @override
   void initState() {
     super.initState();
@@ -41,7 +46,79 @@ class _HomePageState extends ConsumerState<HomePage>
       }
       ref.read(lockerNotifierProvider).getLocations();
       ref.read(promotionNotifierProvider).load();
+      _loadActiveOrder();
     });
+  }
+
+  Future<void> _loadActiveOrder() async {
+    try {
+      final orders = await _opsService.myOrders();
+      if (orders.isNotEmpty && mounted) {
+        final active = orders.firstWhere(
+          (o) {
+            final s = (o['status'] as String? ?? '').toUpperCase();
+            return s != 'COMPLETED' && s != 'CANCELED';
+          },
+          orElse: () => orders.first,
+        );
+
+        final lockerId = int.tryParse(
+          '${active['lockerId'] ?? active['destinationLockerId'] ?? ''}',
+        );
+        String? lockerName = active['lockerName']?.toString();
+        int? boxNumber = int.tryParse('${active['boxNumber'] ?? ''}');
+
+        if (lockerId != null) {
+          if (lockerName == null || lockerName.isEmpty) {
+            final locations = ref.read(lockerNotifierProvider).state.locations;
+            final matched =
+                locations.where((loc) => loc.id == '$lockerId').firstOrNull;
+            if (matched != null) {
+              lockerName = matched.name;
+            } else {
+              try {
+                final info = await _opsService.locker(lockerId);
+                lockerName = info['name']?.toString();
+              } catch (_) {}
+            }
+          }
+
+          if (boxNumber == null) {
+            final boxId = int.tryParse(
+              '${active['sendBoxId'] ?? active['receiveBoxId'] ?? active['boxId'] ?? ''}',
+            );
+            if (boxId != null) {
+              try {
+                final layout = await _opsService.layout(lockerId);
+                final cells = layout['cells'] as List?;
+                if (cells != null) {
+                  for (final c in cells) {
+                    if (int.tryParse('${c['id'] ?? ''}') == boxId) {
+                      boxNumber = int.tryParse('${c['boxNumber'] ?? ''}');
+                      break;
+                    }
+                  }
+                }
+              } catch (_) {}
+            }
+          }
+        }
+
+        final resolved = Map<String, dynamic>.from(active);
+        if (lockerName != null && lockerName.isNotEmpty) {
+          resolved['lockerName'] = lockerName;
+        }
+        if (boxNumber != null) {
+          resolved['boxNumber'] = boxNumber;
+        }
+
+        if (mounted) {
+          setState(() => _activeOrder = resolved);
+        }
+      }
+    } catch (_) {
+      // Keep sample card if network or not logged in
+    }
   }
 
   Future<void> _onRefresh() async {
@@ -51,9 +128,9 @@ class _HomePageState extends ConsumerState<HomePage>
       profile.loadProfile(),
       ref.read(lockerNotifierProvider).getLocations(refresh: true),
       ref.read(promotionNotifierProvider).load(),
+      _loadActiveOrder(),
     ]);
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -69,16 +146,20 @@ class _HomePageState extends ConsumerState<HomePage>
 
   Widget _buildCustomerBody(BuildContext context) {
     return RefreshIndicator(
-      color: AislBrand.navy,
+      color: const Color(0xFF574E00),
       onRefresh: _onRefresh,
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildHeader(context),
+            _buildTopAppBar(context),
+            const SizedBox(height: 12),
+            _buildHeroCard(context),
             const SizedBox(height: 20),
-            _buildChips(context),
+            _buildQuickActionBadges(context),
+            const SizedBox(height: 20),
+            _buildActiveShipmentSection(context),
             const SizedBox(height: 24),
             _buildPopularLockersSection(context),
             const SizedBox(height: 24),
@@ -90,238 +171,116 @@ class _HomePageState extends ConsumerState<HomePage>
     );
   }
 
-  String _greeting() {
-    final hour = DateTime.now().hour;
-    if (hour < 12) return '☀️ Chào buổi sáng';
-    if (hour < 14) return '🌤️ Chào buổi trưa';
-    if (hour < 18) return '🌅 Chào buổi chiều';
-    return '🌙 Chào buổi tối';
-  }
-
-  Widget _buildHeader(BuildContext context) {
+  Widget _buildTopAppBar(BuildContext context) {
     final profile = context.watch<ProfileProvider>().profile;
     final name = (profile?.fullName.trim().isNotEmpty ?? false)
-        ? profile!.fullName
+        ? profile!.fullName.trim()
         : 'Người dùng';
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textColor = isDark ? Colors.white : const Color(0xFF0F172A);
 
-    // Theme-adaptive colours
-    final bgGradient = isDark
-        ? const [Color(0xFF061A30), Color(0xFF0A2845), Color(0xFF0D3055)]
-        : const [Color(0xFFFFFFFF), Color(0xFFEBF5FF), Color(0xFFCBE8F5)];
-    final textColor = isDark ? const Color(0xFFF1F5F9) : AislBrand.navy;
-    final subColor = isDark
-        ? const Color(0xFF94A3B8)
-        : AislBrand.navy.withValues(alpha: 0.65);
-    final circleA = isDark
-        ? Colors.white.withValues(alpha: 0.04)
-        : AislBrand.cyan.withValues(alpha: 0.18);
-    final circleB = isDark
-        ? Colors.white.withValues(alpha: 0.03)
-        : AislBrand.navy.withValues(alpha: 0.06);
-    final accentDot = isDark ? const Color(0xFF38BDF8) : AislBrand.cyan;
-    final cardBg = isDark
-        ? Colors.white.withValues(alpha: 0.07)
-        : AislBrand.navy.withValues(alpha: 0.06);
-    final cardBorder = isDark
-        ? Colors.white.withValues(alpha: 0.12)
-        : AislBrand.navy.withValues(alpha: 0.10);
-    final walletIconBg = isDark
-        ? const Color(0xFF38BDF8).withValues(alpha: 0.15)
-        : AislBrand.cyan.withValues(alpha: 0.20);
-    final walletIconColor = isDark ? const Color(0xFF38BDF8) : AislBrand.navy;
-    final walletLabelColor = isDark
-        ? const Color(0xFF94A3B8)
-        : AislBrand.navy.withValues(alpha: 0.60);
-    final btnBg = isDark ? const Color(0xFF38BDF8) : AislBrand.navy;
-    final btnText = isDark ? const Color(0xFF061A30) : Colors.white;
-    final shadowColor =
-        isDark ? Colors.black.withValues(alpha: 0.4) : const Color(0x1A000000);
-
-    return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: bgGradient,
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: const BorderRadius.vertical(bottom: Radius.circular(30)),
-        boxShadow: [
-          BoxShadow(color: shadowColor, blurRadius: 12, offset: const Offset(0, 4)),
-        ],
-      ),
-      child: ClipRRect(
-        borderRadius: const BorderRadius.vertical(bottom: Radius.circular(30)),
-        child: Stack(
+    return SafeArea(
+      bottom: false,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(20, 10, 20, 6),
+        child: Row(
           children: [
-            // ── Decorative circles (background) ──────────────────────────
-            Positioned(
-              top: -40,
-              right: -40,
-              child: Container(
-                width: 160,
-                height: 160,
-                decoration: BoxDecoration(color: circleA, shape: BoxShape.circle),
+            // Lock.R Brand Logo & Name
+            Container(
+              width: 38,
+              height: 38,
+              decoration: BoxDecoration(
+                color: const Color(0xFF574E00).withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Center(
+                child: Icon(
+                  LucideIcons.box,
+                  color: Color(0xFF574E00),
+                  size: 22,
+                ),
               ),
             ),
-            Positioned(
-              top: 20,
-              right: 60,
-              child: Container(
-                width: 60,
-                height: 60,
-                decoration: BoxDecoration(color: circleB, shape: BoxShape.circle),
+            const SizedBox(width: 10),
+            Text(
+              'Lock.R',
+              style: TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.w800,
+                letterSpacing: -0.5,
+                color: textColor,
               ),
             ),
-            Positioned(
-              bottom: -30,
-              left: -20,
-              child: Container(
-                width: 110,
-                height: 110,
-                decoration: BoxDecoration(color: circleB, shape: BoxShape.circle),
-              ),
-            ),
-            // ── Content ───────────────────────────────────────────────────
-            SafeArea(
-              bottom: false,
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 16, 20, 22),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    // Row 1: Avatar / greeting / bell
-                    Row(
+            const Spacer(),
+            // Bell Notification with Dot
+            Consumer<NotificationProvider>(
+              builder: (context, provider, _) {
+                final count = provider.unreadCount;
+                return GestureDetector(
+                  onTap: () => context.push(AppRouter.notifications),
+                  behavior: HitTestBehavior.opaque,
+                  child: Container(
+                    width: 42,
+                    height: 42,
+                    decoration: BoxDecoration(
+                      color: isDark
+                          ? Colors.white.withValues(alpha: 0.08)
+                          : const Color(0xFFF1F5F9),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Stack(
+                      alignment: Alignment.center,
                       children: [
-                        BrandAvatar(
-                          imageUrl: profile?.avatarUrl,
-                          name: name,
-                          size: 48,
+                        Icon(
+                          LucideIcons.bell,
+                          size: 21,
+                          color: textColor,
                         ),
-                        const SizedBox(width: 14),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(
-                                'Hi $name!',
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
-                                  fontSize: 22,
-                                  fontWeight: FontWeight.w800,
-                                  color: textColor,
-                                ),
+                        if (count > 0)
+                          Positioned(
+                            top: 9,
+                            right: 10,
+                            child: Container(
+                              width: 8,
+                              height: 8,
+                              decoration: const BoxDecoration(
+                                color: Color(0xFF574E00),
+                                shape: BoxShape.circle,
                               ),
-                              const SizedBox(height: 3),
-                              Row(
-                                children: [
-                                  Container(
-                                    width: 6,
-                                    height: 6,
-                                    decoration: BoxDecoration(
-                                      color: accentDot,
-                                      shape: BoxShape.circle,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 5),
-                                  Text(
-                                    _greeting(),
-                                    style: TextStyle(fontSize: 13, color: subColor),
-                                  ),
-                                ],
-                              ),
-                            ],
+                            ),
                           ),
-                        ),
-                        _buildBell(context, isDark: isDark),
                       ],
                     ),
-
-                    // Row 2: Wallet card
-                    if (FeatureFlags.walletEnabled) ...[
-                      const SizedBox(height: 16),
-                      Consumer<WalletProvider>(
-                        builder: (context, wallet, _) => GestureDetector(
-                          onTap: () async {
-                            await context.push(AppRouter.topUp);
-                            if (context.mounted) wallet.getWalletBalance();
-                          },
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 12,
-                            ),
-                            decoration: BoxDecoration(
-                              color: cardBg,
-                              borderRadius: BorderRadius.circular(16),
-                              border: Border.all(color: cardBorder),
-                            ),
-                            child: Row(
-                              children: [
-                                Container(
-                                  width: 36,
-                                  height: 36,
-                                  decoration: BoxDecoration(
-                                    color: walletIconBg,
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: Icon(
-                                    LucideIcons.wallet,
-                                    color: walletIconColor,
-                                    size: 18,
-                                  ),
-                                ),
-                                const SizedBox(width: 12),
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Text(
-                                      'Số dư ví',
-                                      style: TextStyle(
-                                        fontSize: 11,
-                                        color: walletLabelColor,
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                    ),
-                                    Text(
-                                      CurrencyFormatter.formatVnd(wallet.balance),
-                                      style: TextStyle(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.w800,
-                                        color: textColor,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                const Spacer(),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 14,
-                                    vertical: 8,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: btnBg,
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                  child: Text(
-                                    'Nạp tiền',
-                                    style: TextStyle(
-                                      color: btnText,
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w700,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ],
+                  ),
+                );
+              },
+            ),
+            const SizedBox(width: 12),
+            // Profile Circular Avatar
+            GestureDetector(
+              onTap: () => context.push(AppRouter.profile),
+              behavior: HitTestBehavior.opaque,
+              child: Container(
+                width: 42,
+                height: 42,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: isDark
+                        ? Colors.white.withValues(alpha: 0.15)
+                        : const Color(0xFFE2E8F0),
+                    width: 1.5,
+                  ),
+                ),
+                child: ClipOval(
+                  child: (profile?.avatarUrl != null &&
+                          profile!.avatarUrl!.isNotEmpty)
+                      ? CachedNetworkImage(
+                          imageUrl: profile.avatarUrl!,
+                          fit: BoxFit.cover,
+                          errorWidget: (_, __, ___) => _avatarFallback(name),
+                        )
+                      : _avatarFallback(name),
                 ),
               ),
             ),
@@ -331,61 +290,953 @@ class _HomePageState extends ConsumerState<HomePage>
     );
   }
 
+  Widget _avatarFallback(String name) {
+    return Container(
+      color: const Color(0xFFE2E8F0),
+      child: Center(
+        child: Text(
+          AislBrand.initials(name),
+          style: const TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w700,
+            color: Color(0xFF334155),
+          ),
+        ),
+      ),
+    );
+  }
 
-  Widget _buildBell(BuildContext context, {bool isDark = false}) {
-    final bellBg = isDark
-        ? Colors.white.withValues(alpha: 0.10)
-        : Colors.white.withValues(alpha: 0.75);
-    final bellBorder = isDark
-        ? Colors.white.withValues(alpha: 0.15)
-        : AislBrand.navy.withValues(alpha: 0.10);
-    final bellIcon = isDark ? const Color(0xFFF1F5F9) : AislBrand.navy;
+  Widget _buildHeroCard(BuildContext context) {
+    final profile = context.watch<ProfileProvider>().profile;
+    final fullName = profile?.fullName.trim() ?? '';
+    final displayName =
+        fullName.isNotEmpty ? fullName.split(' ').last : 'Bạn';
 
-    return Consumer<NotificationProvider>(
-      builder: (context, provider, _) {
-        final count = provider.unreadCount;
-        return GestureDetector(
-          onTap: () => context.push(AppRouter.notifications),
-          behavior: HitTestBehavior.opaque,
-          child: Container(
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(
-              color: bellBg,
-              shape: BoxShape.circle,
-              border: Border.all(color: bellBorder),
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 20),
+      decoration: BoxDecoration(
+        color: const Color(0xFF14171F),
+        borderRadius: BorderRadius.circular(26),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.25),
+            blurRadius: 18,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(26),
+        child: Stack(
+          children: [
+            // Top Section: Info text and spacing for wallet pill
+            Padding(
+              padding: const EdgeInsets.fromLTRB(18, 18, 18, 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'HỆ THỐNG TỦ THÔNG MINH',
+                              style: TextStyle(
+                                color: Color(0xFF94A3B8),
+                                fontSize: 10.5,
+                                fontWeight: FontWeight.w700,
+                                letterSpacing: 1.1,
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                            Text(
+                              'Hello, $displayName! 👋',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 22,
+                                fontWeight: FontWeight.w800,
+                                letterSpacing: -0.3,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const SizedBox(height: 6),
+                            const Text(
+                              'Gửi đồ, thuê tủ và nhận hàng,\ntất cả trong một ứng dụng.',
+                              style: TextStyle(
+                                color: Color(0xFF94A3B8),
+                                fontSize: 12.5,
+                                height: 1.35,
+                                fontWeight: FontWeight.w400,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 120),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  // Reserve space for the wallet pill to sit comfortably
+                  const SizedBox(height: 54),
+                ],
+              ),
             ),
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                Icon(LucideIcons.bell, color: bellIcon, size: 24),
-                if (count > 0)
-                  Positioned(
-                    top: 6,
-                    right: 6,
-                    child: Container(
-                      padding: const EdgeInsets.all(2),
-                      constraints: const BoxConstraints(
-                        minWidth: 18,
-                        minHeight: 18,
+            // Big 3D Box Illustration (Layer 2)
+            Positioned(
+              top: 10,
+              right: 10,
+              child: IgnorePointer(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(
+                          LucideIcons.mapPin,
+                          color: Color(0xFF574E00),
+                          size: 15,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          'Điểm tủ 24/7',
+                          style: TextStyle(
+                            color: Colors.white.withValues(alpha: 0.9),
+                            fontSize: 10.5,
+                            fontStyle: FontStyle.italic,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 2),
+                    SizedBox(
+                      width: 150,
+                      height: 130,
+                      child: Image.asset(
+                        'assets/images/box_stack_3d.png',
+                        fit: BoxFit.contain,
+                        errorBuilder: (context, error, stackTrace) =>
+                            const SizedBox.shrink(),
                       ),
-                      decoration: BoxDecoration(
-                        color: AislBrand.badgeRed,
-                        shape: BoxShape.circle,
-                        border: Border.all(color: Colors.white, width: 1.5),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            // Bottom Wallet Pill (Layer 3 - exactly overlaps the bottom of the 3D box)
+            Positioned(
+              left: 16,
+              right: 16,
+              bottom: 16,
+              child: _buildWalletPill(context),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildWalletPill(BuildContext context) {
+    return Consumer<WalletProvider>(
+      builder: (context, wallet, _) => GestureDetector(
+        onTap: () async {
+          await context.push(AppRouter.topUp);
+          if (context.mounted) wallet.getWalletBalance();
+        },
+        behavior: HitTestBehavior.opaque,
+        child: Container(
+          height: 54,
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.16),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 38,
+                height: 38,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF574E00).withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Center(
+                  child: Icon(
+                    LucideIcons.wallet,
+                    color: Color(0xFF574E00),
+                    size: 20,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Text(
+                      'Số dư ví khả dụng',
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: Color(0xFF64748B),
+                        fontWeight: FontWeight.w600,
                       ),
-                      child: Center(
-                        child: Text(
-                          count > 99 ? '99+' : '$count',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 9,
-                            fontWeight: FontWeight.w700,
+                    ),
+                    const SizedBox(height: 1),
+                    Text(
+                      CurrencyFormatter.formatVnd(wallet.balance),
+                      style: const TextStyle(
+                        fontSize: 16.5,
+                        fontWeight: FontWeight.w800,
+                        color: Color(0xFF0F172A),
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF574E00),
+                  borderRadius: BorderRadius.circular(10),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFF574E00).withValues(alpha: 0.35),
+                      blurRadius: 6,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: const Text(
+                  'Nạp tiền',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildQuickActionBadges(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textColor = isDark ? Colors.white : const Color(0xFF0F172A);
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          _buildQuickBadgeItem(
+            context: context,
+            icon: LucideIcons.store,
+            label: 'Cửa hàng',
+            isPrimary: true,
+            textColor: textColor,
+            onTap: () => context.push(AppRouter.stores),
+          ),
+          _buildQuickBadgeItem(
+            context: context,
+            icon: LucideIcons.box,
+            label: 'Thuê tủ',
+            isPrimary: false,
+            textColor: textColor,
+            onTap: () => context.go(AppRouter.lockers),
+          ),
+          _buildQuickBadgeItem(
+            context: context,
+            icon: LucideIcons.calendarClock,
+            label: 'Đơn tủ',
+            isPrimary: false,
+            textColor: textColor,
+            onTap: () => context.go(AppRouter.orders),
+          ),
+          _buildQuickBadgeItem(
+            context: context,
+            icon: LucideIcons.ellipsis,
+            label: 'Tiện ích',
+            isPrimary: false,
+            textColor: textColor,
+            onTap: () => _showMoreUtilitiesSheet(context),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildQuickBadgeItem({
+    required BuildContext context,
+    required IconData icon,
+    required String label,
+    required bool isPrimary,
+    required Color textColor,
+    required VoidCallback onTap,
+  }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final bgColor = isPrimary
+        ? const Color(0xFF574E00)
+        : (isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9));
+    final iconColor = isPrimary
+        ? Colors.white
+        : (isDark ? Colors.white : const Color(0xFF0F172A));
+
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 68,
+            height: 68,
+            decoration: BoxDecoration(
+              color: bgColor,
+              borderRadius: BorderRadius.circular(22),
+              boxShadow: isPrimary
+                  ? [
+                      BoxShadow(
+                        color: const Color(0xFF574E00).withValues(alpha: 0.35),
+                        blurRadius: 12,
+                        offset: const Offset(0, 4),
+                      ),
+                    ]
+                  : null,
+            ),
+            child: Center(
+              child: Icon(
+                icon,
+                color: iconColor,
+                size: 26,
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 12.5,
+              fontWeight: isPrimary ? FontWeight.w800 : FontWeight.w600,
+              color: textColor,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildActiveShipmentSection(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cardBg = isDark ? const Color(0xFF1E293B) : Colors.white;
+    final cardBorder =
+        isDark ? Colors.white.withValues(alpha: 0.1) : const Color(0xFFF1F5F9);
+    final titleColor = isDark ? Colors.white : const Color(0xFF0F172A);
+    final subColor = isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B);
+
+    final order = _activeOrder;
+    final orderCode = order != null &&
+            order['orderCode'] != null &&
+            order['orderCode'].toString().isNotEmpty
+        ? '#${order['orderCode']}'
+        : '#ORD-20260920-7D7BP5';
+    final rawType = order != null ? (order['type'] as String? ?? '') : '';
+    final boxNum = order != null ? order['boxNumber'] : null;
+    final typeName = typeLabel(rawType.isNotEmpty ? rawType : 'RENTAL');
+    final subtitle = order != null
+        ? (boxNum != null ? '$typeName • Ô số $boxNum' : typeName)
+        : 'Thuê tủ • Ô số 5';
+    final routeText = order != null
+        ? (order['lockerName'] as String? ?? 'Tủ demo capstone 3x3')
+        : 'Tủ demo capstone 3x3';
+    final rawStatus =
+        order != null ? (order['status'] as String? ?? 'STORING') : 'STORING';
+    final displayStatus = statusLabel(rawStatus);
+    final sColor = statusColor(rawStatus);
+    final deadline = order != null ? order['pickupDeadline'] : null;
+    final deadlineStr = deadline != null ? fmtDateTime(deadline) : null;
+    final isDelivered = rawStatus.toUpperCase() == 'COMPLETED';
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Section Header: Active shipment + See all >
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Active shipment',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w800,
+                  color: titleColor,
+                  letterSpacing: -0.3,
+                ),
+              ),
+              GestureDetector(
+                onTap: () => context.go(AppRouter.orders),
+                behavior: HitTestBehavior.opaque,
+                child: Row(
+                  children: [
+                    Text(
+                      'See all',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: subColor,
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    Icon(
+                      LucideIcons.chevronRight,
+                      size: 14,
+                      color: subColor,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          // Shipment Card
+          GestureDetector(
+            onTap: () => context.go(AppRouter.orders),
+            child: Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: cardBg,
+                borderRadius: BorderRadius.circular(22),
+                border: Border.all(color: cardBorder),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.04),
+                    blurRadius: 14,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Column(
+                children: [
+                  // Top Row: 3D Box Thumb, Title/Info, Status Badge & ETA
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // 3D Box Thumb container
+                      Container(
+                        width: 52,
+                        height: 52,
+                        decoration: BoxDecoration(
+                          color: isDark
+                              ? Colors.white.withValues(alpha: 0.08)
+                              : const Color(0xFFF8FAFC),
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(
+                            color: isDark
+                                ? Colors.white.withValues(alpha: 0.12)
+                                : const Color(0xFFE2E8F0),
+                          ),
+                        ),
+                        padding: const EdgeInsets.all(5),
+                        child: Image.asset(
+                          (rawType.toUpperCase().contains('SEND') ||
+                                  rawType.toUpperCase().contains('DRONE') ||
+                                  rawType.toUpperCase().contains('DELIVERY') ||
+                                  rawType.toUpperCase().contains('PARCEL'))
+                              ? 'assets/images/air_delivery_3d.png'
+                              : 'assets/images/box_stack_3d.png',
+                          fit: BoxFit.contain,
+                          errorBuilder: (context, error, stackTrace) => Icon(
+                            (rawType.toUpperCase().contains('SEND') ||
+                                    rawType.toUpperCase().contains('DRONE') ||
+                                    rawType.toUpperCase().contains('DELIVERY') ||
+                                    rawType.toUpperCase().contains('PARCEL'))
+                                ? LucideIcons.plane
+                                : LucideIcons.box,
+                            size: 26,
+                            color: isDark
+                                ? Colors.white70
+                                : const Color(0xFF1E293B),
                           ),
                         ),
                       ),
+                      const SizedBox(width: 12),
+                      // Middle: Order Code, Subtitle, Route
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              orderCode,
+                              style: TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w800,
+                                color: titleColor,
+                              ),
+                            ),
+                            const SizedBox(height: 3),
+                            Text(
+                              subtitle,
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w500,
+                                color: subColor,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              routeText,
+                              style: TextStyle(
+                                fontSize: 11.5,
+                                fontWeight: FontWeight.w400,
+                                color: subColor.withValues(alpha: 0.8),
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      // Right: Status badge & ETA
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: sColor.withValues(alpha: 0.12),
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Container(
+                                  width: 6,
+                                  height: 6,
+                                  decoration: BoxDecoration(
+                                    color: sColor,
+                                    shape: BoxShape.circle,
+                                  ),
+                                ),
+                                const SizedBox(width: 5),
+                                Text(
+                                  displayStatus,
+                                  style: TextStyle(
+                                    fontSize: 11.5,
+                                    fontWeight: FontWeight.w700,
+                                    color: sColor,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            deadlineStr != null
+                                ? 'Hạn lấy đồ'
+                                : (isDelivered ? 'Trạng thái' : 'Dự kiến'),
+                            style: TextStyle(
+                              fontSize: 10.5,
+                              color: subColor,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          const SizedBox(height: 1),
+                          Text(
+                            deadlineStr ??
+                                (isDelivered ? 'Đã hoàn tất' : '2:30 PM'),
+                            style: TextStyle(
+                              fontSize: 12.5,
+                              fontWeight: FontWeight.w800,
+                              color: titleColor,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 18),
+                  // Bottom Stepper (4 steps dynamic matching actual order status)
+                  _buildShipmentStepper(context, order: order),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildShipmentStepper(
+    BuildContext context, {
+    Map<String, dynamic>? order,
+  }) {
+    final activeColor = const Color(0xFF574E00);
+    final inactiveColor = const Color(0xFFCBD5E1);
+    final lineColor = const Color(0xFFE2E8F0);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textColor = isDark ? Colors.white : const Color(0xFF0F172A);
+    final mutedText = const Color(0xFF94A3B8);
+
+    final rawStatus = (order?['status'] as String? ?? '').toUpperCase();
+    final rawType = (order?['type'] as String? ?? '').toUpperCase();
+    final isRental = rawType.contains('RENT') || rawType.contains('STORAGE');
+
+    final List<String> titles;
+    final List<String?> times;
+    final int activeStepCount;
+
+    final createdStr = order?['createdAt'] != null
+        ? fmtDateTime(order!['createdAt'])
+        : '12 Sep, 10:24';
+
+    if (order == null) {
+      titles = const ['Picked up', 'In transit', 'Out for delivery', 'Delivered'];
+      times = const ['12 Sep, 10:24', '13 Sep, 08:40', null, null];
+      activeStepCount = 2;
+    } else if (isRental) {
+      titles = const ['Tạo đơn', 'Bỏ vào tủ', 'Đang lưu tủ', 'Hoàn tất'];
+      times = [createdStr, null, null, null];
+      if (rawStatus == 'INITIALIZED') {
+        activeStepCount = 1;
+      } else if (rawStatus == 'STORING') {
+        activeStepCount = 3;
+      } else if (rawStatus == 'COMPLETED') {
+        activeStepCount = 4;
+      } else {
+        activeStepCount = 2;
+      }
+    } else {
+      titles = const ['Tạo đơn', 'Đã vào tủ', 'Vận chuyển', 'Đã nhận'];
+      times = [createdStr, null, null, null];
+      if (rawStatus == 'INITIALIZED') {
+        activeStepCount = 1;
+      } else if (rawStatus == 'STORING') {
+        activeStepCount = 2;
+      } else if (rawStatus == 'COLLECTED' ||
+          rawStatus == 'PROCESSING' ||
+          rawStatus == 'RETURNED' ||
+          rawStatus == 'READY_FOR_PICKUP') {
+        activeStepCount = 3;
+      } else if (rawStatus == 'COMPLETED') {
+        activeStepCount = 4;
+      } else {
+        activeStepCount = 2;
+      }
+    }
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final totalWidth = constraints.maxWidth;
+        final stepWidth = totalWidth / 4;
+
+        return Column(
+          children: [
+            // Row of Circles connected by Lines
+            SizedBox(
+              height: 24,
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  // Connecting Lines
+                  Positioned(
+                    left: stepWidth / 2,
+                    right: stepWidth / 2,
+                    child: Row(
+                      children: [
+                        // Line 1-2
+                        Expanded(
+                          child: Container(
+                            height: 2.5,
+                            color:
+                                activeStepCount >= 2 ? activeColor : lineColor,
+                          ),
+                        ),
+                        // Line 2-3
+                        Expanded(
+                          child: Container(
+                            height: 2.5,
+                            color:
+                                activeStepCount >= 3 ? activeColor : lineColor,
+                          ),
+                        ),
+                        // Line 3-4
+                        Expanded(
+                          child: Container(
+                            height: 2.5,
+                            color:
+                                activeStepCount >= 4 ? activeColor : lineColor,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
+                  // The 4 Step Circles
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      _buildStepCircle(
+                        isActive: activeStepCount >= 1,
+                        activeColor: activeColor,
+                        inactiveColor: inactiveColor,
+                      ),
+                      _buildStepCircle(
+                        isActive: activeStepCount >= 2,
+                        activeColor: activeColor,
+                        inactiveColor: inactiveColor,
+                      ),
+                      _buildStepCircle(
+                        isActive: activeStepCount >= 3,
+                        activeColor: activeColor,
+                        inactiveColor: inactiveColor,
+                      ),
+                      _buildStepCircle(
+                        isActive: activeStepCount >= 4,
+                        activeColor: activeColor,
+                        inactiveColor: inactiveColor,
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 8),
+            // The Labels and Timestamps
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildStepLabel(
+                  title: titles[0],
+                  time: times[0],
+                  isActive: activeStepCount >= 1,
+                  textColor: textColor,
+                  mutedColor: mutedText,
+                ),
+                _buildStepLabel(
+                  title: titles[1],
+                  time: times[1],
+                  isActive: activeStepCount >= 2,
+                  textColor: textColor,
+                  mutedColor: mutedText,
+                ),
+                _buildStepLabel(
+                  title: titles[2],
+                  time: times[2],
+                  isActive: activeStepCount >= 3,
+                  textColor: textColor,
+                  mutedColor: mutedText,
+                ),
+                _buildStepLabel(
+                  title: titles[3],
+                  time: times[3],
+                  isActive: activeStepCount >= 4,
+                  textColor: textColor,
+                  mutedColor: mutedText,
+                ),
+              ],
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildStepCircle({
+    required bool isActive,
+    required Color activeColor,
+    required Color inactiveColor,
+  }) {
+    return Container(
+      width: 22,
+      height: 22,
+      decoration: BoxDecoration(
+        color: isActive ? activeColor : Colors.white,
+        shape: BoxShape.circle,
+        border: Border.all(
+          color: isActive ? activeColor : inactiveColor,
+          width: 2,
+        ),
+      ),
+      child: Center(
+        child: isActive
+            ? const Icon(
+                LucideIcons.check,
+                color: Colors.white,
+                size: 13,
+              )
+            : null,
+      ),
+    );
+  }
+
+  Widget _buildStepLabel({
+    required String title,
+    required String? time,
+    required bool isActive,
+    required Color textColor,
+    required Color mutedColor,
+  }) {
+    return Expanded(
+      child: Column(
+        children: [
+          Text(
+            title,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 10.5,
+              fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
+              color: isActive ? textColor : mutedColor,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          if (time != null) ...[
+            const SizedBox(height: 2),
+            Text(
+              time,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 9.5,
+                color: mutedColor,
+                fontWeight: FontWeight.w400,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  void _showMoreUtilitiesSheet(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final sheetBg = isDark ? const Color(0xFF1E293B) : Colors.white;
+    final titleColor = isDark ? Colors.white : const Color(0xFF0F172A);
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: sheetBg,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (ctx) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: Container(
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: Colors.grey.withValues(alpha: 0.3),
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'Tiện ích & Dịch vụ',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w800,
+                    color: titleColor,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Wrap(
+                  spacing: 16,
+                  runSpacing: 16,
+                  children: [
+                    _buildUtilityItem(
+                      ctx,
+                      icon: LucideIcons.gift,
+                      label: 'Ưu đãi',
+                      color: const Color(0xFFEC4899),
+                      onTap: () {
+                        Navigator.pop(ctx);
+                        context.push(AppRouter.promotions);
+                      },
+                    ),
+                    _buildUtilityItem(
+                      ctx,
+                      icon: LucideIcons.triangleAlert,
+                      label: 'Báo sự cố',
+                      color: const Color(0xFFF59E0B),
+                      onTap: () {
+                        Navigator.pop(ctx);
+                        context.push(AppRouter.createReport);
+                      },
+                    ),
+                    _buildUtilityItem(
+                      ctx,
+                      icon: LucideIcons.clipboardList,
+                      label: 'Báo cáo',
+                      color: const Color(0xFF3B82F6),
+                      onTap: () {
+                        Navigator.pop(ctx);
+                        context.push(AppRouter.myLockerReports);
+                      },
+                    ),
+                    _buildUtilityItem(
+                      ctx,
+                      icon: LucideIcons.wallet,
+                      label: 'Nạp ví',
+                      color: const Color(0xFF10B981),
+                      onTap: () {
+                        Navigator.pop(ctx);
+                        context.push(AppRouter.topUp);
+                      },
+                    ),
+                    _buildUtilityItem(
+                      ctx,
+                      icon: LucideIcons.store,
+                      label: 'Điểm gửi',
+                      color: const Color(0xFF8B5CF6),
+                      onTap: () {
+                        Navigator.pop(ctx);
+                        context.push(AppRouter.stores);
+                      },
+                    ),
+                    _buildUtilityItem(
+                      ctx,
+                      icon: LucideIcons.bell,
+                      label: 'Thông báo',
+                      color: const Color(0xFF06B6D4),
+                      onTap: () {
+                        Navigator.pop(ctx);
+                        context.push(AppRouter.notifications);
+                      },
+                    ),
+                  ],
+                ),
               ],
             ),
           ),
@@ -394,53 +1245,47 @@ class _HomePageState extends ConsumerState<HomePage>
     );
   }
 
-  Widget _buildChips(BuildContext context) {
-    final chips = <Widget>[
-      BrandFilterChip(
-        icon: LucideIcons.packageCheck,
-        label: 'Đơn hàng',
-        onTap: () => context.go(AppRouter.orders),
-      ),
-      BrandFilterChip(
-        icon: LucideIcons.box,
-        label: 'Tủ',
-        onTap: () => context.go(AppRouter.lockers),
-      ),
-      BrandFilterChip(
-        icon: LucideIcons.store,
-        label: 'Cửa hàng',
-        onTap: () => context.push(AppRouter.stores),
-      ),
-      BrandFilterChip(
-        icon: LucideIcons.bell,
-        label: 'Thông báo',
-        onTap: () => context.push(AppRouter.notifications),
-      ),
-      BrandFilterChip(
-        icon: LucideIcons.gift,
-        label: 'Ưu đãi',
-        onTap: () => context.push(AppRouter.promotions),
-      ),
-      BrandFilterChip(
-        icon: LucideIcons.triangleAlert,
-        label: 'Báo sự cố',
-        onTap: () => context.push(AppRouter.createReport),
-      ),
-      BrandFilterChip(
-        icon: LucideIcons.clipboardList,
-        label: 'Báo cáo của tôi',
-        onTap: () => context.push(AppRouter.myLockerReports),
-      ),
-    ];
+  Widget _buildUtilityItem(
+    BuildContext context, {
+    required IconData icon,
+    required String label,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textColor = isDark ? Colors.white : const Color(0xFF0F172A);
 
-    return SizedBox(
-      height: 44,
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 20),
-        itemCount: chips.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 10),
-        itemBuilder: (_, index) => chips[index],
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(16),
+      child: SizedBox(
+        width: 72,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 52,
+              height: 52,
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Icon(icon, color: color, size: 24),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              label,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: textColor,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -482,7 +1327,7 @@ class _HomePageState extends ConsumerState<HomePage>
           itemBuilder: (_, __) => Container(
             width: 250,
             decoration: BoxDecoration(
-              color: Colors.grey.shade200,
+              color: Colors.grey.shade800,
               borderRadius: BorderRadius.circular(20),
             ),
           ),
@@ -975,3 +1820,4 @@ class _FlashSaleCard extends StatelessWidget {
         ),
       );
 }
+

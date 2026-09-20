@@ -81,7 +81,8 @@ class _NotificationListPageState extends State<NotificationListPage> {
               children: [
                 BrandHeroHeader(
                   title: 'Thông báo',
-                  subtitle: 'Cập nhật mới nhất từ Lockerly',
+                  subtitle: 'Cập nhật mới nhất từ Lock.R',
+                  imageAsset: 'assets/images/box_stack_3d.png',
                   onBack: () => context.pop(),
                 ),
                 const Expanded(
@@ -100,7 +101,8 @@ class _NotificationListPageState extends State<NotificationListPage> {
             children: [
               BrandHeroHeader(
                 title: 'Thông báo',
-                subtitle: 'Cập nhật mới nhất từ Lockerly',
+                subtitle: 'Cập nhật mới nhất từ Lock.R',
+                imageAsset: 'assets/images/box_stack_3d.png',
                 onBack: () => context.pop(),
                 trailing: Consumer<NotificationProvider>(
                   builder: (context, provider, _) {
@@ -119,15 +121,11 @@ class _NotificationListPageState extends State<NotificationListPage> {
                                 vertical: 8,
                               ),
                               decoration: BoxDecoration(
-                                color: Colors.white,
+                                color: Colors.white.withValues(alpha: 0.14),
                                 borderRadius: BorderRadius.circular(20),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withValues(alpha: 0.1),
-                                    blurRadius: 4,
-                                    offset: const Offset(0, 2),
-                                  ),
-                                ],
+                                border: Border.all(
+                                  color: Colors.white.withValues(alpha: 0.22),
+                                ),
                               ),
                               child: const Row(
                                 mainAxisSize: MainAxisSize.min,
@@ -135,7 +133,7 @@ class _NotificationListPageState extends State<NotificationListPage> {
                                   Icon(
                                     LucideIcons.checkCheck,
                                     size: 14,
-                                    color: AislBrand.navy,
+                                    color: Colors.white,
                                   ),
                                   SizedBox(width: 4),
                                   Text(
@@ -143,7 +141,7 @@ class _NotificationListPageState extends State<NotificationListPage> {
                                     style: TextStyle(
                                       fontSize: 12,
                                       fontWeight: FontWeight.w700,
-                                      color: AislBrand.navy,
+                                      color: Colors.white,
                                     ),
                                   ),
                                 ],

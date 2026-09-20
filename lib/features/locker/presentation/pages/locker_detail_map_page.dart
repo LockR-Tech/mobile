@@ -64,54 +64,53 @@ class _LockerDetailMapPageState extends ConsumerState<LockerDetailMapPage> {
     // ko render map nếu toạ độ ko hợp lệ
     if (!widget.location.hasValidCoordinate) {
       return Scaffold(
-        appBar: AppBar(
-          title: Text(
-            widget.location.name,
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w700,
+        body: Column(
+          children: [
+            BrandHeroHeader(
+              title: widget.location.name,
+              subtitle: 'Chi tiết vị trí tủ Lock.R',
+              onBack: () => Navigator.of(context).pop(),
             ),
-          ),
-          backgroundColor: AislBrand.navy,
-          foregroundColor: Colors.white,
-          elevation: 0,
-        ),
-        body: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  Icons.location_off,
-                  size: 64,
-                  color: const Color(0xFF0A2342),
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  'Toạ độ địa điểm không hợp lệ.\nKhông thể hiển thị bản đồ.',
-                  style: TextStyle(color: Colors.grey[800], fontSize: 16),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 24),
-                ElevatedButton.icon(
-                  onPressed: () =>
-                      showLocationServicesSheet(context, widget.location),
-                  icon: const Icon(Icons.add_box_outlined, size: 18),
-                  label: const Text('Đặt dịch vụ'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AislBrand.navy,
-                    foregroundColor: Colors.white,
+            Expanded(
+              child: Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.location_off,
+                        size: 64,
+                        color: const Color(0xFF0A2342),
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Toạ độ địa điểm không hợp lệ.\nKhông thể hiển thị bản đồ.',
+                        style: TextStyle(color: Colors.grey[800], fontSize: 16),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 24),
+                      ElevatedButton.icon(
+                        onPressed: () =>
+                            showLocationServicesSheet(context, widget.location),
+                        icon: const Icon(Icons.add_box_outlined, size: 18),
+                        label: const Text('Đặt dịch vụ'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AislBrand.navy,
+                          foregroundColor: Colors.white,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      TextButton(
+                        onPressed: () => Navigator.maybePop(context),
+                        child: const Text('Quay lại'),
+                      ),
+                    ],
                   ),
                 ),
-                const SizedBox(height: 12),
-                TextButton(
-                  onPressed: () => Navigator.maybePop(context),
-                  child: const Text('Quay lại'),
-                ),
-              ],
+              ),
             ),
-          ),
+          ],
         ),
       );
     }
@@ -194,14 +193,15 @@ class _LockerDetailMapPageState extends ConsumerState<LockerDetailMapPage> {
     }
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          widget.location.name,
-          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
-        ),
-        backgroundColor: AislBrand.navy,
-        foregroundColor: Colors.white,
-        elevation: 0,
+      body: Column(
+        children: [
+          BrandHeroHeader(
+            title: widget.location.name,
+            subtitle: 'Chi tiết vị trí tủ Lock.R',
+            onBack: () => Navigator.of(context).pop(),
+          ),
+          Expanded(child: mapStack),
+        ],
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => context.push(
@@ -212,12 +212,11 @@ class _LockerDetailMapPageState extends ConsumerState<LockerDetailMapPage> {
             'title': widget.location.name,
           },
         ),
-        backgroundColor: AislBrand.navy,
+        backgroundColor: const Color(0xFF14171F),
         foregroundColor: Colors.white,
         icon: const Icon(Icons.directions_rounded),
         label: const Text('Chỉ đường'),
       ),
-      body: mapStack,
     );
   }
 }

@@ -11,6 +11,7 @@ import 'package:smart_laundry_locker/features/wallet/presentation/providers/wall
 import 'package:provider/provider.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:flutter/foundation.dart';
+import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
 
 class TopUpPage extends StatefulWidget {
   const TopUpPage({super.key});
@@ -78,26 +79,19 @@ class _TopUpPageState extends State<TopUpPage> with BusinessConfigStateMixin {
         builder: (context, provider, walletProvider, child) {
           return Scaffold(
             backgroundColor: AISLShadcnTheme.navySurface,
-            appBar: AppBar(
-              elevation: 0,
-              backgroundColor: Colors.white,
-              foregroundColor: Colors.black,
-              centerTitle: true,
-              title: const Text(
-                'NẠP TIỀN',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 0.5,
-                  color: Colors.black87,
+            body: Column(
+              children: [
+                BrandHeroHeader(
+                  title: 'Nạp tiền vào ví',
+                  subtitle: 'Nạp tiền để sử dụng các dịch vụ Lock.R',
+                  imageAsset: 'assets/images/box_stack_3d.png',
                 ),
-              ),
-            ),
-            body: SingleChildScrollView(
-              padding: const EdgeInsets.fromLTRB(16, 20, 16, 0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
+                Expanded(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.fromLTRB(16, 20, 16, 0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
                   _TopUpAmountGrid(
                     amounts: _amounts,
                     selectedAmount: _selectedAmount,
@@ -129,55 +123,58 @@ class _TopUpPageState extends State<TopUpPage> with BusinessConfigStateMixin {
                 ],
               ),
             ),
-            bottomNavigationBar: SafeArea(
-              minimum: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-              child: _ActionBottomButton(
-                isLoading: provider.isCreatingTopUpUrl,
-                onPressed: () async {
-                  debugPrint(
-                    '[TOPUP][page] pressed selectedAmount=$_selectedAmount',
-                  );
-                  if (!_validateTopUp()) return;
-                  final result = await provider.initiateTopUp(_selectedAmount);
-                  if (!mounted) return;
-                  if (result == null || result.paymentUrl.isEmpty) {
-                    final msg =
-                        provider.topUpError ?? 'Không thể tạo link thanh toán.';
-                    debugPrint(
-                      '[TOPUP][page] no result / empty url. error="$msg"',
-                    );
-                    SmartDialog.showToast(msg);
-                    return;
-                  }
-                  final uri = Uri.tryParse(result.paymentUrl);
-                  if (uri == null || !uri.hasScheme) {
-                    debugPrint(
-                      '[TOPUP][page] invalid url="${result.paymentUrl}"',
-                    );
-                    SmartDialog.showToast('Link thanh toán không hợp lệ.');
-                    return;
-                  }
-                  debugPrint(
-                    '[TOPUP][page] navigating to WebView url="${result.paymentUrl}"',
-                  );
+          ),
+        ],
+      ),
+      bottomNavigationBar: SafeArea(
+        minimum: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+        child: _ActionBottomButton(
+          isLoading: provider.isCreatingTopUpUrl,
+          onPressed: () async {
+            debugPrint(
+              '[TOPUP][page] pressed selectedAmount=$_selectedAmount',
+            );
+            if (!_validateTopUp()) return;
+            final result = await provider.initiateTopUp(_selectedAmount);
+            if (!mounted) return;
+            if (result == null || result.paymentUrl.isEmpty) {
+              final msg =
+                  provider.topUpError ?? 'Không thể tạo link thanh toán.';
+              debugPrint(
+                '[TOPUP][page] no result / empty url. error="$msg"',
+              );
+              SmartDialog.showToast(msg);
+              return;
+            }
+            final uri = Uri.tryParse(result.paymentUrl);
+            if (uri == null || !uri.hasScheme) {
+              debugPrint(
+                '[TOPUP][page] invalid url="${result.paymentUrl}"',
+              );
+              SmartDialog.showToast('Link thanh toán không hợp lệ.');
+              return;
+            }
+            debugPrint(
+              '[TOPUP][page] navigating to WebView url="${result.paymentUrl}"',
+            );
 
-                  final ok = await Navigator.of(context).push<bool>(
-                    MaterialPageRoute(
-                      builder: (_) =>
-                          TopUpWebViewPage(paymentUrl: result.paymentUrl),
-                    ),
-                  );
-
-                  if (!mounted) return;
-                  if (ok == true) {
-                    await walletProvider.getWalletBalance();
-                    if (mounted) Navigator.of(context).pop(true);
-                  }
-                },
+            final ok = await Navigator.of(context).push<bool>(
+              MaterialPageRoute(
+                builder: (_) =>
+                    TopUpWebViewPage(paymentUrl: result.paymentUrl),
               ),
-            ),
-          );
-        },
+            );
+
+            if (!mounted) return;
+            if (ok == true) {
+              await walletProvider.getWalletBalance();
+              if (mounted) Navigator.of(context).pop(true);
+            }
+          },
+        ),
+      ),
+    );
+  },
       ),
     );
   }

@@ -90,8 +90,6 @@ class _PolicyPageState extends State<PolicyPage> {
                   title: widget.title,
                   showBackButton: true,
                   onBackPressed: _handleBack,
-                  backgroundColor: ShadTheme.of(context).colorScheme.muted,
-                  foregroundColor: ShadTheme.of(context).colorScheme.foreground,
                 ),
                 const SliverFillRemaining(
                   child: Center(child: CircularProgressIndicator()),
@@ -109,8 +107,6 @@ class _PolicyPageState extends State<PolicyPage> {
                   title: widget.title,
                   showBackButton: true,
                   onBackPressed: _handleBack,
-                  backgroundColor: ShadTheme.of(context).colorScheme.muted,
-                  foregroundColor: ShadTheme.of(context).colorScheme.foreground,
                 ),
                 SliverFillRemaining(
                   child: Center(
@@ -174,8 +170,6 @@ class _PolicyPageState extends State<PolicyPage> {
                 title: widget.title,
                 showBackButton: true,
                 onBackPressed: _handleBack,
-                backgroundColor: ShadTheme.of(context).colorScheme.muted,
-                foregroundColor: ShadTheme.of(context).colorScheme.foreground,
               ),
               SliverToBoxAdapter(
                 child: Container(

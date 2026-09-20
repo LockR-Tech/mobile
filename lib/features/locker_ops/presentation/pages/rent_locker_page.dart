@@ -10,6 +10,7 @@ import 'package:smart_laundry_locker/features/locker_ops/presentation/utils/busi
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/locker_picker.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/ops_widgets.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/order_extras.dart';
+import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
 
 /// RENTAL flow: chọn tủ + loại ô + thời lượng, trả tiền theo giờ, PIN dùng
 /// nhiều lần tới hết hạn thuê (khớp `order-service` createRental/extend/end).
@@ -252,10 +253,17 @@ class _RentLockerPageState extends State<RentLockerPage>
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AISLShadcnTheme.navySurface,
-      appBar: AppBar(
-        title: const Text('Thuê tủ giữ đồ'),
-        backgroundColor: AISLShadcnTheme.navyPrimary,
-        foregroundColor: Colors.white,
+      body: Column(
+        children: [
+          BrandHeroHeader(
+            title: 'Thuê tủ giữ đồ',
+            subtitle: 'Chọn điểm tủ & thời gian sử dụng',
+            onBack: () => Navigator.of(context).pop(),
+          ),
+          Expanded(
+            child: _order == null ? _buildForm() : _buildResult(),
+          ),
+        ],
       ),
       bottomNavigationBar: _order == null ? Container(
         padding: EdgeInsets.only(
@@ -288,7 +296,6 @@ class _RentLockerPageState extends State<RentLockerPage>
           ],
         ),
       ) : null,
-      body: _order == null ? _buildForm() : _buildResult(),
     );
   }
 

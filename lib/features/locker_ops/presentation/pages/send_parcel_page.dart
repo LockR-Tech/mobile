@@ -11,6 +11,7 @@ import 'package:smart_laundry_locker/features/locker_ops/presentation/utils/busi
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/locker_picker.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/ops_widgets.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/order_extras.dart';
+import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
 
 /// SEND flow (gửi hàng C2C qua tủ).
 /// Stage 1: tạo đơn + nhận PIN bỏ hàng. Stage 2: xác nhận đã bỏ hàng → PIN
@@ -171,10 +172,17 @@ class _SendParcelPageState extends State<SendParcelPage>
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AISLShadcnTheme.navySurface,
-      appBar: AppBar(
-        title: const Text('Gửi hàng qua tủ'),
-        backgroundColor: AISLShadcnTheme.navyPrimary,
-        foregroundColor: Colors.white,
+      body: Column(
+        children: [
+          BrandHeroHeader(
+            title: 'Gửi hàng qua tủ',
+            subtitle: 'Gửi đồ nhanh chóng & tiện lợi',
+            onBack: () => Navigator.of(context).pop(),
+          ),
+          Expanded(
+            child: _order == null ? _buildForm() : _buildResult(),
+          ),
+        ],
       ),
       bottomNavigationBar: _order == null ? Container(
         padding: EdgeInsets.only(
@@ -233,7 +241,6 @@ class _SendParcelPageState extends State<SendParcelPage>
           ],
         ),
       ) : null,
-      body: _order == null ? _buildForm() : _buildResult(),
     );
   }
 
