@@ -888,7 +888,12 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage> {
             color: c,
             onTap: () {
               Navigator.pop(sheetCtx);
-              onTap();
+              // Đợi bottom sheet bị tháo khỏi widget tree trước khi mở dialog
+              // tiếp theo. Mở ngay trong cùng frame làm Flutter dispose route
+              // trong khi các inherited dependencies của sheet còn được dùng.
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                if (mounted) onTap();
+              });
             },
           );
         }
@@ -943,18 +948,20 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage> {
                       'Đã nhả phụ trách drone',
                     ),
                   ),
-                tile(
-                  Icons.sync_alt,
-                  'Đổi trạng thái',
-                  const Color(0xFF7C3AED),
-                  () => _changeDroneStatusFlow(drone),
-                ),
-                tile(
-                  Icons.battery_charging_full,
-                  'Cập nhật pin %',
-                  const Color(0xFF0891B2),
-                  () => _updateDroneBatteryFlow(drone),
-                ),
+                if (assignedToMe) ...[
+                  tile(
+                    Icons.sync_alt,
+                    'Đổi trạng thái',
+                    const Color(0xFF7C3AED),
+                    () => _changeDroneStatusFlow(drone),
+                  ),
+                  tile(
+                    Icons.battery_charging_full,
+                    'Cập nhật pin %',
+                    const Color(0xFF0891B2),
+                    () => _updateDroneBatteryFlow(drone),
+                  ),
+                ],
                 tile(
                   Icons.history_edu_outlined,
                   'Nhật ký bảo trì',
@@ -974,7 +981,8 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage> {
     final droneId = _asInt(drone['id']);
     if (droneId == null) return;
     final reasonCtrl = TextEditingController();
-    String selected = drone['status'] as String? ?? 'IDLE';
+    final currentStatus = drone['status'] as String? ?? 'IDLE';
+    String selected = currentStatus;
 
     final result = await showDialog<String>(
       context: context,
@@ -992,7 +1000,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage> {
                 spacing: 8,
                 runSpacing: 8,
                 children: [
-                  for (final s in _droneStatuses)
+                  for (final s in _manualDroneStatuses(currentStatus))
                     ChoiceChip(
                       label: Text(_droneStatusLabel(s)),
                       selected: selected == s,
@@ -1375,16 +1383,18 @@ const _cancelReasons = [
 
 /// Trạng thái của 1 con drone vật lý (drone_units.status) — khác trạng thái
 /// ô tủ cellType=DRONE ở trên.
-const _droneStatuses = [
-  'IDLE',
-  'CHARGING',
-  'IN_FLIGHT',
-  'MAINTENANCE',
-  'FAULT',
-];
+const _droneStatuses = ['IDLE', 'CHARGING', 'MAINTENANCE', 'FAULT'];
+
+List<String> _manualDroneStatuses(String current) {
+  if (current == 'RESERVED' || current == 'IN_FLIGHT') {
+    return [current, 'FAULT'];
+  }
+  return _droneStatuses;
+}
 
 String _droneStatusLabel(String? status) => switch (status) {
   'IDLE' => 'Sẵn sàng',
+  'RESERVED' => 'Đã giữ cho nhiệm vụ',
   'CHARGING' => 'Đang sạc',
   'IN_FLIGHT' => 'Đang bay',
   'MAINTENANCE' => 'Đang bảo trì',
@@ -1394,6 +1404,7 @@ String _droneStatusLabel(String? status) => switch (status) {
 
 Color _droneStatusColor(String? status) => switch (status) {
   'IDLE' => const Color(0xFF16A34A),
+  'RESERVED' => const Color(0xFF0F766E),
   'CHARGING' => const Color(0xFF2563EB),
   'IN_FLIGHT' => const Color(0xFF7C3AED),
   'MAINTENANCE' => const Color(0xFFD97706),
