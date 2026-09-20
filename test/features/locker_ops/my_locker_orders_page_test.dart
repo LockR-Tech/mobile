@@ -327,7 +327,13 @@ void main() {
 
     await tester.ensureVisible(find.text('Gia hạn thuê'));
     expect(find.text('Gia hạn thuê'), findsOneWidget);
-    expect(find.textContaining('Thanh toán'), findsNothing);
+    expect(
+      find.descendant(
+        of: find.byType(OpsPrimaryButton),
+        matching: find.textContaining('Thanh toán'),
+      ),
+      findsNothing,
+    );
 
     await tester.ensureVisible(find.text('Gia hạn thuê'));
     await tester.tap(find.text('Gia hạn thuê'));
@@ -340,7 +346,13 @@ void main() {
     await tester.tap(find.text('Tủ thuê'));
     await tester.pumpAndSettle();
 
-    expect(find.textContaining('Thanh toán'), findsOneWidget);
+    expect(
+      find.descendant(
+        of: find.byType(OpsPrimaryButton),
+        matching: find.textContaining('Thanh toán'),
+      ),
+      findsOneWidget,
+    );
   });
 
   testWidgets(
@@ -442,4 +454,248 @@ void main() {
 
     expect(service.endRentalCalls, 1);
   });
+
+  testWidgets(
+    'shows direct open locker button for paid drop-off and storing orders',
+    (tester) async {
+      final service = _FakePaidDropOrderLockerOpsService();
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: MediaQuery(
+            data: const MediaQueryData(size: Size(390, 844)),
+            child: MyLockerOrdersPage(service: service),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // Đơn mới hơn (ORD-62, STORING) hiển thị trước
+      await tester.tap(find.text('Tủ kiểm thử').first);
+      await tester.pumpAndSettle();
+
+      await tester.ensureVisible(find.textContaining('để lấy đồ'));
+      expect(find.textContaining('để lấy đồ'), findsOneWidget);
+
+      // Đóng sheet
+      Navigator.of(tester.element(find.textContaining('để lấy đồ'))).pop();
+      await tester.pumpAndSettle();
+
+      // Đơn cũ hơn (ORD-61, INITIALIZED) hiển thị sau
+      await tester.tap(find.text('Tủ kiểm thử').last);
+      await tester.pumpAndSettle();
+
+      await tester.ensureVisible(find.textContaining('để bỏ đồ'));
+      expect(find.textContaining('để bỏ đồ'), findsOneWidget);
+    },
+  );
+
+  testWidgets('shows direct mobile open option in rental completion sheet', (
+    tester,
+  ) async {
+    final service = _FakeRentalCompletionLockerOpsService();
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: MediaQuery(
+          data: const MediaQueryData(size: Size(390, 844)),
+          child: MyLockerOrdersPage(service: service),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Tủ thuê kiosk'));
+    await tester.pumpAndSettle();
+
+    await tester.ensureVisible(find.text('Kết thúc thuê & lấy đồ'));
+    await tester.tap(find.text('Kết thúc thuê & lấy đồ'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Lấy đồ tại kiosk'), findsOneWidget);
+    expect(find.textContaining('trên điện thoại'), findsOneWidget);
+  });
+
+  testWidgets(
+    'prioritizes receiveBox and destinationLocker for multi-locker storing pickup',
+    (tester) async {
+      final service = _FakeMultiLockerTransferOpsService();
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: MediaQuery(
+            data: const MediaQueryData(size: Size(390, 844)),
+            child: MyLockerOrdersPage(service: service),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Tủ đích'));
+      await tester.pumpAndSettle();
+
+      // Phải chọn đúng ô nhận (ô số 8 tại tủ đích), không lấy nhầm ô gửi (ô số 1 tại tủ gửi)
+      expect(find.text('Mở Ô số 8 để lấy đồ'), findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    'allows free order with 0 vnd to open box for drop-off even when unpaid',
+    (tester) async {
+      final service = _FakeFreeOrderLockerOpsService();
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: MediaQuery(
+            data: const MediaQueryData(size: Size(390, 844)),
+            child: MyLockerOrdersPage(service: service),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Tủ miễn phí'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Mở Ô số 5 để bỏ đồ'), findsOneWidget);
+    },
+  );
 }
+
+class _FakePaidDropOrderLockerOpsService extends LockerOpsService {
+  _FakePaidDropOrderLockerOpsService() : super(dio: createMockDio().dio);
+
+  @override
+  Future<List<Map<String, dynamic>>> myOrders() async => [
+    {
+      'id': 61,
+      'type': 'SEND',
+      'status': 'INITIALIZED',
+      'paymentStatus': 'PAID',
+      'totalPrice': 15000,
+      'lockerId': 7,
+      'sendBoxId': 7003,
+      'pinCode': '123456',
+      'orderCode': 'ORD-61',
+      'createdAt': '2026-07-15T09:00:00',
+    },
+    {
+      'id': 62,
+      'type': 'SEND',
+      'status': 'STORING',
+      'paymentStatus': 'PAID',
+      'totalPrice': 15000,
+      'lockerId': 7,
+      'receiveBoxId': 7003,
+      'pinCode': '654321',
+      'orderCode': 'ORD-62',
+      'createdAt': '2026-07-15T10:00:00',
+    },
+  ];
+
+  @override
+  Future<Map<String, dynamic>> locker(int lockerId) async => {
+    'id': lockerId,
+    'name': 'Tủ kiểm thử',
+    'code': 'LOC-07',
+    'latitude': 10.8231,
+    'longitude': 106.6297,
+  };
+
+  @override
+  Future<Map<String, dynamic>> layout(int lockerId) async => {
+    'cells': [
+      {'id': 7003, 'boxNumber': 3},
+    ],
+  };
+
+  @override
+  Future<List<Map<String, dynamic>>> myReports() async => const [];
+
+  @override
+  Future<Map<String, dynamic>> unlock(
+    int lockerId,
+    int boxId,
+    String pinCode,
+  ) async => {'accepted': true, 'message': 'Unlocked successfully'};
+}
+
+class _FakeMultiLockerTransferOpsService extends LockerOpsService {
+  _FakeMultiLockerTransferOpsService() : super(dio: createMockDio().dio);
+
+  @override
+  Future<List<Map<String, dynamic>>> myOrders() async => [
+    {
+      'id': 71,
+      'type': 'SEND',
+      'status': 'STORING',
+      'paymentStatus': 'PAID',
+      'totalPrice': 20000,
+      'lockerId': 1,
+      'destinationLockerId': 2,
+      'sendBoxId': 101,
+      'receiveBoxId': 202,
+      'pinCode': '998877',
+      'orderCode': 'ORD-71',
+      'createdAt': '2026-07-15T09:00:00',
+    },
+  ];
+
+  @override
+  Future<Map<String, dynamic>> locker(int lockerId) async => {
+    'id': lockerId,
+    'name': lockerId == 1 ? 'Tủ gửi' : 'Tủ đích',
+    'code': lockerId == 1 ? 'LOC-01' : 'LOC-02',
+    'latitude': 10.8000,
+    'longitude': 106.6000,
+  };
+
+  @override
+  Future<Map<String, dynamic>> layout(int lockerId) async => {
+    'cells': lockerId == 1
+        ? [{'id': 101, 'boxNumber': 1}]
+        : [{'id': 202, 'boxNumber': 8}],
+  };
+
+  @override
+  Future<List<Map<String, dynamic>>> myReports() async => const [];
+}
+
+class _FakeFreeOrderLockerOpsService extends LockerOpsService {
+  _FakeFreeOrderLockerOpsService() : super(dio: createMockDio().dio);
+
+  @override
+  Future<List<Map<String, dynamic>>> myOrders() async => [
+    {
+      'id': 81,
+      'type': 'SEND',
+      'status': 'INITIALIZED',
+      'paymentStatus': 'UNPAID',
+      'totalPrice': 0,
+      'paymentRequired': false,
+      'lockerId': 3,
+      'sendBoxId': 305,
+      'pinCode': '111222',
+      'orderCode': 'ORD-81',
+      'createdAt': '2026-07-15T09:00:00',
+    },
+  ];
+
+  @override
+  Future<Map<String, dynamic>> locker(int lockerId) async => {
+    'id': lockerId,
+    'name': 'Tủ miễn phí',
+    'code': 'LOC-03',
+  };
+
+  @override
+  Future<Map<String, dynamic>> layout(int lockerId) async => {
+    'cells': [
+      {'id': 305, 'boxNumber': 5},
+    ],
+  };
+
+  @override
+  Future<List<Map<String, dynamic>>> myReports() async => const [];
+}
+
