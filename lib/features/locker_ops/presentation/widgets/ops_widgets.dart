@@ -467,12 +467,14 @@ class OpsSheetAction extends StatelessWidget {
               children: [
                 Icon(icon, size: 18, color: color),
                 const SizedBox(width: 12),
-                Text(
-                  label,
-                  style: TextStyle(
-                    color: color,
-                    fontWeight: FontWeight.w700,
-                    fontSize: 14,
+                Expanded(
+                  child: Text(
+                    label,
+                    style: TextStyle(
+                      color: color,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 14,
+                    ),
                   ),
                 ),
               ],

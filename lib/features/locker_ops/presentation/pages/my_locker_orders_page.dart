@@ -12,6 +12,7 @@ import 'package:smart_laundry_locker/features/transactions/presentation/pages/to
     show TopUpWebViewPage;
 import 'package:smart_laundry_locker/features/locker_ops/presentation/utils/business_rules_text.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/utils/locker_maps.dart';
+import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/locker_unlock_modal.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/ops_widgets.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/order_status_timeline.dart';
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
@@ -55,10 +56,13 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
       final reports = await _service.myReports();
 
       // Fetch box layouts to display box numbers instead of box IDs
-      final lockerIds = orders
-          .map((o) => _asInt(o['lockerId']))
-          .whereType<int>()
-          .toSet();
+      final lockerIds = <int>{};
+      for (final o in orders) {
+        final origin = _asInt(o['lockerId']);
+        if (origin != null) lockerIds.add(origin);
+        final dest = _asInt(o['destinationLockerId']);
+        if (dest != null) lockerIds.add(dest);
+      }
 
       if (!mounted) return;
 
@@ -116,7 +120,11 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
   }
 
   Map<String, dynamic>? _activeReportForOrder(Map<String, dynamic> order) {
-    final boxId = _asInt(order['sendBoxId'] ?? order['receiveBoxId']);
+    final rawStatus = (order['status'] as String? ?? '').toUpperCase();
+    final isPickup = rawStatus == 'STORING' || rawStatus == 'RETURNED';
+    final boxId = isPickup
+        ? _asInt(order['receiveBoxId'] ?? order['sendBoxId'])
+        : _asInt(order['sendBoxId'] ?? order['receiveBoxId']);
     if (boxId == null) return null;
     return _activeReportsByBox[boxId];
   }
@@ -124,7 +132,11 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
   /// Số ô in trên tủ, tra từ sơ đồ tủ đã tải. Dùng cho MỌI câu thông báo cho người
   /// dùng: `boxId` là mã nội bộ, nói "ô 701" thì người ta ra tủ không tìm thấy ô nào.
   String _boxLabelFor(Map<String, dynamic> order, int? boxId) {
-    final lockerId = _asInt(order['lockerId']);
+    final rawStatus = (order['status'] as String? ?? '').toUpperCase();
+    final isPickup = rawStatus == 'STORING' || rawStatus == 'RETURNED';
+    final lockerId = isPickup
+        ? _asInt(order['destinationLockerId'] ?? order['lockerId'])
+        : _asInt(order['lockerId'] ?? order['destinationLockerId']);
     final number = (lockerId == null || boxId == null)
         ? null
         : _lockerBoxesMap[lockerId]?[boxId];
@@ -458,6 +470,9 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
     final qrToken = order['qrToken'] as String?;
     if (orderId == null) return;
 
+    final boxId = _asInt(order['sendBoxId'] ?? order['receiveBoxId']);
+    final boxLabel = _boxLabelFor(order, boxId);
+
     await showModalBottomSheet<void>(
       context: context,
       useRootNavigator: true,
@@ -467,7 +482,7 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(26)),
       ),
-      builder: (ctx) => Padding(
+      builder: (ctx) => SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(20, 4, 20, 24),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -483,8 +498,18 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
             ),
             const SizedBox(height: 8),
             const Text(
-              'Dùng mã này tại kiosk để mở ô, lấy đồ ra, rồi đóng cửa tủ lại trước khi xác nhận kết thúc thuê.',
+              'Dùng mã này tại kiosk để mở ô, lấy đồ ra, rồi đóng cửa tủ lại trước khi xác nhận kết thúc thuê. Bạn cũng có thể bấm mở trực tiếp trên app nếu đang ở gần tủ.',
               style: TextStyle(fontSize: 14, color: opsMutedText, height: 1.45),
+            ),
+            const SizedBox(height: 16),
+            OpsSheetAction(
+              label: 'Mở $boxLabel trên điện thoại (GPS/QR)',
+              icon: LucideIcons.doorOpen,
+              primary: true,
+              onTap: () {
+                Navigator.pop(ctx);
+                _openLockerFlow(order);
+              },
             ),
             if ((pin != null && pin.isNotEmpty) ||
                 (qrToken != null && qrToken.isNotEmpty)) ...[
@@ -497,7 +522,7 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
             OpsSheetAction(
               label: 'Đã lấy đồ và đóng tủ',
               icon: LucideIcons.circleCheck,
-              primary: true,
+              primary: false,
               onTap: () {
                 Navigator.pop(ctx);
                 _runAction(
@@ -513,14 +538,24 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
   }
 
   /// Bản ghi tủ của đơn, `null` khi chưa tải được.
-  Map<String, dynamic>? _lockerOf(Map<String, dynamic> order) =>
-      _lockersMap[_asInt(order['lockerId'])];
+  Map<String, dynamic>? _lockerOf(Map<String, dynamic> order) {
+    final rawStatus = (order['status'] as String? ?? '').toUpperCase();
+    final isPickup = rawStatus == 'STORING' || rawStatus == 'RETURNED';
+    final lockerId = isPickup
+        ? _asInt(order['destinationLockerId'] ?? order['lockerId'])
+        : _asInt(order['lockerId'] ?? order['destinationLockerId']);
+    return _lockersMap[lockerId];
+  }
 
   String? _lockerNameOf(Map<String, dynamic> order) =>
-      _lockersMap[_asInt(order['lockerId'])]?['name']?.toString();
+      _lockerOf(order)?['name']?.toString();
 
   Future<void> _openLockerDirections(Map<String, dynamic> order) async {
-    final lockerId = _asInt(order['lockerId']);
+    final rawStatus = (order['status'] as String? ?? '').toUpperCase();
+    final isPickup = rawStatus == 'STORING' || rawStatus == 'RETURNED';
+    final lockerId = isPickup
+        ? _asInt(order['destinationLockerId'] ?? order['lockerId'])
+        : _asInt(order['lockerId'] ?? order['destinationLockerId']);
     if (lockerId == null) {
       _snack('Đơn chưa có thông tin tủ.');
       return;
@@ -573,21 +608,16 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
     await _doCheckout(orderId, method);
   }
 
-  /// Gửi lệnh mở ô của đơn xuống cabinet qua backend IoT
-  /// (mobile → POST /api/iot/unlock → iot-service → MQTT → cabinet mở cửa).
-  Future<void> _openLockerFlow(Map<String, dynamic> order) async {
-    final lockerId = _asInt(order['lockerId']);
-    final boxId = _asInt(order['sendBoxId'] ?? order['receiveBoxId']);
-    final pin = order['pinCode'] as String?;
-    if (lockerId == null || boxId == null || pin == null || pin.isEmpty) {
-      _snack('Đơn chưa có thông tin ô/PIN để mở tủ.');
-      return;
-    }
-    final boxLabel = _boxLabelFor(order, boxId);
+  /// Thực hiện mở khóa vật lý qua backend IoT
+  Future<void> _doPhysicalUnlock(
+    int lockerId,
+    int boxId,
+    String pin,
+    String boxLabel,
+    Map<String, dynamic> order,
+  ) async {
     _snack('Đang gửi lệnh mở $boxLabel tới tủ...');
     try {
-      // Backend chờ phản hồi phần cứng qua MQTT rồi mới trả: accepted=true
-      // nghĩa là cabinet đã xác nhận MỞ CỬA thật (không phải chỉ nhận lệnh).
       final res = await _service.unlock(lockerId, boxId, pin);
       final accepted = res['accepted'] == true;
       final msg = res['message']?.toString();
@@ -596,9 +626,68 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
             ? 'Tủ đã mở $boxLabel — mời bạn thao tác rồi đóng cửa.'
             : 'Không mở được $boxLabel${msg != null && msg.isNotEmpty ? ': $msg' : ''}',
       );
-      if (accepted) await _load();
+      if (accepted) {
+        await _load();
+      }
     } catch (e) {
       _snack(LockerOpsService.errorMessage(e));
+    }
+  }
+
+  /// Gửi lệnh mở ô của đơn xuống cabinet qua mô hình Hybrid (GPS Geofencing + Quét QR).
+  Future<void> _openLockerFlow(Map<String, dynamic> order) async {
+    final rawStatus = (order['status'] as String? ?? '').toUpperCase();
+    final type = (order['type'] as String? ?? '').toUpperCase();
+    final isRental = type == 'RENTAL';
+    final isPickupPhase = rawStatus == 'STORING' || rawStatus == 'RETURNED';
+
+    final lockerId = isPickupPhase
+        ? _asInt(order['destinationLockerId'] ?? order['lockerId'])
+        : _asInt(order['lockerId'] ?? order['destinationLockerId']);
+
+    final boxId = isPickupPhase
+        ? _asInt(order['receiveBoxId'] ?? order['sendBoxId'])
+        : _asInt(order['sendBoxId'] ?? order['receiveBoxId']);
+
+    final pin = order['pinCode'] as String?;
+    if (lockerId == null || boxId == null || pin == null || pin.isEmpty) {
+      _snack('Đơn chưa có thông tin ô/PIN để mở tủ.');
+      return;
+    }
+    final boxLabel = _boxLabelFor(order, boxId);
+
+    // Lấy thông tin tủ đầy đủ (mã tủ, tên)
+    Map<String, dynamic>? locker = _lockersMap[lockerId];
+    if (locker == null) {
+      try {
+        locker = await _service.locker(lockerId);
+      } catch (_) {}
+    }
+    final lockerName = locker?['name']?.toString() ?? 'Tủ Lock.R';
+    final lockerCode = locker?['code']?.toString() ?? '';
+
+    if (!mounted) return;
+
+    // Hiển thị Modal 3 phương thức mở tủ:
+    // 1. Bluetooth BLE (Proximity 1-chạm kèm chế độ Mô phỏng RPi)
+    // 2. Quét tem mã QR trên thân tủ
+    // 3. Xem mã PIN / OTP nhập trực tiếp tại màn hình Kiosk
+    final action = await LockerUnlockModal.show(
+      context,
+      lockerName: lockerName,
+      lockerCode: lockerCode,
+      lockerId: lockerId,
+      boxId: boxId,
+      boxLabel: boxLabel,
+      pinCode: pin,
+      isRentalReturning: isRental && rawStatus == 'STORING',
+    );
+
+    if (action == null || !mounted) return;
+
+    if (action.type == LockerUnlockActionType.openViaBle ||
+        action.type == LockerUnlockActionType.openViaQr) {
+      await _doPhysicalUnlock(lockerId, boxId, pin, boxLabel, order);
     }
   }
 
@@ -655,7 +744,7 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
                   order['sendBoxId'],
                 )],
             receiveBoxNumber:
-                _lockerBoxesMap[_asInt(order['lockerId'])]?[_asInt(
+                _lockerBoxesMap[_asInt(order['destinationLockerId'] ?? order['lockerId'])]?[_asInt(
                   order['receiveBoxId'],
                 )],
             onReorder: (id) async {
@@ -1312,8 +1401,11 @@ String _boxRouteLabel(int? sendBoxNumber, int? receiveBoxNumber) {
 String _orderBoxLabel({
   int? sendBoxNumber,
   int? receiveBoxNumber,
+  bool isPickupPhase = false,
 }) {
-  final label = sendBoxNumber ?? receiveBoxNumber;
+  final label = isPickupPhase
+      ? (receiveBoxNumber ?? sendBoxNumber)
+      : (sendBoxNumber ?? receiveBoxNumber);
   return label == null ? 'Ô này' : 'Ô số $label';
 }
 
@@ -1368,7 +1460,10 @@ class _DetailSheet extends StatelessWidget {
     final type = (order['type'] as String? ?? '').toUpperCase();
     final isDroneDelivery = type == 'DRONE_DELIVERY';
     final isRental = type == 'RENTAL';
-    final boxId = (order['sendBoxId'] ?? order['receiveBoxId']) as int?;
+    final isPickupPhase = rawStatus == 'STORING' || rawStatus == 'RETURNED';
+    final boxId = isPickupPhase
+        ? ((order['receiveBoxId'] ?? order['sendBoxId']) as int?)
+        : ((order['sendBoxId'] ?? order['receiveBoxId']) as int?);
     final deadline = order['pickupDeadline'];
     final overdue =
         isOverdue(deadline) && status != 'COMPLETED' && status != 'CANCELED';
@@ -1389,6 +1484,7 @@ class _DetailSheet extends StatelessWidget {
     final boxLabel = _orderBoxLabel(
       sendBoxNumber: sendBoxNumber,
       receiveBoxNumber: receiveBoxNumber,
+      isPickupPhase: isPickupPhase,
     );
     final rawAddress = locker?['address']?.toString().trim();
     final lockerAddress = (rawAddress == null || rawAddress.isEmpty)
@@ -1411,6 +1507,10 @@ class _DetailSheet extends StatelessWidget {
     final discountAmount = _asDouble(order['discount']) ?? 0;
     final promotionCode = (order['promotionCode'] as String?)?.trim();
     final createdAt = order['createdAt'];
+
+    final canDrop = rawStatus == 'INITIALIZED' &&
+        (paymentStatus == 'PAID' || totalNum <= 0 || order['paymentRequired'] == false) &&
+        boxId != null;
 
     final actions = <Widget>[
       if (isDroneDelivery &&
@@ -1436,22 +1536,42 @@ class _DetailSheet extends StatelessWidget {
           primary: true,
           onTap: () => onReorder(id),
         ),
+      if (canDrop)
+        OpsSheetAction(
+          label: 'Mở $boxLabel để bỏ đồ',
+          icon: LucideIcons.doorOpen,
+          primary: true,
+          onTap: onOpenLocker,
+        ),
       if (rawStatus == 'INITIALIZED')
         OpsSheetAction(
           label: 'Tôi đã bỏ đồ vào ô',
           icon: LucideIcons.packageCheck,
-          primary: true,
+          primary: !canDrop,
           onTap: () => onConfirmDrop(id),
         ),
       if (canUsePickupActions &&
-          (rawStatus == 'RETURNED' || (rawStatus == 'STORING' && !isRental)))
+          (rawStatus == 'RETURNED' || (rawStatus == 'STORING' && !isRental))) ...[
+        OpsSheetAction(
+          label: 'Mở $boxLabel để lấy đồ',
+          icon: LucideIcons.doorOpen,
+          primary: true,
+          onTap: onOpenLocker,
+        ),
         OpsSheetAction(
           label: 'Tôi đã lấy đồ — hoàn tất',
           icon: LucideIcons.circleCheck,
-          primary: true,
+          primary: false,
           onTap: () => onComplete(id),
         ),
+      ],
       if (isRental && rawStatus == 'STORING') ...[
+        OpsSheetAction(
+          label: 'Mở $boxLabel để trả tủ & lấy đồ',
+          icon: LucideIcons.doorOpen,
+          primary: true,
+          onTap: onOpenLocker,
+        ),
         OpsSheetAction(
           label: 'Gia hạn thuê',
           icon: LucideIcons.timer,

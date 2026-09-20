@@ -32,6 +32,10 @@
 	<string>Lock.R cần truy cập thư viện ảnh để bạn chọn ảnh sự cố ô tủ và ảnh đại diện.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Lock.R dùng vị trí để tìm tủ gần bạn, chỉ đường và ghi vị trí chụp ảnh hiện trường.</string>
+	<key>NSBluetoothAlwaysUsageDescription</key>
+	<string>Lock.R cần quyền Bluetooth để tự động nhận diện và mở cửa tủ khi bạn đứng gần.</string>
+	<key>NSBluetoothPeripheralUsageDescription</key>
+	<string>Lock.R cần quyền Bluetooth để kết nối và mở cửa tủ thông minh.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>
