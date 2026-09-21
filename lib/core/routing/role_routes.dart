@@ -27,3 +27,26 @@ bool requiresSignIn(String location) =>
     location == AppRouter.topUp ||
     location == AppRouter.assistant ||
     location.startsWith('${AppRouter.assistant}/');
+
+/// Tab của trang KTV tủ theo thứ tự hiển thị — giá trị `?tab=` của
+/// [AppRouter.technicianHome].
+const technicianTabs = ['inspect', 'incidents', 'mine', 'schedules', 'devices'];
+
+/// `?tab=` ⇒ chỉ số tab; tên lạ/thiếu ⇒ tab đầu.
+int technicianTabIndex(String? tab) {
+  final index = technicianTabs.indexOf(tab ?? '');
+  return index < 0 ? 0 : index;
+}
+
+/// Noti (push hoặc trong app) gửi KTV tủ ⇒ đường dẫn tới đúng tab; `null` nếu
+/// không phải noti của KTV tủ. `locker.report.assigned` có `referenceType`
+/// LOCKER là admin giao tủ, còn lại là giao phiếu.
+String? technicianRouteForNotification(String? type, {String? referenceType}) {
+  final tab = switch (type) {
+    'locker.report.routed' => 'incidents',
+    'locker.report.assigned' => referenceType == 'LOCKER' ? 'incidents' : 'mine',
+    'locker.schedule.due' => 'schedules',
+    _ => null,
+  };
+  return tab == null ? null : '${AppRouter.technicianHome}?tab=$tab';
+}

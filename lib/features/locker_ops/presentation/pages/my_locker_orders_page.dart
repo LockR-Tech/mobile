@@ -4,16 +4,14 @@ import 'package:go_router/go_router.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import 'package:smart_laundry_locker/core/config/business_config_provider.dart';
-import 'package:smart_laundry_locker/core/config/env_config.dart';
 import 'package:smart_laundry_locker/core/media/media.dart';
 import 'package:smart_laundry_locker/core/routing/app_router.dart';
 import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
-import 'package:smart_laundry_locker/features/transactions/presentation/pages/top_up_page.dart'
-    show TopUpWebViewPage;
 import 'package:smart_laundry_locker/features/locker_ops/presentation/utils/business_rules_text.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/utils/locker_maps.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/locker_unlock_modal.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/ops_widgets.dart';
+import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/order_payment_sheet.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/order_status_timeline.dart';
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
 
@@ -575,8 +573,8 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
     }
   }
 
-  /// Pick a payment method then pay the order. Wallet/Cash settle instantly;
-  /// VNPay/MoMo open the provider page in a WebView and settle via callback.
+  /// Chọn phương thức rồi thanh toán; chỉ báo thành công khi server đã ghi
+  /// nhận đơn PAID (bước bỏ hàng phụ thuộc vào trạng thái đó).
   Future<void> _payDialog(Map<String, dynamic> order) async {
     final orderId = _asInt(order['id']);
     if (orderId == null) return;
@@ -585,28 +583,24 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
     // Làm mới nền danh sách phương thức admin bật (trong TTL thì không gọi mạng).
     businessConfigService.refresh();
 
-    num balance = 0;
     try {
-      balance = await _service.walletBalance();
-    } catch (_) {}
-    if (!mounted) return;
-
-    final method = await showModalBottomSheet<String>(
-      context: context,
-      useRootNavigator: true,
-      backgroundColor: Colors.white,
-      showDragHandle: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(26)),
-      ),
-      builder: (ctx) => _PaymentMethodPicker(
+      final outcome = await payOrderAndAwaitPaid(
+        context,
+        service: _service,
+        orderId: orderId,
         total: total,
-        walletBalance: balance,
         enabledMethods: businessConfig.enabledPaymentMethods,
-      ),
-    );
-    if (method == null) return;
-    await _doCheckout(orderId, method);
+      );
+      if (!mounted || outcome == OrderPaymentOutcome.cancelled) return;
+      _snack(
+        outcome == OrderPaymentOutcome.paid
+            ? 'Thanh toán thành công'
+            : 'Đang chờ xác nhận thanh toán — kéo xuống để làm mới sau ít phút.',
+      );
+      await _load();
+    } catch (e) {
+      _snack(LockerOpsService.errorMessage(e));
+    }
   }
 
   /// Thực hiện mở khóa vật lý qua backend IoT
@@ -689,32 +683,6 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
     if (action.type == LockerUnlockActionType.openViaBle ||
         action.type == LockerUnlockActionType.openViaQr) {
       await _doPhysicalUnlock(lockerId, boxId, pin, boxLabel, order);
-    }
-  }
-
-  Future<void> _doCheckout(int orderId, String method) async {
-    try {
-      final res = await _service.checkout(
-        orderId,
-        method,
-        returnUrl: '${EnvConfig.apiBaseUrl}/payments/vnpay/callback',
-      );
-      final url = res['url'] as String?;
-      if ((method == 'VNPAY' || method == 'MOMO') &&
-          url != null &&
-          url.isNotEmpty) {
-        if (!mounted) return;
-        final ok = await Navigator.of(context).push<bool>(
-          MaterialPageRoute(builder: (_) => TopUpWebViewPage(paymentUrl: url)),
-        );
-        if (ok == true) _snack('Thanh toán thành công');
-        await _load();
-      } else {
-        _snack('Thanh toán thành công');
-        await _load();
-      }
-    } catch (e) {
-      _snack(LockerOpsService.errorMessage(e));
     }
   }
 
@@ -1886,142 +1854,3 @@ class _DetailSheet extends StatelessWidget {
   }
 }
 
-// ── Payment method picker ─────────────────────────────────────────────────────
-
-class _PaymentMethodPicker extends StatelessWidget {
-  const _PaymentMethodPicker({
-    required this.total,
-    required this.walletBalance,
-    required this.enabledMethods,
-  });
-  final double total;
-  final num walletBalance;
-
-  /// Phương thức admin đang bật (`app.payment.enabled-methods`), viết hoa.
-  final List<String> enabledMethods;
-
-  @override
-  Widget build(BuildContext context) {
-    final insufficient = walletBalance < total;
-    bool enabled(String method) => enabledMethods.contains(method);
-    final hasAnyMethod = const ['WALLET', 'VNPAY', 'MOMO', 'CASH'].any(enabled);
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 4, 20, 24),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          const Text(
-            'Chọn phương thức thanh toán',
-            style: TextStyle(
-              fontWeight: FontWeight.w800,
-              fontSize: 18,
-              color: opsDark,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            'Số tiền: ${fmtPrice(total)}',
-            style: const TextStyle(fontSize: 14, color: opsMutedText),
-          ),
-          const SizedBox(height: 16),
-          if (!hasAnyMethod)
-            const OpsBanner(
-              tone: OpsBannerTone.warning,
-              icon: LucideIcons.badgeAlert,
-              text:
-                  'Hiện chưa có phương thức thanh toán nào khả dụng. '
-                  'Vui lòng thử lại sau.',
-            ),
-          if (enabled('WALLET'))
-            _MethodTile(
-              icon: LucideIcons.wallet,
-              title: 'Ví của tôi',
-              subtitle: insufficient
-                  ? 'Số dư ${fmtPrice(walletBalance)} — không đủ, hãy nạp thêm'
-                  : 'Số dư ${fmtPrice(walletBalance)} · thanh toán tức thì',
-              enabled: !insufficient,
-              onTap: () => Navigator.pop(context, 'WALLET'),
-            ),
-          if (enabled('VNPAY'))
-            _MethodTile(
-              icon: LucideIcons.creditCard,
-              title: 'VNPay',
-              subtitle: 'Thẻ ATM / QR ngân hàng',
-              onTap: () => Navigator.pop(context, 'VNPAY'),
-            ),
-          if (enabled('MOMO'))
-            _MethodTile(
-              icon: LucideIcons.smartphone,
-              title: 'MoMo',
-              subtitle: 'Ví MoMo',
-              onTap: () => Navigator.pop(context, 'MOMO'),
-            ),
-          if (enabled('CASH'))
-            _MethodTile(
-              icon: LucideIcons.banknote,
-              title: 'Tiền mặt',
-              subtitle: 'Thanh toán tại quầy',
-              onTap: () => Navigator.pop(context, 'CASH'),
-            ),
-        ],
-      ),
-    );
-  }
-}
-
-class _MethodTile extends StatelessWidget {
-  const _MethodTile({
-    required this.icon,
-    required this.title,
-    required this.subtitle,
-    required this.onTap,
-    this.enabled = true,
-  });
-  final IconData icon;
-  final String title;
-  final String subtitle;
-  final VoidCallback onTap;
-  final bool enabled;
-
-  @override
-  Widget build(BuildContext context) {
-    return Opacity(
-      opacity: enabled ? 1 : 0.5,
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 10),
-        // Nền/viền đặt trên Material (không phải DecoratedBox) để ListTile vẽ
-        // được hiệu ứng chạm — tránh assertion "ink splashes may be invisible".
-        child: Material(
-          color: opsSurface,
-          clipBehavior: Clip.antiAlias,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
-            side: const BorderSide(color: opsBorder),
-          ),
-          child: ListTile(
-            enabled: enabled,
-            onTap: enabled ? onTap : null,
-            leading: Icon(icon, color: opsPrimary),
-            title: Text(
-              title,
-              style: const TextStyle(
-                fontWeight: FontWeight.w700,
-                color: opsDark,
-              ),
-            ),
-            subtitle: Text(
-              subtitle,
-              style: const TextStyle(fontSize: 12, color: opsMutedText),
-            ),
-            trailing: const Icon(
-              LucideIcons.chevronRight,
-              size: 18,
-              color: opsMutedText,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}

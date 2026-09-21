@@ -87,4 +87,58 @@ void main() {
       expect(requiresSignIn('/assistant-foo'), isFalse);
     });
   });
+
+  group('technician notification routing', () {
+    test('ticket routed to my locker opens the incidents tab', () {
+      expect(
+        technicianRouteForNotification('locker.report.routed'),
+        equals('/technician-home?tab=incidents'),
+      );
+    });
+
+    test('ticket assigned to me opens "Việc của tôi"', () {
+      expect(
+        technicianRouteForNotification(
+          'locker.report.assigned',
+          referenceType: 'LOCKER_REPORT',
+        ),
+        equals('/technician-home?tab=mine'),
+      );
+      expect(
+        technicianRouteForNotification('locker.report.assigned'),
+        equals('/technician-home?tab=mine'),
+      );
+    });
+
+    test('locker assigned to me opens the incidents tab', () {
+      expect(
+        technicianRouteForNotification(
+          'locker.report.assigned',
+          referenceType: 'LOCKER',
+        ),
+        equals('/technician-home?tab=incidents'),
+      );
+    });
+
+    test('due schedule opens the schedules tab', () {
+      expect(
+        technicianRouteForNotification('locker.schedule.due'),
+        equals('/technician-home?tab=schedules'),
+      );
+    });
+
+    test('other notifications are not technician routes', () {
+      expect(technicianRouteForNotification('locker.report.resolved'), isNull);
+      expect(technicianRouteForNotification('ORDER_STATUS_CHANGED'), isNull);
+      expect(technicianRouteForNotification(null), isNull);
+    });
+
+    test('tab query maps to tab index, unknown falls back to first tab', () {
+      expect(technicianTabIndex('incidents'), 1);
+      expect(technicianTabIndex('mine'), 2);
+      expect(technicianTabIndex('schedules'), 3);
+      expect(technicianTabIndex('nope'), 0);
+      expect(technicianTabIndex(null), 0);
+    });
+  });
 }

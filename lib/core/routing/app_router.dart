@@ -306,7 +306,10 @@ class AppRouter {
       GoRoute(
         path: technicianHome,
         name: 'technician_home',
-        builder: (context, state) => const TechnicianHomePage(),
+        // `?tab=` (noti KTV tủ) mở thẳng tab tương ứng.
+        builder: (context, state) => TechnicianHomePage(
+          initialTab: technicianTabIndex(state.uri.queryParameters['tab']),
+        ),
       ),
       GoRoute(
         path: technicianProfile,

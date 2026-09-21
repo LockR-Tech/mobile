@@ -10,6 +10,7 @@ import 'dart:math';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:smart_laundry_locker/core/network/api_client.dart';
 import 'package:smart_laundry_locker/core/routing/app_router.dart';
+import 'package:smart_laundry_locker/core/routing/role_routes.dart';
 import 'package:smart_laundry_locker/features/notifications/domain/entities/delivery_notification.dart';
 import 'package:go_router/go_router.dart';
 
@@ -319,11 +320,16 @@ class FirebaseMessagingService {
   /// Điều hướng khi người dùng bấm vào noti (background/terminated qua
   /// onMessageOpenedApp/getInitialMessage, hoặc foreground qua local-notif).
   ///
-  /// Ưu tiên: đơn drone mới -> hàng đợi DRONE_TECHNICIAN; cập nhật chuyến drone ->
-  /// timeline customer; noti giao hàng khác -> chi tiết đơn; còn lại -> Thông báo.
+  /// Ưu tiên: đơn drone mới -> hàng đợi DRONE_TECHNICIAN; phiếu/lịch của KTV tủ
+  /// -> tab tương ứng trang KTV tủ; cập nhật chuyến drone -> timeline customer;
+  /// noti giao hàng khác -> chi tiết đơn; còn lại -> Thông báo.
   void _handleTapData(Map<String, dynamic> data) {
     final type = data['type']?.toString();
     final delivery = DeliveryNotification.fromData(data);
+    final technicianRoute = technicianRouteForNotification(
+      type,
+      referenceType: data['referenceType']?.toString(),
+    );
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final context = AppRouter.navigatorKey.currentContext;
@@ -331,6 +337,8 @@ class FirebaseMessagingService {
 
       if (_isMaintenanceDroneType(type)) {
         context.go(AppRouter.maintenanceHome);
+      } else if (technicianRoute != null) {
+        context.go(technicianRoute);
       } else if (_isDroneDeliveryType(type)) {
         final orderId = data['orderId']?.toString() ?? '';
         context.go(AppRouter.droneDeliveryTracking, extra: orderId);
