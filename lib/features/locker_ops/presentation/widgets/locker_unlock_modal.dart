@@ -35,6 +35,8 @@ class LockerUnlockModal extends StatefulWidget {
   final String boxLabel;
   final String pinCode;
   final bool isRentalReturning;
+  final bool isOverdue;
+  final String? overdueNotice;
 
   const LockerUnlockModal({
     super.key,
@@ -45,6 +47,8 @@ class LockerUnlockModal extends StatefulWidget {
     required this.boxLabel,
     required this.pinCode,
     this.isRentalReturning = false,
+    this.isOverdue = false,
+    this.overdueNotice,
   });
 
   static Future<LockerUnlockActionResult?> show(
@@ -56,6 +60,8 @@ class LockerUnlockModal extends StatefulWidget {
     required String boxLabel,
     required String pinCode,
     bool isRentalReturning = false,
+    bool isOverdue = false,
+    String? overdueNotice,
   }) {
     return showModalBottomSheet<LockerUnlockActionResult>(
       context: context,
@@ -73,6 +79,8 @@ class LockerUnlockModal extends StatefulWidget {
         boxLabel: boxLabel,
         pinCode: pinCode,
         isRentalReturning: isRentalReturning,
+        isOverdue: isOverdue,
+        overdueNotice: overdueNotice,
       ),
     );
   }
@@ -242,6 +250,35 @@ class _LockerUnlockModalState extends State<LockerUnlockModal> with SingleTicker
               ),
             ],
           ),
+
+          if (widget.isOverdue) ...[
+            const SizedBox(height: 10),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFEF2F2),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: const Color(0xFFFECACA)),
+              ),
+              child: Row(
+                children: [
+                  const Icon(LucideIcons.clockAlert, size: 16, color: Color(0xFFDC2626)),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      widget.overdueNotice ??
+                          'Đơn thuê đã quá hạn. Đã ghi nhận xử lý phí quá giờ — mời bạn lấy đồ và đóng tủ để hoàn tất trả tủ.',
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: Color(0xFF991B1B),
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
 
           if (widget.isRentalReturning) ...[
             const SizedBox(height: 10),

@@ -10,6 +10,7 @@ import 'package:smart_laundry_locker/core/services/token_service.dart';
 import 'package:smart_laundry_locker/features/auth/presentation/providers/auth_injection.dart';
 import 'package:smart_laundry_locker/features/auth/presentation/providers/login_provider.dart';
 import 'package:smart_laundry_locker/features/auth/presentation/providers/register_provider.dart';
+import 'package:smart_laundry_locker/features/profile/presentation/providers/profile_provider.dart';
 
 /// Brand palette shared by the login + register flows so both halves of the
 /// auth screen feel like one product.
@@ -141,6 +142,7 @@ class _LoginScreenState extends State<LoginScreen>
   Future<void> _navigateAfterLogin() async {
     if (!mounted) return;
     try {
+      context.read<ProfileProvider>().loadProfile();
       final roles = await TokenService.getCurrentRoles();
       if (!mounted) return;
       context.go(homeForRoles(roles));

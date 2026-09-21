@@ -126,7 +126,6 @@ class _LockerPageState extends ConsumerState<LockerPage> {
               BrandHeroHeader(
                 title: 'Danh sách tủ',
                 subtitle: 'Chọn tủ để xem chi tiết',
-                imageAsset: 'assets/images/box_stack_3d.png',
                 trailing: BrandCircleIconButton(
                   icon: LucideIcons.mapPin,
                   onTap: () {

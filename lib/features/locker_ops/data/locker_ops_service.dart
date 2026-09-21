@@ -234,6 +234,11 @@ class LockerOpsService {
     body: {'hours': hours},
   );
 
+  Future<Map<String, dynamic>> assessOvertime(int orderId) => _map(
+    'POST',
+    '/api/orders/$orderId/assess-overtime',
+  );
+
   Future<Map<String, dynamic>> cancelOrder(int orderId) =>
       _map('PUT', '/api/orders/$orderId/cancel');
 

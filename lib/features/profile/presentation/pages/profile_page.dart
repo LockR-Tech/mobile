@@ -784,6 +784,7 @@ class _ProfilePageState extends State<ProfilePage>
             onPressed: () async {
               Navigator.of(dialogContext).pop();
               await TokenService.clearTokens();
+              _profileProvider.reset();
               setState(() {
                 _userData = null;
                 _isLoggedIn = false;

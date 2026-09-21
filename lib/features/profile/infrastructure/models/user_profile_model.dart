@@ -32,6 +32,16 @@ class UserProfileModel {
     if (avatar != null && avatar.toString().isNotEmpty) {
       normalized['avatarUrl'] = avatar.toString();
     }
+    if ((normalized['fullName'] == null ||
+            normalized['fullName'].toString().trim().isEmpty) &&
+        json['name'] != null) {
+      normalized['fullName'] = json['name'].toString();
+    }
+    if ((normalized['fullName'] == null ||
+            normalized['fullName'].toString().trim().isEmpty) &&
+        json['username'] != null) {
+      normalized['fullName'] = json['username'].toString();
+    }
     return _$UserProfileModelFromJson(normalized);
   }
 
