@@ -255,6 +255,26 @@ class LockerOpsService {
     },
   );
 
+  /// Báo sự cố cấp tủ (không gắn ô). [blocking] (chỉ LOCKER_TECHNICIAN/ADMIN)
+  /// đưa cả tủ vào MAINTENANCE — ngưng nhận đơn tới khi phiếu được hoàn tất.
+  Future<Map<String, dynamic>> reportLocker(
+    int lockerId,
+    String title,
+    String description, {
+    bool blocking = false,
+    List<Map<String, dynamic>>? attachments,
+  }) => _map(
+    'POST',
+    '/api/lockers/$lockerId/report',
+    body: {
+      'title': title,
+      'description': description,
+      if (attachments != null && attachments.isNotEmpty)
+        'attachments': attachments,
+      if (blocking) 'blocking': true,
+    },
+  );
+
   /// All fault reports the signed-in customer has filed, newest first.
   /// Mỗi phiếu có `attachments[]`.
   Future<List<Map<String, dynamic>>> myReports() =>
@@ -316,6 +336,14 @@ class LockerOpsService {
 
   Future<List<Map<String, dynamic>>> reports({bool mine = false}) =>
       _list('/api/locker-technician/reports', query: {'mine': mine});
+
+  /// Phiếu OPEN của các tủ mình phụ trách (`routedToUserId` = mình), chờ nhận.
+  Future<List<Map<String, dynamic>>> routedReports() =>
+      _list('/api/locker-technician/reports', query: {'routed': true});
+
+  /// Tủ mình phụ trách (`assignedTechnicianId/Name`, `status`, `landingPad`…).
+  Future<List<Map<String, dynamic>>> myLockers() =>
+      _list('/api/locker-technician/lockers', query: {'mine': true});
 
   /// Tất cả phiếu sự cố Kiosk (OPEN + IN_PROGRESS + RESOLVED) — ưu tiên endpoint maintenance,
   /// dùng cho tab "Sự cố" trên Mobile để KTV thấy toàn bộ hệ thống (giống Admin portal).
@@ -430,13 +458,55 @@ class LockerOpsService {
     },
   );
 
-  /// Lịch bảo trì phòng ngừa (mỗi mục kèm cờ `due`).
-  Future<List<Map<String, dynamic>>> maintenanceSchedules() =>
-      _list('/api/maintenance/schedules');
+  /// Lịch bảo trì phòng ngừa (mỗi mục kèm cờ `due`, `checklistItems`,
+  /// `lastResult`, `pendingReportId`). [mine] ⇒ chỉ lịch giao cho mình;
+  /// [target] = LOCKER / DRONE lọc theo đối tượng.
+  Future<List<Map<String, dynamic>>> maintenanceSchedules({
+    bool mine = false,
+    String? target,
+  }) {
+    final query = <String, dynamic>{
+      if (mine) 'mine': true,
+      if (target != null) 'target': target,
+    };
+    return _list(
+      '/api/maintenance/schedules',
+      query: query.isEmpty ? null : query,
+    );
+  }
 
   /// KTV đánh dấu đã kiểm tra xong 1 lịch → dời mốc đến hạn kế tiếp.
   Future<Map<String, dynamic>> completeSchedule(int scheduleId, {Map<String, dynamic>? data}) =>
       _map('POST', '/api/maintenance/schedules/$scheduleId/complete', body: data);
+
+  /// Hoàn tất 1 lần kiểm tra theo checklist. [items] phải phủ đúng
+  /// `checklistItems` của lịch: `{label, result: PASS|FAIL|NA, note?}`; server
+  /// tự suy kết quả — có mục FAIL ⇒ FAILED: không dời hạn, tự mở phiếu giao cho
+  /// mình (`pendingReportId` trong response), [faultBoxId] thì ô đó chuyển FAULT.
+  /// Lịch không có checklist ⇒ [items] rỗng và gửi [status] PASSED/FAILED.
+  Future<Map<String, dynamic>> completeInspection(
+    int scheduleId,
+    List<Map<String, dynamic>> items, {
+    String? status,
+    String? note,
+    int? faultBoxId,
+    String? faultReason,
+    List<String>? photoUrls,
+  }) {
+    final trimmedNote = note?.trim();
+    final trimmedReason = faultReason?.trim();
+    return completeSchedule(
+      scheduleId,
+      data: {
+        if (items.isNotEmpty) 'items': items else 'status': status ?? 'PASSED',
+        if (trimmedNote != null && trimmedNote.isNotEmpty) 'note': trimmedNote,
+        if (faultBoxId != null) 'faultBoxId': faultBoxId,
+        if (trimmedReason != null && trimmedReason.isNotEmpty)
+          'faultReason': trimmedReason,
+        if (photoUrls != null && photoUrls.isNotEmpty) 'photoUrls': photoUrls,
+      },
+    );
+  }
 
   /// Mở ô khẩn cấp không cần PIN khách — luôn được ghi vào audit log
   /// (credential MASTER) ở backend.
@@ -616,8 +686,10 @@ class LockerOpsService {
   Future<Map<String, dynamic>> completeDroneDelivery(int id) =>
       _map('POST', '/api/drone-technician/drone-deliveries/$id/complete');
 
-  /// #6 KTV cập nhật trạng thái bảo trì bãi đáp drone của 1 tủ.
-  /// [status] = OK / FAULT / MAINTENANCE.
+  /// #6 KTV cập nhật trạng thái bảo trì bãi đáp drone của 1 tủ; trả về layout tủ.
+  /// [status] = OK / FAULT / MAINTENANCE. Khác OK ⇒ server mở 1 phiếu
+  /// LANDING_PAD (KTV tủ tự báo thì tự nhận). Về OK khi phiếu đó còn mở ⇒ server
+  /// hoàn tất phiếu (chỉ người được giao, áp luật ảnh nghiệm thu).
   Future<Map<String, dynamic>> updateLandingPadStatus(
     int lockerId,
     String status, {
@@ -656,6 +728,23 @@ class LockerOpsService {
     await _map('POST', '/api/locker-technician/devices/$id/restart');
   }
 
+  /// Mã lỗi nghiệp vụ (`code` của ApiResponse lỗi), ví dụ `REPORT_OPEN`.
+  static String? errorCode(Object error) {
+    if (error is! DioException) return null;
+    final data = error.response?.data;
+    final code = data is Map ? data['code'] : null;
+    return code?.toString();
+  }
+
+  /// Các mã lỗi mà server trả `message` tiếng Anh — hiển thị bản tiếng Việt.
+  static const _codeMessages = <String, String>{
+    'RESOLUTION_PHOTO_REQUIRED':
+        'Cần ít nhất 1 ảnh nghiệm thu trước khi hoàn tất phiếu.',
+    'LANDING_PAD_ABSENT': 'Tủ này không có bãi đáp drone.',
+    'LANDING_PAD_STATUS_INVALID': 'Trạng thái bãi đáp không hợp lệ.',
+    'REPORT_NOT_CLAIMABLE': 'Phiếu không còn ở trạng thái chờ nhận.',
+  };
+
   /// Human-readable message from an [ApiResponse] error payload.
   static String errorMessage(Object error) {
     if (error is MediaUploadException) return error.message;
@@ -665,6 +754,8 @@ class LockerOpsService {
           ? MediaErrorMessages.forCode(data['code']?.toString())
           : null;
       if (mediaMessage != null) return mediaMessage;
+      final codeMessage = _codeMessages[errorCode(error)];
+      if (codeMessage != null) return codeMessage;
       if (data is Map && data['message'] is String) {
         return data['message'] as String;
       }

@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:provider/provider.dart';
 import 'package:smart_laundry_locker/core/routing/app_router.dart';
+import 'package:smart_laundry_locker/core/routing/role_routes.dart';
 import 'package:smart_laundry_locker/core/services/token_service.dart';
 
 class NotificationListPage extends StatefulWidget {
@@ -65,6 +66,11 @@ class _NotificationListPageState extends State<NotificationListPage> {
         context.push(AppRouter.promotions);
         break;
       default:
+        // Phiếu/lịch của KTV tủ -> tab tương ứng trên trang KTV tủ.
+        final technicianRoute = technicianRouteForNotification(
+          payload.actionType,
+        );
+        if (technicianRoute != null) context.go(technicianRoute);
         break;
     }
   }

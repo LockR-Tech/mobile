@@ -10,6 +10,7 @@ import 'package:smart_laundry_locker/core/media/media.dart';
 import 'package:smart_laundry_locker/core/services/token_service.dart';
 import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/utils/locker_maps.dart';
+import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/complete_inspection_sheet.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/locker_picker.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/ops_widgets.dart';
 import 'package:provider/provider.dart';
@@ -22,7 +23,10 @@ import 'package:smart_laundry_locker/features/locker_ops/presentation/pages/tech
 /// + IoT device management. Drone fleet operations live with the
 /// DRONE_TECHNICIAN role.
 class TechnicianHomePage extends StatefulWidget {
-  const TechnicianHomePage({super.key});
+  const TechnicianHomePage({this.initialTab = 0, super.key});
+
+  /// Tab mở sẵn (xem `technicianTabs` trong role_routes) — noti KTV tủ trỏ tới.
+  final int initialTab;
 
   @override
   State<TechnicianHomePage> createState() => _TechnicianHomePageState();
@@ -31,13 +35,24 @@ class TechnicianHomePage extends StatefulWidget {
 class _TechnicianHomePageState extends State<TechnicianHomePage>
     with SingleTickerProviderStateMixin {
   final _service = LockerOpsService();
-  late final TabController _tabs = TabController(length: 5, vsync: this);
+  late final TabController _tabs = TabController(
+    length: 5,
+    vsync: this,
+    initialIndex: widget.initialTab.clamp(0, 4),
+  );
 
   List<Map<String, dynamic>> _faults = [];
   List<Map<String, dynamic>> _reports = [];
   List<Map<String, dynamic>> _myReports = [];
+  // Phiếu OPEN của các tủ mình phụ trách, chờ mình nhận (`reports?routed=true`).
+  List<Map<String, dynamic>> _routedReports = [];
+  // Tủ mình phụ trách (`lockers?mine=true`).
+  List<Map<String, dynamic>> _myLockers = [];
+  String _queueView = 'ALL';
   List<Map<String, dynamic>> _schedules = [];
   String _scheduleFilter = 'ALL';
+  // Của tôi (lịch giao cho mình) / Tất cả lịch tủ.
+  bool _mySchedulesOnly = true;
   // Cảnh báo phần cứng toàn cục (GAP 2): ô cửa-mở-bất-thường trên mọi tủ.
   List<Map<String, dynamic>> _anomalies = [];
   bool _loading = true;
@@ -117,6 +132,15 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
     _load();
   }
 
+  @override
+  void didUpdateWidget(covariant TechnicianHomePage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Bấm noti khi đang ở sẵn trang này ⇒ chỉ đổi tab.
+    if (widget.initialTab != oldWidget.initialTab) {
+      _tabs.animateTo(widget.initialTab.clamp(0, 4));
+    }
+  }
+
   Future<void> _load() async {
     setState(() => _loading = true);
     try {
@@ -138,29 +162,29 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
         rawMine = await _service.reports(mine: true);
       } catch (_) {}
 
+      List<Map<String, dynamic>> rawRouted = [];
+      try {
+        rawRouted = await _service.routedReports();
+      } catch (_) {}
+
       List<Map<String, dynamic>> lockers = [];
       try {
         lockers = await _service.lockers();
       } catch (_) {}
+
+      List<Map<String, dynamic>> myLockers = [];
+      try {
+        myLockers = await _service.myLockers();
+      } catch (_) {}
       if (!mounted) return;
       final kioskAllReports = rawReports.where((r) => !_isDroneReport(r)).toList();
+      // `assignedToUserId` là nguồn sự thật: phiếu KTV tủ tự báo đã được server
+      // tự giao (IN_PROGRESS) — không đoán "của tôi" theo người báo nữa.
       final Map<dynamic, Map<String, dynamic>> myReportsMap = {};
-      for (final r in rawMine) {
-        if (!_isDroneReport(r)) {
-          final id = r['id'];
-          if (id != null) myReportsMap[id] = r;
-        }
-      }
-      if (_myUserId != null && _myUserId!.isNotEmpty) {
-        for (final r in kioskAllReports) {
-          final assignedId = r['assignedToUserId']?.toString();
-          final reporterId = r['userId']?.toString();
-          final isMine = (assignedId != null && assignedId == _myUserId) ||
-              (assignedId == null && reporterId != null && reporterId == _myUserId);
-          if (isMine) {
-            final id = r['id'];
-            if (id != null) myReportsMap[id] = r;
-          }
+      for (final r in [...rawMine, ...kioskAllReports]) {
+        final id = r['id'];
+        if (id != null && !_isDroneReport(r) && _isAssignedToMe(r)) {
+          myReportsMap.putIfAbsent(id, () => r);
         }
       }
       final myReportsList = myReportsMap.values.toList();
@@ -168,12 +192,16 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
         _faults = rawFaults.where((f) => !_isDroneFault(f)).toList();
         _reports = kioskAllReports;
         _myReports = myReportsList;
+        _routedReports = rawRouted.where((r) => !_isDroneReport(r)).toList();
         _lockers = lockers;
+        _myLockers = myLockers;
       });
-      // Lịch bảo trì định kỳ — chỉ lịch của tủ; lịch drone thuộc đội bay
-      // (DRONE_TECHNICIAN). Không để vỡ trang nếu BE chưa deploy.
+      // Lịch bảo trì định kỳ — chỉ lịch của tủ (target=LOCKER); lịch drone thuộc
+      // đội bay (DRONE_TECHNICIAN). Lọc "Của tôi" làm tại chỗ theo
+      // `assignedTechnicianId` (đúng như `mine=true` của server) để đổi bộ lọc
+      // không phải gọi lại. Không để vỡ trang nếu BE chưa deploy.
       try {
-        final schedules = await _service.maintenanceSchedules();
+        final schedules = await _service.maintenanceSchedules(target: 'LOCKER');
         if (mounted) {
           setState(() => _schedules = schedules.toList(growable: false));
         }
@@ -210,7 +238,15 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
       final validSelected = lockers.any(
         (locker) => _asInt(locker['id']) == _selectedLockerId,
       );
-      final firstId = lockers.isNotEmpty ? _asInt(lockers.first['id']) : null;
+      // Mặc định mở tủ đầu tiên mình phụ trách (nếu có).
+      final myFirstId = myLockers
+          .map((l) => _asInt(l['id']))
+          .firstWhere(
+            (id) => id != null && lockers.any((l) => _asInt(l['id']) == id),
+            orElse: () => null,
+          );
+      final firstId = myFirstId ??
+          (lockers.isNotEmpty ? _asInt(lockers.first['id']) : null);
       final nextSelectedId = validSelected ? _selectedLockerId : firstId;
       if (nextSelectedId == null) {
         setState(() {
@@ -709,23 +745,180 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
       await _load();
       return true;
     } catch (e) {
-      if (mounted) {
-        final msg = LockerOpsService.errorMessage(e);
-        if (msg.contains('SLA_RESTRICTED') ||
-            msg.contains('hạn chế nhận thêm') ||
-            msg.contains('quá hạn SLA')) {
-          _showSlaRestrictedDialog(msg);
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              backgroundColor: const Color(0xFFDC2626),
-              content: Text(msg),
-            ),
-          );
-        }
-      }
+      _showError(e);
       return false;
     }
+  }
+
+  /// Báo lỗi server (message tiếng Việt từ ApiResponse). `REPORT_OPEN` (ô/bãi
+  /// đáp còn phiếu mở) kèm nút mở phiếu đó để nghiệm thu đúng quy trình.
+  void _showError(Object e) {
+    if (!mounted) return;
+    final msg = LockerOpsService.errorMessage(e);
+    if (msg.contains('SLA_RESTRICTED') ||
+        msg.contains('hạn chế nhận thêm') ||
+        msg.contains('quá hạn SLA')) {
+      _showSlaRestrictedDialog(msg);
+      return;
+    }
+    final openReportId = LockerOpsService.errorCode(e) == 'REPORT_OPEN'
+        ? int.tryParse(RegExp(r'#(\d+)').firstMatch(msg)?.group(1) ?? '')
+        : null;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        backgroundColor: const Color(0xFFDC2626),
+        duration: Duration(seconds: openReportId != null ? 6 : 4),
+        content: Text(msg),
+        action: openReportId == null
+            ? null
+            : SnackBarAction(
+                label: 'Mở phiếu',
+                textColor: Colors.white,
+                onPressed: () => _resolveViaTicket(openReportId),
+              ),
+      ),
+    );
+  }
+
+  void _showInfo(String msg) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+  }
+
+  bool _isAssignedToMe(Map<String, dynamic> r) {
+    final me = _myUserId;
+    return me != null &&
+        me.isNotEmpty &&
+        r['assignedToUserId']?.toString() == me;
+  }
+
+  Set<int> get _myLockerIds =>
+      _myLockers.map((l) => _asInt(l['id'])).whereType<int>().toSet();
+
+  Map<String, dynamic>? _findReport(int reportId) {
+    for (final r in [..._myReports, ..._routedReports, ..._reports]) {
+      if (_asInt(r['id']) == reportId) return r;
+    }
+    return null;
+  }
+
+  /// Phiếu còn mở của 1 ô: `openReportId` trong danh sách ô lỗi, hoặc phiếu
+  /// chưa RESOLVED gắn ô đó.
+  int? _openReportIdForBox(int boxId) {
+    for (final f in _faults) {
+      if (_asInt(f['boxId']) == boxId && _asInt(f['openReportId']) != null) {
+        return _asInt(f['openReportId']);
+      }
+    }
+    for (final r in [..._myReports, ..._reports]) {
+      if (_asInt(r['boxId']) == boxId && r['status'] != 'RESOLVED') {
+        return _asInt(r['id']);
+      }
+    }
+    return null;
+  }
+
+  /// "Đã sửa" cho ô FAULT. Ô còn phiếu mở ⇒ hoàn tất qua phiếu (ảnh nghiệm
+  /// thu, đúng luật backend); chỉ gọi clear-fault khi ô không có phiếu nào.
+  Future<void> _markFaultFixed(int boxId, {int? openReportId}) async {
+    final reportId = openReportId ?? _openReportIdForBox(boxId);
+    if (reportId != null) {
+      await _resolveViaTicket(reportId);
+      return;
+    }
+    try {
+      await _service.clearFault(boxId);
+      _showInfo('Ô đã hoạt động lại');
+      await _load();
+    } catch (e) {
+      _showError(e);
+      // REPORT_OPEN / BOX_NOT_FAULT: dữ liệu trên máy đã cũ ⇒ tải lại.
+      final code = LockerOpsService.errorCode(e);
+      if (code == 'REPORT_OPEN' || code == 'BOX_NOT_FAULT') await _load();
+    }
+  }
+
+  /// Mở luồng hoàn tất (nghiệm thu + ảnh) cho phiếu [reportId]: phiếu của mình
+  /// ⇒ mở sheet nghiệm thu; phiếu OPEN chưa ai nhận ⇒ nhận phiếu rồi nghiệm thu;
+  /// phiếu KTV khác đang giữ ⇒ báo rõ, không gọi API.
+  Future<void> _resolveViaTicket(int reportId) async {
+    Map<String, dynamic>? ticket = _findReport(reportId);
+    try {
+      ticket = await _service.getMaintenanceReport(reportId);
+    } catch (_) {}
+    if (!mounted) return;
+    if (ticket == null || ticket.isEmpty) {
+      _showInfo('Không tải được phiếu #$reportId');
+      return;
+    }
+    final status = ticket['status']?.toString();
+    if (status == 'RESOLVED') {
+      _showInfo('Phiếu #$reportId đã được hoàn tất.');
+      await _load();
+      return;
+    }
+    if (_isAssignedToMe(ticket)) {
+      await _confirmResolveReport(ticket);
+      return;
+    }
+    if (status != 'OPEN') {
+      _showInfo(
+        'Phiếu #$reportId đang do KTV #${ticket['assignedToUserId']} xử lý — '
+        'chỉ người được giao mới hoàn tất được.',
+      );
+      return;
+    }
+    final claim = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Text('Phiếu #$reportId chưa có người nhận'),
+        content: const Text(
+          'Ô/bãi đáp này đang có phiếu sự cố mở. Nhận phiếu rồi nghiệm thu '
+          '(chụp ảnh sau khi sửa) để đưa về hoạt động.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Hủy'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFF59E0B),
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Nhận & nghiệm thu'),
+          ),
+        ],
+      ),
+    );
+    if (claim != true || !mounted) return;
+    try {
+      final claimed = await _service.claimReport(reportId);
+      if (!mounted) return;
+      await _confirmResolveReport({...ticket, ...claimed});
+    } catch (e) {
+      _showError(e);
+    }
+    await _load();
+  }
+
+  /// Mở chi tiết phiếu theo id (badge "Chờ phiếu #id" của lịch định kỳ).
+  Future<void> _openReportById(int reportId) async {
+    Map<String, dynamic>? ticket = _findReport(reportId);
+    if (ticket == null) {
+      try {
+        ticket = await _service.getMaintenanceReport(reportId);
+      } catch (e) {
+        _showError(e);
+        return;
+      }
+    }
+    if (mounted && ticket.isNotEmpty) _showReportDetailModal(ticket);
   }
 
   Future<void> _openDirections(Map<String, dynamic> item) async {
@@ -1405,10 +1598,198 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
             ),
             const SizedBox(height: 12),
             _boxHealthCard(),
+            if (_layout?['landingPad'] == true && _selectedLockerId != null) ...[
+              const SizedBox(height: 12),
+              _landingPadCard(_selectedLockerId!),
+            ],
           ],
         ],
       ),
     );
+  }
+
+  static const _landingPadStatuses = ['OK', 'FAULT', 'MAINTENANCE'];
+
+  String _landingPadLabel(String status) => switch (status) {
+    'OK' => 'Hoạt động tốt',
+    'FAULT' => 'Hỏng',
+    'MAINTENANCE' => 'Đang bảo trì',
+    _ => status,
+  };
+
+  Color _landingPadColor(String status) => switch (status) {
+    'OK' => const Color(0xFF16A34A),
+    'FAULT' => const Color(0xFFDC2626),
+    _ => const Color(0xFFD97706),
+  };
+
+  /// Phiếu LANDING_PAD còn mở của tủ (tối đa 1 phiếu mở mỗi bãi đáp).
+  Map<String, dynamic>? _openLandingPadReport(int lockerId) {
+    for (final r in [..._myReports, ..._reports]) {
+      if (r['category'] == 'LANDING_PAD' &&
+          _asInt(r['lockerId']) == lockerId &&
+          r['status'] != 'RESOLVED') {
+        return r;
+      }
+    }
+    return null;
+  }
+
+  /// Bãi đáp drone của tủ đang chọn (#6): KTV tủ đổi OK / FAULT / MAINTENANCE.
+  Widget _landingPadCard(int lockerId) {
+    final status = (_layout?['landingPadStatus'] ?? 'OK').toString();
+    final markerId = _layout?['landingMarkerId']?.toString();
+    final openTicket = _openLandingPadReport(lockerId);
+    final color = _landingPadColor(status);
+    return OpsCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.flight_land, size: 18, color: opsPrimary),
+              const SizedBox(width: 8),
+              const Expanded(
+                child: Text(
+                  'Bãi đáp drone',
+                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800),
+                ),
+              ),
+              _MiniPill(
+                icon: Icons.circle,
+                text: _landingPadLabel(status),
+                color: color,
+              ),
+            ],
+          ),
+          if (markerId != null && markerId.isNotEmpty) ...[
+            const SizedBox(height: 4),
+            Text(
+              'Marker: $markerId',
+              style: const TextStyle(fontSize: 12, color: opsMutedText),
+            ),
+          ],
+          if (openTicket != null) ...[
+            const SizedBox(height: 8),
+            InkWell(
+              onTap: () => _showReportDetailModal(openTicket),
+              borderRadius: BorderRadius.circular(999),
+              child: _MiniPill(
+                icon: Icons.pending_actions,
+                text: 'Phiếu #${openTicket['id']} đang mở',
+                color: const Color(0xFFEA580C),
+              ),
+            ),
+          ],
+          const SizedBox(height: 10),
+          Wrap(
+            spacing: 8,
+            runSpacing: 6,
+            children: [
+              for (final s in _landingPadStatuses)
+                _buildScheduleChip(
+                  label: _landingPadLabel(s),
+                  selected: status == s,
+                  activeColor: _landingPadColor(s),
+                  onTap: () {
+                    if (status != s) _changeLandingPad(lockerId, s, openTicket);
+                  },
+                ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            'Báo Hỏng/Bảo trì ⇒ mở phiếu bãi đáp giao cho bạn. Về "Hoạt động tốt" '
+            'khi còn phiếu ⇒ nghiệm thu phiếu (ảnh sau khi sửa).',
+            style: TextStyle(fontSize: 11.5, color: opsMutedText),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Về OK khi còn phiếu bãi đáp ⇒ hoàn tất qua phiếu (luật ảnh nghiệm thu);
+  /// FAULT/MAINTENANCE cần lý do — thành mô tả phiếu server mở.
+  Future<void> _changeLandingPad(
+    int lockerId,
+    String status,
+    Map<String, dynamic>? openTicket,
+  ) async {
+    final ticketId = _asInt(openTicket?['id']);
+    if (status == 'OK' && ticketId != null) {
+      await _resolveViaTicket(ticketId);
+      return;
+    }
+    String? reason;
+    if (status != 'OK') {
+      reason = await _askLandingPadReason(status);
+      if (reason == null) return;
+    }
+    try {
+      await _service.updateLandingPadStatus(lockerId, status, reason: reason);
+      _showInfo(
+        status == 'OK'
+            ? 'Bãi đáp đã hoạt động lại'
+            : 'Bãi đáp: ${_landingPadLabel(status)}'
+                  '${ticketId == null ? ' — đã mở phiếu sự cố giao cho bạn' : ''}',
+      );
+      await _load();
+    } catch (e) {
+      _showError(e);
+    }
+  }
+
+  Future<String?> _askLandingPadReason(String status) async {
+    final ctrl = TextEditingController();
+    String? error;
+    final reason = await showDialog<String>(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setLocal) => AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: Text('Bãi đáp: ${_landingPadLabel(status)}'),
+          content: TextField(
+            controller: ctrl,
+            autofocus: true,
+            minLines: 1,
+            maxLines: 3,
+            decoration: InputDecoration(
+              labelText: 'Lý do',
+              hintText: status == 'FAULT'
+                  ? 'VD: Marker bong tróc, mặt đáp nứt...'
+                  : 'VD: Vệ sinh, sơn lại marker...',
+              errorText: error,
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Hủy'),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: _landingPadColor(status),
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              onPressed: () {
+                final text = ctrl.text.trim();
+                if (text.isEmpty) {
+                  setLocal(() => error = 'Vui lòng nhập lý do.');
+                  return;
+                }
+                Navigator.pop(ctx, text);
+              },
+              child: const Text('Xác nhận'),
+            ),
+          ],
+        ),
+      ),
+    );
+    ctrl.dispose();
+    return reason;
   }
 
   /// Dựng sơ đồ vật lý Kiosk đồng bộ với Admin:
@@ -1769,6 +2150,12 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                 icon: Icons.luggage_outlined,
                 text: 'XL ${_countCells(cells, 'XL', field: 'cellType')}',
               ),
+              if (_myLockerIds.contains(_asInt(locker['id'])))
+                const _MiniPill(
+                  icon: Icons.assignment_ind_outlined,
+                  text: 'Tủ bạn phụ trách',
+                  color: Color(0xFFD97706),
+                ),
             ],
           ),
           const SizedBox(height: 10),
@@ -1966,6 +2353,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
     final status = cell['status'] as String? ?? 'AVAILABLE';
     final color = statusColor(status);
     final reason = cell['faultReason'] as String?;
+    final openReportId = status == 'FAULT' ? _openReportIdForBox(boxId) : null;
 
     await showModalBottomSheet<void>(
       context: context,
@@ -1991,14 +2379,14 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
         final actions = <Widget>[];
         switch (status) {
           case 'FAULT':
+            // Ô còn phiếu mở ⇒ đóng qua phiếu (nghiệm thu + ảnh), không clear thẳng.
             actions.add(tile(
               Icons.check_circle,
-              'Đã sửa xong — mở lại ô',
+              openReportId != null
+                  ? 'Đã sửa xong — nghiệm thu phiếu #$openReportId'
+                  : 'Đã sửa xong — mở lại ô',
               const Color(0xFF16A34A),
-              () => _runCellAction(
-                () => _service.clearFault(boxId),
-                'Ô đã hoạt động lại',
-              ),
+              () => _markFaultFixed(boxId, openReportId: openReportId),
             ));
             break;
           case 'OUT_OF_SERVICE':
@@ -2240,11 +2628,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
       }
       await _load();
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(LockerOpsService.errorMessage(e))),
-        );
-      }
+      _showError(e);
     }
   }
 
@@ -2532,16 +2916,58 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
     final openReports = _reports.where((r) => r['status'] == 'OPEN').toList();
     final inProgressReports = _reports.where((r) => r['status'] == 'IN_PROGRESS').toList();
     final resolvedReports = _reports.where((r) => r['status'] == 'RESOLVED').toList();
+    // "Tủ tôi phụ trách": phiếu OPEN server định tuyến cho mình + ô lỗi của các tủ đó.
+    final routedView = _queueView == 'ROUTED';
+    final myLockerIds = _myLockerIds;
+    final faults = routedView
+        ? _faults
+            .where((f) => myLockerIds.contains(_asInt(f['lockerId'])))
+            .toList()
+        : _faults;
 
     return RefreshIndicator(
       onRefresh: _load,
       child: ListView(
         padding: const EdgeInsets.all(12),
         children: [
-          _boxAnomaliesSection(),
-          if (_faults.isNotEmpty) ...[
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: [
+                _buildScheduleChip(
+                  label: 'Tất cả (${_reports.length})',
+                  selected: !routedView,
+                  icon: Icons.public,
+                  onTap: () => setState(() => _queueView = 'ALL'),
+                ),
+                const SizedBox(width: 8),
+                _buildScheduleChip(
+                  label: 'Tủ tôi phụ trách (${_routedReports.length})',
+                  selected: routedView,
+                  icon: Icons.assignment_ind_outlined,
+                  activeColor: const Color(0xFFD97706),
+                  onTap: () => setState(() => _queueView = 'ROUTED'),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 12),
+          if (!routedView) _boxAnomaliesSection(),
+          if (routedView) ...[
+            OpsBanner(
+              tone: OpsBannerTone.info,
+              icon: Icons.assignment_ind_outlined,
+              text: _myLockers.isEmpty
+                  ? 'Bạn chưa được giao phụ trách tủ nào — phiếu mới được báo tới mọi KTV tủ.'
+                  : 'Bạn phụ trách ${_myLockers.length} tủ: '
+                        '${_myLockers.map((l) => l['name'] ?? l['code'] ?? '#${l['id']}').join(', ')}. '
+                        'Phiếu mới ở các tủ này được chuyển thẳng cho bạn.',
+            ),
+            const SizedBox(height: 10),
+          ],
+          if (faults.isNotEmpty) ...[
             const OpsSectionLabel('Ô đang lỗi vật lý tại trạm', icon: Icons.warning_amber_rounded),
-            for (final f in _faults)
+            for (final f in faults)
               Padding(
                 padding: const EdgeInsets.only(bottom: 10),
                 child: OpsCard(
@@ -2607,12 +3033,20 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                             icon: const Icon(Icons.map_outlined, size: 16, color: opsPrimary),
                             label: const Text('Chỉ đường', style: TextStyle(color: opsPrimary)),
                           ),
+                          // Ô còn phiếu mở ⇒ "Đã sửa" mở luồng nghiệm thu của phiếu.
                           TextButton(
-                            onPressed: () => _run(
-                              () => _service.clearFault(f['boxId'] as int),
-                              'Ô đã hoạt động lại',
+                            onPressed: _asInt(f['boxId']) == null
+                                ? null
+                                : () => _markFaultFixed(
+                                      _asInt(f['boxId'])!,
+                                      openReportId: _asInt(f['openReportId']),
+                                    ),
+                            child: Text(
+                              _asInt(f['openReportId']) != null
+                                  ? 'Đã sửa · phiếu #${f['openReportId']}'
+                                  : 'Đã sửa',
+                              style: const TextStyle(color: Color(0xFF16A34A)),
                             ),
-                            child: const Text('Đã sửa', style: TextStyle(color: Color(0xFF16A34A))),
                           ),
                         ],
                       ),
@@ -2623,8 +3057,24 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
             const SizedBox(height: 8),
           ],
 
+          // --- Phiếu OPEN định tuyến cho mình (tủ mình phụ trách) ---
+          if (routedView) ...[
+            if (_routedReports.isNotEmpty) ...[
+              OpsSectionLabel(
+                'Phiếu chờ bạn nhận (${_routedReports.length})',
+                icon: Icons.assignment_late_outlined,
+              ),
+              for (final r in _routedReports) _reportCard(r, isQueueView: true),
+            ] else if (faults.isEmpty)
+              const OpsEmptyState(
+                icon: Icons.check_circle_outline,
+                title: 'Không có phiếu nào chờ bạn',
+                subtitle: 'Các tủ bạn phụ trách chưa có sự cố mới.',
+              ),
+          ],
+
           // --- Banner tổng quan sự cố toàn hệ thống ---
-          if (_reports.isNotEmpty) ...[
+          if (!routedView && _reports.isNotEmpty) ...[
             Container(
               margin: const EdgeInsets.only(bottom: 12),
               padding: const EdgeInsets.all(12),
@@ -2694,7 +3144,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
           ],
 
           // --- Phiếu OPEN: chờ tiếp nhận ---
-          if (openReports.isNotEmpty) ...[
+          if (!routedView && openReports.isNotEmpty) ...[
             if (openReports.isNotEmpty)
               Container(
                 margin: const EdgeInsets.only(bottom: 10),
@@ -2727,20 +3177,20 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
           ],
 
           // --- Phiếu IN_PROGRESS: KTV khác đang xử lý (tham khảo) ---
-          if (inProgressReports.isNotEmpty) ...[
+          if (!routedView && inProgressReports.isNotEmpty) ...[
             const OpsSectionLabel('Đang được xử lý', icon: Icons.engineering_outlined),
             for (final r in inProgressReports) _reportCard(r, isQueueView: false),
             const SizedBox(height: 8),
           ],
 
           // --- Phiếu RESOLVED: đã hoàn tất (lịch sử hệ thống) ---
-          if (resolvedReports.isNotEmpty) ...[
+          if (!routedView && resolvedReports.isNotEmpty) ...[
             const OpsSectionLabel('Đã hoàn tất gần đây', icon: Icons.check_circle_outline),
             for (final r in resolvedReports) _reportCard(r, isQueueView: false),
             const SizedBox(height: 8),
           ],
 
-          if (_reports.isEmpty && _faults.isEmpty)
+          if (!routedView && _reports.isEmpty && _faults.isEmpty)
             const OpsEmptyState(
               icon: Icons.check_circle_outline,
               title: 'Không có sự cố nào',
@@ -3017,9 +3467,18 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
   }
 
   // ---- Tab 4: bảo trì định kỳ (preventive) — Dành riêng cho KTV Kiosk ----
+  bool _isScheduleMine(Map<String, dynamic> s) {
+    final me = _myUserId;
+    return me != null &&
+        me.isNotEmpty &&
+        s['assignedTechnicianId']?.toString() == me;
+  }
+
   Widget _buildSchedules() {
     // KTV Kiosk chỉ hiển thị các kế hoạch kiểm tra định kỳ của trạm Kiosk
-    final kioskList = _schedules.where((s) => !_isDroneSchedule(s)).toList();
+    final allKioskList = _schedules.where((s) => !_isDroneSchedule(s)).toList();
+    final myKioskList = allKioskList.where(_isScheduleMine).toList();
+    final kioskList = _mySchedulesOnly ? myKioskList : allKioskList;
     final dueList = kioskList.where((s) => s['due'] == true).toList();
     final upcomingList = kioskList.where((s) => s['due'] != true).toList();
 
@@ -3046,18 +3505,40 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
           const OpsBanner(
             tone: OpsBannerTone.info,
             icon: Icons.event_repeat,
-            text: 'Lịch kiểm tra định kỳ Kiosk do quản trị tạo. Khi đến hạn, hãy kiểm '
-                'tra tủ rồi bấm "Đã kiểm tra" để cập nhật kết quả và dời sang chu kỳ kế tiếp.',
+            text: 'Lịch kiểm tra định kỳ Kiosk do quản trị tạo và giao KTV phụ trách. '
+                'Khi đến hạn, bấm "Kiểm tra" và đánh giá từng hạng mục: tất cả đạt ⇒ dời '
+                'sang chu kỳ kế tiếp; có mục không đạt ⇒ hệ thống mở phiếu giao cho bạn, '
+                'hạn chỉ dời khi phiếu được hoàn tất.',
           ),
           const SizedBox(height: 10),
 
-          // Thanh lọc bộ lọc danh mục cho KTV Kiosk: Tất cả, Đến hạn, Sắp tới
+          // Phạm vi: lịch giao cho mình / mọi lịch tủ
+          Row(
+            children: [
+              _buildScheduleChip(
+                label: 'Của tôi (${myKioskList.length})',
+                selected: _mySchedulesOnly,
+                icon: Icons.person_outline,
+                onTap: () => setState(() => _mySchedulesOnly = true),
+              ),
+              const SizedBox(width: 8),
+              _buildScheduleChip(
+                label: 'Tất cả (${allKioskList.length})',
+                selected: !_mySchedulesOnly,
+                icon: Icons.groups_outlined,
+                onTap: () => setState(() => _mySchedulesOnly = false),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+
+          // Thanh lọc theo hạn: Mọi hạn, Đến hạn, Sắp tới
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: Row(
               children: [
                 _buildScheduleChip(
-                  label: 'Tất cả (${kioskList.length})',
+                  label: 'Mọi hạn (${kioskList.length})',
                   selected: _scheduleFilter == 'ALL',
                   onTap: () => setState(() => _scheduleFilter = 'ALL'),
                 ),
@@ -3089,8 +3570,12 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                   ? 'Không có lịch kiểm tra Kiosk nào đến hạn'
                   : _scheduleFilter == 'UPCOMING'
                       ? 'Không có lịch kiểm tra Kiosk nào sắp tới'
-                      : 'Chưa có kế hoạch kiểm tra định kỳ Kiosk nào',
-              subtitle: 'Mọi thiết bị Kiosk đều đang trong chu kỳ bảo trì bình thường.',
+                      : _mySchedulesOnly
+                          ? 'Bạn chưa được giao lịch kiểm tra nào'
+                          : 'Chưa có kế hoạch kiểm tra định kỳ Kiosk nào',
+              subtitle: _mySchedulesOnly
+                  ? 'Chọn "Tất cả" để xem lịch của các KTV khác.'
+                  : 'Mọi thiết bị Kiosk đều đang trong chu kỳ bảo trì bình thường.',
             ),
           if (_scheduleFilter == 'ALL') ...[
             if (due.isNotEmpty) ...[
@@ -3183,6 +3668,16 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
     final lastDone = _fmtDateTime(s['lastDoneAt']) ?? _fmtDate(s['lastDoneAt']);
     final id = _asInt(s['id']);
     final rem = _remainingDaysInfo(s['nextDueAt']);
+    final pendingReportId = _asInt(s['pendingReportId']);
+    final lastResult = s['lastResult']?.toString();
+    final assignedId = s['assignedTechnicianId']?.toString();
+    final assignedToMe = _isScheduleMine(s);
+    // Server chặn: lịch đang chờ phiếu KHÔNG ĐẠT (409) hoặc giao cho KTV khác (403).
+    final blockedReason = pendingReportId != null
+        ? 'Lần trước không đạt — hoàn tất phiếu #$pendingReportId trước khi kiểm tra lại.'
+        : assignedId != null && !assignedToMe
+            ? 'Lịch do KTV khác phụ trách.'
+            : null;
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
@@ -3230,6 +3725,28 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                   text: 'Trạm Kiosk',
                   color: Color(0xFFD97706),
                 ),
+                if (pendingReportId != null)
+                  InkWell(
+                    onTap: () => _openReportById(pendingReportId),
+                    borderRadius: BorderRadius.circular(999),
+                    child: _MiniPill(
+                      icon: Icons.pending_actions,
+                      text: 'Chờ phiếu #$pendingReportId',
+                      color: const Color(0xFFEA580C),
+                    ),
+                  ),
+                if (lastResult == 'PASSED')
+                  const _MiniPill(
+                    icon: Icons.verified_outlined,
+                    text: 'Lần trước: ĐẠT',
+                    color: Color(0xFF16A34A),
+                  ),
+                if (lastResult == 'FAILED')
+                  const _MiniPill(
+                    icon: Icons.report_gmailerrorred_outlined,
+                    text: 'Lần trước: KHÔNG ĐẠT',
+                    color: Color(0xFFDC2626),
+                  ),
               ],
             ),
             const SizedBox(height: 8),
@@ -3263,6 +3780,15 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                     icon: Icons.history,
                     text: 'Lần trước: $lastDone',
                   ),
+                _MiniPill(
+                  icon: Icons.engineering_outlined,
+                  text: assignedId == null
+                      ? 'Chưa giao KTV'
+                      : assignedToMe
+                          ? 'KTV phụ trách: bạn'
+                          : 'KTV phụ trách: ${s['assignedTechnicianName'] ?? '#$assignedId'}',
+                  color: assignedToMe ? const Color(0xFF16A34A) : opsMutedText,
+                ),
               ],
             ),
             if (s['address'] != null && (s['address'] as String).isNotEmpty) ...[
@@ -3305,22 +3831,35 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
               ),
             ],
             const SizedBox(height: 10),
-            Align(
-              alignment: Alignment.centerRight,
-              child: ElevatedButton.icon(
-                onPressed: id == null
-                    ? null
-                    : () => _showCompleteInspectionSheet(s),
-                icon: const Icon(Icons.check, size: 16),
-                label: const Text('Đã kiểm tra'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF16A34A),
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+            Row(
+              children: [
+                Expanded(
+                  child: blockedReason == null
+                      ? const SizedBox.shrink()
+                      : Text(
+                          blockedReason,
+                          style: const TextStyle(
+                            fontSize: 11.5,
+                            color: opsMutedText,
+                          ),
+                        ),
+                ),
+                const SizedBox(width: 8),
+                ElevatedButton.icon(
+                  onPressed: id == null || blockedReason != null
+                      ? null
+                      : () => _showCompleteInspectionSheet(s),
+                  icon: const Icon(Icons.fact_check_outlined, size: 16),
+                  label: const Text('Kiểm tra'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF16A34A),
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                   ),
                 ),
-              ),
+              ],
             ),
           ],
         ),
@@ -3328,25 +3867,57 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
     );
   }
 
-  /// Mở BottomSheet xác nhận hoàn thành kiểm tra định kỳ kèm tuỳ chọn bổ sung hình ảnh
+  /// Mở sheet đánh giá checklist; xong thì báo kết quả server suy ra (ĐẠT dời
+  /// hạn / KHÔNG ĐẠT kèm phiếu vừa mở) rồi tải lại.
   Future<void> _showCompleteInspectionSheet(Map<String, dynamic> s) async {
     final id = _asInt(s['id']);
     if (id == null) return;
-    final done = await showModalBottomSheet<bool>(
+    // Trang đang mở đúng tủ của lịch ⇒ dùng luôn danh sách ô để chọn ô hỏng.
+    final cells = _selectedLockerId != null &&
+            _selectedLockerId == _asInt(s['lockerId'])
+        ? (_layout?['cells'] as List?)?.cast<Map<String, dynamic>>()
+        : null;
+    final result = await showModalBottomSheet<Map<String, dynamic>>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.white,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
-      builder: (_) => _CompleteInspectionSheet(
+      builder: (_) => CompleteInspectionSheet(
         schedule: s,
         service: _service,
+        lockerCells: cells,
       ),
     );
-    if (done == true && mounted) {
-      await _load();
-    }
+    if (result == null || !mounted) return;
+    final pendingReportId = _asInt(result['pendingReportId']);
+    final failed = result['lastResult'] == 'FAILED' || pendingReportId != null;
+    final nextDue = _fmtDate(result['nextDueAt']);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        backgroundColor:
+            failed ? const Color(0xFFDC2626) : const Color(0xFF16A34A),
+        duration: Duration(seconds: pendingReportId != null ? 6 : 4),
+        content: Text(
+          pendingReportId != null
+              ? 'Kiểm tra KHÔNG ĐẠT — đã mở phiếu #$pendingReportId giao cho bạn. '
+                    'Hạn kế tiếp chỉ dời khi phiếu được hoàn tất.'
+              : failed
+                  ? 'Đã ghi nhận KHÔNG ĐẠT cho "${s['title'] ?? 'Tủ Kiosk'}".'
+                  : 'Đã ghi nhận ĐẠT cho "${s['title'] ?? 'Tủ Kiosk'}"'
+                        '${nextDue != null ? ' — hạn kế tiếp $nextDue' : ''}.',
+        ),
+        action: pendingReportId == null
+            ? null
+            : SnackBarAction(
+                label: 'Xem việc',
+                textColor: Colors.white,
+                onPressed: () => _tabs.animateTo(2),
+              ),
+      ),
+    );
+    await _load();
   }
 
   String? _fmtDate(dynamic value) {
@@ -3365,6 +3936,8 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
 
   bool _isDroneSchedule(Map<String, dynamic> s) {
     if (s['droneUnitId'] != null || s['droneCode'] != null) return true;
+    // Lịch gắn tủ (kể cả kiểm tra bãi đáp) là việc của KTV tủ.
+    if (s['lockerId'] != null) return false;
     final t = (s['title'] ?? '').toString().toLowerCase();
     final lc = (s['lockerCode'] ?? '').toString().toLowerCase();
     final ln = (s['lockerName'] ?? '').toString().toLowerCase();
@@ -3384,6 +3957,10 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
 
   bool _isDroneReport(Map<String, dynamic> r) {
     if (r['droneUnitId'] != null) return true;
+    // Server đã phân loại (BOX/DRONE/LANDING_PAD/LOCKER) ⇒ tin `category`;
+    // phiếu bãi đáp là việc của KTV tủ. Đoán theo chữ chỉ cho response cũ.
+    final category = r['category']?.toString();
+    if (category != null && category.isNotEmpty) return category == 'DRONE';
     final t = (r['title'] ?? '').toString().toLowerCase();
     final d = (r['description'] ?? '').toString().toLowerCase();
     final ct = (r['cellType'] ?? '').toString().toUpperCase();
@@ -3937,10 +4514,52 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
     return (cleaned, urls);
   }
 
+  /// Nhãn phụ của phiếu: loại tài sản, chặn cả tủ, sinh từ lịch định kỳ,
+  /// định tuyến cho tủ mình phụ trách.
+  List<Widget> _ticketBadges(Map<String, dynamic> r) {
+    final category = r['category']?.toString();
+    final scheduleId = _asInt(r['scheduleId']);
+    final routedToMe = r['status'] == 'OPEN' &&
+        _myUserId != null &&
+        r['routedToUserId']?.toString() == _myUserId;
+    return [
+      if (category == 'LANDING_PAD')
+        const _MiniPill(
+          icon: Icons.flight_land,
+          text: 'Bãi đáp',
+          color: Color(0xFF7C3AED),
+        ),
+      if (category == 'LOCKER')
+        const _MiniPill(
+          icon: Icons.warehouse_outlined,
+          text: 'Cấp tủ',
+          color: Color(0xFF0369A1),
+        ),
+      if (r['blocksLocker'] == true)
+        const _MiniPill(
+          icon: Icons.block,
+          text: 'Ngưng cả tủ',
+          color: Color(0xFFDC2626),
+        ),
+      if (scheduleId != null)
+        _MiniPill(
+          icon: Icons.event_repeat,
+          text: 'Từ kiểm tra định kỳ #$scheduleId',
+          color: const Color(0xFF7C3AED),
+        ),
+      if (routedToMe)
+        const _MiniPill(
+          icon: Icons.assignment_ind_outlined,
+          text: 'Tủ bạn phụ trách',
+          color: Color(0xFFD97706),
+        ),
+    ];
+  }
+
   Widget _reportCard(Map<String, dynamic> r, {bool isQueueView = false}) {
     final status = r['status'] as String? ?? '';
     // Kiểm tra phiếu có đang được assign cho chính KTV này không
-    final isAssignedToMe = '${r['assignedToUserId'] ?? ''}' == (_myUserId ?? '') && _myUserId != null && _myUserId!.isNotEmpty;
+    final isAssignedToMe = _isAssignedToMe(r);
     final lockerLabel = r['lockerName'] ?? 'Chưa tra được tên tủ';
     final boxLabel = r['boxNumber'] ?? r['boxId'];
     final createdAt = _parseDate(r['createdAt']);
@@ -4126,6 +4745,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                         ),
                       ),
                     ],
+                    ..._ticketBadges(r),
                   ],
                 ),
                 const SizedBox(height: 10),
@@ -4324,7 +4944,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
   /// Modal BottomSheet hiển thị toàn bộ 100% thông tin chi tiết của phiếu sự cố
   void _showReportDetailModal(Map<String, dynamic> r) {
     final status = r['status'] as String? ?? '';
-    final assignedToMe = '${r['assignedToUserId'] ?? ''}' == (_myUserId ?? '');
+    final assignedToMe = _isAssignedToMe(r);
     final lockerLabel = r['lockerName'] ?? 'Chưa tra được tên tủ';
     final boxLabel = r['boxNumber'] ?? r['boxId'];
     final createdAt = _parseDate(r['createdAt']);
@@ -4491,6 +5111,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                                 text: 'Lý do gia hạn: ${_localSlaExtensions[r['id']]?['reason'] ?? r['slaExtensionReason']}',
                                 color: const Color(0xFF92400E),
                               ),
+                            ..._ticketBadges(r),
                           ],
                         ),
                         const SizedBox(height: 16),
@@ -4709,7 +5330,8 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                           ),
                         ),
                       ),
-                    if (status == 'IN_PROGRESS')
+                    // Chỉ KTV đang được giao mới hoàn tất được (server trả 403 nếu không).
+                    if (status == 'IN_PROGRESS' && assignedToMe)
                       Row(
                         children: [
                           Expanded(
@@ -4768,6 +5390,14 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                             ),
                           ),
                         ],
+                      ),
+                    if (status == 'IN_PROGRESS' && !assignedToMe)
+                      OpsBanner(
+                        tone: OpsBannerTone.info,
+                        icon: Icons.engineering_outlined,
+                        text: r['assignedToUserId'] != null
+                            ? 'Phiếu đang do KTV #${r['assignedToUserId']} xử lý — chỉ người được giao mới hoàn tất được.'
+                            : 'Phiếu đang được xử lý.',
                       ),
                     if (status == 'OPEN' || status == 'IN_PROGRESS')
                       const SizedBox(height: 10),
@@ -5729,12 +6359,17 @@ class _ResolveVerificationSheetState extends State<_ResolveVerificationSheet> {
       );
 
       if (mounted) {
+        // Đóng phiếu ⇒ server trả tài sản của phiếu về hoạt động.
+        final restored = switch (widget.report['category']) {
+          'LANDING_PAD' => 'Bãi đáp đã hoạt động lại.',
+          'LOCKER' => 'Tủ đã hoạt động lại.',
+          _ => 'Ô tủ đã hoạt động lại.',
+        };
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            backgroundColor: Color(0xFF16A34A),
-            content:
-                Text('Đã nghiệm thu và hoàn tất sự cố! Ô tủ đã hoạt động lại.'),
+          SnackBar(
+            backgroundColor: const Color(0xFF16A34A),
+            content: Text('Đã nghiệm thu và hoàn tất sự cố! $restored'),
           ),
         );
       }
@@ -5866,7 +6501,7 @@ class _ResolveVerificationSheetState extends State<_ResolveVerificationSheet> {
                               fontWeight: FontWeight.bold, fontSize: 16),
                         ),
                         Text(
-                          '$lockerLabel · Ô $boxLabel · #$reportTitle',
+                          '$lockerLabel${boxLabel != null ? ' · Ô $boxLabel' : ''} · #$reportTitle',
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
@@ -6003,442 +6638,6 @@ class _ResolveVerificationSheetState extends State<_ResolveVerificationSheet> {
                         fontWeight: FontWeight.bold, fontSize: 14),
                   ),
                 ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-/// Sheet hoàn thành ca kiểm tra định kỳ (Preventive Maintenance) dành cho KTV Kiosk:
-/// Cho phép xác nhận đã kiểm tra, chọn nhanh các hạng mục đạt chuẩn, ghi chú biên bản
-/// và tuỳ chọn chụp/tải ảnh minh chứng hiện trường trước khi cập nhật chu kỳ kế tiếp.
-class _CompleteInspectionSheet extends StatefulWidget {
-  const _CompleteInspectionSheet({
-    required this.schedule,
-    required this.service,
-  });
-
-  final Map<String, dynamic> schedule;
-  final LockerOpsService service;
-
-  @override
-  State<_CompleteInspectionSheet> createState() => _CompleteInspectionSheetState();
-}
-
-class _CompleteInspectionSheetState extends State<_CompleteInspectionSheet> {
-  static const _accent = Color(0xFF16A34A);
-
-  final _noteCtrl = TextEditingController();
-  final _photos = PhotoPickerController(maxPhotos: 3);
-  bool _submitting = false;
-  String? _error;
-
-  final List<String> _quickChecks = [
-    '🧹 Vệ sinh tủ sạch sẽ',
-    '🔒 Khóa điện tử nhạy tốt',
-    '⚡ Cảm biến ô tủ bình thường',
-    '🔋 Nguồn UPS ổn định',
-    '🚪 Then chốt cửa đóng khít',
-    '📶 Kết nối IoT ổn định',
-  ];
-  final Set<String> _selectedChecks = {};
-
-  @override
-  void dispose() {
-    _photos.dispose();
-    _noteCtrl.dispose();
-    super.dispose();
-  }
-
-  void _toggleCheck(String check) {
-    setState(() {
-      if (_selectedChecks.contains(check)) {
-        _selectedChecks.remove(check);
-      } else {
-        _selectedChecks.add(check);
-      }
-      if (_selectedChecks.isNotEmpty) {
-        _noteCtrl.text = 'Đã kiểm tra: ${_selectedChecks.join(', ')}.';
-      }
-    });
-  }
-
-  Future<void> _submit() async {
-    final id = (widget.schedule['id'] as num?)?.toInt();
-    if (id == null) {
-      setState(() => _error = 'Mã lịch kiểm tra không hợp lệ.');
-      return;
-    }
-
-    setState(() {
-      _submitting = true;
-      _error = null;
-    });
-
-    try {
-      // 1. Upload ảnh minh chứng nếu KTV có đính kèm (tuỳ chọn)
-      List<String> photoUrls = [];
-      if (_photos.isNotEmpty) {
-        await _photos.uploadAll(caption: 'Ảnh kiểm tra định kỳ');
-        photoUrls = _photos.photos
-            .map((p) => p.upload?.secureUrl)
-            .whereType<String>()
-            .toList();
-      }
-
-      // 2. Gọi backend hoàn thành schedule (cập nhật lastDoneAt = now, nextDueAt = now + interval, lưu log)
-      await widget.service.completeSchedule(
-        id,
-        data: {
-          if (_noteCtrl.text.trim().isNotEmpty) 'note': _noteCtrl.text.trim(),
-          if (_selectedChecks.isNotEmpty) 'checklistResults': _selectedChecks.join('; '),
-          'status': 'PASSED',
-          if (photoUrls.isNotEmpty) 'photoUrls': photoUrls,
-        },
-      );
-
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            backgroundColor: const Color(0xFF16A34A),
-            content: Row(
-              children: [
-                const Icon(Icons.check_circle_rounded, color: Colors.white, size: 20),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    'Đã hoàn tất kiểm tra định kỳ cho "${widget.schedule['title'] ?? 'Tủ Kiosk'}"',
-                    style: const TextStyle(fontWeight: FontWeight.w600),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-        Navigator.pop(context, true);
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() => _error = LockerOpsService.errorMessage(e));
-      }
-    } finally {
-      if (mounted) {
-        setState(() => _submitting = false);
-      }
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final s = widget.schedule;
-    final title = s['title'] ?? 'Kiểm tra định kỳ Kiosk';
-    final lockerCode = s['lockerCode'];
-    final lockerName = s['lockerName'];
-    final lockerLabel =
-        '${lockerName ?? "Tủ Kiosk"}${lockerCode != null ? " ($lockerCode)" : ""}';
-    final intervalDays = s['intervalDays'] ?? 30;
-
-    return Padding(
-      padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
-      child: SafeArea(
-        top: false,
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Center(
-                child: Container(
-                  width: 44,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: Colors.grey[300],
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 14),
-
-              // Tiêu đề BottomSheet
-              Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      color: _accent.withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: const Icon(Icons.fact_check_rounded, color: _accent, size: 24),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'Xác nhận kiểm tra định kỳ',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                            color: opsDark,
-                          ),
-                        ),
-                        Text(
-                          '$title · $lockerLabel',
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(fontSize: 12, color: opsMutedText),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 14),
-
-              // Thẻ thông tin trạm Kiosk và chu kỳ
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF8FAFC),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: const Color(0xFFE2E8F0)),
-                ),
-                child: Row(
-                  children: [
-                    const Icon(Icons.inventory_2_outlined, size: 16, color: Color(0xFFB45309)),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        lockerLabel,
-                        style: const TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.bold,
-                          color: opsDark,
-                        ),
-                      ),
-                    ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFFEF3C7),
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: const Color(0xFFFDE68A)),
-                      ),
-                      child: Text(
-                        'Chu kỳ: $intervalDays ngày',
-                        style: const TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF92400E),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              if (s['address'] != null && (s['address'] as String).isNotEmpty) ...[
-                const SizedBox(height: 8),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFF0FDF4),
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: const Color(0xFFBBF7D0)),
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.place_outlined, size: 15, color: Color(0xFF16A34A)),
-                      const SizedBox(width: 6),
-                      Expanded(
-                        child: Text(
-                          '${s['address']}${s['locationNote'] != null && (s['locationNote'] as String).isNotEmpty ? " · ${s['locationNote']}" : ""}',
-                          style: const TextStyle(
-                            fontSize: 12,
-                            color: Color(0xFF166534),
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-              const SizedBox(height: 14),
-
-              // Checklist kiểm tra nhanh
-              const Text(
-                'Hạng mục kiểm tra nhanh:',
-                style: TextStyle(
-                  fontSize: 12.5,
-                  fontWeight: FontWeight.bold,
-                  color: opsDark,
-                ),
-              ),
-              const SizedBox(height: 6),
-              Wrap(
-                spacing: 6,
-                runSpacing: 6,
-                children: _quickChecks.map((check) {
-                  final isSelected = _selectedChecks.contains(check);
-                  return InkWell(
-                    onTap: _submitting ? null : () => _toggleCheck(check),
-                    borderRadius: BorderRadius.circular(8),
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 150),
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: isSelected ? _accent.withValues(alpha: 0.12) : Colors.white,
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(
-                          color: isSelected ? _accent : const Color(0xFFE2E8F0),
-                          width: isSelected ? 1.5 : 1,
-                        ),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          if (isSelected) ...[
-                            const Icon(Icons.check, size: 13, color: _accent),
-                            const SizedBox(width: 4),
-                          ],
-                          Text(
-                            check,
-                            style: TextStyle(
-                              fontSize: 11.5,
-                              fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                              color: isSelected ? _accent : opsDark,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                }).toList(),
-              ),
-              const SizedBox(height: 14),
-
-              // Ghi chú biên bản
-              TextField(
-                controller: _noteCtrl,
-                enabled: !_submitting,
-                minLines: 2,
-                maxLines: 4,
-                decoration: InputDecoration(
-                  labelText: 'Ghi chú biên bản kiểm tra (tuỳ chọn)',
-                  hintText: 'Nhập tình trạng kiểm tra, vệ sinh ô tủ, thay thế linh kiện nếu có...',
-                  isDense: true,
-                  alignLabelWithHint: true,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: opsBorder),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 14),
-
-              // Upload ảnh minh chứng (tuỳ chọn)
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    'Ảnh minh chứng hiện trường (tuỳ chọn):',
-                    style: TextStyle(
-                      fontSize: 12.5,
-                      fontWeight: FontWeight.bold,
-                      color: opsDark,
-                    ),
-                  ),
-                  Text(
-                    'Tối đa ${_photos.maxPhotos} ảnh',
-                    style: const TextStyle(fontSize: 11, color: opsMutedText),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 4),
-              const Text(
-                'Chụp ảnh toàn cảnh tủ, ổ khóa hoặc linh kiện vừa kiểm tra để lưu hồ sơ đối soát.',
-                style: TextStyle(fontSize: 11.5, color: opsMutedText),
-              ),
-              const SizedBox(height: 8),
-              PhotoPickerField(
-                controller: _photos,
-                enabled: !_submitting,
-                thumbSize: 76,
-                accentColor: _accent,
-                addLabel: 'Chụp ảnh',
-                helperText: 'Tối đa ${_photos.maxPhotos} ảnh',
-              ),
-
-              if (_error != null) ...[
-                const SizedBox(height: 12),
-                OpsBanner(
-                  tone: OpsBannerTone.danger,
-                  icon: Icons.error_outline,
-                  text: _error!,
-                ),
-              ],
-              const SizedBox(height: 18),
-
-              // Nút hành động
-              Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton(
-                      onPressed: _submitting ? null : () => Navigator.pop(context, false),
-                      style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 13),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        side: const BorderSide(color: Color(0xFFCBD5E1)),
-                      ),
-                      child: const Text(
-                        'Đóng',
-                        style: TextStyle(
-                          fontWeight: FontWeight.w600,
-                          color: opsDark,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    flex: 2,
-                    child: ElevatedButton.icon(
-                      onPressed: _submitting ? null : _submit,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: _accent,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 13),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      icon: _submitting
-                          ? const SizedBox(
-                              width: 18,
-                              height: 18,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: Colors.white,
-                              ),
-                            )
-                          : const Icon(Icons.check_circle_outline_rounded, size: 18),
-                      label: Text(
-                        _submitting ? 'Đang cập nhật...' : 'Xác nhận hoàn thành',
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 14,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
               ),
             ],
           ),
