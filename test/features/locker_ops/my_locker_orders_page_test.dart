@@ -283,7 +283,7 @@ void main() {
     expect(service.lastExtendHours, 3);
   });
 
-  testWidgets('wraps drone order header and hides unpaid credentials', (
+  testWidgets('drone order header fits a narrow screen and hides unpaid credentials', (
     tester,
   ) async {
     await tester.pumpWidget(
@@ -296,10 +296,10 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(
-      find.ancestor(of: find.text('Đã tiếp nhận'), matching: find.byType(Wrap)),
-      findsOneWidget,
-    );
+    // Header thẻ đơn: mã đơn co lại bằng ellipsis, nhãn trạng thái luôn hiện đủ —
+    // ở 320px không được tràn (RenderFlex overflow sẽ thành exception).
+    expect(find.text('Đã tiếp nhận'), findsOneWidget);
+    expect(tester.takeException(), isNull);
 
     await tester.tap(find.text('Tủ demo'));
     await tester.pumpAndSettle();
