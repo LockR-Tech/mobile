@@ -14,13 +14,13 @@ void main() {
     service = LockerOpsService(dio: mock.dio);
   });
 
-  // ── TECHNICIAN ────────────────────────────────────────────────────────────
+  // ── LOCKER_TECHNICIAN ─────────────────────────────────────────────────────
 
-  group('TECHNICIAN endpoints', () {
+  group('LOCKER_TECHNICIAN endpoints', () {
     group('techDevices()', () {
       test('returns device list with status', () async {
         adapter.onGet(
-          '/api/technician/devices',
+          '/api/locker-technician/devices',
           (server) => server.reply(
             200,
             apiOk([
@@ -50,7 +50,7 @@ void main() {
 
       test('returns empty list when no devices', () async {
         adapter.onGet(
-          '/api/technician/devices',
+          '/api/locker-technician/devices',
           (server) => server.reply(200, apiOk([])),
         );
 
@@ -62,7 +62,7 @@ void main() {
     group('techDeviceDetail()', () {
       test('returns device detail map', () async {
         adapter.onGet(
-          '/api/technician/devices/1',
+          '/api/locker-technician/devices/1',
           (server) => server.reply(
             200,
             apiOk({
@@ -87,7 +87,7 @@ void main() {
     group('techDeviceLogs()', () {
       test('returns audit log entries', () async {
         adapter.onGet(
-          '/api/technician/devices/1/logs',
+          '/api/locker-technician/devices/1/logs',
           (server) => server.reply(
             200,
             apiOk([
@@ -117,7 +117,7 @@ void main() {
     group('techUpdateStatus()', () {
       test('completes without throwing on success', () async {
         adapter.onPut(
-          '/api/technician/devices/1/status',
+          '/api/locker-technician/devices/1/status',
           (server) => server.reply(
             200,
             apiOk({
@@ -135,7 +135,7 @@ void main() {
     group('techRestartDevice()', () {
       test('completes without throwing on success', () async {
         adapter.onPost(
-          '/api/technician/devices/1/restart',
+          '/api/locker-technician/devices/1/restart',
           (server) =>
               server.reply(200, apiOk({'deviceId': 'DEV-001', 'lockerId': 10})),
         );
@@ -145,12 +145,12 @@ void main() {
     });
   });
 
-  // ── MAINTENANCE (locker upkeep endpoints — now used by TECHNICIAN UI) ─────
+  // ── /api/locker-technician (việc của KTV tủ) ──────────────────────────────
 
-  group('MAINTENANCE endpoints', () {
+  group('/api/locker-technician endpoints', () {
     test('faults() returns fault cell list', () async {
       adapter.onGet(
-        '/api/maintenance/faults',
+        '/api/locker-technician/faults',
         (server) => server.reply(
           200,
           apiOk([
@@ -171,7 +171,7 @@ void main() {
 
     test('claimReport() returns updated report', () async {
       adapter.onPut(
-        '/api/maintenance/reports/42/claim',
+        '/api/locker-technician/reports/42/claim',
         (server) =>
             server.reply(200, apiOk({'id': 42, 'status': 'IN_PROGRESS'})),
       );
@@ -182,7 +182,7 @@ void main() {
 
     test('resolveReport() returns resolved report', () async {
       adapter.onPut(
-        '/api/maintenance/reports/42/resolve',
+        '/api/locker-technician/reports/42/resolve',
         (server) => server.reply(200, apiOk({'id': 42, 'status': 'RESOLVED'})),
       );
 
@@ -192,7 +192,7 @@ void main() {
 
     test('clearFault() succeeds', () async {
       adapter.onPost(
-        '/api/maintenance/boxes/5/clear-fault',
+        '/api/locker-technician/boxes/5/clear-fault',
         (server) => server.reply(200, apiOk(null)),
       );
 
@@ -201,7 +201,7 @@ void main() {
 
     test('forceOpenBox() succeeds', () async {
       adapter.onPost(
-        '/api/maintenance/boxes/5/force-open',
+        '/api/locker-technician/boxes/5/force-open',
         (server) => server.reply(200, apiOk(null)),
       );
 
@@ -209,12 +209,12 @@ void main() {
     });
   });
 
-  // ── MAINTENANCE — drone fleet ─────────────────────────────────────────────
+  // ── DRONE_TECHNICIAN — drone fleet ────────────────────────────────────────
 
   group('Drone fleet endpoints', () {
     test('droneUnits() returns fleet list', () async {
       adapter.onGet(
-        '/api/maintenance/drones',
+        '/api/drone-technician/drones',
         (server) => server.reply(
           200,
           apiOk([
@@ -244,7 +244,7 @@ void main() {
 
     test('updateDroneStatus() returns updated drone', () async {
       adapter.onPost(
-        '/api/maintenance/drones/1/status',
+        '/api/drone-technician/drones/1/status',
         (server) => server.reply(200, apiOk({'id': 1, 'status': 'CHARGING'})),
       );
 
@@ -254,7 +254,7 @@ void main() {
 
     test('updateDroneBattery() returns updated drone', () async {
       adapter.onPost(
-        '/api/maintenance/drones/1/battery',
+        '/api/drone-technician/drones/1/battery',
         (server) => server.reply(200, apiOk({'id': 1, 'batteryPercent': 40})),
       );
 
@@ -264,7 +264,7 @@ void main() {
 
     test('droneOrderQueue() returns order-based maintenance queue', () async {
       adapter.onGet(
-        '/api/maintenance/drone-orders',
+        '/api/drone-technician/drone-orders',
         (server) => server.reply(
           200,
           apiOk([
@@ -291,7 +291,7 @@ void main() {
       'acceptDroneOrder() posts to order-based maintenance endpoint',
       () async {
         adapter.onPost(
-          '/api/maintenance/drone-orders/21/accept',
+          '/api/drone-technician/drone-orders/21/accept',
           (server) => server.reply(
             202,
             apiOk({
@@ -319,7 +319,7 @@ void main() {
 
     test('launchDroneOrder() posts to launch endpoint', () async {
       adapter.onPost(
-        '/api/maintenance/drone-orders/21/launch',
+        '/api/drone-technician/drone-orders/21/launch',
         (server) => server.reply(
           202,
           apiOk({
@@ -346,7 +346,7 @@ void main() {
       'cancelDroneOrder() posts reason code and optional note to cancel endpoint',
       () async {
         adapter.onPost(
-          '/api/maintenance/drone-orders/22/cancel',
+          '/api/drone-technician/drone-orders/22/cancel',
           (server) {
             return server.reply(
               200,
@@ -581,7 +581,7 @@ void main() {
 
     test('addReportLog() posts note + PROGRESS attachments', () async {
       adapter.onPost(
-        '/api/maintenance/reports/42/logs',
+        '/api/locker-technician/reports/42/logs',
         (server) => server.reply(200, apiOk({'id': 3})),
       );
 
@@ -596,7 +596,7 @@ void main() {
 
     test('resolveReport() sends body only with note/attachments', () async {
       adapter.onPut(
-        '/api/maintenance/reports/42/resolve',
+        '/api/locker-technician/reports/42/resolve',
         (server) => server.reply(200, apiOk({'id': 42, 'status': 'RESOLVED'})),
       );
 
@@ -620,7 +620,7 @@ void main() {
 
     test('reportAttachments() filters by stage', () async {
       adapter.onGet(
-        '/api/maintenance/reports/42/attachments',
+        '/api/locker-technician/reports/42/attachments',
         (server) => server.reply(
           200,
           apiOk([
@@ -637,7 +637,7 @@ void main() {
 
     test('addReportAttachments() posts stage, note and attachments', () async {
       adapter.onPost(
-        '/api/maintenance/reports/42/attachments',
+        '/api/locker-technician/reports/42/attachments',
         (server) => server.reply(
           200,
           apiOk([
@@ -665,14 +665,14 @@ void main() {
 
     test('deleteReportAttachment() calls DELETE', () async {
       adapter.onDelete(
-        '/api/maintenance/reports/42/attachments/7',
+        '/api/locker-technician/reports/42/attachments/7',
         (server) => server.reply(200, apiOk(null)),
       );
 
       await service.deleteReportAttachment(42, 7);
 
       expect(captured.single.method, 'DELETE');
-      expect(captured.single.path, '/api/maintenance/reports/42/attachments/7');
+      expect(captured.single.path, '/api/locker-technician/reports/42/attachments/7');
     });
 
     test('myReportAttachments() and addMyReportAttachments()', () async {
@@ -711,7 +711,7 @@ void main() {
 
     test('getMaintenanceReport() returns the report', () async {
       adapter.onGet(
-        '/api/maintenance/reports/42',
+        '/api/locker-technician/reports/42',
         (server) =>
             server.reply(200, apiOk({'id': 42, 'attachments': <Object>[]})),
       );

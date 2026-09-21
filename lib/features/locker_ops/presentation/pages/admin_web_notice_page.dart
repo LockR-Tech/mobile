@@ -5,7 +5,8 @@ import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/op
 
 /// ADMIN signs in on mobile → the admin console only exists on the web app,
 /// so show a notice and offer sign-out. Mobile keeps 3 roles: customer,
-/// MAINTENANCE (drone fleet) and TECHNICIAN (locker maintenance + IoT).
+/// DRONE_TECHNICIAN (drone fleet) and LOCKER_TECHNICIAN (locker maintenance
+/// + IoT).
 class AdminWebNoticePage extends StatelessWidget {
   const AdminWebNoticePage({super.key});
 
