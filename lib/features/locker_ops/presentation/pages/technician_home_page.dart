@@ -7,7 +7,9 @@ import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:smart_laundry_locker/core/config/business_config_service.dart';
 import 'package:smart_laundry_locker/core/media/media.dart';
+import 'package:smart_laundry_locker/core/routing/app_router.dart';
 import 'package:smart_laundry_locker/core/services/token_service.dart';
+import 'package:smart_laundry_locker/features/assistant/presentation/widgets/assistant_entry.dart';
 import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/utils/locker_maps.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/locker_picker.dart';
@@ -1172,10 +1174,22 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                           ),
                         ),
                         const SizedBox(width: 8),
-                        // Action buttons (Profile & Logout)
+                        // Action buttons (Assistant, Profile & Logout)
                         Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
+                            // Trợ lý hỏi đáp — chỉ hiện khi trợ lý đang bật.
+                            AssistantEntryGate(
+                              builder: (context) => Padding(
+                                padding: const EdgeInsets.only(right: 6),
+                                child: _headerActionButton(
+                                  icon: Icons.support_agent_rounded,
+                                  tooltip: 'Trợ lý hỏi đáp',
+                                  onTap: () =>
+                                      context.push(AppRouter.assistant),
+                                ),
+                              ),
+                            ),
                             _headerActionButton(
                               icon: Icons.person_outline_rounded,
                               tooltip: 'Hồ sơ & Chỉnh sửa',

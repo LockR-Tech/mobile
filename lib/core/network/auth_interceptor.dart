@@ -66,6 +66,9 @@ class AuthInterceptor extends Interceptor {
           },
           responseType: requestOptions.responseType,
           contentType: requestOptions.contentType,
+          // Giữ timeout riêng của request (vd. hỏi trợ lý chờ 120 s).
+          sendTimeout: requestOptions.sendTimeout,
+          receiveTimeout: requestOptions.receiveTimeout,
           extra: {...requestOptions.extra, _retriedFlag: true},
         ),
       );

@@ -68,4 +68,23 @@ void main() {
       });
     });
   });
+
+  group('requiresSignIn', () {
+    test('trợ lý hỏi đáp và lịch sử cần đăng nhập', () {
+      expect(requiresSignIn('/assistant'), isTrue);
+      expect(requiresSignIn('/assistant/history'), isTrue);
+    });
+
+    test('giữ các màn cần đăng nhập sẵn có', () {
+      expect(requiresSignIn('/transactions'), isTrue);
+      expect(requiresSignIn('/top-up'), isTrue);
+    });
+
+    test('màn công khai không bị chặn', () {
+      expect(requiresSignIn('/'), isFalse);
+      expect(requiresSignIn('/onboarding'), isFalse);
+      expect(requiresSignIn('/home'), isFalse);
+      expect(requiresSignIn('/assistant-foo'), isFalse);
+    });
+  });
 }
