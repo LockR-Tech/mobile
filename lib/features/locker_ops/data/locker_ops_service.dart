@@ -196,6 +196,29 @@ class LockerOpsService {
     },
   );
 
+  Future<Map<String, dynamic>> order(int orderId) =>
+      _map('GET', '/api/orders/$orderId');
+
+  /// Chờ đơn được ghi nhận đã thanh toán. Server ghi PAID bất đồng bộ (sự kiện
+  /// payment → order), nên ngay sau checkout đơn có thể vẫn UNPAID vài giây.
+  Future<bool> awaitOrderPaid(
+    int orderId, {
+    Duration timeout = const Duration(seconds: 20),
+    Duration interval = const Duration(milliseconds: 1500),
+  }) async {
+    final deadline = DateTime.now().add(timeout);
+    while (true) {
+      try {
+        final status = await _map('GET', '/api/orders/$orderId/status');
+        if (status['isPaid'] == true) return true;
+      } catch (_) {
+        // Lỗi mạng tạm thời — thử lại tới hết hạn.
+      }
+      if (!DateTime.now().isBefore(deadline)) return false;
+      await Future<void>.delayed(interval);
+    }
+  }
+
   Future<Map<String, dynamic>> confirmDrop(int orderId) =>
       _map('PUT', '/api/orders/$orderId/confirm');
 

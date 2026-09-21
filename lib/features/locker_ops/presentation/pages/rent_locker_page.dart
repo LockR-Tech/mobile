@@ -10,6 +10,7 @@ import 'package:smart_laundry_locker/features/locker_ops/presentation/utils/busi
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/locker_picker.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/ops_widgets.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/order_extras.dart';
+import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/order_payment_sheet.dart';
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
 
 /// RENTAL flow: chọn tủ + loại ô + thời lượng, trả tiền theo giờ, PIN dùng
@@ -54,7 +55,7 @@ class RentLockerPage extends StatefulWidget {
 }
 
 class _RentLockerPageState extends State<RentLockerPage>
-    with BusinessConfigStateMixin {
+    with BusinessConfigStateMixin, WidgetsBindingObserver {
   final _noteCtrl = TextEditingController();
 
   List<Map<String, dynamic>> _lockers = [];
@@ -75,6 +76,7 @@ class _RentLockerPageState extends State<RentLockerPage>
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _hours = businessConfig.rentalDefaultHours.toDouble();
     if (widget.initialCellType != null) _cellType = widget.initialCellType!;
     if (widget.initialLockerId != null) {
@@ -102,8 +104,18 @@ class _RentLockerPageState extends State<RentLockerPage>
     });
   }
 
+  // Khách có thể thanh toán qua cổng ngoài hoặc xác nhận bỏ đồ ngay tại kiosk —
+  // quay lại app thì tải lại đơn để thấy trạng thái mới.
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed && _order != null) {
+      _refreshOrder();
+    }
+  }
+
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _noteCtrl.dispose();
     super.dispose();
   }
@@ -189,21 +201,63 @@ class _RentLockerPageState extends State<RentLockerPage>
     }
   }
 
-  Future<void> _mockPayment() async {
+  Future<void> _refreshOrder() async {
+    final id = _order?['id'] as int?;
+    if (id == null) return;
+    try {
+      final fresh = await _service.order(id);
+      if (!mounted || fresh.isEmpty) return;
+      setState(() => _order = fresh);
+    } catch (_) {
+      // Giữ bản đang hiển thị; lần sau quay lại app sẽ thử tải lại.
+    }
+  }
+
+  Future<void> _pay() async {
     final id = _order?['id'] as int?;
     if (id == null) return;
     setState(() => _loading = true);
     try {
-      final order = await _service.checkout(id, 'CASH');
-      if (!mounted) return;
-      setState(() {
-        _order = {
-          ...?_order,
-          'paymentStatus': 'PAID',
-          if (order['paidAt'] != null) 'paidAt': order['paidAt'],
-        };
-      });
-      _snack('Đã mock thanh toán (CASH) thành công');
+      final total = _order?['totalPrice'];
+      final outcome = await payOrderAndAwaitPaid(
+        context,
+        service: _service,
+        orderId: id,
+        total: total is num ? total.toDouble() : _netPrice.toDouble(),
+        enabledMethods: businessConfig.enabledPaymentMethods,
+      );
+      if (!mounted || outcome == OrderPaymentOutcome.cancelled) return;
+      await _refreshOrder();
+      _snack(
+        outcome == OrderPaymentOutcome.paid
+            ? 'Thanh toán thành công'
+            : 'Đang chờ xác nhận thanh toán, vui lòng đợi giây lát',
+      );
+    } catch (e) {
+      _snack(LockerOpsService.errorMessage(e));
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
+
+  Future<void> _openBox() async {
+    final order = _order;
+    final lockerId = order?['lockerId'] as int?;
+    final boxId = order?['sendBoxId'] as int?;
+    final pin = order?['pinCode'] as String?;
+    if (lockerId == null || boxId == null || pin == null || pin.isEmpty) {
+      _snack('Đơn chưa có thông tin ô/PIN để mở tủ.');
+      return;
+    }
+    setState(() => _loading = true);
+    try {
+      final res = await _service.unlock(lockerId, boxId, pin);
+      final message = res['message']?.toString();
+      _snack(
+        res['accepted'] == true
+            ? 'Ô đã mở — đặt đồ vào, đóng cửa rồi bấm xác nhận.'
+            : (message == null || message.isEmpty ? 'Không mở được ô' : message),
+      );
     } catch (e) {
       _snack(LockerOpsService.errorMessage(e));
     } finally {
@@ -698,8 +752,11 @@ class _RentLockerPageState extends State<RentLockerPage>
     final order = _order!;
     final status = order['status'] as String?;
     final started = status == 'STORING';
-    final unpaid = (order['paymentStatus'] as String?) != 'PAID';
+    final total = order['totalPrice'];
+    final hasFee = total is num ? total > 0 : _netPrice > 0;
+    final unpaid = hasFee && (order['paymentStatus'] as String?) != 'PAID';
     final config = businessConfig;
+    final payLabel = 'Thanh toán ${fmtPrice(total is num ? total : _netPrice)}';
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
@@ -762,24 +819,34 @@ class _RentLockerPageState extends State<RentLockerPage>
           ),
         ).animate().fadeIn(duration: 300.ms).slideY(begin: 0.05),
         const SizedBox(height: 16),
-        // Nút mock trả bằng CASH — ẩn khi admin tắt phương thức tiền mặt.
-        if ((!started || unpaid) && config.isPaymentMethodEnabled('CASH')) ...[
+        if (!started && unpaid && config.requirePaymentBeforeDrop) ...[
+          const OpsBanner(
+            tone: OpsBannerTone.warning,
+            icon: LucideIcons.badgeAlert,
+            text: 'Cần thanh toán đơn trước khi mở ô bỏ đồ.',
+          ),
+          const SizedBox(height: 12),
           OpsPrimaryButton(
-            label: 'Đã thanh toán (Mock Ví)',
+            label: payLabel,
             icon: LucideIcons.wallet,
             loading: _loading,
-            onPressed: _mockPayment,
+            onPressed: _pay,
           ),
-        ],
-        if (!started) ...[
-          if (unpaid && config.requirePaymentBeforeDrop) ...[
-            const SizedBox(height: 12),
-            const OpsBanner(
-              tone: OpsBannerTone.warning,
-              icon: LucideIcons.badgeAlert,
-              text: 'Cần thanh toán đơn trước khi bỏ đồ vào ô.',
-            ),
-          ],
+        ] else if (!started) ...[
+          const OpsBanner(
+            tone: OpsBannerTone.info,
+            icon: LucideIcons.lockKeyholeOpen,
+            text: 'Mở ô bằng nút bên dưới hoặc nhập PIN tại tủ, đặt đồ vào, '
+                'đóng cửa rồi xác nhận để bắt đầu tính giờ thuê.',
+          ),
+          const SizedBox(height: 12),
+          OpsPrimaryButton(
+            label: 'Mở ô để bỏ đồ',
+            icon: LucideIcons.lockKeyholeOpen,
+            color: opsPrimary,
+            loading: _loading,
+            onPressed: _openBox,
+          ),
           const SizedBox(height: 12),
           OpsPrimaryButton(
             label: 'Tôi đã bỏ đồ — bắt đầu kỳ thuê',
@@ -789,12 +856,18 @@ class _RentLockerPageState extends State<RentLockerPage>
           ),
         ] else ...[
           if (unpaid) ...[
-            const SizedBox(height: 12),
             const OpsBanner(
               tone: OpsBannerTone.warning,
               icon: LucideIcons.badgeAlert,
               text:
-                  'Bạn có thể dùng tủ trước, nhưng phải thanh toán xong trước khi kết thúc thuê.',
+                  'Còn phí gia hạn chưa thanh toán — cần trả trước khi kết thúc thuê.',
+            ),
+            const SizedBox(height: 12),
+            OpsPrimaryButton(
+              label: payLabel,
+              icon: LucideIcons.wallet,
+              loading: _loading,
+              onPressed: _pay,
             ),
             const SizedBox(height: 12),
           ],

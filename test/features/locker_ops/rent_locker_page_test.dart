@@ -13,8 +13,34 @@ class _FakeRentLockerOpsService extends LockerOpsService {
   int? createRentalBoxId;
   int checkoutCalls = 0;
   int confirmDropCalls = 0;
+  int unlockCalls = 0;
   int? lastCheckoutOrderId;
+  String? lastCheckoutMethod;
   int? lastConfirmOrderId;
+
+  @override
+  Future<num> walletBalance() async => 50000;
+
+  @override
+  Future<bool> awaitOrderPaid(
+    int orderId, {
+    Duration timeout = const Duration(seconds: 20),
+    Duration interval = const Duration(milliseconds: 1500),
+  }) async =>
+      checkoutCalls > 0;
+
+  @override
+  Future<Map<String, dynamic>> order(int orderId) async => {
+        ..._createdOrder,
+        'id': orderId,
+        'paymentStatus': checkoutCalls > 0 ? 'PAID' : 'UNPAID',
+      };
+
+  @override
+  Future<Map<String, dynamic>> unlock(int lockerId, int boxId, String pinCode) async {
+    unlockCalls++;
+    return {'accepted': true, 'nextStep': 'CONFIRM_DROP'};
+  }
 
   final Map<String, dynamic> _createdOrder = {
     'id': 81,
@@ -53,6 +79,7 @@ class _FakeRentLockerOpsService extends LockerOpsService {
   }) async {
     checkoutCalls++;
     lastCheckoutOrderId = orderId;
+    lastCheckoutMethod = method;
     return {
       'id': 991,
       'orderId': orderId,
@@ -162,7 +189,7 @@ void main() {
     expect(find.text('36.000đ'), findsOneWidget);
   });
 
-  testWidgets('preserves selected box, does not auto-confirm after payment, and hides deadline before start', (
+  testWidgets('pays for real, opens the box, then confirms — never auto-confirms', (
     tester,
   ) async {
     final service = _FakeRentLockerOpsService();
@@ -189,18 +216,46 @@ void main() {
     expect(service.createRentalBoxId, 5004);
     expect(find.textContaining('mở ô số 4'), findsOneWidget);
     expect(find.textContaining('Hết hạn thuê:'), findsNothing);
+    // Chưa trả tiền thì chưa có nút mở ô / xác nhận.
+    expect(find.text('Mở ô để bỏ đồ'), findsNothing);
 
-    final payButton = find.textContaining('Đã thanh toán');
+    final payButton = find.text('Thanh toán 20.000đ');
     await tester.dragUntilVisible(
       payButton,
       find.byType(Scrollable).first,
       const Offset(0, -300),
     );
     await tester.tap(payButton);
+    // Nút hiện spinner suốt lúc bảng chọn mở ⇒ không dùng pumpAndSettle ở đây.
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 600));
+
+    // App khách không tự xác nhận tiền mặt.
+    expect(find.text('Tiền mặt'), findsNothing);
+    await tester.tap(find.text('Ví của tôi'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 600));
     await tester.pumpAndSettle();
 
     expect(service.checkoutCalls, 1);
     expect(service.lastCheckoutOrderId, 81);
+    expect(service.lastCheckoutMethod, 'WALLET');
+    expect(service.confirmDropCalls, 0);
+
+    final openButton = find.text('Mở ô để bỏ đồ');
+    await tester.dragUntilVisible(
+      openButton,
+      find.byType(Scrollable).first,
+      const Offset(0, -300),
+    );
+    // SnackBar "Thanh toán thành công" có thể che nút ⇒ gọi thẳng onTap.
+    tester
+        .widget<InkWell>(find.ancestor(of: openButton, matching: find.byType(InkWell)).first)
+        .onTap
+        ?.call();
+    await tester.pump();
+    await tester.pumpAndSettle();
+    expect(service.unlockCalls, 1);
     expect(service.confirmDropCalls, 0);
 
     final confirmButton = find.text('Tôi đã bỏ đồ — bắt đầu kỳ thuê');

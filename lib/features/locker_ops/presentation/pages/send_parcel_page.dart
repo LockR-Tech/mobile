@@ -11,19 +11,24 @@ import 'package:smart_laundry_locker/features/locker_ops/presentation/utils/busi
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/locker_picker.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/ops_widgets.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/order_extras.dart';
+import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/order_payment_sheet.dart';
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
 
 /// SEND flow (gửi hàng C2C qua tủ).
-/// Stage 1: tạo đơn + nhận PIN bỏ hàng. Stage 2: xác nhận đã bỏ hàng → PIN
-/// nhận hàng được sinh mới và gửi cho người nhận (đúng luồng PIN 2 giai đoạn
-/// của backend `order-service`).
+/// Stage 1: tạo đơn + nhận PIN bỏ hàng. Stage 2: thanh toán → mở ô → bỏ hàng →
+/// xác nhận; khi đó PIN nhận hàng được sinh mới và gửi cho người nhận (đúng luồng
+/// PIN 2 giai đoạn của backend `order-service`). Server chỉ nhận xác nhận khi đơn
+/// đã thanh toán và ô đã từng được mở bằng PIN gửi.
 class SendParcelPage extends StatefulWidget {
   const SendParcelPage({
     super.key,
     this.initialLockerId,
     this.initialLockerName,
     this.locationName,
+    this.service,
   });
+
+  final LockerOpsService? service;
 
   /// Pre-selected locker (cabinet) id — set when opened from the cell grid.
   /// When non-null the locker picker is hidden and the API load is skipped.
@@ -41,8 +46,8 @@ class SendParcelPage extends StatefulWidget {
 }
 
 class _SendParcelPageState extends State<SendParcelPage>
-    with BusinessConfigStateMixin {
-  final _service = LockerOpsService();
+    with BusinessConfigStateMixin, WidgetsBindingObserver {
+  late final LockerOpsService _service = widget.service ?? LockerOpsService();
   final _formKey = GlobalKey<FormState>();
   final _phoneCtrl = TextEditingController();
   final _nameCtrl = TextEditingController();
@@ -68,6 +73,7 @@ class _SendParcelPageState extends State<SendParcelPage>
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     if (widget.initialLockerId != null) {
       // Đến từ lưới ô — tủ đã xác định, bỏ qua gọi API load danh sách tủ.
       _lockerId = widget.initialLockerId;
@@ -77,8 +83,18 @@ class _SendParcelPageState extends State<SendParcelPage>
     }
   }
 
+  // Người gửi có thể thanh toán qua cổng ngoài hoặc xác nhận bỏ hàng ngay tại
+  // kiosk — quay lại app thì tải lại đơn để thấy trạng thái mới.
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed && _order != null) {
+      _refreshOrder();
+    }
+  }
+
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _phoneCtrl.dispose();
     _nameCtrl.dispose();
     _emailCtrl.dispose();
@@ -127,6 +143,70 @@ class _SendParcelPageState extends State<SendParcelPage>
       );
       if (!mounted) return;
       setState(() => _order = order);
+    } catch (e) {
+      _snack(LockerOpsService.errorMessage(e));
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
+
+  Future<void> _refreshOrder() async {
+    final id = _order?['id'] as int?;
+    if (id == null) return;
+    try {
+      final fresh = await _service.order(id);
+      if (!mounted || fresh.isEmpty) return;
+      setState(() => _order = fresh);
+    } catch (_) {
+      // Giữ bản đang hiển thị; lần sau quay lại app sẽ thử tải lại.
+    }
+  }
+
+  Future<void> _pay() async {
+    final id = _order?['id'] as int?;
+    if (id == null) return;
+    setState(() => _loading = true);
+    try {
+      final total = _order?['totalPrice'];
+      final outcome = await payOrderAndAwaitPaid(
+        context,
+        service: _service,
+        orderId: id,
+        total: total is num ? total.toDouble() : _netFee.toDouble(),
+        enabledMethods: businessConfig.enabledPaymentMethods,
+      );
+      if (!mounted || outcome == OrderPaymentOutcome.cancelled) return;
+      await _refreshOrder();
+      _snack(
+        outcome == OrderPaymentOutcome.paid
+            ? 'Thanh toán thành công — mời bạn mở ô và bỏ hàng'
+            : 'Đang chờ xác nhận thanh toán, vui lòng đợi giây lát',
+      );
+    } catch (e) {
+      _snack(LockerOpsService.errorMessage(e));
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
+
+  Future<void> _openBox() async {
+    final order = _order;
+    final lockerId = order?['lockerId'] as int?;
+    final boxId = order?['sendBoxId'] as int?;
+    final pin = order?['pinCode'] as String?;
+    if (lockerId == null || boxId == null || pin == null || pin.isEmpty) {
+      _snack('Đơn chưa có thông tin ô/PIN để mở tủ.');
+      return;
+    }
+    setState(() => _loading = true);
+    try {
+      final res = await _service.unlock(lockerId, boxId, pin);
+      final message = res['message']?.toString();
+      _snack(
+        res['accepted'] == true
+            ? 'Ô đã mở — đặt hàng vào, đóng cửa rồi bấm xác nhận.'
+            : (message == null || message.isEmpty ? 'Không mở được ô' : message),
+      );
     } catch (e) {
       _snack(LockerOpsService.errorMessage(e));
     } finally {
@@ -417,41 +497,17 @@ class _SendParcelPageState extends State<SendParcelPage>
     );
   }
 
-  Future<void> _mockPayment() async {
-    final id = _order?['id'] as int?;
-    if (id == null) return;
-    setState(() => _loading = true);
-    try {
-      // Dùng CASH thay cho WALLET để mock thành công mà không cần số dư trong DB thật
-      final payment = await _service.checkout(id, 'CASH');
-      if (!mounted) return;
-      // checkout trả về bản ghi thanh toán, không phải đơn — chỉ gộp trạng
-      // thái thanh toán để giữ nguyên id/PIN của đơn cho bước confirmDrop.
-      setState(() {
-        _order = {
-          ...?_order,
-          'paymentStatus': 'PAID',
-          if (payment['paidAt'] != null) 'paidAt': payment['paidAt'],
-        };
-      });
-      _snack('Đã mock thanh toán (CASH) thành công');
-      // Tự động gọi confirmDrop sau khi thanh toán thành công
-      await _confirmDrop();
-    } catch (e) {
-      _snack(LockerOpsService.errorMessage(e));
-    } finally {
-      if (mounted) setState(() => _loading = false);
-    }
-  }
-
   // ---- Stage 2: result ----
   Widget _buildResult() {
     final order = _order!;
     final status = order['status'] as String?;
     final isDropped = status == 'STORING';
     final hasReceiverAccount = order['receiverId'] != null;
+    final total = order['totalPrice'];
+    final hasFee = total is num ? total > 0 : _netFee > 0;
     final unpaid = (order['paymentStatus'] as String?) != 'PAID';
     final config = businessConfig;
+    final mustPayFirst = hasFee && unpaid && config.requirePaymentBeforeDrop;
 
     return ListView(
       padding: const EdgeInsets.all(16),
@@ -524,25 +580,35 @@ class _SendParcelPageState extends State<SendParcelPage>
           ),
         ).animate().fadeIn(duration: 300.ms).slideY(begin: 0.05),
         const SizedBox(height: 16),
-        if (!isDropped) ...[
-          if (unpaid && config.requirePaymentBeforeDrop) ...[
-            const OpsBanner(
-              tone: OpsBannerTone.warning,
-              icon: LucideIcons.badgeAlert,
-              text: 'Cần thanh toán đơn trước khi bỏ hàng vào ô.',
-            ),
-            const SizedBox(height: 12),
-          ],
-          // Nút mock trả bằng CASH — ẩn khi admin tắt phương thức tiền mặt.
-          if (config.isPaymentMethodEnabled('CASH')) ...[
-            OpsPrimaryButton(
-              label: 'Đã thanh toán (Mock Ví)',
-              icon: LucideIcons.wallet,
-              loading: _loading,
-              onPressed: _mockPayment,
-            ),
-            const SizedBox(height: 12),
-          ],
+        if (!isDropped && mustPayFirst) ...[
+          const OpsBanner(
+            tone: OpsBannerTone.warning,
+            icon: LucideIcons.badgeAlert,
+            text: 'Cần thanh toán đơn trước khi mở ô bỏ hàng.',
+          ),
+          const SizedBox(height: 12),
+          OpsPrimaryButton(
+            label: 'Thanh toán ${fmtPrice(total is num ? total : _netFee)}',
+            icon: LucideIcons.wallet,
+            loading: _loading,
+            onPressed: _pay,
+          ),
+        ] else if (!isDropped) ...[
+          const OpsBanner(
+            tone: OpsBannerTone.info,
+            icon: LucideIcons.lockKeyholeOpen,
+            text: 'Mở ô bằng nút bên dưới hoặc nhập PIN tại tủ, đặt hàng vào, '
+                'đóng cửa rồi xác nhận. Xác nhận ngay trên màn hình tủ cũng được.',
+          ),
+          const SizedBox(height: 12),
+          OpsPrimaryButton(
+            label: 'Mở ô để bỏ hàng',
+            icon: LucideIcons.lockKeyholeOpen,
+            color: opsPrimary,
+            loading: _loading,
+            onPressed: _openBox,
+          ),
+          const SizedBox(height: 12),
           OpsPrimaryButton(
             label: 'Tôi đã bỏ hàng vào ô',
             icon: LucideIcons.check,
