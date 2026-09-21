@@ -84,7 +84,6 @@ class _TopUpPageState extends State<TopUpPage> with BusinessConfigStateMixin {
                 BrandHeroHeader(
                   title: 'Nạp tiền vào ví',
                   subtitle: 'Nạp tiền để sử dụng các dịch vụ Lock.R',
-                  imageAsset: 'assets/images/box_stack_3d.png',
                 ),
                 Expanded(
                   child: SingleChildScrollView(

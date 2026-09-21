@@ -212,7 +212,7 @@ class BrandHeroHeader extends StatelessWidget {
     this.titleColor = Colors.white,
     this.subtitleColor = const Color(0xFF94A3B8),
     this.backgroundColor,
-    this.imageAsset = 'assets/images/box_stack_3d.png',
+    this.imageAsset,
   });
 
   final String title;

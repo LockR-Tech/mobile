@@ -88,7 +88,6 @@ class _NotificationListPageState extends State<NotificationListPage> {
                 BrandHeroHeader(
                   title: 'Thông báo',
                   subtitle: 'Cập nhật mới nhất từ Lock.R',
-                  imageAsset: 'assets/images/box_stack_3d.png',
                   onBack: () => context.pop(),
                 ),
                 const Expanded(
@@ -108,7 +107,6 @@ class _NotificationListPageState extends State<NotificationListPage> {
               BrandHeroHeader(
                 title: 'Thông báo',
                 subtitle: 'Cập nhật mới nhất từ Lock.R',
-                imageAsset: 'assets/images/box_stack_3d.png',
                 onBack: () => context.pop(),
                 trailing: Consumer<NotificationProvider>(
                   builder: (context, provider, _) {

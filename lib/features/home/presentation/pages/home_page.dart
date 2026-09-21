@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/services.dart';
 import 'package:smart_laundry_locker/features/promotions/data/models/promotion_model.dart';
 import 'package:smart_laundry_locker/features/promotions/presentation/pages/promotion_detail_page.dart';
@@ -12,6 +13,7 @@ import 'package:smart_laundry_locker/features/notifications/presentation/provide
 import 'package:smart_laundry_locker/core/routing/app_router.dart';
 import 'package:smart_laundry_locker/features/wallet/presentation/providers/wallet_provider.dart';
 import 'package:smart_laundry_locker/features/profile/presentation/providers/profile_provider.dart';
+import 'package:smart_laundry_locker/features/profile/domain/entities/user_profile.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart' hide Consumer;
 import 'package:smart_laundry_locker/features/locker/domain/entities/locker_location.dart';
 import 'package:smart_laundry_locker/features/locker/presentation/providers/locker_provider.dart';
@@ -41,7 +43,7 @@ class _HomePageState extends ConsumerState<HomePage>
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       final profile = context.read<ProfileProvider>();
-      if (profile.profile == null && !profile.isLoading) {
+      if (!profile.isLoading) {
         profile.loadProfile();
       }
       ref.read(lockerNotifierProvider).getLocations();
@@ -173,9 +175,7 @@ class _HomePageState extends ConsumerState<HomePage>
 
   Widget _buildTopAppBar(BuildContext context) {
     final profile = context.watch<ProfileProvider>().profile;
-    final name = (profile?.fullName.trim().isNotEmpty ?? false)
-        ? profile!.fullName.trim()
-        : 'Người dùng';
+    final name = _resolveDisplayName(profile);
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final textColor = isDark ? Colors.white : const Color(0xFF0F172A);
 
@@ -190,14 +190,33 @@ class _HomePageState extends ConsumerState<HomePage>
               width: 38,
               height: 38,
               decoration: BoxDecoration(
-                color: const Color(0xFF574E00).withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(10),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.08),
+                    blurRadius: 6,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
               ),
-              child: const Center(
-                child: Icon(
-                  LucideIcons.box,
-                  color: Color(0xFF574E00),
-                  size: 22,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(10),
+                child: Image.asset(
+                  'assets/images/logo.png',
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) => Container(
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF574E00).withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Center(
+                      child: Icon(
+                        LucideIcons.box,
+                        color: Color(0xFF574E00),
+                        size: 20,
+                      ),
+                    ),
+                  ),
                 ),
               ),
             ),
@@ -306,11 +325,62 @@ class _HomePageState extends ConsumerState<HomePage>
     );
   }
 
+  String _resolveDisplayName(UserProfile? profile) {
+    if (profile == null) return 'Bạn';
+    final name = profile.fullName.trim();
+    if (name.isNotEmpty && name.toLowerCase() != 'người dùng') {
+      return _capitalizeWords(name);
+    }
+    final email = profile.email.trim();
+    if (email.isNotEmpty) {
+      return _capitalizeWords(email.split('@').first);
+    }
+    final phone = profile.phoneNumber.trim();
+    if (phone.isNotEmpty) {
+      return phone;
+    }
+    return 'Bạn';
+  }
+
+  String _resolveHeroDisplayName(UserProfile? profile) {
+    if (profile == null) return 'Bạn';
+    final name = profile.fullName.trim();
+    if (name.isNotEmpty && name.toLowerCase() != 'người dùng') {
+      final parts =
+          name.split(RegExp(r'\s+')).where((w) => w.isNotEmpty).toList();
+      if (parts.isNotEmpty) {
+        return _capitalizeWords(parts.last);
+      }
+    }
+    final email = profile.email.trim();
+    if (email.isNotEmpty) {
+      final prefix = email.split('@').first;
+      final emailParts = prefix
+          .split(RegExp(r'[._\s-]+'))
+          .where((w) => w.isNotEmpty)
+          .toList();
+      if (emailParts.isNotEmpty) {
+        return _capitalizeWords(emailParts.last);
+      }
+    }
+    final phone = profile.phoneNumber.trim();
+    if (phone.isNotEmpty) {
+      return phone;
+    }
+    return 'Bạn';
+  }
+
+  String _capitalizeWords(String input) {
+    return input
+        .split(RegExp(r'\s+'))
+        .where((w) => w.isNotEmpty)
+        .map((w) => w[0].toUpperCase() + (w.length > 1 ? w.substring(1) : ''))
+        .join(' ');
+  }
+
   Widget _buildHeroCard(BuildContext context) {
     final profile = context.watch<ProfileProvider>().profile;
-    final fullName = profile?.fullName.trim() ?? '';
-    final displayName =
-        fullName.isNotEmpty ? fullName.split(' ').last : 'Bạn';
+    final displayName = _resolveHeroDisplayName(profile);
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 20),
@@ -352,16 +422,28 @@ class _HomePageState extends ConsumerState<HomePage>
                               ),
                             ),
                             const SizedBox(height: 6),
-                            Text(
-                              'Hello, $displayName! 👋',
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 22,
-                                fontWeight: FontWeight.w800,
-                                letterSpacing: -0.3,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Flexible(
+                                  child: Text(
+                                    'Hello, $displayName!',
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 22,
+                                      fontWeight: FontWeight.w800,
+                                      letterSpacing: -0.3,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                                const SizedBox(width: 6),
+                                const Text(
+                                  '👋',
+                                  style: TextStyle(fontSize: 20),
+                                ),
+                              ],
                             ),
                             const SizedBox(height: 6),
                             const Text(
@@ -381,7 +463,7 @@ class _HomePageState extends ConsumerState<HomePage>
                   ),
                   const SizedBox(height: 20),
                   // Reserve space for the wallet pill to sit comfortably
-                  const SizedBox(height: 54),
+                  const SizedBox(height: 60),
                 ],
               ),
             ),
@@ -415,8 +497,8 @@ class _HomePageState extends ConsumerState<HomePage>
                     ),
                     const SizedBox(height: 2),
                     SizedBox(
-                      width: 150,
-                      height: 130,
+                      width: 200,
+                      height: 180,
                       child: Image.asset(
                         'assets/images/box_stack_3d.png',
                         fit: BoxFit.contain,
@@ -449,89 +531,96 @@ class _HomePageState extends ConsumerState<HomePage>
           if (context.mounted) wallet.getWalletBalance();
         },
         behavior: HitTestBehavior.opaque,
-        child: Container(
-          height: 54,
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.16),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
-          child: Row(
-            children: [
-              Container(
-                width: 38,
-                height: 38,
-                decoration: BoxDecoration(
-                  color: const Color(0xFF574E00).withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(10),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(16),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: Colors.white.withValues(alpha: 0.15),
+                  width: 1,
                 ),
-                child: const Center(
-                  child: Icon(
-                    LucideIcons.wallet,
-                    color: Color(0xFF574E00),
-                    size: 20,
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    width: 38,
+                    height: 38,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Center(
+                      child: Icon(
+                        LucideIcons.wallet,
+                        color: Colors.white,
+                        size: 20,
+                      ),
+                    ),
                   ),
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Text(
-                      'Số dư ví khả dụng',
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Text(
+                          'Số dư ví khả dụng',
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: Color(0xFF94A3B8),
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        FittedBox(
+                          fit: BoxFit.scaleDown,
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            CurrencyFormatter.formatVnd(wallet.balance),
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w800,
+                              color: Colors.white,
+                            ),
+                            maxLines: 1,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF574E00),
+                      borderRadius: BorderRadius.circular(10),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFF574E00).withValues(alpha: 0.35),
+                          blurRadius: 6,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: const Text(
+                      'Nạp tiền',
                       style: TextStyle(
-                        fontSize: 11,
-                        color: Color(0xFF64748B),
-                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
-                    const SizedBox(height: 1),
-                    Text(
-                      CurrencyFormatter.formatVnd(wallet.balance),
-                      style: const TextStyle(
-                        fontSize: 16.5,
-                        fontWeight: FontWeight.w800,
-                        color: Color(0xFF0F172A),
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ],
-                ),
-              ),
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF574E00),
-                  borderRadius: BorderRadius.circular(10),
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color(0xFF574E00).withValues(alpha: 0.35),
-                      blurRadius: 6,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: const Text(
-                  'Nạp tiền',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 12.5,
-                    fontWeight: FontWeight.w700,
                   ),
-                ),
+                ],
               ),
-            ],
+            ),
           ),
         ),
       ),
@@ -996,27 +1085,46 @@ class _HomePageState extends ConsumerState<HomePage>
                   ),
                   // The 4 Step Circles
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      _buildStepCircle(
-                        isActive: activeStepCount >= 1,
-                        activeColor: activeColor,
-                        inactiveColor: inactiveColor,
+                      Expanded(
+                        child: Center(
+                          child: _buildStepCircle(
+                            isActive: activeStepCount >= 1,
+                            activeColor: activeColor,
+                            inactiveColor: inactiveColor,
+                            circleBg: isDark ? const Color(0xFF1E293B) : Colors.white,
+                          ),
+                        ),
                       ),
-                      _buildStepCircle(
-                        isActive: activeStepCount >= 2,
-                        activeColor: activeColor,
-                        inactiveColor: inactiveColor,
+                      Expanded(
+                        child: Center(
+                          child: _buildStepCircle(
+                            isActive: activeStepCount >= 2,
+                            activeColor: activeColor,
+                            inactiveColor: inactiveColor,
+                            circleBg: isDark ? const Color(0xFF1E293B) : Colors.white,
+                          ),
+                        ),
                       ),
-                      _buildStepCircle(
-                        isActive: activeStepCount >= 3,
-                        activeColor: activeColor,
-                        inactiveColor: inactiveColor,
+                      Expanded(
+                        child: Center(
+                          child: _buildStepCircle(
+                            isActive: activeStepCount >= 3,
+                            activeColor: activeColor,
+                            inactiveColor: inactiveColor,
+                            circleBg: isDark ? const Color(0xFF1E293B) : Colors.white,
+                          ),
+                        ),
                       ),
-                      _buildStepCircle(
-                        isActive: activeStepCount >= 4,
-                        activeColor: activeColor,
-                        inactiveColor: inactiveColor,
+                      Expanded(
+                        child: Center(
+                          child: _buildStepCircle(
+                            isActive: activeStepCount >= 4,
+                            activeColor: activeColor,
+                            inactiveColor: inactiveColor,
+                            circleBg: isDark ? const Color(0xFF1E293B) : Colors.white,
+                          ),
+                        ),
                       ),
                     ],
                   ),
@@ -1068,12 +1176,13 @@ class _HomePageState extends ConsumerState<HomePage>
     required bool isActive,
     required Color activeColor,
     required Color inactiveColor,
+    Color circleBg = Colors.white,
   }) {
     return Container(
       width: 22,
       height: 22,
       decoration: BoxDecoration(
-        color: isActive ? activeColor : Colors.white,
+        color: isActive ? activeColor : circleBg,
         shape: BoxShape.circle,
         border: Border.all(
           color: isActive ? activeColor : inactiveColor,

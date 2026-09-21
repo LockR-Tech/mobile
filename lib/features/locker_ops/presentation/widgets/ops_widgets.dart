@@ -143,6 +143,16 @@ String fmtRemaining(dynamic deadline) {
       : 'Quá hạn ${_humanDuration(now.difference(d))}';
 }
 
+DateTime? parseDate(dynamic value) => _parseDate(value);
+
+String fmtOverdueDuration(dynamic deadline) {
+  final d = _parseDate(deadline);
+  if (d == null) return '';
+  final now = DateTime.now();
+  if (!now.isAfter(d)) return '';
+  return _humanDuration(now.difference(d));
+}
+
 // ---- Reusable widgets ----
 
 /// Small uppercase section label above a group of fields.

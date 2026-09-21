@@ -140,7 +140,6 @@ class _StoresPageState extends State<StoresPage> {
           BrandHeroHeader(
             title: 'Cửa hàng',
             subtitle: 'Khám phá điểm tủ & đối tác liên kết',
-            imageAsset: 'assets/images/box_stack_3d.png',
             trailing: BrandCircleIconButton(
               icon: LucideIcons.refreshCw,
               onTap: _load,

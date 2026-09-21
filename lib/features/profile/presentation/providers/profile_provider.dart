@@ -7,6 +7,7 @@ import 'package:smart_laundry_locker/features/profile/application/use_cases/upda
 import 'package:smart_laundry_locker/features/profile/application/use_cases/get_courier_profile_use_case.dart';
 import 'package:smart_laundry_locker/features/profile/domain/entities/user_profile.dart';
 import 'package:smart_laundry_locker/features/profile/domain/entities/courier_profile.dart';
+import 'package:smart_laundry_locker/core/services/token_service.dart';
 import 'package:flutter/foundation.dart';
 
 class ProfileProvider extends ChangeNotifier {
@@ -76,7 +77,22 @@ class ProfileProvider extends ChangeNotifier {
         _isLoading = false;
         _error = failure.message;
         _isSuccess = false;
-        _profile = null;
+        if (_profile == null) {
+          final userName = await TokenService.getUserName();
+          final userEmail = await TokenService.getUserEmail();
+          final userId = await TokenService.getUserId();
+          if (userName != null || userEmail != null) {
+            _profile = UserProfile(
+              id: userId ?? '',
+              fullName: userName ?? userEmail?.split('@').first ?? 'Người dùng',
+              email: userEmail ?? '',
+              phoneNumber: '',
+              status: UserStatus.ACTIVE,
+              isVerified: true,
+              isActive: true,
+            );
+          }
+        }
         notifyListeners();
       },
       (profileEntity) async {
