@@ -312,16 +312,16 @@ class LockerOpsService {
 
   // ---- Maintenance ----
   Future<List<Map<String, dynamic>>> faults() =>
-      _list('/api/maintenance/faults');
+      _list('/api/locker-technician/faults');
 
   Future<List<Map<String, dynamic>>> reports({bool mine = false}) =>
-      _list('/api/maintenance/reports', query: {'mine': mine});
+      _list('/api/locker-technician/reports', query: {'mine': mine});
 
   /// Tất cả phiếu sự cố Kiosk (OPEN + IN_PROGRESS + RESOLVED) — ưu tiên endpoint maintenance,
   /// dùng cho tab "Sự cố" trên Mobile để KTV thấy toàn bộ hệ thống (giống Admin portal).
   Future<List<Map<String, dynamic>>> allKioskReports() async {
     try {
-      final list = await _list('/api/maintenance/reports', query: {'all': true});
+      final list = await _list('/api/locker-technician/reports', query: {'all': true});
       if (list.isNotEmpty) return list;
     } catch (_) {}
     try {
@@ -336,11 +336,11 @@ class LockerOpsService {
   }
 
   Future<Map<String, dynamic>> claimReport(int reportId) =>
-      _map('PUT', '/api/maintenance/reports/$reportId/claim');
+      _map('PUT', '/api/locker-technician/reports/$reportId/claim');
 
-  /// 1 phiếu (TECH/MAINT/ADMIN), có `attachments[]`.
+  /// 1 phiếu (LOCKER_TECHNICIAN/DRONE_TECHNICIAN/ADMIN), có `attachments[]`.
   Future<Map<String, dynamic>> getMaintenanceReport(int reportId) =>
-      _map('GET', '/api/maintenance/reports/$reportId');
+      _map('GET', '/api/locker-technician/reports/$reportId');
 
   /// Hoàn tất phiếu. Ảnh [attachments] lưu stage RESOLUTION trước khi đóng.
   /// Không có [note]/[attachments] ⇒ PUT không body (như cũ).
@@ -354,7 +354,7 @@ class LockerOpsService {
     final hasAttachments = attachments != null && attachments.isNotEmpty;
     return _map(
       'PUT',
-      '/api/maintenance/reports/$reportId/resolve',
+      '/api/locker-technician/reports/$reportId/resolve',
       body: hasNote || hasAttachments
           ? {
               if (hasNote) 'note': trimmedNote,
@@ -369,7 +369,7 @@ class LockerOpsService {
     int reportId, {
     String? stage,
   }) => _list(
-    '/api/maintenance/reports/$reportId/attachments',
+    '/api/locker-technician/reports/$reportId/attachments',
     query: stage == null ? null : {'stage': stage},
   );
 
@@ -380,7 +380,7 @@ class LockerOpsService {
     String stage,
     List<Map<String, dynamic>> attachments, {
     String? note,
-  }) => _postList('/api/maintenance/reports/$reportId/attachments', {
+  }) => _postList('/api/locker-technician/reports/$reportId/attachments', {
     'stage': stage,
     if (note != null && note.trim().isNotEmpty) 'note': note.trim(),
     'attachments': attachments,
@@ -388,32 +388,32 @@ class LockerOpsService {
 
   Future<void> deleteReportAttachment(int reportId, int attachmentId) async {
     await _dio.delete<dynamic>(
-      '/api/maintenance/reports/$reportId/attachments/$attachmentId',
+      '/api/locker-technician/reports/$reportId/attachments/$attachmentId',
     );
   }
 
   Future<Map<String, dynamic>> clearFault(int boxId) =>
-      _map('POST', '/api/maintenance/boxes/$boxId/clear-fault');
+      _map('POST', '/api/locker-technician/boxes/$boxId/clear-fault');
 
   /// Ngưng dùng ô có chủ đích (bảo trì/đóng). Ô bị loại khỏi mọi reserve.
   Future<Map<String, dynamic>> outOfService(int boxId, {String? reason}) =>
       _map(
         'POST',
-        '/api/maintenance/boxes/$boxId/out-of-service',
+        '/api/locker-technician/boxes/$boxId/out-of-service',
         body: reason == null ? null : {'reason': reason},
       );
 
   /// Đưa ô vào trạng thái đang vệ sinh/khử khuẩn.
   Future<Map<String, dynamic>> cleaning(int boxId) =>
-      _map('POST', '/api/maintenance/boxes/$boxId/cleaning');
+      _map('POST', '/api/locker-technician/boxes/$boxId/cleaning');
 
   /// Khôi phục ô từ OUT_OF_SERVICE/CLEANING về AVAILABLE.
   Future<Map<String, dynamic>> returnToService(int boxId) =>
-      _map('POST', '/api/maintenance/boxes/$boxId/return-to-service');
+      _map('POST', '/api/locker-technician/boxes/$boxId/return-to-service');
 
   /// Nhật ký xử lý của 1 phiếu bảo trì (work-log nhiều bước).
   Future<List<Map<String, dynamic>>> reportLogs(int reportId) =>
-      _list('/api/maintenance/reports/$reportId/logs');
+      _list('/api/locker-technician/reports/$reportId/logs');
 
   /// Dòng nhật ký; [attachments] (≤10) lưu stage PROGRESS gắn với dòng này.
   Future<Map<String, dynamic>> addReportLog(
@@ -422,7 +422,7 @@ class LockerOpsService {
     List<Map<String, dynamic>>? attachments,
   }) => _map(
     'POST',
-    '/api/maintenance/reports/$reportId/logs',
+    '/api/locker-technician/reports/$reportId/logs',
     body: {
       'note': note,
       if (attachments != null && attachments.isNotEmpty)
@@ -441,15 +441,15 @@ class LockerOpsService {
   /// Mở ô khẩn cấp không cần PIN khách — luôn được ghi vào audit log
   /// (credential MASTER) ở backend.
   Future<Map<String, dynamic>> forceOpenBox(int boxId) =>
-      _map('POST', '/api/maintenance/boxes/$boxId/force-open');
+      _map('POST', '/api/locker-technician/boxes/$boxId/force-open');
 
   /// Điểm đánh giá trung bình KTV nhận được từ các report mình xử lý.
   Future<Map<String, dynamic>> myRatingAverage() =>
-      _map('GET', '/api/maintenance/my-rating-average');
+      _map('GET', '/api/locker-technician/my-rating-average');
 
   /// Thống kê hiệu suất & trạng thái chế tài SLA của chính KTV đang đăng nhập.
   Future<Map<String, dynamic>> myPerformance() =>
-      _map('GET', '/api/maintenance/my-performance');
+      _map('GET', '/api/locker-technician/my-performance');
 
   /// KTV xin gia hạn thêm thời gian xử lý sự cố (SLA extension).
   Future<Map<String, dynamic>> extendReportSla(
@@ -462,7 +462,7 @@ class LockerOpsService {
       if (reason != null && reason.isNotEmpty) 'reason': reason,
     };
     try {
-      return await _map('PUT', '/api/maintenance/reports/$reportId/extend-sla', body: body);
+      return await _map('PUT', '/api/locker-technician/reports/$reportId/extend-sla', body: body);
     } catch (_) {
       return await _map('PUT', '/api/admin/lockers/reports/$reportId/extend-sla', body: body);
     }
@@ -474,14 +474,14 @@ class LockerOpsService {
   /// doorOpen, needsAttention}`. `needsAttention` = cửa đang mở nhưng ô không
   /// `OCCUPIED` (nghi cửa kẹt/quên đóng).
   Future<List<Map<String, dynamic>>> boxHealth(int lockerId) =>
-      _list('/api/maintenance/lockers/$lockerId/box-health');
+      _list('/api/locker-technician/lockers/$lockerId/box-health');
 
   /// Tổng quan ca trực: mọi ô trên TẤT CẢ tủ đang có cửa phần cứng MỞ nhưng
   /// không `OCCUPIED` (nghi cửa kẹt/quên đóng). Mỗi phần tử kèm metadata locker
   /// (`lockerName/lockerAddress/lockerLatitude/lockerLongitude` để chỉ đường) +
   /// `boxId/boxNumber/cellType/logicalStatus/hwState/lastReportedAt`.
   Future<List<Map<String, dynamic>>> boxAnomalies() =>
-      _list('/api/maintenance/box-anomalies');
+      _list('/api/locker-technician/box-anomalies');
 
   // ---- Drone fleet (maintenance) ----
   // Pin/trạng thái bay hiện chưa có telemetry thật, KTV nhập tay qua các
@@ -489,15 +489,15 @@ class LockerOpsService {
 
   /// Danh sách toàn bộ drone (thiết bị bay vật lý, khác ô tủ cellType=DRONE).
   Future<List<Map<String, dynamic>>> droneUnits() =>
-      _list('/api/maintenance/drones');
+      _list('/api/drone-technician/drones');
 
   /// KTV nhận phụ trách một drone.
   Future<Map<String, dynamic>> claimDrone(int id) =>
-      _map('POST', '/api/maintenance/drones/$id/claim');
+      _map('POST', '/api/drone-technician/drones/$id/claim');
 
   /// KTV nhả quyền phụ trách một drone (bàn giao ca).
   Future<Map<String, dynamic>> releaseDrone(int id) =>
-      _map('POST', '/api/maintenance/drones/$id/release');
+      _map('POST', '/api/drone-technician/drones/$id/release');
 
   /// Đổi trạng thái drone (IDLE/CHARGING/IN_FLIGHT/MAINTENANCE/FAULT).
   /// [reason] bắt buộc khi chuyển sang FAULT.
@@ -507,7 +507,7 @@ class LockerOpsService {
     String? reason,
   }) => _map(
     'POST',
-    '/api/maintenance/drones/$id/status',
+    '/api/drone-technician/drones/$id/status',
     body: {'status': status, if (reason != null) 'reason': reason},
   );
 
@@ -515,16 +515,16 @@ class LockerOpsService {
   Future<Map<String, dynamic>> updateDroneBattery(int id, int batteryPercent) =>
       _map(
         'POST',
-        '/api/maintenance/drones/$id/battery',
+        '/api/drone-technician/drones/$id/battery',
         body: {'batteryPercent': batteryPercent},
       );
 
   /// Nhật ký bảo trì của một drone.
   Future<List<Map<String, dynamic>>> droneLogs(int id) =>
-      _list('/api/maintenance/drones/$id/logs');
+      _list('/api/drone-technician/drones/$id/logs');
 
   Future<Map<String, dynamic>> addDroneLog(int id, String note) =>
-      _map('POST', '/api/maintenance/drones/$id/logs', body: {'note': note});
+      _map('POST', '/api/drone-technician/drones/$id/logs', body: {'note': note});
 
   // ---- Drone delivery requests (khách tạo -> đội bay điều phối) ----
 
@@ -553,17 +553,17 @@ class LockerOpsService {
   Future<Map<String, dynamic>> cancelDroneDelivery(int id) =>
       _map('PUT', '/api/drone-deliveries/$id/cancel');
 
-  /// Hàng đợi điều phối cho đội bay (MAINTENANCE); lọc theo [status] nếu có.
+  /// Hàng đợi điều phối cho đội bay (DRONE_TECHNICIAN); lọc theo [status] nếu có.
   Future<List<Map<String, dynamic>>> droneDeliveryQueue({String? status}) =>
       _list(
-        '/api/maintenance/drone-deliveries',
+        '/api/drone-technician/drone-deliveries',
         query: status == null ? null : {'status': status},
       );
 
   /// Hàng đợi order-based cho đội bay theo Phase 2.
   Future<List<Map<String, dynamic>>> droneOrderQueue({String? deliveryStage}) =>
       _list(
-        '/api/maintenance/drone-orders',
+        '/api/drone-technician/drone-orders',
         query: deliveryStage == null ? null : {'deliveryStage': deliveryStage},
       );
 
@@ -574,7 +574,7 @@ class LockerOpsService {
     required String idempotencyKey,
   }) => _map(
     'POST',
-    '/api/maintenance/drone-orders/$orderId/accept',
+    '/api/drone-technician/drone-orders/$orderId/accept',
     headers: {'Idempotency-Key': idempotencyKey},
     body: {'droneUnitId': droneUnitId},
   );
@@ -585,7 +585,7 @@ class LockerOpsService {
     required String idempotencyKey,
   }) => _map(
     'POST',
-    '/api/maintenance/drone-orders/$orderId/launch',
+    '/api/drone-technician/drone-orders/$orderId/launch',
     headers: {'Idempotency-Key': idempotencyKey},
   );
 
@@ -595,7 +595,7 @@ class LockerOpsService {
     String? note,
   }) => _map(
     'POST',
-    '/api/maintenance/drone-orders/$orderId/cancel',
+    '/api/drone-technician/drone-orders/$orderId/cancel',
     body: {
       'reasonCode': reasonCode,
       if (note != null && note.trim().isNotEmpty) 'note': note.trim(),
@@ -608,13 +608,13 @@ class LockerOpsService {
     int? droneUnitId,
   }) => _map(
     'POST',
-    '/api/maintenance/drone-deliveries/$id/dispatch',
+    '/api/drone-technician/drone-deliveries/$id/dispatch',
     body: droneUnitId == null ? null : {'droneUnitId': droneUnitId},
   );
 
   /// Drone đã thả hàng xong — yêu cầu DELIVERED, drone quay về IDLE.
   Future<Map<String, dynamic>> completeDroneDelivery(int id) =>
-      _map('POST', '/api/maintenance/drone-deliveries/$id/complete');
+      _map('POST', '/api/drone-technician/drone-deliveries/$id/complete');
 
   /// #6 KTV cập nhật trạng thái bảo trì bãi đáp drone của 1 tủ.
   /// [status] = OK / FAULT / MAINTENANCE.
@@ -624,36 +624,36 @@ class LockerOpsService {
     String? reason,
   }) => _map(
     'POST',
-    '/api/maintenance/lockers/$lockerId/landing-pad',
+    '/api/locker-technician/lockers/$lockerId/landing-pad',
     body: {'status': status, if (reason != null) 'reason': reason},
   );
 
-  // ── TECHNICIAN ─────────────────────────────────────────────────────────────
+  // ── LOCKER_TECHNICIAN ──────────────────────────────────────────────────────
 
-  /// Danh sách thiết bị IoT mà TECHNICIAN phụ trách.
+  /// Danh sách thiết bị IoT mà LOCKER_TECHNICIAN phụ trách.
   Future<List<Map<String, dynamic>>> techDevices() =>
-      _list('/api/technician/devices');
+      _list('/api/locker-technician/devices');
 
   /// Chi tiết một thiết bị IoT theo ID.
   Future<Map<String, dynamic>> techDeviceDetail(int id) =>
-      _map('GET', '/api/technician/devices/$id');
+      _map('GET', '/api/locker-technician/devices/$id');
 
   /// Cập nhật trạng thái thiết bị (ONLINE / OFFLINE / ERROR).
   Future<void> techUpdateStatus(int id, String status) async {
     await _map(
       'PUT',
-      '/api/technician/devices/$id/status',
+      '/api/locker-technician/devices/$id/status',
       body: {'status': status},
     );
   }
 
   /// Nhật ký audit của một thiết bị IoT.
   Future<List<Map<String, dynamic>>> techDeviceLogs(int id) =>
-      _list('/api/technician/devices/$id/logs');
+      _list('/api/locker-technician/devices/$id/logs');
 
   /// Gửi lệnh restart thiết bị IoT.
   Future<void> techRestartDevice(int id) async {
-    await _map('POST', '/api/technician/devices/$id/restart');
+    await _map('POST', '/api/locker-technician/devices/$id/restart');
   }
 
   /// Human-readable message from an [ApiResponse] error payload.

@@ -18,25 +18,31 @@ void main() {
       });
     });
 
-    group('TECHNICIAN (locker maintenance + IoT)', () {
-      test('TECHNICIAN routes to /technician-home', () {
-        expect(homeForRoles(['TECHNICIAN']), equals('/technician-home'));
-      });
-      test('TECHNICIAN beats CUSTOMER', () {
+    group('LOCKER_TECHNICIAN (kỹ thuật viên tủ: locker maintenance + IoT)', () {
+      test('LOCKER_TECHNICIAN routes to /technician-home', () {
         expect(
-          homeForRoles(['CUSTOMER', 'TECHNICIAN']),
+          homeForRoles(['LOCKER_TECHNICIAN']),
+          equals('/technician-home'),
+        );
+      });
+      test('LOCKER_TECHNICIAN beats CUSTOMER', () {
+        expect(
+          homeForRoles(['CUSTOMER', 'LOCKER_TECHNICIAN']),
           equals('/technician-home'),
         );
       });
     });
 
-    group('MAINTENANCE (drone fleet)', () {
-      test('MAINTENANCE routes to /maintenance-home', () {
-        expect(homeForRoles(['MAINTENANCE']), equals('/maintenance-home'));
-      });
-      test('TECHNICIAN beats MAINTENANCE', () {
+    group('DRONE_TECHNICIAN (kỹ thuật viên drone: drone fleet)', () {
+      test('DRONE_TECHNICIAN routes to /maintenance-home', () {
         expect(
-          homeForRoles(['MAINTENANCE', 'TECHNICIAN']),
+          homeForRoles(['DRONE_TECHNICIAN']),
+          equals('/maintenance-home'),
+        );
+      });
+      test('LOCKER_TECHNICIAN beats DRONE_TECHNICIAN', () {
+        expect(
+          homeForRoles(['DRONE_TECHNICIAN', 'LOCKER_TECHNICIAN']),
           equals('/technician-home'),
         );
       });
@@ -55,6 +61,10 @@ void main() {
       test('retired roles MANAGER/STAFF fall back to /home', () {
         expect(homeForRoles(['MANAGER']), equals('/home'));
         expect(homeForRoles(['STAFF']), equals('/home'));
+      });
+      test('tên role cũ trước khi đổi không còn được chấp nhận', () {
+        expect(homeForRoles(['TECHNICIAN']), equals('/home'));
+        expect(homeForRoles(['MAINTENANCE']), equals('/home'));
       });
     });
   });

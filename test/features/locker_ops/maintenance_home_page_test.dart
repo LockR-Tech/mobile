@@ -114,7 +114,7 @@ class _FakeMaintenanceService extends LockerOpsService {
 void main() {
   setUp(() {
     mockSecureStorage({
-      'access_token': makeFakeJwt(sub: '99', roles: ['MAINTENANCE']),
+      'access_token': makeFakeJwt(sub: '99', roles: ['DRONE_TECHNICIAN']),
     });
   });
 

@@ -17,9 +17,10 @@ import 'package:smart_laundry_locker/features/profile/presentation/providers/pro
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/pages/technician_profile_page.dart';
 
-/// Home for the TECHNICIAN role: physical locker maintenance (fault cells,
-/// work queue, preventive schedules, landing pad) + IoT device management.
-/// Drone fleet operations live with the MAINTENANCE role.
+/// Home for the LOCKER_TECHNICIAN role (kỹ thuật viên tủ): physical locker
+/// maintenance (fault cells, work queue, preventive schedules, landing pad)
+/// + IoT device management. Drone fleet operations live with the
+/// DRONE_TECHNICIAN role.
 class TechnicianHomePage extends StatefulWidget {
   const TechnicianHomePage({super.key});
 
@@ -170,7 +171,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
         _lockers = lockers;
       });
       // Lịch bảo trì định kỳ — chỉ lịch của tủ; lịch drone thuộc đội bay
-      // (MAINTENANCE). Không để vỡ trang nếu BE chưa deploy.
+      // (DRONE_TECHNICIAN). Không để vỡ trang nếu BE chưa deploy.
       try {
         final schedules = await _service.maintenanceSchedules();
         if (mounted) {

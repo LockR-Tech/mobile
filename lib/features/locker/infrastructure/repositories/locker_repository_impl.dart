@@ -51,9 +51,9 @@ class LockerRepositoryImpl implements LockerRepository {
       final hasAdminRole = roles.any(
         (r) =>
             r == 'ADMIN' ||
-            r == 'TECHNICIAN' ||
+            r == 'LOCKER_TECHNICIAN' ||
             r == 'ROLE_ADMIN' ||
-            r == 'ROLE_TECHNICIAN',
+            r == 'ROLE_LOCKER_TECHNICIAN',
       );
 
       if (hasCustomerRole && !hasAdminRole) {

@@ -6,10 +6,10 @@ import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/ops_widgets.dart';
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
 
-/// Home for the MAINTENANCE role: drone fleet only (delivery dispatch queue
-/// from the backend, fleet status/battery, mission planner, flight data,
-/// drone maintenance schedules). Physical locker maintenance lives with the
-/// TECHNICIAN role.
+/// Home for the DRONE_TECHNICIAN role (kỹ thuật viên drone): drone fleet only
+/// (delivery dispatch queue from the backend, fleet status/battery, mission
+/// planner, flight data, drone maintenance schedules). Physical locker
+/// maintenance lives with the LOCKER_TECHNICIAN role.
 class MaintenanceHomePage extends StatefulWidget {
   const MaintenanceHomePage({super.key, this.service});
 
@@ -25,7 +25,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage> {
   List<Map<String, dynamic>> _drones = [];
   // Hàng đợi order-based cho đội bay theo Phase 2.
   List<Map<String, dynamic>> _deliveries = [];
-  // Lịch bảo trì định kỳ của drone (droneUnitId != null) — lịch tủ thuộc TECHNICIAN.
+  // Lịch bảo trì định kỳ của drone (droneUnitId != null) — lịch tủ thuộc LOCKER_TECHNICIAN.
   List<Map<String, dynamic>> _schedules = [];
   bool _loading = true;
   String? _myUserId;

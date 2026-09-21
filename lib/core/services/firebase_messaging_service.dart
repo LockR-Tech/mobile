@@ -319,7 +319,7 @@ class FirebaseMessagingService {
   /// Điều hướng khi người dùng bấm vào noti (background/terminated qua
   /// onMessageOpenedApp/getInitialMessage, hoặc foreground qua local-notif).
   ///
-  /// Ưu tiên: đơn drone mới -> hàng đợi MAINTENANCE; cập nhật chuyến drone ->
+  /// Ưu tiên: đơn drone mới -> hàng đợi DRONE_TECHNICIAN; cập nhật chuyến drone ->
   /// timeline customer; noti giao hàng khác -> chi tiết đơn; còn lại -> Thông báo.
   void _handleTapData(Map<String, dynamic> data) {
     final type = data['type']?.toString();
