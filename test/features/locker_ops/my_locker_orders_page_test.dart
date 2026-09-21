@@ -212,7 +212,7 @@ void main() {
     useBusinessConfig();
   });
 
-  testWidgets('chỉ hiện phương thức thanh toán admin đang bật', (tester) async {
+  testWidgets('chỉ hiện phương thức admin đang bật, không có tiền mặt tự xác nhận', (tester) async {
     useBusinessConfig(
       BusinessConfig.fromPublicMaps(
         payment: {'app.payment.enabled-methods': 'VNPAY,CASH'},
@@ -237,7 +237,8 @@ void main() {
 
     expect(find.text('Chọn phương thức thanh toán'), findsOneWidget);
     expect(find.text('VNPay'), findsOneWidget);
-    expect(find.text('Tiền mặt'), findsOneWidget);
+    // Admin bật CASH vẫn không hiện: ở tủ không có ai thu tiền để xác nhận.
+    expect(find.text('Tiền mặt'), findsNothing);
     expect(find.text('Ví của tôi'), findsNothing);
     expect(find.text('MoMo'), findsNothing);
   });
