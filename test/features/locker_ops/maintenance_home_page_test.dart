@@ -29,7 +29,10 @@ class _FakeMaintenanceService extends LockerOpsService {
   ];
 
   @override
-  Future<List<Map<String, dynamic>>> maintenanceSchedules() async => const [];
+  Future<List<Map<String, dynamic>>> maintenanceSchedules({
+    bool mine = false,
+    String? target,
+  }) async => const [];
 
   @override
   Future<List<Map<String, dynamic>>> droneOrderQueue({

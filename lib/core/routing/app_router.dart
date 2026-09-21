@@ -31,6 +31,7 @@ import 'package:smart_laundry_locker/core/presentation/pages/directions_map_page
 import 'package:smart_laundry_locker/features/notifications/presentation/pages/notification_list_page.dart';
 import 'package:smart_laundry_locker/features/vouchers/presentation/pages/my_vouchers_page.dart';
 import 'package:smart_laundry_locker/features/promotions/presentation/pages/promotions_page.dart';
+import 'package:smart_laundry_locker/core/routing/role_routes.dart';
 import 'package:smart_laundry_locker/core/services/token_service.dart';
 import 'package:go_router/go_router.dart';
 
@@ -303,7 +304,10 @@ class AppRouter {
       GoRoute(
         path: technicianHome,
         name: 'technician_home',
-        builder: (context, state) => const TechnicianHomePage(),
+        // `?tab=` (noti KTV tủ) mở thẳng tab tương ứng.
+        builder: (context, state) => TechnicianHomePage(
+          initialTab: technicianTabIndex(state.uri.queryParameters['tab']),
+        ),
       ),
       GoRoute(
         path: technicianProfile,

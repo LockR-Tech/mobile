@@ -742,4 +742,266 @@ void main() {
       );
     });
   });
+
+  // ── Luồng 4: KTV tủ (định tuyến phiếu, kiểm tra định kỳ, bãi đáp) ─────────
+
+  group('locker technician ops', () {
+    late List<RequestOptions> captured;
+
+    setUp(() {
+      final mock = createMockDio();
+      adapter = mock.adapter;
+      captured = [];
+      mock.dio.interceptors.add(
+        InterceptorsWrapper(
+          onRequest: (options, handler) {
+            captured.add(options);
+            handler.next(options);
+          },
+        ),
+      );
+      service = LockerOpsService(dio: mock.dio);
+    });
+
+    Map<String, dynamic> errorBody(String code, String message) => {
+      'success': false,
+      'code': code,
+      'message': message,
+      'data': null,
+      'errors': null,
+    };
+
+    test('routedReports() asks for OPEN tickets routed to me', () async {
+      adapter.onGet(
+        '/api/locker-technician/reports',
+        (server) => server.reply(
+          200,
+          apiOk([
+            {
+              'id': 42,
+              'status': 'OPEN',
+              'category': 'BOX',
+              'routedToUserId': 7,
+              'blocksLocker': false,
+            },
+          ]),
+        ),
+      );
+
+      final result = await service.routedReports();
+
+      expect(result.single['routedToUserId'], 7);
+      expect(captured.single.method, 'GET');
+      expect(captured.single.path, '/api/locker-technician/reports');
+      expect(captured.single.queryParameters, {'routed': true});
+    });
+
+    test('myLockers() lists lockers I am responsible for', () async {
+      adapter.onGet(
+        '/api/locker-technician/lockers',
+        (server) => server.reply(
+          200,
+          apiOk([
+            {
+              'id': 3,
+              'name': 'Tủ A',
+              'landingPad': true,
+              'assignedTechnicianId': 7,
+            },
+          ]),
+        ),
+      );
+
+      final result = await service.myLockers();
+
+      expect(result.single['landingPad'], isTrue);
+      expect(captured.single.path, '/api/locker-technician/lockers');
+      expect(captured.single.queryParameters, {'mine': true});
+    });
+
+    test('maintenanceSchedules() sends mine/target only when set', () async {
+      adapter.onGet(
+        '/api/maintenance/schedules',
+        (server) => server.reply(
+          200,
+          apiOk([
+            {
+              'id': 5,
+              'checklistItems': ['Khóa', 'Nguồn'],
+              'lastResult': 'FAILED',
+              'pendingReportId': 88,
+            },
+          ]),
+        ),
+      );
+
+      final result = await service.maintenanceSchedules(
+        mine: true,
+        target: 'LOCKER',
+      );
+      await service.maintenanceSchedules();
+
+      expect(result.single['pendingReportId'], 88);
+      expect(captured[0].queryParameters, {'mine': true, 'target': 'LOCKER'});
+      expect(captured[1].queryParameters, isEmpty);
+    });
+
+    test('completeInspection() posts items + fault box, no legacy status', () async {
+      adapter.onPost(
+        '/api/maintenance/schedules/5/complete',
+        (server) => server.reply(
+          200,
+          apiOk({'id': 5, 'lastResult': 'FAILED', 'pendingReportId': 91}),
+        ),
+      );
+
+      final result = await service.completeInspection(
+        5,
+        [
+          {'label': 'Khóa', 'result': 'PASS'},
+          {'label': 'Nguồn', 'result': 'FAIL', 'note': 'UPS hỏng'},
+        ],
+        note: '  Đã kiểm tra  ',
+        faultBoxId: 12,
+        faultReason: ' Ô 12 không khoá ',
+        photoUrls: const ['https://x/1.jpg'],
+      );
+
+      expect(result['pendingReportId'], 91);
+      expect(captured.single.method, 'POST');
+      expect(captured.single.path, '/api/maintenance/schedules/5/complete');
+      expect(captured.single.data, {
+        'items': [
+          {'label': 'Khóa', 'result': 'PASS'},
+          {'label': 'Nguồn', 'result': 'FAIL', 'note': 'UPS hỏng'},
+        ],
+        'note': 'Đã kiểm tra',
+        'faultBoxId': 12,
+        'faultReason': 'Ô 12 không khoá',
+        'photoUrls': ['https://x/1.jpg'],
+      });
+    });
+
+    test('completeInspection() without checklist sends legacy status', () async {
+      adapter.onPost(
+        '/api/maintenance/schedules/6/complete',
+        (server) => server.reply(200, apiOk({'id': 6, 'lastResult': 'PASSED'})),
+      );
+
+      await service.completeInspection(6, const [], status: 'FAILED');
+      await service.completeInspection(6, const []);
+
+      expect(captured[0].data, {'status': 'FAILED'});
+      expect(captured[1].data, {'status': 'PASSED'});
+    });
+
+    test('updateLandingPadStatus() posts status and optional reason', () async {
+      adapter.onPost(
+        '/api/locker-technician/lockers/3/landing-pad',
+        (server) => server.reply(
+          200,
+          apiOk({'lockerId': 3, 'landingPad': true, 'landingPadStatus': 'FAULT'}),
+        ),
+      );
+
+      final layout = await service.updateLandingPadStatus(
+        3,
+        'FAULT',
+        reason: 'Marker bong tróc',
+      );
+      await service.updateLandingPadStatus(3, 'OK');
+
+      expect(layout['landingPadStatus'], 'FAULT');
+      expect(captured[0].path, '/api/locker-technician/lockers/3/landing-pad');
+      expect(captured[0].data, {'status': 'FAULT', 'reason': 'Marker bong tróc'});
+      expect(captured[1].data, {'status': 'OK'});
+    });
+
+    test('updateLandingPadStatus() surfaces LANDING_PAD_ABSENT in Vietnamese', () async {
+      adapter.onPost(
+        '/api/locker-technician/lockers/4/landing-pad',
+        (server) => server.reply(
+          400,
+          errorBody('LANDING_PAD_ABSENT', 'This locker has no drone landing pad'),
+        ),
+      );
+
+      try {
+        await service.updateLandingPadStatus(4, 'FAULT', reason: 'x');
+        fail('expected DioException');
+      } on DioException catch (e) {
+        expect(LockerOpsService.errorCode(e), 'LANDING_PAD_ABSENT');
+        expect(
+          LockerOpsService.errorMessage(e),
+          'Tủ này không có bãi đáp drone.',
+        );
+      }
+    });
+
+    test('reportLocker() sends blocking only for a blocking report', () async {
+      adapter.onPost(
+        '/api/lockers/3/report',
+        (server) => server.reply(
+          200,
+          apiOk({'id': 50, 'category': 'LOCKER', 'blocksLocker': true}),
+        ),
+      );
+
+      final result = await service.reportLocker(
+        3,
+        'Mất nguồn',
+        'Cả tủ mất điện',
+        blocking: true,
+      );
+      await service.reportLocker(3, 'Màn hình mờ', 'Khó đọc');
+
+      expect(result['blocksLocker'], isTrue);
+      expect(captured[0].data, {
+        'title': 'Mất nguồn',
+        'description': 'Cả tủ mất điện',
+        'blocking': true,
+      });
+      expect(captured[1].data, {
+        'title': 'Màn hình mờ',
+        'description': 'Khó đọc',
+      });
+    });
+
+    test('clearFault() surfaces REPORT_OPEN code and server message', () async {
+      const message =
+          'Đang có phiếu sự cố #42 — nhận phiếu rồi hoàn tất phiếu để khôi phục';
+      adapter.onPost(
+        '/api/locker-technician/boxes/5/clear-fault',
+        (server) => server.reply(409, errorBody('REPORT_OPEN', message)),
+      );
+
+      try {
+        await service.clearFault(5);
+        fail('expected DioException');
+      } on DioException catch (e) {
+        expect(e.response?.statusCode, 409);
+        expect(LockerOpsService.errorCode(e), 'REPORT_OPEN');
+        expect(LockerOpsService.errorMessage(e), message);
+      }
+      expect(captured.single.path, '/api/locker-technician/boxes/5/clear-fault');
+    });
+
+    test('errorMessage() localises RESOLUTION_PHOTO_REQUIRED', () {
+      final error = DioException(
+        requestOptions: RequestOptions(path: '/x'),
+        response: Response(
+          requestOptions: RequestOptions(path: '/x'),
+          statusCode: 400,
+          data: errorBody(
+            'RESOLUTION_PHOTO_REQUIRED',
+            'Take at least one acceptance photo before resolving the report',
+          ),
+        ),
+      );
+
+      expect(LockerOpsService.errorCode(error), 'RESOLUTION_PHOTO_REQUIRED');
+      expect(LockerOpsService.errorMessage(error), contains('ảnh nghiệm thu'));
+      expect(LockerOpsService.errorCode(Exception('x')), isNull);
+    });
+  });
 }
