@@ -20,6 +20,14 @@ String homeForRoles(List<String> roles) {
   return AppRouter.home;
 }
 
+/// Màn chỉ mở khi đã đăng nhập (mọi vai trò); chưa đăng nhập ⇒ router đưa
+/// về màn đăng nhập. Trợ lý hỏi đáp gọi API cần JWT nên nằm trong nhóm này.
+bool requiresSignIn(String location) =>
+    location == AppRouter.transactions ||
+    location == AppRouter.topUp ||
+    location == AppRouter.assistant ||
+    location.startsWith('${AppRouter.assistant}/');
+
 /// Tab của trang KTV tủ theo thứ tự hiển thị — giá trị `?tab=` của
 /// [AppRouter.technicianHome].
 const technicianTabs = ['inspect', 'incidents', 'mine', 'schedules', 'devices'];

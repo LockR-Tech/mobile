@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:smart_laundry_locker/core/routing/app_router.dart';
 import 'package:smart_laundry_locker/core/services/token_service.dart';
+import 'package:smart_laundry_locker/features/assistant/presentation/widgets/assistant_entry.dart';
 import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/ops_widgets.dart';
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
@@ -137,6 +138,19 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage> {
             trailing: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
+                // Trợ lý hỏi đáp — chỉ hiện khi trợ lý đang bật.
+                AssistantEntryGate(
+                  builder: (context) => Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: Tooltip(
+                      message: 'Trợ lý hỏi đáp',
+                      child: BrandCircleIconButton(
+                        icon: Icons.support_agent_rounded,
+                        onTap: () => context.push(AppRouter.assistant),
+                      ),
+                    ),
+                  ),
+                ),
                 BrandCircleIconButton(icon: Icons.refresh, onTap: _load),
                 if (!context.canPop()) ...[
                   const SizedBox(width: 8),

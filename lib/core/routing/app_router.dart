@@ -1,4 +1,5 @@
 import 'package:smart_laundry_locker/core/routing/main_navigation_wrapper.dart';
+import 'package:smart_laundry_locker/core/routing/role_routes.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:smart_laundry_locker/features/auth/presentation/pages/forgot_password_page.dart';
@@ -31,7 +32,6 @@ import 'package:smart_laundry_locker/core/presentation/pages/directions_map_page
 import 'package:smart_laundry_locker/features/notifications/presentation/pages/notification_list_page.dart';
 import 'package:smart_laundry_locker/features/vouchers/presentation/pages/my_vouchers_page.dart';
 import 'package:smart_laundry_locker/features/promotions/presentation/pages/promotions_page.dart';
-import 'package:smart_laundry_locker/core/routing/role_routes.dart';
 import 'package:smart_laundry_locker/core/services/token_service.dart';
 import 'package:go_router/go_router.dart';
 
@@ -53,6 +53,8 @@ import 'package:smart_laundry_locker/features/stores/domain/entities/store.dart'
 import 'package:smart_laundry_locker/features/stores/presentation/pages/stores_page.dart';
 import 'package:smart_laundry_locker/features/stores/presentation/pages/store_detail_page.dart';
 import 'package:smart_laundry_locker/features/stores/presentation/pages/store_lockers_page.dart';
+import 'package:smart_laundry_locker/features/assistant/presentation/pages/assistant_chat_page.dart';
+import 'package:smart_laundry_locker/features/assistant/presentation/pages/assistant_history_page.dart';
 import 'package:latlong2/latlong.dart';
 
 class AppRouter {
@@ -99,6 +101,8 @@ class AppRouter {
   static const String droneFlightData = '/drone/flight-data';
   static const String droneDeliveryTracking = '/drone-delivery';
   static const String droneLiveMap = '/drone-delivery/live-map';
+  static const String assistant = '/assistant';
+  static const String assistantHistory = '/assistant/history';
 
   static final GlobalKey<NavigatorState> navigatorKey =
       GlobalKey<NavigatorState>();
@@ -112,9 +116,7 @@ class AppRouter {
       final isLoggedIn = TokenService.authState.value;
       final location = state.matchedLocation;
 
-      final isProtectedRoute = location == transactions || location == topUp;
-
-      if (!isLoggedIn && isProtectedRoute) {
+      if (!isLoggedIn && requiresSignIn(location)) {
         return onboarding;
       }
 
@@ -452,6 +454,24 @@ class AppRouter {
               '';
           return DroneLiveMapPage(orderId: orderId);
         },
+      ),
+      // Trợ lý hỏi đáp — mọi vai trò đã đăng nhập (xem requiresSignIn).
+      GoRoute(
+        path: assistant,
+        name: 'assistant',
+        builder: (context, state) {
+          // `extra` = id hội thoại cần mở (int); fallback query param.
+          final extra = state.extra;
+          final conversationId = extra is int
+              ? extra
+              : int.tryParse(state.uri.queryParameters['conversationId'] ?? '');
+          return AssistantChatPage(initialConversationId: conversationId);
+        },
+      ),
+      GoRoute(
+        path: assistantHistory,
+        name: 'assistant_history',
+        builder: (context, state) => const AssistantHistoryPage(),
       ),
     ],
   );

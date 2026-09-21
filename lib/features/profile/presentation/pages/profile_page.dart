@@ -14,6 +14,8 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:smart_laundry_locker/core/routing/app_router.dart';
 import 'package:smart_laundry_locker/core/theme/shadcn_theme.dart';
 import 'package:smart_laundry_locker/core/theme/theme_provider.dart';
+import 'package:smart_laundry_locker/features/assistant/data/models/assistant_models.dart';
+import 'package:smart_laundry_locker/features/assistant/presentation/providers/assistant_availability.dart';
 import 'package:smart_laundry_locker/features/profile/presentation/mixins/profile_image_actions_mixin.dart';
 import 'package:smart_laundry_locker/features/profile/presentation/widgets/profile_header.dart';
 import 'package:smart_laundry_locker/features/profile/presentation/widgets/profile_menu_item.dart';
@@ -105,6 +107,8 @@ class _ProfilePageState extends State<ProfilePage>
     final isLoggedIn = _profileProvider.profile != null;
 
     if (isLoggedIn) {
+      // Nạp trước trạng thái trợ lý cho mục "Trợ giúp" (không chờ).
+      AssistantAvailability.instance.refresh();
       await _delegationProvider.fetchMyDelegations();
     }
     if (!mounted) return;
@@ -432,10 +436,18 @@ class _ProfilePageState extends State<ProfilePage>
           _buildMenuGroup(
             title: 'Hỗ trợ',
             items: [
-              ProfileMenuItem(
-                icon: LucideIcons.handHelping,
-                title: 'Trợ giúp',
-                onTap: _handleHelp,
+              // Trợ lý bật ⇒ "Trợ giúp" mở trợ lý hỏi đáp; tắt/chưa deploy ⇒
+              // giữ bottom sheet trợ giúp nhanh như cũ.
+              ValueListenableBuilder<AssistantStatus?>(
+                valueListenable: AssistantAvailability.instance,
+                builder: (context, status, _) => ProfileMenuItem(
+                  icon: LucideIcons.handHelping,
+                  title: 'Trợ giúp',
+                  subtitle: status?.enabled == true
+                      ? 'Hỏi đáp với trợ lý Lock.R'
+                      : null,
+                  onTap: _handleHelp,
+                ),
               ),
               ProfileMenuItem(
                 icon: LucideIcons.messageCircle,
@@ -544,7 +556,23 @@ class _ProfilePageState extends State<ProfilePage>
     _showProfileSnackBar('Tính năng đang được phát triển');
   }
 
-  void _handleHelp() {
+  Future<void> _handleHelp() async {
+    final availability = AssistantAvailability.instance;
+    final status =
+        availability.value ??
+        await availability.refresh().timeout(
+          const Duration(seconds: 3),
+          onTimeout: () => null,
+        );
+    if (!mounted) return;
+    if (status?.enabled == true) {
+      context.push(AppRouter.assistant);
+    } else {
+      _showQuickHelp();
+    }
+  }
+
+  void _showQuickHelp() {
     showModalBottomSheet<void>(
       context: context,
       backgroundColor: Colors.white,
