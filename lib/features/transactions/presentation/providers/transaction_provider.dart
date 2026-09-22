@@ -105,9 +105,9 @@ class TransactionProvider extends ChangeNotifier {
     );
   }
 
-  Future<TopUpResult?> initiateTopUp(int amount) async {
+  Future<TopUpResult?> initiateTopUp(int amount, {String method = 'VNPAY'}) async {
     if (_isCreatingTopUpUrl) return null;
-    debugPrint('[TOPUP][provider] initiateTopUp(amount=$amount)');
+    debugPrint('[TOPUP][provider] initiateTopUp(amount=$amount, method=$method)');
     if (amount <= 0) {
       _topUpError = 'Số tiền không hợp lệ.';
       notifyListeners();
@@ -118,7 +118,7 @@ class TransactionProvider extends ChangeNotifier {
     _topUpError = null;
     notifyListeners();
 
-    final result = await initiateTopUpUseCase(amount: amount);
+    final result = await initiateTopUpUseCase(amount: amount, method: method);
 
     TopUpResult? entity;
     result.fold(

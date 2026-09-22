@@ -12,13 +12,12 @@ class TopUpRemoteDataSourceImpl implements TopUpRemoteDataSource {
   TopUpRemoteDataSourceImpl(this._apiClient);
 
   @override
-  Future<TopUpResponseDto> createTopUpUrl({required int amount}) async {
-    // Ghi chú: Domain này bắt buộc PHẢI được whitelist (cấu hình) trong giao diện VNPay Sandbox Merchant.
-    // Thông thường VNPay Sandbox sẽ cho phép 'http://localhost' đi qua mà không báo lỗi "Chưa phê duyệt".
-    // Tránh sử dụng Uri.base.origin vì cổng (port) của Flutter Web thay đổi liên tục sẽ bị VNPay chặn.
-    final returnUrl = '${EnvConfig.apiBaseUrl}/payments/vnpay/callback';
+  Future<TopUpResponseDto> createTopUpUrl({required int amount, String method = 'VNPAY'}) async {
+    final returnUrl = method == 'SEPAY'
+        ? '${EnvConfig.apiBaseUrl}/payments/sepay/callback'
+        : '${EnvConfig.apiBaseUrl}/payments/vnpay/callback';
 
-    final dto = TopUpRequestDto(amount: amount, returnUrl: returnUrl);
+    final dto = TopUpRequestDto(amount: amount, returnUrl: returnUrl, method: method);
     debugPrint('[TOPUP][ds] POST $_path payload=${dto.toJson()}');
 
     final response = await _apiClient.post<dynamic>(_path, data: dto.toJson());

@@ -21,10 +21,11 @@ class TopUpRepositoryImpl implements TopUpRepository {
   @override
   Future<Either<Failure, TopUpResult>> createTopUpUrl({
     required int amount,
+    String method = 'VNPAY',
   }) async {
     try {
-      debugPrint('[TOPUP][repo] createTopUpUrl(amount=$amount)');
-      final dto = await remoteDataSource.createTopUpUrl(amount: amount);
+      debugPrint('[TOPUP][repo] createTopUpUrl(amount=$amount, method=$method)');
+      final dto = await remoteDataSource.createTopUpUrl(amount: amount, method: method);
       debugPrint(
         '[TOPUP][repo] dto.paymentUrl="${dto.paymentUrl}" txnRef="${dto.txnRef}"',
       );

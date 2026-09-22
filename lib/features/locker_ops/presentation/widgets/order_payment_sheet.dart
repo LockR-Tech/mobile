@@ -50,13 +50,17 @@ Future<OrderPaymentOutcome> payOrderAndAwaitPaid(
   );
   if (method == null || !context.mounted) return OrderPaymentOutcome.cancelled;
 
+  final returnUrl = method == 'SEPAY'
+      ? '${EnvConfig.apiBaseUrl}/payments/sepay/callback'
+      : '${EnvConfig.apiBaseUrl}/payments/vnpay/callback';
+
   final res = await service.checkout(
     orderId,
     method,
-    returnUrl: '${EnvConfig.apiBaseUrl}/payments/vnpay/callback',
+    returnUrl: returnUrl,
   );
   final url = res['url'] as String?;
-  if ((method == 'VNPAY' || method == 'MOMO') && url != null && url.isNotEmpty) {
+  if ((method == 'VNPAY' || method == 'MOMO' || method == 'SEPAY') && url != null && url.isNotEmpty) {
     if (!context.mounted) return OrderPaymentOutcome.cancelled;
     await Navigator.of(context).push<bool>(
       MaterialPageRoute(builder: (_) => TopUpWebViewPage(paymentUrl: url)),
@@ -82,7 +86,7 @@ class PaymentMethodPicker extends StatelessWidget {
   /// Tiền mặt luôn bị bỏ qua: không có ai thu tiền ở tủ để xác nhận.
   final List<String> enabledMethods;
 
-  static const _selfServiceMethods = ['WALLET', 'VNPAY', 'MOMO'];
+  static const _selfServiceMethods = ['WALLET', 'VNPAY', 'MOMO', 'SEPAY'];
 
   @override
   Widget build(BuildContext context) {
@@ -129,6 +133,13 @@ class PaymentMethodPicker extends StatelessWidget {
                   : 'Số dư ${fmtPrice(walletBalance)} · thanh toán tức thì',
               enabled: !insufficient,
               onTap: () => Navigator.pop(context, 'WALLET'),
+            ),
+          if (enabled('SEPAY'))
+            _MethodTile(
+              icon: LucideIcons.qrCode,
+              title: 'SePay (VietQR)',
+              subtitle: 'Quét mã VietQR chuyển khoản nhanh 24/7',
+              onTap: () => Navigator.pop(context, 'SEPAY'),
             ),
           if (enabled('VNPAY'))
             _MethodTile(

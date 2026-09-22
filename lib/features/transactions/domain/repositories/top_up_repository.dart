@@ -3,5 +3,8 @@ import 'package:smart_laundry_locker/features/transactions/domain/entities/top_u
 import 'package:dartz/dartz.dart';
 
 abstract class TopUpRepository {
-  Future<Either<Failure, TopUpResult>> createTopUpUrl({required int amount});
+  Future<Either<Failure, TopUpResult>> createTopUpUrl({
+    required int amount,
+    String method = 'VNPAY',
+  });
 }

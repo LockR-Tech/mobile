@@ -176,12 +176,14 @@ class _SendParcelPageState extends State<SendParcelPage>
         enabledMethods: businessConfig.enabledPaymentMethods,
       );
       if (!mounted || outcome == OrderPaymentOutcome.cancelled) return;
-      await _refreshOrder();
-      _snack(
-        outcome == OrderPaymentOutcome.paid
-            ? 'Thanh toán thành công — mời bạn mở ô và bỏ hàng'
-            : 'Đang chờ xác nhận thanh toán, vui lòng đợi giây lát',
-      );
+      if (outcome == OrderPaymentOutcome.paid) {
+        // Thanh toán xong → chuyển sang danh sách đơn để user xem trạng thái.
+        context.go(AppRouter.myLockerOrders);
+      } else {
+        // pending — webhook chưa về, nhắc user làm mới sau.
+        await _refreshOrder();
+        _snack('Đang chờ xác nhận thanh toán, vui lòng đợi giây lát');
+      }
     } catch (e) {
       _snack(LockerOpsService.errorMessage(e));
     } finally {

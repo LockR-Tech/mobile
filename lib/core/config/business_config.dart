@@ -152,7 +152,7 @@ class BusinessConfig {
     topupMaxAmount: 50000000,
     topupDefaultAmount: 100000,
     topupPresets: [20000, 50000, 100000, 200000, 500000, 1000000],
-    enabledPaymentMethods: ['CASH', 'WALLET', 'VNPAY', 'MOMO'],
+    enabledPaymentMethods: ['CASH', 'WALLET', 'VNPAY', 'MOMO', 'SEPAY'],
     reportPhotosPerRequestReporter: 5,
     reportPhotosPerRequestStaff: 10,
     cellDimensionsStandard: '45 × 30 × 50 cm',

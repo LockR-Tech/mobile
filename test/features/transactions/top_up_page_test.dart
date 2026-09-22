@@ -54,13 +54,16 @@ void main() {
     expect(find.textContaining('từ 20.000'), findsOneWidget);
     expect(find.textContaining('3.000.000'), findsOneWidget);
     expect(find.text('VNPAY'), findsOneWidget);
+    expect(find.text('SePay (VietQR)'), findsOneWidget);
 
     await tester.tap(find.textContaining('90.000').first);
     await tester.pumpAndSettle();
     expect(find.textContaining('Số tiền nạp: 90.000'), findsOneWidget);
   });
 
-  testWidgets('admin tắt VNPAY ⇒ ẩn cổng và không gọi API nạp', (tester) async {
+  testWidgets('admin tắt cả VNPAY và SEPAY ⇒ ẩn cổng và không gọi API nạp', (
+    tester,
+  ) async {
     useBusinessConfig(
       BusinessConfig.fromPublicMaps(
         payment: {'app.payment.enabled-methods': 'CASH,WALLET'},
@@ -70,8 +73,9 @@ void main() {
     await _pumpTopUp(tester);
 
     expect(find.text('VNPAY'), findsNothing);
+    expect(find.text('SePay (VietQR)'), findsNothing);
     expect(
-      find.text('Nạp tiền qua VNPAY đang tạm ngưng. Vui lòng thử lại sau.'),
+      find.text('Dịch vụ nạp tiền đang tạm ngưng. Vui lòng thử lại sau.'),
       findsOneWidget,
     );
 
@@ -79,11 +83,24 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 300));
 
-    expect(find.text('Nạp tiền qua VNPAY đang tạm ngưng.'), findsOneWidget);
+    expect(find.textContaining('đang tạm ngưng'), findsWidgets);
     expect(find.byType(TopUpWebViewPage), findsNothing);
 
     // Chờ toast tự đóng để không còn timer treo.
     await tester.pump(const Duration(seconds: 5));
     await tester.pumpAndSettle();
+  });
+
+  testWidgets('admin chỉ bật SEPAY ⇒ chỉ hiển thị SePay', (tester) async {
+    useBusinessConfig(
+      BusinessConfig.fromPublicMaps(
+        payment: {'app.payment.enabled-methods': 'SEPAY'},
+      ),
+    );
+
+    await _pumpTopUp(tester);
+
+    expect(find.text('SePay (VietQR)'), findsOneWidget);
+    expect(find.text('VNPAY'), findsNothing);
   });
 }
