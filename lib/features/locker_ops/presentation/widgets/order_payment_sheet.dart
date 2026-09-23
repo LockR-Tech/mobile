@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
@@ -18,7 +20,7 @@ enum OrderPaymentOutcome {
   cancelled,
 }
 
-/// Chọn phương thức (ví, VNPay, MoMo — app khách không tự xác nhận tiền mặt),
+/// Chọn phương thức (ví, VNPay, MoMo, SePay — app khách không tự xác nhận tiền mặt),
 /// thanh toán, rồi chờ tới khi đơn thật sự PAID mới cho sang bước bỏ hàng.
 /// Lỗi gọi API được ném ra cho nơi gọi tự báo.
 Future<OrderPaymentOutcome> payOrderAndAwaitPaid(
@@ -61,15 +63,249 @@ Future<OrderPaymentOutcome> payOrderAndAwaitPaid(
   );
   // Backend PaymentResponse dùng field "paymentUrl" (không phải "url")
   final url = (res['paymentUrl'] ?? res['url'] ?? res['deeplink']) as String?;
-  if ((method == 'VNPAY' || method == 'MOMO' || method == 'SEPAY') && url != null && url.isNotEmpty) {
+  final qrCodeUrl = res['qrCodeUrl'] as String?;
+
+  if (method == 'SEPAY') {
+    // SePay: ưu tiên hiển thị VietQR inline nếu backend cung cấp qrCodeUrl,
+    // ngược lại mở WebView.
+    if (!context.mounted) return OrderPaymentOutcome.cancelled;
+    if (qrCodeUrl != null && qrCodeUrl.isNotEmpty) {
+      await showModalBottomSheet<void>(
+        context: context,
+        useRootNavigator: true,
+        isScrollControlled: true,
+        backgroundColor: Colors.white,
+        showDragHandle: true,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(26)),
+        ),
+        builder: (_) => _SepayVietQrSheet(
+          service: service,
+          orderId: orderId,
+          amount: total,
+          qrImageUrl: qrCodeUrl,
+        ),
+      );
+    } else if (url != null && url.isNotEmpty) {
+      // Fallback: mở WebView nếu chưa cấu hình bank account
+      await Navigator.of(context).push<bool>(
+        MaterialPageRoute(builder: (_) => TopUpWebViewPage(paymentUrl: url)),
+      );
+    }
+  } else if ((method == 'VNPAY' || method == 'MOMO') && url != null && url.isNotEmpty) {
     if (!context.mounted) return OrderPaymentOutcome.cancelled;
     await Navigator.of(context).push<bool>(
       MaterialPageRoute(builder: (_) => TopUpWebViewPage(paymentUrl: url)),
     );
   }
-  final paid = await service.awaitOrderPaid(orderId);
+
+  // Tăng timeout lên 60s để webhook có thời gian xử lý
+  final paid = await service.awaitOrderPaid(orderId,
+      timeout: const Duration(seconds: 60));
   return paid ? OrderPaymentOutcome.paid : OrderPaymentOutcome.pending;
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SePay VietQR inline bottom sheet
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _SepayVietQrSheet extends StatefulWidget {
+  const _SepayVietQrSheet({
+    required this.service,
+    required this.orderId,
+    required this.amount,
+    required this.qrImageUrl,
+  });
+
+  final LockerOpsService service;
+  final int orderId;
+  final double amount;
+  final String qrImageUrl;
+
+  @override
+  State<_SepayVietQrSheet> createState() => _SepayVietQrSheetState();
+}
+
+class _SepayVietQrSheetState extends State<_SepayVietQrSheet> {
+  bool _checking = false;
+  bool _paid = false;
+  Timer? _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    // Poll mỗi 3s kiểm tra trạng thái đơn
+    _timer = Timer.periodic(const Duration(seconds: 3), (_) => _checkPaid());
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  Future<void> _checkPaid() async {
+    if (_paid || _checking) return;
+    setState(() => _checking = true);
+    try {
+      final status = await widget.service.orderStatus(widget.orderId);
+      if (status == true && mounted) {
+        _timer?.cancel();
+        setState(() {
+          _paid = true;
+          _checking = false;
+        });
+        // Tự đóng sheet sau 1.5s
+        await Future<void>.delayed(const Duration(milliseconds: 1500));
+        if (mounted) Navigator.of(context).pop();
+      }
+    } catch (_) {
+    } finally {
+      if (mounted) setState(() => _checking = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.only(
+        left: 20,
+        right: 20,
+        top: 4,
+        bottom: MediaQuery.of(context).viewInsets.bottom + 32,
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          // Header
+          Row(
+            children: [
+              const Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Quét mã VietQR để thanh toán',
+                        style: TextStyle(
+                            fontWeight: FontWeight.w800,
+                            fontSize: 17,
+                            color: opsDark)),
+                    SizedBox(height: 2),
+                    Text('Mở app ngân hàng bất kỳ, quét mã bên dưới',
+                        style: TextStyle(fontSize: 13, color: opsMutedText)),
+                  ],
+                ),
+              ),
+              if (_checking)
+                const SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(strokeWidth: 2)),
+            ],
+          ),
+          const SizedBox(height: 16),
+
+          if (_paid)
+            // Success state
+            Column(
+              children: [
+                Container(
+                  width: 72,
+                  height: 72,
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFDCFCE7),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.check_rounded,
+                      color: Color(0xFF16A34A), size: 40),
+                ),
+                const SizedBox(height: 12),
+                const Text('Thanh toán thành công!',
+                    style: TextStyle(
+                        fontWeight: FontWeight.w800,
+                        fontSize: 18,
+                        color: Color(0xFF16A34A))),
+              ],
+            )
+          else
+            // QR image from VietQR.io
+            ClipRRect(
+              borderRadius: BorderRadius.circular(16),
+              child: Image.network(
+                widget.qrImageUrl,
+                width: 260,
+                height: 300,
+                fit: BoxFit.contain,
+                loadingBuilder: (_, child, progress) {
+                  if (progress == null) return child;
+                  return const SizedBox(
+                    width: 260,
+                    height: 300,
+                    child: Center(child: CircularProgressIndicator()),
+                  );
+                },
+                errorBuilder: (_, __, ___) => const SizedBox(
+                  width: 260,
+                  height: 260,
+                  child: Center(
+                    child: Text('Không thể tải mã QR',
+                        style: TextStyle(color: opsMutedText)),
+                  ),
+                ),
+              ),
+            ),
+
+          const SizedBox(height: 12),
+          // Amount chip
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF0F9FF),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: const Color(0xFFBAE6FD)),
+            ),
+            child: Text(
+              'Số tiền: ${fmtPrice(widget.amount)}',
+              style: const TextStyle(
+                fontWeight: FontWeight.w700,
+                fontSize: 15,
+                color: Color(0xFF0369A1),
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            'Tự động xác nhận sau khi chuyển khoản thành công',
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 12, color: opsMutedText),
+          ),
+          const SizedBox(height: 16),
+          // SePay branding
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Text('Cung cấp bởi ',
+                  style: TextStyle(fontSize: 12, color: opsMutedText)),
+              Image.network(
+                'https://sepay.vn/assets/images/sepay-logo.png',
+                height: 20,
+                errorBuilder: (_, __, ___) => const Text('SePay',
+                    style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: opsPrimary)),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PaymentMethodPicker
+// ─────────────────────────────────────────────────────────────────────────────
 
 /// Bảng chọn phương thức thanh toán cho đơn tủ.
 class PaymentMethodPicker extends StatelessWidget {

@@ -199,11 +199,17 @@ class LockerOpsService {
   Future<Map<String, dynamic>> order(int orderId) =>
       _map('GET', '/api/orders/$orderId');
 
+  /// Kiểm tra ngay một lần xem đơn đã PAID chưa (dùng để poll trong QR sheet).
+  Future<bool> orderStatus(int orderId) async {
+    final status = await _map('GET', '/api/orders/$orderId/status');
+    return status['isPaid'] == true;
+  }
+
   /// Chờ đơn được ghi nhận đã thanh toán. Server ghi PAID bất đồng bộ (sự kiện
   /// payment → order), nên ngay sau checkout đơn có thể vẫn UNPAID vài giây.
   Future<bool> awaitOrderPaid(
     int orderId, {
-    Duration timeout = const Duration(seconds: 20),
+    Duration timeout = const Duration(seconds: 60),
     Duration interval = const Duration(milliseconds: 1500),
   }) async {
     final deadline = DateTime.now().add(timeout);
