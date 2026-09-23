@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:smart_laundry_locker/core/config/business_config_provider.dart';
 import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
@@ -528,6 +529,201 @@ class _PaymentStatusChipState extends State<PaymentStatusChip> {
               fontSize: 12,
               fontWeight: FontWeight.w700,
               color: s.color,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Hiển thị mã VietQR SePay trực tiếp trên trang để user quét và chuyển khoản.
+/// Không cần bấm nút — chỉ cần quét và chuyển đúng nội dung là xong.
+class InlineVietQrCard extends StatelessWidget {
+  const InlineVietQrCard({
+    super.key,
+    required this.orderId,
+    required this.amount,
+  });
+
+  final int orderId;
+  final double amount;
+
+  String _qrUrl() {
+    final info = Uri.encodeComponent('PAY-$orderId');
+    return 'https://img.vietqr.io/image/970422-0000234917957-compact2.jpg'
+        '?amount=${amount.toInt()}&addInfo=$info&accountName=TRUONG%20NGUYEN%20THAI%20BINH';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final transferNote = 'PAY-$orderId';
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.06),
+            blurRadius: 16,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          // Header
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Color(0xFF1E40AF), Color(0xFF3B82F6)],
+              ),
+              borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+            ),
+            child: Row(
+              children: const [
+                Icon(LucideIcons.qrCode, color: Colors.white, size: 20),
+                SizedBox(width: 10),
+                Text(
+                  'Quét mã VietQR để thanh toán',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 15,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          // QR image
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 20, 20, 4),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: Image.network(
+                _qrUrl(),
+                width: double.infinity,
+                fit: BoxFit.fitWidth,
+                loadingBuilder: (_, child, progress) => progress == null
+                    ? child
+                    : const SizedBox(
+                        height: 200,
+                        child: Center(child: CircularProgressIndicator()),
+                      ),
+                errorBuilder: (_, __, ___) => const SizedBox(
+                  height: 160,
+                  child: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(LucideIcons.imageOff, size: 36, color: opsMutedText),
+                        SizedBox(height: 8),
+                        Text('Không tải được mã QR', style: TextStyle(color: opsMutedText)),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          // Amount row
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text('Số tiền cần chuyển:',
+                    style: TextStyle(color: opsMutedText, fontSize: 13)),
+                Text(
+                  '${amount.toInt().toString().replaceAllMapped(RegExp(r'(\d)(?=(\d{3})+$)'), (m) => '${m[1]}.')} đ',
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w800,
+                    fontSize: 16,
+                    color: opsDark,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const Divider(height: 1, indent: 20, endIndent: 20),
+          // Transfer note row with copy button
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text('Nội dung chuyển khoản:',
+                          style: TextStyle(color: opsMutedText, fontSize: 12)),
+                      const SizedBox(height: 2),
+                      Text(
+                        transferNote,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w800,
+                          fontSize: 15,
+                          color: opsDark,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                TextButton.icon(
+                  onPressed: () {
+                    Clipboard.setData(ClipboardData(text: transferNote));
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Đã sao chép nội dung chuyển khoản'),
+                        duration: Duration(seconds: 2),
+                      ),
+                    );
+                  },
+                  icon: const Icon(LucideIcons.copy, size: 14),
+                  label: const Text('Sao chép'),
+                  style: TextButton.styleFrom(
+                    foregroundColor: const Color(0xFF3B82F6),
+                    textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          // Loading hint
+          Container(
+            margin: const EdgeInsets.fromLTRB(20, 0, 20, 16),
+            padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 14),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF0FDF4),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: const Color(0xFFBBF7D0)),
+            ),
+            child: Row(
+              children: const [
+                SizedBox(
+                  width: 14,
+                  height: 14,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: Color(0xFF16A34A),
+                  ),
+                ),
+                SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    'Đang chờ xác nhận thanh toán… mã mở ô sẽ tự hiện.',
+                    style: TextStyle(
+                      color: Color(0xFF16A34A),
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         ],

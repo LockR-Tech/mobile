@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
@@ -72,6 +73,7 @@ class _RentLockerPageState extends State<RentLockerPage>
   int _discount = 0;
   String? _promoCode;
   Map<String, int>? _availableCounts;
+  Timer? _paymentPollTimer;
 
   @override
   void initState() {
@@ -115,9 +117,28 @@ class _RentLockerPageState extends State<RentLockerPage>
 
   @override
   void dispose() {
+    _paymentPollTimer?.cancel();
     WidgetsBinding.instance.removeObserver(this);
     _noteCtrl.dispose();
     super.dispose();
+  }
+
+  void _startPaymentPolling(int orderId) {
+    _paymentPollTimer?.cancel();
+    _paymentPollTimer = Timer.periodic(const Duration(seconds: 3), (_) async {
+      try {
+        final paid = await _service.orderStatus(orderId);
+        if (paid && mounted) {
+          _stopPaymentPolling();
+          await _refreshOrder();
+        }
+      } catch (_) {}
+    });
+  }
+
+  void _stopPaymentPolling() {
+    _paymentPollTimer?.cancel();
+    _paymentPollTimer = null;
   }
 
   Future<void> _loadLockers() async {
@@ -194,6 +215,14 @@ class _RentLockerPageState extends State<RentLockerPage>
       );
       if (!mounted) return;
       setState(() => _order = order);
+      // Nếu đơn chưa thanh toán → tự động poll trạng thái
+      final orderId = order['id'] as int?;
+      final paymentStatus = order['paymentStatus'] as String?;
+      final fee = order['totalPrice'];
+      final hasFee = fee is num ? fee > 0 : _netPrice > 0;
+      if (orderId != null && hasFee && paymentStatus != 'PAID') {
+        _startPaymentPolling(orderId);
+      }
     } catch (e) {
       _snack(LockerOpsService.errorMessage(e));
     } finally {
@@ -208,6 +237,11 @@ class _RentLockerPageState extends State<RentLockerPage>
       final fresh = await _service.order(id);
       if (!mounted || fresh.isEmpty) return;
       setState(() => _order = fresh);
+      // Dừng poll nếu đã trả tiền
+      final payStatus = fresh['paymentStatus'] as String?;
+      if (payStatus == 'PAID') {
+        _stopPaymentPolling();
+      }
     } catch (_) {
       // Giữ bản đang hiển thị; lần sau quay lại app sẽ thử tải lại.
     }
@@ -797,42 +831,13 @@ class _RentLockerPageState extends State<RentLockerPage>
               if (!started && unpaid && config.requirePaymentBeforeDrop) ...[
                 const _ResultHeadline(
                   icon: LucideIcons.wallet,
-                  title: 'Chờ thanh toán',
-                  subtitle: 'Vui lòng hoàn tất thanh toán để nhận mã mở ô và bỏ đồ.',
+                  title: 'Quét mã để thanh toán',
+                  subtitle: 'Chuyển khoản đúng số tiền — mã mở ô sẽ hiển thị ngay sau khi xác nhận.',
                 ),
                 const SizedBox(height: 16),
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFF8FAFC),
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: const Color(0xFFE2E8F0)),
-                  ),
-                  child: Column(
-                    children: [
-                      Container(
-                        width: 56,
-                        height: 56,
-                        decoration: const BoxDecoration(
-                          color: Color(0xFFFEF2F2),
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(LucideIcons.lock, size: 28, color: Color(0xFFEF4444)),
-                      ),
-                      const SizedBox(height: 12),
-                      const Text(
-                        'Mã mở ô tủ được bảo mật',
-                        style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15, color: opsDark),
-                      ),
-                      const SizedBox(height: 4),
-                      const Text(
-                        'Mã PIN và mã QR mở tủ sẽ xuất hiện ngay sau khi thanh toán thành công.',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(fontSize: 13, color: opsMutedText),
-                      ),
-                    ],
-                  ),
+                InlineVietQrCard(
+                  orderId: order['id'] as int,
+                  amount: total is num ? total.toDouble() : _netPrice.toDouble(),
                 ),
               ] else ...[
                 _ResultHeadline(
@@ -865,16 +870,9 @@ class _RentLockerPageState extends State<RentLockerPage>
         const SizedBox(height: 16),
         if (!started && unpaid && config.requirePaymentBeforeDrop) ...[
           const OpsBanner(
-            tone: OpsBannerTone.warning,
+            tone: OpsBannerTone.info,
             icon: LucideIcons.badgeAlert,
-            text: 'Cần thanh toán đơn trước khi mở ô bỏ đồ.',
-          ),
-          const SizedBox(height: 12),
-          OpsPrimaryButton(
-            label: payLabel,
-            icon: LucideIcons.wallet,
-            loading: _loading,
-            onPressed: _pay,
+            text: 'Quét mã QR trên và chuyển khoản — mã mở ô sẽ tự hiện sau khi thanh toán.',
           ),
         ] else if (!started) ...[
           const OpsBanner(
