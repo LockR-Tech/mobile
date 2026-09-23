@@ -69,15 +69,14 @@ class _FavoritesPageState extends State<FavoritesPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF7FAFC),
-      body: Column(
-        children: [
-          BrandHeroHeader(
-            title: 'Yêu thích',
-            subtitle: 'Cửa hàng bạn đã lưu',
-            onBack: () => AppRouter.backOrHome(context),
-          ),
-          Expanded(child: _buildBody()),
-        ],
+      body: BrandHeroScaffold(
+        header: (collapse) => BrandHeroHeader(
+          title: 'Yêu thích',
+          subtitle: 'Điểm gửi bạn đã lưu',
+          onBack: () => AppRouter.backOrHome(context),
+          collapseProgress: collapse,
+        ),
+        child: _buildBody(),
       ),
     );
   }

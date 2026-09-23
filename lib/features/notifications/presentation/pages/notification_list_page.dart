@@ -181,13 +181,13 @@ class _NotificationListPageState extends State<NotificationListPage> {
 
         return Scaffold(
           backgroundColor: const Color(0xFFF7FAFC),
-          body: Column(
-            children: [
-              BrandHeroHeader(
-                title: 'Thông báo',
-                subtitle: 'Cập nhật mới nhất từ Lock.R',
-                onBack: () => AppRouter.backOrHome(context),
-                trailing: Consumer<NotificationProvider>(
+          body: BrandHeroScaffold(
+            header: (collapse) => BrandHeroHeader(
+              title: 'Thông báo',
+              subtitle: 'Cập nhật mới nhất từ Lock.R',
+              onBack: () => AppRouter.backOrHome(context),
+              collapseProgress: collapse,
+              trailing: Consumer<NotificationProvider>(
                   builder: (context, provider, _) {
                     final showMarkAll = provider.unreadCount > 0 &&
                         provider.notifications.isNotEmpty;
@@ -243,8 +243,7 @@ class _NotificationListPageState extends State<NotificationListPage> {
                   },
                 ),
               ),
-              Expanded(
-                child: Consumer<NotificationProvider>(
+            child: Consumer<NotificationProvider>(
                   builder: (context, provider, _) {
                     if (provider.isLoading && provider.notifications.isEmpty) {
                       return const Center(
@@ -305,8 +304,6 @@ class _NotificationListPageState extends State<NotificationListPage> {
                     );
                   },
                 ),
-              ),
-            ],
           ),
         );
       },

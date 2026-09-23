@@ -213,7 +213,15 @@ class BrandHeroHeader extends StatelessWidget {
     this.subtitleColor = const Color(0xFF94A3B8),
     this.backgroundColor,
     this.imageAsset,
+    this.collapseProgress = 0,
   });
+
+  /// 0 = header đầy đủ, 1 = đã co thành thanh gọn.
+  ///
+  /// Header nằm trên một `Expanded` nên luôn cố định và ăn ~140px chiều cao kể
+  /// cả khi người dùng cuộn. [BrandHeroScaffold] truyền giá trị này theo vị trí
+  /// cuộn để phần mô tả xẹp dần, chỉ giữ lại tiêu đề và nút quay lại.
+  final double collapseProgress;
 
   final String title;
   final String? subtitle;
@@ -228,6 +236,7 @@ class BrandHeroHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = collapseProgress.clamp(0.0, 1.0);
     final canPop = Navigator.of(context).canPop();
     final shouldShowBack = showBackButton ?? (onBack != null || canPop);
     final effectiveOnBack = shouldShowBack
@@ -275,7 +284,7 @@ class BrandHeroHeader extends StatelessWidget {
             SafeArea(
               bottom: false,
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 14, 20, 22),
+                padding: EdgeInsets.fromLTRB(20, 14 - 5 * t, 20, 22 - 13 * t),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
@@ -295,40 +304,57 @@ class BrandHeroHeader extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Text(
-                            eyebrow ?? 'LOCK.R • HỆ THỐNG TỦ THÔNG MINH',
-                            style: const TextStyle(
-                              color: Color(0xFF94A3B8),
-                              fontSize: 10,
-                              fontWeight: FontWeight.w700,
-                              letterSpacing: 1.0,
+                          _Collapsible(
+                            progress: t,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  eyebrow ?? 'LOCK.R • HỆ THỐNG TỦ THÔNG MINH',
+                                  style: const TextStyle(
+                                    color: Color(0xFF94A3B8),
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w700,
+                                    letterSpacing: 1.0,
+                                  ),
+                                ),
+                                const SizedBox(height: 5),
+                              ],
                             ),
                           ),
-                          const SizedBox(height: 5),
                           Text(
                             title,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
-                              fontSize: 22,
+                              fontSize: 22 - 3 * t,
                               fontWeight: FontWeight.w800,
                               color: titleColor,
                               letterSpacing: -0.4,
                             ),
                           ),
-                          if (subtitle != null) ...[
-                            const SizedBox(height: 3),
-                            Text(
-                              subtitle!,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                fontSize: 12.5,
-                                fontWeight: FontWeight.w400,
-                                color: subtitleColor,
+                          if (subtitle != null)
+                            _Collapsible(
+                              progress: t,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const SizedBox(height: 3),
+                                  Text(
+                                    subtitle!,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      fontSize: 12.5,
+                                      fontWeight: FontWeight.w400,
+                                      color: subtitleColor,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
-                          ],
                         ],
                       ),
                     ),
@@ -343,6 +369,89 @@ class BrandHeroHeader extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+/// Xẹp dần theo [progress] (0 = hiện đủ, 1 = cao 0) và mờ đi cùng lúc.
+class _Collapsible extends StatelessWidget {
+  const _Collapsible({required this.progress, required this.child});
+
+  final double progress;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final factor = (1 - progress).clamp(0.0, 1.0);
+    if (factor == 0) return const SizedBox.shrink();
+    return ClipRect(
+      child: Align(
+        alignment: Alignment.topLeft,
+        heightFactor: factor,
+        child: Opacity(opacity: factor, child: child),
+      ),
+    );
+  }
+}
+
+/// Bọc một trang "header + nội dung cuộn" để header co lại khi cuộn xuống.
+///
+/// Trước đây mọi trang dựng `Column(children: [BrandHeroHeader(...), Expanded(...)])`
+/// nên header đứng yên và ăn ~140px chiều cao suốt lúc đọc nội dung.
+class BrandHeroScaffold extends StatefulWidget {
+  const BrandHeroScaffold({
+    super.key,
+    required this.header,
+    required this.child,
+    this.collapseDistance = 88,
+  });
+
+  /// Dựng header với mức co hiện tại (0..1).
+  final Widget Function(double collapseProgress) header;
+
+  /// Phần nội dung cuộn được (ListView, RefreshIndicator bọc ListView...).
+  final Widget child;
+
+  /// Cuộn bao nhiêu pixel thì header co hết cỡ.
+  final double collapseDistance;
+
+  @override
+  State<BrandHeroScaffold> createState() => _BrandHeroScaffoldState();
+}
+
+class _BrandHeroScaffoldState extends State<BrandHeroScaffold> {
+  final ValueNotifier<double> _progress = ValueNotifier<double>(0);
+
+  @override
+  void dispose() {
+    _progress.dispose();
+    super.dispose();
+  }
+
+  bool _onScroll(ScrollNotification notification) {
+    // Chỉ nghe trục dọc của danh sách chính; bỏ qua list ngang lồng bên trong.
+    if (notification.metrics.axis != Axis.vertical) return false;
+    if (notification.depth > 0) return false;
+    final offset = notification.metrics.pixels;
+    _progress.value = (offset / widget.collapseDistance).clamp(0.0, 1.0);
+    return false;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        ValueListenableBuilder<double>(
+          valueListenable: _progress,
+          builder: (context, value, _) => widget.header(value),
+        ),
+        Expanded(
+          child: NotificationListener<ScrollNotification>(
+            onNotification: _onScroll,
+            child: widget.child,
+          ),
+        ),
+      ],
     );
   }
 }

@@ -45,25 +45,22 @@ class _PromotionsPageState extends ConsumerState<PromotionsPage> {
 
     return Scaffold(
       backgroundColor: context.pageBg,
-      body: Column(
-        children: [
-          BrandHeroHeader(
-            title: 'Ưu đãi & Flash Sale',
-            subtitle: 'Khám phá ưu đãi đang hiệu lực hôm nay',
-            onBack: () => AppRouter.backOrHome(context),
-            trailing: BrandCircleIconButton(
-              icon: LucideIcons.refreshCw,
-              onTap: () => ref.read(promotionNotifierProvider).load(),
-            ),
+      body: BrandHeroScaffold(
+        header: (collapse) => BrandHeroHeader(
+          title: 'Ưu đãi & Flash Sale',
+          subtitle: 'Khám phá ưu đãi đang hiệu lực hôm nay',
+          onBack: () => AppRouter.backOrHome(context),
+          collapseProgress: collapse,
+          trailing: BrandCircleIconButton(
+            icon: LucideIcons.refreshCw,
+            onTap: () => ref.read(promotionNotifierProvider).load(),
           ),
-          Expanded(
-            child: RefreshIndicator(
-              color: AislBrand.navy,
-              onRefresh: () => ref.read(promotionNotifierProvider).load(),
-              child: _buildBody(provider),
-            ),
-          ),
-        ],
+        ),
+        child: RefreshIndicator(
+          color: AislBrand.navy,
+          onRefresh: () => ref.read(promotionNotifierProvider).load(),
+          child: _buildBody(provider),
+        ),
       ),
     );
   }
