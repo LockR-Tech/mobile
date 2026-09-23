@@ -543,20 +543,10 @@ class _HomePageState extends ConsumerState<HomePage>
               ),
               child: Row(
                 children: [
-                  Container(
-                    width: 38,
-                    height: 38,
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: const Center(
-                      child: Icon(
-                        LucideIcons.wallet,
-                        color: Colors.white,
-                        size: 20,
-                      ),
-                    ),
+                  const AppLottie(
+                    AppLottieAssets.napVi,
+                    width: 40,
+                    height: 40,
                   ),
                   const SizedBox(width: 10),
                   Expanded(
@@ -1445,7 +1435,7 @@ class _HomePageState extends ConsumerState<HomePage>
           padding: const EdgeInsets.symmetric(horizontal: 20),
           child: BrandSectionHeader(
             icon: LucideIcons.store,
-            title: 'Các nơi đặt locker',
+            title: 'Các nơi đặt kiosk',
             onSeeAll: () => context.go(AppRouter.lockers),
             highlightColor: const Color(0xFF0F172A),
             highlightRollColor: const Color(0xFF020617),
