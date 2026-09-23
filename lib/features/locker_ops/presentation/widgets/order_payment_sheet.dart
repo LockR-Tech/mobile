@@ -59,7 +59,8 @@ Future<OrderPaymentOutcome> payOrderAndAwaitPaid(
     method,
     returnUrl: returnUrl,
   );
-  final url = res['url'] as String?;
+  // Backend PaymentResponse dùng field "paymentUrl" (không phải "url")
+  final url = (res['paymentUrl'] ?? res['url'] ?? res['deeplink']) as String?;
   if ((method == 'VNPAY' || method == 'MOMO' || method == 'SEPAY') && url != null && url.isNotEmpty) {
     if (!context.mounted) return OrderPaymentOutcome.cancelled;
     await Navigator.of(context).push<bool>(
