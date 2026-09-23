@@ -794,19 +794,61 @@ class _RentLockerPageState extends State<RentLockerPage>
                 ),
                 const SizedBox(height: 14),
               ],
+              if (!started && unpaid && config.requirePaymentBeforeDrop) ...[
+                const _ResultHeadline(
+                  icon: LucideIcons.wallet,
+                  title: 'Chờ thanh toán',
+                  subtitle: 'Vui lòng hoàn tất thanh toán để nhận mã mở ô và bỏ đồ.',
+                ),
+                const SizedBox(height: 16),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF8FAFC),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: const Color(0xFFE2E8F0)),
+                  ),
+                  child: Column(
+                    children: [
+                      Container(
+                        width: 56,
+                        height: 56,
+                        decoration: const BoxDecoration(
+                          color: Color(0xFFFEF2F2),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(LucideIcons.lock, size: 28, color: Color(0xFFEF4444)),
+                      ),
+                      const SizedBox(height: 12),
+                      const Text(
+                        'Mã mở ô tủ được bảo mật',
+                        style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15, color: opsDark),
+                      ),
+                      const SizedBox(height: 4),
+                      const Text(
+                        'Mã PIN và mã QR mở tủ sẽ xuất hiện ngay sau khi thanh toán thành công.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(fontSize: 13, color: opsMutedText),
+                      ),
+                    ],
+                  ),
+                ),
+              ] else ...[
                 _ResultHeadline(
                   icon: started ? LucideIcons.lockKeyhole : LucideIcons.packageOpen,
                   title: started ? 'Kỳ thuê đang chạy' : 'Đã giữ ô — bỏ đồ vào',
                   subtitle: started
                       ? 'PIN mở ô nhiều lần tới ${fmtDateTime(order['pickupDeadline'])}.'
-                    : 'Nhập PIN để mở ô số ${_resultBoxLabel(order)} và đặt đồ vào.',
+                      : 'Nhập PIN để mở ô số ${_resultBoxLabel(order)} và đặt đồ vào.',
                 ),
-              const SizedBox(height: 16),
-              AccessCredentials(
-                pin: order['pinCode'] as String?,
-                qrToken: order['qrToken'] as String?,
-                caption: 'PIN dùng nhiều lần trong kỳ thuê',
-              ),
+                const SizedBox(height: 16),
+                AccessCredentials(
+                  pin: order['pinCode'] as String?,
+                  qrToken: order['qrToken'] as String?,
+                  caption: 'PIN dùng nhiều lần trong kỳ thuê',
+                ),
+              ],
               if (order['pickupDeadline'] != null) ...[
                 const SizedBox(height: 16),
                 OpsBanner(

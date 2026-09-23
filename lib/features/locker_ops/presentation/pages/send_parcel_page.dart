@@ -542,31 +542,73 @@ class _SendParcelPageState extends State<SendParcelPage>
                 ),
                 const SizedBox(height: 14),
               ],
-              if (!isDropped) ...[
-                _ResultHeadline(
-                  icon: LucideIcons.packageOpen,
-                  title: 'Bước 1 — Bỏ hàng vào ô',
-                  subtitle:
-                      'Đến tủ, nhập PIN bên dưới để mở ô số ${order['sendBoxId'] ?? '-'}, '
-                      'đặt hàng vào rồi đóng cửa.',
+              if (!isDropped && mustPayFirst) ...[
+                const _ResultHeadline(
+                  icon: LucideIcons.wallet,
+                  title: 'Chờ thanh toán phí gửi',
+                  subtitle: 'Vui lòng hoàn tất thanh toán để nhận mã mở ô và bỏ hàng.',
+                ),
+                const SizedBox(height: 16),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF8FAFC),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: const Color(0xFFE2E8F0)),
+                  ),
+                  child: Column(
+                    children: [
+                      Container(
+                        width: 56,
+                        height: 56,
+                        decoration: const BoxDecoration(
+                          color: Color(0xFFFEF2F2),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(LucideIcons.lock, size: 28, color: Color(0xFFEF4444)),
+                      ),
+                      const SizedBox(height: 12),
+                      const Text(
+                        'Mã mở ô tủ được bảo mật',
+                        style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15, color: opsDark),
+                      ),
+                      const SizedBox(height: 4),
+                      const Text(
+                        'Mã PIN và mã QR mở tủ sẽ xuất hiện ngay sau khi thanh toán thành công.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(fontSize: 13, color: opsMutedText),
+                      ),
+                    ],
+                  ),
                 ),
               ] else ...[
-                _ResultHeadline(
-                  icon: LucideIcons.packageCheck,
-                  title: 'Bước 2 — Đã bỏ hàng xong',
-                  subtitle: hasReceiverAccount
-                      ? 'PIN nhận hàng đã được gửi tới tài khoản người nhận.'
-                      : 'Hãy chuyển mã PIN nhận hàng bên dưới cho người nhận.',
+                if (!isDropped) ...[
+                  _ResultHeadline(
+                    icon: LucideIcons.packageOpen,
+                    title: 'Bước 1 — Bỏ hàng vào ô',
+                    subtitle:
+                        'Đến tủ, nhập PIN bên dưới để mở ô số ${order['sendBoxId'] ?? '-'}, '
+                        'đặt hàng vào rồi đóng cửa.',
+                  ),
+                ] else ...[
+                  _ResultHeadline(
+                    icon: LucideIcons.packageCheck,
+                    title: 'Bước 2 — Đã bỏ hàng xong',
+                    subtitle: hasReceiverAccount
+                        ? 'PIN nhận hàng đã được gửi tới tài khoản người nhận.'
+                        : 'Hãy chuyển mã PIN nhận hàng bên dưới cho người nhận.',
+                  ),
+                ],
+                const SizedBox(height: 16),
+                AccessCredentials(
+                  pin: order['pinCode'] as String?,
+                  qrToken: order['qrToken'] as String?,
+                  caption: isDropped
+                      ? 'Người nhận nhập PIN / quét QR tại tủ để lấy hàng'
+                      : 'Nhập PIN hoặc quét QR tại tủ để mở ô và bỏ hàng',
                 ),
               ],
-              const SizedBox(height: 16),
-              AccessCredentials(
-                pin: order['pinCode'] as String?,
-                qrToken: order['qrToken'] as String?,
-                caption: isDropped
-                    ? 'Người nhận nhập PIN / quét QR tại tủ để lấy hàng'
-                    : 'Nhập PIN hoặc quét QR tại tủ để mở ô và bỏ hàng',
-              ),
               if (isDropped && order['pickupDeadline'] != null) ...[
                 const SizedBox(height: 16),
                 OpsBanner(

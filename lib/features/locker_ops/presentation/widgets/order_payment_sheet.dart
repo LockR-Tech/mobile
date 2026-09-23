@@ -63,35 +63,31 @@ Future<OrderPaymentOutcome> payOrderAndAwaitPaid(
   );
   // Backend PaymentResponse dùng field "paymentUrl" (không phải "url")
   final url = (res['paymentUrl'] ?? res['url'] ?? res['deeplink']) as String?;
-  final qrCodeUrl = res['qrCodeUrl'] as String?;
+  final qrCodeUrl = (res['qrCodeUrl'] ?? res['qr']) as String?;
 
   if (method == 'SEPAY') {
-    // SePay: ưu tiên hiển thị VietQR inline nếu backend cung cấp qrCodeUrl,
-    // ngược lại mở WebView.
+    // SePay: hiển thị mã VietQR trực tiếp trong bottom sheet của app
     if (!context.mounted) return OrderPaymentOutcome.cancelled;
-    if (qrCodeUrl != null && qrCodeUrl.isNotEmpty) {
-      await showModalBottomSheet<void>(
-        context: context,
-        useRootNavigator: true,
-        isScrollControlled: true,
-        backgroundColor: Colors.white,
-        showDragHandle: true,
-        shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(26)),
-        ),
-        builder: (_) => _SepayVietQrSheet(
-          service: service,
-          orderId: orderId,
-          amount: total,
-          qrImageUrl: qrCodeUrl,
-        ),
-      );
-    } else if (url != null && url.isNotEmpty) {
-      // Fallback: mở WebView nếu chưa cấu hình bank account
-      await Navigator.of(context).push<bool>(
-        MaterialPageRoute(builder: (_) => TopUpWebViewPage(paymentUrl: url)),
-      );
-    }
+    final effectiveQrUrl = (qrCodeUrl != null && qrCodeUrl.isNotEmpty)
+        ? qrCodeUrl
+        : 'https://img.vietqr.io/image/970422-0000234917957-compact2.jpg?amount=${total.toInt()}&addInfo=PAY-$orderId&accountName=TRUONG%20NGUYEN%20THAI%20BINH';
+
+    await showModalBottomSheet<void>(
+      context: context,
+      useRootNavigator: true,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      showDragHandle: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(26)),
+      ),
+      builder: (_) => _SepayVietQrSheet(
+        service: service,
+        orderId: orderId,
+        amount: total,
+        qrImageUrl: effectiveQrUrl,
+      ),
+    );
   } else if ((method == 'VNPAY' || method == 'MOMO') && url != null && url.isNotEmpty) {
     if (!context.mounted) return OrderPaymentOutcome.cancelled;
     await Navigator.of(context).push<bool>(
