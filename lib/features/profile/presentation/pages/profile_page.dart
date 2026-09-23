@@ -543,6 +543,7 @@ class _ProfilePageState extends State<ProfilePage>
     final themeProvider = context.read<ThemeProvider>();
     showModalBottomSheet<void>(
       context: context,
+      useRootNavigator: true,
       backgroundColor: Colors.transparent,
       builder: (ctx) {
         return _ThemePickerSheet(current: themeProvider.themeMode);
@@ -575,6 +576,7 @@ class _ProfilePageState extends State<ProfilePage>
   void _showQuickHelp() {
     showModalBottomSheet<void>(
       context: context,
+      useRootNavigator: true,
       backgroundColor: Colors.white,
       showDragHandle: true,
       shape: const RoundedRectangleBorder(
@@ -656,6 +658,7 @@ class _ProfilePageState extends State<ProfilePage>
   void _handleContact() {
     showModalBottomSheet<void>(
       context: context,
+      useRootNavigator: true,
       backgroundColor: Colors.white,
       showDragHandle: true,
       shape: const RoundedRectangleBorder(

@@ -1258,6 +1258,7 @@ class _HomePageState extends ConsumerState<HomePage>
 
     showModalBottomSheet(
       context: context,
+      useRootNavigator: true,
       backgroundColor: sheetBg,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
