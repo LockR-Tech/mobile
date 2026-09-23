@@ -117,13 +117,16 @@ class NotificationProvider extends ChangeNotifier {
   }
 
   Future<void> loadNotifications({bool refresh = false}) async {
+    // Phải chặn trùng lệnh TRƯỚC khi xoá danh sách: bản cũ xoá xong mới thấy
+    // `_isLoading` rồi `return`, nên một lần refresh trùng với lần nạp đang
+    // chạy sẽ để lại danh sách rỗng cho tới lần nạp sau.
+    if (_isLoading) return;
+
     if (refresh) {
       _currentPage = 1;
       _notifications.clear();
       _error = null;
     }
-
-    if (_isLoading) return;
 
     _isLoading = true;
     notifyListeners();

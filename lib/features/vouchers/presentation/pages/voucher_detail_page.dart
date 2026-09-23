@@ -1,6 +1,6 @@
+import 'package:smart_laundry_locker/core/routing/app_router.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
@@ -55,7 +55,7 @@ class VoucherDetailPage extends StatelessWidget {
           BrandHeroHeader(
             title: 'Chi tiết ưu đãi',
             subtitle: voucher.campaignTitle,
-            onBack: () => context.pop(),
+            onBack: () => AppRouter.backOrHome(context),
           ),
           Expanded(
             child: SingleChildScrollView(

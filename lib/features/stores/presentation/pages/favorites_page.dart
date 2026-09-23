@@ -74,7 +74,7 @@ class _FavoritesPageState extends State<FavoritesPage> {
           BrandHeroHeader(
             title: 'Yêu thích',
             subtitle: 'Cửa hàng bạn đã lưu',
-            onBack: () => context.pop(),
+            onBack: () => AppRouter.backOrHome(context),
           ),
           Expanded(child: _buildBody()),
         ],

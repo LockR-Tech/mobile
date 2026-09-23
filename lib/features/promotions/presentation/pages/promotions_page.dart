@@ -1,7 +1,7 @@
+import 'package:smart_laundry_locker/core/routing/app_router.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart' hide Consumer;
-import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:smart_laundry_locker/features/promotions/data/models/promotion_model.dart';
@@ -50,7 +50,7 @@ class _PromotionsPageState extends ConsumerState<PromotionsPage> {
           BrandHeroHeader(
             title: 'Ưu đãi & Flash Sale',
             subtitle: 'Khám phá ưu đãi đang hiệu lực hôm nay',
-            onBack: () => context.pop(),
+            onBack: () => AppRouter.backOrHome(context),
             trailing: BrandCircleIconButton(
               icon: LucideIcons.refreshCw,
               onTap: () => ref.read(promotionNotifierProvider).load(),

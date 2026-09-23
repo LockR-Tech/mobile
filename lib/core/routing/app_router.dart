@@ -107,6 +107,20 @@ class AppRouter {
   static final GlobalKey<NavigatorState> navigatorKey =
       GlobalKey<NavigatorState>();
 
+  /// Nút quay lại an toàn cho mọi màn.
+  ///
+  /// Bấm vào push notification đưa người dùng tới màn bằng `context.go`, tức
+  /// **thay cả stack** — lúc đó `context.pop()` không có gì để pop nên nút quay
+  /// lại trông như bị liệt. Dùng hàm này thay cho `context.pop()` trực tiếp:
+  /// còn stack thì pop, hết stack thì về trang chủ.
+  static void backOrHome(BuildContext context) {
+    if (context.canPop()) {
+      context.pop();
+    } else {
+      context.go(home);
+    }
+  }
+
   static final router = GoRouter(
     navigatorKey: navigatorKey,
     initialLocation: splash,

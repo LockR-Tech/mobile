@@ -35,3 +35,13 @@ DateTime? parseServerDateTime(dynamic value) {
 /// không đọc được — dùng cho field bắt buộc có giá trị.
 DateTime parseServerDateTimeOr(dynamic value, [DateTime? fallback]) =>
     parseServerDateTime(value) ?? fallback ?? DateTime.now();
+
+String _two(int n) => n.toString().padLeft(2, '0');
+
+/// `HH:mm:ss dd/MM/yyyy` — định dạng chuẩn của dự án.
+String formatDateTimeVn(DateTime? value, {String empty = '—'}) {
+  if (value == null) return empty;
+  final d = value.toLocal();
+  return '${_two(d.hour)}:${_two(d.minute)}:${_two(d.second)} '
+      '${_two(d.day)}/${_two(d.month)}/${d.year}';
+}
