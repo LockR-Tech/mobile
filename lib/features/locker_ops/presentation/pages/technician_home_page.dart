@@ -1,3 +1,4 @@
+import 'package:smart_laundry_locker/core/utils/app_date_time.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
@@ -5563,7 +5564,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
 
   DateTime? _parseDate(dynamic value) {
     if (value == null) return null;
-    return DateTime.tryParse('$value')?.toLocal();
+    return parseServerDateTime(value);
   }
 
   String _formatFullDateTime(DateTime dt) {
@@ -5732,7 +5733,7 @@ class _IotDeviceSheetState extends State<_IotDeviceSheet> {
       };
 
   String _fmtDate(dynamic value) {
-    final d = DateTime.tryParse('$value')?.toLocal();
+    final d = parseServerDateTime(value);
     if (d == null) return '';
     String two(int n) => n.toString().padLeft(2, '0');
     return '${two(d.hour)}:${two(d.minute)} ${two(d.day)}/${two(d.month)}/${d.year}';
@@ -6054,7 +6055,7 @@ class _RepairLogSheetState extends State<_RepairLogSheet> {
   }
 
   String _fmt(dynamic value) {
-    final d = DateTime.tryParse('$value')?.toLocal();
+    final d = parseServerDateTime(value);
     if (d == null) return '';
     String two(int n) => n.toString().padLeft(2, '0');
     return '${two(d.hour)}:${two(d.minute)} ${two(d.day)}/${two(d.month)}';

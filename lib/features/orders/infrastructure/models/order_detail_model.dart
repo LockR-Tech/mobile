@@ -1,3 +1,4 @@
+import 'package:smart_laundry_locker/core/utils/app_date_time.dart';
 import 'package:smart_laundry_locker/features/orders/domain/entities/order_detail.dart';
 import 'package:json_annotation/json_annotation.dart';
 
@@ -90,19 +91,9 @@ double _parseDouble(dynamic value) {
   return 0.0;
 }
 
-DateTime? _parseDateTimeNullable(dynamic value) {
-  if (value == null) return null;
-  if (value is String) return DateTime.tryParse(value)?.toLocal();
-  return null;
-}
+DateTime? _parseDateTimeNullable(dynamic value) => parseServerDateTime(value);
 
-DateTime _parseDateTime(dynamic value) {
-  if (value == null) return DateTime.now();
-  if (value is String) {
-    return DateTime.tryParse(value)?.toLocal() ?? DateTime.now();
-  }
-  return DateTime.now();
-}
+DateTime _parseDateTime(dynamic value) => parseServerDateTimeOr(value);
 
 /// OrderDetailModel - Infrastructure model cho OrderDetail entity
 /// Matches API OrderDetailResponse schema exactly.

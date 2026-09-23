@@ -1,3 +1,4 @@
+import 'package:smart_laundry_locker/core/utils/app_date_time.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:smart_laundry_locker/core/routing/app_router.dart';
@@ -387,7 +388,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage> {
   }
 
   String? _fmtDate(dynamic value) {
-    final d = DateTime.tryParse('$value')?.toLocal();
+    final d = parseServerDateTime(value);
     if (d == null) return null;
     String two(int n) => n.toString().padLeft(2, '0');
     return '${two(d.day)}/${two(d.month)}/${d.year}';
@@ -408,7 +409,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage> {
     final description = order['description']?.toString();
     final droneCode = order['droneCode']?.toString();
     final missionStatus = order['missionStatus']?.toString();
-    final createdAt = DateTime.tryParse('${order['createdAt']}')?.toLocal();
+    final createdAt = parseServerDateTime(order['createdAt']);
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
       child: Container(
@@ -1236,7 +1237,7 @@ class _DroneLogSheetState extends State<_DroneLogSheet> {
   }
 
   String _fmt(dynamic value) {
-    final d = DateTime.tryParse('$value')?.toLocal();
+    final d = parseServerDateTime(value);
     if (d == null) return '';
     String two(int n) => n.toString().padLeft(2, '0');
     return '${two(d.hour)}:${two(d.minute)} ${two(d.day)}/${two(d.month)}';

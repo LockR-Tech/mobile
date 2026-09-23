@@ -1,3 +1,5 @@
+import 'package:smart_laundry_locker/core/utils/app_date_time.dart';
+
 class NotificationDataPayload {
   final String actionType;
   final String? referenceId;
@@ -84,8 +86,8 @@ class NotificationModel {
           ? NotificationDataPayload.fromJson(payload)
           : null,
       isRead: json['isRead'] as bool? ?? false,
-      createdAt: DateTime.parse(createdAtStr).toLocal(),
-      updatedAt: DateTime.parse(updatedAtStr).toLocal(),
+      createdAt: parseServerDateTimeOr(createdAtStr),
+      updatedAt: parseServerDateTimeOr(updatedAtStr),
     );
   }
 
@@ -207,7 +209,7 @@ class NotificationModel {
 
   static String _fmtIso(String iso) {
     try {
-      final dt = DateTime.parse(iso).toLocal();
+      final dt = parseServerDateTimeOr(iso);
       final hh = dt.hour.toString().padLeft(2, '0');
       final mm = dt.minute.toString().padLeft(2, '0');
       final dd = dt.day.toString().padLeft(2, '0');

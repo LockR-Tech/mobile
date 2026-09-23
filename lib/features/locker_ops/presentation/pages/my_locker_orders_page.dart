@@ -1,3 +1,4 @@
+import 'package:smart_laundry_locker/core/utils/app_date_time.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
@@ -145,7 +146,7 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
   static DateTime? _parseOrderDate(Map<String, dynamic> o) {
     final raw = o['createdAt'] ?? o['updatedAt'] ?? o['pickupDeadline'];
     if (raw == null) return null;
-    return DateTime.tryParse('$raw')?.toLocal();
+    return parseServerDateTime(raw);
   }
 
   static String _dateGroupLabel(DateTime d) {

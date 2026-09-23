@@ -5,6 +5,7 @@ import 'package:smart_laundry_locker/shared/widgets/app_lottie.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:smart_laundry_locker/core/theme/shadcn_theme.dart';
+import 'package:smart_laundry_locker/core/utils/app_date_time.dart';
 
 /// Shared design kit for the locker customer flows (SEND / RENTAL / orders).
 /// Everything here is aligned to [AISLShadcnTheme] (navy + Manrope, 16px radius,
@@ -101,17 +102,7 @@ String fmtPrice(dynamic value) {
   return '${n < 0 ? '-' : ''}$bufferđ';
 }
 
-DateTime? _parseDate(dynamic value) {
-  if (value == null) return null;
-  String s = '$value';
-  if (s.contains('T')) {
-    final timePart = s.split('T').last;
-    if (!timePart.endsWith('Z') && !timePart.contains('+') && !timePart.contains('-')) {
-      s += 'Z';
-    }
-  }
-  return DateTime.tryParse(s)?.toLocal();
-}
+DateTime? _parseDate(dynamic value) => parseServerDateTime(value);
 
 String _two(int n) => n.toString().padLeft(2, '0');
 

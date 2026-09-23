@@ -1,3 +1,4 @@
+import 'package:smart_laundry_locker/core/utils/app_date_time.dart';
 import 'package:smart_laundry_locker/features/maintenance/domain/entities/maintenance_report.dart';
 import 'package:json_annotation/json_annotation.dart';
 
@@ -42,8 +43,8 @@ class MaintenanceReportModel extends MaintenanceReport {
             [],
         status: json['status'] as String,
         staffNote: json['staffNote'] as String?,
-        createdAt: DateTime.parse(json['createdAt'] as String).toLocal(),
-        updatedAt: DateTime.parse(json['updatedAt'] as String).toLocal(),
+        createdAt: parseServerDateTimeOr(json['createdAt']),
+        updatedAt: parseServerDateTimeOr(json['updatedAt']),
       );
 
   Map<String, dynamic> toJson() => _$MaintenanceReportModelToJson(this);
