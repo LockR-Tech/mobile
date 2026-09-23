@@ -1,3 +1,4 @@
+import 'package:smart_laundry_locker/core/utils/app_date_time.dart';
 import 'package:smart_laundry_locker/features/delegations/domain/entities/delegation.dart';
 import 'package:smart_laundry_locker/features/orders/infrastructure/models/order_detail_model.dart';
 import 'package:json_annotation/json_annotation.dart';
@@ -10,7 +11,7 @@ Object? _readId(Map<dynamic, dynamic> json, String key) =>
 DateTime? _parseDateTimeNullable(dynamic value) {
   if (value == null) return null;
   if (value is String) {
-    return DateTime.tryParse(value)?.toLocal();
+    return parseServerDateTime(value);
   }
   return null;
 }

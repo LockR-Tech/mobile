@@ -1,3 +1,4 @@
+import 'package:smart_laundry_locker/core/utils/app_date_time.dart';
 import 'package:smart_laundry_locker/features/notifications/domain/entities/notification_model.dart';
 import 'package:smart_laundry_locker/features/notifications/presentation/providers/notification_provider.dart';
 import 'package:smart_laundry_locker/shared/widgets/unauthenticated_placeholder.dart';
@@ -52,7 +53,13 @@ class _NotificationListPageState extends State<NotificationListPage> {
     context.read<NotificationProvider>().markAsRead(notification.id);
 
     final payload = notification.dataPayload;
-    if (payload == null) return;
+    // Không có payload (hoặc payload không chỉ tới màn nào) thì trước đây bấm
+    // vào thông báo không xảy ra gì cả. Mở sheet nội dung đầy đủ để người dùng
+    // ít nhất đọc được thông báo.
+    if (payload == null) {
+      _showNotificationSheet(notification);
+      return;
+    }
 
     switch (payload.actionType) {
       // Noti đơn hàng + noti trạng thái giao hàng (drone) -> mở chi tiết đơn.
@@ -60,6 +67,8 @@ class _NotificationListPageState extends State<NotificationListPage> {
       case 'ORDER_STATUS_CHANGED':
         if (payload.referenceId != null) {
           context.push(AppRouter.orderDetail, extra: payload.referenceId);
+        } else {
+          _showNotificationSheet(notification);
         }
         break;
       case 'OPEN_PROMOTION_TAB':
@@ -70,9 +79,79 @@ class _NotificationListPageState extends State<NotificationListPage> {
         final technicianRoute = technicianRouteForNotification(
           payload.actionType,
         );
-        if (technicianRoute != null) context.go(technicianRoute);
+        if (technicianRoute != null) {
+          context.go(technicianRoute);
+        } else {
+          _showNotificationSheet(notification);
+        }
         break;
     }
+  }
+
+  /// Nội dung đầy đủ của thông báo khi không có màn nào để mở.
+  void _showNotificationSheet(NotificationModel notification) {
+    showModalBottomSheet<void>(
+      context: context,
+      useRootNavigator: true,
+      backgroundColor: Colors.white,
+      showDragHandle: true,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(26)),
+      ),
+      builder: (ctx) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 4, 20, 24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    width: 42,
+                    height: 42,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF14171F).withValues(alpha: 0.06),
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: Icon(
+                      _getIconForType(notification.dataPayload?.actionType),
+                      size: 21,
+                      color: const Color(0xFF14171F),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      notification.title,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 14),
+              Flexible(
+                child: SingleChildScrollView(
+                  child: Text(
+                    notification.body,
+                    style: const TextStyle(fontSize: 14, height: 1.5),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 14),
+              Text(
+                formatDateTimeVn(notification.createdAt),
+                style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   @override
@@ -88,7 +167,7 @@ class _NotificationListPageState extends State<NotificationListPage> {
                 BrandHeroHeader(
                   title: 'Thông báo',
                   subtitle: 'Cập nhật mới nhất từ Lock.R',
-                  onBack: () => context.pop(),
+                  onBack: () => AppRouter.backOrHome(context),
                 ),
                 const Expanded(
                   child: UnauthenticatedPlaceholder(
@@ -102,13 +181,13 @@ class _NotificationListPageState extends State<NotificationListPage> {
 
         return Scaffold(
           backgroundColor: const Color(0xFFF7FAFC),
-          body: Column(
-            children: [
-              BrandHeroHeader(
-                title: 'Thông báo',
-                subtitle: 'Cập nhật mới nhất từ Lock.R',
-                onBack: () => context.pop(),
-                trailing: Consumer<NotificationProvider>(
+          body: BrandHeroScaffold(
+            header: (collapse) => BrandHeroHeader(
+              title: 'Thông báo',
+              subtitle: 'Cập nhật mới nhất từ Lock.R',
+              onBack: () => AppRouter.backOrHome(context),
+              collapseProgress: collapse,
+              trailing: Consumer<NotificationProvider>(
                   builder: (context, provider, _) {
                     final showMarkAll = provider.unreadCount > 0 &&
                         provider.notifications.isNotEmpty;
@@ -164,8 +243,7 @@ class _NotificationListPageState extends State<NotificationListPage> {
                   },
                 ),
               ),
-              Expanded(
-                child: Consumer<NotificationProvider>(
+            child: Consumer<NotificationProvider>(
                   builder: (context, provider, _) {
                     if (provider.isLoading && provider.notifications.isEmpty) {
                       return const Center(
@@ -226,8 +304,6 @@ class _NotificationListPageState extends State<NotificationListPage> {
                     );
                   },
                 ),
-              ),
-            ],
           ),
         );
       },

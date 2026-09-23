@@ -5,6 +5,7 @@ import 'package:smart_laundry_locker/shared/widgets/app_lottie.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:smart_laundry_locker/core/theme/shadcn_theme.dart';
+import 'package:smart_laundry_locker/core/utils/app_date_time.dart';
 
 /// Shared design kit for the locker customer flows (SEND / RENTAL / orders).
 /// Everything here is aligned to [AISLShadcnTheme] (navy + Manrope, 16px radius,
@@ -101,16 +102,22 @@ String fmtPrice(dynamic value) {
   return '${n < 0 ? '-' : ''}$bufferđ';
 }
 
-DateTime? _parseDate(dynamic value) {
-  if (value == null) return null;
-  String s = '$value';
-  if (s.contains('T')) {
-    final timePart = s.split('T').last;
-    if (!timePart.endsWith('Z') && !timePart.contains('+') && !timePart.contains('-')) {
-      s += 'Z';
-    }
-  }
-  return DateTime.tryParse(s)?.toLocal();
+DateTime? _parseDate(dynamic value) => parseServerDateTime(value);
+
+/// Số tiền còn phải trả của đơn.
+///
+/// Gia hạn thuê tủ và phí quá hạn cộng thêm vào `totalPrice` rồi đặt lại
+/// `paymentStatus = UNPAID`, nên thu theo `totalPrice` là bắt khách trả lại cả
+/// phần đã thanh toán trước đó. Backend trả `amountDue`; nếu server chưa có
+/// field này (chưa deploy) thì lùi về `totalPrice` như cũ.
+double orderAmountDue(Map<String, dynamic> order) {
+  final due = order['amountDue'];
+  if (due is num) return due.toDouble();
+  final parsedDue = num.tryParse('$due');
+  if (parsedDue != null) return parsedDue.toDouble();
+  final total = order['totalPrice'];
+  if (total is num) return total.toDouble();
+  return num.tryParse('$total')?.toDouble() ?? 0;
 }
 
 String _two(int n) => n.toString().padLeft(2, '0');

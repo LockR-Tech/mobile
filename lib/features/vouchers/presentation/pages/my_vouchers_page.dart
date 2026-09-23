@@ -45,7 +45,7 @@ class _MyVouchersPageState extends State<MyVouchersPage>
           BrandHeroHeader(
             title: 'Ưu đãi của tôi',
             subtitle: 'Mã giảm giá & quà tặng của bạn',
-            onBack: () => context.pop(),
+            onBack: () => AppRouter.backOrHome(context),
             trailing: BrandCircleIconButton(
               icon: LucideIcons.refreshCw,
               onTap: () => context.read<VoucherProvider>().loadMyVouchers(),
