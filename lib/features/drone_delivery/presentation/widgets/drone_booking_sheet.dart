@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:smart_laundry_locker/core/config/business_config_provider.dart';
+import 'package:smart_laundry_locker/shared/widgets/app_lottie.dart';
 import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/utils/business_rules_text.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/ops_widgets.dart';
@@ -171,10 +172,9 @@ class _DroneBookingSheetState extends State<DroneBookingSheet>
                   color: const Color(0xFF6366F1).withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(16),
                 ),
-                child: Image.asset(
-                  'assets/images/air_delivery_3d.png',
-                  fit: BoxFit.contain,
-                  errorBuilder: (context, error, stackTrace) => const Icon(
+                child: AppLottie(
+                  AppLottieAssets.airplaneBox,
+                  fallback: (context) => const Icon(
                     Icons.flight_takeoff,
                     color: Color(0xFF6366F1),
                     size: 26,

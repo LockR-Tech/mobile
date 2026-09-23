@@ -23,6 +23,7 @@ import 'package:smart_laundry_locker/features/stores/presentation/pages/store_lo
 import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/ops_widgets.dart'
     show statusLabel, typeLabel, statusColor, fmtDateTime;
+import 'package:smart_laundry_locker/shared/widgets/app_lottie.dart';
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
 
 class HomePage extends ConsumerStatefulWidget {
@@ -496,15 +497,10 @@ class _HomePageState extends ConsumerState<HomePage>
                       ],
                     ),
                     const SizedBox(height: 2),
-                    SizedBox(
+                    const SizedBox(
                       width: 200,
                       height: 180,
-                      child: Image.asset(
-                        'assets/images/box_stack_3d.png',
-                        fit: BoxFit.contain,
-                        errorBuilder: (context, error, stackTrace) =>
-                            const SizedBox.shrink(),
-                      ),
+                      child: AppLottie(AppLottieAssets.box),
                     ),
                   ],
                 ),
@@ -639,6 +635,7 @@ class _HomePageState extends ConsumerState<HomePage>
           _buildQuickBadgeItem(
             context: context,
             icon: LucideIcons.store,
+            lottieAsset: AppLottieAssets.cuaHang,
             label: 'Cửa hàng',
             isPrimary: true,
             textColor: textColor,
@@ -647,6 +644,7 @@ class _HomePageState extends ConsumerState<HomePage>
           _buildQuickBadgeItem(
             context: context,
             icon: LucideIcons.box,
+            lottieAsset: AppLottieAssets.thueTu,
             label: 'Thuê tủ',
             isPrimary: false,
             textColor: textColor,
@@ -655,6 +653,7 @@ class _HomePageState extends ConsumerState<HomePage>
           _buildQuickBadgeItem(
             context: context,
             icon: LucideIcons.calendarClock,
+            lottieAsset: AppLottieAssets.donTu,
             label: 'Đơn tủ',
             isPrimary: false,
             textColor: textColor,
@@ -680,6 +679,7 @@ class _HomePageState extends ConsumerState<HomePage>
     required bool isPrimary,
     required Color textColor,
     required VoidCallback onTap,
+    String? lottieAsset,
   }) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final bgColor = isPrimary
@@ -712,11 +712,22 @@ class _HomePageState extends ConsumerState<HomePage>
                   : null,
             ),
             child: Center(
-              child: Icon(
-                icon,
-                color: iconColor,
-                size: 26,
-              ),
+              child: lottieAsset != null
+                  ? AppLottie(
+                      lottieAsset,
+                      width: 46,
+                      height: 46,
+                      fallback: (context) => Icon(
+                        icon,
+                        color: iconColor,
+                        size: 26,
+                      ),
+                    )
+                  : Icon(
+                      icon,
+                      color: iconColor,
+                      size: 26,
+                    ),
             ),
           ),
           const SizedBox(height: 8),
@@ -846,15 +857,14 @@ class _HomePageState extends ConsumerState<HomePage>
                           ),
                         ),
                         padding: const EdgeInsets.all(5),
-                        child: Image.asset(
+                        child: AppLottie(
                           (rawType.toUpperCase().contains('SEND') ||
                                   rawType.toUpperCase().contains('DRONE') ||
                                   rawType.toUpperCase().contains('DELIVERY') ||
                                   rawType.toUpperCase().contains('PARCEL'))
-                              ? 'assets/images/air_delivery_3d.png'
-                              : 'assets/images/box_stack_3d.png',
-                          fit: BoxFit.contain,
-                          errorBuilder: (context, error, stackTrace) => Icon(
+                              ? AppLottieAssets.airplaneBox
+                              : AppLottieAssets.box,
+                          fallback: (context) => Icon(
                             (rawType.toUpperCase().contains('SEND') ||
                                     rawType.toUpperCase().contains('DRONE') ||
                                     rawType.toUpperCase().contains('DELIVERY') ||
@@ -1287,6 +1297,7 @@ class _HomePageState extends ConsumerState<HomePage>
                     _buildUtilityItem(
                       ctx,
                       icon: LucideIcons.gift,
+                      lottieAsset: AppLottieAssets.uuDai,
                       label: 'Ưu đãi',
                       color: const Color(0xFFEC4899),
                       onTap: () {
@@ -1297,6 +1308,7 @@ class _HomePageState extends ConsumerState<HomePage>
                     _buildUtilityItem(
                       ctx,
                       icon: LucideIcons.triangleAlert,
+                      lottieAsset: AppLottieAssets.baoSuCo,
                       label: 'Báo sự cố',
                       color: const Color(0xFFF59E0B),
                       onTap: () {
@@ -1307,6 +1319,7 @@ class _HomePageState extends ConsumerState<HomePage>
                     _buildUtilityItem(
                       ctx,
                       icon: LucideIcons.clipboardList,
+                      lottieAsset: AppLottieAssets.baoCao,
                       label: 'Báo cáo',
                       color: const Color(0xFF3B82F6),
                       onTap: () {
@@ -1317,6 +1330,7 @@ class _HomePageState extends ConsumerState<HomePage>
                     _buildUtilityItem(
                       ctx,
                       icon: LucideIcons.wallet,
+                      lottieAsset: AppLottieAssets.napVi,
                       label: 'Nạp ví',
                       color: const Color(0xFF10B981),
                       onTap: () {
@@ -1360,6 +1374,7 @@ class _HomePageState extends ConsumerState<HomePage>
     required String label,
     required Color color,
     required VoidCallback onTap,
+    String? lottieAsset,
   }) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final textColor = isDark ? Colors.white : const Color(0xFF0F172A);
@@ -1379,7 +1394,17 @@ class _HomePageState extends ConsumerState<HomePage>
                 color: color.withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(16),
               ),
-              child: Icon(icon, color: color, size: 24),
+              child: Center(
+                child: lottieAsset != null
+                    ? AppLottie(
+                        lottieAsset,
+                        width: 36,
+                        height: 36,
+                        fallback: (context) =>
+                            Icon(icon, color: color, size: 24),
+                      )
+                    : Icon(icon, color: color, size: 24),
+              ),
             ),
             const SizedBox(height: 8),
             Text(
