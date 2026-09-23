@@ -30,27 +30,72 @@ class CustomBottomNavigationBar extends StatelessWidget {
           height: 64,
           child: Stack(
             children: [
-              // Background layer: blur + decoration (non-interactive)
+              // Background layer: iPhone Liquid Glass (blur + multi-stop refraction gradient + specular highlight)
               Positioned.fill(
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(26),
-                  child: BackdropFilter(
-                    filter: ImageFilter.blur(sigmaX: 22, sigmaY: 22),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.30),
-                        borderRadius: BorderRadius.circular(26),
-                        border: Border.all(
-                          color: Colors.white.withValues(alpha: 0.55),
-                          width: 1.2,
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.10),
-                            blurRadius: 20,
-                            offset: const Offset(0, 8),
+                child: Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(28),
+                    boxShadow: [
+                      // Ambient deep shadow
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.12),
+                        blurRadius: 28,
+                        offset: const Offset(0, 10),
+                        spreadRadius: -2,
+                      ),
+                      // Upper ambient bounce
+                      BoxShadow(
+                        color: Colors.white.withValues(alpha: 0.40),
+                        blurRadius: 10,
+                        offset: const Offset(0, -1),
+                      ),
+                    ],
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(28),
+                    child: BackdropFilter(
+                      filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          // High-luminance frosted liquid gradient
+                          gradient: LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: [
+                              Colors.white.withValues(alpha: 0.75),
+                              Colors.white.withValues(alpha: 0.45),
+                              Colors.white.withValues(alpha: 0.28),
+                            ],
+                            stops: const [0.0, 0.45, 1.0],
                           ),
-                        ],
+                          borderRadius: BorderRadius.circular(28),
+                          border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.85),
+                            width: 1.3,
+                          ),
+                        ),
+                        child: Stack(
+                          children: [
+                            // 1px specular light gleam on top edge like iPhone curved glass
+                            Positioned(
+                              top: 0,
+                              left: 20,
+                              right: 20,
+                              height: 1.0,
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    colors: [
+                                      Colors.transparent,
+                                      Colors.white.withValues(alpha: 0.95),
+                                      Colors.transparent,
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
@@ -80,20 +125,36 @@ class CustomBottomNavigationBar extends StatelessWidget {
   }
 
   Widget _buildItem(NavigationItem item, int index, bool isActive) {
-    final color = isActive ? AislBrand.navy : const Color(0xFF9CA3AF);
+    final color = isActive ? AislBrand.navy : const Color(0xFF64748B);
     return Expanded(
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
         onTap: () => onTap(index),
         child: Center(
           child: AnimatedContainer(
-            duration: const Duration(milliseconds: 180),
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+            duration: const Duration(milliseconds: 220),
+            curve: Curves.easeOutCubic,
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
             decoration: BoxDecoration(
               color: isActive
-                  ? Colors.white.withValues(alpha: 0.35)
+                  ? Colors.white.withValues(alpha: 0.65)
                   : Colors.transparent,
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(18),
+              border: isActive
+                  ? Border.all(
+                      color: Colors.white.withValues(alpha: 0.90),
+                      width: 1.0,
+                    )
+                  : null,
+              boxShadow: isActive
+                  ? [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.06),
+                        blurRadius: 10,
+                        offset: const Offset(0, 3),
+                      ),
+                    ]
+                  : null,
             ),
             child: _buildIcon(isActive ? item.activeIcon : item.icon, color),
           ),
@@ -109,30 +170,42 @@ class CustomBottomNavigationBar extends StatelessWidget {
           behavior: HitTestBehavior.opaque,
           onTap: () => onTap(index),
           child: Container(
-              width: 54,
-              height: 54,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.white,
-                border: Border.all(
-                  color: const Color(0xFFE2E8F0),
-                  width: 1.5,
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.10),
-                    blurRadius: 12,
-                    offset: const Offset(0, 4),
-                  ),
+            width: 52,
+            height: 52,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: const LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Colors.white,
+                  Color(0xFFF8FAFC),
                 ],
               ),
-              child: Center(
-                child: _buildIcon(item.icon, AislBrand.navy, size: 25),
+              border: Border.all(
+                color: Colors.white,
+                width: 2.0,
               ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.12),
+                  blurRadius: 16,
+                  offset: const Offset(0, 6),
+                ),
+                BoxShadow(
+                  color: Colors.white.withValues(alpha: 0.90),
+                  blurRadius: 6,
+                  offset: const Offset(0, -1),
+                ),
+              ],
+            ),
+            child: Center(
+              child: _buildIcon(item.icon, AislBrand.navy, size: 24),
             ),
           ),
         ),
-      );
+      ),
+    );
   }
 
   Widget _buildIcon(dynamic icon, Color color, {double size = 22}) {
