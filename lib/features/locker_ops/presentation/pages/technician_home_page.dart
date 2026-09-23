@@ -1758,51 +1758,54 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
     String? error;
     final reason = await showDialog<String>(
       context: context,
-      builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setLocal) => AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          title: Text('Bãi đáp: ${_landingPadLabel(status)}'),
-          content: TextField(
-            controller: ctrl,
-            autofocus: true,
-            minLines: 1,
-            maxLines: 3,
-            decoration: InputDecoration(
-              labelText: 'Lý do',
-              hintText: status == 'FAULT'
-                  ? 'VD: Marker bong tróc, mặt đáp nứt...'
-                  : 'VD: Vệ sinh, sơn lại marker...',
-              errorText: error,
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: const Text('Hủy'),
-            ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: _landingPadColor(status),
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
+      // ctrl được huỷ khi dialog gỡ khỏi cây (sau hiệu ứng đóng).
+      builder: (ctx) => ControllerDisposer(
+        controllers: [ctrl],
+        child: StatefulBuilder(
+          builder: (ctx, setLocal) => AlertDialog(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            title: Text('Bãi đáp: ${_landingPadLabel(status)}'),
+            content: TextField(
+              controller: ctrl,
+              autofocus: true,
+              minLines: 1,
+              maxLines: 3,
+              decoration: InputDecoration(
+                labelText: 'Lý do',
+                hintText: status == 'FAULT'
+                    ? 'VD: Marker bong tróc, mặt đáp nứt...'
+                    : 'VD: Vệ sinh, sơn lại marker...',
+                errorText: error,
               ),
-              onPressed: () {
-                final text = ctrl.text.trim();
-                if (text.isEmpty) {
-                  setLocal(() => error = 'Vui lòng nhập lý do.');
-                  return;
-                }
-                Navigator.pop(ctx, text);
-              },
-              child: const Text('Xác nhận'),
             ),
-          ],
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: const Text('Hủy'),
+              ),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: _landingPadColor(status),
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                onPressed: () {
+                  final text = ctrl.text.trim();
+                  if (text.isEmpty) {
+                    setLocal(() => error = 'Vui lòng nhập lý do.');
+                    return;
+                  }
+                  Navigator.pop(ctx, text);
+                },
+                child: const Text('Xác nhận'),
+              ),
+            ],
+          ),
         ),
       ),
     );
-    ctrl.dispose();
     return reason;
   }
 
@@ -2663,9 +2666,9 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
     final ok = await showDialog<bool>(
       context: context,
       barrierDismissible: false,
-      // photos được huỷ khi dialog gỡ khỏi cây (sau hiệu ứng đóng).
+      // photos + reasonCtrl được huỷ khi dialog gỡ khỏi cây (sau hiệu ứng đóng).
       builder: (ctx) => ControllerDisposer(
-        controller: photos,
+        controllers: [photos, reasonCtrl],
         child: StatefulBuilder(
           builder: (ctx, setLocal) => AlertDialog(
             shape: RoundedRectangleBorder(
@@ -2758,7 +2761,6 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
       ),
     );
     final reason = reasonCtrl.text.trim();
-    reasonCtrl.dispose();
     if (ok != true || reason.isEmpty) return;
     await _runCellAction(
       () => _service.reportFault(boxId, reason, attachments: attachments),
@@ -2775,45 +2777,48 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
     final reasonCtrl = TextEditingController();
     final ok = await showDialog<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text('Ngưng dùng ô #${cell['boxNumber']}'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Ô sẽ bị loại khỏi phân phối cho khách tới khi được khôi phục.',
-              style: TextStyle(fontSize: 12, color: opsMutedText),
+      // reasonCtrl được huỷ khi dialog gỡ khỏi cây (sau hiệu ứng đóng).
+      builder: (ctx) => ControllerDisposer(
+        controllers: [reasonCtrl],
+        child: AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: Text('Ngưng dùng ô #${cell['boxNumber']}'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Ô sẽ bị loại khỏi phân phối cho khách tới khi được khôi phục.',
+                style: TextStyle(fontSize: 12, color: opsMutedText),
+              ),
+              const SizedBox(height: 8),
+              TextField(
+                controller: reasonCtrl,
+                decoration: const InputDecoration(labelText: 'Lý do (tùy chọn)'),
+                minLines: 1,
+                maxLines: 3,
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text('Hủy'),
             ),
-            const SizedBox(height: 8),
-            TextField(
-              controller: reasonCtrl,
-              decoration: const InputDecoration(labelText: 'Lý do (tùy chọn)'),
-              minLines: 1,
-              maxLines: 3,
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF6B7280),
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+              onPressed: () => Navigator.pop(ctx, true),
+              child: const Text('Ngưng dùng'),
             ),
           ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Hủy'),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF6B7280),
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            ),
-            onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Ngưng dùng'),
-          ),
-        ],
       ),
     );
     final reason = reasonCtrl.text.trim();
-    reasonCtrl.dispose();
     if (ok != true) return;
     await _runCellAction(
       () => _service.outOfService(boxId, reason: reason.isEmpty ? null : reason),

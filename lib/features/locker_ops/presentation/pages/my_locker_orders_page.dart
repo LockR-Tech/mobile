@@ -340,9 +340,9 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
     final confirmed = await showDialog<bool>(
       context: context,
       barrierDismissible: false,
-      // photos được huỷ khi dialog gỡ khỏi cây (sau hiệu ứng đóng).
+      // photos + reasonCtrl được huỷ khi dialog gỡ khỏi cây (sau hiệu ứng đóng).
       builder: (ctx) => ControllerDisposer(
-        controller: photos,
+        controllers: [photos, reasonCtrl],
         child: StatefulBuilder(
           builder: (ctx, setLocal) => AlertDialog(
             shape: RoundedRectangleBorder(
