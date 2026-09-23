@@ -104,6 +104,22 @@ String fmtPrice(dynamic value) {
 
 DateTime? _parseDate(dynamic value) => parseServerDateTime(value);
 
+/// Số tiền còn phải trả của đơn.
+///
+/// Gia hạn thuê tủ và phí quá hạn cộng thêm vào `totalPrice` rồi đặt lại
+/// `paymentStatus = UNPAID`, nên thu theo `totalPrice` là bắt khách trả lại cả
+/// phần đã thanh toán trước đó. Backend trả `amountDue`; nếu server chưa có
+/// field này (chưa deploy) thì lùi về `totalPrice` như cũ.
+double orderAmountDue(Map<String, dynamic> order) {
+  final due = order['amountDue'];
+  if (due is num) return due.toDouble();
+  final parsedDue = num.tryParse('$due');
+  if (parsedDue != null) return parsedDue.toDouble();
+  final total = order['totalPrice'];
+  if (total is num) return total.toDouble();
+  return num.tryParse('$total')?.toDouble() ?? 0;
+}
+
 String _two(int n) => n.toString().padLeft(2, '0');
 
 /// ISO timestamp -> `HH:mm:ss dd/MM/yyyy`.

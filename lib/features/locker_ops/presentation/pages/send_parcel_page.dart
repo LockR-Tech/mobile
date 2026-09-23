@@ -220,12 +220,14 @@ class _SendParcelPageState extends State<SendParcelPage>
     if (id == null) return;
     setState(() => _loading = true);
     try {
-      final total = _order?['totalPrice'];
+      // Thu phần còn thiếu, không thu lại phần khách đã trả.
+      final order = _order;
+      final due = order == null ? null : orderAmountDue(order);
       final outcome = await payOrderAndAwaitPaid(
         context,
         service: _service,
         orderId: id,
-        total: total is num ? total.toDouble() : _netFee.toDouble(),
+        total: due ?? _netFee.toDouble(),
         enabledMethods: businessConfig.enabledPaymentMethods,
       );
       if (!mounted || outcome == OrderPaymentOutcome.cancelled) return;
@@ -633,6 +635,44 @@ class _SendParcelPageState extends State<SendParcelPage>
                       : 'Nhập PIN tại tủ để mở ô và bỏ hàng',
                 ),
               ],
+              // Người nhận vừa nhập ở bước trước nhưng màn kết quả không hiện
+              // lại, nên không kiểm tra được mình gõ đúng số chưa.
+              ...[
+                const SizedBox(height: 16),
+                const OpsSectionLabel(
+                  'Người nhận',
+                  icon: LucideIcons.userRound,
+                ),
+                OpsInfoRow(
+                  icon: LucideIcons.user,
+                  label: 'Họ tên',
+                  value: _textOrDash(order['receiverName']),
+                ),
+                OpsInfoRow(
+                  icon: LucideIcons.phone,
+                  label: 'Số điện thoại',
+                  value: _textOrDash(order['receiverPhone']),
+                ),
+                if (_hasText(order['receiverEmail']))
+                  OpsInfoRow(
+                    icon: LucideIcons.mail,
+                    label: 'Email',
+                    value: '${order['receiverEmail']}',
+                  ),
+                OpsInfoRow(
+                  icon: LucideIcons.userCheck,
+                  label: 'Tài khoản Lock.R',
+                  value: hasReceiverAccount
+                      ? 'Đã có — PIN gửi thẳng vào app'
+                      : 'Chưa có — bạn cần chuyển PIN cho người nhận',
+                ),
+                if (_hasText(order['customerNote']))
+                  OpsInfoRow(
+                    icon: LucideIcons.stickyNote,
+                    label: 'Ghi chú',
+                    value: '${order['customerNote']}',
+                  ),
+              ],
               if (isDropped && order['pickupDeadline'] != null) ...[
                 const SizedBox(height: 16),
                 OpsBanner(
@@ -827,3 +867,7 @@ class _ResultHeadline extends StatelessWidget {
     );
   }
 }
+
+bool _hasText(dynamic value) => value != null && '$value'.trim().isNotEmpty;
+
+String _textOrDash(dynamic value) => _hasText(value) ? '$value'.trim() : '—';

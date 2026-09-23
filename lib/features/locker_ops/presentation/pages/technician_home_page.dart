@@ -52,6 +52,9 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
   // Tủ mình phụ trách (`lockers?mine=true`).
   List<Map<String, dynamic>> _myLockers = [];
   String _queueView = 'ALL';
+
+  /// Lọc tab Sự cố theo trạng thái phiếu: ALL / OPEN / IN_PROGRESS / RESOLVED.
+  String _reportStatusFilter = 'ALL';
   List<Map<String, dynamic>> _schedules = [];
   String _scheduleFilter = 'ALL';
   // Của tôi (lịch giao cho mình) / Tất cả lịch tủ.
@@ -2933,9 +2936,19 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
   Widget _buildQueue() {
     // Tab "Sự cố": Toàn bộ sự cố Kiosk để KTV duyệt — OPEN thì nhận việc, còn lại là tham khảo.
     // Dữ liệu từ /api/admin/lockers/reports — khớp 100% với Admin portal.
-    final openReports = _reports.where((r) => r['status'] == 'OPEN').toList();
-    final inProgressReports = _reports.where((r) => r['status'] == 'IN_PROGRESS').toList();
-    final resolvedReports = _reports.where((r) => r['status'] == 'RESOLVED').toList();
+    // Bộ lọc trạng thái: khi chọn một trạng thái thì các nhóm còn lại rỗng nên
+    // danh sách bên dưới chỉ còn đúng nhóm đó.
+    bool statusShown(String status) =>
+        _reportStatusFilter == 'ALL' || _reportStatusFilter == status;
+    final openReports = statusShown('OPEN')
+        ? _reports.where((r) => r['status'] == 'OPEN').toList()
+        : <Map<String, dynamic>>[];
+    final inProgressReports = statusShown('IN_PROGRESS')
+        ? _reports.where((r) => r['status'] == 'IN_PROGRESS').toList()
+        : <Map<String, dynamic>>[];
+    final resolvedReports = statusShown('RESOLVED')
+        ? _reports.where((r) => r['status'] == 'RESOLVED').toList()
+        : <Map<String, dynamic>>[];
     // "Tủ tôi phụ trách": phiếu OPEN server định tuyến cho mình + ô lỗi của các tủ đó.
     final routedView = _queueView == 'ROUTED';
     final myLockerIds = _myLockerIds;
@@ -2971,6 +2984,40 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
               ],
             ),
           ),
+          if (!routedView) ...[
+            const SizedBox(height: 8),
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: [
+                  for (final option in const [
+                    ('ALL', 'Mọi trạng thái', Icons.filter_list),
+                    ('OPEN', 'Chờ nhận', Icons.fiber_new_rounded),
+                    ('IN_PROGRESS', 'Đang xử lý', Icons.build_circle_outlined),
+                    ('RESOLVED', 'Hoàn tất', Icons.check_circle_outline),
+                  ]) ...[
+                    _buildScheduleChip(
+                      label: option.$1 == 'ALL'
+                          ? option.$2
+                          : '${option.$2} '
+                              '(${_reports.where((r) => r['status'] == option.$1).length})',
+                      selected: _reportStatusFilter == option.$1,
+                      icon: option.$3,
+                      activeColor: switch (option.$1) {
+                        'OPEN' => const Color(0xFFDC2626),
+                        'IN_PROGRESS' => const Color(0xFFD97706),
+                        'RESOLVED' => const Color(0xFF16A34A),
+                        _ => opsPrimary,
+                      },
+                      onTap: () =>
+                          setState(() => _reportStatusFilter = option.$1),
+                    ),
+                    const SizedBox(width: 8),
+                  ],
+                ],
+              ),
+            ),
+          ],
           const SizedBox(height: 12),
           if (!routedView) _boxAnomaliesSection(),
           if (routedView) ...[

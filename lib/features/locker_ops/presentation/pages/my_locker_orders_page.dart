@@ -200,64 +200,6 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
     }
   }
 
-  Future<void> _delegateDialog(int orderId) async {
-    final phoneCtrl = TextEditingController();
-    final nameCtrl = TextEditingController();
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('Ủy quyền lấy hộ'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text(
-              'Người được ủy quyền sẽ nhận PIN mới để mở ô.',
-              style: TextStyle(fontSize: 13, color: opsMutedText),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: phoneCtrl,
-              keyboardType: TextInputType.phone,
-              decoration: const InputDecoration(
-                labelText: 'SĐT người lấy hộ',
-                prefixIcon: Icon(LucideIcons.phone, size: 18),
-              ),
-            ),
-            const SizedBox(height: 8),
-            TextField(
-              controller: nameCtrl,
-              decoration: const InputDecoration(
-                labelText: 'Tên (tùy chọn)',
-                prefixIcon: Icon(LucideIcons.idCard, size: 18),
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Hủy'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Ủy quyền'),
-          ),
-        ],
-      ),
-    );
-    if (confirmed == true && phoneCtrl.text.trim().isNotEmpty) {
-      await _runAction(
-        () => _service.delegate(
-          orderId,
-          phone: phoneCtrl.text.trim(),
-          name: nameCtrl.text.trim().isEmpty ? null : nameCtrl.text.trim(),
-        ),
-        'Đã ủy quyền — PIN mới được gửi cho người lấy hộ',
-      );
-    }
-  }
-
   Future<void> _extendDialog(int orderId) async {
     // Giới hạn gia hạn do admin cấu hình; làm mới nền để lần sau dùng giá trị
     // mới nhất mà không bắt người dùng chờ mạng.
@@ -564,12 +506,19 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
     try {
       // Dùng bản ghi đã tải nếu có; chỉ gọi mạng khi cache chưa có tủ này.
       final locker = _lockersMap[lockerId] ?? await _service.locker(lockerId);
-      final opened = await openLockerDirections(
+      final result = await openLockerDirectionsResult(
         latitude: _asDouble(locker['latitude']),
         longitude: _asDouble(locker['longitude']),
         address: locker['address']?.toString(),
       );
-      if (!opened) _snack('Tủ chưa có vị trí để chỉ đường.');
+      switch (result) {
+        case DirectionsResult.opened:
+          break;
+        case DirectionsResult.noLocation:
+          _snack('Tủ chưa có vị trí để chỉ đường.');
+        case DirectionsResult.launchFailed:
+          _snack('Không mở được ứng dụng bản đồ trên máy này.');
+      }
     } catch (e) {
       _snack(LockerOpsService.errorMessage(e));
     }
@@ -580,7 +529,8 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
   Future<void> _payDialog(Map<String, dynamic> order) async {
     final orderId = _asInt(order['id']);
     if (orderId == null) return;
-    final total = _asDouble(order['totalPrice']) ?? 0;
+    // Thu phần còn thiếu, không thu lại phần khách đã trả (gia hạn/phí quá hạn).
+    final total = orderAmountDue(order);
 
     // Làm mới nền danh sách phương thức admin bật (trong TTL thì không gọi mạng).
     businessConfigService.refresh();
@@ -813,10 +763,6 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
             onEndRental: (id) async {
               Navigator.pop(ctx);
               await _showRentalCompletionGuide(order);
-            },
-            onDelegate: (id) async {
-              Navigator.pop(ctx);
-              await _delegateDialog(id);
             },
             onExtend: (id) async {
               Navigator.pop(ctx);
@@ -1890,7 +1836,6 @@ class _DetailSheet extends StatelessWidget {
     required this.onConfirmDrop,
     required this.onComplete,
     required this.onEndRental,
-    required this.onDelegate,
     required this.onExtend,
     required this.onReport,
     required this.onCancel,
@@ -1913,7 +1858,6 @@ class _DetailSheet extends StatelessWidget {
   final void Function(int orderId) onConfirmDrop;
   final void Function(int orderId) onComplete;
   final void Function(int orderId) onEndRental;
-  final void Function(int orderId) onDelegate;
   final void Function(int orderId) onExtend;
   final void Function(int boxId) onReport;
   final void Function(int orderId) onCancel;
@@ -2035,7 +1979,7 @@ class _DetailSheet extends StatelessWidget {
         ),
       if (canPay)
         OpsSheetAction(
-          label: 'Thanh toán ${fmtPrice(order['totalPrice'])}',
+          label: 'Thanh toán ${fmtPrice(orderAmountDue(order))}',
           icon: LucideIcons.creditCard,
           primary: true,
           onTap: () => onPay(id),
@@ -2111,13 +2055,8 @@ class _DetailSheet extends StatelessWidget {
           onTap: () => onEndRental(id),
         ),
       ],
-      if (canUsePickupActions &&
-          (rawStatus == 'STORING' || rawStatus == 'RETURNED'))
-        OpsSheetAction(
-          label: 'Ủy quyền người khác lấy hộ',
-          icon: LucideIcons.userPlus,
-          onTap: () => onDelegate(id),
-        ),
+      // "Ủy quyền người khác lấy hộ" đã gỡ theo yêu cầu nghiệp vụ — người nhận
+      // lấy hàng bằng mã PIN, không cần uỷ quyền thêm một lớp nữa.
       if (boxId != null && rawStatus != 'COMPLETED' && rawStatus != 'CANCELED')
         OpsSheetAction(
           label: 'Báo ô lỗi',
@@ -2336,6 +2275,23 @@ class _DetailSheet extends StatelessWidget {
                 value: fmtPrice(order['totalPrice']),
                 valueColor: opsDark,
               ),
+              // Gia hạn / phí quá hạn cộng vào tổng nhưng phần cũ đã trả rồi,
+              // nên tách rõ đã trả bao nhiêu và còn thiếu bao nhiêu.
+              if (orderAmountDue(order) > 0 &&
+                  (_asDouble(order['paidAmount']) ?? 0) > 0) ...[
+                OpsInfoRow(
+                  icon: LucideIcons.receiptText,
+                  label: 'Đã thanh toán',
+                  value: fmtPrice(order['paidAmount']),
+                  valueColor: const Color(0xFF15803D),
+                ),
+                OpsInfoRow(
+                  icon: LucideIcons.circleDollarSign,
+                  label: 'Còn phải trả',
+                  value: fmtPrice(orderAmountDue(order)),
+                  valueColor: const Color(0xFFB45309),
+                ),
+              ],
               OpsInfoRow(
                 icon: LucideIcons.checkCheck,
                 label: 'Thanh toán',
@@ -2350,6 +2306,8 @@ class _DetailSheet extends StatelessWidget {
                           ? const Color(0xFF64748B)
                           : const Color(0xFFB45309)),
               ),
+              // Hình thức thanh toán + mã giao dịch lấy từ payment-service.
+              _PaymentTraceRows(orderId: _asInt(order['id'])),
               if (customerNote != null && customerNote.isNotEmpty)
                 OpsInfoRow(
                   icon: LucideIcons.stickyNote,
@@ -2379,3 +2337,103 @@ class _DetailSheet extends StatelessWidget {
   }
 }
 
+
+/// Hình thức thanh toán + mã giao dịch của đơn.
+///
+/// `OrderResponse` không mang thông tin này (nằm ở payment-service), nên chi
+/// tiết đơn của khách trước đây chỉ có "Đã/Chưa thanh toán" mà không biết trả
+/// bằng gì và mã giao dịch nào để đối soát.
+class _PaymentTraceRows extends StatefulWidget {
+  const _PaymentTraceRows({required this.orderId});
+
+  final int? orderId;
+
+  @override
+  State<_PaymentTraceRows> createState() => _PaymentTraceRowsState();
+}
+
+class _PaymentTraceRowsState extends State<_PaymentTraceRows> {
+  late Future<List<Map<String, dynamic>>> _future;
+
+  @override
+  void initState() {
+    super.initState();
+    _future = _load();
+  }
+
+  Future<List<Map<String, dynamic>>> _load() async {
+    final id = widget.orderId;
+    if (id == null) return const [];
+    try {
+      return await LockerOpsService().paymentsByOrder(id);
+    } catch (_) {
+      // Chi tiết đơn vẫn phải mở được khi payment-service lỗi.
+      return const [];
+    }
+  }
+
+  static String _methodLabel(String? method) => switch (method?.toUpperCase()) {
+    'WALLET' => 'Ví Lock.R',
+    'SEPAY' => 'Chuyển khoản (SePay)',
+    'VNPAY' => 'VNPay',
+    'MOMO' => 'MoMo',
+    'CASH' => 'Tiền mặt',
+    null => '—',
+    final other => other,
+  };
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<List<Map<String, dynamic>>>(
+      future: _future,
+      builder: (context, snapshot) {
+        final payments = snapshot.data ?? const <Map<String, dynamic>>[];
+        // Chỉ hiện giao dịch đã hoàn tất — giao dịch PENDING/FAILED không phải
+        // thứ khách dùng để đối soát.
+        final done = payments
+            .where((p) => '${p['status']}'.toUpperCase() == 'COMPLETED')
+            .toList();
+        if (done.isEmpty) return const SizedBox.shrink();
+
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            for (final p in done) ...[
+              OpsInfoRow(
+                icon: LucideIcons.creditCard,
+                label: 'Hình thức thanh toán',
+                value: _methodLabel(p['method'] as String?),
+              ),
+              OpsInfoRow(
+                icon: LucideIcons.hash,
+                label: 'Mã giao dịch',
+                value: _transactionCode(p),
+              ),
+              if (p['amount'] != null)
+                OpsInfoRow(
+                  icon: LucideIcons.banknote,
+                  label: 'Số tiền đã trả',
+                  value: fmtPrice(p['amount']),
+                  valueColor: const Color(0xFF15803D),
+                ),
+              if (p['createdAt'] != null)
+                OpsInfoRow(
+                  icon: LucideIcons.calendarCheck,
+                  label: 'Thời gian thanh toán',
+                  value: fmtDateTime(p['createdAt']),
+                ),
+            ],
+          ],
+        );
+      },
+    );
+  }
+
+  static String _transactionCode(Map<String, dynamic> payment) {
+    for (final key in ['referenceTransactionId', 'referenceId', 'id']) {
+      final value = payment[key];
+      if (value != null && '$value'.trim().isNotEmpty) return '$value';
+    }
+    return '—';
+  }
+}
