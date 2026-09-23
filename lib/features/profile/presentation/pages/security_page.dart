@@ -8,6 +8,7 @@ import 'package:smart_laundry_locker/features/profile/presentation/providers/sec
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:provider/provider.dart';
+import 'package:smart_laundry_locker/shared/widgets/controller_disposer.dart';
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
 
 class SecurityPage extends StatefulWidget {
@@ -117,8 +118,10 @@ class _SecurityPageState extends State<SecurityPage> {
     await showDialog<void>(
       context: parentContext,
       barrierDismissible: false,
-      builder: (context) {
-        return StatefulBuilder(
+      // Hai controller được huỷ khi dialog gỡ khỏi cây (sau hiệu ứng đóng).
+      builder: (context) => ControllerDisposer(
+        controllers: [newPasswordController, confirmPasswordController],
+        child: StatefulBuilder(
           builder: (context, setLocalState) {
             void validateMatch() {
               final newPass = newPasswordController.text.trim();
@@ -314,12 +317,9 @@ class _SecurityPageState extends State<SecurityPage> {
               ),
             );
           },
-        );
-      },
+        ),
+      ),
     );
-
-    newPasswordController.dispose();
-    confirmPasswordController.dispose();
   }
 
   @override

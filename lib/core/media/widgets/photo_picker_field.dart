@@ -8,33 +8,6 @@ import 'package:smart_laundry_locker/core/media/photo_picker_controller.dart';
 const _defaultAccent = Color(0xFF1E5A8A);
 const _mutedText = Color(0xFF64748B);
 
-/// Huỷ [controller] khi widget bị gỡ khỏi cây — dùng cho controller tạo tạm
-/// trong `showDialog` (dialog còn chạy hiệu ứng đóng sau khi future trả về).
-class ControllerDisposer extends StatefulWidget {
-  const ControllerDisposer({
-    super.key,
-    required this.controller,
-    required this.child,
-  });
-
-  final ChangeNotifier controller;
-  final Widget child;
-
-  @override
-  State<ControllerDisposer> createState() => _ControllerDisposerState();
-}
-
-class _ControllerDisposerState extends State<ControllerDisposer> {
-  @override
-  void dispose() {
-    widget.controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) => widget.child;
-}
-
 /// Hàng ảnh chờ gửi: thumbnail + nút xoá + tiến độ upload từng ảnh, kèm ô
 /// "Thêm ảnh" (camera / thư viện). Trạng thái nằm trong [controller].
 class PhotoPickerField extends StatelessWidget {
