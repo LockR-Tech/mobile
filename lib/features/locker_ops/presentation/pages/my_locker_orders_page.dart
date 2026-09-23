@@ -6,6 +6,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:smart_laundry_locker/core/config/business_config_provider.dart';
 import 'package:smart_laundry_locker/core/media/media.dart';
 import 'package:smart_laundry_locker/core/routing/app_router.dart';
+import 'package:smart_laundry_locker/shared/widgets/app_lottie.dart';
 import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/utils/business_rules_text.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/utils/locker_maps.dart';
@@ -1122,14 +1123,11 @@ class _OrderCard extends StatelessWidget {
                     child: SizedBox(
                       width: 112,
                       height: 100,
-                      child: Image.asset(
+                      child: AppLottie(
                         _isDeliveryOrder(type)
-                            ? 'assets/images/air_delivery_3d.png'
-                            : 'assets/images/box_stack_3d.png',
-                        fit: BoxFit.contain,
+                            ? AppLottieAssets.airplaneBox
+                            : AppLottieAssets.box,
                         alignment: Alignment.bottomRight,
-                        errorBuilder: (context, error, stackTrace) =>
-                            const SizedBox.shrink(),
                       ),
                     ),
                   ),
@@ -2160,12 +2158,11 @@ class _DetailSheet extends StatelessWidget {
                 ),
               ),
               padding: const EdgeInsets.all(4),
-              child: Image.asset(
+              child: AppLottie(
                 _isDeliveryOrder(order['type'] as String?)
-                    ? 'assets/images/air_delivery_3d.png'
-                    : 'assets/images/box_stack_3d.png',
-                fit: BoxFit.contain,
-                errorBuilder: (context, error, stackTrace) => Icon(
+                    ? AppLottieAssets.airplaneBox
+                    : AppLottieAssets.box,
+                fallback: (context) => Icon(
                   typeIcon(order['type'] as String?),
                   color: statusColor(status),
                   size: 24,

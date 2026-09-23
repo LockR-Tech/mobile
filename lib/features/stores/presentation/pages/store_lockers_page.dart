@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:smart_laundry_locker/core/presentation/pages/directions_map_page.dart';
+import 'package:smart_laundry_locker/shared/widgets/app_lottie.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/presentation/widgets/drone_booking_sheet.dart';
 import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/pages/rent_locker_page.dart';
@@ -1145,10 +1146,9 @@ class _BookingSheet extends StatelessWidget {
                   color: AislBrand.cyan.withValues(alpha: 0.14),
                   borderRadius: BorderRadius.circular(16),
                 ),
-                child: Image.asset(
-                  'assets/images/box_stack_3d.png',
-                  fit: BoxFit.contain,
-                  errorBuilder: (context, error, stackTrace) => const Icon(
+                child: AppLottie(
+                  AppLottieAssets.box,
+                  fallback: (context) => const Icon(
                     LucideIcons.box,
                     color: AislBrand.navy,
                     size: 26,
@@ -1232,7 +1232,7 @@ class _BookingSheet extends StatelessWidget {
             children: [
               Expanded(
                 child: _ServiceButton(
-                  imageAsset: 'assets/images/box_stack_3d.png',
+                  lottieAsset: AppLottieAssets.box,
                   label: 'Thuê tủ',
                   sublabel: 'Tính theo giờ',
                   gradient: const LinearGradient(
@@ -1246,7 +1246,7 @@ class _BookingSheet extends StatelessWidget {
               const SizedBox(width: 12),
               Expanded(
                 child: _ServiceButton(
-                  imageAsset: 'assets/images/air_delivery_3d.png',
+                  lottieAsset: AppLottieAssets.airplaneBox,
                   label: 'Gửi hàng',
                   sublabel: 'Chuyển C2C',
                   gradient: const LinearGradient(
@@ -1322,14 +1322,14 @@ class _VerticalDivider extends StatelessWidget {
 
 class _ServiceButton extends StatelessWidget {
   const _ServiceButton({
-    required this.imageAsset,
+    required this.lottieAsset,
     required this.label,
     required this.sublabel,
     required this.gradient,
     required this.onTap,
   });
 
-  final String imageAsset;
+  final String lottieAsset;
   final String label;
   final String sublabel;
   final LinearGradient gradient;
@@ -1354,11 +1354,10 @@ class _ServiceButton extends StatelessWidget {
                 SizedBox(
                   width: 52,
                   height: 52,
-                  child: Image.asset(
-                    imageAsset,
-                    fit: BoxFit.contain,
-                    errorBuilder: (context, error, stackTrace) => Icon(
-                      imageAsset.contains('air')
+                  child: AppLottie(
+                    lottieAsset,
+                    fallback: (context) => Icon(
+                      lottieAsset == AppLottieAssets.airplaneBox
                           ? LucideIcons.send
                           : LucideIcons.box,
                       color: Colors.white,
