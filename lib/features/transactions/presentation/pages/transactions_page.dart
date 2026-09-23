@@ -139,38 +139,79 @@ class _TransactionsPageState extends State<TransactionsPage> {
                                   ),
                                 ),
                                 const SizedBox(width: 12),
-                                TextButton(
-                                  onPressed: () async {
-                                    final ok = await context.push<bool>(
-                                      AppRouter.topUp,
-                                    );
-                                    if (!mounted) return;
-                                    if (ok == true) {
-                                      await _provider.fetchTransactions(
-                                        refresh: true,
-                                      );
-                                      await walletProvider.getWalletBalance();
-                                    }
-                                  },
-                                  style: TextButton.styleFrom(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 16,
-                                      vertical: 8,
+                                Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    TextButton(
+                                      onPressed: () async {
+                                        final ok = await context.push<bool>(
+                                          AppRouter.topUp,
+                                        );
+                                        if (!mounted) return;
+                                        if (ok == true) {
+                                          await _provider.fetchTransactions(
+                                            refresh: true,
+                                          );
+                                          await walletProvider.getWalletBalance();
+                                        }
+                                      },
+                                      style: TextButton.styleFrom(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 14,
+                                          vertical: 6,
+                                        ),
+                                        backgroundColor:
+                                            AISLShadcnTheme.navyPrimary,
+                                        foregroundColor: Colors.white,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(10),
+                                        ),
+                                      ),
+                                      child: const Text(
+                                        'Nạp tiền',
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
                                     ),
-                                    backgroundColor:
-                                        AISLShadcnTheme.navyPrimary,
-                                    foregroundColor: Colors.white,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(12),
+                                    const SizedBox(height: 6),
+                                    OutlinedButton(
+                                      onPressed: () async {
+                                        final ok = await context.push<bool>(
+                                          AppRouter.withdraw,
+                                        );
+                                        if (!mounted) return;
+                                        if (ok == true) {
+                                          await _provider.fetchTransactions(
+                                            refresh: true,
+                                          );
+                                          await walletProvider.getWalletBalance();
+                                        }
+                                      },
+                                      style: OutlinedButton.styleFrom(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 14,
+                                          vertical: 6,
+                                        ),
+                                        foregroundColor:
+                                            AISLShadcnTheme.navyPrimary,
+                                        side: const BorderSide(
+                                          color: AISLShadcnTheme.navyPrimary,
+                                        ),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(10),
+                                        ),
+                                      ),
+                                      child: const Text(
+                                        'Rút tiền',
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
                                     ),
-                                  ),
-                                  child: const Text(
-                                    'Nạp tiền',
-                                    style: TextStyle(
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
+                                  ],
                                 ),
                               ],
                             ),

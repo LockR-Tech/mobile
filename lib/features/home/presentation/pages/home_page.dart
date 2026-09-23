@@ -1341,6 +1341,16 @@ class _HomePageState extends ConsumerState<HomePage>
                     ),
                     _buildUtilityItem(
                       ctx,
+                      icon: LucideIcons.arrowUpRight,
+                      label: 'Rút tiền',
+                      color: const Color(0xFFF97316),
+                      onTap: () {
+                        Navigator.pop(ctx);
+                        context.push(AppRouter.withdraw);
+                      },
+                    ),
+                    _buildUtilityItem(
+                      ctx,
                       icon: LucideIcons.store,
                       label: 'Điểm gửi',
                       color: const Color(0xFF8B5CF6),

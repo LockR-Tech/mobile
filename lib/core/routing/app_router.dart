@@ -27,6 +27,7 @@ import 'package:smart_laundry_locker/features/profile/presentation/pages/securit
 import 'package:smart_laundry_locker/features/subscription/presentation/pages/plans_page.dart';
 import 'package:smart_laundry_locker/features/transactions/presentation/pages/transactions_page.dart';
 import 'package:smart_laundry_locker/features/transactions/presentation/pages/top_up_page.dart';
+import 'package:smart_laundry_locker/features/wallet/presentation/pages/withdraw_page.dart';
 import 'package:smart_laundry_locker/core/presentation/pages/qr_scanner_page.dart';
 import 'package:smart_laundry_locker/core/presentation/pages/directions_map_page.dart';
 import 'package:smart_laundry_locker/features/notifications/presentation/pages/notification_list_page.dart';
@@ -73,6 +74,7 @@ class AppRouter {
   static const String plans = '/profile/plans';
   static const String transactions = '/transactions';
   static const String topUp = '/top-up';
+  static const String withdraw = '/withdraw';
   static const String policy = '/policy';
   static const String createReport = '/maintenance/create-report';
   static const String myReports = '/maintenance/my-reports';
@@ -217,6 +219,11 @@ class AppRouter {
         path: topUp,
         name: 'top_up',
         builder: (context, state) => const TopUpPage(),
+      ),
+      GoRoute(
+        path: withdraw,
+        name: 'withdraw',
+        builder: (context, state) => const WithdrawPage(),
       ),
       GoRoute(
         path: policy,

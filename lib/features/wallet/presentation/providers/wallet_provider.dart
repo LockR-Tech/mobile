@@ -31,6 +31,9 @@ class WalletProvider extends ChangeNotifier {
   double _balance = 0;
   double get balance => _balance;
 
+  double _withdrawableBalance = 0;
+  double get withdrawableBalance => _withdrawableBalance;
+
   bool _isLoading = false;
   bool get isLoading => _isLoading;
 
@@ -51,6 +54,32 @@ class WalletProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
+      try {
+        final response = await _apiClient.get<dynamic>('/api/wallet/withdrawable-balance');
+        final data = response.data;
+        Map<String, dynamic>? payload;
+        if (data is Map<String, dynamic>) {
+          payload = (data['data'] is Map<String, dynamic>)
+              ? (data['data'] as Map<String, dynamic>)
+              : data;
+        }
+
+        if (payload != null) {
+          final rawTotal = payload['totalBalance'];
+          _balance = rawTotal is num
+              ? rawTotal.toDouble()
+              : double.tryParse('$rawTotal') ?? 0;
+
+          final rawWithdrawable = payload['withdrawableBalance'];
+          _withdrawableBalance = rawWithdrawable is num
+              ? rawWithdrawable.toDouble()
+              : double.tryParse('$rawWithdrawable') ?? 0;
+          return;
+        }
+      } catch (_) {
+        // Fallback to /api/wallet if withdrawable-balance endpoint is unavailable
+      }
+
       final response = await _apiClient.get<dynamic>('/api/wallet');
       final data = response.data;
       Map<String, dynamic>? payload;
@@ -65,8 +94,62 @@ class WalletProvider extends ChangeNotifier {
           ? raw.toDouble()
           : double.tryParse('$raw') ?? 0;
       _balance = balance;
+      _withdrawableBalance = balance;
     } catch (e) {
       _error = e.toString();
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<Map<String, dynamic>> withdraw({
+    required String bankName,
+    required String bankCode,
+    required String accountNumber,
+    required String accountHolderName,
+    required double amount,
+  }) async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
+    try {
+      final response = await _apiClient.post<Map<String, dynamic>>(
+        '/api/wallet/withdraw',
+        data: {
+          'bankName': bankName,
+          'bankCode': bankCode,
+          'accountNumber': accountNumber,
+          'accountHolderName': accountHolderName,
+          'amount': amount,
+        },
+      );
+
+      final data = response.data;
+      Map<String, dynamic>? payload;
+      if (data != null) {
+        payload = (data['data'] is Map<String, dynamic>)
+            ? data['data'] as Map<String, dynamic>
+            : data;
+      }
+
+      if (payload != null) {
+        final balAfter = payload['balanceAfter'];
+        if (balAfter is num) {
+          _balance = balAfter.toDouble();
+        }
+        final withAfter = payload['withdrawableBalance'];
+        if (withAfter is num) {
+          _withdrawableBalance = withAfter.toDouble();
+        }
+      }
+
+      AppEventBus.instance.emit(const WalletUpdatedEvent());
+      return payload ?? {};
+    } catch (e) {
+      _error = e.toString();
+      rethrow;
     } finally {
       _isLoading = false;
       notifyListeners();

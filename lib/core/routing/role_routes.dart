@@ -25,6 +25,7 @@ String homeForRoles(List<String> roles) {
 bool requiresSignIn(String location) =>
     location == AppRouter.transactions ||
     location == AppRouter.topUp ||
+    location == AppRouter.withdraw ||
     location == AppRouter.assistant ||
     location.startsWith('${AppRouter.assistant}/');
 
