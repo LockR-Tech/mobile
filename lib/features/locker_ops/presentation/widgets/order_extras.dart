@@ -456,11 +456,23 @@ class _PaymentStatusChipState extends State<PaymentStatusChip> {
   Future<void> _load() async {
     try {
       final payments = await _service.paymentsByOrder(widget.orderId);
+      String? foundStatus;
+      if (payments.any((p) =>
+          p['status'] == 'COMPLETED' ||
+          p['status'] == 'PAID' ||
+          p['status'] == 'SUCCESS')) {
+        foundStatus = 'COMPLETED';
+      } else if (payments.isNotEmpty) {
+        foundStatus = payments.last['status'] as String?;
+      } else {
+        final ord = await _service.order(widget.orderId);
+        if (ord['paymentStatus'] == 'PAID') {
+          foundStatus = 'COMPLETED';
+        }
+      }
       if (!mounted) return;
       setState(() {
-        _status = payments.isEmpty
-            ? null
-            : payments.first['status'] as String?;
+        _status = foundStatus;
         _loading = false;
       });
     } catch (_) {

@@ -131,6 +131,14 @@ class _RentLockerPageState extends State<RentLockerPage>
         if (paid && mounted) {
           _stopPaymentPolling();
           await _refreshOrder();
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Thanh toán thành công! Mã PIN mở ô tủ đã sẵn sàng.'),
+                backgroundColor: Color(0xFF16A34A),
+              ),
+            );
+          }
         }
       } catch (_) {}
     });
@@ -139,6 +147,14 @@ class _RentLockerPageState extends State<RentLockerPage>
   void _stopPaymentPolling() {
     _paymentPollTimer?.cancel();
     _paymentPollTimer = null;
+  }
+
+  Future<void> _initSepayCheckout(int orderId) async {
+    try {
+      await _service.checkout(orderId, 'SEPAY');
+    } catch (_) {
+      // Backend SePay webhook sẽ tự động xử lý nếu đã có thanh toán
+    }
   }
 
   Future<void> _loadLockers() async {
@@ -221,6 +237,7 @@ class _RentLockerPageState extends State<RentLockerPage>
       final fee = order['totalPrice'];
       final hasFee = fee is num ? fee > 0 : _netPrice > 0;
       if (orderId != null && hasFee && paymentStatus != 'PAID') {
+        _initSepayCheckout(orderId);
         _startPaymentPolling(orderId);
       }
     } catch (e) {
