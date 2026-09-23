@@ -8,6 +8,7 @@ import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/ops_widgets.dart';
 import 'package:smart_laundry_locker/features/transactions/presentation/pages/top_up_page.dart'
     show TopUpWebViewPage;
+import 'package:smart_laundry_locker/shared/widgets/app_lottie.dart';
 
 enum OrderPaymentOutcome {
   /// Đơn đã được ghi nhận PAID.
@@ -100,6 +101,18 @@ Future<OrderPaymentOutcome> payOrderAndAwaitPaid(
       timeout: const Duration(seconds: 60));
   return paid ? OrderPaymentOutcome.paid : OrderPaymentOutcome.pending;
 }
+
+/// Huy hiệu tick xanh cũ — giữ làm dự phòng khi không nạp được Lottie.
+Widget _paidCheckBadge(BuildContext context) => Container(
+      width: 72,
+      height: 72,
+      decoration: const BoxDecoration(
+        color: Color(0xFFDCFCE7),
+        shape: BoxShape.circle,
+      ),
+      child: const Icon(Icons.check_rounded,
+          color: Color(0xFF16A34A), size: 40),
+    );
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SePay VietQR inline bottom sheet
@@ -202,18 +215,16 @@ class _SepayVietQrSheetState extends State<_SepayVietQrSheet> {
           const SizedBox(height: 16),
 
           if (_paid)
-            // Success state
+            // Success state — dùng chung cho thanh toán lúc tạo đơn và phí quá hạn.
             Column(
               children: [
-                Container(
-                  width: 72,
-                  height: 72,
-                  decoration: const BoxDecoration(
-                    color: Color(0xFFDCFCE7),
-                    shape: BoxShape.circle,
+                const SizedBox(
+                  width: 140,
+                  height: 140,
+                  child: AppLottie(
+                    AppLottieAssets.daThanhToan,
+                    fallback: _paidCheckBadge,
                   ),
-                  child: const Icon(Icons.check_rounded,
-                      color: Color(0xFF16A34A), size: 40),
                 ),
                 const SizedBox(height: 12),
                 const Text('Thanh toán thành công!',
