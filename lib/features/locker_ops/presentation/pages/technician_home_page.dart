@@ -3898,34 +3898,53 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
               ),
             ],
             const SizedBox(height: 10),
+            // Lịch bị chặn vì lần trước KHÔNG ĐẠT: trước đây chỉ có một dòng chữ
+            // xám 11.5px cạnh nút đã mờ, nên KTV không biết phải làm gì để kiểm
+            // tra tiếp. Nay nói rõ bước kế tiếp và cho bấm thẳng vào phiếu.
+            if (blockedReason != null) ...[
+              OpsBanner(
+                tone: OpsBannerTone.warning,
+                icon: Icons.report_gmailerrorred_outlined,
+                text: pendingReportId != null
+                    ? 'Lần kiểm tra trước KHÔNG ĐẠT nên hệ thống đã mở phiếu '
+                          '#$pendingReportId. Xử lý xong và nghiệm thu phiếu đó '
+                          'thì lịch này mở lại để kiểm tra tiếp.'
+                    : blockedReason,
+              ),
+              const SizedBox(height: 8),
+            ],
             Row(
               children: [
-                Expanded(
-                  child: blockedReason == null
-                      ? const SizedBox.shrink()
-                      : Text(
-                          blockedReason,
-                          style: const TextStyle(
-                            fontSize: 11.5,
-                            color: opsMutedText,
-                          ),
-                        ),
-                ),
-                const SizedBox(width: 8),
-                ElevatedButton.icon(
-                  onPressed: id == null || blockedReason != null
-                      ? null
-                      : () => _showCompleteInspectionSheet(s),
-                  icon: const Icon(Icons.fact_check_outlined, size: 16),
-                  label: const Text('Kiểm tra'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF16A34A),
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                const Spacer(),
+                if (pendingReportId != null)
+                  ElevatedButton.icon(
+                    onPressed: () => _openReportById(pendingReportId),
+                    icon: const Icon(Icons.assignment_turned_in_outlined,
+                        size: 16),
+                    label: Text('Xử lý phiếu #$pendingReportId'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFEA580C),
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                  )
+                else
+                  ElevatedButton.icon(
+                    onPressed: id == null || blockedReason != null
+                        ? null
+                        : () => _showCompleteInspectionSheet(s),
+                    icon: const Icon(Icons.fact_check_outlined, size: 16),
+                    label: const Text('Kiểm tra'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF16A34A),
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                     ),
                   ),
-                ),
               ],
             ),
           ],
