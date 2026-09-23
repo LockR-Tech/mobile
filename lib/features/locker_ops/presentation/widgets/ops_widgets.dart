@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:lottie/lottie.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:smart_laundry_locker/core/theme/shadcn_theme.dart';
@@ -556,12 +557,16 @@ class AccessCredentials extends StatelessWidget {
   const AccessCredentials({
     required this.pin,
     this.qrToken,
-    this.caption = 'Nhập PIN hoặc quét QR tại màn hình tủ để mở ô',
+    this.caption = 'Nhập PIN tại màn hình tủ để mở ô',
+    this.showSuccessAnimation = true,
+    this.showQr = false,
     super.key,
   });
   final String? pin;
   final String? qrToken;
   final String caption;
+  final bool showSuccessAnimation;
+  final bool showQr;
 
   @override
   Widget build(BuildContext context) {
@@ -569,7 +574,7 @@ class AccessCredentials extends StatelessWidget {
     final digits = pin!.split('');
     return Column(
       children: [
-        if (qrToken != null && qrToken!.isNotEmpty)
+        if (showQr && qrToken != null && qrToken!.isNotEmpty) ...[
           Container(
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
@@ -597,7 +602,34 @@ class AccessCredentials extends StatelessWidget {
               ),
             ),
           ).animate().fadeIn(duration: 350.ms).scale(begin: const Offset(0.92, 0.92)),
-        const SizedBox(height: 16),
+          const SizedBox(height: 16),
+        ] else if (showSuccessAnimation) ...[
+          SizedBox(
+            width: 140,
+            height: 140,
+            child: Lottie.asset(
+              'assets/images/dathanhtoan.json',
+              repeat: false,
+              fit: BoxFit.contain,
+              errorBuilder: (context, error, stackTrace) {
+                return Container(
+                  width: 80,
+                  height: 80,
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFDCFCE7),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    LucideIcons.circleCheck,
+                    size: 48,
+                    color: Color(0xFF16A34A),
+                  ),
+                );
+              },
+            ),
+          ).animate().fadeIn(duration: 350.ms).scale(begin: const Offset(0.9, 0.9)),
+          const SizedBox(height: 8),
+        ],
         GestureDetector(
           onTap: () {
             Clipboard.setData(ClipboardData(text: pin!));

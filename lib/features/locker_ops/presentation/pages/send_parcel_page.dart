@@ -629,8 +629,8 @@ class _SendParcelPageState extends State<SendParcelPage>
                   pin: order['pinCode'] as String?,
                   qrToken: order['qrToken'] as String?,
                   caption: isDropped
-                      ? 'Người nhận nhập PIN / quét QR tại tủ để lấy hàng'
-                      : 'Nhập PIN hoặc quét QR tại tủ để mở ô và bỏ hàng',
+                      ? 'Người nhận nhập PIN tại tủ để lấy hàng'
+                      : 'Nhập PIN tại tủ để mở ô và bỏ hàng',
                 ),
               ],
               if (isDropped && order['pickupDeadline'] != null) ...[
