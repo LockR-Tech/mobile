@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:lottie/lottie.dart';
+import 'package:smart_laundry_locker/shared/widgets/app_lottie.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:smart_laundry_locker/core/theme/shadcn_theme.dart';
@@ -607,25 +607,21 @@ class AccessCredentials extends StatelessWidget {
           SizedBox(
             width: 140,
             height: 140,
-            child: Lottie.asset(
-              'assets/images/dathanhtoan.json',
-              repeat: false,
-              fit: BoxFit.contain,
-              errorBuilder: (context, error, stackTrace) {
-                return Container(
-                  width: 80,
-                  height: 80,
-                  decoration: const BoxDecoration(
-                    color: Color(0xFFDCFCE7),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    LucideIcons.circleCheck,
-                    size: 48,
-                    color: Color(0xFF16A34A),
-                  ),
-                );
-              },
+            child: AppLottie(
+              AppLottieAssets.daThanhToan,
+              fallback: (context) => Container(
+                width: 80,
+                height: 80,
+                decoration: const BoxDecoration(
+                  color: Color(0xFFDCFCE7),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  LucideIcons.circleCheck,
+                  size: 48,
+                  color: Color(0xFF16A34A),
+                ),
+              ),
             ),
           ).animate().fadeIn(duration: 350.ms).scale(begin: const Offset(0.9, 0.9)),
           const SizedBox(height: 8),
