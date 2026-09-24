@@ -22,7 +22,13 @@ void main() {
         defaults.topupPresets,
         [20000, 50000, 100000, 200000, 500000, 1000000],
       );
-      expect(defaults.enabledPaymentMethods, ['CASH', 'WALLET', 'VNPAY', 'MOMO']);
+      expect(defaults.enabledPaymentMethods, [
+        'CASH',
+        'WALLET',
+        'VNPAY',
+        'MOMO',
+        'SEPAY',
+      ]);
       expect(defaults.reportPhotosPerRequestReporter, 5);
       expect(defaults.reportPhotosPerRequestStaff, 10);
       expect(defaults.cellDimensionsStandard, '45 × 30 × 50 cm');

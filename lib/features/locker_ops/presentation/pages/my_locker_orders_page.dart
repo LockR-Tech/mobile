@@ -1274,12 +1274,16 @@ class _OrderCard extends StatelessWidget {
                       color: Color(0xFFDC2626),
                     ),
                     SizedBox(width: 6),
-                    Text(
-                      'Đơn đã quá hạn — có thể phát sinh phí',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xFFDC2626),
+                    // Expanded chứ không để Text tự do: trong Row, Text lấy chiều rộng
+                    // tự nhiên nên câu này tràn khỏi màn hình 390px và hiện vạch vàng-đen.
+                    Expanded(
+                      child: Text(
+                        'Đơn đã quá hạn — có thể phát sinh phí',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFFDC2626),
+                        ),
                       ),
                     ),
                   ],
