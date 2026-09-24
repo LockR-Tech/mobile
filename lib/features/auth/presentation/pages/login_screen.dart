@@ -12,6 +12,7 @@ import 'package:smart_laundry_locker/features/auth/presentation/providers/login_
 import 'package:smart_laundry_locker/features/auth/presentation/providers/register_provider.dart';
 import 'package:smart_laundry_locker/features/profile/presentation/providers/profile_provider.dart';
 import 'package:smart_laundry_locker/shared/shared.dart';
+import 'package:smart_laundry_locker/shared/widgets/app_lottie.dart';
 
 /// Brand palette shared by the login + register flows so both halves of the
 /// auth screen feel like one product.
@@ -21,6 +22,7 @@ const Color _kBlue = Color(0xFF0077B6);
 const Color _kCyan = Color(0xFF00B4D8);
 const Color _kInk = Color(0xFF1E293B);
 const Color _kMuted = Color(0xFF64748B);
+const String _kFastDeliveryLottie = 'assets/animations/fast_shopping_delivery.json';
 
 /// Single auth screen with a Login / Register toggle. Email-or-phone +
 /// password sign-in, self-registration, and social sign-in (Google / Facebook
@@ -358,7 +360,7 @@ class _LoginScreenState extends State<LoginScreen>
                   width: double.infinity,
                   alignment: Alignment.center,
                   child: const AppLottie(
-                    AppLottieAssets.fastDelivery,
+                    _kFastDeliveryLottie,
                     animate: true,
                     repeat: true,
                     fit: BoxFit.contain,

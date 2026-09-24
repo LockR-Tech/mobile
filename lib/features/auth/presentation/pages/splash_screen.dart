@@ -6,6 +6,9 @@ import 'package:smart_laundry_locker/core/routing/role_routes.dart';
 import 'package:smart_laundry_locker/core/services/biometric_service.dart';
 import 'package:smart_laundry_locker/core/services/token_service.dart';
 import 'package:smart_laundry_locker/shared/shared.dart';
+import 'package:smart_laundry_locker/shared/widgets/app_lottie.dart';
+
+const String _kFastDeliveryLottie = 'assets/animations/fast_shopping_delivery.json';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -251,7 +254,7 @@ class _SplashScreenState extends State<SplashScreen>
                               ],
                             ),
                             child: const AppLottie(
-                              AppLottieAssets.fastDelivery,
+                              _kFastDeliveryLottie,
                               animate: true,
                               repeat: true,
                               fit: BoxFit.contain,
