@@ -8,7 +8,8 @@ import 'package:smart_laundry_locker/core/services/token_service.dart';
 import 'package:smart_laundry_locker/shared/shared.dart';
 import 'package:smart_laundry_locker/shared/widgets/app_lottie.dart';
 
-const String _kFastDeliveryLottie = 'assets/animations/fast_shopping_delivery.json';
+const String _kFastDeliveryLottie =
+    'assets/animations/fast_shopping_delivery.json';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -33,16 +34,11 @@ class _SplashScreenState extends State<SplashScreen>
       vsync: this,
       duration: const Duration(milliseconds: 900),
     );
-    _fadeAnimation = CurvedAnimation(
-      parent: _animCtrl,
-      curve: Curves.easeOut,
-    );
-    _scaleAnimation = Tween<double>(begin: 0.85, end: 1.0).animate(
-      CurvedAnimation(
-        parent: _animCtrl,
-        curve: Curves.easeOutBack,
-      ),
-    );
+    _fadeAnimation = CurvedAnimation(parent: _animCtrl, curve: Curves.easeOut);
+    _scaleAnimation = Tween<double>(
+      begin: 0.85,
+      end: 1.0,
+    ).animate(CurvedAnimation(parent: _animCtrl, curve: Curves.easeOutBack));
     _animCtrl.forward();
 
     _checkAuthAndNavigate();
@@ -56,7 +52,7 @@ class _SplashScreenState extends State<SplashScreen>
 
   Future<void> _checkAuthAndNavigate() async {
     // Thời gian hiển thị splash screen tầm 4s theo yêu cầu
-    await Future<void>.delayed(const Duration(seconds: 4));
+    await Future<void>.delayed(const Duration(seconds: 5));
     if (!mounted) return;
 
     final hasToken = await TokenService.hasToken();
@@ -111,9 +107,7 @@ class _SplashScreenState extends State<SplashScreen>
       body: Container(
         width: double.infinity,
         height: double.infinity,
-        decoration: const BoxDecoration(
-          color: Colors.white,
-        ),
+        decoration: const BoxDecoration(color: Colors.white),
         child: SafeArea(
           child: FadeTransition(
             opacity: _fadeAnimation,
@@ -166,7 +160,9 @@ class _SplashScreenState extends State<SplashScreen>
                               borderRadius: BorderRadius.circular(24),
                               boxShadow: [
                                 BoxShadow(
-                                  color: const Color(0xFF0F172A).withValues(alpha: 0.08),
+                                  color: const Color(
+                                    0xFF0F172A,
+                                  ).withValues(alpha: 0.08),
                                   blurRadius: 20,
                                   spreadRadius: 2,
                                   offset: const Offset(0, 6),
@@ -299,10 +295,15 @@ class _SplashScreenState extends State<SplashScreen>
                                   const SizedBox(height: 14),
                                   ElevatedButton.icon(
                                     onPressed: _retryBiometric,
-                                    icon: const Icon(LucideIcons.fingerprint, size: 20),
+                                    icon: const Icon(
+                                      LucideIcons.fingerprint,
+                                      size: 20,
+                                    ),
                                     label: const Text(
                                       'Xác thực vân tay / Face ID',
-                                      style: TextStyle(fontWeight: FontWeight.w700),
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.w700,
+                                      ),
                                     ),
                                     style: ElevatedButton.styleFrom(
                                       backgroundColor: const Color(0xFF003D5B),
