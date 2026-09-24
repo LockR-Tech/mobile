@@ -421,12 +421,19 @@ class OpsPrimaryButton extends StatelessWidget {
                     Icon(icon, size: 18, color: Colors.white),
                     const SizedBox(width: 8),
                   ],
-                  Text(
-                    label,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w700,
-                      fontSize: 15,
+                  // Flexible chứ không để Text tự do: nhãn tiếng Việt dài ("Kết thúc
+                  // thuê & lấy đồ") lấy chiều rộng tự nhiên nên tràn khỏi nút trên máy
+                  // hẹp. Flexible cho xuống dòng mà vẫn giữ nút căn giữa; Expanded thì
+                  // chiếm hết chỗ còn lại và làm chữ lệch trái.
+                  Flexible(
+                    child: Text(
+                      label,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 15,
+                      ),
                     ),
                   ),
                 ],

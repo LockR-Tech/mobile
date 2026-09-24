@@ -18,6 +18,16 @@ class _FakeRentLockerOpsService extends LockerOpsService {
   String? lastCheckoutMethod;
   int? lastConfirmOrderId;
 
+  /// SePay đã báo nhận tiền hay chưa. Tách khỏi `checkoutCalls` vì trang tự gọi
+  /// checkout('SEPAY') ngay khi tạo đơn để dựng mã VietQR — gọi checkout không còn
+  /// đồng nghĩa với việc khách đã chuyển khoản.
+  bool paid = false;
+
+  /// Trang bật Timer.periodic hỏi trạng thái ngay sau khi tạo đơn; không chặn ở đây
+  /// thì poll gọi qua mock dio, lỗi, rồi lặp mãi và pumpAndSettle không bao giờ lắng.
+  @override
+  Future<bool> orderStatus(int orderId) async => paid;
+
   @override
   Future<num> walletBalance() async => 50000;
 
@@ -27,13 +37,13 @@ class _FakeRentLockerOpsService extends LockerOpsService {
     Duration timeout = const Duration(seconds: 20),
     Duration interval = const Duration(milliseconds: 1500),
   }) async =>
-      checkoutCalls > 0;
+      paid;
 
   @override
   Future<Map<String, dynamic>> order(int orderId) async => {
         ..._createdOrder,
         'id': orderId,
-        'paymentStatus': checkoutCalls > 0 ? 'PAID' : 'UNPAID',
+        'paymentStatus': paid ? 'PAID' : 'UNPAID',
       };
 
   @override
@@ -103,7 +113,7 @@ class _FakeRentLockerOpsService extends LockerOpsService {
 
   @override
   Future<List<Map<String, dynamic>>> paymentsByOrder(int orderId) async {
-    if (checkoutCalls > 0) {
+    if (paid) {
       return [
         {
           'id': 991,
@@ -211,35 +221,31 @@ void main() {
     await tester.pumpAndSettle();
 
     await tester.tap(find.text('Thuê ngay'));
-    await tester.pumpAndSettle();
+    // Không pumpAndSettle: đơn vừa tạo còn UNPAID nên trang chạy vòng poll SePay,
+    // trạng thái "đã lắng" sẽ không bao giờ tới.
+    await tester.pump();
+    for (var i = 0; i < 4; i++) {
+      await tester.pump(const Duration(milliseconds: 500));
+    }
 
     expect(service.createRentalBoxId, 5004);
-    expect(find.textContaining('mở ô số 4'), findsOneWidget);
+    // Chưa trả tiền: trang chỉ mời chuyển khoản, chưa lộ mã mở ô và chưa cho mở.
+    expect(find.textContaining('Quét mã VietQR'), findsOneWidget);
+    expect(find.textContaining('mở ô số 4'), findsNothing);
     expect(find.textContaining('Hết hạn thuê:'), findsNothing);
-    // Chưa trả tiền thì chưa có nút mở ô / xác nhận.
     expect(find.text('Mở ô để bỏ đồ'), findsNothing);
-
-    final payButton = find.text('Thanh toán 20.000đ');
-    await tester.dragUntilVisible(
-      payButton,
-      find.byType(Scrollable).first,
-      const Offset(0, -300),
-    );
-    await tester.tap(payButton);
-    // Nút hiện spinner suốt lúc bảng chọn mở ⇒ không dùng pumpAndSettle ở đây.
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 600));
-
-    // App khách không tự xác nhận tiền mặt.
-    expect(find.text('Tiền mặt'), findsNothing);
-    await tester.tap(find.text('Ví của tôi'));
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 600));
-    await tester.pumpAndSettle();
-
-    expect(service.checkoutCalls, 1);
+    expect(service.unlockCalls, 0);
     expect(service.lastCheckoutOrderId, 81);
-    expect(service.lastCheckoutMethod, 'WALLET');
+    expect(service.lastCheckoutMethod, 'SEPAY');
+
+    // SePay báo đã nhận tiền: vòng poll 3 giây thấy đơn chuyển sang PAID.
+    service.paid = true;
+    await tester.pump(const Duration(seconds: 3));
+    for (var i = 0; i < 4; i++) {
+      await tester.pump(const Duration(milliseconds: 500));
+    }
+
+    expect(find.textContaining('mở ô số 4'), findsOneWidget);
     expect(service.confirmDropCalls, 0);
 
     final openButton = find.text('Mở ô để bỏ đồ');

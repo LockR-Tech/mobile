@@ -46,18 +46,27 @@ class _FakeLockerOpsService extends LockerOpsService {
 class _FakeRentalExtendLockerOpsService extends LockerOpsService {
   _FakeRentalExtendLockerOpsService() : super(dio: createMockDio().dio);
 
+  /// Mốc thời gian dạng backend trả về: UTC, không hậu tố Z.
+  ///
+  /// Trước đây đơn mẫu ghi cứng hạn `2026-07-15`, tới lúc chạy thì đã quá hạn nên
+  /// màn hiện thêm nút "Thanh toán phí quá giờ" — đúng hành vi sau khi có tính năng
+  /// trả phí quá hạn để mở ô, nhưng phá tiền đề của test là đơn đã trả đủ, chưa có
+  /// nút thanh toán nào. Dùng mốc tương đối để test không hỏng lại theo thời gian.
+  static String _iso(Duration offset) =>
+      DateTime.now().toUtc().add(offset).toIso8601String().split('.').first;
+
   final Map<String, dynamic> _order = {
     'id': 31,
     'type': 'RENTAL',
     'status': 'STORING',
     'paymentStatus': 'PAID',
     'totalPrice': 10000,
-    'pickupDeadline': '2026-07-15T12:00:00',
+    'pickupDeadline': _iso(const Duration(hours: 5)),
     'lockerId': 5,
     'sendBoxId': 5001,
     'pinCode': '654321',
     'orderCode': 'ORD-31',
-    'createdAt': '2026-07-15T09:00:00',
+    'createdAt': _iso(const Duration(hours: -3)),
   };
 
   @override
@@ -256,6 +265,9 @@ void main() {
     );
     final service = _FakeRentalExtendLockerOpsService();
 
+    await tester.binding.setSurfaceSize(const Size(390, 844));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
     await tester.pumpWidget(
       MaterialApp(
         home: MediaQuery(
@@ -380,6 +392,9 @@ void main() {
     tester,
   ) async {
     final service = _FakeFaultyOrderLockerOpsService();
+
+    await tester.binding.setSurfaceSize(const Size(390, 844));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
     useBusinessConfig(
       BusinessConfig.fromPublicMaps(
         locker: {'app.maintenance.report-photos-per-request-reporter': 3},
@@ -421,6 +436,9 @@ void main() {
     tester,
   ) async {
     final service = _FakeRentalCompletionLockerOpsService();
+
+    await tester.binding.setSurfaceSize(const Size(390, 844));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
 
     await tester.pumpWidget(
       MaterialApp(
@@ -495,6 +513,9 @@ void main() {
     tester,
   ) async {
     final service = _FakeRentalCompletionLockerOpsService();
+
+    await tester.binding.setSurfaceSize(const Size(390, 844));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
 
     await tester.pumpWidget(
       MaterialApp(
