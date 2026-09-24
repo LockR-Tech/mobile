@@ -33,6 +33,9 @@ Future<OrderPaymentOutcome> payOrderAndAwaitPaid(
   required int orderId,
   required double total,
   required List<String> enabledMethods,
+  /// Lý do trả tiền, hiện lên chi tiết đơn để phân biệt nhiều lần trả trên cùng
+  /// một đơn. Nơi gọi biết rõ mới truyền; không truyền thì server tự suy.
+  String? description,
 }) async {
   num balance = 0;
   try {
@@ -64,6 +67,7 @@ Future<OrderPaymentOutcome> payOrderAndAwaitPaid(
     orderId,
     method,
     returnUrl: returnUrl,
+    description: description,
   );
   // Backend PaymentResponse dùng field "paymentUrl" (không phải "url")
   final url = (res['paymentUrl'] ?? res['url'] ?? res['deeplink']) as String?;

@@ -185,6 +185,10 @@ class LockerOpsService {
     String method, {
     String? bankCode,
     String? returnUrl,
+    /// Lý do trả tiền lần này ("Phí quá hạn"…). Một đơn có thể trả nhiều lần —
+    /// thuê rồi gia hạn — nên chi tiết đơn cần biết khoản nào là gì. Bỏ trống thì
+    /// server tự suy ra đây là lần trả đầu hay trả bổ sung.
+    String? description,
   }) => _map(
     'POST',
     '/api/payments/checkout',
@@ -193,6 +197,7 @@ class LockerOpsService {
       'method': method,
       if (bankCode != null) 'bankCode': bankCode,
       if (returnUrl != null) 'returnUrl': returnUrl,
+      if (description != null) 'description': description,
     },
   );
 

@@ -1501,7 +1501,7 @@ class _PayOvertimeConfirmationSheetState
       try {
         await widget.service.assessOvertime(orderId);
       } catch (_) {}
-      await widget.service.checkout(orderId, 'WALLET');
+      await widget.service.checkout(orderId, 'WALLET', description: 'Phí quá hạn');
       final paid = await widget.service.awaitOrderPaid(orderId);
       if (!mounted) return;
       if (paid) {
@@ -1538,6 +1538,7 @@ class _PayOvertimeConfirmationSheetState
       orderId: orderId,
       total: widget.fee.toDouble(),
       enabledMethods: widget.enabledMethods,
+      description: 'Phí quá hạn',
     );
 
     if (outcome == OrderPaymentOutcome.paid && mounted) {
@@ -2417,35 +2418,54 @@ class _PaymentTraceRowsState extends State<_PaymentTraceRows> {
         return Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            for (final p in done) ...[
+            // Một đơn trả nhiều lần (thuê rồi gia hạn, hoặc bị tính phí quá hạn) thì
+            // mỗi khối phải nói rõ là tiền gì — không thì khách chỉ thấy hai số tiền
+            // giống hệt nhau mà không biết khoản nào là khoản nào.
+            for (var i = 0; i < done.length; i++) ...[
+              if (done.length > 1) ...[
+                if (i > 0) const SizedBox(height: 14),
+                OpsSectionLabel(
+                  _sectionLabel(done[i], i),
+                  icon: LucideIcons.receiptText,
+                ),
+              ],
               OpsInfoRow(
                 icon: LucideIcons.creditCard,
                 label: 'Hình thức thanh toán',
-                value: _methodLabel(p['method'] as String?),
+                value: _methodLabel(done[i]['method'] as String?),
               ),
               OpsInfoRow(
                 icon: LucideIcons.hash,
                 label: 'Mã giao dịch',
-                value: _transactionCode(p),
+                value: _transactionCode(done[i]),
               ),
-              if (p['amount'] != null)
+              if (done[i]['amount'] != null)
                 OpsInfoRow(
                   icon: LucideIcons.banknote,
-                  label: 'Số tiền đã trả',
-                  value: fmtPrice(p['amount']),
+                  label: 'Số tiền',
+                  value: fmtPrice(done[i]['amount']),
                   valueColor: const Color(0xFF15803D),
                 ),
-              if (p['createdAt'] != null)
+              if (done[i]['createdAt'] != null)
                 OpsInfoRow(
                   icon: LucideIcons.calendarCheck,
                   label: 'Thời gian thanh toán',
-                  value: fmtDateTime(p['createdAt']),
+                  value: fmtDateTime(done[i]['createdAt']),
                 ),
             ],
           ],
         );
       },
     );
+  }
+
+  /// Tiêu đề cụm giao dịch. `description` do payment-service ghi ("Thanh toán đơn #48",
+  /// "Thanh toán bổ sung đơn #48", "Phí quá hạn"). Vẫn kèm "Lần N" vì các giao dịch tạo
+  /// trước bản này đều mang mô tả y hệt nhau — không có số thứ tự thì lại không phân biệt được.
+  static String _sectionLabel(Map<String, dynamic> payment, int index) {
+    final description = '${payment['description'] ?? ''}'.trim();
+    final order = 'Lần ${index + 1}';
+    return description.isEmpty ? order : '$order · $description';
   }
 
   static String _transactionCode(Map<String, dynamic> payment) {
