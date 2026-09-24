@@ -43,6 +43,9 @@ abstract final class AppLottieAssets {
 
   /// Hiệu ứng loading giao vận kiện hàng (Delivery-05).
   static const String deliveryLoading = '$_dir/delivery_animation.json';
+
+  /// Minh hoạ mua sắm & giao vận nhanh ("10- Fast Shopping Delivery").
+  static const String fastDelivery = '$_dir/fast_shopping_delivery.json';
 }
 
 /// Hiển thị một file Lottie trong `assets/animations/`.

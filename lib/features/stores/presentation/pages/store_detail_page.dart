@@ -116,7 +116,7 @@ class _StoreDetailPageState extends State<StoreDetailPage> {
       body: Column(
         children: [
           BrandHeroHeader(
-            title: 'Chi tiết cửa hàng',
+            title: 'Chi tiết điểm gửi',
             subtitle: _store?.name ?? 'Điểm tủ & đối tác liên kết',
             onBack: () => Navigator.of(context).pop(),
           ),
