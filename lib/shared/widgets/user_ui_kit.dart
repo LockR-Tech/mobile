@@ -1,6 +1,7 @@
 import 'dart:ui';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 /// Convenience extension so widgets can do `context.isDark`, `context.cardBg` etc.
@@ -659,8 +660,7 @@ class BrandStatusBadge extends StatelessWidget {
 
 // ── Highlight banner widget (Threads "Đang thịnh hành" style) ───────────────
 
-class _HighlightBanner extends StatelessWidget {
-  // color/rollColor kept for API compatibility but SVG asset is used for visuals
+class _HighlightBanner extends StatefulWidget {
   final Color color;
   final Color rollColor;
   final String title;
@@ -671,8 +671,38 @@ class _HighlightBanner extends StatelessWidget {
     required this.title,
   });
 
+  @override
+  State<_HighlightBanner> createState() => _HighlightBannerState();
+}
+
+class _HighlightBannerState extends State<_HighlightBanner> {
+  static String? _rawSvg;
+
+  @override
+  void initState() {
+    super.initState();
+    if (_rawSvg == null) {
+      rootBundle.loadString('assets/images/banner_highlight.svg').then((val) {
+        if (mounted) {
+          setState(() {
+            _rawSvg = val;
+          });
+        } else {
+          _rawSvg = val;
+        }
+      });
+    }
+  }
+
+  static String _toHex(Color c) {
+    final r = ((c.r * 255).round() & 0xFF).toRadixString(16).padLeft(2, '0');
+    final g = ((c.g * 255).round() & 0xFF).toRadixString(16).padLeft(2, '0');
+    final b = ((c.b * 255).round() & 0xFF).toRadixString(16).padLeft(2, '0');
+    return '#$r$g$b';
+  }
+
   static const _textStyle = TextStyle(
-    fontSize: 15,
+    fontSize: 14.5,
     fontWeight: FontWeight.w800,
     color: Colors.white,
     letterSpacing: 0.3,
@@ -687,7 +717,7 @@ class _HighlightBanner extends StatelessWidget {
   Widget build(BuildContext context) {
     final textScaler = MediaQuery.textScalerOf(context);
     final tp = TextPainter(
-      text: TextSpan(text: title, style: _textStyle),
+      text: TextSpan(text: widget.title, style: _textStyle),
       textDirection: TextDirection.ltr,
       textScaler: textScaler,
       maxLines: 1,
@@ -696,20 +726,51 @@ class _HighlightBanner extends StatelessWidget {
     final bannerWidth = (_leftPad + tp.width) / (1 - _rollFraction);
     final rightPad = bannerWidth - _leftPad - tp.width;
 
-    return SizedBox(
+    Widget background;
+    if (_rawSvg != null) {
+      final bodyHex = _toHex(widget.color);
+      final rollHex = _toHex(widget.rollColor);
+      int matchCount = 0;
+      final coloredSvg = _rawSvg!.replaceAllMapped(
+        RegExp(r'fill="#[0-9A-Fa-f]{6}"'),
+        (match) {
+          matchCount++;
+          return matchCount == 1 ? 'fill="$bodyHex"' : 'fill="$rollHex"';
+        },
+      );
+      background = SvgPicture.string(
+        coloredSvg,
+        fit: BoxFit.fill,
+      );
+    } else {
+      background = Container(
+        decoration: BoxDecoration(
+          color: widget.color,
+          borderRadius: BorderRadius.circular(8),
+        ),
+      );
+    }
+
+    return Container(
       width: bannerWidth,
       height: 30,
+      decoration: BoxDecoration(
+        boxShadow: [
+          BoxShadow(
+            color: widget.color.withValues(alpha: 0.22),
+            blurRadius: 8,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
       child: Stack(
         fit: StackFit.expand,
         children: [
-          SvgPicture.asset(
-            'assets/images/banner_highlight.svg',
-            fit: BoxFit.fill,
-          ),
+          background,
           Padding(
             padding: EdgeInsets.fromLTRB(_leftPad, 0, rightPad, 0),
             child: Center(
-              child: Text(title, softWrap: false, style: _textStyle),
+              child: Text(widget.title, softWrap: false, style: _textStyle),
             ),
           ),
         ],

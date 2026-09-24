@@ -7,6 +7,7 @@ import 'package:smart_laundry_locker/features/stores/domain/entities/store.dart'
 import 'package:smart_laundry_locker/features/stores/infrastructure/services/favorite_stores_service.dart';
 import 'package:smart_laundry_locker/features/stores/infrastructure/services/store_service.dart';
 import 'package:smart_laundry_locker/features/stores/presentation/widgets/store_card.dart';
+import 'package:smart_laundry_locker/shared/shared.dart';
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
 
 /// Favourite stores (device-only). Ported from the legacy RN `user/favorites`
@@ -84,7 +85,7 @@ class _FavoritesPageState extends State<FavoritesPage> {
   Widget _buildBody() {
     if (_loading) {
       return const Center(
-        child: CircularProgressIndicator(color: AislBrand.navy),
+        child: AppLoadingIndicator(message: 'Đang tải danh sách yêu thích...'),
       );
     }
     if (_error != null) {

@@ -26,6 +26,7 @@ import 'package:smart_laundry_locker/features/home/presentation/providers/home_p
 import 'package:smart_laundry_locker/features/home/data/repositories/home_repository.dart';
 import 'package:smart_laundry_locker/features/vouchers/presentation/providers/voucher_provider.dart';
 import 'package:smart_laundry_locker/core/theme/theme_provider.dart';
+import 'package:smart_laundry_locker/shared/shared.dart';
 
 class _AislToastWidget extends StatelessWidget {
   final String msg;
@@ -105,14 +106,14 @@ class _AislLoadingWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 28),
+      padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 24),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 24,
+            color: Colors.black.withOpacity(0.12),
+            blurRadius: 28,
             offset: const Offset(0, 12),
           ),
         ],
@@ -120,20 +121,9 @@ class _AislLoadingWidget extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          SizedBox(
-            height: 40,
-            width: 40,
-            child: CircularProgressIndicator(
-              strokeWidth: 4,
-              strokeCap: StrokeCap.round,
-              valueColor: AlwaysStoppedAnimation<Color>(
-                AISLShadcnTheme.navyPrimary,
-              ),
-              backgroundColor: const Color(0xFF0A2342).withOpacity(0.15),
-            ),
-          ),
+          const AppLoadingIndicator(size: 96),
           if (msg.isNotEmpty) ...[
-            const SizedBox(height: 20),
+            const SizedBox(height: 12),
             Text(
               msg,
               style: const TextStyle(

@@ -16,6 +16,7 @@ import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/op
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/order_payment_sheet.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/order_status_timeline.dart';
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
+import 'package:smart_laundry_locker/shared/shared.dart';
 
 /// All locker orders of the signed-in customer, with the full action set gated
 /// to the backend state machine: confirm drop, pickup/complete, delegate,
@@ -544,11 +545,25 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
         enabledMethods: businessConfig.enabledPaymentMethods,
       );
       if (!mounted || outcome == OrderPaymentOutcome.cancelled) return;
-      _snack(
-        outcome == OrderPaymentOutcome.paid
-            ? 'Thanh toán thành công'
-            : 'Đang chờ xác nhận thanh toán — kéo xuống để làm mới sau ít phút.',
-      );
+      if (outcome == OrderPaymentOutcome.paid) {
+        showPaymentResultDialog<void>(
+          context,
+          type: PaymentStatusType.success,
+          title: 'Thanh toán thành công!',
+          amountText: '${total.toInt()} đ',
+          message: 'Đơn hàng của bạn đã được thanh toán thành công.',
+        );
+      } else if (outcome == OrderPaymentOutcome.failed) {
+        showPaymentResultDialog<void>(
+          context,
+          type: PaymentStatusType.failure,
+          title: 'Thanh toán thất bại',
+          amountText: '${total.toInt()} đ',
+          message: 'Giao dịch chưa hoàn tất hoặc đã bị hủy. Vui lòng thử lại.',
+        );
+      } else {
+        _snack('Đang chờ xác nhận thanh toán — kéo xuống để làm mới sau ít phút.');
+      }
       await _load();
     } catch (e) {
       _snack(LockerOpsService.errorMessage(e));
@@ -865,7 +880,7 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
           Expanded(
             child: _loading
                 ? const Center(
-                    child: CircularProgressIndicator(color: AislBrand.navy),
+                    child: AppLoadingIndicator(message: 'Đang tải danh sách đơn...'),
                   )
                 : _visible.isEmpty
                 ? OpsEmptyState(

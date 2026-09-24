@@ -149,7 +149,7 @@ class _HomePageState extends ConsumerState<HomePage>
 
   Widget _buildCustomerBody(BuildContext context) {
     return RefreshIndicator(
-      color: const Color(0xFF574E00),
+      color: const Color(0xFF0F172A),
       onRefresh: _onRefresh,
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
@@ -207,13 +207,13 @@ class _HomePageState extends ConsumerState<HomePage>
                   fit: BoxFit.cover,
                   errorBuilder: (context, error, stackTrace) => Container(
                     decoration: BoxDecoration(
-                      color: const Color(0xFF574E00).withValues(alpha: 0.12),
+                      color: const Color(0xFF0F172A).withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: const Center(
                       child: Icon(
                         LucideIcons.box,
-                        color: Color(0xFF574E00),
+                        color: Color(0xFF0F172A),
                         size: 20,
                       ),
                     ),
@@ -264,7 +264,7 @@ class _HomePageState extends ConsumerState<HomePage>
                               width: 8,
                               height: 8,
                               decoration: const BoxDecoration(
-                                color: Color(0xFF574E00),
+                                color: Color(0xFFEF4444),
                                 shape: BoxShape.circle,
                               ),
                             ),
@@ -481,7 +481,7 @@ class _HomePageState extends ConsumerState<HomePage>
                       children: [
                         const Icon(
                           LucideIcons.mapPin,
-                          color: Color(0xFF574E00),
+                          color: Color(0xFFF59E0B),
                           size: 15,
                         ),
                         const SizedBox(width: 4),
@@ -543,20 +543,10 @@ class _HomePageState extends ConsumerState<HomePage>
               ),
               child: Row(
                 children: [
-                  Container(
-                    width: 38,
-                    height: 38,
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: const Center(
-                      child: Icon(
-                        LucideIcons.wallet,
-                        color: Colors.white,
-                        size: 20,
-                      ),
-                    ),
+                  const AppLottie(
+                    AppLottieAssets.napVi,
+                    width: 40,
+                    height: 40,
                   ),
                   const SizedBox(width: 10),
                   Expanded(
@@ -595,11 +585,11 @@ class _HomePageState extends ConsumerState<HomePage>
                     padding:
                         const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF574E00),
+                      color: const Color(0xFFD97706),
                       borderRadius: BorderRadius.circular(10),
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFF574E00).withValues(alpha: 0.35),
+                          color: const Color(0xFFD97706).withValues(alpha: 0.35),
                           blurRadius: 6,
                           offset: const Offset(0, 2),
                         ),
@@ -637,7 +627,7 @@ class _HomePageState extends ConsumerState<HomePage>
             icon: LucideIcons.store,
             lottieAsset: AppLottieAssets.cuaHang,
             label: 'Điểm gửi',
-            isPrimary: true,
+            isPrimary: false,
             textColor: textColor,
             onTap: () => context.push(AppRouter.stores),
           ),
@@ -683,7 +673,7 @@ class _HomePageState extends ConsumerState<HomePage>
   }) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final bgColor = isPrimary
-        ? const Color(0xFF574E00)
+        ? const Color(0xFF0F172A)
         : (isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9));
     final iconColor = isPrimary
         ? Colors.white
@@ -704,7 +694,7 @@ class _HomePageState extends ConsumerState<HomePage>
               boxShadow: isPrimary
                   ? [
                       BoxShadow(
-                        color: const Color(0xFF574E00).withValues(alpha: 0.35),
+                        color: const Color(0xFF0F172A).withValues(alpha: 0.35),
                         blurRadius: 12,
                         offset: const Offset(0, 4),
                       ),
@@ -993,7 +983,7 @@ class _HomePageState extends ConsumerState<HomePage>
     BuildContext context, {
     Map<String, dynamic>? order,
   }) {
-    final activeColor = const Color(0xFF574E00);
+    final activeColor = const Color(0xFF10B981);
     final inactiveColor = const Color(0xFFCBD5E1);
     final lineColor = const Color(0xFFE2E8F0);
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -1341,6 +1331,16 @@ class _HomePageState extends ConsumerState<HomePage>
                     ),
                     _buildUtilityItem(
                       ctx,
+                      icon: LucideIcons.arrowUpRight,
+                      label: 'Rút tiền',
+                      color: const Color(0xFFF97316),
+                      onTap: () {
+                        Navigator.pop(ctx);
+                        context.push(AppRouter.withdraw);
+                      },
+                    ),
+                    _buildUtilityItem(
+                      ctx,
                       icon: LucideIcons.store,
                       lottieAsset: AppLottieAssets.cuaHang,
                       label: 'Điểm gửi',
@@ -1436,10 +1436,10 @@ class _HomePageState extends ConsumerState<HomePage>
           padding: const EdgeInsets.symmetric(horizontal: 20),
           child: BrandSectionHeader(
             icon: LucideIcons.store,
-            title: 'Các nơi đặt locker',
+            title: 'Các nơi đặt kiosk',
             onSeeAll: () => context.go(AppRouter.lockers),
-            highlightColor: const Color(0xFF766807),
-            highlightRollColor: const Color(0xFF58500D),
+            highlightColor: const Color(0xFF0F172A),
+            highlightRollColor: const Color(0xFF020617),
           ),
         ),
         const SizedBox(height: 14),
@@ -1644,8 +1644,8 @@ class _HomePageState extends ConsumerState<HomePage>
             icon: LucideIcons.zap,
             title: 'Flash Sale',
             onSeeAll: () => context.push(AppRouter.promotions),
-            highlightColor: const Color(0xFF766807),
-            highlightRollColor: const Color(0xFF58500D),
+            highlightColor: const Color(0xFFE11D48),
+            highlightRollColor: const Color(0xFF9F1239),
           ),
         ),
         const SizedBox(height: 14),

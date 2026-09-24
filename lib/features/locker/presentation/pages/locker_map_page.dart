@@ -14,6 +14,7 @@ import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' as http;
 import 'package:latlong2/latlong.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
+import 'package:smart_laundry_locker/shared/shared.dart';
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
 
 class LockerMapPage extends ConsumerStatefulWidget {
@@ -74,7 +75,11 @@ class _LockerMapPageState extends ConsumerState<LockerMapPage>
               subtitle: 'Tìm điểm tủ Lock.R gần bạn nhất',
               onBack: () => Navigator.maybePop(context),
             ),
-            const Expanded(child: Center(child: CircularProgressIndicator())),
+            const Expanded(
+              child: Center(
+                child: AppLoadingIndicator(message: 'Đang tải bản đồ...'),
+              ),
+            ),
           ],
         ),
       );

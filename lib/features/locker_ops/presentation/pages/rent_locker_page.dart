@@ -13,6 +13,7 @@ import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/op
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/order_extras.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/order_payment_sheet.dart';
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
+import 'package:smart_laundry_locker/shared/shared.dart';
 
 /// RENTAL flow: chọn tủ + loại ô + thời lượng, trả tiền theo giờ, PIN dùng
 /// nhiều lần tới hết hạn thuê (khớp `order-service` createRental/extend/end).
@@ -283,6 +284,13 @@ class _RentLockerPageState extends State<RentLockerPage>
       if (outcome == OrderPaymentOutcome.paid) {
         // Thanh toán xong → chuyển sang danh sách đơn để user xem trạng thái.
         context.go(AppRouter.myLockerOrders);
+      } else if (outcome == OrderPaymentOutcome.failed) {
+        showPaymentResultDialog<void>(
+          context,
+          type: PaymentStatusType.failure,
+          title: 'Thanh toán thất bại',
+          message: 'Giao dịch chưa hoàn tất hoặc đã bị hủy. Vui lòng thử lại.',
+        );
       } else {
         // pending — webhook chưa về, nhắc user làm mới sau.
         await _refreshOrder();
@@ -410,7 +418,10 @@ class _RentLockerPageState extends State<RentLockerPage>
 
   Widget _buildForm() {
     if (_loadingLockers) {
-      return const Center(child: CircularProgressIndicator());
+      return const AppLoadingIndicator(
+        fullScreen: true,
+        message: 'Đang tải thông tin điểm tủ...',
+      );
     }
     final config = businessConfig;
     final minHours = config.rentalMinHours;

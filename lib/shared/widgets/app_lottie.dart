@@ -35,8 +35,14 @@ abstract final class AppLottieAssets {
   /// Icon nút "Nạp ví".
   static const String napVi = '$_dir/napvi.json';
 
-  /// Minh hoạ "Đã thanh toán".
+  /// Minh hoạ "Đã thanh toán" (thành công).
   static const String daThanhToan = '$_dir/dathanhtoan.json';
+
+  /// Minh hoạ "Thanh toán thất bại".
+  static const String thatBaiThanhToan = '$_dir/thatbaithanhtoan.json';
+
+  /// Hiệu ứng loading giao vận kiện hàng (Delivery-05).
+  static const String deliveryLoading = '$_dir/delivery_animation.json';
 }
 
 /// Hiển thị một file Lottie trong `assets/animations/`.
@@ -57,6 +63,7 @@ class AppLottie extends StatelessWidget {
     this.fit = BoxFit.contain,
     this.alignment = Alignment.center,
     this.animate = false,
+    this.repeat,
     this.fallback,
   });
 
@@ -66,6 +73,7 @@ class AppLottie extends StatelessWidget {
   final BoxFit fit;
   final AlignmentGeometry alignment;
   final bool animate;
+  final bool? repeat;
   final WidgetBuilder? fallback;
 
   @override
@@ -77,6 +85,7 @@ class AppLottie extends StatelessWidget {
       fit: fit,
       alignment: alignment,
       animate: animate,
+      repeat: repeat,
       errorBuilder: (context, error, stackTrace) =>
           fallback?.call(context) ?? const SizedBox.shrink(),
     );

@@ -11,6 +11,7 @@ import 'package:flutter/services.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
+import 'package:smart_laundry_locker/shared/shared.dart';
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
 
 class ProfileDetailPage extends StatefulWidget {
@@ -78,7 +79,9 @@ class _ProfileDetailPageState extends State<ProfileDetailPage> {
               child: Consumer<ProfileProvider>(
             builder: (context, provider, child) {
               if (provider.isLoading && provider.profile == null) {
-                return const Center(child: CircularProgressIndicator());
+                return const Center(
+                  child: AppLoadingIndicator(message: 'Đang tải thông tin...'),
+                );
               }
 
               // hiện error khi không có profile data

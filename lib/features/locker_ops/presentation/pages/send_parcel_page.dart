@@ -13,6 +13,7 @@ import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/lo
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/ops_widgets.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/order_extras.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/order_payment_sheet.dart';
+import 'package:smart_laundry_locker/shared/shared.dart';
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
 
 /// SEND flow (gửi hàng C2C qua tủ).
@@ -234,6 +235,15 @@ class _SendParcelPageState extends State<SendParcelPage>
       if (outcome == OrderPaymentOutcome.paid) {
         // Thanh toán xong → chuyển sang danh sách đơn để user xem trạng thái.
         context.go(AppRouter.myLockerOrders);
+      } else if (outcome == OrderPaymentOutcome.failed) {
+        await showPaymentResultDialog(
+          context,
+          type: PaymentStatusType.failure,
+          title: 'Thanh toán không thành công',
+          message:
+              'Giao dịch thanh toán đơn gửi hàng không thành công. Vui lòng kiểm tra và thử lại.',
+          primaryButtonText: 'Đã hiểu',
+        );
       } else {
         // pending — webhook chưa về, nhắc user làm mới sau.
         await _refreshOrder();
@@ -384,7 +394,9 @@ class _SendParcelPageState extends State<SendParcelPage>
   // ---- Stage 1: form ----
   Widget _buildForm() {
     if (_loadingLockers) {
-      return const Center(child: CircularProgressIndicator());
+      return const Center(
+        child: AppLoadingIndicator(message: 'Đang tải danh sách tủ...'),
+      );
     }
     return Form(
       key: _formKey,

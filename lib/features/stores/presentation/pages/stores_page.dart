@@ -10,6 +10,7 @@ import 'package:smart_laundry_locker/features/stores/domain/entities/store.dart'
 import 'package:smart_laundry_locker/features/stores/infrastructure/services/store_service.dart';
 import 'package:smart_laundry_locker/features/stores/presentation/widgets/store_card.dart';
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
+import 'package:smart_laundry_locker/shared/shared.dart';
 
 /// Customer-facing list of stores. Supports text search and "near me"
 /// sorting by distance. Mirrors the legacy RN `user/stores` screen.
@@ -213,7 +214,10 @@ class _StoresPageState extends State<StoresPage> {
 
   Widget _buildBody() {
     if (_loading) {
-      return const Center(child: CircularProgressIndicator());
+      return const AppLoadingIndicator(
+        fullScreen: true,
+        message: 'Đang tải danh sách điểm tủ...',
+      );
     }
     if (_error != null) {
       return _ErrorState(message: _error!, onRetry: _load);

@@ -19,6 +19,7 @@ import 'package:smart_laundry_locker/features/assistant/presentation/providers/a
 import 'package:smart_laundry_locker/features/profile/presentation/mixins/profile_image_actions_mixin.dart';
 import 'package:smart_laundry_locker/features/profile/presentation/widgets/profile_header.dart';
 import 'package:smart_laundry_locker/features/profile/presentation/widgets/profile_menu_item.dart';
+import 'package:smart_laundry_locker/shared/shared.dart';
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
@@ -157,7 +158,9 @@ class _ProfilePageState extends State<ProfilePage>
               subtitle: 'Quản lý tài khoản của bạn',
             ),
             Expanded(
-              child: Center(child: CircularProgressIndicator()),
+              child: Center(
+                child: AppLoadingIndicator(message: 'Đang tải hồ sơ...'),
+              ),
             ),
           ],
         ),
@@ -171,7 +174,7 @@ class _ProfilePageState extends State<ProfilePage>
       });
       return Scaffold(
         backgroundColor: context.pageBg,
-        body: const Center(child: CircularProgressIndicator()),
+        body: const Center(child: AppLoadingIndicator()),
       );
     }
 

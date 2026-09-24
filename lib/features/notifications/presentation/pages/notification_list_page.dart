@@ -1,6 +1,7 @@
 import 'package:smart_laundry_locker/core/utils/app_date_time.dart';
 import 'package:smart_laundry_locker/features/notifications/domain/entities/notification_model.dart';
 import 'package:smart_laundry_locker/features/notifications/presentation/providers/notification_provider.dart';
+import 'package:smart_laundry_locker/shared/shared.dart';
 import 'package:smart_laundry_locker/shared/widgets/unauthenticated_placeholder.dart';
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
 import 'package:flutter/material.dart';
@@ -247,7 +248,7 @@ class _NotificationListPageState extends State<NotificationListPage> {
                   builder: (context, provider, _) {
                     if (provider.isLoading && provider.notifications.isEmpty) {
                       return const Center(
-                        child: CircularProgressIndicator(color: AislBrand.navy),
+                        child: AppLoadingIndicator(message: 'Đang tải thông báo...'),
                       );
                     }
 

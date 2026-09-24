@@ -8,7 +8,7 @@ import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/ops_widgets.dart';
 import 'package:smart_laundry_locker/features/transactions/presentation/pages/top_up_page.dart'
     show TopUpWebViewPage;
-import 'package:smart_laundry_locker/shared/widgets/app_lottie.dart';
+import 'package:smart_laundry_locker/shared/shared.dart';
 
 enum OrderPaymentOutcome {
   /// Đơn đã được ghi nhận PAID.
@@ -19,6 +19,9 @@ enum OrderPaymentOutcome {
 
   /// Khách đóng bảng chọn phương thức.
   cancelled,
+
+  /// Thanh toán thất bại.
+  failed,
 }
 
 /// Chọn phương thức (ví, VNPay, MoMo, SePay — app khách không tự xác nhận tiền mặt),
@@ -215,24 +218,13 @@ class _SepayVietQrSheetState extends State<_SepayVietQrSheet> {
           const SizedBox(height: 16),
 
           if (_paid)
-            // Success state — dùng chung cho thanh toán lúc tạo đơn và phí quá hạn.
-            Column(
-              children: [
-                const SizedBox(
-                  width: 140,
-                  height: 140,
-                  child: AppLottie(
-                    AppLottieAssets.daThanhToan,
-                    fallback: _paidCheckBadge,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                const Text('Thanh toán thành công!',
-                    style: TextStyle(
-                        fontWeight: FontWeight.w800,
-                        fontSize: 18,
-                        color: Color(0xFF16A34A))),
-              ],
+            // Success state với Lottie animation
+            AppPaymentStatusView(
+              type: PaymentStatusType.success,
+              title: 'Thanh toán thành công!',
+              amountText: '${widget.amount.toInt()} đ',
+              message: 'Hệ thống đã nhận được tiền, đơn hàng đang được cập nhật...',
+              iconSize: 100,
             )
           else
             // QR image from VietQR.io
@@ -248,7 +240,7 @@ class _SepayVietQrSheetState extends State<_SepayVietQrSheet> {
                   return const SizedBox(
                     width: 260,
                     height: 300,
-                    child: Center(child: CircularProgressIndicator()),
+                    child: Center(child: AppLoadingIndicator(size: 64)),
                   );
                 },
                 errorBuilder: (_, __, ___) => const SizedBox(

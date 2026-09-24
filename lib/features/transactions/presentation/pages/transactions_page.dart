@@ -11,6 +11,7 @@ import 'package:smart_laundry_locker/features/transactions/presentation/provider
 import 'package:smart_laundry_locker/features/wallet/presentation/providers/wallet_provider.dart';
 import 'package:smart_laundry_locker/core/utils/currency_formatter.dart';
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
+import 'package:smart_laundry_locker/shared/shared.dart';
 
 class TransactionsPage extends StatefulWidget {
   const TransactionsPage({super.key});
@@ -139,38 +140,79 @@ class _TransactionsPageState extends State<TransactionsPage> {
                                   ),
                                 ),
                                 const SizedBox(width: 12),
-                                TextButton(
-                                  onPressed: () async {
-                                    final ok = await context.push<bool>(
-                                      AppRouter.topUp,
-                                    );
-                                    if (!mounted) return;
-                                    if (ok == true) {
-                                      await _provider.fetchTransactions(
-                                        refresh: true,
-                                      );
-                                      await walletProvider.getWalletBalance();
-                                    }
-                                  },
-                                  style: TextButton.styleFrom(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 16,
-                                      vertical: 8,
+                                Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    TextButton(
+                                      onPressed: () async {
+                                        final ok = await context.push<bool>(
+                                          AppRouter.topUp,
+                                        );
+                                        if (!mounted) return;
+                                        if (ok == true) {
+                                          await _provider.fetchTransactions(
+                                            refresh: true,
+                                          );
+                                          await walletProvider.getWalletBalance();
+                                        }
+                                      },
+                                      style: TextButton.styleFrom(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 14,
+                                          vertical: 6,
+                                        ),
+                                        backgroundColor:
+                                            AISLShadcnTheme.navyPrimary,
+                                        foregroundColor: Colors.white,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(10),
+                                        ),
+                                      ),
+                                      child: const Text(
+                                        'Nạp tiền',
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
                                     ),
-                                    backgroundColor:
-                                        AISLShadcnTheme.navyPrimary,
-                                    foregroundColor: Colors.white,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(12),
+                                    const SizedBox(height: 6),
+                                    OutlinedButton(
+                                      onPressed: () async {
+                                        final ok = await context.push<bool>(
+                                          AppRouter.withdraw,
+                                        );
+                                        if (!mounted) return;
+                                        if (ok == true) {
+                                          await _provider.fetchTransactions(
+                                            refresh: true,
+                                          );
+                                          await walletProvider.getWalletBalance();
+                                        }
+                                      },
+                                      style: OutlinedButton.styleFrom(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 14,
+                                          vertical: 6,
+                                        ),
+                                        foregroundColor:
+                                            AISLShadcnTheme.navyPrimary,
+                                        side: const BorderSide(
+                                          color: AISLShadcnTheme.navyPrimary,
+                                        ),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(10),
+                                        ),
+                                      ),
+                                      child: const Text(
+                                        'Rút tiền',
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
                                     ),
-                                  ),
-                                  child: const Text(
-                                    'Nạp tiền',
-                                    style: TextStyle(
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
+                                  ],
                                 ),
                               ],
                             ),
@@ -207,7 +249,10 @@ class _TransactionsSliverList extends StatelessWidget {
         if (provider.isLoading && transactions.isEmpty) {
           return const SliverFillRemaining(
             hasScrollBody: false,
-            child: Center(child: CircularProgressIndicator()),
+            child: AppLoadingIndicator(
+              fullScreen: true,
+              message: 'Đang tải lịch sử giao dịch...',
+            ),
           );
         }
 
@@ -319,62 +364,127 @@ class _MBStyleTransactionItem extends StatelessWidget {
     final content =
         'GD: $amountSign$amountFmt|SD: $balanceFmt|ND: ${transaction.description}';
 
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border(
-          bottom: BorderSide(color: Colors.grey.shade100),
-        ),
-      ),
-      padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(
+    final descLower = transaction.description.toLowerCase();
+    final isFailed = descLower.contains('thất bại') ||
+        descLower.contains('failed') ||
+        descLower.contains('hủy') ||
+        descLower.contains('cancel');
+
+    return InkWell(
+      onTap: () {
+        showPaymentResultDialog<void>(
+          context,
+          type: isFailed ? PaymentStatusType.failure : PaymentStatusType.success,
+          title: isFailed ? 'Giao dịch không thành công' : 'Giao dịch thành công',
+          amountText: '$amountSign$amountFmt',
+          message: transaction.description,
+          detailsWidget: Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF8FAFC),
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: Colors.grey.shade200),
+            ),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 15,
-                    color: Colors.black87,
-                  ),
-                ),
+                _dialogRow('Thời gian', DateFormat('dd/MM/yyyy HH:mm').format(transaction.createdAt.toLocal())),
+                if (transaction.referenceId != null && transaction.referenceId!.isNotEmpty) ...[
+                  const SizedBox(height: 6),
+                  _dialogRow('Mã GD', transaction.referenceId!),
+                ],
+                if (transaction.orderCode != null && transaction.orderCode!.isNotEmpty) ...[
+                  const SizedBox(height: 6),
+                  _dialogRow('Mã đơn', transaction.orderCode!),
+                ],
                 const SizedBox(height: 6),
-                Text(
-                  content,
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: Colors.grey.shade600,
-                    height: 1.45,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  time,
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: dotColor,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
+                _dialogRow('Số dư sau GD', balanceFmt),
               ],
             ),
           ),
-          const SizedBox(width: 12),
-          Container(
-            width: 10,
-            height: 10,
-            margin: const EdgeInsets.only(top: 4),
-            decoration: BoxDecoration(
-              color: dotColor,
-              shape: BoxShape.circle,
-            ),
+          primaryButtonText: 'Đóng',
+        );
+      },
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          border: Border(
+            bottom: BorderSide(color: Colors.grey.shade100),
           ),
-        ],
+        ),
+        padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 15,
+                      color: Colors.black87,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    content,
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: Colors.grey.shade600,
+                      height: 1.45,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    time,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: dotColor,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 12),
+            Container(
+              width: 10,
+              height: 10,
+              margin: const EdgeInsets.only(top: 4),
+              decoration: BoxDecoration(
+                color: dotColor,
+                shape: BoxShape.circle,
+              ),
+            ),
+          ],
+        ),
       ),
+    );
+  }
+
+  Widget _dialogRow(String label, String value) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          label,
+          style: const TextStyle(
+            fontSize: 13,
+            color: Color(0xFF64748B),
+          ),
+        ),
+        Text(
+          value,
+          style: const TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w700,
+            color: Color(0xFF0F172A),
+          ),
+        ),
+      ],
     );
   }
 }

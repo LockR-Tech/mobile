@@ -4,6 +4,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:smart_laundry_locker/core/routing/app_router.dart';
+import 'package:smart_laundry_locker/shared/shared.dart';
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
 import '../providers/voucher_provider.dart';
 import '../../data/models/voucher_model.dart';
@@ -74,7 +75,7 @@ class _MyVouchersPageState extends State<MyVouchersPage>
               builder: (context, provider, child) {
                 if (provider.isLoading) {
                   return const Center(
-                    child: CircularProgressIndicator(color: AislBrand.navy),
+                    child: AppLoadingIndicator(message: 'Đang tải ưu đãi...'),
                   );
                 }
 
