@@ -18,6 +18,7 @@ import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:smart_laundry_locker/features/maintenance/presentation/pages/create_report_page.dart';
 import 'package:smart_laundry_locker/features/delegations/presentation/pages/search_delegatee_page.dart';
 import 'package:smart_laundry_locker/shared/widgets/app_bar.dart';
+import 'package:smart_laundry_locker/shared/shared.dart';
 import 'package:flutter/material.dart';
 import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
 import 'package:smart_laundry_locker/features/orders/presentation/widgets/pulsing_report_icon.dart';
@@ -175,7 +176,10 @@ class _CustomerOrderDetailPageState extends State<CustomerOrderDetailPage> {
                     title: 'Chi tiết đơn hàng',
                     showBackButton: true,
                   ),
-                  body: Center(child: CircularProgressIndicator()),
+                  body: AppLoadingIndicator(
+                    fullScreen: true,
+                    message: 'Đang tải chi tiết đơn hàng...',
+                  ),
                 );
               }
 
@@ -728,12 +732,23 @@ class _CustomerOrderDetailPageState extends State<CustomerOrderDetailPage> {
     final success = await _provider.payOverdueFee(order.id);
     SmartDialog.dismiss<void>();
 
+    if (!context.mounted) return;
     if (success) {
-      SmartDialog.showToast('Thanh toán thành công!');
+      showPaymentResultDialog<void>(
+        context,
+        type: PaymentStatusType.success,
+        title: 'Thanh toán thành công!',
+        message: 'Phí quá hạn đã được thanh toán. Bạn có thể mở tủ để lấy đồ.',
+      );
       // Refresh to update status and show regular buttons
       await _provider.fetchOrderDetail(order.id);
     } else {
-      SmartDialog.showToast('Lỗi: ${_provider.error ?? "Thanh toán thất bại"}');
+      showPaymentResultDialog<void>(
+        context,
+        type: PaymentStatusType.failure,
+        title: 'Thanh toán thất bại',
+        message: _provider.error ?? 'Thanh toán phí quá hạn không thành công. Vui lòng kiểm tra lại.',
+      );
     }
   }
 

@@ -18,6 +18,7 @@ const _assets = <String, String>{
   'baoCao': AppLottieAssets.baoCao,
   'napVi': AppLottieAssets.napVi,
   'daThanhToan': AppLottieAssets.daThanhToan,
+  'thatBaiThanhToan': AppLottieAssets.thatBaiThanhToan,
 };
 
 void main() {
@@ -57,6 +58,15 @@ void main() {
 
       expect(frame.image.width, greaterThan(0));
       expect(frame.image.height, greaterThan(0));
+    });
+
+    test('deliveryLoading có trong bundle và parse được', () async {
+      final bytes = await rootBundle.load(AppLottieAssets.deliveryLoading);
+      final composition = await LottieComposition.fromBytes(
+        bytes.buffer.asUint8List(),
+      );
+      expect(composition.duration, isNotNull);
+      expect(composition.duration.inMilliseconds, greaterThan(0));
     });
   });
 

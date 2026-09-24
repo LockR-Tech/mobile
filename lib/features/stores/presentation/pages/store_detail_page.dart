@@ -11,6 +11,7 @@ import 'package:smart_laundry_locker/features/stores/infrastructure/services/sto
 import 'package:smart_laundry_locker/features/stores/presentation/pages/store_lockers_page.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
+import 'package:smart_laundry_locker/shared/shared.dart';
 
 /// Store detail screen: store info + customer ratings.
 ///
@@ -121,7 +122,10 @@ class _StoreDetailPageState extends State<StoreDetailPage> {
           ),
           Expanded(
             child: _loading
-                ? const Center(child: CircularProgressIndicator())
+                ? const AppLoadingIndicator(
+                    fullScreen: true,
+                    message: 'Đang tải thông tin...',
+                  )
                 : _error != null
                 ? _buildError()
                 : _buildContent(_store!),

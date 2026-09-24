@@ -15,6 +15,7 @@ import 'package:smart_laundry_locker/features/vouchers/presentation/providers/vo
 import 'package:smart_laundry_locker/features/vouchers/data/models/voucher_model.dart';
 import 'package:provider/provider.dart';
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
+import 'package:smart_laundry_locker/shared/shared.dart';
 
 class ConfirmRentArgs {
   final String cabinetId;
@@ -335,7 +336,7 @@ class _ConfirmRentBodyState extends State<_ConfirmRentBody> {
             if (provider.isLoading) {
               return const SizedBox(
                 height: 300,
-                child: Center(child: CircularProgressIndicator()),
+                child: Center(child: AppLoadingIndicator(size: 72)),
               );
             }
 
@@ -994,17 +995,35 @@ class RentSuccessPage extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Container(
-                width: 92,
-                height: 92,
-                decoration: const BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Color(0xFFE5F7EC),
-                ),
-                child: const Icon(
-                  Icons.check_rounded,
-                  color: Color(0xFF16A34A),
-                  size: 54,
+              TweenAnimationBuilder<double>(
+                tween: Tween<double>(begin: 0.0, end: 1.0),
+                duration: const Duration(milliseconds: 700),
+                curve: Curves.elasticOut,
+                builder: (context, scale, child) {
+                  return Transform.scale(
+                    scale: scale,
+                    child: child,
+                  );
+                },
+                child: Container(
+                  width: 120,
+                  height: 120,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF16A34A).withValues(alpha: 0.2),
+                        blurRadius: 32,
+                        spreadRadius: 6,
+                        offset: const Offset(0, 8),
+                      ),
+                    ],
+                  ),
+                  child: const AppLottie(
+                    AppLottieAssets.daThanhToan,
+                    animate: true,
+                    fit: BoxFit.contain,
+                  ),
                 ),
               ),
               const SizedBox(height: 16),

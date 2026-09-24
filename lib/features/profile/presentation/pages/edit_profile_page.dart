@@ -11,6 +11,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
+import 'package:smart_laundry_locker/shared/shared.dart';
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
 
 class EditProfilePage extends StatefulWidget {
@@ -279,7 +280,9 @@ class _EditProfilePageState extends State<EditProfilePage> {
               if (widget.profile == null &&
                   provider.isLoading &&
                   provider.profile == null) {
-                return const Center(child: CircularProgressIndicator());
+                return const Center(
+                  child: AppLoadingIndicator(message: 'Đang tải thông tin...'),
+                );
               }
 
               if (widget.profile == null &&

@@ -13,6 +13,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:intl/intl.dart';
+import 'package:smart_laundry_locker/shared/shared.dart';
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
 
 class PlansPage extends StatefulWidget {
@@ -98,7 +99,9 @@ class _PlansPageState extends State<PlansPage> {
                   builder: (context, state) {
                     final plans = state.plans;
                     if (state is SubscriptionLoading && plans.isEmpty) {
-                      return const Center(child: CircularProgressIndicator());
+                      return const Center(
+                        child: AppLoadingIndicator(message: 'Đang tải gói dịch vụ...'),
+                      );
                     }
                     if (plans.isEmpty) {
                       return const Center(child: Text('Không có dữ liệu gói cước.'));

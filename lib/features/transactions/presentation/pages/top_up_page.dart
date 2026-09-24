@@ -12,6 +12,7 @@ import 'package:provider/provider.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:flutter/foundation.dart';
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
+import 'package:smart_laundry_locker/shared/shared.dart';
 
 class TopUpPage extends StatefulWidget {
   const TopUpPage({super.key});
@@ -184,7 +185,38 @@ class _TopUpPageState extends State<TopUpPage> with BusinessConfigStateMixin {
             if (!mounted) return;
             if (ok == true) {
               await walletProvider.getWalletBalance();
-              if (mounted) Navigator.of(context).pop(true);
+              if (mounted) {
+                final fmtAmount = NumberFormat.currency(
+                  locale: 'vi_VN',
+                  symbol: 'đ',
+                  decimalDigits: 0,
+                ).format(_selectedAmount);
+
+                await showPaymentResultDialog<void>(
+                  context,
+                  type: PaymentStatusType.success,
+                  title: 'Nạp tiền thành công!',
+                  amountText: '+$fmtAmount',
+                  message: 'Số dư ví của bạn đã được cập nhật thành công.',
+                );
+                if (mounted) Navigator.of(context).pop(true);
+              }
+            } else if (ok == false) {
+              if (mounted) {
+                final fmtAmount = NumberFormat.currency(
+                  locale: 'vi_VN',
+                  symbol: 'đ',
+                  decimalDigits: 0,
+                ).format(_selectedAmount);
+
+                await showPaymentResultDialog<void>(
+                  context,
+                  type: PaymentStatusType.failure,
+                  title: 'Thanh toán thất bại',
+                  amountText: fmtAmount,
+                  message: 'Giao dịch nạp ví đã bị hủy hoặc không thành công. Vui lòng kiểm tra lại.',
+                );
+              }
             }
           },
         ),
@@ -562,7 +594,13 @@ class _TopUpWebViewPageState extends State<TopUpWebViewPage> {
       body: Stack(
         children: [
           WebViewWidget(controller: _controller),
-          if (_isLoading) const Center(child: CircularProgressIndicator()),
+          if (_isLoading)
+            const Center(
+              child: AppLoadingIndicator(
+                size: 80,
+                message: 'Đang kết nối cổng thanh toán...',
+              ),
+            ),
         ],
       ),
     );

@@ -10,6 +10,7 @@ import 'package:smart_laundry_locker/features/locker_ops/presentation/pages/send
 import 'package:smart_laundry_locker/features/stores/domain/entities/store.dart';
 import 'package:smart_laundry_locker/features/maintenance/presentation/pages/create_report_page.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:smart_laundry_locker/shared/shared.dart';
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
 
 /// Hiển thị lưới ô tủ locker tại một cửa hàng cụ thể.
@@ -126,7 +127,7 @@ class _StoreLockerGridPageState extends State<StoreLockerGridPage> {
   Widget _buildBody() {
     if (_loading) {
       return const Center(
-        child: CircularProgressIndicator(color: AislBrand.navy),
+        child: AppLoadingIndicator(message: 'Đang tải danh sách tủ...'),
       );
     }
     if (_error != null) {

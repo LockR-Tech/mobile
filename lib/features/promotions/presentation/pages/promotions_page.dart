@@ -8,6 +8,7 @@ import 'package:smart_laundry_locker/features/promotions/data/models/promotion_m
 import 'package:smart_laundry_locker/features/promotions/presentation/pages/promotion_detail_page.dart';
 import 'package:smart_laundry_locker/features/promotions/presentation/providers/promotion_provider.dart';
 import 'package:smart_laundry_locker/features/vouchers/data/repositories/voucher_repository.dart';
+import 'package:smart_laundry_locker/shared/shared.dart';
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
 
 class PromotionsPage extends ConsumerStatefulWidget {
@@ -70,7 +71,9 @@ class _PromotionsPageState extends ConsumerState<PromotionsPage> {
 
   Widget _buildBody(PromotionProvider provider) {
     if (provider.isLoading && provider.promotions.isEmpty) {
-      return const Center(child: CircularProgressIndicator(color: AislBrand.navy));
+      return const Center(
+        child: AppLoadingIndicator(message: 'Đang tải khuyến mãi...'),
+      );
     }
     if (provider.error != null && provider.promotions.isEmpty) {
       return ListView(
