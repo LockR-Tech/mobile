@@ -68,6 +68,15 @@ void main() {
       expect(composition.duration, isNotNull);
       expect(composition.duration.inMilliseconds, greaterThan(0));
     });
+
+    test('fastDelivery có trong bundle và parse được', () async {
+      final bytes = await rootBundle.load(AppLottieAssets.fastDelivery);
+      final composition = await LottieComposition.fromBytes(
+        bytes.buffer.asUint8List(),
+      );
+      expect(composition.duration, isNotNull);
+      expect(composition.duration.inMilliseconds, greaterThan(0));
+    });
   });
 
   testWidgets('AppLottie dựng được và giữ đúng kích thước khung', (

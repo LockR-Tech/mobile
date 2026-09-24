@@ -11,6 +11,7 @@ import 'package:smart_laundry_locker/features/auth/presentation/providers/auth_i
 import 'package:smart_laundry_locker/features/auth/presentation/providers/login_provider.dart';
 import 'package:smart_laundry_locker/features/auth/presentation/providers/register_provider.dart';
 import 'package:smart_laundry_locker/features/profile/presentation/providers/profile_provider.dart';
+import 'package:smart_laundry_locker/shared/shared.dart';
 
 /// Brand palette shared by the login + register flows so both halves of the
 /// auth screen feel like one product.
@@ -256,10 +257,10 @@ class _LoginScreenState extends State<LoginScreen>
   Widget _buildHeader() {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.only(top: 64, bottom: 28),
+      padding: const EdgeInsets.fromLTRB(20, 52, 20, 18),
       decoration: const BoxDecoration(
         gradient: LinearGradient(
-          colors: [_kNavyDark, _kNavy, _kBlue],
+          colors: [_kNavyDark, _kNavy, Color(0xFF0F3661)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -269,67 +270,98 @@ class _LoginScreenState extends State<LoginScreen>
         alignment: Alignment.center,
         children: [
           Positioned(
-            top: -40,
-            right: -50,
-            child: _circle(180, Colors.white.withValues(alpha: 0.04)),
+            top: -50,
+            right: -60,
+            child: _circle(200, Colors.white.withValues(alpha: 0.04)),
           ),
           Positioned(
-            bottom: -30,
-            left: -40,
-            child: _circle(140, _kCyan.withValues(alpha: 0.08)),
+            bottom: -40,
+            left: -50,
+            child: _circle(160, _kCyan.withValues(alpha: 0.08)),
           ),
           Column(
+            mainAxisSize: MainAxisSize.min,
             children: [
+              // 1. Logo ở TRÊN file JSON
               ScaleTransition(
                 scale: _logoScale,
                 child: FadeTransition(
                   opacity: _opacity,
-                  child: Container(
-                    width: 88,
-                    height: 88,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: Colors.white.withValues(alpha: 0.15),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(
+                        width: 48,
+                        height: 48,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(15),
+                          border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.8),
+                            width: 1.5,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFF00B4D8).withValues(alpha: 0.35),
+                              blurRadius: 18,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(14),
+                          child: Image.asset(
+                            'assets/images/logo.png',
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) => Container(
+                              color: const Color(0xFF0F172A),
+                              child: const Icon(LucideIcons.box, color: Colors.white, size: 24),
+                            ),
+                          ),
+                        ),
                       ),
-                    ),
-                    alignment: Alignment.center,
-                    child: Container(
-                      width: 72,
-                      height: 72,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.white.withValues(alpha: 0.1),
+                      const SizedBox(width: 12),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'LOCK.R',
+                            style: TextStyle(
+                              fontSize: 22,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: 2.2,
+                              color: Colors.white,
+                            ),
+                          ),
+                          Text(
+                            'Tủ thông minh • Giao nhận 24/7',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                              color: Colors.white.withValues(alpha: 0.82),
+                            ),
+                          ),
+                        ],
                       ),
-                      child: const Icon(
-                        LucideIcons.box,
-                        size: 34,
-                        color: Colors.white,
-                      ),
-                    ),
+                    ],
                   ),
                 ),
               ),
-              const SizedBox(height: 14),
+
+              const SizedBox(height: 10),
+
+              // 2. Lottie Animation Shopping Delivery ở DƯỚI Logo
               FadeTransition(
                 opacity: _opacity,
-                child: const Text(
-                  'Lock.R Locker',
-                  style: TextStyle(
-                    fontSize: 26,
-                    fontWeight: FontWeight.w900,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 6),
-              FadeTransition(
-                opacity: _opacity,
-                child: Text(
-                  'Locker thông minh, tiện lợi',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.white.withValues(alpha: 0.8),
+                child: Container(
+                  height: 130,
+                  width: double.infinity,
+                  alignment: Alignment.center,
+                  child: const AppLottie(
+                    AppLottieAssets.fastDelivery,
+                    animate: true,
+                    repeat: true,
+                    fit: BoxFit.contain,
                   ),
                 ),
               ),
@@ -371,8 +403,24 @@ class _LoginScreenState extends State<LoginScreen>
           duration: const Duration(milliseconds: 200),
           padding: const EdgeInsets.symmetric(vertical: 12),
           decoration: BoxDecoration(
-            color: active ? _kBlue : Colors.transparent,
+            gradient: active
+                ? const LinearGradient(
+                    colors: [_kNavy, _kBlue],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  )
+                : null,
+            color: active ? null : Colors.transparent,
             borderRadius: BorderRadius.circular(10),
+            boxShadow: active
+                ? [
+                    BoxShadow(
+                      color: _kBlue.withValues(alpha: 0.3),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ]
+                : null,
           ),
           alignment: Alignment.center,
           child: Text(
