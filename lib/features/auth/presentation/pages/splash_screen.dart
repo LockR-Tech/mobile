@@ -55,7 +55,8 @@ class _SplashScreenState extends State<SplashScreen>
   }
 
   Future<void> _checkAuthAndNavigate() async {
-    await Future<void>.delayed(const Duration(seconds: 2));
+    // Thời gian hiển thị splash screen tầm 4s theo yêu cầu
+    await Future<void>.delayed(const Duration(seconds: 4));
     if (!mounted) return;
 
     final hasToken = await TokenService.hasToken();
@@ -106,19 +107,12 @@ class _SplashScreenState extends State<SplashScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       body: Container(
         width: double.infinity,
         height: double.infinity,
         decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Color(0xFF061426),
-              Color(0xFF0A2240),
-              Color(0xFF0F325E),
-            ],
-          ),
+          color: Colors.white,
         ),
         child: SafeArea(
           child: FadeTransition(
@@ -127,28 +121,28 @@ class _SplashScreenState extends State<SplashScreen>
               scale: _scaleAnimation,
               child: Stack(
                 children: [
-                  // Ambient glowing circles for depth & glass aesthetic
+                  // Ambient soft decorative circles for subtle depth on white
                   Positioned(
-                    top: -60,
-                    right: -50,
+                    top: -50,
+                    right: -40,
+                    child: Container(
+                      width: 220,
+                      height: 220,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: const Color(0xFFE0F2FE).withValues(alpha: 0.5),
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    bottom: -60,
+                    left: -50,
                     child: Container(
                       width: 240,
                       height: 240,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: const Color(0xFF00B4D8).withValues(alpha: 0.12),
-                      ),
-                    ),
-                  ),
-                  Positioned(
-                    bottom: -80,
-                    left: -60,
-                    child: Container(
-                      width: 260,
-                      height: 260,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: const Color(0xFF0077B6).withValues(alpha: 0.15),
+                        color: const Color(0xFFF0FDF4).withValues(alpha: 0.6),
                       ),
                     ),
                   ),
@@ -157,7 +151,7 @@ class _SplashScreenState extends State<SplashScreen>
                   Center(
                     child: SingleChildScrollView(
                       physics: const BouncingScrollPhysics(),
-                      padding: const EdgeInsets.symmetric(horizontal: 24),
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
@@ -165,21 +159,17 @@ class _SplashScreenState extends State<SplashScreen>
 
                           // ── 1. LOGO Ở TRÊN ──────────────────────────────────────
                           Container(
-                            width: 88,
-                            height: 88,
+                            width: 86,
+                            height: 86,
                             decoration: BoxDecoration(
                               color: Colors.white,
-                              borderRadius: BorderRadius.circular(26),
-                              border: Border.all(
-                                color: Colors.white.withValues(alpha: 0.8),
-                                width: 2,
-                              ),
+                              borderRadius: BorderRadius.circular(24),
                               boxShadow: [
                                 BoxShadow(
-                                  color: const Color(0xFF00B4D8).withValues(alpha: 0.35),
-                                  blurRadius: 28,
+                                  color: const Color(0xFF0F172A).withValues(alpha: 0.08),
+                                  blurRadius: 20,
                                   spreadRadius: 2,
-                                  offset: const Offset(0, 8),
+                                  offset: const Offset(0, 6),
                                 ),
                               ],
                             ),
@@ -193,7 +183,7 @@ class _SplashScreenState extends State<SplashScreen>
                                     color: const Color(0xFF0F172A),
                                     child: const Icon(
                                       LucideIcons.box,
-                                      size: 42,
+                                      size: 40,
                                       color: Colors.white,
                                     ),
                                   );
@@ -210,49 +200,40 @@ class _SplashScreenState extends State<SplashScreen>
                               fontSize: 28,
                               fontWeight: FontWeight.w900,
                               letterSpacing: 3.5,
-                              color: Colors.white,
+                              color: Color(0xFF0F172A),
                             ),
                           ),
                           const SizedBox(height: 6),
                           Container(
                             padding: const EdgeInsets.symmetric(
-                              horizontal: 14,
-                              vertical: 4,
+                              horizontal: 16,
+                              vertical: 5,
                             ),
                             decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: 0.12),
+                              color: const Color(0xFFF1F5F9),
                               borderRadius: BorderRadius.circular(20),
                               border: Border.all(
-                                color: Colors.white.withValues(alpha: 0.15),
+                                color: const Color(0xFFE2E8F0),
                               ),
                             ),
                             child: const Text(
                               'Hệ thống tủ khóa thông minh 24/7',
                               style: TextStyle(
                                 fontSize: 12.5,
-                                fontWeight: FontWeight.w500,
-                                letterSpacing: 0.4,
-                                color: Color(0xFFE2E8F0),
+                                fontWeight: FontWeight.w600,
+                                letterSpacing: 0.3,
+                                color: Color(0xFF475569),
                               ),
                             ),
                           ),
 
-                          const SizedBox(height: 24),
+                          const SizedBox(height: 20),
 
-                          // ── 2. LOTTIE ANIMATION Ở DƯỚI LOGO ─────────────────────
+                          // ── 2. LOTTIE ANIMATION PHÓNG TO Ở DƯỚI LOGO ────────────
                           Container(
-                            width: 250,
-                            height: 250,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: const Color(0xFF0077B6).withValues(alpha: 0.18),
-                                  blurRadius: 40,
-                                  spreadRadius: 10,
-                                ),
-                              ],
-                            ),
+                            width: 320,
+                            height: 320,
+                            alignment: Alignment.center,
                             child: const AppLottie(
                               _kFastDeliveryLottie,
                               animate: true,
@@ -261,7 +242,7 @@ class _SplashScreenState extends State<SplashScreen>
                             ),
                           ),
 
-                          const SizedBox(height: 28),
+                          const SizedBox(height: 20),
 
                           // ── 3. LOADING INDICATOR HOẶC BIOMETRIC PROMPT ──────────
                           if (!_bioBlocked) ...[
@@ -271,20 +252,20 @@ class _SplashScreenState extends State<SplashScreen>
                                 borderRadius: BorderRadius.circular(10),
                                 child: const LinearProgressIndicator(
                                   minHeight: 4,
-                                  backgroundColor: Color(0x33FFFFFF),
+                                  backgroundColor: Color(0xFFE2E8F0),
                                   valueColor: AlwaysStoppedAnimation<Color>(
-                                    Color(0xFF00B4D8),
+                                    Color(0xFF0077B6),
                                   ),
                                 ),
                               ),
                             ),
-                            const SizedBox(height: 12),
-                            Text(
+                            const SizedBox(height: 10),
+                            const Text(
                               'Đang tải...',
                               style: TextStyle(
                                 fontSize: 13,
                                 fontWeight: FontWeight.w500,
-                                color: Colors.white.withValues(alpha: 0.65),
+                                color: Color(0xFF94A3B8),
                               ),
                             ),
                           ] else ...[
@@ -292,11 +273,18 @@ class _SplashScreenState extends State<SplashScreen>
                             Container(
                               padding: const EdgeInsets.all(20),
                               decoration: BoxDecoration(
-                                color: Colors.white.withValues(alpha: 0.08),
+                                color: Colors.white,
                                 borderRadius: BorderRadius.circular(24),
                                 border: Border.all(
-                                  color: Colors.white.withValues(alpha: 0.18),
+                                  color: const Color(0xFFE2E8F0),
                                 ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withValues(alpha: 0.05),
+                                    blurRadius: 16,
+                                    offset: const Offset(0, 4),
+                                  ),
+                                ],
                               ),
                               child: Column(
                                 children: [
@@ -305,7 +293,7 @@ class _SplashScreenState extends State<SplashScreen>
                                     style: TextStyle(
                                       fontSize: 14,
                                       fontWeight: FontWeight.w500,
-                                      color: Color(0xFFE2E8F0),
+                                      color: Color(0xFF475569),
                                     ),
                                   ),
                                   const SizedBox(height: 14),
@@ -317,8 +305,8 @@ class _SplashScreenState extends State<SplashScreen>
                                       style: TextStyle(fontWeight: FontWeight.w700),
                                     ),
                                     style: ElevatedButton.styleFrom(
-                                      backgroundColor: const Color(0xFF00B4D8),
-                                      foregroundColor: const Color(0xFF001F2D),
+                                      backgroundColor: const Color(0xFF003D5B),
+                                      foregroundColor: Colors.white,
                                       elevation: 0,
                                       padding: const EdgeInsets.symmetric(
                                         horizontal: 24,
@@ -332,10 +320,10 @@ class _SplashScreenState extends State<SplashScreen>
                                   const SizedBox(height: 6),
                                   TextButton(
                                     onPressed: _signOutInstead,
-                                    child: Text(
+                                    child: const Text(
                                       'Đăng xuất và dùng mật khẩu',
                                       style: TextStyle(
-                                        color: Colors.white.withValues(alpha: 0.7),
+                                        color: Color(0xFF64748B),
                                         fontSize: 13.5,
                                       ),
                                     ),
