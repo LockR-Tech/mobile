@@ -86,6 +86,7 @@ class _FakeRentLockerOpsService extends LockerOpsService {
     String method, {
     String? bankCode,
     String? returnUrl,
+    String? description,
   }) async {
     checkoutCalls++;
     lastCheckoutOrderId = orderId;
