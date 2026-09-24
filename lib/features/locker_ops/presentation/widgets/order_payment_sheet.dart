@@ -105,6 +105,18 @@ Future<OrderPaymentOutcome> payOrderAndAwaitPaid(
   return paid ? OrderPaymentOutcome.paid : OrderPaymentOutcome.pending;
 }
 
+/// Huy hiệu tick xanh cũ — giữ làm dự phòng khi không nạp được Lottie.
+Widget _paidCheckBadge(BuildContext context) => Container(
+      width: 72,
+      height: 72,
+      decoration: const BoxDecoration(
+        color: Color(0xFFDCFCE7),
+        shape: BoxShape.circle,
+      ),
+      child: const Icon(Icons.check_rounded,
+          color: Color(0xFF16A34A), size: 40),
+    );
+
 // ─────────────────────────────────────────────────────────────────────────────
 // SePay VietQR inline bottom sheet
 // ─────────────────────────────────────────────────────────────────────────────

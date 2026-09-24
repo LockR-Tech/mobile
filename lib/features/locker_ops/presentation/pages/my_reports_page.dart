@@ -63,21 +63,20 @@ class _MyReportsPageState extends State<MyReportsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF2F3F5),
-      body: Column(
-        children: [
-          BrandHeroHeader(
-            title: 'Báo cáo của tôi',
-            subtitle: 'Theo dõi các báo lỗi ô tủ bạn đã gửi',
-            onBack: () => Navigator.of(context).maybePop(),
-            trailing: BrandCircleIconButton(
-              icon: LucideIcons.refreshCw,
-              onTap: _load,
-              iconSize: 18,
-            ),
+      body: BrandHeroScaffold(
+        header: (collapse) => BrandHeroHeader(
+          title: 'Báo cáo của tôi',
+          subtitle: 'Theo dõi các báo lỗi ô tủ bạn đã gửi',
+          onBack: () => Navigator.of(context).maybePop(),
+          collapseProgress: collapse,
+          trailing: BrandCircleIconButton(
+            icon: LucideIcons.refreshCw,
+            onTap: _load,
+            iconSize: 18,
           ),
-          const SizedBox(height: 8),
-          Expanded(
-            child: _loading
+        ),
+        child: Builder(
+          builder: (context) => _loading
                 ? const Center(
                     child: CircularProgressIndicator(color: AislBrand.navy),
                   )
@@ -98,8 +97,7 @@ class _MyReportsPageState extends State<MyReportsPage> {
                           _ReportCard(report: _reports[i], onChanged: _load),
                     ),
                   ),
-          ),
-        ],
+        ),
       ),
     );
   }

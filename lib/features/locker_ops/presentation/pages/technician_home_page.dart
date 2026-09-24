@@ -1,3 +1,4 @@
+import 'package:smart_laundry_locker/core/utils/app_date_time.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
@@ -51,6 +52,9 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
   // Tủ mình phụ trách (`lockers?mine=true`).
   List<Map<String, dynamic>> _myLockers = [];
   String _queueView = 'ALL';
+
+  /// Lọc tab Sự cố theo trạng thái phiếu: ALL / OPEN / IN_PROGRESS / RESOLVED.
+  String _reportStatusFilter = 'ALL';
   List<Map<String, dynamic>> _schedules = [];
   String _scheduleFilter = 'ALL';
   // Của tôi (lịch giao cho mình) / Tất cả lịch tủ.
@@ -1758,51 +1762,54 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
     String? error;
     final reason = await showDialog<String>(
       context: context,
-      builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setLocal) => AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          title: Text('Bãi đáp: ${_landingPadLabel(status)}'),
-          content: TextField(
-            controller: ctrl,
-            autofocus: true,
-            minLines: 1,
-            maxLines: 3,
-            decoration: InputDecoration(
-              labelText: 'Lý do',
-              hintText: status == 'FAULT'
-                  ? 'VD: Marker bong tróc, mặt đáp nứt...'
-                  : 'VD: Vệ sinh, sơn lại marker...',
-              errorText: error,
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: const Text('Hủy'),
-            ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: _landingPadColor(status),
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
+      // ctrl được huỷ khi dialog gỡ khỏi cây (sau hiệu ứng đóng).
+      builder: (ctx) => ControllerDisposer(
+        controllers: [ctrl],
+        child: StatefulBuilder(
+          builder: (ctx, setLocal) => AlertDialog(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            title: Text('Bãi đáp: ${_landingPadLabel(status)}'),
+            content: TextField(
+              controller: ctrl,
+              autofocus: true,
+              minLines: 1,
+              maxLines: 3,
+              decoration: InputDecoration(
+                labelText: 'Lý do',
+                hintText: status == 'FAULT'
+                    ? 'VD: Marker bong tróc, mặt đáp nứt...'
+                    : 'VD: Vệ sinh, sơn lại marker...',
+                errorText: error,
               ),
-              onPressed: () {
-                final text = ctrl.text.trim();
-                if (text.isEmpty) {
-                  setLocal(() => error = 'Vui lòng nhập lý do.');
-                  return;
-                }
-                Navigator.pop(ctx, text);
-              },
-              child: const Text('Xác nhận'),
             ),
-          ],
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: const Text('Hủy'),
+              ),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: _landingPadColor(status),
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                onPressed: () {
+                  final text = ctrl.text.trim();
+                  if (text.isEmpty) {
+                    setLocal(() => error = 'Vui lòng nhập lý do.');
+                    return;
+                  }
+                  Navigator.pop(ctx, text);
+                },
+                child: const Text('Xác nhận'),
+              ),
+            ],
+          ),
         ),
       ),
     );
-    ctrl.dispose();
     return reason;
   }
 
@@ -2663,9 +2670,9 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
     final ok = await showDialog<bool>(
       context: context,
       barrierDismissible: false,
-      // photos được huỷ khi dialog gỡ khỏi cây (sau hiệu ứng đóng).
+      // photos + reasonCtrl được huỷ khi dialog gỡ khỏi cây (sau hiệu ứng đóng).
       builder: (ctx) => ControllerDisposer(
-        controller: photos,
+        controllers: [photos, reasonCtrl],
         child: StatefulBuilder(
           builder: (ctx, setLocal) => AlertDialog(
             shape: RoundedRectangleBorder(
@@ -2758,7 +2765,6 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
       ),
     );
     final reason = reasonCtrl.text.trim();
-    reasonCtrl.dispose();
     if (ok != true || reason.isEmpty) return;
     await _runCellAction(
       () => _service.reportFault(boxId, reason, attachments: attachments),
@@ -2775,45 +2781,48 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
     final reasonCtrl = TextEditingController();
     final ok = await showDialog<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text('Ngưng dùng ô #${cell['boxNumber']}'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Ô sẽ bị loại khỏi phân phối cho khách tới khi được khôi phục.',
-              style: TextStyle(fontSize: 12, color: opsMutedText),
+      // reasonCtrl được huỷ khi dialog gỡ khỏi cây (sau hiệu ứng đóng).
+      builder: (ctx) => ControllerDisposer(
+        controllers: [reasonCtrl],
+        child: AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: Text('Ngưng dùng ô #${cell['boxNumber']}'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Ô sẽ bị loại khỏi phân phối cho khách tới khi được khôi phục.',
+                style: TextStyle(fontSize: 12, color: opsMutedText),
+              ),
+              const SizedBox(height: 8),
+              TextField(
+                controller: reasonCtrl,
+                decoration: const InputDecoration(labelText: 'Lý do (tùy chọn)'),
+                minLines: 1,
+                maxLines: 3,
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text('Hủy'),
             ),
-            const SizedBox(height: 8),
-            TextField(
-              controller: reasonCtrl,
-              decoration: const InputDecoration(labelText: 'Lý do (tùy chọn)'),
-              minLines: 1,
-              maxLines: 3,
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF6B7280),
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+              onPressed: () => Navigator.pop(ctx, true),
+              child: const Text('Ngưng dùng'),
             ),
           ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Hủy'),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF6B7280),
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            ),
-            onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Ngưng dùng'),
-          ),
-        ],
       ),
     );
     final reason = reasonCtrl.text.trim();
-    reasonCtrl.dispose();
     if (ok != true) return;
     await _runCellAction(
       () => _service.outOfService(boxId, reason: reason.isEmpty ? null : reason),
@@ -2927,9 +2936,19 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
   Widget _buildQueue() {
     // Tab "Sự cố": Toàn bộ sự cố Kiosk để KTV duyệt — OPEN thì nhận việc, còn lại là tham khảo.
     // Dữ liệu từ /api/admin/lockers/reports — khớp 100% với Admin portal.
-    final openReports = _reports.where((r) => r['status'] == 'OPEN').toList();
-    final inProgressReports = _reports.where((r) => r['status'] == 'IN_PROGRESS').toList();
-    final resolvedReports = _reports.where((r) => r['status'] == 'RESOLVED').toList();
+    // Bộ lọc trạng thái: khi chọn một trạng thái thì các nhóm còn lại rỗng nên
+    // danh sách bên dưới chỉ còn đúng nhóm đó.
+    bool statusShown(String status) =>
+        _reportStatusFilter == 'ALL' || _reportStatusFilter == status;
+    final openReports = statusShown('OPEN')
+        ? _reports.where((r) => r['status'] == 'OPEN').toList()
+        : <Map<String, dynamic>>[];
+    final inProgressReports = statusShown('IN_PROGRESS')
+        ? _reports.where((r) => r['status'] == 'IN_PROGRESS').toList()
+        : <Map<String, dynamic>>[];
+    final resolvedReports = statusShown('RESOLVED')
+        ? _reports.where((r) => r['status'] == 'RESOLVED').toList()
+        : <Map<String, dynamic>>[];
     // "Tủ tôi phụ trách": phiếu OPEN server định tuyến cho mình + ô lỗi của các tủ đó.
     final routedView = _queueView == 'ROUTED';
     final myLockerIds = _myLockerIds;
@@ -2965,6 +2984,40 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
               ],
             ),
           ),
+          if (!routedView) ...[
+            const SizedBox(height: 8),
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: [
+                  for (final option in const [
+                    ('ALL', 'Mọi trạng thái', Icons.filter_list),
+                    ('OPEN', 'Chờ nhận', Icons.fiber_new_rounded),
+                    ('IN_PROGRESS', 'Đang xử lý', Icons.build_circle_outlined),
+                    ('RESOLVED', 'Hoàn tất', Icons.check_circle_outline),
+                  ]) ...[
+                    _buildScheduleChip(
+                      label: option.$1 == 'ALL'
+                          ? option.$2
+                          : '${option.$2} '
+                              '(${_reports.where((r) => r['status'] == option.$1).length})',
+                      selected: _reportStatusFilter == option.$1,
+                      icon: option.$3,
+                      activeColor: switch (option.$1) {
+                        'OPEN' => const Color(0xFFDC2626),
+                        'IN_PROGRESS' => const Color(0xFFD97706),
+                        'RESOLVED' => const Color(0xFF16A34A),
+                        _ => opsPrimary,
+                      },
+                      onTap: () =>
+                          setState(() => _reportStatusFilter = option.$1),
+                    ),
+                    const SizedBox(width: 8),
+                  ],
+                ],
+              ),
+            ),
+          ],
           const SizedBox(height: 12),
           if (!routedView) _boxAnomaliesSection(),
           if (routedView) ...[
@@ -3845,34 +3898,53 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
               ),
             ],
             const SizedBox(height: 10),
+            // Lịch bị chặn vì lần trước KHÔNG ĐẠT: trước đây chỉ có một dòng chữ
+            // xám 11.5px cạnh nút đã mờ, nên KTV không biết phải làm gì để kiểm
+            // tra tiếp. Nay nói rõ bước kế tiếp và cho bấm thẳng vào phiếu.
+            if (blockedReason != null) ...[
+              OpsBanner(
+                tone: OpsBannerTone.warning,
+                icon: Icons.report_gmailerrorred_outlined,
+                text: pendingReportId != null
+                    ? 'Lần kiểm tra trước KHÔNG ĐẠT nên hệ thống đã mở phiếu '
+                          '#$pendingReportId. Xử lý xong và nghiệm thu phiếu đó '
+                          'thì lịch này mở lại để kiểm tra tiếp.'
+                    : blockedReason,
+              ),
+              const SizedBox(height: 8),
+            ],
             Row(
               children: [
-                Expanded(
-                  child: blockedReason == null
-                      ? const SizedBox.shrink()
-                      : Text(
-                          blockedReason,
-                          style: const TextStyle(
-                            fontSize: 11.5,
-                            color: opsMutedText,
-                          ),
-                        ),
-                ),
-                const SizedBox(width: 8),
-                ElevatedButton.icon(
-                  onPressed: id == null || blockedReason != null
-                      ? null
-                      : () => _showCompleteInspectionSheet(s),
-                  icon: const Icon(Icons.fact_check_outlined, size: 16),
-                  label: const Text('Kiểm tra'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF16A34A),
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                const Spacer(),
+                if (pendingReportId != null)
+                  ElevatedButton.icon(
+                    onPressed: () => _openReportById(pendingReportId),
+                    icon: const Icon(Icons.assignment_turned_in_outlined,
+                        size: 16),
+                    label: Text('Xử lý phiếu #$pendingReportId'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFEA580C),
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                  )
+                else
+                  ElevatedButton.icon(
+                    onPressed: id == null || blockedReason != null
+                        ? null
+                        : () => _showCompleteInspectionSheet(s),
+                    icon: const Icon(Icons.fact_check_outlined, size: 16),
+                    label: const Text('Kiểm tra'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF16A34A),
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                     ),
                   ),
-                ),
               ],
             ),
           ],
@@ -5558,7 +5630,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
 
   DateTime? _parseDate(dynamic value) {
     if (value == null) return null;
-    return DateTime.tryParse('$value')?.toLocal();
+    return parseServerDateTime(value);
   }
 
   String _formatFullDateTime(DateTime dt) {
@@ -5727,7 +5799,7 @@ class _IotDeviceSheetState extends State<_IotDeviceSheet> {
       };
 
   String _fmtDate(dynamic value) {
-    final d = DateTime.tryParse('$value')?.toLocal();
+    final d = parseServerDateTime(value);
     if (d == null) return '';
     String two(int n) => n.toString().padLeft(2, '0');
     return '${two(d.hour)}:${two(d.minute)} ${two(d.day)}/${two(d.month)}/${d.year}';
@@ -6049,7 +6121,7 @@ class _RepairLogSheetState extends State<_RepairLogSheet> {
   }
 
   String _fmt(dynamic value) {
-    final d = DateTime.tryParse('$value')?.toLocal();
+    final d = parseServerDateTime(value);
     if (d == null) return '';
     String two(int n) => n.toString().padLeft(2, '0');
     return '${two(d.hour)}:${two(d.minute)} ${two(d.day)}/${two(d.month)}';

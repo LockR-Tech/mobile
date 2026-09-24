@@ -270,12 +270,14 @@ class _RentLockerPageState extends State<RentLockerPage>
     if (id == null) return;
     setState(() => _loading = true);
     try {
-      final total = _order?['totalPrice'];
+      // Thu phần còn thiếu: đơn thuê đã trả rồi mà gia hạn thì chỉ trả thêm giờ mới.
+      final order = _order;
+      final due = order == null ? null : orderAmountDue(order);
       final outcome = await payOrderAndAwaitPaid(
         context,
         service: _service,
         orderId: id,
-        total: total is num ? total.toDouble() : _netPrice.toDouble(),
+        total: due ?? _netPrice.toDouble(),
         enabledMethods: businessConfig.enabledPaymentMethods,
       );
       if (!mounted || outcome == OrderPaymentOutcome.cancelled) return;

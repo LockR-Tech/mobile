@@ -1,3 +1,4 @@
+import 'package:smart_laundry_locker/core/utils/app_date_time.dart';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
 import 'package:smart_laundry_locker/core/config/business_config_service.dart';
@@ -85,8 +86,7 @@ class MaintenanceRemoteDataSourceImpl implements MaintenanceRemoteDataSource {
 
     final rawId = data['id']?.toString() ?? '0';
     final rawCreatedAt = data['createdAt'] != null
-        ? DateTime.tryParse(data['createdAt'].toString())?.toLocal() ??
-            DateTime.now()
+        ? parseServerDateTimeOr(data['createdAt'])
         : DateTime.now();
 
     return MaintenanceReportModel(
@@ -126,8 +126,7 @@ class MaintenanceRemoteDataSourceImpl implements MaintenanceRemoteDataSource {
       final m = e as Map<String, dynamic>;
       final rawId = m['id']?.toString() ?? '0';
       final rawCreatedAt = m['createdAt'] != null
-          ? DateTime.tryParse(m['createdAt'].toString())?.toLocal() ??
-              DateTime.now()
+          ? parseServerDateTimeOr(m['createdAt'])
           : DateTime.now();
 
       return MaintenanceReportModel(

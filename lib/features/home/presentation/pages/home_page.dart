@@ -626,7 +626,7 @@ class _HomePageState extends ConsumerState<HomePage>
             context: context,
             icon: LucideIcons.store,
             lottieAsset: AppLottieAssets.cuaHang,
-            label: 'Cửa hàng',
+            label: 'Điểm gửi',
             isPrimary: false,
             textColor: textColor,
             onTap: () => context.push(AppRouter.stores),
@@ -1342,6 +1342,7 @@ class _HomePageState extends ConsumerState<HomePage>
                     _buildUtilityItem(
                       ctx,
                       icon: LucideIcons.store,
+                      lottieAsset: AppLottieAssets.cuaHang,
                       label: 'Điểm gửi',
                       color: const Color(0xFF8B5CF6),
                       onTap: () {
