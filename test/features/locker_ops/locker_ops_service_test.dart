@@ -301,6 +301,8 @@ void main() {
               'deliveryStage': 'ACCEPTED',
               'droneUnitId': 9,
               'droneCode': 'DRONE-09',
+              'assignedByUserId': 99,
+              'expectedWeightGrams': 1200,
             }),
           ),
         );
@@ -314,6 +316,50 @@ void main() {
         expect(result['missionId'], equals(301));
         expect(result['deliveryStage'], equals('ACCEPTED'));
         expect(result['droneCode'], equals('DRONE-09'));
+      },
+    );
+
+    test(
+      'confirmDroneLoading() posts weight, seal and safety checklist',
+      () async {
+        adapter.onPost(
+          '/api/drone-technician/drone-orders/21/loading-confirmation',
+          (server) => server.reply(
+            200,
+            apiOk({
+              'orderId': 21,
+              'missionId': 301,
+              'missionStatus': 'READY_TO_LAUNCH',
+              'deliveryStage': 'ACCEPTED',
+              'payloadWeightGrams': 1450,
+              'sealCode': 'SEAL-21',
+            }),
+          ),
+          data: {
+            'payloadWeightGrams': 1450,
+            'sealCode': 'SEAL-21',
+            'parcelMatched': true,
+            'payloadSecured': true,
+            'compartmentLocked': true,
+            'note': 'Nguyen ven',
+          },
+          headers: {'Idempotency-Key': 'load-1'},
+        );
+
+        final result = await service.confirmDroneLoading(
+          21,
+          payloadWeightGrams: 1450,
+          sealCode: 'SEAL-21',
+          parcelMatched: true,
+          payloadSecured: true,
+          compartmentLocked: true,
+          note: 'Nguyen ven',
+          idempotencyKey: 'load-1',
+        );
+
+        expect(result['missionStatus'], equals('READY_TO_LAUNCH'));
+        expect(result['payloadWeightGrams'], equals(1450));
+        expect(result['sealCode'], equals('SEAL-21'));
       },
     );
 

@@ -688,6 +688,30 @@ class LockerOpsService {
     body: {'droneUnitId': droneUnitId},
   );
 
+  /// Xác nhận kiện đã được cân, đối chiếu, cố định và khóa khoang hàng.
+  Future<Map<String, dynamic>> confirmDroneLoading(
+    int orderId, {
+    required int payloadWeightGrams,
+    required String sealCode,
+    required bool parcelMatched,
+    required bool payloadSecured,
+    required bool compartmentLocked,
+    String? note,
+    required String idempotencyKey,
+  }) => _map(
+    'POST',
+    '/api/drone-technician/drone-orders/$orderId/loading-confirmation',
+    headers: {'Idempotency-Key': idempotencyKey},
+    body: {
+      'payloadWeightGrams': payloadWeightGrams,
+      'sealCode': sealCode.trim(),
+      'parcelMatched': parcelMatched,
+      'payloadSecured': payloadSecured,
+      'compartmentLocked': compartmentLocked,
+      if (note != null && note.trim().isNotEmpty) 'note': note.trim(),
+    },
+  );
+
   /// Đội bay phát lệnh launch cho mission đã sẵn sàng.
   Future<Map<String, dynamic>> launchDroneOrder(
     int orderId, {
