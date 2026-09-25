@@ -11,6 +11,9 @@ class _FakeMaintenanceService extends LockerOpsService {
 
   int? acceptedOrderId;
   int? acceptedDroneId;
+  int? loadedOrderId;
+  int? loadedWeightGrams;
+  String? loadedSealCode;
   int? launchedOrderId;
   int? canceledOrderId;
   int? canceledReasonCode;
@@ -50,10 +53,22 @@ class _FakeMaintenanceService extends LockerOpsService {
         'orderId': 22,
         'deliveryStage': 'ACCEPTED',
         'missionStatus': 'READY_TO_LAUNCH',
+        'assignedByUserId': 99,
         'droneCode': 'DRONE-09',
         'destinationLockerId': 5,
         'reservedBoxId': 9002,
         'description': 'Hang mau',
+      },
+      {
+        'orderId': 23,
+        'deliveryStage': 'ACCEPTED',
+        'missionStatus': 'AWAITING_LOADING',
+        'assignedByUserId': 99,
+        'droneCode': 'DRONE-10',
+        'destinationLockerId': 6,
+        'reservedBoxId': 9003,
+        'description': 'Linh kien dien tu',
+        'expectedWeightGrams': 1450,
       },
     ];
     if (deliveryStage == null) return items;
@@ -73,10 +88,35 @@ class _FakeMaintenanceService extends LockerOpsService {
     return {
       'orderId': orderId,
       'missionId': 301,
-      'missionStatus': 'READY_TO_LAUNCH',
+      'missionStatus': 'AWAITING_LOADING',
       'deliveryStage': 'ACCEPTED',
       'droneUnitId': droneUnitId,
       'droneCode': 'DRONE-09',
+      'assignedByUserId': 99,
+    };
+  }
+
+  @override
+  Future<Map<String, dynamic>> confirmDroneLoading(
+    int orderId, {
+    required int payloadWeightGrams,
+    required String sealCode,
+    required bool parcelMatched,
+    required bool payloadSecured,
+    required bool compartmentLocked,
+    String? note,
+    required String idempotencyKey,
+  }) async {
+    loadedOrderId = orderId;
+    loadedWeightGrams = payloadWeightGrams;
+    loadedSealCode = sealCode;
+    return {
+      'orderId': orderId,
+      'missionId': 303,
+      'missionStatus': 'READY_TO_LAUNCH',
+      'deliveryStage': 'ACCEPTED',
+      'payloadWeightGrams': payloadWeightGrams,
+      'sealCode': sealCode,
     };
   }
 
@@ -138,6 +178,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.textContaining('Chờ tiếp nhận'), findsOneWidget);
+    expect(find.textContaining('Chờ nạp hàng'), findsOneWidget);
     expect(find.textContaining('Sẵn sàng phóng'), findsOneWidget);
     expect(find.text('Tiếp nhận'), findsOneWidget);
     expect(find.text('Phóng'), findsOneWidget);
@@ -149,6 +190,50 @@ void main() {
 
     expect(service.acceptedOrderId, equals(21));
     expect(service.acceptedDroneId, equals(9));
+  });
+
+  testWidgets('requires full loading checklist before mission is ready', (
+    tester,
+  ) async {
+    final service = _FakeMaintenanceService();
+    final router = GoRouter(
+      routes: [
+        GoRoute(
+          path: '/',
+          builder: (context, state) => MaintenanceHomePage(service: service),
+        ),
+      ],
+    );
+
+    await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Xác nhận nạp'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Xác nhận nạp hàng'), findsOneWidget);
+    expect(
+      tester
+          .widget<TextField>(
+            find.byKey(const ValueKey('drone-loading-weight')),
+          )
+          .controller!
+          .text,
+      '1450',
+    );
+    await tester.enterText(
+      find.byKey(const ValueKey('drone-loading-seal')),
+      'SEAL-23',
+    );
+    for (final checkbox in find.byType(Checkbox).evaluate()) {
+      await tester.tap(find.byWidget(checkbox.widget));
+      await tester.pump();
+    }
+    await tester.tap(find.text('Xác nhận đã nạp'));
+    await tester.pumpAndSettle();
+
+    expect(service.loadedOrderId, equals(23));
+    expect(service.loadedWeightGrams, equals(1450));
+    expect(service.loadedSealCode, equals('SEAL-23'));
   });
 
   testWidgets('requires cancel reason before canceling accepted drone order', (
@@ -167,7 +252,10 @@ void main() {
     await tester.pumpWidget(MaterialApp.router(routerConfig: router));
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('Hủy trước khi bay'));
+    final cancelReadyMission = find.text('Hủy trước khi bay').last;
+    await tester.ensureVisible(cancelReadyMission);
+    await tester.pumpAndSettle();
+    await tester.tap(cancelReadyMission);
     await tester.pumpAndSettle();
 
     expect(find.text('Hủy nhiệm vụ trước khi bay'), findsOneWidget);
