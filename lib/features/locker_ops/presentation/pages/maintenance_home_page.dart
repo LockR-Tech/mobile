@@ -37,8 +37,20 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage> {
       .where((d) => d['deliveryStage'] == 'AWAITING_DISPATCH')
       .toList(growable: false);
 
-  List<Map<String, dynamic>> get _acceptedDeliveries => _deliveries
-      .where((d) => d['deliveryStage'] == 'ACCEPTED')
+  List<Map<String, dynamic>> get _awaitingLoadingDeliveries => _deliveries
+      .where(
+        (d) =>
+            d['deliveryStage'] == 'ACCEPTED' &&
+            d['missionStatus'] == 'AWAITING_LOADING',
+      )
+      .toList(growable: false);
+
+  List<Map<String, dynamic>> get _readyToLaunchDeliveries => _deliveries
+      .where(
+        (d) =>
+            d['deliveryStage'] == 'ACCEPTED' &&
+            d['missionStatus'] == 'READY_TO_LAUNCH',
+      )
       .toList(growable: false);
 
   List<Map<String, dynamic>> get _launchingDeliveries => _deliveries
@@ -219,7 +231,8 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage> {
   // ---- Đội drone (thiết bị bay vật lý, khác ô tủ cellType=DRONE) ----
   Widget _buildDroneFleet() {
     final awaiting = _awaitingDispatchDeliveries;
-    final accepted = _acceptedDeliveries;
+    final awaitingLoading = _awaitingLoadingDeliveries;
+    final readyToLaunch = _readyToLaunchDeliveries;
     final launching = _launchingDeliveries;
     return RefreshIndicator(
       onRefresh: _load,
@@ -237,13 +250,27 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage> {
               _deliveryCard(order, action: _DeliveryAction.accept),
             const SizedBox(height: 8),
           ],
-          if (accepted.isNotEmpty) ...[
+          if (awaitingLoading.isNotEmpty) ...[
             OpsSectionLabel(
-              'Sẵn sàng phóng (${accepted.length})',
+              'Chờ nạp hàng (${awaitingLoading.length})',
+              icon: Icons.inventory_2_outlined,
+            ),
+            const SizedBox(height: 8),
+            for (final order in awaitingLoading)
+              _deliveryCard(
+                order,
+                action: _DeliveryAction.load,
+                onCancel: () => _cancelDeliveryFlow(order),
+              ),
+            const SizedBox(height: 8),
+          ],
+          if (readyToLaunch.isNotEmpty) ...[
+            OpsSectionLabel(
+              'Sẵn sàng phóng (${readyToLaunch.length})',
               icon: Icons.rocket_launch,
             ),
             const SizedBox(height: 8),
-            for (final order in accepted)
+            for (final order in readyToLaunch)
               _deliveryCard(
                 order,
                 action: _DeliveryAction.launch,
@@ -262,7 +289,8 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage> {
             const SizedBox(height: 8),
           ],
           if (awaiting.isNotEmpty ||
-              accepted.isNotEmpty ||
+              awaitingLoading.isNotEmpty ||
+              readyToLaunch.isNotEmpty ||
               launching.isNotEmpty) ...[
             const Divider(),
             const SizedBox(height: 8),
@@ -473,14 +501,17 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage> {
                     ],
                   ),
                 ),
-                if (!(action == _DeliveryAction.launch && onCancel != null))
+                if (!((action == _DeliveryAction.load ||
+                        action == _DeliveryAction.launch) &&
+                    onCancel != null))
                   FilledButton.icon(
-                    onPressed: _actionEnabled(action, orderId)
+                    onPressed: _actionEnabled(action, orderId, order)
                         ? () => _handleDeliveryAction(order, action)
                         : null,
                     style: FilledButton.styleFrom(
                       backgroundColor: switch (action) {
                         _DeliveryAction.accept => const Color(0xFF6366F1),
+                        _DeliveryAction.load => const Color(0xFFF59E0B),
                         _DeliveryAction.launch => const Color(0xFF16A34A),
                         _DeliveryAction.launching => const Color(0xFF94A3B8),
                       },
@@ -494,12 +525,14 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage> {
                     ),
                     icon: Icon(switch (action) {
                       _DeliveryAction.accept => Icons.send_rounded,
+                      _DeliveryAction.load => Icons.inventory_2_outlined,
                       _DeliveryAction.launch => Icons.rocket_launch,
                       _DeliveryAction.launching => Icons.hourglass_top,
                     }, size: 15),
                     label: Text(
                       switch (action) {
                         _DeliveryAction.accept => 'Tiếp nhận',
+                        _DeliveryAction.load => 'Xác nhận nạp',
                         _DeliveryAction.launch => 'Phóng',
                         _DeliveryAction.launching => 'Đang phóng',
                       },
@@ -511,7 +544,9 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage> {
                   ),
               ],
             ),
-            if (action == _DeliveryAction.launch && onCancel != null) ...[
+            if ((action == _DeliveryAction.load ||
+                    action == _DeliveryAction.launch) &&
+                onCancel != null) ...[
               const SizedBox(height: 10),
               Wrap(
                 spacing: 8,
@@ -519,11 +554,13 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage> {
                 alignment: WrapAlignment.end,
                 children: [
                   FilledButton.icon(
-                    onPressed: _actionEnabled(action, orderId)
+                    onPressed: _actionEnabled(action, orderId, order)
                         ? () => _handleDeliveryAction(order, action)
                         : null,
                     style: FilledButton.styleFrom(
-                      backgroundColor: const Color(0xFF16A34A),
+                      backgroundColor: action == _DeliveryAction.load
+                          ? const Color(0xFFF59E0B)
+                          : const Color(0xFF16A34A),
                       padding: const EdgeInsets.symmetric(
                         horizontal: 14,
                         vertical: 8,
@@ -532,17 +569,22 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage> {
                         borderRadius: BorderRadius.circular(10),
                       ),
                     ),
-                    icon: const Icon(Icons.rocket_launch, size: 15),
-                    label: const Text(
-                      'Phóng',
-                      style: TextStyle(
+                    icon: Icon(
+                      action == _DeliveryAction.load
+                          ? Icons.inventory_2_outlined
+                          : Icons.rocket_launch,
+                      size: 15,
+                    ),
+                    label: Text(
+                      action == _DeliveryAction.load ? 'Xác nhận nạp' : 'Phóng',
+                      style: const TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
                   ),
                   OutlinedButton.icon(
-                    onPressed: onCancel,
+                    onPressed: _ownsMission(order) ? onCancel : null,
                     style: OutlinedButton.styleFrom(
                       foregroundColor: const Color(0xFFDC2626),
                       side: const BorderSide(color: Color(0xFFDC2626)),
@@ -586,9 +628,20 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage> {
     );
   }
 
-  bool _actionEnabled(_DeliveryAction action, int? orderId) {
+  bool _actionEnabled(
+    _DeliveryAction action,
+    int? orderId,
+    Map<String, dynamic> order,
+  ) {
     if (orderId == null) return false;
-    return action != _DeliveryAction.launching;
+    if (action == _DeliveryAction.launching) return false;
+    return action == _DeliveryAction.accept || _ownsMission(order);
+  }
+
+  bool _ownsMission(Map<String, dynamic> order) {
+    final assignedBy = order['assignedByUserId'];
+    // Cho phép payload server cũ chưa có field này trong giai đoạn rolling deploy.
+    return assignedBy == null || '$assignedBy' == _myUserId;
   }
 
   Future<void> _handleDeliveryAction(
@@ -600,6 +653,8 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage> {
     switch (action) {
       case _DeliveryAction.accept:
         await _acceptFlow(order);
+      case _DeliveryAction.load:
+        await _confirmLoadingFlow(order);
       case _DeliveryAction.launch:
         await _run(
           () => _service.launchDroneOrder(
@@ -611,6 +666,148 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage> {
       case _DeliveryAction.launching:
         return;
     }
+  }
+
+  Future<void> _confirmLoadingFlow(Map<String, dynamic> order) async {
+    final orderId = _asInt(order['orderId']);
+    if (orderId == null) return;
+    final weightCtrl = TextEditingController(
+      text:
+          '${_asInt(order['payloadWeightGrams']) ?? _asInt(order['expectedWeightGrams']) ?? 1200}',
+    );
+    final sealCtrl = TextEditingController();
+    final noteCtrl = TextEditingController();
+    var parcelMatched = false;
+    var payloadSecured = false;
+    var compartmentLocked = false;
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setLocal) => AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          title: const Text('Xác nhận nạp hàng'),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Cân kiện và hoàn tất toàn bộ checklist trước khi cho phép phóng.',
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  key: const ValueKey('drone-loading-weight'),
+                  controller: weightCtrl,
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(
+                    labelText: 'Khối lượng thực tế (gram)',
+                    isDense: true,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                TextField(
+                  key: const ValueKey('drone-loading-seal'),
+                  controller: sealCtrl,
+                  textCapitalization: TextCapitalization.characters,
+                  decoration: const InputDecoration(
+                    labelText: 'Mã niêm phong',
+                    isDense: true,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                CheckboxListTile(
+                  dense: true,
+                  contentPadding: EdgeInsets.zero,
+                  value: parcelMatched,
+                  onChanged: (value) =>
+                      setLocal(() => parcelMatched = value ?? false),
+                  title: const Text('Đúng kiện hàng và đúng đơn'),
+                ),
+                CheckboxListTile(
+                  dense: true,
+                  contentPadding: EdgeInsets.zero,
+                  value: payloadSecured,
+                  onChanged: (value) =>
+                      setLocal(() => payloadSecured = value ?? false),
+                  title: const Text('Kiện hàng đã được cố định'),
+                ),
+                CheckboxListTile(
+                  dense: true,
+                  contentPadding: EdgeInsets.zero,
+                  value: compartmentLocked,
+                  onChanged: (value) =>
+                      setLocal(() => compartmentLocked = value ?? false),
+                  title: const Text('Khoang hàng đã khóa'),
+                ),
+                TextField(
+                  controller: noteCtrl,
+                  minLines: 1,
+                  maxLines: 3,
+                  decoration: const InputDecoration(
+                    labelText: 'Ghi chú (tùy chọn)',
+                    isDense: true,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text('Đóng'),
+            ),
+            FilledButton(
+              onPressed: () {
+                final weight = int.tryParse(weightCtrl.text.trim());
+                if (weight == null ||
+                    weight <= 0 ||
+                    sealCtrl.text.trim().isEmpty ||
+                    !parcelMatched ||
+                    !payloadSecured ||
+                    !compartmentLocked) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text(
+                        'Nhập khối lượng, mã niêm phong và hoàn tất checklist',
+                      ),
+                    ),
+                  );
+                  return;
+                }
+                Navigator.pop(ctx, true);
+              },
+              child: const Text('Xác nhận đã nạp'),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    if (confirmed == true) {
+      await _run(
+        () => _service.confirmDroneLoading(
+          orderId,
+          payloadWeightGrams: int.parse(weightCtrl.text.trim()),
+          sealCode: sealCtrl.text,
+          parcelMatched: parcelMatched,
+          payloadSecured: payloadSecured,
+          compartmentLocked: compartmentLocked,
+          note: noteCtrl.text,
+          idempotencyKey: _idempotencyKey('load', orderId),
+        ),
+        'Đã xác nhận nạp hàng — nhiệm vụ sẵn sàng phóng',
+      );
+    }
+    // showDialog hoàn tất future trước khi animation tháo hẳn route. Trì hoãn
+    // dispose để TextField không còn subscribe controller trong frame cuối.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      weightCtrl.dispose();
+      sealCtrl.dispose();
+      noteCtrl.dispose();
+    });
   }
 
   Future<void> _cancelDeliveryFlow(Map<String, dynamic> order) async {
@@ -1385,7 +1582,7 @@ int? _asInt(dynamic value) {
   return int.tryParse('$value');
 }
 
-enum _DeliveryAction { accept, launch, launching }
+enum _DeliveryAction { accept, load, launch, launching }
 
 class _DroneCancelReason {
   const _DroneCancelReason(this.code, this.label, {this.requiresNote = false});
