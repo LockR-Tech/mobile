@@ -262,14 +262,22 @@ class _WalletBalanceCard extends StatelessWidget {
   }
 }
 
-/// Card Thống kê chi tiêu & phân bổ theo từng dịch vụ theo kỳ (Hôm nay, Tháng này, Năm nay, Tất cả)
-class _SpendingStatsCard extends StatelessWidget {
+/// Card Thống kê chi tiêu & phân bổ theo từng dịch vụ / hình thức theo kỳ (Hôm nay, Tháng này, Năm nay, Tất cả)
+class _SpendingStatsCard extends StatefulWidget {
   final TransactionProvider provider;
 
   const _SpendingStatsCard({required this.provider});
 
   @override
+  State<_SpendingStatsCard> createState() => _SpendingStatsCardState();
+}
+
+class _SpendingStatsCardState extends State<_SpendingStatsCard> {
+  bool _showMethodBreakdown = false;
+
+  @override
   Widget build(BuildContext context) {
+    final provider = widget.provider;
     final stats = provider.spendingStats ?? SpendingStats.empty(provider.selectedPeriod);
     final period = provider.selectedPeriod;
 
@@ -436,33 +444,100 @@ class _SpendingStatsCard extends StatelessWidget {
           const Divider(height: 1, color: Color(0xFFF1F5F9)),
           const SizedBox(height: 14),
 
-          // Service breakdown header
-          const Row(
+          // Breakdown header with toggle tabs: [Theo dịch vụ] [Theo hình thức]
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Icon(
-                Icons.pie_chart_rounded,
-                size: 16,
-                color: Color(0xFF475569),
+              Row(
+                children: [
+                  Icon(
+                    _showMethodBreakdown ? Icons.account_balance_wallet_outlined : Icons.pie_chart_rounded,
+                    size: 16,
+                    color: const Color(0xFF475569),
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    _showMethodBreakdown ? 'Tổng tiền theo hình thức' : 'Chi tiết theo từng dịch vụ',
+                    style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF334155),
+                    ),
+                  ),
+                ],
               ),
-              SizedBox(width: 6),
-              Text(
-                'Chi tiết theo từng dịch vụ',
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w700,
-                  color: Color(0xFF334155),
+              Container(
+                padding: const EdgeInsets.all(2),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF1F5F9),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  children: [
+                    _buildSubTab(
+                      title: 'Dịch vụ',
+                      isSelected: !_showMethodBreakdown,
+                      onTap: () => setState(() => _showMethodBreakdown = false),
+                    ),
+                    _buildSubTab(
+                      title: 'Hình thức',
+                      isSelected: _showMethodBreakdown,
+                      onTap: () => setState(() => _showMethodBreakdown = true),
+                    ),
+                  ],
                 ),
               ),
             ],
           ),
           const SizedBox(height: 12),
 
-          // Services Breakdown List
-          _ServiceBreakdownList(
-            stats: stats,
-            periodTransactions: provider.periodTransactions,
-          ),
+          // Services or Methods Breakdown List
+          if (!_showMethodBreakdown)
+            _ServiceBreakdownList(
+              stats: stats,
+              periodTransactions: provider.periodTransactions,
+            )
+          else
+            _MethodBreakdownList(
+              provider: provider,
+              periodTransactions: provider.periodTransactions,
+            ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildSubTab({
+    required String title,
+    required bool isSelected,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+        decoration: BoxDecoration(
+          color: isSelected ? Colors.white : Colors.transparent,
+          borderRadius: BorderRadius.circular(6),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.06),
+                    blurRadius: 4,
+                    offset: const Offset(0, 1),
+                  ),
+                ]
+              : null,
+        ),
+        child: Text(
+          title,
+          style: TextStyle(
+            fontSize: 11,
+            fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+            color: isSelected ? AISLShadcnTheme.navyPrimary : const Color(0xFF64748B),
+          ),
+        ),
       ),
     );
   }
@@ -471,7 +546,7 @@ class _SpendingStatsCard extends StatelessWidget {
     final isSelected = current == value;
     return Expanded(
       child: GestureDetector(
-        onTap: () => provider.setPeriod(value),
+        onTap: () => widget.provider.setPeriod(value),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
           padding: const EdgeInsets.symmetric(vertical: 7),
@@ -765,6 +840,157 @@ class _ServiceBreakdownList extends StatelessWidget {
   }
 }
 
+/// Danh sách tổng tiền và giao dịch cho từng hình thức thanh toán (Ví, SePay, VNPay, MoMo, Rút tiền...)
+class _MethodBreakdownList extends StatelessWidget {
+  final TransactionProvider provider;
+  final List<Transaction> periodTransactions;
+
+  const _MethodBreakdownList({
+    required this.provider,
+    required this.periodTransactions,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final walletAmt = provider.getMethodAmount('WALLET');
+    final sepayAmt = provider.getMethodAmount('SEPAY');
+    final vnpayAmt = provider.getMethodAmount('VNPAY');
+    final momoAmt = provider.getMethodAmount('MOMO');
+    final withdrawAmt = provider.getMethodAmount('WITHDRAW');
+
+    final walletCnt = provider.getMethodCount('WALLET');
+    final sepayCnt = provider.getMethodCount('SEPAY');
+    final vnpayCnt = provider.getMethodCount('VNPAY');
+    final momoCnt = provider.getMethodCount('MOMO');
+    final withdrawCnt = provider.getMethodCount('WITHDRAW');
+
+    final totalVolume = walletAmt + sepayAmt + vnpayAmt + momoAmt + withdrawAmt;
+
+    final methods = <Map<String, dynamic>>[
+      {
+        'key': 'WALLET',
+        'title': 'Ví Lock.R',
+        'amount': walletAmt,
+        'count': walletCnt,
+        'color': const Color(0xFF1E293B),
+        'icon': Icons.account_balance_wallet_rounded,
+      },
+      {
+        'key': 'SEPAY',
+        'title': 'Cổng SePay QR',
+        'amount': sepayAmt,
+        'count': sepayCnt,
+        'color': const Color(0xFF0284C7),
+        'icon': Icons.qr_code_2_rounded,
+      },
+      {
+        'key': 'VNPAY',
+        'title': 'Cổng VNPay',
+        'amount': vnpayAmt,
+        'count': vnpayCnt,
+        'color': const Color(0xFFE11D48),
+        'icon': Icons.credit_card_rounded,
+      },
+      if (momoAmt > 0 || momoCnt > 0)
+        {
+          'key': 'MOMO',
+          'title': 'Ví MoMo',
+          'amount': momoAmt,
+          'count': momoCnt,
+          'color': const Color(0xFFC026D3),
+          'icon': Icons.account_balance_wallet_outlined,
+        },
+      {
+        'key': 'WITHDRAW',
+        'title': 'Rút tiền về STK',
+        'amount': withdrawAmt,
+        'count': withdrawCnt,
+        'color': const Color(0xFFEA580C),
+        'icon': Icons.outbox_rounded,
+      },
+    ];
+
+    return Column(
+      children: methods.map((m) {
+        final double amt = (m['amount'] as num).toDouble();
+        final int cnt = m['count'] as int;
+        final double ratio = totalVolume > 0 ? (amt / totalVolume).clamp(0.0, 1.0) : 0.0;
+        final Color color = m['color'] as Color;
+        final IconData icon = m['icon'] as IconData;
+        final String title = m['title'] as String;
+
+        final amtStr = NumberFormat.currency(
+          locale: 'vi_VN',
+          symbol: 'đ',
+          decimalDigits: 0,
+        ).format(amt);
+
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 10),
+          child: Column(
+            children: [
+              Row(
+                children: [
+                  Container(
+                    width: 28,
+                    height: 28,
+                    decoration: BoxDecoration(
+                      color: color.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Icon(icon, size: 16, color: color),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          title,
+                          style: const TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF1E293B),
+                          ),
+                        ),
+                        Text(
+                          '$cnt giao dịch',
+                          style: const TextStyle(
+                            fontSize: 11,
+                            color: Color(0xFF94A3B8),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Text(
+                    amtStr,
+                    style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF0F172A),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 6),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(4),
+                child: LinearProgressIndicator(
+                  value: ratio,
+                  minHeight: 5,
+                  backgroundColor: const Color(0xFFF1F5F9),
+                  valueColor: AlwaysStoppedAnimation<Color>(color),
+                ),
+              ),
+            ],
+          ),
+        );
+      }).toList(),
+    );
+  }
+}
+
 /// Thanh bộ lọc hình thức giao dịch (Ví Lock.R, SePay QR, VNPay, Rút tiền...)
 class _PaymentMethodFilterBar extends StatelessWidget {
   final TransactionProvider provider;
@@ -780,6 +1006,11 @@ class _PaymentMethodFilterBar extends StatelessWidget {
       {'key': 'VNPAY', 'label': 'Cổng VNPay', 'icon': Icons.credit_card_rounded},
       {'key': 'WITHDRAW', 'label': 'Rút tiền', 'icon': Icons.outbox_rounded},
     ];
+
+    final currentFilter = filters.firstWhere(
+      (f) => f['key'] == provider.selectedMethod,
+      orElse: () => filters.first,
+    );
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -887,6 +1118,67 @@ class _PaymentMethodFilterBar extends StatelessWidget {
                 ),
               );
             },
+          ),
+        ),
+
+        // Thẻ hiển thị tổng tiền cho hình thức giao dịch đang chọn
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: const Color(0xFFE2E8F0)),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.02),
+                  blurRadius: 6,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      width: 24,
+                      height: 24,
+                      decoration: BoxDecoration(
+                        color: AISLShadcnTheme.navySurface,
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Icon(
+                        currentFilter['icon'] as IconData,
+                        size: 14,
+                        color: AISLShadcnTheme.navyPrimary,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      provider.selectedMethod == 'ALL'
+                          ? 'Tổng tiền (tất cả):'
+                          : 'Tổng tiền ${currentFilter['label']}:',
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: Color(0xFF64748B),
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+                Text(
+                  '${NumberFormat.currency(locale: 'vi_VN', symbol: 'đ', decimalDigits: 0).format(provider.getMethodAmount(provider.selectedMethod))} (${provider.getMethodCount(provider.selectedMethod)} GD)',
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFF0F172A),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ],

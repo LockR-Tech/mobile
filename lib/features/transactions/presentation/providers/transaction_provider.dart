@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:smart_laundry_locker/features/transactions/application/use_cases/initiate_top_up_use_case.dart';
 import 'package:smart_laundry_locker/features/transactions/application/use_cases/get_transactions_use_case.dart';
 import 'package:smart_laundry_locker/features/transactions/application/use_cases/get_spending_stats_use_case.dart';
+import 'package:smart_laundry_locker/features/transactions/application/use_cases/get_total_by_method_use_case.dart';
 import 'package:smart_laundry_locker/features/transactions/domain/entities/transaction.dart';
 import 'package:smart_laundry_locker/features/transactions/domain/entities/top_up_result.dart';
 import 'package:smart_laundry_locker/features/transactions/domain/entities/spending_stats.dart';
+import 'package:smart_laundry_locker/features/transactions/domain/entities/transaction_method_total.dart';
 import 'package:smart_laundry_locker/features/transactions/domain/entities/transaction_extensions.dart';
 import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
 import 'package:flutter/foundation.dart';
@@ -13,11 +15,13 @@ class TransactionProvider extends ChangeNotifier {
   final GetTransactionsUseCase getTransactionsUseCase;
   final InitiateTopUpUseCase initiateTopUpUseCase;
   final GetSpendingStatsUseCase getSpendingStatsUseCase;
+  final GetTotalByMethodUseCase getTotalByMethodUseCase;
 
   TransactionProvider({
     required this.getTransactionsUseCase,
     required this.initiateTopUpUseCase,
     required this.getSpendingStatsUseCase,
+    required this.getTotalByMethodUseCase,
   });
 
   bool _isLoading = false;
@@ -49,6 +53,9 @@ class TransactionProvider extends ChangeNotifier {
   SpendingStats? _spendingStats;
   SpendingStats? get spendingStats => _spendingStats ?? computeStatsForPeriod(_selectedPeriod);
 
+  TransactionMethodTotal? _methodTotal;
+  TransactionMethodTotal? get methodTotal => _methodTotal;
+
   bool _isLoadingStats = false;
   bool get isLoadingStats => _isLoadingStats;
 
@@ -63,12 +70,14 @@ class TransactionProvider extends ChangeNotifier {
     _selectedPeriod = period;
     notifyListeners();
     fetchSpendingStats(period: period);
+    fetchTotalByMethod(period: period);
   }
 
   void setMethodFilter(String method) {
     if (_selectedMethod == method) return;
     _selectedMethod = method;
     notifyListeners();
+    fetchTotalByMethod(method: method);
   }
 
   List<Transaction> get periodTransactions {
@@ -100,6 +109,24 @@ class TransactionProvider extends ChangeNotifier {
     final list = periodTransactions;
     if (method == 'ALL') return list.length;
     return list.where((t) => t.detectedMethod == method).length;
+  }
+
+  double getMethodAmount(String method) {
+    if (_methodTotal != null && _methodTotal!.summary.isNotEmpty) {
+      if (method == 'ALL') {
+        return _methodTotal!.totalAmount;
+      }
+      if (_methodTotal!.summary.containsKey(method)) {
+        return _methodTotal!.summary[method] ?? 0.0;
+      }
+    }
+    final list = periodTransactions;
+    if (method == 'ALL') {
+      return list.fold(0.0, (sum, t) => sum + t.amount);
+    }
+    return list
+        .where((t) => t.detectedMethod == method)
+        .fold(0.0, (sum, t) => sum + t.amount);
   }
 
   SpendingStats computeStatsForPeriod(String period) {
@@ -166,6 +193,22 @@ class TransactionProvider extends ChangeNotifier {
 
     _isLoadingStats = false;
     notifyListeners();
+  }
+
+  Future<void> fetchTotalByMethod({String? method, String? period}) async {
+    final p = period ?? _selectedPeriod;
+    final m = method ?? _selectedMethod;
+    final result = await getTotalByMethodUseCase(period: p, method: m);
+    result.fold(
+      (failure) {
+        debugPrint('[TX][provider] fetchTotalByMethod failed: ${failure.message}');
+      },
+      (data) {
+        debugPrint('[TX][provider] fetchTotalByMethod success: totalAmount=${data.totalAmount}, count=${data.transactionCount}');
+        _methodTotal = data;
+        notifyListeners();
+      },
+    );
   }
 
   Future<void> fetchTransactions({bool refresh = false}) async {
@@ -321,6 +364,7 @@ class TransactionProvider extends ChangeNotifier {
     // Recompute stats and attempt API sync
     _spendingStats = computeStatsForPeriod(_selectedPeriod);
     fetchSpendingStats(period: _selectedPeriod);
+    fetchTotalByMethod(period: _selectedPeriod);
     notifyListeners();
   }
 
