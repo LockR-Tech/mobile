@@ -3,6 +3,7 @@ import 'package:dartz/dartz.dart';
 import 'package:smart_laundry_locker/core/network/api_client.dart';
 import 'package:smart_laundry_locker/features/transactions/domain/entities/paginated_transactions.dart';
 import 'package:smart_laundry_locker/features/transactions/domain/entities/spending_stats.dart';
+import 'package:smart_laundry_locker/features/transactions/domain/entities/transaction_method_total.dart';
 import 'package:smart_laundry_locker/features/transactions/domain/repositories/transaction_repository.dart';
 import 'package:flutter/foundation.dart';
 import '../data_sources/transaction_remote_data_source.dart';
@@ -50,6 +51,31 @@ class TransactionRepositoryImpl implements TransactionRepository {
       return Left(NetworkFailure(e.message));
     } catch (e) {
       debugPrint('[TX][repo] getSpendingStats CATCH-ALL: $e');
+      return Left(UnknownFailure(e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, TransactionMethodTotal>> getTotalByMethod({
+    String? method,
+    String period = 'ALL',
+    String? fromDate,
+    String? toDate,
+  }) async {
+    try {
+      final map = await remoteDataSource.getTotalByMethod(
+        method: method,
+        period: period,
+        fromDate: fromDate,
+        toDate: toDate,
+      );
+      return Right(TransactionMethodTotal.fromJson(map));
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
+    } on NetworkException catch (e) {
+      return Left(NetworkFailure(e.message));
+    } catch (e) {
+      debugPrint('[TX][repo] getTotalByMethod CATCH-ALL: $e');
       return Left(UnknownFailure(e.toString()));
     }
   }

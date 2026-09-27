@@ -10,4 +10,11 @@ abstract class TransactionRemoteDataSource {
   });
 
   Future<Map<String, dynamic>> getSpendingStats({String period = 'ALL'});
+
+  Future<Map<String, dynamic>> getTotalByMethod({
+    String? method,
+    String period = 'ALL',
+    String? fromDate,
+    String? toDate,
+  });
 }

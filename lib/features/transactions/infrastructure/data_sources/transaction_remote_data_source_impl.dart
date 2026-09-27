@@ -56,4 +56,41 @@ class TransactionRemoteDataSourceImpl implements TransactionRemoteDataSource {
 
     return data;
   }
+
+  @override
+  Future<Map<String, dynamic>> getTotalByMethod({
+    String? method,
+    String period = 'ALL',
+    String? fromDate,
+    String? toDate,
+  }) async {
+    final queryParams = <String, dynamic>{
+      'period': period,
+    };
+    if (method != null && method.isNotEmpty) {
+      queryParams['method'] = method;
+    }
+    if (fromDate != null && fromDate.isNotEmpty) {
+      queryParams['from'] = fromDate;
+    }
+    if (toDate != null && toDate.isNotEmpty) {
+      queryParams['to'] = toDate;
+    }
+
+    final response = await apiClient.get<Map<String, dynamic>>(
+      '/api/wallet/total-by-method',
+      queryParameters: queryParams,
+    );
+
+    if (response.data == null) {
+      throw ServerException('No data returned from total by method');
+    }
+
+    final data = response.data!['data'];
+    if (data is! Map<String, dynamic>) {
+      throw ServerException('Invalid total by method response shape');
+    }
+
+    return data;
+  }
 }
