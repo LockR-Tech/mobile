@@ -582,6 +582,101 @@ void main() {
       expect(find.text('Mở Ô số 5 để bỏ đồ'), findsOneWidget);
     },
   );
+
+  testWidgets(
+    'filters orders by status and service type when tapping filter badges',
+    (tester) async {
+      final service = _FakeMultipleOrdersLockerOpsService();
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: MediaQuery(
+            data: const MediaQueryData(size: Size(390, 844)),
+            child: MyLockerOrdersPage(service: service),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final filterBar = find.byType(SingleChildScrollView).first;
+
+      // All filters exist with counts
+      expect(find.descendant(of: filterBar, matching: find.text('Tất cả')), findsOneWidget);
+      expect(find.descendant(of: filterBar, matching: find.text('Gần đây')), findsOneWidget);
+      expect(find.descendant(of: filterBar, matching: find.text('Đang dùng')), findsOneWidget);
+      expect(find.descendant(of: filterBar, matching: find.text('Hoàn thành')), findsOneWidget);
+      expect(find.descendant(of: filterBar, matching: find.text('Thuê tủ')), findsOneWidget);
+      expect(find.descendant(of: filterBar, matching: find.text('Gửi hàng')), findsOneWidget);
+
+      // Both orders initially visible
+      expect(find.text('#ORD-RENTAL-1'), findsOneWidget);
+      expect(find.text('#ORD-SEND-1'), findsOneWidget);
+
+      // Tap 'Hoàn thành' -> only completed order is shown
+      await tester.tap(find.text('Hoàn thành'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('#ORD-SEND-1'), findsOneWidget);
+      expect(find.text('#ORD-RENTAL-1'), findsNothing);
+
+      // Tap 'Đang dùng' -> only active order is shown
+      await tester.tap(find.text('Đang dùng'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('#ORD-RENTAL-1'), findsOneWidget);
+      expect(find.text('#ORD-SEND-1'), findsNothing);
+
+      // Tap 'Tất cả' -> both are shown again
+      await tester.tap(find.text('Tất cả'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('#ORD-RENTAL-1'), findsOneWidget);
+      expect(find.text('#ORD-SEND-1'), findsOneWidget);
+    },
+  );
+}
+
+class _FakeMultipleOrdersLockerOpsService extends LockerOpsService {
+  _FakeMultipleOrdersLockerOpsService() : super(dio: createMockDio().dio);
+
+  @override
+  Future<List<Map<String, dynamic>>> myOrders() async => [
+    {
+      'id': 101,
+      'type': 'RENTAL',
+      'status': 'INITIALIZED',
+      'orderCode': 'ORD-RENTAL-1',
+      'createdAt': DateTime.now().toIso8601String(),
+      'lockerId': 10,
+      'sendBoxId': 1001,
+    },
+    {
+      'id': 102,
+      'type': 'SEND',
+      'status': 'COMPLETED',
+      'orderCode': 'ORD-SEND-1',
+      'createdAt': DateTime.now().toIso8601String(),
+      'lockerId': 10,
+      'sendBoxId': 1002,
+    },
+  ];
+
+  @override
+  Future<Map<String, dynamic>> locker(int lockerId) async => {
+    'id': lockerId,
+    'name': 'Tủ kiểm thử',
+  };
+
+  @override
+  Future<Map<String, dynamic>> layout(int lockerId) async => {
+    'cells': [
+      {'id': 1001, 'boxNumber': 1},
+      {'id': 1002, 'boxNumber': 2},
+    ],
+  };
+
+  @override
+  Future<List<Map<String, dynamic>>> myReports() async => const [];
 }
 
 class _FakePaidDropOrderLockerOpsService extends LockerOpsService {

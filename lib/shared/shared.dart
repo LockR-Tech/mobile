@@ -5,3 +5,4 @@ export 'widgets/app_bar.dart';
 export 'widgets/app_lottie.dart';
 export 'widgets/app_loading_indicator.dart';
 export 'widgets/app_payment_status_view.dart';
+export 'widgets/full_screen_payment_success_dialog.dart';

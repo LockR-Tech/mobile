@@ -36,7 +36,10 @@ class ProfileHeader extends StatelessWidget {
       padding: const EdgeInsets.all(26),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: AislBrand.brandGradient,
+          colors: [
+            Color.fromARGB(255, 25, 40, 59),
+            Color.fromARGB(255, 223, 223, 238),
+          ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -253,7 +256,7 @@ class ProfileHeader extends StatelessWidget {
       height: 100,
       decoration: const BoxDecoration(
         shape: BoxShape.circle,
-        color: Colors.white,
+        color: Color.fromARGB(255, 182, 187, 195),
       ),
       child: Center(
         child: Text(
@@ -262,7 +265,7 @@ class ProfileHeader extends StatelessWidget {
             fontFamily: 'Manrope',
             fontSize: 36,
             fontWeight: FontWeight.w700,
-            color: AislBrand.navy,
+            color: Color.fromARGB(255, 9, 9, 9),
           ),
         ),
       ),
@@ -279,7 +282,7 @@ class ProfileHeader extends StatelessWidget {
             fontFamily: 'Manrope',
             fontSize: 20,
             fontWeight: FontWeight.w700,
-            color: Colors.white,
+            color: Color.fromARGB(255, 14, 13, 13),
           ),
           textAlign: TextAlign.center,
         ),
@@ -292,7 +295,7 @@ class ProfileHeader extends StatelessWidget {
             style: const TextStyle(
               fontFamily: 'Manrope',
               fontSize: 14,
-              color: Colors.white70,
+              color: Color.fromARGB(255, 21, 21, 21),
             ),
             textAlign: TextAlign.center,
           ),

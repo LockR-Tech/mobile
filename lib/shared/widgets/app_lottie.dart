@@ -38,6 +38,9 @@ abstract final class AppLottieAssets {
   /// Minh hoạ "Đã thanh toán" (thành công).
   static const String daThanhToan = '$_dir/dathanhtoan.json';
 
+  /// Animation thanh toán thành công mới (thử nghiệm).
+  static const String thanhCongAnimation = '$_dir/thanhconganimation.json';
+
   /// Minh hoạ "Thanh toán thất bại".
   static const String thatBaiThanhToan = '$_dir/thatbaithanhtoan.json';
 

@@ -115,14 +115,13 @@ class _SendParcelPageState extends State<SendParcelPage>
         if (paid && mounted) {
           _stopPaymentPolling();
           await _refreshOrder();
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Thanh toán thành công! Mã PIN mở ô tủ đã sẵn sàng.'),
-                backgroundColor: Color(0xFF16A34A),
-              ),
-            );
-          }
+          if (!mounted) return;
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Thanh toán thành công! Mã PIN mở ô tủ đã sẵn sàng.'),
+              backgroundColor: Color(0xFF16A34A),
+            ),
+          );
         }
       } catch (_) {}
     });
@@ -602,7 +601,7 @@ class _SendParcelPageState extends State<SendParcelPage>
                 ],
               ),
               const Divider(height: 24, color: opsBorder),
-              if (order['id'] is int) ...[
+              if (order['id'] is int && !(mustPayFirst && !isDropped)) ...[
                 Align(
                   alignment: Alignment.centerLeft,
                   child: PaymentStatusChip(orderId: order['id'] as int),
@@ -610,12 +609,6 @@ class _SendParcelPageState extends State<SendParcelPage>
                 const SizedBox(height: 14),
               ],
               if (!isDropped && mustPayFirst) ...[
-                const _ResultHeadline(
-                  icon: LucideIcons.wallet,
-                  title: 'Quét mã để thanh toán phí gửi',
-                  subtitle: 'Chuyển khoản đúng số tiền — mã mở ô sẽ hiển thị ngay sau khi xác nhận.',
-                ),
-                const SizedBox(height: 16),
                 InlineVietQrCard(
                   orderId: order['id'] as int,
                   amount: total is num ? total.toDouble() : _netFee.toDouble(),

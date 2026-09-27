@@ -1632,6 +1632,7 @@ class _HomePageState extends ConsumerState<HomePage>
     final PromotionProvider promoProvider = ref.watch(promotionNotifierProvider);
     final promos = promoProvider.promotions;
     final isLoading = promoProvider.isLoading;
+    const String? lottieAsset = AppLottieAssets.uuDai;
 
     if (!isLoading && promos.isEmpty) return const SizedBox.shrink();
 
@@ -1643,9 +1644,10 @@ class _HomePageState extends ConsumerState<HomePage>
           child: BrandSectionHeader(
             icon: LucideIcons.zap,
             title: 'Flash Sale',
+            lottieAsset: lottieAsset,
             onSeeAll: () => context.push(AppRouter.promotions),
             highlightColor: const Color(0xFFE11D48),
-            highlightRollColor: const Color(0xFF9F1239),
+            highlightRollColor: const Color.fromARGB(255, 230, 121, 152),
           ),
         ),
         const SizedBox(height: 14),

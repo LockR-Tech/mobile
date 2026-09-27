@@ -4,7 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lottie/lottie.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:smart_laundry_locker/shared/widgets/app_lottie.dart';
+import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
 
 /// Mọi asset Lottie được UI tham chiếu qua [AppLottieAssets].
 const _assets = <String, String>{
@@ -18,6 +20,7 @@ const _assets = <String, String>{
   'baoCao': AppLottieAssets.baoCao,
   'napVi': AppLottieAssets.napVi,
   'daThanhToan': AppLottieAssets.daThanhToan,
+  'thanhCongAnimation': AppLottieAssets.thanhCongAnimation,
   'thatBaiThanhToan': AppLottieAssets.thatBaiThanhToan,
 };
 
@@ -97,5 +100,28 @@ void main() {
 
     expect(tester.takeException(), isNull);
     expect(tester.getSize(find.byType(AppLottie)), const Size(200, 180));
+  });
+
+  testWidgets('BrandSectionHeader renders lottieAsset in highlight mode', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      const MaterialApp(
+        home: Scaffold(
+          body: BrandSectionHeader(
+            icon: LucideIcons.zap,
+            title: 'Flash Sale',
+            lottieAsset: AppLottieAssets.uuDai,
+            highlightColor: Color(0xFFE11D48),
+            highlightRollColor: Color(0xFF9F1239),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(tester.takeException(), isNull);
+    expect(find.text('Flash Sale'), findsOneWidget);
+    expect(find.byType(AppLottie), findsOneWidget);
   });
 }

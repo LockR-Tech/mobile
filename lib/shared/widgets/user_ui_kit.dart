@@ -3,6 +3,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:smart_laundry_locker/shared/widgets/app_lottie.dart';
 
 /// Convenience extension so widgets can do `context.isDark`, `context.cardBg` etc.
 extension AislTheme on BuildContext {
@@ -155,15 +156,17 @@ class BrandAvatar extends StatelessWidget {
 class BrandCircleIconButton extends StatelessWidget {
   const BrandCircleIconButton({
     super.key,
-    required this.icon,
+    this.icon,
+    this.child,
     required this.onTap,
     this.iconColor = Colors.white,
     this.background,
     this.size = 40,
     this.iconSize = 20,
-  });
+  }) : assert(icon != null || child != null);
 
-  final IconData icon;
+  final IconData? icon;
+  final Widget? child;
   final VoidCallback onTap;
   final Color iconColor;
   final Color? background;
@@ -193,7 +196,9 @@ class BrandCircleIconButton extends StatelessWidget {
             ),
           ],
         ),
-        child: Icon(icon, size: iconSize, color: iconColor),
+        child: Center(
+          child: child ?? Icon(icon!, size: iconSize, color: iconColor),
+        ),
       ),
     );
   }
@@ -463,6 +468,7 @@ class BrandSectionHeader extends StatelessWidget {
     super.key,
     required this.icon,
     required this.title,
+    this.lottieAsset,
     this.onSeeAll,
     this.seeAllLabel = 'XEM TẤT CẢ',
     this.highlightColor,
@@ -471,6 +477,7 @@ class BrandSectionHeader extends StatelessWidget {
 
   final IconData icon;
   final String title;
+  final String? lottieAsset;
   final VoidCallback? onSeeAll;
   final String seeAllLabel;
 
@@ -496,13 +503,24 @@ class BrandSectionHeader extends StatelessWidget {
           ),
           const SizedBox(width: 12),
           Expanded(
-            child: Text(
-              title,
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w700,
-                color: AislBrand.textTitle,
-              ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Flexible(
+                  child: Text(
+                    title,
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                      color: AislBrand.textTitle,
+                    ),
+                  ),
+                ),
+                if (lottieAsset != null) ...[
+                  const SizedBox(width: 6),
+                  AppLottie(lottieAsset!, width: 22, height: 22),
+                ],
+              ],
             ),
           ),
         ] else ...[
@@ -512,6 +530,7 @@ class BrandSectionHeader extends StatelessWidget {
                 highlightRollColor ??
                 Color.lerp(highlightColor!, Colors.black, 0.30)!,
             title: title,
+            lottieAsset: lottieAsset,
           ),
           const Spacer(),
         ],
@@ -664,11 +683,13 @@ class _HighlightBanner extends StatefulWidget {
   final Color color;
   final Color rollColor;
   final String title;
+  final String? lottieAsset;
 
   const _HighlightBanner({
     required this.color,
     required this.rollColor,
     required this.title,
+    this.lottieAsset,
   });
 
   @override
@@ -709,9 +730,11 @@ class _HighlightBannerState extends State<_HighlightBanner> {
   );
 
   // SVG roll element occupies the rightmost ~7% of banner width.
-  // bannerWidth = (leftPad + textWidth) / 0.93  → roll fills remainder automatically.
+  // bannerWidth = (leftPad + contentWidth) / 0.93  → roll fills remainder automatically.
   static const double _leftPad = 14.0;
   static const double _rollFraction = 0.07;
+  static const double _lottieSize = 20.0;
+  static const double _lottieSpacing = 6.0;
 
   @override
   Widget build(BuildContext context) {
@@ -723,8 +746,11 @@ class _HighlightBannerState extends State<_HighlightBanner> {
       maxLines: 1,
     )..layout();
 
-    final bannerWidth = (_leftPad + tp.width) / (1 - _rollFraction);
-    final rightPad = bannerWidth - _leftPad - tp.width;
+    final lottieWidth =
+        widget.lottieAsset != null ? (_lottieSize + _lottieSpacing) : 0.0;
+    final contentWidth = tp.width + lottieWidth;
+    final bannerWidth = (_leftPad + contentWidth) / (1 - _rollFraction);
+    final rightPad = bannerWidth - _leftPad - contentWidth;
 
     Widget background;
     if (_rawSvg != null) {
@@ -770,7 +796,21 @@ class _HighlightBannerState extends State<_HighlightBanner> {
           Padding(
             padding: EdgeInsets.fromLTRB(_leftPad, 0, rightPad, 0),
             child: Center(
-              child: Text(widget.title, softWrap: false, style: _textStyle),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Text(widget.title, softWrap: false, style: _textStyle),
+                  if (widget.lottieAsset != null) ...[
+                    const SizedBox(width: _lottieSpacing),
+                    AppLottie(
+                      widget.lottieAsset!,
+                      width: _lottieSize,
+                      height: _lottieSize,
+                    ),
+                  ],
+                ],
+              ),
             ),
           ),
         ],

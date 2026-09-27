@@ -1,3 +1,4 @@
+import 'package:geolocator/geolocator.dart';
 import 'package:smart_laundry_locker/features/locker/domain/entities/locker_location.dart';
 import 'package:smart_laundry_locker/features/locker/presentation/pages/locker_map_page.dart';
 import 'package:smart_laundry_locker/features/stores/domain/entities/store.dart';
@@ -9,7 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:smart_laundry_locker/core/services/token_service.dart';
-import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/location_services.dart';
+import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
 import 'package:smart_laundry_locker/shared/widgets/unauthenticated_placeholder.dart';
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
 
@@ -23,6 +24,10 @@ class LockerPage extends ConsumerStatefulWidget {
 class _LockerPageState extends ConsumerState<LockerPage> {
   final TextEditingController _searchController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
+  final LockerOpsService _opsService = LockerOpsService();
+  String? _mostUsedLocationId;
+  String? _mostUsedLocationName;
+  Position? _userPosition;
 
   @override
   void initState() {
@@ -31,6 +36,8 @@ class _LockerPageState extends ConsumerState<LockerPage> {
     _scrollController.addListener(_onScroll);
     TokenService.authState.addListener(_onAuthStateChanged);
     _onAuthStateChanged();
+    _loadMostUsedLocation();
+    _fetchUserPosition();
   }
 
   void _onAuthStateChanged() {
@@ -38,9 +45,85 @@ class _LockerPageState extends ConsumerState<LockerPage> {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) {
           ref.read<LockerProvider>(lockerNotifierProvider).getLocations();
+          _loadMostUsedLocation();
+          _fetchUserPosition();
         }
       });
     }
+  }
+
+  Future<void> _loadMostUsedLocation() async {
+    if (!TokenService.authState.value) return;
+    try {
+      final orders = await _opsService.myOrders();
+      if (!mounted || orders.isEmpty) return;
+
+      final counts = <String, int>{};
+      final names = <String, String>{};
+      for (final order in orders) {
+        final lid = '${order['lockerId'] ?? order['destinationLockerId'] ?? order['senderLockerId'] ?? ''}'.trim();
+        if (lid.isNotEmpty) {
+          counts[lid] = (counts[lid] ?? 0) + 1;
+          final name = order['lockerName']?.toString();
+          if (name != null && name.isNotEmpty) {
+            names[lid] = name;
+          }
+        }
+      }
+
+      if (counts.isNotEmpty) {
+        var bestId = '';
+        var maxCount = 0;
+        counts.forEach((id, count) {
+          if (count > maxCount) {
+            maxCount = count;
+            bestId = id;
+          }
+        });
+        if (bestId.isNotEmpty && mounted) {
+          setState(() {
+            _mostUsedLocationId = bestId;
+            _mostUsedLocationName = names[bestId];
+          });
+        }
+      }
+    } catch (_) {}
+  }
+
+  Future<void> _fetchUserPosition() async {
+    try {
+      final serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) return;
+
+      var permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+      }
+      if (permission == LocationPermission.denied ||
+          permission == LocationPermission.deniedForever) {
+        return;
+      }
+
+      final lastPos = await Geolocator.getLastKnownPosition();
+      if (lastPos != null && mounted) {
+        setState(() {
+          _userPosition = lastPos;
+        });
+      }
+
+      final currentPos = await Geolocator.getCurrentPosition(
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.medium,
+          timeLimit: Duration(seconds: 4),
+        ),
+      ).timeout(const Duration(seconds: 5));
+
+      if (mounted) {
+        setState(() {
+          _userPosition = currentPos;
+        });
+      }
+    } catch (_) {}
   }
 
   @override
@@ -106,12 +189,12 @@ class _LockerPageState extends ConsumerState<LockerPage> {
             body: Column(
               children: const [
                 BrandHeroHeader(
-                  title: 'Danh sách tủ',
-                  subtitle: 'Đăng nhập để xem các tủ khả dụng',
+                  title: 'Danh sách địa điểm',
+                  subtitle: 'Đăng nhập để xem các địa điểm khả dụng',
                 ),
                 Expanded(
                   child: UnauthenticatedPlaceholder(
-                    message: 'Bạn cần đăng nhập để xem danh sách tủ',
+                    message: 'Bạn cần đăng nhập để xem danh sách địa điểm',
                   ),
                 ),
               ],
@@ -124,8 +207,8 @@ class _LockerPageState extends ConsumerState<LockerPage> {
           body: Column(
             children: [
               BrandHeroHeader(
-                title: 'Danh sách tủ',
-                subtitle: 'Chọn tủ để xem chi tiết',
+                title: 'Danh sách địa điểm',
+                subtitle: 'Chọn địa điểm để xem chi tiết',
                 trailing: BrandCircleIconButton(
                   icon: LucideIcons.mapPin,
                   onTap: () {
@@ -138,11 +221,11 @@ class _LockerPageState extends ConsumerState<LockerPage> {
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
+                padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
                 child: TextField(
                   controller: _searchController,
                   decoration: InputDecoration(
-                    hintText: 'Tìm kiếm tủ...',
+                    hintText: 'Tìm kiếm địa điểm...',
                     prefixIcon: Icon(LucideIcons.search,
                         size: 18, color: context.textMuted),
                     filled: true,
@@ -162,10 +245,6 @@ class _LockerPageState extends ConsumerState<LockerPage> {
                     ),
                   ),
                 ),
-              ),
-              const Padding(
-                padding: EdgeInsets.fromLTRB(20, 4, 20, 10),
-                child: LockerUtilitiesRow(),
               ),
               Expanded(child: _buildLocationsList(state)),
             ],
@@ -215,37 +294,74 @@ class _LockerPageState extends ConsumerState<LockerPage> {
     if (state.locations.isEmpty) {
       return Center(
         child: Text(
-          'Hiện tại chưa có tủ nào!',
+          'Hiện tại chưa có địa điểm nào!',
           style: TextStyle(color: Colors.grey[600], fontSize: 16),
         ),
       );
     }
 
+    // Rearrange locations so most-used location is at index 0
+    final locations = List<LockerLocation>.of(state.locations);
+    if (_mostUsedLocationId != null && locations.isNotEmpty) {
+      final mostUsedIdx = locations.indexWhere(
+        (loc) =>
+            loc.id == _mostUsedLocationId ||
+            (_mostUsedLocationName != null &&
+                loc.name.trim().toLowerCase() ==
+                    _mostUsedLocationName!.trim().toLowerCase()),
+      );
+      if (mostUsedIdx > 0) {
+        final topItem = locations.removeAt(mostUsedIdx);
+        locations.insert(0, topItem);
+      }
+    }
+
     // List of locations
     return RefreshIndicator(
       onRefresh: () async {
-        await ref
-            .read<LockerProvider>(lockerNotifierProvider)
-            .getLocations(refresh: true);
+        await Future.wait([
+          ref
+              .read<LockerProvider>(lockerNotifierProvider)
+              .getLocations(refresh: true),
+          _loadMostUsedLocation(),
+          _fetchUserPosition(),
+        ]);
       },
       child: ListView.separated(
         controller: _scrollController,
         padding: const EdgeInsets.fromLTRB(16, 4, 16, 100),
-        itemCount: state.locations.length + (state.isLoadingMore ? 1 : 0),
-        separatorBuilder: (_, __) =>
-            Divider(height: 1, color: context.dividerColor),
+        itemCount: locations.length + (state.isLoadingMore ? 1 : 0),
+        separatorBuilder: (_, index) {
+          final isTopMostUsed = index == 0 &&
+              _mostUsedLocationId != null &&
+              locations.isNotEmpty &&
+              (locations[0].id == _mostUsedLocationId ||
+                  (_mostUsedLocationName != null &&
+                      locations[0].name.trim().toLowerCase() ==
+                          _mostUsedLocationName!.trim().toLowerCase()));
+          if (isTopMostUsed) {
+            return const SizedBox(height: 6);
+          }
+          return Divider(height: 1, color: context.dividerColor);
+        },
         itemBuilder: (context, index) {
           // Loading more indicator - show skeleton row
-          if (index >= state.locations.length) {
+          if (index >= locations.length) {
             return const Padding(
               padding: EdgeInsets.symmetric(vertical: 8),
               child: _LockerItemSkeleton(),
             );
           }
 
-          final location = state.locations[index];
+          final location = locations[index];
+          final isMostUsed = location.id == _mostUsedLocationId ||
+              (_mostUsedLocationName != null &&
+                  location.name.trim().toLowerCase() ==
+                      _mostUsedLocationName!.trim().toLowerCase());
           return LockerItem(
             location: location,
+            isMostUsed: isMostUsed,
+            userPosition: _userPosition,
             onTap: () => _navigateToMap(location),
           );
         },

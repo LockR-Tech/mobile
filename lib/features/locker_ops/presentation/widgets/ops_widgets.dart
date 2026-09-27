@@ -329,11 +329,13 @@ class OpsInfoRow extends StatelessWidget {
 class OpsBanner extends StatelessWidget {
   const OpsBanner({
     required this.text,
+    this.title,
     this.icon = LucideIcons.info,
     this.tone = OpsBannerTone.info,
     super.key,
   });
   final String text;
+  final String? title;
   final IconData icon;
   final OpsBannerTone tone;
 
@@ -346,26 +348,42 @@ class OpsBanner extends StatelessWidget {
       OpsBannerTone.success => const Color(0xFF16A34A),
     };
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(14),
         border: Border.all(color: color.withValues(alpha: 0.25)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, size: 16, color: color),
-          const SizedBox(width: 8),
+          Icon(icon, size: title != null ? 22 : 16, color: color),
+          const SizedBox(width: 10),
           Expanded(
-            child: Text(
-              text,
-              style: TextStyle(
-                fontSize: 12.5,
-                height: 1.35,
-                color: color,
-                fontWeight: FontWeight.w600,
-              ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (title != null) ...[
+                  Text(
+                    title!,
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w800,
+                      color: color,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                ],
+                Text(
+                  text,
+                  style: TextStyle(
+                    fontSize: 12.5,
+                    height: 1.35,
+                    color: color,
+                    fontWeight: title != null ? FontWeight.w500 : FontWeight.w600,
+                  ),
+                ),
+              ],
             ),
           ),
         ],
@@ -452,15 +470,17 @@ class OpsPrimaryButton extends StatelessWidget {
 class OpsSheetAction extends StatelessWidget {
   const OpsSheetAction({
     required this.label,
-    required this.icon,
+    this.icon,
+    this.leading,
     required this.onTap,
     this.primary = false,
     this.danger = false,
     this.color,
     super.key,
-  });
+  }) : assert(icon != null || leading != null);
   final String label;
-  final IconData icon;
+  final IconData? icon;
+  final Widget? leading;
   final VoidCallback onTap;
   final bool primary;
   final bool danger;
@@ -475,7 +495,11 @@ class OpsSheetAction extends StatelessWidget {
     if (primary) {
       return Padding(
         padding: const EdgeInsets.only(bottom: 10),
-        child: OpsPrimaryButton(label: label, icon: icon, onPressed: onTap),
+        child: OpsPrimaryButton(
+          label: label,
+          icon: icon ?? LucideIcons.circle,
+          onPressed: onTap,
+        ),
       );
     }
     return Padding(
@@ -490,7 +514,7 @@ class OpsSheetAction extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             child: Row(
               children: [
-                Icon(icon, size: 18, color: color),
+                leading ?? Icon(icon!, size: 18, color: color),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
@@ -574,6 +598,7 @@ class AccessCredentials extends StatelessWidget {
     this.caption = 'Nhập PIN tại màn hình tủ để mở ô',
     this.showSuccessAnimation = true,
     this.showQr = false,
+    this.animationSize = 210,
     super.key,
   });
   final String? pin;
@@ -581,6 +606,7 @@ class AccessCredentials extends StatelessWidget {
   final String caption;
   final bool showSuccessAnimation;
   final bool showQr;
+  final double animationSize;
 
   @override
   Widget build(BuildContext context) {
@@ -619,20 +645,20 @@ class AccessCredentials extends StatelessWidget {
           const SizedBox(height: 16),
         ] else if (showSuccessAnimation) ...[
           SizedBox(
-            width: 140,
-            height: 140,
+            width: animationSize,
+            height: animationSize,
             child: AppLottie(
               AppLottieAssets.daThanhToan,
               fallback: (context) => Container(
-                width: 80,
-                height: 80,
+                width: 90,
+                height: 90,
                 decoration: const BoxDecoration(
                   color: Color(0xFFDCFCE7),
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(
                   LucideIcons.circleCheck,
-                  size: 48,
+                  size: 52,
                   color: Color(0xFF16A34A),
                 ),
               ),
@@ -656,9 +682,9 @@ class AccessCredentials extends StatelessWidget {
                 children: [
                   for (final d in digits)
                     Container(
-                      margin: const EdgeInsets.symmetric(horizontal: 4),
-                      width: 40,
-                      height: 52,
+                      margin: const EdgeInsets.symmetric(horizontal: 2.5),
+                      width: 32,
+                      height: 42,
                       alignment: Alignment.center,
                       decoration: BoxDecoration(
                         gradient: const LinearGradient(
@@ -666,39 +692,39 @@ class AccessCredentials extends StatelessWidget {
                           end: Alignment.bottomCenter,
                           colors: [opsDark, AISLShadcnTheme.navySecondary],
                         ),
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(9),
                       ),
                       child: Text(
                         d,
                         style: const TextStyle(
                           color: Colors.white,
-                          fontSize: 26,
-                          fontWeight: FontWeight.w800,
+                          fontSize: 19,
+                          fontWeight: FontWeight.w700,
                         ),
                       ),
                     ),
                 ],
               ),
-              const SizedBox(height: 6),
+              const SizedBox(height: 5),
               const Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(LucideIcons.copy, size: 12, color: opsMutedText),
+                  Icon(LucideIcons.copy, size: 11, color: opsMutedText),
                   SizedBox(width: 4),
                   Text(
                     'Chạm để sao chép',
-                    style: TextStyle(fontSize: 11, color: opsMutedText),
+                    style: TextStyle(fontSize: 10.5, color: opsMutedText),
                   ),
                 ],
               ),
             ],
           ),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 6),
         Text(
           caption,
           textAlign: TextAlign.center,
-          style: const TextStyle(fontSize: 12, color: opsMutedText, height: 1.3),
+          style: const TextStyle(fontSize: 11.5, color: opsMutedText, height: 1.3),
         ),
       ],
     );

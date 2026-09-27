@@ -106,9 +106,11 @@ class _StoreLockerGridPageState extends State<StoreLockerGridPage> {
             subtitle: widget.store.name,
             onBack: () => Navigator.pop(context),
             trailing: BrandCircleIconButton(
-              icon: LucideIcons.triangleAlert,
-              iconColor: const Color(0xFFE11D48),
-              iconSize: 18,
+              child: const AppLottie(
+                AppLottieAssets.baoSuCo,
+                width: 22,
+                height: 22,
+              ),
               onTap: () => _openReportLocker(),
             ),
           ),
@@ -507,12 +509,12 @@ class _LockerCardState extends State<_LockerCard> {
                           child: const Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(
-                                LucideIcons.triangleAlert,
-                                size: 10,
-                                color: Color(0xFFE11D48),
+                              AppLottie(
+                                AppLottieAssets.baoSuCo,
+                                width: 14,
+                                height: 14,
                               ),
-                              SizedBox(width: 3),
+                              SizedBox(width: 4),
                               Text(
                                 'Báo sự cố',
                                 style: TextStyle(
@@ -1269,7 +1271,7 @@ class _BookingSheet extends StatelessWidget {
               const SizedBox(width: 12),
               Expanded(
                 child: _ServiceButton(
-                  lottieAsset: AppLottieAssets.airplaneBox,
+                  lottieAsset: AppLottieAssets.box,
                   label: 'Gửi hàng',
                   sublabel: 'Chuyển C2C',
                   gradient: const LinearGradient(

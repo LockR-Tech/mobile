@@ -181,9 +181,7 @@ class _ProfilePageState extends State<ProfilePage>
     return Scaffold(
       backgroundColor: context.pageBg,
       body: MultiProvider(
-        providers: [
-          ChangeNotifierProvider.value(value: _delegationProvider),
-        ],
+        providers: [ChangeNotifierProvider.value(value: _delegationProvider)],
         child: Column(
           children: [
             BrandHeroHeader(
@@ -200,8 +198,8 @@ class _ProfilePageState extends State<ProfilePage>
                 onRefresh: () async {
                   await _loadUserProfile(forceRefresh: true);
                 },
-                color: AISLShadcnTheme.navyPrimary,
-                backgroundColor: context.cardBg,
+                color: const Color.fromARGB(255, 191, 199, 209),
+                backgroundColor: const Color.fromARGB(255, 220, 228, 238),
                 child: SingleChildScrollView(
                   physics: const AlwaysScrollableScrollPhysics(),
                   child: Column(
@@ -238,255 +236,255 @@ class _ProfilePageState extends State<ProfilePage>
   Widget _buildMenuSection() {
     return Column(
       children: [
-          // Account section
-          _buildMenuGroup(
-            title: 'Tài khoản',
-            items: [
-              ProfileMenuItem(
-                icon: LucideIcons.user,
-                title: 'Thông tin cá nhân',
-                onTap: _handleEditProfile,
+        // Account section
+        _buildMenuGroup(
+          title: 'Tài khoản',
+          items: [
+            ProfileMenuItem(
+              icon: LucideIcons.user,
+              title: 'Thông tin cá nhân',
+              onTap: _handleEditProfile,
+            ),
+            // Tạm ẩn: backend chưa có AI service (/api/auth/ai/* trả 500).
+            if (FeatureFlags.faceRecognitionEnabled)
+              ListenableBuilder(
+                listenable: _profileProvider,
+                builder: (context, _) {
+                  final isRegistered = _profileProvider.isFaceRegistered;
+                  return ProfileMenuItem(
+                    icon: Icons.face_retouching_natural_outlined,
+                    title: isRegistered
+                        ? 'Đăng ký lại khuôn mặt'
+                        : 'Đăng ký khuôn mặt',
+                    onTap: _handleFaceRegistration,
+                  );
+                },
               ),
-              // Tạm ẩn: backend chưa có AI service (/api/auth/ai/* trả 500).
-              if (FeatureFlags.faceRecognitionEnabled)
-                ListenableBuilder(
-                  listenable: _profileProvider,
-                  builder: (context, _) {
-                    final isRegistered = _profileProvider.isFaceRegistered;
-                    return ProfileMenuItem(
-                      icon: Icons.face_retouching_natural_outlined,
-                      title: isRegistered
-                          ? 'Đăng ký lại khuôn mặt'
-                          : 'Đăng ký khuôn mặt',
-                      onTap: _handleFaceRegistration,
-                    );
+            ProfileMenuItem(
+              icon: LucideIcons.shield,
+              title: 'Bảo mật',
+              onTap: _handleSecurity,
+            ),
+            // Tạm ẩn: backend chưa có subscription service (/plans, /subscriptions 404).
+            if (FeatureFlags.subscriptionEnabled)
+              ProfileMenuItem(
+                icon: LucideIcons.badgePercent,
+                title: 'Gói dịch vụ',
+                onTap: _handlePlans,
+              ),
+            // Tạm ẩn: backend chưa có kho voucher (/promotions/vouchers/my 404).
+            // (Trang "Ưu đãi" qua chip ở trang chủ vẫn hoạt động.)
+            if (FeatureFlags.vouchersEnabled)
+              ProfileMenuItem(
+                icon: LucideIcons.ticket,
+                title: 'Ưu đãi & Quà tặng',
+                onTap: _handleMyVouchers,
+              ),
+            Consumer<NotificationProvider>(
+              builder: (context, provider, child) {
+                return ProfileMenuItem(
+                  icon: LucideIcons.bell,
+                  title: 'Thông báo',
+                  onTap: () {
+                    context.push(AppRouter.notifications);
                   },
-                ),
-              ProfileMenuItem(
-                icon: LucideIcons.shield,
-                title: 'Bảo mật',
-                onTap: _handleSecurity,
-              ),
-              // Tạm ẩn: backend chưa có subscription service (/plans, /subscriptions 404).
-              if (FeatureFlags.subscriptionEnabled)
-                ProfileMenuItem(
-                  icon: LucideIcons.badgePercent,
-                  title: 'Gói dịch vụ',
-                  onTap: _handlePlans,
-                ),
-              // Tạm ẩn: backend chưa có kho voucher (/promotions/vouchers/my 404).
-              // (Trang "Ưu đãi" qua chip ở trang chủ vẫn hoạt động.)
-              if (FeatureFlags.vouchersEnabled)
-                ProfileMenuItem(
-                  icon: LucideIcons.ticket,
-                  title: 'Ưu đãi & Quà tặng',
-                  onTap: _handleMyVouchers,
-                ),
-              Consumer<NotificationProvider>(
-                builder: (context, provider, child) {
-                  return ProfileMenuItem(
-                    icon: LucideIcons.bell,
-                    title: 'Thông báo',
-                    onTap: () {
-                      context.push(AppRouter.notifications);
-                    },
-                    trailing: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        if (provider.unreadCount > 0)
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 6,
-                              vertical: 2,
-                            ),
-                            decoration: BoxDecoration(
-                              color: Colors.red,
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: Text(
-                              provider.unreadCount > 99
-                                  ? '99+'
-                                  : '${provider.unreadCount}',
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 10,
-                                fontWeight: FontWeight.bold,
-                              ),
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (provider.unreadCount > 0)
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 2,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.red,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Text(
+                            provider.unreadCount > 99
+                                ? '99+'
+                                : '${provider.unreadCount}',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
                             ),
                           ),
-                        const SizedBox(width: 8),
-                        Icon(
-                          LucideIcons.chevronRight,
-                          size: 16,
-                          color: context.textMuted,
                         ),
-                      ],
-                    ),
-                  );
-                },
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          const Divider(height: 1, indent: 16, endIndent: 16),
-          const SizedBox(height: 8),
-          // Properties section
-          _buildMenuGroup(
-            title: 'Quản lý',
-            items: [
-              Consumer<DelegationProvider>(
-                builder: (context, provider, child) {
-                  final delegations = provider.myDelegations
-                      .where((d) => d.isActive && d.usedAt == null)
-                      .toList();
-
-                  return ProfileMenuItem(
-                    icon: LucideIcons.packageOpen,
-                    title: 'Đơn ủy quyền',
-                    onTap: () => context.push(AppRouter.myDelegations),
-                    trailing: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        if (delegations.isNotEmpty)
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 6,
-                              vertical: 2,
-                            ),
-                            decoration: BoxDecoration(
-                              color: Colors.blue,
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: Text(
-                              delegations.length > 99
-                                  ? '99+'
-                                  : '${delegations.length}',
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 10,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                        const SizedBox(width: 8),
-                        Icon(
-                          LucideIcons.chevronRight,
-                          size: 16,
-                          color: context.textMuted,
-                        ),
-                      ],
-                    ),
-                  );
-                },
-              ),
-              // Tạm ẩn: backend chưa có lịch sử giao dịch/ví (/payments/transactions 404).
-              if (FeatureFlags.transactionsEnabled)
-                ProfileMenuItem(
-                  icon: LucideIcons.arrowLeftRight,
-                  title: 'Giao dịch',
-                  onTap: () => context.push(AppRouter.transactions),
-                  trailing: Icon(
-                    LucideIcons.chevronRight,
-                    size: 16,
-                    color: Colors.black54,
+                      const SizedBox(width: 8),
+                      Icon(
+                        LucideIcons.chevronRight,
+                        size: 16,
+                        color: context.textMuted,
+                      ),
+                    ],
                   ),
-                ),
-              ProfileMenuItem(
-                icon: LucideIcons.clipboardList,
-                title: 'Báo cáo của tôi',
-                onTap: () => context.pushNamed('my_reports'),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          const Divider(height: 1, indent: 16, endIndent: 16),
-          const SizedBox(height: 8),
-          // Settings section
-          _buildMenuGroup(
-            title: 'Cài đặt',
-            items: [
-              ProfileMenuItem(
-                icon: LucideIcons.globe,
-                title: 'Ngôn ngữ',
-                onTap: _handleLanguage,
-                trailing: Icon(
-                  LucideIcons.chevronRight,
-                  size: 16,
-                  color: ShadTheme.of(context).colorScheme.mutedForeground,
-                ),
-              ),
-              ProfileMenuItem(
-                icon: LucideIcons.palette,
-                title: 'Giao diện',
-                onTap: _handleTheme,
-                trailing: Icon(
-                  LucideIcons.chevronRight,
-                  size: 16,
-                  color: ShadTheme.of(context).colorScheme.mutedForeground,
-                ),
-              ),
-              ProfileMenuItem(
-                icon: LucideIcons.mapPin,
-                title: 'Vị trí',
-                onTap: _handleLocation,
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          const Divider(height: 1, indent: 16, endIndent: 16),
-          const SizedBox(height: 8),
-          // Support section
-          _buildMenuGroup(
-            title: 'Hỗ trợ',
-            items: [
-              // Trợ lý bật ⇒ "Trợ giúp" mở trợ lý hỏi đáp; tắt/chưa deploy ⇒
-              // giữ bottom sheet trợ giúp nhanh như cũ.
-              ValueListenableBuilder<AssistantStatus?>(
-                valueListenable: AssistantAvailability.instance,
-                builder: (context, status, _) => ProfileMenuItem(
-                  icon: LucideIcons.handHelping,
-                  title: 'Trợ giúp',
-                  subtitle: status?.enabled == true
-                      ? 'Hỏi đáp với trợ lý Lock.R'
-                      : null,
-                  onTap: _handleHelp,
-                ),
-              ),
-              ProfileMenuItem(
-                icon: LucideIcons.messageCircle,
-                title: 'Liên hệ',
-                onTap: _handleContact,
-              ),
-              ProfileMenuItem(
-                icon: LucideIcons.fileText,
-                title: 'Điều khoản',
-                onTap: _handleTerms,
-              ),
-              ProfileMenuItem(
-                icon: LucideIcons.shieldCheck,
-                title: 'Chính sách bảo mật',
-                onTap: _handlePrivacy,
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          const Divider(height: 1, indent: 16, endIndent: 16),
-          const SizedBox(height: 8),
-          // Account actions
-          _buildMenuGroup(
-            items: [
-              ProfileMenuItem(
-                icon: LucideIcons.doorOpen,
-                title: 'Đăng xuất',
-                onTap: _handleLogout,
-                textColor: ShadTheme.of(context).colorScheme.destructive,
-                iconColor: ShadTheme.of(context).colorScheme.destructive,
-              ),
-            ],
-          ),
+                );
+              },
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        const Divider(height: 1, indent: 16, endIndent: 16),
+        const SizedBox(height: 8),
+        // Properties section
+        _buildMenuGroup(
+          title: 'Quản lý',
+          items: [
+            Consumer<DelegationProvider>(
+              builder: (context, provider, child) {
+                final delegations = provider.myDelegations
+                    .where((d) => d.isActive && d.usedAt == null)
+                    .toList();
 
-          const SizedBox(height: 8),
-        ],
+                return ProfileMenuItem(
+                  icon: LucideIcons.packageOpen,
+                  title: 'Đơn ủy quyền',
+                  onTap: () => context.push(AppRouter.myDelegations),
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (delegations.isNotEmpty)
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 2,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.blue,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Text(
+                            delegations.length > 99
+                                ? '99+'
+                                : '${delegations.length}',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      const SizedBox(width: 8),
+                      Icon(
+                        LucideIcons.chevronRight,
+                        size: 16,
+                        color: context.textMuted,
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
+            // Tạm ẩn: backend chưa có lịch sử giao dịch/ví (/payments/transactions 404).
+            if (FeatureFlags.transactionsEnabled)
+              ProfileMenuItem(
+                icon: LucideIcons.arrowLeftRight,
+                title: 'Giao dịch',
+                onTap: () => context.push(AppRouter.transactions),
+                trailing: Icon(
+                  LucideIcons.chevronRight,
+                  size: 16,
+                  color: Colors.black54,
+                ),
+              ),
+            ProfileMenuItem(
+              icon: LucideIcons.clipboardList,
+              title: 'Báo cáo của tôi',
+              onTap: () => context.pushNamed('my_reports'),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        const Divider(height: 1, indent: 16, endIndent: 16),
+        const SizedBox(height: 8),
+        // Settings section
+        _buildMenuGroup(
+          title: 'Cài đặt',
+          items: [
+            ProfileMenuItem(
+              icon: LucideIcons.globe,
+              title: 'Ngôn ngữ',
+              onTap: _handleLanguage,
+              trailing: Icon(
+                LucideIcons.chevronRight,
+                size: 16,
+                color: ShadTheme.of(context).colorScheme.mutedForeground,
+              ),
+            ),
+            ProfileMenuItem(
+              icon: LucideIcons.palette,
+              title: 'Giao diện',
+              onTap: _handleTheme,
+              trailing: Icon(
+                LucideIcons.chevronRight,
+                size: 16,
+                color: ShadTheme.of(context).colorScheme.mutedForeground,
+              ),
+            ),
+            ProfileMenuItem(
+              icon: LucideIcons.mapPin,
+              title: 'Vị trí',
+              onTap: _handleLocation,
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        const Divider(height: 1, indent: 16, endIndent: 16),
+        const SizedBox(height: 8),
+        // Support section
+        _buildMenuGroup(
+          title: 'Hỗ trợ',
+          items: [
+            // Trợ lý bật ⇒ "Trợ giúp" mở trợ lý hỏi đáp; tắt/chưa deploy ⇒
+            // giữ bottom sheet trợ giúp nhanh như cũ.
+            ValueListenableBuilder<AssistantStatus?>(
+              valueListenable: AssistantAvailability.instance,
+              builder: (context, status, _) => ProfileMenuItem(
+                icon: LucideIcons.handHelping,
+                title: 'Trợ giúp',
+                subtitle: status?.enabled == true
+                    ? 'Hỏi đáp với trợ lý Lock.R'
+                    : null,
+                onTap: _handleHelp,
+              ),
+            ),
+            ProfileMenuItem(
+              icon: LucideIcons.messageCircle,
+              title: 'Liên hệ',
+              onTap: _handleContact,
+            ),
+            ProfileMenuItem(
+              icon: LucideIcons.fileText,
+              title: 'Điều khoản',
+              onTap: _handleTerms,
+            ),
+            ProfileMenuItem(
+              icon: LucideIcons.shieldCheck,
+              title: 'Chính sách bảo mật',
+              onTap: _handlePrivacy,
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        const Divider(height: 1, indent: 16, endIndent: 16),
+        const SizedBox(height: 8),
+        // Account actions
+        _buildMenuGroup(
+          items: [
+            ProfileMenuItem(
+              icon: LucideIcons.doorOpen,
+              title: 'Đăng xuất',
+              onTap: _handleLogout,
+              textColor: ShadTheme.of(context).colorScheme.destructive,
+              iconColor: ShadTheme.of(context).colorScheme.destructive,
+            ),
+          ],
+        ),
+
+        const SizedBox(height: 8),
+      ],
     );
   }
 
@@ -803,7 +801,6 @@ class _ProfilePageState extends State<ProfilePage>
       ),
     );
   }
-
 }
 
 // ── Theme picker bottom sheet ──────────────────────────────────────────────────
@@ -817,7 +814,9 @@ class _ThemePickerSheet extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final bg = isDark ? const Color(0xFF0A2342) : Colors.white;
     final textColor = isDark ? Colors.white : const Color(0xFF0F172A);
-    final mutedColor = isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B);
+    final mutedColor = isDark
+        ? const Color(0xFF94A3B8)
+        : const Color(0xFF64748B);
 
     return Container(
       decoration: BoxDecoration(
@@ -914,8 +913,9 @@ class _ThemeOption extends StatelessWidget {
         ? navy.withValues(alpha: isDark ? 0.7 : 0.4)
         : (isDark ? const Color(0xFF1E4976) : const Color(0xFFE2E8F0));
     final textColor = isDark ? Colors.white : const Color(0xFF0F172A);
-    final mutedColor =
-        isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B);
+    final mutedColor = isDark
+        ? const Color(0xFF94A3B8)
+        : const Color(0xFF64748B);
 
     return GestureDetector(
       onTap: onTap,
@@ -936,12 +936,11 @@ class _ThemeOption extends StatelessWidget {
                 color: selected
                     ? navy.withValues(alpha: 0.12)
                     : (isDark
-                        ? const Color(0xFF0D2B4A)
-                        : const Color(0xFFF0F4F8)),
+                          ? const Color(0xFF0D2B4A)
+                          : const Color(0xFFF0F4F8)),
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: Icon(icon,
-                  size: 20, color: selected ? navy : mutedColor),
+              child: Icon(icon, size: 20, color: selected ? navy : mutedColor),
             ),
             const SizedBox(width: 14),
             Expanded(
@@ -963,8 +962,7 @@ class _ThemeOption extends StatelessWidget {
                 ],
               ),
             ),
-            if (selected)
-              Icon(LucideIcons.circleCheck, size: 20, color: navy),
+            if (selected) Icon(LucideIcons.circleCheck, size: 20, color: navy),
           ],
         ),
       ),

@@ -203,6 +203,8 @@ void main() {
   testWidgets('pays for real, opens the box, then confirms — never auto-confirms', (
     tester,
   ) async {
+    await tester.binding.setSurfaceSize(const Size(800, 1800));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
     final service = _FakeRentLockerOpsService();
 
     await tester.pumpWidget(
