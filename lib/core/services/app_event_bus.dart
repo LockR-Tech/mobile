@@ -35,6 +35,13 @@ class ReportUpdatedEvent extends AppEvent {
   final String? reportId;
 }
 
+/// Locker layout or box status changed (fault, lock, relocate, repair).
+class LockerLayoutUpdatedEvent extends AppEvent {
+  const LockerLayoutUpdatedEvent({this.lockerId, this.boxId});
+  final String? lockerId;
+  final String? boxId;
+}
+
 // ── Singleton bus ─────────────────────────────────────────────────────────────
 
 /// App-wide synchronous event bus for domain events.

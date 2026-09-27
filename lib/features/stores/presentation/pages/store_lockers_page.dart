@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:smart_laundry_locker/core/presentation/pages/directions_map_page.dart';
-import 'package:smart_laundry_locker/shared/widgets/app_lottie.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/presentation/widgets/drone_booking_sheet.dart';
 import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/pages/rent_locker_page.dart';
@@ -11,6 +10,8 @@ import 'package:smart_laundry_locker/features/stores/domain/entities/store.dart'
 import 'package:smart_laundry_locker/features/maintenance/presentation/pages/create_report_page.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:smart_laundry_locker/shared/shared.dart';
+import 'dart:async';
+import 'package:smart_laundry_locker/core/services/app_event_bus.dart';
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
 
 /// Hiển thị lưới ô tủ locker tại một cửa hàng cụ thể.
@@ -296,6 +297,7 @@ class _LockerCardState extends State<_LockerCard> {
   Map<String, dynamic>? _layout;
   bool _loadingLayout = false;
   String? _layoutError;
+  StreamSubscription<AppEvent>? _busSub;
 
   int get _lockerId => (widget.locker['id'] as num?)?.toInt() ?? 0;
 
@@ -312,6 +314,26 @@ class _LockerCardState extends State<_LockerCard> {
       _expanded = true;
       _loadLayout();
     }
+    _busSub = AppEventBus.instance.events.listen((event) {
+      if (!mounted) return;
+      if (event is LockerLayoutUpdatedEvent) {
+        if (event.lockerId == null ||
+            event.lockerId == _lockerId.toString()) {
+          setState(() {
+            _layout = null;
+          });
+          if (_expanded) {
+            _loadLayout();
+          }
+        }
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _busSub?.cancel();
+    super.dispose();
   }
 
   Future<void> _loadLayout() async {
