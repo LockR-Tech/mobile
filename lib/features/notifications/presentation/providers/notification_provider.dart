@@ -66,6 +66,11 @@ class NotificationProvider extends ChangeNotifier {
       case 'LOCKER_REPORT_CLAIMED':
       case 'LOCKER_REPORT_RESOLVED':
         bus.emit(ReportUpdatedEvent(reportId: referenceId));
+      case 'LOCKER_LAYOUT_UPDATED':
+      case 'LOCKER_BOX_FAULT':
+      case 'ORDER_BOX_RELOCATED':
+        bus.emit(LockerLayoutUpdatedEvent(lockerId: referenceId));
+        bus.emit(ReportUpdatedEvent(reportId: referenceId));
     }
   }
 

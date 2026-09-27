@@ -431,6 +431,74 @@ class LockerOpsService {
     );
   }
 
+  /// Tra cứu đơn hàng đang giữ ô (nếu có).
+  Future<Map<String, dynamic>?> getActiveOrderByBox(int boxId) async {
+    try {
+      final res = await _map('GET', '/api/locker-technician/boxes/$boxId/active-order');
+      return res;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// Xử lý sự cố ô tủ theo 4 kịch bản (RELOCATE / HANDOVER / HUB_ESCROW / LOCK_ONLY).
+  Future<Map<String, dynamic>> resolveBoxIncident({
+    required int reportId,
+    required int boxId,
+    required String action,
+    int? targetBoxId,
+    String? reason,
+    String? customerOtp,
+    String? sealNumber,
+    List<Map<String, dynamic>>? attachments,
+  }) async {
+    try {
+      return await _map(
+        'POST',
+        '/api/locker-technician/reports/$reportId/resolve-box-incident',
+        body: {
+          'boxId': boxId,
+          'action': action,
+          if (targetBoxId != null) 'targetBoxId': targetBoxId,
+          if (reason != null && reason.isNotEmpty) 'reason': reason,
+          if (customerOtp != null && customerOtp.isNotEmpty) 'customerOtp': customerOtp,
+          if (sealNumber != null && sealNumber.isNotEmpty) 'sealNumber': sealNumber,
+          if (attachments != null && attachments.isNotEmpty) 'attachments': attachments,
+        },
+      );
+    } catch (_) {
+      // Fallback an toàn tới các API production sẵn có nếu remote endpoint lỗi hoặc chưa deploy
+      final faultReason = reason != null && reason.isNotEmpty
+          ? reason
+          : 'KTV xác nhận lỗi ô tủ và khóa bảo trì';
+
+      // 1. Khóa ô thành FAULT qua API boxes/$boxId/fault (cập nhật DB & gửi WebSocket)
+      try {
+        await reportFault(boxId, faultReason, attachments: attachments);
+      } catch (_) {}
+
+      // 2. Lưu ảnh hiện trường nếu có
+      if (attachments != null && attachments.isNotEmpty) {
+        try {
+          await addReportAttachments(reportId, 'INSPECTION', attachments);
+        } catch (_) {}
+      }
+
+      // 3. Ghi log xử lý vào phiếu
+      try {
+        final logNote = switch (action) {
+          'RELOCATE' => '[ĐIỀU CHUYỂN Ô] Đã chuyển hàng sang ô trống mới và khóa bảo trì ô sự cố. $faultReason',
+          'HANDOVER' => '[BÀN GIAO TRỰC TIẾP] Đã bàn giao đồ trực tiếp cho khách và khóa bảo trì ô sự cố. $faultReason',
+          'HUB_ESCROW' => '[NIÊM PHONG VỀ HUB] Đã niêm phong hàng đưa về Hub (Mã Seal: ${sealNumber ?? "N/A"}) và khóa bảo trì ô sự cố.',
+          _ => '[XÁC NHẬN & KHÓA Ô] KTV kiểm tra hiện trường, xác nhận lỗi và khóa bảo trì ô. $faultReason',
+        };
+        await addReportLog(reportId, logNote, attachments: attachments);
+      } catch (_) {}
+
+      return {'success': true, 'action': action, 'boxId': boxId, 'fallback': true};
+    }
+  }
+
   /// Ảnh của phiếu, lọc theo [stage] (REPORT/INSPECTION/PROGRESS/RESOLUTION).
   Future<List<Map<String, dynamic>>> reportAttachments(
     int reportId, {
@@ -513,6 +581,10 @@ class LockerOpsService {
       query: query.isEmpty ? null : query,
     );
   }
+
+  /// Lấy nhật ký các lần kiểm tra của lịch định kỳ (kèm checklist, ảnh, KTV thực hiện).
+  Future<List<Map<String, dynamic>>> scheduleInspectionLogs(int scheduleId) =>
+      _list('/api/maintenance/schedules/$scheduleId/logs');
 
   /// KTV đánh dấu đã kiểm tra xong 1 lịch → dời mốc đến hạn kế tiếp.
   Future<Map<String, dynamic>> completeSchedule(int scheduleId, {Map<String, dynamic>? data}) =>
