@@ -8,4 +8,6 @@ abstract class TransactionRemoteDataSource {
     String? toDate,
     String? type,
   });
+
+  Future<Map<String, dynamic>> getSpendingStats({String period = 'ALL'});
 }

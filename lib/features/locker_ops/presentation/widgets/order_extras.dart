@@ -7,6 +7,7 @@ import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/op
 import 'package:smart_laundry_locker/features/promotions/data/models/promotion_model.dart';
 import 'package:smart_laundry_locker/features/promotions/data/repositories/promotion_repository.dart';
 import 'package:smart_laundry_locker/core/network/api_client.dart';
+import 'package:smart_laundry_locker/shared/shared.dart';
 
 /// Compute the discount (in VND) a validated [promotion] grants on [total].
 /// Mirrors the order-service Promotion model (discountType / discountValue /
@@ -623,7 +624,7 @@ class InlineVietQrCard extends StatelessWidget {
                     ? child
                     : const SizedBox(
                         height: 200,
-                        child: Center(child: CircularProgressIndicator()),
+                        child: Center(child: AppLoadingIndicator(size: 64)),
                       ),
                 errorBuilder: (_, __, ___) => const SizedBox(
                   height: 160,
@@ -705,34 +706,45 @@ class InlineVietQrCard extends StatelessWidget {
               ],
             ),
           ),
-          // Loading hint
+          // Loading hint với file animation JSON loading (Delivery-05)
           Container(
             margin: const EdgeInsets.fromLTRB(20, 0, 20, 16),
-            padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 14),
+            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
             decoration: BoxDecoration(
-              color: const Color(0xFFF0FDF4),
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: const Color(0xFFBBF7D0)),
+              color: const Color(0xFFF8FAFC),
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: const Color(0xFFE2E8F0)),
             ),
             child: Row(
               children: const [
                 SizedBox(
-                  width: 14,
-                  height: 14,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: Color(0xFF16A34A),
-                  ),
+                  width: 44,
+                  height: 44,
+                  child: AppLoadingIndicator(size: 44),
                 ),
-                SizedBox(width: 10),
+                SizedBox(width: 12),
                 Expanded(
-                  child: Text(
-                    'Đang chờ xác nhận thanh toán… mã mở ô sẽ tự hiện.',
-                    style: TextStyle(
-                      color: Color(0xFF16A34A),
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                    ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Đang chờ xác nhận thanh toán…',
+                        style: TextStyle(
+                          color: opsDark,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      SizedBox(height: 2),
+                      Text(
+                        'Mã mở ô sẽ tự hiện ngay sau khi nhận tiền.',
+                        style: TextStyle(
+                          color: opsMutedText,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],

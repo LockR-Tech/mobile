@@ -37,4 +37,23 @@ class TransactionRemoteDataSourceImpl implements TransactionRemoteDataSource {
 
     return PaginatedTransactionsModel.fromList(items);
   }
+
+  @override
+  Future<Map<String, dynamic>> getSpendingStats({String period = 'ALL'}) async {
+    final response = await apiClient.get<Map<String, dynamic>>(
+      '/api/wallet/spending-stats',
+      queryParameters: {'period': period},
+    );
+
+    if (response.data == null) {
+      throw ServerException('No data returned from spending stats');
+    }
+
+    final data = response.data!['data'];
+    if (data is! Map<String, dynamic>) {
+      throw ServerException('Invalid spending stats response shape');
+    }
+
+    return data;
+  }
 }

@@ -2,6 +2,7 @@ import 'package:smart_laundry_locker/core/errors/failures.dart';
 import 'package:dartz/dartz.dart';
 import 'package:smart_laundry_locker/core/network/api_client.dart';
 import 'package:smart_laundry_locker/features/transactions/domain/entities/paginated_transactions.dart';
+import 'package:smart_laundry_locker/features/transactions/domain/entities/spending_stats.dart';
 import 'package:smart_laundry_locker/features/transactions/domain/repositories/transaction_repository.dart';
 import 'package:flutter/foundation.dart';
 import '../data_sources/transaction_remote_data_source.dart';
@@ -34,6 +35,21 @@ class TransactionRepositoryImpl implements TransactionRepository {
       return Left(NetworkFailure(e.message));
     } catch (e) {
       debugPrint('[TX][repo] getTransactions CATCH-ALL: $e');
+      return Left(UnknownFailure(e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, SpendingStats>> getSpendingStats({String period = 'ALL'}) async {
+    try {
+      final map = await remoteDataSource.getSpendingStats(period: period);
+      return Right(SpendingStats.fromJson(map));
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
+    } on NetworkException catch (e) {
+      return Left(NetworkFailure(e.message));
+    } catch (e) {
+      debugPrint('[TX][repo] getSpendingStats CATCH-ALL: $e');
       return Left(UnknownFailure(e.toString()));
     }
   }

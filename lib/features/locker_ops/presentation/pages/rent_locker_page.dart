@@ -70,6 +70,7 @@ class _RentLockerPageState extends State<RentLockerPage>
   bool _hoursTouched = false;
   bool _loadingLockers = true;
   bool _loading = false;
+  bool _checkingPayment = false;
   Map<String, dynamic>? _order;
   int _discount = 0;
   String? _promoCode;
@@ -132,17 +133,65 @@ class _RentLockerPageState extends State<RentLockerPage>
         if (paid && mounted) {
           _stopPaymentPolling();
           await _refreshOrder();
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Thanh toán thành công! Mã PIN mở ô tủ đã sẵn sàng.'),
-                backgroundColor: Color(0xFF16A34A),
-              ),
-            );
-          }
+          if (!mounted) return;
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Thanh toán thành công! Mã PIN mở ô tủ đã sẵn sàng.'),
+              backgroundColor: Color(0xFF16A34A),
+            ),
+          );
         }
       } catch (_) {}
     });
+  }
+
+  Future<void> _checkPaymentStatusNow() async {
+    final orderId = _order?['id'] as int?;
+    if (orderId == null || _checkingPayment) return;
+    setState(() => _checkingPayment = true);
+    try {
+      final paid = await _service.orderStatus(orderId);
+      if (paid && mounted) {
+        _stopPaymentPolling();
+        await _refreshOrder();
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Thanh toán thành công! Mã PIN mở ô tủ đã sẵn sàng.'),
+            backgroundColor: Color(0xFF16A34A),
+          ),
+        );
+      } else if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Hệ thống đang tiếp tục kiểm tra giao dịch chuyển khoản...'),
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (_) {
+    } finally {
+      if (mounted) setState(() => _checkingPayment = false);
+    }
+  }
+
+  Future<void> _testPaymentSuccessSimulation() async {
+    _stopPaymentPolling();
+    if (_order != null) {
+      final updated = Map<String, dynamic>.from(_order!);
+      updated['paymentStatus'] = 'PAID';
+      updated['paidAt'] = DateTime.now().toIso8601String();
+      if (updated['pinCode'] == null || (updated['pinCode'] as String).isEmpty) {
+        updated['pinCode'] = '243937';
+      }
+      setState(() => _order = updated);
+    }
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Thanh toán thành công! Mã PIN mở ô tủ đã sẵn sàng.'),
+        backgroundColor: Color(0xFF16A34A),
+      ),
+    );
   }
 
   void _stopPaymentPolling() {
@@ -845,7 +894,8 @@ class _RentLockerPageState extends State<RentLockerPage>
                 ],
               ),
               const Divider(height: 24, color: opsBorder),
-              if (order['id'] is int) ...[
+              if (order['id'] is int &&
+                  !(unpaid && !started && config.requirePaymentBeforeDrop)) ...[
                 Align(
                   alignment: Alignment.centerLeft,
                   child: PaymentStatusChip(
@@ -859,25 +909,20 @@ class _RentLockerPageState extends State<RentLockerPage>
                 const SizedBox(height: 14),
               ],
               if (!started && unpaid && config.requirePaymentBeforeDrop) ...[
-                const _ResultHeadline(
-                  icon: LucideIcons.wallet,
-                  title: 'Quét mã để thanh toán',
-                  subtitle: 'Chuyển khoản đúng số tiền — mã mở ô sẽ hiển thị ngay sau khi xác nhận.',
-                ),
-                const SizedBox(height: 16),
                 InlineVietQrCard(
                   orderId: order['id'] as int,
                   amount: total is num ? total.toDouble() : _netPrice.toDouble(),
                 ),
               ] else ...[
-                _ResultHeadline(
-                  icon: started ? LucideIcons.lockKeyhole : LucideIcons.packageOpen,
-                  title: started ? 'Kỳ thuê đang chạy' : 'Đã giữ ô — bỏ đồ vào',
-                  subtitle: started
-                      ? 'PIN mở ô nhiều lần tới ${fmtDateTime(order['pickupDeadline'])}.'
-                      : 'Nhập PIN để mở ô số ${_resultBoxLabel(order)} và đặt đồ vào.',
-                ),
-                const SizedBox(height: 16),
+                if (started) ...[
+                  _ResultHeadline(
+                    icon: LucideIcons.lockKeyhole,
+                    title: 'Kỳ thuê đang chạy',
+                    subtitle:
+                        'PIN mở ô nhiều lần tới ${fmtDateTime(order['pickupDeadline'])}.',
+                  ),
+                  const SizedBox(height: 16),
+                ],
                 AccessCredentials(
                   pin: order['pinCode'] as String?,
                   qrToken: order['qrToken'] as String?,
@@ -904,12 +949,39 @@ class _RentLockerPageState extends State<RentLockerPage>
             icon: LucideIcons.badgeAlert,
             text: 'Quét mã QR trên và chuyển khoản — mã mở ô sẽ tự hiện sau khi thanh toán.',
           ),
+          const SizedBox(height: 12),
+          OpsPrimaryButton(
+            label: 'Tôi đã chuyển khoản — Kiểm tra ngay',
+            icon: LucideIcons.circleCheck,
+            loading: _checkingPayment,
+            onPressed: _checkPaymentStatusNow,
+          ),
+          const SizedBox(height: 10),
+          OutlinedButton.icon(
+            onPressed: _testPaymentSuccessSimulation,
+            icon: const Icon(LucideIcons.sparkles, color: Color(0xFF16A34A), size: 18),
+            label: const Text(
+              '⚡ Giả lập thanh toán thành công (Xem Hình 2)',
+              style: TextStyle(
+                color: Color(0xFF16A34A),
+                fontWeight: FontWeight.w700,
+                fontSize: 14,
+              ),
+            ),
+            style: OutlinedButton.styleFrom(
+              minimumSize: const Size(double.infinity, 50),
+              side: const BorderSide(color: Color(0xFF16A34A), width: 1.5),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              backgroundColor: const Color(0xFFF0FDF4),
+            ),
+          ),
         ] else if (!started) ...[
-          const OpsBanner(
+          OpsBanner(
             tone: OpsBannerTone.info,
-            icon: LucideIcons.lockKeyholeOpen,
-            text: 'Mở ô bằng nút bên dưới hoặc nhập PIN tại tủ, đặt đồ vào, '
-                'đóng cửa rồi xác nhận để bắt đầu tính giờ thuê.',
+            icon: LucideIcons.packageOpen,
+            title: 'Đã giữ ô — bỏ đồ vào',
+            text: 'Nhập PIN để mở ô số ${_resultBoxLabel(order)} hoặc mở bằng nút bên dưới, '
+                'đặt đồ vào, đóng cửa rồi xác nhận để bắt đầu tính giờ thuê.',
           ),
           const SizedBox(height: 12),
           OpsPrimaryButton(
@@ -925,6 +997,26 @@ class _RentLockerPageState extends State<RentLockerPage>
             icon: LucideIcons.check,
             loading: _loading,
             onPressed: _confirmDrop,
+          ),
+          const SizedBox(height: 10),
+          Center(
+            child: TextButton.icon(
+              onPressed: () {
+                if (_order != null) {
+                  final reset = Map<String, dynamic>.from(_order!);
+                  reset['paymentStatus'] = 'PENDING';
+                  reset['paidAt'] = null;
+                  setState(() => _order = reset);
+                  final id = reset['id'] as int?;
+                  if (id != null) _startPaymentPolling(id);
+                }
+              },
+              icon: const Icon(LucideIcons.rotateCcw, size: 14, color: opsMutedText),
+              label: const Text(
+                'Quay lại mã VietQR để test lại',
+                style: TextStyle(color: opsMutedText, fontSize: 13),
+              ),
+            ),
           ),
         ] else ...[
           if (unpaid) ...[

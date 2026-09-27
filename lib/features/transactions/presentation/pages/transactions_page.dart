@@ -6,6 +6,8 @@ import 'package:smart_laundry_locker/core/routing/app_router.dart';
 import 'package:smart_laundry_locker/core/network/api_client.dart';
 import 'package:smart_laundry_locker/core/theme/shadcn_theme.dart';
 import 'package:smart_laundry_locker/features/transactions/domain/entities/transaction.dart';
+import 'package:smart_laundry_locker/features/transactions/domain/entities/transaction_extensions.dart';
+import 'package:smart_laundry_locker/features/transactions/domain/entities/spending_stats.dart';
 import 'package:smart_laundry_locker/features/transactions/presentation/providers/transaction_injection.dart';
 import 'package:smart_laundry_locker/features/transactions/presentation/providers/transaction_provider.dart';
 import 'package:smart_laundry_locker/features/wallet/presentation/providers/wallet_provider.dart';
@@ -44,12 +46,10 @@ class _TransactionsPageState extends State<TransactionsPage> {
 
   @override
   Widget build(BuildContext context) {
-    final screenH = MediaQuery.sizeOf(context).height;
-
     return ChangeNotifierProvider.value(
       value: _provider,
       child: Scaffold(
-        backgroundColor: Colors.grey.shade50,
+        backgroundColor: const Color(0xFFF8FAFC),
         body: Consumer2<TransactionProvider, WalletProvider>(
           builder: (context, provider, walletProvider, child) {
             return Column(
@@ -73,167 +73,824 @@ class _TransactionsPageState extends State<TransactionsPage> {
                       await context.read<WalletProvider>().getWalletBalance();
                     },
                     child: CustomScrollView(
+                      physics: const AlwaysScrollableScrollPhysics(
+                        parent: BouncingScrollPhysics(),
+                      ),
                       slivers: [
                         SliverToBoxAdapter(
-                    child: Column(
-                      children: [
-                        SizedBox(height: screenH * 0.015),
-                        Card(
-                          margin: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-                          elevation: 0,
-                          shadowColor: Colors.black12,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          child: Container(
-                            padding: const EdgeInsets.all(20),
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(16),
-                              color: Colors.white,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withValues(alpha: 0.05),
-                                  blurRadius: 10,
-                                  offset: const Offset(0, 4),
-                                ),
-                              ],
-                            ),
-                            child: Row(
-                              children: [
-                                Container(
-                                  width: 40,
-                                  height: 40,
-                                  decoration: BoxDecoration(
-                                    color: AISLShadcnTheme.navySurface,
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  child: const Icon(
-                                    Icons.account_balance_wallet_rounded,
-                                    color: AISLShadcnTheme.navyPrimary,
-                                  ),
-                                ),
-                                const SizedBox(width: 16),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        'Số dư ví',
-                                        style: TextStyle(
-                                          fontSize: 15,
-                                          color: Colors.grey.shade600,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 4),
-                                      Text(
-                                        CurrencyFormatter.formatVnd(
-                                          walletProvider.balance,
-                                        ),
-                                        style: const TextStyle(
-                                          fontSize: 26,
-                                          fontWeight: FontWeight.w800,
-                                          color: Colors.black87,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                const SizedBox(width: 12),
-                                Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    TextButton(
-                                      onPressed: () async {
-                                        final ok = await context.push<bool>(
-                                          AppRouter.topUp,
-                                        );
-                                        if (!mounted) return;
-                                        if (ok == true) {
-                                          await _provider.fetchTransactions(
-                                            refresh: true,
-                                          );
-                                          await walletProvider.getWalletBalance();
-                                        }
-                                      },
-                                      style: TextButton.styleFrom(
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 14,
-                                          vertical: 6,
-                                        ),
-                                        backgroundColor:
-                                            AISLShadcnTheme.navyPrimary,
-                                        foregroundColor: Colors.white,
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(10),
-                                        ),
-                                      ),
-                                      child: const Text(
-                                        'Nạp tiền',
-                                        style: TextStyle(
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                    ),
-                                    const SizedBox(height: 6),
-                                    OutlinedButton(
-                                      onPressed: () async {
-                                        final ok = await context.push<bool>(
-                                          AppRouter.withdraw,
-                                        );
-                                        if (!mounted) return;
-                                        if (ok == true) {
-                                          await _provider.fetchTransactions(
-                                            refresh: true,
-                                          );
-                                          await walletProvider.getWalletBalance();
-                                        }
-                                      },
-                                      style: OutlinedButton.styleFrom(
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 14,
-                                          vertical: 6,
-                                        ),
-                                        foregroundColor:
-                                            AISLShadcnTheme.navyPrimary,
-                                        side: const BorderSide(
-                                          color: AISLShadcnTheme.navyPrimary,
-                                        ),
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(10),
-                                        ),
-                                      ),
-                                      child: const Text(
-                                        'Rút tiền',
-                                        style: TextStyle(
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const SizedBox(height: 12),
+                              // Card 1: Số dư ví
+                              _WalletBalanceCard(
+                                balance: walletProvider.balance,
+                                onTopUp: () async {
+                                  final ok = await context.push<bool>(
+                                    AppRouter.topUp,
+                                  );
+                                  if (!mounted) return;
+                                  if (ok == true) {
+                                    await _provider.fetchTransactions(refresh: true);
+                                    await walletProvider.getWalletBalance();
+                                  }
+                                },
+                                onWithdraw: () async {
+                                  final ok = await context.push<bool>(
+                                    AppRouter.withdraw,
+                                  );
+                                  if (!mounted) return;
+                                  if (ok == true) {
+                                    await _provider.fetchTransactions(refresh: true);
+                                    await walletProvider.getWalletBalance();
+                                  }
+                                },
+                              ),
+                              const SizedBox(height: 12),
+
+                              // Card 2: Thống kê chi tiêu & phân bổ dịch vụ theo kỳ (Ngày, Tháng, Năm, Tất cả)
+                              _SpendingStatsCard(provider: provider),
+
+                              const SizedBox(height: 16),
+
+                              // Card 3: Bộ lọc hình thức giao dịch (Ví, SePay, VNPay, Rút tiền)
+                              _PaymentMethodFilterBar(provider: provider),
+
+                              const SizedBox(height: 8),
+                            ],
                           ),
                         ),
-                        SizedBox(height: screenH * 0.015),
+                        const _TransactionsSliverList(),
+                        const SliverPadding(padding: EdgeInsets.only(bottom: 32)),
                       ],
                     ),
                   ),
-                  const _TransactionsSliverList(),
-                  const SliverPadding(padding: EdgeInsets.only(bottom: 24)),
-                ],
-              ),
-            ),
+                ),
+              ],
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
+
+/// Card Số dư ví (Giữ phong cách hiện có và tối ưu độ hoàn thiện)
+class _WalletBalanceCard extends StatelessWidget {
+  final double balance;
+  final VoidCallback onTopUp;
+  final VoidCallback onWithdraw;
+
+  const _WalletBalanceCard({
+    required this.balance,
+    required this.onTopUp,
+    required this.onWithdraw,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 14,
+            offset: const Offset(0, 4),
           ),
         ],
-      );
-    },
-  ),
-),
-);
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              color: AISLShadcnTheme.navySurface,
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: const Icon(
+              Icons.account_balance_wallet_rounded,
+              color: AISLShadcnTheme.navyPrimary,
+              size: 24,
+            ),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Số dư ví',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.grey.shade600,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  CurrencyFormatter.formatVnd(balance),
+                  style: const TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.w800,
+                    color: Color(0xFF0F172A),
+                    letterSpacing: -0.5,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              FilledButton(
+                onPressed: onTopUp,
+                style: FilledButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 7,
+                  ),
+                  minimumSize: const Size(82, 34),
+                  backgroundColor: AISLShadcnTheme.navyPrimary,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+                child: const Text(
+                  'Nạp tiền',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 6),
+              OutlinedButton(
+                onPressed: onWithdraw,
+                style: OutlinedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 7,
+                  ),
+                  minimumSize: const Size(82, 34),
+                  foregroundColor: AISLShadcnTheme.navyPrimary,
+                  side: const BorderSide(
+                    color: AISLShadcnTheme.navyPrimary,
+                    width: 1.2,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+                child: const Text(
+                  'Rút tiền',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Card Thống kê chi tiêu & phân bổ theo từng dịch vụ theo kỳ (Hôm nay, Tháng này, Năm nay, Tất cả)
+class _SpendingStatsCard extends StatelessWidget {
+  final TransactionProvider provider;
+
+  const _SpendingStatsCard({required this.provider});
+
+  @override
+  Widget build(BuildContext context) {
+    final stats = provider.spendingStats ?? SpendingStats.empty(provider.selectedPeriod);
+    final period = provider.selectedPeriod;
+
+    final expenseFmt = NumberFormat.currency(
+      locale: 'vi_VN',
+      symbol: 'đ',
+      decimalDigits: 0,
+    ).format(stats.totalExpense);
+
+    final incomeFmt = NumberFormat.currency(
+      locale: 'vi_VN',
+      symbol: 'đ',
+      decimalDigits: 0,
+    ).format(stats.totalIncome);
+
+    final netFmt = NumberFormat.currency(
+      locale: 'vi_VN',
+      symbol: 'đ',
+      decimalDigits: 0,
+    ).format(stats.netChange.abs());
+    final isNetPositive = stats.netChange >= 0;
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 16,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Period Selector Bar
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Row(
+                children: [
+                  Icon(
+                    Icons.insights_rounded,
+                    size: 18,
+                    color: AISLShadcnTheme.navyPrimary,
+                  ),
+                  SizedBox(width: 6),
+                  Text(
+                    'Thống kê chi tiêu',
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF0F172A),
+                    ),
+                  ),
+                ],
+              ),
+              if (provider.isLoadingStats)
+                const SizedBox(
+                  width: 14,
+                  height: 14,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
+            ],
+          ),
+          const SizedBox(height: 12),
+
+          // Period Segment Tabs
+          Container(
+            padding: const EdgeInsets.all(3),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF1F5F9),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Row(
+              children: [
+                _buildPeriodTab('Hôm nay', 'DAY', period),
+                _buildPeriodTab('Tháng này', 'MONTH', period),
+                _buildPeriodTab('Năm nay', 'YEAR', period),
+                _buildPeriodTab('Tất cả', 'ALL', period),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+
+          // Summary Metrics Grid (Tổng chi, Tổng nạp, Biến động ròng)
+          Row(
+            children: [
+              Expanded(
+                child: _MetricItem(
+                  label: 'Tổng chi tiêu',
+                  value: '-$expenseFmt',
+                  valueColor: const Color(0xFFDC2626),
+                  icon: Icons.arrow_outward_rounded,
+                  iconBg: const Color(0xFFFEE2E2),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: _MetricItem(
+                  label: 'Tổng nạp vào',
+                  value: '+$incomeFmt',
+                  valueColor: const Color(0xFF16A34A),
+                  icon: Icons.south_west_rounded,
+                  iconBg: const Color(0xFFDCFCE7),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+
+          // Net summary row
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF8FAFC),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: const Color(0xFFE2E8F0)),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    Icon(
+                      isNetPositive
+                          ? Icons.trending_up_rounded
+                          : Icons.trending_down_rounded,
+                      size: 16,
+                      color: isNetPositive
+                          ? const Color(0xFF16A34A)
+                          : const Color(0xFFDC2626),
+                    ),
+                    const SizedBox(width: 6),
+                    const Text(
+                      'Biến động ròng:',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Color(0xFF64748B),
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+                Text(
+                  '${isNetPositive ? '+' : '-'}$netFmt (${stats.transactionCount} GD)',
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    color: isNetPositive
+                        ? const Color(0xFF16A34A)
+                        : const Color(0xFFDC2626),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 18),
+          const Divider(height: 1, color: Color(0xFFF1F5F9)),
+          const SizedBox(height: 14),
+
+          // Service breakdown header
+          const Row(
+            children: [
+              Icon(
+                Icons.pie_chart_rounded,
+                size: 16,
+                color: Color(0xFF475569),
+              ),
+              SizedBox(width: 6),
+              Text(
+                'Chi tiết theo từng dịch vụ',
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xFF334155),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+
+          // Services Breakdown List
+          _ServiceBreakdownList(
+            stats: stats,
+            periodTransactions: provider.periodTransactions,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPeriodTab(String title, String value, String current) {
+    final isSelected = current == value;
+    return Expanded(
+      child: GestureDetector(
+        onTap: () => provider.setPeriod(value),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.symmetric(vertical: 7),
+          decoration: BoxDecoration(
+            color: isSelected ? Colors.white : Colors.transparent,
+            borderRadius: BorderRadius.circular(10),
+            boxShadow: isSelected
+                ? [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.05),
+                      blurRadius: 4,
+                      offset: const Offset(0, 1),
+                    ),
+                  ]
+                : null,
+          ),
+          child: Text(
+            title,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+              color: isSelected
+                  ? AISLShadcnTheme.navyPrimary
+                  : const Color(0xFF64748B),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _MetricItem extends StatelessWidget {
+  final String label;
+  final String value;
+  final Color valueColor;
+  final IconData icon;
+  final Color iconBg;
+
+  const _MetricItem({
+    required this.label,
+    required this.value,
+    required this.valueColor,
+    required this.icon,
+    required this.iconBg,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFFF1F5F9)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 26,
+                height: 26,
+                decoration: BoxDecoration(
+                  color: iconBg,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(
+                  icon,
+                  size: 15,
+                  color: valueColor,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  label,
+                  style: const TextStyle(
+                    fontSize: 11,
+                    color: Color(0xFF64748B),
+                    fontWeight: FontWeight.w500,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w800,
+              color: valueColor,
+              letterSpacing: -0.3,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Danh sách tiến độ và chi tiêu cho từng dịch vụ
+class _ServiceBreakdownList extends StatelessWidget {
+  final SpendingStats stats;
+  final List<Transaction> periodTransactions;
+
+  const _ServiceBreakdownList({
+    required this.stats,
+    required this.periodTransactions,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final rentalAmt = stats.byService['RENTAL'] ?? 0.0;
+    final sendAmt = stats.byService['SEND'] ?? 0.0;
+    final laundryAmt = stats.byService['LAUNDRY'] ?? 0.0;
+    final topupAmt = stats.byService['TOPUP'] ?? 0.0;
+    final withdrawAmt = stats.byService['WITHDRAW'] ?? 0.0;
+    final otherAmt = stats.byService['OTHER'] ?? 0.0;
+
+    // Đếm số lượt theo dịch vụ trong kỳ
+    int rentalCount = 0;
+    int sendCount = 0;
+    int laundryCount = 0;
+    int topupCount = 0;
+    int withdrawCount = 0;
+    int otherCount = 0;
+
+    for (final tx in periodTransactions) {
+      switch (tx.detectedService) {
+        case 'RENTAL':
+          rentalCount++;
+          break;
+        case 'SEND':
+          sendCount++;
+          break;
+        case 'LAUNDRY':
+          laundryCount++;
+          break;
+        case 'TOPUP':
+          topupCount++;
+          break;
+        case 'WITHDRAW':
+          withdrawCount++;
+          break;
+        default:
+          otherCount++;
+          break;
+      }
+    }
+
+    final totalVolume = rentalAmt + sendAmt + laundryAmt + topupAmt + withdrawAmt + otherAmt;
+
+    final services = <Map<String, dynamic>>[
+      {
+        'key': 'RENTAL',
+        'title': 'Thuê tủ thông minh',
+        'amount': rentalAmt,
+        'count': rentalCount,
+        'color': const Color(0xFF2563EB),
+        'icon': Icons.inventory_2_rounded,
+      },
+      {
+        'key': 'SEND',
+        'title': 'Gửi đồ / Giao nhận',
+        'amount': sendAmt,
+        'count': sendCount,
+        'color': const Color(0xFF7C3AED),
+        'icon': Icons.local_shipping_rounded,
+      },
+      if (laundryAmt > 0 || laundryCount > 0)
+        {
+          'key': 'LAUNDRY',
+          'title': 'Giặt sấy tủ',
+          'amount': laundryAmt,
+          'count': laundryCount,
+          'color': const Color(0xFF0D9488),
+          'icon': Icons.local_laundry_service_rounded,
+        },
+      {
+        'key': 'TOPUP',
+        'title': 'Nạp tiền ví',
+        'amount': topupAmt,
+        'count': topupCount,
+        'color': const Color(0xFF16A34A),
+        'icon': Icons.add_circle_outline_rounded,
+      },
+      {
+        'key': 'WITHDRAW',
+        'title': 'Rút tiền về STK',
+        'amount': withdrawAmt,
+        'count': withdrawCount,
+        'color': const Color(0xFFEA580C),
+        'icon': Icons.outbox_rounded,
+      },
+      if (otherAmt > 0 || otherCount > 0)
+        {
+          'key': 'OTHER',
+          'title': 'Khác / Điều chỉnh',
+          'amount': otherAmt,
+          'count': otherCount,
+          'color': const Color(0xFF64748B),
+          'icon': Icons.receipt_long_rounded,
+        },
+    ];
+
+    return Column(
+      children: services.map((s) {
+        final double amt = (s['amount'] as num).toDouble();
+        final int cnt = s['count'] as int;
+        final double ratio = totalVolume > 0 ? (amt / totalVolume).clamp(0.0, 1.0) : 0.0;
+        final Color color = s['color'] as Color;
+        final IconData icon = s['icon'] as IconData;
+        final String title = s['title'] as String;
+
+        final amtStr = NumberFormat.currency(
+          locale: 'vi_VN',
+          symbol: 'đ',
+          decimalDigits: 0,
+        ).format(amt);
+
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 10),
+          child: Column(
+            children: [
+              Row(
+                children: [
+                  Container(
+                    width: 28,
+                    height: 28,
+                    decoration: BoxDecoration(
+                      color: color.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Icon(icon, size: 16, color: color),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          title,
+                          style: const TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF1E293B),
+                          ),
+                        ),
+                        Text(
+                          '$cnt giao dịch',
+                          style: const TextStyle(
+                            fontSize: 11,
+                            color: Color(0xFF94A3B8),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Text(
+                    amtStr,
+                    style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF0F172A),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 6),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(4),
+                child: LinearProgressIndicator(
+                  value: ratio,
+                  minHeight: 5,
+                  backgroundColor: const Color(0xFFF1F5F9),
+                  valueColor: AlwaysStoppedAnimation<Color>(color),
+                ),
+              ),
+            ],
+          ),
+        );
+      }).toList(),
+    );
+  }
+}
+
+/// Thanh bộ lọc hình thức giao dịch (Ví Lock.R, SePay QR, VNPay, Rút tiền...)
+class _PaymentMethodFilterBar extends StatelessWidget {
+  final TransactionProvider provider;
+
+  const _PaymentMethodFilterBar({required this.provider});
+
+  @override
+  Widget build(BuildContext context) {
+    final filters = [
+      {'key': 'ALL', 'label': 'Tất cả hình thức', 'icon': Icons.tune_rounded},
+      {'key': 'WALLET', 'label': 'Ví Lock.R', 'icon': Icons.account_balance_wallet_rounded},
+      {'key': 'SEPAY', 'label': 'Cổng SePay', 'icon': Icons.qr_code_2_rounded},
+      {'key': 'VNPAY', 'label': 'Cổng VNPay', 'icon': Icons.credit_card_rounded},
+      {'key': 'WITHDRAW', 'label': 'Rút tiền', 'icon': Icons.outbox_rounded},
+    ];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Padding(
+          padding: EdgeInsets.symmetric(horizontal: 16),
+          child: Row(
+            children: [
+              Icon(
+                Icons.filter_list_rounded,
+                size: 16,
+                color: Color(0xFF475569),
+              ),
+              SizedBox(width: 6),
+              Text(
+                'Lọc theo hình thức giao dịch',
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xFF334155),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 8),
+        SizedBox(
+          height: 38,
+          child: ListView.separated(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            scrollDirection: Axis.horizontal,
+            itemCount: filters.length,
+            separatorBuilder: (_, __) => const SizedBox(width: 8),
+            itemBuilder: (context, index) {
+              final f = filters[index];
+              final key = f['key'] as String;
+              final label = f['label'] as String;
+              final icon = f['icon'] as IconData;
+              final isSelected = provider.selectedMethod == key;
+              final count = provider.getMethodCount(key);
+
+              return InkWell(
+                onTap: () => provider.setMethodFilter(key),
+                borderRadius: BorderRadius.circular(10),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 180),
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                  decoration: BoxDecoration(
+                    color: isSelected
+                        ? AISLShadcnTheme.navyPrimary
+                        : Colors.white,
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(
+                      color: isSelected
+                          ? AISLShadcnTheme.navyPrimary
+                          : const Color(0xFFE2E8F0),
+                    ),
+                    boxShadow: isSelected
+                        ? [
+                            BoxShadow(
+                              color: AISLShadcnTheme.navyPrimary.withValues(alpha: 0.2),
+                              blurRadius: 6,
+                              offset: const Offset(0, 2),
+                            ),
+                          ]
+                        : null,
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        icon,
+                        size: 14,
+                        color: isSelected ? Colors.white : const Color(0xFF64748B),
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        label,
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                          color: isSelected ? Colors.white : const Color(0xFF334155),
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                        decoration: BoxDecoration(
+                          color: isSelected
+                              ? Colors.white.withValues(alpha: 0.2)
+                              : const Color(0xFFF1F5F9),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Text(
+                          '$count',
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                            color: isSelected ? Colors.white : const Color(0xFF64748B),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      ],
+    );
   }
 }
 
@@ -244,9 +901,9 @@ class _TransactionsSliverList extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<TransactionProvider>(
       builder: (context, provider, child) {
-        final transactions = provider.transactions;
+        final transactions = provider.filteredTransactions;
 
-        if (provider.isLoading && transactions.isEmpty) {
+        if (provider.isLoading && provider.transactions.isEmpty) {
           return const SliverFillRemaining(
             hasScrollBody: false,
             child: AppLoadingIndicator(
@@ -256,7 +913,7 @@ class _TransactionsSliverList extends StatelessWidget {
           );
         }
 
-        if (provider.error != null && transactions.isEmpty) {
+        if (provider.error != null && provider.transactions.isEmpty) {
           return SliverFillRemaining(
             hasScrollBody: false,
             child: Center(
@@ -273,12 +930,43 @@ class _TransactionsSliverList extends StatelessWidget {
         }
 
         if (transactions.isEmpty) {
-          return const SliverFillRemaining(
+          return SliverFillRemaining(
             hasScrollBody: false,
             child: Center(
-              child: Text(
-                'Chưa có giao dịch nào',
-                style: TextStyle(color: Colors.grey, fontSize: 16),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 56,
+                    height: 56,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF1F5F9),
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: const Icon(
+                      Icons.receipt_long_outlined,
+                      size: 28,
+                      color: Color(0xFF94A3B8),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  const Text(
+                    'Không có giao dịch nào',
+                    style: TextStyle(
+                      color: Color(0xFF64748B),
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  const Text(
+                    'Không tìm thấy giao dịch theo bộ lọc đã chọn',
+                    style: TextStyle(
+                      color: Color(0xFF94A3B8),
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
               ),
             ),
           );
@@ -320,13 +1008,14 @@ class _DateHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 20, 16, 8),
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 6),
       child: Text(
         date,
         style: const TextStyle(
-          fontWeight: FontWeight.bold,
-          fontSize: 14,
-          color: Colors.black87,
+          fontWeight: FontWeight.w700,
+          fontSize: 13,
+          color: Color(0xFF475569),
+          letterSpacing: 0.2,
         ),
       ),
     );
@@ -340,9 +1029,9 @@ class _MBStyleTransactionItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isIncome =
-        transaction.type == 'TOP_UP' || transaction.type == 'DEPOSIT';
+        transaction.type == 'TOP_UP' || transaction.type == 'CREDIT';
     final dotColor =
-        isIncome ? const Color(0xFF4CAF50) : const Color(0xFFE65100);
+        isIncome ? const Color(0xFF16A34A) : const Color(0xFFEA580C);
     final amountSign = isIncome ? '+' : '-';
     final time =
         DateFormat('HH:mm').format(transaction.createdAt.toLocal());
@@ -358,11 +1047,21 @@ class _MBStyleTransactionItem extends StatelessWidget {
       decimalDigits: 0,
     ).format(transaction.balanceAfter);
 
-    // Backend không trả walletId cho khách hàng (mỗi người chỉ có đúng một ví, không cần
-    // định danh) nên bỏ đoạn "VI xxxxxx|" khỏi mẫu tin nhắn kiểu SMS ngân hàng bên dưới.
-    final title = isIncome ? 'Thông báo nạp tiền ví' : 'Thông báo biến động số dư';
+    // Method and service info
+    final methodLabel = transaction.detectedMethodLabel;
+    final methodIcon = transaction.detectedMethodIcon;
+    final methodColor = transaction.detectedMethodColor;
+
+    final serviceLabel = transaction.detectedServiceLabel;
+    final serviceColor = transaction.detectedServiceColor;
+
+    final isWallet = transaction.detectedMethod == 'WALLET';
+    final title = isIncome
+        ? 'Thông báo nạp tiền ví'
+        : (isWallet ? 'Thông báo biến động số dư' : 'Thanh toán đơn qua $methodLabel');
+    final infoPart = isWallet ? 'SD: $balanceFmt' : 'PT: $methodLabel';
     final content =
-        'GD: $amountSign$amountFmt|SD: $balanceFmt|ND: ${transaction.description}';
+        'GD: $amountSign$amountFmt | $infoPart\nND: ${transaction.description}';
 
     final descLower = transaction.description.toLowerCase();
     final isFailed = descLower.contains('thất bại') ||
@@ -388,7 +1087,14 @@ class _MBStyleTransactionItem extends StatelessWidget {
             ),
             child: Column(
               children: [
-                _dialogRow('Thời gian', DateFormat('dd/MM/yyyy HH:mm').format(transaction.createdAt.toLocal())),
+                _dialogRow('Hình thức GD', methodLabel),
+                const SizedBox(height: 6),
+                _dialogRow('Dịch vụ', serviceLabel),
+                const SizedBox(height: 6),
+                _dialogRow(
+                  'Thời gian',
+                  DateFormat('dd/MM/yyyy HH:mm').format(transaction.createdAt.toLocal()),
+                ),
                 if (transaction.referenceId != null && transaction.referenceId!.isNotEmpty) ...[
                   const SizedBox(height: 6),
                   _dialogRow('Mã GD', transaction.referenceId!),
@@ -397,8 +1103,10 @@ class _MBStyleTransactionItem extends StatelessWidget {
                   const SizedBox(height: 6),
                   _dialogRow('Mã đơn', transaction.orderCode!),
                 ],
-                const SizedBox(height: 6),
-                _dialogRow('Số dư sau GD', balanceFmt),
+                if (isWallet) ...[
+                  const SizedBox(height: 6),
+                  _dialogRow('Số dư sau GD', balanceFmt),
+                ],
               ],
             ),
           ),
@@ -406,58 +1114,133 @@ class _MBStyleTransactionItem extends StatelessWidget {
         );
       },
       child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 3),
         decoration: BoxDecoration(
           color: Colors.white,
-          border: Border(
-            bottom: BorderSide(color: Colors.grey.shade100),
-          ),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: const Color(0xFFF1F5F9)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.02),
+              blurRadius: 6,
+              offset: const Offset(0, 2),
+            ),
+          ],
         ),
-        padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
-        child: Row(
+        padding: const EdgeInsets.all(14),
+        child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
+            // Header row with title & badges
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
                     title,
                     style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 15,
-                      color: Colors.black87,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 14,
+                      color: Color(0xFF0F172A),
                     ),
                   ),
-                  const SizedBox(height: 6),
-                  Text(
-                    content,
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: Colors.grey.shade600,
-                      height: 1.45,
+                ),
+                Container(
+                  width: 8,
+                  height: 8,
+                  decoration: BoxDecoration(
+                    color: dotColor,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 6),
+
+            // Badges row: Method badge + Service badge
+            Wrap(
+              spacing: 6,
+              runSpacing: 4,
+              children: [
+                // Method Badge
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: methodColor.withValues(alpha: 0.08),
+                    borderRadius: BorderRadius.circular(6),
+                    border: Border.all(
+                      color: methodColor.withValues(alpha: 0.25),
+                      width: 0.8,
                     ),
                   ),
-                  const SizedBox(height: 6),
-                  Text(
-                    time,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(methodIcon, size: 12, color: methodColor),
+                      const SizedBox(width: 4),
+                      Text(
+                        methodLabel,
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                          color: methodColor,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                // Service Badge
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: serviceColor.withValues(alpha: 0.08),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Text(
+                    serviceLabel,
                     style: TextStyle(
-                      fontSize: 12,
-                      color: dotColor,
+                      fontSize: 11,
                       fontWeight: FontWeight.w600,
+                      color: serviceColor,
                     ),
                   ),
-                ],
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+
+            // Description / SMS text
+            Text(
+              content,
+              style: const TextStyle(
+                fontSize: 12.5,
+                color: Color(0xFF64748B),
+                height: 1.45,
               ),
             ),
-            const SizedBox(width: 12),
-            Container(
-              width: 10,
-              height: 10,
-              margin: const EdgeInsets.only(top: 4),
-              decoration: BoxDecoration(
-                color: dotColor,
-                shape: BoxShape.circle,
-              ),
+            const SizedBox(height: 6),
+
+            // Time & Amount highlight
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  time,
+                  style: TextStyle(
+                    fontSize: 11.5,
+                    color: dotColor,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                Text(
+                  '$amountSign$amountFmt',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w800,
+                    color: dotColor,
+                  ),
+                ),
+              ],
             ),
           ],
         ),

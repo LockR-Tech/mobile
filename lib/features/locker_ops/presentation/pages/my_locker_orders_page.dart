@@ -113,10 +113,78 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
     }
   }
 
+  bool _isRecent(Map<String, dynamic> o) {
+    final d = _parseOrderDate(o);
+    if (d == null) return true;
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final day = DateTime(d.year, d.month, d.day);
+    final diff = today.difference(day).inDays.abs();
+    return diff <= 7;
+  }
+
+  bool _isActive(Map<String, dynamic> o) {
+    final rawStatus = (o['status'] as String? ?? '').toUpperCase();
+    return rawStatus.isNotEmpty &&
+        rawStatus != 'COMPLETED' &&
+        rawStatus != 'CANCELED';
+  }
+
+  bool _isCompleted(Map<String, dynamic> o) {
+    final rawStatus = (o['status'] as String? ?? '').toUpperCase();
+    return rawStatus == 'COMPLETED';
+  }
+
+  bool _isRental(Map<String, dynamic> o) {
+    final type = (o['type'] as String? ?? '').toUpperCase();
+    return type.contains('RENT');
+  }
+
+  bool _isSend(Map<String, dynamic> o) {
+    final type = o['type'] as String?;
+    return _isDeliveryOrder(type);
+  }
+
+  bool _isCanceled(Map<String, dynamic> o) {
+    final rawStatus = (o['status'] as String? ?? '').toUpperCase();
+    return rawStatus == 'CANCELED';
+  }
+
+  int get _countRecent => _orders.where(_isRecent).length;
+  int get _countActive => _orders.where(_isActive).length;
+  int get _countCompleted => _orders.where(_isCompleted).length;
+  int get _countRental => _orders.where(_isRental).length;
+  int get _countSend => _orders.where(_isSend).length;
+  int get _countCanceled => _orders.where(_isCanceled).length;
+
+  void _setFilter(String key) {
+    setState(() {
+      _typeFilter = (_typeFilter == key && key != 'ALL') ? 'ALL' : key;
+    });
+  }
+
+  String get _emptySubtitle => switch (_typeFilter) {
+    'RECENT' => 'Không có đơn hàng nào trong 7 ngày gần đây.',
+    'ACTIVE' => 'Hiện không có đơn hàng nào đang trong quá trình sử dụng.',
+    'COMPLETED' => 'Chưa có đơn hàng nào đã hoàn tất.',
+    'RENTAL' => 'Chưa có đơn thuê tủ nào.',
+    'SEND' => 'Chưa có đơn gửi hàng nào.',
+    'CANCELED' => 'Không có đơn nào đã hủy.',
+    _ => 'Tạo đơn Gửi hàng hoặc Thuê tủ từ màn hình chính.',
+  };
+
   List<Map<String, dynamic>> get _visible {
     return _orders.where((o) {
-      final type = (o['type'] as String? ?? '').toUpperCase();
-      return _typeFilter == 'ALL' || type == _typeFilter;
+      return switch (_typeFilter) {
+        'RECENT' => _isRecent(o),
+        'ACTIVE' => _isActive(o),
+        'COMPLETED' => _isCompleted(o),
+        'RENTAL' => _isRental(o),
+        'SEND' => _isSend(o),
+        'CANCELED' => _isCanceled(o),
+        'ALL' => true,
+        _ => true,
+      };
     }).toList();
   }
 
@@ -562,7 +630,9 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
           message: 'Giao dịch chưa hoàn tất hoặc đã bị hủy. Vui lòng thử lại.',
         );
       } else {
-        _snack('Đang chờ xác nhận thanh toán — kéo xuống để làm mới sau ít phút.');
+        _snack(
+          'Đang chờ xác nhận thanh toán — kéo xuống để làm mới sau ít phút.',
+        );
       }
       await _load();
     } catch (e) {
@@ -611,8 +681,9 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
         walletBalance: balance,
         lockerName: lockerName,
         boxLabel: boxLabel,
-        overdueDurationText:
-            durationText.isNotEmpty ? durationText : 'Đã quá hạn',
+        overdueDurationText: durationText.isNotEmpty
+            ? durationText
+            : 'Đã quá hạn',
         overtimeRate: config.pickupOvertimeFeePerHour,
         service: _service,
         enabledMethods: config.enabledPaymentMethods,
@@ -693,7 +764,8 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
     if (!mounted) return;
 
     final deadline = order['pickupDeadline'];
-    final overdue = isOverdue(deadline) &&
+    final overdue =
+        isOverdue(deadline) &&
         rawStatus != 'COMPLETED' &&
         rawStatus != 'CANCELED';
 
@@ -846,7 +918,7 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
             ),
           ),
 
-          // ── Service type chips ───────────────────────────────────────────
+          // ── Service type & status filter chips ────────────────────────────
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.fromLTRB(16, 10, 16, 12),
@@ -856,20 +928,52 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
                   label: 'Tất cả',
                   count: _orders.length,
                   selected: _typeFilter == 'ALL',
-                  onTap: () => setState(() => _typeFilter = 'ALL'),
+                  onTap: () => _setFilter('ALL'),
+                ),
+                const SizedBox(width: 8),
+                _TypeChip(
+                  label: 'Gần đây',
+                  count: _countRecent,
+                  selected: _typeFilter == 'RECENT',
+                  onTap: () => _setFilter('RECENT'),
+                ),
+                const SizedBox(width: 8),
+                _TypeChip(
+                  label: 'Đang dùng',
+                  count: _countActive,
+                  selected: _typeFilter == 'ACTIVE',
+                  onTap: () => _setFilter('ACTIVE'),
+                ),
+                const SizedBox(width: 8),
+                _TypeChip(
+                  label: 'Hoàn thành',
+                  count: _countCompleted,
+                  selected: _typeFilter == 'COMPLETED',
+                  onTap: () => _setFilter('COMPLETED'),
                 ),
                 const SizedBox(width: 8),
                 _TypeChip(
                   label: 'Thuê tủ',
+                  count: _countRental,
                   selected: _typeFilter == 'RENTAL',
-                  onTap: () => setState(() => _typeFilter = 'RENTAL'),
+                  onTap: () => _setFilter('RENTAL'),
                 ),
                 const SizedBox(width: 8),
                 _TypeChip(
                   label: 'Gửi hàng',
+                  count: _countSend,
                   selected: _typeFilter == 'SEND',
-                  onTap: () => setState(() => _typeFilter = 'SEND'),
+                  onTap: () => _setFilter('SEND'),
                 ),
+                if (_countCanceled > 0) ...[
+                  const SizedBox(width: 8),
+                  _TypeChip(
+                    label: 'Đã hủy',
+                    count: _countCanceled,
+                    selected: _typeFilter == 'CANCELED',
+                    onTap: () => _setFilter('CANCELED'),
+                  ),
+                ],
               ],
             ),
           ),
@@ -880,14 +984,17 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
           Expanded(
             child: _loading
                 ? const Center(
-                    child: AppLoadingIndicator(message: 'Đang tải danh sách đơn...'),
+                    child: AppLoadingIndicator(
+                      message: 'Đang tải danh sách đơn...',
+                    ),
                   )
                 : _visible.isEmpty
                 ? OpsEmptyState(
                     icon: LucideIcons.packageOpen,
-                    title: 'Chưa có đơn nào',
-                    subtitle:
-                        'Tạo đơn Gửi hàng hoặc Thuê tủ từ màn hình chính.',
+                    title: _typeFilter == 'ALL'
+                        ? 'Chưa có đơn nào'
+                        : 'Không có đơn phù hợp',
+                    subtitle: _emptySubtitle,
                   )
                 : RefreshIndicator(
                     color: AislBrand.navy,
@@ -961,7 +1068,7 @@ class _ListItem {
   bool get isHeader => header != null;
 }
 
-// ── Service type chip ─────────────────────────────────────────────────────────
+// ── Service type & status chip ───────────────────────────────────────────
 
 class _TypeChip extends StatelessWidget {
   const _TypeChip({
@@ -977,48 +1084,63 @@ class _TypeChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 180),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        decoration: BoxDecoration(
-          color: selected ? context.textPrimary : Colors.transparent,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: selected ? context.textPrimary : context.borderColor,
-            width: 1.5,
-          ),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-                color: selected
-                    ? (context.isDark ? const Color(0xFF061A30) : Colors.white)
-                    : context.textPrimary,
-              ),
+    final isDark = context.isDark;
+    final activeBg = isDark ? Colors.white : const Color(0xFF0F172A);
+    final activeFg = isDark ? const Color(0xFF0F172A) : Colors.white;
+    final inactiveBg = isDark
+        ? Colors.white.withValues(alpha: 0.06)
+        : const Color(0xFFF1F5F9);
+    final inactiveBorder = isDark
+        ? Colors.white.withValues(alpha: 0.12)
+        : const Color(0xFFE2E8F0);
+    final inactiveFg = context.textPrimary;
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(20),
+        splashColor: isDark
+            ? Colors.white.withValues(alpha: 0.1)
+            : const Color(0xFF0F172A).withValues(alpha: 0.08),
+        highlightColor: Colors.transparent,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7.5),
+          decoration: BoxDecoration(
+            color: selected ? activeBg : inactiveBg,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: selected ? activeBg : inactiveBorder,
+              width: 1.5,
             ),
-            if (count != null && count! > 0) ...[
-              const SizedBox(width: 5),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
               Text(
-                '($count)',
+                label,
                 style: TextStyle(
-                  fontSize: 12,
-                  color: selected
-                      ? (context.isDark
-                                ? const Color(0xFF061A30)
-                                : Colors.white)
-                            .withValues(alpha: 0.7)
-                      : context.textMuted,
+                  fontSize: 13,
+                  fontWeight: selected ? FontWeight.w700 : FontWeight.w600,
+                  color: selected ? activeFg : inactiveFg,
                 ),
               ),
+              if (count != null) ...[
+                const SizedBox(width: 5),
+                Text(
+                  '($count)',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+                    color: selected
+                        ? activeFg.withValues(alpha: 0.75)
+                        : context.textMuted,
+                  ),
+                ),
+              ],
             ],
-          ],
+          ),
         ),
       ),
     );
@@ -1083,8 +1205,8 @@ class _OrderCard extends StatelessWidget {
                   right: -4,
                   child: IgnorePointer(
                     child: SizedBox(
-                      width: 112,
-                      height: 100,
+                      width: 162,
+                      height: 150,
                       child: AppLottie(
                         _isDeliveryOrder(type)
                             ? AppLottieAssets.airplaneBox
@@ -1501,7 +1623,11 @@ class _PayOvertimeConfirmationSheetState
       try {
         await widget.service.assessOvertime(orderId);
       } catch (_) {}
-      await widget.service.checkout(orderId, 'WALLET', description: 'Phí quá hạn');
+      await widget.service.checkout(
+        orderId,
+        'WALLET',
+        description: 'Phí quá hạn',
+      );
       final paid = await widget.service.awaitOrderPaid(orderId);
       if (!mounted) return;
       if (paid) {
@@ -1611,14 +1737,8 @@ class _PayOvertimeConfirmationSheetState
             ),
             child: Column(
               children: [
-                _breakdownRow(
-                  'Hạn trả ban đầu',
-                  fmtDateTime(deadline),
-                ),
-                _breakdownRow(
-                  'Thời điểm mở tủ',
-                  fmtDateTime(DateTime.now()),
-                ),
+                _breakdownRow('Hạn trả ban đầu', fmtDateTime(deadline)),
+                _breakdownRow('Thời điểm mở tủ', fmtDateTime(DateTime.now())),
                 _breakdownRow(
                   'Thời gian quá hạn',
                   widget.overdueDurationText,
@@ -1788,8 +1908,10 @@ class _PayOvertimeConfirmationSheetState
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label,
-              style: const TextStyle(fontSize: 12.5, color: opsMutedText)),
+          Text(
+            label,
+            style: const TextStyle(fontSize: 12.5, color: opsMutedText),
+          ),
           Text(
             value,
             style: TextStyle(
@@ -1906,8 +2028,9 @@ class _DetailSheet extends StatelessWidget {
     final hasExtra =
         extraFee != null &&
         (extraFee is num ? extraFee > 0 : num.tryParse('$extraFee') != null);
-    final extraFeeNum =
-        extraFee is num ? extraFee : num.tryParse('$extraFee') ?? 0;
+    final extraFeeNum = extraFee is num
+        ? extraFee
+        : num.tryParse('$extraFee') ?? 0;
 
     final paymentStatus = (order['paymentStatus'] as String? ?? 'UNPAID')
         .toUpperCase();
@@ -1960,8 +2083,8 @@ class _DetailSheet extends StatelessWidget {
       final percentCap = maxPercent > 0 && totalNum > 0
           ? (totalNum * maxPercent / 100).round()
           : (config.pickupMaxOvertimeFee > 0
-              ? config.pickupMaxOvertimeFee
-              : raw);
+                ? config.pickupMaxOvertimeFee
+                : raw);
       var fee = raw;
       if (config.pickupMaxOvertimeFee > 0 &&
           fee > config.pickupMaxOvertimeFee) {
@@ -1974,7 +2097,8 @@ class _DetailSheet extends StatelessWidget {
     }
 
     final overtimeFee = calcOvertime();
-    final isOvertimePaid = hasExtra &&
+    final isOvertimePaid =
+        hasExtra &&
         paymentStatus == 'PAID' &&
         extraFeeNum >= overtimeFee &&
         overtimeFee > 0;
@@ -2080,7 +2204,11 @@ class _DetailSheet extends StatelessWidget {
       if (boxId != null && rawStatus != 'COMPLETED' && rawStatus != 'CANCELED')
         OpsSheetAction(
           label: 'Báo ô lỗi',
-          icon: LucideIcons.triangleAlert,
+          leading: const AppLottie(
+            AppLottieAssets.baoSuCo,
+            width: 22,
+            height: 22,
+          ),
           onTap: () => onReport(boxId),
         ),
       if (rawStatus == 'INITIALIZED')
@@ -2164,7 +2292,7 @@ class _DetailSheet extends StatelessWidget {
               text: isOvertimePaid
                   ? 'Đơn quá hạn đã thanh toán phí quá giờ. Mời bạn mở ô để lấy đồ và hoàn tất trả tủ.'
                   : 'Đơn đã quá hạn lấy — cần thanh toán phí quá giờ để mở tủ. '
-                      '${overtimePolicyText(config)}',
+                        '${overtimePolicyText(config)}',
             ),
           ),
         Container(
@@ -2356,7 +2484,6 @@ class _DetailSheet extends StatelessWidget {
     );
   }
 }
-
 
 /// Hình thức thanh toán + mã giao dịch của đơn.
 ///
