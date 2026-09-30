@@ -196,6 +196,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
       } catch (_) {}
       if (!mounted) return;
       final kioskAllReports = rawReports.where((r) => !_isDroneReport(r)).toList();
+      kioskAllReports.sort(_compareReportsNewestFirst);
       // `assignedToUserId` là nguồn sự thật: phiếu KTV tủ tự báo đã được server
       // tự giao (IN_PROGRESS) — không đoán "của tôi" theo người báo nữa.
       final Map<dynamic, Map<String, dynamic>> myReportsMap = {};
@@ -206,11 +207,14 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
         }
       }
       final myReportsList = myReportsMap.values.toList();
+      myReportsList.sort(_compareReportsAssignedOrClaimedFirst);
+      final sortedRouted = rawRouted.where((r) => !_isDroneReport(r)).toList();
+      sortedRouted.sort(_compareReportsNewestFirst);
       setState(() {
         _faults = rawFaults.where((f) => !_isDroneFault(f)).toList();
         _reports = kioskAllReports;
         _myReports = myReportsList;
-        _routedReports = rawRouted.where((r) => !_isDroneReport(r)).toList();
+        _routedReports = sortedRouted;
         _lockers = lockers;
         _myLockers = myLockers;
       });
@@ -221,7 +225,9 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
       try {
         final schedules = await _service.maintenanceSchedules(target: 'LOCKER');
         if (mounted) {
-          setState(() => _schedules = schedules.toList(growable: false));
+          final sortedSchedules = schedules.toList();
+          sortedSchedules.sort(_compareSchedulesNewestFirst);
+          setState(() => _schedules = sortedSchedules);
         }
       } catch (_) {}
       try {
@@ -2120,49 +2126,80 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
         _asDouble(locker['latitude']) != null ||
         (address != null && address.trim().isNotEmpty);
 
-    return OpsCard(
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x0A0A2342),
+            blurRadius: 16,
+            offset: Offset(0, 4),
+          ),
+        ],
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              const Icon(Icons.inventory_2_outlined, color: opsPrimary),
-              const SizedBox(width: 8),
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: opsPrimary.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Icon(Icons.warehouse_outlined, color: opsPrimary, size: 20),
+              ),
+              const SizedBox(width: 10),
               Expanded(
-                child: Text(
-                  '${locker['name'] ?? 'Tủ'} · ${locker['code'] ?? 'N/A'}',
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w900,
-                    color: opsDark,
-                  ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '${locker['name'] ?? 'Tủ'} · ${locker['code'] ?? 'N/A'}',
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w900,
+                        fontSize: 15.5,
+                        color: opsDark,
+                        letterSpacing: -0.2,
+                      ),
+                    ),
+                    if (address != null && address.trim().isNotEmpty) ...[
+                      const SizedBox(height: 2),
+                      Row(
+                        children: [
+                          const Icon(
+                            Icons.location_on_outlined,
+                            size: 13.5,
+                            color: opsMutedText,
+                          ),
+                          const SizedBox(width: 3),
+                          Expanded(
+                            child: Text(
+                              address,
+                              style: const TextStyle(fontSize: 11.5, color: opsMutedText),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ],
                 ),
               ),
+              const SizedBox(width: 8),
               StatusChip(status),
             ],
           ),
-          if (address != null && address.trim().isNotEmpty) ...[
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                const Icon(
-                  Icons.location_on_outlined,
-                  size: 15,
-                  color: opsMutedText,
-                ),
-                const SizedBox(width: 4),
-                Expanded(
-                  child: Text(
-                    address,
-                    style: const TextStyle(fontSize: 12, color: opsMutedText),
-                  ),
-                ),
-              ],
-            ),
-          ],
-          const SizedBox(height: 10),
+          const SizedBox(height: 12),
           Wrap(
             spacing: 8,
-            runSpacing: 8,
+            runSpacing: 7,
             children: [
               _MiniPill(
                 icon: Icons.event_available_outlined,
@@ -2191,19 +2228,32 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                 ),
             ],
           ),
+          const SizedBox(height: 12),
+          const Divider(height: 1, color: Color(0xFFF1F5F9)),
           const SizedBox(height: 10),
           Row(
             children: [
-              Expanded(
+              const Expanded(
                 child: Text(
                   'Kiểm tra trực quan từng ô rồi chỉ báo hỏng khi xác nhận lỗi vật lý tại tủ.',
-                  style: const TextStyle(fontSize: 12, color: opsMutedText),
+                  style: TextStyle(fontSize: 11.5, color: opsMutedText),
                 ),
               ),
-              TextButton.icon(
+              const SizedBox(width: 8),
+              OutlinedButton.icon(
                 onPressed: hasLocation ? () => _openDirections(locker) : null,
-                icon: const Icon(Icons.map_outlined, size: 16, color: opsPrimary),
-                label: const Text('Chỉ đường', style: TextStyle(color: opsPrimary)),
+                icon: const Icon(Icons.near_me_outlined, size: 14),
+                label: const Text('Chỉ đường'),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: opsPrimary,
+                  side: BorderSide(color: opsPrimary.withValues(alpha: 0.3)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  visualDensity: VisualDensity.compact,
+                  textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
+                ),
               ),
             ],
           ),
@@ -2222,6 +2272,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
           child: _MetricCard(
             label: 'Tổng ô',
             value: '$total',
+            icon: Icons.grid_view_rounded,
             color: const Color(0xFF2563EB),
           ),
         ),
@@ -2230,6 +2281,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
           child: _MetricCard(
             label: 'Sẵn sàng',
             value: '$available',
+            icon: Icons.check_circle_outline,
             color: const Color(0xFF16A34A),
           ),
         ),
@@ -2238,7 +2290,9 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
           child: _MetricCard(
             label: 'Ô lỗi',
             value: '$fault',
+            icon: Icons.error_outline,
             color: const Color(0xFFDC2626),
+            highlight: (fault is num ? fault : int.tryParse('$fault') ?? 0) > 0,
           ),
         ),
       ],
@@ -2254,30 +2308,42 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
       'OUT_OF_SERVICE',
       'CLEANING',
     ];
-    return Wrap(
-      spacing: 10,
-      runSpacing: 6,
-      children: [
-        for (final s in items)
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 12,
-                height: 12,
-                decoration: BoxDecoration(
-                  color: statusColor(s),
-                  borderRadius: BorderRadius.circular(3),
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+      ),
+      child: Wrap(
+        spacing: 12,
+        runSpacing: 6,
+        children: [
+          for (final s in items)
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 9,
+                  height: 9,
+                  decoration: BoxDecoration(
+                    color: statusColor(s),
+                    shape: BoxShape.circle,
+                  ),
                 ),
-              ),
-              const SizedBox(width: 4),
-              Text(
-                statusLabel(s),
-                style: const TextStyle(fontSize: 11, color: opsMutedText),
-              ),
-            ],
-          ),
-      ],
+                const SizedBox(width: 5),
+                Text(
+                  statusLabel(s),
+                  style: const TextStyle(
+                    fontSize: 11,
+                    color: Color(0xFF475569),
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+        ],
+      ),
     );
   }
 
@@ -2287,7 +2353,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
     return Padding(
       padding: const EdgeInsets.all(3),
       child: Material(
-        color: color.withValues(alpha: 0.1),
+        color: color.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(14),
         child: InkWell(
           borderRadius: BorderRadius.circular(14),
@@ -2301,7 +2367,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(14),
               border: Border.all(
-                color: color.withValues(alpha: 0.6),
+                color: color.withValues(alpha: isTall ? 0.6 : 0.4),
                 width: isTall ? 1.5 : 1.0,
               ),
             ),
@@ -2320,9 +2386,9 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                     Text(
                       '#${cell['boxNumber']}',
                       style: TextStyle(
-                        fontWeight: FontWeight.bold,
+                        fontWeight: FontWeight.w900,
                         color: color,
-                        fontSize: isTall ? 16 : 13,
+                        fontSize: isTall ? 16 : 13.5,
                       ),
                     ),
                     if (!isTall && type == 'XL')
@@ -2333,21 +2399,36 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                   ],
                 ),
                 const SizedBox(height: 2),
-                Text(
-                  statusLabel(cell['status'] as String?),
-                  style: TextStyle(
-                    fontSize: isTall ? 11 : 10,
-                    fontWeight: isTall ? FontWeight.w600 : FontWeight.normal,
-                    color: color,
-                  ),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 5,
+                      height: 5,
+                      decoration: BoxDecoration(
+                        color: color,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                    const SizedBox(width: 3.5),
+                    Text(
+                      statusLabel(cell['status'] as String?),
+                      style: TextStyle(
+                        fontSize: isTall ? 11 : 10,
+                        fontWeight: FontWeight.w700,
+                        color: color,
+                      ),
+                    ),
+                  ],
                 ),
                 Text(
                   _cellTypeLabel(type),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontSize: isTall ? 10 : 9,
-                    color: opsMutedText,
+                  style: const TextStyle(
+                    fontSize: 9.5,
+                    color: Color(0xFF64748B),
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
                 if (isTall) ...[
@@ -2355,17 +2436,17 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                   Container(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 6,
-                      vertical: 2,
+                      vertical: 2.5,
                     ),
                     decoration: BoxDecoration(
-                      color: color.withValues(alpha: 0.15),
+                      color: color.withValues(alpha: 0.16),
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: const Text(
                       'Khoang đứng XL',
                       style: TextStyle(
                         fontSize: 9,
-                        fontWeight: FontWeight.bold,
+                        fontWeight: FontWeight.w800,
                         color: opsDark,
                       ),
                     ),
@@ -2842,26 +2923,6 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
     );
   }
 
-  /// Mở nhật ký xử lý (work-log) của 1 phiếu để xem + thêm ghi chú tiến trình.
-  Future<void> _reportLogSheet(Map<String, dynamic> report) async {
-    final reportId = _asInt(report['id']);
-    if (reportId == null) return;
-    await showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (_) => _RepairLogSheet(
-        reportId: reportId,
-        service: _service,
-        title: '#${report['id']} · ${report['title'] ?? ''}',
-      ),
-    );
-    if (mounted) await _load();
-  }
-
   /// Cảnh báo phần cứng toàn cục (GAP 2): mọi ô cửa-mở-bất-thường trên tất cả
   /// tủ, để KTV thấy ngay ở đầu tab Sự cố mà không phải chọn từng tủ. Ẩn khi
   /// không có ô nào bất thường.
@@ -2955,12 +3016,15 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
     final openReports = statusShown('OPEN')
         ? _reports.where((r) => r['status'] == 'OPEN').toList()
         : <Map<String, dynamic>>[];
+    openReports.sort(_compareReportsNewestFirst);
     final inProgressReports = statusShown('IN_PROGRESS')
         ? _reports.where((r) => r['status'] == 'IN_PROGRESS').toList()
         : <Map<String, dynamic>>[];
+    inProgressReports.sort(_compareReportsAssignedOrClaimedFirst);
     final resolvedReports = statusShown('RESOLVED')
         ? _reports.where((r) => r['status'] == 'RESOLVED').toList()
         : <Map<String, dynamic>>[];
+    resolvedReports.sort(_compareReportsResolvedFirst);
     // "Tủ tôi phụ trách": phiếu OPEN server định tuyến cho mình + ô lỗi của các tủ đó.
     final routedView = _queueView == 'ROUTED';
     final myLockerIds = _myLockerIds;
@@ -3156,27 +3220,33 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
           if (!routedView && _reports.isNotEmpty) ...[
             Container(
               margin: const EdgeInsets.only(bottom: 12),
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
-                  colors: [Color(0xFFF0F9FF), Color(0xFFE0F2FE)],
+                  colors: [Color(0xFF0284C7), Color(0xFF0369A1)],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: const Color(0xFF0EA5E9), width: 1.2),
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF0284C7).withValues(alpha: 0.25),
+                    blurRadius: 10,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
               ),
               child: Row(
                 children: [
                   Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF0EA5E9).withValues(alpha: 0.15),
+                      color: Colors.white.withValues(alpha: 0.2),
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(Icons.dashboard_outlined, color: Color(0xFF0284C7), size: 20),
+                    child: const Icon(Icons.dashboard_outlined, color: Colors.white, size: 20),
                   ),
-                  const SizedBox(width: 10),
+                  const SizedBox(width: 12),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -3186,32 +3256,32 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                           style: const TextStyle(
                             fontSize: 12.5,
                             fontWeight: FontWeight.w800,
-                            color: Color(0xFF0C4A6E),
-                            letterSpacing: 0.2,
+                            color: Colors.white,
+                            letterSpacing: 0.3,
                           ),
                         ),
-                        const SizedBox(height: 3),
-                        Row(
+                        const SizedBox(height: 5),
+                        Wrap(
+                          spacing: 6,
+                          runSpacing: 4,
                           children: [
                             if (openReports.isNotEmpty)
                               _QueueStatChip(
                                 label: '${openReports.length} chờ nhận',
                                 color: const Color(0xFFF59E0B),
+                                isSolid: true,
                               ),
-                            if (openReports.isNotEmpty && inProgressReports.isNotEmpty)
-                              const SizedBox(width: 6),
                             if (inProgressReports.isNotEmpty)
                               _QueueStatChip(
                                 label: '${inProgressReports.length} đang xử lý',
-                                color: const Color(0xFF3B82F6),
+                                color: Colors.white,
                               ),
-                            if (resolvedReports.isNotEmpty) ...[
-                              const SizedBox(width: 6),
+                            if (resolvedReports.isNotEmpty)
                               _QueueStatChip(
                                 label: '${resolvedReports.length} hoàn tất',
                                 color: const Color(0xFF16A34A),
+                                isSolid: true,
                               ),
-                            ],
                           ],
                         ),
                       ],
@@ -3226,17 +3296,31 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
           if (!routedView && openReports.isNotEmpty) ...[
             if (openReports.isNotEmpty)
               Container(
-                margin: const EdgeInsets.only(bottom: 10),
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                margin: const EdgeInsets.only(bottom: 12),
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                 decoration: BoxDecoration(
                   color: const Color(0xFFFFFBEB),
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: const Color(0xFFF59E0B), width: 1.2),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: const Color(0xFFFDE68A)),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFFF59E0B).withValues(alpha: 0.08),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.bolt, color: Color(0xFFD97706), size: 18),
-                    const SizedBox(width: 8),
+                    Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF59E0B).withValues(alpha: 0.15),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(Icons.bolt_rounded, color: Color(0xFFD97706), size: 18),
+                    ),
+                    const SizedBox(width: 10),
                     Expanded(
                       child: Text(
                         '${openReports.length} sự cố đang chờ KTV tiếp nhận xử lý',
@@ -3434,72 +3518,113 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: bg,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(color: border),
+        boxShadow: [
+          BoxShadow(
+            color: border.withValues(alpha: 0.15),
+            blurRadius: 8,
+            offset: const Offset(0, 3),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Icon(icon, color: textColor, size: 20),
-              const SizedBox(width: 8),
+              Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: textColor.withValues(alpha: 0.12),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(icon, color: textColor, size: 18),
+              ),
+              const SizedBox(width: 10),
               Expanded(
                 child: Text(
                   title,
                   style: TextStyle(
-                    fontWeight: FontWeight.bold,
+                    fontWeight: FontWeight.w800,
                     fontSize: 13.5,
                     color: textColor,
+                    letterSpacing: -0.2,
                   ),
                 ),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3.5),
                 decoration: BoxDecoration(
                   color: textColor.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: textColor.withValues(alpha: 0.2)),
                 ),
                 child: Text(
                   badgeText,
                   style: TextStyle(
                     fontSize: 10.5,
-                    fontWeight: FontWeight.w700,
+                    fontWeight: FontWeight.w800,
                     color: textColor,
+                    letterSpacing: 0.2,
                   ),
                 ),
               ),
             ],
           ),
           if (reason.isNotEmpty) ...[
-            const SizedBox(height: 6),
+            const SizedBox(height: 8),
             Text(
               reason,
-              style: TextStyle(fontSize: 12, color: textColor.withValues(alpha: 0.9)),
+              style: TextStyle(fontSize: 12, color: textColor.withValues(alpha: 0.9), height: 1.3),
             ),
           ],
-          const SizedBox(height: 8),
-          Row(
+          const SizedBox(height: 10),
+          Wrap(
+            spacing: 8,
+            runSpacing: 6,
             children: [
-              Text(
-                'Đã hoàn thành: $resolved',
-                style: TextStyle(fontSize: 11.5, color: textColor.withValues(alpha: 0.8)),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: textColor.withValues(alpha: 0.08),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  'Đã hoàn thành: $resolved',
+                  style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: textColor),
+                ),
               ),
-              const SizedBox(width: 12),
-              Text(
-                'Đang làm: $inProgress',
-                style: TextStyle(fontSize: 11.5, color: textColor.withValues(alpha: 0.8)),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: textColor.withValues(alpha: 0.08),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  'Đang làm: $inProgress',
+                  style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: textColor),
+                ),
               ),
-              const SizedBox(width: 12),
-              Text(
-                'Quá hạn SLA: $overdue',
-                style: TextStyle(
-                  fontSize: 11.5,
-                  fontWeight: overdue > 0 ? FontWeight.bold : FontWeight.normal,
-                  color: overdue > 0 ? const Color(0xFFDC2626) : textColor.withValues(alpha: 0.8),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: overdue > 0
+                      ? const Color(0xFFDC2626).withValues(alpha: 0.15)
+                      : textColor.withValues(alpha: 0.08),
+                  borderRadius: BorderRadius.circular(8),
+                  border: overdue > 0 ? Border.all(color: const Color(0xFFDC2626).withValues(alpha: 0.4)) : null,
+                ),
+                child: Text(
+                  'Quá hạn SLA: $overdue',
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: overdue > 0 ? FontWeight.w800 : FontWeight.w600,
+                    color: overdue > 0 ? const Color(0xFFDC2626) : textColor,
+                  ),
                 ),
               ),
             ],
@@ -3511,7 +3636,9 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
 
   Widget _buildMine() {
     final active = _myReports.where((r) => r['status'] != 'RESOLVED').toList();
+    active.sort(_compareReportsAssignedOrClaimedFirst);
     final done = _myReports.where((r) => r['status'] == 'RESOLVED').toList();
+    done.sort(_compareReportsResolvedFirst);
     return RefreshIndicator(
       onRefresh: _load,
       child: ListView(
@@ -3556,10 +3683,14 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
   Widget _buildSchedules() {
     // KTV Kiosk chỉ hiển thị các kế hoạch kiểm tra định kỳ của trạm Kiosk
     final allKioskList = _schedules.where((s) => !_isDroneSchedule(s)).toList();
+    allKioskList.sort(_compareSchedulesNewestFirst);
     final myKioskList = allKioskList.where(_isScheduleMine).toList();
+    myKioskList.sort(_compareSchedulesNewestFirst);
     final kioskList = _mySchedulesOnly ? myKioskList : allKioskList;
     final dueList = kioskList.where((s) => s['due'] == true).toList();
+    dueList.sort(_compareSchedulesNewestFirst);
     final upcomingList = kioskList.where((s) => s['due'] != true).toList();
+    upcomingList.sort(_compareSchedulesNewestFirst);
 
     List<Map<String, dynamic>> displayed;
     switch (_scheduleFilter) {
@@ -3574,7 +3705,9 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
     }
 
     final due = displayed.where((s) => s['due'] == true).toList();
+    due.sort(_compareSchedulesNewestFirst);
     final upcoming = displayed.where((s) => s['due'] != true).toList();
+    upcoming.sort(_compareSchedulesNewestFirst);
 
     return RefreshIndicator(
       onRefresh: _load,
@@ -3683,31 +3816,46 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
   }) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(10),
+      borderRadius: BorderRadius.circular(22),
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 150),
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        duration: const Duration(milliseconds: 180),
+        curve: Curves.easeOutCubic,
+        padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 7),
         decoration: BoxDecoration(
-          color: selected ? activeColor.withValues(alpha: 0.12) : Colors.white,
-          borderRadius: BorderRadius.circular(10),
+          color: selected ? activeColor : const Color(0xFFF8FAFC),
+          borderRadius: BorderRadius.circular(22),
           border: Border.all(
             color: selected ? activeColor : const Color(0xFFE2E8F0),
-            width: selected ? 1.5 : 1,
+            width: selected ? 1.2 : 1.0,
           ),
+          boxShadow: selected
+              ? [
+                  BoxShadow(
+                    color: activeColor.withValues(alpha: 0.28),
+                    blurRadius: 8,
+                    offset: const Offset(0, 3),
+                  ),
+                ]
+              : null,
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             if (icon != null) ...[
-              Icon(icon, size: 14, color: selected ? activeColor : opsMutedText),
-              const SizedBox(width: 4),
+              Icon(
+                icon,
+                size: 14,
+                color: selected ? Colors.white : const Color(0xFF64748B),
+              ),
+              const SizedBox(width: 5),
             ],
             Text(
               label,
               style: TextStyle(
-                fontSize: 12,
-                fontWeight: selected ? FontWeight.bold : FontWeight.w600,
-                color: selected ? activeColor : opsDark,
+                fontSize: 12.5,
+                fontWeight: selected ? FontWeight.w700 : FontWeight.w600,
+                color: selected ? Colors.white : const Color(0xFF334155),
+                letterSpacing: 0.1,
               ),
             ),
           ],
@@ -3755,40 +3903,64 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
             : null;
 
     return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.only(bottom: 12),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
           onTap: () => _showScheduleDetailModal(s),
-          borderRadius: BorderRadius.circular(16),
-          child: OpsCard(
-            border: due
-                ? Border.all(color: const Color(0xFFFCA5A5), width: 1.2)
-                : (pendingReportId != null
-                    ? Border.all(color: const Color(0xFFFDBA74), width: 1.2)
-                    : null),
+          borderRadius: BorderRadius.circular(18),
+          child: Container(
+            padding: const EdgeInsets.all(15),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(
+                color: due
+                    ? const Color(0xFFFCA5A5)
+                    : (pendingReportId != null
+                        ? const Color(0xFFFED7AA)
+                        : const Color(0xFFE2E8F0)),
+                width: due || pendingReportId != null ? 1.3 : 1.0,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: due
+                      ? const Color(0xFFDC2626).withValues(alpha: 0.06)
+                      : const Color(0xFF0F172A).withValues(alpha: 0.04),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Hàng 1: ID nổi bật & Tiêu đề + Badge trạng thái
+                // Hàng 1: ID pill & Tiêu đề + Badge trạng thái
                 Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3.5),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF7C3AED).withValues(alpha: 0.12),
-                        borderRadius: BorderRadius.circular(6),
-                        border: Border.all(
-                          color: const Color(0xFF7C3AED).withValues(alpha: 0.25),
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFF6366F1), Color(0xFF4F46E5)],
                         ),
+                        borderRadius: BorderRadius.circular(8),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFF6366F1).withValues(alpha: 0.25),
+                            blurRadius: 4,
+                            offset: const Offset(0, 1.5),
+                          ),
+                        ],
                       ),
                       child: Text(
                         '#${id ?? "N/A"}',
                         style: const TextStyle(
-                          fontSize: 12.5,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF7C3AED),
+                          fontSize: 12,
+                          fontWeight: FontWeight.w800,
+                          color: Colors.white,
+                          letterSpacing: 0.2,
                         ),
                       ),
                     ),
@@ -3800,6 +3972,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                           fontWeight: FontWeight.bold,
                           fontSize: 15,
                           color: opsDark,
+                          letterSpacing: -0.2,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -3807,41 +3980,85 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                     ),
                     const SizedBox(width: 8),
                     if (due)
-                      const _MiniPill(
-                        icon: Icons.warning_amber_rounded,
-                        text: 'Đến hạn',
-                        color: Color(0xFFDC2626),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFEE2E2),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(color: const Color(0xFFFCA5A5)),
+                        ),
+                        child: const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.warning_amber_rounded, size: 13, color: Color(0xFFDC2626)),
+                            SizedBox(width: 4),
+                            Text(
+                              'Đến hạn',
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w800,
+                                color: Color(0xFFDC2626),
+                              ),
+                            ),
+                          ],
+                        ),
                       )
                     else if (rem.$1.isNotEmpty)
-                      _MiniPill(
-                        icon: Icons.schedule_outlined,
-                        text: rem.$1,
-                        color: const Color(0xFF2563EB),
-                      ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-
-                // Hàng 2: Trạm Tủ Kiosk
-                Row(
-                  children: [
-                    const Icon(Icons.inventory_2_outlined, size: 14, color: Color(0xFFB45309)),
-                    const SizedBox(width: 6),
-                    Expanded(
-                      child: Text(
-                        targetLabel,
-                        style: const TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                          color: opsDark,
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFEFF6FF),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(color: const Color(0xFFBFDBFE)),
                         ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.schedule_outlined, size: 13, color: Color(0xFF2563EB)),
+                            const SizedBox(width: 4),
+                            Text(
+                              rem.$1,
+                              style: const TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w700,
+                                color: Color(0xFF2563EB),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
                   ],
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 10),
+
+                // Hàng 2: Trạm Tủ Kiosk trong thanh pill trang nhã
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF8FAFC),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: const Color(0xFFE2E8F0)),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.warehouse_outlined, size: 15, color: opsPrimary),
+                      const SizedBox(width: 7),
+                      Expanded(
+                        child: Text(
+                          targetLabel,
+                          style: const TextStyle(
+                            fontSize: 12.5,
+                            fontWeight: FontWeight.w700,
+                            color: Color(0xFF1E293B),
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 9),
 
                 // Hàng 3: 2 Thông tin vắn tắt (Hạn tới & Chu kỳ)
                 Wrap(
@@ -3851,34 +4068,40 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                     if (nextDue != null)
                       _MiniPill(
                         icon: Icons.event_outlined,
-                        text: 'Hạn tới: $nextDue',
+                        text: 'Hạn: $nextDue',
                         color: due ? const Color(0xFFDC2626) : const Color(0xFF16A34A),
                       ),
                     _MiniPill(
-                      icon: Icons.repeat,
+                      icon: Icons.sync_rounded,
                       text: 'Chu kỳ: Mỗi ${s['intervalDays']} ngày',
                       color: const Color(0xFF475569),
                     ),
+                    if (assignedToMe)
+                      const _MiniPill(
+                        icon: Icons.assignment_ind_outlined,
+                        text: 'Phụ trách',
+                        color: Color(0xFFD97706),
+                      ),
                   ],
                 ),
 
-                // Hàng 4: Cảnh báo rút gọn nếu lần trước không đạt hoặc có phiếu sự cố
+                // Hàng 4: Cảnh báo nếu lần trước không đạt hoặc có phiếu sự cố
                 if (pendingReportId != null) ...[
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 10),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
                     decoration: BoxDecoration(
                       color: const Color(0xFFFFF7ED),
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(10),
                       border: Border.all(color: const Color(0xFFFED7AA)),
                     ),
                     child: Row(
                       children: [
-                        const Icon(Icons.report_gmailerrorred_outlined, size: 14, color: Color(0xFFEA580C)),
-                        const SizedBox(width: 6),
+                        const Icon(Icons.report_gmailerrorred_outlined, size: 15, color: Color(0xFFEA580C)),
+                        const SizedBox(width: 7),
                         Expanded(
                           child: Text(
-                            'Lần trước KHÔNG ĐẠT · Chờ hoàn tất phiếu #$pendingReportId',
+                            'Lần trước KHÔNG ĐẠT · Chờ hoàn tất phiếu #$pendingReportId trước khi kiểm tra lại',
                             style: const TextStyle(
                               fontSize: 11.5,
                               fontWeight: FontWeight.w600,
@@ -3893,24 +4116,26 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                   ),
                 ],
 
+                const SizedBox(height: 12),
+                const Divider(height: 1, color: Color(0xFFF1F5F9)),
                 const SizedBox(height: 10),
-                const Divider(height: 1),
-                const SizedBox(height: 8),
 
                 // Hàng 5: Nút hành động
                 Row(
                   children: [
-                    TextButton.icon(
+                    OutlinedButton.icon(
                       onPressed: () => _showScheduleDetailModal(s),
-                      icon: const Icon(Icons.info_outline, size: 15),
-                      label: const Text(
-                        'Chi tiết',
-                        style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600),
-                      ),
-                      style: TextButton.styleFrom(
-                        foregroundColor: opsPrimary,
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                      icon: const Icon(Icons.info_outline, size: 14),
+                      label: const Text('Chi tiết'),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: const Color(0xFF475569),
+                        side: const BorderSide(color: Color(0xFFCBD5E1)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
                         visualDensity: VisualDensity.compact,
+                        textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
                       ),
                     ),
                     const Spacer(),
@@ -3923,10 +4148,12 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                           backgroundColor: const Color(0xFFEA580C),
                           foregroundColor: Colors.white,
                           elevation: 0,
+                          shadowColor: const Color(0xFFEA580C).withValues(alpha: 0.3),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(10),
                           ),
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+                          textStyle: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700),
                         ),
                       )
                     else
@@ -3939,12 +4166,15 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFF16A34A),
                           foregroundColor: Colors.white,
-                          disabledBackgroundColor: Colors.grey.shade300,
-                          elevation: 0,
+                          disabledBackgroundColor: const Color(0xFFE2E8F0),
+                          disabledForegroundColor: const Color(0xFF94A3B8),
+                          elevation: 1,
+                          shadowColor: const Color(0xFF16A34A).withValues(alpha: 0.3),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(10),
                           ),
-                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 9),
+                          textStyle: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700),
                         ),
                       ),
                   ],
@@ -3979,13 +4209,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
 
   // Compatibility stub to prevent Flutter Hot Reload lookup failure on in-memory instances
   // ignore: unused_element
-  Widget _buildScheduleDetailRow({
-    dynamic icon,
-    dynamic label,
-    dynamic value,
-    dynamic highlightColor,
-  }) =>
-      const SizedBox.shrink();
+  Widget _buildScheduleDetailRow() => const SizedBox.shrink();
 
   /// Mở sheet đánh giá checklist; xong thì báo kết quả server suy ra (ĐẠT dời
   /// hạn / KHÔNG ĐẠT kèm phiếu vừa mở) rồi tải lại.
@@ -4705,34 +4929,38 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
     final isOverdue = _isReportOverdue(r);
 
     return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.only(bottom: 12),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
           onTap: () => _showReportDetailModal(r),
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(18),
           child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            padding: const EdgeInsets.all(15),
             decoration: BoxDecoration(
               color: isNew
                   ? const Color(0xFFFFFDF5)
                   : isOverdue
                       ? const Color(0xFFFFFBFB)
                       : Colors.white,
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(18),
               border: Border.all(
                 color: isNew
                     ? const Color(0xFFFDE68A)
                     : isOverdue
                         ? const Color(0xFFFECACA)
                         : const Color(0xFFE2E8F0),
-                width: isOverdue || isNew ? 1.2 : 1,
+                width: isOverdue || isNew ? 1.3 : 1.0,
               ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.03),
-                  blurRadius: 6,
-                  offset: const Offset(0, 2),
+                  color: isOverdue
+                      ? const Color(0xFFDC2626).withValues(alpha: 0.07)
+                      : (isNew
+                          ? const Color(0xFFF59E0B).withValues(alpha: 0.07)
+                          : const Color(0xFF0F172A).withValues(alpha: 0.04)),
+                  blurRadius: 14,
+                  offset: const Offset(0, 4),
                 ),
               ],
             ),
@@ -4742,14 +4970,41 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
               children: [
                 // 1. Tiêu đề + SLA đếm ngược + Trạng thái
                 Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 7.5, vertical: 3.5),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF0F172A).withValues(alpha: 0.07),
+                        borderRadius: BorderRadius.circular(7),
+                        border: Border.all(color: const Color(0xFF0F172A).withValues(alpha: 0.12)),
+                      ),
+                      child: Text(
+                        '#${r['id']}',
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w800,
+                          fontSize: 12,
+                          color: Color(0xFF1E293B),
+                          letterSpacing: 0.2,
+                        ),
+                      ),
+                    ),
                     if (isNew) ...[
                       Container(
-                        margin: const EdgeInsets.only(right: 6),
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        margin: const EdgeInsets.only(left: 6),
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2.5),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFF59E0B),
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFFF59E0B), Color(0xFFD97706)],
+                          ),
                           borderRadius: BorderRadius.circular(6),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFFF59E0B).withValues(alpha: 0.3),
+                              blurRadius: 4,
+                              offset: const Offset(0, 1.5),
+                            ),
+                          ],
                         ),
                         child: const Text(
                           'MỚI',
@@ -4757,17 +5012,20 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                             color: Colors.white,
                             fontWeight: FontWeight.w800,
                             fontSize: 9.5,
+                            letterSpacing: 0.3,
                           ),
                         ),
                       ),
                     ],
+                    const SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        '#${r['id']} · ${r['title'] ?? ''}',
+                        '${r['title'] ?? ''}',
                         style: const TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 14.5,
                           color: opsDark,
+                          letterSpacing: -0.2,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -4786,45 +5044,53 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                     StatusChip(status),
                   ],
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 10),
 
                 // 2. Dòng thông tin cốt lõi (Vị trí tủ, thời gian, số ảnh, gia hạn)
                 Wrap(
                   spacing: 8,
-                  runSpacing: 5,
+                  runSpacing: 6,
                   crossAxisAlignment: WrapCrossAlignment.center,
                   children: [
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(Icons.inventory_2_outlined, size: 13.5, color: opsPrimary),
-                        const SizedBox(width: 4),
-                        Text(
-                          '$lockerLabel${boxLabel != null ? ' · ô $boxLabel' : ''}',
-                          style: const TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                            color: Color(0xFF334155),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3.5),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF8FAFC),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: const Color(0xFFE2E8F0)),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.warehouse_outlined, size: 13.5, color: opsPrimary),
+                          const SizedBox(width: 5),
+                          Text(
+                            '$lockerLabel${boxLabel != null ? ' · Ô $boxLabel' : ''}',
+                            style: const TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                              color: Color(0xFF1E293B),
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                     if (createdAt != null) ...[
                       Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Icon(Icons.access_time, size: 13, color: Color(0xFF94A3B8)),
-                          const SizedBox(width: 3),
+                          const Icon(Icons.access_time_rounded, size: 13, color: Color(0xFF64748B)),
+                          const SizedBox(width: 3.5),
                           Text(
                             _formatCompactDateTime(createdAt),
-                            style: const TextStyle(fontSize: 11.5, color: Color(0xFF64748B)),
+                            style: const TextStyle(fontSize: 11.5, color: Color(0xFF64748B), fontWeight: FontWeight.w500),
                           ),
                         ],
                       ),
                     ],
                     if (attachments.isNotEmpty) ...[
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2.5),
                         decoration: BoxDecoration(
                           color: const Color(0xFFF1F5F9),
                           borderRadius: BorderRadius.circular(6),
@@ -4834,7 +5100,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             const Icon(Icons.photo_library_outlined, size: 12, color: Color(0xFF64748B)),
-                            const SizedBox(width: 3),
+                            const SizedBox(width: 3.5),
                             Text(
                               '${attachments.length} ảnh',
                               style: const TextStyle(
@@ -4849,7 +5115,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                     ],
                     if (isExtended) ...[
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2.5),
                         decoration: BoxDecoration(
                           color: const Color(0xFFFEF3C7),
                           borderRadius: BorderRadius.circular(6),
@@ -4868,6 +5134,8 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                     ..._ticketBadges(r),
                   ],
                 ),
+                const SizedBox(height: 12),
+                const Divider(height: 1, color: Color(0xFFF1F5F9)),
                 const SizedBox(height: 10),
 
                 // 3. Thanh thao tác nhanh và nút bấm chính
@@ -4877,61 +5145,39 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                   spacing: 6,
                   runSpacing: 6,
                   children: [
-                    // Nhóm công cụ: Chỉ đường, Nhật ký
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        InkWell(
-                          onTap: () => _openDirections(r),
+                    // Nút Chỉ đường
+                    InkWell(
+                      onTap: () => _openDirections(r),
+                      borderRadius: BorderRadius.circular(8),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4.5),
+                        decoration: BoxDecoration(
+                          color: opsPrimary.withValues(alpha: 0.08),
                           borderRadius: BorderRadius.circular(8),
-                          child: const Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 5, vertical: 4),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(Icons.near_me_outlined, size: 13.5, color: opsPrimary),
-                                SizedBox(width: 3),
-                                Text(
-                                  'Chỉ đường',
-                                  style: TextStyle(
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.w600,
-                                    color: opsPrimary,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
                         ),
-                        const SizedBox(width: 4),
-                        InkWell(
-                          onTap: () => _reportLogSheet(r),
-                          borderRadius: BorderRadius.circular(8),
-                          child: const Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 5, vertical: 4),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(Icons.history_edu_outlined, size: 13.5, color: opsPrimary),
-                                SizedBox(width: 3),
-                                Text(
-                                  'Nhật ký',
-                                  style: TextStyle(
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.w600,
-                                    color: opsPrimary,
-                                  ),
-                                ),
-                              ],
+                        child: const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.near_me_outlined, size: 13.5, color: opsPrimary),
+                            SizedBox(width: 4),
+                            Text(
+                              'Chỉ đường',
+                              style: TextStyle(
+                                fontSize: 11.5,
+                                fontWeight: FontWeight.w700,
+                                color: opsPrimary,
+                              ),
                             ),
-                          ),
+                          ],
                         ),
-                      ],
+                      ),
                     ),
 
-                    // Nhóm hành động
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
+                    // Nhóm hành động — dùng Wrap để tránh overflow khi card hẹp
+                    Wrap(
+                      spacing: 5,
+                      runSpacing: 5,
+                      crossAxisAlignment: WrapCrossAlignment.center,
                       children: [
                         // Nút nhận việc nếu OPEN
                         if ((isQueueView || status == 'OPEN') && status == 'OPEN')
@@ -4949,16 +5195,17 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                               backgroundColor: const Color(0xFFF59E0B),
                               foregroundColor: Colors.white,
                               elevation: 0,
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                              shadowColor: const Color(0xFFF59E0B).withValues(alpha: 0.35),
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
                               visualDensity: VisualDensity.compact,
                               shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
+                                borderRadius: BorderRadius.circular(10),
                               ),
                             ),
-                            icon: const Icon(Icons.pan_tool_alt, size: 12.5),
+                            icon: const Icon(Icons.pan_tool_alt_rounded, size: 13.5),
                             label: const Text(
                               'Nhận việc',
-                              style: TextStyle(fontWeight: FontWeight.w700, fontSize: 11),
+                              style: TextStyle(fontWeight: FontWeight.w800, fontSize: 11.5),
                             ),
                           ),
                         // Nút gia hạn, nghiệm thu & hoàn tất nếu IN_PROGRESS của KTV
@@ -4968,7 +5215,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                             onTap: () => _openExtendSlaSheet(r),
                             borderRadius: BorderRadius.circular(8),
                             child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
                               decoration: BoxDecoration(
                                 color: const Color(0xFFFFFBEB),
                                 borderRadius: BorderRadius.circular(8),
@@ -4978,11 +5225,11 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   Icon(
-                                    Icons.more_time,
+                                    Icons.more_time_rounded,
                                     size: 13,
                                     color: Color(0xFFD97706),
                                   ),
-                                  SizedBox(width: 3),
+                                  SizedBox(width: 3.5),
                                   Text(
                                     'Gia hạn',
                                     style: TextStyle(
@@ -4995,12 +5242,11 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                               ),
                             ),
                           ),
-                          const SizedBox(width: 5),
                           InkWell(
                             onTap: () => _inspectionFlow(r),
                             borderRadius: BorderRadius.circular(8),
                             child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
                               decoration: BoxDecoration(
                                 color: const Color(0xFFFEF3C7),
                                 borderRadius: BorderRadius.circular(8),
@@ -5014,7 +5260,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                                     size: 13,
                                     color: const Color(0xFFB45309),
                                   ),
-                                  const SizedBox(width: 3),
+                                  const SizedBox(width: 3.5),
                                   Text(
                                     hasInspection ? 'Ảnh (+)' : 'Nghiệm thu',
                                     style: const TextStyle(
@@ -5027,28 +5273,27 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                               ),
                             ),
                           ),
-                          const SizedBox(width: 5),
                           ElevatedButton.icon(
                             onPressed: () => _confirmResolveReport(r),
-                            icon: const Icon(Icons.check, size: 13),
+                            icon: const Icon(Icons.check, size: 13.5),
                             label: const Text(
                               'Hoàn tất',
-                              style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700),
+                              style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w800),
                             ),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: const Color(0xFF16A34A),
                               foregroundColor: Colors.white,
                               elevation: 0,
+                              shadowColor: const Color(0xFF16A34A).withValues(alpha: 0.3),
                               visualDensity: VisualDensity.compact,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(8),
                               ),
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                             ),
                           ),
                         ],
-                        const SizedBox(width: 3),
-                        const Icon(Icons.chevron_right, size: 16, color: Color(0xFF94A3B8)),
+                        const Icon(Icons.chevron_right, size: 17, color: Color(0xFF94A3B8)),
                       ],
                     ),
                   ],
@@ -5375,25 +5620,33 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                       ],
 
                       // Full stage attachments with timestamps
-                      if (attachments.isNotEmpty) ...[
-                        const Text(
-                          'Hình ảnh minh chứng theo giai đoạn:',
-                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: opsDark),
-                        ),
-                        const SizedBox(height: 8),
-                        AttachmentStageGallery(
-                          attachments: attachments,
-                          labels: const {
-                            ReportStage.report: 'Ảnh người báo',
-                            ReportStage.inspection: 'Ảnh KTV xác nhận',
-                            ReportStage.progress: 'Ảnh quá trình sửa',
-                            ReportStage.resolution: 'Ảnh nghiệm thu',
-                          },
-                          accentColor: opsPrimary,
-                          thumbSize: 76,
-                        ),
-                        const SizedBox(height: 16),
-                      ],
+                      const Text(
+                        'Hình ảnh minh chứng theo giai đoạn:',
+                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: opsDark),
+                      ),
+                      const SizedBox(height: 8),
+                      AttachmentStageGallery(
+                        attachments: attachments,
+                        showEmptyStages: true,
+                        labels: const {
+                          ReportStage.report: 'Ảnh hiện trường (người báo)',
+                          ReportStage.inspection: 'Ảnh xác nhận của KTV',
+                          ReportStage.progress: 'Ảnh trong quá trình sửa',
+                          ReportStage.resolution: 'Ảnh nghiệm thu',
+                        },
+                        accentColor: opsPrimary,
+                        thumbSize: 76,
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Nhật ký & Lịch sử xử lý KTV (được chuyển từ hình 3 sang)
+                      _ReportLogsSection(
+                        reportId: _asInt(r['id']) ?? 0,
+                        service: _service,
+                        report: r,
+                        canAddNote: status == 'IN_PROGRESS' && assignedToMe,
+                      ),
+                      const SizedBox(height: 16),
                     ],
                   ),
                 ),
@@ -5513,55 +5766,27 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                         const SizedBox(height: 6),
                       ],
 
-                      // Hàng 2: Nút tiện ích phụ (Chỉ đường + Nhật ký xử lý + Gia hạn SLA)
+                      // Hàng 2: Nút tiện ích phụ (Chỉ đường + Gia hạn SLA)
                       Row(
                         children: [
                           Expanded(
                             child: SizedBox(
-                              height: 32,
+                              height: 36,
                               child: OutlinedButton.icon(
                                 onPressed: () {
                                   Navigator.pop(ctx);
                                   _openDirections(r);
                                 },
-                                icon: const Icon(Icons.map_outlined, size: 13),
+                                icon: const Icon(Icons.near_me_outlined, size: 14),
                                 label: const Text(
-                                  'Chỉ đường',
-                                  style: TextStyle(fontSize: 11),
+                                  'Chỉ đường tới tủ',
+                                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                 ),
                                 style: OutlinedButton.styleFrom(
                                   foregroundColor: opsPrimary,
                                   side: BorderSide(color: opsPrimary.withValues(alpha: 0.35)),
-                                  padding: const EdgeInsets.symmetric(horizontal: 2),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 5),
-                          Expanded(
-                            child: SizedBox(
-                              height: 32,
-                              child: OutlinedButton.icon(
-                                onPressed: () {
-                                  Navigator.pop(ctx);
-                                  _reportLogSheet(r);
-                                },
-                                icon: const Icon(Icons.history_edu_outlined, size: 13),
-                                label: const Text(
-                                  'Nhật ký',
-                                  style: TextStyle(fontSize: 11),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                style: OutlinedButton.styleFrom(
-                                  foregroundColor: opsDark,
-                                  side: BorderSide(color: Colors.grey.shade300),
-                                  padding: const EdgeInsets.symmetric(horizontal: 2),
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(8),
                                   ),
@@ -5570,19 +5795,19 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                             ),
                           ),
                           if (status == 'IN_PROGRESS') ...[
-                            const SizedBox(width: 5),
+                            const SizedBox(width: 8),
                             Expanded(
                               child: SizedBox(
-                                height: 32,
+                                height: 36,
                                 child: OutlinedButton.icon(
                                   onPressed: () {
                                     Navigator.pop(ctx);
                                     _openExtendSlaSheet(r);
                                   },
-                                  icon: const Icon(Icons.more_time, size: 13, color: Color(0xFFD97706)),
+                                  icon: const Icon(Icons.more_time, size: 14, color: Color(0xFFD97706)),
                                   label: const Text(
                                     'Gia hạn SLA',
-                                    style: TextStyle(fontSize: 10.5, color: Color(0xFFD97706), fontWeight: FontWeight.w700),
+                                    style: TextStyle(fontSize: 12, color: Color(0xFFD97706), fontWeight: FontWeight.w700),
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                   ),
@@ -5590,7 +5815,6 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                                     foregroundColor: const Color(0xFFD97706),
                                     side: const BorderSide(color: Color(0xFFFDE68A)),
                                     backgroundColor: const Color(0xFFFFFBEB),
-                                    padding: const EdgeInsets.symmetric(horizontal: 2),
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(8),
                                     ),
@@ -5714,6 +5938,72 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
   DateTime? _parseDate(dynamic value) {
     if (value == null) return null;
     return parseServerDateTime(value);
+  }
+
+  int _compareReportsNewestFirst(Map<String, dynamic> a, Map<String, dynamic> b) {
+    final da = _parseDate(a['createdAt']);
+    final db = _parseDate(b['createdAt']);
+    if (da != null && db != null) {
+      final cmp = db.compareTo(da);
+      if (cmp != 0) return cmp;
+    } else if (da != null) {
+      return -1;
+    } else if (db != null) {
+      return 1;
+    }
+    final ida = _asInt(a['id']) ?? 0;
+    final idb = _asInt(b['id']) ?? 0;
+    return idb.compareTo(ida);
+  }
+
+  int _compareReportsAssignedOrClaimedFirst(Map<String, dynamic> a, Map<String, dynamic> b) {
+    // Ưu tiên mốc thời gian nhận việc / được phân công (assignedAt), fallback sang createdAt
+    final da = _parseDate(a['assignedAt']) ?? _parseDate(a['createdAt']);
+    final db = _parseDate(b['assignedAt']) ?? _parseDate(b['createdAt']);
+    if (da != null && db != null) {
+      final cmp = db.compareTo(da);
+      if (cmp != 0) return cmp;
+    } else if (da != null) {
+      return -1;
+    } else if (db != null) {
+      return 1;
+    }
+    final ida = _asInt(a['id']) ?? 0;
+    final idb = _asInt(b['id']) ?? 0;
+    return idb.compareTo(ida);
+  }
+
+  int _compareReportsResolvedFirst(Map<String, dynamic> a, Map<String, dynamic> b) {
+    final da = _parseDate(a['resolvedAt']) ?? _parseDate(a['createdAt']);
+    final db = _parseDate(b['resolvedAt']) ?? _parseDate(b['createdAt']);
+    if (da != null && db != null) {
+      final cmp = db.compareTo(da);
+      if (cmp != 0) return cmp;
+    } else if (da != null) {
+      return -1;
+    } else if (db != null) {
+      return 1;
+    }
+    final ida = _asInt(a['id']) ?? 0;
+    final idb = _asInt(b['id']) ?? 0;
+    return idb.compareTo(ida);
+  }
+
+  int _compareSchedulesNewestFirst(Map<String, dynamic> a, Map<String, dynamic> b) {
+    // Lịch định kỳ mới nhất khi được phân công / cập nhật hoặc tạo mới đưa lên đầu
+    final ua = _parseDate(a['updatedAt']) ?? _parseDate(a['createdAt']);
+    final ub = _parseDate(b['updatedAt']) ?? _parseDate(b['createdAt']);
+    if (ua != null && ub != null) {
+      final cmp = ub.compareTo(ua);
+      if (cmp != 0) return cmp;
+    } else if (ua != null) {
+      return -1;
+    } else if (ub != null) {
+      return 1;
+    }
+    final ida = _asInt(a['id']) ?? 0;
+    final idb = _asInt(b['id']) ?? 0;
+    return idb.compareTo(ida);
   }
 
   String _formatFullDateTime(DateTime dt) {
@@ -6098,20 +6388,22 @@ class _IotDeviceSheetState extends State<_IotDeviceSheet> {
   }
 }
 
-/// Bottom sheet xem + thêm nhật ký xử lý (work-log) cho một phiếu bảo trì.
-class _RepairLogSheet extends StatefulWidget {
-  const _RepairLogSheet({
+/// Section nhật ký và tiến trình xử lý KTV hiển thị trực tiếp trong modal chi tiết phiếu (Hình 4)
+class _ReportLogsSection extends StatefulWidget {
+  const _ReportLogsSection({
     required this.reportId,
     required this.service,
-    required this.title,
+    required this.report,
+    this.canAddNote = false,
   });
 
   final int reportId;
   final LockerOpsService service;
-  final String title;
+  final Map<String, dynamic> report;
+  final bool canAddNote;
 
   @override
-  State<_RepairLogSheet> createState() => _RepairLogSheetState();
+  State<_ReportLogsSection> createState() => _ReportLogsSectionState();
 }
 
 /// Số ảnh tối đa mỗi lần KTV gửi (INSPECTION/PROGRESS/RESOLUTION) — admin
@@ -6119,14 +6411,13 @@ class _RepairLogSheet extends StatefulWidget {
 int get _staffPhotosPerRequest =>
     BusinessConfigService.instance.current.reportPhotosPerRequestStaff;
 
-class _RepairLogSheetState extends State<_RepairLogSheet> {
+class _ReportLogsSectionState extends State<_ReportLogsSection> {
   final _noteCtrl = TextEditingController();
-  // Ảnh tiến độ (stage PROGRESS) gắn vào dòng nhật ký — tối đa theo cấu hình
-  // app.maintenance.report-photos-per-request-staff.
   final _photos = PhotoPickerController(maxPhotos: _staffPhotosPerRequest);
   List<Map<String, dynamic>> _logs = const [];
   bool _loading = true;
   bool _sending = false;
+  bool _showInput = false;
 
   final _quickChips = const [
     '📸 Kiểm tra hiện trường',
@@ -6176,9 +6467,6 @@ class _RepairLogSheetState extends State<_RepairLogSheet> {
     accentColor: opsPrimary,
   );
 
-  /// Upload ảnh tiến độ lên Cloudinary rồi gửi kèm dòng nhật ký (stage
-  /// PROGRESS). Upload lỗi giữa chừng: ảnh đã lên giữ lại, bấm gửi lại chỉ
-  /// upload phần còn thiếu.
   Future<void> _add() async {
     final note = _noteCtrl.text.trim();
     if (note.isEmpty && _photos.isEmpty) return;
@@ -6192,6 +6480,7 @@ class _RepairLogSheetState extends State<_RepairLogSheet> {
       );
       _noteCtrl.clear();
       _photos.clear();
+      setState(() => _showInput = false);
       await _load();
     } catch (e) {
       if (mounted) {
@@ -6208,210 +6497,294 @@ class _RepairLogSheetState extends State<_RepairLogSheet> {
     final d = parseServerDateTime(value);
     if (d == null) return '';
     String two(int n) => n.toString().padLeft(2, '0');
-    return '${two(d.hour)}:${two(d.minute)} ${two(d.day)}/${two(d.month)}';
+    return '${two(d.hour)}:${two(d.minute)} ${two(d.day)}/${two(d.month)}/${d.year}';
+  }
+
+  Widget _buildHighlightedNote(String noteText, {List<ReportAttachment>? photos}) {
+    String text = noteText.trim();
+    if (!text.startsWith('[') && photos != null && photos.any((a) => a.stage == ReportStage.resolution)) {
+      text = '[NGHIỆM THU THÀNH CÔNG] $text';
+    }
+    final match = RegExp(r'^(\[[^\]]+\])\s*(.*)$', dotAll: true).firstMatch(text);
+    if (match != null) {
+      var tag = match.group(1)!;
+      final rest = match.group(2) ?? '';
+      final upperTag = tag.toUpperCase();
+
+      // [SỬA TẠI CHỖ THÀNH CÔNG] hoặc [XỬ LÝ TẠI CHỖ] -> hiển thị là [GHI CHÚ HIỆN TRƯỜNG]
+      if (upperTag.contains('SỬA TẠI CHỖ') || upperTag.contains('XỬ LÝ TẠI CHỖ')) {
+        tag = '[GHI CHÚ HIỆN TRƯỜNG]';
+      }
+
+      Color tagBg = const Color(0xFFE2E8F0);
+      Color tagFg = const Color(0xFF334155);
+      final currentUpper = tag.toUpperCase();
+      if (currentUpper.contains('NGHIỆM THU') || currentUpper.contains('THÀNH CÔNG')) {
+        tagBg = const Color(0xFFDCFCE7);
+        tagFg = const Color(0xFF15803D);
+      } else if (currentUpper.contains('HIỆN TRƯỜNG') || currentUpper.contains('KIỂM TRA')) {
+        tagBg = const Color(0xFFE0F2FE);
+        tagFg = const Color(0xFF0369A1);
+      } else if (currentUpper.contains('ĐIỀU CHUYỂN')) {
+        tagBg = const Color(0xFFE0F2FE);
+        tagFg = const Color(0xFF0369A1);
+      } else if (currentUpper.contains('BÀN GIAO')) {
+        tagBg = const Color(0xFFF3E8FF);
+        tagFg = const Color(0xFF7E22CE);
+      } else if (currentUpper.contains('LƯU KHO') || currentUpper.contains('HUB')) {
+        tagBg = const Color(0xFFFEF3C7);
+        tagFg = const Color(0xFFB45309);
+      }
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+            decoration: BoxDecoration(
+              color: tagBg,
+              borderRadius: BorderRadius.circular(6),
+            ),
+            child: Text(
+              tag,
+              style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.bold, color: tagFg),
+            ),
+          ),
+          if (rest.isNotEmpty) ...[
+            const SizedBox(height: 5),
+            Text(
+              rest,
+              style: const TextStyle(fontSize: 13, color: opsDark, height: 1.35),
+            ),
+          ],
+        ],
+      );
+    }
+    return Text(
+      text,
+      style: const TextStyle(fontSize: 13, color: opsDark, height: 1.35),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
-      child: SafeArea(
-        top: false,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
           children: [
-            const SizedBox(height: 12),
-            Container(
-              width: 44,
-              height: 4,
-              decoration: BoxDecoration(
-                color: Colors.grey[300],
-                borderRadius: BorderRadius.circular(2),
-              ),
+            const Icon(Icons.history_edu_outlined, size: 16, color: opsPrimary),
+            const SizedBox(width: 6),
+            const Text(
+              'Nhật ký & Lịch sử xử lý của KTV:',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12.5, color: opsDark),
             ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 12, 20, 4),
-              child: Row(
-                children: [
-                  const Icon(
-                    Icons.history_edu_outlined,
-                    size: 18,
-                    color: opsMutedText,
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      'Nhật ký xử lý · ${widget.title}',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(fontWeight: FontWeight.w800),
-                    ),
-                  ),
-                ],
+            if (_logs.isNotEmpty) ...[
+              const SizedBox(width: 6),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                decoration: BoxDecoration(
+                  color: opsPrimary.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Text(
+                  '${_logs.length}',
+                  style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: opsPrimary),
+                ),
               ),
+            ],
+            const Spacer(),
+            if (!_loading)
+              InkWell(
+                onTap: _load,
+                borderRadius: BorderRadius.circular(6),
+                child: const Padding(
+                  padding: EdgeInsets.all(4),
+                  child: Icon(Icons.refresh, size: 16, color: opsMutedText),
+                ),
+              ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        if (_loading)
+          const Padding(
+            padding: EdgeInsets.all(16),
+            child: Center(child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))),
+          )
+        else if (_logs.isEmpty)
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF8FAFC),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: const Color(0xFFE2E8F0)),
             ),
-            const Divider(height: 1),
-            Flexible(
-              child: _loading
-                  ? const Padding(
-                      padding: EdgeInsets.all(24),
-                      child: Center(child: CircularProgressIndicator()),
-                    )
-                  : _logs.isEmpty
-                  ? const OpsEmptyState(
-                      icon: Icons.history_edu_outlined,
-                      title: 'Chưa có ghi chú nào',
-                      subtitle: 'Thêm bước xử lý đầu tiên bên dưới.',
-                    )
-                  : ListView.separated(
-                      shrinkWrap: true,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 20,
-                        vertical: 8,
+            child: const Row(
+              children: [
+                Icon(Icons.info_outline, size: 16, color: opsMutedText),
+                SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'Chưa có ghi chú xử lý nào. Thao tác "Kiểm tra ô & Khóa sự cố" hoặc "Nghiệm thu" sẽ tự động lưu lại đầy đủ tại đây.',
+                    style: TextStyle(fontSize: 12, color: opsMutedText),
+                  ),
+                ),
+              ],
+            ),
+          )
+        else
+          Column(
+            children: [
+              for (final log in _logs) ...[
+                Builder(
+                  builder: (context) {
+                    final noteText = '${log['note'] ?? ''}';
+                    final logPhotos = ReportAttachment.listFrom(log['attachments']);
+                    return Container(
+                      width: double.infinity,
+                      margin: const EdgeInsets.only(bottom: 8),
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF8FAFC),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: const Color(0xFFE2E8F0)),
                       ),
-                      itemCount: _logs.length,
-                      separatorBuilder: (_, __) => const SizedBox(height: 8),
-                      itemBuilder: (_, i) {
-                        final log = _logs[i];
-                        final noteText = '${log['note'] ?? ''}';
-                        final logPhotos =
-                            ReportAttachment.listFrom(log['attachments']);
-                        return Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: opsSurface,
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: opsBorder),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
                             children: [
-                              Text(noteText),
-                              if (logPhotos.isNotEmpty) ...[
-                                const SizedBox(height: 6),
-                                AttachmentStrip(
-                                  attachments: logPhotos,
-                                  size: 56,
-                                  viewerTitle: 'Nhật ký · ${_fmt(log['createdAt'])}',
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFE0F2FE),
+                                  borderRadius: BorderRadius.circular(6),
                                 ),
-                              ],
-                              const SizedBox(height: 4),
+                                child: Text(
+                                  log['actorUserId'] != null ? 'KTV #${log['actorUserId']}' : 'Kỹ thuật viên',
+                                  style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFF0369A1)),
+                                ),
+                              ),
+                              const Spacer(),
                               Text(
-                                '${_fmt(log['createdAt'])}'
-                                '${log['actorUserId'] != null ? ' · KTV #${log['actorUserId']}' : ''}',
-                                style: const TextStyle(
-                                  fontSize: 11,
-                                  color: opsMutedText,
-                                ),
+                                _fmt(log['createdAt']),
+                                style: const TextStyle(fontSize: 11.5, color: opsMutedText),
                               ),
                             ],
                           ),
-                        );
-                      },
-                    ),
-            ),
-            const Divider(height: 1),
-            // Quick suggestions
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-              child: Row(
-                children: [
-                  for (final tag in _quickChips)
-                    Padding(
-                      padding: const EdgeInsets.only(right: 6),
-                      child: ActionChip(
-                        label: Text(tag, style: const TextStyle(fontSize: 11)),
-                        padding: EdgeInsets.zero,
-                        visualDensity: VisualDensity.compact,
-                        onPressed: () {
-                          final cur = _noteCtrl.text.trim();
-                          _noteCtrl.text = cur.isEmpty ? tag : '$cur, $tag';
-                        },
+                          const SizedBox(height: 8),
+                          _buildHighlightedNote(noteText, photos: logPhotos),
+                          if (logPhotos.isNotEmpty) ...[
+                            const SizedBox(height: 8),
+                            AttachmentStrip(
+                              attachments: logPhotos,
+                              size: 58,
+                              viewerTitle: 'Nhật ký · ${_fmt(log['createdAt'])}',
+                            ),
+                          ],
+                        ],
                       ),
-                    ),
-                ],
+                    );
+                  },
+                ),
+              ],
+            ],
+          ),
+        if (widget.canAddNote) ...[
+          const SizedBox(height: 6),
+          if (!_showInput)
+            Align(
+              alignment: Alignment.centerLeft,
+              child: TextButton.icon(
+                onPressed: () => setState(() => _showInput = true),
+                icon: const Icon(Icons.add_comment_outlined, size: 14),
+                label: const Text('Thêm bước xử lý / ghi chú nhanh...', style: TextStyle(fontSize: 12)),
+                style: TextButton.styleFrom(
+                  foregroundColor: opsPrimary,
+                  visualDensity: VisualDensity.compact,
+                ),
               ),
-            ),
-            if (_photos.isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
+            )
+          else
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: opsPrimary.withValues(alpha: 0.3)),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
                       children: [
-                        const Icon(Icons.photo_library_outlined, size: 14, color: opsPrimary),
-                        const SizedBox(width: 4),
-                        Text(
-                          '${_photos.length} ảnh tiến độ đính kèm',
-                          style: const TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                            color: opsPrimary,
+                        for (final tag in _quickChips)
+                          Padding(
+                            padding: const EdgeInsets.only(right: 6),
+                            child: ActionChip(
+                              label: Text(tag, style: const TextStyle(fontSize: 11)),
+                              padding: EdgeInsets.zero,
+                              visualDensity: VisualDensity.compact,
+                              onPressed: () {
+                                final cur = _noteCtrl.text.trim();
+                                _noteCtrl.text = cur.isEmpty ? tag : '$cur, $tag';
+                              },
+                            ),
                           ),
-                        ),
                       ],
                     ),
-                    const SizedBox(height: 6),
+                  ),
+                  const SizedBox(height: 8),
+                  if (_photos.isNotEmpty) ...[
                     PhotoPickerField(
                       controller: _photos,
                       enabled: !_sending,
-                      thumbSize: 68,
+                      thumbSize: 56,
                       accentColor: opsPrimary,
                     ),
+                    const SizedBox(height: 6),
                   ],
-                ),
-              ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(12, 4, 16, 12),
-              child: Row(
-                children: [
-                  IconButton(
-                    icon: const Icon(
-                      Icons.camera_alt_outlined,
-                      color: opsPrimary,
-                    ),
-                    tooltip: 'Chụp hoặc chọn ảnh',
-                    onPressed: _showImagePickerOptions,
-                  ),
-                  Expanded(
-                    child: TextField(
-                      controller: _noteCtrl,
-                      minLines: 1,
-                      maxLines: 3,
-                      decoration: InputDecoration(
-                        hintText: 'Thêm bước xử lý / ghi chú...',
-                        isDense: true,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: opsBorder),
+                  Row(
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.camera_alt_outlined, size: 20, color: opsPrimary),
+                        onPressed: _showImagePickerOptions,
+                      ),
+                      Expanded(
+                        child: TextField(
+                          controller: _noteCtrl,
+                          minLines: 1,
+                          maxLines: 2,
+                          style: const TextStyle(fontSize: 12.5),
+                          decoration: InputDecoration(
+                            hintText: 'Nhập ghi chú xử lý...',
+                            isDense: true,
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                          ),
                         ),
                       ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  IconButton.filled(
-                    onPressed: _sending ? null : _add,
-                    style: IconButton.styleFrom(backgroundColor: opsPrimary),
-                    icon: _sending
-                        ? const SizedBox(
-                            width: 18,
-                            height: 18,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: Colors.white,
-                            ),
-                          )
-                        : const Icon(Icons.send),
+                      const SizedBox(width: 6),
+                      IconButton.filled(
+                        onPressed: _sending ? null : _add,
+                        style: IconButton.styleFrom(backgroundColor: opsPrimary),
+                        icon: _sending
+                            ? const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                            : const Icon(Icons.send, size: 16),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.close, size: 18, color: opsMutedText),
+                        onPressed: () => setState(() => _showInput = false),
+                      ),
+                    ],
                   ),
                 ],
               ),
             ),
-          ],
-        ),
-      ),
+        ],
+      ],
     );
   }
 }
@@ -6506,14 +6879,19 @@ class _ResolveVerificationSheet extends StatefulWidget {
 class _ResolveVerificationSheetState extends State<_ResolveVerificationSheet> {
   final _noteCtrl = TextEditingController();
   // "Trước khi sửa" = ảnh INSPECTION/REPORT (bỏ qua nếu phiếu đã có),
+  // "Trong quá trình sửa" = ảnh PROGRESS thao tác kỹ thuật,
   // "Sau khi xong" = ảnh RESOLUTION gửi cùng lệnh Hoàn tất.
   final _beforePhotos = PhotoPickerController(
+    maxPhotos: _staffPhotosPerRequest,
+  );
+  final _progressPhotos = PhotoPickerController(
     maxPhotos: _staffPhotosPerRequest,
   );
   final _afterPhotos = PhotoPickerController(
     maxPhotos: _staffPhotosPerRequest,
   );
   List<ReportAttachment> _existingInspection = [];
+  List<ReportAttachment> _existingProgress = [];
   List<ReportAttachment> _existingResolution = [];
   bool _submitting = false;
   // Ảnh INSPECTION đã gắn nhưng resolve lỗi ⇒ lần thử lại không gắn lần 2.
@@ -6534,6 +6912,7 @@ class _ResolveVerificationSheetState extends State<_ResolveVerificationSheet> {
     _initAttachments();
     _fetchAttachmentsFromServer();
     _beforePhotos.addListener(_onPhotosChanged);
+    _progressPhotos.addListener(_onPhotosChanged);
     _afterPhotos.addListener(_onPhotosChanged);
   }
 
@@ -6541,6 +6920,8 @@ class _ResolveVerificationSheetState extends State<_ResolveVerificationSheet> {
     _existingInspection = _extractReportBeforeAttachments(widget.report);
     final allAttachments =
         ReportAttachment.listFrom(widget.report['attachments']);
+    _existingProgress =
+        allAttachments.where((a) => a.stage == ReportStage.progress).toList();
     _existingResolution =
         allAttachments.where((a) => a.stage == ReportStage.resolution).toList();
   }
@@ -6566,6 +6947,9 @@ class _ResolveVerificationSheetState extends State<_ResolveVerificationSheet> {
           final st = a.stage.toLowerCase().trim();
           return st == 'report' || st == 'inspection';
         }).toList();
+        final progressFromServer = parsed
+            .where((a) => a.stage == ReportStage.progress)
+            .toList();
         final cached = _inspectionAttachmentsCache[repId] ?? [];
 
         setState(() {
@@ -6573,6 +6957,7 @@ class _ResolveVerificationSheetState extends State<_ResolveVerificationSheet> {
             for (final a in [...userAtts, ...beforeFromServer, ...cached])
               a.url: a
           }.values.toList();
+          _existingProgress = progressFromServer;
           _existingResolution =
               parsed.where((a) => a.stage == ReportStage.resolution).toList();
         });
@@ -6584,6 +6969,9 @@ class _ResolveVerificationSheetState extends State<_ResolveVerificationSheet> {
   @override
   void dispose() {
     _beforePhotos
+      ..removeListener(_onPhotosChanged)
+      ..dispose();
+    _progressPhotos
       ..removeListener(_onPhotosChanged)
       ..dispose();
     _afterPhotos
@@ -6620,6 +7008,9 @@ class _ResolveVerificationSheetState extends State<_ResolveVerificationSheet> {
       final inspection = _beforePhotos.isNotEmpty && !_inspectionSaved
           ? await _beforePhotos.uploadAll()
           : const <Map<String, dynamic>>[];
+      final progress = _progressPhotos.isNotEmpty
+          ? await _progressPhotos.uploadAll()
+          : const <Map<String, dynamic>>[];
       final resolution = await _afterPhotos.uploadAll();
 
       if (inspection.isNotEmpty) {
@@ -6631,11 +7022,23 @@ class _ResolveVerificationSheetState extends State<_ResolveVerificationSheet> {
         _inspectionSaved = true;
       }
 
+      if (progress.isNotEmpty) {
+        await widget.service.addReportAttachments(
+          reportId,
+          ReportStage.progress,
+          progress,
+        );
+      }
+
       // Ảnh RESOLUTION + ghi chú đi cùng lệnh Hoàn tất (1 request).
-      final noteText = _noteCtrl.text.trim();
+      // Chuẩn hóa tag [NGHIỆM THU THÀNH CÔNG] đồng bộ hệ thống.
+      final rawNote = _noteCtrl.text.trim();
+      final formattedNote = rawNote.isNotEmpty
+          ? (rawNote.startsWith('[') ? rawNote : '[NGHIỆM THU THÀNH CÔNG] $rawNote')
+          : '[NGHIỆM THU THÀNH CÔNG] Đã khắc phục và nghiệm thu thành công.';
       await widget.service.resolveReport(
         reportId,
-        note: noteText.isEmpty ? null : noteText,
+        note: formattedNote,
         attachments: resolution,
       );
 
@@ -6842,6 +7245,32 @@ class _ResolveVerificationSheetState extends State<_ResolveVerificationSheet> {
                       addLabel: _existingInspection.isNotEmpty
                           ? 'Chụp thêm ảnh'
                           : 'Chụp ảnh',
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 10),
+              _buildPhotoSection(
+                title: 'Trong quá trình sửa',
+                subtitle: 'Ảnh thao tác kỹ thuật, thay thế linh kiện (tuỳ chọn)',
+                satisfied: _existingProgress.isNotEmpty || _progressPhotos.isNotEmpty,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (_existingProgress.isNotEmpty) ...[
+                      AttachmentStrip(
+                        attachments: _existingProgress,
+                        viewerTitle: ReportStage.label(ReportStage.progress),
+                      ),
+                      const SizedBox(height: 8),
+                    ],
+                    PhotoPickerField(
+                      controller: _progressPhotos,
+                      enabled: !_submitting,
+                      accentColor: const Color(0xFF2563EB),
+                      addLabel: _existingProgress.isNotEmpty
+                          ? 'Chụp thêm ảnh'
+                          : 'Chụp ảnh quá trình sửa',
                     ),
                   ],
                 ),
@@ -7238,6 +7667,8 @@ class _BoxIncidentResolutionSheetState
   int? _targetBoxId;
   Map<String, dynamic>? _activeOrder;
   bool _loadingOrder = false;
+  bool _lockBox = false; // Toggle khóa ô tủ hay giữ hoạt động
+  bool _openingBox = false; // Loading mở khẩn cấp
 
   final _ktvNotesCtrl = TextEditingController();
   final _otpCtrl = TextEditingController();
@@ -7329,39 +7760,68 @@ class _BoxIncidentResolutionSheetState
     setState(() => _loadingOrder = true);
     try {
       final order = await widget.service.getActiveOrderByBox(boxId);
-      final cell = _currentCell;
-      final isOccupied =
-          (cell?['status'] as String? ?? '').toUpperCase() == 'OCCUPIED' ||
-              order != null;
+      final hasOrder = order != null &&
+          order.isNotEmpty &&
+          order['orderCode'] != null &&
+          order['orderCode'].toString().trim().isNotEmpty &&
+          order['orderCode'].toString().toLowerCase() != 'null';
       if (mounted) {
         setState(() {
-          _activeOrder = order;
-          if (isOccupied) {
+          _activeOrder = hasOrder ? order : null;
+          if (hasOrder) {
             _action = 'RELOCATE';
             final av = _availableTargetBoxes;
             _targetBoxId = av.isNotEmpty ? _asInt(av.first['id']) : null;
+            _lockBox = true;
           } else {
-            _action = 'LOCK_ONLY';
+            _action = 'QUICK_FIX';
             _targetBoxId = null;
+            _lockBox = false; // Mặc định không khóa để KTV kiểm tra thực tế
           }
         });
       }
     } catch (_) {
-      if (mounted) setState(() => _action = 'LOCK_ONLY');
+      if (mounted) {
+        setState(() {
+          _activeOrder = null;
+          _action = 'QUICK_FIX';
+          _targetBoxId = null;
+          _lockBox = false;
+        });
+      }
     } finally {
       if (mounted) setState(() => _loadingOrder = false);
     }
   }
 
   Future<void> _forceOpenBox() async {
-    if (_selectedBoxId == null) return;
+    if (_selectedBoxId == null || _openingBox) return;
+    setState(() => _openingBox = true);
     try {
-      await widget.service.forceOpenBox(_selectedBoxId!);
+      final res = await widget.service.forceOpenBox(_selectedBoxId!);
       if (mounted) {
+        final isAccepted = res['accepted'] == true ||
+            res['status'] == 'ACCEPTED' ||
+            res['code'] == 200;
+        final boxNum = _currentCell?['boxNumber'] ?? _selectedBoxId;
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Đã gửi lệnh mở ô khẩn cấp thành công!'),
-            backgroundColor: Color(0xFF16A34A),
+          SnackBar(
+            content: Row(
+              children: [
+                const Icon(Icons.check_circle_outline,
+                    color: Colors.white, size: 20),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    isAccepted
+                        ? 'Đã mở ô #$boxNum thành công!'
+                        : 'Lệnh mở khẩn cấp đã được gửi tới Kiosk.',
+                  ),
+                ),
+              ],
+            ),
+            backgroundColor: const Color(0xFF16A34A),
+            behavior: SnackBarBehavior.floating,
           ),
         );
       }
@@ -7369,11 +7829,23 @@ class _BoxIncidentResolutionSheetState
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Lỗi mở ô: ${LockerOpsService.errorMessage(e)}'),
+            content: Row(
+              children: [
+                const Icon(Icons.error_outline,
+                    color: Colors.white, size: 20),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text('Lỗi mở ô: ${LockerOpsService.errorMessage(e)}'),
+                ),
+              ],
+            ),
             backgroundColor: const Color(0xFFDC2626),
+            behavior: SnackBarBehavior.floating,
           ),
         );
       }
+    } finally {
+      if (mounted) setState(() => _openingBox = false);
     }
   }
 
@@ -7421,15 +7893,17 @@ class _BoxIncidentResolutionSheetState
           ? rawDesc
           : ((rawTitle != null && rawTitle.isNotEmpty) ? rawTitle : 'Sự cố ô tủ');
       final ktvNote = _ktvNotesCtrl.text.trim();
+      final reasonPrefix = _action == 'QUICK_FIX' ? '[GHI CHÚ HIỆN TRƯỜNG]' : '';
       final fullReason = ktvNote.isNotEmpty
-          ? '$ktvNote (Lý do sự cố: $reportedReason)'
-          : reportedReason;
+          ? (reasonPrefix.isNotEmpty ? '$reasonPrefix $ktvNote (Lý do sự cố: $reportedReason)' : '$ktvNote (Lý do sự cố: $reportedReason)')
+          : (reasonPrefix.isNotEmpty ? '$reasonPrefix $reportedReason' : reportedReason);
 
       await widget.service.resolveBoxIncident(
         reportId: widget.report['id'] as int,
         boxId: _selectedBoxId!,
         action: _action,
         targetBoxId: _targetBoxId,
+        lockBox: _lockBox,
         reason: fullReason,
         customerOtp: _otpCtrl.text.trim(),
         sealNumber: _sealCtrl.text.trim(),
@@ -7458,9 +7932,6 @@ class _BoxIncidentResolutionSheetState
   @override
   Widget build(BuildContext context) {
     final cell = _currentCell;
-    final isOccupied =
-        (cell?['status'] as String? ?? '').toUpperCase() == 'OCCUPIED' ||
-            _activeOrder != null;
     final avTargets = _availableTargetBoxes;
 
     return Padding(
@@ -7583,254 +8054,444 @@ class _BoxIncidentResolutionSheetState
               // BƯỚC 2: HIỆN TRẠNG Ô & PHƯƠNG ÁN XỬ LÝ
               if (_loadingOrder) ...[
                 const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 12),
+                  padding: EdgeInsets.symmetric(vertical: 16),
                   child: Center(
                     child: CircularProgressIndicator(strokeWidth: 2),
                   ),
                 ),
-              ] else if (isOccupied) ...[
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFFFFBEB),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: const Color(0xFFFDE68A)),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          const Icon(Icons.warning_amber_rounded,
-                              color: Color(0xFFD97706), size: 20),
-                          const SizedBox(width: 8),
-                          const Expanded(
-                            child: Text(
-                              'Ô ĐANG CHỨA ĐỒ CỦA KHÁCH!',
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                color: Color(0xFF92400E),
-                                fontSize: 13,
+              ] else ...[
+                // Banner trạng thái ô & Nút mở khẩn cấp
+                if (_activeOrder != null) ...[
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFFFBEB),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: const Color(0xFFFDE68A)),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            const Icon(Icons.warning_amber_rounded,
+                                color: Color(0xFFD97706), size: 20),
+                            const SizedBox(width: 8),
+                            const Expanded(
+                              child: Text(
+                                'Ô ĐANG CHỨA ĐỒ CỦA KHÁCH!',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF92400E),
+                                  fontSize: 13,
+                                ),
                               ),
                             ),
-                          ),
-                          OutlinedButton.icon(
-                            onPressed: _forceOpenBox,
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: const Color(0xFFEA580C),
-                              side: const BorderSide(color: Color(0xFFEA580C)),
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 8, vertical: 4),
-                              minimumSize: const Size(0, 32),
+                            OutlinedButton.icon(
+                              onPressed: _openingBox ? null : _forceOpenBox,
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: const Color(0xFFEA580C),
+                                side: const BorderSide(color: Color(0xFFEA580C)),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 10, vertical: 6),
+                                minimumSize: const Size(0, 32),
+                              ),
+                              icon: _openingBox
+                                  ? const SizedBox(
+                                      width: 13,
+                                      height: 13,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        color: Color(0xFFEA580C),
+                                      ),
+                                    )
+                                  : const Icon(Icons.lock_open, size: 14),
+                              label: Text(
+                                _openingBox ? 'Đang mở...' : 'Mở khẩn cấp',
+                                style: const TextStyle(
+                                    fontSize: 11.5, fontWeight: FontWeight.bold),
+                              ),
                             ),
-                            icon: const Icon(Icons.lock_open, size: 14),
-                            label: const Text('Mở khẩn cấp',
-                                style: TextStyle(fontSize: 11.5)),
-                          ),
-                        ],
-                      ),
-                      if (_activeOrder != null) ...[
+                          ],
+                        ),
                         const SizedBox(height: 6),
                         Text(
-                          'Đơn hàng: ${_activeOrder!['orderCode']} · Khách: ${_activeOrder!['receiverName'] ?? ''} (${_activeOrder!['receiverPhone'] ?? ''})',
+                          'Đơn hàng: ${_activeOrder!['orderCode']} · Khách: ${_activeOrder!['receiverName'] ?? 'Khách'} (${_activeOrder!['receiverPhone'] ?? ''})',
                           style: const TextStyle(
-                              fontSize: 12, color: Color(0xFF78350F)),
+                              fontSize: 12,
+                              color: Color(0xFF78350F),
+                              fontWeight: FontWeight.w500),
                         ),
                       ],
-                    ],
+                    ),
                   ),
-                ),
-                const SizedBox(height: 14),
-                const Text(
-                  '2. Chọn phương án xử lý hàng trong ô:',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13.5),
-                ),
-                const SizedBox(height: 6),
-
-                // KỊCH BẢN 1: Điều chuyển
-                RadioListTile<String>(
-                  value: 'RELOCATE',
-                  groupValue: _action,
-                  onChanged: (v) => setState(() => _action = v!),
-                  title: const Text(
-                    'Điều chuyển sang ô trống mới (Khuyến nghị)',
-                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
-                  ),
-                  subtitle: const Text(
-                    'Dọn đồ sang ô trống khác cùng Kiosk, cấp mã PIN mới cho khách & Khóa ô cũ.',
-                    style: TextStyle(fontSize: 11.5, color: opsMutedText),
-                  ),
-                  activeColor: _brandColor,
-                  contentPadding: EdgeInsets.zero,
-                ),
-                if (_action == 'RELOCATE') ...[
-                  Padding(
-                    padding: const EdgeInsets.only(left: 36, bottom: 8),
-                    child: avTargets.isEmpty
-                        ? const Text(
-                            '⚠️ Trạm Kiosk không còn ô trống nào! Hãy chọn phương án giao trực tiếp hoặc niêm phong.',
-                            style: TextStyle(
-                                color: Color(0xFFDC2626), fontSize: 12),
-                          )
-                        : DropdownButtonFormField<int>(
-                            value: _targetBoxId,
-                            decoration: InputDecoration(
-                              labelText: 'Chọn ô trống đích',
-                              isDense: true,
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(10),
+                ] else if ((cell?['status'] as String? ?? '').toUpperCase() == 'OCCUPIED') ...[
+                  // Ô hiển thị OCCUPIED nhưng không có đơn hàng nào trong hệ thống
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFEFF6FF),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: const Color(0xFFBFDBFE)),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            const Icon(Icons.info_outline,
+                                color: Color(0xFF2563EB), size: 20),
+                            const SizedBox(width: 8),
+                            const Expanded(
+                              child: Text(
+                                'Ô KHÔNG CÓ ĐƠN HÀNG HOẠT ĐỘNG',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF1E40AF),
+                                  fontSize: 13,
+                                ),
                               ),
                             ),
-                            items: avTargets.map((t) {
-                              return DropdownMenuItem<int>(
-                                value: _asInt(t['id']),
-                                child: Text(
-                                    'Ô #${t['boxNumber']} (${t['cellType'] ?? 'STANDARD'})'),
-                              );
-                            }).toList(),
-                            onChanged: (val) =>
-                                setState(() => _targetBoxId = val),
-                          ),
-                  ),
-                ],
-
-                // KỊCH BẢN 2: Bàn giao trực tiếp
-                RadioListTile<String>(
-                  value: 'HANDOVER',
-                  groupValue: _action,
-                  onChanged: (v) => setState(() => _action = v!),
-                  title: const Text(
-                    'Khách hàng có mặt - Bàn giao trực tiếp',
-                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
-                  ),
-                  subtitle: const Text(
-                    'Khách đang ở tại trạm nhận đồ trực tiếp, hoàn tất đơn & Khóa ô cũ.',
-                    style: TextStyle(fontSize: 11.5, color: opsMutedText),
-                  ),
-                  activeColor: _brandColor,
-                  contentPadding: EdgeInsets.zero,
-                ),
-                if (_action == 'HANDOVER') ...[
-                  Padding(
-                    padding: const EdgeInsets.only(left: 36, bottom: 8),
-                    child: TextField(
-                      controller: _otpCtrl,
-                      decoration: InputDecoration(
-                        labelText: 'Mã OTP / PIN của khách (tuỳ chọn)',
-                        hintText: 'Nhập mã để xác thực nếu có',
-                        isDense: true,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
+                            OutlinedButton.icon(
+                              onPressed: _openingBox ? null : _forceOpenBox,
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: const Color(0xFF2563EB),
+                                side: const BorderSide(color: Color(0xFF2563EB)),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 10, vertical: 6),
+                                minimumSize: const Size(0, 32),
+                              ),
+                              icon: _openingBox
+                                  ? const SizedBox(
+                                      width: 13,
+                                      height: 13,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        color: Color(0xFF2563EB),
+                                      ),
+                                    )
+                                  : const Icon(Icons.lock_open, size: 14),
+                              label: Text(
+                                _openingBox ? 'Đang mở...' : 'Mở khẩn cấp',
+                                style: const TextStyle(
+                                    fontSize: 11.5, fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                          ],
                         ),
-                      ),
-                    ),
-                  ),
-                ],
-
-                // KỊCH BẢN 3: Niêm phong về Hub
-                RadioListTile<String>(
-                  value: 'HUB_ESCROW',
-                  groupValue: _action,
-                  onChanged: (v) => setState(() => _action = v!),
-                  title: const Text(
-                    'Kiosk hết ô trống - Niêm phong đưa về Hub',
-                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
-                  ),
-                  subtitle: const Text(
-                    'Đóng túi niêm phong an toàn, quét mã Seal đưa về Hub lưu trữ & Khóa ô cũ.',
-                    style: TextStyle(fontSize: 11.5, color: opsMutedText),
-                  ),
-                  activeColor: _brandColor,
-                  contentPadding: EdgeInsets.zero,
-                ),
-                if (_action == 'HUB_ESCROW') ...[
-                  Padding(
-                    padding: const EdgeInsets.only(left: 36, bottom: 8),
-                    child: TextField(
-                      controller: _sealCtrl,
-                      decoration: InputDecoration(
-                        labelText: 'Mã Seal niêm phong',
-                        isDense: true,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-
-              ] else ...[
-                // Ô trống không có đồ
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFF0FDF4),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: const Color(0xFFBBF7D0)),
-                  ),
-                  child: const Row(
-                    children: [
-                      Icon(Icons.check_circle_outline,
-                          color: Color(0xFF16A34A), size: 20),
-                      SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          'Ô hiện tại đang trống (Không có đồ bên trong)',
+                        const SizedBox(height: 6),
+                        const Text(
+                          'Hệ thống không tìm thấy đơn hàng trong ô này. Có thể khách đã lấy đồ, kẹt cảm biến hoặc báo nhầm ô. KTV hãy mở khẩn cấp để kiểm tra thực tế.',
                           style: TextStyle(
-                            fontWeight: FontWeight.w600,
-                            color: Color(0xFF166534),
-                            fontSize: 12.5,
+                            fontSize: 12,
+                            color: Color(0xFF1E3A8A),
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
-                const SizedBox(height: 12),
-                const Text(
-                  '2. Chọn hành động:',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13.5),
+                ] else ...[
+                  // Ô trống bình thường
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF0FDF4),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: const Color(0xFFBBF7D0)),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.check_circle_outline,
+                            color: Color(0xFF16A34A), size: 20),
+                        const SizedBox(width: 8),
+                        const Expanded(
+                          child: Text(
+                            'Ô hiện tại đang trống (Không có đồ bên trong)',
+                            style: TextStyle(
+                              fontWeight: FontWeight.w600,
+                              color: Color(0xFF166534),
+                              fontSize: 12.5,
+                            ),
+                          ),
+                        ),
+                        OutlinedButton.icon(
+                          onPressed: _openingBox ? null : _forceOpenBox,
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: const Color(0xFF16A34A),
+                            side: const BorderSide(color: Color(0xFF16A34A)),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 10, vertical: 6),
+                            minimumSize: const Size(0, 32),
+                          ),
+                          icon: _openingBox
+                              ? const SizedBox(
+                                  width: 13,
+                                  height: 13,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: Color(0xFF16A34A),
+                                  ),
+                                )
+                              : const Icon(Icons.lock_open, size: 14),
+                          label: Text(
+                            _openingBox ? 'Đang mở...' : 'Mở khẩn cấp',
+                            style: const TextStyle(
+                                fontSize: 11.5, fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+                const SizedBox(height: 14),
+
+                Text(
+                  _activeOrder != null
+                      ? '2. Chọn phương án xử lý hàng trong ô:'
+                      : '2. Chọn phương án xử lý:',
+                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13.5),
                 ),
                 const SizedBox(height: 6),
+
+                if (_activeOrder != null) ...[
+                  // KỊCH BẢN 1: Điều chuyển
+                  RadioListTile<String>(
+                    value: 'RELOCATE',
+                    groupValue: _action,
+                    onChanged: (v) => setState(() {
+                      _action = v!;
+                      _lockBox = true;
+                    }),
+                    title: const Text(
+                      'Điều chuyển sang ô trống mới (Khuyến nghị)',
+                      style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                    ),
+                    subtitle: const Text(
+                      'Dọn đồ sang ô trống khác cùng Kiosk, cấp mã PIN mới cho khách & Khóa ô cũ.',
+                      style: TextStyle(fontSize: 11.5, color: opsMutedText),
+                    ),
+                    activeColor: _brandColor,
+                    contentPadding: EdgeInsets.zero,
+                  ),
+                  if (_action == 'RELOCATE') ...[
+                    Padding(
+                      padding: const EdgeInsets.only(left: 36, bottom: 8),
+                      child: avTargets.isEmpty
+                          ? const Text(
+                              '⚠️ Trạm Kiosk không còn ô trống nào! Hãy chọn phương án giao trực tiếp hoặc niêm phong.',
+                              style: TextStyle(
+                                  color: Color(0xFFDC2626), fontSize: 12),
+                            )
+                          : DropdownButtonFormField<int>(
+                              value: _targetBoxId,
+                              decoration: InputDecoration(
+                                labelText: 'Chọn ô trống đích',
+                                isDense: true,
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                              ),
+                              items: avTargets.map((t) {
+                                return DropdownMenuItem<int>(
+                                  value: _asInt(t['id']),
+                                  child: Text(
+                                      'Ô #${t['boxNumber']} (${t['cellType'] ?? 'STANDARD'})'),
+                                );
+                              }).toList(),
+                              onChanged: (val) =>
+                                  setState(() => _targetBoxId = val),
+                            ),
+                    ),
+                  ],
+
+                  // KỊCH BẢN 2: Bàn giao trực tiếp
+                  RadioListTile<String>(
+                    value: 'HANDOVER',
+                    groupValue: _action,
+                    onChanged: (v) => setState(() {
+                      _action = v!;
+                      _lockBox = true;
+                    }),
+                    title: const Text(
+                      'Khách hàng có mặt - Bàn giao trực tiếp',
+                      style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                    ),
+                    subtitle: const Text(
+                      'Khách đang ở tại trạm nhận đồ trực tiếp, hoàn tất đơn & Khóa ô cũ.',
+                      style: TextStyle(fontSize: 11.5, color: opsMutedText),
+                    ),
+                    activeColor: _brandColor,
+                    contentPadding: EdgeInsets.zero,
+                  ),
+                  if (_action == 'HANDOVER') ...[
+                    Padding(
+                      padding: const EdgeInsets.only(left: 36, bottom: 8),
+                      child: TextField(
+                        controller: _otpCtrl,
+                        decoration: InputDecoration(
+                          labelText: 'Mã OTP / PIN của khách (tuỳ chọn)',
+                          hintText: 'Nhập mã để xác thực nếu có',
+                          isDense: true,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+
+                  // KỊCH BẢN 3: Niêm phong về Hub
+                  RadioListTile<String>(
+                    value: 'HUB_ESCROW',
+                    groupValue: _action,
+                    onChanged: (v) => setState(() {
+                      _action = v!;
+                      _lockBox = true;
+                    }),
+                    title: const Text(
+                      'Kiosk hết ô trống - Niêm phong đưa về Hub',
+                      style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                    ),
+                    subtitle: const Text(
+                      'Đóng túi niêm phong an toàn, quét mã Seal đưa về Hub lưu trữ & Khóa ô cũ.',
+                      style: TextStyle(fontSize: 11.5, color: opsMutedText),
+                    ),
+                    activeColor: _brandColor,
+                    contentPadding: EdgeInsets.zero,
+                  ),
+                  if (_action == 'HUB_ESCROW') ...[
+                    Padding(
+                      padding: const EdgeInsets.only(left: 36, bottom: 8),
+                      child: TextField(
+                        controller: _sealCtrl,
+                        decoration: InputDecoration(
+                          labelText: 'Mã Seal niêm phong',
+                          isDense: true,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+
+                  // KỊCH BẢN 4: Xử lý tại chỗ (khi có hàng nhưng xử lý được ngay)
+                  RadioListTile<String>(
+                    value: 'QUICK_FIX',
+                    groupValue: _action,
+                    onChanged: (v) => setState(() {
+                      _action = v!;
+                      _lockBox = false;
+                    }),
+                    title: const Text(
+                      'Kiểm tra & Xử lý tại chỗ (Không chuyển dọn đồ)',
+                      style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                    ),
+                    subtitle: const Text(
+                      'Kiểm tra cảm biến, đóng chặt cửa hoặc hỗ trợ khách tại chỗ mà không cần dọn đồ.',
+                      style: TextStyle(fontSize: 11.5, color: opsMutedText),
+                    ),
+                    activeColor: _brandColor,
+                    contentPadding: EdgeInsets.zero,
+                  ),
+                ] else ...[
+                  // KHÔNG CÓ ĐƠN HÀNG HOẠT ĐỘNG
+                  RadioListTile<String>(
+                    value: 'QUICK_FIX',
+                    groupValue: _action,
+                    onChanged: (v) => setState(() {
+                      _action = v!;
+                      _lockBox = false;
+                    }),
+                    title: const Text(
+                      'Kiểm tra & Xử lý tại chỗ (Khuyến nghị)',
+                      style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                    ),
+                    subtitle: const Text(
+                      'Kiểm tra vật lý (cảm biến, chốt khóa, vệ sinh). Nếu user báo nhầm hoặc lỗi nhẹ đã khắc phục xong, không cần khóa ô.',
+                      style: TextStyle(fontSize: 11.5, color: opsMutedText),
+                    ),
+                    activeColor: _brandColor,
+                    contentPadding: EdgeInsets.zero,
+                  ),
+                  RadioListTile<String>(
+                    value: 'LOCK_ONLY',
+                    groupValue: _action,
+                    onChanged: (v) => setState(() {
+                      _action = v!;
+                      _lockBox = true;
+                    }),
+                    title: const Text(
+                      'Xác nhận lỗi phần cứng & Khóa ô bảo trì (FAULT)',
+                      style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                    ),
+                    subtitle: const Text(
+                      'Cần linh kiện thay thế hoặc bảo dưỡng sâu. Tạm ngưng hoạt động ô tủ để kỹ thuật viên sửa chữa.',
+                      style: TextStyle(fontSize: 11.5, color: opsMutedText),
+                    ),
+                    activeColor: _brandColor,
+                    contentPadding: EdgeInsets.zero,
+                  ),
+                ],
+
+                // NÚT CHỌN KHÓA Ô TỦ HAY KHÔNG (Switch)
+                const SizedBox(height: 12),
                 Container(
-                  padding: const EdgeInsets.all(12),
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFF8FAFC),
+                    color: _lockBox ? const Color(0xFFFEF2F2) : const Color(0xFFF0FDF4),
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: _brandColor.withValues(alpha: 0.35)),
+                    border: Border.all(
+                      color: _lockBox ? const Color(0xFFFECACA) : const Color(0xFFBBF7D0),
+                    ),
                   ),
                   child: Row(
                     children: [
-                      Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: _brandColor.withValues(alpha: 0.1),
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(Icons.lock_outline, color: _brandColor, size: 20),
+                      Icon(
+                        _lockBox ? Icons.lock_outline : Icons.lock_open_outlined,
+                        color: _lockBox ? const Color(0xFFDC2626) : const Color(0xFF16A34A),
+                        size: 24,
                       ),
                       const SizedBox(width: 12),
-                      const Expanded(
+                      Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Xác nhận lỗi & Khóa ô bảo trì (FAULT)',
+                              _lockBox
+                                  ? 'Khóa ô tủ để bảo trì (Trạng thái: FAULT)'
+                                  : 'Giữ ô tủ hoạt động bình thường (AVAILABLE)',
                               style: TextStyle(
-                                fontSize: 13,
                                 fontWeight: FontWeight.bold,
-                                color: opsDark,
+                                fontSize: 13,
+                                color: _lockBox
+                                    ? const Color(0xFF991B1B)
+                                    : const Color(0xFF166534),
                               ),
                             ),
-                            SizedBox(height: 2),
+                            const SizedBox(height: 2),
                             Text(
-                              'Hiện trạng đúng như phản ánh. Khóa ô để tiến hành sửa chữa, cập nhật sơ đồ Kiosk & Admin.',
-                              style: TextStyle(fontSize: 11.5, color: opsMutedText),
+                              _lockBox
+                                  ? 'Ô tủ sẽ bị tạm ngưng và không nhận đơn mới cho đến khi hoàn tất sửa chữa.'
+                                  : 'Không khóa ô tủ. Phù hợp khi khách hàng báo nhầm hoặc sự cố đã được xử lý ngay tại chỗ.',
+                              style: TextStyle(
+                                fontSize: 11.5,
+                                color: _lockBox
+                                    ? const Color(0xFFB91C1C)
+                                    : const Color(0xFF15803D),
+                              ),
                             ),
                           ],
                         ),
                       ),
-                      const Icon(Icons.check_circle, color: _brandColor, size: 20),
+                      Switch(
+                        value: _lockBox,
+                        onChanged: (val) => setState(() => _lockBox = val),
+                        activeColor: const Color(0xFFDC2626),
+                        activeTrackColor: const Color(0xFFFCA5A5),
+                        inactiveThumbColor: const Color(0xFF16A34A),
+                        inactiveTrackColor: const Color(0xFFBBF7D0),
+                      ),
                     ],
                   ),
                 ),
@@ -8116,26 +8777,31 @@ String _cellTypeLabel(String? type) => switch (type) {
 
 /// Pill nhỏ trong banner tổng quan sự cố của tab "Sự cố" (Queue).
 class _QueueStatChip extends StatelessWidget {
-  const _QueueStatChip({required this.label, required this.color});
+  const _QueueStatChip({
+    required this.label,
+    required this.color,
+    this.isSolid = false,
+  });
 
   final String label;
   final Color color;
+  final bool isSolid;
 
   @override
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.12),
+        color: isSolid ? color : Colors.white.withValues(alpha: 0.22),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: color.withValues(alpha: 0.4)),
+        border: isSolid ? null : Border.all(color: Colors.white.withValues(alpha: 0.3)),
       ),
       child: Text(
         label,
-        style: TextStyle(
+        style: const TextStyle(
           fontSize: 10.5,
           fontWeight: FontWeight.w700,
-          color: color.withValues(alpha: 1.0),
+          color: Colors.white,
         ),
       ),
     );
@@ -8160,30 +8826,47 @@ class _MetricCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 10),
       decoration: BoxDecoration(
         color: highlight
-            ? color.withValues(alpha: 0.15)
-            : color.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(12),
+            ? color.withValues(alpha: 0.12)
+            : color.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(14),
         border: Border.all(
-          color: highlight ? color : color.withValues(alpha: 0.2),
-          width: highlight ? 1.6 : 1.0,
+          color: highlight ? color : color.withValues(alpha: 0.22),
+          width: highlight ? 1.5 : 1.0,
         ),
+        boxShadow: highlight
+            ? [
+                BoxShadow(
+                  color: color.withValues(alpha: 0.18),
+                  blurRadius: 6,
+                  offset: const Offset(0, 2),
+                ),
+              ]
+            : null,
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           if (icon != null) ...[
-            Icon(icon, size: 16, color: color),
-            const SizedBox(height: 2),
+            Container(
+              padding: const EdgeInsets.all(4.5),
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.14),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, size: 14, color: color),
+            ),
+            const SizedBox(height: 4),
           ],
           Text(
             value,
             style: TextStyle(
-              fontSize: 18,
+              fontSize: 18.5,
               fontWeight: FontWeight.w900,
               color: color,
+              letterSpacing: -0.5,
             ),
           ),
           const SizedBox(height: 2),

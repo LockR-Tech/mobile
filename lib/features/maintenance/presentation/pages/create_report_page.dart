@@ -22,6 +22,7 @@ class CreateReportPage extends StatefulWidget {
   final String? lockerName;
   final String? cabinetName;
   final String? locationName;
+  final int? initialBoxId;
 
   const CreateReportPage({
     Key? key,
@@ -30,6 +31,7 @@ class CreateReportPage extends StatefulWidget {
     this.lockerName,
     this.cabinetName,
     this.locationName,
+    this.initialBoxId,
   }) : super(key: key);
 
   @override
@@ -43,11 +45,16 @@ class _CreateReportPageState extends State<CreateReportPage> {
   final ImagePicker _picker = ImagePicker();
   late MaintenanceProvider _provider;
   late LockerProvider _lockerProvider;
+  final ApiClient _apiClient = ApiClient();
 
   bool _isLoadingLockerOptions = true;
   String? _lockerOptionsError;
   List<_LockerAddressOption> _lockerOptions = [];
   String? _selectedLockerOptionId;
+
+  List<Map<String, dynamic>> _boxes = [];
+  int? _selectedBoxId;
+  bool _isLoadingBoxes = false;
 
   String _friendlyErrorMessage(String? rawError) {
     if (rawError == null || rawError.trim().isEmpty) {
@@ -98,6 +105,9 @@ class _CreateReportPageState extends State<CreateReportPage> {
   @override
   void initState() {
     super.initState();
+    if (widget.initialBoxId != null) {
+      _selectedBoxId = widget.initialBoxId;
+    }
     _provider = MaintenanceInjection.provideMaintenanceProvider(ApiClient());
     _lockerProvider = LockerInjection.provideLockerProvider(ApiClient());
     _loadLockerAddressOptions();
@@ -110,6 +120,37 @@ class _CreateReportPageState extends State<CreateReportPage> {
     _lockerProvider.dispose();
     _provider.dispose();
     super.dispose();
+  }
+
+  Future<void> _loadBoxesForLocker(String lockerId) async {
+    final parsedId = int.tryParse(lockerId);
+    if (parsedId == null) return;
+    setState(() => _isLoadingBoxes = true);
+    try {
+      final res = await _apiClient.get('/api/lockers/$parsedId/layout');
+      final raw = res.data;
+      final data = raw is Map ? raw['data'] : null;
+      final cellsRaw = data is Map ? data['cells'] : null;
+      if (cellsRaw is List) {
+        final cells = cellsRaw
+            .whereType<Map>()
+            .map((e) => Map<String, dynamic>.from(e))
+            .toList();
+        cells.sort((a, b) =>
+            ((a['boxNumber'] as num?) ?? 0).compareTo((b['boxNumber'] as num?) ?? 0));
+        if (mounted) {
+          setState(() {
+            _boxes = cells;
+            if (_selectedBoxId == null && widget.initialBoxId != null) {
+              _selectedBoxId = widget.initialBoxId;
+            }
+          });
+        }
+      }
+    } catch (_) {
+    } finally {
+      if (mounted) setState(() => _isLoadingBoxes = false);
+    }
   }
 
   Future<void> _loadLockerAddressOptions() async {
@@ -136,6 +177,7 @@ class _CreateReportPageState extends State<CreateReportPage> {
         _selectedLockerOptionId = optionId;
         _isLoadingLockerOptions = false;
       });
+      _loadBoxesForLocker(widget.lockerId);
       return;
     }
 
@@ -207,6 +249,14 @@ class _CreateReportPageState extends State<CreateReportPage> {
           ? 'Không tìm thấy locker khả dụng để báo cáo'
           : null;
     });
+
+    if (selectedId != null) {
+      final matchedOpt = options.firstWhere(
+        (o) => o.id == selectedId,
+        orElse: () => options.first,
+      );
+      _loadBoxesForLocker(matchedOpt.lockerId);
+    }
   }
 
   Future<void> _submitReport() async {
@@ -246,6 +296,7 @@ class _CreateReportPageState extends State<CreateReportPage> {
       title: _titleController.text,
       description: _descriptionController.text,
       photos: _capturedPhotos,
+      boxId: _selectedBoxId,
     );
 
     SmartDialog.dismiss<void>();
@@ -342,6 +393,8 @@ class _CreateReportPageState extends State<CreateReportPage> {
             ),
             const SizedBox(height: 16),
             _buildLockerAddressDropdown(),
+            const SizedBox(height: 16),
+            _buildBoxSelectionSection(),
             const SizedBox(height: 16),
             _buildPhotoSection(),
             const SizedBox(height: 40),
@@ -524,6 +577,148 @@ class _CreateReportPageState extends State<CreateReportPage> {
               fontWeight: FontWeight.w500,
             ),
           ),
+      ],
+    );
+  }
+
+  Widget _buildBoxSelectionSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            const Text(
+              'Chọn ô gặp sự cố tại Kiosk:',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: Colors.black87,
+              ),
+            ),
+            const SizedBox(width: 8),
+            Text(
+              '(Tuỳ chọn)',
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.grey.shade600,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        if (_isLoadingBoxes)
+          Container(
+            padding: const EdgeInsets.symmetric(vertical: 14),
+            child: const Center(
+              child: SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
+            ),
+          )
+        else if (_boxes.isEmpty)
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.grey.shade50,
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: Colors.grey.shade200),
+            ),
+            child: Text(
+              'Không tìm thấy danh sách ô hoặc sự cố xảy ra chung toàn trạm.',
+              style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+            ),
+          )
+        else ...[
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: _boxes.map((c) {
+              final cId = (c['id'] as num?)?.toInt();
+              final isSel = cId != null && cId == _selectedBoxId;
+              final st = (c['status'] as String? ?? '').toUpperCase();
+              final col = switch (st) {
+                'AVAILABLE' => const Color(0xFF16A34A),
+                'OCCUPIED' => const Color(0xFFD97706),
+                'RESERVED' => const Color(0xFF2563EB),
+                'FAULT' => const Color(0xFFDC2626),
+                _ => Colors.grey,
+              };
+              return ChoiceChip(
+                selected: isSel,
+                onSelected: (val) {
+                  setState(() {
+                    _selectedBoxId = val ? cId : null;
+                  });
+                },
+                selectedColor: AISLShadcnTheme.navyPrimary.withValues(alpha: 0.18),
+                backgroundColor: Colors.white,
+                side: BorderSide(
+                  color: isSel ? AISLShadcnTheme.navyPrimary : Colors.grey.shade300,
+                  width: isSel ? 2 : 1,
+                ),
+                label: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 8,
+                      height: 8,
+                      decoration: BoxDecoration(
+                        color: col,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      '#${c['boxNumber']}',
+                      style: TextStyle(
+                        fontWeight: isSel ? FontWeight.bold : FontWeight.w600,
+                        color: isSel ? AISLShadcnTheme.navyPrimary : Colors.black87,
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }).toList(),
+          ),
+          if (_selectedBoxId != null) ...[
+            const SizedBox(height: 8),
+            Builder(
+              builder: (_) {
+                final match = _boxes.firstWhere(
+                  (b) => (b['id'] as num?)?.toInt() == _selectedBoxId,
+                  orElse: () => {},
+                );
+                final numVal = match['boxNumber'] ?? _selectedBoxId;
+                return Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFECFDF5),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: const Color(0xFFA7F3D0)),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.check_circle, size: 14, color: Color(0xFF059669)),
+                      const SizedBox(width: 6),
+                      Text(
+                        'Đã chọn ô #$numVal — KTV sẽ thấy ngay ô này khi nhận xử lý.',
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF065F46),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
+          ],
+        ],
       ],
     );
   }

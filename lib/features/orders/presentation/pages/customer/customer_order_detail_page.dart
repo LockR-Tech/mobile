@@ -1157,6 +1157,7 @@ class _CustomerOrderDetailPageState extends State<CustomerOrderDetailPage> {
               ? locker.displayPosition
               : _fetchedLockerName ?? activeDetail.lockerLabel,
           locationName: cabinet?.locationName,
+          initialBoxId: int.tryParse(lockerId),
         ),
       ),
     );

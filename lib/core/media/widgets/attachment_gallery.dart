@@ -133,6 +133,7 @@ class AttachmentStageGallery extends StatelessWidget {
     this.labels = const {},
     this.accentColor = _defaultAccent,
     this.thumbSize = 64,
+    this.showEmptyStages = false,
   });
 
   final List<ReportAttachment> attachments;
@@ -145,12 +146,16 @@ class AttachmentStageGallery extends StatelessWidget {
   final Color accentColor;
   final double thumbSize;
 
+  /// Luôn hiển thị tiêu đề giai đoạn kèm "Chưa có ảnh" nếu stage chưa có ảnh.
+  final bool showEmptyStages;
+
   @override
   Widget build(BuildContext context) {
     final groups = ReportAttachment.groupByStage(attachments);
     final visible = [
       for (final stage in stages)
-        if (groups[stage] != null) MapEntry(stage, groups[stage]!),
+        if (showEmptyStages || (groups[stage] != null && groups[stage]!.isNotEmpty))
+          MapEntry(stage, groups[stage] ?? const <ReportAttachment>[]),
     ];
     if (visible.isEmpty) return const SizedBox.shrink();
     return Column(
@@ -171,7 +176,7 @@ class AttachmentStageGallery extends StatelessWidget {
                 Flexible(
                   child: Text(
                     '${labels[entry.key] ?? ReportStage.label(entry.key)} '
-                    '(${entry.value.length})',
+                    '(${entry.value.length} ảnh):',
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w700,
@@ -182,11 +187,24 @@ class AttachmentStageGallery extends StatelessWidget {
               ],
             ),
           ),
-          AttachmentStrip(
-            attachments: entry.value,
-            size: thumbSize,
-            viewerTitle: labels[entry.key] ?? ReportStage.label(entry.key),
-          ),
+          if (entry.value.isEmpty)
+            const Padding(
+              padding: EdgeInsets.only(left: 18, bottom: 4),
+              child: Text(
+                'Chưa có ảnh',
+                style: TextStyle(
+                  fontSize: 11.5,
+                  fontStyle: FontStyle.italic,
+                  color: Color(0xFF94A3B8),
+                ),
+              ),
+            )
+          else
+            AttachmentStrip(
+              attachments: entry.value,
+              size: thumbSize,
+              viewerTitle: labels[entry.key] ?? ReportStage.label(entry.key),
+            ),
         ],
       ],
     );
@@ -203,6 +221,7 @@ class AttachmentStageGallery extends StatelessWidget {
   static Color _stageColor(String stage, Color accent) => switch (stage) {
     ReportStage.report => const Color(0xFFE11D48),
     ReportStage.inspection => const Color(0xFFD97706),
+    ReportStage.progress => const Color(0xFF2563EB),
     ReportStage.resolution => const Color(0xFF16A34A),
     _ => accent,
   };

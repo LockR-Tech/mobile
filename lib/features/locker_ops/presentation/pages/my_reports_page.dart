@@ -7,6 +7,7 @@ import 'package:smart_laundry_locker/core/config/business_config_service.dart';
 import 'package:smart_laundry_locker/core/media/media.dart';
 import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/ops_widgets.dart';
+import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/user_report_detail_sheet.dart';
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
 
 /// Tối đa ảnh REPORT trên 1 phiếu (hợp đồng media-storage). Backend không công
@@ -196,150 +197,187 @@ class _ReportCardState extends State<_ReportCard> {
         status != 'RESOLVED' &&
         reportPhotoCount < _maxReportPhotosPerReport;
 
-    return OpsCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () => UserReportDetailSheet.show(
+          context,
+          report: report,
+          onChanged: widget.onChanged,
+        ),
+        borderRadius: BorderRadius.circular(16),
+        child: OpsCard(
+          child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(
-                child: Text(
-                  report['title']?.toString() ?? 'Báo cáo ô tủ',
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w700,
-                    fontSize: 15,
-                    color: opsDark,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 8),
-              StatusChip(status),
-            ],
-          ),
-          if (description != null && description.isNotEmpty) ...[
-            const SizedBox(height: 6),
-            Text(
-              description,
-              style: const TextStyle(fontSize: 13, color: opsMutedText),
-            ),
-          ],
-          const SizedBox(height: 12),
-          OpsInfoRow(
-            icon: LucideIcons.warehouse,
-            label: 'Tủ',
-            value: '${lockerLabel ?? '-'}',
-          ),
-          if (report['boxNumber'] != null)
-            OpsInfoRow(
-              icon: LucideIcons.grid3x3,
-              label: 'Ô',
-              value: '${report['boxNumber']}',
-            ),
-          OpsInfoRow(
-            icon: LucideIcons.calendar,
-            label: 'Gửi lúc',
-            value: fmtDateTime(report['createdAt']),
-          ),
-          if (attachments.isNotEmpty)
-            AttachmentStageGallery(
-              attachments: attachments,
-              stages: const [
-                ReportStage.report,
-                ReportStage.inspection,
-                ReportStage.resolution,
-              ],
-              labels: const {
-                ReportStage.report: 'Ảnh bạn gửi',
-                ReportStage.inspection: 'Ảnh kỹ thuật viên kiểm tra',
-                ReportStage.resolution: 'Ảnh nghiệm thu',
-              },
-              accentColor: AislBrand.navy,
-            ),
-          if (canAddPhotos)
-            Align(
-              alignment: Alignment.centerLeft,
-              child: TextButton.icon(
-                onPressed: () => _addPhotos(reportId, reportPhotoCount),
-                icon: const Icon(LucideIcons.imagePlus, size: 16),
-                label: Text(
-                  reportPhotoCount == 0 ? 'Thêm ảnh sự cố' : 'Bổ sung ảnh',
-                ),
-                style: TextButton.styleFrom(foregroundColor: AislBrand.navy),
-              ),
-            ),
-          if (status == 'IN_PROGRESS')
-            const Padding(
-              padding: EdgeInsets.only(top: 10),
-              child: OpsBanner(
-                tone: OpsBannerTone.info,
-                icon: LucideIcons.userCheck,
-                text: 'Đội bảo trì đang xử lý báo cáo này.',
-              ),
-            )
-          else if (status == 'RESOLVED') ...[
-            const Padding(
-              padding: EdgeInsets.only(top: 10),
-              child: OpsBanner(
-                tone: OpsBannerTone.success,
-                icon: LucideIcons.circleCheck,
-                text: 'Báo cáo đã được xử lý xong.',
-              ),
-            ),
-            const SizedBox(height: 10),
-            if (_loadingRating)
-              const SizedBox(
-                height: 20,
-                child: Center(
-                  child: SizedBox(
-                    width: 16,
-                    height: 16,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  ),
-                ),
-              )
-            else if (_rating != null)
               Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  ...List.generate(
-                    5,
-                    (i) => Icon(
-                      i < (_rating!['rating'] as int)
-                          ? LucideIcons.star
-                          : LucideIcons.star,
-                      size: 16,
-                      color: i < (_rating!['rating'] as int)
-                          ? const Color(0xFFF59E0B)
-                          : opsBorder,
+                  Expanded(
+                    child: Text(
+                      report['title']?.toString() ?? 'Báo cáo ô tủ',
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 15,
+                        color: opsDark,
+                      ),
                     ),
                   ),
                   const SizedBox(width: 8),
-                  const Text(
-                    'Bạn đã đánh giá',
-                    style: TextStyle(fontSize: 12, color: opsMutedText),
-                  ),
-                ],
-              )
-            else
-              Row(
-                children: [
-                  const Text(
-                    'Đánh giá xử lý: ',
-                    style: TextStyle(fontSize: 12, color: opsMutedText),
-                  ),
-                  ...List.generate(
-                    5,
-                    (i) => IconButton(
-                      padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
-                      icon: const Icon(LucideIcons.star, size: 18, color: Color(0xFFF59E0B)),
-                      onPressed: _submitting ? null : () => _submitRating(i + 1),
-                    ),
-                  ),
+                  StatusChip(status),
+                  const SizedBox(width: 4),
+                  const Icon(LucideIcons.chevronRight, size: 16, color: opsMutedText),
                 ],
               ),
-          ],
-        ],
+              if (description != null && description.isNotEmpty) ...[
+                const SizedBox(height: 6),
+                Text(
+                  description,
+                  style: const TextStyle(fontSize: 13, color: opsMutedText),
+                ),
+              ],
+              const SizedBox(height: 12),
+              OpsInfoRow(
+                icon: LucideIcons.warehouse,
+                label: 'Tủ',
+                value: '${lockerLabel ?? '-'}',
+              ),
+              if (report['boxNumber'] != null)
+                OpsInfoRow(
+                  icon: LucideIcons.grid3x3,
+                  label: 'Ô',
+                  value: '${report['boxNumber']}',
+                ),
+              OpsInfoRow(
+                icon: LucideIcons.calendar,
+                label: 'Gửi lúc',
+                value: fmtDateTime(report['createdAt']),
+              ),
+              if (attachments.isNotEmpty)
+                AttachmentStageGallery(
+                  attachments: attachments,
+                  stages: const [
+                    ReportStage.report,
+                    ReportStage.inspection,
+                    ReportStage.progress,
+                    ReportStage.resolution,
+                  ],
+                  labels: const {
+                    ReportStage.report: 'Ảnh hiện trường (bạn gửi)',
+                    ReportStage.inspection: 'Ảnh kỹ thuật viên kiểm tra',
+                    ReportStage.progress: 'Ảnh trong quá trình sửa',
+                    ReportStage.resolution: 'Ảnh nghiệm thu',
+                  },
+                  accentColor: AislBrand.navy,
+                ),
+              if (canAddPhotos)
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: TextButton.icon(
+                    onPressed: () => _addPhotos(reportId, reportPhotoCount),
+                    icon: const Icon(LucideIcons.imagePlus, size: 16),
+                    label: Text(
+                      reportPhotoCount == 0 ? 'Thêm ảnh sự cố' : 'Bổ sung ảnh',
+                    ),
+                    style: TextButton.styleFrom(foregroundColor: AislBrand.navy),
+                  ),
+                ),
+              if (status == 'IN_PROGRESS')
+                const Padding(
+                  padding: EdgeInsets.only(top: 10),
+                  child: OpsBanner(
+                    tone: OpsBannerTone.info,
+                    icon: LucideIcons.userCheck,
+                    text: 'Đội bảo trì đang xử lý báo cáo này.',
+                  ),
+                )
+              else if (status == 'RESOLVED') ...[
+                const Padding(
+                  padding: EdgeInsets.only(top: 10),
+                  child: OpsBanner(
+                    tone: OpsBannerTone.success,
+                    icon: LucideIcons.circleCheck,
+                    text: 'Báo cáo đã được xử lý xong.',
+                  ),
+                ),
+                const SizedBox(height: 10),
+                if (_loadingRating)
+                  const SizedBox(
+                    height: 20,
+                    child: Center(
+                      child: SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      ),
+                    ),
+                  )
+                else if (_rating != null)
+                  Row(
+                    children: [
+                      ...List.generate(
+                        5,
+                        (i) => Icon(
+                          i < (_rating!['rating'] as int)
+                              ? LucideIcons.star
+                              : LucideIcons.star,
+                          size: 16,
+                          color: i < (_rating!['rating'] as int)
+                              ? const Color(0xFFF59E0B)
+                              : opsBorder,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      const Text(
+                        'Bạn đã đánh giá',
+                        style: TextStyle(fontSize: 12, color: opsMutedText),
+                      ),
+                    ],
+                  )
+                else
+                  Row(
+                    children: [
+                      const Text(
+                        'Đánh giá xử lý: ',
+                        style: TextStyle(fontSize: 12, color: opsMutedText),
+                      ),
+                      ...List.generate(
+                        5,
+                        (i) => IconButton(
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
+                          icon: const Icon(LucideIcons.star, size: 18, color: Color(0xFFF59E0B)),
+                          onPressed: _submitting ? null : () => _submitRating(i + 1),
+                        ),
+                      ),
+                    ],
+                  ),
+              ],
+              const SizedBox(height: 10),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF1F5F9),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Nhấn để xem chi tiết tiến trình & xử lý',
+                      style: TextStyle(
+                        fontSize: 11.5,
+                        fontWeight: FontWeight.w600,
+                        color: opsPrimary,
+                      ),
+                    ),
+                    Icon(LucideIcons.arrowRight, size: 13, color: opsPrimary),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

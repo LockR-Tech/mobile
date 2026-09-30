@@ -9,9 +9,9 @@ abstract final class ReportStage {
   static const ordered = [report, inspection, progress, resolution];
 
   static String label(String stage) => switch (stage) {
-    report => 'Ảnh báo lỗi',
-    inspection => 'Ảnh xác nhận hiện trường',
-    progress => 'Ảnh quá trình sửa',
+    report => 'Ảnh hiện trường (người báo)',
+    inspection => 'Ảnh xác nhận của KTV',
+    progress => 'Ảnh trong quá trình sửa',
     resolution => 'Ảnh nghiệm thu',
     _ => 'Ảnh',
   };
