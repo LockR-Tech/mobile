@@ -16,6 +16,7 @@ abstract class MaintenanceRemoteDataSource {
     required String title,
     required String description,
     List<File>? photos,
+    int? boxId,
   });
 
   Future<Map<String, dynamic>> getMyReports({int page = 1, int limit = 10});
@@ -42,6 +43,7 @@ class MaintenanceRemoteDataSourceImpl implements MaintenanceRemoteDataSource {
     required String title,
     required String description,
     List<File>? photos,
+    int? boxId,
   }) async {
     final rawUserId = await TokenService.getUserId();
     final userId = int.tryParse(rawUserId ?? '') ?? 2;
@@ -75,6 +77,7 @@ class MaintenanceRemoteDataSourceImpl implements MaintenanceRemoteDataSource {
         'userId': userId,
         'title': title.trim(),
         'description': formattedDescription,
+        if (boxId != null) 'boxId': boxId,
         if (attachments.isNotEmpty) 'attachments': attachments,
       },
     );

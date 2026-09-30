@@ -11,6 +11,7 @@ abstract class MaintenanceRepository {
     required String title,
     required String description,
     List<File>? photos,
+    int? boxId,
   });
 
   Future<Either<Failure, List<MaintenanceReport>>> getMyReports({

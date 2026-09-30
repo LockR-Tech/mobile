@@ -19,6 +19,7 @@ class CreateReportUseCase {
       title: params.title,
       description: params.description,
       photos: params.photos,
+      boxId: params.boxId,
     );
   }
 }
@@ -29,6 +30,7 @@ class CreateReportParams {
   final String title;
   final String description;
   final List<File>? photos;
+  final int? boxId;
 
   const CreateReportParams({
     required this.lockerId,
@@ -36,5 +38,6 @@ class CreateReportParams {
     required this.title,
     required this.description,
     this.photos,
+    this.boxId,
   });
 }

@@ -1,5 +1,6 @@
 import 'package:smart_laundry_locker/core/media/media.dart';
 import 'package:smart_laundry_locker/core/network/api_client.dart';
+import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/user_report_detail_sheet.dart';
 import 'package:smart_laundry_locker/features/maintenance/domain/entities/maintenance_report.dart';
 import 'package:smart_laundry_locker/features/maintenance/presentation/pages/create_report_page.dart';
 import 'package:smart_laundry_locker/features/maintenance/presentation/providers/maintenance_injection.dart';
@@ -204,127 +205,189 @@ class _ReportListPageState extends State<ReportListPage> {
   }
 
   Widget _buildReportItem(MaintenanceReport report) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      decoration: BoxDecoration(
-        color: Colors.white,
+    final reportMap = {
+      'id': int.tryParse(report.id) ?? report.id,
+      'code': report.code,
+      'title': report.title,
+      'description': report.description,
+      'status': report.status,
+      'lockerId': int.tryParse(report.lockerId) ?? report.lockerId,
+      'lockerName': report.lockerLabel,
+      'boxId': int.tryParse(report.cabinetId) ?? report.cabinetId,
+      'boxNumber': report.cabinetName,
+      'reporterName': report.reporterName,
+      'staffNote': report.staffNote,
+      'createdAt': report.createdAt.toIso8601String(),
+      'photoUrls': report.photoUrls,
+      'attachments': report.photoUrls
+          .map((u) => {
+                'url': u,
+                'stage': 'REPORT',
+                'createdAt': report.createdAt.toIso8601String(),
+              })
+          .toList(),
+    };
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () => UserReportDetailSheet.show(
+          context,
+          report: reportMap,
+          onChanged: () => _provider.fetchMyReports(),
+        ),
         borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  report.code,
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                    color: Colors.grey.shade900,
-                  ),
-                ),
-                _buildStatusBadge(report.status),
-              ],
-            ),
-            const SizedBox(height: 10),
-            Text(
-              report.title,
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 15,
-                color: Colors.grey.shade800,
-              ),
-            ),
-            const SizedBox(height: 6),
-            Text(
-              report.description,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
-            ),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                Icon(
-                  LucideIcons.calendar,
-                  size: 14,
-                  color: Colors.grey.shade500,
-                ),
-                const SizedBox(width: 6),
-                Text(
-                  _fmtDate(report.createdAt),
-                  style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
-                ),
-                const Spacer(),
-                if (report.photoUrls.isNotEmpty) ...[
-                  Icon(
-                    LucideIcons.image,
-                    size: 14,
-                    color: Colors.grey.shade500,
-                  ),
-                  const SizedBox(width: 6),
-                  Text(
-                    '${report.photoUrls.length} ảnh',
-                    style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
-                  ),
-                ],
-              ],
-            ),
-            if (report.photoUrls.isNotEmpty) ...[
-              const SizedBox(height: 10),
-              AttachmentStageGallery(
-                attachments: report.photoUrls
-                    .map((u) => ReportAttachment(
-                          url: u,
-                          stage: ReportStage.report,
-                          createdAt: report.createdAt,
-                        ))
-                    .toList(),
-                accentColor: AISLShadcnTheme.navyPrimary,
-                thumbSize: 60,
+        child: Container(
+          margin: const EdgeInsets.only(bottom: 12),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.05),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
               ),
             ],
-            if (report.staffNote != null && report.staffNote!.isNotEmpty) ...[
-              const Divider(height: 24),
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFE7F0F8),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Icon(
-                      LucideIcons.messageSquare,
-                      size: 14,
-                      color: const Color(0xFF0A2342),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        'Phản hồi: ${report.staffNote}',
-                        style: const TextStyle(
-                          fontSize: 12,
-                          color: const Color(0xFF0A2342),
-                        ),
+                    Text(
+                      report.code,
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                        color: Colors.grey.shade900,
                       ),
+                    ),
+                    Row(
+                      children: [
+                        _buildStatusBadge(report.status),
+                        const SizedBox(width: 4),
+                        const Icon(LucideIcons.chevronRight, size: 16, color: Colors.grey),
+                      ],
                     ),
                   ],
                 ),
-              ),
-            ],
-          ],
+                const SizedBox(height: 10),
+                Text(
+                  report.title,
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 15,
+                    color: Colors.grey.shade800,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  report.description,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    Icon(
+                      LucideIcons.calendar,
+                      size: 14,
+                      color: Colors.grey.shade500,
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      _fmtDate(report.createdAt),
+                      style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
+                    ),
+                    const Spacer(),
+                    if (report.photoUrls.isNotEmpty) ...[
+                      Icon(
+                        LucideIcons.image,
+                        size: 14,
+                        color: Colors.grey.shade500,
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        '${report.photoUrls.length} ảnh',
+                        style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
+                      ),
+                    ],
+                  ],
+                ),
+                if (report.photoUrls.isNotEmpty) ...[
+                  const SizedBox(height: 10),
+                  AttachmentStageGallery(
+                    attachments: report.photoUrls
+                        .map((u) => ReportAttachment(
+                              url: u,
+                              stage: ReportStage.report,
+                              createdAt: report.createdAt,
+                            ))
+                        .toList(),
+                    accentColor: AISLShadcnTheme.navyPrimary,
+                    thumbSize: 60,
+                  ),
+                ],
+                if (report.staffNote != null && report.staffNote!.isNotEmpty) ...[
+                  const Divider(height: 24),
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFE7F0F8),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Icon(
+                          LucideIcons.messageSquare,
+                          size: 14,
+                          color: Color(0xFF0A2342),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'Phản hồi: ${report.staffNote}',
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: Color(0xFF0A2342),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+                const SizedBox(height: 10),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF1F5F9),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Nhấn để xem chi tiết tiến trình & xử lý',
+                        style: TextStyle(
+                          fontSize: 11.5,
+                          fontWeight: FontWeight.w600,
+                          color: AISLShadcnTheme.navyPrimary,
+                        ),
+                      ),
+                      Icon(LucideIcons.arrowRight, size: 13, color: AISLShadcnTheme.navyPrimary),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );

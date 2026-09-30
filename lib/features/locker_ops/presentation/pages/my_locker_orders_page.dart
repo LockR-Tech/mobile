@@ -7,7 +7,6 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:smart_laundry_locker/core/config/business_config_provider.dart';
 import 'package:smart_laundry_locker/core/media/media.dart';
 import 'package:smart_laundry_locker/core/routing/app_router.dart';
-import 'package:smart_laundry_locker/shared/widgets/app_lottie.dart';
 import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/utils/business_rules_text.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/utils/locker_maps.dart';
@@ -2479,6 +2478,8 @@ class _DetailSheet extends StatelessWidget {
         const Divider(height: 1, color: opsBorder),
         const SizedBox(height: 12),
         OrderStatusTimeline(orderId: id),
+        const SizedBox(height: 12),
+        _OrderIncidentResolutionSection(orderId: id),
         const SizedBox(height: 8),
       ],
     );
@@ -2601,5 +2602,206 @@ class _PaymentTraceRowsState extends State<_PaymentTraceRows> {
       if (value != null && '$value'.trim().isNotEmpty) return '$value';
     }
     return '—';
+  }
+}
+
+// ───────────────────────────────────────────────────────────────────────────────
+// Phương án xử lý ô tủ từ Incident Notes trong Order Timeline
+// ───────────────────────────────────────────────────────────────────────────────
+
+/// Hiển thị chi tiết phương án xử lý ô tủ khi có sự cố — lấy từ incident notes
+/// trong order timeline ("[THàNH CÔNG]", "[ĐIỀU CHUYỂN Ô]", v.v.).
+/// Chỉ hiển khi timeline có ít nhất 1 note dạng incident resolution tag.
+class _OrderIncidentResolutionSection extends StatefulWidget {
+  const _OrderIncidentResolutionSection({required this.orderId});
+  final int orderId;
+
+  @override
+  State<_OrderIncidentResolutionSection> createState() =>
+      _OrderIncidentResolutionSectionState();
+}
+
+class _OrderIncidentResolutionSectionState
+    extends State<_OrderIncidentResolutionSection> {
+  final _svc = LockerOpsService();
+  List<Map<String, dynamic>> _incidentEvents = const [];
+  bool _loading = true;
+
+  // Danh sách tag prefix của incident notes
+  static const _incidentTags = [
+    '[THàNH CÔNG]',
+    '[ĐIỀU CHUYỂN Ô]',
+    '[NIÊM PHONG VỀ HUB]',
+    '[BÀN GIAO TRỰC TIếP]',
+    '[XÁC NHẬN & KHÓA Ô]',
+    '[Xử LÝ TẠI CHỔ]',
+    '[NGHIỆM THU]',
+    '[KHÓA BẢO TRÌ]',
+  ];
+
+  static final _tagRegex = RegExp(r'^(\[[^\]]+\])\s*(.*)', dotAll: true);
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    try {
+      final events = await _svc.orderTimeline(widget.orderId);
+      if (!mounted) return;
+      // Lọc chỉ giữ incident notes dựa trên tag
+      final incidents = events.where((e) {
+        final note = (e['note'] ?? e['description'] ?? '').toString().trim();
+        final upperNote = note.toUpperCase();
+        return _incidentTags.any((t) => upperNote.contains(t.toUpperCase()));
+      }).toList();
+      setState(() {
+        _incidentEvents = incidents;
+        _loading = false;
+      });
+    } catch (_) {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
+
+  static String _fmtDt(dynamic value) {
+    if (value == null) return '';
+    try {
+      final d = DateTime.parse(value.toString()).toLocal();
+      String tw(int n) => n.toString().padLeft(2, '0');
+      return '${tw(d.hour)}:${tw(d.minute)} ${tw(d.day)}/${tw(d.month)}/${d.year}';
+    } catch (_) {
+      return '';
+    }
+  }
+
+  ({Color bg, Color fg, IconData icon}) _tagStyle(String upperTag) {
+    if (upperTag.contains('THàNH CÔNG') || upperTag.contains('NGHIỆM THU') || upperTag.contains('Xử LÝ TẠI CHỔ')) {
+      return (bg: const Color(0xFFDCFCE7), fg: const Color(0xFF15803D), icon: LucideIcons.circleCheck);
+    } else if (upperTag.contains('ĐIỀU CHUYỂN')) {
+      return (bg: const Color(0xFFE0F2FE), fg: const Color(0xFF0369A1), icon: LucideIcons.arrowRightLeft);
+    } else if (upperTag.contains('NIÊM PHONG') || upperTag.contains('HUB')) {
+      return (bg: const Color(0xFFFEF3C7), fg: const Color(0xFFB45309), icon: LucideIcons.packageCheck);
+    } else if (upperTag.contains('BÀN GIAO')) {
+      return (bg: const Color(0xFFF3E8FF), fg: const Color(0xFF7E22CE), icon: LucideIcons.handshake);
+    } else if (upperTag.contains('KHÓA BẢO TRÌ') || upperTag.contains('XÁC NHẬN')) {
+      return (bg: const Color(0xFFFEF2F2), fg: const Color(0xFFDC2626), icon: LucideIcons.lockKeyhole);
+    }
+    return (bg: const Color(0xFFF1F5F9), fg: const Color(0xFF334155), icon: LucideIcons.info);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_loading || _incidentEvents.isEmpty) return const SizedBox.shrink();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Divider(height: 1, color: opsBorder),
+        const SizedBox(height: 12),
+        const Row(
+          children: [
+            Icon(LucideIcons.shieldAlert, size: 15, color: opsPrimary),
+            SizedBox(width: 6),
+            Text(
+              'Phương án xử lý ô tủ:',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 13,
+                color: opsDark,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        for (final event in _incidentEvents) ...[
+          Builder(
+            builder: (context) {
+              final rawNote = (event['note'] ?? event['description'] ?? '').toString().trim();
+              final match = _tagRegex.firstMatch(rawNote);
+              final tag = match?.group(1) ?? rawNote;
+              final rest = match?.group(2) ?? '';
+              final style = _tagStyle(tag.toUpperCase());
+              final ts = _fmtDt(event['changedAt'] ?? event['createdAt'] ?? event['timestamp']);
+
+              return Container(
+                width: double.infinity,
+                margin: const EdgeInsets.only(bottom: 8),
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: style.bg.withValues(alpha: 0.55),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: style.bg),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(style.icon, size: 14, color: style.fg),
+                        const SizedBox(width: 6),
+                        Expanded(
+                          child: Text(
+                            tag,
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                              color: style.fg,
+                            ),
+                          ),
+                        ),
+                        if (ts.isNotEmpty)
+                          Text(
+                            ts,
+                            style: const TextStyle(fontSize: 11, color: opsMutedText),
+                          ),
+                      ],
+                    ),
+                    if (rest.isNotEmpty) ...[
+                      const SizedBox(height: 6),
+                      Text(
+                        rest,
+                        style: TextStyle(
+                          fontSize: 12.5,
+                          color: style.fg.withValues(alpha: 0.8),
+                          height: 1.4,
+                        ),
+                      ),
+                    ],
+                    // Thông báo người dùng nếu có nội dung actionable
+                    if (tag.toUpperCase().contains('ĐIỀU CHUYỂN'))
+                      Padding(
+                        padding: const EdgeInsets.only(top: 6),
+                        child: Text(
+                          'ℹ️ Hàng của bạn đã được chuyển sang ô mới. Vui lòng kiểm tra mã mở ô mới trong app.',
+                          style: TextStyle(fontSize: 11.5, color: style.fg, height: 1.35),
+                        ),
+                      )
+                    else if (tag.toUpperCase().contains('NIÊM PHONG') || tag.toUpperCase().contains('HUB'))
+                      Padding(
+                        padding: const EdgeInsets.only(top: 6),
+                        child: Text(
+                          'ℹ️ Hàng được niêm phong an toàn và đưa về Hub. Nhân viên sẽ liên hệ bạn để thu xếp lại.',
+                          style: TextStyle(fontSize: 11.5, color: style.fg, height: 1.35),
+                        ),
+                      )
+                    else if (tag.toUpperCase().contains('BÀN GIAO'))
+                      Padding(
+                        padding: const EdgeInsets.only(top: 6),
+                        child: Text(
+                          'ℹ️ Hàng đã được bàn giao trực tiếp. Nếu có thắc mắc vui lòng liên hệ bộ phận CSKH.',
+                          style: TextStyle(fontSize: 11.5, color: style.fg, height: 1.35),
+                        ),
+                      ),
+                  ],
+                ),
+              );
+            },
+          ),
+        ],
+      ],
+    );
   }
 }

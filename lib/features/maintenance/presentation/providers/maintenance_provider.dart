@@ -32,6 +32,7 @@ class MaintenanceProvider extends ChangeNotifier {
     required String title,
     required String description,
     List<File>? photos,
+    int? boxId,
   }) async {
     _isLoading = true;
     _error = null;
@@ -44,6 +45,7 @@ class MaintenanceProvider extends ChangeNotifier {
         title: title,
         description: description,
         photos: photos,
+        boxId: boxId,
       ),
     );
 

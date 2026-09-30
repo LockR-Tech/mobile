@@ -21,6 +21,7 @@ class MaintenanceRepositoryImpl implements MaintenanceRepository {
     required String title,
     required String description,
     List<File>? photos,
+    int? boxId,
   }) async {
     try {
       final report = await _remoteDataSource.createReport(
@@ -29,6 +30,7 @@ class MaintenanceRepositoryImpl implements MaintenanceRepository {
         title: title,
         description: description,
         photos: photos,
+        boxId: boxId,
       );
       return Right(report);
     } on ValidationException catch (e) {
