@@ -872,12 +872,12 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
     } catch (_) {}
     if (!mounted) return;
     if (ticket == null || ticket.isEmpty) {
-      _showInfo('Không tải được phiếu #$reportId');
+      _showInfo('Không tải được phiếu RPT-$reportId');
       return;
     }
     final status = ticket['status']?.toString();
     if (status == 'RESOLVED') {
-      _showInfo('Phiếu #$reportId đã được hoàn tất.');
+      _showInfo('Phiếu RPT-$reportId đã được hoàn tất.');
       await _load();
       return;
     }
@@ -887,7 +887,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
     }
     if (status != 'OPEN') {
       _showInfo(
-        'Phiếu #$reportId đang do KTV #${ticket['assignedToUserId']} xử lý — '
+        'Phiếu RPT-$reportId đang do KTV #${ticket['assignedToUserId']} xử lý — '
         'chỉ người được giao mới hoàn tất được.',
       );
       return;
@@ -896,7 +896,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text('Phiếu #$reportId chưa có người nhận'),
+        title: Text('Phiếu RPT-$reportId chưa có người nhận'),
         content: const Text(
           'Ô/bãi đáp này đang có phiếu sự cố mở. Nhận phiếu rồi nghiệm thu '
           '(chụp ảnh sau khi sửa) để đưa về hoạt động.',
@@ -1712,7 +1712,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
               borderRadius: BorderRadius.circular(999),
               child: _MiniPill(
                 icon: Icons.pending_actions,
-                text: 'Phiếu #${openTicket['id']} đang mở',
+                text: 'Phiếu RPT-${openTicket['id']} đang mở',
                 color: const Color(0xFFEA580C),
               ),
             ),
@@ -2497,7 +2497,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
             actions.add(tile(
               Icons.check_circle,
               openReportId != null
-                  ? 'Đã sửa xong — nghiệm thu phiếu #$openReportId'
+                  ? 'Đã sửa xong — nghiệm thu phiếu RPT-$openReportId'
                   : 'Đã sửa xong — mở lại ô',
               const Color(0xFF16A34A),
               () => _markFaultFixed(boxId, openReportId: openReportId),
@@ -3186,7 +3186,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                                     ),
                             child: Text(
                               _asInt(f['openReportId']) != null
-                                  ? 'Đã sửa · phiếu #${f['openReportId']}'
+                                  ? 'Đã sửa · phiếu RPT-${f['openReportId']}'
                                   : 'Đã sửa',
                               style: const TextStyle(color: Color(0xFF16A34A)),
                             ),
@@ -3897,7 +3897,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
     final assignedToMe = _isScheduleMine(s);
     // Server chặn: lịch đang chờ phiếu KHÔNG ĐẠT (409) hoặc giao cho KTV khác (403).
     final blockedReason = pendingReportId != null
-        ? 'Lần trước không đạt — hoàn tất phiếu #$pendingReportId trước khi kiểm tra lại.'
+        ? 'Lần trước không đạt — hoàn tất phiếu RPT-$pendingReportId trước khi kiểm tra lại.'
         : assignedId != null && !assignedToMe
             ? 'Lịch do KTV khác phụ trách.'
             : null;
@@ -4101,7 +4101,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                         const SizedBox(width: 7),
                         Expanded(
                           child: Text(
-                            'Lần trước KHÔNG ĐẠT · Chờ hoàn tất phiếu #$pendingReportId trước khi kiểm tra lại',
+                            'Lần trước KHÔNG ĐẠT · Chờ hoàn tất phiếu RPT-$pendingReportId trước khi kiểm tra lại',
                             style: const TextStyle(
                               fontSize: 11.5,
                               fontWeight: FontWeight.w600,
@@ -4143,7 +4143,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                       ElevatedButton.icon(
                         onPressed: () => _openReportById(pendingReportId),
                         icon: const Icon(Icons.assignment_turned_in_outlined, size: 15),
-                        label: Text('Xử lý phiếu #$pendingReportId'),
+                        label: Text('Xử lý phiếu RPT-$pendingReportId'),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFFEA580C),
                           foregroundColor: Colors.white,
@@ -4245,7 +4245,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
         duration: Duration(seconds: pendingReportId != null ? 6 : 4),
         content: Text(
           pendingReportId != null
-              ? 'Kiểm tra KHÔNG ĐẠT — đã mở phiếu #$pendingReportId giao cho bạn. '
+              ? 'Kiểm tra KHÔNG ĐẠT — đã mở phiếu RPT-$pendingReportId giao cho bạn. '
                     'Hạn kế tiếp chỉ dời khi phiếu được hoàn tất.'
               : failed
                   ? 'Đã ghi nhận KHÔNG ĐẠT cho "${s['title'] ?? 'Tủ Kiosk'}".'
@@ -4430,7 +4430,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
         SnackBar(
           backgroundColor: const Color(0xFF059669),
           content: Text(
-              'Đã gia hạn SLA thành công thêm +$hours giờ cho phiếu #$reportId'),
+              'Đã gia hạn SLA thành công thêm +$hours giờ cho phiếu RPT-$reportId'),
         ),
       );
     }
@@ -4499,7 +4499,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  'Gia hạn SLA phiếu #${r['id']}',
+                                  'Gia hạn SLA phiếu RPT-${r['id']}',
                                   style: const TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.bold,
@@ -4980,7 +4980,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                         border: Border.all(color: const Color(0xFF0F172A).withValues(alpha: 0.12)),
                       ),
                       child: Text(
-                        '#${r['id']}',
+                        'RPT-${r['id']}',
                         style: const TextStyle(
                           fontWeight: FontWeight.w800,
                           fontSize: 12,
@@ -5333,6 +5333,9 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
     final extHours = (_localSlaExtensions[r['id']]?['extensionHours'] ?? r['slaExtendedHours'] as num? ?? 0).toInt();
     final isExtended = extHours > 0;
     final effectiveDue = _getEffectiveDueAt(r);
+    final userReportPhotos = attachments
+        .where((a) => a.stage == ReportStage.report)
+        .toList();
 
     showModalBottomSheet<void>(
       context: context,
@@ -5372,7 +5375,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                               children: [
                                 Flexible(
                                   child: Text(
-                                    '#${r['id']} · ${r['title'] ?? ''}',
+                                    'RPT-${r['id']} · ${r['title'] ?? ''}',
                                     style: const TextStyle(
                                       fontSize: 16,
                                       fontWeight: FontWeight.bold,
@@ -5597,47 +5600,35 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                         const SizedBox(height: 14),
                       ],
 
-                      // Description
-                      if (cleanedDesc.isNotEmpty) ...[
+                      // Description & Ảnh người báo gửi
+                      if (cleanedDesc.isNotEmpty || userReportPhotos.isNotEmpty) ...[
                         const Text(
                           'Nội dung khách phản ánh:',
                           style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: opsDark),
                         ),
                         const SizedBox(height: 6),
-                        Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFF1F5F9),
-                            borderRadius: BorderRadius.circular(10),
+                        if (cleanedDesc.isNotEmpty)
+                          Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFF1F5F9),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Text(
+                              cleanedDesc,
+                              style: const TextStyle(fontSize: 13, color: opsDark, height: 1.4),
+                            ),
                           ),
-                          child: Text(
-                            cleanedDesc,
-                            style: const TextStyle(fontSize: 13, color: opsDark, height: 1.4),
+                        if (userReportPhotos.isNotEmpty) ...[
+                          const SizedBox(height: 8),
+                          AttachmentStrip(
+                            attachments: userReportPhotos,
+                            viewerTitle: 'Ảnh hiện trường do khách gửi',
                           ),
-                        ),
+                        ],
                         const SizedBox(height: 16),
                       ],
-
-                      // Full stage attachments with timestamps
-                      const Text(
-                        'Hình ảnh minh chứng theo giai đoạn:',
-                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: opsDark),
-                      ),
-                      const SizedBox(height: 8),
-                      AttachmentStageGallery(
-                        attachments: attachments,
-                        showEmptyStages: true,
-                        labels: const {
-                          ReportStage.report: 'Ảnh hiện trường (người báo)',
-                          ReportStage.inspection: 'Ảnh xác nhận của KTV',
-                          ReportStage.progress: 'Ảnh trong quá trình sửa',
-                          ReportStage.resolution: 'Ảnh nghiệm thu',
-                        },
-                        accentColor: opsPrimary,
-                        thumbSize: 76,
-                      ),
-                      const SizedBox(height: 16),
 
                       // Nhật ký & Lịch sử xử lý KTV (được chuyển từ hình 3 sang)
                       _ReportLogsSection(
@@ -5897,7 +5888,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
       ),
       builder: (_) => _InspectionSheet(
         reportId: reportId,
-        title: '#${report['id']} · ${report['title'] ?? ''}',
+        title: 'RPT-${report['id']} · ${report['title'] ?? ''}',
         service: _service,
       ),
     );
@@ -7152,7 +7143,7 @@ class _ResolveVerificationSheetState extends State<_ResolveVerificationSheet> {
   @override
   Widget build(BuildContext context) {
     final reportTitle =
-        widget.report['title'] ?? 'Sự cố #${widget.report['id']}';
+        widget.report['title'] ?? 'Sự cố RPT-${widget.report['id']}';
     final lockerLabel =
         widget.report['lockerName'] ?? 'Tủ #${widget.report['lockerId']}';
     final boxLabel = widget.report['boxNumber'] ?? widget.report['boxId'];
@@ -7205,7 +7196,7 @@ class _ResolveVerificationSheetState extends State<_ResolveVerificationSheet> {
                               fontWeight: FontWeight.bold, fontSize: 16),
                         ),
                         Text(
-                          '$lockerLabel${boxLabel != null ? ' · Ô $boxLabel' : ''} · #$reportTitle',
+                          '$lockerLabel${boxLabel != null ? ' · Ô $boxLabel' : ''} · RPT-${widget.report['id']} · $reportTitle',
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
@@ -7674,7 +7665,9 @@ class _BoxIncidentResolutionSheetState
   final _otpCtrl = TextEditingController();
   final _sealCtrl = TextEditingController();
   final _photos = PhotoPickerController(maxPhotos: _staffPhotosPerRequest);
+  final _progressPhotos = PhotoPickerController(maxPhotos: _staffPhotosPerRequest);
   List<ReportAttachment> _existingInspection = [];
+  List<ReportAttachment> _existingProgress = [];
   bool _submitting = false;
   String? _error;
 
@@ -7695,6 +7688,8 @@ class _BoxIncidentResolutionSheetState
 
     final repId = _asInt(widget.report['id']);
     _existingInspection = _extractReportBeforeAttachments(widget.report);
+    final allAtts = ReportAttachment.listFrom(widget.report['attachments']);
+    _existingProgress = allAtts.where((a) => a.stage == ReportStage.progress).toList();
     if (repId != null) {
       _loadExistingInspectionFromServer(repId);
     }
@@ -7704,11 +7699,15 @@ class _BoxIncidentResolutionSheetState
     try {
       final serverList = await widget.service.reportAttachments(reportId);
       if (serverList.isNotEmpty && mounted) {
-        final parsed = ReportAttachment.listFrom(serverList)
+        final parsed = ReportAttachment.listFrom(serverList);
+        final beforeFromServer = parsed
             .where((a) {
               final st = a.stage.toLowerCase().trim();
               return st == 'report' || st == 'inspection';
             })
+            .toList();
+        final progressFromServer = parsed
+            .where((a) => a.stage == ReportStage.progress)
             .toList();
         final (_, userPhotos) = _extractUserPhotosAndCleanHelper(
           widget.report['description'],
@@ -7723,8 +7722,9 @@ class _BoxIncidentResolutionSheetState
         final cached = _inspectionAttachmentsCache[reportId] ?? [];
         setState(() {
           _existingInspection = {
-            for (final a in [...userAtts, ...parsed, ...cached]) a.url: a
+            for (final a in [...userAtts, ...beforeFromServer, ...cached]) a.url: a
           }.values.toList();
+          _existingProgress = progressFromServer;
         });
         _inspectionAttachmentsCache[reportId] = _existingInspection;
       }
@@ -7734,6 +7734,7 @@ class _BoxIncidentResolutionSheetState
   @override
   void dispose() {
     _photos.dispose();
+    _progressPhotos.dispose();
     _ktvNotesCtrl.dispose();
     _otpCtrl.dispose();
     _sealCtrl.dispose();
@@ -7863,7 +7864,10 @@ class _BoxIncidentResolutionSheetState
       _error = null;
     });
     try {
-      final attachments = await _photos.uploadAll();
+      final attachments = _photos.isNotEmpty ? await _photos.uploadAll() : <Map<String, dynamic>>[];
+      final progressAttachments = _progressPhotos.isNotEmpty
+          ? await _progressPhotos.uploadAll()
+          : <Map<String, dynamic>>[];
       final repId = _asInt(widget.report['id']);
       if (attachments.isNotEmpty && repId != null) {
         final newAtts = attachments
@@ -7884,6 +7888,27 @@ class _BoxIncidentResolutionSheetState
         widget.report['attachments'] = [
           ...currentRaw,
           ...attachments.map((a) => {...a, 'stage': 'INSPECTION'}),
+        ];
+      }
+
+      if (progressAttachments.isNotEmpty && repId != null) {
+        final newAtts = progressAttachments
+            .map((att) => ReportAttachment(
+                  stage: ReportStage.progress,
+                  url: (att['url'] ?? att['secureUrl'] ?? '').toString(),
+                  thumbnailUrl:
+                      (att['thumbnailUrl'] ?? att['url'] ?? '').toString(),
+                  publicId: att['publicId']?.toString(),
+                ))
+            .toList();
+        _existingProgress = {
+          for (final a in [..._existingProgress, ...newAtts]) a.url: a
+        }.values.toList();
+
+        final currentRaw = (widget.report['attachments'] as List?) ?? [];
+        widget.report['attachments'] = [
+          ...currentRaw,
+          ...progressAttachments.map((a) => {...a, 'stage': 'PROGRESS'}),
         ];
       }
 
@@ -7908,6 +7933,7 @@ class _BoxIncidentResolutionSheetState
         customerOtp: _otpCtrl.text.trim(),
         sealNumber: _sealCtrl.text.trim(),
         attachments: attachments,
+        progressAttachments: progressAttachments,
       );
 
       // Đồng bộ EventBus cho toàn hệ thống mobile
@@ -7977,7 +8003,7 @@ class _BoxIncidentResolutionSheetState
                               fontWeight: FontWeight.bold, fontSize: 16),
                         ),
                         Text(
-                          '#${widget.report['id']} · ${widget.report['title'] ?? ''}',
+                          'RPT-${widget.report['id']} · ${widget.report['title'] ?? ''}',
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
@@ -8591,7 +8617,7 @@ class _BoxIncidentResolutionSheetState
 
               // BƯỚC 4: ẢNH HIỆN TRƯỜNG
               const Text(
-                '4. Ảnh hiện trường / Đối chứng:',
+                '4. Ảnh hiện trường / Đối chứng (KTV kiểm tra):',
                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13.5),
               ),
               const SizedBox(height: 6),
@@ -8638,6 +8664,63 @@ class _BoxIncidentResolutionSheetState
               PhotoPickerField(
                 controller: _photos,
                 accentColor: _brandColor,
+              ),
+              const SizedBox(height: 14),
+
+              // BƯỚC 5: ẢNH TRONG QUÁ TRÌNH SỬA
+              const Text(
+                '5. Ảnh trong quá trình sửa:',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13.5),
+              ),
+              const SizedBox(height: 4),
+              const Text(
+                'Chụp ảnh tháo lắp linh kiện, thao tác kỹ thuật, kiểm tra cảm biến hoặc xử lý đồ:',
+                style: TextStyle(fontSize: 12, color: opsMutedText),
+              ),
+              const SizedBox(height: 6),
+              if (_existingProgress.isNotEmpty) ...[
+                Container(
+                  margin: const EdgeInsets.only(bottom: 8),
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF0FDF4),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: const Color(0xFFBBF7D0)),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          const Icon(Icons.check_circle, size: 14, color: Color(0xFF16A34A)),
+                          const SizedBox(width: 6),
+                          Text(
+                            'Đã có ${_existingProgress.length} ảnh trong quá trình sửa:',
+                            style: const TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF166534),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      AttachmentStrip(
+                        attachments: _existingProgress,
+                        viewerTitle: 'Ảnh trong quá trình sửa',
+                      ),
+                    ],
+                  ),
+                ),
+                const Text(
+                  'Chụp thêm ảnh quá trình sửa mới (tuỳ chọn):',
+                  style: TextStyle(fontSize: 11.5, color: opsMutedText),
+                ),
+                const SizedBox(height: 4),
+              ],
+              PhotoPickerField(
+                controller: _progressPhotos,
+                accentColor: const Color(0xFF2563EB),
               ),
 
               if (_error != null) ...[

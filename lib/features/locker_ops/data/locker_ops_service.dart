@@ -541,6 +541,7 @@ class LockerOpsService {
     String? customerOtp,
     String? sealNumber,
     List<Map<String, dynamic>>? attachments,
+    List<Map<String, dynamic>>? progressAttachments,
     bool? lockBox,
   }) async {
     try {
@@ -555,6 +556,8 @@ class LockerOpsService {
           if (customerOtp != null && customerOtp.isNotEmpty) 'customerOtp': customerOtp,
           if (sealNumber != null && sealNumber.isNotEmpty) 'sealNumber': sealNumber,
           if (attachments != null && attachments.isNotEmpty) 'attachments': attachments,
+          if (progressAttachments != null && progressAttachments.isNotEmpty)
+            'progressAttachments': progressAttachments,
           if (lockBox != null) 'lockBox': lockBox,
         },
       );
@@ -576,7 +579,14 @@ class LockerOpsService {
         } catch (_) {}
       }
 
-      // 3. Ghi log xử lý vào phiếu
+      // 3. Lưu ảnh trong quá trình sửa nếu có
+      if (progressAttachments != null && progressAttachments.isNotEmpty) {
+        try {
+          await addReportAttachments(reportId, 'PROGRESS', progressAttachments);
+        } catch (_) {}
+      }
+
+      // 4. Ghi log xử lý vào phiếu
       try {
         final logNote = switch (action) {
           'RELOCATE' => '[ĐIỀU CHUYỂN Ô] Đã chuyển hàng sang ô trống mới và khóa bảo trì ô sự cố. $faultReason',
@@ -584,7 +594,7 @@ class LockerOpsService {
           'HUB_ESCROW' => '[NIÊM PHONG VỀ HUB] Đã niêm phong hàng đưa về Hub (Mã Seal: ${sealNumber ?? "N/A"}) và khóa bảo trì ô sự cố.',
           _ => '[XÁC NHẬN & KHÓA Ô] KTV kiểm tra hiện trường, xác nhận lỗi và khóa bảo trì ô. $faultReason',
         };
-        await addReportLog(reportId, logNote, attachments: attachments);
+        await addReportLog(reportId, logNote, attachments: progressAttachments ?? attachments);
       } catch (_) {}
 
       return {'success': true, 'action': action, 'boxId': boxId, 'fallback': true};
