@@ -14,6 +14,7 @@ import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/lo
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/ops_widgets.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/order_payment_sheet.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/order_status_timeline.dart';
+import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/user_report_detail_sheet.dart';
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
 import 'package:smart_laundry_locker/shared/shared.dart';
 
@@ -40,6 +41,9 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
   /// địa điểm đặt tủ mà không phải gọi mạng thêm lần nữa.
   Map<int, Map<String, dynamic>> _lockersMap = {};
   Map<int, Map<String, dynamic>> _activeReportsByBox = {};
+  Map<int, Map<String, dynamic>> _latestReportByBox = {};
+  Map<String, Map<String, dynamic>> _reportByOrderCode = {};
+  Map<String, List<Map<String, dynamic>>> _reportLogsByOrderCode = {};
   bool _loading = true;
   String _typeFilter = 'ALL';
 
@@ -54,6 +58,14 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
     try {
       final orders = await _service.myOrders();
       final reports = await _service.myReports();
+
+      final Map<int, Map<String, dynamic>> latestReportByBox = {};
+      for (final r in reports) {
+        final bId = _asInt(r['boxId']);
+        if (bId != null) {
+          latestReportByBox[bId] ??= r;
+        }
+      }
 
       // Fetch box layouts to display box numbers instead of box IDs
       final lockerIds = <int>{};
@@ -98,11 +110,91 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
         }
       }
 
+      final Map<String, Map<String, dynamic>> reportByOrderCode = {};
+      final Map<String, List<Map<String, dynamic>>> reportLogsByOrderCode = {};
+
+      // Tra cứu nhật ký các phiếu sự cố để gắn kết trực tiếp với đơn hàng
+      // (đặc biệt khi KTV đã điều chuyển đơn hàng sang ô mới khác ô ban đầu)
+      await Future.wait(reports.map((r) async {
+        final rId = _asInt(r['id']);
+        if (rId == null) return;
+        List<Map<String, dynamic>> logs = [];
+        try {
+          logs = await _service.userReportLogs(rId);
+        } catch (_) {}
+        if (logs.isEmpty) {
+          try {
+            logs = await _service.reportLogs(rId);
+          } catch (_) {}
+        }
+        if (logs.isEmpty) return;
+
+        for (final log in logs) {
+          final note = (log['note'] ??
+                  log['description'] ??
+                  log['message'] ??
+                  log['content'] ??
+                  log['staffNote'] ??
+                  '')
+              .toString();
+
+          // 1. Quét theo mã đơn trong ghi chú
+          final matches = RegExp(r'ORD-[A-Za-z0-9\-_]+', caseSensitive: false)
+              .allMatches(note);
+          for (final m in matches) {
+            final code = m.group(0)!;
+            reportByOrderCode[code] = r;
+            reportByOrderCode[code.toUpperCase()] = r;
+            reportLogsByOrderCode[code] = logs;
+            reportLogsByOrderCode[code.toUpperCase()] = logs;
+          }
+
+          // 2. Nếu log điều chuyển sang ô mới ("sang ô #4"):
+          // Tự động tìm đơn hàng đang hoạt động (chưa hủy/chưa hoàn tất) ở ô đích
+          final mNew = RegExp(r'sang ô #?(\d+)', caseSensitive: false).firstMatch(note);
+          if (mNew != null) {
+            final targetBoxNum = int.tryParse(mNew.group(1)!);
+            if (targetBoxNum != null) {
+              final rLockerId = _asInt(r['lockerId']);
+              for (final o in orders) {
+                final oLockerId = _asInt(o['lockerId'] ?? o['destinationLockerId']);
+                if (rLockerId != null && oLockerId != null && rLockerId != oLockerId) {
+                  continue;
+                }
+                final rawStatus = (o['status'] as String? ?? '').toUpperCase();
+                // Bỏ qua các đơn đã hủy hoặc đã hoàn tất trong quá khứ!
+                if (rawStatus == 'CANCELED' || rawStatus == 'COMPLETED') continue;
+
+                final oBoxId = _asInt(o['sendBoxId'] ?? o['receiveBoxId']);
+                int? oBoxNum;
+                if (oLockerId != null && oBoxId != null) {
+                  oBoxNum = lockerBoxesMap[oLockerId]?[oBoxId];
+                }
+                oBoxNum ??= _asInt(o['sendBoxNumber'] ?? o['receiveBoxNumber']);
+
+                if (oBoxNum == targetBoxNum || oBoxId == targetBoxNum) {
+                  final code = o['orderCode']?.toString();
+                  if (code != null) {
+                    reportByOrderCode[code] = r;
+                    reportByOrderCode[code.toUpperCase()] = r;
+                    reportLogsByOrderCode[code] = logs;
+                    reportLogsByOrderCode[code.toUpperCase()] = logs;
+                  }
+                }
+              }
+            }
+          }
+        }
+      }));
+
       if (!mounted) return;
       setState(() {
         _lockerBoxesMap = lockerBoxesMap;
         _lockersMap = lockersMap;
         _activeReportsByBox = _activeReportsByBoxMap(reports);
+        _latestReportByBox = latestReportByBox;
+        _reportByOrderCode = reportByOrderCode;
+        _reportLogsByOrderCode = reportLogsByOrderCode;
         _orders = orders;
       });
     } catch (e) {
@@ -189,12 +281,62 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
 
   Map<String, dynamic>? _activeReportForOrder(Map<String, dynamic> order) {
     final rawStatus = (order['status'] as String? ?? '').toUpperCase();
+    // Đơn đã hủy hoặc đã hoàn tất trong quá khứ KHÔNG BAO GIỜ nhận sự cố đang mở của ô tủ!
+    if (rawStatus == 'CANCELED' || rawStatus == 'COMPLETED') return null;
+
     final isPickup = rawStatus == 'STORING' || rawStatus == 'RETURNED';
     final boxId = isPickup
         ? _asInt(order['receiveBoxId'] ?? order['sendBoxId'])
         : _asInt(order['sendBoxId'] ?? order['receiveBoxId']);
     if (boxId == null) return null;
     return _activeReportsByBox[boxId];
+  }
+
+  /// Tra cứu phiếu sự cố gắn liền với đơn hàng (ưu tiên phiếu theo mã đơn,
+  /// sau đó phiếu đang mở, nếu không có thì lấy phiếu sự cố đã xử lý mới nhất của ô tủ).
+  Map<String, dynamic>? _incidentReportForOrder(Map<String, dynamic> order) {
+    final code = order['orderCode']?.toString();
+    if (code != null) {
+      if (_reportByOrderCode.containsKey(code)) {
+        return _reportByOrderCode[code];
+      }
+      if (_reportByOrderCode.containsKey(code.toUpperCase())) {
+        return _reportByOrderCode[code.toUpperCase()];
+      }
+    }
+
+    final rawStatus = (order['status'] as String? ?? '').toUpperCase();
+    // Đơn đã hủy hoặc đã hoàn tất trong quá khứ KHÔNG NHẬN sự cố của ô tủ
+    if (rawStatus == 'CANCELED' || rawStatus == 'COMPLETED') {
+      return null;
+    }
+
+    final active = _activeReportForOrder(order);
+    if (active != null) return active;
+
+    final isPickup = rawStatus == 'STORING' || rawStatus == 'RETURNED';
+    final boxId = isPickup
+        ? _asInt(order['receiveBoxId'] ?? order['sendBoxId'])
+        : _asInt(order['sendBoxId'] ?? order['receiveBoxId']);
+    if (boxId != null && _latestReportByBox.containsKey(boxId)) {
+      return _latestReportByBox[boxId];
+    }
+    final otherBoxId = isPickup
+        ? _asInt(order['sendBoxId'])
+        : _asInt(order['receiveBoxId']);
+    if (otherBoxId != null && _latestReportByBox.containsKey(otherBoxId)) {
+      return _latestReportByBox[otherBoxId];
+    }
+    return null;
+  }
+
+  /// Lấy danh sách nhật ký xử lý của KTV liên quan đến đơn hàng (nếu có)
+  List<Map<String, dynamic>> _incidentLogsForOrder(Map<String, dynamic> order) {
+    final code = order['orderCode']?.toString();
+    if (code != null && _reportLogsByOrderCode.containsKey(code)) {
+      return _reportLogsByOrderCode[code]!;
+    }
+    return const [];
   }
 
   /// Số ô in trên tủ, tra từ sơ đồ tủ đã tải. Dùng cho MỌI câu thông báo cho người
@@ -814,7 +956,8 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
           padding: const EdgeInsets.fromLTRB(20, 4, 20, 24),
           child: _DetailSheet(
             order: order,
-            faultReport: _activeReportForOrder(order),
+            faultReport: _incidentReportForOrder(order),
+            faultLogs: _incidentLogsForOrder(order),
             lockerName: _lockerNameOf(order),
             locker: _lockerOf(order),
             sendBoxNumber:
@@ -1023,7 +1166,8 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
                           child:
                               _OrderCard(
                                     order: o,
-                                    faultReport: _activeReportForOrder(o),
+                                    faultReport: _incidentReportForOrder(o),
+                                    faultLogs: _incidentLogsForOrder(o),
                                     lockerName: _lockerNameOf(o),
                                     sendBoxNumber:
                                         _lockerBoxesMap[_asInt(
@@ -1034,6 +1178,12 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
                                           o['lockerId'],
                                         )]?[_asInt(o['receiveBoxId'])],
                                     onTap: () => _openDetail(o),
+                                    onViewReport: () {
+                                      final r = _incidentReportForOrder(o);
+                                      if (r != null) {
+                                        UserReportDetailSheet.show(context, report: r);
+                                      }
+                                    },
                                   )
                                   .animate()
                                   .fadeIn(delay: (i * 30).ms, duration: 200.ms)
@@ -1160,18 +1310,22 @@ class _OrderCard extends StatelessWidget {
   const _OrderCard({
     required this.order,
     this.faultReport,
+    this.faultLogs = const [],
     this.lockerName,
     this.sendBoxNumber,
     this.receiveBoxNumber,
     required this.onTap,
+    this.onViewReport,
   });
 
   final Map<String, dynamic> order;
   final Map<String, dynamic>? faultReport;
+  final List<Map<String, dynamic>> faultLogs;
   final String? lockerName;
   final int? sendBoxNumber;
   final int? receiveBoxNumber;
   final VoidCallback onTap;
+  final VoidCallback? onViewReport;
 
   @override
   Widget build(BuildContext context) {
@@ -1417,10 +1571,15 @@ class _OrderCard extends StatelessWidget {
                 padding: const EdgeInsets.fromLTRB(16, 0, 16, 14),
                 child: _FaultOrderBanner(
                   report: faultReport!,
+                  logs: faultLogs,
                   boxLabel: _orderBoxLabel(
                     sendBoxNumber: sendBoxNumber,
                     receiveBoxNumber: receiveBoxNumber,
                   ),
+                  onViewReport: onViewReport ??
+                      () {
+                        UserReportDetailSheet.show(context, report: faultReport!);
+                      },
                 ),
               ),
           ],
@@ -1483,71 +1642,210 @@ class _RouteRow extends StatelessWidget {
 }
 
 class _FaultOrderBanner extends StatelessWidget {
-  const _FaultOrderBanner({required this.report, required this.boxLabel});
+  const _FaultOrderBanner({
+    required this.report,
+    required this.boxLabel,
+    this.logs = const [],
+    this.onViewReport,
+  });
 
   final Map<String, dynamic> report;
   final String boxLabel;
+  final List<Map<String, dynamic>> logs;
+  final VoidCallback? onViewReport;
 
   @override
   Widget build(BuildContext context) {
     final reason = (report['description'] as String?)?.trim();
+    final status = (report['status'] as String? ?? 'OPEN').toUpperCase();
+    final isResolved = status == 'RESOLVED' || status == 'CLOSED';
+    final reportId = report['id'];
 
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-      decoration: BoxDecoration(
-        color: const Color(0xFFFEF2F2),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFFCA5A5)),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Icon(
-            LucideIcons.triangleAlert,
-            size: 16,
-            color: Color(0xFFDC2626),
+    // Kiểm tra xem đơn hàng đã được KTV điều chuyển sang ô mới an toàn chưa
+    bool isRelocated = false;
+    String? newBoxNum;
+    String? oldBoxNum = report['boxNumber']?.toString();
+
+    for (final log in logs) {
+      final note = (log['note'] ?? '').toString();
+      final upper = note.toUpperCase();
+      if (upper.contains('ĐIỀU CHUYỂN') || upper.contains('RELOCATE')) {
+        isRelocated = true;
+        final mNew = RegExp(r'sang ô #?(\d+)', caseSensitive: false).firstMatch(note);
+        if (mNew != null) newBoxNum = mNew.group(1);
+        final mOld = RegExp(r'khóa bảo trì ô #?(\d+)', caseSensitive: false).firstMatch(note) ??
+            RegExp(r'ô #?(\d+)', caseSensitive: false).firstMatch(note);
+        if (mOld != null && (oldBoxNum == null || oldBoxNum.isEmpty)) {
+          oldBoxNum = mOld.group(1);
+        }
+        break;
+      }
+    }
+
+    final Color bg;
+    final Color border;
+    final Color fg;
+    final String title;
+    final String subtitle;
+    final IconData icon;
+
+    if (isRelocated) {
+      bg = const Color(0xFFF0FDF4);
+      border = const Color(0xFFBBF7D0);
+      fg = const Color(0xFF15803D);
+      icon = LucideIcons.arrowRightLeft;
+      title = 'Đã điều chuyển sang Ô số ${newBoxNum ?? ''} an toàn';
+      subtitle = 'KTV đã chuyển đồ từ ô cũ (#${oldBoxNum ?? ''}) sang ô mới do sự cố. Mã PIN mới đã sẵn sàng.';
+    } else if (isResolved) {
+      bg = const Color(0xFFF0FDF4);
+      border = const Color(0xFFBBF7D0);
+      fg = const Color(0xFF15803D);
+      icon = LucideIcons.shieldCheck;
+      title = '$boxLabel đã được KTV kiểm tra & xử lý xong';
+      subtitle = 'Tài sản trong ô được bảo vệ an toàn.';
+    } else {
+      bg = const Color(0xFFFEF2F2);
+      border = const Color(0xFFFCA5A5);
+      fg = const Color(0xFFDC2626);
+      icon = LucideIcons.triangleAlert;
+      title = '$boxLabel đã được báo sự cố';
+      subtitle = 'Hãy hủy đơn này và đặt ô khác (hoặc liên hệ KTV).';
+    }
+
+    void onTapBanner() {
+      if (onViewReport != null) {
+        onViewReport!();
+      } else {
+        UserReportDetailSheet.show(context, report: report);
+      }
+    }
+
+    return Material(
+      color: bg,
+      borderRadius: BorderRadius.circular(12),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onTapBanner,
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: border),
           ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  '$boxLabel đã được báo lỗi.',
-                  style: const TextStyle(
-                    fontSize: 12.5,
-                    height: 1.35,
-                    color: Color(0xFFDC2626),
-                    fontWeight: FontWeight.w700,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(
+                    icon,
+                    size: 16,
+                    color: fg,
                   ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  'Hãy hủy đơn này và đặt ô khác.',
-                  style: const TextStyle(
-                    fontSize: 12.5,
-                    height: 1.35,
-                    color: Color(0xFFDC2626),
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                if (reason != null && reason.isNotEmpty) ...[
-                  const SizedBox(height: 2),
-                  Text(
-                    'Lý do: $reason',
-                    style: const TextStyle(
-                      fontSize: 12,
-                      height: 1.35,
-                      color: Color(0xFFDC2626),
-                      fontWeight: FontWeight.w500,
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                title,
+                                style: TextStyle(
+                                  fontSize: 12.5,
+                                  height: 1.35,
+                                  color: fg,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ),
+                            if (reportId != null) ...[
+                              const SizedBox(width: 6),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 6,
+                                  vertical: 2,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: fg.withValues(alpha: 0.12),
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: Text(
+                                  'RPT-$reportId',
+                                  style: TextStyle(
+                                    fontSize: 10.5,
+                                    fontWeight: FontWeight.bold,
+                                    color: fg,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          subtitle,
+                          style: TextStyle(
+                            fontSize: 12,
+                            height: 1.35,
+                            color: fg.withValues(alpha: 0.9),
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        if (reason != null && reason.isNotEmpty && !isRelocated) ...[
+                          const SizedBox(height: 2),
+                          Text(
+                            'Lý do: $reason',
+                            style: TextStyle(
+                              fontSize: 11.5,
+                              height: 1.35,
+                              color: fg.withValues(alpha: 0.8),
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ],
                     ),
                   ),
                 ],
-              ],
-            ),
+              ),
+              const SizedBox(height: 8),
+              Align(
+                alignment: Alignment.centerRight,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  decoration: BoxDecoration(
+                    color: fg.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: fg.withValues(alpha: 0.25)),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(isRelocated ? LucideIcons.arrowRightLeft : LucideIcons.fileText, size: 12, color: fg),
+                      const SizedBox(width: 5),
+                      Text(
+                        isRelocated
+                            ? 'Xem chi tiết điều chuyển & ảnh KTV'
+                            : 'Xem biên bản & ảnh minh chứng',
+                        style: TextStyle(
+                          fontSize: 11.5,
+                          fontWeight: FontWeight.bold,
+                          color: fg,
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      Icon(LucideIcons.chevronRight, size: 13, color: fg),
+                    ],
+                  ),
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
@@ -1965,10 +2263,520 @@ String _orderBoxLabel({
   return label == null ? 'Ô này' : 'Ô số $label';
 }
 
+/// Bóc tách và chuẩn hóa thông tin điều chuyển ô do sự cố kỹ thuật của đơn hàng
+class _IncidentRelocationInfo {
+  final bool isRelocated;
+  final String? oldBoxNumber;
+  final String? newBoxNumber;
+  final String? oldBoxOpenedTime;
+  final String? relocatedTime;
+  final String? technician;
+  final String? initialPin;
+  final String? currentPin;
+  final String? faultReason;
+  final List<String> photoUrls;
+  final int? reportId;
+
+  const _IncidentRelocationInfo({
+    required this.isRelocated,
+    this.oldBoxNumber,
+    this.newBoxNumber,
+    this.oldBoxOpenedTime,
+    this.relocatedTime,
+    this.technician,
+    this.initialPin,
+    this.currentPin,
+    this.faultReason,
+    this.photoUrls = const [],
+    this.reportId,
+  });
+
+  static String _fmtSec(dynamic value) {
+    if (value == null) return '';
+    try {
+      final d = DateTime.parse(value.toString()).toLocal();
+      String tw(int n) => n.toString().padLeft(2, '0');
+      return '${tw(d.hour)}:${tw(d.minute)}:${tw(d.second)} ${tw(d.day)}/${tw(d.month)}/${d.year}';
+    } catch (_) {
+      return '';
+    }
+  }
+
+  static _IncidentRelocationInfo extract({
+    required Map<String, dynamic> order,
+    Map<String, dynamic>? report,
+    List<Map<String, dynamic>> logs = const [],
+  }) {
+    bool isRelocated = false;
+    String? oldBox;
+    String? newBox;
+    String? oldOpenedTime;
+    String? relTime;
+    String? tech;
+    final photoUrls = <String>{};
+
+    final repId = _asInt(report?['id']);
+    final faultReason = (report?['description'] ?? report?['reason'])?.toString().trim();
+    if (report?['boxNumber'] != null) {
+      oldBox = report!['boxNumber'].toString();
+    }
+
+    // Quét qua logs để bóc tách thông tin KTV và các mốc can thiệp
+    for (final l in logs) {
+      final note = (l['note'] ?? l['description'] ?? '').toString();
+      final upper = note.toUpperCase();
+      final dt = l['createdAt'] ?? l['created_at'] ?? l['timestamp'] ?? l['changedAt'];
+      final dtStr = _fmtSec(dt);
+
+      final actorId = l['actorUserId'] ?? l['userId'] ?? l['technicianId'];
+      if (actorId != null && tech == null) {
+        tech = 'KTV #$actorId';
+      }
+
+      // Trích xuất ảnh trong log
+      final atts = l['attachments'];
+      if (atts is List) {
+        for (final a in atts) {
+          if (a is Map) {
+            final u = (a['secureUrl'] ?? a['url'] ?? a['thumbnailUrl'])?.toString().trim();
+            if (u != null && (u.startsWith('http://') || u.startsWith('https://'))) {
+              photoUrls.add(u);
+            }
+          }
+        }
+      }
+
+      if (upper.contains('ĐIỀU CHUYỂN') || upper.contains('RELOCATE')) {
+        isRelocated = true;
+        if (relTime == null && dtStr.isNotEmpty) {
+          relTime = dtStr;
+        }
+        final mNew = RegExp(r'sang ô #?(\d+)', caseSensitive: false).firstMatch(note);
+        if (mNew != null) newBox = mNew.group(1);
+        final mOld = RegExp(r'khóa bảo trì ô #?(\d+)', caseSensitive: false).firstMatch(note) ??
+            RegExp(r'ô #?(\d+)', caseSensitive: false).firstMatch(note);
+        if (mOld != null && (oldBox == null || oldBox.isEmpty)) {
+          oldBox = mOld.group(1);
+        }
+      } else {
+        // Ghi chú hiện trường / kiểm tra mở ô cũ
+        if (oldOpenedTime == null && dtStr.isNotEmpty) {
+          oldOpenedTime = dtStr;
+        }
+        if (oldBox == null || oldBox.isEmpty) {
+          final mOld = RegExp(r'ô #?(\d+)', caseSensitive: false).firstMatch(note);
+          if (mOld != null) oldBox = mOld.group(1);
+        }
+      }
+    }
+
+    if (newBox == null && order['sendBoxNumber'] != null) {
+      newBox = order['sendBoxNumber'].toString();
+    }
+    if (newBox == null && order['receiveBoxNumber'] != null) {
+      newBox = order['receiveBoxNumber'].toString();
+    }
+
+    return _IncidentRelocationInfo(
+      isRelocated: isRelocated,
+      oldBoxNumber: oldBox,
+      newBoxNumber: newBox,
+      oldBoxOpenedTime: oldOpenedTime,
+      relocatedTime: relTime,
+      technician: tech ??
+          (report?['assignedToTechnicianName'] ??
+              (report?['assignedToUserId'] != null
+                  ? 'KTV #${report!['assignedToUserId']}'
+                  : null)),
+      initialPin: '•••••• (Đã hủy để bảo mật)',
+      currentPin: order['pinCode']?.toString(),
+      faultReason: faultReason,
+      photoUrls: photoUrls.toList(),
+      reportId: repId,
+    );
+  }
+}
+
+/// Card chi tiết hồ sơ điều chuyển ô hiển thị trong modal chi tiết đơn hàng
+class _OrderRelocationCard extends StatelessWidget {
+  const _OrderRelocationCard({
+    required this.relocation,
+    this.onViewReport,
+  });
+
+  final _IncidentRelocationInfo relocation;
+  final VoidCallback? onViewReport;
+
+  @override
+  Widget build(BuildContext context) {
+    final oldBox = relocation.oldBoxNumber ?? '—';
+    final newBox = relocation.newBoxNumber ?? '—';
+    final tech = relocation.technician ?? 'KTV phụ trách';
+    final oldTime = relocation.oldBoxOpenedTime;
+    final newTime = relocation.relocatedTime;
+    final photos = relocation.photoUrls;
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF0FDF4),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFF86EFAC), width: 1.2),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF15803D).withValues(alpha: 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Tiêu đề card
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFDCFCE7),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(
+                  LucideIcons.arrowRightLeft,
+                  size: 16,
+                  color: Color(0xFF15803D),
+                ),
+              ),
+              const SizedBox(width: 8),
+              const Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'HỒ SƠ ĐIỀU CHUYỂN Ô AN TOÀN',
+                      style: TextStyle(
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.w800,
+                        color: Color(0xFF15803D),
+                        letterSpacing: 0.3,
+                      ),
+                    ),
+                    Text(
+                      'Hàng đã được chuyển sang ô mới do ô cũ gặp sự cố kỹ thuật',
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: Color(0xFF166534),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              if (relocation.reportId != null)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF15803D).withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Text(
+                    'RPT-${relocation.reportId}',
+                    style: const TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w800,
+                      color: Color(0xFF15803D),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+          const SizedBox(height: 12),
+
+          // Sơ đồ chuyển đổi ô: Ô CŨ -> Ô MỚI
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: const Color(0xFFDCFCE7)),
+            ),
+            child: Row(
+              children: [
+                // Ô cũ
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Row(
+                        children: [
+                          Icon(LucideIcons.circleAlert, size: 12, color: Color(0xFFDC2626)),
+                          SizedBox(width: 4),
+                          Text(
+                            'Ô BAN ĐẦU',
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w700,
+                              color: Color(0xFFDC2626),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        'Ô số #$oldBox',
+                        style: const TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w800,
+                          color: Color(0xFF991B1B),
+                        ),
+                      ),
+                      const SizedBox(height: 1),
+                      Text(
+                        relocation.faultReason != null && relocation.faultReason!.isNotEmpty
+                            ? relocation.faultReason!
+                            : 'Gặp sự cố kỹ thuật',
+                        style: const TextStyle(fontSize: 10.5, color: Color(0xFFB91C1C)),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                ),
+                // Icon mũi tên chuyển tiếp
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 6),
+                  child: Column(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: const BoxDecoration(
+                          color: Color(0xFFE0F2FE),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          LucideIcons.arrowRight,
+                          size: 14,
+                          color: Color(0xFF0284C7),
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        tech,
+                        style: const TextStyle(
+                          fontSize: 9.5,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF0369A1),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                // Ô mới
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      const Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          Text(
+                            'Ô TIẾP NHẬN MỚI',
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w700,
+                              color: Color(0xFF15803D),
+                            ),
+                          ),
+                          SizedBox(width: 4),
+                          Icon(LucideIcons.circleCheck, size: 12, color: Color(0xFF15803D)),
+                        ],
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        'Ô số #$newBox',
+                        style: const TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w800,
+                          color: Color(0xFF15803D),
+                        ),
+                      ),
+                      const SizedBox(height: 1),
+                      const Text(
+                        'Đang chứa hàng an toàn',
+                        style: TextStyle(fontSize: 10.5, color: Color(0xFF166534)),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 10),
+
+          // Chi tiết các mốc thời gian & mã PIN
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.85),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: const Color(0xFFE2E8F0)),
+            ),
+            child: Column(
+              children: [
+                if (oldTime != null && oldTime.isNotEmpty) ...[
+                  _detailRow(
+                    icon: LucideIcons.doorOpen,
+                    label: 'Thời gian mở ô cũ kiểm tra',
+                    value: oldTime,
+                    valueColor: const Color(0xFFB45309),
+                  ),
+                  const Divider(height: 10, color: Color(0xFFF1F5F9)),
+                ],
+                if (newTime != null && newTime.isNotEmpty) ...[
+                  _detailRow(
+                    icon: LucideIcons.packageCheck,
+                    label: 'Thời gian chuyển qua ô mới',
+                    value: newTime,
+                    valueColor: const Color(0xFF15803D),
+                  ),
+                  const Divider(height: 10, color: Color(0xFFF1F5F9)),
+                ],
+                _detailRow(
+                  icon: LucideIcons.shieldAlert,
+                  label: 'Mã PIN ô ban đầu',
+                  value: 'Đã vô hiệu hoá (Mã cũ hết hạn)',
+                  valueColor: const Color(0xFF64748B),
+                ),
+                const Divider(height: 10, color: Color(0xFFF1F5F9)),
+                _detailRow(
+                  icon: LucideIcons.key,
+                  label: 'Mã PIN mở ô mới (#$newBox)',
+                  value: '${relocation.currentPin ?? '••••••'} (Đang kích hoạt)',
+                  valueColor: const Color(0xFF15803D),
+                  isBold: true,
+                ),
+              ],
+            ),
+          ),
+
+          // Ảnh minh chứng KTV
+          if (photos.isNotEmpty) ...[
+            const SizedBox(height: 10),
+            Row(
+              children: [
+                const Icon(LucideIcons.camera, size: 13, color: Color(0xFF15803D)),
+                const SizedBox(width: 5),
+                Text(
+                  'Ảnh KTV chụp quá trình kiểm tra & chuyển ô (${photos.length} ảnh):',
+                  style: const TextStyle(
+                    fontSize: 11.5,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFF15803D),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 6),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                for (final url in photos)
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: Container(
+                      width: 58,
+                      height: 58,
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade200,
+                        border: Border.all(color: const Color(0xFF86EFAC)),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Image.network(
+                        url,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => const Icon(
+                          Icons.broken_image,
+                          size: 20,
+                          color: Colors.grey,
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ],
+
+          const SizedBox(height: 10),
+          // Nút bấm mở chi tiết báo cáo sự cố
+          Material(
+            color: const Color(0xFF15803D),
+            borderRadius: BorderRadius.circular(10),
+            child: InkWell(
+              onTap: onViewReport,
+              borderRadius: BorderRadius.circular(10),
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 9, horizontal: 12),
+                alignment: Alignment.center,
+                child: const Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(LucideIcons.fileText, size: 14, color: Colors.white),
+                    SizedBox(width: 6),
+                    Text(
+                      'Xem toàn bộ biên bản sự cố KTV & nhật ký ➔',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  static Widget _detailRow({
+    required IconData icon,
+    required String label,
+    required String value,
+    Color? valueColor,
+    bool isBold = false,
+  }) {
+    return Row(
+      children: [
+        Icon(icon, size: 12.5, color: valueColor ?? const Color(0xFF475569)),
+        const SizedBox(width: 6),
+        Text(
+          label,
+          style: const TextStyle(fontSize: 11.5, color: Color(0xFF64748B)),
+        ),
+        const Spacer(),
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 11.5,
+            fontWeight: isBold ? FontWeight.w800 : FontWeight.w600,
+            color: valueColor ?? const Color(0xFF1E293B),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
 class _DetailSheet extends StatelessWidget {
   const _DetailSheet({
     required this.order,
     this.faultReport,
+    this.faultLogs = const [],
     this.lockerName,
     this.locker,
     this.sendBoxNumber,
@@ -1989,6 +2797,7 @@ class _DetailSheet extends StatelessWidget {
 
   final Map<String, dynamic> order;
   final Map<String, dynamic>? faultReport;
+  final List<Map<String, dynamic>> faultLogs;
   final String? lockerName;
 
   /// Bản ghi tủ đầy đủ để hiện địa điểm; `null` khi chưa tải được.
@@ -2049,6 +2858,19 @@ class _DetailSheet extends StatelessWidget {
     final lockerAddress = (rawAddress == null || rawAddress.isEmpty)
         ? null
         : rawAddress;
+
+    // Trích xuất toàn bộ hồ sơ điều chuyển ô kỹ thuật (nếu có)
+    final relocation = _IncidentRelocationInfo.extract(
+      order: order,
+      report: faultReport,
+      logs: faultLogs,
+    );
+
+    void handleViewReport() {
+      if (faultReport != null) {
+        UserReportDetailSheet.show(context, report: faultReport!);
+      }
+    }
 
     // Backend order-service trả thêm 5 trường này từ bản vá OrderResponse (trước đây có
     // trên entity nhưng không trả về khách hàng) — receiverName/receiverPhone (SEND / uỷ
@@ -2228,7 +3050,12 @@ class _DetailSheet extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         if (faultReport != null) ...[
-          _FaultOrderBanner(report: faultReport!, boxLabel: boxLabel),
+          _FaultOrderBanner(
+            report: faultReport!,
+            boxLabel: boxLabel,
+            logs: faultLogs,
+            onViewReport: handleViewReport,
+          ),
           const SizedBox(height: 12),
         ],
         Row(
@@ -2294,6 +3121,16 @@ class _DetailSheet extends StatelessWidget {
                         '${overtimePolicyText(config)}',
             ),
           ),
+
+        // Khối Card Hồ Sơ Điều Chuyển Ô Kỹ Thuật (nếu có)
+        if (relocation.isRelocated) ...[
+          _OrderRelocationCard(
+            relocation: relocation,
+            onViewReport: handleViewReport,
+          ),
+          const SizedBox(height: 14),
+        ],
+
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
           decoration: BoxDecoration(
@@ -2315,13 +3152,48 @@ class _DetailSheet extends StatelessWidget {
                   label: 'Địa điểm',
                   value: lockerAddress,
                 ),
-              // Chỉ hiện SỐ Ô in trên tủ. Trước đây thiếu số ô thì rơi về `sendBoxId`
-              // — mã nội bộ — nên màn hình chỉ một con số không có trên tủ thật.
-              OpsInfoRow(
-                icon: LucideIcons.grid3x3,
-                label: 'Ô',
-                value: _boxRouteLabel(sendBoxNumber, receiveBoxNumber),
-              ),
+
+              // Hiển thị chi tiết ô tủ theo nghiệp vụ chuyển ô hoặc bình thường
+              if (relocation.isRelocated) ...[
+                OpsInfoRow(
+                  icon: LucideIcons.grid3x3,
+                  label: 'Ô mới tiếp nhận',
+                  value: 'Ô số ${relocation.newBoxNumber ?? sendBoxNumber ?? '—'} (Đang an toàn)',
+                  valueColor: const Color(0xFF15803D),
+                ),
+                OpsInfoRow(
+                  icon: LucideIcons.circleAlert,
+                  label: 'Ô ban đầu',
+                  value: 'Ô số ${relocation.oldBoxNumber ?? '—'} (Gặp sự cố)',
+                  valueColor: const Color(0xFFDC2626),
+                ),
+                if (relocation.oldBoxOpenedTime != null && relocation.oldBoxOpenedTime!.isNotEmpty)
+                  OpsInfoRow(
+                    icon: LucideIcons.doorOpen,
+                    label: 'Thời gian mở ô cũ',
+                    value: relocation.oldBoxOpenedTime!,
+                    valueColor: const Color(0xFFB45309),
+                  ),
+                if (relocation.relocatedTime != null && relocation.relocatedTime!.isNotEmpty)
+                  OpsInfoRow(
+                    icon: LucideIcons.checkCheck,
+                    label: 'Thời gian chuyển ô',
+                    value: relocation.relocatedTime!,
+                    valueColor: const Color(0xFF15803D),
+                  ),
+                OpsInfoRow(
+                  icon: LucideIcons.keyRound,
+                  label: 'Mã PIN ban đầu',
+                  value: 'Đã vô hiệu hoá (Mã cũ hết hạn)',
+                  valueColor: const Color(0xFF64748B),
+                ),
+              ] else ...[
+                OpsInfoRow(
+                  icon: LucideIcons.grid3x3,
+                  label: 'Ô',
+                  value: _boxRouteLabel(sendBoxNumber, receiveBoxNumber),
+                ),
+              ],
               if (createdAt != null)
                 OpsInfoRow(
                   icon: LucideIcons.calendar,
@@ -2465,13 +3337,55 @@ class _DetailSheet extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 16),
-        if (order['pinCode'] != null && canUsePickupActions)
+        if (order['pinCode'] != null && canUsePickupActions) ...[
+          if (relocation.isRelocated)
+            Center(
+              child: Container(
+                margin: const EdgeInsets.only(bottom: 8),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFDCFCE7),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: const Color(0xFF86EFAC)),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(LucideIcons.keyRound, size: 14, color: Color(0xFF15803D)),
+                    const SizedBox(width: 6),
+                    Text(
+                      'Mã PIN mở Ô MỚI (#${relocation.newBoxNumber ?? '4'}):',
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF15803D),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
           Center(
             child: AccessCredentials(
               pin: order['pinCode'] as String?,
               qrToken: order['qrToken'] as String?,
             ),
           ),
+          if (relocation.isRelocated)
+            const Padding(
+              padding: EdgeInsets.only(top: 6),
+              child: Center(
+                child: Text(
+                  '🔒 Mã PIN ô cũ đã bị vô hiệu hoá. Chỉ sử dụng mã trên để mở ô mới an toàn.',
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: Color(0xFF64748B),
+                    fontStyle: FontStyle.italic,
+                  ),
+                ),
+              ),
+            ),
+        ],
         const SizedBox(height: 16),
         ...actions,
         const SizedBox(height: 20),
@@ -2479,7 +3393,12 @@ class _DetailSheet extends StatelessWidget {
         const SizedBox(height: 12),
         OrderStatusTimeline(orderId: id),
         const SizedBox(height: 12),
-        _OrderIncidentResolutionSection(orderId: id),
+        _OrderIncidentResolutionSection(
+          orderId: id,
+          order: order,
+          report: faultReport,
+          logs: faultLogs,
+        ),
         const SizedBox(height: 8),
       ],
     );
@@ -2613,8 +3532,17 @@ class _PaymentTraceRowsState extends State<_PaymentTraceRows> {
 /// trong order timeline ("[THàNH CÔNG]", "[ĐIỀU CHUYỂN Ô]", v.v.).
 /// Chỉ hiển khi timeline có ít nhất 1 note dạng incident resolution tag.
 class _OrderIncidentResolutionSection extends StatefulWidget {
-  const _OrderIncidentResolutionSection({required this.orderId});
+  const _OrderIncidentResolutionSection({
+    required this.orderId,
+    this.order,
+    this.report,
+    this.logs = const [],
+  });
+
   final int orderId;
+  final Map<String, dynamic>? order;
+  final Map<String, dynamic>? report;
+  final List<Map<String, dynamic>> logs;
 
   @override
   State<_OrderIncidentResolutionSection> createState() =>
@@ -2625,16 +3553,18 @@ class _OrderIncidentResolutionSectionState
     extends State<_OrderIncidentResolutionSection> {
   final _svc = LockerOpsService();
   List<Map<String, dynamic>> _incidentEvents = const [];
+  List<Map<String, dynamic>> _attachments = const [];
+  Map<String, dynamic>? _resolvedReport;
   bool _loading = true;
 
   // Danh sách tag prefix của incident notes
   static const _incidentTags = [
-    '[THàNH CÔNG]',
+    '[THÀNH CÔNG]',
     '[ĐIỀU CHUYỂN Ô]',
     '[NIÊM PHONG VỀ HUB]',
-    '[BÀN GIAO TRỰC TIếP]',
+    '[BÀN GIAO TRỰC TIẾP]',
     '[XÁC NHẬN & KHÓA Ô]',
-    '[Xử LÝ TẠI CHỔ]',
+    '[XỬ LÝ TẠI CHỖ]',
     '[NGHIỆM THU]',
     '[KHÓA BẢO TRÌ]',
   ];
@@ -2644,6 +3574,7 @@ class _OrderIncidentResolutionSectionState
   @override
   void initState() {
     super.initState();
+    _resolvedReport = widget.report;
     _load();
   }
 
@@ -2657,6 +3588,61 @@ class _OrderIncidentResolutionSectionState
         final upperNote = note.toUpperCase();
         return _incidentTags.any((t) => upperNote.contains(t.toUpperCase()));
       }).toList();
+
+      // Nếu timeline chưa có incident events nhưng widget.logs có ghi nhận từ KTV
+      if (incidents.isEmpty && widget.logs.isNotEmpty) {
+        for (final l in widget.logs) {
+          final note = (l['note'] ?? l['description'] ?? '').toString().trim();
+          final upperNote = note.toUpperCase();
+          if (_incidentTags.any((t) => upperNote.contains(t.toUpperCase())) ||
+              upperNote.contains('ĐIỀU CHUYỂN') ||
+              upperNote.contains('SỰ CỐ') ||
+              upperNote.contains('BẢO TRÌ') ||
+              upperNote.contains('HIỆN TRƯỜNG')) {
+            incidents.add({
+              'note': note,
+              'changedAt': l['createdAt'] ?? l['created_at'] ?? l['timestamp'] ?? l['changedAt'],
+              'actorUserId': l['actorUserId'] ?? l['userId'],
+            });
+          }
+        }
+      }
+
+      // Nếu chưa có report truyền vào, thử trích xuất reportId từ ghi chú sự cố
+      if (_resolvedReport == null) {
+        for (final ev in incidents) {
+          final n = (ev['note'] ?? ev['description'] ?? '').toString();
+          final m = RegExp(r'RPT-(\d+)', caseSensitive: false).firstMatch(n);
+          if (m != null) {
+            _resolvedReport = {'id': int.tryParse(m.group(1)!)};
+            break;
+          }
+        }
+      }
+
+      // Bổ sung ảnh từ widget.logs nếu có
+      for (final l in widget.logs) {
+        final atts = l['attachments'];
+        if (atts is List) {
+          for (final a in atts) {
+            if (a is Map<String, dynamic>) {
+              _attachments.add(a);
+            }
+          }
+        }
+      }
+
+      // Tải danh sách ảnh minh chứng đính kèm nếu có reportId
+      final repId = _asInt(_resolvedReport?['id']);
+      if (repId != null) {
+        try {
+          final atts = await _svc.myReportAttachments(repId);
+          if (atts.isNotEmpty && mounted) {
+            _attachments = [..._attachments, ...atts];
+          }
+        } catch (_) {}
+      }
+
       setState(() {
         _incidentEvents = incidents;
         _loading = false;
@@ -2678,53 +3664,115 @@ class _OrderIncidentResolutionSectionState
   }
 
   ({Color bg, Color fg, IconData icon}) _tagStyle(String upperTag) {
-    if (upperTag.contains('THàNH CÔNG') || upperTag.contains('NGHIỆM THU') || upperTag.contains('Xử LÝ TẠI CHỔ')) {
-      return (bg: const Color(0xFFDCFCE7), fg: const Color(0xFF15803D), icon: LucideIcons.circleCheck);
+    if (upperTag.contains('THÀNH CÔNG') ||
+        upperTag.contains('NGHIỆM THU') ||
+        upperTag.contains('XỬ LÝ TẠI CHỖ')) {
+      return (
+        bg: const Color(0xFFDCFCE7),
+        fg: const Color(0xFF15803D),
+        icon: LucideIcons.circleCheck,
+      );
     } else if (upperTag.contains('ĐIỀU CHUYỂN')) {
-      return (bg: const Color(0xFFE0F2FE), fg: const Color(0xFF0369A1), icon: LucideIcons.arrowRightLeft);
+      return (
+        bg: const Color(0xFFE0F2FE),
+        fg: const Color(0xFF0369A1),
+        icon: LucideIcons.arrowRightLeft,
+      );
     } else if (upperTag.contains('NIÊM PHONG') || upperTag.contains('HUB')) {
-      return (bg: const Color(0xFFFEF3C7), fg: const Color(0xFFB45309), icon: LucideIcons.packageCheck);
+      return (
+        bg: const Color(0xFFFEF3C7),
+        fg: const Color(0xFFB45309),
+        icon: LucideIcons.packageCheck,
+      );
     } else if (upperTag.contains('BÀN GIAO')) {
-      return (bg: const Color(0xFFF3E8FF), fg: const Color(0xFF7E22CE), icon: LucideIcons.handshake);
-    } else if (upperTag.contains('KHÓA BẢO TRÌ') || upperTag.contains('XÁC NHẬN')) {
-      return (bg: const Color(0xFFFEF2F2), fg: const Color(0xFFDC2626), icon: LucideIcons.lockKeyhole);
+      return (
+        bg: const Color(0xFFF3E8FF),
+        fg: const Color(0xFF7E22CE),
+        icon: LucideIcons.handshake,
+      );
+    } else if (upperTag.contains('KHÓA BẢO TRÌ') ||
+        upperTag.contains('XÁC NHẬN')) {
+      return (
+        bg: const Color(0xFFFEF2F2),
+        fg: const Color(0xFFDC2626),
+        icon: LucideIcons.lockKeyhole,
+      );
     }
-    return (bg: const Color(0xFFF1F5F9), fg: const Color(0xFF334155), icon: LucideIcons.info);
+    return (
+      bg: const Color(0xFFF1F5F9),
+      fg: const Color(0xFF334155),
+      icon: LucideIcons.info,
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    if (_loading || _incidentEvents.isEmpty) return const SizedBox.shrink();
+    if (_loading || (_incidentEvents.isEmpty && _resolvedReport == null)) {
+      return const SizedBox.shrink();
+    }
+
+    final repId = _asInt(_resolvedReport?['id']);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Divider(height: 1, color: opsBorder),
         const SizedBox(height: 12),
-        const Row(
+        Row(
           children: [
-            Icon(LucideIcons.shieldAlert, size: 15, color: opsPrimary),
-            SizedBox(width: 6),
-            Text(
-              'Phương án xử lý ô tủ:',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 13,
-                color: opsDark,
+            const Icon(LucideIcons.shieldCheck, size: 16, color: opsPrimary),
+            const SizedBox(width: 6),
+            const Expanded(
+              child: Text(
+                'Biên bản can thiệp & bảo vệ tài sản:',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 13,
+                  color: opsDark,
+                ),
               ),
             ),
+            if (repId != null)
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(
+                  color: opsPrimary.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Text(
+                  'RPT-$repId',
+                  style: const TextStyle(
+                    fontSize: 10.5,
+                    fontWeight: FontWeight.bold,
+                    color: opsPrimary,
+                  ),
+                ),
+              ),
           ],
         ),
         const SizedBox(height: 8),
         for (final event in _incidentEvents) ...[
           Builder(
             builder: (context) {
-              final rawNote = (event['note'] ?? event['description'] ?? '').toString().trim();
+              final rawNote =
+                  (event['note'] ?? event['description'] ?? '').toString().trim();
               final match = _tagRegex.firstMatch(rawNote);
               final tag = match?.group(1) ?? rawNote;
               final rest = match?.group(2) ?? '';
               final style = _tagStyle(tag.toUpperCase());
-              final ts = _fmtDt(event['changedAt'] ?? event['createdAt'] ?? event['timestamp']);
+              final ts = _fmtDt(
+                event['changedAt'] ?? event['createdAt'] ?? event['timestamp'],
+              );
+              // Danh sách thumbnail ảnh KTV chụp minh chứng (nếu có)
+              final validPhotos = _attachments.where((a) {
+                final u = (a['thumbnailUrl'] ??
+                        a['secureUrl'] ??
+                        a['url'] ??
+                        '')
+                    .toString()
+                    .trim();
+                return u.startsWith('http://') || u.startsWith('https://');
+              }).toList();
 
               return Container(
                 width: double.infinity,
@@ -2755,7 +3803,10 @@ class _OrderIncidentResolutionSectionState
                         if (ts.isNotEmpty)
                           Text(
                             ts,
-                            style: const TextStyle(fontSize: 11, color: opsMutedText),
+                            style: const TextStyle(
+                              fontSize: 11,
+                              color: opsMutedText,
+                            ),
                           ),
                       ],
                     ),
@@ -2765,26 +3816,171 @@ class _OrderIncidentResolutionSectionState
                         rest,
                         style: TextStyle(
                           fontSize: 12.5,
-                          color: style.fg.withValues(alpha: 0.8),
+                          color: style.fg.withValues(alpha: 0.9),
                           height: 1.4,
                         ),
                       ),
                     ],
+
+                    if (validPhotos.isNotEmpty) ...[
+                      const SizedBox(height: 8),
+                      GestureDetector(
+                        onTap: () {
+                          UserReportDetailSheet.show(
+                            context,
+                            report: _resolvedReport ?? {
+                              'id': repId ?? 0,
+                              'title':
+                                  'Sự cố ô tủ - Đơn hàng #${widget.order?['orderCode'] ?? widget.orderId}',
+                              'description': rest,
+                              'status': 'RESOLVED',
+                            },
+                          );
+                        },
+                        child: Wrap(
+                          spacing: 6,
+                          runSpacing: 6,
+                          crossAxisAlignment: WrapCrossAlignment.center,
+                          children: [
+                            ...validPhotos.take(3).map((a) {
+                              final url = (a['thumbnailUrl'] ??
+                                      a['secureUrl'] ??
+                                      a['url'] ??
+                                      '')
+                                  .toString()
+                                  .trim();
+                              return ClipRRect(
+                                borderRadius: BorderRadius.circular(8),
+                                child: Container(
+                                  width: 42,
+                                  height: 42,
+                                  decoration: BoxDecoration(
+                                    color: Colors.grey.shade200,
+                                    border: Border.all(
+                                      color: style.fg.withValues(alpha: 0.25),
+                                    ),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Image.network(
+                                    url,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (_, __, ___) => Icon(
+                                      Icons.broken_image,
+                                      size: 16,
+                                      color: Colors.grey.shade400,
+                                    ),
+                                  ),
+                                ),
+                              );
+                            }),
+                            if (validPhotos.length > 3)
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 6,
+                                  vertical: 4,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: style.fg.withValues(alpha: 0.12),
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: Text(
+                                  '+${validPhotos.length - 3} ảnh',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.bold,
+                                    color: style.fg,
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+                    ],
+                    // Nút bấm chuyển sang xem toàn bộ báo cáo & ảnh minh chứng KTV
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8),
+                      child: Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          onTap: () {
+                            UserReportDetailSheet.show(
+                              context,
+                              report: _resolvedReport ?? {
+                                'id': repId ?? 0,
+                                'title':
+                                    'Sự cố ô tủ - Đơn hàng #${widget.order?['orderCode'] ?? widget.orderId}',
+                                'description': rest,
+                                'status': 'RESOLVED',
+                              },
+                            );
+                          },
+                          borderRadius: BorderRadius.circular(8),
+                          child: Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 7,
+                            ),
+                            decoration: BoxDecoration(
+                              color: style.fg.withValues(alpha: 0.08),
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(
+                                color: style.fg.withValues(alpha: 0.25),
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  LucideIcons.fileCheck,
+                                  size: 13,
+                                  color: style.fg,
+                                ),
+                                const SizedBox(width: 6),
+                                Text(
+                                  'Xem chi tiết & ảnh minh chứng KTV',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
+                                    color: style.fg,
+                                  ),
+                                ),
+                                const SizedBox(width: 4),
+                                Icon(
+                                  LucideIcons.chevronRight,
+                                  size: 13,
+                                  color: style.fg,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
                     // Thông báo người dùng nếu có nội dung actionable
                     if (tag.toUpperCase().contains('ĐIỀU CHUYỂN'))
                       Padding(
                         padding: const EdgeInsets.only(top: 6),
                         child: Text(
                           'ℹ️ Hàng của bạn đã được chuyển sang ô mới. Vui lòng kiểm tra mã mở ô mới trong app.',
-                          style: TextStyle(fontSize: 11.5, color: style.fg, height: 1.35),
+                          style: TextStyle(
+                            fontSize: 11.5,
+                            color: style.fg,
+                            height: 1.35,
+                          ),
                         ),
                       )
-                    else if (tag.toUpperCase().contains('NIÊM PHONG') || tag.toUpperCase().contains('HUB'))
+                    else if (tag.toUpperCase().contains('NIÊM PHONG') ||
+                        tag.toUpperCase().contains('HUB'))
                       Padding(
                         padding: const EdgeInsets.only(top: 6),
                         child: Text(
                           'ℹ️ Hàng được niêm phong an toàn và đưa về Hub. Nhân viên sẽ liên hệ bạn để thu xếp lại.',
-                          style: TextStyle(fontSize: 11.5, color: style.fg, height: 1.35),
+                          style: TextStyle(
+                            fontSize: 11.5,
+                            color: style.fg,
+                            height: 1.35,
+                          ),
                         ),
                       )
                     else if (tag.toUpperCase().contains('BÀN GIAO'))
@@ -2792,7 +3988,11 @@ class _OrderIncidentResolutionSectionState
                         padding: const EdgeInsets.only(top: 6),
                         child: Text(
                           'ℹ️ Hàng đã được bàn giao trực tiếp. Nếu có thắc mắc vui lòng liên hệ bộ phận CSKH.',
-                          style: TextStyle(fontSize: 11.5, color: style.fg, height: 1.35),
+                          style: TextStyle(
+                            fontSize: 11.5,
+                            color: style.fg,
+                            height: 1.35,
+                          ),
                         ),
                       ),
                   ],

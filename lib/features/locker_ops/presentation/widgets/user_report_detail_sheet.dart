@@ -32,9 +32,11 @@ class UserReportDetailSheet extends StatefulWidget {
     BuildContext context, {
     required Map<String, dynamic> report,
     Future<void> Function()? onChanged,
+    bool useRootNavigator = true,
   }) {
     return showModalBottomSheet<void>(
       context: context,
+      useRootNavigator: useRootNavigator,
       isScrollControlled: true,
       backgroundColor: Colors.white,
       shape: const RoundedRectangleBorder(
