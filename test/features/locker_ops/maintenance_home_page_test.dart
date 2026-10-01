@@ -45,6 +45,8 @@ class _FakeMaintenanceService extends LockerOpsService {
       {
         'orderId': 21,
         'deliveryStage': 'AWAITING_DISPATCH',
+        // Chỉ đơn đã thanh toán mới tiếp nhận được.
+        'paymentStatus': 'PAID',
         'destinationLockerId': 5,
         'reservedBoxId': 9001,
         'description': 'Tai lieu khan',
@@ -177,9 +179,12 @@ void main() {
     await tester.pumpWidget(MaterialApp.router(routerConfig: router));
     await tester.pumpAndSettle();
 
-    expect(find.textContaining('Chờ tiếp nhận'), findsOneWidget);
-    expect(find.textContaining('Chờ nạp hàng'), findsOneWidget);
-    expect(find.textContaining('Sẵn sàng phóng'), findsOneWidget);
+    // Khớp tiêu đề nhóm ("… (n)"): thẻ đơn cũng hiện nhãn trạng thái nhiệm vụ
+    // cùng chữ, nên tìm theo chữ trần sẽ ra nhiều hơn một widget.
+    expect(find.textContaining('Chờ tiếp nhận ('), findsOneWidget);
+    expect(find.textContaining('Chờ nạp hàng ('), findsOneWidget);
+    expect(find.textContaining('Sẵn sàng phóng ('), findsOneWidget);
+    expect(find.textContaining('Nhiệm vụ: Chờ nạp hàng'), findsOneWidget);
     expect(find.text('Tiếp nhận'), findsOneWidget);
     expect(find.text('Phóng'), findsOneWidget);
 

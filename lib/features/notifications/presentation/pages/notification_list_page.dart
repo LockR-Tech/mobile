@@ -62,15 +62,30 @@ class _NotificationListPageState extends State<NotificationListPage> {
       return;
     }
 
+    // Hành trình giao drone -> màn theo dõi drone của đúng đơn. Phải xét trước
+    // `switch`: mốc chặng giao dùng chung `type = ORDER_STATUS_CHANGED` với đơn
+    // tủ, chỉ khác `referenceType = DELIVERY`.
+    if (payload.isDroneDelivery) {
+      if (payload.referenceId != null) {
+        context.push(AppRouter.droneDeliveryTracking, extra: payload.referenceId);
+      } else {
+        _showNotificationSheet(notification);
+      }
+      return;
+    }
+    // Đơn drone mới -> hàng đợi điều phối của đội bay.
+    if (payload.isDroneDispatch) {
+      context.push(AppRouter.maintenanceHome);
+      return;
+    }
+
     switch (payload.actionType) {
-      // Noti đơn hàng + noti trạng thái giao hàng (drone) -> mở chi tiết đơn.
+      // Noti đơn tủ -> danh sách đơn của tôi. Trang chi tiết đơn cũ
+      // (`AppRouter.orderDetail`) gọi API `/orders/me/{id}` đã bị gỡ nên mở ra
+      // chỉ thấy màn trống — trông như bấm thông báo không có gì xảy ra.
       case 'OPEN_ORDER_DETAIL':
       case 'ORDER_STATUS_CHANGED':
-        if (payload.referenceId != null) {
-          context.push(AppRouter.orderDetail, extra: payload.referenceId);
-        } else {
-          _showNotificationSheet(notification);
-        }
+        context.push(AppRouter.myLockerOrders);
         break;
       case 'OPEN_PROMOTION_TAB':
         context.push(AppRouter.promotions);
@@ -443,8 +458,11 @@ class _NotificationListPageState extends State<NotificationListPage> {
                     overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 8),
+                  // Giờ cụ thể trước, khoảng cách tương đối sau: "3 giờ trước"
+                  // một mình không cho biết thông báo tới lúc nào.
                   Text(
-                    _formatTimeAgo(notification.createdAt),
+                    '${formatDateTimeVn(notification.createdAt)} · '
+                    '${_formatTimeAgo(notification.createdAt)}',
                     style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
                   ),
                 ],
@@ -459,9 +477,12 @@ class _NotificationListPageState extends State<NotificationListPage> {
   IconData _getIconForType(String? actionType) {
     if (actionType == null) return LucideIcons.bell;
     switch (actionType) {
+      case 'DRONE_ORDER_CREATED':
+        return LucideIcons.planeTakeoff;
       case 'OPEN_ORDER_DETAIL':
         return LucideIcons.package;
       case 'ORDER_STATUS_CHANGED':
+      case 'DRONE_DELIVERY_STATUS_CHANGED':
         return LucideIcons.truck; // trạng thái giao hàng (drone)
       case 'OPEN_PROMOTION_TAB':
         return LucideIcons.tag;
@@ -474,6 +495,7 @@ class _NotificationListPageState extends State<NotificationListPage> {
     final now = DateTime.now();
     final diff = now.difference(time);
 
+    // Đồng hồ máy chậm hơn server vài giây thì diff âm — vẫn là "vừa xong".
     if (diff.inMinutes < 1) return 'Vừa xong';
     if (diff.inHours < 1) return '${diff.inMinutes} phút trước';
     if (diff.inDays < 1) return '${diff.inHours} giờ trước';

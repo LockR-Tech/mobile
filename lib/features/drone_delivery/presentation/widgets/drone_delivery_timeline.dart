@@ -1,14 +1,36 @@
 import 'package:flutter/material.dart';
+import 'package:smart_laundry_locker/core/utils/app_date_time.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/domain/entities/drone_delivery_stage.dart';
 
 /// Timeline dọc cho toàn bộ vòng đời giao drone theo order-based contract.
 class DroneDeliveryTimeline extends StatelessWidget {
   final DroneDeliveryStage stage;
 
-  const DroneDeliveryTimeline({super.key, required this.stage});
+  /// Thời điểm thực tế từng mốc đã đạt (lấy từ nhật ký hành trình). Mốc chưa
+  /// tới thì không có trong map và không hiện giờ.
+  final Map<DroneDeliveryStage, DateTime> stageTimes;
+
+  const DroneDeliveryTimeline({
+    super.key,
+    required this.stage,
+    this.stageTimes = const {},
+  });
 
   int get _activeIndex {
     if (stage.order >= 0) return stage.order;
+    // Đã nhận hàng: mọi mốc đều xong.
+    if (stage == DroneDeliveryStage.completed) {
+      return DroneDeliveryStage.timeline.length;
+    }
+    // Huỷ/quá hạn/lỗi: dừng ở mốc xa nhất đã thực sự đạt, không tô xanh các
+    // mốc chưa hề xảy ra.
+    if (stage.isFailure && stageTimes.isNotEmpty) {
+      var reached = 0;
+      for (final step in stageTimes.keys) {
+        if (step.order > reached) reached = step.order;
+      }
+      return reached;
+    }
     if (stage.isDelayed) return DroneDeliveryStage.enRoute.order;
     if (stage.isFailure) return DroneDeliveryStage.readyForPickup.order;
     return 0;
@@ -26,6 +48,7 @@ class DroneDeliveryTimeline extends StatelessWidget {
             isFirst: i == 0,
             isLast: i == steps.length - 1,
             state: _stateFor(i),
+            reachedAt: stageTimes[steps[i]],
             // Màu cảnh báo chỉ áp cho mốc active khi delayed/failed.
             overrideColor: (i == _activeIndex && (stage.isDelayed || stage.isFailure))
                 ? stage.color
@@ -51,6 +74,7 @@ class _TimelineRow extends StatelessWidget {
   final bool isFirst;
   final bool isLast;
   final _NodeState state;
+  final DateTime? reachedAt;
   final Color? overrideColor;
 
   const _TimelineRow({
@@ -58,6 +82,7 @@ class _TimelineRow extends StatelessWidget {
     required this.isFirst,
     required this.isLast,
     required this.state,
+    this.reachedAt,
     this.overrideColor,
   });
 
@@ -156,6 +181,17 @@ class _TimelineRow extends StatelessWidget {
                       height: 1.3,
                     ),
                   ),
+                  if (reachedAt != null && state != _NodeState.pending) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      formatDateTimeVn(reachedAt),
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFF1E5A8A),
+                      ),
+                    ),
+                  ],
                 ],
               ),
             ),

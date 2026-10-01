@@ -53,10 +53,10 @@ class UserProfileModel {
       fullName: fullName ?? 'Người dùng',
       email: email ?? '',
       phoneNumber: phoneNumber ?? '',
-      status: _parseStatus(status ?? 'INACTIVE'),
+      status: _parseStatus(status ?? (isActive == false ? 'INACTIVE' : 'ACTIVE')),
       avatarUrl: avatarUrl,
       isVerified: isVerified ?? false,
-      isActive: isActive ?? false,
+      isActive: isActive ?? (status?.toUpperCase() != 'INACTIVE' && status?.toUpperCase() != 'BLOCKED'),
     );
   }
 

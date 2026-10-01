@@ -434,9 +434,19 @@ void main() {
             'deliveryStage': 'AWAITING_DISPATCH',
           }),
         ),
+        // Chỉ khớp khi body mang đúng tủ gửi (Locker A) và tủ nhận (Locker B).
+        data: {
+          'sourceLockerId': 4,
+          'destinationLockerId': 5,
+          'preferredBoxId': 9001,
+          'description': 'Tai lieu',
+          'parcelWeightGrams': 1200,
+          'paymentMethod': 'CASH',
+        },
       );
 
       final result = await service.createDroneDeliveryOrder(
+        sourceLockerId: 4,
         destinationLockerId: 5,
         preferredBoxId: 9001,
         description: 'Tai lieu',

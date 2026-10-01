@@ -3,12 +3,18 @@ import 'package:smart_laundry_locker/core/utils/app_date_time.dart';
 class NotificationDataPayload {
   final String actionType;
   final String? referenceId;
+
+  /// `ORDER`, `DELIVERY` (mốc chặng giao drone), `LOCKER`… — backend gửi kèm
+  /// `type`. Hai noti cùng `type = ORDER_STATUS_CHANGED` mở hai màn khác nhau
+  /// tuỳ field này.
+  final String? referenceType;
   final String? url;
   final Map<String, dynamic>? additionalContext;
 
   const NotificationDataPayload({
     required this.actionType,
     this.referenceId,
+    this.referenceType,
     this.url,
     this.additionalContext,
   });
@@ -19,10 +25,20 @@ class NotificationDataPayload {
           (json['actionType'] ?? json['type'] ?? json['referenceType'] ?? '')
               .toString(),
       referenceId: json['referenceId']?.toString(),
+      referenceType: json['referenceType']?.toString(),
       url: json['url']?.toString(),
       additionalContext: json['additionalContext'] as Map<String, dynamic>?,
     );
   }
+
+  /// Noti về hành trình giao drone của khách: mốc chặng (`DELIVERY`) hoặc đội
+  /// bay huỷ nhiệm vụ.
+  bool get isDroneDelivery =>
+      actionType == 'DRONE_DELIVERY_STATUS_CHANGED' ||
+      (referenceType ?? '').toUpperCase() == 'DELIVERY';
+
+  /// Noti báo đội bay có đơn drone mới cần tiếp nhận.
+  bool get isDroneDispatch => actionType == 'DRONE_ORDER_CREATED';
 }
 
 class NotificationModel {

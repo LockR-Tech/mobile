@@ -1,3 +1,4 @@
+import 'package:smart_laundry_locker/core/utils/app_date_time.dart';
 import 'package:smart_laundry_locker/features/transactions/domain/entities/transaction.dart';
 
 /// Khớp `WalletTransactionResponse` (payment-service, `GET /api/wallet/transactions`).
@@ -31,9 +32,9 @@ class TransactionModel extends Transaction {
         source: json['source'] as String? ?? '',
         description: json['description'] as String? ?? '',
         balanceAfter: _asDouble(json['balanceAfter']) ?? 0,
-        createdAt:
-            DateTime.tryParse('${json['createdAt']}')?.toLocal() ??
-            DateTime.now(),
+        // Backend trả LocalDateTime trần (UTC). `DateTime.tryParse` coi chuỗi trần
+        // là giờ máy nên giờ giao dịch hiện sớm 7 tiếng — dùng hàm đọc giờ chung.
+        createdAt: parseServerDateTimeOr(json['createdAt']),
       );
 }
 

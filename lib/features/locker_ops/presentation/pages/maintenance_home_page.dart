@@ -1,9 +1,17 @@
+import 'dart:async';
+
 import 'package:smart_laundry_locker/core/utils/app_date_time.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:smart_laundry_locker/core/routing/app_router.dart';
 import 'package:smart_laundry_locker/core/services/token_service.dart';
+import 'package:smart_laundry_locker/core/services/app_event_bus.dart';
 import 'package:smart_laundry_locker/features/assistant/presentation/widgets/assistant_entry.dart';
+import 'package:smart_laundry_locker/features/drone_delivery/domain/entities/drone_delivery_stage.dart';
+import 'package:smart_laundry_locker/features/drone_delivery/domain/entities/drone_delivery_status.dart';
+import 'package:smart_laundry_locker/features/drone_delivery/domain/entities/drone_labels.dart';
+import 'package:smart_laundry_locker/features/drone_delivery/infrastructure/models/drone_delivery_response.dart';
+import 'package:smart_laundry_locker/features/drone_delivery/presentation/widgets/drone_delivery_detail.dart';
 import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/ops_widgets.dart';
 import 'package:smart_laundry_locker/shared/widgets/controller_disposer.dart';
@@ -32,6 +40,8 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage> {
   List<Map<String, dynamic>> _schedules = [];
   bool _loading = true;
   String? _myUserId;
+  Timer? _deliveryRefreshTimer;
+  StreamSubscription<AppEvent>? _eventSubscription;
 
   List<Map<String, dynamic>> get _awaitingDispatchDeliveries => _deliveries
       .where((d) => d['deliveryStage'] == 'AWAITING_DISPATCH')
@@ -57,10 +67,51 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage> {
       .where((d) => d['deliveryStage'] == 'LAUNCHING')
       .toList(growable: false);
 
+  /// Drone đã rời trạm, đang trên đường tới tủ nhận.
+  List<Map<String, dynamic>> get _inFlightDeliveries => _deliveries
+      .where(
+        (d) => const {
+          'DEPARTED',
+          'EN_ROUTE',
+          'APPROACHING',
+          'ARRIVED',
+        }.contains(d['deliveryStage']),
+      )
+      .toList(growable: false);
+
+  /// Hàng đã vào ô tủ nhận, chờ khách tới lấy — nhiệm vụ bay đã xong nhưng điều
+  /// phối viên vẫn theo dõi được tới khi đơn hoàn tất.
+  List<Map<String, dynamic>> get _deliveredDeliveries => _deliveries
+      .where((d) => d['deliveryStage'] == 'READY_FOR_PICKUP')
+      .toList(growable: false);
+
   @override
   void initState() {
     super.initState();
     _load();
+    _deliveryRefreshTimer = Timer.periodic(
+      const Duration(seconds: 3),
+      (_) => _refreshDeliveries(),
+    );
+    _eventSubscription = AppEventBus.instance.events.listen((event) {
+      if (event is OrderChangedEvent) _refreshDeliveries();
+    });
+  }
+
+  @override
+  void dispose() {
+    _deliveryRefreshTimer?.cancel();
+    _eventSubscription?.cancel();
+    super.dispose();
+  }
+
+  Future<void> _refreshDeliveries() async {
+    try {
+      final deliveries = await _service.droneOrderQueue();
+      if (mounted) setState(() => _deliveries = deliveries);
+    } catch (_) {
+      // Giữ dữ liệu cuối cùng khi mất mạng; lần poll sau sẽ thử lại.
+    }
   }
 
   Future<void> _load() async {
@@ -234,6 +285,8 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage> {
     final awaitingLoading = _awaitingLoadingDeliveries;
     final readyToLaunch = _readyToLaunchDeliveries;
     final launching = _launchingDeliveries;
+    final inFlight = _inFlightDeliveries;
+    final delivered = _deliveredDeliveries;
     return RefreshIndicator(
       onRefresh: _load,
       child: ListView(
@@ -288,10 +341,32 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage> {
               _deliveryCard(order, action: _DeliveryAction.launching),
             const SizedBox(height: 8),
           ],
+          if (inFlight.isNotEmpty) ...[
+            OpsSectionLabel(
+              'Đang bay (${inFlight.length})',
+              icon: Icons.flight,
+            ),
+            const SizedBox(height: 8),
+            for (final order in inFlight)
+              _deliveryCard(order, action: _DeliveryAction.track),
+            const SizedBox(height: 8),
+          ],
+          if (delivered.isNotEmpty) ...[
+            OpsSectionLabel(
+              'Đã giao · chờ khách nhận (${delivered.length})',
+              icon: Icons.inventory_outlined,
+            ),
+            const SizedBox(height: 8),
+            for (final order in delivered)
+              _deliveryCard(order, action: _DeliveryAction.track),
+            const SizedBox(height: 8),
+          ],
           if (awaiting.isNotEmpty ||
               awaitingLoading.isNotEmpty ||
               readyToLaunch.isNotEmpty ||
-              launching.isNotEmpty) ...[
+              launching.isNotEmpty ||
+              inFlight.isNotEmpty ||
+              delivered.isNotEmpty) ...[
             const Divider(),
             const SizedBox(height: 8),
           ],
@@ -300,8 +375,9 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage> {
             tone: OpsBannerTone.info,
             icon: Icons.flight_outlined,
             text:
-                'Pin và trạng thái bay do kỹ thuật viên cập nhật tay — '
-                'chưa có telemetry thật từ drone.',
+                'Chưa có telemetry thật từ drone: pin do kỹ thuật viên cập nhật '
+                'tay, và với đơn drone thật bạn xác nhận từng chặng bay ngay '
+                'trên thẻ nhiệm vụ. Đơn mô phỏng tự chuyển chặng.',
           ),
           const SizedBox(height: 12),
           _droneToolCard(
@@ -430,17 +506,20 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage> {
   }) {
     final orderId = _asInt(order['orderId']);
     final lockerId = _asInt(order['destinationLockerId']);
-    final lockerName =
-        order['lockerName'] ??
-        (lockerId == null ? 'Tủ đích chưa rõ' : 'Tủ đích #$lockerId');
     final reservedBoxId = _asInt(order['reservedBoxId']);
     final description = order['description']?.toString();
     final droneCode = order['droneCode']?.toString();
     final missionStatus = order['missionStatus']?.toString();
-    final createdAt = parseServerDateTime(order['createdAt']);
+    final orderCode = order['orderCode']?.toString();
+    final stage = DroneDeliveryStage.fromRaw(order['deliveryStage']?.toString());
+    final boxNumber = _asInt(order['reservedBoxNumber']);
+    final updatedAt = parseServerDateTime(order['updatedAt']);
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
-      child: Container(
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: orderId == null ? null : () => _showDeliveryDetail(orderId),
+        child: Container(
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(16),
@@ -479,7 +558,8 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        '$lockerName',
+                        '${_lockerPointName(order['sourceLocker'], order['sourceLockerId'], 'Tủ nguồn')} '
+                        '→ ${_lockerPointName(order['destinationLocker'], lockerId, 'Tủ đích')}',
                         style: const TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 14,
@@ -488,9 +568,12 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage> {
                       ),
                       Text(
                         [
-                          if (reservedBoxId != null)
-                            'Ô giữ chỗ #$reservedBoxId',
-                          if (createdAt != null) _formatTime(createdAt),
+                          if (orderCode != null && orderCode.isNotEmpty)
+                            orderCode,
+                          if (boxNumber != null)
+                            'Ô nhận số $boxNumber'
+                          else if (reservedBoxId != null)
+                            'Đã giữ ô nhận',
                           if (droneCode != null) droneCode,
                         ].join(' · '),
                         style: const TextStyle(
@@ -514,6 +597,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage> {
                         _DeliveryAction.load => const Color(0xFFF59E0B),
                         _DeliveryAction.launch => const Color(0xFF16A34A),
                         _DeliveryAction.launching => const Color(0xFF94A3B8),
+                        _DeliveryAction.track => const Color(0xFF1E5A8A),
                       },
                       padding: const EdgeInsets.symmetric(
                         horizontal: 14,
@@ -528,6 +612,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage> {
                       _DeliveryAction.load => Icons.inventory_2_outlined,
                       _DeliveryAction.launch => Icons.rocket_launch,
                       _DeliveryAction.launching => Icons.hourglass_top,
+                      _DeliveryAction.track => Icons.route,
                     }, size: 15),
                     label: Text(
                       switch (action) {
@@ -535,6 +620,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage> {
                         _DeliveryAction.load => 'Xác nhận nạp',
                         _DeliveryAction.launch => 'Phóng',
                         _DeliveryAction.launching => 'Đang phóng',
+                        _DeliveryAction.track => 'Theo dõi',
                       },
                       style: const TextStyle(
                         fontSize: 13,
@@ -615,14 +701,83 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage> {
                 style: const TextStyle(fontSize: 12, color: Colors.black54),
               ),
             ],
-            if (missionStatus != null && missionStatus.isNotEmpty) ...[
+            if (_advanceLabel(order) != null) ...[
+              const SizedBox(height: 10),
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton.icon(
+                  onPressed: () => _advanceFlow(order),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: const Color(0xFF0F766E),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  icon: const Icon(Icons.check_circle_outline, size: 16),
+                  label: Text(
+                    'Xác nhận ${_advanceLabel(order)}',
+                    style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+            if (action == _DeliveryAction.accept && !_isPaid(order)) ...[
               const SizedBox(height: 8),
+              const _MiniPill(
+                icon: Icons.payments_outlined,
+                text: 'Chưa thanh toán · chưa thể tiếp nhận',
+                color: Color(0xFFB45309),
+              ),
+            ],
+            const SizedBox(height: 8),
+            Text(
+              [
+                'Chặng: ${stage.title}',
+                if (missionStatus != null && missionStatus.isNotEmpty)
+                  'Nhiệm vụ: ${droneMissionStatusLabel(missionStatus)}',
+              ].join(' · '),
+              style: const TextStyle(fontSize: 12, color: Colors.black54),
+            ),
+            if (updatedAt != null) ...[
+              const SizedBox(height: 4),
               Text(
-                'Mission: $missionStatus',
-                style: const TextStyle(fontSize: 12, color: Colors.black45),
+                'Cập nhật ${formatDateTimeVn(updatedAt)} · chạm để xem chi tiết',
+                style: const TextStyle(fontSize: 11, color: Colors.black45),
               ),
             ],
           ],
+        ),
+        ),
+      ),
+    );
+  }
+
+  String _lockerPointName(dynamic raw, dynamic fallbackId, String fallback) {
+    final map = raw is Map ? raw : null;
+    final name = map?['name'] ?? map?['code'];
+    if (name != null && '$name'.trim().isNotEmpty) return '$name';
+    return fallbackId == null ? fallback : '$fallback #$fallbackId';
+  }
+
+  /// Chi tiết nhiệm vụ + nhật ký hành trình, tự làm mới khi sheet đang mở.
+  Future<void> _showDeliveryDetail(int orderId) async {
+    await showModalBottomSheet<void>(
+      context: context,
+      useRootNavigator: true,
+      isScrollControlled: true,
+      showDragHandle: true,
+      backgroundColor: const Color(0xFFF6F8FB),
+      builder: (ctx) => DraggableScrollableSheet(
+        expand: false,
+        initialChildSize: .88,
+        maxChildSize: .96,
+        builder: (ctx, controller) => _DroneOrderDetailSheet(
+          orderId: orderId,
+          service: _service,
+          scrollController: controller,
         ),
       ),
     );
@@ -635,8 +790,65 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage> {
   ) {
     if (orderId == null) return false;
     if (action == _DeliveryAction.launching) return false;
-    return action == _DeliveryAction.accept || _ownsMission(order);
+    if (action == _DeliveryAction.track) return true;
+    // Quy tắc backend: chưa PAID thì accept bị từ chối (DRONE_ORDER_UNPAID).
+    if (action == _DeliveryAction.accept) return _isPaid(order);
+    return _ownsMission(order);
   }
+
+  static const _nextStageLabels = <String, String>{
+    'LAUNCHING': 'drone đã rời trạm',
+    'DEPARTED': 'drone đang trên đường',
+    'EN_ROUTE': 'drone sắp tới tủ nhận',
+    'APPROACHING': 'drone đã tới tủ nhận',
+    'ARRIVED': 'hàng đã vào ô tủ nhận',
+  };
+
+  /// Nhãn chặng kế tiếp nếu điều phối viên này được xác nhận tay; null nếu không.
+  /// Chỉ đơn drone thật: đơn DEMO do bộ giả lập tự đẩy chặng.
+  String? _advanceLabel(Map<String, dynamic> order) {
+    if ('${order['fulfillmentMode']}'.toUpperCase() == 'DEMO') return null;
+    if (order['assignedByUserId'] == null || !_ownsMission(order)) return null;
+    return _nextStageLabels['${order['deliveryStage']}'];
+  }
+
+  Future<void> _advanceFlow(Map<String, dynamic> order) async {
+    final orderId = _asInt(order['orderId']);
+    final label = _advanceLabel(order);
+    if (orderId == null || label == null) return;
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Text('Xác nhận chặng bay'),
+        content: Text(
+          'Xác nhận $label?\n\nKhách sẽ thấy chặng mới ngay và không hoàn tác được.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Chưa'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Xác nhận'),
+          ),
+        ],
+      ),
+    );
+    if (ok != true) return;
+    await _run(
+      () => _service.advanceDroneOrder(orderId),
+      'Đã xác nhận: $label',
+    );
+  }
+
+  bool _isPaid(Map<String, dynamic> order) =>
+      '${order['paymentStatus']}'.toUpperCase() == 'PAID';
+
+  String _routeLabel(Map<String, dynamic> order) =>
+      '${_lockerPointName(order['sourceLocker'], order['sourceLockerId'], 'Tủ gửi')} '
+      '→ ${_lockerPointName(order['destinationLocker'], order['destinationLockerId'], 'Tủ nhận')}';
 
   bool _ownsMission(Map<String, dynamic> order) {
     final assignedBy = order['assignedByUserId'];
@@ -665,6 +877,8 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage> {
         );
       case _DeliveryAction.launching:
         return;
+      case _DeliveryAction.track:
+        await _showDeliveryDetail(orderId);
     }
   }
 
@@ -673,7 +887,9 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage> {
     if (orderId == null) return;
     final weightCtrl = TextEditingController(
       text:
-          '${_asInt(order['payloadWeightGrams']) ?? _asInt(order['expectedWeightGrams']) ?? 1200}',
+          // Mặc định là khối lượng khách khai báo (`parcelWeightGrams` của read
+          // model; `expectedWeightGrams` là tên field ở response accept/launch).
+          '${_asInt(order['payloadWeightGrams']) ?? _asInt(order['parcelWeightGrams']) ?? _asInt(order['expectedWeightGrams']) ?? 1200}',
     );
     final sealCtrl = TextEditingController();
     final noteCtrl = TextEditingController();
@@ -900,26 +1116,25 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage> {
     );
   }
 
-  String _formatTime(DateTime t) {
-    final now = DateTime.now();
-    final diff = now.difference(t);
-    if (diff.inMinutes < 1) return 'Vừa xong';
-    if (diff.inMinutes < 60) return '${diff.inMinutes} phút trước';
-    return '${t.hour.toString().padLeft(2, '0')}:${t.minute.toString().padLeft(2, '0')}';
-  }
-
   /// Chọn drone IDLE rồi tiếp nhận nhiệm vụ theo `orderId`.
   Future<void> _acceptFlow(Map<String, dynamic> order) async {
     final id = _asInt(order['orderId']);
     if (id == null) return;
     final candidates = _drones
-        .where((d) => d['status'] == 'IDLE')
+        .where(
+          (d) =>
+              d['status'] == 'IDLE' &&
+              (_asInt(order['sourceLockerId']) == null ||
+                  _asInt(d['lockerId']) == _asInt(order['sourceLockerId'])),
+        )
         .toList(growable: false);
     if (candidates.isEmpty) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Không có drone IDLE để tiếp nhận nhiệm vụ'),
+            content: Text(
+              'Tủ gửi của đơn không có drone nào đang sẵn sàng (IDLE)',
+            ),
           ),
         );
       }
@@ -946,8 +1161,9 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Giao tới ${order['lockerName'] ?? 'tủ đích #${order['destinationLockerId']}'}'
-                '${order['reservedBoxId'] != null ? ' · ô giữ chỗ #${order['reservedBoxId']}' : ''}.',
+                'Tuyến ${_routeLabel(order)}'
+                '${order['reservedBoxNumber'] != null ? ' · ô nhận số ${order['reservedBoxNumber']}' : ''}.\n'
+                'Chọn drone đang sẵn sàng tại tủ gửi:',
               ),
               const SizedBox(height: 12),
               Wrap(
@@ -1582,7 +1798,113 @@ int? _asInt(dynamic value) {
   return int.tryParse('$value');
 }
 
-enum _DeliveryAction { accept, load, launch, launching }
+enum _DeliveryAction { accept, load, launch, launching, track }
+
+/// Nội dung sheet chi tiết nhiệm vụ. Hỏi lại server mỗi 3 giây và mỗi khi có
+/// sự kiện đơn hàng, để điều phối viên thấy chặng mới mà không cần đóng/mở lại.
+class _DroneOrderDetailSheet extends StatefulWidget {
+  const _DroneOrderDetailSheet({
+    required this.orderId,
+    required this.service,
+    required this.scrollController,
+  });
+
+  final int orderId;
+  final LockerOpsService service;
+  final ScrollController scrollController;
+
+  @override
+  State<_DroneOrderDetailSheet> createState() => _DroneOrderDetailSheetState();
+}
+
+class _DroneOrderDetailSheetState extends State<_DroneOrderDetailSheet> {
+  DroneDeliveryStatus? _status;
+  String? _error;
+  Timer? _timer;
+  StreamSubscription<AppEvent>? _events;
+  bool _fetching = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _refresh();
+    _timer = Timer.periodic(const Duration(seconds: 3), (_) => _refresh());
+    _events = AppEventBus.instance.events.listen((event) {
+      if (event is OrderChangedEvent) _refresh();
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    _events?.cancel();
+    super.dispose();
+  }
+
+  Future<void> _refresh() async {
+    if (_fetching) return;
+    _fetching = true;
+    try {
+      final detail = await widget.service.droneOrderDetail(widget.orderId);
+      if (!mounted) return;
+      setState(() {
+        _status = DroneDeliveryResponse.fromJson(detail).toEntity();
+        _error = null;
+      });
+    } catch (error) {
+      // Giữ dữ liệu cuối cùng khi mất mạng; chỉ báo lỗi nếu chưa tải được lần nào.
+      if (mounted && _status == null) {
+        setState(() => _error = LockerOpsService.errorMessage(error));
+      }
+    } finally {
+      _fetching = false;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final status = _status;
+    return ListView(
+      controller: widget.scrollController,
+      padding: const EdgeInsets.fromLTRB(16, 4, 16, 28),
+      children: [
+        const Text(
+          'Chi tiết nhiệm vụ drone',
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
+        ),
+        const SizedBox(height: 4),
+        const Text(
+          'Tự cập nhật theo thời gian thực',
+          style: TextStyle(fontSize: 12, color: opsMutedText),
+        ),
+        const SizedBox(height: 14),
+        if (status != null)
+          DroneDeliveryDetail(status: status, forOperator: true)
+        else if (_error != null)
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 32),
+            child: Column(
+              children: [
+                Text(_error!, textAlign: TextAlign.center),
+                const SizedBox(height: 12),
+                OutlinedButton(
+                  onPressed: _refresh,
+                  child: const Text('Thử lại'),
+                ),
+              ],
+            ),
+          )
+        else
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 48),
+            child: Center(
+              child: CircularProgressIndicator(color: AislBrand.navy),
+            ),
+          ),
+      ],
+    );
+  }
+}
 
 class _DroneCancelReason {
   const _DroneCancelReason(this.code, this.label, {this.requiresNote = false});
