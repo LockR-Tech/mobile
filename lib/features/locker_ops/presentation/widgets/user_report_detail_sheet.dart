@@ -514,6 +514,9 @@ class _UserReportDetailSheetState extends State<UserReportDetailSheet> {
     final staffNote = (r['staffNote'] ?? '').toString().trim();
     final isResolved = status == 'RESOLVED' || status == 'CLOSED';
     final reportPhotoCount = attachments.where((a) => a.stage == ReportStage.report).length;
+    final userReportPhotos = attachments
+        .where((a) => a.stage == ReportStage.report)
+        .toList();
     final canAddPhotos = reportId != null && !isResolved && reportPhotoCount < _maxReportPhotosPerReport;
 
     final effectiveLogs = _logs.isNotEmpty
@@ -557,7 +560,7 @@ class _UserReportDetailSheetState extends State<UserReportDetailSheet> {
                         children: [
                           Flexible(
                             child: Text(
-                              '#${r['id']} · ${r['title'] ?? 'Báo cáo sự cố'}',
+                              'RPT-${r['id']} · ${r['title'] ?? 'Báo cáo sự cố'}',
                               style: const TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
@@ -767,26 +770,52 @@ class _UserReportDetailSheetState extends State<UserReportDetailSheet> {
                     const SizedBox(height: 14),
                   ],
 
-                  // Description card
-                  if (cleanedDesc.isNotEmpty) ...[
-                    const Text(
-                      'Nội dung phản ánh sự cố:',
-                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12.5, color: opsDark),
+                  // Description card & Ảnh người báo gửi
+                  if (cleanedDesc.isNotEmpty || userReportPhotos.isNotEmpty || canAddPhotos) ...[
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          'Nội dung phản ánh sự cố:',
+                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12.5, color: opsDark),
+                        ),
+                        if (canAddPhotos)
+                          TextButton.icon(
+                            onPressed: () => _addPhotos(reportId, reportPhotoCount),
+                            icon: const Icon(LucideIcons.imagePlus, size: 14),
+                            label: Text(
+                              userReportPhotos.isEmpty ? 'Thêm ảnh' : 'Bổ sung ảnh',
+                              style: const TextStyle(fontSize: 12),
+                            ),
+                            style: TextButton.styleFrom(
+                              foregroundColor: AISLShadcnTheme.navyPrimary,
+                              visualDensity: VisualDensity.compact,
+                            ),
+                          ),
+                      ],
                     ),
                     const SizedBox(height: 6),
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFF1F5F9),
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(color: const Color(0xFFE2E8F0)),
+                    if (cleanedDesc.isNotEmpty)
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF1F5F9),
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: const Color(0xFFE2E8F0)),
+                        ),
+                        child: Text(
+                          cleanedDesc,
+                          style: const TextStyle(fontSize: 13, color: opsDark, height: 1.4),
+                        ),
                       ),
-                      child: Text(
-                        cleanedDesc,
-                        style: const TextStyle(fontSize: 13, color: opsDark, height: 1.4),
+                    if (userReportPhotos.isNotEmpty) ...[
+                      const SizedBox(height: 8),
+                      AttachmentStrip(
+                        attachments: userReportPhotos,
+                        viewerTitle: 'Ảnh hiện trường sự cố bạn đã gửi',
                       ),
-                    ),
+                    ],
                     const SizedBox(height: 16),
                   ],
 
@@ -805,73 +834,6 @@ class _UserReportDetailSheetState extends State<UserReportDetailSheet> {
                     logs: effectiveLogs,
                   ),
                   const SizedBox(height: 16),
-
-                  // Hình ảnh minh chứng theo giai đoạn
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text(
-                        'Hình ảnh minh chứng theo giai đoạn:',
-                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12.5, color: opsDark),
-                      ),
-                      if (canAddPhotos)
-                        TextButton.icon(
-                          onPressed: () => _addPhotos(reportId, reportPhotoCount),
-                          icon: const Icon(LucideIcons.imagePlus, size: 14),
-                          label: const Text('Thêm ảnh', style: TextStyle(fontSize: 12)),
-                          style: TextButton.styleFrom(
-                            foregroundColor: AISLShadcnTheme.navyPrimary,
-                            visualDensity: VisualDensity.compact,
-                          ),
-                        ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  AttachmentStageGallery(
-                    attachments: attachments,
-                    showEmptyStages: true,
-                    labels: const {
-                      ReportStage.report: 'Ảnh hiện trường (người báo)',
-                      ReportStage.inspection: 'Ảnh xác nhận của KTV',
-                      ReportStage.progress: 'Ảnh trong quá trình sửa',
-                      ReportStage.resolution: 'Ảnh nghiệm thu',
-                    },
-                    accentColor: opsPrimary,
-                    thumbSize: 76,
-                  ),
-                  const SizedBox(height: 16),
-                  if (canAddPhotos && attachments.isEmpty) ...[
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFF8FAFC),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: const Color(0xFFE2E8F0)),
-                      ),
-                      child: Row(
-                        children: [
-                          const Icon(LucideIcons.image, size: 20, color: opsMutedText),
-                          const SizedBox(width: 10),
-                          const Expanded(
-                            child: Text(
-                              'Chưa có ảnh đính kèm. Bạn có thể bổ sung ảnh hiện trường để KTV xử lý nhanh hơn.',
-                              style: TextStyle(fontSize: 12, color: opsMutedText),
-                            ),
-                          ),
-                          TextButton.icon(
-                            onPressed: () => _addPhotos(reportId, 0),
-                            icon: const Icon(LucideIcons.plus, size: 14),
-                            label: const Text('Thêm ảnh', style: TextStyle(fontSize: 12)),
-                            style: TextButton.styleFrom(
-                              foregroundColor: AISLShadcnTheme.navyPrimary,
-                              visualDensity: VisualDensity.compact,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                  ],
 
                   // Staff Note / Resolution Note Card
                   if (staffNote.isNotEmpty) ...[

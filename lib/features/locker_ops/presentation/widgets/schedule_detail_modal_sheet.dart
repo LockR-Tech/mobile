@@ -193,7 +193,7 @@ class _ScheduleDetailModalSheetState extends State<ScheduleDetailModalSheet> {
     final assignedId = s['assignedTechnicianId']?.toString();
     final assignedToMe = widget.isMine;
     final blockedReason = pendingReportId != null
-        ? 'Lần trước không đạt — hoàn tất phiếu #$pendingReportId trước khi kiểm tra lại.'
+        ? 'Lần trước không đạt — hoàn tất phiếu RPT-$pendingReportId trước khi kiểm tra lại.'
         : assignedId != null && !assignedToMe
             ? 'Lịch do KTV khác phụ trách.'
             : null;
@@ -1133,7 +1133,7 @@ class _ScheduleDetailModalSheetState extends State<ScheduleDetailModalSheet> {
                                             color: Color(0xFFEA580C)),
                                         const SizedBox(width: 6),
                                         Text(
-                                          'Phiếu sự cố kỹ thuật liên quan: #$repId',
+                                          'Phiếu sự cố kỹ thuật liên quan: RPT-$repId',
                                           style: const TextStyle(
                                             fontWeight: FontWeight.bold,
                                             fontSize: 12.5,
@@ -1174,7 +1174,7 @@ class _ScheduleDetailModalSheetState extends State<ScheduleDetailModalSheet> {
                                             Icons.assignment_turned_in_outlined,
                                             size: 15),
                                         label: Text(
-                                            'Mở phiếu sự cố #$repId để xử lý'),
+                                            'Mở phiếu sự cố RPT-$repId để xử lý'),
                                       ),
                                     ),
                                   ],
@@ -1240,7 +1240,7 @@ class _ScheduleDetailModalSheetState extends State<ScheduleDetailModalSheet> {
                             Icons.assignment_turned_in_outlined,
                             size: 16),
                         label: Text(
-                          'Xử lý phiếu sự cố #$pendingReportId',
+                          'Xử lý phiếu sự cố RPT-$pendingReportId',
                           style: const TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 13.5,
