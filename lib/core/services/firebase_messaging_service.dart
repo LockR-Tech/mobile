@@ -340,11 +340,15 @@ class FirebaseMessagingService {
       } else if (technicianRoute != null) {
         context.go(technicianRoute);
       } else if (_isDroneDeliveryType(type)) {
-        final orderId = data['orderId']?.toString() ?? '';
+        // Noti huỷ nhiệm vụ chỉ mang `referenceId`, không có `orderId`.
+        final orderId =
+            (data['orderId'] ?? data['referenceId'])?.toString() ?? '';
         context.go(AppRouter.droneDeliveryTracking, extra: orderId);
       } else if (delivery != null) {
-        // Deep-link tới chi tiết đơn theo orderId (route nhận String orderId).
-        context.push(AppRouter.orderDetail, extra: delivery.orderId);
+        // Payload {orderId, status} chỉ do endpoint mốc chặng giao drone gửi
+        // (type = ORDER_STATUS_CHANGED, referenceType = DELIVERY) -> mở màn theo
+        // dõi drone. Trang chi tiết đơn cũ gọi API đã gỡ nên mở ra màn trống.
+        context.go(AppRouter.droneDeliveryTracking, extra: delivery.orderId);
       } else {
         context.go(AppRouter.notifications);
       }

@@ -43,6 +43,7 @@ class FeatureFlags {
 
   /// Live map theo dõi drone real-time cho NGƯỜI NHẬN (Phase 2, qua STOMP
   /// `/topic/deliveries/{orderId}/position`). Gate nút "Theo dõi trên bản đồ"
-  /// ở trang timeline. Bật khi backend đã publish snapshot vị trí lên topic.
-  static const bool droneLiveMapEnabled = false;
+  /// ở trang timeline. order-service phát vị trí cho đơn DEMO (nội suy trên đoạn
+  /// tủ gửi → tủ nhận); đơn drone thật chưa có telemetry nên nút chỉ hiện với DEMO.
+  static const bool droneLiveMapEnabled = true;
 }

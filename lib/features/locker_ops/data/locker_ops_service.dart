@@ -185,8 +185,12 @@ class LockerOpsService {
   );
 
   Future<Map<String, dynamic>> createDroneDeliveryOrder({
+    required int sourceLockerId,
     required int destinationLockerId,
+    int? sourceBoxId,
     int? preferredBoxId,
+    String? receiverPhone,
+    String? receiverName,
     String? description,
     required int parcelWeightGrams,
     required String paymentMethod,
@@ -196,8 +200,12 @@ class LockerOpsService {
     '/api/orders/drone-deliveries',
     headers: {'Idempotency-Key': idempotencyKey},
     body: {
+      'sourceLockerId': sourceLockerId,
       'destinationLockerId': destinationLockerId,
+      if (sourceBoxId != null) 'sourceBoxId': sourceBoxId,
       if (preferredBoxId != null) 'preferredBoxId': preferredBoxId,
+      if (receiverPhone != null) 'receiverPhone': receiverPhone,
+      if (receiverName != null) 'receiverName': receiverName,
       if (description != null) 'description': description,
       'parcelWeightGrams': parcelWeightGrams,
       'paymentMethod': paymentMethod,
@@ -865,6 +873,9 @@ class LockerOpsService {
         query: deliveryStage == null ? null : {'deliveryStage': deliveryStage},
       );
 
+  Future<Map<String, dynamic>> droneOrderDetail(int orderId) =>
+      _map('GET', '/api/drone-technician/drone-orders/$orderId');
+
   /// Đội bay tiếp nhận một order drone và gán drone cho mission.
   Future<Map<String, dynamic>> acceptDroneOrder(
     int orderId, {
@@ -910,6 +921,11 @@ class LockerOpsService {
     '/api/drone-technician/drone-orders/$orderId/launch',
     headers: {'Idempotency-Key': idempotencyKey},
   );
+
+  /// Đơn drone thật (STANDARD): điều phối viên xác nhận drone sang chặng kế tiếp.
+  /// Trả về chi tiết nhiệm vụ sau khi đổi chặng.
+  Future<Map<String, dynamic>> advanceDroneOrder(int orderId) =>
+      _map('POST', '/api/drone-technician/drone-orders/$orderId/advance');
 
   Future<Map<String, dynamic>> cancelDroneOrder(
     int orderId, {
@@ -995,6 +1011,49 @@ class LockerOpsService {
     'LANDING_PAD_ABSENT': 'Tủ này không có bãi đáp drone.',
     'LANDING_PAD_STATUS_INVALID': 'Trạng thái bãi đáp không hợp lệ.',
     'REPORT_NOT_CLAIMABLE': 'Phiếu không còn ở trạng thái chờ nhận.',
+    // ── Luồng giao drone (order-service / locker-service) ──
+    'DRONE_ROUTE_REQUIRED': 'Cần chọn cả tủ gửi và tủ nhận.',
+    'DRONE_ROUTE_INVALID': 'Tủ gửi và tủ nhận phải khác nhau.',
+    'DRONE_SOURCE_NOT_FOUND': 'Không tìm thấy tủ gửi.',
+    'DRONE_DESTINATION_NOT_FOUND': 'Không tìm thấy tủ nhận.',
+    'DRONE_LOCKER_INACTIVE': 'Tủ gửi hoặc tủ nhận đang ngừng hoạt động.',
+    'DRONE_SOURCE_CELL_UNAVAILABLE':
+        'Ô drone ở tủ gửi đang có đơn khác. Vui lòng chờ đội bay nạp hàng hoặc chọn tủ khác.',
+    'DRONE_SOURCE_CELL_MISMATCH': 'Ô drone đã chọn không thuộc tủ gửi này.',
+    'DRONE_CELL_REQUIRED': 'Chỉ đặt giao drone được ở ô drone.',
+    'BOX_NOT_AVAILABLE': 'Ô tủ không còn trống. Vui lòng chọn ô hoặc tủ khác.',
+    'DRONE_DEMO_NOT_ALLOWED': 'Tài khoản chưa được dùng chế độ mô phỏng drone.',
+    'DRONE_ORDER_UNPAID': 'Đơn chưa thanh toán nên chưa thể tiếp nhận.',
+    'DRONE_ORDER_STATUS_INVALID': 'Đơn không còn ở bước cho phép thao tác này.',
+    'DRONE_MISSION_ALREADY_EXISTS': 'Đơn đã có điều phối viên khác tiếp nhận.',
+    'DRONE_MISSION_STATUS_INVALID':
+        'Nhiệm vụ không còn ở bước cho phép thao tác này.',
+    'DRONE_MISSION_NOT_ASSIGNED_TO_USER':
+        'Chỉ điều phối viên đã tiếp nhận mới thao tác được nhiệm vụ này.',
+    'DRONE_WRONG_SOURCE_LOCKER': 'Drone được chọn không đỗ tại tủ gửi của đơn.',
+    'DRONE_INACTIVE': 'Drone đã ngừng hoạt động.',
+    'DRONE_NOT_IDLE': 'Drone không còn sẵn sàng, hãy chọn drone khác.',
+    'DRONE_BATTERY_TOO_LOW': 'Pin drone quá thấp để bay, cần sạc trước.',
+    'DRONE_STATUS_CONFLICT':
+        'Trạng thái drone vừa thay đổi, hãy tải lại và thử lại.',
+    'DRONE_RESERVATION_LOST':
+        'Drone không còn được giữ cho nhiệm vụ này (có thể đã báo lỗi).',
+    'DRONE_PAYLOAD_TOO_HEAVY': 'Kiện hàng vượt tải trọng cho phép của drone.',
+    'DRONE_LOADING_NOT_CONFIRMED': 'Cần xác nhận nạp hàng trước khi phóng.',
+    'DRONE_ALREADY_IN_FLIGHT': 'Drone đã cất cánh, không thể huỷ nhiệm vụ.',
+    'DRONE_CANCEL_NOTE_REQUIRED': 'Cần nhập ghi chú khi chọn lý do Khác.',
+    'DRONE_STAGE_AUTOMATED':
+        'Đơn mô phỏng tự chuyển chặng, không cần xác nhận tay.',
+    'DRONE_RECEIVER_PHONE_INVALID': 'Số điện thoại người nhận không hợp lệ.',
+    'LOCKER_INACTIVE': 'Tủ đang ngừng hoạt động.',
+    'LANDING_PAD_UNAVAILABLE': 'Bãi đáp drone chưa sẵn sàng.',
+    'DRONE_OWNERSHIP_REQUIRED': 'Bạn cần nhận phụ trách drone này trước.',
+    'DRONE_ALREADY_ASSIGNED': 'Drone đã có kỹ thuật viên khác phụ trách.',
+    'DRONE_ACTIVE_MISSION':
+        'Drone đang có nhiệm vụ, chỉ được báo lỗi (FAULT).',
+    'DRONE_FAULT_REASON_REQUIRED': 'Cần nhập lý do khi báo drone lỗi.',
+    'DRONE_PAYMENT_REQUIRED_BEFORE_PICKUP':
+        'Vui lòng thanh toán đơn drone trước khi mở tủ nhận hàng.',
   };
 
   /// Human-readable message from an [ApiResponse] error payload.

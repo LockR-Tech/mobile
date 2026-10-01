@@ -57,6 +57,10 @@ class NotificationProvider extends ChangeNotifier {
     final bus = AppEventBus.instance;
     switch (actionType) {
       case 'ORDER_STATUS_CHANGED':
+      // Đội bay huỷ nhiệm vụ / có đơn drone mới: danh sách đơn của khách và hàng
+      // đợi điều phối đều phải nạp lại ngay, không chờ lượt poll kế tiếp.
+      case 'DRONE_DELIVERY_STATUS_CHANGED':
+      case 'DRONE_ORDER_CREATED':
         bus.emit(OrderChangedEvent(orderId: referenceId));
       case 'PAYMENT_COMPLETED':
         bus.emit(PaymentCompletedEvent(orderId: referenceId));

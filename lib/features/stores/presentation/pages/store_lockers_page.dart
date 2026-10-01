@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:smart_laundry_locker/core/presentation/pages/directions_map_page.dart';
+import 'package:go_router/go_router.dart';
+import 'package:smart_laundry_locker/core/routing/app_router.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/presentation/widgets/drone_booking_sheet.dart';
 import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/pages/rent_locker_page.dart';
@@ -630,6 +632,15 @@ class _LockerCardState extends State<_LockerCard> {
           lockerName: _lockerName,
           origin: widget.storeLatLng,
           lockerId: _lockerId,
+          onBooked: (orderId) {
+            // Đơn vừa giữ ô drone này: nạp lại sơ đồ để ô chuyển xám ngay, rồi
+            // đưa khách tới màn theo dõi — nơi có nhắc thanh toán để đội bay
+            // tiếp nhận.
+            if (!mounted) return;
+            setState(() => _layout = null);
+            _loadLayout();
+            context.push(AppRouter.droneDeliveryTracking, extra: '$orderId');
+          },
         ),
       );
       return;
@@ -869,7 +880,10 @@ class _CellTile extends StatelessWidget {
   bool get _isFault => _status == 'FAULT';
 
   Gradient get _bgGradient {
-    if (_isDrone) {
+    // Ô drone chỉ tô tím khi còn nhận đơn. Đã có đơn giữ ô (RESERVED/OCCUPIED)
+    // hoặc ô đang hỏng/bảo trì thì theo màu trạng thái như mọi ô khác — trước đây
+    // ô drone luôn tím nên đặt xong vẫn trông như còn trống.
+    if (_isDrone && _isAvailable) {
       return const LinearGradient(
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
@@ -883,6 +897,12 @@ class _CellTile extends StatelessWidget {
         colors: [AislBrand.cyan.withValues(alpha: 0.8), AislBrand.cyan],
       ),
       'OCCUPIED' || 'IN_USE' => const LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [Color(0xFFF1F5F9), Color(0xFFCBD5E1)],
+      ),
+      // Ô drone đã có đơn: xám, không phân biệt đang giữ chỗ hay đã có hàng.
+      'RESERVED' when _isDrone => const LinearGradient(
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
         colors: [Color(0xFFF1F5F9), Color(0xFFCBD5E1)],
@@ -910,8 +930,13 @@ class _CellTile extends StatelessWidget {
     };
   }
 
+  bool get _isGreyedOut =>
+      _status == 'OCCUPIED' ||
+      _status == 'IN_USE' ||
+      (_isDrone && _status == 'RESERVED');
+
   Color get _fg {
-    if (_status == 'OCCUPIED' || _status == 'IN_USE') {
+    if (_isGreyedOut) {
       return const Color(0xFF64748B);
     }
     return Colors.white;
@@ -944,7 +969,7 @@ class _CellTile extends StatelessWidget {
                   offset: const Offset(0, 3),
                 ),
               ]
-            : _isDrone
+            : (_isDrone && _isAvailable)
             ? [
                 BoxShadow(
                   color: _CellPalette.drone.withValues(alpha: 0.4),
@@ -1031,8 +1056,18 @@ class _CellTile extends StatelessWidget {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        const Icon(Icons.flight_rounded, color: Colors.white, size: 26),
+        Icon(Icons.flight_rounded, color: _fg, size: 26),
         const SizedBox(height: 2),
+        if (_isGreyedOut)
+          Text(
+            'ĐÃ ĐẶT',
+            style: TextStyle(
+              color: _fg,
+              fontSize: 9,
+              fontWeight: FontWeight.w800,
+              letterSpacing: 0.8,
+            ),
+          ),
         if (_isAvailable)
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),

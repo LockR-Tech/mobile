@@ -1383,9 +1383,13 @@ class _MBStyleTransactionItem extends StatelessWidget {
                 const SizedBox(height: 6),
                 _dialogRow('Dịch vụ', serviceLabel),
                 const SizedBox(height: 6),
+                _dialogRow('Loại GD', isIncome ? 'Cộng tiền vào ví' : 'Trừ tiền'),
+                const SizedBox(height: 6),
+                _dialogRow('Số tiền', '$amountSign$amountFmt'),
+                const SizedBox(height: 6),
                 _dialogRow(
                   'Thời gian',
-                  DateFormat('dd/MM/yyyy HH:mm').format(transaction.createdAt.toLocal()),
+                  DateFormat('HH:mm:ss dd/MM/yyyy').format(transaction.createdAt.toLocal()),
                 ),
                 if (transaction.referenceId != null && transaction.referenceId!.isNotEmpty) ...[
                   const SizedBox(height: 6),
@@ -1395,10 +1399,8 @@ class _MBStyleTransactionItem extends StatelessWidget {
                   const SizedBox(height: 6),
                   _dialogRow('Mã đơn', transaction.orderCode!),
                 ],
-                if (isWallet) ...[
-                  const SizedBox(height: 6),
-                  _dialogRow('Số dư sau GD', balanceFmt),
-                ],
+                const SizedBox(height: 6),
+                _dialogRow('Số dư ví sau GD', balanceFmt),
               ],
             ),
           ),
