@@ -8,6 +8,7 @@ import 'package:smart_laundry_locker/features/drone_delivery/domain/entities/dro
 import 'package:smart_laundry_locker/features/drone_delivery/domain/entities/drone_delivery_status.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/domain/entities/drone_labels.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/presentation/widgets/drone_delivery_timeline.dart';
+import 'package:smart_laundry_locker/features/drone_delivery/presentation/widgets/drone_route_map_card.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/utils/locker_maps.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/ops_widgets.dart';
 
@@ -21,7 +22,7 @@ Map<DroneDeliveryStage, DateTime> droneStageTimes(DroneDeliveryStatus status) {
   for (final event in status.journeyEvents.reversed) {
     final stage = DroneDeliveryStage.fromRaw(event.toStage);
     final at = event.occurredAt;
-    if (stage.order < 0 || at == null) continue;
+    if (stage.order < 0 || at == null || event.isPickupCodeSent) continue;
     times.putIfAbsent(stage, () => at);
   }
   final createdAt = status.createdAt;
@@ -31,8 +32,49 @@ Map<DroneDeliveryStage, DateTime> droneStageTimes(DroneDeliveryStatus status) {
   return times;
 }
 
-/// Toàn bộ thông tin một chuyến giao drone: chặng hiện tại, lộ trình A → B, các
-/// mốc thời gian, hồ sơ nạp hàng và nhật ký hành trình (mới nhất trước).
+/// Mốc phụ gắn vào từng chặng của timeline — trước đây nằm trong thẻ "Mốc thời
+/// gian" riêng, giờ hiện ngay dưới chặng mà chúng thuộc về.
+Map<DroneDeliveryStage, List<DroneTimelineDetail>> droneStepDetails(
+  DroneDeliveryStatus status,
+) {
+  final codeEvent = status.pickupCodeEvent;
+  final reachedPickup =
+      status.depositedAt != null ||
+      status.stage == DroneDeliveryStage.readyForPickup ||
+      status.stage == DroneDeliveryStage.completed;
+  return {
+    DroneDeliveryStage.awaitingDispatch: [
+      DroneTimelineDetail('Thanh toán', status.paidAt),
+    ],
+    DroneDeliveryStage.accepted: [
+      DroneTimelineDetail('Nạp hàng lên drone', status.loadedAt),
+      DroneTimelineDetail('Sẵn sàng phóng', status.readyToLaunchAt),
+    ],
+    if (reachedPickup)
+      DroneDeliveryStage.readyForPickup: [
+        DroneTimelineDetail(
+          'Gửi mã cho người nhận',
+          codeEvent?.occurredAt,
+          note: codeEvent?.note,
+        ),
+        DroneTimelineDetail('Hạn nhận hàng', status.pickupDeadline),
+        DroneTimelineDetail('Người nhận lấy hàng', status.completedAt),
+      ],
+  };
+}
+
+/// Lần đầu đơn rơi vào trạng thái kết thúc không thành công (huỷ/quá hạn/lỗi).
+DateTime? _endedAt(DroneDeliveryStatus status) => switch (status.stage) {
+  DroneDeliveryStage.canceled =>
+    status.firstReachedAt('CANCELED') ?? status.updatedAt,
+  DroneDeliveryStage.expired =>
+    status.firstReachedAt('EXPIRED') ?? status.updatedAt,
+  DroneDeliveryStage.failed => status.firstReachedAt('FAILED') ?? status.updatedAt,
+  _ => null,
+};
+
+/// Toàn bộ thông tin một chuyến giao drone: chặng hiện tại, bản đồ lộ trình A → B,
+/// timeline có giờ từng chặng, hồ sơ nạp hàng và nhật ký hành trình (mới nhất trước).
 ///
 /// Dùng chung cho khách (màn theo dõi) và điều phối viên (chi tiết nhiệm vụ) để
 /// hai bên luôn nhìn cùng một bộ dữ liệu. Trả về `Column`, nơi dùng tự bọc scroll.
@@ -69,6 +111,8 @@ class DroneDeliveryDetail extends StatelessWidget {
         ],
         ...beforeRoute,
         const SizedBox(height: 16),
+        DroneRouteMapCard(status: status),
+        const SizedBox(height: 16),
         _RouteCard(status: status),
         const SizedBox(height: 16),
         _Card(
@@ -77,6 +121,7 @@ class DroneDeliveryDetail extends StatelessWidget {
           child: DroneDeliveryTimeline(
             stage: stage,
             stageTimes: droneStageTimes(status),
+            stepDetails: droneStepDetails(status),
           ),
         ),
         const SizedBox(height: 16),
@@ -85,8 +130,6 @@ class DroneDeliveryDetail extends StatelessWidget {
         _PeopleCard(status: status, forOperator: forOperator),
         const SizedBox(height: 16),
         _MissionCard(status: status),
-        const SizedBox(height: 16),
-        _MilestoneCard(status: status),
         const SizedBox(height: 16),
         _JourneyCard(events: status.journeyEvents),
       ],
@@ -238,8 +281,10 @@ class _StatusBanner extends StatelessWidget {
     final stage = status.stage;
     final color = stage.color; // amber cho delayed, đỏ cho failed/huỷ/quá hạn
     final reason = droneCancelReasonLabel(status.cancelReason);
+    final endedAt = _endedAt(status);
     final lines = <String>[
       stage.body(_etaText(status.etaMinutes)),
+      if (endedAt != null) 'Lúc: ${formatDateTimeVn(endedAt)}',
       if (stage == DroneDeliveryStage.canceled && reason != null)
         'Lý do: $reason',
       if (stage == DroneDeliveryStage.canceled && status.cancelNote != null)
@@ -345,6 +390,9 @@ class _RouteCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final box = status.reservedBoxNumber;
+    final sentAt = status.sentAt;
+    final depositedAt = status.depositedAt;
+    final code = status.pickupCodeEvent;
     return _Card(
       title: 'Lộ trình giao hàng',
       icon: LucideIcons.route,
@@ -355,9 +403,11 @@ class _RouteCard extends StatelessWidget {
             point: status.sourceLocker,
             fallbackId: status.sourceLockerId,
             color: const Color(0xFF0F766E),
-            extra: status.sourceBoxNumber == null
-                ? null
-                : 'Bỏ kiện vào ô drone số ${status.sourceBoxNumber}',
+            extras: [
+              if (status.sourceBoxNumber != null)
+                'Bỏ kiện vào ô drone số ${status.sourceBoxNumber}',
+              'Gửi đi lúc: ${formatDateTimeVn(sentAt, empty: 'Chưa gửi')}',
+            ],
             directionsLabel: 'Chỉ đường tới tủ gửi',
           ),
           Align(
@@ -374,7 +424,14 @@ class _RouteCard extends StatelessWidget {
             point: status.destinationLocker,
             fallbackId: status.destinationLockerId,
             color: AISLShadcnTheme.navyAccent,
-            extra: box == null ? null : 'Ô nhận số $box',
+            extras: [
+              if (box != null) 'Ô nhận số $box',
+              'Hàng vào tủ lúc: ${formatDateTimeVn(depositedAt, empty: 'Chưa tới')}',
+              if (code?.occurredAt != null)
+                'Gửi mã cho người nhận lúc: ${formatDateTimeVn(code!.occurredAt)}',
+              'Người nhận lấy hàng lúc: '
+                  '${formatDateTimeVn(status.completedAt, empty: 'Chưa nhận')}',
+            ],
             directionsLabel: 'Chỉ đường tới tủ nhận',
             primary: true,
           ),
@@ -391,7 +448,7 @@ class _RoutePoint extends StatelessWidget {
     required this.fallbackId,
     required this.color,
     required this.directionsLabel,
-    this.extra,
+    this.extras = const [],
     this.primary = false,
   });
 
@@ -400,7 +457,7 @@ class _RoutePoint extends StatelessWidget {
   final int? fallbackId;
   final Color color;
   final String directionsLabel;
-  final String? extra;
+  final List<String> extras;
   final bool primary;
 
   /// Có toạ độ ⇒ mở bản đồ chỉ đường trong app; chỉ có địa chỉ ⇒ mở ứng dụng
@@ -501,9 +558,9 @@ class _RoutePoint extends StatelessWidget {
                         color: Color(0xFF64748B),
                       ),
                     ),
-                  if (extra != null)
+                  for (final extra in extras)
                     Text(
-                      extra!,
+                      extra,
                       style: const TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w700,
@@ -541,6 +598,14 @@ class _OrderCard extends StatelessWidget {
           'Phí giao drone',
           status.totalPrice == null ? '—' : fmtPrice(status.totalPrice),
         ),
+        if (status.paymentMethod != null)
+          ('Phương thức', dronePaymentMethodLabel(status.paymentMethod)),
+        if (status.paymentReference != null)
+          ('Mã thanh toán', status.paymentReference!),
+        if (status.paymentTransactionId != null)
+          ('Mã giao dịch', status.paymentTransactionId!),
+        if (status.paidAt != null)
+          ('Thanh toán lúc', formatDateTimeVn(status.paidAt)),
         ('Ô nhận tại tủ đích', box == null ? '—' : 'Ô số $box'),
         ('Khối lượng khai báo', droneWeightLabel(status.expectedWeightGrams)),
         ('Mô tả kiện hàng', status.description ?? 'Không có mô tả'),
@@ -618,44 +683,6 @@ class _MissionCard extends StatelessWidget {
   }
 }
 
-class _MilestoneCard extends StatelessWidget {
-  const _MilestoneCard({required this.status});
-
-  final DroneDeliveryStatus status;
-
-  @override
-  Widget build(BuildContext context) {
-    const pending = 'Chưa diễn ra';
-    final times = droneStageTimes(status);
-    String at(DroneDeliveryStage stage) =>
-        formatDateTimeVn(times[stage], empty: pending);
-    return _Card(
-      title: 'Mốc thời gian',
-      icon: LucideIcons.calendarClock,
-      child: _Rows([
-        ('Tạo đơn', formatDateTimeVn(status.createdAt)),
-        ('Thanh toán', formatDateTimeVn(status.paidAt, empty: 'Chưa thanh toán')),
-        ('Đội bay tiếp nhận', formatDateTimeVn(status.acceptedAt, empty: pending)),
-        ('Nạp hàng lên drone', formatDateTimeVn(status.loadedAt, empty: pending)),
-        (
-          'Sẵn sàng phóng',
-          formatDateTimeVn(status.readyToLaunchAt, empty: pending),
-        ),
-        ('Khởi phóng', formatDateTimeVn(status.launchingAt, empty: pending)),
-        ('Rời trạm', at(DroneDeliveryStage.departed)),
-        ('Tới tủ nhận', at(DroneDeliveryStage.arrived)),
-        ('Hàng vào ô', at(DroneDeliveryStage.readyForPickup)),
-        (
-          'Hạn nhận hàng',
-          formatDateTimeVn(status.pickupDeadline, empty: 'Có khi hàng vào ô'),
-        ),
-        ('Đã nhận hàng', formatDateTimeVn(status.completedAt, empty: pending)),
-        ('Cập nhật cuối', formatDateTimeVn(status.updatedAt)),
-      ]),
-    );
-  }
-}
-
 class _JourneyCard extends StatelessWidget {
   const _JourneyCard({required this.events});
 
@@ -667,6 +694,7 @@ class _JourneyCard extends StatelessWidget {
     final from = (event.fromStage ?? '').toUpperCase();
     final to = event.toStage.toUpperCase();
     if (from == 'ACCEPTED' && to == 'ACCEPTED') return 'Đã nạp hàng lên drone';
+    if (event.isPickupCodeSent) return 'Gửi mã nhận hàng cho người nhận';
     if (from.isEmpty && to == 'AWAITING_DISPATCH') return 'Đơn drone được tạo';
     return DroneDeliveryStage.fromRaw(to).title;
   }

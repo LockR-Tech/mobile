@@ -39,6 +39,38 @@ String dronePaymentStatusLabel(String? status) =>
       _ => status!,
     };
 
+/// `payments.method` của payment-service.
+String dronePaymentMethodLabel(String? method) =>
+    switch ((method ?? '').toUpperCase()) {
+      '' => '—',
+      'WALLET' => 'Ví Lock.R',
+      'CASH' => 'Tiền mặt',
+      'VNPAY' => 'VNPay',
+      'MOMO' => 'MoMo',
+      'SEPAY' => 'Chuyển khoản (SePay)',
+      _ => method!,
+    };
+
+/// Thời lượng chuyển chặng: `45 giây`, `3 phút 20 giây`, `1 giờ 5 phút`, `2 ngày 3 giờ`.
+String droneDurationLabel(Duration duration) {
+  final d = duration.isNegative ? Duration.zero : duration;
+  if (d.inDays > 0) {
+    final hours = d.inHours % 24;
+    return hours == 0 ? '${d.inDays} ngày' : '${d.inDays} ngày $hours giờ';
+  }
+  if (d.inHours > 0) {
+    final minutes = d.inMinutes % 60;
+    return minutes == 0 ? '${d.inHours} giờ' : '${d.inHours} giờ $minutes phút';
+  }
+  if (d.inMinutes > 0) {
+    final seconds = d.inSeconds % 60;
+    return seconds == 0
+        ? '${d.inMinutes} phút'
+        : '${d.inMinutes} phút $seconds giây';
+  }
+  return '${d.inSeconds} giây';
+}
+
 /// Lý do đội bay huỷ nhiệm vụ — khớp `DroneOrderMaintenanceService.cancelReasonLabel`.
 String? droneCancelReasonLabel(int? code) => switch (code) {
   null => null,

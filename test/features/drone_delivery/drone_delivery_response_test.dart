@@ -77,6 +77,51 @@ void main() {
     expect(status.stageChangedAt, DateTime.utc(2026, 10, 1, 3).toLocal());
   });
 
+  test('maps payment transaction and send / receive times', () {
+    final status = DroneDeliveryResponse.fromJson({
+      'orderId': 21,
+      'status': 'COMPLETED',
+      'deliveryStage': 'READY_FOR_PICKUP',
+      'paymentStatus': 'PAID',
+      'paymentMethod': 'VNPAY',
+      'paymentReference': 'PAY-21-ABC',
+      'paymentTransactionId': '14523311',
+      'launchingAt': '2026-10-01T03:00:00',
+      'completedAt': '2026-10-01T05:00:00',
+      'journeyEvents': [
+        {
+          'id': 5,
+          'fromStage': 'READY_FOR_PICKUP',
+          'toStage': 'READY_FOR_PICKUP',
+          'note': 'Đã gửi mã nhận hàng cho người nhận qua email nh***@gmail.com.',
+          'occurredAt': '2026-10-01T04:00:01',
+        },
+        {
+          'id': 4,
+          'fromStage': 'ARRIVED',
+          'toStage': 'READY_FOR_PICKUP',
+          'occurredAt': '2026-10-01T04:00:00',
+        },
+        {
+          'id': 3,
+          'fromStage': 'LAUNCHING',
+          'toStage': 'DEPARTED',
+          'occurredAt': '2026-10-01T03:01:00',
+        },
+      ],
+    }).toEntity();
+
+    expect(status.paymentMethod, 'VNPAY');
+    expect(status.paymentReference, 'PAY-21-ABC');
+    expect(status.paymentTransactionId, '14523311');
+    // Gửi = lúc rời trạm, không phải lúc khởi phóng.
+    expect(status.sentAt, DateTime.utc(2026, 10, 1, 3, 1).toLocal());
+    // Hàng vào ô = dòng ARRIVED → READY_FOR_PICKUP, không phải dòng gửi mã.
+    expect(status.depositedAt, DateTime.utc(2026, 10, 1, 4).toLocal());
+    expect(status.pickupCodeEvent!.note, contains('email'));
+    expect(status.completedAt, DateTime.utc(2026, 10, 1, 5).toLocal());
+  });
+
   test('finished orders show the order outcome instead of the last stage', () {
     DroneDeliveryStage stageOf(String orderStatus, String deliveryStage) =>
         DroneDeliveryResponse.fromJson({
