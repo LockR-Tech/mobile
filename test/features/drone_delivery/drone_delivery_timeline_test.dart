@@ -44,5 +44,48 @@ void main() {
     // Huỷ sau khi tiếp nhận: dừng ở mốc đó, các mốc bay chưa hề diễn ra.
     expect(find.byIcon(Icons.close), findsOneWidget);
     expect(find.byIcon(Icons.check), findsOneWidget);
+    // Thời gian chuyển giữa hai chặng đã đạt.
+    expect(find.text('Chuyển sau 24 phút 53 giây'), findsOneWidget);
+  });
+
+  testWidgets('shows how long the current stage has run and its sub-milestones', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: SingleChildScrollView(
+            child: DroneDeliveryTimeline(
+              stage: DroneDeliveryStage.accepted,
+              now: DateTime(2026, 10, 1, 9, 40),
+              stageTimes: {
+                DroneDeliveryStage.awaitingDispatch: DateTime(2026, 10, 1, 9, 0),
+                DroneDeliveryStage.accepted: DateTime(2026, 10, 1, 9, 30),
+              },
+              stepDetails: {
+                DroneDeliveryStage.accepted: [
+                  DroneTimelineDetail(
+                    'Nạp hàng lên drone',
+                    DateTime(2026, 10, 1, 9, 35),
+                  ),
+                  const DroneTimelineDetail('Sẵn sàng phóng', null),
+                ],
+              },
+            ),
+          ),
+        ),
+      ),
+    );
+
+    expect(find.text('Đã ở chặng này 10 phút'), findsOneWidget);
+    expect(find.text('Chuyển sau 30 phút'), findsOneWidget);
+    expect(
+      find.text('Nạp hàng lên drone: 09:35:00 01/10/2026', findRichText: true),
+      findsOneWidget,
+    );
+    expect(
+      find.text('Sẵn sàng phóng: Chưa diễn ra', findRichText: true),
+      findsOneWidget,
+    );
   });
 }

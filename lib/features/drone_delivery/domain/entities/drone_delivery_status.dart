@@ -53,6 +53,12 @@ class DroneDeliveryStatus {
   final DateTime? createdAt;
   final DateTime? paidAt;
 
+  /// Lần thanh toán thành công gần nhất: phương thức, mã tham chiếu Lock.R và mã
+  /// giao dịch phía cổng/ngân hàng (null với ví Lock.R, tiền mặt).
+  final String? paymentMethod;
+  final String? paymentReference;
+  final String? paymentTransactionId;
+
   /// Thời điểm điều phối viên tiếp nhận (= lúc tạo mission).
   final DateTime? acceptedAt;
   final DateTime? loadedAt;
@@ -105,6 +111,9 @@ class DroneDeliveryStatus {
     this.cancelNote,
     this.createdAt,
     this.paidAt,
+    this.paymentMethod,
+    this.paymentReference,
+    this.paymentTransactionId,
     this.acceptedAt,
     this.loadedAt,
     this.readyToLaunchAt,
@@ -128,6 +137,31 @@ class DroneDeliveryStatus {
 
   DateTime? get stageChangedAt =>
       journeyEvents.isEmpty ? updatedAt : journeyEvents.first.occurredAt;
+
+  /// Lần ĐẦU nhật ký đạt chặng [rawStage] (nhật ký xếp mới nhất trước).
+  DateTime? firstReachedAt(String rawStage) {
+    final wanted = rawStage.toUpperCase();
+    for (final event in journeyEvents.reversed) {
+      if (event.toStage.toUpperCase() == wanted && !event.isPickupCodeSent) {
+        return event.occurredAt;
+      }
+    }
+    return null;
+  }
+
+  /// Gửi hàng: lúc drone rời trạm, chưa có thì lúc khởi phóng.
+  DateTime? get sentAt => firstReachedAt('DEPARTED') ?? launchingAt;
+
+  /// Hàng vào ô tủ nhận.
+  DateTime? get depositedAt => firstReachedAt('READY_FOR_PICKUP');
+
+  /// Dòng nhật ký hệ thống ghi đã gửi (hoặc chưa gửi được) mã nhận hàng.
+  DroneJourneyEvent? get pickupCodeEvent {
+    for (final event in journeyEvents) {
+      if (event.isPickupCodeSent) return event;
+    }
+    return null;
+  }
 }
 
 class DroneLockerPoint {
@@ -181,4 +215,9 @@ class DroneJourneyEvent {
   final String? actorName;
   final String? note;
   final DateTime? occurredAt;
+
+  /// Backend ghi việc gửi mã nhận hàng thành dòng READY_FOR_PICKUP → READY_FOR_PICKUP.
+  bool get isPickupCodeSent =>
+      (fromStage ?? '').toUpperCase() == 'READY_FOR_PICKUP' &&
+      toStage.toUpperCase() == 'READY_FOR_PICKUP';
 }

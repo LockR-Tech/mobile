@@ -15,6 +15,7 @@ typedef DroneOrderCreator =
       required int? preferredBoxId,
       required String? receiverPhone,
       required String? receiverName,
+      required String? receiverEmail,
       required String? description,
       required int parcelWeightGrams,
       required String paymentMethod,
@@ -56,6 +57,7 @@ class _DroneBookingSheetState extends State<DroneBookingSheet>
   final _descController = TextEditingController();
   final _receiverPhoneController = TextEditingController();
   final _receiverNameController = TextEditingController();
+  final _receiverEmailController = TextEditingController();
   bool _submitting = false;
   bool _loadingDestinations = true;
   List<Map<String, dynamic>> _destinations = const [];
@@ -103,6 +105,7 @@ class _DroneBookingSheetState extends State<DroneBookingSheet>
     _descController.dispose();
     _receiverPhoneController.dispose();
     _receiverNameController.dispose();
+    _receiverEmailController.dispose();
     super.dispose();
   }
 
@@ -118,6 +121,12 @@ class _DroneBookingSheetState extends State<DroneBookingSheet>
     if (receiverPhone.isNotEmpty &&
         !RegExp(r'^\+?[0-9]{9,15}$').hasMatch(receiverPhone)) {
       _showMessage('Số điện thoại người nhận không hợp lệ');
+      return;
+    }
+    final receiverEmail = _receiverEmailController.text.trim();
+    if (receiverEmail.isNotEmpty &&
+        !RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(receiverEmail)) {
+      _showMessage('Email người nhận không hợp lệ');
       return;
     }
     final sourceLockerId = widget.lockerId;
@@ -144,6 +153,7 @@ class _DroneBookingSheetState extends State<DroneBookingSheet>
             required preferredBoxId,
             required receiverPhone,
             required receiverName,
+            required receiverEmail,
             required description,
             required parcelWeightGrams,
             required paymentMethod,
@@ -156,6 +166,7 @@ class _DroneBookingSheetState extends State<DroneBookingSheet>
               preferredBoxId: preferredBoxId,
               receiverPhone: receiverPhone,
               receiverName: receiverName,
+              receiverEmail: receiverEmail,
               description: description,
               parcelWeightGrams: parcelWeightGrams,
               paymentMethod: paymentMethod,
@@ -171,6 +182,7 @@ class _DroneBookingSheetState extends State<DroneBookingSheet>
         preferredBoxId: null,
         receiverPhone: receiverPhone.isEmpty ? null : receiverPhone,
         receiverName: receiverName.isEmpty ? null : receiverName,
+        receiverEmail: receiverEmail.isEmpty ? null : receiverEmail,
         description: description,
         parcelWeightGrams: businessConfig.droneDefaultParcelWeightGrams,
         // Chỉ là phương thức dự kiến ghi trên đơn; tiền thu thật ở bước thanh
@@ -388,10 +400,31 @@ class _DroneBookingSheetState extends State<DroneBookingSheet>
                 ),
               ),
             ),
+            const SizedBox(height: 10),
+            TextField(
+              key: const ValueKey('drone-receiver-email'),
+              controller: _receiverEmailController,
+              keyboardType: TextInputType.emailAddress,
+              decoration: InputDecoration(
+                labelText: 'Email người nhận (tuỳ chọn)',
+                prefixIcon: const Icon(Icons.email_outlined),
+                filled: true,
+                fillColor: Colors.grey.shade50,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: Colors.grey.shade200),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: Colors.grey.shade200),
+                ),
+              ),
+            ),
             const SizedBox(height: 6),
             const Text(
-              'Người nhận sẽ được gửi mã mở ô khi hàng vào tủ: qua app nếu số này '
-              'có tài khoản Lock.R, qua SMS nếu chưa có.',
+              'Khi hàng vào tủ, người nhận được gửi mã mở ô qua email (email nhập ở '
+              'trên, hoặc email tài khoản Lock.R của số này), qua app nếu số có tài '
+              'khoản, qua SMS nếu chưa có.',
               style: TextStyle(fontSize: 12, color: Colors.grey),
             ),
             const SizedBox(height: 12),

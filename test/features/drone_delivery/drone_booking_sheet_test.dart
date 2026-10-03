@@ -32,6 +32,7 @@ void main() {
               required preferredBoxId,
               required receiverPhone,
               required receiverName,
+              required receiverEmail,
               required description,
               required parcelWeightGrams,
               required paymentMethod,
@@ -90,6 +91,7 @@ void main() {
               required preferredBoxId,
               required receiverPhone,
               required receiverName,
+              required receiverEmail,
               required description,
               required parcelWeightGrams,
               required paymentMethod,
@@ -128,6 +130,7 @@ void main() {
     int? sentSourceBox;
     String? sentPhone;
     String? sentName;
+    String? sentEmail;
     var calls = 0;
     final messages = <String>[];
 
@@ -150,6 +153,7 @@ void main() {
               required preferredBoxId,
               required receiverPhone,
               required receiverName,
+              required receiverEmail,
               required description,
               required parcelWeightGrams,
               required paymentMethod,
@@ -159,6 +163,7 @@ void main() {
               sentSourceBox = sourceBoxId;
               sentPhone = receiverPhone;
               sentName = receiverName;
+              sentEmail = receiverEmail;
               return {'orderId': 78};
             },
             showMessage: messages.add,
@@ -188,6 +193,22 @@ void main() {
       find.byKey(const ValueKey('drone-receiver-name')),
       'Chi B',
     );
+    await tester.enterText(
+      find.byKey(const ValueKey('drone-receiver-email')),
+      'khong-phai-email',
+    );
+    await tester.ensureVisible(submit);
+    await tester.pumpAndSettle();
+    await tester.tap(submit);
+    await tester.pumpAndSettle();
+
+    expect(calls, 0);
+    expect(messages.last, 'Email người nhận không hợp lệ');
+
+    await tester.enterText(
+      find.byKey(const ValueKey('drone-receiver-email')),
+      ' chib@gmail.com ',
+    );
     await tester.ensureVisible(submit);
     await tester.pumpAndSettle();
     await tester.tap(submit);
@@ -197,5 +218,6 @@ void main() {
     expect(sentSourceBox, 9001);
     expect(sentPhone, '0909000111');
     expect(sentName, 'Chi B');
+    expect(sentEmail, 'chib@gmail.com');
   });
 }

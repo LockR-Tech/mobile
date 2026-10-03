@@ -8,7 +8,10 @@ import 'package:latlong2/latlong.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:smart_laundry_locker/core/routing/app_router.dart';
 import 'package:smart_laundry_locker/core/theme/shadcn_theme.dart';
+import 'package:smart_laundry_locker/features/drone_delivery/domain/entities/drone_labels.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/domain/entities/drone_position_snapshot.dart';
+import 'package:smart_laundry_locker/features/drone_delivery/domain/entities/drone_route_geometry.dart';
+import 'package:smart_laundry_locker/features/drone_delivery/presentation/providers/drone_delivery_providers.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/presentation/providers/drone_live_map_providers.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/presentation/widgets/drone_marker.dart';
 
@@ -53,12 +56,26 @@ class _DroneLiveMapPageState extends ConsumerState<DroneLiveMapPage>
   bool _followDrone = true;
   final List<LatLng> _trail = [];
 
+  /// Tủ nhận — đích để tính quãng đường còn lại và giờ tới nơi.
+  LatLng? _destination;
+
+  /// Tốc độ mặt đất (m/s): backend gửi thì dùng, không thì tự đo giữa hai snapshot
+  /// và làm mượt để ETA không nhảy loạn theo từng điểm GPS.
+  double? _speedMps;
+
+  /// Giờ dự kiến tới tủ nhận, tính lại mỗi snapshot; đồng hồ đếm ngược chạy theo giây.
+  DateTime? _arrivalAt;
+
   @override
   void initState() {
     super.initState();
     _anim = AnimationController(vsync: this, duration: _tweenDuration)
       ..addListener(() => setState(() {}));
-    _watchdog = Timer.periodic(const Duration(seconds: 1), (_) => _checkSignal());
+    _watchdog = Timer.periodic(const Duration(seconds: 1), (_) {
+      _checkSignal();
+      // Đếm ngược giờ tới nơi theo từng giây giữa hai snapshot.
+      if (mounted && _arrivalAt != null) setState(() {});
+    });
   }
 
   @override
@@ -80,9 +97,11 @@ class _DroneLiveMapPageState extends ConsumerState<DroneLiveMapPage>
 
   void _applySnapshot(DronePositionSnapshot snap) {
     final target = LatLng(snap.lat, snap.lng);
+    _updateSpeed(_latest, snap);
     _latest = snap;
     _lastSnapshotAt = DateTime.now();
     _signalLost = false;
+    _updateArrival(snap);
 
     if (!_firstFix) {
       _from = target;
@@ -108,6 +127,49 @@ class _DroneLiveMapPageState extends ConsumerState<DroneLiveMapPage>
 
     if (_followDrone) _moveCamera(target);
     _anim.forward(from: 0);
+  }
+
+  void _updateSpeed(DronePositionSnapshot? previous, DronePositionSnapshot current) {
+    final reported = current.speedMps;
+    if (reported != null && reported > 0) {
+      _speedMps = reported;
+      return;
+    }
+    if (previous == null) return;
+    final seconds =
+        current.timestamp.difference(previous.timestamp).inMilliseconds / 1000;
+    if (seconds <= 0) return;
+    final meters =
+        droneDistanceKm(previous.lat, previous.lng, current.lat, current.lng) * 1000;
+    final measured = meters / seconds;
+    // Trung bình trượt: 30% điểm mới, 70% lịch sử.
+    _speedMps = _speedMps == null ? measured : _speedMps! * 0.7 + measured * 0.3;
+  }
+
+  void _updateArrival(DronePositionSnapshot snap) {
+    final remaining = _remainingKm(LatLng(snap.lat, snap.lng));
+    final speed = _speedMps;
+    if (remaining != null && speed != null && speed > 0.5) {
+      _arrivalAt = DateTime.now().add(
+        Duration(seconds: (remaining * 1000 / speed).round()),
+      );
+    } else if (snap.etaMinutes != null) {
+      // Chưa đo được tốc độ: dùng ước lượng theo chặng của backend.
+      _arrivalAt = DateTime.now().add(Duration(minutes: snap.etaMinutes!));
+    } else {
+      _arrivalAt = null;
+    }
+  }
+
+  double? _remainingKm(LatLng from) {
+    final destination = _destination;
+    if (destination == null) return null;
+    return droneDistanceKm(
+      from.latitude,
+      from.longitude,
+      destination.latitude,
+      destination.longitude,
+    );
   }
 
   void _moveCamera(LatLng target) {
@@ -151,6 +213,17 @@ class _DroneLiveMapPageState extends ConsumerState<DroneLiveMapPage>
       },
     );
 
+    // Toạ độ tủ gửi/tủ nhận lấy từ read model hành trình (cùng provider màn timeline).
+    final route = ref.watch(droneDeliveryStatusProvider(widget.orderId)).value;
+    final source = route?.sourceLocker;
+    final destination = route?.destinationLocker;
+    final sourcePoint = source != null && source.hasCoordinates
+        ? LatLng(source.latitude!, source.longitude!)
+        : null;
+    _destination = destination != null && destination.hasCoordinates
+        ? LatLng(destination.latitude!, destination.longitude!)
+        : null;
+
     final pos = _currentLatLng();
 
     return Scaffold(
@@ -167,6 +240,17 @@ class _DroneLiveMapPageState extends ConsumerState<DroneLiveMapPage>
                 urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                 userAgentPackageName: 'com.aisl.app',
               ),
+              if (sourcePoint != null && _destination != null)
+                PolylineLayer(
+                  polylines: [
+                    Polyline(
+                      points: [sourcePoint, _destination!],
+                      color: const Color(0xFF94A3B8),
+                      strokeWidth: 3,
+                      pattern: StrokePattern.dashed(segments: const [10, 6]),
+                    ),
+                  ],
+                ),
               if (_trail.length > 1)
                 PolylineLayer(
                   polylines: [
@@ -177,6 +261,27 @@ class _DroneLiveMapPageState extends ConsumerState<DroneLiveMapPage>
                     ),
                   ],
                 ),
+              MarkerLayer(
+                markers: [
+                  if (sourcePoint != null)
+                    Marker(
+                      point: sourcePoint,
+                      width: 32,
+                      height: 32,
+                      child: const _LockerPin(label: 'A', color: Color(0xFF0F766E)),
+                    ),
+                  if (_destination != null)
+                    Marker(
+                      point: _destination!,
+                      width: 32,
+                      height: 32,
+                      child: const _LockerPin(
+                        label: 'B',
+                        color: AISLShadcnTheme.navyPrimary,
+                      ),
+                    ),
+                ],
+              ),
               if (_firstFix)
                 MarkerLayer(
                   markers: [
@@ -207,7 +312,7 @@ class _DroneLiveMapPageState extends ConsumerState<DroneLiveMapPage>
 
           Positioned(
             right: 12,
-            bottom: 160,
+            bottom: MediaQuery.of(context).padding.bottom + 250,
             child: _MapFab(
               icon: _followDrone ? LucideIcons.locateFixed : LucideIcons.locate,
               onTap: () {
@@ -219,7 +324,13 @@ class _DroneLiveMapPageState extends ConsumerState<DroneLiveMapPage>
             ),
           ),
 
-          if (_latest != null) _BottomStatusCard(snapshot: _latest!),
+          if (_latest != null)
+            _BottomStatusCard(
+              snapshot: _latest!,
+              remainingKm: _remainingKm(pos),
+              arrivalAt: _arrivalAt,
+              speedMps: _speedMps,
+            ),
         ],
       ),
     );
@@ -366,14 +477,52 @@ class _ConnectingOverlay extends StatelessWidget {
   }
 }
 
+class _LockerPin extends StatelessWidget {
+  final String label;
+  final Color color;
+  const _LockerPin({required this.label, required this.color});
+
+  @override
+  Widget build(BuildContext context) => Container(
+    alignment: Alignment.center,
+    decoration: BoxDecoration(
+      color: color,
+      shape: BoxShape.circle,
+      border: Border.all(color: Colors.white, width: 2.5),
+    ),
+    child: Text(
+      label,
+      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800),
+    ),
+  );
+}
+
 class _BottomStatusCard extends StatelessWidget {
   final DronePositionSnapshot snapshot;
-  const _BottomStatusCard({required this.snapshot});
+  final double? remainingKm;
+  final DateTime? arrivalAt;
+  final double? speedMps;
+
+  const _BottomStatusCard({
+    required this.snapshot,
+    this.remainingKm,
+    this.arrivalAt,
+    this.speedMps,
+  });
+
+  String get _subtitle {
+    final at = arrivalAt;
+    if (at == null) return 'Đang trên đường tới tủ nhận';
+    final left = at.difference(DateTime.now());
+    if (left.inSeconds <= 0) return 'Sắp tới nơi';
+    return 'Còn ${droneDurationLabel(left)}';
+  }
 
   @override
   Widget build(BuildContext context) {
     final stage = snapshot.stage;
-    final eta = snapshot.etaMinutes;
+    final at = arrivalAt;
+    final speed = speedMps;
     return Positioned(
       left: 12,
       right: 12,
@@ -391,43 +540,122 @@ class _BottomStatusCard extends StatelessWidget {
             ),
           ],
         ),
-        child: Row(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Container(
-              width: 44,
-              height: 44,
-              decoration: BoxDecoration(
-                color: stage.color.withValues(alpha: 0.12),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(stage.icon, color: stage.color, size: 22),
+            Row(
+              children: [
+                Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: stage.color.withValues(alpha: 0.12),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(stage.icon, color: stage.color, size: 22),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        stage.title,
+                        style: const TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w800,
+                          color: AISLShadcnTheme.navyPrimary,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        _subtitle,
+                        style: TextStyle(color: Colors.grey[600], fontSize: 13),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    stage.title,
+            const SizedBox(height: 14),
+            Row(
+              children: [
+                _Metric(
+                  label: 'Dự kiến đến',
+                  value: at == null
+                      ? '—'
+                      : '${at.hour.toString().padLeft(2, '0')}:'
+                            '${at.minute.toString().padLeft(2, '0')}:'
+                            '${at.second.toString().padLeft(2, '0')}',
+                ),
+                _Metric(
+                  label: 'Còn lại',
+                  value: remainingKm == null ? '—' : droneKmLabel(remainingKm!),
+                ),
+                _Metric(
+                  label: 'Tốc độ',
+                  value: speed == null
+                      ? '—'
+                      : '${(speed * 3.6).toStringAsFixed(1).replaceAll('.', ',')} km/h',
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            Row(
+              children: [
+                const Icon(
+                  LucideIcons.mapPin,
+                  size: 14,
+                  color: Color(0xFF64748B),
+                ),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text(
+                    'Vĩ độ, kinh độ: '
+                    '${droneCoordinateLabel(snapshot.lat, snapshot.lng)}',
                     style: const TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w800,
-                      color: AISLShadcnTheme.navyPrimary,
+                      fontSize: 12,
+                      color: Color(0xFF475569),
+                      fontFeatures: [FontFeature.tabularFigures()],
                     ),
                   ),
-                  const SizedBox(height: 2),
-                  Text(
-                    eta != null ? 'Còn khoảng $eta phút' : 'Đang trên đường tới bạn',
-                    style: TextStyle(color: Colors.grey[600], fontSize: 13),
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
           ],
         ),
       ),
     );
   }
+}
+
+class _Metric extends StatelessWidget {
+  final String label;
+  final String value;
+  const _Metric({required this.label, required this.value});
+
+  @override
+  Widget build(BuildContext context) => Expanded(
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: const TextStyle(fontSize: 11, color: Color(0xFF64748B)),
+        ),
+        const SizedBox(height: 2),
+        Text(
+          value,
+          style: const TextStyle(
+            fontSize: 15,
+            fontWeight: FontWeight.w800,
+            color: AISLShadcnTheme.navyPrimary,
+          ),
+        ),
+      ],
+    ),
+  );
 }
 
 class _CircleButton extends StatelessWidget {
