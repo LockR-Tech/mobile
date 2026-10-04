@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:smart_laundry_locker/core/config/business_config.dart';
 import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/pages/maintenance_home_page.dart';
 
@@ -71,6 +72,8 @@ class _FakeMaintenanceService extends LockerOpsService {
         'reservedBoxId': 9003,
         'description': 'Linh kien dien tu',
         'expectedWeightGrams': 1450,
+        'paymentStatus': 'PAID',
+        'totalPrice': 27000,
       },
     ];
     if (deliveryStage == null) return items;
@@ -102,7 +105,7 @@ class _FakeMaintenanceService extends LockerOpsService {
   Future<Map<String, dynamic>> confirmDroneLoading(
     int orderId, {
     required int payloadWeightGrams,
-    required String sealCode,
+    String? sealCode,
     required bool parcelMatched,
     required bool payloadSecured,
     required bool compartmentLocked,
@@ -225,10 +228,16 @@ void main() {
           .text,
       '1450',
     );
-    await tester.enterText(
-      find.byKey(const ValueKey('drone-loading-seal')),
-      'SEAL-23',
+    // Mã niêm phong do hệ thống cấp, đội viên không nhập tay.
+    expect(
+      find.descendant(
+        of: find.byKey(const ValueKey('drone-loading-seal')),
+        matching: find.byType(TextField),
+      ),
+      findsNothing,
     );
+    expect(find.textContaining('Khách khai báo 1450 g'), findsOneWidget);
+    expect(find.byKey(const ValueKey('drone-loading-surcharge')), findsNothing);
     for (final checkbox in find.byType(Checkbox).evaluate()) {
       await tester.tap(find.byWidget(checkbox.widget));
       await tester.pump();
@@ -238,7 +247,54 @@ void main() {
 
     expect(service.loadedOrderId, equals(23));
     expect(service.loadedWeightGrams, equals(1450));
-    expect(service.loadedSealCode, equals('SEAL-23'));
+    expect(service.loadedSealCode, matches(RegExp(r'^NP-\d{6}-[A-Z2-9]{6}$')));
+  });
+
+  testWidgets('cân nặng hơn khai báo: báo trước khoản khách phải trả thêm', (
+    tester,
+  ) async {
+    useBusinessConfig(
+      BusinessConfig.fromPublicMaps(
+        order: {'app.order.drone-weight-step-fee': 3000},
+      ),
+    );
+    addTearDown(useBusinessConfig);
+    final service = _FakeMaintenanceService();
+    final router = GoRouter(
+      routes: [
+        GoRoute(
+          path: '/',
+          builder: (context, state) => MaintenanceHomePage(service: service),
+        ),
+      ],
+    );
+
+    await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Xác nhận nạp'));
+    await tester.pumpAndSettle();
+
+    // Khai 1450 g đã tính 27.000đ; cân 2000 g = 15.000 + 6 nấc × 3.000 = 33.000đ.
+    await tester.enterText(
+      find.byKey(const ValueKey('drone-loading-weight')),
+      '2000',
+    );
+    await tester.pump();
+
+    expect(
+      tester
+          .widget<Text>(find.byKey(const ValueKey('drone-loading-surcharge')))
+          .data,
+      contains('6.000đ'),
+    );
+
+    // Trong sai số cân 50 g thì không thu thêm.
+    await tester.enterText(
+      find.byKey(const ValueKey('drone-loading-weight')),
+      '1490',
+    );
+    await tester.pump();
+    expect(find.byKey(const ValueKey('drone-loading-surcharge')), findsNothing);
   });
 
   testWidgets('requires cancel reason before canceling accepted drone order', (

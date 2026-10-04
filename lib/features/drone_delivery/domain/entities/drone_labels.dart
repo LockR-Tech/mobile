@@ -2,6 +2,8 @@
 /// trả nguyên văn để màn hình không vỡ khi backend thêm giá trị mới.
 library;
 
+import 'dart:math';
+
 /// `DroneMission.status` — trạng thái vận hành phía đội bay.
 String droneMissionStatusLabel(String? status) =>
     switch ((status ?? '').toUpperCase()) {
@@ -88,6 +90,30 @@ String droneFulfillmentModeLabel(String? mode) =>
       'STANDARD' => 'Drone thật',
       _ => mode ?? '—',
     };
+
+/// Nhãn ngắn cho nút chọn khối lượng: `500 g`, `1 kg`, `1,5 kg`.
+String droneWeightShortLabel(int grams) {
+  if (grams < 1000) return '$grams g';
+  final kg = grams / 1000;
+  final text = kg == kg.roundToDouble()
+      ? kg.toStringAsFixed(0)
+      : kg.toString().replaceAll('.', ',');
+  return '$text kg';
+}
+
+/// Mã niêm phong hệ thống cấp cho một lần nạp hàng: `NP-<yyMMdd>-<6 ký tự>`, bỏ các
+/// ký tự dễ đọc nhầm (0/O, 1/I). Cùng định dạng với mã order-service tự sinh.
+String generateDroneSealCode({DateTime? now, Random? random}) {
+  const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  final rng = random ?? Random.secure();
+  final at = now ?? DateTime.now();
+  String two(int n) => n.toString().padLeft(2, '0');
+  final suffix = List.generate(
+    6,
+    (_) => alphabet[rng.nextInt(alphabet.length)],
+  ).join();
+  return 'NP-${two(at.year % 100)}${two(at.month)}${two(at.day)}-$suffix';
+}
 
 /// `1.250 g (1,25 kg)`; null ⇒ `—`.
 String droneWeightLabel(int? grams) {

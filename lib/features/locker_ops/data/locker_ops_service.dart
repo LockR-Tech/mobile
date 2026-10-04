@@ -894,7 +894,8 @@ class LockerOpsService {
   Future<Map<String, dynamic>> confirmDroneLoading(
     int orderId, {
     required int payloadWeightGrams,
-    required String sealCode,
+    /// Bỏ trống thì server tự sinh mã niêm phong.
+    String? sealCode,
     required bool parcelMatched,
     required bool payloadSecured,
     required bool compartmentLocked,
@@ -906,7 +907,8 @@ class LockerOpsService {
     headers: {'Idempotency-Key': idempotencyKey},
     body: {
       'payloadWeightGrams': payloadWeightGrams,
-      'sealCode': sealCode.trim(),
+      if (sealCode != null && sealCode.trim().isNotEmpty)
+        'sealCode': sealCode.trim(),
       'parcelMatched': parcelMatched,
       'payloadSecured': payloadSecured,
       'compartmentLocked': compartmentLocked,
@@ -1042,6 +1044,9 @@ class LockerOpsService {
         'Drone không còn được giữ cho nhiệm vụ này (có thể đã báo lỗi).',
     'DRONE_PAYLOAD_TOO_HEAVY': 'Kiện hàng vượt tải trọng cho phép của drone.',
     'DRONE_LOADING_NOT_CONFIRMED': 'Cần xác nhận nạp hàng trước khi phóng.',
+    'DRONE_SURCHARGE_UNPAID':
+        'Kiện nặng hơn khai báo. Chờ khách trả thêm phần phí chênh rồi mới phóng được.',
+    'DRONE_PARCEL_WEIGHT_INVALID': 'Khối lượng kiện hàng không hợp lệ.',
     'DRONE_ALREADY_IN_FLIGHT': 'Drone đã cất cánh, không thể huỷ nhiệm vụ.',
     'DRONE_CANCEL_NOTE_REQUIRED': 'Cần nhập ghi chú khi chọn lý do Khác.',
     'DRONE_STAGE_AUTOMATED':

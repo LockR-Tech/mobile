@@ -32,6 +32,12 @@ class BusinessConfig {
     required this.extendMaxHours,
     required this.requirePaymentBeforeDrop,
     required this.droneDefaultParcelWeightGrams,
+    this.droneBaseWeightGrams = 500,
+    this.droneWeightStepGrams = 250,
+    this.droneWeightStepFee = 0,
+    this.droneWeightOptionsGrams = const [500, 750, 1000, 1500, 2000, 3000],
+    this.droneMaxPayloadWeightGrams = 5000,
+    this.droneWeightToleranceGrams = 50,
     required this.topupMinAmount,
     required this.topupMaxAmount,
     required this.topupDefaultAmount,
@@ -94,6 +100,21 @@ class BusinessConfig {
   final bool requirePaymentBeforeDrop;
 
   final int droneDefaultParcelWeightGrams;
+
+  /// Bảng giá drone theo khối lượng: [droneDeliveryFee] đã gồm
+  /// [droneBaseWeightGrams]; mỗi nấc [droneWeightStepGrams] vượt (kể cả nấc chưa
+  /// trọn) cộng [droneWeightStepFee]. Mặc định phụ phí 0 để app vẫn hiện đúng giá
+  /// đồng nhất khi server chưa có bảng giá theo khối lượng.
+  final int droneBaseWeightGrams;
+  final int droneWeightStepGrams;
+  final int droneWeightStepFee;
+
+  /// Các mức khối lượng khách chọn khi đặt drone (gram, tăng dần).
+  final List<int> droneWeightOptionsGrams;
+  final int droneMaxPayloadWeightGrams;
+
+  /// Cân thực tế vượt khai báo không quá mức này thì không thu thêm.
+  final int droneWeightToleranceGrams;
 
   // ---- Scope `payment` ----
   final int topupMinAmount;
@@ -269,6 +290,35 @@ class BusinessConfig {
         d.droneDefaultParcelWeightGrams,
         min: 1,
       ),
+      droneBaseWeightGrams: _int(
+        o['app.order.drone-base-weight-grams'],
+        d.droneBaseWeightGrams,
+        min: 1,
+      ),
+      droneWeightStepGrams: _int(
+        o['app.order.drone-weight-step-grams'],
+        d.droneWeightStepGrams,
+        min: 1,
+      ),
+      droneWeightStepFee: _int(
+        o['app.order.drone-weight-step-fee'],
+        d.droneWeightStepFee,
+      ),
+      droneWeightOptionsGrams: List.unmodifiable(
+        _intList(
+          o['app.order.drone-weight-options-grams'],
+          d.droneWeightOptionsGrams,
+        ),
+      ),
+      droneMaxPayloadWeightGrams: _int(
+        o['app.order.drone-max-payload-weight-grams'],
+        d.droneMaxPayloadWeightGrams,
+        min: 1,
+      ),
+      droneWeightToleranceGrams: _int(
+        o['app.order.drone-weight-tolerance-grams'],
+        d.droneWeightToleranceGrams,
+      ),
       topupMinAmount: topupMin,
       topupMaxAmount: topupMax,
       topupDefaultAmount: topupDefault,
@@ -353,6 +403,12 @@ class BusinessConfig {
       'app.order.extend-max-hours': extendMaxHours,
       'app.order.require-payment-before-drop': requirePaymentBeforeDrop,
       'app.order.drone-default-parcel-weight-grams': droneDefaultParcelWeightGrams,
+      'app.order.drone-base-weight-grams': droneBaseWeightGrams,
+      'app.order.drone-weight-step-grams': droneWeightStepGrams,
+      'app.order.drone-weight-step-fee': droneWeightStepFee,
+      'app.order.drone-weight-options-grams': droneWeightOptionsGrams,
+      'app.order.drone-max-payload-weight-grams': droneMaxPayloadWeightGrams,
+      'app.order.drone-weight-tolerance-grams': droneWeightToleranceGrams,
     },
     'payment': {
       'app.payment.topup-min-amount': topupMinAmount,
@@ -393,6 +449,35 @@ class BusinessConfig {
   String toString() => 'BusinessConfig($_signature)';
 
   // ---- Parser chịu lỗi ----
+
+  /// Phí giao drone cho kiện [grams] — cùng công thức với `OrderRules.droneDeliveryFee`
+  /// của order-service; server vẫn là nơi tính tiền thật.
+  int droneDeliveryFeeFor(int grams) {
+    final over = grams - droneBaseWeightGrams;
+    if (over <= 0) return droneDeliveryFee;
+    final steps = (over + droneWeightStepGrams - 1) ~/ droneWeightStepGrams;
+    return droneDeliveryFee + steps * droneWeightStepFee;
+  }
+
+  /// Các mức khối lượng khách chọn được: bỏ mức vượt tải tối đa của drone.
+  List<int> get droneWeightChoices {
+    final choices = droneWeightOptionsGrams
+        .where((grams) => grams <= droneMaxPayloadWeightGrams)
+        .toList(growable: false);
+    return choices.isEmpty ? [droneDefaultParcelWeightGrams] : choices;
+  }
+
+  /// Phần thu thêm khi đội bay cân được [actualGrams] cho đơn khai [declaredGrams]
+  /// đang có tổng [currentTotal]; 0 khi trong sai số cho phép hoặc không nặng hơn.
+  int droneWeightSurcharge({
+    required int declaredGrams,
+    required int actualGrams,
+    required num currentTotal,
+  }) {
+    if (actualGrams <= declaredGrams + droneWeightToleranceGrams) return 0;
+    final diff = droneDeliveryFeeFor(actualGrams) - currentTotal;
+    return diff > 0 ? diff.round() : 0;
+  }
 
   static int _int(dynamic raw, int fallback, {int min = 0}) {
     int? value;
