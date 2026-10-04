@@ -21,6 +21,12 @@ class DroneDeliveryStatus {
   final String? missionStatus;
   final String? fulfillmentMode;
   final double? totalPrice;
+
+  /// Phí thu thêm vì đội bay cân kiện nặng hơn khối lượng khai báo; null khi không lệch.
+  final double? weightSurcharge;
+
+  /// Phần còn phải trả (tổng hiện tại trừ phần đã trả); null với server cũ.
+  final double? amountDue;
   final int? sourceLockerId;
   final int? destinationLockerId;
   final int? reservedBoxId;
@@ -86,6 +92,8 @@ class DroneDeliveryStatus {
     this.missionStatus,
     this.fulfillmentMode,
     this.totalPrice,
+    this.weightSurcharge,
+    this.amountDue,
     this.sourceLockerId,
     this.destinationLockerId,
     this.reservedBoxId,
@@ -134,6 +142,21 @@ class DroneDeliveryStatus {
   /// Đơn còn chờ đội bay nhưng chưa trả tiền — đội bay không tiếp nhận được.
   bool get needsPaymentBeforeDispatch =>
       stage == DroneDeliveryStage.awaitingDispatch && !isPaid;
+
+  /// Đội bay đã nạp hàng nhưng kiện nặng hơn khai báo: khách phải trả phần chênh thì
+  /// drone mới được phóng (`DRONE_SURCHARGE_UNPAID`).
+  bool get needsSurchargePayment =>
+      stage == DroneDeliveryStage.accepted &&
+      !isPaid &&
+      (weightSurcharge ?? 0) > 0;
+
+  /// Số tiền khách cần trả lúc này.
+  double? get payableAmount =>
+      (amountDue ?? 0) > 0 ? amountDue : (needsSurchargePayment ? weightSurcharge : totalPrice);
+
+  /// Người đặt chỉ huỷ được khi đội bay chưa tiếp nhận (khớp
+  /// `OrderService.assertDroneCancelable`); sau đó chỉ đội bay huỷ được.
+  bool get canCustomerCancel => stage == DroneDeliveryStage.awaitingDispatch;
 
   DateTime? get stageChangedAt =>
       journeyEvents.isEmpty ? updatedAt : journeyEvents.first.occurredAt;

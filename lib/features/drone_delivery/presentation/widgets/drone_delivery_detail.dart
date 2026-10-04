@@ -8,6 +8,7 @@ import 'package:smart_laundry_locker/features/drone_delivery/domain/entities/dro
 import 'package:smart_laundry_locker/features/drone_delivery/domain/entities/drone_delivery_status.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/domain/entities/drone_labels.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/presentation/widgets/drone_delivery_timeline.dart';
+import 'package:smart_laundry_locker/features/drone_delivery/presentation/widgets/drone_order_cancel.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/presentation/widgets/drone_route_map_card.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/utils/locker_maps.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/ops_widgets.dart';
@@ -84,9 +85,17 @@ class DroneDeliveryDetail extends StatelessWidget {
     required this.status,
     this.forOperator = false,
     this.beforeRoute = const [],
+    this.onPay,
+    this.onCancel,
   });
 
   final DroneDeliveryStatus status;
+
+  /// Khách bấm thanh toán ngay trên thẻ nhắc đơn chưa trả tiền.
+  final VoidCallback? onPay;
+
+  /// Khách huỷ đơn khi đội bay chưa tiếp nhận.
+  final VoidCallback? onCancel;
 
   /// Điều phối viên thấy thêm liên hệ người gửi/người nhận.
   final bool forOperator;
@@ -105,9 +114,9 @@ class DroneDeliveryDetail extends StatelessWidget {
           const SizedBox(height: 16),
           _StatusBanner(status: status),
         ],
-        if (status.needsPaymentBeforeDispatch) ...[
+        if (status.needsPaymentBeforeDispatch || status.needsSurchargePayment) ...[
           const SizedBox(height: 16),
-          _UnpaidBanner(forOperator: forOperator),
+          _UnpaidBanner(status: status, forOperator: forOperator, onPay: onPay),
         ],
         ...beforeRoute,
         const SizedBox(height: 16),
@@ -124,6 +133,10 @@ class DroneDeliveryDetail extends StatelessWidget {
             stepDetails: droneStepDetails(status),
           ),
         ),
+        if (!forOperator && onCancel != null && status.canCustomerCancel) ...[
+          const SizedBox(height: 16),
+          _CancelCard(status: status, onCancel: onCancel!),
+        ],
         const SizedBox(height: 16),
         _OrderCard(status: status),
         const SizedBox(height: 16),
@@ -324,16 +337,35 @@ class _StatusBanner extends StatelessWidget {
   }
 }
 
-/// Quy tắc: đội bay chỉ tiếp nhận đơn đã thanh toán. Khách thấy lối đi thanh toán,
-/// điều phối viên thấy lý do chưa tiếp nhận được.
+/// Quy tắc: đội bay chỉ tiếp nhận đơn đã thanh toán. Khách thanh toán ngay trên
+/// thẻ này, điều phối viên thấy lý do chưa tiếp nhận được.
 class _UnpaidBanner extends StatelessWidget {
-  const _UnpaidBanner({required this.forOperator});
+  const _UnpaidBanner({
+    required this.status,
+    required this.forOperator,
+    this.onPay,
+  });
 
+  final DroneDeliveryStatus status;
   final bool forOperator;
+  final VoidCallback? onPay;
+
+  /// Đơn nợ phần phí chênh vì đội bay cân kiện nặng hơn khai báo.
+  String _surchargeText() {
+    final amount = fmtPrice(status.payableAmount ?? status.weightSurcharge);
+    final weights =
+        'Kiện cân thực tế ${droneWeightLabel(status.payloadWeightGrams)}, nặng hơn '
+        'mức ${droneWeightLabel(status.expectedWeightGrams)} đã khai báo.';
+    return forOperator
+        ? '$weights Chờ khách trả thêm $amount rồi mới phóng được.'
+        : '$weights Bạn cần trả thêm $amount để drone cất cánh. Không đồng ý thì '
+              'liên hệ đội bay để huỷ đơn và nhận hoàn tiền.';
+  }
 
   @override
   Widget build(BuildContext context) {
     const color = Color(0xFFB45309);
+    final surcharge = status.needsSurchargePayment;
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
@@ -351,7 +383,9 @@ class _UnpaidBanner extends StatelessWidget {
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
-                  forOperator
+                  surcharge
+                      ? _surchargeText()
+                      : forOperator
                       ? 'Khách chưa thanh toán. Chỉ tiếp nhận được sau khi đơn đã thanh toán.'
                       : 'Đơn chưa thanh toán. Đội bay chỉ tiếp nhận sau khi bạn thanh toán.',
                   style: const TextStyle(
@@ -364,18 +398,64 @@ class _UnpaidBanner extends StatelessWidget {
               ),
             ],
           ),
-          if (!forOperator) ...[
+          if (!forOperator && onPay != null) ...[
             const SizedBox(height: 10),
             SizedBox(
               width: double.infinity,
               child: FilledButton.icon(
                 style: FilledButton.styleFrom(backgroundColor: color),
-                onPressed: () => context.push(AppRouter.myLockerOrders),
+                onPressed: onPay,
                 icon: const Icon(LucideIcons.wallet, size: 18),
-                label: const Text('Tới đơn hàng để thanh toán'),
+                label: Text(surcharge ? 'Trả thêm phí chênh' : 'Thanh toán ngay'),
               ),
             ),
           ],
+        ],
+      ),
+    );
+  }
+}
+
+/// Quy tắc: người đặt huỷ được tới khi đội bay tiếp nhận; đơn đã trả tiền thì hoàn
+/// về ví Lock.R.
+class _CancelCard extends StatelessWidget {
+  const _CancelCard({required this.status, required this.onCancel});
+
+  final DroneDeliveryStatus status;
+  final VoidCallback onCancel;
+
+  @override
+  Widget build(BuildContext context) {
+    const danger = Color(0xFFDC2626);
+    return _Card(
+      title: 'Huỷ đơn',
+      icon: LucideIcons.circleX,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Bạn huỷ được đơn khi đội bay chưa tiếp nhận. '
+            '${droneCancelRefundNote(isPaid: status.isPaid, totalPrice: status.totalPrice)}',
+            style: const TextStyle(
+              fontSize: 13,
+              color: Color(0xFF475569),
+              height: 1.4,
+            ),
+          ),
+          const SizedBox(height: 12),
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              style: OutlinedButton.styleFrom(
+                foregroundColor: danger,
+                side: const BorderSide(color: danger),
+                padding: const EdgeInsets.symmetric(vertical: 12),
+              ),
+              onPressed: onCancel,
+              icon: const Icon(LucideIcons.circleX, size: 18),
+              label: const Text('Huỷ đơn'),
+            ),
+          ),
         ],
       ),
     );
@@ -598,6 +678,8 @@ class _OrderCard extends StatelessWidget {
           'Phí giao drone',
           status.totalPrice == null ? '—' : fmtPrice(status.totalPrice),
         ),
+        if ((status.weightSurcharge ?? 0) > 0)
+          ('Trong đó thu thêm do cân lệch', fmtPrice(status.weightSurcharge)),
         if (status.paymentMethod != null)
           ('Phương thức', dronePaymentMethodLabel(status.paymentMethod)),
         if (status.paymentReference != null)

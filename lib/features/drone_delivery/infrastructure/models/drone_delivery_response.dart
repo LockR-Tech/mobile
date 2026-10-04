@@ -77,6 +77,8 @@ class DroneDeliveryResponse {
     missionStatus: raw['missionStatus']?.toString(),
     fulfillmentMode: raw['fulfillmentMode']?.toString(),
     totalPrice: _asDouble(raw['totalPrice']),
+    weightSurcharge: _asDouble(raw['weightSurcharge']),
+    amountDue: _asDouble(raw['amountDue']),
     sourceLockerId: _asInt(raw['sourceLockerId']),
     destinationLockerId: _asInt(raw['destinationLockerId']),
     reservedBoxId: _asInt(raw['reservedBoxId']),

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:smart_laundry_locker/core/utils/app_date_time.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:smart_laundry_locker/core/config/business_config_service.dart';
 import 'package:smart_laundry_locker/core/routing/app_router.dart';
 import 'package:smart_laundry_locker/core/services/token_service.dart';
 import 'package:smart_laundry_locker/core/services/app_event_bus.dart';
@@ -732,6 +733,14 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage> {
                 color: Color(0xFFB45309),
               ),
             ],
+            if (action == _DeliveryAction.launch && !_isPaid(order)) ...[
+              const SizedBox(height: 8),
+              const _MiniPill(
+                icon: Icons.scale_outlined,
+                text: 'Kiện nặng hơn khai báo · chờ khách trả thêm phí',
+                color: Color(0xFFB45309),
+              ),
+            ],
             const SizedBox(height: 8),
             Text(
               [
@@ -793,6 +802,9 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage> {
     if (action == _DeliveryAction.track) return true;
     // Quy tắc backend: chưa PAID thì accept bị từ chối (DRONE_ORDER_UNPAID).
     if (action == _DeliveryAction.accept) return _isPaid(order);
+    // Kiện nặng hơn khai báo làm đơn nợ phí chênh: chưa trả thì chưa phóng
+    // (DRONE_SURCHARGE_UNPAID).
+    if (action == _DeliveryAction.launch && !_isPaid(order)) return false;
     return _ownsMission(order);
   }
 
@@ -891,7 +903,27 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage> {
           // model; `expectedWeightGrams` là tên field ở response accept/launch).
           '${_asInt(order['payloadWeightGrams']) ?? _asInt(order['parcelWeightGrams']) ?? _asInt(order['expectedWeightGrams']) ?? 1200}',
     );
-    final sealCtrl = TextEditingController();
+    // Mã niêm phong do hệ thống cấp cho lần nạp này — đội viên ghi/dán lên niêm
+    // phong, không tự nhập.
+    final sealCode = generateDroneSealCode();
+    final config = BusinessConfigService.instance.current;
+    final declaredGrams =
+        _asInt(order['parcelWeightGrams']) ?? _asInt(order['expectedWeightGrams']);
+    final totalRaw = order['totalPrice'];
+    final currentTotal = totalRaw is num ? totalRaw : num.tryParse('$totalRaw');
+    // Phần thu thêm ước tính theo bảng giá; server tính lại khi xác nhận.
+    int surchargeFor(String text) {
+      final actual = int.tryParse(text.trim());
+      if (actual == null || declaredGrams == null || currentTotal == null) {
+        return 0;
+      }
+      return config.droneWeightSurcharge(
+        declaredGrams: declaredGrams,
+        actualGrams: actual,
+        currentTotal: currentTotal,
+      );
+    }
+
     final noteCtrl = TextEditingController();
     var parcelMatched = false;
     var payloadSecured = false;
@@ -918,19 +950,48 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage> {
                   key: const ValueKey('drone-loading-weight'),
                   controller: weightCtrl,
                   keyboardType: TextInputType.number,
+                  onChanged: (_) => setLocal(() {}),
                   decoration: const InputDecoration(
                     labelText: 'Khối lượng thực tế (gram)',
                     isDense: true,
                   ),
                 ),
-                const SizedBox(height: 10),
-                TextField(
+                const SizedBox(height: 6),
+                Text(
+                  declaredGrams == null
+                      ? 'Khách chưa khai báo khối lượng.'
+                      : 'Khách khai báo ${droneWeightLabel(declaredGrams)}'
+                            '${currentTotal == null ? '' : ' · phí đã tính ${fmtPrice(currentTotal)}'}.',
+                  style: const TextStyle(fontSize: 12, color: Colors.black54),
+                ),
+                if (surchargeFor(weightCtrl.text) > 0) ...[
+                  const SizedBox(height: 6),
+                  Text(
+                    'Nặng hơn khai báo: khách phải trả thêm '
+                    '${fmtPrice(surchargeFor(weightCtrl.text))}. Drone chỉ phóng được '
+                    'sau khi khách thanh toán.',
+                    key: const ValueKey('drone-loading-surcharge'),
+                    style: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFFB45309),
+                    ),
+                  ),
+                ],
+                const SizedBox(height: 12),
+                InputDecorator(
                   key: const ValueKey('drone-loading-seal'),
-                  controller: sealCtrl,
-                  textCapitalization: TextCapitalization.characters,
                   decoration: const InputDecoration(
-                    labelText: 'Mã niêm phong',
+                    labelText: 'Mã niêm phong (hệ thống cấp)',
                     isDense: true,
+                    helperText: 'Ghi mã này lên niêm phong của kiện.',
+                  ),
+                  child: SelectableText(
+                    sealCode,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 1,
+                    ),
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -980,14 +1041,13 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage> {
                 final weight = int.tryParse(weightCtrl.text.trim());
                 if (weight == null ||
                     weight <= 0 ||
-                    sealCtrl.text.trim().isEmpty ||
                     !parcelMatched ||
                     !payloadSecured ||
                     !compartmentLocked) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
                       content: Text(
-                        'Nhập khối lượng, mã niêm phong và hoàn tất checklist',
+                        'Nhập khối lượng thực tế và hoàn tất checklist',
                       ),
                     ),
                   );
@@ -1003,27 +1063,65 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage> {
     );
 
     if (confirmed == true) {
-      await _run(
-        () => _service.confirmDroneLoading(
-          orderId,
-          payloadWeightGrams: int.parse(weightCtrl.text.trim()),
-          sealCode: sealCtrl.text,
-          parcelMatched: parcelMatched,
-          payloadSecured: payloadSecured,
-          compartmentLocked: compartmentLocked,
-          note: noteCtrl.text,
-          idempotencyKey: _idempotencyKey('load', orderId),
-        ),
-        'Đã xác nhận nạp hàng — nhiệm vụ sẵn sàng phóng',
+      await _confirmLoading(
+        orderId,
+        payloadWeightGrams: int.parse(weightCtrl.text.trim()),
+        sealCode: sealCode,
+        parcelMatched: parcelMatched,
+        payloadSecured: payloadSecured,
+        compartmentLocked: compartmentLocked,
+        note: noteCtrl.text,
       );
     }
     // showDialog hoàn tất future trước khi animation tháo hẳn route. Trì hoãn
     // dispose để TextField không còn subscribe controller trong frame cuối.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       weightCtrl.dispose();
-      sealCtrl.dispose();
       noteCtrl.dispose();
     });
+  }
+
+  /// Gửi xác nhận nạp hàng rồi báo theo kết quả server: kiện nặng hơn khai báo thì
+  /// đơn nợ phần phí chênh và chưa phóng được.
+  Future<void> _confirmLoading(
+    int orderId, {
+    required int payloadWeightGrams,
+    required String sealCode,
+    required bool parcelMatched,
+    required bool payloadSecured,
+    required bool compartmentLocked,
+    required String note,
+  }) async {
+    String message;
+    try {
+      final result = await _service.confirmDroneLoading(
+        orderId,
+        payloadWeightGrams: payloadWeightGrams,
+        sealCode: sealCode,
+        parcelMatched: parcelMatched,
+        payloadSecured: payloadSecured,
+        compartmentLocked: compartmentLocked,
+        note: note,
+        idempotencyKey: _idempotencyKey('load', orderId),
+      );
+      final surchargeRaw = result['weightSurcharge'];
+      final surcharge = surchargeRaw is num
+          ? surchargeRaw
+          : num.tryParse('$surchargeRaw') ?? 0;
+      final seal = result['sealCode'] ?? sealCode;
+      message = surcharge > 0
+          ? 'Đã nạp hàng (niêm phong $seal). Kiện nặng hơn khai báo — chờ khách '
+                'trả thêm ${fmtPrice(surcharge)} rồi mới phóng.'
+          : 'Đã xác nhận nạp hàng (niêm phong $seal) — nhiệm vụ sẵn sàng phóng';
+    } catch (e) {
+      message = LockerOpsService.errorMessage(e);
+    }
+    if (mounted) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(message)));
+    }
+    await _load();
   }
 
   Future<void> _cancelDeliveryFlow(Map<String, dynamic> order) async {

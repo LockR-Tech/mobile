@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:smart_laundry_locker/core/config/business_config_provider.dart';
+import 'package:smart_laundry_locker/features/drone_delivery/domain/entities/drone_labels.dart';
+import 'package:smart_laundry_locker/features/drone_delivery/presentation/widgets/drone_order_payment.dart';
 import 'package:smart_laundry_locker/shared/widgets/app_lottie.dart';
 import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/utils/business_rules_text.dart';
@@ -30,6 +32,8 @@ class DroneBookingSheet extends StatefulWidget {
     required this.origin,
     this.lockerId,
     this.createOrder,
+    this.freeDroneCells,
+    this.payOrder,
     this.onBooked,
     this.showMessage,
     this.destinationLockers,
@@ -44,6 +48,12 @@ class DroneBookingSheet extends StatefulWidget {
   final int? lockerId;
 
   final DroneOrderCreator? createOrder;
+
+  /// Số ô DRONE còn trống của một tủ nhận; null = không tra được.
+  final Future<int?> Function(int lockerId)? freeDroneCells;
+
+  /// Thanh toán đơn vừa tạo; mặc định mở bảng thanh toán thật.
+  final DroneOrderPayer? payOrder;
   final ValueChanged<int>? onBooked;
   final ValueChanged<String>? showMessage;
   final List<Map<String, dynamic>>? destinationLockers;
@@ -61,7 +71,22 @@ class _DroneBookingSheetState extends State<DroneBookingSheet>
   bool _submitting = false;
   bool _loadingDestinations = true;
   List<Map<String, dynamic>> _destinations = const [];
+  Map<int, int> _freeCells = const {};
+  Map<String, dynamic>? _pendingOrder;
   int? _destinationLockerId;
+  int? _weightGrams;
+
+  /// Mức khối lượng đang chọn; chưa chọn thì lấy mức nhỏ nhất đủ chứa khối lượng
+  /// mặc định admin cấu hình.
+  int get _selectedWeight {
+    final choices = businessConfig.droneWeightChoices;
+    final picked = _weightGrams;
+    if (picked != null && choices.contains(picked)) return picked;
+    return choices.firstWhere(
+      (grams) => grams >= businessConfig.droneDefaultParcelWeightGrams,
+      orElse: () => choices.last,
+    );
+  }
 
   @override
   void initState() {
@@ -83,18 +108,102 @@ class _DroneBookingSheetState extends State<DroneBookingSheet>
                 '${locker['status']}'.toUpperCase() == 'ACTIVE';
           })
           .toList(growable: false);
+      final freeCells = await _loadFreeCells(destinations);
+      final pendingOrder = freeCells.values.any((free) => free == 0)
+          ? await _loadPendingUnpaidOrder()
+          : null;
       if (!mounted) return;
       setState(() {
         _destinations = destinations;
-        _destinationLockerId = destinations.isEmpty
-            ? null
-            : _asInt(destinations.first['id']);
+        _freeCells = freeCells;
+        _pendingOrder = pendingOrder;
+        // Ưu tiên tủ còn ô nhận; giữ lựa chọn cũ nếu tủ đó vẫn nhận được.
+        final current = _destinationLockerId;
+        final keep =
+            current != null &&
+            freeCells[current] != 0 &&
+            destinations.any((locker) => _asInt(locker['id']) == current);
+        if (!keep) {
+          final open = destinations.where(
+            (locker) => freeCells[_asInt(locker['id'])] != 0,
+          );
+          final pick = open.isNotEmpty
+              ? open.first
+              : (destinations.isEmpty ? null : destinations.first);
+          _destinationLockerId = pick == null ? null : _asInt(pick['id']);
+        }
       });
     } catch (_) {
       if (mounted) setState(() => _destinations = const []);
     } finally {
       if (mounted) setState(() => _loadingDestinations = false);
     }
+  }
+
+  /// Số ô DRONE còn trống ở từng tủ nhận; thiếu khoá = không tra được (vẫn cho
+  /// chọn, server là nơi quyết định cuối). Danh sách tủ do nơi gọi truyền sẵn thì
+  /// chỉ tra khi nơi gọi cũng truyền [DroneBookingSheet.freeDroneCells].
+  Future<Map<int, int>> _loadFreeCells(
+    List<Map<String, dynamic>> destinations,
+  ) async {
+    final lookup =
+        widget.freeDroneCells ??
+        (widget.destinationLockers == null ? _freeDroneCellsFromLayout : null);
+    if (lookup == null) return const {};
+    final result = <int, int>{};
+    await Future.wait(
+      destinations.map((locker) async {
+        final id = _asInt(locker['id'])!;
+        try {
+          final free = await lookup(id);
+          if (free != null) result[id] = free;
+        } catch (_) {}
+      }),
+    );
+    return result;
+  }
+
+  static Future<int?> _freeDroneCellsFromLayout(int lockerId) async {
+    final layout = await LockerOpsService().layout(lockerId);
+    final cells = layout['cells'];
+    if (cells is! List) return null;
+    return cells
+        .whereType<Map>()
+        .where(
+          (cell) =>
+              '${cell['cellType']}'.toUpperCase() == 'DRONE' &&
+              '${cell['status']}'.toUpperCase() == 'AVAILABLE',
+        )
+        .length;
+  }
+
+  /// Đơn drone của chính khách đang chờ thanh toán — đơn này vẫn giữ ô drone ở cả
+  /// hai tủ, thường là lý do tủ nhận báo hết ô.
+  Future<Map<String, dynamic>?> _loadPendingUnpaidOrder() async {
+    if (widget.destinationLockers != null) return null;
+    try {
+      final orders = await LockerOpsService().myOrders();
+      for (final order in orders) {
+        if ('${order['type']}'.toUpperCase() == 'DRONE_DELIVERY' &&
+            '${order['status']}'.toUpperCase() == 'AWAITING_DISPATCH' &&
+            '${order['paymentStatus']}'.toUpperCase() != 'PAID' &&
+            _asInt(order['id']) != null) {
+          return order;
+        }
+      }
+    } catch (_) {}
+    return null;
+  }
+
+  bool get _destinationFull =>
+      _destinationLockerId != null && _freeCells[_destinationLockerId] == 0;
+
+  void _openPendingOrder() {
+    final orderId = _asInt(_pendingOrder?['id']);
+    if (orderId == null) return;
+    // Màn gọi đưa khách tới màn theo dõi của đơn — nơi thanh toán được ngay.
+    Navigator.pop(context);
+    widget.onBooked?.call(orderId);
   }
 
   static int? _asInt(dynamic value) =>
@@ -137,6 +246,10 @@ class _DroneBookingSheetState extends State<DroneBookingSheet>
     final destinationLockerId = _destinationLockerId;
     if (destinationLockerId == null) {
       _showMessage('Chưa có tủ đích hoạt động và có bãi đáp drone');
+      return;
+    }
+    if (_destinationFull) {
+      _showMessage(_destinationFullMessage());
       return;
     }
 
@@ -184,7 +297,7 @@ class _DroneBookingSheetState extends State<DroneBookingSheet>
         receiverName: receiverName.isEmpty ? null : receiverName,
         receiverEmail: receiverEmail.isEmpty ? null : receiverEmail,
         description: description,
-        parcelWeightGrams: businessConfig.droneDefaultParcelWeightGrams,
+        parcelWeightGrams: _selectedWeight,
         // Chỉ là phương thức dự kiến ghi trên đơn; tiền thu thật ở bước thanh
         // toán. App khách không còn tiền mặt tự xác nhận.
         paymentMethod: 'WALLET',
@@ -200,12 +313,25 @@ class _DroneBookingSheetState extends State<DroneBookingSheet>
       }
 
       if (!mounted) return;
+      SmartDialog.dismiss<void>(status: SmartStatus.loading);
+      // Đội bay chỉ tiếp nhận đơn đã thanh toán ⇒ mở thanh toán ngay khi đơn vừa
+      // tạo. Khách đóng bảng thanh toán thì vẫn tới màn theo dõi, nơi trả tiếp được.
+      final message = await _payCreatedOrder(orderId, response);
+
+      if (!mounted) return;
       // Đóng sheet trước rồi mới báo cho màn gọi, để màn gọi điều hướng được.
       Navigator.pop(context, response);
       widget.onBooked?.call(orderId);
-      _showMessage('Đã tạo đơn drone. Thanh toán để đội bay tiếp nhận.');
+      _showMessage(message);
     } catch (error) {
-      _showMessage(LockerOpsService.errorMessage(error));
+      // Ô gửi hỏng có mã riêng, nên BOX_NOT_AVAILABLE ở đây là tủ NHẬN hết ô drone
+      // (có người vừa giữ mất) — báo đúng tủ và nạp lại số ô trống.
+      if (LockerOpsService.errorCode(error) == 'BOX_NOT_AVAILABLE') {
+        _showMessage(_destinationFullMessage());
+        _loadDestinations();
+      } else {
+        _showMessage(LockerOpsService.errorMessage(error));
+      }
     } finally {
       SmartDialog.dismiss<void>();
       if (mounted) {
@@ -213,6 +339,30 @@ class _DroneBookingSheetState extends State<DroneBookingSheet>
       }
     }
   }
+
+  Future<String> _payCreatedOrder(
+    int orderId,
+    Map<String, dynamic> response,
+  ) async {
+    final due = orderAmountDue(response);
+    try {
+      final outcome = await (widget.payOrder ?? payDroneOrder)(
+        context,
+        orderId: orderId,
+        total: due > 0
+            ? due
+            : businessConfig.droneDeliveryFeeFor(_selectedWeight).toDouble(),
+      );
+      return droneOrderPaymentMessage(outcome);
+    } catch (error) {
+      return 'Đã tạo đơn drone nhưng chưa thanh toán được: '
+          '${LockerOpsService.errorMessage(error)}';
+    }
+  }
+
+  String _destinationFullMessage() =>
+      '${_destinationName() ?? 'Tủ nhận'} đã hết ô drone trống để nhận hàng. '
+      'Hãy chọn tủ nhận khác hoặc thử lại sau.';
 
   void _showMessage(String message) {
     final showMessage = widget.showMessage;
@@ -306,16 +456,43 @@ class _DroneBookingSheetState extends State<DroneBookingSheet>
                     ? 'Đang tải tủ nhận...'
                     : 'Chọn tủ nhận có bãi đáp',
               ),
+              isExpanded: true,
               items: _destinations.map((locker) {
                 final id = _asInt(locker['id'])!;
                 final name = locker['name'] ?? locker['code'] ?? 'Tủ #$id';
-                return DropdownMenuItem<int>(value: id, child: Text('$name'));
+                final free = _freeCells[id];
+                final suffix = switch (free) {
+                  null => '',
+                  0 => ' · hết ô nhận',
+                  _ => ' · còn $free ô drone',
+                };
+                return DropdownMenuItem<int>(
+                  value: id,
+                  // Tủ hết ô nhận vẫn hiện để khách biết lý do, nhưng không chọn được.
+                  enabled: free != 0,
+                  child: Text(
+                    '$name$suffix',
+                    overflow: TextOverflow.ellipsis,
+                    style: free == 0 ? const TextStyle(color: Colors.grey) : null,
+                  ),
+                );
               }).toList(),
               onChanged: _loadingDestinations
                   ? null
                   : (value) => setState(() => _destinationLockerId = value),
             ),
             const SizedBox(height: 12),
+            if (_destinationFull) ...[
+              _DestinationFullNotice(
+                message: _destinationFullMessage(),
+                pendingOrderCode: _pendingOrder?['orderCode']?.toString(),
+                onOpenPendingOrder:
+                    _pendingOrder == null || widget.onBooked == null
+                    ? null
+                    : _openPendingOrder,
+              ),
+              const SizedBox(height: 12),
+            ],
 
             Container(
               width: double.infinity,
@@ -349,7 +526,7 @@ class _DroneBookingSheetState extends State<DroneBookingSheet>
                   SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      'Bỏ kiện vào ô drone này, thanh toán đơn rồi đội bay sẽ nạp '
+                      'Tạo đơn xong bạn thanh toán ngay, bỏ kiện vào ô drone này rồi đội bay sẽ nạp '
                       'hàng và cho drone bay tới tủ nhận. Bạn theo dõi được từng '
                       'chặng theo thời gian thực.',
                       style: TextStyle(fontSize: 12, color: Color(0xFF4F46E5)),
@@ -450,12 +627,41 @@ class _DroneBookingSheetState extends State<DroneBookingSheet>
             ),
             const SizedBox(height: 12),
 
+            // Khối lượng khai báo — quyết định phí; đội bay cân lại khi nạp hàng.
+            const Text(
+              'Khối lượng kiện hàng',
+              style: TextStyle(fontWeight: FontWeight.w700),
+            ),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                for (final grams in businessConfig.droneWeightChoices)
+                  ChoiceChip(
+                    key: ValueKey('drone-weight-$grams'),
+                    label: Text(droneWeightShortLabel(grams)),
+                    selected: grams == _selectedWeight,
+                    onSelected: (_) => setState(() => _weightGrams = grams),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 6),
+            Text(
+              'Chọn mức bằng hoặc lớn hơn khối lượng thật. Đội bay cân lại khi nạp '
+              'hàng: nặng hơn mức đã chọn quá '
+              '${businessConfig.droneWeightToleranceGrams} g thì bạn trả thêm phần '
+              'phí chênh trước khi drone bay; nhẹ hơn không hoàn lại.',
+              style: const TextStyle(fontSize: 12, color: Colors.grey),
+            ),
+            const SizedBox(height: 12),
+
             // Fee row
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 const Text(
-                  'Phí dịch vụ:',
+                  'Phí giao drone:',
                   style: TextStyle(color: Colors.grey),
                 ),
                 Container(
@@ -468,7 +674,9 @@ class _DroneBookingSheetState extends State<DroneBookingSheet>
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
-                    fmtPrice(businessConfig.droneDeliveryFee),
+                    fmtPrice(
+                      businessConfig.droneDeliveryFeeFor(_selectedWeight),
+                    ),
                     style: const TextStyle(
                       color: Colors.green,
                       fontWeight: FontWeight.w600,
@@ -489,7 +697,9 @@ class _DroneBookingSheetState extends State<DroneBookingSheet>
             SizedBox(
               width: double.infinity,
               child: FilledButton.icon(
-                onPressed: _submitting ? null : _confirm,
+                onPressed: _submitting || _loadingDestinations || _destinationFull
+                    ? null
+                    : _confirm,
                 style: FilledButton.styleFrom(
                   backgroundColor: opsPrimary,
                   padding: const EdgeInsets.symmetric(vertical: 15),
@@ -499,7 +709,7 @@ class _DroneBookingSheetState extends State<DroneBookingSheet>
                 ),
                 icon: const Icon(Icons.send_rounded, size: 18),
                 label: const Text(
-                  'Tạo yêu cầu giao Drone',
+                  'Tạo đơn và thanh toán',
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
                 ),
               ),
@@ -519,5 +729,61 @@ class _DroneBookingSheetState extends State<DroneBookingSheet>
       }
     }
     return 'Tủ #$id';
+  }
+}
+
+/// Báo trước khi khách điền form: tủ nhận hết ô drone thì chưa tạo đơn được.
+class _DestinationFullNotice extends StatelessWidget {
+  const _DestinationFullNotice({
+    required this.message,
+    this.pendingOrderCode,
+    this.onOpenPendingOrder,
+  });
+
+  final String message;
+  final String? pendingOrderCode;
+  final VoidCallback? onOpenPendingOrder;
+
+  @override
+  Widget build(BuildContext context) {
+    const color = Color(0xFFB45309);
+    final onOpen = onOpenPendingOrder;
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFEF3C7),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFFCD34D)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            onOpen == null
+                ? message
+                : '$message\nĐơn ${pendingOrderCode ?? 'drone'} của bạn chưa thanh '
+                      'toán và đang giữ ô drone.',
+            style: const TextStyle(
+              color: color,
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              height: 1.4,
+            ),
+          ),
+          if (onOpen != null) ...[
+            const SizedBox(height: 8),
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton(
+                style: FilledButton.styleFrom(backgroundColor: color),
+                onPressed: onOpen,
+                child: const Text('Mở đơn đang chờ thanh toán'),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
   }
 }

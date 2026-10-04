@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
+import 'package:smart_laundry_locker/core/config/business_config_service.dart';
 import 'package:smart_laundry_locker/core/config/feature_flags.dart';
 import 'package:smart_laundry_locker/core/routing/app_router.dart';
 import 'package:smart_laundry_locker/core/theme/shadcn_theme.dart';
@@ -10,6 +11,9 @@ import 'package:smart_laundry_locker/features/drone_delivery/domain/entities/dro
 import 'package:smart_laundry_locker/features/drone_delivery/presentation/providers/drone_delivery_providers.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/presentation/widgets/drone_approaching_sheet.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/presentation/widgets/drone_delivery_detail.dart';
+import 'package:smart_laundry_locker/features/drone_delivery/presentation/widgets/drone_order_cancel.dart';
+import 'package:smart_laundry_locker/features/drone_delivery/presentation/widgets/drone_order_payment.dart';
+import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
 
 /// Trang cho NGƯỜI NHẬN theo dõi đơn giao bằng drone (Phase 1: timeline theo
 /// push notification, CHƯA có live map).
@@ -26,6 +30,8 @@ class DroneDeliveryTrackingPage extends ConsumerStatefulWidget {
 class _DroneDeliveryTrackingPageState
     extends ConsumerState<DroneDeliveryTrackingPage> {
   DroneDeliveryStage? _lastApproachingShown;
+  bool _paying = false;
+  bool _canceling = false;
 
   @override
   Widget build(BuildContext context) {
@@ -93,11 +99,65 @@ class _DroneDeliveryTrackingPageState
                   ref.invalidate(droneDeliveryStatusProvider(widget.orderId)),
             ),
           ),
-          data: (status) =>
-              _TrackingBody(status: status, orderId: widget.orderId),
+          data: (status) => _TrackingBody(
+            status: status,
+            orderId: widget.orderId,
+            onPay: () => _pay(status),
+            onCancel: () => _cancel(status),
+          ),
         ),
       ),
     );
+  }
+
+  /// Người đặt huỷ đơn khi đội bay chưa tiếp nhận; server hoàn tiền về ví nếu đơn
+  /// đã thanh toán.
+  Future<void> _cancel(DroneDeliveryStatus status) async {
+    final orderId = int.tryParse(widget.orderId);
+    if (_canceling || orderId == null) return;
+    final messenger = ScaffoldMessenger.of(context);
+    _canceling = true;
+    final String? message;
+    try {
+      message = await confirmAndCancelDroneOrder(
+        context,
+        orderId: orderId,
+        orderCode: status.orderCode,
+        isPaid: status.isPaid,
+        totalPrice: status.totalPrice,
+      );
+    } finally {
+      _canceling = false;
+    }
+    if (message == null || !mounted) return;
+    ref.invalidate(droneDeliveryStatusProvider(widget.orderId));
+    messenger.showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  /// Thanh toán ngay trên màn theo dõi, không bắt khách sang danh sách đơn.
+  Future<void> _pay(DroneDeliveryStatus status) async {
+    final orderId = int.tryParse(widget.orderId);
+    if (_paying || orderId == null) return;
+    _paying = true;
+    final messenger = ScaffoldMessenger.of(context);
+    String message;
+    try {
+      final outcome = await payDroneOrder(
+        context,
+        orderId: orderId,
+        total:
+            status.payableAmount ??
+            BusinessConfigService.instance.current.droneDeliveryFee.toDouble(),
+      );
+      message = droneOrderPaymentMessage(outcome);
+    } catch (error) {
+      message = LockerOpsService.errorMessage(error);
+    } finally {
+      _paying = false;
+    }
+    if (!mounted) return;
+    ref.invalidate(droneDeliveryStatusProvider(widget.orderId));
+    messenger.showSnackBar(SnackBar(content: Text(message)));
   }
 
   static String? _etaText(int? minutes) =>
@@ -107,8 +167,15 @@ class _DroneDeliveryTrackingPageState
 class _TrackingBody extends StatelessWidget {
   final DroneDeliveryStatus status;
   final String orderId;
+  final VoidCallback onPay;
+  final VoidCallback onCancel;
 
-  const _TrackingBody({required this.status, required this.orderId});
+  const _TrackingBody({
+    required this.status,
+    required this.orderId,
+    required this.onPay,
+    required this.onCancel,
+  });
 
   /// Chỉ mời xem live map khi drone đang trên đường và
   /// cờ Phase 2 bật. Các mốc arrived/delivered/failed không cần bản đồ nữa.
@@ -130,6 +197,8 @@ class _TrackingBody extends StatelessWidget {
         const SizedBox(height: 12),
         DroneDeliveryDetail(
           status: status,
+          onPay: onPay,
+          onCancel: onCancel,
           beforeRoute: [
             if (_canTrackOnMap) ...[
               const SizedBox(height: 16),

@@ -7,6 +7,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:smart_laundry_locker/core/config/business_config_provider.dart';
 import 'package:smart_laundry_locker/core/media/media.dart';
 import 'package:smart_laundry_locker/core/routing/app_router.dart';
+import 'package:smart_laundry_locker/features/drone_delivery/presentation/widgets/drone_order_cancel.dart';
 import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/utils/business_rules_text.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/utils/locker_maps.dart';
@@ -408,6 +409,21 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
     } catch (e) {
       _snack(LockerOpsService.errorMessage(e));
     }
+  }
+
+  /// Đơn drone: hỏi xác nhận và báo rõ việc hoàn tiền, giống màn theo dõi drone.
+  Future<void> _cancelDroneOrder(Map<String, dynamic> order, int orderId) async {
+    final message = await confirmAndCancelDroneOrder(
+      context,
+      orderId: orderId,
+      orderCode: order['orderCode']?.toString(),
+      isPaid: '${order['paymentStatus']}'.toUpperCase() == 'PAID',
+      totalPrice: _asDouble(order['totalPrice']),
+      cancelOrder: _service.cancelOrder,
+    );
+    if (message == null || !mounted) return;
+    _snack(message);
+    await _load();
   }
 
   Future<void> _extendDialog(int orderId) async {
@@ -1008,6 +1024,10 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
             },
             onCancel: (id) async {
               Navigator.pop(ctx);
+              if ('${order['type']}'.toUpperCase() == 'DRONE_DELIVERY') {
+                await _cancelDroneOrder(order, id);
+                return;
+              }
               await _runAction(() => _service.cancelOrder(id), 'Đã hủy đơn');
             },
             onDirections: () => _openLockerDirections(order),
@@ -3032,7 +3052,9 @@ class _DetailSheet extends StatelessWidget {
           ),
           onTap: () => onReport(boxId),
         ),
-      if (rawStatus == 'INITIALIZED')
+      // Đơn drone huỷ được tới khi đội bay tiếp nhận (chặng AWAITING_DISPATCH).
+      if (rawStatus == 'INITIALIZED' ||
+          (isDroneDelivery && status.toUpperCase() == 'AWAITING_DISPATCH'))
         OpsSheetAction(
           label: 'Hủy đơn',
           icon: LucideIcons.circleX,
