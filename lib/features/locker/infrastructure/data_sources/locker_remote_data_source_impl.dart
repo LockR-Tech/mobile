@@ -1,7 +1,6 @@
 import 'package:smart_laundry_locker/core/network/api_client.dart';
 import 'package:smart_laundry_locker/features/locker/infrastructure/data_sources/locker_remote_data_source.dart';
 import 'package:smart_laundry_locker/features/locker/infrastructure/models/cabinet_model.dart';
-import 'package:smart_laundry_locker/features/locker/infrastructure/models/customer_cabinet_model.dart';
 import 'package:smart_laundry_locker/features/locker/infrastructure/models/fixed_rent_response_model.dart';
 import 'package:smart_laundry_locker/features/locker/infrastructure/models/locker_location_model.dart';
 import 'package:smart_laundry_locker/features/locker/infrastructure/models/locker_rent_request_model.dart';
@@ -71,11 +70,25 @@ class LockerRemoteDataSourceImpl implements LockerRemoteDataSource {
     final locations = <Map<String, dynamic>>[];
     for (final item in items) {
       if (item is! Map<String, dynamic>) continue;
+      final idStr = (item['id'] ?? '').toString();
       final code = (item['code'] ?? '').toString();
       final lockerName = (item['name'] ?? code).toString();
       final addr = (item['address'] ?? '').toString();
-      final status = (item['status'] ?? 'ACTIVE').toString().toUpperCase();
+      final rawStatus = (item['status'] ?? 'ACTIVE').toString().toUpperCase();
       final storeId = item['storeId']?.toString();
+      final bool? isOnline = item['online'] as bool?;
+
+      // Tủ thật TU01 (CAB-TU01) ở admin hiện đang mất kết nối (Pi gateway offline)
+      final isCabinetTU01 = idStr == '7' ||
+          code == 'CAB-TU01' ||
+          lockerName.contains('TU01') ||
+          lockerName.contains('Tủ thật');
+
+      final bool isDisconnected = isOnline == false ||
+          rawStatus == 'DISCONNECTED' ||
+          (isCabinetTU01 && isOnline != true);
+
+      final status = isDisconnected ? 'DISCONNECTED' : rawStatus;
 
       if (query.isNotEmpty &&
           !lockerName.toLowerCase().contains(query) &&
@@ -85,7 +98,7 @@ class LockerRemoteDataSourceImpl implements LockerRemoteDataSource {
       }
 
       locations.add(<String, dynamic>{
-        'id': (item['id'] ?? '').toString(),
+        'id': idStr,
         'name': lockerName,
         'address': addr,
         // Missing coordinates -> NaN so LockerLocation.hasValidCoordinate is
@@ -94,6 +107,7 @@ class LockerRemoteDataSourceImpl implements LockerRemoteDataSource {
         'latitude': (item['latitude'] as num?)?.toDouble() ?? double.nan,
         'longitude': (item['longitude'] as num?)?.toDouble() ?? double.nan,
         'isActive': status == 'ACTIVE',
+        'description': status,
         if (storeId != null && storeImages.containsKey(storeId))
           'imageUrl': storeImages[storeId],
       });

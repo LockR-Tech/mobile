@@ -39,8 +39,14 @@ class LockerLocation {
     return true;
   }
 
+  /// Business logic: Trạng thái vận hành tủ (ACTIVE, MAINTENANCE, DISCONNECTED,...)
+  String get status => (description != null && description!.isNotEmpty)
+      ? description!
+      : (isActive ? 'ACTIVE' : 'INACTIVE');
+
   /// Business logic: Kiểm tra location có hoạt động hay không
-  bool get isOperational => isActive;
+  bool get isOperational =>
+      isActive && status != 'MAINTENANCE' && status != 'DISCONNECTED';
 
   /// Business logic: Tính khoảng cách đến một điểm khác
   double distanceTo(LockerLocation other) {
