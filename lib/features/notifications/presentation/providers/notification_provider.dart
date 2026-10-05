@@ -55,26 +55,42 @@ class NotificationProvider extends ChangeNotifier {
 
   static void _emitDomainEvent(String? actionType, String? referenceId) {
     final bus = AppEventBus.instance;
-    switch (actionType) {
-      case 'ORDER_STATUS_CHANGED':
-      // Đội bay huỷ nhiệm vụ / có đơn drone mới: danh sách đơn của khách và hàng
-      // đợi điều phối đều phải nạp lại ngay, không chờ lượt poll kế tiếp.
-      case 'DRONE_DELIVERY_STATUS_CHANGED':
-      case 'DRONE_ORDER_CREATED':
-        bus.emit(OrderChangedEvent(orderId: referenceId));
-      case 'PAYMENT_COMPLETED':
-        bus.emit(PaymentCompletedEvent(orderId: referenceId));
-        bus.emit(const WalletUpdatedEvent());
-      case 'PAYMENT_FAILED':
-        bus.emit(PaymentFailedEvent(orderId: referenceId));
-      case 'LOCKER_REPORT_CLAIMED':
-      case 'LOCKER_REPORT_RESOLVED':
-        bus.emit(ReportUpdatedEvent(reportId: referenceId));
-      case 'LOCKER_LAYOUT_UPDATED':
-      case 'LOCKER_BOX_FAULT':
-      case 'ORDER_BOX_RELOCATED':
-        bus.emit(LockerLayoutUpdatedEvent(lockerId: referenceId));
-        bus.emit(ReportUpdatedEvent(reportId: referenceId));
+    final action = (actionType ?? '').toUpperCase();
+
+    if (action.contains('ORDER') ||
+        action.contains('DELIVERY') ||
+        action == 'ORDER_STATUS_CHANGED' ||
+        action == 'DRONE_DELIVERY_STATUS_CHANGED' ||
+        action == 'DRONE_ORDER_CREATED' ||
+        action == 'ORDER_CREATED' ||
+        action == 'ORDER_STATUS' ||
+        action == 'ORDER_BOX_RELOCATED' ||
+        action == 'ORDER_RELOCATED' ||
+        action == 'ORDER_ESCROWED' ||
+        action == 'ORDER_RENTAL_EXTENDED' ||
+        action == 'ORDER_CONFIRMED' ||
+        action == 'ORDER_COMPLETED' ||
+        action == 'ORDER_CANCELLED' ||
+        action == 'ORDER_CANCELED') {
+      bus.emit(OrderChangedEvent(orderId: referenceId));
+    }
+
+    if (action == 'PAYMENT_COMPLETED') {
+      bus.emit(PaymentCompletedEvent(orderId: referenceId));
+      bus.emit(const WalletUpdatedEvent());
+      bus.emit(OrderChangedEvent(orderId: referenceId));
+    } else if (action == 'PAYMENT_FAILED') {
+      bus.emit(PaymentFailedEvent(orderId: referenceId));
+      bus.emit(OrderChangedEvent(orderId: referenceId));
+    }
+
+    if (action.contains('REPORT')) {
+      bus.emit(ReportUpdatedEvent(reportId: referenceId));
+    }
+
+    if (action.contains('LOCKER') || action.contains('BOX')) {
+      bus.emit(LockerLayoutUpdatedEvent(lockerId: referenceId));
+      bus.emit(ReportUpdatedEvent(reportId: referenceId));
     }
   }
 

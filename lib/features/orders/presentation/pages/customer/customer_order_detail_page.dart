@@ -56,12 +56,16 @@ class _CustomerOrderDetailPageState extends State<CustomerOrderDetailPage> {
     super.initState();
     final apiClient = ApiClient();
     _provider = OrderInjection.provideOrderProvider(apiClient);
-
     final currentId = widget.order?.id ?? widget.orderId;
     _eventSub = AppEventBus.instance.events.listen((event) {
       if (!mounted) return;
-      if (event is OrderChangedEvent &&
-          (event.orderId == null || event.orderId == currentId)) {
+      if ((event is OrderChangedEvent &&
+              (event.orderId == null || event.orderId == currentId)) ||
+          (event is PaymentCompletedEvent &&
+              (event.orderId == null || event.orderId == currentId)) ||
+          (event is PaymentFailedEvent &&
+              (event.orderId == null || event.orderId == currentId))) {
+        debugPrint('[CustomerOrderDetailPage] Refreshing order detail $currentId due to event: $event');
         _provider.fetchOrderDetail(currentId);
       }
     });

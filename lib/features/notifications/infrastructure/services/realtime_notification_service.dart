@@ -16,7 +16,8 @@ class RealtimeNotificationService {
   Stream<NotificationModel> get notifications => _controller.stream;
 
   StompClient? _client;
-  StompUnsubscribe? _unsubscribe;
+  StompUnsubscribe? _unsubscribeNotif;
+  StompUnsubscribe? _unsubscribeOrders;
   String? _connectedToken;
 
   Future<void> connect() async {
@@ -43,8 +44,12 @@ class RealtimeNotificationService {
         connectionTimeout: const Duration(seconds: 15),
         onConnect: (frame) {
           debugPrint('Realtime notifications connected');
-          _unsubscribe = _client?.subscribe(
+          _unsubscribeNotif = _client?.subscribe(
             destination: '/user/queue/notifications',
+            callback: _handleFrame,
+          );
+          _unsubscribeOrders = _client?.subscribe(
+            destination: '/user/queue/orders',
             callback: _handleFrame,
           );
         },
@@ -60,11 +65,13 @@ class RealtimeNotificationService {
 
   void disconnect() {
     try {
-      _unsubscribe?.call();
+      _unsubscribeNotif?.call();
+      _unsubscribeOrders?.call();
     } catch (_) {
       // Best effort; the underlying client may already be down.
     }
-    _unsubscribe = null;
+    _unsubscribeNotif = null;
+    _unsubscribeOrders = null;
     _client?.deactivate();
     _client = null;
     _connectedToken = null;
