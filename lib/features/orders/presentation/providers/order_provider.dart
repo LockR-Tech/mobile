@@ -1,3 +1,5 @@
+import 'dart:async';
+import 'package:smart_laundry_locker/core/services/app_event_bus.dart';
 import 'package:smart_laundry_locker/features/orders/application/use_cases/get_my_orders_use_case.dart';
 import 'package:smart_laundry_locker/features/orders/application/use_cases/get_order_detail_use_case.dart';
 import 'package:smart_laundry_locker/features/orders/application/use_cases/get_active_orders_use_case.dart';
@@ -15,6 +17,7 @@ class OrderProvider extends ChangeNotifier {
   final GetActiveOrdersUseCase _getActiveOrdersUseCase;
   final PayOverdueFeeUseCase _payOverdueFeeUseCase;
   final RecreateAccessCodeUseCase _recreateAccessCodeUseCase;
+  StreamSubscription<AppEvent>? _eventSub;
 
   OrderProvider({
     required GetMyOrdersUseCase getMyOrdersUseCase,
@@ -26,13 +29,34 @@ class OrderProvider extends ChangeNotifier {
        _getOrderDetailUseCase = getOrderDetailUseCase,
        _getActiveOrdersUseCase = getActiveOrdersUseCase,
        _payOverdueFeeUseCase = payOverdueFeeUseCase,
-       _recreateAccessCodeUseCase = recreateAccessCodeUseCase;
+       _recreateAccessCodeUseCase = recreateAccessCodeUseCase {
+    _eventSub = AppEventBus.instance.events.listen((event) {
+      if (_isDisposed) return;
+      if (event is OrderChangedEvent ||
+          event is PaymentCompletedEvent ||
+          event is PaymentFailedEvent) {
+        if (_activeOrders.isNotEmpty) {
+          fetchActiveOrders();
+        }
+        if (_orders.isNotEmpty) {
+          refresh();
+        }
+        if (_selectedOrder != null &&
+            (event is! OrderChangedEvent ||
+                event.orderId == null ||
+                event.orderId == _selectedOrder!.id)) {
+          fetchOrderDetail(_selectedOrder!.id);
+        }
+      }
+    });
+  }
 
   bool _isDisposed = false;
 
   @override
   void dispose() {
     _isDisposed = true;
+    _eventSub?.cancel();
     super.dispose();
   }
 

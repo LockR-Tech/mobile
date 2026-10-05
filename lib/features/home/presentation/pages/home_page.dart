@@ -1,3 +1,5 @@
+import 'dart:async';
+import 'package:smart_laundry_locker/core/services/app_event_bus.dart';
 import 'package:flutter/services.dart';
 import 'package:smart_laundry_locker/features/promotions/data/models/promotion_model.dart';
 import 'package:smart_laundry_locker/features/promotions/presentation/pages/promotion_detail_page.dart';
@@ -34,10 +36,20 @@ class _HomePageState extends ConsumerState<HomePage>
     with SingleTickerProviderStateMixin {
   final LockerOpsService _opsService = LockerOpsService();
   Map<String, dynamic>? _activeOrder;
+  StreamSubscription<AppEvent>? _eventSub;
 
   @override
   void initState() {
     super.initState();
+    _eventSub = AppEventBus.instance.events.listen((event) {
+      if (!mounted) return;
+      if (event is OrderChangedEvent ||
+          event is PaymentCompletedEvent ||
+          event is PaymentFailedEvent) {
+        debugPrint('[HomePage] Order/payment event received: $event, refreshing active order...');
+        _loadActiveOrder();
+      }
+    });
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       final profile = context.read<ProfileProvider>();
@@ -48,6 +60,12 @@ class _HomePageState extends ConsumerState<HomePage>
       ref.read(promotionNotifierProvider).load();
       _loadActiveOrder();
     });
+  }
+
+  @override
+  void dispose() {
+    _eventSub?.cancel();
+    super.dispose();
   }
 
   Future<void> _loadActiveOrder() async {

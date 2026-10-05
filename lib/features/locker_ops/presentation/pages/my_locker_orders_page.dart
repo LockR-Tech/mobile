@@ -1,3 +1,5 @@
+import 'dart:async';
+import 'package:smart_laundry_locker/core/services/app_event_bus.dart';
 import 'package:smart_laundry_locker/core/utils/app_date_time.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -47,11 +49,28 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
   Map<String, List<Map<String, dynamic>>> _reportLogsByOrderCode = {};
   bool _loading = true;
   String _typeFilter = 'ALL';
+  StreamSubscription<AppEvent>? _eventSub;
 
   @override
   void initState() {
     super.initState();
     _load();
+    _eventSub = AppEventBus.instance.events.listen((event) {
+      if (!mounted) return;
+      if (event is OrderChangedEvent ||
+          event is PaymentCompletedEvent ||
+          event is PaymentFailedEvent ||
+          event is LockerLayoutUpdatedEvent) {
+        debugPrint('[MyLockerOrdersPage] Real-time event received: $event, refreshing orders...');
+        _load();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _eventSub?.cancel();
+    super.dispose();
   }
 
   Future<void> _load() async {
@@ -874,6 +893,201 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
     }
   }
 
+  /// Luồng thanh toán và lấy đồ hoàn tất (dành cho đơn quá hạn/hết hạn hoặc đơn cần thanh toán rồi chốt xong luôn).
+  Future<void> _payAndCompleteFlow(Map<String, dynamic> order) async {
+    final orderId = _asInt(order['id']);
+    if (orderId == null) return;
+
+    // Cập nhật phí quá hạn nếu có trước khi tính toán
+    try {
+      final assessed = await _service.assessOvertime(orderId);
+      if (assessed.isNotEmpty) {
+        order = assessed;
+      }
+    } catch (_) {}
+
+    final due = orderAmountDue(order);
+    final paymentStatus =
+        (order['paymentStatus'] as String? ?? 'UNPAID').toUpperCase();
+    final needsPayment = due > 0 || paymentStatus != 'PAID';
+
+    if (needsPayment) {
+      businessConfigService.refresh();
+      try {
+        final outcome = await payOrderAndAwaitPaid(
+          context,
+          service: _service,
+          orderId: orderId,
+          total: due,
+          enabledMethods: businessConfig.enabledPaymentMethods,
+        );
+        if (!mounted || outcome == OrderPaymentOutcome.cancelled) return;
+        if (outcome == OrderPaymentOutcome.failed) {
+          showPaymentResultDialog<void>(
+            context,
+            type: PaymentStatusType.failure,
+            title: 'Thanh toán thất bại',
+            amountText: '${due.toInt()} đ',
+            message:
+                'Giao dịch chưa hoàn tất hoặc đã bị hủy. Vui lòng thử lại.',
+          );
+          await _load();
+          return;
+        }
+
+        // Đã thanh toán thành công -> chờ backend propagate payment event
+        // trước khi gọi complete (tránh race condition với assertPaidBefore*)
+        _snack('Đã thanh toán thành công — Đang hoàn tất đơn hàng...');
+        await Future.delayed(const Duration(milliseconds: 1500));
+        try {
+          final isRental =
+              (order['type'] as String? ?? '').toUpperCase() == 'RENTAL';
+          Exception? firstErr;
+          if (isRental) {
+            try {
+              await _service.endRental(orderId);
+            } catch (e) {
+              firstErr = e is Exception ? e : Exception(e.toString());
+              // endRental thất bại → thử complete thông thường
+              await _service.completePickup(orderId);
+            }
+          } else {
+            await _service.completePickup(orderId);
+          }
+          if (mounted) {
+            showPaymentResultDialog<void>(
+              context,
+              type: PaymentStatusType.success,
+              title: 'Hoàn tất đơn hàng!',
+              amountText: '${due.toInt()} đ',
+              message:
+                  'Bạn đã thanh toán và lấy đồ thành công. Đơn hàng đã hoàn tất.',
+            );
+          }
+        } catch (e) {
+          // Cả endRental lẫn completePickup đều thất bại (ví dụ backend deploy bản cũ chưa cho EXPIRED complete)
+          // -> Đơn đã trả tiền thành công; hiện thông báo rõ ràng cho khách
+          if (mounted) {
+            final rawStatus = (order['status'] as String? ?? '').toUpperCase();
+            showPaymentResultDialog<void>(
+              context,
+              type: PaymentStatusType.success,
+              title: 'Thanh toán thành công!',
+              amountText: '${due.toInt()} đ',
+              message: rawStatus == 'EXPIRED'
+                  ? 'Bạn đã thanh toán phí quá hạn thành công. Do đơn đã quá hạn lưu tủ (>24h), đồ đang được lưu giữ an toàn tại quầy/kho. Vui lòng đọc mã đơn cho nhân viên để nhận đồ!'
+                  : 'Thanh toán thành công. Vui lòng cho nhân viên biết để hoàn tất đơn.',
+            );
+          }
+        }
+        await _load();
+      } catch (e) {
+        _snack(LockerOpsService.errorMessage(e));
+      }
+    } else {
+      // Đã thanh toán hoặc không còn nợ phí -> Xác nhận đã lấy đồ để kết thúc đơn
+      final confirm = await showDialog<bool>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(18),
+          ),
+          title: const Row(
+            children: [
+              Icon(LucideIcons.packageCheck, color: Color(0xFF16A34A)),
+              SizedBox(width: 8),
+              Text(
+                'Xác nhận lấy đồ',
+                style: TextStyle(fontWeight: FontWeight.w700, fontSize: 17),
+              ),
+            ],
+          ),
+          content: const Text(
+            'Bạn xác nhận đã nhận lại đầy đủ đồ đạc của đơn hàng này? Thao tác này sẽ đóng và hoàn tất đơn hàng.',
+            style: TextStyle(fontSize: 14, height: 1.4),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text('Hủy', style: TextStyle(color: opsMutedText)),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF16A34A),
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+              onPressed: () => Navigator.pop(ctx, true),
+              child: const Text('Đã lấy đồ — Hoàn tất'),
+            ),
+          ],
+        ),
+      );
+
+      if (confirm == true && mounted) {
+        try {
+          final isRental =
+              (order['type'] as String? ?? '').toUpperCase() == 'RENTAL';
+          if (isRental) {
+            try {
+              await _service.endRental(orderId);
+            } catch (_) {
+              await _service.completePickup(orderId);
+            }
+          } else {
+            await _service.completePickup(orderId);
+          }
+          _snack('Đã nhận đồ — đơn hoàn tất');
+          await _load();
+        } catch (e) {
+          final rawStatus = (order['status'] as String? ?? '').toUpperCase();
+          if (rawStatus == 'EXPIRED' && mounted) {
+            await showDialog<void>(
+              context: context,
+              builder: (ctx) => AlertDialog(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(18),
+                ),
+                title: const Row(
+                  children: [
+                    Icon(LucideIcons.circleCheck, color: Color(0xFF16A34A)),
+                    SizedBox(width: 8),
+                    Text(
+                      'Đã ghi nhận nhận đồ',
+                      style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
+                    ),
+                  ],
+                ),
+                content: const Text(
+                  'Đơn hàng của bạn đã thanh toán đầy đủ. Do đơn đã quá hạn lưu tủ (>24h), đồ được bàn giao trực tiếp bởi nhân viên tại quầy. Nhân viên sẽ đóng trạng thái đơn trên hệ thống giúp bạn!',
+                  style: TextStyle(fontSize: 14, height: 1.4),
+                ),
+                actions: [
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AislBrand.navy,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                    onPressed: () => Navigator.pop(ctx),
+                    child: const Text('Đã hiểu'),
+                  ),
+                ],
+              ),
+            );
+            await _load();
+          } else {
+            _snack(LockerOpsService.errorMessage(e));
+          }
+        }
+      }
+    }
+  }
+
   /// Luồng thanh toán phí quá hạn để mở ô tủ (Pay-to-Unlock).
   Future<void> _payOvertimeFlow(Map<String, dynamic> order, num fee) async {
     final orderId = _asInt(order['id']);
@@ -1117,6 +1331,10 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
               Navigator.pop(ctx);
               await _payOvertimeFlow(order, fee);
             },
+            onPayAndComplete: (id) async {
+              Navigator.pop(ctx);
+              await _payAndCompleteFlow(order);
+            },
             onOpenLocker: () {
               Navigator.pop(ctx);
               _openLockerFlow(order);
@@ -1276,6 +1494,8 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
                                           o['lockerId'],
                                         )]?[_asInt(o['receiveBoxId'])],
                                     onTap: () => _openDetail(o),
+                                    onPayAndComplete: () =>
+                                        _payAndCompleteFlow(o),
                                     onViewReport: () {
                                       final r = _incidentReportForOrder(o);
                                       if (r != null) {
@@ -1413,6 +1633,7 @@ class _OrderCard extends StatelessWidget {
     this.sendBoxNumber,
     this.receiveBoxNumber,
     required this.onTap,
+    this.onPayAndComplete,
     this.onViewReport,
   });
 
@@ -1423,6 +1644,7 @@ class _OrderCard extends StatelessWidget {
   final int? sendBoxNumber;
   final int? receiveBoxNumber;
   final VoidCallback onTap;
+  final VoidCallback? onPayAndComplete;
   final VoidCallback? onViewReport;
 
   @override
@@ -1598,29 +1820,105 @@ class _OrderCard extends StatelessWidget {
                             ),
                           ),
                           const SizedBox(width: 12),
-                          GestureDetector(
-                            onTap: onTap,
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 14,
-                                vertical: 6,
-                              ),
-                              decoration: BoxDecoration(
-                                border: Border.all(
+                          Builder(
+                            builder: (ctx) {
+                              final due = orderAmountDue(order);
+                              final paymentStatus = (order['paymentStatus']
+                                          as String? ??
+                                      'UNPAID')
+                                  .toUpperCase();
+                              final needsPay =
+                                  due > 0 || paymentStatus != 'PAID';
+
+                              final String actionLabel;
+                              final Color? actionBgColor;
+                              final Color actionTextColor;
+                              final BorderSide actionBorderSide;
+
+                              if (rawStatus == 'EXPIRED') {
+                                actionLabel = needsPay
+                                    ? 'Thanh toán & lấy đồ'
+                                    : 'Xác nhận lấy đồ';
+                                actionBgColor = const Color(
+                                  0xFFDC2626,
+                                ).withValues(alpha: 0.12);
+                                actionTextColor = const Color(0xFFDC2626);
+                                actionBorderSide = const BorderSide(
+                                  color: Color(0xFFDC2626),
+                                  width: 1.4,
+                                );
+                              } else if (isDone) {
+                                actionLabel = 'Xem lại';
+                                actionBgColor = null;
+                                actionTextColor = context.textPrimary;
+                                actionBorderSide = BorderSide(
                                   color: context.borderColor,
                                   width: 1.5,
+                                );
+                              } else if (rawStatus == 'INITIALIZED') {
+                                actionLabel = 'Bỏ đồ vào tủ';
+                                actionBgColor = AislBrand.navy.withValues(
+                                  alpha: 0.10,
+                                );
+                                actionTextColor = AislBrand.navy;
+                                actionBorderSide = const BorderSide(
+                                  color: AislBrand.navy,
+                                  width: 1.2,
+                                );
+                              } else if (overdue) {
+                                actionLabel = needsPay
+                                    ? 'Thanh toán & lấy đồ'
+                                    : 'Lấy đồ ngay';
+                                actionBgColor = const Color(
+                                  0xFFDC2626,
+                                ).withValues(alpha: 0.12);
+                                actionTextColor = const Color(0xFFDC2626);
+                                actionBorderSide = const BorderSide(
+                                  color: Color(0xFFDC2626),
+                                  width: 1.4,
+                                );
+                              } else {
+                                actionLabel = 'Chi tiết';
+                                actionBgColor = null;
+                                actionTextColor = context.textPrimary;
+                                actionBorderSide = BorderSide(
+                                  color: context.borderColor,
+                                  width: 1.5,
+                                );
+                              }
+
+                              return GestureDetector(
+                                onTap: () {
+                                  if ((rawStatus == 'EXPIRED' || overdue) &&
+                                      onPayAndComplete != null) {
+                                    onPayAndComplete!();
+                                  } else {
+                                    onTap();
+                                  }
+                                },
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 14,
+                                    vertical: 6,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: actionBgColor,
+                                    border: Border.fromBorderSide(
+                                      actionBorderSide,
+                                    ),
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                  child: Text(
+                                    actionLabel,
+                                    style: TextStyle(
+                                      fontSize: 12.5,
+                                      fontWeight: FontWeight.w700,
+                                      color: actionTextColor,
+                                    ),
+                                  ),
                                 ),
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              child: Text(
-                                'Xem lại',
-                                style: TextStyle(
-                                  fontSize: 12.5,
-                                  fontWeight: FontWeight.w600,
-                                  color: context.textPrimary,
-                                ),
-                              ),
-                            ),
+                              );
+                            },
                           ),
                         ],
                       ),
@@ -1630,8 +1928,37 @@ class _OrderCard extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 14),
-            // Overdue banner
-            if (overdue)
+            // Overdue or Expired banner
+            if (rawStatus == 'EXPIRED')
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
+                color: const Color(0xFFFEF2F2),
+                child: Row(
+                  children: const [
+                    Icon(
+                      LucideIcons.triangleAlert,
+                      size: 13,
+                      color: Color(0xFFDC2626),
+                    ),
+                    SizedBox(width: 6),
+                    Expanded(
+                      child: Text(
+                        'Đơn đã hết hạn lưu tủ (>24h) — Bấm để thanh toán & lấy đồ',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFFDC2626),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              )
+            else if (overdue)
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.symmetric(
@@ -2411,8 +2738,16 @@ Map<int, Map<String, dynamic>> _activeReportsByBoxMap(
 }
 
 /// `4`, `4 → 7`, hoặc `Chưa gán ô` — cho dòng "Ô" ở bảng chi tiết.
-String _boxRouteLabel(int? sendBoxNumber, int? receiveBoxNumber) {
-  if (sendBoxNumber == null && receiveBoxNumber == null) return 'Chưa gán ô';
+String _boxRouteLabel(
+  int? sendBoxNumber,
+  int? receiveBoxNumber, [
+  String? status,
+]) {
+  if (sendBoxNumber == null && receiveBoxNumber == null) {
+    return (status ?? '').toUpperCase() == 'EXPIRED'
+        ? 'Đã giải phóng ô (Bảo quản tại quầy)'
+        : 'Chưa gán ô';
+  }
   if (sendBoxNumber != null && receiveBoxNumber != null) {
     return '$sendBoxNumber → $receiveBoxNumber';
   }
@@ -2966,6 +3301,7 @@ class _DetailSheet extends StatelessWidget {
     required this.onPayOvertime,
     required this.onOpenLocker,
     required this.onTrackDrone,
+    this.onPayAndComplete,
   });
 
   final Map<String, dynamic> order;
@@ -2990,6 +3326,7 @@ class _DetailSheet extends StatelessWidget {
   final void Function(int orderId, num fee) onPayOvertime;
   final VoidCallback onOpenLocker;
   final void Function(int orderId) onTrackDrone;
+  final void Function(int orderId)? onPayAndComplete;
 
   @override
   Widget build(BuildContext context) {
@@ -3116,14 +3453,48 @@ class _DetailSheet extends StatelessWidget {
           primary: true,
           onTap: () => onTrackDrone(id),
         ),
-      if (canPay)
+      if (canPay &&
+          rawStatus != 'EXPIRED' &&
+          !(rawStatus == 'STORING' && needsPayOvertime) &&
+          !(rawStatus == 'RETURNED' && needsPayOvertime))
         OpsSheetAction(
           label: 'Thanh toán ${fmtPrice(orderAmountDue(order))}',
           icon: LucideIcons.creditCard,
           primary: true,
           onTap: () => onPay(id),
         ),
-      if (rawStatus == 'COMPLETED' || rawStatus == 'CANCELED')
+      if (rawStatus == 'EXPIRED') ...[
+        if (canPay || orderAmountDue(order) > 0)
+          OpsSheetAction(
+            label:
+                'Thanh toán (${fmtPrice(orderAmountDue(order) > 0 ? orderAmountDue(order) : totalNum)}) & Lấy đồ hoàn tất',
+            icon: LucideIcons.circleCheck,
+            primary: true,
+            onTap: () => onPayAndComplete?.call(id),
+          )
+        else
+          OpsSheetAction(
+            label: 'Tôi đã lấy đồ — Hoàn tất đơn',
+            icon: LucideIcons.circleCheck,
+            primary: true,
+            onTap: () => onPayAndComplete?.call(id),
+          ),
+        if (boxId != null)
+          OpsSheetAction(
+            label: 'Mở $boxLabel để lấy đồ',
+            icon: LucideIcons.doorOpen,
+            primary: false,
+            onTap: onOpenLocker,
+          ),
+        OpsSheetAction(
+          label: 'Đặt lại đơn',
+          icon: LucideIcons.repeat,
+          primary: false,
+          onTap: () => onReorder(id),
+        ),
+      ],
+      if ((rawStatus == 'COMPLETED' || rawStatus == 'CANCELED') &&
+          rawStatus != 'EXPIRED')
         OpsSheetAction(
           label: 'Đặt lại đơn',
           icon: LucideIcons.repeat,
@@ -3147,42 +3518,58 @@ class _DetailSheet extends StatelessWidget {
       if (canUsePickupActions &&
           (rawStatus == 'RETURNED' ||
               (rawStatus == 'STORING' && !isRental))) ...[
-        if (needsPayOvertime)
+        if (needsPayOvertime) ...[
+          OpsSheetAction(
+            label:
+                'Thanh toán (${fmtPrice(orderAmountDue(order) > 0 ? orderAmountDue(order) : overtimeFee)}) & Lấy đồ hoàn tất',
+            icon: LucideIcons.circleCheck,
+            primary: true,
+            onTap: () => onPayAndComplete?.call(id),
+          ),
           OpsSheetAction(
             label: 'Thanh toán phí quá giờ (${fmtPrice(overtimeFee)}) & Mở ô',
             icon: LucideIcons.creditCard,
-            primary: true,
+            primary: false,
             onTap: () => onPayOvertime(id, overtimeFee),
-          )
-        else
+          ),
+        ] else ...[
           OpsSheetAction(
             label: 'Mở $boxLabel để lấy đồ',
             icon: LucideIcons.doorOpen,
             primary: true,
             onTap: onOpenLocker,
           ),
-        OpsSheetAction(
-          label: 'Tôi đã lấy đồ — hoàn tất',
-          icon: LucideIcons.circleCheck,
-          primary: false,
-          onTap: () => onComplete(id),
-        ),
+          OpsSheetAction(
+            label: 'Tôi đã lấy đồ — hoàn tất',
+            icon: LucideIcons.circleCheck,
+            primary: false,
+            onTap: () => onComplete(id),
+          ),
+        ],
       ],
       if (isRental && rawStatus == 'STORING') ...[
-        if (needsPayOvertime)
+        if (needsPayOvertime) ...[
+          OpsSheetAction(
+            label:
+                'Thanh toán (${fmtPrice(orderAmountDue(order) > 0 ? orderAmountDue(order) : overtimeFee)}) & Lấy đồ hoàn tất',
+            icon: LucideIcons.circleCheck,
+            primary: true,
+            onTap: () => onPayAndComplete?.call(id),
+          ),
           OpsSheetAction(
             label: 'Thanh toán phí quá giờ (${fmtPrice(overtimeFee)}) & Mở ô',
             icon: LucideIcons.creditCard,
-            primary: true,
+            primary: false,
             onTap: () => onPayOvertime(id, overtimeFee),
-          )
-        else
+          ),
+        ] else ...[
           OpsSheetAction(
             label: 'Mở $boxLabel để trả tủ & lấy đồ',
             icon: LucideIcons.doorOpen,
             primary: true,
             onTap: onOpenLocker,
           ),
+        ],
         OpsSheetAction(
           label: 'Gia hạn thuê',
           icon: LucideIcons.timer,
@@ -3196,7 +3583,10 @@ class _DetailSheet extends StatelessWidget {
       ],
       // "Ủy quyền người khác lấy hộ" đã gỡ theo yêu cầu nghiệp vụ — người nhận
       // lấy hàng bằng mã PIN, không cần uỷ quyền thêm một lớp nữa.
-      if (boxId != null && rawStatus != 'COMPLETED' && rawStatus != 'CANCELED')
+      if (boxId != null &&
+          rawStatus != 'COMPLETED' &&
+          rawStatus != 'CANCELED' &&
+          rawStatus != 'EXPIRED')
         OpsSheetAction(
           label: 'Báo ô lỗi',
           leading: const AppLottie(
@@ -3283,7 +3673,18 @@ class _DetailSheet extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 16),
-        if (overdue)
+        if (rawStatus == 'EXPIRED')
+          Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: OpsBanner(
+              tone: OpsBannerTone.danger,
+              icon: LucideIcons.triangleAlert,
+              text: (canPay || orderAmountDue(order) > 0)
+                  ? 'Đơn đã quá hạn lưu tủ (>24h). Ô tủ đã được giải phóng và đồ đã chuyển về bảo quản an toàn. Quý khách vui lòng thanh toán phí còn lại và bấm "Thanh toán & lấy đồ" để hoàn tất.'
+                  : 'Đơn đã quá hạn lưu tủ (>24h). Ô tủ đã được giải phóng và đồ đã chuyển về bảo quản an toàn. Quý khách vui lòng kiểm tra nhận đồ và bấm "Tôi đã lấy đồ — Hoàn tất đơn" để hoàn tất.',
+            ),
+          )
+        else if (overdue)
           Padding(
             padding: const EdgeInsets.only(bottom: 12),
             child: OpsBanner(
@@ -3367,7 +3768,11 @@ class _DetailSheet extends StatelessWidget {
                 OpsInfoRow(
                   icon: LucideIcons.grid3x3,
                   label: 'Ô',
-                  value: _boxRouteLabel(sendBoxNumber, receiveBoxNumber),
+                  value: _boxRouteLabel(
+                    sendBoxNumber,
+                    receiveBoxNumber,
+                    rawStatus,
+                  ),
                 ),
               ],
               if (createdAt != null)
