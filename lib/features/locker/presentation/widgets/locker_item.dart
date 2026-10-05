@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:smart_laundry_locker/features/locker/domain/entities/locker_location.dart';
@@ -84,25 +86,36 @@ class LockerItem extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Thumbnail 110×110
+          // Thumbnail 110×110 có badge trạng thái đè lên
           ClipRRect(
             borderRadius: BorderRadius.circular(12),
             child: SizedBox(
               width: 110,
               height: 110,
-              child: (location.imageUrl != null &&
-                      location.imageUrl!.isNotEmpty)
-                  ? CachedNetworkImage(
-                      imageUrl: location.imageUrl!,
-                      fit: BoxFit.cover,
-                      memCacheWidth: 220,
-                      memCacheHeight: 220,
-                      placeholder: (_, __) =>
-                          _GradientThumb(colors: colors, initials: _initials()),
-                      errorWidget: (_, __, ___) =>
-                          _GradientThumb(colors: colors, initials: _initials()),
-                    )
-                  : _GradientThumb(colors: colors, initials: _initials()),
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  (location.imageUrl != null &&
+                          location.imageUrl!.isNotEmpty)
+                      ? CachedNetworkImage(
+                          imageUrl: location.imageUrl!,
+                          fit: BoxFit.cover,
+                          memCacheWidth: 220,
+                          memCacheHeight: 220,
+                          placeholder: (_, __) =>
+                              _GradientThumb(colors: colors, initials: _initials()),
+                          errorWidget: (_, __, ___) =>
+                              _GradientThumb(colors: colors, initials: _initials()),
+                        )
+                      : _GradientThumb(colors: colors, initials: _initials()),
+                  // Badge trạng thái mờ trong suốt (Glassmorphism)
+                  Positioned(
+                    top: 6,
+                    left: 6,
+                    child: _StatusChip(active: location.isActive),
+                  ),
+                ],
+              ),
             ),
           ),
           const SizedBox(width: 14),
@@ -114,55 +127,54 @@ class LockerItem extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  // Status chip & Distance chip & Most used badge
-                  SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    physics: const BouncingScrollPhysics(),
-                    child: Row(
-                      children: [
-                        _StatusChip(active: location.isActive),
-                        if (calculatedDistance != null) ...[
-                          const SizedBox(width: 8),
-                          _DistanceChip(distanceKm: calculatedDistance),
-                        ],
-                        if (isMostUsed) ...[
-                          const SizedBox(width: 8),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 7,
-                              vertical: 2,
-                            ),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFFEF3C7),
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(
-                                color: const Color(0xFFFDE68A),
+                  // Distance chip & Most used badge
+                  if (calculatedDistance != null || isMostUsed)
+                    SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      physics: const BouncingScrollPhysics(),
+                      child: Row(
+                        children: [
+                          if (calculatedDistance != null)
+                            _DistanceChip(distanceKm: calculatedDistance),
+                          if (calculatedDistance != null && isMostUsed)
+                            const SizedBox(width: 8),
+                          if (isMostUsed) ...[
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 7,
+                                vertical: 2,
                               ),
-                            ),
-                            child: const Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(
-                                  LucideIcons.sparkles,
-                                  size: 10,
-                                  color: Color(0xFFB45309),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFFEF3C7),
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(
+                                  color: const Color(0xFFFDE68A),
                                 ),
-                                SizedBox(width: 3),
-                                Text(
-                                  'Hay dùng nhất',
-                                  style: TextStyle(
-                                    fontSize: 10.5,
-                                    fontWeight: FontWeight.w700,
+                              ),
+                              child: const Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    LucideIcons.sparkles,
+                                    size: 10,
                                     color: Color(0xFFB45309),
                                   ),
-                                ),
-                              ],
+                                  SizedBox(width: 3),
+                                  Text(
+                                    'Hay dùng nhất',
+                                    style: TextStyle(
+                                      fontSize: 10.5,
+                                      fontWeight: FontWeight.w700,
+                                      color: Color(0xFFB45309),
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
-                          ),
+                          ],
                         ],
-                      ],
+                      ),
                     ),
-                  ),
                   // Name — 2 lines
                   Text(
                     location.name,
@@ -287,25 +299,61 @@ class _StatusChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = active ? const Color(0xFF16A34A) : Colors.grey;
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(
-          width: 7,
-          height: 7,
-          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
-        ),
-        const SizedBox(width: 5),
-        Text(
-          active ? 'Mở cửa' : 'Đóng',
-          style: TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.w600,
-            color: color,
+    final dotColor = active ? const Color(0xFF22C55E) : const Color(0xFF94A3B8);
+    final text = active ? 'Mở cửa' : 'Đóng';
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(20),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+          decoration: BoxDecoration(
+            color: active
+                ? Colors.black.withValues(alpha: 0.42)
+                : Colors.black.withValues(alpha: 0.52),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: active
+                  ? const Color(0xFF22C55E).withValues(alpha: 0.45)
+                  : Colors.white.withValues(alpha: 0.22),
+              width: 0.8,
+            ),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 6,
+                height: 6,
+                decoration: BoxDecoration(
+                  color: dotColor,
+                  shape: BoxShape.circle,
+                  boxShadow: active
+                      ? [
+                          BoxShadow(
+                            color: const Color(0xFF22C55E).withValues(alpha: 0.9),
+                            blurRadius: 4,
+                            spreadRadius: 0.8,
+                          ),
+                        ]
+                      : null,
+                ),
+              ),
+              const SizedBox(width: 4.5),
+              Text(
+                text,
+                style: const TextStyle(
+                  fontSize: 10.5,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.white,
+                  letterSpacing: 0.2,
+                ),
+              ),
+            ],
           ),
         ),
-      ],
+      ),
     );
   }
 }

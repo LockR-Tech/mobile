@@ -114,6 +114,14 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
       final Map<String, Map<String, dynamic>> reportByOrderCode = {};
       final Map<String, List<Map<String, dynamic>>> reportLogsByOrderCode = {};
 
+      for (final r in reports) {
+        final directCode = r['orderCode']?.toString().trim();
+        if (directCode != null && directCode.isNotEmpty) {
+          reportByOrderCode[directCode] = r;
+          reportByOrderCode[directCode.toUpperCase()] = r;
+        }
+      }
+
       // Tra cứu nhật ký các phiếu sự cố để gắn kết trực tiếp với đơn hàng
       // (đặc biệt khi KTV đã điều chuyển đơn hàng sang ô mới khác ô ban đầu)
       await Future.wait(reports.map((r) async {
@@ -165,6 +173,15 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
                 final rawStatus = (o['status'] as String? ?? '').toUpperCase();
                 // Bỏ qua các đơn đã hủy hoặc đã hoàn tất trong quá khứ!
                 if (rawStatus == 'CANCELED' || rawStatus == 'COMPLETED') continue;
+
+                // Đơn hàng ở ô đích phải được tạo trước hoặc trong lúc sự cố được xử lý
+                final oDate = _parseOrderDate(o);
+                final rResolved = parseServerDateTime(r['resolvedAt']) ??
+                    parseServerDateTime(r['updatedAt']) ??
+                    parseServerDateTime(r['createdAt']);
+                if (oDate != null && rResolved != null && oDate.isAfter(rResolved)) {
+                  continue;
+                }
 
                 final oBoxId = _asInt(o['sendBoxId'] ?? o['receiveBoxId']);
                 int? oBoxNum;
@@ -290,7 +307,61 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
         ? _asInt(order['receiveBoxId'] ?? order['sendBoxId'])
         : _asInt(order['sendBoxId'] ?? order['receiveBoxId']);
     if (boxId == null) return null;
-    return _activeReportsByBox[boxId];
+    final rep = _activeReportsByBox[boxId];
+    if (rep == null) return null;
+    if (_isReportApplicableToOrder(rep, order)) {
+      return rep;
+    }
+    return null;
+  }
+
+  /// Kiểm tra xem phiếu sự cố có thực sự liên quan đến đơn hàng này hay không.
+  /// 1. Nếu phiếu có orderCode hoặc orderId cụ thể, bắt buộc phải trùng khớp với đơn hàng.
+  /// 2. Nếu phiếu đã RESOLVED/CLOSED, đơn hàng bắt buộc phải được tạo TRƯỚC thời điểm
+  ///    sự cố được xử lý xong. Đơn tạo mới sau khi sự cố đã xong sẽ bị bỏ qua.
+  bool _isReportApplicableToOrder(
+    Map<String, dynamic> report,
+    Map<String, dynamic> order,
+  ) {
+    // Nếu phiếu có gắn mã đơn cụ thể từ backend
+    final reportOrderCode = report['orderCode']?.toString().trim();
+    final currentOrderCode = order['orderCode']?.toString().trim();
+    if (reportOrderCode != null &&
+        reportOrderCode.isNotEmpty &&
+        currentOrderCode != null &&
+        currentOrderCode.isNotEmpty) {
+      if (reportOrderCode.toUpperCase() != currentOrderCode.toUpperCase()) {
+        return false;
+      }
+    }
+
+    final reportOrderId = _asInt(report['orderId']);
+    final currentOrderId = _asInt(order['id']);
+    if (reportOrderId != null && currentOrderId != null) {
+      if (reportOrderId != currentOrderId) {
+        return false;
+      }
+    }
+
+    final reportStatus = (report['status'] as String? ?? 'OPEN').toUpperCase();
+    final isResolved = reportStatus == 'RESOLVED' || reportStatus == 'CLOSED';
+
+    // Nếu sự cố đang mở (OPEN/IN_PROGRESS), đơn hàng đang nằm ở ô đó đều bị ảnh hưởng
+    if (!isResolved) return true;
+
+    final orderDate = _parseOrderDate(order);
+    final resolvedAt = parseServerDateTime(report['resolvedAt']) ??
+        parseServerDateTime(report['updatedAt']) ??
+        parseServerDateTime(report['createdAt']);
+
+    if (orderDate != null && resolvedAt != null) {
+      // Đơn hàng được tạo SAU KHI sự cố đã được xử lý xong -> không liên quan
+      if (orderDate.isAfter(resolvedAt)) {
+        return false;
+      }
+    }
+
+    return true;
   }
 
   /// Tra cứu phiếu sự cố gắn liền với đơn hàng (ưu tiên phiếu theo mã đơn,
@@ -320,13 +391,19 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
         ? _asInt(order['receiveBoxId'] ?? order['sendBoxId'])
         : _asInt(order['sendBoxId'] ?? order['receiveBoxId']);
     if (boxId != null && _latestReportByBox.containsKey(boxId)) {
-      return _latestReportByBox[boxId];
+      final rep = _latestReportByBox[boxId]!;
+      if (_isReportApplicableToOrder(rep, order)) {
+        return rep;
+      }
     }
     final otherBoxId = isPickup
         ? _asInt(order['sendBoxId'])
         : _asInt(order['receiveBoxId']);
     if (otherBoxId != null && _latestReportByBox.containsKey(otherBoxId)) {
-      return _latestReportByBox[otherBoxId];
+      final rep = _latestReportByBox[otherBoxId]!;
+      if (_isReportApplicableToOrder(rep, order)) {
+        return rep;
+      }
     }
     return null;
   }
@@ -972,6 +1049,7 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
           padding: const EdgeInsets.fromLTRB(20, 4, 20, 24),
           child: _DetailSheet(
             order: order,
+            service: _service,
             faultReport: _incidentReportForOrder(order),
             faultLogs: _incidentLogsForOrder(order),
             lockerName: _lockerNameOf(order),
@@ -1965,6 +2043,45 @@ class _PayOvertimeConfirmationSheetState
     }
   }
 
+  Future<void> _payWithSepay() async {
+    final orderId = _asInt(widget.order['id']);
+    if (orderId == null) return;
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
+
+    try {
+      try {
+        await widget.service.assessOvertime(orderId);
+      } catch (_) {}
+
+      if (!mounted) return;
+
+      final outcome = await payWithSepayAndAwaitPaid(
+        context,
+        service: widget.service,
+        orderId: orderId,
+        total: widget.fee.toDouble(),
+        description: 'Phí quá hạn',
+      );
+
+      if (outcome == OrderPaymentOutcome.paid && mounted) {
+        Navigator.pop(context, true);
+      } else if (mounted) {
+        setState(() {
+          _loading = false;
+        });
+      }
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _loading = false;
+        _error = LockerOpsService.errorMessage(e);
+      });
+    }
+  }
+
   Future<void> _payWithOtherMethods() async {
     final orderId = _asInt(widget.order['id']);
     if (orderId == null) return;
@@ -2105,18 +2222,18 @@ class _PayOvertimeConfirmationSheetState
             ),
           ),
           const SizedBox(height: 14),
-          // Số dư ví
+          // Số dư ví (kèm badge Demo)
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
             decoration: BoxDecoration(
               color: hasEnoughWallet
                   ? const Color(0xFFF0FDF4)
-                  : const Color(0xFFFEF2F2),
+                  : const Color(0xFFF8FAFC),
               borderRadius: BorderRadius.circular(14),
               border: Border.all(
                 color: hasEnoughWallet
                     ? const Color(0xFFBBF7D0)
-                    : const Color(0xFFFECACA),
+                    : const Color(0xFFE2E8F0),
               ),
             ),
             child: Row(
@@ -2126,29 +2243,52 @@ class _PayOvertimeConfirmationSheetState
                   size: 20,
                   color: hasEnoughWallet
                       ? const Color(0xFF16A34A)
-                      : const Color(0xFFDC2626),
+                      : const Color(0xFF64748B),
                 ),
                 const SizedBox(width: 10),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        'Số dư ví khả dụng: ${fmtPrice(widget.walletBalance)}',
-                        style: TextStyle(
-                          fontWeight: FontWeight.w700,
-                          fontSize: 13,
-                          color: hasEnoughWallet
-                              ? const Color(0xFF15803D)
-                              : const Color(0xFF991B1B),
-                        ),
+                      Row(
+                        children: [
+                          Text(
+                            'Số dư ví khả dụng: ${fmtPrice(widget.walletBalance)}',
+                            style: TextStyle(
+                              fontWeight: FontWeight.w700,
+                              fontSize: 13,
+                              color: hasEnoughWallet
+                                  ? const Color(0xFF15803D)
+                                  : const Color(0xFF334155),
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 6,
+                              vertical: 1.5,
+                            ),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFE2E8F0),
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: const Text(
+                              'Demo',
+                              style: TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF475569),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                       if (!hasEnoughWallet)
                         Text(
-                          'Còn thiếu ${fmtPrice(widget.fee - widget.walletBalance)} để thanh toán nhanh qua ví',
+                          'Còn thiếu ${fmtPrice(widget.fee - widget.walletBalance)} nếu trả qua ví demo',
                           style: const TextStyle(
                             fontSize: 11.5,
-                            color: Color(0xFFB91C1C),
+                            color: Color(0xFF64748B),
                           ),
                         ),
                     ],
@@ -2166,7 +2306,34 @@ class _PayOvertimeConfirmationSheetState
             ),
           ],
           const SizedBox(height: 18),
-          if (hasEnoughWallet)
+
+          // 1. NÚT CHÍNH: Thanh toán bằng SePay (VietQR)
+          FilledButton.icon(
+            onPressed: _loading ? null : _payWithSepay,
+            icon: const Icon(LucideIcons.qrCode, size: 19),
+            label: Text(
+              _loading
+                  ? 'Đang khởi tạo SePay...'
+                  : 'Thanh toán SePay (VietQR) • ${fmtPrice(widget.fee)}',
+              style: const TextStyle(
+                fontWeight: FontWeight.w800,
+                fontSize: 14.5,
+              ),
+            ),
+            style: FilledButton.styleFrom(
+              backgroundColor: const Color(0xFF0F172A),
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(vertical: 14),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14),
+              ),
+              elevation: 0,
+            ),
+          ),
+
+          // 2. NÚT PHỤ: Trừ ví demo (nếu ví có đủ tiền)
+          if (hasEnoughWallet) ...[
+            const SizedBox(height: 10),
             FilledButton.icon(
               onPressed: _loading ? null : _payWithWallet,
               icon: _loading
@@ -2182,7 +2349,7 @@ class _PayOvertimeConfirmationSheetState
               label: Text(
                 _loading
                     ? 'Đang thanh toán & mở tủ...'
-                    : 'Trừ ví ${fmtPrice(widget.fee)} & Mở tủ ngay',
+                    : 'Trừ ví demo ${fmtPrice(widget.fee)} & Mở tủ ngay',
                 style: const TextStyle(fontWeight: FontWeight.w800),
               ),
               style: FilledButton.styleFrom(
@@ -2192,23 +2359,8 @@ class _PayOvertimeConfirmationSheetState
                   borderRadius: BorderRadius.circular(14),
                 ),
               ),
-            )
-          else
-            FilledButton.icon(
-              onPressed: _loading ? null : _payWithOtherMethods,
-              icon: const Icon(LucideIcons.creditCard, size: 18),
-              label: Text(
-                'Nạp tiền / Thanh toán ${fmtPrice(widget.fee)}',
-                style: const TextStyle(fontWeight: FontWeight.w800),
-              ),
-              style: FilledButton.styleFrom(
-                backgroundColor: opsPrimary,
-                padding: const EdgeInsets.symmetric(vertical: 14),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14),
-                ),
-              ),
             ),
+          ],
           const SizedBox(height: 8),
           TextButton(
             onPressed: _loading ? null : () => Navigator.pop(context, false),
@@ -2795,6 +2947,7 @@ class _OrderRelocationCard extends StatelessWidget {
 class _DetailSheet extends StatelessWidget {
   const _DetailSheet({
     required this.order,
+    this.service,
     this.faultReport,
     this.faultLogs = const [],
     this.lockerName,
@@ -2816,6 +2969,7 @@ class _DetailSheet extends StatelessWidget {
   });
 
   final Map<String, dynamic> order;
+  final LockerOpsService? service;
   final Map<String, dynamic>? faultReport;
   final List<Map<String, dynamic>> faultLogs;
   final String? lockerName;
@@ -3413,13 +3567,14 @@ class _DetailSheet extends StatelessWidget {
         const SizedBox(height: 20),
         const Divider(height: 1, color: opsBorder),
         const SizedBox(height: 12),
-        OrderStatusTimeline(orderId: id),
+        OrderStatusTimeline(orderId: id, service: service),
         const SizedBox(height: 12),
         _OrderIncidentResolutionSection(
           orderId: id,
           order: order,
           report: faultReport,
           logs: faultLogs,
+          service: service,
         ),
         const SizedBox(height: 8),
       ],
@@ -3559,12 +3714,14 @@ class _OrderIncidentResolutionSection extends StatefulWidget {
     this.order,
     this.report,
     this.logs = const [],
+    this.service,
   });
 
   final int orderId;
   final Map<String, dynamic>? order;
   final Map<String, dynamic>? report;
   final List<Map<String, dynamic>> logs;
+  final LockerOpsService? service;
 
   @override
   State<_OrderIncidentResolutionSection> createState() =>
@@ -3573,7 +3730,14 @@ class _OrderIncidentResolutionSection extends StatefulWidget {
 
 class _OrderIncidentResolutionSectionState
     extends State<_OrderIncidentResolutionSection> {
-  final _svc = LockerOpsService();
+  LockerOpsService? get _svc {
+    if (widget.service != null) return widget.service;
+    try {
+      return LockerOpsService();
+    } catch (_) {
+      return null;
+    }
+  }
   List<Map<String, dynamic>> _incidentEvents = const [];
   List<Map<String, dynamic>> _attachments = const [];
   Map<String, dynamic>? _resolvedReport;
@@ -3601,8 +3765,13 @@ class _OrderIncidentResolutionSectionState
   }
 
   Future<void> _load() async {
+    final svc = _svc;
+    if (svc == null) {
+      if (mounted) setState(() => _loading = false);
+      return;
+    }
     try {
-      final events = await _svc.orderTimeline(widget.orderId);
+      final events = await svc.orderTimeline(widget.orderId);
       if (!mounted) return;
       // Lọc chỉ giữ incident notes dựa trên tag
       final incidents = events.where((e) {
@@ -3658,7 +3827,7 @@ class _OrderIncidentResolutionSectionState
       final repId = _asInt(_resolvedReport?['id']);
       if (repId != null) {
         try {
-          final atts = await _svc.myReportAttachments(repId);
+          final atts = await svc.myReportAttachments(repId);
           if (atts.isNotEmpty && mounted) {
             _attachments = [..._attachments, ...atts];
           }

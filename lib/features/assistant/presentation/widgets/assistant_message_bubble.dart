@@ -4,6 +4,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
 
 import '../../data/models/assistant_models.dart';
+import '../../../../shared/shared.dart';
 import 'assistant_sources.dart';
 
 double _maxBubbleWidth(BuildContext context) =>
@@ -271,18 +272,13 @@ class AssistantAvatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return SizedBox(
       width: size,
       height: size,
-      decoration: const BoxDecoration(
-        shape: BoxShape.circle,
-        gradient: LinearGradient(
-          colors: AislBrand.brandGradient,
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
+      child: const AppLottie(
+        AppLottieAssets.chatbox,
+        fit: BoxFit.contain,
       ),
-      child: Icon(LucideIcons.bot, size: size * 0.55, color: Colors.white),
     );
   }
 }

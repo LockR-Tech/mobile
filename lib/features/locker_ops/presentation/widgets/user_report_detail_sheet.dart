@@ -648,6 +648,12 @@ class _UserReportDetailSheetState extends State<UserReportDetailSheet> {
                         text: boxLabel != null ? 'Sự cố Ô tủ #$boxLabel' : 'Sự cố Trạm Kiosk',
                         color: const Color(0xFF475569),
                       ),
+                      if (r['orderCode'] != null && r['orderCode'].toString().trim().isNotEmpty)
+                        _MiniPill(
+                          icon: Icons.receipt_long_outlined,
+                          text: 'Đơn hàng: ${r['orderCode']}',
+                          color: const Color(0xFF0D9488),
+                        ),
                     ],
                   ),
                   const SizedBox(height: 16),

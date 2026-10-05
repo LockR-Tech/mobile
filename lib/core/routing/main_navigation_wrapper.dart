@@ -86,6 +86,7 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper> {
     final String location = GoRouterState.of(context).uri.path;
     if (location.startsWith(AppRouter.home)) return 0;
     if (location.startsWith(AppRouter.lockers)) return 1;
+    if (location.startsWith(AppRouter.assistant)) return 2;
     if (location.startsWith(AppRouter.orders)) return 3;
     if (location.startsWith(AppRouter.profile)) return 4;
     return 0;
@@ -100,7 +101,7 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper> {
         context.go(AppRouter.lockers);
         break;
       case 2:
-        context.push(AppRouter.qrScan);
+        context.push(AppRouter.assistant);
         break;
       case 3:
         context.go(AppRouter.orders);
@@ -130,41 +131,51 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper> {
           duration: const Duration(milliseconds: 220),
           opacity: _navVisible ? 1.0 : 0.0,
           child: CustomBottomNavigationBar(
-        currentIndex: _calculateSelectedIndex(context),
-        onTap: _onItemTapped,
-        items: const [
-          NavigationItem(
-            icon: LucideIcons.house,
-            activeIcon: LucideIcons.house,
-            label: 'Trang chủ',
-            route: AppRouter.home,
-          ),
-          NavigationItem(
-            icon: CustomIcons.drawer,
-            activeIcon: CustomIcons.drawer,
-            label: 'Tủ',
-            route: AppRouter.lockers,
-          ),
-          NavigationItem(
-            icon: LucideIcons.scanLine,
-            activeIcon: LucideIcons.scanLine,
-            label: 'Quét QR',
-            route: AppRouter.qrScan,
-            isProminent: true,
-          ),
-          NavigationItem(
-            icon: CustomIcons.package,
-            activeIcon: CustomIcons.package,
-            label: 'Đơn hàng',
-            route: AppRouter.orders,
-          ),
-          NavigationItem(
-            icon: LucideIcons.user,
-            activeIcon: LucideIcons.user,
-            label: 'Hồ sơ',
-            route: AppRouter.profile,
-          ),
-        ],
+            currentIndex: _calculateSelectedIndex(context),
+            onTap: _onItemTapped,
+            items: [
+              const NavigationItem(
+                icon: LucideIcons.house,
+                activeIcon: LucideIcons.house,
+                label: 'Trang chủ',
+                route: AppRouter.home,
+              ),
+              const NavigationItem(
+                icon: CustomIcons.drawer,
+                activeIcon: CustomIcons.drawer,
+                label: 'Tủ',
+                route: AppRouter.lockers,
+              ),
+              NavigationItem(
+                icon: (Color color, double size) => AppLottie(
+                  AppLottieAssets.chatbox,
+                  width: size,
+                  height: size,
+                  fit: BoxFit.contain,
+                ),
+                activeIcon: (Color color, double size) => AppLottie(
+                  AppLottieAssets.chatbox,
+                  width: size,
+                  height: size,
+                  fit: BoxFit.contain,
+                ),
+                label: 'Trợ lý AI',
+                route: AppRouter.assistant,
+                isProminent: true,
+              ),
+              const NavigationItem(
+                icon: CustomIcons.package,
+                activeIcon: CustomIcons.package,
+                label: 'Đơn hàng',
+                route: AppRouter.orders,
+              ),
+              const NavigationItem(
+                icon: LucideIcons.user,
+                activeIcon: LucideIcons.user,
+                label: 'Hồ sơ',
+                route: AppRouter.profile,
+              ),
+            ],
           ),
         ),
       ),

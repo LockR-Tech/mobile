@@ -74,27 +74,12 @@ Future<OrderPaymentOutcome> payOrderAndAwaitPaid(
   final qrCodeUrl = (res['qrCodeUrl'] ?? res['qr']) as String?;
 
   if (method == 'SEPAY') {
-    // SePay: hiển thị mã VietQR trực tiếp trong bottom sheet của app
-    if (!context.mounted) return OrderPaymentOutcome.cancelled;
-    final effectiveQrUrl = (qrCodeUrl != null && qrCodeUrl.isNotEmpty)
-        ? qrCodeUrl
-        : 'https://img.vietqr.io/image/970422-0000234917957-compact2.jpg?amount=${total.toInt()}&addInfo=PAY-$orderId&accountName=TRUONG%20NGUYEN%20THAI%20BINH';
-
-    await showModalBottomSheet<void>(
-      context: context,
-      useRootNavigator: true,
-      isScrollControlled: true,
-      backgroundColor: Colors.white,
-      showDragHandle: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(26)),
-      ),
-      builder: (_) => _SepayVietQrSheet(
-        service: service,
-        orderId: orderId,
-        amount: total,
-        qrImageUrl: effectiveQrUrl,
-      ),
+    return payWithSepayAndAwaitPaid(
+      context,
+      service: service,
+      orderId: orderId,
+      total: total,
+      description: description,
     );
   } else if ((method == 'VNPAY' || method == 'MOMO') && url != null && url.isNotEmpty) {
     if (!context.mounted) return OrderPaymentOutcome.cancelled;
@@ -104,6 +89,50 @@ Future<OrderPaymentOutcome> payOrderAndAwaitPaid(
   }
 
   // Tăng timeout lên 60s để webhook có thời gian xử lý
+  final paid = await service.awaitOrderPaid(orderId,
+      timeout: const Duration(seconds: 60));
+  return paid ? OrderPaymentOutcome.paid : OrderPaymentOutcome.pending;
+}
+
+/// Thanh toán trực tiếp qua cổng SePay (VietQR) và chờ xác nhận thanh toán thành công
+Future<OrderPaymentOutcome> payWithSepayAndAwaitPaid(
+  BuildContext context, {
+  required LockerOpsService service,
+  required int orderId,
+  required double total,
+  String? description,
+}) async {
+  final returnUrl = '${EnvConfig.apiBaseUrl}/payments/sepay/callback';
+  final res = await service.checkout(
+    orderId,
+    'SEPAY',
+    returnUrl: returnUrl,
+    description: description,
+  );
+  final qrCodeUrl = (res['qrCodeUrl'] ?? res['qr']) as String?;
+  final effectiveQrUrl = (qrCodeUrl != null && qrCodeUrl.isNotEmpty)
+      ? qrCodeUrl
+      : 'https://img.vietqr.io/image/970422-0000234917957-compact2.jpg?amount=${total.toInt()}&addInfo=PAY-$orderId&accountName=TRUONG%20NGUYEN%20THAI%20BINH';
+
+  if (!context.mounted) return OrderPaymentOutcome.cancelled;
+
+  await showModalBottomSheet<void>(
+    context: context,
+    useRootNavigator: true,
+    isScrollControlled: true,
+    backgroundColor: Colors.white,
+    showDragHandle: true,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(26)),
+    ),
+    builder: (_) => _SepayVietQrSheet(
+      service: service,
+      orderId: orderId,
+      amount: total,
+      qrImageUrl: effectiveQrUrl,
+    ),
+  );
+
   final paid = await service.awaitOrderPaid(orderId,
       timeout: const Duration(seconds: 60));
   return paid ? OrderPaymentOutcome.paid : OrderPaymentOutcome.pending;
