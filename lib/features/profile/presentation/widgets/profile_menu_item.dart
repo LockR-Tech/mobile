@@ -5,7 +5,8 @@ import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
 /// Profile menu item widget
 class ProfileMenuItem extends StatelessWidget {
   const ProfileMenuItem({
-    required this.icon,
+    this.icon,
+    this.leadingWidget,
     required this.title,
     super.key,
     this.subtitle,
@@ -14,8 +15,13 @@ class ProfileMenuItem extends StatelessWidget {
     this.iconColor,
     this.textColor,
     this.showDivider = true,
-  });
-  final IconData icon;
+  }) : assert(
+         icon != null || leadingWidget != null,
+         'Either icon or leadingWidget must be provided',
+       );
+
+  final IconData? icon;
+  final Widget? leadingWidget;
   final String title;
   final String? subtitle;
   final VoidCallback? onTap;
@@ -29,11 +35,15 @@ class ProfileMenuItem extends StatelessWidget {
     return Column(
       children: [
         ListTile(
-          leading: Icon(
-            icon,
-            color: iconColor ?? ShadTheme.of(context).colorScheme.primary,
-            size: 24,
-          ),
+          leading: leadingWidget ??
+              (icon != null
+                  ? Icon(
+                      icon,
+                      color:
+                          iconColor ?? ShadTheme.of(context).colorScheme.primary,
+                      size: 24,
+                    )
+                  : null),
 
           title: Text(
             title,

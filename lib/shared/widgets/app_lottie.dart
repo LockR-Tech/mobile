@@ -1,6 +1,8 @@
 import 'package:flutter/widgets.dart';
 import 'package:lottie/lottie.dart';
 
+import 'chatbox_data.dart';
+
 /// Đường dẫn tới bộ minh hoạ 3D dạng Lottie trong `assets/animations/`.
 ///
 /// Tên file giữ nguyên theo tên gốc của bộ icon để dễ đối chiếu với nút
@@ -11,8 +13,12 @@ abstract final class AppLottieAssets {
   /// Thùng hàng xếp chồng - thay cho `box_stack_3d.png`.
   static const String box = '$_dir/box.json';
 
-  /// Máy bay + kiện hàng - thay cho `air_delivery_3d.png`.
+  /// Drone giao hàng / máy bay + kiện hàng.
   static const String airplaneBox = '$_dir/airplane_box.json';
+  static const String drone = '$_dir/airplane_box.json';
+
+  /// Icon Chatbox 3D cho Trợ lý AI.
+  static const String chatbox = '$_dir/chatbox.json';
 
   /// Icon nút "Cửa hàng".
   static const String cuaHang = '$_dir/cuahang.json';
@@ -84,6 +90,14 @@ class AppLottie extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (asset == AppLottieAssets.chatbox) {
+      return ChatboxFallbackImage(
+        width: width,
+        height: height,
+        fit: fit,
+      );
+    }
+
     return Lottie.asset(
       asset,
       width: width,

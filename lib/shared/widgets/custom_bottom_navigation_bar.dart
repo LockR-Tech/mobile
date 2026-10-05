@@ -169,38 +169,11 @@ class CustomBottomNavigationBar extends StatelessWidget {
         child: GestureDetector(
           behavior: HitTestBehavior.opaque,
           onTap: () => onTap(index),
-          child: Container(
-            width: 52,
-            height: 52,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: const LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  Colors.white,
-                  Color(0xFFF8FAFC),
-                ],
-              ),
-              border: Border.all(
-                color: Colors.white,
-                width: 2.0,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.12),
-                  blurRadius: 16,
-                  offset: const Offset(0, 6),
-                ),
-                BoxShadow(
-                  color: Colors.white.withValues(alpha: 0.90),
-                  blurRadius: 6,
-                  offset: const Offset(0, -1),
-                ),
-              ],
-            ),
+          child: SizedBox(
+            width: 56,
+            height: 56,
             child: Center(
-              child: _buildIcon(item.icon, AislBrand.navy, size: 24),
+              child: _buildIcon(item.icon, AislBrand.navy, size: 52),
             ),
           ),
         ),
@@ -209,10 +182,14 @@ class CustomBottomNavigationBar extends StatelessWidget {
   }
 
   Widget _buildIcon(dynamic icon, Color color, {double size = 22}) {
-    if (icon is IconData) {
+    if (icon is Widget) {
+      return icon;
+    } else if (icon is IconData) {
       return Icon(icon, size: size, color: color);
     } else if (icon is IconBuilder) {
       return icon(color, size);
+    } else if (icon is Function) {
+      return (icon as dynamic)(color, size) as Widget;
     }
     return SizedBox(width: size, height: size);
   }
@@ -220,8 +197,8 @@ class CustomBottomNavigationBar extends StatelessWidget {
 
 /// Navigation item model for custom bottom navigation
 class NavigationItem {
-  final dynamic icon; // IconData or IconBuilder
-  final dynamic activeIcon; // IconData or IconBuilder
+  final dynamic icon; // IconData, IconBuilder, or Widget
+  final dynamic activeIcon; // IconData, IconBuilder, or Widget
   final String label;
   final String route;
   final bool isProminent;
@@ -232,9 +209,5 @@ class NavigationItem {
     required this.label,
     required this.route,
     this.isProminent = false,
-  }) : assert(
-         (icon is IconData || icon is IconBuilder) &&
-             (activeIcon is IconData || activeIcon is IconBuilder),
-         'icon and activeIcon must be either IconData or IconData',
-       );
+  });
 }

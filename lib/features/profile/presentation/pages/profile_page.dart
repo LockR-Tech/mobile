@@ -14,7 +14,6 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:smart_laundry_locker/core/routing/app_router.dart';
 import 'package:smart_laundry_locker/core/theme/shadcn_theme.dart';
 import 'package:smart_laundry_locker/core/theme/theme_provider.dart';
-import 'package:smart_laundry_locker/features/assistant/data/models/assistant_models.dart';
 import 'package:smart_laundry_locker/features/assistant/presentation/providers/assistant_availability.dart';
 import 'package:smart_laundry_locker/features/profile/presentation/mixins/profile_image_actions_mixin.dart';
 import 'package:smart_laundry_locker/features/profile/presentation/widgets/profile_header.dart';
@@ -380,19 +379,33 @@ class _ProfilePageState extends State<ProfilePage>
             // Tạm ẩn: backend chưa có lịch sử giao dịch/ví (/payments/transactions 404).
             if (FeatureFlags.transactionsEnabled)
               ProfileMenuItem(
-                icon: LucideIcons.arrowLeftRight,
+                leadingWidget: const SizedBox(
+                  width: 26,
+                  height: 26,
+                  child: AppLottie(
+                    AppLottieAssets.napVi,
+                    fit: BoxFit.contain,
+                  ),
+                ),
                 title: 'Giao dịch',
                 onTap: () => context.push(AppRouter.transactions),
-                trailing: Icon(
+                trailing: const Icon(
                   LucideIcons.chevronRight,
                   size: 16,
                   color: Colors.black54,
                 ),
               ),
             ProfileMenuItem(
-              icon: LucideIcons.clipboardList,
+              leadingWidget: const SizedBox(
+                width: 26,
+                height: 26,
+                child: AppLottie(
+                  AppLottieAssets.baoCao,
+                  fit: BoxFit.contain,
+                ),
+              ),
               title: 'Báo cáo của tôi',
-              onTap: () => context.pushNamed('my_reports'),
+              onTap: () => context.push(AppRouter.myReports),
             ),
           ],
         ),
@@ -437,18 +450,68 @@ class _ProfilePageState extends State<ProfilePage>
         _buildMenuGroup(
           title: 'Hỗ trợ',
           items: [
-            // Trợ lý bật ⇒ "Trợ giúp" mở trợ lý hỏi đáp; tắt/chưa deploy ⇒
-            // giữ bottom sheet trợ giúp nhanh như cũ.
-            ValueListenableBuilder<AssistantStatus?>(
-              valueListenable: AssistantAvailability.instance,
-              builder: (context, status, _) => ProfileMenuItem(
-                icon: LucideIcons.handHelping,
-                title: 'Trợ giúp',
-                subtitle: status?.enabled == true
-                    ? 'Hỏi đáp với trợ lý Lock.R'
-                    : null,
-                onTap: _handleHelp,
+            ProfileMenuItem(
+              leadingWidget: Container(
+                width: 38,
+                height: 38,
+                padding: const EdgeInsets.all(2),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF2563EB).withValues(alpha: 0.08),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const AppLottie(
+                  AppLottieAssets.chatbox,
+                  fit: BoxFit.contain,
+                ),
               ),
+              title: 'Trợ lý AI Lock.R',
+              subtitle: 'Hỏi đáp & hỗ trợ thông minh 24/7',
+              trailing: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 7,
+                      vertical: 3,
+                    ),
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFF2563EB), Color(0xFF7C3AED)],
+                      ),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(LucideIcons.sparkles, size: 11, color: Colors.white),
+                        SizedBox(width: 3),
+                        Text(
+                          'AI',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  Icon(
+                    LucideIcons.chevronRight,
+                    size: 18,
+                    color: context.textMuted,
+                  ),
+                ],
+              ),
+              onTap: () => context.push(AppRouter.assistant),
+            ),
+            ProfileMenuItem(
+              icon: LucideIcons.helpCircle,
+              title: 'Trợ giúp nhanh',
+              subtitle: 'Hướng dẫn sử dụng & câu hỏi thường gặp',
+              onTap: _showQuickHelp,
             ),
             ProfileMenuItem(
               icon: LucideIcons.messageCircle,
@@ -556,22 +619,6 @@ class _ProfilePageState extends State<ProfilePage>
 
   void _handleLocation() {
     _showProfileSnackBar('Tính năng đang được phát triển');
-  }
-
-  Future<void> _handleHelp() async {
-    final availability = AssistantAvailability.instance;
-    final status =
-        availability.value ??
-        await availability.refresh().timeout(
-          const Duration(seconds: 3),
-          onTimeout: () => null,
-        );
-    if (!mounted) return;
-    if (status?.enabled == true) {
-      context.push(AppRouter.assistant);
-    } else {
-      _showQuickHelp();
-    }
   }
 
   void _showQuickHelp() {

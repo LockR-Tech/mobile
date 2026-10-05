@@ -1,17 +1,14 @@
-import 'dart:ui';
 import 'package:flutter/services.dart';
 import 'package:smart_laundry_locker/features/promotions/data/models/promotion_model.dart';
 import 'package:smart_laundry_locker/features/promotions/presentation/pages/promotion_detail_page.dart';
 import 'package:smart_laundry_locker/features/promotions/presentation/providers/promotion_provider.dart';
 import 'package:flutter/material.dart';
-import 'package:smart_laundry_locker/core/utils/currency_formatter.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:smart_laundry_locker/features/notifications/presentation/providers/notification_provider.dart';
 import 'package:smart_laundry_locker/core/routing/app_router.dart';
-import 'package:smart_laundry_locker/features/wallet/presentation/providers/wallet_provider.dart';
 import 'package:smart_laundry_locker/features/profile/presentation/providers/profile_provider.dart';
 import 'package:smart_laundry_locker/features/profile/domain/entities/user_profile.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart' hide Consumer;
@@ -232,6 +229,29 @@ class _HomePageState extends ConsumerState<HomePage>
               ),
             ),
             const Spacer(),
+            // QR Scanner Button
+            GestureDetector(
+              onTap: () => context.push(AppRouter.qrScan),
+              behavior: HitTestBehavior.opaque,
+              child: Container(
+                width: 42,
+                height: 42,
+                decoration: BoxDecoration(
+                  color: isDark
+                      ? Colors.white.withValues(alpha: 0.08)
+                      : const Color(0xFFF1F5F9),
+                  shape: BoxShape.circle,
+                ),
+                child: Center(
+                  child: Icon(
+                    LucideIcons.scanLine,
+                    size: 20,
+                    color: textColor,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
             // Bell Notification with Dot
             Consumer<NotificationProvider>(
               builder: (context, provider, _) {
@@ -400,75 +420,7 @@ class _HomePageState extends ConsumerState<HomePage>
         borderRadius: BorderRadius.circular(26),
         child: Stack(
           children: [
-            // Top Section: Info text and spacing for wallet pill
-            Padding(
-              padding: const EdgeInsets.fromLTRB(18, 18, 18, 16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              'HỆ THỐNG TỦ THÔNG MINH',
-                              style: TextStyle(
-                                color: Color(0xFF94A3B8),
-                                fontSize: 10.5,
-                                fontWeight: FontWeight.w700,
-                                letterSpacing: 1.1,
-                              ),
-                            ),
-                            const SizedBox(height: 6),
-                            Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Flexible(
-                                  child: Text(
-                                    'Hello, $displayName!',
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 22,
-                                      fontWeight: FontWeight.w800,
-                                      letterSpacing: -0.3,
-                                    ),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                                const SizedBox(width: 6),
-                                const Text(
-                                  '👋',
-                                  style: TextStyle(fontSize: 20),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 6),
-                            const Text(
-                              'Gửi đồ, thuê tủ và nhận hàng,\ntất cả trong một ứng dụng.',
-                              style: TextStyle(
-                                color: Color(0xFF94A3B8),
-                                fontSize: 12.5,
-                                height: 1.35,
-                                fontWeight: FontWeight.w400,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(width: 120),
-                    ],
-                  ),
-                  const SizedBox(height: 20),
-                  // Reserve space for the wallet pill to sit comfortably
-                  const SizedBox(height: 60),
-                ],
-              ),
-            ),
-            // Big 3D Box Illustration (Layer 2)
+            // Big 3D Box Illustration (Right Side)
             Positioned(
               top: 10,
               right: 10,
@@ -498,116 +450,77 @@ class _HomePageState extends ConsumerState<HomePage>
                     ),
                     const SizedBox(height: 2),
                     const SizedBox(
-                      width: 200,
-                      height: 180,
+                      width: 170,
+                      height: 140,
                       child: AppLottie(AppLottieAssets.box),
                     ),
                   ],
                 ),
               ),
             ),
-            // Bottom Wallet Pill (Layer 3 - exactly overlaps the bottom of the 3D box)
-            Positioned(
-              left: 16,
-              right: 16,
-              bottom: 16,
-              child: _buildWalletPill(context),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildWalletPill(BuildContext context) {
-    return Consumer<WalletProvider>(
-      builder: (context, wallet, _) => GestureDetector(
-        onTap: () async {
-          await context.push(AppRouter.topUp);
-          if (context.mounted) wallet.getWalletBalance();
-        },
-        behavior: HitTestBehavior.opaque,
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(16),
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.08),
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.15),
-                  width: 1,
-                ),
-              ),
+            // Info text Section (Left Side)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 22, 20, 26),
               child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const AppLottie(
-                    AppLottieAssets.napVi,
-                    width: 40,
-                    height: 40,
-                  ),
-                  const SizedBox(width: 10),
                   Expanded(
                     child: Column(
-                      mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.min,
                       children: [
                         const Text(
-                          'Số dư ví khả dụng',
+                          'HỆ THỐNG TỦ THÔNG MINH',
                           style: TextStyle(
-                            fontSize: 11,
                             color: Color(0xFF94A3B8),
-                            fontWeight: FontWeight.w600,
+                            fontSize: 10.5,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 1.1,
                           ),
                         ),
-                        const SizedBox(height: 2),
-                        FittedBox(
-                          fit: BoxFit.scaleDown,
-                          alignment: Alignment.centerLeft,
-                          child: Text(
-                            CurrencyFormatter.formatVnd(wallet.balance),
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w800,
-                              color: Colors.white,
+                        const SizedBox(height: 8),
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Flexible(
+                              child: Text(
+                                'Hello, $displayName!',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.w800,
+                                  letterSpacing: -0.3,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
                             ),
-                            maxLines: 1,
+                            const SizedBox(width: 6),
+                            const Text(
+                              '👋',
+                              style: TextStyle(fontSize: 20),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        const Text(
+                          'Gửi đồ, thuê tủ và nhận hàng,\ntất cả trong một ứng dụng.',
+                          style: TextStyle(
+                            color: Color(0xFF94A3B8),
+                            fontSize: 12.5,
+                            height: 1.4,
+                            fontWeight: FontWeight.w400,
                           ),
                         ),
+                        const SizedBox(height: 24),
                       ],
                     ),
                   ),
-                  const SizedBox(width: 8),
-                  Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFD97706),
-                      borderRadius: BorderRadius.circular(10),
-                      boxShadow: [
-                        BoxShadow(
-                          color: const Color(0xFFD97706).withValues(alpha: 0.35),
-                          blurRadius: 6,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                    child: const Text(
-                      'Nạp tiền',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 12.5,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ),
+                  const SizedBox(width: 110),
                 ],
               ),
             ),
-          ),
+          ],
         ),
       ),
     );
@@ -1315,7 +1228,7 @@ class _HomePageState extends ConsumerState<HomePage>
                       color: const Color(0xFF3B82F6),
                       onTap: () {
                         Navigator.pop(ctx);
-                        context.push(AppRouter.myLockerReports);
+                        context.push(AppRouter.myReports);
                       },
                     ),
                     _buildUtilityItem(
