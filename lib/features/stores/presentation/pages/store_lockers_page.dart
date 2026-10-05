@@ -47,12 +47,68 @@ class _StoreLockerGridPageState extends State<StoreLockerGridPage> {
       _error = null;
     });
     try {
-      final all = await _service.lockersByStore(widget.store.id);
+      List<Map<String, dynamic>> lockers = [];
+      // 1. Thử lấy danh sách tủ theo storeId
+      if (widget.store.id > 0) {
+        try {
+          lockers = await _service.lockersByStore(widget.store.id);
+        } catch (_) {}
+      }
+
+      // 2. Nếu không tìm thấy tủ nào, có thể widget.store.id chính là lockerId
+      if (lockers.isEmpty && widget.store.id > 0) {
+        try {
+          final direct = await _service.locker(widget.store.id);
+          if (direct.isNotEmpty && direct['id'] != null) {
+            lockers = [direct];
+          }
+        } catch (_) {}
+      }
+
+      // 3. Nếu vẫn không thấy, lấy danh sách tất cả tủ trên hệ thống và tìm theo id, storeId hoặc tên/mã
+      if (lockers.isEmpty) {
+        try {
+          final allGlobal = await _service.lockers();
+          final targetId = widget.store.id.toString();
+          lockers = allGlobal.where((l) {
+            final lId = l['id']?.toString();
+            final sId = l['storeId']?.toString();
+            return (targetId != '0' && (lId == targetId || sId == targetId));
+          }).toList();
+
+          if (lockers.isEmpty && widget.store.name.isNotEmpty) {
+            final targetName = widget.store.name.trim().toLowerCase();
+            lockers = allGlobal.where((l) {
+              final name = (l['name'] ?? '').toString().trim().toLowerCase();
+              final code = (l['code'] ?? '').toString().trim().toLowerCase();
+              return name.contains(targetName) ||
+                  targetName.contains(name) ||
+                  code.contains(targetName) ||
+                  targetName.contains(code);
+            }).toList();
+          }
+        } catch (_) {}
+      }
+
       if (!mounted) return;
       setState(() {
-        _lockers = all.where((l) {
-          final s = (l['status'] as String?)?.toUpperCase();
-          return s == 'ACTIVE' || s == null;
+        // Đồng bộ với Admin: Hiển thị đầy đủ mọi tủ (kể cả bảo trì, mất kết nối, tạm đóng)
+        _lockers = lockers.map((l) {
+          final lId = (l['id'] as num?)?.toInt();
+          final code = (l['code'] ?? '').toString();
+          final name = (l['name'] ?? '').toString();
+          final isCabinetTU01 = lId == 7 ||
+              code == 'CAB-TU01' ||
+              name.contains('TU01') ||
+              name.contains('Tủ thật');
+          final isOnline = l['online'] as bool?;
+          if (isOnline == false || (isCabinetTU01 && isOnline != true)) {
+            final copy = Map<String, dynamic>.from(l);
+            copy['status'] = 'DISCONNECTED';
+            copy['online'] = false;
+            return copy;
+          }
+          return l;
         }).toList();
         _loading = false;
       });
@@ -366,7 +422,24 @@ class _LockerCardState extends State<_LockerCard> {
   }
 
   static Map<String, dynamic> _enrichLayout(Map<String, dynamic> raw) {
-    return raw;
+    if (raw.isEmpty) return raw;
+    final Map<String, dynamic> enriched = Map<String, dynamic>.from(raw);
+    final rawCells = raw['cells'] as List?;
+    if (rawCells != null) {
+      final enrichedCells = rawCells.map((c) {
+        if (c is! Map<String, dynamic>) return c;
+        final map = Map<String, dynamic>.from(c);
+        final boxNum = (map['boxNumber'] as num?)?.toInt();
+        final cellType = (map['cellType'] as String?)?.toUpperCase();
+        // Giống Admin (layout-view.tsx): Ô #1, Ô #2 và các ô có cellType DRONE là ô tiếp nhận Drone
+        if (boxNum == 1 || boxNum == 2 || cellType == 'DRONE') {
+          map['isDrone'] = true;
+        }
+        return map;
+      }).toList();
+      enriched['cells'] = enrichedCells;
+    }
+    return enriched;
   }
 
   void _toggle() {
@@ -382,8 +455,18 @@ class _LockerCardState extends State<_LockerCard> {
     final totalCells =
         (_layout?['totalCells'] as num?)?.toInt() ?? cells.length;
     final available = cells.where((c) => c['status'] == 'AVAILABLE').length;
-    final isActive =
-        (widget.locker['status'] as String?)?.toUpperCase() == 'ACTIVE';
+
+    final statusStr = ((_layout?['status'] ?? widget.locker['status']) as String?)?.toUpperCase() ?? 'ACTIVE';
+    final bool? onlineField = _layout?['online'] as bool?;
+    final bool isCabinetTU01 = _lockerId == 7 ||
+        widget.locker['code'] == 'CAB-TU01' ||
+        _lockerName.contains('TU01') ||
+        _lockerName.contains('Tủ thật');
+    final bool isDisconnected = onlineField == false ||
+        statusStr == 'DISCONNECTED' ||
+        (isCabinetTU01 && onlineField != true);
+    final bool isMaintenance = statusStr == 'MAINTENANCE';
+    final bool isActive = statusStr == 'ACTIVE' && !isDisconnected;
 
     return Container(
       decoration: BoxDecoration(
@@ -401,9 +484,63 @@ class _LockerCardState extends State<_LockerCard> {
         children: [
           _buildHeader(
             isActive: isActive,
+            isMaintenance: isMaintenance,
+            isDisconnected: isDisconnected,
             available: available,
             totalCells: totalCells,
           ),
+          if (isDisconnected)
+            Container(
+              margin: const EdgeInsets.fromLTRB(16, 0, 16, 10),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFEF2F2),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: const Color(0xFFFECACA)),
+              ),
+              child: const Row(
+                children: [
+                  Icon(LucideIcons.wifiOff, size: 16, color: Color(0xFFDC2626)),
+                  SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Bộ điều khiển Kiosk mất kết nối (Offline).',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFFB91C1C),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            )
+          else if (isMaintenance)
+            Container(
+              margin: const EdgeInsets.fromLTRB(16, 0, 16, 10),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFFFBEB),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: const Color(0xFFFDE68A)),
+              ),
+              child: const Row(
+                children: [
+                  Icon(LucideIcons.wrench, size: 16, color: Color(0xFFD97706)),
+                  SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Tủ đang trong chế độ bảo trì kỹ thuật.',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFFB45309),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
           AnimatedSize(
             duration: const Duration(milliseconds: 300),
             curve: Curves.easeInOut,
@@ -418,6 +555,8 @@ class _LockerCardState extends State<_LockerCard> {
 
   Widget _buildHeader({
     required bool isActive,
+    required bool isMaintenance,
+    required bool isDisconnected,
     required int available,
     required int totalCells,
   }) {
@@ -473,15 +612,30 @@ class _LockerCardState extends State<_LockerCard> {
                         ),
                         const SizedBox(width: 6),
                       ],
-                      _Pill(
-                        label: isActive ? 'Hoạt động' : 'Ngừng',
-                        bg: isActive
-                            ? const Color(0xFFDEF7EC)
-                            : const Color(0xFFFDE8E8),
-                        fg: isActive
-                            ? const Color(0xFF046C4E)
-                            : const Color(0xFF9B1C1C),
-                      ),
+                      if (isDisconnected)
+                        const _Pill(
+                          label: 'Mất kết nối',
+                          bg: Color(0xFFFDE8E8),
+                          fg: Color(0xFF9B1C1C),
+                        )
+                      else if (isMaintenance)
+                        const _Pill(
+                          label: 'Bảo trì',
+                          bg: Color(0xFFFEF3C7),
+                          fg: Color(0xFFD97706),
+                        )
+                      else if (isActive)
+                        const _Pill(
+                          label: 'Hoạt động',
+                          bg: Color(0xFFDEF7EC),
+                          fg: Color(0xFF046C4E),
+                        )
+                      else
+                        const _Pill(
+                          label: 'Tạm ngưng',
+                          bg: Color(0xFFF1F5F9),
+                          fg: Color(0xFF64748B),
+                        ),
                       const SizedBox(width: 6),
                       InkWell(
                         borderRadius: BorderRadius.circular(20),
@@ -622,7 +776,13 @@ class _LockerCardState extends State<_LockerCard> {
 
   void _showBookingSheet(BuildContext ctx, Map<String, dynamic> cell) {
     // DRONE cells use a dedicated booking flow
-    if ((cell['cellType'] as String?)?.toUpperCase() == 'DRONE') {
+    final boxNum = (cell['boxNumber'] as num?)?.toInt();
+    final isDrone = cell['isDrone'] == true ||
+        (cell['cellType'] as String?)?.toUpperCase() == 'DRONE' ||
+        boxNum == 1 ||
+        boxNum == 2;
+
+    if (isDrone) {
       showModalBottomSheet<void>(
         context: ctx,
         isScrollControlled: true,
@@ -701,7 +861,12 @@ class _CellGrid extends StatelessWidget {
   final ValueChanged<Map<String, dynamic>> onFaultTap;
 
   bool _isXl(Map<String, dynamic> cell) =>
-      (cell['cellType'] as String?) == 'XL';
+      (cell['cellType'] as String?) == 'XL' ||
+      (cell['size'] as String?) == 'XL' ||
+      (cell['colIndex'] == 0 &&
+          (cell['rowIndex'] == null ||
+              cell['rowIndex'] == 1 ||
+              cell['rowIndex'] == 2));
 
   @override
   Widget build(BuildContext context) {
@@ -749,11 +914,11 @@ class _CellGrid extends StatelessWidget {
                 final span = cell != null ? (_isXl(cell) ? 2 : 1) : 1;
                 skipRows = span - 1;
 
-                final height = 58.0 * span + 5.0 * (span - 1);
+                final height = 80.0 * span + 6.0 * (span - 1);
 
                 colChildren.add(
                   Padding(
-                    padding: const EdgeInsets.only(bottom: 5),
+                    padding: const EdgeInsets.only(bottom: 6),
                     child: SizedBox(
                       height: height,
                       child: cell != null
@@ -800,12 +965,22 @@ class _GridLegend extends StatelessWidget {
           _LegendChip(color: _CellPalette.available, label: 'Trống'),
           _LegendChip(color: _CellPalette.occupied, label: 'Đang dùng'),
           _LegendChip(color: _CellPalette.reserved, label: 'Đã đặt'),
-          _LegendChip(color: _CellPalette.fault, label: 'Lỗi'),
+          _LegendChip(color: _CellPalette.fault, label: 'Lỗi / Hỏng'),
           _LegendChip(color: _CellPalette.cleaning, label: 'Bảo trì'),
           _LegendChip(
             color: _CellPalette.drone,
             label: 'Drone',
             icon: Icons.flight_rounded,
+          ),
+          _LegendChip(
+            color: Color(0xFFD97706),
+            label: 'Cửa mở',
+            icon: LucideIcons.doorOpen,
+          ),
+          _LegendChip(
+            color: Color(0xFF64748B),
+            label: 'Cửa đóng',
+            icon: LucideIcons.doorClosed,
           ),
         ],
       ),
@@ -873,16 +1048,28 @@ class _CellTile extends StatelessWidget {
   final Map<String, dynamic> cell;
   final VoidCallback? onTap;
 
-  String get _status => (cell['status'] as String?) ?? '';
-  String get _cellType => (cell['cellType'] as String?) ?? 'STANDARD';
-  bool get _isDrone => _cellType == 'DRONE';
+  String get _status => ((cell['status'] as String?) ?? '').toUpperCase();
+  String get _cellType => ((cell['cellType'] as String?) ?? 'STANDARD').toUpperCase();
+  int? get _boxNumber => (cell['boxNumber'] as num?)?.toInt();
+
+  // Đồng bộ với Admin layout-view.tsx: Ô #1, Ô #2 và các ô có cellType DRONE là ô tiếp nhận Drone
+  bool get _isDrone =>
+      cell['isDrone'] == true ||
+      _cellType == 'DRONE' ||
+      _boxNumber == 1 ||
+      _boxNumber == 2;
+
   bool get _isAvailable => _status == 'AVAILABLE';
   bool get _isFault => _status == 'FAULT';
+  bool get _isCleaning => _status == 'CLEANING';
+
+  bool get _isDoorOpen =>
+      cell['doorOpen'] == true ||
+      ((cell['hwState'] as String?)?.toUpperCase() == 'OPEN');
 
   Gradient get _bgGradient {
     // Ô drone chỉ tô tím khi còn nhận đơn. Đã có đơn giữ ô (RESERVED/OCCUPIED)
-    // hoặc ô đang hỏng/bảo trì thì theo màu trạng thái như mọi ô khác — trước đây
-    // ô drone luôn tím nên đặt xong vẫn trông như còn trống.
+    // hoặc ô đang hỏng/bảo trì thì theo màu trạng thái như mọi ô khác.
     if (_isDrone && _isAvailable) {
       return const LinearGradient(
         begin: Alignment.topLeft,
@@ -956,10 +1143,12 @@ class _CellTile extends StatelessWidget {
       width: double.infinity,
       decoration: BoxDecoration(
         gradient: _bgGradient,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(10),
         border: Border.all(
-          color: Colors.white.withValues(alpha: 0.3),
-          width: 1,
+          color: _isDoorOpen
+              ? const Color(0xFFFBBF24)
+              : Colors.white.withValues(alpha: 0.3),
+          width: _isDoorOpen ? 1.5 : 1,
         ),
         boxShadow: (_isAvailable && !_isDrone)
             ? [
@@ -988,7 +1177,7 @@ class _CellTile extends StatelessWidget {
       child: Stack(
         children: [
           Positioned.fill(
-            child: _isDrone ? _buildDroneContent() : _buildStandardContent(),
+            child: _buildCellContent(),
           ),
           if (_isFault)
             Positioned(
@@ -1013,15 +1202,15 @@ class _CellTile extends StatelessWidget {
             ),
           // Tay nắm cửa
           Positioned(
-            right: 6,
+            right: 5,
             top: 0,
             bottom: 0,
             child: Center(
               child: Container(
-                width: 4,
-                height: 24,
+                width: 3.5,
+                height: 22,
                 decoration: BoxDecoration(
-                  color: _fg.withValues(alpha: 0.4),
+                  color: _fg.withValues(alpha: 0.35),
                   borderRadius: BorderRadius.circular(2),
                   boxShadow: [
                     BoxShadow(
@@ -1051,83 +1240,135 @@ class _CellTile extends StatelessWidget {
     return GestureDetector(onTap: onTap, child: content);
   }
 
-  /// Ô drone — icon máy bay không người lái
-  Widget _buildDroneContent() {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Icon(Icons.flight_rounded, color: _fg, size: 26),
-        const SizedBox(height: 2),
-        if (_isGreyedOut)
-          Text(
-            'ĐÃ ĐẶT',
-            style: TextStyle(
-              color: _fg,
-              fontSize: 9,
-              fontWeight: FontWeight.w800,
-              letterSpacing: 0.8,
-            ),
-          ),
-        if (_isAvailable)
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.25),
-              borderRadius: BorderRadius.circular(6),
-            ),
-            child: const Text(
-              'DRONE',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 9,
-                fontWeight: FontWeight.w800,
-                letterSpacing: 0.8,
-              ),
-            ),
-          ),
-      ],
-    );
-  }
+  Widget _buildCellContent() {
+    final isXl = ((_cellType == 'XL' || _sizeLabel == 'L') && !_isDrone);
+    final icon = _isDrone
+        ? Icons.flight_rounded
+        : (isXl ? LucideIcons.luggage : LucideIcons.box);
+    final iconSize = _isDrone ? 20.0 : (isXl ? 20.0 : 16.0);
 
-  /// Ô thường — icon kích cỡ + "TRỐNG"
-  Widget _buildStandardContent() {
-    final isXl = _cellType == 'XL' || _sizeLabel == 'L';
-    final icon = isXl ? LucideIcons.luggage : LucideIcons.box;
-    final iconSize = _isFault ? 20.0 : (isXl ? 32.0 : 24.0);
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Icon(icon, color: _fg.withValues(alpha: 0.95), size: iconSize),
-        if (_isAvailable) ...[
-          const SizedBox(height: 6),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.2),
-              borderRadius: BorderRadius.circular(6),
-            ),
-            child: Text(
-              'TRỐNG',
-              style: TextStyle(
-                color: _fg,
-                fontSize: 9,
-                fontWeight: FontWeight.w800,
-                letterSpacing: 0.5,
+    final String statusText;
+    if (_isFault) {
+      statusText = 'Hỏng';
+    } else if (_isCleaning) {
+      statusText = 'Vệ sinh';
+    } else if (_status == 'OCCUPIED' || _status == 'IN_USE') {
+      statusText = 'Đang dùng';
+    } else if (_status == 'RESERVED') {
+      statusText = 'Đã đặt';
+    } else if (_isDrone && _isAvailable) {
+      statusText = 'Nhận Drone';
+    } else if (_isAvailable) {
+      statusText = 'Sẵn sàng';
+    } else {
+      statusText = _status;
+    }
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(6, 5, 12, 5),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          // Hàng trên: Số ô & Trạng thái cửa
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Flexible(
+                child: Text(
+                  'Ô #${_boxNumber ?? '?'}${_isDrone ? ' 🛸' : ''}',
+                  style: TextStyle(
+                    color: _fg,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w800,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
-            ),
+              const SizedBox(width: 4),
+              _buildDoorBadge(),
+            ],
           ),
-        ] else if (_isFault) ...[
-          const SizedBox(height: 6),
-          const Text(
-            'Hỏng',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 10,
-              fontWeight: FontWeight.w800,
+          // Giữa: Icon loại ô
+          Center(
+            child: Icon(icon, color: _fg.withValues(alpha: 0.95), size: iconSize),
+          ),
+          // Hàng dưới: Trạng thái ô (Sẵn sàng / Đang dùng / Báo hỏng / ...)
+          Center(
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+              decoration: BoxDecoration(
+                color: _isAvailable
+                    ? Colors.white.withValues(alpha: 0.22)
+                    : Colors.black.withValues(alpha: 0.14),
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: Text(
+                statusText,
+                style: TextStyle(
+                  color: _fg,
+                  fontSize: 8.5,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 0.2,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
             ),
           ),
         ],
-      ],
+      ),
+    );
+  }
+
+  Widget _buildDoorBadge() {
+    if (_isDoorOpen) {
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+        decoration: BoxDecoration(
+          color: const Color(0xFFFEF08A),
+          borderRadius: BorderRadius.circular(4),
+          border: Border.all(color: const Color(0xFFEAB308), width: 0.8),
+        ),
+        child: const Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(LucideIcons.doorOpen, size: 9, color: Color(0xFF854D0E)),
+            SizedBox(width: 2),
+            Text(
+              'Mở',
+              style: TextStyle(
+                color: Color(0xFF854D0E),
+                fontSize: 8,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+      decoration: BoxDecoration(
+        color: Colors.black.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(LucideIcons.doorClosed, size: 9, color: _fg.withValues(alpha: 0.8)),
+          const SizedBox(width: 2),
+          Text(
+            'Đóng',
+            style: TextStyle(
+              color: _fg.withValues(alpha: 0.8),
+              fontSize: 8,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

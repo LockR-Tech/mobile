@@ -1487,9 +1487,21 @@ class _HomePageState extends ConsumerState<HomePage>
                 top: 12,
                 left: 12,
                 child: BrandStatusBadge(
-                  label: location.isActive ? 'Hoạt động' : 'Đóng cửa',
-                  dotColor: location.isActive ? AislBrand.statusGreen : Colors.grey,
-                  textColor: location.isActive ? AislBrand.statusGreenText : Colors.grey.shade700,
+                  label: location.status == 'MAINTENANCE'
+                      ? 'Bảo trì'
+                      : (location.status == 'DISCONNECTED'
+                          ? 'Mất kết nối'
+                          : (location.isActive ? 'Hoạt động' : 'Tạm ngưng')),
+                  dotColor: location.status == 'MAINTENANCE'
+                      ? const Color(0xFFF59E0B)
+                      : (location.status == 'DISCONNECTED'
+                          ? const Color(0xFFEF4444)
+                          : (location.isActive ? AislBrand.statusGreen : Colors.grey)),
+                  textColor: location.status == 'MAINTENANCE'
+                      ? const Color(0xFFB45309)
+                      : (location.status == 'DISCONNECTED'
+                          ? const Color(0xFFDC2626)
+                          : (location.isActive ? AislBrand.statusGreenText : Colors.grey.shade700)),
                 ),
               ),
               // Name + address bottom

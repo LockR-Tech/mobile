@@ -942,13 +942,11 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
         try {
           final isRental =
               (order['type'] as String? ?? '').toUpperCase() == 'RENTAL';
-          Exception? firstErr;
           if (isRental) {
             try {
               await _service.endRental(orderId);
-            } catch (e) {
-              firstErr = e is Exception ? e : Exception(e.toString());
-              // endRental thất bại → thử complete thông thường
+            } catch (_) {
+              // endRental thất bại -> thử complete thông thường
               await _service.completePickup(orderId);
             }
           } else {

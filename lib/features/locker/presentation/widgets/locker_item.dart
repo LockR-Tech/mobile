@@ -112,7 +112,10 @@ class LockerItem extends StatelessWidget {
                   Positioned(
                     top: 6,
                     left: 6,
-                    child: _StatusChip(active: location.isActive),
+                    child: _StatusChip(
+                      active: location.isActive,
+                      status: location.status,
+                    ),
                   ),
                 ],
               ),
@@ -293,14 +296,40 @@ class _GradientThumb extends StatelessWidget {
 }
 
 class _StatusChip extends StatelessWidget {
-  const _StatusChip({required this.active});
+  const _StatusChip({required this.active, this.status});
 
   final bool active;
+  final String? status;
 
   @override
   Widget build(BuildContext context) {
-    final dotColor = active ? const Color(0xFF22C55E) : const Color(0xFF94A3B8);
-    final text = active ? 'Mở cửa' : 'Đóng';
+    final s = status?.toUpperCase();
+    final isMaintenance = s == 'MAINTENANCE';
+    final isDisconnected = s == 'DISCONNECTED';
+
+    final Color dotColor;
+    final String text;
+    final Color borderColor;
+
+    if (isDisconnected) {
+      dotColor = const Color(0xFFEF4444);
+      text = 'Mất kết nối';
+      borderColor = const Color(0xFFEF4444).withValues(alpha: 0.5);
+    } else if (isMaintenance) {
+      dotColor = const Color(0xFFF59E0B);
+      text = 'Bảo trì';
+      borderColor = const Color(0xFFF59E0B).withValues(alpha: 0.5);
+    } else if (active) {
+      dotColor = const Color(0xFF22C55E);
+      text = 'Hoạt động';
+      borderColor = const Color(0xFF22C55E).withValues(alpha: 0.45);
+    } else {
+      dotColor = const Color(0xFF94A3B8);
+      text = 'Tạm ngưng';
+      borderColor = Colors.white.withValues(alpha: 0.22);
+    }
+
+    final hasGlow = active || isMaintenance || isDisconnected;
 
     return ClipRRect(
       borderRadius: BorderRadius.circular(20),
@@ -314,9 +343,7 @@ class _StatusChip extends StatelessWidget {
                 : Colors.black.withValues(alpha: 0.52),
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
-              color: active
-                  ? const Color(0xFF22C55E).withValues(alpha: 0.45)
-                  : Colors.white.withValues(alpha: 0.22),
+              color: borderColor,
               width: 0.8,
             ),
           ),
@@ -329,10 +356,10 @@ class _StatusChip extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: dotColor,
                   shape: BoxShape.circle,
-                  boxShadow: active
+                  boxShadow: hasGlow
                       ? [
                           BoxShadow(
-                            color: const Color(0xFF22C55E).withValues(alpha: 0.9),
+                            color: dotColor.withValues(alpha: 0.9),
                             blurRadius: 4,
                             spreadRadius: 0.8,
                           ),
