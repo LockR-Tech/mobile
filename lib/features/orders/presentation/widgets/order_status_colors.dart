@@ -138,6 +138,8 @@ class OrderStatusColors {
         return const Color(0xFF2E7D32); // Green
       case 'PARTIAL_PAID':
         return const Color(0xFFE65100); // Deep Orange
+      case 'REFUND_PENDING':
+        return const Color(0xFFD97706); // Amber / Chờ hoàn tiền
       case 'REFUNDED':
         return const Color(0xFF0288D1); // Light Blue
       default:
@@ -155,6 +157,8 @@ class OrderStatusColors {
         return const Color(0xFFE8F5E9);
       case 'PARTIAL_PAID':
         return const Color(0xFFFBE9E7);
+      case 'REFUND_PENDING':
+        return const Color(0xFFFEF3C7); // Amber light
       case 'REFUNDED':
         return const Color(0xFFE1F5FE);
       default:

@@ -80,6 +80,8 @@ class EnumTranslator {
         return 'Đã thanh toán';
       case 'PARTIAL_PAID':
         return 'Thanh toán một phần';
+      case 'REFUND_PENDING':
+        return 'Chờ hoàn tiền';
       case 'REFUNDED':
         return 'Đã hoàn tiền';
       default:
