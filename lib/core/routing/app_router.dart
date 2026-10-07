@@ -27,6 +27,7 @@ import 'package:smart_laundry_locker/features/profile/presentation/pages/securit
 import 'package:smart_laundry_locker/features/subscription/presentation/pages/plans_page.dart';
 import 'package:smart_laundry_locker/features/transactions/presentation/pages/transactions_page.dart';
 import 'package:smart_laundry_locker/features/transactions/presentation/pages/top_up_page.dart';
+import 'package:smart_laundry_locker/features/payment/presentation/pages/refund_bank_account_page.dart';
 import 'package:smart_laundry_locker/features/wallet/presentation/pages/withdraw_page.dart';
 import 'package:smart_laundry_locker/core/presentation/pages/qr_scanner_page.dart';
 import 'package:smart_laundry_locker/core/presentation/pages/directions_map_page.dart';
@@ -70,6 +71,7 @@ class AppRouter {
   static const String profile = '/profile';
   static const String profileDetail = '/profile/detail';
   static const String editProfile = '/profile/edit';
+  static const String refundBankAccount = '/profile/bank-account';
   static const String security = '/profile/security';
   static const String plans = '/profile/plans';
   static const String transactions = '/transactions';
@@ -172,6 +174,11 @@ class AppRouter {
           final profile = extra is UserProfile ? extra : null;
           return EditProfilePage(profile: profile);
         },
+      ),
+      GoRoute(
+        path: refundBankAccount,
+        name: 'refund_bank_account',
+        builder: (context, state) => const RefundBankAccountPage(),
       ),
       GoRoute(
         path: security,

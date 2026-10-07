@@ -26,6 +26,7 @@ bool requiresSignIn(String location) =>
     location == AppRouter.transactions ||
     location == AppRouter.topUp ||
     location == AppRouter.withdraw ||
+    location == AppRouter.refundBankAccount ||
     location == AppRouter.assistant ||
     location.startsWith('${AppRouter.assistant}/');
 

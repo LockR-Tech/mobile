@@ -3895,6 +3895,7 @@ class _DetailSheet extends StatelessWidget {
                 label: 'Thanh toán',
                 value: switch (paymentStatus) {
                   'PAID' => 'Đã thanh toán',
+                  'REFUND_PENDING' => 'Chờ hoàn tiền',
                   'REFUNDED' => 'Đã hoàn tiền',
                   _ => 'Chưa thanh toán',
                 },
@@ -3902,7 +3903,9 @@ class _DetailSheet extends StatelessWidget {
                     ? const Color(0xFF15803D)
                     : (paymentStatus == 'REFUNDED'
                           ? const Color(0xFF64748B)
-                          : const Color(0xFFB45309)),
+                          : (paymentStatus == 'REFUND_PENDING'
+                              ? const Color(0xFFD97706)
+                              : const Color(0xFFB45309))),
               ),
               // Hình thức thanh toán + mã giao dịch lấy từ payment-service.
               _PaymentTraceRows(orderId: _asInt(order['id'])),

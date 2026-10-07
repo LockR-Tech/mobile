@@ -244,6 +244,11 @@ class _ProfilePageState extends State<ProfilePage>
               title: 'Thông tin cá nhân',
               onTap: _handleEditProfile,
             ),
+            ProfileMenuItem(
+              icon: LucideIcons.landmark,
+              title: 'Tài khoản nhận hoàn tiền',
+              onTap: () => context.push(AppRouter.refundBankAccount),
+            ),
             // Tạm ẩn: backend chưa có AI service (/api/auth/ai/* trả 500).
             if (FeatureFlags.faceRecognitionEnabled)
               ListenableBuilder(
