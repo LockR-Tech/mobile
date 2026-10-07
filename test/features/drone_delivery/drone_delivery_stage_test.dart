@@ -50,7 +50,7 @@ void main() {
         droneCancelRefundNote(isPaid: s.isPaid, totalPrice: s.totalPrice);
     expect(note(waiting), contains('không phát sinh phí'));
     expect(note(paid), contains('15.000đ'));
-    expect(note(paid), contains('hoàn về ví Lock.R'));
+    expect(note(paid), contains('hoàn bằng chuyển khoản'));
   });
 
   test('cân lệch: đơn đã nạp hàng mà nợ phụ thu thì khách phải trả phần chênh', () {

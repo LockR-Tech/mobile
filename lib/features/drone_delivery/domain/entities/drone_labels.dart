@@ -37,6 +37,7 @@ String dronePaymentStatusLabel(String? status) =>
       '' => '—',
       'PAID' => 'Đã thanh toán',
       'UNPAID' => 'Chưa thanh toán',
+      'REFUND_PENDING' => 'Chờ hoàn tiền',
       'REFUNDED' => 'Đã hoàn tiền',
       _ => status!,
     };

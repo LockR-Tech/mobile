@@ -41,7 +41,7 @@ void main() {
 
     await tester.tap(find.text('mở'));
     await tester.pumpAndSettle();
-    expect(find.textContaining('15.000đ sẽ được hoàn về ví Lock.R'), findsOneWidget);
+    expect(find.textContaining('15.000đ sẽ được hoàn bằng chuyển khoản'), findsOneWidget);
     await tester.tap(find.text('Giữ đơn'));
     await tester.pumpAndSettle();
 
@@ -53,7 +53,7 @@ void main() {
     tester,
   ) async {
     final results = <String?>[];
-    var paymentStatus = 'REFUNDED';
+    var paymentStatus = 'REFUND_PENDING';
     await pumpTrigger(
       tester,
       cancelOrder: (orderId) async {
@@ -63,7 +63,7 @@ void main() {
       onResult: results.add,
     );
 
-    for (final status in ['REFUNDED', 'PAID', 'UNPAID']) {
+    for (final status in ['REFUND_PENDING', 'REFUNDED', 'PAID', 'UNPAID']) {
       paymentStatus = status;
       await tester.tap(find.text('mở'));
       await tester.pumpAndSettle();
@@ -72,8 +72,9 @@ void main() {
     }
 
     expect(results, [
-      'Đã huỷ đơn. Tiền đã được hoàn về ví Lock.R của bạn.',
-      'Đã huỷ đơn. Tiền chưa được hoàn tự động, vui lòng liên hệ hỗ trợ.',
+      'Đã huỷ đơn. Yêu cầu hoàn tiền đã được ghi nhận, admin sẽ chuyển khoản cho bạn.',
+      'Đã huỷ đơn. Tiền đã được chuyển khoản hoàn cho bạn.',
+      'Đã huỷ đơn. Chưa ghi nhận được yêu cầu hoàn tiền, vui lòng liên hệ hỗ trợ.',
       'Đã huỷ đơn.',
     ]);
   });

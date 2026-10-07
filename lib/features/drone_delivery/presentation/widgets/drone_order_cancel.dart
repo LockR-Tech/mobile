@@ -6,11 +6,12 @@ import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/op
 String droneCancelRefundNote({required bool isPaid, num? totalPrice}) => isPaid
     ? 'Đơn đã thanh toán: '
           '${totalPrice == null ? 'phí giao drone' : fmtPrice(totalPrice)} '
-          'sẽ được hoàn về ví Lock.R của bạn.'
+          'sẽ được hoàn bằng chuyển khoản sau khi admin duyệt. Hãy kiểm tra '
+          'tài khoản ngân hàng nhận tiền trong Hồ sơ.'
     : 'Đơn chưa thanh toán nên không phát sinh phí.';
 
 /// Người đặt huỷ đơn drone khi đội bay chưa tiếp nhận: hỏi xác nhận, gọi huỷ (server
-/// nhả ô ở hai tủ và hoàn tiền về ví nếu đơn đã thanh toán) rồi trả câu báo kết quả.
+/// nhả ô ở hai tủ và ghi yêu cầu hoàn tiền nếu đơn đã thanh toán) rồi trả câu báo kết quả.
 /// Trả `null` khi khách không xác nhận. Dùng chung cho màn theo dõi và danh sách đơn.
 Future<String?> confirmAndCancelDroneOrder(
   BuildContext context, {
@@ -50,9 +51,11 @@ Future<String?> confirmAndCancelDroneOrder(
       orderId,
     );
     return switch ('${canceled['paymentStatus']}'.toUpperCase()) {
-      'REFUNDED' => 'Đã huỷ đơn. Tiền đã được hoàn về ví Lock.R của bạn.',
+      'REFUND_PENDING' =>
+        'Đã huỷ đơn. Yêu cầu hoàn tiền đã được ghi nhận, admin sẽ chuyển khoản cho bạn.',
+      'REFUNDED' => 'Đã huỷ đơn. Tiền đã được chuyển khoản hoàn cho bạn.',
       'PAID' =>
-        'Đã huỷ đơn. Tiền chưa được hoàn tự động, vui lòng liên hệ hỗ trợ.',
+        'Đã huỷ đơn. Chưa ghi nhận được yêu cầu hoàn tiền, vui lòng liên hệ hỗ trợ.',
       _ => 'Đã huỷ đơn.',
     };
   } catch (error) {

@@ -303,10 +303,14 @@ class _StatusBanner extends StatelessWidget {
       if (stage == DroneDeliveryStage.canceled && status.cancelNote != null)
         'Ghi chú: ${status.cancelNote}',
       if (stage == DroneDeliveryStage.canceled &&
+          (status.paymentStatus ?? '').toUpperCase() == 'REFUND_PENDING')
+        'Yêu cầu hoàn tiền đã được ghi nhận. Admin sẽ chuyển khoản về tài '
+            'khoản ngân hàng của người đặt.',
+      if (stage == DroneDeliveryStage.canceled &&
           (status.paymentStatus ?? '').toUpperCase() == 'REFUNDED')
-        'Tiền đã được hoàn về ví Lock.R của người đặt.',
+        'Tiền đã được chuyển khoản hoàn cho người đặt.',
       if (stage == DroneDeliveryStage.canceled && status.isPaid)
-        'Tiền chưa được hoàn tự động — vui lòng liên hệ hỗ trợ.',
+        'Chưa ghi nhận được yêu cầu hoàn tiền — vui lòng liên hệ hỗ trợ.',
     ];
     return Container(
       padding: const EdgeInsets.all(14),
@@ -416,8 +420,8 @@ class _UnpaidBanner extends StatelessWidget {
   }
 }
 
-/// Quy tắc: người đặt huỷ được tới khi đội bay tiếp nhận; đơn đã trả tiền thì hoàn
-/// về ví Lock.R.
+/// Quy tắc: người đặt huỷ được tới khi đội bay tiếp nhận; đơn đã trả tiền thì hệ
+/// thống ghi yêu cầu hoàn tiền, admin chuyển khoản về tài khoản ngân hàng của khách.
 class _CancelCard extends StatelessWidget {
   const _CancelCard({required this.status, required this.onCancel});
 

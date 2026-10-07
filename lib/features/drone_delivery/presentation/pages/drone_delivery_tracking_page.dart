@@ -110,8 +110,8 @@ class _DroneDeliveryTrackingPageState
     );
   }
 
-  /// Người đặt huỷ đơn khi đội bay chưa tiếp nhận; server hoàn tiền về ví nếu đơn
-  /// đã thanh toán.
+  /// Người đặt huỷ đơn khi đội bay chưa tiếp nhận; server ghi yêu cầu hoàn tiền
+  /// (admin chuyển khoản) nếu đơn đã thanh toán.
   Future<void> _cancel(DroneDeliveryStatus status) async {
     final orderId = int.tryParse(widget.orderId);
     if (_canceling || orderId == null) return;
@@ -181,8 +181,10 @@ class _TrackingBody extends StatelessWidget {
   /// cờ Phase 2 bật. Các mốc arrived/delivered/failed không cần bản đồ nữa.
   bool get _canTrackOnMap =>
       FeatureFlags.droneLiveMapEnabled &&
-      // Chỉ đơn DEMO có nguồn vị trí; đơn drone thật mở bản đồ sẽ không có tín hiệu.
-      (status.fulfillmentMode ?? '').toUpperCase() == 'DEMO' &&
+      // Cần nguồn vị trí: đơn DEMO (vị trí nội suy) hoặc drone thật còn gửi telemetry.
+      // Server cũ chưa trả `liveTracking` thì chỉ đơn DEMO có bản đồ.
+      (status.liveTracking ??
+          (status.fulfillmentMode ?? '').toUpperCase() == 'DEMO') &&
       (status.stage == DroneDeliveryStage.departed ||
           status.stage == DroneDeliveryStage.enRoute ||
           status.stage == DroneDeliveryStage.approaching);

@@ -20,6 +20,10 @@ class DroneDeliveryStatus {
   final String? paymentStatus;
   final String? missionStatus;
   final String? fulfillmentMode;
+
+  /// Backend đang có nguồn vị trí trực tiếp cho đơn này (đơn DEMO đang bay, hoặc drone
+  /// thật còn gửi telemetry); null với server cũ chưa trả field này.
+  final bool? liveTracking;
   final double? totalPrice;
 
   /// Phí thu thêm vì đội bay cân kiện nặng hơn khối lượng khai báo; null khi không lệch.
@@ -91,6 +95,7 @@ class DroneDeliveryStatus {
     this.paymentStatus,
     this.missionStatus,
     this.fulfillmentMode,
+    this.liveTracking,
     this.totalPrice,
     this.weightSurcharge,
     this.amountDue,

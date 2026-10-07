@@ -703,6 +703,14 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage> {
               ),
             ],
             if (_advanceLabel(order) != null) ...[
+              if (order['liveTracking'] == true) ...[
+                const SizedBox(height: 8),
+                const _MiniPill(
+                  icon: Icons.sensors,
+                  text: 'Drone đang gửi tín hiệu · chặng bay tự cập nhật',
+                  color: Color(0xFF0F766E),
+                ),
+              ],
               const SizedBox(height: 10),
               SizedBox(
                 width: double.infinity,
