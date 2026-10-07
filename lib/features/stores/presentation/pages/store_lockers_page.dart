@@ -430,10 +430,17 @@ class _LockerCardState extends State<_LockerCard> {
         if (c is! Map<String, dynamic>) return c;
         final map = Map<String, dynamic>.from(c);
         final boxNum = (map['boxNumber'] as num?)?.toInt();
+        final col = (map['colIndex'] as num?)?.toInt();
         final cellType = (map['cellType'] as String?)?.toUpperCase();
-        // Giống Admin (layout-view.tsx): Ô #1, Ô #2 và các ô có cellType DRONE là ô tiếp nhận Drone
-        if (boxNum == 1 || boxNum == 2 || cellType == 'DRONE') {
+        // Ô vali (XL, ô #1, cột 0): là ô thường (thuê tủ lưu đồ, KHÔNG PHẢI drone)
+        if (cellType == 'XL' || boxNum == 1 || col == 0) {
+          map['cellType'] = 'XL';
+          map['isDrone'] = false;
+        } else if (cellType == 'DRONE' || (cellType == null && (boxNum == 2 || boxNum == 3))) {
+          map['cellType'] = 'DRONE';
           map['isDrone'] = true;
+        } else {
+          map['isDrone'] = false;
         }
         return map;
       }).toList();
@@ -545,7 +552,7 @@ class _LockerCardState extends State<_LockerCard> {
             duration: const Duration(milliseconds: 300),
             curve: Curves.easeInOut,
             child: _expanded
-                ? _buildExpandedContent(cells)
+                ? _buildExpandedContent(cells, isActive: isActive)
                 : const SizedBox.shrink(),
           ),
         ],
@@ -704,7 +711,7 @@ class _LockerCardState extends State<_LockerCard> {
     );
   }
 
-  Widget _buildExpandedContent(List<Map<String, dynamic>> cells) {
+  Widget _buildExpandedContent(List<Map<String, dynamic>> cells, {bool isActive = true}) {
     return Column(
       children: [
         const Divider(height: 1, color: Color(0xFFF0F4F8)),
@@ -739,6 +746,9 @@ class _LockerCardState extends State<_LockerCard> {
         else
           _CellGrid(
             cells: cells,
+            isOnline: isActive,
+            lockerName: _lockerName,
+            lockerCode: widget.locker['code']?.toString() ?? 'CAB-TU01',
             onCellTap: (cell) => _showBookingSheet(context, cell),
             onFaultTap: (cell) => _showFaultHint(context, cell),
           ),
@@ -761,8 +771,12 @@ class _LockerCardState extends State<_LockerCard> {
   String _cellTypeForBooking(Map<String, dynamic> cell) {
     final explicit = (cell['cellType'] as String?)?.toUpperCase();
     if (explicit == 'XL') return 'XL';
+    final boxNum = (cell['boxNumber'] as num?)?.toInt();
+    if (boxNum == 1) return 'XL';
+    final col = (cell['colIndex'] as num?)?.toInt();
+    if (col == 0) return 'XL';
     final size = (cell['size'] as String?)?.toUpperCase() ?? '';
-    if (size == 'LARGE') return 'XL';
+    if (size == 'LARGE' || size == 'XL') return 'XL';
     return 'STANDARD';
   }
 
@@ -775,12 +789,16 @@ class _LockerCardState extends State<_LockerCard> {
   }
 
   void _showBookingSheet(BuildContext ctx, Map<String, dynamic> cell) {
-    // DRONE cells use a dedicated booking flow
+    // DRONE cells use a dedicated booking flow. Ô vali (XL) là ô thuê tủ thường.
     final boxNum = (cell['boxNumber'] as num?)?.toInt();
-    final isDrone = cell['isDrone'] == true ||
-        (cell['cellType'] as String?)?.toUpperCase() == 'DRONE' ||
-        boxNum == 1 ||
-        boxNum == 2;
+    final col = (cell['colIndex'] as num?)?.toInt();
+    final cellType = (cell['cellType'] as String?)?.toUpperCase();
+    final isXl = cellType == 'XL' || boxNum == 1 || col == 0;
+    final isDrone = !isXl &&
+        (cell['isDrone'] == true ||
+            cellType == 'DRONE' ||
+            ((cell['cellType'] == null || cell['cellType'] == '') &&
+                (boxNum == 2 || boxNum == 3)));
 
     if (isDrone) {
       showModalBottomSheet<void>(
@@ -806,7 +824,7 @@ class _LockerCardState extends State<_LockerCard> {
       return;
     }
 
-    final cellType = _cellTypeForBooking(cell);
+    final bookingCellType = _cellTypeForBooking(cell);
     showModalBottomSheet<void>(
       context: ctx,
       isScrollControlled: true,
@@ -825,7 +843,7 @@ class _LockerCardState extends State<_LockerCard> {
                   initialLockerId: _lockerId,
                   initialLockerName: _lockerName,
                   locationName: widget.storeName,
-                  initialCellType: cellType,
+                  initialCellType: bookingCellType,
                   initialBoxId: (cell['id'] as num?)?.toInt(),
                   initialBoxNumber: (cell['boxNumber'] as num?)?.toInt(),
                 ),
@@ -855,16 +873,24 @@ class _CellGrid extends StatelessWidget {
     required this.cells,
     required this.onCellTap,
     required this.onFaultTap,
+    this.isOnline = true,
+    this.lockerName = 'Tủ Kiosk',
+    this.lockerCode = 'CAB-TU01',
   });
   final List<Map<String, dynamic>> cells;
   final ValueChanged<Map<String, dynamic>> onCellTap;
   final ValueChanged<Map<String, dynamic>> onFaultTap;
+  final bool isOnline;
+  final String lockerName;
+  final String lockerCode;
 
   bool _isXl(Map<String, dynamic> cell) =>
-      (cell['cellType'] as String?) == 'XL' ||
-      (cell['size'] as String?) == 'XL' ||
-      (cell['colIndex'] == 0 &&
+      (cell['cellType'] as String?)?.toUpperCase() == 'XL' ||
+      (cell['size'] as String?)?.toUpperCase() == 'XL' ||
+      ((cell['boxNumber'] as num?)?.toInt() == 1) ||
+      ((cell['colIndex'] as num?)?.toInt() == 0 &&
           (cell['rowIndex'] == null ||
+              cell['rowIndex'] == 0 ||
               cell['rowIndex'] == 1 ||
               cell['rowIndex'] == 2));
 
@@ -904,37 +930,87 @@ class _CellGrid extends StatelessWidget {
               final colChildren = <Widget>[];
               int skipRows = 0;
 
-              for (int row = 0; row < numRows; row++) {
-                if (skipRows > 0) {
-                  skipRows--;
-                  continue;
-                }
+              // Cột 0 của trạm Kiosk: Hàng trên là Màn hình cảm ứng 7 inch;
+              // Ô #1 (Vali XL) ở phía dưới màn hình
+              if (col == 0 && numCols >= 2) {
+                // 1. Màn hình 7 inch (Waveshare 1024x600 IPS)
+                colChildren.add(
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 6),
+                    child: SizedBox(
+                      height: 80.0,
+                      child: _ScreenTile(
+                        isOnline: isOnline,
+                        onTap: () => _showScreenDetailSheet(
+                          context,
+                          isOnline: isOnline,
+                          lockerName: lockerName,
+                          lockerCode: lockerCode,
+                        ),
+                      ),
+                    ),
+                  ),
+                );
 
-                final cell = grid[row][col];
-                final span = cell != null ? (_isXl(cell) ? 2 : 1) : 1;
-                skipRows = span - 1;
-
+                // 2. Ô #1 (Vali XL) hạ thấp xuống dưới
+                final col0Cell = cells.firstWhere(
+                  (c) =>
+                      ((c['colIndex'] as num?)?.toInt() == 0) ||
+                      ((c['boxNumber'] as num?)?.toInt() == 1),
+                  orElse: () => cells.first,
+                );
+                final span = (numRows > 1) ? (numRows - 1) : 1;
                 final height = 80.0 * span + 6.0 * (span - 1);
-
                 colChildren.add(
                   Padding(
                     padding: const EdgeInsets.only(bottom: 6),
                     child: SizedBox(
                       height: height,
-                      child: cell != null
-                          ? _CellTile(
-                              cell: cell,
-                              onTap: switch ((cell['status'] as String?)
-                                  ?.toUpperCase()) {
-                                'AVAILABLE' => () => onCellTap(cell),
-                                'FAULT' => () => onFaultTap(cell),
-                                _ => null,
-                              },
-                            )
-                          : null,
+                      child: _CellTile(
+                        cell: col0Cell,
+                        onTap: switch ((col0Cell['status'] as String?)
+                            ?.toUpperCase()) {
+                          'AVAILABLE' => () => onCellTap(col0Cell),
+                          'FAULT' => () => onFaultTap(col0Cell),
+                          _ => null,
+                        },
+                      ),
                     ),
                   ),
                 );
+              } else {
+                for (int row = 0; row < numRows; row++) {
+                  if (skipRows > 0) {
+                    skipRows--;
+                    continue;
+                  }
+
+                  final cell = grid[row][col];
+                  final span = cell != null ? (_isXl(cell) ? 2 : 1) : 1;
+                  skipRows = span - 1;
+
+                  final height = 80.0 * span + 6.0 * (span - 1);
+
+                  colChildren.add(
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 6),
+                      child: SizedBox(
+                        height: height,
+                        child: cell != null
+                            ? _CellTile(
+                                cell: cell,
+                                onTap: switch ((cell['status'] as String?)
+                                    ?.toUpperCase()) {
+                                  'AVAILABLE' => () => onCellTap(cell),
+                                  'FAULT' => () => onFaultTap(cell),
+                                  _ => null,
+                                },
+                              )
+                            : null,
+                      ),
+                    ),
+                  );
+                }
               }
 
               return Expanded(
@@ -962,6 +1038,11 @@ class _GridLegend extends StatelessWidget {
         spacing: 8,
         runSpacing: 8,
         children: const [
+          _LegendChip(
+            color: Color(0xFF0284C7),
+            label: 'Màn hình 7"',
+            icon: LucideIcons.monitor,
+          ),
           _LegendChip(color: _CellPalette.available, label: 'Trống'),
           _LegendChip(color: _CellPalette.occupied, label: 'Đang dùng'),
           _LegendChip(color: _CellPalette.reserved, label: 'Đã đặt'),
@@ -973,6 +1054,11 @@ class _GridLegend extends StatelessWidget {
             icon: Icons.flight_rounded,
           ),
           _LegendChip(
+            color: _CellPalette.available,
+            label: 'Vali (XL)',
+            icon: LucideIcons.luggage,
+          ),
+          _LegendChip(
             color: Color(0xFFD97706),
             label: 'Cửa mở',
             icon: LucideIcons.doorOpen,
@@ -981,6 +1067,513 @@ class _GridLegend extends StatelessWidget {
             color: Color(0xFF64748B),
             label: 'Cửa đóng',
             icon: LucideIcons.doorClosed,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+void _showScreenDetailSheet(
+  BuildContext context, {
+  required bool isOnline,
+  required String lockerName,
+  required String lockerCode,
+}) {
+  showModalBottomSheet<void>(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
+    builder: (_) => _KioskScreenDetailSheet(
+      isOnline: isOnline,
+      lockerName: lockerName,
+      lockerCode: lockerCode,
+    ),
+  );
+}
+
+class _ScreenTile extends StatelessWidget {
+  const _ScreenTile({required this.onTap, this.isOnline = true});
+  final VoidCallback onTap;
+  final bool isOnline;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: double.infinity,
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Color(0xFF0F172A), Color(0xFF1E293B)],
+          ),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(
+            color: isOnline
+                ? const Color(0xFF38BDF8).withValues(alpha: 0.6)
+                : const Color(0xFFEF4444).withValues(alpha: 0.5),
+            width: 1.2,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: isOnline
+                  ? const Color(0xFF0284C7).withValues(alpha: 0.25)
+                  : Colors.black.withValues(alpha: 0.2),
+              blurRadius: 6,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Stack(
+          children: [
+            // Ánh phản chiếu màn hình gương
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              height: 28,
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.white.withValues(alpha: 0.12),
+                      Colors.transparent,
+                    ],
+                  ),
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(9)),
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 5),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  // Hàng tiêu đề: Icon Monitor + Tên + Badge 1024x600
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            LucideIcons.monitor,
+                            size: 11,
+                            color: isOnline
+                                ? const Color(0xFF38BDF8)
+                                : const Color(0xFF94A3B8),
+                          ),
+                          const SizedBox(width: 3),
+                          const Text(
+                            'Màn hình 7"',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 9.5,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                        ],
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 4,
+                          vertical: 1,
+                        ),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF0369A1).withValues(alpha: 0.35),
+                          borderRadius: BorderRadius.circular(4),
+                          border: Border.all(
+                            color: const Color(0xFF38BDF8).withValues(alpha: 0.4),
+                            width: 0.6,
+                          ),
+                        ),
+                        child: const Text(
+                          '1024×600',
+                          style: TextStyle(
+                            color: Color(0xFFBAE6FD),
+                            fontSize: 7.5,
+                            fontWeight: FontWeight.w600,
+                            fontFamily: 'monospace',
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  // Giữa: Kiosk Touchpad/Hand
+                  Center(
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          LucideIcons.tablet,
+                          size: 13,
+                          color: isOnline
+                              ? const Color(0xFF67E8F9)
+                              : const Color(0xFF94A3B8),
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          'Kiosk Touch',
+                          style: TextStyle(
+                            color: isOnline
+                                ? const Color(0xFFE0F2FE)
+                                : const Color(0xFF94A3B8),
+                            fontSize: 9,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  // Đáy: Trạng thái Online / Offline
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Container(
+                            width: 5.5,
+                            height: 5.5,
+                            decoration: BoxDecoration(
+                              color: isOnline
+                                  ? const Color(0xFF22C55E)
+                                  : const Color(0xFFEF4444),
+                              shape: BoxShape.circle,
+                              boxShadow: isOnline
+                                  ? [
+                                      BoxShadow(
+                                        color: const Color(0xFF22C55E)
+                                            .withValues(alpha: 0.8),
+                                        blurRadius: 4,
+                                      ),
+                                    ]
+                                  : null,
+                            ),
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            isOnline ? 'Online' : 'Offline',
+                            style: TextStyle(
+                              color: isOnline
+                                  ? const Color(0xFF86EFAC)
+                                  : const Color(0xFFFCA5A5),
+                              fontSize: 8,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ],
+                      ),
+                      Text(
+                        ':3002',
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.5),
+                          fontSize: 7.5,
+                          fontFamily: 'monospace',
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _KioskScreenDetailSheet extends StatelessWidget {
+  const _KioskScreenDetailSheet({
+    required this.isOnline,
+    required this.lockerName,
+    required this.lockerCode,
+  });
+
+  final bool isOnline;
+  final String lockerName;
+  final String lockerCode;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+      ),
+      padding: EdgeInsets.fromLTRB(
+        20,
+        12,
+        20,
+        MediaQuery.of(context).viewInsets.bottom +
+            MediaQuery.of(context).padding.bottom +
+            24,
+      ),
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Thanh kéo handle
+            Center(
+              child: Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFE2E8F0),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            // Header
+            Row(
+              children: [
+                Container(
+                  width: 46,
+                  height: 46,
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF0F172A), Color(0xFF1E293B)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(
+                      color: const Color(0xFF38BDF8).withValues(alpha: 0.5),
+                    ),
+                  ),
+                  child: const Icon(
+                    LucideIcons.monitor,
+                    color: Color(0xFF38BDF8),
+                    size: 22,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Màn hình cảm ứng 7" Kiosk',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w800,
+                          color: Color(0xFF0F172A),
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        '$lockerName ($lockerCode)',
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Color(0xFF64748B),
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: isOnline
+                        ? const Color(0xFFECFDF5)
+                        : const Color(0xFFFEF2F2),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: isOnline
+                          ? const Color(0xFFA7F3D0)
+                          : const Color(0xFFFECACA),
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        width: 7,
+                        height: 7,
+                        decoration: BoxDecoration(
+                          color: isOnline
+                              ? const Color(0xFF10B981)
+                              : const Color(0xFFEF4444),
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                      const SizedBox(width: 5),
+                      Text(
+                        isOnline ? 'Trực tuyến' : 'Ngoại tuyến',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                          color: isOnline
+                              ? const Color(0xFF047857)
+                              : const Color(0xFFB91C1C),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 18),
+            // Thông số hiển thị
+            _buildSectionTitle('Thông số phần cứng màn hình', LucideIcons.cpu),
+            const SizedBox(height: 8),
+            _buildInfoCard([
+              _buildSpecRow('Model phần cứng', 'Waveshare 7inch HDMI LCD (C)'),
+              _buildSpecRow('Tấm nền hiển thị', 'IPS chống chói (Góc nhìn 178°)'),
+              _buildSpecRow('Độ phân giải', '1024 × 600 pixels @ 60Hz'),
+              _buildSpecRow('Cổng truyền video', 'Micro-HDMI to HDMI (HDMI-1 từ Pi 4)'),
+            ]),
+            const SizedBox(height: 14),
+            _buildSectionTitle('Cảm ứng & Điều khiển', LucideIcons.tablet),
+            const SizedBox(height: 8),
+            _buildInfoCard([
+              _buildSpecRow(
+                'Công nghệ cảm ứng',
+                'Điện dung 5 điểm (Capacitive 5-point)',
+              ),
+              _buildSpecRow(
+                'Giao tiếp cảm ứng',
+                'Micro-USB to USB-A (Chuẩn HID Plug&Play)',
+              ),
+              _buildSpecRow('IC điều khiển', 'Goodix GT911 Touch Controller'),
+            ]),
+            const SizedBox(height: 14),
+            _buildSectionTitle('Ứng dụng Kiosk Web', LucideIcons.globe),
+            const SizedBox(height: 8),
+            _buildInfoCard([
+              _buildSpecRow(
+                'Chế độ chạy',
+                'Google Chromium Kiosk Mode (Toàn màn hình)',
+              ),
+              _buildSpecRow('Địa chỉ nội bộ', 'http://localhost:3002/'),
+              _buildSpecRow(
+                'Tự động bật sáng',
+                'DPMS Blanking (Tiết kiệm điện sau 5p)',
+              ),
+            ]),
+            const SizedBox(height: 16),
+            // Khung hướng dẫn khách hàng
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF0FDF4),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: const Color(0xFFBBF7D0)),
+              ),
+              child: const Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(LucideIcons.info, size: 18, color: Color(0xFF16A34A)),
+                  SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      'Khách hàng có thể thao tác nhập mã PIN/OTP hoặc quét mã QR đơn hàng trực tiếp trên màn hình 7 inch này tại trạm tủ để nhận đồ mà không cần mở ứng dụng.',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Color(0xFF15803D),
+                        height: 1.4,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 18),
+            SizedBox(
+              width: double.infinity,
+              height: 44,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF0F172A),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  elevation: 0,
+                ),
+                onPressed: () => Navigator.pop(context),
+                child: const Text(
+                  'Đóng thông tin màn hình',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 13,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSectionTitle(String title, IconData icon) {
+    return Row(
+      children: [
+        Icon(icon, size: 14, color: const Color(0xFF475569)),
+        const SizedBox(width: 6),
+        Text(
+          title,
+          style: const TextStyle(
+            fontSize: 12.5,
+            fontWeight: FontWeight.w700,
+            color: Color(0xFF334155),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildInfoCard(List<Widget> children) {
+    return Container(
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      child: Column(children: children),
+    );
+  }
+
+  Widget _buildSpecRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            label,
+            style: const TextStyle(
+              fontSize: 11.5,
+              color: Color(0xFF64748B),
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          const SizedBox(width: 8),
+          Flexible(
+            child: Text(
+              value,
+              textAlign: TextAlign.end,
+              style: const TextStyle(
+                fontSize: 11.5,
+                color: Color(0xFF0F172A),
+                fontWeight: FontWeight.w600,
+              ),
+            ),
           ),
         ],
       ),
@@ -1051,13 +1644,18 @@ class _CellTile extends StatelessWidget {
   String get _status => ((cell['status'] as String?) ?? '').toUpperCase();
   String get _cellType => ((cell['cellType'] as String?) ?? 'STANDARD').toUpperCase();
   int? get _boxNumber => (cell['boxNumber'] as num?)?.toInt();
+  int? get _colIndex => (cell['colIndex'] as num?)?.toInt();
 
-  // Đồng bộ với Admin layout-view.tsx: Ô #1, Ô #2 và các ô có cellType DRONE là ô tiếp nhận Drone
+  bool get _isXl => _cellType == 'XL' || _boxNumber == 1 || _colIndex == 0;
+
+  // Ô vali (XL, ô #1) là ô giữ đồ thông thường (thuê tủ), KHÔNG PHẢI drone.
+  // Chỉ ô có cellType DRONE (hoặc fallback ô #2, #3 trên nóc nếu chưa cấu hình cellType) mới là Drone.
   bool get _isDrone =>
-      cell['isDrone'] == true ||
-      _cellType == 'DRONE' ||
-      _boxNumber == 1 ||
-      _boxNumber == 2;
+      !_isXl &&
+      (cell['isDrone'] == true ||
+          _cellType == 'DRONE' ||
+          ((cell['cellType'] == null || cell['cellType'] == '') &&
+              (_boxNumber == 2 || _boxNumber == 3)));
 
   bool get _isAvailable => _status == 'AVAILABLE';
   bool get _isFault => _status == 'FAULT';
@@ -1241,7 +1839,7 @@ class _CellTile extends StatelessWidget {
   }
 
   Widget _buildCellContent() {
-    final isXl = ((_cellType == 'XL' || _sizeLabel == 'L') && !_isDrone);
+    final isXl = _isXl || ((_cellType == 'XL' || _sizeLabel == 'L') && !_isDrone);
     final icon = _isDrone
         ? Icons.flight_rounded
         : (isXl ? LucideIcons.luggage : LucideIcons.box);
@@ -1264,6 +1862,8 @@ class _CellTile extends StatelessWidget {
       statusText = _status;
     }
 
+    final boxEmoji = _isDrone ? ' 🛸' : (isXl ? ' 🧳' : '');
+
     return Padding(
       padding: const EdgeInsets.fromLTRB(6, 5, 12, 5),
       child: Column(
@@ -1276,7 +1876,7 @@ class _CellTile extends StatelessWidget {
             children: [
               Flexible(
                 child: Text(
-                  'Ô #${_boxNumber ?? '?'}${_isDrone ? ' 🛸' : ''}',
+                  'Ô #${_boxNumber ?? '?'}$boxEmoji',
                   style: TextStyle(
                     color: _fg,
                     fontSize: 10,
@@ -1392,11 +1992,16 @@ class _BookingSheet extends StatelessWidget {
   final VoidCallback onRent;
   final VoidCallback onSend;
 
+  bool get _isXl =>
+      (cell['cellType'] as String?)?.toUpperCase() == 'XL' ||
+      (cell['boxNumber'] as num?)?.toInt() == 1 ||
+      (cell['colIndex'] as num?)?.toInt() == 0;
+
   String get _sizeVi => switch ((cell['size'] as String?) ?? '') {
     'SMALL' => 'Nhỏ (S)',
     'MEDIUM' => 'Vừa (M)',
     'LARGE' => 'Lớn (L)',
-    _ => (cell['cellType'] as String?) ?? '—',
+    _ => _isXl ? 'Vali cỡ lớn (XL)' : ((cell['cellType'] as String?) ?? '—'),
   };
 
   String get _boxLabel {
@@ -1447,23 +2052,29 @@ class _BookingSheet extends StatelessWidget {
                   color: AislBrand.cyan.withValues(alpha: 0.14),
                   borderRadius: BorderRadius.circular(16),
                 ),
-                child: AppLottie(
-                  AppLottieAssets.box,
-                  fallback: (context) => const Icon(
-                    LucideIcons.box,
-                    color: AislBrand.navy,
-                    size: 26,
-                  ),
-                ),
+                child: _isXl
+                    ? const Icon(
+                        LucideIcons.luggage,
+                        color: AislBrand.navy,
+                        size: 28,
+                      )
+                    : AppLottie(
+                        AppLottieAssets.box,
+                        fallback: (context) => const Icon(
+                          LucideIcons.box,
+                          color: AislBrand.navy,
+                          size: 26,
+                        ),
+                      ),
               ),
               const SizedBox(width: 14),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'Ô tủ trống',
-                      style: TextStyle(
+                    Text(
+                      _isXl ? 'Ô tủ vali trống' : 'Ô tủ trống',
+                      style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w800,
                         color: AislBrand.textTitle,
