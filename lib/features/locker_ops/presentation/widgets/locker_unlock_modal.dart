@@ -122,7 +122,7 @@ class _LockerUnlockModalState extends State<LockerUnlockModal> with SingleTicker
     final res = await LockerBleService.instance.scanForLocker(
       expectedLockerCode: widget.lockerCode,
       expectedLockerId: widget.lockerId,
-      timeout: const Duration(seconds: 3),
+      timeout: const Duration(seconds: 4),
     );
 
     if (!mounted) return;
