@@ -238,10 +238,13 @@ class _RentLockerPageState extends State<RentLockerPage>
         int std = 0, xl = 0;
         for (final c in cells) {
           if (c['status'] == 'AVAILABLE') {
-            if (c['cellType'] == 'STANDARD') {
-              std++;
-            } else if (c['cellType'] == 'XL') {
+            final type = (c['cellType'] as String?)?.toUpperCase();
+            final boxNum = (c['boxNumber'] as num?)?.toInt();
+            final col = (c['colIndex'] as num?)?.toInt();
+            if (type == 'XL' || boxNum == 1 || col == 0) {
               xl++;
+            } else if (type == 'STANDARD' || (type != 'DRONE' && boxNum != 2 && boxNum != 3)) {
+              std++;
             }
           }
         }
