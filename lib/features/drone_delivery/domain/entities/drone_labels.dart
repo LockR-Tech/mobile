@@ -17,6 +17,7 @@ String droneMissionStatusLabel(String? status) =>
       'ARRIVED' => 'Đã tới tủ nhận',
       'DEPOSITED' => 'Đã gửi hàng vào ô',
       'CANCELED' => 'Đã huỷ',
+      'FAILED' => 'Chuyến bay thất bại',
       _ => status!,
     };
 
@@ -74,7 +75,7 @@ String droneDurationLabel(Duration duration) {
   return '${d.inSeconds} giây';
 }
 
-/// Lý do đội bay huỷ nhiệm vụ — khớp `DroneOrderMaintenanceService.cancelReasonLabel`.
+/// Lý do đội bay huỷ nhiệm vụ hoặc báo chuyến bay thất bại — khớp `DroneOrderMaintenanceService.cancelReasonLabel`.
 String? droneCancelReasonLabel(int? code) => switch (code) {
   null => null,
   1 => 'Thời tiết xấu',

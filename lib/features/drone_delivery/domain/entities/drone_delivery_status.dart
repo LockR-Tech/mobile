@@ -79,6 +79,29 @@ class DroneDeliveryStatus {
   final DroneLockerPoint? sourceLocker;
   final DroneLockerPoint? destinationLocker;
 
+  /// Khai báo kiện lúc đặt đơn; kích thước và giá trị khai báo có thể null.
+  final String? parcelCategory;
+  final int? parcelLengthCm;
+  final int? parcelWidthCm;
+  final int? parcelHeightCm;
+  final double? declaredValue;
+  final bool? fragile;
+
+  /// Khoảng cách đường chim bay tủ gửi → tủ nhận (mét).
+  final int? routeDistanceMeters;
+
+  /// Người gửi xác nhận đã bỏ kiện vào ô gửi; null ⇒ đội bay chưa tiếp nhận được.
+  final DateTime? parcelDroppedAt;
+
+  /// Đơn đã đóng mà kiện chưa được trả cho người gửi. Null với server cũ chưa
+  /// theo dõi việc bàn giao kiện.
+  final bool? parcelReturnPending;
+
+  /// `SOURCE_BOX` | `FLIGHT_TEAM` khi kiện đang chờ trả.
+  final String? parcelHeldAt;
+  final DateTime? parcelReturnedAt;
+  final String? parcelReturnNote;
+
   /// Mốc hành trình, mới nhất trước.
   final List<DroneJourneyEvent> journeyEvents;
 
@@ -135,6 +158,18 @@ class DroneDeliveryStatus {
     this.completedAt,
     this.sourceLocker,
     this.destinationLocker,
+    this.parcelCategory,
+    this.parcelLengthCm,
+    this.parcelWidthCm,
+    this.parcelHeightCm,
+    this.declaredValue,
+    this.fragile,
+    this.routeDistanceMeters,
+    this.parcelDroppedAt,
+    this.parcelReturnPending,
+    this.parcelHeldAt,
+    this.parcelReturnedAt,
+    this.parcelReturnNote,
     this.journeyEvents = const [],
   });
 
@@ -154,6 +189,15 @@ class DroneDeliveryStatus {
       stage == DroneDeliveryStage.accepted &&
       !isPaid &&
       (weightSurcharge ?? 0) > 0;
+
+  /// Đơn đã trả tiền nhưng người gửi chưa xác nhận bỏ kiện vào ô gửi — đội bay
+  /// chưa tiếp nhận được (`DRONE_PARCEL_NOT_DROPPED`). Server cũ không theo dõi
+  /// mốc này ([parcelReturnPending] null) thì không nhắc.
+  bool get needsParcelDrop =>
+      parcelReturnPending != null &&
+      stage == DroneDeliveryStage.awaitingDispatch &&
+      isPaid &&
+      parcelDroppedAt == null;
 
   /// Số tiền khách cần trả lúc này.
   double? get payableAmount =>

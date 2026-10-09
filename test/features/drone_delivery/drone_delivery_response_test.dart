@@ -24,6 +24,72 @@ void main() {
     expect(response.etaMinutes, 6);
   });
 
+  test('a flight that failed after launch shows as failed, not canceled', () {
+    final status = DroneDeliveryResponse.fromJson({
+      'orderId': 21,
+      // Backend đóng đơn là CANCELED để hoàn tiền; chặng FAILED mới là điều khách cần thấy.
+      'status': 'CANCELED',
+      'deliveryStage': 'FAILED',
+      'missionStatus': 'FAILED',
+      'cancelReason': 2,
+    }).toEntity();
+
+    expect(status.stage, DroneDeliveryStage.failed);
+    expect(status.canCustomerCancel, isFalse);
+
+    final canceled = DroneDeliveryResponse.fromJson({
+      'orderId': 22,
+      'status': 'CANCELED',
+      'deliveryStage': 'CANCELED',
+    }).toEntity();
+    expect(canceled.stage, DroneDeliveryStage.canceled);
+  });
+
+  test('paid order asks the sender to drop the parcel until the drop is confirmed', () {
+    Map<String, dynamic> order(Map<String, dynamic> extra) => {
+      'orderId': 21,
+      'status': 'AWAITING_DISPATCH',
+      'deliveryStage': 'AWAITING_DISPATCH',
+      'paymentStatus': 'PAID',
+      ...extra,
+    };
+
+    final waiting = DroneDeliveryResponse.fromJson(
+      order({'parcelReturnPending': false, 'parcelCategory': 'FOOD', 'fragile': true}),
+    ).toEntity();
+    expect(waiting.needsParcelDrop, isTrue);
+    expect(waiting.parcelCategory, 'FOOD');
+    expect(waiting.fragile, isTrue);
+
+    final dropped = DroneDeliveryResponse.fromJson(
+      order({'parcelReturnPending': false, 'parcelDroppedAt': '2026-10-09T03:00:00'}),
+    ).toEntity();
+    expect(dropped.needsParcelDrop, isFalse);
+
+    // Server cũ chưa theo dõi mốc bỏ kiện thì không nhắc.
+    expect(DroneDeliveryResponse.fromJson(order({})).toEntity().needsParcelDrop, isFalse);
+
+    final unpaid = DroneDeliveryResponse.fromJson(
+      order({'parcelReturnPending': false, 'paymentStatus': 'UNPAID'}),
+    ).toEntity();
+    expect(unpaid.needsParcelDrop, isFalse);
+  });
+
+  test('a closed order reports where its parcel waits to be returned', () {
+    final status = DroneDeliveryResponse.fromJson({
+      'orderId': 21,
+      'status': 'CANCELED',
+      'deliveryStage': 'CANCELED',
+      'parcelReturnPending': true,
+      'parcelHeldAt': 'SOURCE_BOX',
+      'parcelDroppedAt': '2026-10-09T03:00:00',
+    }).toEntity();
+
+    expect(status.parcelReturnPending, isTrue);
+    expect(status.parcelHeldAt, 'SOURCE_BOX');
+    expect(status.parcelReturnedAt, isNull);
+  });
+
   test('maps route, people, loading record and journey for the detail view', () {
     final status = DroneDeliveryResponse.fromJson({
       'orderId': 21,

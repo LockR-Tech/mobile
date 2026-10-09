@@ -38,6 +38,14 @@ class BusinessConfig {
     this.droneWeightOptionsGrams = const [500, 750, 1000, 1500, 2000, 3000],
     this.droneMaxPayloadWeightGrams = 5000,
     this.droneWeightToleranceGrams = 50,
+    this.droneFlightsSuspended = false,
+    this.droneMaxParcelLengthCm = 30,
+    this.droneMaxParcelWidthCm = 25,
+    this.droneMaxParcelHeightCm = 20,
+    this.droneMaxDeclaredValue = 2000000,
+    this.droneUnpaidCancelMinutes = 30,
+    this.droneDispatchTimeoutMinutes = 120,
+    this.droneSurchargeTimeoutMinutes = 60,
     required this.topupMinAmount,
     required this.topupMaxAmount,
     required this.topupDefaultAmount,
@@ -115,6 +123,27 @@ class BusinessConfig {
 
   /// Cân thực tế vượt khai báo không quá mức này thì không thu thêm.
   final int droneWeightToleranceGrams;
+
+  /// Admin tạm dừng bay (thời tiết, sự cố): không đặt được đơn drone mới.
+  final bool droneFlightsSuspended;
+
+  /// Kích thước khoang hàng của drone (cm) và trần giá trị khai báo (VND).
+  final int droneMaxParcelLengthCm;
+  final int droneMaxParcelWidthCm;
+  final int droneMaxParcelHeightCm;
+  final int droneMaxDeclaredValue;
+
+  /// Hạn chờ của đơn drone (phút, 0 = không tự huỷ): chưa thanh toán; đã thanh toán
+  /// mà chưa bỏ kiện/chưa được tiếp nhận; nợ phụ thu cân lệch.
+  final int droneUnpaidCancelMinutes;
+  final int droneDispatchTimeoutMinutes;
+  final int droneSurchargeTimeoutMinutes;
+
+  List<int> get droneMaxParcelSizeCm => [
+    droneMaxParcelLengthCm,
+    droneMaxParcelWidthCm,
+    droneMaxParcelHeightCm,
+  ];
 
   // ---- Scope `payment` ----
   final int topupMinAmount;
@@ -319,6 +348,41 @@ class BusinessConfig {
         o['app.order.drone-weight-tolerance-grams'],
         d.droneWeightToleranceGrams,
       ),
+      droneFlightsSuspended: _bool(
+        o['app.order.drone-flights-suspended'],
+        d.droneFlightsSuspended,
+      ),
+      droneMaxParcelLengthCm: _int(
+        o['app.order.drone-max-parcel-length-cm'],
+        d.droneMaxParcelLengthCm,
+        min: 1,
+      ),
+      droneMaxParcelWidthCm: _int(
+        o['app.order.drone-max-parcel-width-cm'],
+        d.droneMaxParcelWidthCm,
+        min: 1,
+      ),
+      droneMaxParcelHeightCm: _int(
+        o['app.order.drone-max-parcel-height-cm'],
+        d.droneMaxParcelHeightCm,
+        min: 1,
+      ),
+      droneMaxDeclaredValue: _int(
+        o['app.order.drone-max-declared-value'],
+        d.droneMaxDeclaredValue,
+      ),
+      droneUnpaidCancelMinutes: _int(
+        o['app.order.drone-unpaid-cancel-minutes'],
+        d.droneUnpaidCancelMinutes,
+      ),
+      droneDispatchTimeoutMinutes: _int(
+        o['app.order.drone-dispatch-timeout-minutes'],
+        d.droneDispatchTimeoutMinutes,
+      ),
+      droneSurchargeTimeoutMinutes: _int(
+        o['app.order.drone-surcharge-timeout-minutes'],
+        d.droneSurchargeTimeoutMinutes,
+      ),
       topupMinAmount: topupMin,
       topupMaxAmount: topupMax,
       topupDefaultAmount: topupDefault,
@@ -409,6 +473,14 @@ class BusinessConfig {
       'app.order.drone-weight-options-grams': droneWeightOptionsGrams,
       'app.order.drone-max-payload-weight-grams': droneMaxPayloadWeightGrams,
       'app.order.drone-weight-tolerance-grams': droneWeightToleranceGrams,
+      'app.order.drone-flights-suspended': droneFlightsSuspended,
+      'app.order.drone-max-parcel-length-cm': droneMaxParcelLengthCm,
+      'app.order.drone-max-parcel-width-cm': droneMaxParcelWidthCm,
+      'app.order.drone-max-parcel-height-cm': droneMaxParcelHeightCm,
+      'app.order.drone-max-declared-value': droneMaxDeclaredValue,
+      'app.order.drone-unpaid-cancel-minutes': droneUnpaidCancelMinutes,
+      'app.order.drone-dispatch-timeout-minutes': droneDispatchTimeoutMinutes,
+      'app.order.drone-surcharge-timeout-minutes': droneSurchargeTimeoutMinutes,
     },
     'payment': {
       'app.payment.topup-min-amount': topupMinAmount,
