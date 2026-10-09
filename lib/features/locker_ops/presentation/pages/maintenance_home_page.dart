@@ -187,7 +187,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
     if (hour < 12) return '☀️ Chào buổi sáng';
     if (hour < 14) return '🌤️ Chào buổi trưa';
     if (hour < 18) return '🌅 Chào buổi chiều';
-    return '🌙 Chào ca tối';
+    return '🌙 Chào buổi tối';
   }
 
   String _resolvedTechnicianName(BuildContext context) {
