@@ -195,6 +195,9 @@ class LockerOpsService {
     String? description,
     required int parcelWeightGrams,
     required String paymentMethod,
+    /// Khai báo kiện (`DroneParcelDeclaration.toJson`): loại hàng, kích thước, giá trị,
+    /// dễ vỡ và cam kết không gửi hàng cấm — backend bắt buộc cam kết này.
+    Map<String, dynamic>? parcel,
     required String idempotencyKey,
   }) => _map(
     'POST',
@@ -211,6 +214,7 @@ class LockerOpsService {
       if (description != null) 'description': description,
       'parcelWeightGrams': parcelWeightGrams,
       'paymentMethod': paymentMethod,
+      ...?parcel,
     },
   );
 
@@ -954,6 +958,42 @@ class LockerOpsService {
     },
   );
 
+  /// Chuyến bay không giao được hàng sau khi đã phóng: đơn đóng lại, ô nhận được
+  /// nhả, drone chuyển FAULT và khách được tạo yêu cầu hoàn tiền. Cùng bảng lý do
+  /// với [cancelDroneOrder].
+  Future<Map<String, dynamic>> failDroneOrder(
+    int orderId, {
+    required int reasonCode,
+    String? note,
+  }) => _map(
+    'POST',
+    '/api/drone-technician/drone-orders/$orderId/fail',
+    body: {
+      'reasonCode': reasonCode,
+      if (note != null && note.trim().isNotEmpty) 'note': note.trim(),
+    },
+  );
+
+  /// Người gửi xác nhận đã bỏ kiện vào ô drone ở tủ gửi — đội bay chỉ tiếp nhận
+  /// được đơn đã có mốc này.
+  Future<Map<String, dynamic>> confirmDroneParcelDrop(int orderId) =>
+      _map('POST', '/api/orders/$orderId/drone-delivery/drop-confirmation');
+
+  /// Khách từ chối trả phụ thu cân lệch: đơn huỷ, phần đã trả được hoàn, đội bay
+  /// trả lại kiện.
+  Future<Map<String, dynamic>> declineDroneSurcharge(int orderId) =>
+      _map('POST', '/api/orders/$orderId/drone-delivery/decline-surcharge');
+
+  /// Đội bay xác nhận đã trả kiện của một đơn không giao được cho người gửi.
+  Future<Map<String, dynamic>> confirmDroneParcelReturn(
+    int orderId, {
+    String? note,
+  }) => _map(
+    'POST',
+    '/api/drone-technician/drone-orders/$orderId/parcel-return',
+    body: {if (note != null && note.trim().isNotEmpty) 'note': note.trim()},
+  );
+
   /// Đội bay điều phối yêu cầu; gán [droneUnitId] thì drone đó chuyển IN_FLIGHT.
   Future<Map<String, dynamic>> dispatchDroneDelivery(
     int id, {
@@ -1028,6 +1068,26 @@ class LockerOpsService {
     // ── Luồng giao drone (order-service / locker-service) ──
     'DRONE_ROUTE_REQUIRED': 'Cần chọn cả tủ gửi và tủ nhận.',
     'DRONE_ROUTE_INVALID': 'Tủ gửi và tủ nhận phải khác nhau.',
+    'DRONE_ROUTE_TOO_FAR': 'Hai tủ cách nhau quá tầm bay của drone.',
+    'DRONE_FLIGHTS_SUSPENDED':
+        'Dịch vụ giao drone đang tạm dừng (thời tiết hoặc sự cố vận hành).',
+    'DRONE_OUTSIDE_FLIGHT_HOURS': 'Ngoài khung giờ được phép phóng drone.',
+    'DRONE_OPEN_ORDER_LIMIT':
+        'Bạn đang có quá nhiều đơn drone chưa hoàn tất. Hoàn tất hoặc huỷ bớt rồi đặt tiếp.',
+    'DRONE_PROHIBITED_ITEMS_NOT_DECLARED':
+        'Bạn cần cam kết kiện không chứa hàng cấm bay.',
+    'DRONE_PARCEL_SIZE_INVALID':
+        'Nhập đủ dài, rộng, cao của kiện hoặc bỏ trống cả ba.',
+    'DRONE_PARCEL_TOO_LARGE': 'Kiện không lọt khoang hàng của drone.',
+    'DRONE_PARCEL_CATEGORY_INVALID': 'Loại hàng không hợp lệ.',
+    'DRONE_DECLARED_VALUE_TOO_HIGH':
+        'Giá trị khai báo vượt mức drone được phép chở.',
+    'DRONE_PARCEL_NOT_DROPPED':
+        'Người gửi chưa xác nhận bỏ kiện vào ô gửi nên chưa thể tiếp nhận.',
+    'DRONE_PARCEL_RETURN_NOT_PENDING': 'Đơn này không có kiện nào chờ trả.',
+    'DRONE_BATTERY_UNKNOWN':
+        'Chưa biết mức pin của drone, hãy cập nhật pin trước khi bay.',
+    'DRONE_SURCHARGE_NOT_OWED': 'Đơn không còn nợ phụ thu cân lệch.',
     'DRONE_SOURCE_NOT_FOUND': 'Không tìm thấy tủ gửi.',
     'DRONE_DESTINATION_NOT_FOUND': 'Không tìm thấy tủ nhận.',
     'DRONE_LOCKER_INACTIVE': 'Tủ gửi hoặc tủ nhận đang ngừng hoạt động.',
