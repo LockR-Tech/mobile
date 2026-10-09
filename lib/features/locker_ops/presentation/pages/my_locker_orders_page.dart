@@ -2683,10 +2683,13 @@ class _PayOvertimeConfirmationSheetState
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            label,
-            style: const TextStyle(fontSize: 12.5, color: opsMutedText),
+          Expanded(
+            child: Text(
+              label,
+              style: const TextStyle(fontSize: 12.5, color: opsMutedText),
+            ),
           ),
+          const SizedBox(width: 8),
           Text(
             value,
             style: TextStyle(
