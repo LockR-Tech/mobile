@@ -15,6 +15,7 @@ import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:smart_laundry_locker/shared/widgets/custom_input.dart';
 import 'package:smart_laundry_locker/shared/widgets/custom_textarea.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class CreateReportPage extends StatefulWidget {
   final String lockerId;
@@ -586,26 +587,60 @@ class _CreateReportPageState extends State<CreateReportPage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text(
-              'Chọn ô gặp sự cố tại Kiosk:',
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: Colors.black87,
-              ),
+            Row(
+              children: [
+                const Text(
+                  'Chọn ô gặp sự cố tại Kiosk:',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black87,
+                  ),
+                ),
+                const SizedBox(width: 6),
+                Text(
+                  '(Tuỳ chọn)',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey.shade600,
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(width: 8),
-            Text(
-              '(Tuỳ chọn)',
-              style: TextStyle(
-                fontSize: 12,
-                color: Colors.grey.shade600,
+            if (_selectedBoxId != null)
+              GestureDetector(
+                onTap: () {
+                  setState(() => _selectedBoxId = null);
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFEF2F2),
+                    borderRadius: BorderRadius.circular(6),
+                    border: Border.all(color: const Color(0xFFFECACA), width: 0.8),
+                  ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.close, size: 12, color: Color(0xFFDC2626)),
+                      SizedBox(width: 3),
+                      Text(
+                        'Bỏ chọn',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFFDC2626),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
-            ),
           ],
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 6),
         if (_isLoadingBoxes)
           Container(
             padding: const EdgeInsets.symmetric(vertical: 14),
@@ -632,59 +667,63 @@ class _CreateReportPageState extends State<CreateReportPage> {
             ),
           )
         else ...[
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: _boxes.map((c) {
-              final cId = (c['id'] as num?)?.toInt();
-              final isSel = cId != null && cId == _selectedBoxId;
-              final st = (c['status'] as String? ?? '').toUpperCase();
-              final col = switch (st) {
-                'AVAILABLE' => const Color(0xFF16A34A),
-                'OCCUPIED' => const Color(0xFFD97706),
-                'RESERVED' => const Color(0xFF2563EB),
-                'FAULT' => const Color(0xFFDC2626),
-                _ => Colors.grey,
-              };
-              return ChoiceChip(
-                selected: isSel,
-                onSelected: (val) {
-                  setState(() {
-                    _selectedBoxId = val ? cId : null;
-                  });
-                },
-                selectedColor: AISLShadcnTheme.navyPrimary.withValues(alpha: 0.18),
-                backgroundColor: Colors.white,
-                side: BorderSide(
-                  color: isSel ? AISLShadcnTheme.navyPrimary : Colors.grey.shade300,
-                  width: isSel ? 2 : 1,
+          // Thanh Chú thích trực quan (Legend) nhận diện theo sơ đồ tủ
+          Container(
+            margin: const EdgeInsets.only(bottom: 10),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF8FAFC),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: const Color(0xFFE2E8F0)),
+            ),
+            child: Wrap(
+              spacing: 12,
+              runSpacing: 6,
+              children: [
+                _buildBoxLegendItem(
+                  icon: LucideIcons.luggage,
+                  label: 'Vali (XL)',
+                  bg: const Color(0xFF00B4D8),
                 ),
-                label: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Container(
-                      width: 8,
-                      height: 8,
-                      decoration: BoxDecoration(
-                        color: col,
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      '#${c['boxNumber']}',
-                      style: TextStyle(
-                        fontWeight: isSel ? FontWeight.bold : FontWeight.w600,
-                        color: isSel ? AISLShadcnTheme.navyPrimary : Colors.black87,
-                      ),
-                    ),
-                  ],
+                _buildBoxLegendItem(
+                  icon: Icons.flight_rounded,
+                  label: 'Drone',
+                  bg: const Color(0xFF6366F1),
                 ),
-              );
-            }).toList(),
+                _buildBoxLegendItem(
+                  icon: LucideIcons.box,
+                  label: 'Tiêu chuẩn',
+                  bg: const Color(0xFF0284C7),
+                ),
+                _buildBoxLegendItem(
+                  icon: LucideIcons.doorOpen,
+                  label: 'Cửa đang mở',
+                  bg: const Color(0xFFD97706),
+                ),
+              ],
+            ),
           ),
+
+          // Lưới ô Kiosk trực quan theo màu sắc sơ đồ tủ
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final double cardWidth = (constraints.maxWidth - 16) / 3;
+              return Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: _boxes.map((c) {
+                  return SizedBox(
+                    width: cardWidth,
+                    child: _buildVisualBoxCard(c),
+                  );
+                }).toList(),
+              );
+            },
+          ),
+
+          // Card thông tin xác nhận khi khách hàng đã chọn ô
           if (_selectedBoxId != null) ...[
-            const SizedBox(height: 8),
+            const SizedBox(height: 10),
             Builder(
               builder: (_) {
                 final match = _boxes.firstWhere(
@@ -692,24 +731,56 @@ class _CreateReportPageState extends State<CreateReportPage> {
                   orElse: () => {},
                 );
                 final numVal = match['boxNumber'] ?? _selectedBoxId;
+                final bCol = (match['colIndex'] as num?)?.toInt();
+                final bType = ((match['cellType'] as String?) ?? '').toUpperCase();
+                final bIsXl = bType == 'XL' || numVal == 1 || bCol == 0;
+                final bIsDrone = !bIsXl &&
+                    (match['isDrone'] == true ||
+                        bType == 'DRONE' ||
+                        ((bType.isEmpty) && (numVal == 2 || numVal == 3)));
+                final bIsDoorOpen = match['doorOpen'] == true ||
+                    ((match['hwState'] as String?)?.toUpperCase() == 'OPEN');
+
+                final String typeLabel = bIsDrone
+                    ? 'Ô Drone (Nóc tủ)'
+                    : (bIsXl ? 'Ô lớn Vali (XL - Cột 1)' : 'Ô Tiêu chuẩn (Vừa)');
+
                 return Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   decoration: BoxDecoration(
                     color: const Color(0xFFECFDF5),
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(10),
                     border: Border.all(color: const Color(0xFFA7F3D0)),
                   ),
                   child: Row(
-                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.check_circle, size: 14, color: Color(0xFF059669)),
-                      const SizedBox(width: 6),
-                      Text(
-                        'Đã chọn ô #$numVal — KTV sẽ thấy ngay ô này khi nhận xử lý.',
-                        style: const TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          color: Color(0xFF065F46),
+                      const Icon(Icons.check_circle_rounded,
+                          size: 18, color: Color(0xFF059669)),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Đang chọn: Ô #$numVal • $typeLabel',
+                              style: const TextStyle(
+                                fontSize: 12.5,
+                                fontWeight: FontWeight.w700,
+                                color: Color(0xFF065F46),
+                              ),
+                            ),
+                            if (bIsDoorOpen) ...[
+                              const SizedBox(height: 2),
+                              const Text(
+                                '⚠️ Cửa ô này hiện đang MỞ trên hệ thống.',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w600,
+                                  color: Color(0xFFB45309),
+                                ),
+                              ),
+                            ],
+                          ],
                         ),
                       ),
                     ],
@@ -720,6 +791,245 @@ class _CreateReportPageState extends State<CreateReportPage> {
           ],
         ],
       ],
+    );
+  }
+
+  Widget _buildBoxLegendItem({
+    required IconData icon,
+    required String label,
+    required Color bg,
+  }) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: 14,
+          height: 14,
+          decoration: BoxDecoration(
+            color: bg,
+            borderRadius: BorderRadius.circular(3),
+          ),
+          child: Icon(icon, size: 9, color: Colors.white),
+        ),
+        const SizedBox(width: 4),
+        Text(
+          label,
+          style: const TextStyle(
+            fontSize: 10.5,
+            fontWeight: FontWeight.w600,
+            color: Color(0xFF334155),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildVisualBoxCard(Map<String, dynamic> c) {
+    final cId = (c['id'] as num?)?.toInt();
+    final isSel = cId != null && cId == _selectedBoxId;
+    final boxNum = (c['boxNumber'] as num?)?.toInt() ?? 0;
+    final col = (c['colIndex'] as num?)?.toInt();
+    final cellType = ((c['cellType'] as String?) ?? '').toUpperCase();
+    final st = ((c['status'] as String?) ?? 'AVAILABLE').toUpperCase();
+    final isDoorOpen = c['doorOpen'] == true ||
+        ((c['hwState'] as String?)?.toUpperCase() == 'OPEN');
+
+    final isXl = cellType == 'XL' || boxNum == 1 || col == 0;
+    final isDrone = !isXl &&
+        (c['isDrone'] == true ||
+            cellType == 'DRONE' ||
+            ((cellType.isEmpty) && (boxNum == 2 || boxNum == 3)));
+
+    final IconData boxIcon = isDrone
+        ? Icons.flight_rounded
+        : (isXl ? LucideIcons.luggage : LucideIcons.box);
+
+    final String typeNote = isDrone
+        ? 'Drone'
+        : (isXl ? 'Vali (XL)' : 'Tiêu chuẩn');
+
+    final String statusNote = switch (st) {
+      'AVAILABLE' => isDrone ? 'Nhận Drone' : 'Sẵn sàng',
+      'OCCUPIED' || 'IN_USE' => 'Đang dùng',
+      'RESERVED' => 'Đã đặt',
+      'FAULT' => 'Hỏng',
+      'CLEANING' => 'Bảo trì',
+      _ => st,
+    };
+
+    // Màu nền gradient giống 100% sơ đồ ô Tủ
+    final LinearGradient bgGradient;
+    if (isDrone && st == 'AVAILABLE') {
+      bgGradient = const LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [Color(0xFF818CF8), Color(0xFF4F46E5)],
+      );
+    } else {
+      bgGradient = switch (st) {
+        'AVAILABLE' when isXl => const LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Color(0xFF06B6D4), Color(0xFF0284C7)],
+          ),
+        'AVAILABLE' => const LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Color(0xFF0EA5E9), Color(0xFF0284C7)],
+          ),
+        'OCCUPIED' || 'IN_USE' => const LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Color(0xFF94A3B8), Color(0xFF64748B)],
+          ),
+        'RESERVED' => const LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Color(0xFFF59E0B), Color(0xFFD97706)],
+          ),
+        'FAULT' => const LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Color(0xFFEF4444), Color(0xFFDC2626)],
+          ),
+        'CLEANING' => const LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Color(0xFF60A5FA), Color(0xFF3B82F6)],
+          ),
+        _ => const LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Color(0xFFCBD5E1), Color(0xFF94A3B8)],
+          ),
+      };
+    }
+
+    return GestureDetector(
+      onTap: () {
+        if (cId != null) {
+          setState(() {
+            _selectedBoxId = isSel ? null : cId;
+          });
+        }
+      },
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        padding: const EdgeInsets.fromLTRB(6, 6, 6, 6),
+        decoration: BoxDecoration(
+          gradient: bgGradient,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(
+            color: isSel
+                ? Colors.black87
+                : (isDoorOpen ? const Color(0xFFFBBF24) : Colors.white.withValues(alpha: 0.35)),
+            width: isSel ? 2.5 : (isDoorOpen ? 2.0 : 1.0),
+          ),
+          boxShadow: [
+            if (isSel)
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.35),
+                blurRadius: 8,
+                spreadRadius: 1,
+                offset: const Offset(0, 2),
+              )
+            else
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.08),
+                blurRadius: 4,
+                offset: const Offset(0, 2),
+              ),
+          ],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // Hàng 1: Số ô + Cửa mở/Checkmark
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Flexible(
+                  child: Text(
+                    'Ô #$boxNum',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w800,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                if (isSel)
+                  Container(
+                    padding: const EdgeInsets.all(1.5),
+                    decoration: const BoxDecoration(
+                      color: Colors.white,
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.check,
+                      size: 10,
+                      color: Color(0xFF0F172A),
+                    ),
+                  )
+                else if (isDoorOpen)
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 3, vertical: 0.5),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFEF08A),
+                      borderRadius: BorderRadius.circular(3),
+                      border: Border.all(color: const Color(0xFFEAB308), width: 0.6),
+                    ),
+                    child: const Text(
+                      'Mở',
+                      style: TextStyle(
+                        fontSize: 7.5,
+                        fontWeight: FontWeight.w800,
+                        color: Color(0xFF854D0E),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 4),
+
+            // Hàng 2: Biểu tượng loại ô
+            Center(
+              child: Icon(
+                boxIcon,
+                color: Colors.white.withValues(alpha: 0.95),
+                size: 20,
+              ),
+            ),
+            const SizedBox(height: 4),
+
+            // Hàng 3: Note loại ô / trạng thái
+            Center(
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1.5),
+                decoration: BoxDecoration(
+                  color: Colors.black.withValues(alpha: 0.16),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: Text(
+                  '$typeNote • $statusNote',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 8,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0.1,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
