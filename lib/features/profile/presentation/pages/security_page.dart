@@ -45,7 +45,7 @@ class _SecurityPageState extends State<SecurityPage> {
     if (!mounted) return;
     setState(() {
       _bioSupported = supported;
-      _bioEnabled = enabled;
+      _bioEnabled = supported && enabled;
     });
   }
 
@@ -90,19 +90,35 @@ class _SecurityPageState extends State<SecurityPage> {
   }
 
   void _onCurrentPasswordChanged(String value) {
-    _verifyDebounce?.cancel();
-    _securityProvider.resetValidation();
+    if (_securityProvider.error != null) {
+      _securityProvider.resetValidation();
+    }
+    setState(() {});
+  }
 
-    if (value.trim().length < 6 || (_email?.isNotEmpty != true)) {
+  Future<void> _handleStartChangePassword() async {
+    final email = _email;
+    final currentPassword = _passwordController.text.trim();
+    if (email == null || email.isEmpty) {
+      SmartDialog.showToast('Không lấy được thông tin email.');
       return;
     }
 
-    _verifyDebounce = Timer(const Duration(milliseconds: 450), () {
-      _securityProvider.verifyCurrentPassword(
-        email: _email!,
-        currentPassword: value.trim(),
+    SmartDialog.showLoading(msg: 'Đang kiểm tra mật khẩu hiện tại...');
+    await _securityProvider.verifyCurrentPassword(
+      email: email,
+      currentPassword: currentPassword,
+    );
+    SmartDialog.dismiss();
+
+    if (!mounted) return;
+    if (_securityProvider.isCurrentPasswordValid) {
+      _showChangePasswordDialog(context);
+    } else {
+      SmartDialog.showToast(
+        _securityProvider.error ?? 'Mật khẩu hiện tại không chính xác',
       );
-    });
+    }
   }
 
   Future<void> _showChangePasswordDialog(BuildContext parentContext) async {
@@ -248,7 +264,7 @@ class _SecurityPageState extends State<SecurityPage> {
                         Expanded(
                           child: ListenableBuilder(
                             listenable: _securityProvider,
-                            builder: (context, _) {
+                            builder: (btnContext, _) {
                               final canConfirm =
                                   !_securityProvider.isChangingPassword &&
                                   (strengthError == null) &&
@@ -289,10 +305,10 @@ class _SecurityPageState extends State<SecurityPage> {
                                                   .trim(),
                                             );
                                         SmartDialog.dismiss();
-                                        if (!mounted) return;
+                                        if (!mounted || !btnContext.mounted) return;
 
                                         if (ok) {
-                                          Navigator.of(context).pop();
+                                          Navigator.of(btnContext).pop();
                                           _passwordController.clear();
                                           _securityProvider.resetValidation();
                                           SmartDialog.showToast(
@@ -530,9 +546,9 @@ class _SecurityPageState extends State<SecurityPage> {
                           ),
                           onPressed:
                               (_isLoadingProfile ||
-                                  !provider.isCurrentPasswordValid)
+                                  _passwordController.text.trim().length < 6)
                               ? null
-                              : () => _showChangePasswordDialog(context),
+                              : _handleStartChangePassword,
                           child: const Text(
                             'Đổi mật khẩu',
                             style: TextStyle(

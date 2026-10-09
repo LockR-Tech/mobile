@@ -7,7 +7,6 @@ import 'package:smart_laundry_locker/features/profile/presentation/widgets/profi
 import 'package:smart_laundry_locker/features/profile/domain/entities/user_profile.dart';
 import 'package:smart_laundry_locker/shared/widgets/app_cached_image.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
@@ -109,9 +108,27 @@ class _ProfileDetailPageState extends State<ProfileDetailPage> {
                 return const Center(child: Text('Không có dữ liệu'));
               }
 
-              final String statusLabel = profile.status == UserStatus.ACTIVE
-                  ? 'Trạng thái tài khoản: Đang hoạt động'
-                  : 'Trạng thái tài khoản: Đang bị khóa';
+              final String statusLabel;
+              final Color statusColor;
+              final Color statusBgColor;
+
+              switch (profile.status) {
+                case UserStatus.ACTIVE:
+                  statusLabel = 'Trạng thái tài khoản: Đang hoạt động';
+                  statusColor = Colors.green.shade700;
+                  statusBgColor = Colors.green.shade50;
+                  break;
+                case UserStatus.INACTIVE:
+                  statusLabel = 'Trạng thái tài khoản: Chưa kích hoạt';
+                  statusColor = Colors.orange.shade800;
+                  statusBgColor = Colors.orange.shade50;
+                  break;
+                case UserStatus.BLOCKED:
+                  statusLabel = 'Trạng thái tài khoản: Đang bị khóa';
+                  statusColor = AppColors.error;
+                  statusBgColor = AppColors.error.withOpacity(0.12);
+                  break;
+              }
 
               return SingleChildScrollView(
                 physics: const BouncingScrollPhysics(),
@@ -207,43 +224,27 @@ class _ProfileDetailPageState extends State<ProfileDetailPage> {
                                 vertical: 6,
                               ),
                               decoration: BoxDecoration(
-                                color: profile.status == UserStatus.ACTIVE
-                                    ? Colors.green.shade50
-                                    : AppColors.error.withOpacity(0.12),
+                                color: statusBgColor,
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  if (profile.status == UserStatus.ACTIVE) ...[
-                                    Container(
-                                      width: 6,
-                                      height: 6,
-                                      decoration: BoxDecoration(
-                                        color: Colors.green.shade700,
-                                        shape: BoxShape.circle,
-                                      ),
+                                  Container(
+                                    width: 6,
+                                    height: 6,
+                                    decoration: BoxDecoration(
+                                      color: statusColor,
+                                      shape: BoxShape.circle,
                                     ),
-                                    const SizedBox(width: 6),
-                                  ] else ...[
-                                    Container(
-                                      width: 6,
-                                      height: 6,
-                                      decoration: BoxDecoration(
-                                        color: AppColors.error,
-                                        shape: BoxShape.circle,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 6),
-                                  ],
+                                  ),
+                                  const SizedBox(width: 6),
                                   Text(
                                     statusLabel,
                                     style: TextStyle(
                                       fontSize: 12,
                                       fontWeight: FontWeight.w600,
-                                      color: profile.status == UserStatus.ACTIVE
-                                          ? Colors.green.shade700
-                                          : AppColors.error,
+                                      color: statusColor,
                                     ),
                                   ),
                                 ],
@@ -307,13 +308,20 @@ class _ProfileDetailPageState extends State<ProfileDetailPage> {
                     const SizedBox(height: 22),
 
                     // Password
-                    ProfileInputCard(
-                      label: 'Mật khẩu',
-                      value: 'password',
-                      hintText: '••••••••••••',
-                      leadingIcon: Icons.lock_outline_rounded,
-                      trailingIcon: Icons.lock_rounded,
-                      isPassword: true,
+                    GestureDetector(
+                      onTap: () => context.push(AppRouter.security),
+                      child: ProfileInputCard(
+                        label: 'Mật khẩu',
+                        value: 'password',
+                        hintText: '••••••••••••',
+                        leadingIcon: Icons.lock_outline_rounded,
+                        trailing: const Icon(
+                          Icons.arrow_forward_ios_rounded,
+                          size: 16,
+                          color: AppColors.onSurfaceVariant,
+                        ),
+                        isPassword: true,
+                      ),
                     ),
 
                     const SizedBox(height: 24),

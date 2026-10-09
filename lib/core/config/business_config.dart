@@ -31,6 +31,7 @@ class BusinessConfig {
     required this.extendDefaultHours,
     required this.extendMaxHours,
     required this.requirePaymentBeforeDrop,
+    this.autoCancelUnpaidMinutes = 15,
     required this.droneDefaultParcelWeightGrams,
     this.droneBaseWeightGrams = 500,
     this.droneWeightStepGrams = 250,
@@ -98,6 +99,9 @@ class BusinessConfig {
 
   /// Chặn xác nhận bỏ hàng / kết thúc thuê khi đơn chưa thanh toán.
   final bool requirePaymentBeforeDrop;
+
+  /// Số phút đơn INITIALIZED chưa thanh toán được giữ trước khi tự huỷ và nhả ô.
+  final int autoCancelUnpaidMinutes;
 
   final int droneDefaultParcelWeightGrams;
 
@@ -168,6 +172,7 @@ class BusinessConfig {
     extendDefaultHours: 2,
     extendMaxHours: 24,
     requirePaymentBeforeDrop: true,
+    autoCancelUnpaidMinutes: 15,
     droneDefaultParcelWeightGrams: 1200,
     topupMinAmount: 10000,
     topupMaxAmount: 50000000,
@@ -284,6 +289,11 @@ class BusinessConfig {
       requirePaymentBeforeDrop: _bool(
         o['app.order.require-payment-before-drop'],
         d.requirePaymentBeforeDrop,
+      ),
+      autoCancelUnpaidMinutes: _int(
+        o['app.order.auto-cancel-unpaid-minutes'],
+        d.autoCancelUnpaidMinutes,
+        min: 1,
       ),
       droneDefaultParcelWeightGrams: _int(
         o['app.order.drone-default-parcel-weight-grams'],
@@ -402,6 +412,7 @@ class BusinessConfig {
       'app.order.extend-default-hours': extendDefaultHours,
       'app.order.extend-max-hours': extendMaxHours,
       'app.order.require-payment-before-drop': requirePaymentBeforeDrop,
+      'app.order.auto-cancel-unpaid-minutes': autoCancelUnpaidMinutes,
       'app.order.drone-default-parcel-weight-grams': droneDefaultParcelWeightGrams,
       'app.order.drone-base-weight-grams': droneBaseWeightGrams,
       'app.order.drone-weight-step-grams': droneWeightStepGrams,
