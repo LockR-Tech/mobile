@@ -309,19 +309,22 @@ class _SummaryBanner extends StatelessWidget {
               fontSize: 13,
             ),
           ),
-          const Spacer(),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-            decoration: BoxDecoration(
-              color: AislBrand.cyan.withValues(alpha: 0.14),
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: const Text(
-              'Chạm vào tủ để xem ô trống',
-              style: TextStyle(
-                color: AislBrand.blue,
-                fontSize: 11,
-                fontWeight: FontWeight.w500,
+          Flexible(
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              decoration: BoxDecoration(
+                color: AislBrand.cyan.withValues(alpha: 0.14),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: const Text(
+                'Chạm vào tủ để xem ô trống',
+                style: TextStyle(
+                  color: AislBrand.blue,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w500,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
             ),
           ),
@@ -607,9 +610,12 @@ class _LockerCardState extends State<_LockerCard> {
                     ),
                   ),
                   const SizedBox(height: 6),
-                  Row(
+                  Wrap(
+                    spacing: 6,
+                    runSpacing: 6,
+                    crossAxisAlignment: WrapCrossAlignment.center,
                     children: [
-                      if (_layout != null) ...[
+                      if (_layout != null)
                         _Pill(
                           label: '$available/$totalCells ô trống',
                           bg: available > 0
@@ -617,8 +623,6 @@ class _LockerCardState extends State<_LockerCard> {
                               : const Color(0xFFE2E8F0),
                           fg: available > 0 ? Colors.white : Colors.grey,
                         ),
-                        const SizedBox(width: 6),
-                      ],
                       if (isDisconnected)
                         const _Pill(
                           label: 'Mất kết nối',
@@ -643,7 +647,6 @@ class _LockerCardState extends State<_LockerCard> {
                           bg: Color(0xFFF1F5F9),
                           fg: Color(0xFF64748B),
                         ),
-                      const SizedBox(width: 6),
                       InkWell(
                         borderRadius: BorderRadius.circular(20),
                         onTap: () {
@@ -1149,97 +1152,94 @@ class _ScreenTile extends StatelessWidget {
               ),
             ),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 5),
+              padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 5),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  // Hàng tiêu đề: Icon Monitor + Tên + Badge 1024x600
+                  // Hàng tiêu đề: Icon Monitor + Tên + Badge 7"
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            LucideIcons.monitor,
-                            size: 11,
-                            color: isOnline
-                                ? const Color(0xFF38BDF8)
-                                : const Color(0xFF94A3B8),
-                          ),
-                          const SizedBox(width: 3),
-                          const Text(
-                            'Màn hình 7"',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 9.5,
-                              fontWeight: FontWeight.w800,
-                            ),
-                          ),
-                        ],
+                      Icon(
+                        LucideIcons.monitor,
+                        size: 11,
+                        color: isOnline
+                            ? const Color(0xFF38BDF8)
+                            : const Color(0xFF94A3B8),
                       ),
+                      const SizedBox(width: 3),
+                      const Expanded(
+                        child: Text(
+                          'Màn hình',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 8.5,
+                            fontWeight: FontWeight.w800,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      const SizedBox(width: 2),
                       Container(
                         padding: const EdgeInsets.symmetric(
-                          horizontal: 4,
-                          vertical: 1,
+                          horizontal: 3,
+                          vertical: 0.5,
                         ),
                         decoration: BoxDecoration(
                           color: const Color(0xFF0369A1).withValues(alpha: 0.35),
-                          borderRadius: BorderRadius.circular(4),
+                          borderRadius: BorderRadius.circular(3),
                           border: Border.all(
                             color: const Color(0xFF38BDF8).withValues(alpha: 0.4),
                             width: 0.6,
                           ),
                         ),
                         child: const Text(
-                          '1024×600',
+                          '7"',
                           style: TextStyle(
                             color: Color(0xFFBAE6FD),
                             fontSize: 7.5,
-                            fontWeight: FontWeight.w600,
-                            fontFamily: 'monospace',
+                            fontWeight: FontWeight.w700,
                           ),
                         ),
                       ),
                     ],
                   ),
-                  // Giữa: Kiosk Touchpad/Hand
+                  // Giữa: Icon Tablet Kiosk
                   Center(
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          LucideIcons.tablet,
-                          size: 13,
-                          color: isOnline
-                              ? const Color(0xFF67E8F9)
-                              : const Color(0xFF94A3B8),
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          'Kiosk Touch',
-                          style: TextStyle(
-                            color: isOnline
-                                ? const Color(0xFFE0F2FE)
-                                : const Color(0xFF94A3B8),
-                            fontSize: 9,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                      ],
+                    child: Icon(
+                      LucideIcons.tablet,
+                      size: 20,
+                      color: isOnline
+                          ? const Color(0xFF67E8F9)
+                          : const Color(0xFF94A3B8),
                     ),
                   ),
-                  // Đáy: Trạng thái Online / Offline
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Row(
+                  // Đáy: Trạng thái Online / Offline dạng capsule
+                  Center(
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 5,
+                        vertical: 1.5,
+                      ),
+                      decoration: BoxDecoration(
+                        color: isOnline
+                            ? const Color(0xFF065F46).withValues(alpha: 0.35)
+                            : const Color(0xFF7F1D1D).withValues(alpha: 0.35),
+                        borderRadius: BorderRadius.circular(4),
+                        border: Border.all(
+                          color: isOnline
+                              ? const Color(0xFF10B981).withValues(alpha: 0.4)
+                              : const Color(0xFFEF4444).withValues(alpha: 0.4),
+                          width: 0.6,
+                        ),
+                      ),
+                      child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Container(
-                            width: 5.5,
-                            height: 5.5,
+                            width: 5,
+                            height: 5,
                             decoration: BoxDecoration(
                               color: isOnline
                                   ? const Color(0xFF22C55E)
@@ -1249,14 +1249,14 @@ class _ScreenTile extends StatelessWidget {
                                   ? [
                                       BoxShadow(
                                         color: const Color(0xFF22C55E)
-                                            .withValues(alpha: 0.8),
+                                            .withValues(alpha: 0.9),
                                         blurRadius: 4,
                                       ),
                                     ]
                                   : null,
                             ),
                           ),
-                          const SizedBox(width: 4),
+                          const SizedBox(width: 3.5),
                           Text(
                             isOnline ? 'Online' : 'Offline',
                             style: TextStyle(
@@ -1265,19 +1265,14 @@ class _ScreenTile extends StatelessWidget {
                                   : const Color(0xFFFCA5A5),
                               fontSize: 8,
                               fontWeight: FontWeight.w700,
+                              letterSpacing: 0.2,
                             ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ],
                       ),
-                      Text(
-                        ':3002',
-                        style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.5),
-                          fontSize: 7.5,
-                          fontFamily: 'monospace',
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
                 ],
               ),
@@ -1925,50 +1920,22 @@ class _CellTile extends StatelessWidget {
   Widget _buildDoorBadge() {
     if (_isDoorOpen) {
       return Container(
-        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+        padding: const EdgeInsets.symmetric(horizontal: 3.5, vertical: 1),
         decoration: BoxDecoration(
           color: const Color(0xFFFEF08A),
-          borderRadius: BorderRadius.circular(4),
+          borderRadius: BorderRadius.circular(3),
           border: Border.all(color: const Color(0xFFEAB308), width: 0.8),
         ),
-        child: const Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(LucideIcons.doorOpen, size: 9, color: Color(0xFF854D0E)),
-            SizedBox(width: 2),
-            Text(
-              'Mở',
-              style: TextStyle(
-                color: Color(0xFF854D0E),
-                fontSize: 8,
-                fontWeight: FontWeight.w800,
-              ),
-            ),
-          ],
-        ),
+        child: const Icon(LucideIcons.doorOpen, size: 9, color: Color(0xFF854D0E)),
       );
     }
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+      padding: const EdgeInsets.symmetric(horizontal: 3.5, vertical: 1),
       decoration: BoxDecoration(
         color: Colors.black.withValues(alpha: 0.15),
-        borderRadius: BorderRadius.circular(4),
+        borderRadius: BorderRadius.circular(3),
       ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(LucideIcons.doorClosed, size: 9, color: _fg.withValues(alpha: 0.8)),
-          const SizedBox(width: 2),
-          Text(
-            'Đóng',
-            style: TextStyle(
-              color: _fg.withValues(alpha: 0.8),
-              fontSize: 8,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ],
-      ),
+      child: Icon(LucideIcons.doorClosed, size: 9, color: _fg.withValues(alpha: 0.8)),
     );
   }
 }

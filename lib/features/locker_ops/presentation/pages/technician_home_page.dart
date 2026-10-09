@@ -4536,11 +4536,17 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                                     style: TextStyle(
                                         fontSize: 12.5,
                                         color: Color(0xFF92400E))),
-                                Text(_formatFullDateTime(currentDue),
-                                    style: const TextStyle(
-                                        fontSize: 12.5,
-                                        fontWeight: FontWeight.w600,
-                                        color: Color(0xFF92400E))),
+                                const SizedBox(width: 8),
+                                Flexible(
+                                  child: Text(_formatFullDateTime(currentDue),
+                                      style: const TextStyle(
+                                          fontSize: 12.5,
+                                          fontWeight: FontWeight.w600,
+                                          color: Color(0xFF92400E)),
+                                      textAlign: TextAlign.end,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis),
+                                ),
                               ],
                             ),
                             const Divider(height: 12, color: Color(0xFFFDE68A)),
@@ -4552,11 +4558,17 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                                         fontSize: 12.5,
                                         fontWeight: FontWeight.bold,
                                         color: Color(0xFFB45309))),
-                                Text(_formatFullDateTime(newDue),
-                                    style: const TextStyle(
-                                        fontSize: 12.5,
-                                        fontWeight: FontWeight.bold,
-                                        color: Color(0xFFB45309))),
+                                const SizedBox(width: 8),
+                                Flexible(
+                                  child: Text(_formatFullDateTime(newDue),
+                                      style: const TextStyle(
+                                          fontSize: 12.5,
+                                          fontWeight: FontWeight.bold,
+                                          color: Color(0xFFB45309)),
+                                      textAlign: TextAlign.end,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis),
+                                ),
                               ],
                             ),
                           ],
