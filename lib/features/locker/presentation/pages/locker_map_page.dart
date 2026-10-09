@@ -186,7 +186,7 @@ class _LockerMapPageState extends ConsumerState<LockerMapPage>
             children: [
               TileLayer(
                 urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                userAgentPackageName: 'com.example.aisl_app',
+                userAgentPackageName: 'com.huynqb.laundrylocker',
               ),
               MarkerLayer(
                 markers: activeLocations.map((LockerLocation location) {
@@ -490,7 +490,7 @@ class _LockerMapPageState extends ConsumerState<LockerMapPage>
               children: [
                 const Icon(
                   LucideIcons.mapPin,
-                  color: const Color(0xFF0A2342),
+                  color: Colors.white,
                   size: 24,
                 ),
                 const SizedBox(width: 12),
@@ -538,7 +538,7 @@ class _LockerMapPageState extends ConsumerState<LockerMapPage>
 
       final response = await http.get(
         uri,
-        headers: const {'User-Agent': 'aisl_app/1.0 (https://aisl.app)'},
+        headers: const {'User-Agent': 'SmartLaundryLocker/1.0 (contact@laundrylocker.vn)'},
       );
 
       if (response.statusCode != 200) {
@@ -591,6 +591,7 @@ class _LockerMapPageState extends ConsumerState<LockerMapPage>
       final serviceEnabled = await Geolocator.isLocationServiceEnabled();
       if (!serviceEnabled) {
         SmartDialog.showToast('Dịch vụ vị trí đang tắt. Vui lòng bật GPS.');
+        if (!mounted) return;
         setState(() {
           _isLocating = false;
         });
@@ -603,6 +604,7 @@ class _LockerMapPageState extends ConsumerState<LockerMapPage>
         permission = await Geolocator.requestPermission();
         if (permission == LocationPermission.denied) {
           SmartDialog.showToast('Quyền truy cập vị trí bị từ chối.');
+          if (!mounted) return;
           setState(() {
             _isLocating = false;
           });
@@ -614,6 +616,7 @@ class _LockerMapPageState extends ConsumerState<LockerMapPage>
         SmartDialog.showToast(
           'Quyền vị trí bị từ chối vĩnh viễn. Hãy bật lại trong cài đặt.',
         );
+        if (!mounted) return;
         setState(() {
           _isLocating = false;
         });
@@ -626,6 +629,7 @@ class _LockerMapPageState extends ConsumerState<LockerMapPage>
 
       final userLatLng = LatLng(position.latitude, position.longitude);
 
+      if (!mounted) return;
       // cập nhật marker, reset địa chỉ
       setState(() {
         _currentUserLocation = userLatLng;
@@ -637,6 +641,7 @@ class _LockerMapPageState extends ConsumerState<LockerMapPage>
         position.longitude,
       );
 
+      if (!mounted) return;
       setState(() {
         _currentAddress = address;
         _isLocating = false;
@@ -645,6 +650,7 @@ class _LockerMapPageState extends ConsumerState<LockerMapPage>
       _mapController.move(userLatLng, 15.0);
     } catch (e) {
       SmartDialog.showToast('Không thể xác định địa chỉ, vui lòng thử lại: $e');
+      if (!mounted) return;
       setState(() {
         _isLocating = false;
       });

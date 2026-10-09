@@ -16,6 +16,9 @@ import 'package:smart_laundry_locker/features/drone_delivery/infrastructure/mode
 import 'package:smart_laundry_locker/features/drone_delivery/presentation/widgets/drone_delivery_detail.dart';
 import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/ops_widgets.dart';
+import 'package:smart_laundry_locker/features/locker_ops/presentation/pages/technician_profile_page.dart';
+import 'package:smart_laundry_locker/features/profile/presentation/providers/profile_provider.dart';
+import 'package:provider/provider.dart';
 import 'package:smart_laundry_locker/shared/widgets/controller_disposer.dart';
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
 
@@ -32,7 +35,9 @@ class MaintenanceHomePage extends StatefulWidget {
   State<MaintenanceHomePage> createState() => _MaintenanceHomePageState();
 }
 
-class _MaintenanceHomePageState extends State<MaintenanceHomePage> {
+class _MaintenanceHomePageState extends State<MaintenanceHomePage>
+    with SingleTickerProviderStateMixin {
+  late final TabController _tabs = TabController(length: 4, vsync: this);
   late final LockerOpsService _service = widget.service ?? LockerOpsService();
 
   List<Map<String, dynamic>> _drones = [];
@@ -42,32 +47,12 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage> {
   List<Map<String, dynamic>> _schedules = [];
   bool _loading = true;
   String? _myUserId;
+  String? _myUserName;
+  String? _myUserEmail;
+  Map<String, dynamic>? _ratingAverage;
+  String _dispatchFilter = 'ALL';
   Timer? _deliveryRefreshTimer;
   StreamSubscription<AppEvent>? _eventSubscription;
-
-  List<Map<String, dynamic>> get _awaitingDispatchDeliveries => _deliveries
-      .where((d) => d['deliveryStage'] == 'AWAITING_DISPATCH')
-      .toList(growable: false);
-
-  List<Map<String, dynamic>> get _awaitingLoadingDeliveries => _deliveries
-      .where(
-        (d) =>
-            d['deliveryStage'] == 'ACCEPTED' &&
-            d['missionStatus'] == 'AWAITING_LOADING',
-      )
-      .toList(growable: false);
-
-  List<Map<String, dynamic>> get _readyToLaunchDeliveries => _deliveries
-      .where(
-        (d) =>
-            d['deliveryStage'] == 'ACCEPTED' &&
-            d['missionStatus'] == 'READY_TO_LAUNCH',
-      )
-      .toList(growable: false);
-
-  List<Map<String, dynamic>> get _launchingDeliveries => _deliveries
-      .where((d) => d['deliveryStage'] == 'LAUNCHING')
-      .toList(growable: false);
 
   /// Drone đã rời trạm, đang trên đường tới tủ nhận.
   List<Map<String, dynamic>> get _inFlightDeliveries => _deliveries
@@ -81,20 +66,16 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage> {
       )
       .toList(growable: false);
 
-  /// Hàng đã vào ô tủ nhận, chờ khách tới lấy — nhiệm vụ bay đã xong nhưng điều
-  /// phối viên vẫn theo dõi được tới khi đơn hoàn tất.
-  List<Map<String, dynamic>> get _deliveredDeliveries => _deliveries
-      .where((d) => d['deliveryStage'] == 'READY_FOR_PICKUP')
-      .toList(growable: false);
-
-  /// Đơn đã đóng mà không giao được, kiện còn chờ trả cho người gửi.
-  List<Map<String, dynamic>> get _parcelReturnDeliveries => _deliveries
-      .where((d) => d['parcelReturnPending'] == true)
-      .toList(growable: false);
-
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      try {
+        final profileProvider = context.read<ProfileProvider>();
+        if (profileProvider.profile == null) profileProvider.loadProfile();
+      } catch (_) {}
+    });
     _load();
     _deliveryRefreshTimer = Timer.periodic(
       const Duration(seconds: 3),
@@ -107,6 +88,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage> {
 
   @override
   void dispose() {
+    _tabs.dispose();
     _deliveryRefreshTimer?.cancel();
     _eventSubscription?.cancel();
     super.dispose();
@@ -125,6 +107,8 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage> {
     setState(() => _loading = true);
     try {
       _myUserId = await TokenService.getUserId();
+      _myUserName = await TokenService.getUserName();
+      _myUserEmail = await TokenService.getUserEmail();
       // Đội drone — endpoint mới (V10); không để vỡ trang nếu BE chưa deploy.
       try {
         final drones = await _service.droneUnits();
@@ -145,6 +129,10 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage> {
                 .toList(growable: false),
           );
         }
+      } catch (_) {}
+      try {
+        final rating = await _service.myRatingAverage();
+        if (mounted) setState(() => _ratingAverage = rating);
       } catch (_) {}
     } finally {
       if (mounted) setState(() => _loading = false);
@@ -195,39 +183,863 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage> {
     }
   }
 
+  String _greeting() {
+    final hour = DateTime.now().hour;
+    if (hour < 12) return '☀️ Chào buổi sáng';
+    if (hour < 14) return '🌤️ Chào buổi trưa';
+    if (hour < 18) return '🌅 Chào buổi chiều';
+    return '🌙 Chào ca tối';
+  }
+
+  String _resolvedTechnicianName(BuildContext context) {
+    try {
+      final name = context.watch<ProfileProvider>().profile?.fullName.trim();
+      if (name != null && name.isNotEmpty && name != 'Người dùng') return name;
+    } catch (_) {}
+    if (_myUserName != null && _myUserName!.trim().isNotEmpty) {
+      return _myUserName!.trim();
+    }
+    if (_myUserEmail != null && _myUserEmail!.trim().isNotEmpty) {
+      return _myUserEmail!.trim();
+    }
+    return 'Kỹ thuật viên drone';
+  }
+
+  Widget _avatarFallback(String name) => Center(
+    child: Text(
+      AislBrand.initials(name),
+      style: const TextStyle(
+        fontSize: 18,
+        fontWeight: FontWeight.w800,
+        color: Color(0xFFF1F5F9),
+        letterSpacing: 0.5,
+      ),
+    ),
+  );
+
+  void _showDroneTechnicianProfile([String? resolvedName]) {
+    String? profileName;
+    String? profileEmail;
+    String? profilePhone;
+    String? profileAvatar;
+    try {
+      final profile = context.read<ProfileProvider>().profile;
+      if (profile != null) {
+        if (profile.fullName.trim().isNotEmpty &&
+            profile.fullName.trim() != 'Người dùng') {
+          profileName = profile.fullName.trim();
+        }
+        if (profile.email.trim().isNotEmpty) {
+          profileEmail = profile.email.trim();
+        }
+        if (profile.phoneNumber.trim().isNotEmpty) {
+          profilePhone = profile.phoneNumber.trim();
+        }
+        profileAvatar = profile.avatarUrl;
+      }
+    } catch (_) {}
+
+    final techName =
+        resolvedName ?? profileName ?? _myUserName ?? 'Kỹ thuật viên drone';
+    final techEmail = profileEmail ?? _myUserEmail ?? 'ktv.drone@lockr.tech';
+    final techPhone = profilePhone ?? 'Chưa cập nhật SĐT';
+    final total = _deliveries.length;
+    final working = _deliveries
+        .where(
+          (d) =>
+              d['deliveryStage'] == 'ACCEPTED' ||
+              d['deliveryStage'] == 'LAUNCHING',
+        )
+        .length;
+    final completed = _deliveries
+        .where((d) => d['deliveryStage'] == 'READY_FOR_PICKUP')
+        .length;
+    final flying = _inFlightDeliveries.length;
+    final avgRating = _ratingAverage?['average']?.toString() ?? '5.0';
+    final ratingCount = _ratingAverage?['count']?.toString() ?? '0';
+
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (ctx) => SafeArea(
+        top: false,
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Center(
+                child: Container(
+                  width: 44,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade300,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Stack(
+                    children: [
+                      Container(
+                        width: 60,
+                        height: 60,
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFF0077B6), Color(0xFF00B4D8)],
+                          ),
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: const Color(0xFF0077B6),
+                            width: 2,
+                          ),
+                        ),
+                        clipBehavior: Clip.antiAlias,
+                        child: profileAvatar != null && profileAvatar.isNotEmpty
+                            ? Image.network(
+                                profileAvatar,
+                                fit: BoxFit.cover,
+                                errorBuilder: (_, __, ___) =>
+                                    _profileAvatarFallback(techName),
+                              )
+                            : _profileAvatarFallback(techName),
+                      ),
+                      Positioned(
+                        right: 0,
+                        bottom: 0,
+                        child: Container(
+                          width: 16,
+                          height: 16,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF16A34A),
+                            shape: BoxShape.circle,
+                            border: Border.all(color: Colors.white, width: 2),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Flexible(
+                              child: Text(
+                                techName,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  fontSize: 17,
+                                  fontWeight: FontWeight.bold,
+                                  color: opsDark,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 6,
+                                vertical: 2,
+                              ),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFDCFCE7),
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: const Text(
+                                'Trực ca',
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w700,
+                                  color: Color(0xFF166534),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 4),
+                        const Text(
+                          'KTV Drone (Đội bay) · Sẵn sàng',
+                          style: TextStyle(
+                            fontSize: 12.5,
+                            color: opsMutedText,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          techEmail,
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: opsMutedText,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              const Divider(height: 1),
+              const SizedBox(height: 14),
+              Row(
+                children: [
+                  Expanded(
+                    child: _profileStatTile(
+                      'Tổng ca',
+                      '$total',
+                      const Color(0xFF4F46E5),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: _profileStatTile(
+                      'Đang làm',
+                      '$working',
+                      const Color(0xFF2563EB),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: _profileStatTile(
+                      'Đã giao',
+                      '$completed',
+                      const Color(0xFF16A34A),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: _profileStatTile(
+                      'Đang bay',
+                      '$flying',
+                      const Color(0xFF0891B2),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 14),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF8FAFC),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: const Color(0xFFE2E8F0)),
+                ),
+                child: Column(
+                  children: [
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.star_rounded,
+                          color: Color(0xFFF59E0B),
+                          size: 20,
+                        ),
+                        const SizedBox(width: 8),
+                        const Text(
+                          'Đánh giá chất lượng: ',
+                          style: TextStyle(fontSize: 13, color: opsDark),
+                        ),
+                        Text(
+                          '$avgRating/5',
+                          style: const TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.bold,
+                            color: opsDark,
+                          ),
+                        ),
+                        Text(
+                          ' ($ratingCount lượt)',
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: opsMutedText,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    const Row(
+                      children: [
+                        Icon(
+                          Icons.verified_user_outlined,
+                          color: Color(0xFF16A34A),
+                          size: 20,
+                        ),
+                        SizedBox(width: 8),
+                        Text(
+                          'Quy chế SLA: ',
+                          style: TextStyle(fontSize: 13, color: opsDark),
+                        ),
+                        _DroneSlaBadge(),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.phone_outlined,
+                          color: opsMutedText,
+                          size: 18,
+                        ),
+                        const SizedBox(width: 8),
+                        const Text(
+                          'SĐT kỹ thuật: ',
+                          style: TextStyle(fontSize: 13, color: opsDark),
+                        ),
+                        Expanded(
+                          child: Text(
+                            techPhone,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                              color: opsDark,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 18),
+              Row(
+                children: [
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        Navigator.of(ctx).pop();
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => const TechnicianProfilePage(),
+                          ),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: opsPrimary,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      icon: const Icon(Icons.edit_note_rounded, size: 20),
+                      label: const Text(
+                        'Xem & Chỉnh sửa hồ sơ',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13.5,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  OutlinedButton.icon(
+                    onPressed: () {
+                      Navigator.of(ctx).pop();
+                      _logout();
+                    },
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: const Color(0xFFDC2626),
+                      side: const BorderSide(color: Color(0xFFFCA5A5)),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 12,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    icon: const Icon(Icons.logout, size: 18),
+                    label: const Text(
+                      'Đăng xuất',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 13.5,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _profileAvatarFallback(String name) => Center(
+    child: Text(
+      AislBrand.initials(name),
+      style: const TextStyle(
+        fontSize: 22,
+        fontWeight: FontWeight.bold,
+        color: Colors.white,
+      ),
+    ),
+  );
+
+  Widget _profileStatTile(String label, String value, Color color) => Container(
+    padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+    decoration: BoxDecoration(
+      color: color.withValues(alpha: 0.08),
+      borderRadius: BorderRadius.circular(10),
+      border: Border.all(color: color.withValues(alpha: 0.2)),
+    ),
+    child: Column(
+      children: [
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            color: color,
+          ),
+        ),
+        const SizedBox(height: 2),
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 10.5,
+            fontWeight: FontWeight.w600,
+            color: color.withValues(alpha: 0.8),
+          ),
+        ),
+      ],
+    ),
+  );
+
+  Widget _buildDroneTechnicianHeader() {
+    final waiting = _deliveries
+        .where((d) => d['deliveryStage'] == 'AWAITING_DISPATCH')
+        .length;
+    final working = _deliveries
+        .where(
+          (d) =>
+              d['deliveryStage'] == 'ACCEPTED' ||
+              d['deliveryStage'] == 'LAUNCHING',
+        )
+        .length;
+    final inFlight = _inFlightDeliveries.length;
+    final displayName = _resolvedTechnicianName(context);
+    String? avatarUrl;
+    try {
+      avatarUrl = context.watch<ProfileProvider>().profile?.avatarUrl;
+    } catch (_) {}
+
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFF061A30), Color(0xFF0A2544), Color(0xFF103A63)],
+          stops: [0.0, 0.52, 1.0],
+        ),
+        borderRadius: BorderRadius.vertical(bottom: Radius.circular(28)),
+        boxShadow: [
+          BoxShadow(
+            color: Color(0x38061A30),
+            blurRadius: 16,
+            offset: Offset(0, 6),
+          ),
+        ],
+      ),
+      child: SafeArea(
+        bottom: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+          child: Column(
+            children: [
+              Row(
+                children: [
+                  GestureDetector(
+                    onTap: () => _showDroneTechnicianProfile(displayName),
+                    child: Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        Container(
+                          width: 52,
+                          height: 52,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            gradient: const LinearGradient(
+                              colors: [
+                                Color(0xFF38BDF8),
+                                Color(0xFF0284C7),
+                                Color(0xFF10B981),
+                              ],
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: const Color(
+                                  0xFF38BDF8,
+                                ).withValues(alpha: 0.35),
+                                blurRadius: 10,
+                              ),
+                            ],
+                          ),
+                          padding: const EdgeInsets.all(2.5),
+                          child: Container(
+                            decoration: const BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Color(0xFF0A2342),
+                            ),
+                            clipBehavior: Clip.antiAlias,
+                            child: avatarUrl != null && avatarUrl.isNotEmpty
+                                ? Image.network(
+                                    avatarUrl,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (_, __, ___) =>
+                                        _avatarFallback(displayName),
+                                  )
+                                : _avatarFallback(displayName),
+                          ),
+                        ),
+                        Positioned(
+                          bottom: 1,
+                          right: 1,
+                          child: Container(
+                            width: 13,
+                            height: 13,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF10B981),
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: const Color(0xFF061A30),
+                                width: 2,
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: const Color(
+                                    0xFF10B981,
+                                  ).withValues(alpha: 0.6),
+                                  blurRadius: 4,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Flexible(
+                              child: Text(
+                                _greeting(),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  color: Colors.white.withValues(alpha: 0.8),
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            _droneRoleBadge(),
+                          ],
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          displayName,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 19,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                        const SizedBox(height: 3),
+                        Row(
+                          children: [
+                            const Icon(
+                              Icons.verified_rounded,
+                              size: 14,
+                              color: Color(0xFF34D399),
+                            ),
+                            const SizedBox(width: 4),
+                            Expanded(
+                              child: Text(
+                                working > 0
+                                    ? 'SLA: Bình thường · $working ca đang xử lý'
+                                    : 'SLA: Bình thường · Sẵn sàng nhận việc',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  color: Color(0xFFA7F3D0),
+                                  fontSize: 11.5,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  if (context.canPop())
+                    _droneHeaderAction(
+                      Icons.arrow_back_rounded,
+                      'Quay lại',
+                      () => context.pop(),
+                    )
+                  else ...[
+                    AssistantEntryGate(
+                      builder: (context) => Padding(
+                        padding: const EdgeInsets.only(right: 6),
+                        child: _droneHeaderAction(
+                          Icons.support_agent_rounded,
+                          'Trợ lý hỏi đáp',
+                          () => context.push(AppRouter.assistant),
+                        ),
+                      ),
+                    ),
+                    _droneHeaderAction(
+                      Icons.person_outline_rounded,
+                      'Hồ sơ & Chỉnh sửa',
+                      () => Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => const TechnicianProfilePage(),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    _droneHeaderAction(
+                      Icons.logout_rounded,
+                      'Đăng xuất',
+                      _logout,
+                    ),
+                  ],
+                ],
+              ),
+              const SizedBox(height: 14),
+              Container(
+                padding: const EdgeInsets.all(4),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.08),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.12),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    _droneHudChip(
+                      Icons.warning_amber_rounded,
+                      '$waiting',
+                      'Chờ xử lý',
+                      const Color(0xFFEF4444),
+                      waiting > 0,
+                      () => _selectDispatchFilter('WAITING'),
+                    ),
+                    const SizedBox(width: 4),
+                    _droneHudChip(
+                      Icons.handyman_outlined,
+                      '$working',
+                      'Đang làm',
+                      const Color(0xFF38BDF8),
+                      false,
+                      () => _selectDispatchFilter('WORKING'),
+                    ),
+                    const SizedBox(width: 4),
+                    _droneHudChip(
+                      Icons.event_repeat_outlined,
+                      '${_schedules.length}',
+                      'Định kỳ',
+                      const Color(0xFFA78BFA),
+                      false,
+                      () => _tabs.animateTo(2),
+                    ),
+                    const SizedBox(width: 4),
+                    _droneHudChip(
+                      Icons.flight_outlined,
+                      '${_drones.length}',
+                      'Đội bay',
+                      const Color(0xFF34D399),
+                      false,
+                      () => _tabs.animateTo(1),
+                    ),
+                  ],
+                ),
+              ),
+              if (inFlight > 0) ...[
+                const SizedBox(height: 8),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    '$inFlight drone đang bay',
+                    style: const TextStyle(
+                      color: Color(0xFFBAE6FD),
+                      fontSize: 11.5,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _droneRoleBadge() => Container(
+    padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+    decoration: BoxDecoration(
+      color: const Color(0xFF0284C7).withValues(alpha: 0.35),
+      borderRadius: BorderRadius.circular(6),
+      border: Border.all(color: const Color(0xFF38BDF8).withValues(alpha: 0.5)),
+    ),
+    child: const Text(
+      'DRONE',
+      style: TextStyle(
+        fontSize: 9.5,
+        fontWeight: FontWeight.w800,
+        color: Color(0xFFBAE6FD),
+        letterSpacing: 0.5,
+      ),
+    ),
+  );
+
+  Widget _droneHeaderAction(IconData icon, String tooltip, VoidCallback onTap) {
+    return Tooltip(
+      message: tooltip,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          width: 38,
+          height: 38,
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.18)),
+          ),
+          alignment: Alignment.center,
+          child: Icon(
+            icon,
+            size: 19,
+            color: Colors.white.withValues(alpha: 0.95),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _droneHudChip(
+    IconData icon,
+    String value,
+    String label,
+    Color accentColor,
+    bool isAlert,
+    VoidCallback onTap,
+  ) {
+    return Expanded(
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(13),
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+          decoration: BoxDecoration(
+            color: isAlert
+                ? const Color(0xFFDC2626).withValues(alpha: 0.22)
+                : Colors.white.withValues(alpha: 0.08),
+            borderRadius: BorderRadius.circular(13),
+            border: Border.all(
+              color: isAlert
+                  ? const Color(0xFFEF4444).withValues(alpha: 0.55)
+                  : Colors.white.withValues(alpha: 0.12),
+            ),
+          ),
+          child: Column(
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(icon, size: 13, color: accentColor),
+                  const SizedBox(width: 4),
+                  Text(
+                    value,
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w800,
+                      color: isAlert ? const Color(0xFFFCA5A5) : Colors.white,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 3),
+              Text(
+                label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white.withValues(alpha: 0.75),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _selectDispatchFilter(String filter) {
+    setState(() => _dispatchFilter = filter);
+    _tabs.animateTo(0);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF6F8FA),
       body: Column(
         children: [
-          BrandHeroHeader(
-            title: 'Đội bay drone',
-            subtitle: _awaitingDispatchDeliveries.isNotEmpty
-                ? '${_awaitingDispatchDeliveries.length} đơn drone đang chờ tiếp nhận'
-                : 'Không có đơn drone nào chờ tiếp nhận',
-            onBack: context.canPop() ? () => context.pop() : null,
-            trailing: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Trợ lý hỏi đáp — chỉ hiện khi trợ lý đang bật.
-                AssistantEntryGate(
-                  builder: (context) => Padding(
-                    padding: const EdgeInsets.only(right: 8),
-                    child: Tooltip(
-                      message: 'Trợ lý hỏi đáp',
-                      child: BrandCircleIconButton(
-                        icon: Icons.support_agent_rounded,
-                        onTap: () => context.push(AppRouter.assistant),
-                      ),
-                    ),
-                  ),
-                ),
-                BrandCircleIconButton(icon: Icons.refresh, onTap: _load),
-                if (!context.canPop()) ...[
-                  const SizedBox(width: 8),
-                  BrandCircleIconButton(icon: Icons.logout, onTap: _logout),
-                ],
+          _buildDroneTechnicianHeader(),
+          Material(
+            color: Colors.white,
+            elevation: 1,
+            shadowColor: Colors.black12,
+            child: TabBar(
+              controller: _tabs,
+              isScrollable: true,
+              tabAlignment: TabAlignment.start,
+              padding: const EdgeInsets.symmetric(horizontal: 4),
+              indicatorColor: const Color(0xFF0077B6),
+              indicatorWeight: 3,
+              labelColor: const Color(0xFF0F172A),
+              labelStyle: const TextStyle(
+                fontSize: 13.5,
+                fontWeight: FontWeight.w700,
+              ),
+              unselectedLabelColor: const Color(0xFF64748B),
+              unselectedLabelStyle: const TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+              ),
+              tabs: [
+                Tab(text: 'Điều phối (${_deliveries.length})'),
+                Tab(text: 'Đội bay (${_drones.length})'),
+                Tab(text: 'Định kỳ (${_schedules.length})'),
+                const Tab(text: 'Công cụ bay'),
               ],
             ),
           ),
@@ -236,7 +1048,15 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage> {
                 ? const Center(
                     child: CircularProgressIndicator(color: AislBrand.navy),
                   )
-                : _buildDroneFleet(),
+                : TabBarView(
+                    controller: _tabs,
+                    children: [
+                      _buildDispatchQueue(),
+                      _buildDroneFleet(),
+                      _buildMaintenanceSchedules(),
+                      _buildFlightTools(),
+                    ],
+                  ),
           ),
         ],
       ),
@@ -286,20 +1106,56 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage> {
     );
   }
 
-  // ---- Đội drone (thiết bị bay vật lý, khác ô tủ cellType=DRONE) ----
-  Widget _buildDroneFleet() {
-    final awaiting = _awaitingDispatchDeliveries;
-    final awaitingLoading = _awaitingLoadingDeliveries;
-    final readyToLaunch = _readyToLaunchDeliveries;
-    final launching = _launchingDeliveries;
-    final inFlight = _inFlightDeliveries;
-    final delivered = _deliveredDeliveries;
-    final parcelReturns = _parcelReturnDeliveries;
+  // ---- Tab điều phối đơn drone ----
+  Widget _buildDispatchQueue() {
+    final visibleDeliveries = _deliveries
+        .where(_matchesDispatchFilter)
+        .toList();
+    final awaiting = visibleDeliveries
+        .where((d) => d['deliveryStage'] == 'AWAITING_DISPATCH')
+        .toList(growable: false);
+    final awaitingLoading = visibleDeliveries
+        .where(
+          (d) =>
+              d['deliveryStage'] == 'ACCEPTED' &&
+              d['missionStatus'] == 'AWAITING_LOADING',
+        )
+        .toList(growable: false);
+    final readyToLaunch = visibleDeliveries
+        .where(
+          (d) =>
+              d['deliveryStage'] == 'ACCEPTED' &&
+              d['missionStatus'] == 'READY_TO_LAUNCH',
+        )
+        .toList(growable: false);
+    final launching = visibleDeliveries
+        .where((d) => d['deliveryStage'] == 'LAUNCHING')
+        .toList(growable: false);
+    final inFlight = visibleDeliveries
+        .where(
+          (d) => const {
+            'DEPARTED',
+            'EN_ROUTE',
+            'APPROACHING',
+            'ARRIVED',
+          }.contains(d['deliveryStage']),
+        )
+        .toList(growable: false);
+    final delivered = visibleDeliveries
+        .where((d) => d['deliveryStage'] == 'READY_FOR_PICKUP')
+        .toList(growable: false);
+    // Đơn đã đóng mà không giao được, kiện còn chờ trả cho người gửi: việc phải làm
+    // nên luôn hiện, không phụ thuộc bộ lọc chặng.
+    final parcelReturns = _deliveries
+        .where((d) => d['parcelReturnPending'] == true)
+        .toList(growable: false);
     return RefreshIndicator(
       onRefresh: _load,
       child: ListView(
         padding: const EdgeInsets.all(12),
         children: [
+          _buildDispatchFilters(),
+          const SizedBox(height: 8),
           // ── Đơn hàng drone order-based cho đội bay ───────────────────────
           if (parcelReturns.isNotEmpty) ...[
             OpsSectionLabel(
@@ -389,15 +1245,191 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage> {
             const SizedBox(height: 8),
           ],
 
+          if (awaiting.isEmpty &&
+              parcelReturns.isEmpty &&
+              awaitingLoading.isEmpty &&
+              readyToLaunch.isEmpty &&
+              launching.isEmpty &&
+              inFlight.isEmpty &&
+              delivered.isEmpty)
+            const OpsEmptyState(
+              icon: Icons.inbox_outlined,
+              title: 'Không có đơn drone đang chờ',
+              subtitle: 'Đơn mới sẽ xuất hiện ở tab Điều phối.',
+            ),
+        ],
+      ),
+    );
+  }
+
+  bool _matchesDispatchFilter(Map<String, dynamic> delivery) {
+    switch (_dispatchFilter) {
+      case 'WAITING':
+        return delivery['deliveryStage'] == 'AWAITING_DISPATCH';
+      case 'WORKING':
+        return delivery['deliveryStage'] == 'ACCEPTED' ||
+            delivery['deliveryStage'] == 'LAUNCHING';
+      case 'FLYING':
+        return const {
+          'DEPARTED',
+          'EN_ROUTE',
+          'APPROACHING',
+          'ARRIVED',
+        }.contains(delivery['deliveryStage']);
+      case 'DONE':
+        return delivery['deliveryStage'] == 'READY_FOR_PICKUP';
+      default:
+        return true;
+    }
+  }
+
+  Widget _buildDispatchFilters() {
+    int count(String filter) => _deliveries.where((d) {
+      switch (filter) {
+        case 'WAITING':
+          return d['deliveryStage'] == 'AWAITING_DISPATCH';
+        case 'WORKING':
+          return d['deliveryStage'] == 'ACCEPTED' ||
+              d['deliveryStage'] == 'LAUNCHING';
+        case 'FLYING':
+          return const {
+            'DEPARTED',
+            'EN_ROUTE',
+            'APPROACHING',
+            'ARRIVED',
+          }.contains(d['deliveryStage']);
+        case 'DONE':
+          return d['deliveryStage'] == 'READY_FOR_PICKUP';
+        default:
+          return true;
+      }
+    }).length;
+
+    final options = [
+      ('ALL', 'Mọi trạng thái', Icons.filter_list_rounded, opsPrimary),
+      ('WAITING', 'Chờ nhận', Icons.fiber_new_rounded, const Color(0xFFDC2626)),
+      (
+        'WORKING',
+        'Đang xử lý',
+        Icons.build_circle_outlined,
+        const Color(0xFFD97706),
+      ),
+      ('FLYING', 'Đang bay', Icons.flight_outlined, const Color(0xFF2563EB)),
+      ('DONE', 'Đã giao', Icons.check_circle_outline, const Color(0xFF16A34A)),
+    ];
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        children: [
+          for (final option in options) ...[
+            _droneFilterChip(
+              label: '${option.$2} (${count(option.$1)})',
+              selected: _dispatchFilter == option.$1,
+              icon: option.$3,
+              activeColor: option.$4,
+              onTap: () => setState(() => _dispatchFilter = option.$1),
+            ),
+            const SizedBox(width: 8),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _droneFilterChip({
+    required String label,
+    required bool selected,
+    required IconData icon,
+    required Color activeColor,
+    required VoidCallback onTap,
+  }) {
+    return ChoiceChip(
+      selected: selected,
+      onSelected: (_) => onTap(),
+      avatar: Icon(
+        icon,
+        size: 16,
+        color: selected ? activeColor : const Color(0xFF64748B),
+      ),
+      label: Text(label),
+      labelStyle: TextStyle(
+        fontSize: 12,
+        fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+        color: selected ? activeColor : const Color(0xFF475569),
+      ),
+      selectedColor: activeColor.withValues(alpha: 0.13),
+      backgroundColor: Colors.white,
+      side: BorderSide(
+        color: selected
+            ? activeColor.withValues(alpha: 0.55)
+            : const Color(0xFFE2E8F0),
+      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
+      showCheckmark: false,
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+    );
+  }
+
+  // ---- Tab đội bay ----
+  Widget _buildDroneFleet() {
+    return RefreshIndicator(
+      onRefresh: _load,
+      child: ListView(
+        padding: const EdgeInsets.all(12),
+        children: [
           const OpsBanner(
             tone: OpsBannerTone.info,
             icon: Icons.flight_outlined,
             text:
-                'Chưa có telemetry thật từ drone: pin do kỹ thuật viên cập nhật '
-                'tay, và với đơn drone thật bạn xác nhận từng chặng bay ngay '
-                'trên thẻ nhiệm vụ. Đơn mô phỏng tự chuyển chặng.',
+                'Chưa có telemetry thật từ drone: pin do kỹ thuật viên cập nhật tay. '
+                'Trạng thái đội bay được đồng bộ từ hệ thống.',
           ),
           const SizedBox(height: 12),
+          if (_drones.isEmpty)
+            const OpsEmptyState(
+              icon: Icons.flight_outlined,
+              title: 'Chưa có drone nào',
+              subtitle: 'Đội drone sẽ hiện ở đây khi được thêm vào hệ thống.',
+            )
+          else
+            for (final d in _drones) _droneCard(d),
+        ],
+      ),
+    );
+  }
+
+  // ---- Tab lịch bảo trì ----
+  Widget _buildMaintenanceSchedules() {
+    return RefreshIndicator(
+      onRefresh: _load,
+      child: ListView(
+        padding: const EdgeInsets.all(12),
+        children: [
+          const OpsSectionLabel(
+            'Lịch bảo trì định kỳ',
+            icon: Icons.event_repeat,
+          ),
+          if (_schedules.isEmpty)
+            const OpsEmptyState(
+              icon: Icons.event_available_outlined,
+              title: 'Chưa có lịch bảo trì',
+              subtitle: 'Lịch kiểm tra drone sẽ xuất hiện ở đây.',
+            )
+          else
+            for (final s in _schedules)
+              _droneScheduleCard(s, due: s['due'] == true),
+        ],
+      ),
+    );
+  }
+
+  // ---- Tab công cụ bay ----
+  Widget _buildFlightTools() {
+    return RefreshIndicator(
+      onRefresh: _load,
+      child: ListView(
+        padding: const EdgeInsets.all(12),
+        children: [
           _droneToolCard(
             icon: Icons.map_outlined,
             title: 'Lập kế hoạch bay (Mission Planner)',
@@ -411,25 +1443,6 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage> {
             subtitle: 'Kết nối MAVLink, xem vị trí/HUD live, gửi lệnh bay',
             onTap: () => context.push(AppRouter.droneFlightData),
           ),
-          const SizedBox(height: 12),
-          if (_drones.isEmpty)
-            const OpsEmptyState(
-              icon: Icons.flight_outlined,
-              title: 'Chưa có drone nào',
-              subtitle: 'Đội drone sẽ hiện ở đây khi được thêm vào hệ thống.',
-            )
-          else
-            for (final d in _drones) _droneCard(d),
-
-          // ── Lịch bảo trì định kỳ drone ──────────────────────────────
-          if (_schedules.isNotEmpty) ...[
-            const SizedBox(height: 16),
-            const Divider(),
-            const SizedBox(height: 8),
-            const OpsSectionLabel('Định kỳ drone', icon: Icons.event_repeat),
-            for (final s in _schedules)
-              _droneScheduleCard(s, due: s['due'] == true),
-          ],
         ],
       ),
     );
@@ -529,7 +1542,9 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage> {
     final droneCode = order['droneCode']?.toString();
     final missionStatus = order['missionStatus']?.toString();
     final orderCode = order['orderCode']?.toString();
-    final stage = DroneDeliveryStage.fromRaw(order['deliveryStage']?.toString());
+    final stage = DroneDeliveryStage.fromRaw(
+      order['deliveryStage']?.toString(),
+    );
     final boxNumber = _asInt(order['reservedBoxNumber']);
     final updatedAt = parseServerDateTime(order['updatedAt']);
     return Padding(
@@ -538,299 +1553,320 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage> {
         behavior: HitTestBehavior.opaque,
         onTap: orderId == null ? null : () => _showDeliveryDetail(orderId),
         child: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: const Color(0xFF6366F1).withValues(alpha: 0.35),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: const Color(0xFF6366F1).withValues(alpha: 0.35),
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF6366F1).withValues(alpha: 0.08),
+                blurRadius: 10,
+                offset: const Offset(0, 3),
+              ),
+            ],
           ),
-          boxShadow: [
-            BoxShadow(
-              color: const Color(0xFF6366F1).withValues(alpha: 0.08),
-              blurRadius: 10,
-              offset: const Offset(0, 3),
-            ),
-          ],
-        ),
-        padding: const EdgeInsets.all(14),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFEEF2FF),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: const Icon(
-                    Icons.flight,
-                    color: Color(0xFF6366F1),
-                    size: 18,
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        '${_lockerPointName(order['sourceLocker'], order['sourceLockerId'], 'Tủ nguồn')} '
-                        '→ ${_lockerPointName(order['destinationLocker'], lockerId, 'Tủ đích')}',
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 14,
-                          color: opsDark,
-                        ),
-                      ),
-                      Text(
-                        [
-                          if (orderCode != null && orderCode.isNotEmpty)
-                            orderCode,
-                          if (boxNumber != null)
-                            'Ô nhận số $boxNumber'
-                          else if (reservedBoxId != null)
-                            'Đã giữ ô nhận',
-                          if (droneCode != null) droneCode,
-                        ].join(' · '),
-                        style: const TextStyle(
-                          fontSize: 12,
-                          color: Colors.grey,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                if (!((action == _DeliveryAction.load ||
-                        action == _DeliveryAction.launch) &&
-                    onCancel != null))
-                  FilledButton.icon(
-                    onPressed: _actionEnabled(action, orderId, order)
-                        ? () => _handleDeliveryAction(order, action)
-                        : null,
-                    style: FilledButton.styleFrom(
-                      backgroundColor: switch (action) {
-                        _DeliveryAction.accept => const Color(0xFF6366F1),
-                        _DeliveryAction.load => const Color(0xFFF59E0B),
-                        _DeliveryAction.launch => const Color(0xFF16A34A),
-                        _DeliveryAction.launching => const Color(0xFF94A3B8),
-                        _DeliveryAction.track => const Color(0xFF1E5A8A),
-                      },
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 14,
-                        vertical: 8,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                    icon: Icon(switch (action) {
-                      _DeliveryAction.accept => Icons.send_rounded,
-                      _DeliveryAction.load => Icons.inventory_2_outlined,
-                      _DeliveryAction.launch => Icons.rocket_launch,
-                      _DeliveryAction.launching => Icons.hourglass_top,
-                      _DeliveryAction.track => Icons.route,
-                    }, size: 15),
-                    label: Text(
-                      switch (action) {
-                        _DeliveryAction.accept => 'Tiếp nhận',
-                        _DeliveryAction.load => 'Xác nhận nạp',
-                        _DeliveryAction.launch => 'Phóng',
-                        _DeliveryAction.launching => 'Đang phóng',
-                        _DeliveryAction.track => 'Theo dõi',
-                      },
-                      style: const TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-            if ((action == _DeliveryAction.load ||
-                    action == _DeliveryAction.launch) &&
-                onCancel != null) ...[
-              const SizedBox(height: 10),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                alignment: WrapAlignment.end,
+          padding: const EdgeInsets.all(14),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
                 children: [
-                  FilledButton.icon(
-                    onPressed: _actionEnabled(action, orderId, order)
-                        ? () => _handleDeliveryAction(order, action)
-                        : null,
-                    style: FilledButton.styleFrom(
-                      backgroundColor: action == _DeliveryAction.load
-                          ? const Color(0xFFF59E0B)
-                          : const Color(0xFF16A34A),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 14,
-                        vertical: 8,
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFEEF2FF),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Icon(
+                      Icons.flight,
+                      color: Color(0xFF6366F1),
+                      size: 18,
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          '${_lockerPointName(order['sourceLocker'], order['sourceLockerId'], 'Tủ nguồn')} '
+                          '→ ${_lockerPointName(order['destinationLocker'], lockerId, 'Tủ đích')}',
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                            color: opsDark,
+                          ),
+                        ),
+                        Text(
+                          [
+                            if (orderCode != null && orderCode.isNotEmpty)
+                              orderCode,
+                            if (boxNumber != null)
+                              'Ô nhận số $boxNumber'
+                            else if (reservedBoxId != null)
+                              'Đã giữ ô nhận',
+                            if (droneCode != null) droneCode,
+                          ].join(' · '),
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  if (!((action == _DeliveryAction.load ||
+                          action == _DeliveryAction.launch) &&
+                      onCancel != null))
+                    FilledButton.icon(
+                      onPressed: _actionEnabled(action, orderId, order)
+                          ? () => _handleDeliveryAction(order, action)
+                          : null,
+                      style: FilledButton.styleFrom(
+                        backgroundColor: switch (action) {
+                          _DeliveryAction.accept => const Color(0xFF6366F1),
+                          _DeliveryAction.load => const Color(0xFFF59E0B),
+                          _DeliveryAction.launch => const Color(0xFF16A34A),
+                          _DeliveryAction.launching => const Color(0xFF94A3B8),
+                          _DeliveryAction.track => const Color(0xFF1E5A8A),
+                        },
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 8,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
                       ),
+                      icon: Icon(switch (action) {
+                        _DeliveryAction.accept => Icons.send_rounded,
+                        _DeliveryAction.load => Icons.inventory_2_outlined,
+                        _DeliveryAction.launch => Icons.rocket_launch,
+                        _DeliveryAction.launching => Icons.hourglass_top,
+                        _DeliveryAction.track => Icons.route,
+                      }, size: 15),
+                      label: Text(
+                        switch (action) {
+                          _DeliveryAction.accept => 'Tiếp nhận',
+                          _DeliveryAction.load => 'Xác nhận nạp',
+                          _DeliveryAction.launch => 'Phóng',
+                          _DeliveryAction.launching => 'Đang phóng',
+                          _DeliveryAction.track => 'Theo dõi',
+                        },
+                        style: const TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+              if ((action == _DeliveryAction.load ||
+                      action == _DeliveryAction.launch) &&
+                  onCancel != null) ...[
+                const SizedBox(height: 10),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  alignment: WrapAlignment.end,
+                  children: [
+                    if (action == _DeliveryAction.load)
+                      FilledButton.icon(
+                        onPressed: _actionEnabled(action, orderId, order)
+                            ? () => _handleDeliveryAction(order, action)
+                            : null,
+                        style: FilledButton.styleFrom(
+                          backgroundColor: const Color(0xFFF59E0B),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 8,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                        icon: const Icon(Icons.inventory_2_outlined, size: 15),
+                        label: const Text(
+                          'Xác nhận nạp',
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                    if (action == _DeliveryAction.launch)
+                      FilledButton.icon(
+                        onPressed: _actionEnabled(action, orderId, order)
+                            ? () => _handleDeliveryAction(order, action)
+                            : null,
+                        style: FilledButton.styleFrom(
+                          backgroundColor: const Color(0xFF16A34A),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 8,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                        icon: const Icon(Icons.rocket_launch, size: 15),
+                        label: const Text(
+                          'Phóng',
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                    OutlinedButton.icon(
+                      onPressed: _ownsMission(order) ? onCancel : null,
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: const Color(0xFFDC2626),
+                        side: const BorderSide(color: Color(0xFFDC2626)),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 8,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                      icon: const Icon(Icons.close_rounded, size: 15),
+                      label: const Text(
+                        'Hủy trước khi bay',
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+              if (description != null && description.isNotEmpty) ...[
+                const SizedBox(height: 8),
+                Text(
+                  'Hàng: $description',
+                  style: const TextStyle(fontSize: 12, color: Colors.black54),
+                ),
+              ],
+              if (_parcelSummary(order) != null) ...[
+                const SizedBox(height: 4),
+                Text(
+                  'Kiện: ${_parcelSummary(order)}',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: order['fragile'] == true
+                        ? const Color(0xFFB45309)
+                        : Colors.black54,
+                    fontWeight: order['fragile'] == true
+                        ? FontWeight.w700
+                        : FontWeight.w400,
+                  ),
+                ),
+              ],
+              if (_advanceLabel(order) != null) ...[
+                if (order['liveTracking'] == true) ...[
+                  const SizedBox(height: 8),
+                  const _MiniPill(
+                    icon: Icons.sensors,
+                    text: 'Drone đang gửi tín hiệu · chặng bay tự cập nhật',
+                    color: Color(0xFF0F766E),
+                  ),
+                ],
+                const SizedBox(height: 10),
+                SizedBox(
+                  width: double.infinity,
+                  child: FilledButton.icon(
+                    onPressed: () => _advanceFlow(order),
+                    style: FilledButton.styleFrom(
+                      backgroundColor: const Color(0xFF0F766E),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),
                       ),
                     ),
-                    icon: Icon(
-                      action == _DeliveryAction.load
-                          ? Icons.inventory_2_outlined
-                          : Icons.rocket_launch,
-                      size: 15,
-                    ),
+                    icon: const Icon(Icons.check_circle_outline, size: 16),
                     label: Text(
-                      action == _DeliveryAction.load ? 'Xác nhận nạp' : 'Phóng',
+                      'Xác nhận ${_advanceLabel(order)}',
                       style: const TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
                   ),
-                  OutlinedButton.icon(
-                    onPressed: _ownsMission(order) ? onCancel : null,
+                ),
+              ],
+              if (_canReportFailure(order)) ...[
+                const SizedBox(height: 8),
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    key: const ValueKey('drone-report-flight-failure'),
+                    onPressed: () => _cancelDeliveryFlow(order, inFlight: true),
                     style: OutlinedButton.styleFrom(
                       foregroundColor: const Color(0xFFDC2626),
                       side: const BorderSide(color: Color(0xFFDC2626)),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 8,
-                      ),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),
                       ),
                     ),
-                    icon: const Icon(Icons.close_rounded, size: 15),
+                    icon: const Icon(Icons.report_problem_outlined, size: 16),
                     label: const Text(
-                      'Hủy trước khi bay',
+                      'Báo chuyến bay thất bại',
                       style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
                   ),
-                ],
-              ),
-            ],
-            if (description != null && description.isNotEmpty) ...[
-              const SizedBox(height: 8),
-              Text(
-                'Hàng: $description',
-                style: const TextStyle(fontSize: 12, color: Colors.black54),
-              ),
-            ],
-            if (_parcelSummary(order) != null) ...[
-              const SizedBox(height: 4),
-              Text(
-                'Kiện: ${_parcelSummary(order)}',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: order['fragile'] == true
-                      ? const Color(0xFFB45309)
-                      : Colors.black54,
-                  fontWeight: order['fragile'] == true
-                      ? FontWeight.w700
-                      : FontWeight.w400,
-                ),
-              ),
-            ],
-            if (_advanceLabel(order) != null) ...[
-              if (order['liveTracking'] == true) ...[
-                const SizedBox(height: 8),
-                const _MiniPill(
-                  icon: Icons.sensors,
-                  text: 'Drone đang gửi tín hiệu · chặng bay tự cập nhật',
-                  color: Color(0xFF0F766E),
                 ),
               ],
-              const SizedBox(height: 10),
-              SizedBox(
-                width: double.infinity,
-                child: FilledButton.icon(
-                  onPressed: () => _advanceFlow(order),
-                  style: FilledButton.styleFrom(
-                    backgroundColor: const Color(0xFF0F766E),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                  ),
-                  icon: const Icon(Icons.check_circle_outline, size: 16),
-                  label: Text(
-                    'Xác nhận ${_advanceLabel(order)}',
-                    style: const TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
+              if (action == _DeliveryAction.accept && !_isPaid(order)) ...[
+                const SizedBox(height: 8),
+                const _MiniPill(
+                  icon: Icons.payments_outlined,
+                  text: 'Chưa thanh toán · chưa thể tiếp nhận',
+                  color: Color(0xFFB45309),
                 ),
-              ),
-            ],
-            if (_canReportFailure(order)) ...[
-              const SizedBox(height: 8),
-              SizedBox(
-                width: double.infinity,
-                child: OutlinedButton.icon(
-                  key: const ValueKey('drone-report-flight-failure'),
-                  onPressed: () => _cancelDeliveryFlow(order, inFlight: true),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: const Color(0xFFDC2626),
-                    side: const BorderSide(color: Color(0xFFDC2626)),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                  ),
-                  icon: const Icon(Icons.report_problem_outlined, size: 16),
-                  label: const Text(
-                    'Báo chuyến bay thất bại',
-                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
-                  ),
+              ],
+              if (action == _DeliveryAction.accept &&
+                  _isPaid(order) &&
+                  !_parcelDropped(order)) ...[
+                const SizedBox(height: 8),
+                const _MiniPill(
+                  icon: Icons.inventory_2_outlined,
+                  text: 'Người gửi chưa bỏ kiện vào ô gửi · chưa thể tiếp nhận',
+                  color: Color(0xFFB45309),
                 ),
-              ),
-            ],
-            if (action == _DeliveryAction.accept && !_isPaid(order)) ...[
+              ],
+              if (action == _DeliveryAction.launch && !_isPaid(order)) ...[
+                const SizedBox(height: 8),
+                const _MiniPill(
+                  icon: Icons.scale_outlined,
+                  text: 'Kiện nặng hơn khai báo · chờ khách trả thêm phí',
+                  color: Color(0xFFB45309),
+                ),
+              ],
               const SizedBox(height: 8),
-              const _MiniPill(
-                icon: Icons.payments_outlined,
-                text: 'Chưa thanh toán · chưa thể tiếp nhận',
-                color: Color(0xFFB45309),
-              ),
-            ],
-            if (action == _DeliveryAction.accept &&
-                _isPaid(order) &&
-                !_parcelDropped(order)) ...[
-              const SizedBox(height: 8),
-              const _MiniPill(
-                icon: Icons.inventory_2_outlined,
-                text: 'Người gửi chưa bỏ kiện vào ô gửi · chưa thể tiếp nhận',
-                color: Color(0xFFB45309),
-              ),
-            ],
-            if (action == _DeliveryAction.launch && !_isPaid(order)) ...[
-              const SizedBox(height: 8),
-              const _MiniPill(
-                icon: Icons.scale_outlined,
-                text: 'Kiện nặng hơn khai báo · chờ khách trả thêm phí',
-                color: Color(0xFFB45309),
-              ),
-            ],
-            const SizedBox(height: 8),
-            Text(
-              [
-                'Chặng: ${stage.title}',
-                if (missionStatus != null && missionStatus.isNotEmpty)
-                  'Nhiệm vụ: ${droneMissionStatusLabel(missionStatus)}',
-              ].join(' · '),
-              style: const TextStyle(fontSize: 12, color: Colors.black54),
-            ),
-            if (updatedAt != null) ...[
-              const SizedBox(height: 4),
               Text(
-                'Cập nhật ${formatDateTimeVn(updatedAt)} · chạm để xem chi tiết',
-                style: const TextStyle(fontSize: 11, color: Colors.black45),
+                [
+                  'Chặng: ${stage.title}',
+                  if (missionStatus != null && missionStatus.isNotEmpty)
+                    'Nhiệm vụ: ${droneMissionStatusLabel(missionStatus)}',
+                ].join(' · '),
+                style: const TextStyle(fontSize: 12, color: Colors.black54),
               ),
+              if (updatedAt != null) ...[
+                const SizedBox(height: 4),
+                Text(
+                  'Cập nhật ${formatDateTimeVn(updatedAt)} · chạm để xem chi tiết',
+                  style: const TextStyle(fontSize: 11, color: Colors.black45),
+                ),
+              ],
             ],
-          ],
-        ),
+          ),
         ),
       ),
     );
@@ -1147,7 +2183,8 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage> {
     final sealCode = generateDroneSealCode();
     final config = BusinessConfigService.instance.current;
     final declaredGrams =
-        _asInt(order['parcelWeightGrams']) ?? _asInt(order['expectedWeightGrams']);
+        _asInt(order['parcelWeightGrams']) ??
+        _asInt(order['expectedWeightGrams']);
     final totalRaw = order['totalPrice'];
     final currentTotal = totalRaw is num ? totalRaw : num.tryParse('$totalRaw');
     // Phần thu thêm ước tính theo bảng giá; server tính lại khi xác nhận.
@@ -1877,7 +2914,9 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage> {
       builder: (ctx) => ControllerDisposer(
         controllers: [ctrl],
         child: AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
           title: const Text('Cập nhật pin %'),
           content: TextField(
             controller: ctrl,
@@ -2333,6 +3372,30 @@ class _DroneStatusChip extends StatelessWidget {
           fontSize: 12,
           fontWeight: FontWeight.w700,
           color: color,
+        ),
+      ),
+    );
+  }
+}
+
+class _DroneSlaBadge extends StatelessWidget {
+  const _DroneSlaBadge();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      decoration: BoxDecoration(
+        color: const Color(0xFFECFDF5),
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: const Color(0xFFA7F3D0)),
+      ),
+      child: const Text(
+        'Đạt chuẩn SLA',
+        style: TextStyle(
+          fontSize: 11,
+          fontWeight: FontWeight.bold,
+          color: Color(0xFF166534),
         ),
       ),
     );
