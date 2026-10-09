@@ -184,12 +184,26 @@ void main() {
 
     // Khớp tiêu đề nhóm ("… (n)"): thẻ đơn cũng hiện nhãn trạng thái nhiệm vụ
     // cùng chữ, nên tìm theo chữ trần sẽ ra nhiều hơn một widget.
-    expect(find.textContaining('Chờ tiếp nhận ('), findsOneWidget);
-    expect(find.textContaining('Chờ nạp hàng ('), findsOneWidget);
-    expect(find.textContaining('Sẵn sàng phóng ('), findsOneWidget);
-    expect(find.textContaining('Nhiệm vụ: Chờ nạp hàng'), findsOneWidget);
-    expect(find.text('Tiếp nhận'), findsOneWidget);
-    expect(find.text('Phóng'), findsOneWidget);
+    expect(
+      find.textContaining('Chờ tiếp nhận (', skipOffstage: false),
+      findsOneWidget,
+    );
+    expect(
+      find.textContaining('Chờ nạp hàng (', skipOffstage: false),
+      findsOneWidget,
+    );
+    expect(
+      find.textContaining('Sẵn sàng phóng (', skipOffstage: false),
+      findsOneWidget,
+    );
+    expect(
+      find.textContaining('Nhiệm vụ: Chờ nạp hàng', skipOffstage: false),
+      findsOneWidget,
+    );
+    expect(find.text('Tiếp nhận', skipOffstage: false), findsOneWidget);
+    final launchAction = find.text('Phóng', skipOffstage: false);
+    await tester.ensureVisible(launchAction);
+    expect(launchAction, findsOneWidget);
 
     await tester.tap(find.text('Tiếp nhận'));
     await tester.pumpAndSettle();
@@ -221,9 +235,7 @@ void main() {
     expect(find.text('Xác nhận nạp hàng'), findsOneWidget);
     expect(
       tester
-          .widget<TextField>(
-            find.byKey(const ValueKey('drone-loading-weight')),
-          )
+          .widget<TextField>(find.byKey(const ValueKey('drone-loading-weight')))
           .controller!
           .text,
       '1450',
