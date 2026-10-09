@@ -241,7 +241,6 @@ class _RentLockerPageState extends State<RentLockerPage>
           if (c['status'] == 'AVAILABLE') {
             final type = (c['cellType'] as String?)?.toUpperCase();
             final boxNum = (c['boxNumber'] as num?)?.toInt();
-            final col = (c['colIndex'] as num?)?.toInt();
             final map = c is Map<String, dynamic> ? c : Map<String, dynamic>.from(c as Map);
             if (LockerLayoutHelper.isXl(map)) {
               xl++;
