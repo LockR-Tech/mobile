@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:convert';
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:smart_laundry_locker/core/network/api_client.dart';
 import 'package:smart_laundry_locker/core/theme/shadcn_theme.dart';
@@ -962,28 +963,61 @@ class _CreateReportPageState extends State<CreateReportPage> {
   }
 
   Widget _buildPhysicalDiagram(List<Map<String, dynamic>> cells) {
-    int maxRow = 0, maxCol = 0;
-    for (final c in cells) {
-      final r = (c['rowIndex'] as num?)?.toInt() ?? 0;
-      final col = (c['colIndex'] as num?)?.toInt() ?? 0;
+    if (cells.isEmpty) return const SizedBox.shrink();
+
+    // 1. Phân loại cột Kiosk (Cột 0) và các cột ô vật lý tiêu chuẩn (Cột >= 1)
+    final hasKioskCol = cells.any(
+      (c) =>
+          ((c['colIndex'] as num?)?.toInt() == 0) ||
+          LockerLayoutHelper.isXl(c),
+    );
+    final col0Cell = hasKioskCol
+        ? cells.firstWhere(
+            (c) =>
+                ((c['colIndex'] as num?)?.toInt() == 0) ||
+                LockerLayoutHelper.isXl(c),
+            orElse: () => cells.first,
+          )
+        : null;
+
+    final standardCells = cells
+        .where((c) =>
+            c != col0Cell && ((c['colIndex'] as num?)?.toInt() ?? 1) > 0)
+        .toList();
+
+    // Xác định dải rowIndex của các ô (1-based theo DB hoặc 0-based)
+    int minRow = 1;
+    int maxRow = 1;
+    int maxCol = 1;
+
+    for (final c in standardCells) {
+      final r = (c['rowIndex'] as num?)?.toInt() ?? 1;
+      final col = (c['colIndex'] as num?)?.toInt() ?? 1;
+      if (r < minRow) minRow = r;
       if (r > maxRow) maxRow = r;
       if (col > maxCol) maxCol = col;
     }
-    final numRows = (maxRow + 1) >= 2 ? (maxRow + 1) : 3;
-    final numCols = (maxCol + 1) >= 2 ? (maxCol + 1) : 2;
+
+    final totalRows = math.max(3, maxRow - minRow + 1);
+    final numCols = math.max(1, maxCol);
 
     final grid = List.generate(
-      numRows,
-      (_) => List<Map<String, dynamic>?>.filled(numCols, null),
+      totalRows,
+      (_) => List<Map<String, dynamic>?>.filled(numCols + 1, null),
     );
-    for (final c in cells) {
-      final r = (c['rowIndex'] as num?)?.toInt() ?? 0;
-      final col = (c['colIndex'] as num?)?.toInt() ?? 0;
-      if (r < numRows && col < numCols) grid[r][col] = c;
+
+    for (final c in standardCells) {
+      final r = (c['rowIndex'] as num?)?.toInt() ?? minRow;
+      final col = (c['colIndex'] as num?)?.toInt() ?? 1;
+      final rowOffset = r - minRow;
+      if (rowOffset >= 0 && rowOffset < totalRows && col <= numCols) {
+        grid[rowOffset][col] = c;
+      }
     }
 
     const double baseCellHeight = 76.0;
     const double cellSpacing = 6.0;
+    final totalColumnsToRender = hasKioskCol ? (numCols + 1) : numCols;
 
     return Container(
       decoration: BoxDecoration(
@@ -994,10 +1028,10 @@ class _CreateReportPageState extends State<CreateReportPage> {
       padding: const EdgeInsets.all(10),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: List.generate(numCols, (col) {
+        children: List.generate(totalColumnsToRender, (colIdx) {
           final colChildren = <Widget>[];
 
-          if (col == 0 && numCols >= 2) {
+          if (hasKioskCol && colIdx == 0) {
             // CỘT 0:
             // 1. Màn hình Kiosk 7 inch
             colChildren.add(
@@ -1010,28 +1044,26 @@ class _CreateReportPageState extends State<CreateReportPage> {
               ),
             );
 
-            // 2. Ô #1 (Vali XL) ở dưới màn hình
-            final col0Cell = cells.firstWhere(
-              (c) =>
-                  ((c['colIndex'] as num?)?.toInt() == 0) ||
-                  ((c['boxNumber'] as num?)?.toInt() == 1),
-              orElse: () => cells.first,
-            );
-            final span = (numRows > 1) ? (numRows - 1) : 1;
-            final height = baseCellHeight * span + cellSpacing * (span - 1);
-            colChildren.add(
-              Padding(
-                padding: const EdgeInsets.only(bottom: cellSpacing),
-                child: SizedBox(
-                  height: height,
-                  child: _buildPhysicalCellTile(col0Cell, isTall: true),
+            // 2. Ô Vali XL (kéo dài các hàng dưới màn hình)
+            if (col0Cell != null) {
+              final span = (totalRows > 1) ? (totalRows - 1) : 1;
+              final height = baseCellHeight * span + cellSpacing * (span - 1);
+              colChildren.add(
+                Padding(
+                  padding: const EdgeInsets.only(bottom: cellSpacing),
+                  child: SizedBox(
+                    height: height,
+                    child: _buildPhysicalCellTile(col0Cell, isTall: true),
+                  ),
                 ),
-              ),
-            );
+              );
+            }
           } else {
+            final col = hasKioskCol ? colIdx : (colIdx + 1);
+
             // CÁC CỘT TIẾP THEO:
-            for (int row = 0; row < numRows; row++) {
-              final cell = grid[row][col];
+            for (int row = 0; row < totalRows; row++) {
+              final cell = (col <= numCols) ? grid[row][col] : null;
               colChildren.add(
                 Padding(
                   padding: const EdgeInsets.only(bottom: cellSpacing),

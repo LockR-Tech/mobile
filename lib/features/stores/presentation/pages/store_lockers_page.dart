@@ -14,6 +14,7 @@ import 'package:smart_laundry_locker/features/locker/domain/utils/locker_layout_
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:smart_laundry_locker/shared/shared.dart';
 import 'dart:async';
+import 'dart:math' as math;
 import 'package:smart_laundry_locker/core/services/app_event_bus.dart';
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
 
@@ -780,14 +781,7 @@ class _LockerCardState extends State<_LockerCard> {
   }
 
   String _cellTypeForBooking(Map<String, dynamic> cell) {
-    final explicit = (cell['cellType'] as String?)?.toUpperCase();
-    if (explicit == 'XL') return 'XL';
-    final boxNum = (cell['boxNumber'] as num?)?.toInt();
-    if (boxNum == 1) return 'XL';
-    final col = (cell['colIndex'] as num?)?.toInt();
-    if (col == 0) return 'XL';
-    final size = (cell['size'] as String?)?.toUpperCase() ?? '';
-    if (size == 'LARGE' || size == 'XL') return 'XL';
+    if (LockerLayoutHelper.isXl(cell)) return 'XL';
     return 'STANDARD';
   }
 
@@ -802,9 +796,8 @@ class _LockerCardState extends State<_LockerCard> {
   void _showBookingSheet(BuildContext ctx, Map<String, dynamic> cell) {
     // DRONE cells use a dedicated booking flow. Ô vali (XL) là ô thuê tủ thường.
     final boxNum = (cell['boxNumber'] as num?)?.toInt();
-    final col = (cell['colIndex'] as num?)?.toInt();
     final cellType = (cell['cellType'] as String?)?.toUpperCase();
-    final isXl = cellType == 'XL' || boxNum == 1 || col == 0;
+    final isXl = LockerLayoutHelper.isXl(cell);
     final isDrone = !isXl &&
         (cell['isDrone'] == true ||
             cellType == 'DRONE' ||
@@ -895,39 +888,63 @@ class _CellGrid extends StatelessWidget {
   final String lockerName;
   final String lockerCode;
 
-  bool _isXl(Map<String, dynamic> cell) =>
-      (cell['cellType'] as String?)?.toUpperCase() == 'XL' ||
-      (cell['size'] as String?)?.toUpperCase() == 'XL' ||
-      ((cell['boxNumber'] as num?)?.toInt() == 1) ||
-      ((cell['colIndex'] as num?)?.toInt() == 0 &&
-          (cell['rowIndex'] == null ||
-              cell['rowIndex'] == 0 ||
-              cell['rowIndex'] == 1 ||
-              cell['rowIndex'] == 2));
+  bool _isXl(Map<String, dynamic> cell) => LockerLayoutHelper.isXl(cell);
 
   @override
   Widget build(BuildContext context) {
-    // Compute grid dimensions
-    int maxRow = 0, maxCol = 0;
-    for (final c in cells) {
-      final r = (c['rowIndex'] as num?)?.toInt() ?? 0;
-      final col = (c['colIndex'] as num?)?.toInt() ?? 0;
+    if (cells.isEmpty) return const SizedBox.shrink();
+
+    // 1. Phân loại cột Kiosk (Cột 0) và các cột ô vật lý tiêu chuẩn (Cột >= 1)
+    final hasKioskCol = cells.any(
+      (c) =>
+          ((c['colIndex'] as num?)?.toInt() == 0) ||
+          LockerLayoutHelper.isXl(c),
+    );
+    final col0Cell = hasKioskCol
+        ? cells.firstWhere(
+            (c) =>
+                ((c['colIndex'] as num?)?.toInt() == 0) ||
+                LockerLayoutHelper.isXl(c),
+            orElse: () => cells.first,
+          )
+        : null;
+
+    final standardCells = cells
+        .where((c) =>
+            c != col0Cell && ((c['colIndex'] as num?)?.toInt() ?? 1) > 0)
+        .toList();
+
+    // Xác định dải rowIndex của các ô (1-based theo DB hoặc 0-based)
+    int minRow = 1;
+    int maxRow = 1;
+    int maxCol = 1;
+
+    for (final c in standardCells) {
+      final r = (c['rowIndex'] as num?)?.toInt() ?? 1;
+      final col = (c['colIndex'] as num?)?.toInt() ?? 1;
+      if (r < minRow) minRow = r;
       if (r > maxRow) maxRow = r;
       if (col > maxCol) maxCol = col;
     }
-    final numRows = maxRow + 1;
-    final numCols = maxCol + 1;
 
-    // Build 2-D grid map
+    final totalRows = math.max(3, maxRow - minRow + 1);
+    final numCols = math.max(1, maxCol);
+
     final grid = List.generate(
-      numRows,
-      (_) => List<Map<String, dynamic>?>.filled(numCols, null),
+      totalRows,
+      (_) => List<Map<String, dynamic>?>.filled(numCols + 1, null),
     );
-    for (final c in cells) {
-      final r = (c['rowIndex'] as num?)?.toInt() ?? 0;
-      final col = (c['colIndex'] as num?)?.toInt() ?? 0;
-      if (r < numRows && col < numCols) grid[r][col] = c;
+
+    for (final c in standardCells) {
+      final r = (c['rowIndex'] as num?)?.toInt() ?? minRow;
+      final col = (c['colIndex'] as num?)?.toInt() ?? 1;
+      final rowOffset = r - minRow;
+      if (rowOffset >= 0 && rowOffset < totalRows && col <= numCols) {
+        grid[rowOffset][col] = c;
+      }
     }
+
+    final totalColumnsToRender = hasKioskCol ? (numCols + 1) : numCols;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -937,13 +954,13 @@ class _CellGrid extends StatelessWidget {
           padding: const EdgeInsets.fromLTRB(14, 4, 14, 16),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
-            children: List.generate(numCols, (col) {
+            children: List.generate(totalColumnsToRender, (colIdx) {
               final colChildren = <Widget>[];
               int skipRows = 0;
 
-              // Cột 0 của trạm Kiosk: Hàng trên là Màn hình cảm ứng 7 inch;
-              // Ô #1 (Vali XL) ở phía dưới màn hình
-              if (col == 0 && numCols >= 2) {
+              // Cột 0 của trạm Kiosk: Hàng 1 là Màn hình cảm ứng 7 inch;
+              // Các hàng còn lại (hàng 2..totalRows) là Ô Vali XL (Box 9/10)
+              if (hasKioskCol && colIdx == 0) {
                 // 1. Màn hình 7 inch (Waveshare 1024x600 IPS)
                 colChildren.add(
                   Padding(
@@ -963,40 +980,38 @@ class _CellGrid extends StatelessWidget {
                   ),
                 );
 
-                // 2. Ô #1 (Vali XL) hạ thấp xuống dưới
-                final col0Cell = cells.firstWhere(
-                  (c) =>
-                      ((c['colIndex'] as num?)?.toInt() == 0) ||
-                      ((c['boxNumber'] as num?)?.toInt() == 1),
-                  orElse: () => cells.first,
-                );
-                final span = (numRows > 1) ? (numRows - 1) : 1;
-                final height = 80.0 * span + 6.0 * (span - 1);
-                colChildren.add(
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 6),
-                    child: SizedBox(
-                      height: height,
-                      child: _CellTile(
-                        cell: col0Cell,
-                        onTap: switch ((col0Cell['status'] as String?)
-                            ?.toUpperCase()) {
-                          'AVAILABLE' => () => onCellTap(col0Cell),
-                          'FAULT' => () => onFaultTap(col0Cell),
-                          _ => null,
-                        },
+                // 2. Ô Vali XL (kéo dài các hàng dưới màn hình)
+                if (col0Cell != null) {
+                  final span = (totalRows > 1) ? (totalRows - 1) : 1;
+                  final height = 80.0 * span + 6.0 * (span - 1);
+                  colChildren.add(
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 6),
+                      child: SizedBox(
+                        height: height,
+                        child: _CellTile(
+                          cell: col0Cell,
+                          onTap: switch ((col0Cell['status'] as String?)
+                              ?.toUpperCase()) {
+                            'AVAILABLE' => () => onCellTap(col0Cell),
+                            'FAULT' => () => onFaultTap(col0Cell),
+                            _ => null,
+                          },
+                        ),
                       ),
                     ),
-                  ),
-                );
+                  );
+                }
               } else {
-                for (int row = 0; row < numRows; row++) {
+                final col = hasKioskCol ? colIdx : (colIdx + 1);
+
+                for (int row = 0; row < totalRows; row++) {
                   if (skipRows > 0) {
                     skipRows--;
                     continue;
                   }
 
-                  final cell = grid[row][col];
+                  final cell = (col <= numCols) ? grid[row][col] : null;
                   final span = cell != null ? (_isXl(cell) ? 2 : 1) : 1;
                   skipRows = span - 1;
 
@@ -1682,7 +1697,7 @@ class _CellTile extends StatelessWidget {
   int? get _boxNumber => (cell['boxNumber'] as num?)?.toInt();
   int? get _colIndex => (cell['colIndex'] as num?)?.toInt();
 
-  bool get _isXl => _cellType == 'XL' || _boxNumber == 1 || _colIndex == 0;
+  bool get _isXl => LockerLayoutHelper.isXl(cell);
 
   // Ô vali (XL, ô #1) là ô giữ đồ thông thường (thuê tủ), KHÔNG PHẢI drone.
   // Chỉ ô có cellType DRONE (hoặc fallback ô #2, #3 trên nóc nếu chưa cấu hình cellType) mới là Drone.
@@ -2000,10 +2015,7 @@ class _BookingSheet extends StatelessWidget {
   final VoidCallback onRent;
   final VoidCallback onSend;
 
-  bool get _isXl =>
-      (cell['cellType'] as String?)?.toUpperCase() == 'XL' ||
-      (cell['boxNumber'] as num?)?.toInt() == 1 ||
-      (cell['colIndex'] as num?)?.toInt() == 0;
+  bool get _isXl => LockerLayoutHelper.isXl(cell);
 
   String get _sizeVi => switch ((cell['size'] as String?) ?? '') {
     'SMALL' => 'Nhỏ (S)',

@@ -12,7 +12,7 @@ import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/lo
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/ops_widgets.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/order_extras.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/order_payment_sheet.dart';
-import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
+import 'package:smart_laundry_locker/features/locker/domain/utils/locker_layout_helper.dart';
 import 'package:smart_laundry_locker/shared/shared.dart';
 
 /// RENTAL flow: chọn tủ + loại ô + thời lượng, trả tiền theo giờ, PIN dùng
@@ -241,7 +241,8 @@ class _RentLockerPageState extends State<RentLockerPage>
             final type = (c['cellType'] as String?)?.toUpperCase();
             final boxNum = (c['boxNumber'] as num?)?.toInt();
             final col = (c['colIndex'] as num?)?.toInt();
-            if (type == 'XL' || boxNum == 1 || col == 0) {
+            final map = c is Map<String, dynamic> ? c : Map<String, dynamic>.from(c as Map);
+            if (LockerLayoutHelper.isXl(map)) {
               xl++;
             } else if (type == 'STANDARD' || (type != 'DRONE' && boxNum != 2 && boxNum != 3)) {
               std++;

@@ -27,8 +27,9 @@ class LockerLayoutHelper {
       final col = (map['colIndex'] as num?)?.toInt();
       final cellType = (map['cellType'] as String?)?.toUpperCase();
 
-      // Ô vali (XL, ô #1, cột 0): là ô thường (thuê tủ lưu đồ lớn, KHÔNG PHẢI drone)
-      if (cellType == 'XL' || boxNum == 1 || col == 0) {
+      final size = (map['size'] as String?)?.toUpperCase();
+      // Ô vali (XL, size XL, hoặc cột 0): là ô thường (thuê tủ lưu đồ lớn, KHÔNG PHẢI drone)
+      if (cellType == 'XL' || size == 'XL' || col == 0) {
         map['cellType'] = 'XL';
         map['isDrone'] = false;
       } else if (cellType == 'DRONE' ||
@@ -48,12 +49,12 @@ class LockerLayoutHelper {
     return enrichedCells;
   }
 
-  /// Kiểm tra ô vali lớn XL
+  /// Kiểm tra ô vali lớn XL (cột 0 trạm Kiosk hoặc loại/kích cỡ XL)
   static bool isXl(Map<String, dynamic> cell) {
     final cellType = (cell['cellType'] as String?)?.toUpperCase();
-    final boxNum = (cell['boxNumber'] as num?)?.toInt();
+    final size = (cell['size'] as String?)?.toUpperCase();
     final col = (cell['colIndex'] as num?)?.toInt();
-    return cellType == 'XL' || boxNum == 1 || col == 0;
+    return cellType == 'XL' || size == 'XL' || col == 0;
   }
 
   /// Kiểm tra ô Drone nóc tủ
