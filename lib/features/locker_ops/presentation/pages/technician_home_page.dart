@@ -22,6 +22,7 @@ import 'package:smart_laundry_locker/features/profile/presentation/providers/pro
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/pages/technician_profile_page.dart';
 import 'package:smart_laundry_locker/core/services/app_event_bus.dart';
+import 'package:smart_laundry_locker/features/locker/domain/utils/locker_layout_helper.dart';
 
 /// Home for the LOCKER_TECHNICIAN role (kỹ thuật viên tủ): physical locker
 /// maintenance (fault cells, work queue, preventive schedules, landing pad)
@@ -8049,6 +8050,10 @@ class _BoxIncidentResolutionSheetState
                     final isSel = cId == _selectedBoxId;
                     final st = c['status'] as String? ?? '';
                     final col = statusColor(st);
+                    final isXl = LockerLayoutHelper.isXl(c);
+                    final isDrone = LockerLayoutHelper.isDrone(c);
+                    final isDoorOpen = LockerLayoutHelper.isDoorOpen(c);
+                    final tag = isDrone ? ' (Drone)' : (isXl ? ' (XL)' : '');
                     return ChoiceChip(
                       selected: isSel,
                       onSelected: (val) {
@@ -8060,8 +8065,10 @@ class _BoxIncidentResolutionSheetState
                       selectedColor: _brandColor.withValues(alpha: 0.18),
                       backgroundColor: Colors.grey.shade100,
                       side: BorderSide(
-                        color: isSel ? _brandColor : Colors.grey.shade300,
-                        width: isSel ? 2 : 1,
+                        color: isSel
+                            ? _brandColor
+                            : (isDoorOpen ? const Color(0xFFF59E0B) : Colors.grey.shade300),
+                        width: isSel ? 2 : (isDoorOpen ? 1.5 : 1),
                       ),
                       label: Row(
                         mainAxisSize: MainAxisSize.min,
@@ -8074,14 +8081,32 @@ class _BoxIncidentResolutionSheetState
                               shape: BoxShape.circle,
                             ),
                           ),
-                          const SizedBox(width: 6),
+                          const SizedBox(width: 5),
                           Text(
-                            '#${c['boxNumber']}',
+                            '#${c['boxNumber']}$tag',
                             style: TextStyle(
                               fontWeight: isSel ? FontWeight.bold : FontWeight.w600,
                               color: isSel ? _brandColor : Colors.black87,
                             ),
                           ),
+                          if (isDoorOpen) ...[
+                            const SizedBox(width: 4),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 3.5, vertical: 0.5),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFFEF08A),
+                                borderRadius: BorderRadius.circular(3),
+                              ),
+                              child: const Text(
+                                'Mở',
+                                style: TextStyle(
+                                  fontSize: 8,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF854D0E),
+                                ),
+                              ),
+                            ),
+                          ],
                         ],
                       ),
                     );

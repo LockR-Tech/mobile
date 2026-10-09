@@ -10,6 +10,7 @@ import 'package:smart_laundry_locker/features/locker_ops/presentation/pages/rent
 import 'package:smart_laundry_locker/features/locker_ops/presentation/pages/send_parcel_page.dart';
 import 'package:smart_laundry_locker/features/stores/domain/entities/store.dart';
 import 'package:smart_laundry_locker/features/maintenance/presentation/pages/create_report_page.dart';
+import 'package:smart_laundry_locker/features/locker/domain/utils/locker_layout_helper.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:smart_laundry_locker/shared/shared.dart';
 import 'dart:async';
@@ -370,6 +371,10 @@ class _LockerCardState extends State<_LockerCard> {
     return (n?.isNotEmpty == true) ? n! : (c ?? 'Tủ');
   }
 
+  List<Map<String, dynamic>> get _currentCells =>
+      (_layout?['cells'] as List?)?.cast<Map<String, dynamic>>() ??
+      const <Map<String, dynamic>>[];
+
   @override
   void initState() {
     super.initState();
@@ -425,31 +430,7 @@ class _LockerCardState extends State<_LockerCard> {
   }
 
   static Map<String, dynamic> _enrichLayout(Map<String, dynamic> raw) {
-    if (raw.isEmpty) return raw;
-    final Map<String, dynamic> enriched = Map<String, dynamic>.from(raw);
-    final rawCells = raw['cells'] as List?;
-    if (rawCells != null) {
-      final enrichedCells = rawCells.map((c) {
-        if (c is! Map<String, dynamic>) return c;
-        final map = Map<String, dynamic>.from(c);
-        final boxNum = (map['boxNumber'] as num?)?.toInt();
-        final col = (map['colIndex'] as num?)?.toInt();
-        final cellType = (map['cellType'] as String?)?.toUpperCase();
-        // Ô vali (XL, ô #1, cột 0): là ô thường (thuê tủ lưu đồ, KHÔNG PHẢI drone)
-        if (cellType == 'XL' || boxNum == 1 || col == 0) {
-          map['cellType'] = 'XL';
-          map['isDrone'] = false;
-        } else if (cellType == 'DRONE' || (cellType == null && (boxNum == 2 || boxNum == 3))) {
-          map['cellType'] = 'DRONE';
-          map['isDrone'] = true;
-        } else {
-          map['isDrone'] = false;
-        }
-        return map;
-      }).toList();
-      enriched['cells'] = enrichedCells;
-    }
-    return enriched;
+    return LockerLayoutHelper.enrichLayout(raw);
   }
 
   void _toggle() {
@@ -658,6 +639,8 @@ class _LockerCardState extends State<_LockerCard> {
                                 cabinetName: _lockerName,
                                 lockerName: _lockerName,
                                 locationName: widget.storeName,
+                                initialLayout: _layout,
+                                initialCells: _currentCells,
                               ),
                             ),
                           );
@@ -768,7 +751,32 @@ class _LockerCardState extends State<_LockerCard> {
 
     ScaffoldMessenger.of(ctx)
       ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text(message)));
+      ..showSnackBar(
+        SnackBar(
+          content: Text(message),
+          action: SnackBarAction(
+            label: 'Báo sự cố',
+            textColor: Colors.amberAccent,
+            onPressed: () {
+              Navigator.of(ctx, rootNavigator: true).push<void>(
+                MaterialPageRoute(
+                  builder: (_) => CreateReportPage(
+                    cabinetId: '$_lockerId',
+                    lockerId: '$_lockerId',
+                    cabinetName: _lockerName,
+                    lockerName: _lockerName,
+                    locationName: widget.storeName,
+                    initialBoxId: (cell['id'] as num?)?.toInt(),
+                    initialLayout: _layout,
+                    initialCells: (_layout?['cells'] as List?)
+                        ?.cast<Map<String, dynamic>>(),
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      );
   }
 
   String _cellTypeForBooking(Map<String, dynamic> cell) {
@@ -1490,6 +1498,39 @@ class _KioskScreenDetailSheet extends StatelessWidget {
             SizedBox(
               width: double.infinity,
               height: 44,
+              child: OutlinedButton.icon(
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: const Color(0xFFEF4444),
+                  side: const BorderSide(color: Color(0xFFFECACA)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                onPressed: () {
+                  Navigator.pop(context);
+                  Navigator.of(context, rootNavigator: true).push<void>(
+                    MaterialPageRoute(
+                      builder: (_) => CreateReportPage(
+                        cabinetId: lockerCode,
+                        lockerId: lockerCode,
+                        cabinetName: lockerName,
+                        lockerName: lockerName,
+                        locationName: '',
+                      ),
+                    ),
+                  );
+                },
+                icon: const Icon(LucideIcons.alertCircle, size: 16),
+                label: const Text(
+                  'Báo sự cố màn hình Kiosk',
+                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+                ),
+              ),
+            ),
+            const SizedBox(height: 8),
+            SizedBox(
+              width: double.infinity,
+              height: 44,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF0F172A),
@@ -2137,6 +2178,34 @@ class _BookingSheet extends StatelessWidget {
                 ),
               ),
             ],
+          ),
+          const SizedBox(height: 12),
+          TextButton.icon(
+            onPressed: () {
+              Navigator.pop(context);
+              Navigator.of(context, rootNavigator: true).push<void>(
+                MaterialPageRoute(
+                  builder: (_) => CreateReportPage(
+                    cabinetId: '$lockerId',
+                    lockerId: '$lockerId',
+                    cabinetName: lockerName,
+                    lockerName: lockerName,
+                    locationName: storeName,
+                    initialBoxId: (cell['id'] as num?)?.toInt(),
+                    initialCells: [cell],
+                  ),
+                ),
+              );
+            },
+            icon: const Icon(LucideIcons.alertTriangle, size: 14, color: Color(0xFFEF4444)),
+            label: const Text(
+              'Gặp sự cố với ô này? Báo cáo ngay',
+              style: TextStyle(
+                fontSize: 12,
+                color: Color(0xFFEF4444),
+                fontWeight: FontWeight.w600,
+              ),
+            ),
           ),
         ],
       ),
