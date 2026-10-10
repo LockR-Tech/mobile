@@ -16,11 +16,15 @@ import 'package:smart_laundry_locker/features/drone_delivery/infrastructure/mode
 import 'package:smart_laundry_locker/features/drone_delivery/presentation/widgets/drone_delivery_detail.dart';
 import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/ops_widgets.dart';
+import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/complete_inspection_sheet.dart';
+import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/schedule_detail_modal_sheet.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/pages/technician_profile_page.dart';
+import 'package:smart_laundry_locker/features/maintenance/presentation/widgets/drone_report_detail_sheet.dart';
 import 'package:smart_laundry_locker/features/profile/presentation/providers/profile_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:smart_laundry_locker/shared/widgets/controller_disposer.dart';
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 /// Home for the DRONE_TECHNICIAN role (kỹ thuật viên drone): drone fleet only
 /// (delivery dispatch queue from the backend, fleet status/battery, mission
@@ -37,14 +41,36 @@ class MaintenanceHomePage extends StatefulWidget {
 
 class _MaintenanceHomePageState extends State<MaintenanceHomePage>
     with SingleTickerProviderStateMixin {
-  late final TabController _tabs = TabController(length: 4, vsync: this);
+  late final TabController _tabs = TabController(length: 6, vsync: this);
   late final LockerOpsService _service = widget.service ?? LockerOpsService();
 
   List<Map<String, dynamic>> _drones = [];
   // Hàng đợi order-based cho đội bay theo Phase 2.
   List<Map<String, dynamic>> _deliveries = [];
+  // Chỉ chứa phiếu category=DRONE, lấy qua API riêng cho DRONE_TECHNICIAN.
+  List<Map<String, dynamic>> _droneReports = [];
+  List<Map<String, dynamic>> _myDroneReports = [];
+  List<Map<String, dynamic>> _routedDroneReports = [];
+  String? _droneReportLoadError;
+  String _droneReportStatusFilter = 'ALL';
+  String _droneReportAssignmentFilter = 'ALL';
+  String _droneReportDroneFilter = 'ALL';
+  String _droneReportTimeFilter = 'ALL';
+  String _droneReportSort = 'NEWEST';
+  int _droneReportVisibleCount = 20;
+  final _droneReportSearchController = TextEditingController();
+  String _myWorkTypeFilter = 'ALL';
+  String _myWorkStatusFilter = 'ACTIVE';
+  String _myWorkSort = 'DUE';
+  final _myWorkSearchController = TextEditingController();
   // Lịch bảo trì định kỳ của drone (droneUnitId != null) — lịch tủ thuộc LOCKER_TECHNICIAN.
   List<Map<String, dynamic>> _schedules = [];
+  String? _scheduleLoadError;
+  bool _mySchedulesOnly = true;
+  String _scheduleDueFilter = 'ALL';
+  String _schedulePriorityFilter = 'ALL';
+  String _scheduleSort = 'DUE';
+  final _scheduleSearchController = TextEditingController();
   bool _loading = true;
   String? _myUserId;
   String? _myUserName;
@@ -83,6 +109,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
     );
     _eventSubscription = AppEventBus.instance.events.listen((event) {
       if (event is OrderChangedEvent) _refreshDeliveries();
+      if (event is ReportUpdatedEvent) _load();
     });
   }
 
@@ -91,6 +118,9 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
     _tabs.dispose();
     _deliveryRefreshTimer?.cancel();
     _eventSubscription?.cancel();
+    _droneReportSearchController.dispose();
+    _myWorkSearchController.dispose();
+    _scheduleSearchController.dispose();
     super.dispose();
   }
 
@@ -121,15 +151,24 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
       } catch (_) {}
       // Lịch bảo trì định kỳ drone — best-effort như trên.
       try {
-        final schedules = await _service.maintenanceSchedules();
+        final schedules = await _service.maintenanceSchedules(target: 'DRONE');
+        if (mounted) {
+          setState(() {
+            _schedules = schedules
+                .where((s) => s['droneUnitId'] != null)
+                .toList(growable: false);
+            _scheduleLoadError = null;
+          });
+        }
+      } catch (e) {
         if (mounted) {
           setState(
-            () => _schedules = schedules
-                .where((s) => s['droneUnitId'] != null)
-                .toList(growable: false),
+            () => _scheduleLoadError =
+                'Không tải được lịch bảo trì Drone: ${LockerOpsService.errorMessage(e)}',
           );
         }
-      } catch (_) {}
+      }
+      await _loadDroneReports();
       try {
         final rating = await _service.myRatingAverage();
         if (mounted) setState(() => _ratingAverage = rating);
@@ -139,9 +178,92 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
     }
   }
 
+  Future<void> _loadDroneReports() async {
+    try {
+      final reports = await _service.droneReports(all: true);
+      final currentUserId = _myUserId;
+      final mine = reports
+          .where(
+            (report) =>
+                currentUserId != null &&
+                '${report['assignedToUserId']}' == currentUserId,
+          )
+          .toList(growable: false);
+      final routed = reports
+          .where(
+            (report) =>
+                report['status'] == 'OPEN' &&
+                (report['routedToUserId'] == null ||
+                    '${report['routedToUserId']}' == currentUserId),
+          )
+          .toList(growable: false);
+      if (!mounted) return;
+      setState(() {
+        _droneReports = reports;
+        _myDroneReports = mine;
+        _routedDroneReports = routed;
+        _droneReportLoadError = null;
+      });
+    } catch (_) {
+      // Nếu API tổng gặp lỗi riêng, vẫn thử API cá nhân để công việc đã được
+      // phân công không biến mất hoàn toàn khỏi mobile.
+      try {
+        final mine = await _service.droneReports(mine: true);
+        if (!mounted) return;
+        setState(() {
+          _myDroneReports = mine;
+          _droneReports = mine;
+          _routedDroneReports = const [];
+          _droneReportLoadError = null;
+        });
+      } catch (_) {
+        if (!mounted) return;
+        setState(() {
+          _droneReportLoadError =
+              'Không tải được phiếu sự cố Drone. Kéo xuống để thử lại.';
+        });
+      }
+    }
+  }
+
   Future<void> _logout() async {
-    await TokenService.clearTokens();
-    if (mounted) context.go('/onboarding');
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Row(
+          children: [
+            Icon(Icons.logout_rounded, color: Color(0xFFDC2626)),
+            SizedBox(width: 10),
+            Text('Đăng xuất ca trực'),
+          ],
+        ),
+        content: const Text(
+          'Bạn có chắc chắn muốn kết thúc ca trực và đăng xuất khỏi tài khoản KTV Drone không?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Hủy', style: TextStyle(color: Colors.grey)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFDC2626),
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text('Đăng xuất'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true) {
+      await TokenService.clearTokens();
+      if (mounted) context.go('/onboarding');
+    }
   }
 
   Future<void> _run(Future<Object?> Function() fn, String ok) async {
@@ -619,15 +741,9 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
   );
 
   Widget _buildDroneTechnicianHeader() {
-    final waiting = _deliveries
-        .where((d) => d['deliveryStage'] == 'AWAITING_DISPATCH')
-        .length;
-    final working = _deliveries
-        .where(
-          (d) =>
-              d['deliveryStage'] == 'ACCEPTED' ||
-              d['deliveryStage'] == 'LAUNCHING',
-        )
+    final waiting = _droneReports.where((r) => r['status'] == 'OPEN').length;
+    final working = _myDroneReports
+        .where((r) => r['status'] == 'IN_PROGRESS')
         .length;
     final inFlight = _inFlightDeliveries.length;
     final displayName = _resolvedTechnicianName(context);
@@ -846,7 +962,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                       'Chờ xử lý',
                       const Color(0xFFEF4444),
                       waiting > 0,
-                      () => _selectDispatchFilter('WAITING'),
+                      () => _selectDroneReportFilter('OPEN'),
                     ),
                     const SizedBox(width: 4),
                     _droneHudChip(
@@ -855,7 +971,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                       'Đang làm',
                       const Color(0xFF38BDF8),
                       false,
-                      () => _selectDispatchFilter('WORKING'),
+                      () => _tabs.animateTo(3),
                     ),
                     const SizedBox(width: 4),
                     _droneHudChip(
@@ -864,7 +980,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                       'Định kỳ',
                       const Color(0xFFA78BFA),
                       false,
-                      () => _tabs.animateTo(2),
+                      () => _tabs.animateTo(4),
                     ),
                     const SizedBox(width: 4),
                     _droneHudChip(
@@ -1002,9 +1118,9 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
     );
   }
 
-  void _selectDispatchFilter(String filter) {
-    setState(() => _dispatchFilter = filter);
-    _tabs.animateTo(0);
+  void _selectDroneReportFilter(String filter) {
+    setState(() => _droneReportStatusFilter = filter);
+    _tabs.animateTo(2);
   }
 
   @override
@@ -1038,6 +1154,11 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
               tabs: [
                 Tab(text: 'Điều phối (${_deliveries.length})'),
                 Tab(text: 'Đội bay (${_drones.length})'),
+                Tab(text: 'Sự cố (${_droneReports.length})'),
+                Tab(
+                  text:
+                      'Việc của tôi (${_myDroneReports.length + _schedules.where(_isScheduleMine).length})',
+                ),
                 Tab(text: 'Định kỳ (${_schedules.length})'),
                 const Tab(text: 'Công cụ bay'),
               ],
@@ -1053,6 +1174,8 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                     children: [
                       _buildDispatchQueue(),
                       _buildDroneFleet(),
+                      _buildDroneIncidentQueue(),
+                      _buildMyDroneWork(),
                       _buildMaintenanceSchedules(),
                       _buildFlightTools(),
                     ],
@@ -1370,6 +1493,734 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
     );
   }
 
+  // ---- Tab sự cố Drone / việc của tôi ----
+  Widget _buildDroneIncidentQueue() {
+    final query = _droneReportSearchController.text.trim().toLowerCase();
+    final now = DateTime.now();
+    final reports = _droneReports.where((report) {
+      final statusMatches =
+          _droneReportStatusFilter == 'ALL' ||
+          report['status'] == _droneReportStatusFilter;
+      final assignmentMatches = switch (_droneReportAssignmentFilter) {
+        'MINE' => _isDroneReportAssignedToMe(report),
+        'UNASSIGNED' => report['assignedToUserId'] == null,
+        _ => true,
+      };
+      final droneCode = '${report['droneCode'] ?? report['droneUnitId'] ?? ''}';
+      final droneMatches =
+          _droneReportDroneFilter == 'ALL' ||
+          droneCode == _droneReportDroneFilter;
+      final createdAt = parseServerDateTime(report['createdAt']);
+      final age = createdAt == null ? null : now.difference(createdAt);
+      final timeMatches = switch (_droneReportTimeFilter) {
+        'TODAY' =>
+          createdAt != null &&
+              createdAt.year == now.year &&
+              createdAt.month == now.month &&
+              createdAt.day == now.day,
+        '7D' => age != null && !age.isNegative && age.inDays < 7,
+        '30D' => age != null && !age.isNegative && age.inDays < 30,
+        _ => true,
+      };
+      final searchable = [
+        report['id'],
+        report['title'],
+        report['description'],
+        report['droneCode'],
+        report['reporterName'],
+        report['orderCode'],
+      ].where((value) => value != null).join(' ').toLowerCase();
+      return statusMatches &&
+          assignmentMatches &&
+          droneMatches &&
+          timeMatches &&
+          (query.isEmpty || searchable.contains(query));
+    }).toList();
+    reports.sort(
+      (a, b) => switch (_droneReportSort) {
+        'OLDEST' => -_compareDroneReportsNewestFirst(a, b),
+        'SLA' => _compareNullableDate(a['slaDueAt'], b['slaDueAt']),
+        _ => _compareDroneReportsNewestFirst(a, b),
+      },
+    );
+    final visibleReports = reports
+        .take(_droneReportVisibleCount)
+        .toList(growable: false);
+    final openCount = _droneReports.where((r) => r['status'] == 'OPEN').length;
+    final inProgressCount = _droneReports
+        .where((r) => r['status'] == 'IN_PROGRESS')
+        .length;
+    final resolvedCount = _droneReports
+        .where((r) => r['status'] == 'RESOLVED')
+        .length;
+
+    return RefreshIndicator(
+      onRefresh: _load,
+      child: ListView(
+        padding: const EdgeInsets.all(12),
+        children: [
+          if (_droneReportLoadError != null) ...[
+            OpsBanner(
+              tone: OpsBannerTone.danger,
+              icon: Icons.cloud_off_outlined,
+              text: _droneReportLoadError!,
+            ),
+            _retryButton(),
+          ] else
+            OpsBanner(
+              tone: openCount > 0 ? OpsBannerTone.warning : OpsBannerTone.info,
+              icon: openCount > 0
+                  ? Icons.warning_amber_rounded
+                  : Icons.flight_outlined,
+              text: openCount > 0
+                  ? 'Có $openCount phiếu sự cố Drone đang chờ KTV tiếp nhận xử lý.'
+                  : 'Hàng đợi sự cố Drone. Phiếu mới được ưu tiên hiển thị để đội bay tiếp nhận kịp thời.',
+            ),
+          const SizedBox(height: 10),
+          _buildSearchField(
+            controller: _droneReportSearchController,
+            hint: 'Tìm mã phiếu, tiêu đề, drone, người báo...',
+            onChanged: (_) => setState(() => _droneReportVisibleCount = 20),
+          ),
+          const SizedBox(height: 10),
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: [
+                for (final option in [
+                  ('ALL', 'Tất cả', _droneReports.length, Icons.filter_list),
+                  ('OPEN', 'Chờ nhận', openCount, Icons.fiber_new_rounded),
+                  (
+                    'IN_PROGRESS',
+                    'Đang xử lý',
+                    inProgressCount,
+                    Icons.build_circle_outlined,
+                  ),
+                  (
+                    'RESOLVED',
+                    'Hoàn tất',
+                    resolvedCount,
+                    Icons.check_circle_outline,
+                  ),
+                ]) ...[
+                  FilterChip(
+                    selected: _droneReportStatusFilter == option.$1,
+                    onSelected: (_) => setState(() {
+                      _droneReportStatusFilter = option.$1;
+                      _droneReportVisibleCount = 20;
+                    }),
+                    avatar: Icon(option.$4, size: 16),
+                    label: Text('${option.$2} (${option.$3})'),
+                    showCheckmark: false,
+                    selectedColor: const Color(
+                      0xFF0284C7,
+                    ).withValues(alpha: 0.14),
+                    side: BorderSide(
+                      color: _droneReportStatusFilter == option.$1
+                          ? const Color(0xFF0284C7)
+                          : const Color(0xFFE2E8F0),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                ],
+              ],
+            ),
+          ),
+          const SizedBox(height: 8),
+          _buildReportAdvancedFilters(),
+          const SizedBox(height: 12),
+          if (_routedDroneReports.isNotEmpty &&
+              _droneReportStatusFilter == 'ALL') ...[
+            OpsSectionLabel(
+              'Gửi trực tiếp cho bạn (${_routedDroneReports.length})',
+              icon: Icons.assignment_ind_outlined,
+            ),
+            const SizedBox(height: 8),
+          ],
+          if (reports.isEmpty && _droneReportLoadError == null)
+            const OpsEmptyState(
+              icon: Icons.check_circle_outline,
+              title: 'Không có phiếu sự cố Drone',
+              subtitle: 'Đội bay hiện không có sự cố phù hợp bộ lọc.',
+            )
+          else
+            for (final report in visibleReports) _droneReportCard(report),
+          if (reports.length > visibleReports.length)
+            Center(
+              child: OutlinedButton.icon(
+                onPressed: () => setState(() => _droneReportVisibleCount += 20),
+                icon: const Icon(Icons.expand_more_rounded),
+                label: Text(
+                  'Xem thêm (${reports.length - visibleReports.length})',
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMyDroneWork() {
+    final query = _myWorkSearchController.text.trim().toLowerCase();
+    final mySchedules = _schedules.where(_isScheduleMine).toList();
+    final tasks = <({String type, Map<String, dynamic> data})>[
+      for (final report in _myDroneReports) (type: 'INCIDENT', data: report),
+      for (final schedule in mySchedules) (type: 'MAINTENANCE', data: schedule),
+    ];
+    final pendingCount = tasks.where((task) {
+      if (task.type == 'INCIDENT') return task.data['status'] == 'OPEN';
+      return task.data['due'] == true;
+    }).length;
+    final progressCount = _myDroneReports
+        .where((report) => report['status'] == 'IN_PROGRESS')
+        .length;
+    final completedCount = tasks.where((task) => _myTaskIsDone(task)).length;
+    final filtered = tasks.where((task) {
+      if (_myWorkTypeFilter != 'ALL' && task.type != _myWorkTypeFilter) {
+        return false;
+      }
+      final done = _myTaskIsDone(task);
+      if (_myWorkStatusFilter == 'ACTIVE' && done) return false;
+      if (_myWorkStatusFilter == 'DONE' && !done) return false;
+      final data = task.data;
+      final searchable = [
+        data['id'],
+        data['title'],
+        data['description'],
+        data['droneCode'],
+        data['orderCode'],
+      ].where((value) => value != null).join(' ').toLowerCase();
+      return query.isEmpty || searchable.contains(query);
+    }).toList();
+    filtered.sort((a, b) {
+      if (_myWorkSort == 'NEWEST') {
+        return _compareNullableDate(
+          b.data['createdAt'] ?? b.data['lastDoneAt'],
+          a.data['createdAt'] ?? a.data['lastDoneAt'],
+        );
+      }
+      final firstDue = a.type == 'INCIDENT'
+          ? a.data['slaDueAt']
+          : a.data['nextDueAt'];
+      final secondDue = b.type == 'INCIDENT'
+          ? b.data['slaDueAt']
+          : b.data['nextDueAt'];
+      return _compareNullableDate(firstDue, secondDue);
+    });
+
+    return RefreshIndicator(
+      onRefresh: _load,
+      child: ListView(
+        padding: const EdgeInsets.all(12),
+        children: [
+          if (_droneReportLoadError != null) ...[
+            OpsBanner(
+              tone: OpsBannerTone.danger,
+              icon: Icons.cloud_off_outlined,
+              text: _droneReportLoadError!,
+            ),
+            _retryButton(),
+          ] else
+            OpsBanner(
+              tone: filtered.isNotEmpty
+                  ? OpsBannerTone.info
+                  : OpsBannerTone.success,
+              icon: filtered.isNotEmpty
+                  ? Icons.engineering_outlined
+                  : Icons.check_circle_outline,
+              text:
+                  'Công việc được giao gồm phiếu sự cố và lịch bảo trì Drone. Mọi thay đổi chỉ được ghi nhận sau khi Backend xác nhận.',
+            ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: _workMetric(
+                  'Chưa làm',
+                  pendingCount,
+                  const Color(0xFFEA580C),
+                ),
+              ),
+              const SizedBox(width: 7),
+              Expanded(
+                child: _workMetric(
+                  'Đang làm',
+                  progressCount,
+                  const Color(0xFF0284C7),
+                ),
+              ),
+              const SizedBox(width: 7),
+              Expanded(
+                child: _workMetric(
+                  'Hoàn tất',
+                  completedCount,
+                  const Color(0xFF16A34A),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          _buildSearchField(
+            controller: _myWorkSearchController,
+            hint: 'Tìm công việc, drone, mã phiếu...',
+            onChanged: (_) => setState(() {}),
+          ),
+          const SizedBox(height: 8),
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: [
+                for (final option in const [
+                  ('ALL', 'Mọi loại'),
+                  ('INCIDENT', 'Sự cố'),
+                  ('MAINTENANCE', 'Bảo trì'),
+                ]) ...[
+                  _droneFilterChip(
+                    label: option.$2,
+                    selected: _myWorkTypeFilter == option.$1,
+                    icon: option.$1 == 'MAINTENANCE'
+                        ? Icons.event_repeat
+                        : option.$1 == 'INCIDENT'
+                        ? Icons.warning_amber_rounded
+                        : Icons.work_outline,
+                    activeColor: const Color(0xFF0284C7),
+                    onTap: () => setState(() => _myWorkTypeFilter = option.$1),
+                  ),
+                  const SizedBox(width: 7),
+                ],
+              ],
+            ),
+          ),
+          const SizedBox(height: 6),
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: [
+                for (final option in const [
+                  ('ACTIVE', 'Cần thực hiện'),
+                  ('DONE', 'Đã hoàn tất'),
+                  ('ALL', 'Tất cả'),
+                ]) ...[
+                  _droneFilterChip(
+                    label: option.$2,
+                    selected: _myWorkStatusFilter == option.$1,
+                    icon: option.$1 == 'DONE'
+                        ? Icons.check_circle_outline
+                        : Icons.pending_actions_outlined,
+                    activeColor: option.$1 == 'DONE'
+                        ? const Color(0xFF16A34A)
+                        : const Color(0xFF7C3AED),
+                    onTap: () =>
+                        setState(() => _myWorkStatusFilter = option.$1),
+                  ),
+                  const SizedBox(width: 7),
+                ],
+                _sortMenu(
+                  value: _myWorkSort,
+                  values: const {'DUE': 'Hạn gần nhất', 'NEWEST': 'Mới nhất'},
+                  onSelected: (value) => setState(() => _myWorkSort = value),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 12),
+          if (filtered.isEmpty)
+            const OpsEmptyState(
+              icon: Icons.engineering_outlined,
+              title: 'Không có công việc phù hợp',
+              subtitle: 'Thử đổi bộ lọc hoặc kéo xuống để tải lại dữ liệu.',
+            )
+          else
+            for (final task in filtered)
+              task.type == 'INCIDENT'
+                  ? _droneReportCard(task.data)
+                  : _droneScheduleCard(
+                      task.data,
+                      due: task.data['due'] == true,
+                    ),
+        ],
+      ),
+    );
+  }
+
+  bool _myTaskIsDone(({String type, Map<String, dynamic> data}) task) {
+    if (task.type == 'INCIDENT') return task.data['status'] == 'RESOLVED';
+    return task.data['due'] != true && task.data['lastDoneAt'] != null;
+  }
+
+  Widget _workMetric(String label, int value, Color color) => Container(
+    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 9),
+    decoration: BoxDecoration(
+      color: color.withValues(alpha: 0.08),
+      borderRadius: BorderRadius.circular(12),
+      border: Border.all(color: color.withValues(alpha: 0.22)),
+    ),
+    child: Column(
+      children: [
+        Text(
+          '$value',
+          style: TextStyle(fontWeight: FontWeight.w900, color: color),
+        ),
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 10.5,
+            fontWeight: FontWeight.w600,
+            color: color,
+          ),
+        ),
+      ],
+    ),
+  );
+
+  Widget _buildSearchField({
+    required TextEditingController controller,
+    required String hint,
+    required ValueChanged<String> onChanged,
+  }) => TextField(
+    controller: controller,
+    onChanged: onChanged,
+    textInputAction: TextInputAction.search,
+    decoration: InputDecoration(
+      hintText: hint,
+      prefixIcon: const Icon(Icons.search_rounded, size: 20),
+      suffixIcon: controller.text.isEmpty
+          ? null
+          : IconButton(
+              tooltip: 'Xóa tìm kiếm',
+              onPressed: () {
+                controller.clear();
+                onChanged('');
+              },
+              icon: const Icon(Icons.close_rounded, size: 19),
+            ),
+      filled: true,
+      fillColor: Colors.white,
+      isDense: true,
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(13),
+        borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(13),
+        borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+      ),
+    ),
+  );
+
+  Widget _buildReportAdvancedFilters() {
+    final drones =
+        _droneReports
+            .map((r) => '${r['droneCode'] ?? r['droneUnitId'] ?? ''}')
+            .where((value) => value.isNotEmpty)
+            .toSet()
+            .toList()
+          ..sort();
+    final active =
+        _droneReportAssignmentFilter != 'ALL' ||
+        _droneReportDroneFilter != 'ALL' ||
+        _droneReportTimeFilter != 'ALL' ||
+        _droneReportSort != 'NEWEST' ||
+        _droneReportSearchController.text.isNotEmpty;
+    return Wrap(
+      spacing: 8,
+      runSpacing: 7,
+      crossAxisAlignment: WrapCrossAlignment.center,
+      children: [
+        _compactDropdown(
+          value: _droneReportAssignmentFilter,
+          items: const {
+            'ALL': 'Mọi phân công',
+            'MINE': 'Giao cho tôi',
+            'UNASSIGNED': 'Chưa phân công',
+          },
+          onChanged: (value) =>
+              setState(() => _droneReportAssignmentFilter = value),
+        ),
+        _compactDropdown(
+          value: _droneReportDroneFilter,
+          items: {'ALL': 'Mọi drone', for (final drone in drones) drone: drone},
+          onChanged: (value) => setState(() => _droneReportDroneFilter = value),
+        ),
+        _compactDropdown(
+          value: _droneReportTimeFilter,
+          items: const {
+            'ALL': 'Mọi thời gian',
+            'TODAY': 'Hôm nay',
+            '7D': '7 ngày',
+            '30D': '30 ngày',
+          },
+          onChanged: (value) => setState(() => _droneReportTimeFilter = value),
+        ),
+        _sortMenu(
+          value: _droneReportSort,
+          values: const {
+            'NEWEST': 'Mới nhất',
+            'OLDEST': 'Cũ nhất',
+            'SLA': 'Hạn SLA',
+          },
+          onSelected: (value) => setState(() => _droneReportSort = value),
+        ),
+        if (active)
+          TextButton.icon(
+            onPressed: _resetDroneReportFilters,
+            icon: const Icon(Icons.restart_alt_rounded, size: 17),
+            label: const Text('Đặt lại'),
+          ),
+      ],
+    );
+  }
+
+  Widget _compactDropdown({
+    required String value,
+    required Map<String, String> items,
+    required ValueChanged<String> onChanged,
+  }) => Container(
+    padding: const EdgeInsets.symmetric(horizontal: 10),
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(999),
+      border: Border.all(color: const Color(0xFFE2E8F0)),
+    ),
+    child: DropdownButtonHideUnderline(
+      child: DropdownButton<String>(
+        value: items.containsKey(value) ? value : items.keys.first,
+        isDense: true,
+        borderRadius: BorderRadius.circular(12),
+        style: const TextStyle(
+          fontSize: 12,
+          color: Color(0xFF334155),
+          fontWeight: FontWeight.w600,
+        ),
+        items: [
+          for (final item in items.entries)
+            DropdownMenuItem(value: item.key, child: Text(item.value)),
+        ],
+        onChanged: (next) {
+          if (next != null) onChanged(next);
+        },
+      ),
+    ),
+  );
+
+  Widget _sortMenu({
+    required String value,
+    required Map<String, String> values,
+    required ValueChanged<String> onSelected,
+  }) => PopupMenuButton<String>(
+    initialValue: value,
+    onSelected: onSelected,
+    itemBuilder: (_) => [
+      for (final item in values.entries)
+        PopupMenuItem(value: item.key, child: Text(item.value)),
+    ],
+    child: Chip(
+      avatar: const Icon(Icons.sort_rounded, size: 16),
+      label: Text(values[value] ?? 'Sắp xếp'),
+      backgroundColor: Colors.white,
+      side: const BorderSide(color: Color(0xFFE2E8F0)),
+    ),
+  );
+
+  void _resetDroneReportFilters() {
+    _droneReportSearchController.clear();
+    setState(() {
+      _droneReportAssignmentFilter = 'ALL';
+      _droneReportDroneFilter = 'ALL';
+      _droneReportTimeFilter = 'ALL';
+      _droneReportSort = 'NEWEST';
+      _droneReportVisibleCount = 20;
+    });
+  }
+
+  int _compareNullableDate(dynamic first, dynamic second) {
+    final firstDate = parseServerDateTime(first);
+    final secondDate = parseServerDateTime(second);
+    if (firstDate == null && secondDate == null) return 0;
+    if (firstDate == null) return 1;
+    if (secondDate == null) return -1;
+    return firstDate.compareTo(secondDate);
+  }
+
+  Widget _droneReportCard(Map<String, dynamic> report) {
+    final status = '${report['status'] ?? 'OPEN'}';
+    final reportId = _asInt(report['id']);
+    final droneCode = report['droneCode']?.toString().trim();
+    final created = _fmtDate(report['createdAt']);
+    final assignedToMe = _isDroneReportAssignedToMe(report);
+    final canClaim = _canClaimDroneReport(report);
+    final isOverdue = report['overdue'] == true;
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: OpsCard(
+        onTap: () => _showDroneReportDetail(report),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF0F172A).withValues(alpha: 0.07),
+                    borderRadius: BorderRadius.circular(7),
+                  ),
+                  child: Text(
+                    'RPT-${reportId ?? '—'}',
+                    style: const TextStyle(
+                      fontSize: 11.5,
+                      fontWeight: FontWeight.w800,
+                      color: opsDark,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    '${report['title'] ?? 'Sự cố Drone'}',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w800,
+                      fontSize: 14,
+                      color: opsDark,
+                    ),
+                  ),
+                ),
+                StatusChip(status),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              runSpacing: 6,
+              children: [
+                _MiniPill(
+                  icon: Icons.flight_outlined,
+                  text: droneCode?.isNotEmpty == true
+                      ? droneCode!
+                      : 'Drone #${report['droneUnitId'] ?? '—'}',
+                  color: const Color(0xFF0284C7),
+                ),
+                if (created != null)
+                  _MiniPill(icon: Icons.schedule_outlined, text: created),
+                if (isOverdue)
+                  const _MiniPill(
+                    icon: Icons.timer_off_outlined,
+                    text: 'Quá hạn SLA',
+                    color: Color(0xFFDC2626),
+                  ),
+              ],
+            ),
+            if ((report['description'] ?? '').toString().trim().isNotEmpty) ...[
+              const SizedBox(height: 8),
+              Text(
+                report['description'].toString(),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(fontSize: 12, color: opsMutedText),
+              ),
+            ],
+            if ((status == 'OPEN' && canClaim) ||
+                (status == 'IN_PROGRESS' && assignedToMe)) ...[
+              const SizedBox(height: 10),
+              Align(
+                alignment: Alignment.centerRight,
+                child: status == 'OPEN'
+                    ? ElevatedButton.icon(
+                        onPressed: reportId == null
+                            ? null
+                            : () => _confirmClaimDroneReport(report),
+                        icon: const Icon(
+                          Icons.assignment_turned_in_outlined,
+                          size: 17,
+                        ),
+                        label: const Text('Nhận xử lý'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF0284C7),
+                          foregroundColor: Colors.white,
+                        ),
+                      )
+                    : TextButton.icon(
+                        onPressed: () => _showDroneReportDetail(report),
+                        icon: const Icon(Icons.build_outlined, size: 17),
+                        label: const Text('Cập nhật xử lý'),
+                      ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  bool _isDroneReportAssignedToMe(Map<String, dynamic> report) =>
+      _myUserId != null &&
+      _myUserId!.isNotEmpty &&
+      '${report['assignedToUserId']}' == _myUserId;
+
+  bool _canClaimDroneReport(Map<String, dynamic> report) {
+    if (report['status'] != 'OPEN') return false;
+    final routedTo = report['routedToUserId']?.toString();
+    return routedTo == null || routedTo.isEmpty || routedTo == _myUserId;
+  }
+
+  Future<void> _confirmClaimDroneReport(Map<String, dynamic> report) async {
+    final reportId = _asInt(report['id']);
+    if (reportId == null) return;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Nhận xử lý sự cố Drone?'),
+        content: Text(
+          'Bạn sẽ trở thành KTV phụ trách phiếu RPT-$reportId của '
+          'Drone ${report['droneCode'] ?? report['droneUnitId'] ?? '—'}.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: const Text('Hủy'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: const Text('Xác nhận nhận việc'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+    await _runCellAction(
+      () => _service.claimDroneReport(reportId),
+      'Đã nhận xử lý phiếu Drone RPT-$reportId',
+    );
+  }
+
+  int _compareDroneReportsNewestFirst(
+    Map<String, dynamic> first,
+    Map<String, dynamic> second,
+  ) {
+    final firstDate = parseServerDateTime(first['createdAt']);
+    final secondDate = parseServerDateTime(second['createdAt']);
+    if (firstDate != null && secondDate != null) {
+      return secondDate.compareTo(firstDate);
+    }
+    return (_asInt(second['id']) ?? 0).compareTo(_asInt(first['id']) ?? 0);
+  }
+
+  void _showDroneReportDetail(Map<String, dynamic> report) {
+    DroneReportDetailSheet.show(
+      context,
+      report: report,
+      service: _service,
+      currentUserId: _myUserId,
+      onChanged: _load,
+    );
+  }
+
   // ---- Tab đội bay ----
   Widget _buildDroneFleet() {
     return RefreshIndicator(
@@ -1400,23 +2251,175 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
 
   // ---- Tab lịch bảo trì ----
   Widget _buildMaintenanceSchedules() {
+    final query = _scheduleSearchController.text.trim().toLowerCase();
+    final allSchedules = [..._schedules];
+    final mine = allSchedules.where(_isScheduleMine).toList();
+    final scope = _mySchedulesOnly ? mine : allSchedules;
+    final dueCount = scope.where((s) => s['due'] == true).length;
+    final upcomingCount = scope.length - dueCount;
+    final schedules = scope.where((schedule) {
+      final dueMatches = switch (_scheduleDueFilter) {
+        'DUE' => schedule['due'] == true,
+        'UPCOMING' => schedule['due'] != true,
+        _ => true,
+      };
+      final priority = '${schedule['priority'] ?? 'NORMAL'}'.toUpperCase();
+      final priorityMatches =
+          _schedulePriorityFilter == 'ALL' ||
+          priority == _schedulePriorityFilter;
+      final searchable = [
+        schedule['id'],
+        schedule['title'],
+        schedule['description'],
+        schedule['droneCode'],
+        schedule['lockerName'],
+        schedule['lockerCode'],
+        schedule['assignedTechnicianName'],
+      ].where((value) => value != null).join(' ').toLowerCase();
+      return dueMatches &&
+          priorityMatches &&
+          (query.isEmpty || searchable.contains(query));
+    }).toList();
+    schedules.sort(
+      (a, b) => switch (_scheduleSort) {
+        'NEWEST' => _compareNullableDate(b['createdAt'], a['createdAt']),
+        'PRIORITY' => _schedulePriorityRank(
+          a,
+        ).compareTo(_schedulePriorityRank(b)),
+        _ => _compareNullableDate(a['nextDueAt'], b['nextDueAt']),
+      },
+    );
+
     return RefreshIndicator(
       onRefresh: _load,
       child: ListView(
         padding: const EdgeInsets.all(12),
         children: [
-          const OpsSectionLabel(
-            'Lịch bảo trì định kỳ',
+          const OpsBanner(
+            tone: OpsBannerTone.info,
             icon: Icons.event_repeat,
+            text:
+                'Lịch bảo trì Drone do quản trị tạo. Đánh giá đủ từng mục checklist; '
+                'nếu có mục không đạt, Drone chuyển sang trạng thái lỗi và hệ thống mở phiếu sự cố.',
           ),
-          if (_schedules.isEmpty)
-            const OpsEmptyState(
+          if (_scheduleLoadError != null) ...[
+            const SizedBox(height: 8),
+            OpsBanner(
+              tone: OpsBannerTone.danger,
+              icon: Icons.cloud_off_outlined,
+              text: _scheduleLoadError!,
+            ),
+            _retryButton(),
+          ],
+          const SizedBox(height: 10),
+          _buildSearchField(
+            controller: _scheduleSearchController,
+            hint: 'Tìm lịch, mã Drone, KTV phụ trách...',
+            onChanged: (_) => setState(() {}),
+          ),
+          const SizedBox(height: 8),
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: [
+                _droneFilterChip(
+                  label: 'Của tôi (${mine.length})',
+                  selected: _mySchedulesOnly,
+                  icon: Icons.person_outline,
+                  activeColor: const Color(0xFF7C3AED),
+                  onTap: () => setState(() => _mySchedulesOnly = true),
+                ),
+                const SizedBox(width: 7),
+                _droneFilterChip(
+                  label: 'Tất cả (${allSchedules.length})',
+                  selected: !_mySchedulesOnly,
+                  icon: Icons.groups_outlined,
+                  activeColor: const Color(0xFF0284C7),
+                  onTap: () => setState(() => _mySchedulesOnly = false),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 6),
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: [
+                for (final option in [
+                  (
+                    'ALL',
+                    'Mọi hạn (${scope.length})',
+                    Icons.event_note_outlined,
+                  ),
+                  ('DUE', 'Đến hạn ($dueCount)', Icons.warning_amber_rounded),
+                  (
+                    'UPCOMING',
+                    'Sắp tới ($upcomingCount)',
+                    Icons.schedule_outlined,
+                  ),
+                ]) ...[
+                  _droneFilterChip(
+                    label: option.$2,
+                    selected: _scheduleDueFilter == option.$1,
+                    icon: option.$3,
+                    activeColor: option.$1 == 'DUE'
+                        ? const Color(0xFFDC2626)
+                        : const Color(0xFF0284C7),
+                    onTap: () => setState(() => _scheduleDueFilter = option.$1),
+                  ),
+                  const SizedBox(width: 7),
+                ],
+              ],
+            ),
+          ),
+          const SizedBox(height: 7),
+          Wrap(
+            spacing: 8,
+            runSpacing: 7,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            children: [
+              _compactDropdown(
+                value: _schedulePriorityFilter,
+                items: const {
+                  'ALL': 'Mọi ưu tiên',
+                  'URGENT': 'Khẩn cấp',
+                  'HIGH': 'Cao',
+                  'NORMAL': 'Bình thường',
+                  'LOW': 'Thấp',
+                },
+                onChanged: (value) =>
+                    setState(() => _schedulePriorityFilter = value),
+              ),
+              _sortMenu(
+                value: _scheduleSort,
+                values: const {
+                  'DUE': 'Hạn gần nhất',
+                  'PRIORITY': 'Ưu tiên',
+                  'NEWEST': 'Mới tạo',
+                },
+                onSelected: (value) => setState(() => _scheduleSort = value),
+              ),
+              if (_scheduleSearchController.text.isNotEmpty ||
+                  _schedulePriorityFilter != 'ALL' ||
+                  _scheduleDueFilter != 'ALL')
+                TextButton.icon(
+                  onPressed: _resetScheduleFilters,
+                  icon: const Icon(Icons.restart_alt_rounded, size: 17),
+                  label: const Text('Đặt lại'),
+                ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          if (schedules.isEmpty && _scheduleLoadError == null)
+            OpsEmptyState(
               icon: Icons.event_available_outlined,
-              title: 'Chưa có lịch bảo trì',
-              subtitle: 'Lịch kiểm tra drone sẽ xuất hiện ở đây.',
+              title: _mySchedulesOnly
+                  ? 'Không có lịch Drone được giao phù hợp'
+                  : 'Không có lịch bảo trì Drone phù hợp',
+              subtitle: 'Thử đổi bộ lọc hoặc kéo xuống để tải lại dữ liệu.',
             )
           else
-            for (final s in _schedules)
+            for (final s in schedules)
               _droneScheduleCard(s, due: s['due'] == true),
         ],
       ),
@@ -1453,9 +2456,17 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
     final nextDue = _fmtDate(s['nextDueAt']);
     final lastDone = _fmtDate(s['lastDoneAt']);
     final id = _asInt(s['id']);
+    final assignedToMe = _isScheduleMine(s);
+    final assignedId = s['assignedTechnicianId'];
+    final pendingReportId = _asInt(s['pendingReportId']);
+    final priority = '${s['priority'] ?? 'NORMAL'}'.toUpperCase();
+    final priorityInfo = _priorityInfo(priority);
+    final blocked =
+        pendingReportId != null || (assignedId != null && !assignedToMe);
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
       child: OpsCard(
+        onTap: () => _showDroneScheduleDetail(s),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -1477,6 +2488,12 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                     text: 'Đến hạn',
                     color: Color(0xFFDC2626),
                   ),
+                const SizedBox(width: 6),
+                _MiniPill(
+                  icon: Icons.flag_outlined,
+                  text: priorityInfo.$1,
+                  color: priorityInfo.$2,
+                ),
               ],
             ),
             const SizedBox(height: 6),
@@ -1493,33 +2510,187 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                   _MiniPill(icon: Icons.event, text: 'Hạn: $nextDue'),
                 if (lastDone != null)
                   _MiniPill(icon: Icons.history, text: 'Lần trước: $lastDone'),
+                if (s['assignedTechnicianName'] != null)
+                  _MiniPill(
+                    icon: Icons.engineering_outlined,
+                    text: '${s['assignedTechnicianName']}',
+                    color: assignedToMe
+                        ? const Color(0xFF7C3AED)
+                        : const Color(0xFF64748B),
+                  ),
               ],
             ),
+            if (pendingReportId != null) ...[
+              const SizedBox(height: 8),
+              OpsBanner(
+                tone: OpsBannerTone.warning,
+                icon: Icons.report_problem_outlined,
+                text:
+                    'Cần hoàn tất phiếu RPT-$pendingReportId trước lần kiểm tra tiếp theo.',
+              ),
+            ],
             const SizedBox(height: 10),
-            Align(
-              alignment: Alignment.centerRight,
-              child: ElevatedButton.icon(
-                onPressed: id == null
-                    ? null
-                    : () => _run(
-                        () => _service.completeSchedule(id),
-                        'Đã ghi nhận kiểm tra — dời lịch kế tiếp',
-                      ),
-                icon: const Icon(Icons.check, size: 16),
-                label: const Text('Đã kiểm tra'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF16A34A),
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+            Row(
+              children: [
+                OutlinedButton.icon(
+                  onPressed: () => _showDroneScheduleDetail(s),
+                  icon: const Icon(Icons.info_outline, size: 16),
+                  label: const Text('Chi tiết'),
+                ),
+                const Spacer(),
+                ElevatedButton.icon(
+                  onPressed: id == null || blocked
+                      ? null
+                      : () => _showDroneInspectionSheet(s),
+                  icon: const Icon(Icons.fact_check_outlined, size: 16),
+                  label: Text(due ? 'Kiểm tra ngay' : 'Kiểm tra'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF16A34A),
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                   ),
                 ),
-              ),
+              ],
             ),
           ],
         ),
       ),
     );
+  }
+
+  bool _isScheduleMine(Map<String, dynamic> schedule) =>
+      _myUserId != null &&
+      schedule['assignedTechnicianId']?.toString() == _myUserId;
+
+  Widget _retryButton() => Align(
+    alignment: Alignment.centerRight,
+    child: TextButton.icon(
+      onPressed: _load,
+      icon: const Icon(Icons.refresh_rounded, size: 18),
+      label: const Text('Thử lại'),
+    ),
+  );
+
+  int _schedulePriorityRank(Map<String, dynamic> schedule) =>
+      switch ('${schedule['priority'] ?? 'NORMAL'}'.toUpperCase()) {
+        'URGENT' => 0,
+        'HIGH' => 1,
+        'NORMAL' => 2,
+        'LOW' => 3,
+        _ => 4,
+      };
+
+  (String, Color) _priorityInfo(String priority) => switch (priority) {
+    'URGENT' => ('Khẩn cấp', const Color(0xFFDC2626)),
+    'HIGH' => ('Ưu tiên cao', const Color(0xFFEA580C)),
+    'LOW' => ('Ưu tiên thấp', const Color(0xFF64748B)),
+    _ => ('Bình thường', const Color(0xFF0284C7)),
+  };
+
+  void _resetScheduleFilters() {
+    _scheduleSearchController.clear();
+    setState(() {
+      _scheduleDueFilter = 'ALL';
+      _schedulePriorityFilter = 'ALL';
+      _scheduleSort = 'DUE';
+    });
+  }
+
+  void _showDroneScheduleDetail(Map<String, dynamic> schedule) {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (_) => ScheduleDetailModalSheet(
+        schedule: schedule,
+        service: _service,
+        isMine: _isScheduleMine(schedule),
+        onOpenDirections: _openScheduleDirections,
+        onOpenReport: _openDroneReportById,
+        onStartInspection: _showDroneInspectionSheet,
+      ),
+    );
+  }
+
+  Future<void> _showDroneInspectionSheet(Map<String, dynamic> schedule) async {
+    final result = await showModalBottomSheet<Map<String, dynamic>>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (_) =>
+          CompleteInspectionSheet(schedule: schedule, service: _service),
+    );
+    if (result == null || !mounted) return;
+    final failed = result['lastResult'] == 'FAILED';
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        backgroundColor: failed
+            ? const Color(0xFFDC2626)
+            : const Color(0xFF16A34A),
+        content: Text(
+          failed
+              ? 'Đã ghi nhận bảo trì KHÔNG ĐẠT. Drone đã chuyển sang lỗi và phiếu sự cố được mở theo phản hồi Backend.'
+              : 'Đã ghi nhận bảo trì ĐẠT và cập nhật chu kỳ tiếp theo.',
+        ),
+      ),
+    );
+    await _load();
+  }
+
+  void _openDroneReportById(int reportId) {
+    Map<String, dynamic>? report;
+    for (final item in _droneReports) {
+      if (_asInt(item['id']) == reportId) {
+        report = item;
+        break;
+      }
+    }
+    if (report != null) {
+      _showDroneReportDetail(report);
+      return;
+    }
+    _service
+        .getDroneReport(reportId)
+        .then((value) {
+          if (mounted) _showDroneReportDetail(value);
+        })
+        .catchError((Object error) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(LockerOpsService.errorMessage(error))),
+            );
+          }
+        });
+  }
+
+  Future<void> _openScheduleDirections(Map<String, dynamic> schedule) async {
+    final address = '${schedule['address'] ?? ''}'.trim();
+    if (address.isEmpty) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Lịch này chưa có địa chỉ trạm Drone.')),
+        );
+      }
+      return;
+    }
+    final uri = Uri.https('www.google.com', '/maps/search/', {
+      'api': '1',
+      'query': address,
+    });
+    if (!await launchUrl(uri, mode: LaunchMode.externalApplication) &&
+        mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Không thể mở ứng dụng bản đồ.')),
+      );
+    }
   }
 
   String? _fmtDate(dynamic value) {
@@ -2007,7 +3178,8 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
   Widget _parcelReturnCard(Map<String, dynamic> order) {
     final orderId = _asInt(order['orderId']);
     final sourceBox = _asInt(order['sourceBoxNumber']);
-    final inSourceBox = '${order['parcelHeldAt']}'.toUpperCase() == 'SOURCE_BOX';
+    final inSourceBox =
+        '${order['parcelHeldAt']}'.toUpperCase() == 'SOURCE_BOX';
     final sender = [
       order['customerName'],
       order['customerPhone'],
@@ -2067,7 +3239,10 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                       borderRadius: BorderRadius.circular(10),
                     ),
                   ),
-                  icon: const Icon(Icons.assignment_turned_in_outlined, size: 16),
+                  icon: const Icon(
+                    Icons.assignment_turned_in_outlined,
+                    size: 16,
+                  ),
                   label: const Text(
                     'Xác nhận đã trả kiện',
                     style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
