@@ -35,6 +35,8 @@ class NotificationDataPayload {
   /// bay huỷ nhiệm vụ.
   bool get isDroneDelivery =>
       actionType == 'DRONE_DELIVERY_STATUS_CHANGED' ||
+      actionType == 'DRONE_PARCEL_DROP_REPORTED' ||
+      actionType == 'DRONE_INCIDENT_RESOLUTION_PROPOSED' ||
       (referenceType ?? '').toUpperCase() == 'DELIVERY';
 
   /// Noti báo đội bay có đơn drone mới cần tiếp nhận.
