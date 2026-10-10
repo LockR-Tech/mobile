@@ -10,6 +10,19 @@ import '../../helpers/test_helpers.dart';
 class _FakeMaintenanceService extends LockerOpsService {
   _FakeMaintenanceService() : super(dio: createMockDio().dio);
 
+  final Map<String, dynamic> droneReport = {
+    'id': 42,
+    'title': 'Lỗi cảm biến Drone',
+    'description': 'Cảm biến độ cao báo sai',
+    'status': 'OPEN',
+    'category': 'DRONE',
+    'droneUnitId': 9,
+    'droneCode': 'DRONE-09',
+    'lockerId': 3,
+    'lockerName': 'Trạm 3',
+    'createdAt': '2026-10-10T08:00:00Z',
+  };
+
   int? acceptedOrderId;
   int? acceptedDroneId;
   int? loadedOrderId;
@@ -19,6 +32,62 @@ class _FakeMaintenanceService extends LockerOpsService {
   int? canceledOrderId;
   int? canceledReasonCode;
   String? canceledNote;
+  String? requestedScheduleTarget;
+  int? completedScheduleId;
+  List<Map<String, dynamic>>? completedChecklist;
+
+  @override
+  Future<List<Map<String, dynamic>>> droneReports({
+    bool mine = false,
+    bool routed = false,
+    bool all = false,
+  }) async {
+    if (mine && droneReport['assignedToUserId'] != 99) return const [];
+    return [Map<String, dynamic>.from(droneReport)];
+  }
+
+  @override
+  Future<Map<String, dynamic>> getDroneReport(int reportId) async =>
+      Map<String, dynamic>.from(droneReport);
+
+  @override
+  Future<List<Map<String, dynamic>>> droneReportAttachments(
+    int reportId, {
+    String? stage,
+  }) async => [
+    {
+      'id': 1,
+      'reportId': reportId,
+      'stage': 'REPORT',
+      'url': 'https://example.com/drone-report.jpg',
+    },
+  ];
+
+  @override
+  Future<List<Map<String, dynamic>>> droneReportLogs(int reportId) async => [
+    {
+      'id': 5,
+      'reportId': reportId,
+      'actorUserId': 99,
+      'note': 'Đã kiểm tra cảm biến độ cao',
+      'createdAt': '2026-10-10T09:00:00Z',
+      'attachments': [
+        {
+          'id': 2,
+          'repairLogId': 5,
+          'stage': 'PROGRESS',
+          'url': 'https://example.com/drone-log.jpg',
+        },
+      ],
+    },
+  ];
+
+  @override
+  Future<Map<String, dynamic>> claimDroneReport(int reportId) async {
+    droneReport['status'] = 'IN_PROGRESS';
+    droneReport['assignedToUserId'] = 99;
+    return Map<String, dynamic>.from(droneReport);
+  }
 
   @override
   Future<List<Map<String, dynamic>>> droneUnits() async => [
@@ -36,7 +105,54 @@ class _FakeMaintenanceService extends LockerOpsService {
   Future<List<Map<String, dynamic>>> maintenanceSchedules({
     bool mine = false,
     String? target,
-  }) async => const [];
+  }) async {
+    requestedScheduleTarget = target;
+    return const [
+      {
+        'id': 71,
+        'droneUnitId': 9,
+        'droneCode': 'DRONE-09',
+        'title': 'Bảo trì pin và cảm biến',
+        'description': 'Kiểm tra trước chu kỳ bay mới',
+        'priority': 'HIGH',
+        'intervalDays': 30,
+        'nextDueAt': '2026-10-09T08:00:00Z',
+        'due': true,
+        'active': true,
+        'assignedTechnicianId': 99,
+        'assignedTechnicianName': 'Bảo Huy Nguyễn',
+        'checklistItems': ['Kiểm tra pin', 'Kiểm tra cảm biến'],
+        'address': 'Trạm 3, TP.HCM',
+      },
+    ];
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> scheduleInspectionLogs(
+    int scheduleId,
+  ) async => const [];
+
+  @override
+  Future<Map<String, dynamic>> completeInspection(
+    int scheduleId,
+    List<Map<String, dynamic>> items, {
+    String? status,
+    String? note,
+    int? faultBoxId,
+    String? faultReason,
+    List<String>? photoUrls,
+  }) async {
+    completedScheduleId = scheduleId;
+    completedChecklist = items;
+    return {
+      'id': scheduleId,
+      'droneUnitId': 9,
+      'droneCode': 'DRONE-09',
+      'title': 'Bảo trì pin và cảm biến',
+      'lastResult': 'PASSED',
+      'nextDueAt': '2026-11-09T08:00:00Z',
+    };
+  }
 
   @override
   Future<List<Map<String, dynamic>>> droneOrderQueue({
@@ -342,4 +458,95 @@ void main() {
     expect(service.canceledReasonCode, equals(5));
     expect(service.canceledNote, equals('Gio giat manh'));
   });
+
+  testWidgets('drone incident detail shows staged photos and log photos', (
+    tester,
+  ) async {
+    final service = _FakeMaintenanceService();
+    final router = GoRouter(
+      routes: [
+        GoRoute(
+          path: '/',
+          builder: (context, state) => MaintenanceHomePage(service: service),
+        ),
+      ],
+    );
+
+    await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Sự cố (1)'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('RPT-42'));
+    await tester.pump();
+    await tester.pump(const Duration(seconds: 1));
+
+    expect(
+      find.text('Hồ sơ chi tiết phiếu sự cố kỹ thuật Drone'),
+      findsOneWidget,
+    );
+    expect(find.text('Ảnh hồ sơ theo giai đoạn'), findsOneWidget);
+    expect(find.textContaining('Ảnh hiện trường'), findsOneWidget);
+    await tester.scrollUntilVisible(
+      find.text('Đã kiểm tra cảm biến độ cao'),
+      300,
+      scrollable: find
+          .descendant(
+            of: find.byKey(const ValueKey('drone-report-detail-scroll')),
+            matching: find.byType(Scrollable),
+          )
+          .first,
+    );
+    expect(find.text('Đã kiểm tra cảm biến độ cao'), findsOneWidget);
+  });
+
+  testWidgets(
+    'assigned drone maintenance appears in my work and requires checklist',
+    (tester) async {
+      final service = _FakeMaintenanceService();
+      final router = GoRouter(
+        routes: [
+          GoRoute(
+            path: '/',
+            builder: (context, state) => MaintenanceHomePage(service: service),
+          ),
+        ],
+      );
+
+      await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+      await tester.pumpAndSettle();
+
+      expect(service.requestedScheduleTarget, 'DRONE');
+      await tester.tap(find.text('Việc của tôi (1)'));
+      await tester.pumpAndSettle();
+      expect(find.text('Bảo trì pin và cảm biến'), findsOneWidget);
+      expect(find.text('Bảo trì'), findsOneWidget);
+
+      await tester.tap(find.text('Định kỳ (1)'));
+      await tester.pumpAndSettle();
+      expect(find.text('Bảo trì pin và cảm biến'), findsOneWidget);
+      await tester.ensureVisible(find.text('Kiểm tra ngay'));
+      await tester.pump();
+      await tester.tap(find.text('Kiểm tra ngay'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Hạng mục kiểm tra (0/2)'), findsOneWidget);
+      await tester.tap(find.byKey(const ValueKey('inspection-item-0-PASS')));
+      await tester.tap(find.byKey(const ValueKey('inspection-item-1-PASS')));
+      await tester.pump();
+      expect(find.text('Hạng mục kiểm tra (2/2)'), findsOneWidget);
+      await tester.ensureVisible(
+        find.byKey(const ValueKey('inspection-submit')),
+      );
+      await tester.pump();
+      await tester.tap(find.byKey(const ValueKey('inspection-submit')));
+      await tester.pumpAndSettle();
+
+      expect(service.completedScheduleId, 71);
+      expect(service.completedChecklist, hasLength(2));
+      expect(
+        service.completedChecklist!.every((item) => item['result'] == 'PASS'),
+        isTrue,
+      );
+    },
+  );
 }
