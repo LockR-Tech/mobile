@@ -32,6 +32,7 @@ class _DroneDeliveryTrackingPageState
   DroneDeliveryStage? _lastApproachingShown;
   bool _paying = false;
   bool _canceling = false;
+  bool _confirming = false;
 
   @override
   Widget build(BuildContext context) {
@@ -104,6 +105,8 @@ class _DroneDeliveryTrackingPageState
             orderId: widget.orderId,
             onPay: () => _pay(status),
             onCancel: () => _cancel(status),
+            onConfirmDrop: () => _confirmDrop(status),
+            onDeclineSurcharge: () => _declineSurcharge(status),
           ),
         ),
       ),
@@ -130,6 +133,76 @@ class _DroneDeliveryTrackingPageState
       _canceling = false;
     }
     if (message == null || !mounted) return;
+    ref.invalidate(droneDeliveryStatusProvider(widget.orderId));
+    messenger.showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  /// Người gửi xác nhận đã bỏ kiện vào ô gửi — điều kiện để đội bay tiếp nhận.
+  Future<void> _confirmDrop(DroneDeliveryStatus status) async {
+    final box = status.sourceBoxNumber;
+    await _confirmThen(
+      title: 'Xác nhận đã bỏ kiện',
+      body:
+          'Bạn đã bỏ kiện vào ${box == null ? 'ô drone ở tủ gửi' : 'ô drone số $box ở tủ gửi'} '
+          'và đóng cửa ô? Đội bay sẽ tới nạp hàng sau khi bạn xác nhận.',
+      confirmLabel: 'Đã bỏ kiện',
+      action: (orderId) => LockerOpsService().confirmDroneParcelDrop(orderId),
+      done: 'Đã ghi nhận. Đội bay sẽ tiếp nhận đơn của bạn.',
+    );
+  }
+
+  /// Khách không đồng ý phụ thu cân lệch: huỷ đơn, hoàn phần đã trả, đội bay trả kiện.
+  Future<void> _declineSurcharge(DroneDeliveryStatus status) async {
+    await _confirmThen(
+      title: 'Huỷ đơn vì không đồng ý phụ thu',
+      body:
+          'Đơn ${status.orderCode ?? ''} sẽ bị huỷ. Phần bạn đã trả được ghi yêu cầu hoàn '
+          'tiền và đội bay sẽ liên hệ để trả lại kiện. Không hoàn tác được.',
+      confirmLabel: 'Huỷ đơn',
+      action: (orderId) => LockerOpsService().declineDroneSurcharge(orderId),
+      done: 'Đã huỷ đơn. Đội bay sẽ trả lại kiện cho bạn.',
+    );
+  }
+
+  Future<void> _confirmThen({
+    required String title,
+    required String body,
+    required String confirmLabel,
+    required Future<Object?> Function(int orderId) action,
+    required String done,
+  }) async {
+    final orderId = int.tryParse(widget.orderId);
+    if (_confirming || orderId == null) return;
+    final messenger = ScaffoldMessenger.of(context);
+    _confirming = true;
+    String? message;
+    try {
+      final ok = await showDialog<bool>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: Text(title),
+          content: Text(body),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text('Chưa'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: Text(confirmLabel),
+            ),
+          ],
+        ),
+      );
+      if (ok != true) return;
+      await action(orderId);
+      message = done;
+    } catch (error) {
+      message = LockerOpsService.errorMessage(error);
+    } finally {
+      _confirming = false;
+    }
+    if (!mounted) return;
     ref.invalidate(droneDeliveryStatusProvider(widget.orderId));
     messenger.showSnackBar(SnackBar(content: Text(message)));
   }
@@ -169,12 +242,16 @@ class _TrackingBody extends StatelessWidget {
   final String orderId;
   final VoidCallback onPay;
   final VoidCallback onCancel;
+  final VoidCallback onConfirmDrop;
+  final VoidCallback onDeclineSurcharge;
 
   const _TrackingBody({
     required this.status,
     required this.orderId,
     required this.onPay,
     required this.onCancel,
+    required this.onConfirmDrop,
+    required this.onDeclineSurcharge,
   });
 
   /// Chỉ mời xem live map khi drone đang trên đường và
@@ -201,6 +278,8 @@ class _TrackingBody extends StatelessWidget {
           status: status,
           onPay: onPay,
           onCancel: onCancel,
+          onConfirmDrop: onConfirmDrop,
+          onDeclineSurcharge: onDeclineSurcharge,
           beforeRoute: [
             if (_canTrackOnMap) ...[
               const SizedBox(height: 16),

@@ -773,7 +773,7 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
               primary: true,
               onTap: () {
                 Navigator.pop(ctx);
-                _openLockerFlow(order);
+                _openLockerFlow(order, isRentalReturning: true);
               },
             ),
             if ((pin != null && pin.isNotEmpty) ||
@@ -905,6 +905,8 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
         order = assessed;
       }
     } catch (_) {}
+
+    if (!mounted) return;
 
     final due = orderAmountDue(order);
     final paymentStatus =
@@ -1176,7 +1178,10 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
   }
 
   /// Gửi lệnh mở ô của đơn xuống cabinet qua mô hình Hybrid (GPS Geofencing + Quét QR).
-  Future<void> _openLockerFlow(Map<String, dynamic> order) async {
+  Future<void> _openLockerFlow(
+    Map<String, dynamic> order, {
+    bool isRentalReturning = false,
+  }) async {
     final rawStatus = (order['status'] as String? ?? '').toUpperCase();
     final type = (order['type'] as String? ?? '').toUpperCase();
     final isRental = type == 'RENTAL';
@@ -1227,7 +1232,7 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
       boxId: boxId,
       boxLabel: boxLabel,
       pinCode: pin,
-      isRentalReturning: isRental && rawStatus == 'STORING',
+      isRentalReturning: isRentalReturning && isRental && rawStatus == 'STORING',
       isOverdue: overdue,
       overdueNotice: overdue
           ? 'Đơn thuê đã quá hạn. Đã ghi nhận xử lý phí quá giờ — mời bạn mở ô lấy đồ và đóng tủ để hoàn tất.'
@@ -2407,30 +2412,6 @@ class _PayOvertimeConfirmationSheetState
     }
   }
 
-  Future<void> _payWithOtherMethods() async {
-    final orderId = _asInt(widget.order['id']);
-    if (orderId == null) return;
-
-    try {
-      await widget.service.assessOvertime(orderId);
-    } catch (_) {}
-
-    if (!mounted) return;
-
-    final outcome = await payOrderAndAwaitPaid(
-      context,
-      service: widget.service,
-      orderId: orderId,
-      total: widget.fee.toDouble(),
-      enabledMethods: widget.enabledMethods,
-      description: 'Phí quá hạn',
-    );
-
-    if (outcome == OrderPaymentOutcome.paid && mounted) {
-      Navigator.pop(context, true);
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final hasEnoughWallet = widget.walletBalance >= widget.fee;
@@ -2702,10 +2683,13 @@ class _PayOvertimeConfirmationSheetState
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            label,
-            style: const TextStyle(fontSize: 12.5, color: opsMutedText),
+          Expanded(
+            child: Text(
+              label,
+              style: const TextStyle(fontSize: 12.5, color: opsMutedText),
+            ),
           ),
+          const SizedBox(width: 8),
           Text(
             value,
             style: TextStyle(
@@ -3694,6 +3678,16 @@ class _DetailSheet extends StatelessWidget {
                   ? 'Đơn quá hạn đã thanh toán phí quá giờ. Mời bạn mở ô để lấy đồ và hoàn tất trả tủ.'
                   : 'Đơn đã quá hạn lấy — cần thanh toán phí quá giờ để mở tủ. '
                         '${overtimePolicyText(config)}',
+            ),
+          )
+        else if (rawStatus == 'INITIALIZED' && canPay)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: OpsBanner(
+              tone: OpsBannerTone.warning,
+              icon: LucideIcons.circleAlert,
+              text:
+                  'Đơn hàng chưa thanh toán. Vui lòng thanh toán trong vòng ${config.autoCancelUnpaidMinutes} phút để giữ chỗ tủ, hoặc bấm "Hủy đơn" bên dưới để giải phóng ô tủ ngay.',
             ),
           ),
 

@@ -58,6 +58,11 @@ class DroneDeliveryResponse {
     final orderStatus = raw['status']?.toString().toUpperCase();
     if (raw.containsKey('deliveryStage') &&
         const {'COMPLETED', 'CANCELED', 'EXPIRED'}.contains(orderStatus)) {
+      // Chuyến bay thất bại sau khi phóng cũng đóng đơn là CANCELED (để hoàn tiền),
+      // nhưng với người dùng đó là giao không thành công chứ không phải "đã huỷ".
+      if (orderStatus == 'CANCELED' && status.toUpperCase() == 'FAILED') {
+        return 'FAILED';
+      }
       return orderStatus!;
     }
     return status;
@@ -119,6 +124,18 @@ class DroneDeliveryResponse {
       raw['destinationLocker'],
       raw['destinationLockerId'],
     ),
+    parcelCategory: _text(raw['parcelCategory']),
+    parcelLengthCm: _asInt(raw['parcelLengthCm']),
+    parcelWidthCm: _asInt(raw['parcelWidthCm']),
+    parcelHeightCm: _asInt(raw['parcelHeightCm']),
+    declaredValue: _asDouble(raw['declaredValue']),
+    fragile: raw['fragile'] as bool?,
+    routeDistanceMeters: _asInt(raw['routeDistanceMeters']),
+    parcelDroppedAt: parseServerDateTime(raw['parcelDroppedAt']),
+    parcelReturnPending: raw['parcelReturnPending'] as bool?,
+    parcelHeldAt: _text(raw['parcelHeldAt']),
+    parcelReturnedAt: parseServerDateTime(raw['parcelReturnedAt']),
+    parcelReturnNote: _text(raw['parcelReturnNote']),
     journeyEvents: _events(raw['journeyEvents']),
   );
 

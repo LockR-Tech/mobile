@@ -1,8 +1,12 @@
 import 'dart:io';
 import 'dart:convert';
+import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:smart_laundry_locker/core/network/api_client.dart';
 import 'package:smart_laundry_locker/core/theme/shadcn_theme.dart';
+import 'package:smart_laundry_locker/core/services/app_event_bus.dart';
+import 'package:smart_laundry_locker/features/locker/domain/utils/locker_layout_helper.dart';
 import 'package:smart_laundry_locker/features/locker/presentation/providers/locker_injection.dart';
 import 'package:smart_laundry_locker/features/locker/presentation/providers/locker_provider.dart';
 import 'package:smart_laundry_locker/features/maintenance/infrastructure/data_sources/maintenance_remote_datasource.dart';
@@ -15,6 +19,7 @@ import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:smart_laundry_locker/shared/widgets/custom_input.dart';
 import 'package:smart_laundry_locker/shared/widgets/custom_textarea.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class CreateReportPage extends StatefulWidget {
   final String lockerId;
@@ -23,6 +28,8 @@ class CreateReportPage extends StatefulWidget {
   final String? cabinetName;
   final String? locationName;
   final int? initialBoxId;
+  final Map<String, dynamic>? initialLayout;
+  final List<Map<String, dynamic>>? initialCells;
 
   const CreateReportPage({
     Key? key,
@@ -32,6 +39,8 @@ class CreateReportPage extends StatefulWidget {
     this.cabinetName,
     this.locationName,
     this.initialBoxId,
+    this.initialLayout,
+    this.initialCells,
   }) : super(key: key);
 
   @override
@@ -52,9 +61,22 @@ class _CreateReportPageState extends State<CreateReportPage> {
   List<_LockerAddressOption> _lockerOptions = [];
   String? _selectedLockerOptionId;
 
+  Map<String, dynamic>? _layout;
   List<Map<String, dynamic>> _boxes = [];
   int? _selectedBoxId;
   bool _isLoadingBoxes = false;
+  bool _isPhysicalView = true;
+  bool _isScreenIssueSelected = false;
+  StreamSubscription<AppEvent>? _busSub;
+
+  String? get _currentLockerId {
+    if (widget.lockerId.isNotEmpty) return widget.lockerId;
+    if (_selectedLockerOptionId != null && _selectedLockerOptionId!.contains('::')) {
+      final parts = _selectedLockerOptionId!.split('::');
+      if (parts.length > 1) return parts[1];
+    }
+    return null;
+  }
 
   String _friendlyErrorMessage(String? rawError) {
     if (rawError == null || rawError.trim().isEmpty) {
@@ -108,13 +130,34 @@ class _CreateReportPageState extends State<CreateReportPage> {
     if (widget.initialBoxId != null) {
       _selectedBoxId = widget.initialBoxId;
     }
+    if (widget.initialLayout != null) {
+      _layout = LockerLayoutHelper.enrichLayout(widget.initialLayout!);
+      _boxes = (_layout!['cells'] as List?)?.cast<Map<String, dynamic>>() ?? [];
+    } else if (widget.initialCells != null) {
+      _boxes = LockerLayoutHelper.enrichCells(widget.initialCells!);
+    }
+
     _provider = MaintenanceInjection.provideMaintenanceProvider(ApiClient());
     _lockerProvider = LockerInjection.provideLockerProvider(ApiClient());
     _loadLockerAddressOptions();
+
+    // Lắng nghe sự kiện đồng bộ thời gian thực từ EventBus
+    _busSub = AppEventBus.instance.events.listen((event) {
+      if (!mounted) return;
+      if (event is LockerLayoutUpdatedEvent) {
+        final currentId = _currentLockerId;
+        if (event.lockerId == null || event.lockerId == currentId) {
+          if (currentId != null && currentId.isNotEmpty) {
+            _loadBoxesForLocker(currentId);
+          }
+        }
+      }
+    });
   }
 
   @override
   void dispose() {
+    _busSub?.cancel();
     _titleController.dispose();
     _descriptionController.dispose();
     _lockerProvider.dispose();
@@ -130,17 +173,22 @@ class _CreateReportPageState extends State<CreateReportPage> {
       final res = await _apiClient.get('/api/lockers/$parsedId/layout');
       final raw = res.data;
       final data = raw is Map ? raw['data'] : null;
-      final cellsRaw = data is Map ? data['cells'] : null;
-      if (cellsRaw is List) {
-        final cells = cellsRaw
-            .whereType<Map>()
-            .map((e) => Map<String, dynamic>.from(e))
-            .toList();
-        cells.sort((a, b) =>
-            ((a['boxNumber'] as num?) ?? 0).compareTo((b['boxNumber'] as num?) ?? 0));
+      if (data is Map<String, dynamic>) {
+        final enriched = LockerLayoutHelper.enrichLayout(data);
         if (mounted) {
           setState(() {
-            _boxes = cells;
+            _layout = enriched;
+            _boxes = (enriched['cells'] as List?)?.cast<Map<String, dynamic>>() ?? [];
+            if (_selectedBoxId == null && widget.initialBoxId != null) {
+              _selectedBoxId = widget.initialBoxId;
+            }
+          });
+        }
+      } else if (data is Map && data['cells'] is List) {
+        final enrichedCells = LockerLayoutHelper.enrichCells(data['cells'] as List);
+        if (mounted) {
+          setState(() {
+            _boxes = enrichedCells;
             if (_selectedBoxId == null && widget.initialBoxId != null) {
               _selectedBoxId = widget.initialBoxId;
             }
@@ -303,6 +351,11 @@ class _CreateReportPageState extends State<CreateReportPage> {
 
     if (result != null) {
       SmartDialog.showToast('Gửi báo cáo thành công');
+      AppEventBus.instance.emit(ReportUpdatedEvent(reportId: result.id.toString()));
+      AppEventBus.instance.emit(LockerLayoutUpdatedEvent(
+        lockerId: lockerId,
+        boxId: _selectedBoxId?.toString(),
+      ));
       if (mounted) Navigator.of(context).pop();
     } else {
       final friendlyError = _friendlyErrorMessage(_provider.error);
@@ -586,33 +639,103 @@ class _CreateReportPageState extends State<CreateReportPage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text(
-              'Chọn ô gặp sự cố tại Kiosk:',
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: Colors.black87,
-              ),
+            Row(
+              children: [
+                const Text(
+                  'Chọn ô gặp sự cố tại Kiosk:',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black87,
+                  ),
+                ),
+                const SizedBox(width: 6),
+                Text(
+                  '(Tuỳ chọn)',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey.shade600,
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(width: 8),
-            Text(
-              '(Tuỳ chọn)',
-              style: TextStyle(
-                fontSize: 12,
-                color: Colors.grey.shade600,
-              ),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Nút chuyển chế độ xem: Sơ đồ vật lý / Danh sách thẻ
+                Container(
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF1F5F9),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: const Color(0xFFCBD5E1), width: 0.8),
+                  ),
+                  padding: const EdgeInsets.all(2),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      _buildViewModeButton(
+                        icon: LucideIcons.layoutGrid,
+                        label: 'Sơ đồ',
+                        isActive: _isPhysicalView,
+                        onTap: () => setState(() => _isPhysicalView = true),
+                      ),
+                      _buildViewModeButton(
+                        icon: LucideIcons.rows3,
+                        label: 'Thẻ',
+                        isActive: !_isPhysicalView,
+                        onTap: () => setState(() => _isPhysicalView = false),
+                      ),
+                    ],
+                  ),
+                ),
+                if (_selectedBoxId != null || _isScreenIssueSelected) ...[
+                  const SizedBox(width: 8),
+                  GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        _selectedBoxId = null;
+                        _isScreenIssueSelected = false;
+                      });
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3.5),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFEF2F2),
+                        borderRadius: BorderRadius.circular(6),
+                        border: Border.all(color: const Color(0xFFFECACA), width: 0.8),
+                      ),
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.close, size: 12, color: Color(0xFFDC2626)),
+                          SizedBox(width: 3),
+                          Text(
+                            'Bỏ chọn',
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                              color: Color(0xFFDC2626),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ],
             ),
           ],
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 6),
         if (_isLoadingBoxes)
           Container(
-            padding: const EdgeInsets.symmetric(vertical: 14),
+            padding: const EdgeInsets.symmetric(vertical: 20),
             child: const Center(
               child: SizedBox(
-                width: 20,
-                height: 20,
+                width: 22,
+                height: 22,
                 child: CircularProgressIndicator(strokeWidth: 2),
               ),
             ),
@@ -632,59 +755,67 @@ class _CreateReportPageState extends State<CreateReportPage> {
             ),
           )
         else ...[
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: _boxes.map((c) {
-              final cId = (c['id'] as num?)?.toInt();
-              final isSel = cId != null && cId == _selectedBoxId;
-              final st = (c['status'] as String? ?? '').toUpperCase();
-              final col = switch (st) {
-                'AVAILABLE' => const Color(0xFF16A34A),
-                'OCCUPIED' => const Color(0xFFD97706),
-                'RESERVED' => const Color(0xFF2563EB),
-                'FAULT' => const Color(0xFFDC2626),
-                _ => Colors.grey,
-              };
-              return ChoiceChip(
-                selected: isSel,
-                onSelected: (val) {
-                  setState(() {
-                    _selectedBoxId = val ? cId : null;
-                  });
-                },
-                selectedColor: AISLShadcnTheme.navyPrimary.withValues(alpha: 0.18),
-                backgroundColor: Colors.white,
-                side: BorderSide(
-                  color: isSel ? AISLShadcnTheme.navyPrimary : Colors.grey.shade300,
-                  width: isSel ? 2 : 1,
+          // Thanh chú thích trực quan (Legend) đồng bộ 100% với Sơ đồ tủ vật lý
+          Container(
+            margin: const EdgeInsets.only(bottom: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF8FAFC),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: const Color(0xFFE2E8F0)),
+            ),
+            child: Wrap(
+              spacing: 10,
+              runSpacing: 6,
+              children: [
+                _buildBoxLegendItem(
+                  icon: LucideIcons.monitor,
+                  label: 'Màn hình 7"',
+                  bg: const Color(0xFF0F172A),
                 ),
-                label: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Container(
-                      width: 8,
-                      height: 8,
-                      decoration: BoxDecoration(
-                        color: col,
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      '#${c['boxNumber']}',
-                      style: TextStyle(
-                        fontWeight: isSel ? FontWeight.bold : FontWeight.w600,
-                        color: isSel ? AISLShadcnTheme.navyPrimary : Colors.black87,
-                      ),
-                    ),
-                  ],
+                _buildBoxLegendItem(
+                  icon: LucideIcons.box,
+                  label: 'Trống',
+                  bg: const Color(0xFF00B4D8),
                 ),
-              );
-            }).toList(),
+                _buildBoxLegendItem(
+                  icon: Icons.flight_rounded,
+                  label: 'Drone',
+                  bg: const Color(0xFF6366F1),
+                ),
+                _buildBoxLegendItem(
+                  icon: LucideIcons.luggage,
+                  label: 'Vali (XL)',
+                  bg: const Color(0xFF0284C7),
+                ),
+                _buildBoxLegendItem(
+                  icon: Icons.circle,
+                  label: 'Đang dùng',
+                  bg: const Color(0xFF64748B),
+                ),
+                _buildBoxLegendItem(
+                  icon: Icons.circle,
+                  label: 'Hỏng',
+                  bg: const Color(0xFFDC2626),
+                ),
+                _buildBoxLegendItem(
+                  icon: LucideIcons.doorOpen,
+                  label: 'Cửa mở',
+                  bg: const Color(0xFFD97706),
+                ),
+              ],
+            ),
           ),
+
+          // Hiển thị Sơ đồ tủ vật lý hoặc Danh sách thẻ ô
+          if (_isPhysicalView)
+            _buildPhysicalDiagram(_boxes)
+          else
+            _buildCardListView(),
+
+          // Card thông tin xác nhận khi khách hàng đã chọn ô hoặc màn hình
           if (_selectedBoxId != null) ...[
-            const SizedBox(height: 8),
+            const SizedBox(height: 10),
             Builder(
               builder: (_) {
                 final match = _boxes.firstWhere(
@@ -692,24 +823,46 @@ class _CreateReportPageState extends State<CreateReportPage> {
                   orElse: () => {},
                 );
                 final numVal = match['boxNumber'] ?? _selectedBoxId;
+                final bIsDoorOpen = LockerLayoutHelper.isDoorOpen(match);
+                final String typeLabel = LockerLayoutHelper.typeLabel(match);
+                final String stLabel = LockerLayoutHelper.statusLabel(match);
+
                 return Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   decoration: BoxDecoration(
                     color: const Color(0xFFECFDF5),
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(10),
                     border: Border.all(color: const Color(0xFFA7F3D0)),
                   ),
                   child: Row(
-                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.check_circle, size: 14, color: Color(0xFF059669)),
-                      const SizedBox(width: 6),
-                      Text(
-                        'Đã chọn ô #$numVal — KTV sẽ thấy ngay ô này khi nhận xử lý.',
-                        style: const TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          color: Color(0xFF065F46),
+                      const Icon(Icons.check_circle_rounded,
+                          size: 18, color: Color(0xFF059669)),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Đang chọn: Ô #$numVal • $typeLabel • $stLabel',
+                              style: const TextStyle(
+                                fontSize: 12.5,
+                                fontWeight: FontWeight.w700,
+                                color: Color(0xFF065F46),
+                              ),
+                            ),
+                            if (bIsDoorOpen) ...[
+                              const SizedBox(height: 2),
+                              const Text(
+                                '⚠️ Cửa ô này hiện đang MỞ trên hệ thống.',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w600,
+                                  color: Color(0xFFB45309),
+                                ),
+                              ),
+                            ],
+                          ],
                         ),
                       ),
                     ],
@@ -717,9 +870,760 @@ class _CreateReportPageState extends State<CreateReportPage> {
                 );
               },
             ),
+          ] else if (_isScreenIssueSelected) ...[
+            const SizedBox(height: 10),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF0F9FF),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: const Color(0xFFBAE6FD)),
+              ),
+              child: const Row(
+                children: [
+                  Icon(LucideIcons.monitor, size: 18, color: Color(0xFF0284C7)),
+                  SizedBox(width: 8),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Đang chọn: Màn hình cảm ứng 7" Kiosk (Sự cố toàn trạm)',
+                          style: TextStyle(
+                            fontSize: 12.5,
+                            fontWeight: FontWeight.w700,
+                            color: Color(0xFF0369A1),
+                          ),
+                        ),
+                        SizedBox(height: 2),
+                        Text(
+                          'Báo cáo lỗi màn hình đơ/tắt, lỗi cảm ứng hoặc sự cố không thuộc ô cụ thể.',
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w500,
+                            color: Color(0xFF0C4A6E),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ],
         ],
       ],
+    );
+  }
+
+  Widget _buildViewModeButton({
+    required IconData icon,
+    required String label,
+    required bool isActive,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+        decoration: BoxDecoration(
+          color: isActive ? Colors.white : Colors.transparent,
+          borderRadius: BorderRadius.circular(6),
+          boxShadow: isActive
+              ? [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.08),
+                    blurRadius: 2,
+                    offset: const Offset(0, 1),
+                  ),
+                ]
+              : null,
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              icon,
+              size: 12,
+              color: isActive ? const Color(0xFF0F172A) : const Color(0xFF64748B),
+            ),
+            const SizedBox(width: 3.5),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
+                color: isActive ? const Color(0xFF0F172A) : const Color(0xFF64748B),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPhysicalDiagram(List<Map<String, dynamic>> cells) {
+    if (cells.isEmpty) return const SizedBox.shrink();
+
+    // 1. Phân loại cột Kiosk (Cột 0) và các cột ô vật lý tiêu chuẩn (Cột >= 1)
+    final hasKioskCol = cells.any(
+      (c) =>
+          ((c['colIndex'] as num?)?.toInt() == 0) ||
+          LockerLayoutHelper.isXl(c),
+    );
+    final col0Cell = hasKioskCol
+        ? cells.firstWhere(
+            (c) =>
+                ((c['colIndex'] as num?)?.toInt() == 0) ||
+                LockerLayoutHelper.isXl(c),
+            orElse: () => cells.first,
+          )
+        : null;
+
+    final standardCells = cells
+        .where((c) =>
+            c != col0Cell && ((c['colIndex'] as num?)?.toInt() ?? 1) > 0)
+        .toList();
+
+    // Xác định dải rowIndex của các ô (1-based theo DB hoặc 0-based)
+    int minRow = 1;
+    int maxRow = 1;
+    int maxCol = 1;
+
+    for (final c in standardCells) {
+      final r = (c['rowIndex'] as num?)?.toInt() ?? 1;
+      final col = (c['colIndex'] as num?)?.toInt() ?? 1;
+      if (r < minRow) minRow = r;
+      if (r > maxRow) maxRow = r;
+      if (col > maxCol) maxCol = col;
+    }
+
+    final totalRows = math.max(3, maxRow - minRow + 1);
+    final numCols = math.max(1, maxCol);
+
+    final grid = List.generate(
+      totalRows,
+      (_) => List<Map<String, dynamic>?>.filled(numCols + 1, null),
+    );
+
+    for (final c in standardCells) {
+      final r = (c['rowIndex'] as num?)?.toInt() ?? minRow;
+      final col = (c['colIndex'] as num?)?.toInt() ?? 1;
+      final rowOffset = r - minRow;
+      if (rowOffset >= 0 && rowOffset < totalRows && col <= numCols) {
+        grid[rowOffset][col] = c;
+      }
+    }
+
+    const double baseCellHeight = 76.0;
+    const double cellSpacing = 6.0;
+    final totalColumnsToRender = hasKioskCol ? (numCols + 1) : numCols;
+
+    return Container(
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+      ),
+      padding: const EdgeInsets.all(10),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: List.generate(totalColumnsToRender, (colIdx) {
+          final colChildren = <Widget>[];
+
+          if (hasKioskCol && colIdx == 0) {
+            // CỘT 0:
+            // 1. Màn hình Kiosk 7 inch
+            colChildren.add(
+              Padding(
+                padding: const EdgeInsets.only(bottom: cellSpacing),
+                child: SizedBox(
+                  height: baseCellHeight,
+                  child: _buildPhysicalScreenTile(),
+                ),
+              ),
+            );
+
+            // 2. Ô Vali XL (kéo dài các hàng dưới màn hình)
+            if (col0Cell != null) {
+              final span = (totalRows > 1) ? (totalRows - 1) : 1;
+              final height = baseCellHeight * span + cellSpacing * (span - 1);
+              colChildren.add(
+                Padding(
+                  padding: const EdgeInsets.only(bottom: cellSpacing),
+                  child: SizedBox(
+                    height: height,
+                    child: _buildPhysicalCellTile(col0Cell, isTall: true),
+                  ),
+                ),
+              );
+            }
+          } else {
+            final col = hasKioskCol ? colIdx : (colIdx + 1);
+
+            // CÁC CỘT TIẾP THEO:
+            for (int row = 0; row < totalRows; row++) {
+              final cell = (col <= numCols) ? grid[row][col] : null;
+              colChildren.add(
+                Padding(
+                  padding: const EdgeInsets.only(bottom: cellSpacing),
+                  child: SizedBox(
+                    height: baseCellHeight,
+                    child: cell != null
+                        ? _buildPhysicalCellTile(cell)
+                        : const SizedBox(),
+                  ),
+                ),
+              );
+            }
+          }
+
+          return Expanded(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 3),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: colChildren,
+              ),
+            ),
+          );
+        }),
+      ),
+    );
+  }
+
+  Widget _buildPhysicalScreenTile() {
+    final isSel = _isScreenIssueSelected;
+
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          if (_isScreenIssueSelected) {
+            _isScreenIssueSelected = false;
+          } else {
+            _isScreenIssueSelected = true;
+            _selectedBoxId = null;
+            if (_titleController.text.trim().isEmpty) {
+              _titleController.text = 'Sự cố màn hình cảm ứng Kiosk 7 inch';
+            }
+          }
+        });
+      },
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Color(0xFF0F172A), Color(0xFF1E293B)],
+          ),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(
+            color: isSel ? const Color(0xFF38BDF8) : const Color(0xFF334155),
+            width: isSel ? 2.2 : 1.0,
+          ),
+          boxShadow: [
+            if (isSel)
+              BoxShadow(
+                color: const Color(0xFF0284C7).withValues(alpha: 0.5),
+                blurRadius: 8,
+                spreadRadius: 1,
+              ),
+          ],
+        ),
+        child: Stack(
+          children: [
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              height: 24,
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.white.withValues(alpha: 0.12),
+                      Colors.transparent,
+                    ],
+                  ),
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(9)),
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 5),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    children: [
+                      const Icon(LucideIcons.monitor, size: 12, color: Color(0xFF38BDF8)),
+                      const SizedBox(width: 4),
+                      const Expanded(
+                        child: Text(
+                          'Màn hình Kiosk',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 9,
+                            fontWeight: FontWeight.w800,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 3.5, vertical: 0.5),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF0369A1).withValues(alpha: 0.35),
+                          borderRadius: BorderRadius.circular(3),
+                          border: Border.all(
+                            color: const Color(0xFF38BDF8).withValues(alpha: 0.4),
+                            width: 0.6,
+                          ),
+                        ),
+                        child: const Text(
+                          '7"',
+                          style: TextStyle(
+                            color: Color(0xFFBAE6FD),
+                            fontSize: 7.5,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const Center(
+                    child: Icon(
+                      LucideIcons.tablet,
+                      size: 18,
+                      color: Color(0xFF67E8F9),
+                    ),
+                  ),
+                  Container(
+                    alignment: Alignment.center,
+                    padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1.5),
+                    decoration: BoxDecoration(
+                      color: isSel
+                          ? const Color(0xFF0284C7).withValues(alpha: 0.6)
+                          : const Color(0xFF1E293B),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Text(
+                      isSel ? '✓ Đang chọn' : 'Chạm báo lỗi',
+                      style: TextStyle(
+                        color: isSel ? Colors.white : const Color(0xFF94A3B8),
+                        fontSize: 8,
+                        fontWeight: FontWeight.w700,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            if (isSel)
+              Positioned(
+                top: 4,
+                right: 4,
+                child: Container(
+                  width: 14,
+                  height: 14,
+                  decoration: const BoxDecoration(
+                    color: Color(0xFF38BDF8),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.check, size: 10, color: Colors.black87),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPhysicalCellTile(Map<String, dynamic> c, {bool isTall = false}) {
+    final cId = (c['id'] as num?)?.toInt();
+    final isSel = cId != null && cId == _selectedBoxId;
+    final boxNum = (c['boxNumber'] as num?)?.toInt() ?? 0;
+    final isXl = LockerLayoutHelper.isXl(c);
+    final isDrone = LockerLayoutHelper.isDrone(c);
+    final isDoorOpen = LockerLayoutHelper.isDoorOpen(c);
+    final bgGradient = LockerLayoutHelper.bgGradient(c);
+    final icon = LockerLayoutHelper.cellIcon(c);
+    final statusStr = LockerLayoutHelper.status(c);
+    final statusLabel = LockerLayoutHelper.statusLabel(c);
+    final typeLabel = isDrone
+        ? 'Drone'
+        : (isXl ? 'Vali (XL)' : 'Tiêu chuẩn');
+
+    final bool isGreyedOut = statusStr == 'OCCUPIED' ||
+        statusStr == 'IN_USE' ||
+        (isDrone && statusStr == 'RESERVED');
+    final Color textColor = isGreyedOut ? const Color(0xFF475569) : Colors.white;
+
+    return GestureDetector(
+      onTap: () {
+        if (cId != null) {
+          setState(() {
+            _isScreenIssueSelected = false;
+            _selectedBoxId = isSel ? null : cId;
+          });
+        }
+      },
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        decoration: BoxDecoration(
+          gradient: bgGradient,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(
+            color: isSel
+                ? Colors.black87
+                : (isDoorOpen
+                    ? const Color(0xFFFBBF24)
+                    : Colors.white.withValues(alpha: 0.35)),
+            width: isSel ? 2.5 : (isDoorOpen ? 2.0 : 1.0),
+          ),
+          boxShadow: [
+            if (isSel)
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.35),
+                blurRadius: 8,
+                spreadRadius: 1,
+                offset: const Offset(0, 2),
+              )
+            else if (isDoorOpen)
+              BoxShadow(
+                color: const Color(0xFFF59E0B).withValues(alpha: 0.3),
+                blurRadius: 6,
+                offset: const Offset(0, 2),
+              ),
+          ],
+        ),
+        child: Stack(
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 5),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Flexible(
+                        child: Text(
+                          '#$boxNum',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w900,
+                            color: textColor,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      Icon(icon, size: 13, color: textColor.withValues(alpha: 0.9)),
+                    ],
+                  ),
+                  if (isTall) ...[
+                    Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            LucideIcons.luggage,
+                            size: 28,
+                            color: textColor.withValues(alpha: 0.85),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'KHOANG VALI LỚN',
+                            style: TextStyle(
+                              fontSize: 9,
+                              fontWeight: FontWeight.w800,
+                              color: textColor.withValues(alpha: 0.85),
+                              letterSpacing: 0.3,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        typeLabel,
+                        style: TextStyle(
+                          fontSize: 9,
+                          fontWeight: FontWeight.w700,
+                          color: textColor.withValues(alpha: 0.85),
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Flexible(
+                            child: Text(
+                              statusLabel,
+                              style: TextStyle(
+                                fontSize: 8.5,
+                                fontWeight: FontWeight.w800,
+                                color: textColor,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          if (isDoorOpen)
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 3.5,
+                                vertical: 0.5,
+                              ),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFD97706),
+                                borderRadius: BorderRadius.circular(3),
+                              ),
+                              child: const Text(
+                                'Mở',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 7.5,
+                                  fontWeight: FontWeight.w900,
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            Positioned(
+              right: 4,
+              top: 0,
+              bottom: 0,
+              child: Center(
+                child: Container(
+                  width: 3,
+                  height: isTall ? 32 : 18,
+                  decoration: BoxDecoration(
+                    color: textColor.withValues(alpha: 0.25),
+                    borderRadius: BorderRadius.circular(1.5),
+                  ),
+                ),
+              ),
+            ),
+            if (isSel)
+              Positioned(
+                top: 4,
+                right: 4,
+                child: Container(
+                  width: 15,
+                  height: 15,
+                  decoration: const BoxDecoration(
+                    color: Colors.black87,
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.check, size: 11, color: Colors.white),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCardListView() {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final double cardWidth = (constraints.maxWidth - 16) / 3;
+        return Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: _boxes.map((c) {
+            return SizedBox(
+              width: cardWidth,
+              child: _buildVisualBoxCard(c),
+            );
+          }).toList(),
+        );
+      },
+    );
+  }
+
+  Widget _buildBoxLegendItem({
+    required IconData icon,
+    required String label,
+    required Color bg,
+  }) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: 14,
+          height: 14,
+          decoration: BoxDecoration(
+            color: bg,
+            borderRadius: BorderRadius.circular(3),
+          ),
+          child: Icon(icon, size: 9, color: Colors.white),
+        ),
+        const SizedBox(width: 4),
+        Text(
+          label,
+          style: const TextStyle(
+            fontSize: 10.5,
+            fontWeight: FontWeight.w600,
+            color: Color(0xFF334155),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildVisualBoxCard(Map<String, dynamic> c) {
+    final cId = (c['id'] as num?)?.toInt();
+    final isSel = cId != null && cId == _selectedBoxId;
+    final boxNum = (c['boxNumber'] as num?)?.toInt() ?? 0;
+    final isDoorOpen = LockerLayoutHelper.isDoorOpen(c);
+    final bgGradient = LockerLayoutHelper.bgGradient(c);
+    final boxIcon = LockerLayoutHelper.cellIcon(c);
+    final typeNote = LockerLayoutHelper.typeLabel(c);
+    final statusNote = LockerLayoutHelper.statusLabel(c);
+
+    return GestureDetector(
+      onTap: () {
+        if (cId != null) {
+          setState(() {
+            _isScreenIssueSelected = false;
+            _selectedBoxId = isSel ? null : cId;
+          });
+        }
+      },
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        padding: const EdgeInsets.fromLTRB(6, 6, 6, 6),
+        decoration: BoxDecoration(
+          gradient: bgGradient,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(
+            color: isSel
+                ? Colors.black87
+                : (isDoorOpen ? const Color(0xFFFBBF24) : Colors.white.withValues(alpha: 0.35)),
+            width: isSel ? 2.5 : (isDoorOpen ? 2.0 : 1.0),
+          ),
+          boxShadow: [
+            if (isSel)
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.35),
+                blurRadius: 8,
+                spreadRadius: 1,
+                offset: const Offset(0, 2),
+              )
+            else
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.08),
+                blurRadius: 4,
+                offset: const Offset(0, 2),
+              ),
+          ],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Flexible(
+                  child: Text(
+                    '#$boxNum',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w800,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                if (isSel)
+                  Container(
+                    padding: const EdgeInsets.all(1.5),
+                    decoration: const BoxDecoration(
+                      color: Colors.white,
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.check,
+                      size: 10,
+                      color: Color(0xFF0F172A),
+                    ),
+                  )
+                else if (isDoorOpen)
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 3, vertical: 0.5),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFEF08A),
+                      borderRadius: BorderRadius.circular(3),
+                      border: Border.all(color: const Color(0xFFEAB308), width: 0.6),
+                    ),
+                    child: const Text(
+                      'Mở',
+                      style: TextStyle(
+                        fontSize: 7.5,
+                        fontWeight: FontWeight.w800,
+                        color: Color(0xFF854D0E),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 4),
+            Center(
+              child: Icon(
+                boxIcon,
+                color: Colors.white.withValues(alpha: 0.95),
+                size: 20,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Center(
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1.5),
+                decoration: BoxDecoration(
+                  color: Colors.black.withValues(alpha: 0.16),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: Text(
+                  '$typeNote • $statusNote',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 8,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0.1,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 

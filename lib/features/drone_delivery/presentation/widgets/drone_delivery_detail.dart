@@ -7,6 +7,7 @@ import 'package:smart_laundry_locker/core/utils/app_date_time.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/domain/entities/drone_delivery_stage.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/domain/entities/drone_delivery_status.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/domain/entities/drone_labels.dart';
+import 'package:smart_laundry_locker/features/drone_delivery/domain/entities/drone_parcel.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/presentation/widgets/drone_delivery_timeline.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/presentation/widgets/drone_order_cancel.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/presentation/widgets/drone_route_map_card.dart';
@@ -46,6 +47,7 @@ Map<DroneDeliveryStage, List<DroneTimelineDetail>> droneStepDetails(
   return {
     DroneDeliveryStage.awaitingDispatch: [
       DroneTimelineDetail('Thanh toán', status.paidAt),
+      DroneTimelineDetail('Bỏ kiện vào ô gửi', status.parcelDroppedAt),
     ],
     DroneDeliveryStage.accepted: [
       DroneTimelineDetail('Nạp hàng lên drone', status.loadedAt),
@@ -87,9 +89,17 @@ class DroneDeliveryDetail extends StatelessWidget {
     this.beforeRoute = const [],
     this.onPay,
     this.onCancel,
+    this.onConfirmDrop,
+    this.onDeclineSurcharge,
   });
 
   final DroneDeliveryStatus status;
+
+  /// Người gửi xác nhận đã bỏ kiện vào ô drone ở tủ gửi.
+  final VoidCallback? onConfirmDrop;
+
+  /// Khách từ chối trả phụ thu cân lệch (huỷ đơn, hoàn phần đã trả).
+  final VoidCallback? onDeclineSurcharge;
 
   /// Khách bấm thanh toán ngay trên thẻ nhắc đơn chưa trả tiền.
   final VoidCallback? onPay;
@@ -116,7 +126,25 @@ class DroneDeliveryDetail extends StatelessWidget {
         ],
         if (status.needsPaymentBeforeDispatch || status.needsSurchargePayment) ...[
           const SizedBox(height: 16),
-          _UnpaidBanner(status: status, forOperator: forOperator, onPay: onPay),
+          _UnpaidBanner(
+            status: status,
+            forOperator: forOperator,
+            onPay: onPay,
+            onDeclineSurcharge: onDeclineSurcharge,
+          ),
+        ],
+        if (status.needsParcelDrop) ...[
+          const SizedBox(height: 16),
+          _DropBanner(
+            status: status,
+            forOperator: forOperator,
+            onConfirmDrop: onConfirmDrop,
+          ),
+        ],
+        if (status.parcelReturnPending == true ||
+            status.parcelReturnedAt != null) ...[
+          const SizedBox(height: 16),
+          _ParcelReturnBanner(status: status, forOperator: forOperator),
         ],
         ...beforeRoute,
         const SizedBox(height: 16),
@@ -295,21 +323,24 @@ class _StatusBanner extends StatelessWidget {
     final color = stage.color; // amber cho delayed, đỏ cho failed/huỷ/quá hạn
     final reason = droneCancelReasonLabel(status.cancelReason);
     final endedAt = _endedAt(status);
+    // Đơn không giao được: đội bay/khách huỷ trước khi bay, hoặc chuyến bay thất bại.
+    final stopped =
+        stage == DroneDeliveryStage.canceled ||
+        stage == DroneDeliveryStage.failed;
     final lines = <String>[
       stage.body(_etaText(status.etaMinutes)),
       if (endedAt != null) 'Lúc: ${formatDateTimeVn(endedAt)}',
-      if (stage == DroneDeliveryStage.canceled && reason != null)
-        'Lý do: $reason',
-      if (stage == DroneDeliveryStage.canceled && status.cancelNote != null)
-        'Ghi chú: ${status.cancelNote}',
-      if (stage == DroneDeliveryStage.canceled &&
+      if (stopped && reason != null) 'Lý do: $reason',
+      if (stopped && status.cancelNote != null) 'Ghi chú: ${status.cancelNote}',
+      if (stage == DroneDeliveryStage.failed)
+        'Đội bay sẽ liên hệ người gửi để trả lại kiện hàng.',
+      if (stopped &&
           (status.paymentStatus ?? '').toUpperCase() == 'REFUND_PENDING')
         'Yêu cầu hoàn tiền đã được ghi nhận. Admin sẽ chuyển khoản về tài '
             'khoản ngân hàng của người đặt.',
-      if (stage == DroneDeliveryStage.canceled &&
-          (status.paymentStatus ?? '').toUpperCase() == 'REFUNDED')
+      if (stopped && (status.paymentStatus ?? '').toUpperCase() == 'REFUNDED')
         'Tiền đã được chuyển khoản hoàn cho người đặt.',
-      if (stage == DroneDeliveryStage.canceled && status.isPaid)
+      if (stopped && status.isPaid)
         'Chưa ghi nhận được yêu cầu hoàn tiền — vui lòng liên hệ hỗ trợ.',
     ];
     return Container(
@@ -348,11 +379,13 @@ class _UnpaidBanner extends StatelessWidget {
     required this.status,
     required this.forOperator,
     this.onPay,
+    this.onDeclineSurcharge,
   });
 
   final DroneDeliveryStatus status;
   final bool forOperator;
   final VoidCallback? onPay;
+  final VoidCallback? onDeclineSurcharge;
 
   /// Đơn nợ phần phí chênh vì đội bay cân kiện nặng hơn khai báo.
   String _surchargeText() {
@@ -363,7 +396,7 @@ class _UnpaidBanner extends StatelessWidget {
     return forOperator
         ? '$weights Chờ khách trả thêm $amount rồi mới phóng được.'
         : '$weights Bạn cần trả thêm $amount để drone cất cánh. Không đồng ý thì '
-              'liên hệ đội bay để huỷ đơn và nhận hoàn tiền.';
+              'bạn có thể huỷ đơn: phần đã trả được hoàn và đội bay trả lại kiện.';
   }
 
   @override
@@ -414,6 +447,145 @@ class _UnpaidBanner extends StatelessWidget {
               ),
             ),
           ],
+          if (!forOperator && surcharge && onDeclineSurcharge != null)
+            SizedBox(
+              width: double.infinity,
+              child: TextButton(
+                key: const ValueKey('drone-decline-surcharge'),
+                style: TextButton.styleFrom(foregroundColor: color),
+                onPressed: onDeclineSurcharge,
+                child: const Text('Không đồng ý · huỷ đơn và nhận hoàn tiền'),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Đơn đã trả tiền nhưng ô gửi còn rỗng: nhắc người gửi bỏ kiện và xác nhận, vì đội
+/// bay chỉ tiếp nhận đơn đã có kiện.
+class _DropBanner extends StatelessWidget {
+  const _DropBanner({
+    required this.status,
+    required this.forOperator,
+    this.onConfirmDrop,
+  });
+
+  final DroneDeliveryStatus status;
+  final bool forOperator;
+  final VoidCallback? onConfirmDrop;
+
+  @override
+  Widget build(BuildContext context) {
+    const color = Color(0xFF1E5A8A);
+    final box = status.sourceBoxNumber;
+    final where = box == null ? 'ô drone ở tủ gửi' : 'ô drone số $box ở tủ gửi';
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: const Color(0xFFE0F2FE),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFF7DD3FC)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Icon(LucideIcons.packagePlus, color: color, size: 20),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  forOperator
+                      ? 'Người gửi chưa xác nhận bỏ kiện vào $where. Chỉ tiếp nhận '
+                            'được sau khi kiện đã nằm trong ô.'
+                      : 'Bỏ kiện vào $where rồi xác nhận bên dưới. Đội bay chỉ tiếp '
+                            'nhận đơn sau khi bạn xác nhận.',
+                  style: const TextStyle(
+                    color: color,
+                    fontSize: 13.5,
+                    fontWeight: FontWeight.w600,
+                    height: 1.4,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          if (!forOperator && onConfirmDrop != null) ...[
+            const SizedBox(height: 10),
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton.icon(
+                key: const ValueKey('drone-confirm-drop'),
+                style: FilledButton.styleFrom(backgroundColor: color),
+                onPressed: onConfirmDrop,
+                icon: const Icon(LucideIcons.packageCheck, size: 18),
+                label: const Text('Tôi đã bỏ kiện vào ô'),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+/// Đơn không giao được mà kiện đã vào hệ thống: kiện đang ở đâu, đã trả cho người gửi chưa.
+class _ParcelReturnBanner extends StatelessWidget {
+  const _ParcelReturnBanner({required this.status, required this.forOperator});
+
+  final DroneDeliveryStatus status;
+  final bool forOperator;
+
+  @override
+  Widget build(BuildContext context) {
+    final returned = status.parcelReturnedAt != null;
+    final color = returned ? const Color(0xFF16A34A) : const Color(0xFFB45309);
+    final inSourceBox = (status.parcelHeldAt ?? '').toUpperCase() == 'SOURCE_BOX';
+    final String text;
+    if (returned) {
+      text =
+          'Kiện đã được trả lại cho người gửi lúc '
+          '${formatDateTimeVn(status.parcelReturnedAt)}.'
+          '${status.parcelReturnNote == null ? '' : ' Ghi chú: ${status.parcelReturnNote}'}';
+    } else if (forOperator) {
+      text = inSourceBox
+          ? 'Kiện còn trong ô gửi. Lấy kiện ra, trả cho người gửi rồi xác nhận đã trả.'
+          : 'Kiện đang do đội bay giữ. Trả cho người gửi rồi xác nhận đã trả.';
+    } else {
+      text = inSourceBox
+          ? 'Kiện của bạn còn trong ô gửi. Đội bay sẽ liên hệ để trả lại kiện.'
+          : 'Kiện của bạn đang do đội bay giữ. Đội bay sẽ liên hệ để trả lại kiện.';
+    }
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.10),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: color.withValues(alpha: 0.4)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(
+            returned ? LucideIcons.packageCheck : LucideIcons.packageOpen,
+            color: color,
+            size: 20,
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              text,
+              style: TextStyle(
+                color: color,
+                fontSize: 13.5,
+                fontWeight: FontWeight.w600,
+                height: 1.4,
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -694,6 +866,34 @@ class _OrderCard extends StatelessWidget {
           ('Thanh toán lúc', formatDateTimeVn(status.paidAt)),
         ('Ô nhận tại tủ đích', box == null ? '—' : 'Ô số $box'),
         ('Khối lượng khai báo', droneWeightLabel(status.expectedWeightGrams)),
+        if (status.parcelCategory != null)
+          ('Loại hàng', droneParcelCategoryLabel(status.parcelCategory)),
+        if (droneParcelSizeLabel(
+              status.parcelLengthCm,
+              status.parcelWidthCm,
+              status.parcelHeightCm,
+            ) !=
+            null)
+          (
+            'Kích thước kiện',
+            droneParcelSizeLabel(
+              status.parcelLengthCm,
+              status.parcelWidthCm,
+              status.parcelHeightCm,
+            )!,
+          ),
+        if (status.declaredValue != null)
+          ('Giá trị khai báo', fmtPrice(status.declaredValue)),
+        if (status.fragile == true) ('Lưu ý', 'Hàng dễ vỡ'),
+        if (status.parcelDroppedAt != null)
+          ('Bỏ kiện vào ô gửi lúc', formatDateTimeVn(status.parcelDroppedAt)),
+        if (status.routeDistanceMeters != null)
+          (
+            'Quãng đường bay',
+            status.routeDistanceMeters! < 1000
+                ? '${status.routeDistanceMeters} m'
+                : '${(status.routeDistanceMeters! / 1000).toStringAsFixed(1)} km',
+          ),
         ('Mô tả kiện hàng', status.description ?? 'Không có mô tả'),
         ('Hình thức bay', droneFulfillmentModeLabel(status.fulfillmentMode)),
       ]),

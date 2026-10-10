@@ -14,6 +14,16 @@ Future<OrderPaymentOutcome> _skipPayment(
   required double total,
 }) async => OrderPaymentOutcome.cancelled;
 
+/// Cam kết không gửi hàng cấm là bắt buộc trước khi tạo đơn.
+Future<void> _acceptDeclaration(WidgetTester tester) async {
+  final box = find.byKey(const ValueKey('drone-prohibited-declaration'));
+  await tester.ensureVisible(box);
+  await tester.pumpAndSettle();
+  if (tester.widget<Checkbox>(box).value == true) return;
+  await tester.tap(box);
+  await tester.pumpAndSettle();
+}
+
 void main() {
   setUp(() => useBusinessConfig());
 
@@ -45,6 +55,7 @@ void main() {
               required receiverEmail,
               required description,
               required parcelWeightGrams,
+              required parcel,
               required paymentMethod,
               required idempotencyKey,
             }) async => {'orderId': 77, 'totalPrice': 30000},
@@ -59,6 +70,7 @@ void main() {
       ),
     );
 
+    await _acceptDeclaration(tester);
     await tester.ensureVisible(find.text('Tạo đơn và thanh toán'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Tạo đơn và thanh toán'));
@@ -97,6 +109,7 @@ void main() {
             required receiverEmail,
             required description,
             required parcelWeightGrams,
+            required parcel,
             required paymentMethod,
             required idempotencyKey,
           }) async {
@@ -118,6 +131,7 @@ void main() {
       find.textContaining('Locker B đã hết ô drone trống'),
       findsOneWidget,
     );
+    await _acceptDeclaration(tester);
     await tester.ensureVisible(submit);
     await tester.pumpAndSettle();
     await tester.tap(submit);
@@ -129,11 +143,109 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.textContaining('đã hết ô drone trống'), findsNothing);
     expect(find.text('Locker C · còn 2 ô drone'), findsOneWidget);
+    await _acceptDeclaration(tester);
     await tester.ensureVisible(submit);
     await tester.pumpAndSettle();
     await tester.tap(submit);
     await tester.pumpAndSettle();
     expect(sentDestinations, [7]);
+  });
+
+  testWidgets('khai báo kiện: bắt buộc cam kết, chặn kiện quá khổ, gửi đủ khai báo', (
+    tester,
+  ) async {
+    final messages = <String>[];
+    final sent = <Map<String, dynamic>>[];
+
+    await tester.pumpWidget(
+      MaterialApp(
+        builder: FlutterSmartDialog.init(),
+        home: Scaffold(
+          body: DroneBookingSheet(
+            cell: const {'id': 9001, 'boxNumber': 7},
+            lockerName: 'Locker A',
+            origin: const LatLng(10.0, 106.0),
+            lockerId: 5,
+            destinationLockers: const [
+              {'id': 6, 'name': 'Locker B', 'landingPad': true, 'status': 'ACTIVE'},
+            ],
+            createOrder: ({
+              required sourceLockerId,
+              required destinationLockerId,
+              required sourceBoxId,
+              required preferredBoxId,
+              required receiverPhone,
+              required receiverName,
+              required receiverEmail,
+              required description,
+              required parcelWeightGrams,
+              required parcel,
+              required paymentMethod,
+              required idempotencyKey,
+            }) async {
+              sent.add(parcel.toJson());
+              return {'orderId': 77};
+            },
+            payOrder: _skipPayment,
+            showMessage: messages.add,
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    final submit = find.text('Tạo đơn và thanh toán');
+
+    Future<void> tapSubmit() async {
+      await tester.ensureVisible(submit);
+      await tester.pumpAndSettle();
+      await tester.tap(submit);
+      await tester.pumpAndSettle();
+    }
+
+    // Chưa cam kết không gửi hàng cấm: không tạo đơn.
+    await tapSubmit();
+    expect(sent, isEmpty);
+    expect(messages.last, contains('cam kết'));
+
+    await _acceptDeclaration(tester);
+
+    // Khoang mặc định 30 × 25 × 20 cm: cạnh 40 cm không lọt.
+    await tester.enterText(find.byKey(const ValueKey('drone-parcel-length')), '40');
+    await tester.enterText(find.byKey(const ValueKey('drone-parcel-width')), '10');
+    await tapSubmit();
+    expect(sent, isEmpty);
+    expect(messages.last, contains('Nhập đủ dài, rộng, cao'));
+
+    await tester.enterText(find.byKey(const ValueKey('drone-parcel-height')), '10');
+    await tapSubmit();
+    expect(sent, isEmpty);
+    expect(messages.last, contains('không lọt khoang drone'));
+
+    // Kiện xoay được: 20 × 30 × 25 vẫn lọt khoang 30 × 25 × 20.
+    await tester.enterText(find.byKey(const ValueKey('drone-parcel-length')), '20');
+    await tester.enterText(find.byKey(const ValueKey('drone-parcel-width')), '30');
+    await tester.enterText(find.byKey(const ValueKey('drone-parcel-height')), '25');
+    await tester.enterText(find.byKey(const ValueKey('drone-parcel-value')), '500000');
+    final electronics = find.byKey(const ValueKey('drone-category-ELECTRONICS'));
+    await tester.ensureVisible(electronics);
+    await tester.pumpAndSettle();
+    await tester.tap(electronics);
+    final fragile = find.byKey(const ValueKey('drone-parcel-fragile'));
+    await tester.ensureVisible(fragile);
+    await tester.pumpAndSettle();
+    await tester.tap(fragile);
+    await tester.pumpAndSettle();
+    await tapSubmit();
+
+    expect(sent.single, {
+      'parcelCategory': 'ELECTRONICS',
+      'parcelLengthCm': 20,
+      'parcelWidthCm': 30,
+      'parcelHeightCm': 25,
+      'declaredValue': 500000,
+      'fragile': true,
+      'prohibitedItemsDeclared': true,
+    });
   });
 
   testWidgets('books with backend orderId instead of local mock id', (tester) async {
@@ -161,6 +273,7 @@ void main() {
               required receiverEmail,
               required description,
               required parcelWeightGrams,
+              required parcel,
               required paymentMethod,
               required idempotencyKey,
             }) async => {
@@ -176,6 +289,7 @@ void main() {
     );
 
     // Sheet có thêm ô người nhận nên nút nằm dưới mép màn test 800×600.
+    await _acceptDeclaration(tester);
     await tester.ensureVisible(find.text('Tạo đơn và thanh toán'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Tạo đơn và thanh toán'));
@@ -222,6 +336,7 @@ void main() {
               required receiverEmail,
               required description,
               required parcelWeightGrams,
+              required parcel,
               required paymentMethod,
               required idempotencyKey,
             }) async {
@@ -246,6 +361,7 @@ void main() {
     );
 
     // Sheet có thêm ô người nhận nên nút nằm dưới mép màn test 800×600.
+    await _acceptDeclaration(tester);
     await tester.ensureVisible(find.text('Tạo đơn và thanh toán'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Tạo đơn và thanh toán'));
@@ -291,6 +407,7 @@ void main() {
               required receiverEmail,
               required description,
               required parcelWeightGrams,
+              required parcel,
               required paymentMethod,
               required idempotencyKey,
             }) async {
@@ -318,6 +435,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('18.000đ'), findsOneWidget);
 
+    await _acceptDeclaration(tester);
     await tester.ensureVisible(find.text('Tạo đơn và thanh toán'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Tạo đơn và thanh toán'));
@@ -365,6 +483,7 @@ void main() {
               required receiverEmail,
               required description,
               required parcelWeightGrams,
+              required parcel,
               required paymentMethod,
               required idempotencyKey,
             }) async {
@@ -387,6 +506,7 @@ void main() {
       find.byKey(const ValueKey('drone-receiver-phone')),
       '12ab',
     );
+    await _acceptDeclaration(tester);
     await tester.ensureVisible(submit);
     await tester.pumpAndSettle();
     await tester.tap(submit);

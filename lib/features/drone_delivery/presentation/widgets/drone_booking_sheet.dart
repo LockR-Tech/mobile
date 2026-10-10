@@ -3,6 +3,7 @@ import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:smart_laundry_locker/core/config/business_config_provider.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/domain/entities/drone_labels.dart';
+import 'package:smart_laundry_locker/features/drone_delivery/domain/entities/drone_parcel.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/presentation/widgets/drone_order_payment.dart';
 import 'package:smart_laundry_locker/shared/widgets/app_lottie.dart';
 import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
@@ -20,6 +21,7 @@ typedef DroneOrderCreator =
       required String? receiverEmail,
       required String? description,
       required int parcelWeightGrams,
+      required DroneParcelDeclaration parcel,
       required String paymentMethod,
       required String idempotencyKey,
     });
@@ -68,6 +70,15 @@ class _DroneBookingSheetState extends State<DroneBookingSheet>
   final _receiverPhoneController = TextEditingController();
   final _receiverNameController = TextEditingController();
   final _receiverEmailController = TextEditingController();
+  final _lengthController = TextEditingController();
+  final _widthController = TextEditingController();
+  final _heightController = TextEditingController();
+  final _valueController = TextEditingController();
+  String _category = 'OTHER';
+  bool _fragile = false;
+
+  /// Người gửi cam kết kiện không chứa hàng cấm bay — bắt buộc trước khi tạo đơn.
+  bool _declared = false;
   bool _submitting = false;
   bool _loadingDestinations = true;
   List<Map<String, dynamic>> _destinations = const [];
@@ -215,6 +226,10 @@ class _DroneBookingSheetState extends State<DroneBookingSheet>
     _receiverPhoneController.dispose();
     _receiverNameController.dispose();
     _receiverEmailController.dispose();
+    _lengthController.dispose();
+    _widthController.dispose();
+    _heightController.dispose();
+    _valueController.dispose();
     super.dispose();
   }
 
@@ -238,6 +253,8 @@ class _DroneBookingSheetState extends State<DroneBookingSheet>
       _showMessage('Email người nhận không hợp lệ');
       return;
     }
+    final parcel = _readParcel();
+    if (parcel == null) return;
     final sourceLockerId = widget.lockerId;
     if (sourceLockerId == null) {
       _showMessage('Không xác định được tủ nguồn của drone');
@@ -269,6 +286,7 @@ class _DroneBookingSheetState extends State<DroneBookingSheet>
             required receiverEmail,
             required description,
             required parcelWeightGrams,
+            required parcel,
             required paymentMethod,
             required idempotencyKey,
           }) {
@@ -282,6 +300,7 @@ class _DroneBookingSheetState extends State<DroneBookingSheet>
               receiverEmail: receiverEmail,
               description: description,
               parcelWeightGrams: parcelWeightGrams,
+              parcel: parcel.toJson(),
               paymentMethod: paymentMethod,
               idempotencyKey: idempotencyKey,
             );
@@ -298,6 +317,7 @@ class _DroneBookingSheetState extends State<DroneBookingSheet>
         receiverEmail: receiverEmail.isEmpty ? null : receiverEmail,
         description: description,
         parcelWeightGrams: _selectedWeight,
+        parcel: parcel,
         // Chỉ là phương thức dự kiến ghi trên đơn; tiền thu thật ở bước thanh
         // toán. App khách không còn tiền mặt tự xác nhận.
         paymentMethod: 'WALLET',
@@ -338,6 +358,161 @@ class _DroneBookingSheetState extends State<DroneBookingSheet>
         setState(() => _submitting = false);
       }
     }
+  }
+
+  /// Đọc phần khai báo kiện; báo lỗi và trả null khi chưa hợp lệ. Server kiểm lại
+  /// đúng các quy tắc này (`validateDroneParcelDeclaration`).
+  DroneParcelDeclaration? _readParcel() {
+    final sizeTexts = [
+      _lengthController.text.trim(),
+      _widthController.text.trim(),
+      _heightController.text.trim(),
+    ];
+    List<int>? size;
+    if (sizeTexts.any((text) => text.isNotEmpty)) {
+      final parsed = sizeTexts.map(int.tryParse).toList();
+      if (parsed.any((value) => value == null || value <= 0)) {
+        _showMessage('Nhập đủ dài, rộng, cao của kiện (cm) hoặc bỏ trống cả ba');
+        return null;
+      }
+      size = parsed.cast<int>();
+      final bay = businessConfig.droneMaxParcelSizeCm;
+      if (!droneParcelFits(size, bay)) {
+        _showMessage(
+          'Kiện không lọt khoang drone (tối đa ${bay[0]} × ${bay[1]} × ${bay[2]} cm)',
+        );
+        return null;
+      }
+    }
+    int? declaredValue;
+    final valueText = _valueController.text.replaceAll(RegExp(r'[^0-9]'), '');
+    if (valueText.isNotEmpty) {
+      declaredValue = int.tryParse(valueText);
+      if (declaredValue == null ||
+          declaredValue > businessConfig.droneMaxDeclaredValue) {
+        _showMessage(
+          'Drone chỉ nhận kiện có giá trị tới '
+          '${fmtPrice(businessConfig.droneMaxDeclaredValue)}',
+        );
+        return null;
+      }
+    }
+    if (!_declared) {
+      _showMessage('Bạn cần cam kết kiện không chứa hàng cấm bay');
+      return null;
+    }
+    return DroneParcelDeclaration(
+      category: _category,
+      lengthCm: size?[0],
+      widthCm: size?[1],
+      heightCm: size?[2],
+      declaredValue: declaredValue,
+      fragile: _fragile,
+      prohibitedItemsDeclared: true,
+    );
+  }
+
+  InputDecoration _parcelInput(String label, {String? suffix}) =>
+      InputDecoration(
+        labelText: label,
+        suffixText: suffix,
+        isDense: true,
+        filled: true,
+        fillColor: Colors.grey.shade50,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.grey.shade200),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.grey.shade200),
+        ),
+      );
+
+  /// Loại hàng, kích thước, giá trị khai báo và cờ dễ vỡ.
+  List<Widget> _parcelFields() {
+    final bay = businessConfig.droneMaxParcelSizeCm;
+    return [
+      const Text('Loại hàng', style: TextStyle(fontWeight: FontWeight.w700)),
+      const SizedBox(height: 8),
+      Wrap(
+        spacing: 8,
+        runSpacing: 8,
+        children: [
+          for (final entry in droneParcelCategories.entries)
+            ChoiceChip(
+              key: ValueKey('drone-category-${entry.key}'),
+              label: Text(entry.value),
+              selected: entry.key == _category,
+              onSelected: (_) => setState(() => _category = entry.key),
+            ),
+        ],
+      ),
+      const SizedBox(height: 12),
+      Row(
+        children: [
+          Expanded(
+            child: TextField(
+              key: const ValueKey('drone-parcel-length'),
+              controller: _lengthController,
+              keyboardType: TextInputType.number,
+              decoration: _parcelInput('Dài', suffix: 'cm'),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: TextField(
+              key: const ValueKey('drone-parcel-width'),
+              controller: _widthController,
+              keyboardType: TextInputType.number,
+              decoration: _parcelInput('Rộng', suffix: 'cm'),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: TextField(
+              key: const ValueKey('drone-parcel-height'),
+              controller: _heightController,
+              keyboardType: TextInputType.number,
+              decoration: _parcelInput('Cao', suffix: 'cm'),
+            ),
+          ),
+        ],
+      ),
+      const SizedBox(height: 6),
+      Text(
+        'Kích thước tuỳ chọn. Khoang drone tối đa ${bay[0]} × ${bay[1]} × ${bay[2]} cm.',
+        style: const TextStyle(fontSize: 12, color: Colors.grey),
+      ),
+      const SizedBox(height: 10),
+      TextField(
+        key: const ValueKey('drone-parcel-value'),
+        controller: _valueController,
+        keyboardType: TextInputType.number,
+        decoration: _parcelInput(
+          'Giá trị khai báo (tuỳ chọn)',
+          suffix: 'đ',
+        ),
+      ),
+      const SizedBox(height: 6),
+      Text(
+        'Căn cứ bồi thường nếu kiện hư hỏng, thất lạc. Tối đa '
+        '${fmtPrice(businessConfig.droneMaxDeclaredValue)}.',
+        style: const TextStyle(fontSize: 12, color: Colors.grey),
+      ),
+      // Sheet tự vẽ nền trắng bằng Container nên không dùng ListTile (cần Material).
+      Row(
+        children: [
+          const Expanded(child: Text('Hàng dễ vỡ')),
+          Switch(
+            key: const ValueKey('drone-parcel-fragile'),
+            value: _fragile,
+            onChanged: (value) => setState(() => _fragile = value),
+          ),
+        ],
+      ),
+      const SizedBox(height: 4),
+    ];
   }
 
   Future<String> _payCreatedOrder(
@@ -627,6 +802,8 @@ class _DroneBookingSheetState extends State<DroneBookingSheet>
             ),
             const SizedBox(height: 12),
 
+            ..._parcelFields(),
+
             // Khối lượng khai báo — quyết định phí; đội bay cân lại khi nạp hàng.
             const Text(
               'Khối lượng kiện hàng',
@@ -691,13 +868,71 @@ class _DroneBookingSheetState extends State<DroneBookingSheet>
               dronePickupPolicyText(businessConfig),
               style: const TextStyle(fontSize: 12, color: Colors.grey),
             ),
-            const SizedBox(height: 20),
+            if (businessConfig.droneUnpaidCancelMinutes > 0) ...[
+              const SizedBox(height: 4),
+              Text(
+                'Đơn chưa thanh toán sau ${businessConfig.droneUnpaidCancelMinutes} '
+                'phút sẽ tự huỷ và nhả ô.',
+                style: const TextStyle(fontSize: 12, color: Colors.grey),
+              ),
+            ],
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Checkbox(
+                  key: const ValueKey('drone-prohibited-declaration'),
+                  value: _declared,
+                  onChanged: (value) =>
+                      setState(() => _declared = value ?? false),
+                ),
+                Expanded(
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTap: () => setState(() => _declared = !_declared),
+                    child: const Padding(
+                      padding: EdgeInsets.only(top: 12),
+                      child: Text(
+                        'Tôi cam kết kiện không chứa hàng cấm bay: pin rời, chất '
+                        'lỏng, chất dễ cháy nổ, hàng cấm theo pháp luật.',
+                        style: TextStyle(fontSize: 12.5),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            if (businessConfig.droneFlightsSuspended) ...[
+              const SizedBox(height: 4),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFEF3C7),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: const Color(0xFFFCD34D)),
+                ),
+                child: const Text(
+                  'Dịch vụ giao drone đang tạm dừng (thời tiết hoặc sự cố vận '
+                  'hành). Vui lòng thử lại sau.',
+                  style: TextStyle(
+                    fontSize: 12.5,
+                    color: Color(0xFFB45309),
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
+            const SizedBox(height: 12),
 
             // Confirm button
             SizedBox(
               width: double.infinity,
               child: FilledButton.icon(
-                onPressed: _submitting || _loadingDestinations || _destinationFull
+                onPressed:
+                    _submitting ||
+                        _loadingDestinations ||
+                        _destinationFull ||
+                        businessConfig.droneFlightsSuspended
                     ? null
                     : _confirm,
                 style: FilledButton.styleFrom(

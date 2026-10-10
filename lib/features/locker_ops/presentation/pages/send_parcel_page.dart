@@ -307,6 +307,73 @@ class _SendParcelPageState extends State<SendParcelPage>
         _ => 'Vừa',
       };
 
+  Future<void> _handleBack() async {
+    final order = _order;
+    if (order == null) {
+      Navigator.of(context).pop();
+      return;
+    }
+
+    final paymentStatus =
+        (order['paymentStatus'] as String? ?? 'UNPAID').toUpperCase();
+    final status = (order['status'] as String? ?? '').toUpperCase();
+    final total = order['totalPrice'];
+    final hasFee = total is num ? total > 0 : _netFee > 0;
+    final isPaid = paymentStatus == 'PAID' || status == 'STORING' || !hasFee;
+
+    if (isPaid) {
+      Navigator.of(context).pop();
+      return;
+    }
+
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+        title: const Row(
+          children: [
+            Icon(LucideIcons.triangleAlert, color: Color(0xFFEA580C)),
+            SizedBox(width: 8),
+            Text(
+              'Hủy tạo đơn hàng?',
+              style: TextStyle(fontWeight: FontWeight.w700, fontSize: 17),
+            ),
+          ],
+        ),
+        content: Text(
+          'Đơn hàng chưa được thanh toán. Nếu bạn thoát bây giờ hoặc không hoàn tất thanh toán trong vòng ${businessConfig.autoCancelUnpaidMinutes} phút, đơn hàng sẽ bị hủy và ô tủ sẽ được giải phóng.',
+          style: const TextStyle(fontSize: 14, color: opsDark, height: 1.4),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Ở lại thanh toán'),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(
+              backgroundColor: const Color(0xFFDC2626),
+            ),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Hủy đơn & Thoát'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm != true || !mounted) return;
+
+    final orderId = order['id'] as int?;
+    if (orderId != null) {
+      try {
+        await _service.cancelOrder(orderId);
+        _snack('Đã hủy đơn hàng và giải phóng ô tủ.');
+      } catch (_) {}
+    }
+    if (mounted) {
+      Navigator.of(context).pop();
+    }
+  }
+
   void _snack(String msg) {
     if (!mounted) return;
     ScaffoldMessenger.of(context)
@@ -316,21 +383,27 @@ class _SendParcelPageState extends State<SendParcelPage>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AISLShadcnTheme.navySurface,
-      body: Column(
-        children: [
-          BrandHeroHeader(
-            title: 'Gửi hàng qua tủ',
-            subtitle: 'Gửi đồ nhanh chóng & tiện lợi',
-            onBack: () => Navigator.of(context).pop(),
-          ),
-          Expanded(
-            child: _order == null ? _buildForm() : _buildResult(),
-          ),
-        ],
-      ),
-      bottomNavigationBar: _order == null ? Container(
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (didPop) return;
+        _handleBack();
+      },
+      child: Scaffold(
+        backgroundColor: AISLShadcnTheme.navySurface,
+        body: Column(
+          children: [
+            BrandHeroHeader(
+              title: 'Gửi hàng qua tủ',
+              subtitle: 'Gửi đồ nhanh chóng & tiện lợi',
+              onBack: _handleBack,
+            ),
+            Expanded(
+              child: _order == null ? _buildForm() : _buildResult(),
+            ),
+          ],
+        ),
+        bottomNavigationBar: _order == null ? Container(
         padding: EdgeInsets.only(
           left: 16,
           right: 16,
@@ -387,6 +460,7 @@ class _SendParcelPageState extends State<SendParcelPage>
           ],
         ),
       ) : null,
+      ),
     );
   }
 

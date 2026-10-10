@@ -11,6 +11,7 @@ import 'package:smart_laundry_locker/features/assistant/presentation/widgets/ass
 import 'package:smart_laundry_locker/features/drone_delivery/domain/entities/drone_delivery_stage.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/domain/entities/drone_delivery_status.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/domain/entities/drone_labels.dart';
+import 'package:smart_laundry_locker/features/drone_delivery/domain/entities/drone_parcel.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/infrastructure/models/drone_delivery_response.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/presentation/widgets/drone_delivery_detail.dart';
 import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
@@ -1143,6 +1144,11 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
     final delivered = visibleDeliveries
         .where((d) => d['deliveryStage'] == 'READY_FOR_PICKUP')
         .toList(growable: false);
+    // Đơn đã đóng mà không giao được, kiện còn chờ trả cho người gửi: việc phải làm
+    // nên luôn hiện, không phụ thuộc bộ lọc chặng.
+    final parcelReturns = _deliveries
+        .where((d) => d['parcelReturnPending'] == true)
+        .toList(growable: false);
     return RefreshIndicator(
       onRefresh: _load,
       child: ListView(
@@ -1151,6 +1157,15 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
           _buildDispatchFilters(),
           const SizedBox(height: 8),
           // ── Đơn hàng drone order-based cho đội bay ───────────────────────
+          if (parcelReturns.isNotEmpty) ...[
+            OpsSectionLabel(
+              'Chờ trả kiện cho người gửi (${parcelReturns.length})',
+              icon: Icons.assignment_return_outlined,
+            ),
+            const SizedBox(height: 8),
+            for (final order in parcelReturns) _parcelReturnCard(order),
+            const SizedBox(height: 8),
+          ],
           if (awaiting.isNotEmpty) ...[
             OpsSectionLabel(
               'Chờ tiếp nhận (${awaiting.length})',
@@ -1220,6 +1235,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
             const SizedBox(height: 8),
           ],
           if (awaiting.isNotEmpty ||
+              parcelReturns.isNotEmpty ||
               awaitingLoading.isNotEmpty ||
               readyToLaunch.isNotEmpty ||
               launching.isNotEmpty ||
@@ -1230,6 +1246,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
           ],
 
           if (awaiting.isEmpty &&
+              parcelReturns.isEmpty &&
               awaitingLoading.isEmpty &&
               readyToLaunch.isEmpty &&
               launching.isEmpty &&
@@ -1735,6 +1752,21 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                   style: const TextStyle(fontSize: 12, color: Colors.black54),
                 ),
               ],
+              if (_parcelSummary(order) != null) ...[
+                const SizedBox(height: 4),
+                Text(
+                  'Kiện: ${_parcelSummary(order)}',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: order['fragile'] == true
+                        ? const Color(0xFFB45309)
+                        : Colors.black54,
+                    fontWeight: order['fragile'] == true
+                        ? FontWeight.w700
+                        : FontWeight.w400,
+                  ),
+                ),
+              ],
               if (_advanceLabel(order) != null) ...[
                 if (order['liveTracking'] == true) ...[
                   const SizedBox(height: 8),
@@ -1766,11 +1798,46 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                   ),
                 ),
               ],
+              if (_canReportFailure(order)) ...[
+                const SizedBox(height: 8),
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    key: const ValueKey('drone-report-flight-failure'),
+                    onPressed: () => _cancelDeliveryFlow(order, inFlight: true),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: const Color(0xFFDC2626),
+                      side: const BorderSide(color: Color(0xFFDC2626)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                    icon: const Icon(Icons.report_problem_outlined, size: 16),
+                    label: const Text(
+                      'Báo chuyến bay thất bại',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
               if (action == _DeliveryAction.accept && !_isPaid(order)) ...[
                 const SizedBox(height: 8),
                 const _MiniPill(
                   icon: Icons.payments_outlined,
                   text: 'Chưa thanh toán · chưa thể tiếp nhận',
+                  color: Color(0xFFB45309),
+                ),
+              ],
+              if (action == _DeliveryAction.accept &&
+                  _isPaid(order) &&
+                  !_parcelDropped(order)) ...[
+                const SizedBox(height: 8),
+                const _MiniPill(
+                  icon: Icons.inventory_2_outlined,
+                  text: 'Người gửi chưa bỏ kiện vào ô gửi · chưa thể tiếp nhận',
                   color: Color(0xFFB45309),
                 ),
               ],
@@ -1842,7 +1909,10 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
     if (action == _DeliveryAction.launching) return false;
     if (action == _DeliveryAction.track) return true;
     // Quy tắc backend: chưa PAID thì accept bị từ chối (DRONE_ORDER_UNPAID).
-    if (action == _DeliveryAction.accept) return _isPaid(order);
+    // …và người gửi chưa bỏ kiện vào ô gửi thì cũng bị từ chối (DRONE_PARCEL_NOT_DROPPED).
+    if (action == _DeliveryAction.accept) {
+      return _isPaid(order) && _parcelDropped(order);
+    }
     // Kiện nặng hơn khai báo làm đơn nợ phí chênh: chưa trả thì chưa phóng
     // (DRONE_SURCHARGE_UNPAID).
     if (action == _DeliveryAction.launch && !_isPaid(order)) return false;
@@ -1864,6 +1934,19 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
     if (order['assignedByUserId'] == null || !_ownsMission(order)) return null;
     return _nextStageLabels['${order['deliveryStage']}'];
   }
+
+  /// Chuyến bay đã phóng (kể cả đơn DEMO) mà không giao được: chỉ điều phối viên
+  /// đã nhận nhiệm vụ được báo — khớp `reportFlightFailure` ở backend.
+  bool _canReportFailure(Map<String, dynamic> order) =>
+      order['assignedByUserId'] != null &&
+      _ownsMission(order) &&
+      const {
+        'LAUNCHING',
+        'DEPARTED',
+        'EN_ROUTE',
+        'APPROACHING',
+        'ARRIVED',
+      }.contains('${order['deliveryStage']}');
 
   Future<void> _advanceFlow(Map<String, dynamic> order) async {
     final orderId = _asInt(order['orderId']);
@@ -1893,6 +1976,157 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
     await _run(
       () => _service.advanceDroneOrder(orderId),
       'Đã xác nhận: $label',
+    );
+  }
+
+  /// Server cũ chưa theo dõi mốc bỏ kiện (không trả `parcelReturnPending`) thì
+  /// không chặn tiếp nhận ở client.
+  bool _parcelDropped(Map<String, dynamic> order) =>
+      order['parcelReturnPending'] == null || order['parcelDroppedAt'] != null;
+
+  /// `Điện tử · 30 × 20 × 10 cm · DỄ VỠ`; null khi đơn không có khai báo kiện.
+  String? _parcelSummary(Map<String, dynamic> order) {
+    final category = order['parcelCategory']?.toString();
+    final size = droneParcelSizeLabel(
+      _asInt(order['parcelLengthCm']),
+      _asInt(order['parcelWidthCm']),
+      _asInt(order['parcelHeightCm']),
+    );
+    final parts = [
+      if (category != null && category.isNotEmpty)
+        droneParcelCategoryLabel(category),
+      ?size,
+      if (order['declaredValue'] != null)
+        'khai báo ${fmtPrice(order['declaredValue'])}',
+      if (order['fragile'] == true) 'DỄ VỠ',
+    ];
+    return parts.isEmpty ? null : parts.join(' · ');
+  }
+
+  /// Đơn không giao được mà kiện chờ trả: ai, kiện ở đâu, nút xác nhận đã trả.
+  Widget _parcelReturnCard(Map<String, dynamic> order) {
+    final orderId = _asInt(order['orderId']);
+    final sourceBox = _asInt(order['sourceBoxNumber']);
+    final inSourceBox = '${order['parcelHeldAt']}'.toUpperCase() == 'SOURCE_BOX';
+    final sender = [
+      order['customerName'],
+      order['customerPhone'],
+    ].where((v) => v != null && '$v'.trim().isNotEmpty).join(' · ');
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: orderId == null ? null : () => _showDeliveryDetail(orderId),
+        child: Container(
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: const Color(0xFFB45309).withValues(alpha: 0.4),
+            ),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                '${order['orderCode'] ?? 'Đơn #$orderId'} · '
+                '${DroneDeliveryStage.fromRaw(order['deliveryStage']?.toString()) == DroneDeliveryStage.failed ? 'chuyến bay thất bại' : 'đã huỷ'}',
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                  color: opsDark,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                inSourceBox
+                    ? 'Kiện còn trong ô gửi${sourceBox == null ? '' : ' số $sourceBox'} · '
+                          '${_lockerPointName(order['sourceLocker'], order['sourceLockerId'], 'Tủ gửi')}'
+                    : 'Kiện đang do đội bay giữ',
+                style: const TextStyle(fontSize: 12, color: Colors.black54),
+              ),
+              if (sender.isNotEmpty) ...[
+                const SizedBox(height: 4),
+                Text(
+                  'Người gửi: $sender',
+                  style: const TextStyle(fontSize: 12, color: Colors.black54),
+                ),
+              ],
+              const SizedBox(height: 10),
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton.icon(
+                  key: ValueKey('drone-parcel-return-$orderId'),
+                  onPressed: orderId != null && _ownsMission(order)
+                      ? () => _confirmParcelReturnFlow(order)
+                      : null,
+                  style: FilledButton.styleFrom(
+                    backgroundColor: const Color(0xFFB45309),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  icon: const Icon(Icons.assignment_turned_in_outlined, size: 16),
+                  label: const Text(
+                    'Xác nhận đã trả kiện',
+                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _confirmParcelReturnFlow(Map<String, dynamic> order) async {
+    final orderId = _asInt(order['orderId']);
+    if (orderId == null) return;
+    final noteCtrl = TextEditingController();
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Text('Xác nhận đã trả kiện'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Chỉ xác nhận khi kiện đã về tay người gửi. Ô gửi còn giữ cho đơn '
+              'này sẽ được nhả.',
+              style: TextStyle(fontSize: 13),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: noteCtrl,
+              minLines: 1,
+              maxLines: 3,
+              decoration: const InputDecoration(
+                labelText: 'Ghi chú (tùy chọn)',
+                isDense: true,
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Chưa'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Đã trả kiện'),
+          ),
+        ],
+      ),
+    );
+    if (ok != true) return;
+    await _run(
+      () => _service.confirmDroneParcelReturn(orderId, note: noteCtrl.text),
+      'Đã ghi nhận trả kiện cho người gửi',
     );
   }
 
@@ -2166,7 +2400,11 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
     await _load();
   }
 
-  Future<void> _cancelDeliveryFlow(Map<String, dynamic> order) async {
+  /// [inFlight] = drone đã phóng: báo chuyến bay thất bại thay vì huỷ trước khi bay.
+  Future<void> _cancelDeliveryFlow(
+    Map<String, dynamic> order, {
+    bool inFlight = false,
+  }) async {
     final orderId = _asInt(order['orderId']);
     if (orderId == null) return;
     final noteCtrl = TextEditingController();
@@ -2179,11 +2417,21 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
           ),
-          title: const Text('Hủy nhiệm vụ trước khi bay'),
+          title: Text(
+            inFlight ? 'Báo chuyến bay thất bại' : 'Hủy nhiệm vụ trước khi bay',
+          ),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              if (inFlight) ...[
+                const Text(
+                  'Đơn sẽ đóng lại và khách được hoàn tiền; drone chuyển sang '
+                  'trạng thái lỗi cho tới khi bạn kiểm tra xong. Không hoàn tác được.',
+                  style: TextStyle(fontSize: 13, color: Colors.black87),
+                ),
+                const SizedBox(height: 12),
+              ],
               Wrap(
                 spacing: 8,
                 runSpacing: 8,
@@ -2235,7 +2483,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                 }
                 Navigator.pop(ctx, true);
               },
-              child: const Text('Xác nhận hủy'),
+              child: Text(inFlight ? 'Xác nhận thất bại' : 'Xác nhận hủy'),
             ),
           ],
         ),
@@ -2246,13 +2494,22 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
       return;
     }
 
+    final note = noteCtrl.text.trim().isEmpty ? null : noteCtrl.text.trim();
     await _run(
-      () => _service.cancelDroneOrder(
-        orderId,
-        reasonCode: selectedReason.code,
-        note: noteCtrl.text.trim().isEmpty ? null : noteCtrl.text.trim(),
-      ),
-      'Đã hủy nhiệm vụ drone',
+      () => inFlight
+          ? _service.failDroneOrder(
+              orderId,
+              reasonCode: selectedReason.code,
+              note: note,
+            )
+          : _service.cancelDroneOrder(
+              orderId,
+              reasonCode: selectedReason.code,
+              note: note,
+            ),
+      inFlight
+          ? 'Đã báo chuyến bay thất bại · khách được hoàn tiền'
+          : 'Đã hủy nhiệm vụ drone',
     );
   }
 

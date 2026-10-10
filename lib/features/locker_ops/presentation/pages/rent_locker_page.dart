@@ -12,6 +12,7 @@ import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/lo
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/ops_widgets.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/order_extras.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/order_payment_sheet.dart';
+import 'package:smart_laundry_locker/features/locker/domain/utils/locker_layout_helper.dart';
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
 import 'package:smart_laundry_locker/shared/shared.dart';
 
@@ -240,8 +241,8 @@ class _RentLockerPageState extends State<RentLockerPage>
           if (c['status'] == 'AVAILABLE') {
             final type = (c['cellType'] as String?)?.toUpperCase();
             final boxNum = (c['boxNumber'] as num?)?.toInt();
-            final col = (c['colIndex'] as num?)?.toInt();
-            if (type == 'XL' || boxNum == 1 || col == 0) {
+            final map = c is Map<String, dynamic> ? c : Map<String, dynamic>.from(c as Map);
+            if (LockerLayoutHelper.isXl(map)) {
               xl++;
             } else if (type == 'STANDARD' || (type != 'DRONE' && boxNum != 2 && boxNum != 3)) {
               std++;
@@ -403,6 +404,73 @@ class _RentLockerPageState extends State<RentLockerPage>
     }
   }
 
+  Future<void> _handleBack() async {
+    final order = _order;
+    if (order == null) {
+      Navigator.of(context).pop();
+      return;
+    }
+
+    final paymentStatus =
+        (order['paymentStatus'] as String? ?? 'UNPAID').toUpperCase();
+    final status = (order['status'] as String? ?? '').toUpperCase();
+    final total = order['totalPrice'];
+    final hasFee = total is num ? total > 0 : _netPrice > 0;
+    final isPaid = paymentStatus == 'PAID' || status == 'STORING' || !hasFee;
+
+    if (isPaid) {
+      Navigator.of(context).pop();
+      return;
+    }
+
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+        title: const Row(
+          children: [
+            Icon(LucideIcons.triangleAlert, color: Color(0xFFEA580C)),
+            SizedBox(width: 8),
+            Text(
+              'Hủy tạo đơn thuê tủ?',
+              style: TextStyle(fontWeight: FontWeight.w700, fontSize: 17),
+            ),
+          ],
+        ),
+        content: Text(
+          'Đơn thuê tủ chưa được thanh toán. Nếu bạn thoát bây giờ hoặc không hoàn tất thanh toán trong vòng ${businessConfig.autoCancelUnpaidMinutes} phút, đơn sẽ bị hủy và ô tủ sẽ được giải phóng.',
+          style: const TextStyle(fontSize: 14, color: opsDark, height: 1.4),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Ở lại thanh toán'),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(
+              backgroundColor: const Color(0xFFDC2626),
+            ),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Hủy đơn & Thoát'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm != true || !mounted) return;
+
+    final orderId = order['id'] as int?;
+    if (orderId != null) {
+      try {
+        await _service.cancelOrder(orderId);
+        _snack('Đã hủy đơn thuê tủ và giải phóng ô tủ.');
+      } catch (_) {}
+    }
+    if (mounted) {
+      Navigator.of(context).pop();
+    }
+  }
+
   void _snack(String msg) {
     if (!mounted) return;
     ScaffoldMessenger.of(context)
@@ -420,21 +488,27 @@ class _RentLockerPageState extends State<RentLockerPage>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AISLShadcnTheme.navySurface,
-      body: Column(
-        children: [
-          BrandHeroHeader(
-            title: 'Thuê tủ giữ đồ',
-            subtitle: 'Chọn điểm tủ & thời gian sử dụng',
-            onBack: () => Navigator.of(context).pop(),
-          ),
-          Expanded(
-            child: _order == null ? _buildForm() : _buildResult(),
-          ),
-        ],
-      ),
-      bottomNavigationBar: _order == null ? Container(
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (didPop) return;
+        _handleBack();
+      },
+      child: Scaffold(
+        backgroundColor: AISLShadcnTheme.navySurface,
+        body: Column(
+          children: [
+            BrandHeroHeader(
+              title: 'Thuê tủ giữ đồ',
+              subtitle: 'Chọn điểm tủ & thời gian sử dụng',
+              onBack: _handleBack,
+            ),
+            Expanded(
+              child: _order == null ? _buildForm() : _buildResult(),
+            ),
+          ],
+        ),
+        bottomNavigationBar: _order == null ? Container(
         padding: EdgeInsets.only(
           left: 16,
           right: 16,
@@ -465,6 +539,7 @@ class _RentLockerPageState extends State<RentLockerPage>
           ],
         ),
       ) : null,
+      ),
     );
   }
 

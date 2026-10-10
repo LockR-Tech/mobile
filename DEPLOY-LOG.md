@@ -5,6 +5,11 @@ Do workflow `deploy-web.yml` tự ghi sau mỗi lần chạy, kể cả khi th�
 
 | Thời điểm (UTC) | Kết quả | Commit | Người đẩy | Ghi chú |
 |---|---|---|---|---|
+| 2026-10-09 18:46 | failure | [`52b5043`](https://github.com/LockR-Tech/mobile/commit/52b5043adaa19f98d4e3b76a62ce71b0d02ccc6b) | @TruongNguyenThaiBinh77 | THẤT BẠI — xem run 37975400186 |
+| 2026-10-09 16:51 | failure | [`976ac6f`](https://github.com/LockR-Tech/mobile/commit/976ac6fc328a8faea7db2d8040836705f7780bb3) | @TruongNguyenThaiBinh77 | THẤT BẠI — xem run 37961918465 |
+| 2026-10-09 15:03 | failure | [`dcb6877`](https://github.com/LockR-Tech/mobile/commit/dcb6877f05e1628dbc4258d2366ea077bbad338f) | @LeThiYenVi | THẤT BẠI — xem run 37948525849 |
+| 2026-10-09 13:40 | failure | [`9a22dd2`](https://github.com/LockR-Tech/mobile/commit/9a22dd2e26e6c2621d508e47392a9f05c96275f0) | @TruongNguyenThaiBinh77 | THẤT BẠI — xem run 37938290540 |
+| 2026-10-09 11:06 | failure | [`629cd5e`](https://github.com/LockR-Tech/mobile/commit/629cd5e7ae601d59dc4f1ec2225031d8017ee828) | @Kimnha01 | THẤT BẠI — xem run 37921485118 |
 | 2026-10-07 10:27 | failure | [`ee2b19c`](https://github.com/LockR-Tech/mobile/commit/ee2b19c8055fadf16dfcbb66fac297ae78135b3c) | @TruongNguyenThaiBinh77 | THẤT BẠI — xem run 37607337322 |
 | 2026-10-07 09:56 | failure | [`32f440d`](https://github.com/LockR-Tech/mobile/commit/32f440d5f4c747e543087918445faf94cf9c3a42) | @LeThiYenVi | THẤT BẠI — xem run 37603841393 |
 | 2026-10-07 08:30 | failure | [`1120706`](https://github.com/LockR-Tech/mobile/commit/11207060d308b43e4ab020df99489266bf009388) | @TruongNguyenThaiBinh77 | THẤT BẠI — xem run 37593797884 |
