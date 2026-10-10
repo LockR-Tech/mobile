@@ -89,6 +89,13 @@ void main() {
   });
 
   group('technician notification routing', () {
+    test('parcel recovery assignment opens recovery tab', () {
+      expect(
+        technicianRouteForNotification('DRONE_PARCEL_RECOVERY_ASSIGNED'),
+        '/technician-home?tab=recovery',
+      );
+      expect(technicianTabIndex('recovery'), 5);
+    });
     test('ticket routed to my locker opens the incidents tab', () {
       expect(
         technicianRouteForNotification('locker.report.routed'),
