@@ -60,8 +60,10 @@ class _CompleteInspectionSheetState extends State<CompleteInspectionSheet> {
   static const _accent = Color(0xFF16A34A);
 
   late final List<String> _items = inspectionChecklistItems(widget.schedule);
-  late final List<InspectionResult?> _results =
-      List<InspectionResult?>.filled(_items.length, null);
+  late final List<InspectionResult?> _results = List<InspectionResult?>.filled(
+    _items.length,
+    null,
+  );
   late final List<TextEditingController> _itemNotes = [
     for (var i = 0; i < _items.length; i++) TextEditingController(),
   ];
@@ -86,11 +88,14 @@ class _CompleteInspectionSheetState extends State<CompleteInspectionSheet> {
 
   int get _answered => _results.whereType<InspectionResult>().length;
 
-  bool get _complete => _hasChecklist ? _answered == _items.length : _overall != null;
+  bool get _complete =>
+      _hasChecklist ? _answered == _items.length : _overall != null;
 
   bool get _failed => _hasChecklist
       ? _results.contains(InspectionResult.fail)
       : _overall == InspectionResult.fail;
+
+  bool get _isDrone => widget.schedule['droneUnitId'] != null;
 
   int? get _lockerId => _asInt(widget.schedule['lockerId']);
 
@@ -121,7 +126,13 @@ class _CompleteInspectionSheetState extends State<CompleteInspectionSheet> {
   /// Danh sách ô để chọn ô hỏng — chỉ tải khi lần kiểm tra có mục Không đạt.
   Future<void> _ensureCells() async {
     final lockerId = _lockerId;
-    if (!_failed || lockerId == null || _cells != null || _cellsLoading) return;
+    if (_isDrone ||
+        !_failed ||
+        lockerId == null ||
+        _cells != null ||
+        _cellsLoading) {
+      return;
+    }
     final preloaded = widget.lockerCells;
     if (preloaded != null) {
       setState(() => _cells = _sortedCells(preloaded));
@@ -133,7 +144,8 @@ class _CompleteInspectionSheetState extends State<CompleteInspectionSheet> {
     });
     try {
       final layout = await widget.service.layout(lockerId);
-      final cells = (layout['cells'] as List?)
+      final cells =
+          (layout['cells'] as List?)
               ?.whereType<Map>()
               .map((c) => Map<String, dynamic>.from(c))
               .toList() ??
@@ -149,11 +161,11 @@ class _CompleteInspectionSheetState extends State<CompleteInspectionSheet> {
   }
 
   List<Map<String, dynamic>> _sortedCells(List<Map<String, dynamic>> cells) =>
-      cells.where((c) => _asInt(c['id']) != null).toList()
-        ..sort(
-          (a, b) => (_asInt(a['boxNumber']) ?? 0)
-              .compareTo(_asInt(b['boxNumber']) ?? 0),
-        );
+      cells.where((c) => _asInt(c['id']) != null).toList()..sort(
+        (a, b) => (_asInt(a['boxNumber']) ?? 0).compareTo(
+          _asInt(b['boxNumber']) ?? 0,
+        ),
+      );
 
   Future<void> _submit() async {
     final id = _asInt(widget.schedule['id']);
@@ -207,17 +219,23 @@ class _CompleteInspectionSheetState extends State<CompleteInspectionSheet> {
   @override
   Widget build(BuildContext context) {
     final s = widget.schedule;
-    final title = s['title'] ?? 'Kiểm tra định kỳ Kiosk';
+    final isDrone = s['droneUnitId'] != null;
+    final title =
+        s['title'] ??
+        (isDrone ? 'Bảo trì định kỳ Drone' : 'Kiểm tra định kỳ Kiosk');
     final lockerCode = s['lockerCode'];
     final lockerName = s['lockerName'];
-    final lockerLabel =
-        '${lockerName ?? "Tủ Kiosk"}${lockerCode != null ? " ($lockerCode)" : ""}';
+    final targetLabel = isDrone
+        ? 'Drone ${s['droneCode'] ?? s['droneUnitId'] ?? '—'}'
+        : '${lockerName ?? "Tủ Kiosk"}${lockerCode != null ? " ($lockerCode)" : ""}';
     final intervalDays = s['intervalDays'] ?? 30;
     final address = s['address']?.toString() ?? '';
     final locationNote = s['locationNote']?.toString() ?? '';
 
     return Padding(
-      padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+      padding: EdgeInsets.only(
+        bottom: MediaQuery.of(context).viewInsets.bottom,
+      ),
       child: SafeArea(
         top: false,
         child: SingleChildScrollView(
@@ -265,7 +283,7 @@ class _CompleteInspectionSheetState extends State<CompleteInspectionSheet> {
                           ),
                         ),
                         Text(
-                          '$title · $lockerLabel',
+                          '$title · $targetLabel',
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
@@ -298,7 +316,7 @@ class _CompleteInspectionSheetState extends State<CompleteInspectionSheet> {
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        lockerLabel,
+                        targetLabel,
                         style: const TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.bold,
@@ -404,7 +422,7 @@ class _CompleteInspectionSheetState extends State<CompleteInspectionSheet> {
               ],
               const SizedBox(height: 10),
               _verdictBanner(intervalDays),
-              if (_failed && _lockerId != null) ...[
+              if (_failed && !isDrone && _lockerId != null) ...[
                 const SizedBox(height: 12),
                 _faultSection(),
               ],
@@ -418,8 +436,9 @@ class _CompleteInspectionSheetState extends State<CompleteInspectionSheet> {
                 maxLines: 4,
                 decoration: InputDecoration(
                   labelText: 'Ghi chú biên bản kiểm tra (tuỳ chọn)',
-                  hintText:
-                      'Tình trạng chung, vệ sinh ô tủ, linh kiện đã thay nếu có...',
+                  hintText: isDrone
+                      ? 'Tình trạng pin, động cơ, cánh quạt, cảm biến hoặc linh kiện đã thay...'
+                      : 'Tình trạng chung, vệ sinh ô tủ, linh kiện đã thay nếu có...',
                   isDense: true,
                   alignLabelWithHint: true,
                   border: OutlineInputBorder(
@@ -440,9 +459,11 @@ class _CompleteInspectionSheetState extends State<CompleteInspectionSheet> {
                 ),
               ),
               const SizedBox(height: 4),
-              const Text(
-                'Chụp ảnh toàn cảnh tủ, ổ khóa hoặc linh kiện vừa kiểm tra để lưu hồ sơ đối soát.',
-                style: TextStyle(fontSize: 11.5, color: opsMutedText),
+              Text(
+                isDrone
+                    ? 'Chụp ảnh Drone, pin hoặc linh kiện vừa kiểm tra để lưu hồ sơ đối soát.'
+                    : 'Chụp ảnh toàn cảnh tủ, ổ khóa hoặc linh kiện vừa kiểm tra để lưu hồ sơ đối soát.',
+                style: const TextStyle(fontSize: 11.5, color: opsMutedText),
               ),
               const SizedBox(height: 8),
               PhotoPickerField(
@@ -518,7 +539,9 @@ class _CompleteInspectionSheetState extends State<CompleteInspectionSheet> {
                               size: 18,
                             ),
                       label: Text(
-                        _submitting ? 'Đang cập nhật...' : 'Xác nhận hoàn thành',
+                        _submitting
+                            ? 'Đang cập nhật...'
+                            : 'Xác nhận hoàn thành',
                         style: const TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 14,
@@ -603,10 +626,7 @@ class _CompleteInspectionSheetState extends State<CompleteInspectionSheet> {
                   padding: EdgeInsets.zero,
                 ),
                 icon: const Icon(Icons.edit_note, size: 16),
-                label: const Text(
-                  'Ghi chú',
-                  style: TextStyle(fontSize: 11.5),
-                ),
+                label: const Text('Ghi chú', style: TextStyle(fontSize: 11.5)),
               ),
             ),
         ],
@@ -681,7 +701,8 @@ class _CompleteInspectionSheetState extends State<CompleteInspectionSheet> {
     return OpsBanner(
       tone: OpsBannerTone.success,
       icon: Icons.verified_outlined,
-      text: 'Kết quả: ĐẠT — hạn kiểm tra kế tiếp dời sang $intervalDays ngày sau.',
+      text:
+          'Kết quả: ĐẠT — hạn kiểm tra kế tiếp dời sang $intervalDays ngày sau.',
     );
   }
 
