@@ -277,9 +277,51 @@ class _FakeMaintenanceService extends LockerOpsService {
 
 void main() {
   setUp(() {
+    createMockApiClient();
     mockSecureStorage({
       'access_token': makeFakeJwt(sub: '99', roles: ['DRONE_TECHNICIAN']),
     });
+  });
+
+  testWidgets('drone technician confirms before logging out', (tester) async {
+    final service = _FakeMaintenanceService();
+    final router = GoRouter(
+      routes: [
+        GoRoute(
+          path: '/',
+          builder: (context, state) => MaintenanceHomePage(service: service),
+        ),
+        GoRoute(
+          path: '/onboarding',
+          builder: (context, state) => const Scaffold(body: Text('Onboarding')),
+        ),
+      ],
+    );
+
+    await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byTooltip('Đăng xuất'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Đăng xuất ca trực'), findsOneWidget);
+    expect(
+      find.text(
+        'Bạn có chắc chắn muốn kết thúc ca trực và đăng xuất khỏi tài khoản KTV Drone không?',
+      ),
+      findsOneWidget,
+    );
+
+    await tester.tap(find.widgetWithText(TextButton, 'Hủy'));
+    await tester.pumpAndSettle();
+    expect(find.text('Onboarding'), findsNothing);
+
+    await tester.tap(find.byTooltip('Đăng xuất'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(ElevatedButton, 'Đăng xuất'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Onboarding'), findsOneWidget);
   });
 
   testWidgets('renders order-based drone queue and accepts awaiting order', (
