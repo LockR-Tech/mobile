@@ -23,6 +23,7 @@ import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/pages/technician_profile_page.dart';
 import 'package:smart_laundry_locker/core/services/app_event_bus.dart';
 import 'package:smart_laundry_locker/features/locker/domain/utils/locker_layout_helper.dart';
+import 'package:smart_laundry_locker/features/maintenance/presentation/widgets/drone_recovery_queue.dart';
 
 /// Home for the LOCKER_TECHNICIAN role (kỹ thuật viên tủ): physical locker
 /// maintenance (fault cells, work queue, preventive schedules, landing pad)
@@ -42,9 +43,9 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
     with SingleTickerProviderStateMixin {
   final _service = LockerOpsService();
   late final TabController _tabs = TabController(
-    length: 5,
+    length: 6,
     vsync: this,
-    initialIndex: widget.initialTab.clamp(0, 4),
+    initialIndex: widget.initialTab.clamp(0, 5),
   );
 
   List<Map<String, dynamic>> _faults = [];
@@ -52,6 +53,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
   List<Map<String, dynamic>> _myReports = [];
   // Phiếu OPEN của các tủ mình phụ trách, chờ mình nhận (`reports?routed=true`).
   List<Map<String, dynamic>> _routedReports = [];
+  List<Map<String, dynamic>> _droneRecoveries = [];
   // Tủ mình phụ trách (`lockers?mine=true`).
   List<Map<String, dynamic>> _myLockers = [];
   String _queueView = 'ALL';
@@ -156,7 +158,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
     super.didUpdateWidget(oldWidget);
     // Bấm noti khi đang ở sẵn trang này ⇒ chỉ đổi tab.
     if (widget.initialTab != oldWidget.initialTab) {
-      _tabs.animateTo(widget.initialTab.clamp(0, 4));
+      _tabs.animateTo(widget.initialTab.clamp(0, 5));
     }
   }
 
@@ -184,6 +186,11 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
       List<Map<String, dynamic>> rawRouted = [];
       try {
         rawRouted = await _service.routedReports();
+      } catch (_) {}
+
+      List<Map<String, dynamic>> droneRecoveries = [];
+      try {
+        droneRecoveries = await _service.droneRecoveries();
       } catch (_) {}
 
       List<Map<String, dynamic>> lockers = [];
@@ -216,6 +223,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
         _reports = kioskAllReports;
         _myReports = myReportsList;
         _routedReports = sortedRouted;
+        _droneRecoveries = droneRecoveries;
         _lockers = lockers;
         _myLockers = myLockers;
       });
@@ -1537,6 +1545,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                 Tab(text: 'Việc của tôi ($mineCount)'),
                 Tab(text: 'Định kỳ (${kioskSchedules.length})'),
                 Tab(text: 'Thiết bị IoT (${_devices.length})'),
+                Tab(text: 'Thu hồi kiện (${_droneRecoveries.length})'),
               ],
             ),
           ),
@@ -1553,6 +1562,11 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                       _buildMine(),
                       _buildSchedules(),
                       _buildIotDevices(),
+                      DroneRecoveryQueue(
+                        items: _droneRecoveries,
+                        service: _service,
+                        onRefresh: _load,
+                      ),
                     ],
                   ),
           ),
