@@ -121,11 +121,30 @@ class _ScheduleDetailModalSheetState extends State<ScheduleDetailModalSheet> {
     if (firstRune > 0x2000) return trimmed;
     final lower = trimmed.toLowerCase();
     if (lower.contains('khóa') || lower.contains('khoa')) return '🔒 $trimmed';
-    if (lower.contains('cảm biến') || lower.contains('cam bien')) return '⚡ $trimmed';
-    if (lower.contains('nguồn') || lower.contains('pin') || lower.contains('ups')) return '🔋 $trimmed';
-    if (lower.contains('màn hình') || lower.contains('camera') || lower.contains('qr')) return '📱 $trimmed';
-    if (lower.contains('kết nối') || lower.contains('iot') || lower.contains('wifi') || lower.contains('4g')) return '📶 $trimmed';
-    if (lower.contains('vệ sinh') || lower.contains('ngoại quan') || lower.contains('sạch sẽ')) return '🧹 $trimmed';
+    if (lower.contains('cảm biến') || lower.contains('cam bien')) {
+      return '⚡ $trimmed';
+    }
+    if (lower.contains('nguồn') ||
+        lower.contains('pin') ||
+        lower.contains('ups')) {
+      return '🔋 $trimmed';
+    }
+    if (lower.contains('màn hình') ||
+        lower.contains('camera') ||
+        lower.contains('qr')) {
+      return '📱 $trimmed';
+    }
+    if (lower.contains('kết nối') ||
+        lower.contains('iot') ||
+        lower.contains('wifi') ||
+        lower.contains('4g')) {
+      return '📶 $trimmed';
+    }
+    if (lower.contains('vệ sinh') ||
+        lower.contains('ngoại quan') ||
+        lower.contains('sạch sẽ')) {
+      return '🧹 $trimmed';
+    }
     return '📋 $trimmed';
   }
 
@@ -181,11 +200,15 @@ class _ScheduleDetailModalSheetState extends State<ScheduleDetailModalSheet> {
   @override
   Widget build(BuildContext context) {
     final s = widget.schedule;
+    final isDrone = s['droneUnitId'] != null;
     final lockerCode = s['lockerCode'];
     final lockerName = s['lockerName'];
-    final targetLabel =
-        '${lockerName ?? "Trạm Kiosk"}${lockerCode != null ? " ($lockerCode)" : ""}';
-    final lastDone = s['lastDoneAt'] != null ? _formatDateTime(s['lastDoneAt']) : null;
+    final targetLabel = isDrone
+        ? 'Drone ${s['droneCode'] ?? s['droneUnitId'] ?? '—'}'
+        : '${lockerName ?? "Trạm Kiosk"}${lockerCode != null ? " ($lockerCode)" : ""}';
+    final lastDone = s['lastDoneAt'] != null
+        ? _formatDateTime(s['lastDoneAt'])
+        : null;
     final id = _asInt(s['id']);
     final rem = _remainingInfo(s['nextDueAt']);
     final due = s['due'] == true;
@@ -195,15 +218,20 @@ class _ScheduleDetailModalSheetState extends State<ScheduleDetailModalSheet> {
     final blockedReason = pendingReportId != null
         ? 'Lần trước không đạt — hoàn tất phiếu RPT-$pendingReportId trước khi kiểm tra lại.'
         : assignedId != null && !assignedToMe
-            ? 'Lịch do KTV khác phụ trách.'
-            : null;
+        ? 'Lịch do KTV khác phụ trách.'
+        : null;
 
     final rawPriority = (s['priority'] ?? 'NORMAL').toString().toUpperCase();
     final (priorityLabel, priorityColor) = switch (rawPriority) {
       'URGENT' => ('Khẩn cấp', const Color(0xFFDC2626)),
       'HIGH' => ('Cao', const Color(0xFFEA580C)),
       'LOW' => ('Thấp', const Color(0xFF64748B)),
-      _ => ('Bình thường (Trạm tiêu chuẩn)', const Color(0xFF0284C7)),
+      _ => (
+        isDrone
+            ? 'Bình thường (Drone tiêu chuẩn)'
+            : 'Bình thường (Trạm tiêu chuẩn)',
+        const Color(0xFF0284C7),
+      ),
     };
 
     final checklistItems = inspectionChecklistItems(s);
@@ -212,7 +240,8 @@ class _ScheduleDetailModalSheetState extends State<ScheduleDetailModalSheet> {
     final timeSlot = (s['scheduledTimeSlot'] ?? '').toString().trim();
 
     // Dữ liệu đánh giá của lần kiểm tra trước (từ log hoặc trực tiếp từ lịch)
-    final hasPreviousRecord = s['lastDoneAt'] != null ||
+    final hasPreviousRecord =
+        s['lastDoneAt'] != null ||
         s['lastResult'] != null ||
         _latestLog != null;
     final rawLogStatus = (_latestLog?['status'] ?? s['lastResult'] ?? 'PASSED')
@@ -220,9 +249,10 @@ class _ScheduleDetailModalSheetState extends State<ScheduleDetailModalSheet> {
         .toUpperCase();
     final isPassed = rawLogStatus != 'FAILED' && rawLogStatus != 'FAIL';
     final logCreatedAt = _latestLog?['createdAt'] ?? s['lastDoneAt'];
-    final logTechName = _latestLog?['technicianName'] ??
+    final logTechName =
+        _latestLog?['technicianName'] ??
         s['assignedTechnicianName'] ??
-        'Kỹ thuật viên Kiosk';
+        (isDrone ? 'Kỹ thuật viên Drone' : 'Kỹ thuật viên Kiosk');
 
     // Checklist 6 hạng mục SOP tiêu chuẩn trạm tủ Kiosk
     const defaultKioskChecklist = [
@@ -232,6 +262,14 @@ class _ScheduleDetailModalSheetState extends State<ScheduleDetailModalSheet> {
       '🔋 Kiểm tra nguồn cấp & pin lưu điện UPS',
       '📱 Màn hình cảm ứng & camera / quét QR',
       '📶 Tín hiệu kết nối IoT 4G / WiFi ổn định',
+    ];
+    const defaultDroneChecklist = [
+      '🛩️ Kiểm tra thân vỏ, càng đáp và cánh quạt',
+      '🔋 Kiểm tra pin, đầu nối và chu kỳ sạc',
+      '⚙️ Kiểm tra động cơ và độ rung bất thường',
+      '🧭 Kiểm tra GPS, IMU và cảm biến độ cao',
+      '📡 Kiểm tra kết nối điều khiển và telemetry',
+      '📷 Kiểm tra camera, tải trọng và cơ cấu thả hàng',
     ];
 
     // Xây dựng danh sách chi tiết từng hạng mục để hiển thị trong mục Kết quả kiểm tra lần trước
@@ -252,8 +290,9 @@ class _ScheduleDetailModalSheetState extends State<ScheduleDetailModalSheet> {
         }
       }
     } else if (hasPreviousRecord) {
-      final baseItems =
-          checklistItems.isNotEmpty ? checklistItems : defaultKioskChecklist;
+      final baseItems = checklistItems.isNotEmpty
+          ? checklistItems
+          : (isDrone ? defaultDroneChecklist : defaultKioskChecklist);
       for (final item in baseItems) {
         itemsToShow.add({
           'label': item,
@@ -294,12 +333,18 @@ class _ScheduleDetailModalSheetState extends State<ScheduleDetailModalSheet> {
                         children: [
                           Container(
                             padding: const EdgeInsets.symmetric(
-                                horizontal: 7, vertical: 2.5),
+                              horizontal: 7,
+                              vertical: 2.5,
+                            ),
                             decoration: BoxDecoration(
-                              color: const Color(0xFF7C3AED).withValues(alpha: 0.12),
+                              color: const Color(
+                                0xFF7C3AED,
+                              ).withValues(alpha: 0.12),
                               borderRadius: BorderRadius.circular(6),
                               border: Border.all(
-                                color: const Color(0xFF7C3AED).withValues(alpha: 0.25),
+                                color: const Color(
+                                  0xFF7C3AED,
+                                ).withValues(alpha: 0.25),
                               ),
                             ),
                             child: Text(
@@ -327,14 +372,18 @@ class _ScheduleDetailModalSheetState extends State<ScheduleDetailModalSheet> {
                           const SizedBox(width: 8),
                           Container(
                             padding: const EdgeInsets.symmetric(
-                                horizontal: 7, vertical: 2),
+                              horizontal: 7,
+                              vertical: 2,
+                            ),
                             decoration: BoxDecoration(
-                              color: const Color(0xFF0284C7).withValues(alpha: 0.1),
+                              color: const Color(
+                                0xFF0284C7,
+                              ).withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(6),
                             ),
-                            child: const Text(
-                              'Định kỳ Kiosk',
-                              style: TextStyle(
+                            child: Text(
+                              isDrone ? 'Định kỳ Drone' : 'Định kỳ Kiosk',
+                              style: const TextStyle(
                                 fontSize: 11,
                                 fontWeight: FontWeight.w600,
                                 color: Color(0xFF0284C7),
@@ -382,25 +431,32 @@ class _ScheduleDetailModalSheetState extends State<ScheduleDetailModalSheet> {
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Icon(Icons.event_repeat,
-                            size: 20, color: Color(0xFF7C3AED)),
+                        const Icon(
+                          Icons.event_repeat,
+                          size: 20,
+                          color: Color(0xFF7C3AED),
+                        ),
                         const SizedBox(width: 10),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
-                            children: const [
+                            children: [
                               Text(
-                                'Kế hoạch kiểm tra bảo trì định kỳ Kiosk',
-                                style: TextStyle(
-                                   fontWeight: FontWeight.bold,
+                                isDrone
+                                    ? 'Kế hoạch bảo trì định kỳ Drone'
+                                    : 'Kế hoạch kiểm tra bảo trì định kỳ Kiosk',
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
                                   fontSize: 13,
                                   color: Color(0xFF5B21B6),
                                 ),
                               ),
-                              SizedBox(height: 2),
+                              const SizedBox(height: 2),
                               Text(
-                                'Đây là lịch kiểm tra bảo dưỡng định kỳ tự động theo chu kỳ cho trạm Kiosk do Quản trị viên thiết lập (không phải là phiếu báo hỏng sự cố).',
-                                style: TextStyle(
+                                isDrone
+                                    ? 'Đây là lịch bảo trì Drone theo chu kỳ do Quản trị viên thiết lập; kết quả checklist được lưu vào hồ sơ vận hành.'
+                                    : 'Đây là lịch kiểm tra bảo dưỡng định kỳ tự động theo chu kỳ cho trạm Kiosk do Quản trị viên thiết lập (không phải là phiếu báo hỏng sự cố).',
+                                style: const TextStyle(
                                   fontSize: 11.5,
                                   color: Color(0xFF6D28D9),
                                   height: 1.35,
@@ -452,8 +508,8 @@ class _ScheduleDetailModalSheetState extends State<ScheduleDetailModalSheet> {
                         text: assignedId == null
                             ? 'Chưa giao KTV'
                             : assignedToMe
-                                ? 'KTV phụ trách: Bạn'
-                                : 'KTV phụ trách: ${s['assignedTechnicianName'] ?? '#$assignedId'}',
+                            ? 'KTV phụ trách: Bạn'
+                            : 'KTV phụ trách: ${s['assignedTechnicianName'] ?? '#$assignedId'}',
                         color: assignedToMe
                             ? const Color(0xFF16A34A)
                             : opsMutedText,
@@ -476,8 +532,11 @@ class _ScheduleDetailModalSheetState extends State<ScheduleDetailModalSheet> {
                       children: [
                         Row(
                           children: [
-                            const Icon(Icons.inventory_2_outlined,
-                                size: 16, color: opsPrimary),
+                            const Icon(
+                              Icons.inventory_2_outlined,
+                              size: 16,
+                              color: opsPrimary,
+                            ),
                             const SizedBox(width: 8),
                             Expanded(
                               child: Text(
@@ -496,8 +555,11 @@ class _ScheduleDetailModalSheetState extends State<ScheduleDetailModalSheet> {
                           Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Icon(Icons.push_pin_outlined,
-                                  size: 15, color: Color(0xFF4F46E5)),
+                              const Icon(
+                                Icons.push_pin_outlined,
+                                size: 15,
+                                color: Color(0xFF4F46E5),
+                              ),
                               const SizedBox(width: 6),
                               Expanded(
                                 child: Text(
@@ -512,13 +574,18 @@ class _ScheduleDetailModalSheetState extends State<ScheduleDetailModalSheet> {
                             ],
                           ),
                         ],
-                        if ((s['address']?.toString() ?? '').trim().isNotEmpty) ...[
+                        if ((s['address']?.toString() ?? '')
+                            .trim()
+                            .isNotEmpty) ...[
                           const SizedBox(height: 6),
                           Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Icon(Icons.location_on_outlined,
-                                  size: 15, color: opsMutedText),
+                              const Icon(
+                                Icons.location_on_outlined,
+                                size: 15,
+                                color: opsMutedText,
+                              ),
                               const SizedBox(width: 6),
                               Expanded(
                                 child: Text(
@@ -540,11 +607,16 @@ class _ScheduleDetailModalSheetState extends State<ScheduleDetailModalSheet> {
                               Navigator.pop(context);
                               widget.onOpenDirections(s);
                             },
-                            icon: const Icon(Icons.near_me_outlined,
-                                size: 14, color: opsPrimary),
-                            label: const Text(
-                              'Chỉ đường tới tủ',
-                              style: TextStyle(
+                            icon: const Icon(
+                              Icons.near_me_outlined,
+                              size: 14,
+                              color: opsPrimary,
+                            ),
+                            label: Text(
+                              isDrone
+                                  ? 'Chỉ đường tới trạm Drone'
+                                  : 'Chỉ đường tới tủ',
+                              style: const TextStyle(
                                 fontSize: 12,
                                 color: opsPrimary,
                                 fontWeight: FontWeight.w600,
@@ -553,11 +625,15 @@ class _ScheduleDetailModalSheetState extends State<ScheduleDetailModalSheet> {
                             style: OutlinedButton.styleFrom(
                               visualDensity: VisualDensity.compact,
                               side: BorderSide(
-                                  color: opsPrimary.withValues(alpha: 0.35)),
+                                color: opsPrimary.withValues(alpha: 0.35),
+                              ),
                               shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8)),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
                               padding: const EdgeInsets.symmetric(
-                                  horizontal: 10, vertical: 6),
+                                horizontal: 10,
+                                vertical: 6,
+                              ),
                             ),
                           ),
                         ),
@@ -615,7 +691,8 @@ class _ScheduleDetailModalSheetState extends State<ScheduleDetailModalSheet> {
                         _buildDetailRow(
                           icon: Icons.repeat,
                           label: 'Chu kỳ lặp lại:',
-                          value: 'Mỗi ${s['intervalDays']} ngày thực hiện 1 lần',
+                          value:
+                              'Mỗi ${s['intervalDays']} ngày thực hiện 1 lần',
                         ),
                         const SizedBox(height: 8),
                         _buildDetailRow(
@@ -631,9 +708,12 @@ class _ScheduleDetailModalSheetState extends State<ScheduleDetailModalSheet> {
                           value: assignedId == null
                               ? 'Chưa phân công (Chờ nhận)'
                               : assignedToMe
-                                  ? 'Bạn (Được giao cho tôi)'
-                                  : (s['assignedTechnicianName'] ?? 'KTV #$assignedId'),
-                          highlightColor: assignedToMe ? const Color(0xFF16A34A) : null,
+                              ? 'Bạn (Được giao cho tôi)'
+                              : (s['assignedTechnicianName'] ??
+                                    'KTV #$assignedId'),
+                          highlightColor: assignedToMe
+                              ? const Color(0xFF16A34A)
+                              : null,
                         ),
                         const SizedBox(height: 8),
                         _buildDetailRow(
@@ -660,8 +740,11 @@ class _ScheduleDetailModalSheetState extends State<ScheduleDetailModalSheet> {
                       children: [
                         Row(
                           children: [
-                            const Icon(Icons.checklist_rounded,
-                                size: 16, color: Color(0xFFEA580C)),
+                            const Icon(
+                              Icons.checklist_rounded,
+                              size: 16,
+                              color: Color(0xFFEA580C),
+                            ),
                             const SizedBox(width: 6),
                             Text(
                               'Bộ tiêu chí kiểm định (${checklistItems.length} mục KTV cần thực hiện):',
@@ -677,7 +760,9 @@ class _ScheduleDetailModalSheetState extends State<ScheduleDetailModalSheet> {
                         if (checklistItems.isNotEmpty)
                           for (var i = 0; i < checklistItems.length; i++) ...[
                             Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 3.5),
+                              padding: const EdgeInsets.symmetric(
+                                vertical: 3.5,
+                              ),
                               child: Row(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
@@ -686,8 +771,9 @@ class _ScheduleDetailModalSheetState extends State<ScheduleDetailModalSheet> {
                                     height: 20,
                                     alignment: Alignment.center,
                                     decoration: BoxDecoration(
-                                      color: const Color(0xFFEA580C)
-                                          .withValues(alpha: 0.1),
+                                      color: const Color(
+                                        0xFFEA580C,
+                                      ).withValues(alpha: 0.1),
                                       shape: BoxShape.circle,
                                     ),
                                     child: Text(
@@ -716,9 +802,11 @@ class _ScheduleDetailModalSheetState extends State<ScheduleDetailModalSheet> {
                             ),
                           ]
                         else
-                          const Text(
-                            'Kiểm tra toàn diện hoạt động của trạm tủ Kiosk.',
-                            style: TextStyle(
+                          Text(
+                            isDrone
+                                ? 'Kiểm tra toàn diện tình trạng vận hành của Drone.'
+                                : 'Kiểm tra toàn diện hoạt động của trạm tủ Kiosk.',
+                            style: const TextStyle(
                               fontSize: 12,
                               color: opsMutedText,
                               fontStyle: FontStyle.italic,
@@ -744,8 +832,11 @@ class _ScheduleDetailModalSheetState extends State<ScheduleDetailModalSheet> {
                         children: [
                           Row(
                             children: const [
-                              Icon(Icons.lightbulb_outline,
-                                  size: 16, color: Color(0xFFD97706)),
+                              Icon(
+                                Icons.lightbulb_outline,
+                                size: 16,
+                                color: Color(0xFFD97706),
+                              ),
                               SizedBox(width: 6),
                               Text(
                                 'Hướng dẫn nghiệp vụ (Ghi chú SOP từ Quản trị viên):',
@@ -786,8 +877,11 @@ class _ScheduleDetailModalSheetState extends State<ScheduleDetailModalSheet> {
                       children: [
                         Row(
                           children: [
-                            const Icon(Icons.assignment_turned_in_outlined,
-                                size: 16, color: opsPrimary),
+                            const Icon(
+                              Icons.assignment_turned_in_outlined,
+                              size: 16,
+                              color: opsPrimary,
+                            ),
                             const SizedBox(width: 6),
                             const Text(
                               'Kết quả kiểm tra lần trước:',
@@ -808,7 +902,9 @@ class _ScheduleDetailModalSheetState extends State<ScheduleDetailModalSheet> {
                               child: SizedBox(
                                 width: 22,
                                 height: 22,
-                                child: CircularProgressIndicator(strokeWidth: 2),
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
                               ),
                             ),
                           ),
@@ -876,8 +972,11 @@ class _ScheduleDetailModalSheetState extends State<ScheduleDetailModalSheet> {
                           if (itemsToShow.isNotEmpty) ...[
                             Row(
                               children: [
-                                const Icon(Icons.checklist_rtl_rounded,
-                                    size: 15, color: Color(0xFF0284C7)),
+                                const Icon(
+                                  Icons.checklist_rtl_rounded,
+                                  size: 15,
+                                  color: Color(0xFF0284C7),
+                                ),
                                 const SizedBox(width: 6),
                                 Text(
                                   'Chi tiết đánh giá từng hạng mục (${itemsToShow.length} mục):',
@@ -891,145 +990,168 @@ class _ScheduleDetailModalSheetState extends State<ScheduleDetailModalSheet> {
                             ),
                             const SizedBox(height: 8),
                             for (var i = 0; i < itemsToShow.length; i++) ...[
-                              Builder(builder: (_) {
-                                final item = itemsToShow[i];
-                                final itemLabel =
-                                    (item['label'] ?? '').toString();
-                                final itemResult = (item['result'] ??
-                                        (isPassed ? 'PASS' : 'FAIL'))
-                                    .toString()
-                                    .toUpperCase();
-                                final itemNote =
-                                    (item['note'] ?? '').toString().trim();
-                                final (resText, resBg, resFg, resBorder) =
-                                    switch (itemResult) {
-                                  'PASS' => (
+                              Builder(
+                                builder: (_) {
+                                  final item = itemsToShow[i];
+                                  final itemLabel = (item['label'] ?? '')
+                                      .toString();
+                                  final itemResult =
+                                      (item['result'] ??
+                                              (isPassed ? 'PASS' : 'FAIL'))
+                                          .toString()
+                                          .toUpperCase();
+                                  final itemNote = (item['note'] ?? '')
+                                      .toString()
+                                      .trim();
+                                  final (
+                                    resText,
+                                    resBg,
+                                    resFg,
+                                    resBorder,
+                                  ) = switch (itemResult) {
+                                    'PASS' => (
                                       '✓ Đạt',
                                       const Color(0xFFDCFCE7),
                                       const Color(0xFF166534),
                                       const Color(0xFF86EFAC),
                                     ),
-                                  'FAIL' => (
+                                    'FAIL' => (
                                       '✕ Không đạt',
                                       const Color(0xFFFEE2E2),
                                       const Color(0xFF991B1B),
                                       const Color(0xFFFCA5A5),
                                     ),
-                                  _ => (
+                                    _ => (
                                       '— Không áp dụng',
                                       const Color(0xFFF1F5F9),
                                       const Color(0xFF475569),
                                       const Color(0xFFCBD5E1),
                                     ),
-                                };
+                                  };
 
-                                return Container(
-                                  margin: const EdgeInsets.only(bottom: 6),
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 10, vertical: 8),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(8),
-                                    border: Border.all(
-                                      color: itemResult == 'FAIL'
-                                          ? const Color(0xFFFCA5A5)
-                                          : const Color(0xFFE2E8F0),
+                                  return Container(
+                                    margin: const EdgeInsets.only(bottom: 6),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 10,
+                                      vertical: 8,
                                     ),
-                                  ),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Row(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.center,
-                                        children: [
-                                          Container(
-                                            width: 20,
-                                            height: 20,
-                                            alignment: Alignment.center,
-                                            decoration: BoxDecoration(
-                                              color: (itemResult == 'FAIL'
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(8),
+                                      border: Border.all(
+                                        color: itemResult == 'FAIL'
+                                            ? const Color(0xFFFCA5A5)
+                                            : const Color(0xFFE2E8F0),
+                                      ),
+                                    ),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Row(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.center,
+                                          children: [
+                                            Container(
+                                              width: 20,
+                                              height: 20,
+                                              alignment: Alignment.center,
+                                              decoration: BoxDecoration(
+                                                color:
+                                                    (itemResult == 'FAIL'
+                                                            ? const Color(
+                                                                0xFFDC2626,
+                                                              )
+                                                            : const Color(
+                                                                0xFF0284C7,
+                                                              ))
+                                                        .withValues(alpha: 0.1),
+                                                shape: BoxShape.circle,
+                                              ),
+                                              child: Text(
+                                                '${i + 1}',
+                                                style: TextStyle(
+                                                  fontSize: 11,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: itemResult == 'FAIL'
                                                       ? const Color(0xFFDC2626)
-                                                      : const Color(0xFF0284C7))
-                                                  .withValues(alpha: 0.1),
-                                              shape: BoxShape.circle,
-                                            ),
-                                            child: Text(
-                                              '${i + 1}',
-                                              style: TextStyle(
-                                                fontSize: 11,
-                                                fontWeight: FontWeight.bold,
-                                                color: itemResult == 'FAIL'
-                                                    ? const Color(0xFFDC2626)
-                                                    : const Color(0xFF0284C7),
+                                                      : const Color(0xFF0284C7),
+                                                ),
                                               ),
                                             ),
-                                          ),
-                                          const SizedBox(width: 8),
-                                          Expanded(
-                                            child: Text(
-                                              _withItemEmoji(itemLabel),
-                                              style: TextStyle(
-                                                fontSize: 12,
-                                                fontWeight: FontWeight.w600,
-                                                color: itemResult == 'FAIL'
-                                                    ? const Color(0xFF991B1B)
-                                                    : opsDark,
+                                            const SizedBox(width: 8),
+                                            Expanded(
+                                              child: Text(
+                                                _withItemEmoji(itemLabel),
+                                                style: TextStyle(
+                                                  fontSize: 12,
+                                                  fontWeight: FontWeight.w600,
+                                                  color: itemResult == 'FAIL'
+                                                      ? const Color(0xFF991B1B)
+                                                      : opsDark,
+                                                ),
                                               ),
                                             ),
-                                          ),
-                                          const SizedBox(width: 6),
-                                          Container(
-                                            padding: const EdgeInsets.symmetric(
-                                                horizontal: 7, vertical: 2.5),
-                                            decoration: BoxDecoration(
-                                              color: resBg,
-                                              borderRadius:
-                                                  BorderRadius.circular(6),
-                                              border:
-                                                  Border.all(color: resBorder),
-                                            ),
-                                            child: Text(
-                                              resText,
-                                              style: TextStyle(
-                                                fontSize: 11,
-                                                fontWeight: FontWeight.bold,
-                                                color: resFg,
+                                            const SizedBox(width: 6),
+                                            Container(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                    horizontal: 7,
+                                                    vertical: 2.5,
+                                                  ),
+                                              decoration: BoxDecoration(
+                                                color: resBg,
+                                                borderRadius:
+                                                    BorderRadius.circular(6),
+                                                border: Border.all(
+                                                  color: resBorder,
+                                                ),
                                               ),
+                                              child: Text(
+                                                resText,
+                                                style: TextStyle(
+                                                  fontSize: 11,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: resFg,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        if (itemNote.isNotEmpty) ...[
+                                          const SizedBox(height: 5),
+                                          Padding(
+                                            padding: const EdgeInsets.only(
+                                              left: 28,
+                                            ),
+                                            child: Row(
+                                              children: [
+                                                const Icon(
+                                                  Icons.edit_note_outlined,
+                                                  size: 13,
+                                                  color: Color(0xFFDC2626),
+                                                ),
+                                                const SizedBox(width: 4),
+                                                Expanded(
+                                                  child: Text(
+                                                    'Ghi chú KTV: $itemNote',
+                                                    style: const TextStyle(
+                                                      fontSize: 11.5,
+                                                      color: Color(0xFFB91C1C),
+                                                      fontWeight:
+                                                          FontWeight.w500,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
                                             ),
                                           ),
                                         ],
-                                      ),
-                                      if (itemNote.isNotEmpty) ...[
-                                        const SizedBox(height: 5),
-                                        Padding(
-                                          padding:
-                                              const EdgeInsets.only(left: 28),
-                                          child: Row(
-                                            children: [
-                                              const Icon(Icons.edit_note_outlined,
-                                                  size: 13,
-                                                  color: Color(0xFFDC2626)),
-                                              const SizedBox(width: 4),
-                                              Expanded(
-                                                child: Text(
-                                                  'Ghi chú KTV: $itemNote',
-                                                  style: const TextStyle(
-                                                    fontSize: 11.5,
-                                                    color: Color(0xFFB91C1C),
-                                                    fontWeight: FontWeight.w500,
-                                                  ),
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
                                       ],
-                                    ],
-                                  ),
-                                );
-                              }),
+                                    ),
+                                  );
+                                },
+                              ),
                             ],
                             const SizedBox(height: 6),
                           ],
@@ -1050,8 +1172,11 @@ class _ScheduleDetailModalSheetState extends State<ScheduleDetailModalSheet> {
                               child: Row(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  const Icon(Icons.comment_outlined,
-                                      size: 14, color: opsDark),
+                                  const Icon(
+                                    Icons.comment_outlined,
+                                    size: 14,
+                                    color: opsDark,
+                                  ),
                                   const SizedBox(width: 6),
                                   Expanded(
                                     child: Text(
@@ -1071,116 +1196,132 @@ class _ScheduleDetailModalSheetState extends State<ScheduleDetailModalSheet> {
 
                           // Ảnh minh chứng hiện trường KTV đã chụp
                           if (_latestLog?['photoUrls'] is List &&
-                              (_latestLog!['photoUrls'] as List).isNotEmpty) ...[
-                            Builder(builder: (_) {
-                              final rawPhotos =
-                                  _latestLog!['photoUrls'] as List;
-                              final attachments = rawPhotos
-                                  .map((u) => ReportAttachment(
+                              (_latestLog!['photoUrls'] as List)
+                                  .isNotEmpty) ...[
+                            Builder(
+                              builder: (_) {
+                                final rawPhotos =
+                                    _latestLog!['photoUrls'] as List;
+                                final attachments = rawPhotos
+                                    .map(
+                                      (u) => ReportAttachment(
                                         url: u.toString(),
                                         stage: ReportStage.inspection,
                                         createdAt: parseServerDateTime(
-                                            _latestLog!['createdAt']),
-                                      ))
-                                  .toList();
-                              return Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'Ảnh hiện trường KTV đã chụp (${attachments.length} ảnh):',
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 12,
-                                      color: Color(0xFF334155),
+                                          _latestLog!['createdAt'],
+                                        ),
+                                      ),
+                                    )
+                                    .toList();
+                                return Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Ảnh hiện trường KTV đã chụp (${attachments.length} ảnh):',
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 12,
+                                        color: Color(0xFF334155),
+                                      ),
                                     ),
-                                  ),
-                                  const SizedBox(height: 6),
-                                  AttachmentStrip(
-                                    attachments: attachments,
-                                    viewerTitle:
-                                        'Ảnh kiểm tra định kỳ lần trước',
-                                  ),
-                                  const SizedBox(height: 8),
-                                ],
-                              );
-                            }),
+                                    const SizedBox(height: 6),
+                                    AttachmentStrip(
+                                      attachments: attachments,
+                                      viewerTitle:
+                                          'Ảnh kiểm tra định kỳ lần trước',
+                                    ),
+                                    const SizedBox(height: 8),
+                                  ],
+                                );
+                              },
+                            ),
                           ],
 
                           // Phiếu sự cố liên quan nếu lần trước không đạt
                           if (pendingReportId != null ||
                               _latestLog?['createdReportId'] != null) ...[
-                            Builder(builder: (_) {
-                              final repId = pendingReportId ??
-                                  _asInt(_latestLog?['createdReportId']);
-                              if (repId == null) return const SizedBox.shrink();
-                              return Container(
-                                padding: const EdgeInsets.all(12),
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFFFFF7ED),
-                                  borderRadius: BorderRadius.circular(10),
-                                  border: Border.all(
-                                      color: const Color(0xFFFED7AA)),
-                                ),
-                                child: Column(
-                                  crossAxisAlignment:
-                                  CrossAxisAlignment.start,
-                                  children: [
-                                    Row(
-                                      children: [
-                                        const Icon(
+                            Builder(
+                              builder: (_) {
+                                final repId =
+                                    pendingReportId ??
+                                    _asInt(_latestLog?['createdReportId']);
+                                if (repId == null) {
+                                  return const SizedBox.shrink();
+                                }
+                                return Container(
+                                  padding: const EdgeInsets.all(12),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFFFF7ED),
+                                    borderRadius: BorderRadius.circular(10),
+                                    border: Border.all(
+                                      color: const Color(0xFFFED7AA),
+                                    ),
+                                  ),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          const Icon(
                                             Icons.assignment_turned_in_outlined,
                                             size: 16,
-                                            color: Color(0xFFEA580C)),
-                                        const SizedBox(width: 6),
-                                        Text(
-                                          'Phiếu sự cố kỹ thuật liên quan: RPT-$repId',
-                                          style: const TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 12.5,
-                                            color: Color(0xFFC2410C),
+                                            color: Color(0xFFEA580C),
                                           ),
-                                        ),
-                                      ],
-                                    ),
-                                    const SizedBox(height: 4),
-                                    const Text(
-                                      'Do lần kiểm tra trước không đạt, hệ thống đã mở phiếu sự cố kỹ thuật. Bạn cần xử lý và nghiệm thu hoàn tất phiếu này để lịch định kỳ mở lại cho lần kiểm tra tiếp theo.',
-                                      style: TextStyle(
-                                        fontSize: 11.5,
-                                        color: Color(0xFF9A3412),
-                                        height: 1.35,
+                                          const SizedBox(width: 6),
+                                          Text(
+                                            'Phiếu sự cố kỹ thuật liên quan: RPT-$repId',
+                                            style: const TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 12.5,
+                                              color: Color(0xFFC2410C),
+                                            ),
+                                          ),
+                                        ],
                                       ),
-                                    ),
-                                    const SizedBox(height: 8),
-                                    SizedBox(
-                                      width: double.infinity,
-                                      height: 36,
-                                      child: ElevatedButton.icon(
-                                        onPressed: () {
-                                          Navigator.pop(context);
-                                          widget.onOpenReport(repId);
-                                        },
-                                        style: ElevatedButton.styleFrom(
-                                          backgroundColor:
-                                              const Color(0xFFEA580C),
-                                          foregroundColor: Colors.white,
-                                          elevation: 0,
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(8),
-                                          ),
+                                      const SizedBox(height: 4),
+                                      const Text(
+                                        'Do lần kiểm tra trước không đạt, hệ thống đã mở phiếu sự cố kỹ thuật. Bạn cần xử lý và nghiệm thu hoàn tất phiếu này để lịch định kỳ mở lại cho lần kiểm tra tiếp theo.',
+                                        style: TextStyle(
+                                          fontSize: 11.5,
+                                          color: Color(0xFF9A3412),
+                                          height: 1.35,
                                         ),
-                                        icon: const Icon(
+                                      ),
+                                      const SizedBox(height: 8),
+                                      SizedBox(
+                                        width: double.infinity,
+                                        height: 36,
+                                        child: ElevatedButton.icon(
+                                          onPressed: () {
+                                            Navigator.pop(context);
+                                            widget.onOpenReport(repId);
+                                          },
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: const Color(
+                                              0xFFEA580C,
+                                            ),
+                                            foregroundColor: Colors.white,
+                                            elevation: 0,
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(8),
+                                            ),
+                                          ),
+                                          icon: const Icon(
                                             Icons.assignment_turned_in_outlined,
-                                            size: 15),
-                                        label: Text(
-                                            'Mở phiếu sự cố RPT-$repId để xử lý'),
+                                            size: 15,
+                                          ),
+                                          label: Text(
+                                            'Mở phiếu sự cố RPT-$repId để xử lý',
+                                          ),
+                                        ),
                                       ),
-                                    ),
-                                  ],
-                                ),
-                              );
-                            }),
+                                    ],
+                                  ),
+                                );
+                              },
+                            ),
                           ],
                         ] else ...[
                           const Text(
@@ -1237,8 +1378,9 @@ class _ScheduleDetailModalSheetState extends State<ScheduleDetailModalSheet> {
                           ),
                         ),
                         icon: const Icon(
-                            Icons.assignment_turned_in_outlined,
-                            size: 16),
+                          Icons.assignment_turned_in_outlined,
+                          size: 16,
+                        ),
                         label: Text(
                           'Xử lý phiếu sự cố RPT-$pendingReportId',
                           style: const TextStyle(
@@ -1273,8 +1415,8 @@ class _ScheduleDetailModalSheetState extends State<ScheduleDetailModalSheet> {
                           blockedReason != null
                               ? 'Lịch do KTV khác phụ trách'
                               : (due
-                                  ? 'Bắt đầu kiểm tra ngay (Đến hạn)'
-                                  : 'Kiểm tra ngay'),
+                                    ? 'Bắt đầu kiểm tra ngay (Đến hạn)'
+                                    : 'Kiểm tra ngay'),
                           style: const TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 13.5,
