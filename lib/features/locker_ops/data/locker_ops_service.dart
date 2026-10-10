@@ -144,6 +144,7 @@ class LockerOpsService {
     required int lockerId,
     required String receiverPhone,
     String? receiverName,
+
     /// Tuỳ chọn. Có email thì server gửi được mã mở tủ cho người nhận CHƯA có
     /// tài khoản Lock.R, không phải chờ người gửi chuyển tay.
     String? receiverEmail,
@@ -195,6 +196,7 @@ class LockerOpsService {
     String? description,
     required int parcelWeightGrams,
     required String paymentMethod,
+
     /// Khai báo kiện (`DroneParcelDeclaration.toJson`): loại hàng, kích thước, giá trị,
     /// dễ vỡ và cam kết không gửi hàng cấm — backend bắt buộc cam kết này.
     Map<String, dynamic>? parcel,
@@ -254,6 +256,7 @@ class LockerOpsService {
     String method, {
     String? bankCode,
     String? returnUrl,
+
     /// Lý do trả tiền lần này ("Phí quá hạn"…). Một đơn có thể trả nhiều lần —
     /// thuê rồi gia hạn — nên chi tiết đơn cần biết khoản nào là gì. Bỏ trống thì
     /// server tự suy ra đây là lần trả đầu hay trả bổ sung.
@@ -314,10 +317,8 @@ class LockerOpsService {
     body: {'hours': hours},
   );
 
-  Future<Map<String, dynamic>> assessOvertime(int orderId) => _map(
-    'POST',
-    '/api/orders/$orderId/assess-overtime',
-  );
+  Future<Map<String, dynamic>> assessOvertime(int orderId) =>
+      _map('POST', '/api/orders/$orderId/assess-overtime');
 
   Future<Map<String, dynamic>> cancelOrder(int orderId) =>
       _map('PUT', '/api/orders/$orderId/cancel');
@@ -472,7 +473,10 @@ class LockerOpsService {
   /// dùng cho tab "Sự cố" trên Mobile để KTV thấy toàn bộ hệ thống (giống Admin portal).
   Future<List<Map<String, dynamic>>> allKioskReports() async {
     try {
-      final list = await _list('/api/locker-technician/reports', query: {'all': true});
+      final list = await _list(
+        '/api/locker-technician/reports',
+        query: {'all': true},
+      );
       if (list.isNotEmpty) return list;
     } catch (_) {}
     try {
@@ -485,6 +489,84 @@ class LockerOpsService {
       return const [];
     }
   }
+
+  // ---- Phiếu sự cố Drone (DRONE_TECHNICIAN) ----
+  // Có route riêng, tuyệt đối không đi qua /api/locker-technician/** vì gateway
+  // tách quyền giữa đội Drone và KTV Kiosk.
+  Future<List<Map<String, dynamic>>> droneReports({
+    bool mine = false,
+    bool routed = false,
+    bool all = false,
+  }) => _list(
+    '/api/drone-technician/reports',
+    query: {
+      if (mine) 'mine': true,
+      if (routed) 'routed': true,
+      if (all) 'all': true,
+    },
+  );
+
+  Future<Map<String, dynamic>> claimDroneReport(int reportId) =>
+      _map('PUT', '/api/drone-technician/reports/$reportId/claim');
+
+  Future<Map<String, dynamic>> getDroneReport(int reportId) =>
+      _map('GET', '/api/drone-technician/reports/$reportId');
+
+  Future<Map<String, dynamic>> resolveDroneReport(
+    int reportId, {
+    String? note,
+    List<Map<String, dynamic>>? attachments,
+  }) {
+    final trimmedNote = note?.trim();
+    final hasNote = trimmedNote != null && trimmedNote.isNotEmpty;
+    final hasAttachments = attachments != null && attachments.isNotEmpty;
+    return _map(
+      'PUT',
+      '/api/drone-technician/reports/$reportId/resolve',
+      body: hasNote || hasAttachments
+          ? {
+              if (hasNote) 'note': trimmedNote,
+              if (hasAttachments) 'attachments': attachments,
+            }
+          : null,
+    );
+  }
+
+  Future<List<Map<String, dynamic>>> droneReportAttachments(
+    int reportId, {
+    String? stage,
+  }) => _list(
+    '/api/drone-technician/reports/$reportId/attachments',
+    query: stage == null ? null : {'stage': stage},
+  );
+
+  Future<List<Map<String, dynamic>>> addDroneReportAttachments(
+    int reportId,
+    String stage,
+    List<Map<String, dynamic>> attachments, {
+    String? note,
+  }) => _postList('/api/drone-technician/reports/$reportId/attachments', {
+    'stage': stage,
+    if (note != null && note.trim().isNotEmpty) 'note': note.trim(),
+    'attachments': attachments,
+  });
+
+  Future<List<Map<String, dynamic>>> droneReportLogs(int reportId) =>
+      _list('/api/drone-technician/reports/$reportId/logs');
+
+  Future<Map<String, dynamic>> addDroneReportLog(
+    int reportId,
+    String note, {
+    List<Map<String, dynamic>>? attachments,
+  }) => _map(
+    'POST',
+    '/api/drone-technician/reports/$reportId/logs',
+    body: {
+      'note': note,
+      if (attachments != null && attachments.isNotEmpty)
+        'attachments': attachments,
+    },
+  );
 
   Future<Map<String, dynamic>> claimReport(int reportId) =>
       _map('PUT', '/api/locker-technician/reports/$reportId/claim');
@@ -535,8 +617,14 @@ class LockerOpsService {
   /// Tra cứu đơn hàng đang giữ ô (nếu có).
   Future<Map<String, dynamic>?> getActiveOrderByBox(int boxId) async {
     try {
-      final res = await _map('GET', '/api/locker-technician/boxes/$boxId/active-order');
-      if (res.isEmpty || (res['id'] == null && res['orderId'] == null && res['orderCode'] == null)) {
+      final res = await _map(
+        'GET',
+        '/api/locker-technician/boxes/$boxId/active-order',
+      );
+      if (res.isEmpty ||
+          (res['id'] == null &&
+              res['orderId'] == null &&
+              res['orderCode'] == null)) {
         return null;
       }
       return res;
@@ -567,9 +655,12 @@ class LockerOpsService {
           'action': action,
           if (targetBoxId != null) 'targetBoxId': targetBoxId,
           if (reason != null && reason.isNotEmpty) 'reason': reason,
-          if (customerOtp != null && customerOtp.isNotEmpty) 'customerOtp': customerOtp,
-          if (sealNumber != null && sealNumber.isNotEmpty) 'sealNumber': sealNumber,
-          if (attachments != null && attachments.isNotEmpty) 'attachments': attachments,
+          if (customerOtp != null && customerOtp.isNotEmpty)
+            'customerOtp': customerOtp,
+          if (sealNumber != null && sealNumber.isNotEmpty)
+            'sealNumber': sealNumber,
+          if (attachments != null && attachments.isNotEmpty)
+            'attachments': attachments,
           if (progressAttachments != null && progressAttachments.isNotEmpty)
             'progressAttachments': progressAttachments,
           if (lockBox != null) 'lockBox': lockBox,
@@ -603,15 +694,28 @@ class LockerOpsService {
       // 4. Ghi log xử lý vào phiếu
       try {
         final logNote = switch (action) {
-          'RELOCATE' => '[ĐIỀU CHUYỂN Ô] Đã chuyển hàng sang ô trống mới và khóa bảo trì ô sự cố. $faultReason',
-          'HANDOVER' => '[BÀN GIAO TRỰC TIẾP] Đã bàn giao đồ trực tiếp cho khách và khóa bảo trì ô sự cố. $faultReason',
-          'HUB_ESCROW' => '[NIÊM PHONG VỀ HUB] Đã niêm phong hàng đưa về Hub (Mã Seal: ${sealNumber ?? "N/A"}) và khóa bảo trì ô sự cố.',
-          _ => '[XÁC NHẬN & KHÓA Ô] KTV kiểm tra hiện trường, xác nhận lỗi và khóa bảo trì ô. $faultReason',
+          'RELOCATE' =>
+            '[ĐIỀU CHUYỂN Ô] Đã chuyển hàng sang ô trống mới và khóa bảo trì ô sự cố. $faultReason',
+          'HANDOVER' =>
+            '[BÀN GIAO TRỰC TIẾP] Đã bàn giao đồ trực tiếp cho khách và khóa bảo trì ô sự cố. $faultReason',
+          'HUB_ESCROW' =>
+            '[NIÊM PHONG VỀ HUB] Đã niêm phong hàng đưa về Hub (Mã Seal: ${sealNumber ?? "N/A"}) và khóa bảo trì ô sự cố.',
+          _ =>
+            '[XÁC NHẬN & KHÓA Ô] KTV kiểm tra hiện trường, xác nhận lỗi và khóa bảo trì ô. $faultReason',
         };
-        await addReportLog(reportId, logNote, attachments: progressAttachments ?? attachments);
+        await addReportLog(
+          reportId,
+          logNote,
+          attachments: progressAttachments ?? attachments,
+        );
       } catch (_) {}
 
-      return {'success': true, 'action': action, 'boxId': boxId, 'fallback': true};
+      return {
+        'success': true,
+        'action': action,
+        'boxId': boxId,
+        'fallback': true,
+      };
     }
   }
 
@@ -728,8 +832,14 @@ class LockerOpsService {
       _list('/api/maintenance/schedules/$scheduleId/logs');
 
   /// KTV đánh dấu đã kiểm tra xong 1 lịch → dời mốc đến hạn kế tiếp.
-  Future<Map<String, dynamic>> completeSchedule(int scheduleId, {Map<String, dynamic>? data}) =>
-      _map('POST', '/api/maintenance/schedules/$scheduleId/complete', body: data);
+  Future<Map<String, dynamic>> completeSchedule(
+    int scheduleId, {
+    Map<String, dynamic>? data,
+  }) => _map(
+    'POST',
+    '/api/maintenance/schedules/$scheduleId/complete',
+    body: data,
+  );
 
   /// Hoàn tất 1 lần kiểm tra theo checklist. [items] phải phủ đúng
   /// `checklistItems` của lịch: `{label, result: PASS|FAIL|NA, note?}`; server
@@ -784,9 +894,17 @@ class LockerOpsService {
       if (reason != null && reason.isNotEmpty) 'reason': reason,
     };
     try {
-      return await _map('PUT', '/api/locker-technician/reports/$reportId/extend-sla', body: body);
+      return await _map(
+        'PUT',
+        '/api/locker-technician/reports/$reportId/extend-sla',
+        body: body,
+      );
     } catch (_) {
-      return await _map('PUT', '/api/admin/lockers/reports/$reportId/extend-sla', body: body);
+      return await _map(
+        'PUT',
+        '/api/admin/lockers/reports/$reportId/extend-sla',
+        body: body,
+      );
     }
   }
 
@@ -845,8 +963,11 @@ class LockerOpsService {
   Future<List<Map<String, dynamic>>> droneLogs(int id) =>
       _list('/api/drone-technician/drones/$id/logs');
 
-  Future<Map<String, dynamic>> addDroneLog(int id, String note) =>
-      _map('POST', '/api/drone-technician/drones/$id/logs', body: {'note': note});
+  Future<Map<String, dynamic>> addDroneLog(int id, String note) => _map(
+    'POST',
+    '/api/drone-technician/drones/$id/logs',
+    body: {'note': note},
+  );
 
   // ---- Drone delivery requests (khách tạo -> đội bay điều phối) ----
 
@@ -908,6 +1029,7 @@ class LockerOpsService {
   Future<Map<String, dynamic>> confirmDroneLoading(
     int orderId, {
     required int payloadWeightGrams,
+
     /// Bỏ trống thì server tự sinh mã niêm phong.
     String? sealCode,
     required bool parcelMatched,
@@ -1126,8 +1248,7 @@ class LockerOpsService {
     'LANDING_PAD_UNAVAILABLE': 'Bãi đáp drone chưa sẵn sàng.',
     'DRONE_OWNERSHIP_REQUIRED': 'Bạn cần nhận phụ trách drone này trước.',
     'DRONE_ALREADY_ASSIGNED': 'Drone đã có kỹ thuật viên khác phụ trách.',
-    'DRONE_ACTIVE_MISSION':
-        'Drone đang có nhiệm vụ, chỉ được báo lỗi (FAULT).',
+    'DRONE_ACTIVE_MISSION': 'Drone đang có nhiệm vụ, chỉ được báo lỗi (FAULT).',
     'DRONE_FAULT_REASON_REQUIRED': 'Cần nhập lý do khi báo drone lỗi.',
     'DRONE_PAYMENT_REQUIRED_BEFORE_PICKUP':
         'Vui lòng thanh toán đơn drone trước khi mở tủ nhận hàng.',
