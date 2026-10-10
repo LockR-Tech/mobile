@@ -32,7 +32,14 @@ bool requiresSignIn(String location) =>
 
 /// Tab của trang KTV tủ theo thứ tự hiển thị — giá trị `?tab=` của
 /// [AppRouter.technicianHome].
-const technicianTabs = ['inspect', 'incidents', 'mine', 'schedules', 'devices'];
+const technicianTabs = [
+  'inspect',
+  'incidents',
+  'mine',
+  'schedules',
+  'devices',
+  'recovery',
+];
 
 /// `?tab=` ⇒ chỉ số tab; tên lạ/thiếu ⇒ tab đầu.
 int technicianTabIndex(String? tab) {
@@ -48,6 +55,8 @@ String? technicianRouteForNotification(String? type, {String? referenceType}) {
     'locker.report.routed' => 'incidents',
     'locker.report.assigned' => referenceType == 'LOCKER' ? 'incidents' : 'mine',
     'locker.schedule.due' => 'schedules',
+    'DRONE_PARCEL_RECOVERY_ASSIGNED' => 'recovery',
+    'drone.parcel.recovery.assigned' => 'recovery',
     _ => null,
   };
   return tab == null ? null : '${AppRouter.technicianHome}?tab=$tab';
