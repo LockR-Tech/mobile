@@ -1013,6 +1013,95 @@ class LockerOpsService {
   Future<Map<String, dynamic>> droneOrderDetail(int orderId) =>
       _map('GET', '/api/drone-technician/drone-orders/$orderId');
 
+  /// Metadata camera/telemetry có kiểm soát quyền cho Journey Detail.
+  Future<Map<String, dynamic>> droneOrderCamera(int orderId) =>
+      _map('GET', '/api/drone-technician/drone-orders/$orderId/camera');
+
+  /// Báo rơi kiện; idempotency key ngăn bấm lặp tạo nhiều incident/ticket.
+  Future<Map<String, dynamic>> reportDroppedParcel(
+    int orderId, {
+    required String idempotencyKey,
+    required String reason,
+    double? latitude,
+    double? longitude,
+    double? gpsAccuracyM,
+    String? cameraStatus,
+    Map<String, dynamic>? cameraSnapshot,
+    String? snapshotCapturedAt,
+  }) => _map(
+    'POST',
+    '/api/drone-technician/drone-orders/$orderId/drop-incident',
+    headers: {'Idempotency-Key': idempotencyKey},
+    body: {
+      'reason': reason.trim(),
+      if (latitude != null) 'latitude': latitude,
+      if (longitude != null) 'longitude': longitude,
+      if (gpsAccuracyM != null) 'gpsAccuracyM': gpsAccuracyM,
+      'cameraStatus': cameraStatus ?? 'UNAVAILABLE',
+      if (cameraSnapshot != null) 'cameraSnapshot': cameraSnapshot,
+      if (snapshotCapturedAt != null) 'snapshotCapturedAt': snapshotCapturedAt,
+    },
+  );
+
+  // ---- Thu hồi kiện rơi (LOCKER_TECHNICIAN) ----
+  Future<List<Map<String, dynamic>>> droneRecoveries() =>
+      _list('/api/locker-technician/drone-recoveries');
+
+  Future<Map<String, dynamic>> droneRecovery(int incidentId) =>
+      _map('GET', '/api/locker-technician/drone-recoveries/$incidentId');
+
+  Future<Map<String, dynamic>> updateDroneRecovery(
+    int incidentId,
+    String action,
+  ) => _map(
+    'POST',
+    '/api/locker-technician/drone-recoveries/$incidentId/actions',
+    body: {'action': action},
+  );
+
+  Future<Map<String, dynamic>> submitDroneRecovery(
+    int incidentId, {
+    required String outcome,
+    String? parcelCondition,
+    String? note,
+    double? latitude,
+    double? longitude,
+    double? gpsAccuracyM,
+    required List<Map<String, dynamic>> evidence,
+  }) => _map(
+    'POST',
+    '/api/locker-technician/drone-recoveries/$incidentId/submit',
+    body: {
+      'outcome': outcome,
+      if (parcelCondition != null) 'parcelCondition': parcelCondition,
+      if (note != null && note.trim().isNotEmpty) 'note': note.trim(),
+      if (latitude != null) 'latitude': latitude,
+      if (longitude != null) 'longitude': longitude,
+      if (gpsAccuracyM != null) 'gpsAccuracyM': gpsAccuracyM,
+      'evidence': evidence,
+    },
+  );
+
+  Future<Map<String, dynamic>> confirmDroneRecoveryHubHandover(int incidentId) =>
+      _map('POST', '/api/locker-technician/drone-recoveries/$incidentId/hub-handover');
+
+  // ---- Khách hàng theo dõi sự cố và phản hồi phương án ----
+  Future<List<Map<String, dynamic>>> myDroneIncidents() =>
+      _list('/api/orders/drone-incidents');
+
+  Future<Map<String, dynamic>> respondDroneIncident(
+    int incidentId, {
+    required String decision,
+    String? note,
+  }) => _map(
+    'POST',
+    '/api/orders/drone-incidents/$incidentId/response',
+    body: {
+      'decision': decision,
+      if (note != null && note.trim().isNotEmpty) 'note': note.trim(),
+    },
+  );
+
   /// Đội bay tiếp nhận một order drone và gán drone cho mission.
   Future<Map<String, dynamic>> acceptDroneOrder(
     int orderId, {

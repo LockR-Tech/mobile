@@ -36,6 +36,8 @@ class FirebaseMessagingService {
     'drone_delivered',
     'drone_delayed',
     'drone_failed',
+    'DRONE_PARCEL_DROP_REPORTED',
+    'DRONE_INCIDENT_RESOLUTION_PROPOSED',
   };
 
   static const Set<String> maintenanceDroneTypes = {'DRONE_ORDER_CREATED'};

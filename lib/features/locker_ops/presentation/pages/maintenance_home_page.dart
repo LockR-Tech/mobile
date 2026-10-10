@@ -20,6 +20,7 @@ import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/co
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/schedule_detail_modal_sheet.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/pages/technician_profile_page.dart';
 import 'package:smart_laundry_locker/features/maintenance/presentation/widgets/drone_report_detail_sheet.dart';
+import 'package:smart_laundry_locker/features/maintenance/presentation/widgets/drone_journey_camera_panel.dart';
 import 'package:smart_laundry_locker/features/profile/presentation/providers/profile_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:smart_laundry_locker/shared/widgets/controller_disposer.dart';
@@ -4453,7 +4454,17 @@ class _DroneOrderDetailSheetState extends State<_DroneOrderDetailSheet> {
         ),
         const SizedBox(height: 14),
         if (status != null)
-          DroneDeliveryDetail(status: status, forOperator: true)
+          ...[
+            if (status.stage.isInFlight) ...[
+              DroneJourneyCameraPanel(
+                orderId: widget.orderId,
+                service: widget.service,
+                onIncidentReported: _refresh,
+              ),
+              const SizedBox(height: 14),
+            ],
+            DroneDeliveryDetail(status: status, forOperator: true),
+          ]
         else if (_error != null)
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 32),
