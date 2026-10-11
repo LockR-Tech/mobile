@@ -71,7 +71,8 @@ Future<OrderPaymentOutcome> payOrderAndAwaitPaid(
   );
   // Backend PaymentResponse dùng field "paymentUrl" (không phải "url")
   final url = (res['paymentUrl'] ?? res['url'] ?? res['deeplink']) as String?;
-  final qrCodeUrl = (res['qrCodeUrl'] ?? res['qr']) as String?;
+
+  if (!context.mounted) return OrderPaymentOutcome.cancelled;
 
   if (method == 'SEPAY') {
     return payWithSepayAndAwaitPaid(
