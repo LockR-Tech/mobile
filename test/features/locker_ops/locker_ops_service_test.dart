@@ -207,6 +207,32 @@ void main() {
 
       await expectLater(service.forceOpenBox(5), completes);
     });
+
+    test('forceOpenBox() reports BOX_FORCE_OPEN_FAILED as not accepted', () async {
+      const reason =
+          'Không gửi được lệnh mở ô tới bộ điều khiển tủ — ô chưa mở, vui lòng thử lại';
+      adapter.onPost(
+        '/api/locker-technician/boxes/5/force-open',
+        // Backend vẫn trả 200, chỉ `code` + `data.accepted` nói ô chưa mở.
+        (server) => server.reply(200, {
+          'success': true,
+          'code': 'BOX_FORCE_OPEN_FAILED',
+          'message': reason,
+          'data': {
+            'accepted': false,
+            'status': 'FAILED',
+            'boxId': 5,
+            'message': reason,
+          },
+        }),
+      );
+
+      final result = await service.forceOpenBox(5);
+
+      expect(result.accepted, isFalse);
+      expect(result.status, 'FAILED');
+      expect(result.failureMessage, reason);
+    });
   });
 
   // ── DRONE_TECHNICIAN — drone fleet ────────────────────────────────────────

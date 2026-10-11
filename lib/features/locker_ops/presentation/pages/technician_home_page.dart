@@ -813,6 +813,19 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
     );
   }
 
+  /// Snackbar đỏ như [_showError] nhưng cho câu lỗi có sẵn (không phải exception),
+  /// ví dụ lý do mở ô khẩn cấp thất bại mà backend trả kèm HTTP 200.
+  void _showErrorText(String msg) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        backgroundColor: const Color(0xFFDC2626),
+        duration: const Duration(seconds: 6),
+        content: Text(msg),
+      ),
+    );
+  }
+
   void _showInfo(String msg) {
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
@@ -2741,7 +2754,18 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
       ),
     );
     if (ok != true) return;
-    await _runCellAction(() => _service.forceOpenBox(boxId), 'Đã gửi lệnh mở tủ khẩn cấp (Lý do: $selectedReason)');
+    try {
+      final result = await _service.forceOpenBox(boxId);
+      if (result.accepted) {
+        _showInfo('Đã gửi lệnh mở tủ khẩn cấp (Lý do: $selectedReason)');
+      } else {
+        // Backend trả 200 cả khi tủ không mở được (TIMEOUT/FAILED/JAMMED) ⇒ báo lỗi.
+        _showErrorText(result.failureMessage);
+      }
+      await _load();
+    } catch (e) {
+      _showError(e);
+    }
   }
 
   /// Chạy 1 thao tác đổi trạng thái ô + báo kết quả + reload danh sách.
@@ -7063,10 +7087,16 @@ class _ResolveVerificationSheetState extends State<_ResolveVerificationSheet> {
       // Nếu KTV chọn "Sửa tại chỗ xong & Tự động mở ô tủ"
       final boxId = _asInt(widget.report['boxId']);
       final lockerId = _asInt(widget.report['lockerId']);
+      // Lý do ô chưa mở được (null = đã mở / không yêu cầu mở). Phiếu đã đóng ở
+      // bước trên nên vẫn hoàn tất, nhưng không được báo "đã mở khóa ô".
+      String? openError;
       if (_quickFixAndUnlock && boxId != null) {
         try {
-          await widget.service.forceOpenBox(boxId);
-        } catch (_) {}
+          final opened = await widget.service.forceOpenBox(boxId);
+          if (!opened.accepted) openError = opened.failureMessage;
+        } catch (e) {
+          openError = LockerOpsService.errorMessage(e);
+        }
         try {
           await widget.service.clearFault(boxId);
         } catch (_) {}
@@ -7089,10 +7119,18 @@ class _ResolveVerificationSheetState extends State<_ResolveVerificationSheet> {
         };
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            backgroundColor: const Color(0xFF16A34A),
-            content: Text('Đã nghiệm thu và hoàn tất sự cố! $restored'),
-          ),
+          openError == null
+              ? SnackBar(
+                  backgroundColor: const Color(0xFF16A34A),
+                  content: Text('Đã nghiệm thu và hoàn tất sự cố! $restored'),
+                )
+              : SnackBar(
+                  backgroundColor: const Color(0xFFDC2626),
+                  duration: const Duration(seconds: 6),
+                  content: Text(
+                    'Đã nghiệm thu và hoàn tất sự cố, nhưng chưa mở được ô: $openError',
+                  ),
+                ),
         );
       }
       await widget.onResolved();
@@ -7826,55 +7864,48 @@ class _BoxIncidentResolutionSheetState
     if (_selectedBoxId == null || _openingBox) return;
     setState(() => _openingBox = true);
     try {
-      final res = await widget.service.forceOpenBox(_selectedBoxId!);
-      if (mounted) {
-        final isAccepted = res['accepted'] == true ||
-            res['status'] == 'ACCEPTED' ||
-            res['code'] == 200;
-        final boxNum = _currentCell?['boxNumber'] ?? _selectedBoxId;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Row(
-              children: [
-                const Icon(Icons.check_circle_outline,
-                    color: Colors.white, size: 20),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    isAccepted
-                        ? 'Đã mở ô #$boxNum thành công!'
-                        : 'Lệnh mở khẩn cấp đã được gửi tới Kiosk.',
-                  ),
-                ),
-              ],
-            ),
-            backgroundColor: const Color(0xFF16A34A),
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
-      }
+      final result = await widget.service.forceOpenBox(_selectedBoxId!);
+      if (!mounted) return;
+      final boxNum = _currentCell?['boxNumber'] ?? _selectedBoxId;
+      // Backend trả 200 cả khi tủ không mở được (TIMEOUT/FAILED/JAMMED) ⇒ báo lỗi.
+      _showForceOpenSnack(
+        success: result.accepted,
+        message: result.accepted
+            ? 'Đã mở ô #$boxNum thành công!'
+            : 'Lỗi mở ô: ${result.failureMessage}',
+      );
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Row(
-              children: [
-                const Icon(Icons.error_outline,
-                    color: Colors.white, size: 20),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text('Lỗi mở ô: ${LockerOpsService.errorMessage(e)}'),
-                ),
-              ],
-            ),
-            backgroundColor: const Color(0xFFDC2626),
-            behavior: SnackBarBehavior.floating,
-          ),
+        _showForceOpenSnack(
+          success: false,
+          message: 'Lỗi mở ô: ${LockerOpsService.errorMessage(e)}',
         );
       }
     } finally {
       if (mounted) setState(() => _openingBox = false);
     }
+  }
+
+  void _showForceOpenSnack({required bool success, required String message}) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            Icon(
+              success ? Icons.check_circle_outline : Icons.error_outline,
+              color: Colors.white,
+              size: 20,
+            ),
+            const SizedBox(width: 8),
+            Expanded(child: Text(message)),
+          ],
+        ),
+        backgroundColor:
+            success ? const Color(0xFF16A34A) : const Color(0xFFDC2626),
+        duration: Duration(seconds: success ? 4 : 6),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
   }
 
   Future<void> _submit() async {
