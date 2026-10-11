@@ -32,6 +32,9 @@ class BusinessConfig {
     required this.extendMaxHours,
     required this.requirePaymentBeforeDrop,
     this.autoCancelUnpaidMinutes = 15,
+    this.overdueReleaseHours = 72,
+    this.overtimeGracePeriodMinutes = 15,
+    this.rentalAutoReleaseEnabled = false,
     required this.droneDefaultParcelWeightGrams,
     this.droneBaseWeightGrams = 500,
     this.droneWeightStepGrams = 250,
@@ -110,6 +113,15 @@ class BusinessConfig {
 
   /// Số phút đơn INITIALIZED chưa thanh toán được giữ trước khi tự huỷ và nhả ô.
   final int autoCancelUnpaidMinutes;
+
+  /// Số giờ đơn quá hạn được giữ trước khi giải phóng tủ (mặc định 72h).
+  final int overdueReleaseHours;
+
+  /// Số phút ân hạn đóng băng phí sau khi khách thanh toán quá hạn (mặc định 15p).
+  final int overtimeGracePeriodMinutes;
+
+  /// Cho phép hệ thống tự động giải phóng đơn thuê tủ (RENTAL) quá hạn về kho hay không (mặc định false).
+  final bool rentalAutoReleaseEnabled;
 
   final int droneDefaultParcelWeightGrams;
 
@@ -202,6 +214,9 @@ class BusinessConfig {
     extendMaxHours: 24,
     requirePaymentBeforeDrop: true,
     autoCancelUnpaidMinutes: 15,
+    overdueReleaseHours: 72,
+    overtimeGracePeriodMinutes: 15,
+    rentalAutoReleaseEnabled: false,
     droneDefaultParcelWeightGrams: 1200,
     topupMinAmount: 10000,
     topupMaxAmount: 50000000,
@@ -323,6 +338,20 @@ class BusinessConfig {
         o['app.order.auto-cancel-unpaid-minutes'],
         d.autoCancelUnpaidMinutes,
         min: 1,
+      ),
+      overdueReleaseHours: _int(
+        o['app.order.overdue-release-hours'],
+        d.overdueReleaseHours,
+        min: 0,
+      ),
+      overtimeGracePeriodMinutes: _int(
+        o['app.order.overtime-grace-period-minutes'],
+        d.overtimeGracePeriodMinutes,
+        min: 0,
+      ),
+      rentalAutoReleaseEnabled: _bool(
+        o['app.order.rental-auto-release-enabled'],
+        d.rentalAutoReleaseEnabled,
       ),
       droneDefaultParcelWeightGrams: _int(
         o['app.order.drone-default-parcel-weight-grams'],
@@ -447,6 +476,10 @@ class BusinessConfig {
   int clampRentalHours(num hours) =>
       hours.round().clamp(rentalMinHours, rentalMaxHours);
 
+  /// Chuỗi nhãn hiển thị số giờ quá hạn, ví dụ '(>72h)'.
+  String get overdueReleaseHoursLabel =>
+      overdueReleaseHours > 0 ? '(>${overdueReleaseHours}h)' : '';
+
   /// Kiểm tra số tiền nạp. Trả `null` nếu hợp lệ, ngược lại là thông báo lỗi.
   String? validateTopupAmount(int amount, String Function(int) formatMoney) {
     if (amount < topupMinAmount || amount > topupMaxAmount) {
@@ -477,6 +510,9 @@ class BusinessConfig {
       'app.order.extend-max-hours': extendMaxHours,
       'app.order.require-payment-before-drop': requirePaymentBeforeDrop,
       'app.order.auto-cancel-unpaid-minutes': autoCancelUnpaidMinutes,
+      'app.order.overdue-release-hours': overdueReleaseHours,
+      'app.order.overtime-grace-period-minutes': overtimeGracePeriodMinutes,
+      'app.order.rental-auto-release-enabled': rentalAutoReleaseEnabled,
       'app.order.drone-default-parcel-weight-grams': droneDefaultParcelWeightGrams,
       'app.order.drone-base-weight-grams': droneBaseWeightGrams,
       'app.order.drone-weight-step-grams': droneWeightStepGrams,

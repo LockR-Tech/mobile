@@ -983,7 +983,7 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
               title: 'Thanh toán thành công!',
               amountText: '${due.toInt()} đ',
               message: rawStatus == 'EXPIRED'
-                  ? 'Bạn đã thanh toán phí quá hạn thành công. Do đơn đã quá hạn lưu tủ (>24h), đồ đang được lưu giữ an toàn tại quầy/kho. Vui lòng đọc mã đơn cho nhân viên để nhận đồ!'
+                  ? 'Bạn đã thanh toán phí quá hạn thành công. Do đơn đã quá hạn lưu tủ ${BusinessConfigService.instance.current.overdueReleaseHoursLabel}, đồ đang được lưu giữ an toàn tại quầy/kho. Vui lòng đọc mã đơn cho nhân viên để nhận đồ!'
                   : 'Thanh toán thành công. Vui lòng cho nhân viên biết để hoàn tất đơn.',
             );
           }
@@ -1068,9 +1068,9 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
                     ),
                   ],
                 ),
-                content: const Text(
-                  'Đơn hàng của bạn đã thanh toán đầy đủ. Do đơn đã quá hạn lưu tủ (>24h), đồ được bàn giao trực tiếp bởi nhân viên tại quầy. Nhân viên sẽ đóng trạng thái đơn trên hệ thống giúp bạn!',
-                  style: TextStyle(fontSize: 14, height: 1.4),
+                content: Text(
+                  'Đơn hàng của bạn đã thanh toán đầy đủ. Do đơn đã quá hạn lưu tủ ${BusinessConfigService.instance.current.overdueReleaseHoursLabel}, đồ được bàn giao trực tiếp bởi nhân viên tại quầy. Nhân viên sẽ đóng trạng thái đơn trên hệ thống giúp bạn!',
+                  style: const TextStyle(fontSize: 14, height: 1.4),
                 ),
                 actions: [
                   ElevatedButton(
@@ -1953,17 +1953,17 @@ class _OrderCard extends StatelessWidget {
                 ),
                 color: const Color(0xFFFEF2F2),
                 child: Row(
-                  children: const [
-                    Icon(
+                  children: [
+                    const Icon(
                       LucideIcons.triangleAlert,
                       size: 13,
                       color: Color(0xFFDC2626),
                     ),
-                    SizedBox(width: 6),
+                    const SizedBox(width: 6),
                     Expanded(
                       child: Text(
-                        'Đơn đã hết hạn lưu tủ (>24h) — Bấm để thanh toán & lấy đồ',
-                        style: TextStyle(
+                        'Đơn đã hết hạn lưu tủ ${BusinessConfigService.instance.current.overdueReleaseHoursLabel} — Bấm để thanh toán & lấy đồ',
+                        style: const TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
                           color: Color(0xFFDC2626),
@@ -3358,7 +3358,10 @@ class _DetailSheet extends StatelessWidget {
         ? totalRaw
         : num.tryParse('$totalRaw') ?? 0;
     final canPay =
-        paymentStatus != 'PAID' && totalNum > 0 && rawStatus != 'CANCELED';
+        paymentStatus != 'PAID' &&
+        totalNum > 0 &&
+        rawStatus != 'CANCELED' &&
+        rawStatus != 'COMPLETED';
     final canUsePickupActions = !isDroneDelivery || paymentStatus == 'PAID';
     final boxLabel = _orderBoxLabel(
       sendBoxNumber: sendBoxNumber,
@@ -3680,8 +3683,8 @@ class _DetailSheet extends StatelessWidget {
               tone: OpsBannerTone.danger,
               icon: LucideIcons.triangleAlert,
               text: (canPay || orderAmountDue(order) > 0)
-                  ? 'Đơn đã quá hạn lưu tủ (>24h). Ô tủ đã được giải phóng và đồ đã chuyển về bảo quản an toàn. Quý khách vui lòng thanh toán phí còn lại và bấm "Thanh toán & lấy đồ" để hoàn tất.'
-                  : 'Đơn đã quá hạn lưu tủ (>24h). Ô tủ đã được giải phóng và đồ đã chuyển về bảo quản an toàn. Quý khách vui lòng kiểm tra nhận đồ và bấm "Tôi đã lấy đồ — Hoàn tất đơn" để hoàn tất.',
+                  ? 'Đơn đã quá hạn lưu tủ ${config.overdueReleaseHoursLabel}. Ô tủ đã được giải phóng và đồ đã chuyển về bảo quản an toàn. Quý khách vui lòng thanh toán phí còn lại và bấm "Thanh toán & lấy đồ" để hoàn tất.'
+                  : 'Đơn đã quá hạn lưu tủ ${config.overdueReleaseHoursLabel}. Ô tủ đã được giải phóng và đồ đã chuyển về bảo quản an toàn. Quý khách vui lòng kiểm tra nhận đồ và bấm "Tôi đã lấy đồ — Hoàn tất đơn" để hoàn tất.',
             ),
           )
         else if (overdue)
@@ -3887,7 +3890,8 @@ class _DetailSheet extends StatelessWidget {
               ),
               // Gia hạn / phí quá hạn cộng vào tổng nhưng phần cũ đã trả rồi,
               // nên tách rõ đã trả bao nhiêu và còn thiếu bao nhiêu.
-              if (orderAmountDue(order) > 0 &&
+              if (rawStatus != 'COMPLETED' &&
+                  orderAmountDue(order) > 0 &&
                   (_asDouble(order['paidAmount']) ?? 0) > 0) ...[
                 OpsInfoRow(
                   icon: LucideIcons.receiptText,
