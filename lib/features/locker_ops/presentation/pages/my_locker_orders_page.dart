@@ -857,6 +857,13 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
     // Làm mới nền danh sách phương thức admin bật (trong TTL thì không gọi mạng).
     businessConfigService.refresh();
 
+    final isRental = ('${order['type']}'.toUpperCase() == 'RENTAL');
+    final paidAmount = _asDouble(order['paidAmount']) ?? 0;
+    final isRentalExtension = isRental && paidAmount > 0;
+    final description = isRentalExtension
+        ? 'Thanh toán gia hạn thời gian đơn #$orderId'
+        : null;
+
     try {
       final outcome = await payOrderAndAwaitPaid(
         context,
@@ -864,6 +871,7 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
         orderId: orderId,
         total: total,
         enabledMethods: businessConfig.enabledPaymentMethods,
+        description: description,
       );
       if (!mounted || outcome == OrderPaymentOutcome.cancelled) return;
       if (outcome == OrderPaymentOutcome.paid) {
@@ -3912,7 +3920,11 @@ class _DetailSheet extends StatelessWidget {
                               : const Color(0xFFB45309))),
               ),
               // Hình thức thanh toán + mã giao dịch lấy từ payment-service.
-              _PaymentTraceRows(orderId: _asInt(order['id'])),
+              _PaymentTraceRows(
+                orderId: _asInt(order['id']),
+                order: order,
+                service: service,
+              ),
               if (customerNote != null && customerNote.isNotEmpty)
                 OpsInfoRow(
                   icon: LucideIcons.stickyNote,
@@ -3998,16 +4010,32 @@ class _DetailSheet extends StatelessWidget {
 /// tiết đơn của khách trước đây chỉ có "Đã/Chưa thanh toán" mà không biết trả
 /// bằng gì và mã giao dịch nào để đối soát.
 class _PaymentTraceRows extends StatefulWidget {
-  const _PaymentTraceRows({required this.orderId});
+  const _PaymentTraceRows({
+    required this.orderId,
+    this.order,
+    this.service,
+  });
 
   final int? orderId;
+  final Map<String, dynamic>? order;
+  final LockerOpsService? service;
 
   @override
   State<_PaymentTraceRows> createState() => _PaymentTraceRowsState();
 }
 
+class _PaymentTraceData {
+  const _PaymentTraceData({
+    required this.payments,
+    required this.timeline,
+  });
+
+  final List<Map<String, dynamic>> payments;
+  final List<Map<String, dynamic>> timeline;
+}
+
 class _PaymentTraceRowsState extends State<_PaymentTraceRows> {
-  late Future<List<Map<String, dynamic>>> _future;
+  late Future<dynamic> _future;
 
   @override
   void initState() {
@@ -4015,14 +4043,30 @@ class _PaymentTraceRowsState extends State<_PaymentTraceRows> {
     _future = _load();
   }
 
-  Future<List<Map<String, dynamic>>> _load() async {
+  @override
+  void reassemble() {
+    super.reassemble();
+    _future = _load();
+  }
+
+  Future<_PaymentTraceData> _load() async {
     final id = widget.orderId;
-    if (id == null) return const [];
+    if (id == null) {
+      return const _PaymentTraceData(payments: [], timeline: []);
+    }
+    final svc = widget.service ?? LockerOpsService();
     try {
-      return await LockerOpsService().paymentsByOrder(id);
+      final results = await Future.wait([
+        svc.paymentsByOrder(id).catchError((_) => <Map<String, dynamic>>[]),
+        svc.orderTimeline(id).catchError((_) => <Map<String, dynamic>>[]),
+      ]);
+      return _PaymentTraceData(
+        payments: results[0],
+        timeline: results[1],
+      );
     } catch (_) {
       // Chi tiết đơn vẫn phải mở được khi payment-service lỗi.
-      return const [];
+      return const _PaymentTraceData(payments: [], timeline: []);
     }
   }
 
@@ -4036,12 +4080,56 @@ class _PaymentTraceRowsState extends State<_PaymentTraceRows> {
     final other => other,
   };
 
+  /// Kiểm tra xem giao dịch thanh toán này có phải phát sinh do gia hạn thuê tủ hay không.
+  /// Nếu là thanh toán khi gia hạn thuê tủ -> true để hiển thị "Thanh toán gia hạn thời gian".
+  /// Nếu không phải do gia hạn (ví dụ: tiền phạt quá giờ, đơn gửi đồ, giặt ủi...) -> false để giữ nguyên.
+  static bool _isRentalExtensionPayment({
+    required Map<String, dynamic> payment,
+    required Map<String, dynamic>? order,
+    required List<Map<String, dynamic>> timeline,
+    required int index,
+  }) {
+    // 1. Chỉ áp dụng cho đơn thuê tủ (RENTAL)
+    final orderType =
+        ('${order?['type'] ?? order?['serviceCategory'] ?? ''}').toUpperCase();
+    if (orderType != 'RENTAL') return false;
+
+    // 2. Lần thanh toán đầu tiên (index 0) là tiền thuê ban đầu, không phải gia hạn
+    if (index == 0) return false;
+
+    final desc = '${payment['description'] ?? ''}'.toLowerCase();
+
+    // 3. Nếu description là phí quá hạn/quá giờ/overtime thì là nộp phạt quá giờ
+    if (desc.contains('quá hạn') ||
+        desc.contains('quá giờ') ||
+        desc.contains('overtime')) {
+      return false;
+    }
+
+    // 4. Đối với đơn thuê tủ (RENTAL), các lần thanh toán sau lần đầu (không phải phí quá giờ)
+    // đều là thanh toán để gia hạn thời gian thuê tủ.
+    return true;
+  }
+
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<List<Map<String, dynamic>>>(
+    return FutureBuilder<dynamic>(
       future: _future,
       builder: (context, snapshot) {
-        final payments = snapshot.data ?? const <Map<String, dynamic>>[];
+        final raw = snapshot.data;
+        final List<Map<String, dynamic>> payments;
+        final List<Map<String, dynamic>> timeline;
+        if (raw is _PaymentTraceData) {
+          payments = raw.payments;
+          timeline = raw.timeline;
+        } else if (raw is List) {
+          payments = raw.cast<Map<String, dynamic>>();
+          timeline = const [];
+        } else {
+          payments = const [];
+          timeline = const [];
+        }
+
         // Chỉ hiện giao dịch đã hoàn tất — giao dịch PENDING/FAILED không phải
         // thứ khách dùng để đối soát.
         final done = payments
@@ -4059,7 +4147,16 @@ class _PaymentTraceRowsState extends State<_PaymentTraceRows> {
               if (done.length > 1) ...[
                 if (i > 0) const SizedBox(height: 14),
                 OpsSectionLabel(
-                  _sectionLabel(done[i], i),
+                  _sectionLabel(
+                    done[i],
+                    i,
+                    isRentalExtension: _isRentalExtensionPayment(
+                      payment: done[i],
+                      order: widget.order,
+                      timeline: timeline,
+                      index: i,
+                    ),
+                  ),
                   icon: LucideIcons.receiptText,
                 ),
               ],
@@ -4094,10 +4191,25 @@ class _PaymentTraceRowsState extends State<_PaymentTraceRows> {
   }
 
   /// Tiêu đề cụm giao dịch. `description` do payment-service ghi ("Thanh toán đơn #48",
-  /// "Thanh toán bổ sung đơn #48", "Phí quá hạn"). Vẫn kèm "Lần N" vì các giao dịch tạo
-  /// trước bản này đều mang mô tả y hệt nhau — không có số thứ tự thì lại không phân biệt được.
-  static String _sectionLabel(Map<String, dynamic> payment, int index) {
-    final description = '${payment['description'] ?? ''}'.trim();
+  /// "Thanh toán bổ sung đơn #48", "Phí quá hạn").
+  /// Nếu là thanh toán khi gia hạn thuê tủ thì đổi "Thanh toán bổ sung" thành
+  /// "Thanh toán gia hạn thời gian". Nếu không phải do thanh toán gia hạn thì giữ nguyên.
+  static String _sectionLabel(
+    Map<String, dynamic> payment,
+    int index, {
+    bool isRentalExtension = false,
+  }) {
+    var description = '${payment['description'] ?? ''}'.trim();
+    if (isRentalExtension) {
+      if (description.isEmpty) {
+        description = 'Thanh toán gia hạn thời gian';
+      } else {
+        description = description.replaceAll(
+          RegExp(r'thanh toán bổ sung', caseSensitive: false),
+          'Thanh toán gia hạn thời gian',
+        );
+      }
+    }
     final order = 'Lần ${index + 1}';
     return description.isEmpty ? order : '$order · $description';
   }

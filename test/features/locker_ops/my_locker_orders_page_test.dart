@@ -637,6 +637,185 @@ void main() {
       expect(find.text('#ORD-SEND-1'), findsOneWidget);
     },
   );
+
+  testWidgets(
+    'hiển thị Thanh toán gia hạn thời gian nếu là thanh toán khi gia hạn thuê tủ',
+    (tester) async {
+      final service = _FakePaymentsOrderLockerOpsService(
+        targetOrder: {
+          'id': 73,
+          'type': 'RENTAL',
+          'status': 'STORING',
+          'paymentStatus': 'PAID',
+          'totalPrice': 7000,
+          'paidAmount': 7000,
+          'orderCode': 'ORD-20261007-X3YAAA',
+          'createdAt': '2026-10-07T14:56:41',
+          'lockerId': 10,
+          'sendBoxId': 5001,
+        },
+        payments: [
+          {
+            'id': 1,
+            'status': 'COMPLETED',
+            'amount': 4000,
+            'method': 'SEPAY',
+            'description': 'Thanh toán đơn #73',
+            'createdAt': '2026-10-07T14:56:41',
+          },
+          {
+            'id': 2,
+            'status': 'COMPLETED',
+            'amount': 3000,
+            'method': 'WALLET',
+            'description': 'Thanh toán bổ sung đơn #73',
+            'createdAt': '2026-10-09T22:55:29',
+          },
+        ],
+        timeline: [
+          {
+            'oldStatus': 'INITIALIZED',
+            'newStatus': 'STORING',
+            'note': 'Order created',
+            'createdAt': '2026-10-07T14:56:41',
+          },
+          {
+            'oldStatus': 'STORING',
+            'newStatus': 'STORING',
+            'note': 'Rental extended by 3h until 2026-10-09T22:00:00',
+            'createdAt': '2026-10-09T22:50:00',
+          },
+        ],
+      );
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: MediaQuery(
+            data: const MediaQueryData(size: Size(390, 844)),
+            child: MyLockerOrdersPage(service: service),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // Mở detail sheet của đơn
+      await tester.tap(find.text('Tủ Test'));
+      await tester.pumpAndSettle();
+
+      // Lần 1 giữ nguyên
+      expect(find.text('Lần 1 · Thanh toán đơn #73'), findsOneWidget);
+      // Lần 2 đã được sửa thành Thanh toán gia hạn thời gian
+      expect(find.text('Lần 2 · Thanh toán gia hạn thời gian đơn #73'), findsOneWidget);
+      expect(find.text('Lần 2 · Thanh toán bổ sung đơn #73'), findsNothing);
+    },
+  );
+
+  testWidgets(
+    'giữ nguyên Thanh toán bổ sung nếu không phải thanh toán do gia hạn (đơn SEND)',
+    (tester) async {
+      final service = _FakePaymentsOrderLockerOpsService(
+        targetOrder: {
+          'id': 73,
+          'type': 'SEND',
+          'status': 'STORING',
+          'paymentStatus': 'PAID',
+          'totalPrice': 7000,
+          'paidAmount': 7000,
+          'orderCode': 'ORD-20261007-X3YAAA',
+          'createdAt': '2026-10-07T14:56:41',
+          'lockerId': 10,
+          'sendBoxId': 5001,
+        },
+        payments: [
+          {
+            'id': 1,
+            'status': 'COMPLETED',
+            'amount': 4000,
+            'method': 'SEPAY',
+            'description': 'Thanh toán đơn #73',
+            'createdAt': '2026-10-07T14:56:41',
+          },
+          {
+            'id': 2,
+            'status': 'COMPLETED',
+            'amount': 3000,
+            'method': 'WALLET',
+            'description': 'Thanh toán bổ sung đơn #73',
+            'createdAt': '2026-10-09T22:55:29',
+          },
+        ],
+        timeline: [
+          // Không có sự kiện Rental extended
+          {
+            'oldStatus': 'INITIALIZED',
+            'newStatus': 'STORING',
+            'note': 'Order created',
+            'createdAt': '2026-10-07T14:56:41',
+          },
+        ],
+      );
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: MediaQuery(
+            data: const MediaQueryData(size: Size(390, 844)),
+            child: MyLockerOrdersPage(service: service),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // Mở detail sheet của đơn
+      await tester.tap(find.text('Tủ Test'));
+      await tester.pumpAndSettle();
+
+      // Lần 1 giữ nguyên
+      expect(find.text('Lần 1 · Thanh toán đơn #73'), findsOneWidget);
+      // Lần 2 không do gia hạn nên giữ nguyên Thanh toán bổ sung
+      expect(find.text('Lần 2 · Thanh toán bổ sung đơn #73'), findsOneWidget);
+      expect(find.text('Lần 2 · Thanh toán gia hạn thời gian đơn #73'), findsNothing);
+    },
+  );
+}
+
+class _FakePaymentsOrderLockerOpsService extends LockerOpsService {
+  _FakePaymentsOrderLockerOpsService({
+    required this.targetOrder,
+    required this.payments,
+    this.timeline = const [],
+  }) : super(dio: createMockDio().dio);
+
+  final Map<String, dynamic> targetOrder;
+  final List<Map<String, dynamic>> payments;
+  final List<Map<String, dynamic>> timeline;
+
+  @override
+  Future<List<Map<String, dynamic>>> myOrders() async => [targetOrder];
+
+  @override
+  Future<Map<String, dynamic>> order(int orderId) async => targetOrder;
+
+  @override
+  Future<Map<String, dynamic>> locker(int lockerId) async => {
+    'id': lockerId,
+    'name': 'Tủ Test',
+  };
+
+  @override
+  Future<Map<String, dynamic>> layout(int lockerId) async => {
+    'cells': [
+      {'id': 5001, 'boxNumber': 1},
+    ],
+  };
+
+  @override
+  Future<List<Map<String, dynamic>>> paymentsByOrder(int orderId) async => payments;
+
+  @override
+  Future<List<Map<String, dynamic>>> orderTimeline(int orderId) async => timeline;
+
+  @override
+  Future<List<Map<String, dynamic>>> myReports() async => const [];
 }
 
 class _FakeMultipleOrdersLockerOpsService extends LockerOpsService {
