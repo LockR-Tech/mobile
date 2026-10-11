@@ -383,8 +383,11 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('Ô số 3 đã được báo lỗi.'), findsOneWidget);
-      expect(find.text('Hãy hủy đơn này và đặt ô khác.'), findsOneWidget);
+      expect(find.text('Ô số 3 đã được báo sự cố'), findsOneWidget);
+      expect(
+        find.text('Hãy hủy đơn này và đặt ô khác (hoặc liên hệ KTV).'),
+        findsOneWidget,
+      );
     },
   );
 

@@ -111,11 +111,12 @@ void main() {
     expect(find.textContaining('Ngăn 4 chập chờn'), findsWidgets);
     expect(find.textContaining('Đạt'), findsWidgets);
     expect(find.textContaining('Không đạt'), findsWidgets);
-    expect(find.textContaining('Phiếu sự cố kỹ thuật liên quan: #18'),
+    // Mã phiếu hiển thị theo định dạng RPT-<id> thống nhất toàn app.
+    expect(find.textContaining('Phiếu sự cố kỹ thuật liên quan: RPT-18'),
         findsWidgets);
 
-    // Tap pinned bottom action bar button "Xử lý phiếu sự cố #18"
-    final bottomBtn = find.text('Xử lý phiếu sự cố #18');
+    // Tap pinned bottom action bar button "Xử lý phiếu sự cố RPT-18"
+    final bottomBtn = find.text('Xử lý phiếu sự cố RPT-18');
     expect(bottomBtn, findsOneWidget);
     await tester.tap(bottomBtn);
     expect(openedReportId, 18);

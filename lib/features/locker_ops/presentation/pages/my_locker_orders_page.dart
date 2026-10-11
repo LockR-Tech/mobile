@@ -1811,8 +1811,13 @@ class _OrderCard extends StatelessWidget {
                       ),
                       const SizedBox(height: 14),
                       // Price + action
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.center,
+                      // Wrap chứ không dùng Row: nhãn nút đổi theo trạng thái (vd. "Thanh toán
+                      // & lấy đồ") có thể dài hơn chỗ trống trên màn hẹp / chữ phóng to — khi
+                      // không đủ chỗ thì nút xuống dòng thay vì tràn vạch vàng-đen.
+                      Wrap(
+                        spacing: 12,
+                        runSpacing: 8,
+                        crossAxisAlignment: WrapCrossAlignment.center,
                         children: [
                           Text(
                             fmtPrice(order['totalPrice']),
@@ -1822,7 +1827,6 @@ class _OrderCard extends StatelessWidget {
                               color: context.textPrimary,
                             ),
                           ),
-                          const SizedBox(width: 12),
                           Builder(
                             builder: (ctx) {
                               final due = orderAmountDue(order);
@@ -2255,14 +2259,20 @@ class _FaultOrderBanner extends StatelessWidget {
                     children: [
                       Icon(isRelocated ? LucideIcons.arrowRightLeft : LucideIcons.fileText, size: 12, color: fg),
                       const SizedBox(width: 5),
-                      Text(
-                        isRelocated
-                            ? 'Xem chi tiết điều chuyển & ảnh KTV'
-                            : 'Xem biên bản & ảnh minh chứng',
-                        style: TextStyle(
-                          fontSize: 11.5,
-                          fontWeight: FontWeight.bold,
-                          color: fg,
+                      // Flexible: banner nằm trong thẻ đơn / sheet chi tiết nên trên màn hẹp
+                      // hoặc chữ phóng to nhãn này dài hơn bề ngang — cho xuống dòng thay vì tràn.
+                      Flexible(
+                        child: Text(
+                          isRelocated
+                              ? 'Xem chi tiết điều chuyển & ảnh KTV'
+                              : 'Xem biên bản & ảnh minh chứng',
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 11.5,
+                            fontWeight: FontWeight.bold,
+                            color: fg,
+                          ),
                         ),
                       ),
                       const SizedBox(width: 4),

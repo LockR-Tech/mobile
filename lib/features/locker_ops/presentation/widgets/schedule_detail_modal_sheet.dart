@@ -1269,12 +1269,15 @@ class _ScheduleDetailModalSheetState extends State<ScheduleDetailModalSheet> {
                                             color: Color(0xFFEA580C),
                                           ),
                                           const SizedBox(width: 6),
-                                          Text(
-                                            'Phiếu sự cố kỹ thuật liên quan: RPT-$repId',
-                                            style: const TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 12.5,
-                                              color: Color(0xFFC2410C),
+                                          // Flexible: màn hẹp thì xuống dòng thay vì tràn
+                                          Flexible(
+                                            child: Text(
+                                              'Phiếu sự cố kỹ thuật liên quan: RPT-$repId',
+                                              style: const TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 12.5,
+                                                color: Color(0xFFC2410C),
+                                              ),
                                             ),
                                           ),
                                         ],
