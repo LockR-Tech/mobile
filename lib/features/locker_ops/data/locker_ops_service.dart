@@ -1,6 +1,9 @@
 import 'package:dio/dio.dart';
 import 'package:smart_laundry_locker/core/media/media_upload.dart';
 import 'package:smart_laundry_locker/core/network/dio_client.dart';
+import 'package:smart_laundry_locker/features/locker_ops/data/force_open_result.dart';
+
+export 'package:smart_laundry_locker/features/locker_ops/data/force_open_result.dart';
 
 /// Thin typed gateway client for the locker flow (Phase 1+2 backend).
 /// All calls go through the API gateway with the JWT already attached
@@ -871,9 +874,12 @@ class LockerOpsService {
   }
 
   /// Mở ô khẩn cấp không cần PIN khách — luôn được ghi vào audit log
-  /// (credential MASTER) ở backend.
-  Future<Map<String, dynamic>> forceOpenBox(int boxId) =>
-      _map('POST', '/api/locker-technician/boxes/$boxId/force-open');
+  /// (credential MASTER) ở backend. Backend trả 200 cả khi ô chưa mở: nơi gọi
+  /// phải kiểm tra [ForceOpenResult.accepted] trước khi báo thành công.
+  Future<ForceOpenResult> forceOpenBox(int boxId) async =>
+      ForceOpenResult.fromResponse(
+        await _map('POST', '/api/locker-technician/boxes/$boxId/force-open'),
+      );
 
   /// Điểm đánh giá trung bình KTV nhận được từ các report mình xử lý.
   Future<Map<String, dynamic>> myRatingAverage() =>
