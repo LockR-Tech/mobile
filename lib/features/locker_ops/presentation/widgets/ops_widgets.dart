@@ -186,13 +186,15 @@ class OpsSectionLabel extends StatelessWidget {
             Icon(icon, size: 16, color: opsPrimary),
             const SizedBox(width: 6),
           ],
-          Text(
-            text,
-            style: const TextStyle(
-              fontWeight: FontWeight.w800,
-              fontSize: 13,
-              letterSpacing: 0.2,
-              color: opsDark,
+          Expanded(
+            child: Text(
+              text,
+              style: const TextStyle(
+                fontWeight: FontWeight.w800,
+                fontSize: 13,
+                letterSpacing: 0.2,
+                color: opsDark,
+              ),
             ),
           ),
         ],
