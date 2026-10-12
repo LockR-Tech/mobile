@@ -2,10 +2,10 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/domain/entities/drone_delivery_stage.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/domain/entities/drone_delivery_status.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/domain/entities/drone_incident_labels.dart';
+import 'package:smart_laundry_locker/features/drone_delivery/domain/entities/drone_locker_availability.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/domain/entities/drone_viewer.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/infrastructure/models/drone_delivery_response.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/presentation/providers/drone_delivery_providers.dart';
-import 'package:smart_laundry_locker/features/drone_delivery/presentation/widgets/drone_booking_sheet.dart';
 
 void main() {
   group('thao tác theo vai trò người xem', () {
