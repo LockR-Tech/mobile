@@ -244,6 +244,10 @@ class LockerOpsService {
   Future<List<Map<String, dynamic>>> paymentsByOrder(int orderId) =>
       _list('/api/payments/order/$orderId');
 
+  /// Refunds recorded for an order.
+  Future<List<Map<String, dynamic>>> refundsByOrder(int orderId) =>
+      _list('/api/payments/order/$orderId/refunds');
+
   /// Số dư ví hiện tại của khách (VND).
   Future<num> walletBalance() async {
     final data = await _map('GET', '/api/wallet');
