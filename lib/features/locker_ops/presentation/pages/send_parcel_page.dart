@@ -12,7 +12,7 @@ import 'package:smart_laundry_locker/features/locker_ops/presentation/utils/busi
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/locker_picker.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/ops_widgets.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/order_extras.dart';
-import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/order_payment_sheet.dart';
+import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/sepay_payment.dart';
 import 'package:smart_laundry_locker/shared/shared.dart';
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
 
@@ -76,7 +76,8 @@ class _SendParcelPageState extends State<SendParcelPage>
   String? _promoCode;
   String _size = 'MEDIUM';
 
-  Timer? _paymentPollTimer;
+  /// Thanh toán SePay của đơn vừa tạo (mã VietQR hiện ngay trên màn).
+  SepayPaymentController? _payment;
 
   /// Tên tủ hiển thị khi mở từ lưới ô mà nơi gọi chỉ truyền id.
   String? _lockerName;
@@ -122,7 +123,7 @@ class _SendParcelPageState extends State<SendParcelPage>
 
   @override
   void dispose() {
-    _paymentPollTimer?.cancel();
+    _disposePayment();
     WidgetsBinding.instance.removeObserver(this);
     _phoneCtrl.dispose();
     _nameCtrl.dispose();
@@ -131,29 +132,56 @@ class _SendParcelPageState extends State<SendParcelPage>
     super.dispose();
   }
 
-  void _startPaymentPolling(int orderId) {
-    _paymentPollTimer?.cancel();
-    _paymentPollTimer = Timer.periodic(const Duration(seconds: 3), (_) async {
-      try {
-        final paid = await _service.orderStatus(orderId);
-        if (paid && mounted) {
-          _stopPaymentPolling();
-          await _refreshOrder();
-          if (!mounted) return;
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Thanh toán thành công! Mã PIN mở ô tủ đã sẵn sàng.'),
-              backgroundColor: Color(0xFF16A34A),
-            ),
-          );
-        }
-      } catch (_) {}
-    });
+  /// Đơn có phí mà chưa thanh toán.
+  bool _isUnpaid(Map<String, dynamic> order) {
+    final total = order['totalPrice'];
+    final hasFee = total is num ? total > 0 : _netFee > 0;
+    return hasFee && (order['paymentStatus'] as String?) != 'PAID';
   }
 
-  void _stopPaymentPolling() {
-    _paymentPollTimer?.cancel();
-    _paymentPollTimer = null;
+  /// Chưa bỏ hàng mà chưa trả ⇒ hiện mã VietQR SePay ngay trên màn: tạo
+  /// checkout MỘT lần cho đơn này, tự hỏi trạng thái ~3 s/lần và khi app quay
+  /// lại. Đơn đã trả / đã bỏ hàng ⇒ dừng.
+  void _syncPayment() {
+    final order = _order;
+    final id = order?['id'] as int?;
+    final needsPayment = order != null &&
+        id != null &&
+        (order['status'] as String?) != 'STORING' &&
+        _isUnpaid(order);
+    if (!needsPayment) {
+      _disposePayment();
+      return;
+    }
+    if (_payment?.orderId == id) return;
+    _disposePayment();
+    final payment = SepayPaymentController(
+      service: _service,
+      orderId: id,
+      amount: orderAmountDue(order),
+    )..addListener(_onPaymentChanged);
+    _payment = payment;
+    unawaited(payment.start());
+  }
+
+  void _disposePayment() {
+    final payment = _payment;
+    _payment = null;
+    payment
+      ?..removeListener(_onPaymentChanged)
+      ..dispose();
+  }
+
+  void _onPaymentChanged() {
+    final payment = _payment;
+    if (payment == null || !payment.paid || !mounted) return;
+    // Đang trong notifyListeners của controller ⇒ huỷ nó ở microtask sau.
+    _payment = null;
+    payment.removeListener(_onPaymentChanged);
+    scheduleMicrotask(payment.dispose);
+    setState(() => _order = {...?_order, 'paymentStatus': 'PAID'});
+    _refreshOrder();
+    _snack('Thanh toán thành công! Mã PIN mở ô tủ đã sẵn sàng.');
   }
 
   Future<void> _loadLockers() async {
@@ -197,9 +225,9 @@ class _SendParcelPageState extends State<SendParcelPage>
         size: _size,
       );
       if (!mounted) return;
-      // Không tự tạo giao dịch thanh toán: khách bấm "Thanh toán" và chọn phương
-      // thức admin đang bật. Mỗi lần bấm là một lần checkout.
       setState(() => _order = order);
+      // Chưa trả ⇒ hiện mã VietQR SePay ngay (một checkout cho đơn này).
+      _syncPayment();
     } catch (e) {
       _snack(LockerOpsService.errorMessage(e));
     } finally {
@@ -213,59 +241,18 @@ class _SendParcelPageState extends State<SendParcelPage>
     try {
       final fresh = await _service.order(id);
       if (!mounted || fresh.isEmpty) return;
-      setState(() => _order = fresh);
-      // Dừng poll nếu đã trả tiền
-      final payStatus = fresh['paymentStatus'] as String?;
-      if (payStatus == 'PAID') {
-        _stopPaymentPolling();
-      }
+      setState(() {
+        // Vừa thấy PAID qua /status mà bản đơn chưa kịp cập nhật ⇒ giữ PAID.
+        final wasPaid = (_order?['paymentStatus'] as String?) == 'PAID';
+        final freshPaid = (fresh['paymentStatus'] as String?) == 'PAID';
+        _order = {
+          ...fresh,
+          if (wasPaid && !freshPaid) 'paymentStatus': 'PAID',
+        };
+      });
+      _syncPayment();
     } catch (_) {
       // Giữ bản đang hiển thị; lần sau quay lại app sẽ thử tải lại.
-    }
-  }
-
-  Future<void> _pay() async {
-    final id = _order?['id'] as int?;
-    if (id == null) return;
-    setState(() => _loading = true);
-    try {
-      // Thu phần còn thiếu, không thu lại phần khách đã trả.
-      final order = _order;
-      final due = order == null ? null : orderAmountDue(order);
-      final outcome = await payOrderAndAwaitPaid(
-        context,
-        service: _service,
-        orderId: id,
-        total: due ?? _netFee.toDouble(),
-        enabledMethods: businessConfig.enabledPaymentMethods,
-      );
-      if (!mounted || outcome == OrderPaymentOutcome.cancelled) return;
-      if (outcome == OrderPaymentOutcome.paid) {
-        // Ở lại màn này: đơn đã PAID thì hiện mã mở ô để khách bỏ đồ tiếp.
-        _stopPaymentPolling();
-        await _refreshOrder();
-        _snack('Thanh toán thành công! Mã PIN mở ô tủ đã sẵn sàng.');
-      } else if (outcome == OrderPaymentOutcome.failed) {
-        await showPaymentResultDialog(
-          context,
-          type: PaymentStatusType.failure,
-          title: 'Thanh toán không thành công',
-          message:
-              'Giao dịch thanh toán đơn gửi hàng không thành công. Vui lòng kiểm tra và thử lại.',
-          primaryButtonText: 'Đã hiểu',
-        );
-      } else {
-        // pending — webhook chưa về: tiếp tục hỏi nền để màn tự cập nhật.
-        await _refreshOrder();
-        if ((_order?['paymentStatus'] as String?) != 'PAID') {
-          _startPaymentPolling(id);
-        }
-        _snack('Đang chờ xác nhận thanh toán, vui lòng đợi giây lát');
-      }
-    } catch (e) {
-      _snack(LockerOpsService.errorMessage(e));
-    } finally {
-      if (mounted) setState(() => _loading = false);
     }
   }
 
@@ -302,6 +289,7 @@ class _SendParcelPageState extends State<SendParcelPage>
       final updated = await _service.confirmDrop(id);
       if (!mounted) return;
       setState(() => _order = updated);
+      _syncPayment();
       _snack('Đã gửi PIN nhận hàng tới người nhận');
     } catch (e) {
       _snack(LockerOpsService.errorMessage(e));
@@ -669,6 +657,7 @@ class _SendParcelPageState extends State<SendParcelPage>
     final unpaid = (order['paymentStatus'] as String?) != 'PAID';
     final config = businessConfig;
     final mustPayFirst = hasFee && unpaid && config.requirePaymentBeforeDrop;
+    final payment = _payment;
 
     return ListView(
       padding: const EdgeInsets.all(16),
@@ -702,12 +691,8 @@ class _SendParcelPageState extends State<SendParcelPage>
                 const SizedBox(height: 14),
               ],
               if (!isDropped && mustPayFirst) ...[
-                const _ResultHeadline(
-                  icon: LucideIcons.lockKeyhole,
-                  title: 'Chờ thanh toán',
-                  subtitle:
-                      'Mã bỏ hàng sẽ hiện ngay sau khi đơn được ghi nhận đã thanh toán.',
-                ),
+                // Mã VietQR SePay thế chỗ mã bỏ hàng cho tới khi đơn PAID.
+                if (payment != null) SepayQrSection(controller: payment),
               ] else ...[
                 if (!isDropped) ...[
                   _ResultHeadline(
@@ -790,39 +775,20 @@ class _SendParcelPageState extends State<SendParcelPage>
         const SizedBox(height: 16),
         if (!isDropped && mustPayFirst) ...[
           OpsBanner(
-            tone: OpsBannerTone.warning,
+            tone: OpsBannerTone.info,
             icon: LucideIcons.badgeAlert,
             text:
-                'Đơn chưa thanh toán. Thanh toán trong ${config.autoCancelUnpaidMinutes} phút để giữ ô — mã bỏ hàng sẽ hiện sau khi thanh toán.',
+                'Quét mã QR trên và chuyển khoản trong ${config.autoCancelUnpaidMinutes} phút để giữ ô — mã bỏ hàng sẽ tự hiện sau khi thanh toán.',
           ),
           const SizedBox(height: 12),
-          OpsPrimaryButton(
-            label: 'Thanh toán ${fmtPrice(orderAmountDue(order))}',
-            icon: LucideIcons.wallet,
-            loading: _loading,
-            onPressed: _pay,
-          ),
-          const SizedBox(height: 10),
-          Center(
-            child: TextButton.icon(
-              onPressed: _loading ? null : _refreshOrder,
-              icon: const Icon(LucideIcons.refreshCw, size: 14, color: opsMutedText),
-              label: const Text(
-                'Đã thanh toán? Kiểm tra lại trạng thái',
-                style: TextStyle(color: opsMutedText, fontSize: 13),
-              ),
-            ),
-          ),
+          if (payment != null) SepayPaymentActions(controller: payment),
         ] else if (!isDropped) ...[
-          if (hasFee && unpaid) ...[
+          if (hasFee && unpaid && payment != null) ...[
             // Admin cho bỏ hàng trước khi trả, nhưng xác nhận bỏ hàng vẫn cần
             // đơn đã thanh toán.
-            OpsPrimaryButton(
-              label: 'Thanh toán ${fmtPrice(orderAmountDue(order))}',
-              icon: LucideIcons.wallet,
-              loading: _loading,
-              onPressed: _pay,
-            ),
+            SepayQrSection(controller: payment),
+            const SizedBox(height: 12),
+            SepayPaymentActions(controller: payment),
             const SizedBox(height: 12),
           ],
           const OpsBanner(

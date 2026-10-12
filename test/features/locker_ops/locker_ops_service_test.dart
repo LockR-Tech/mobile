@@ -1,6 +1,9 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:smart_laundry_locker/core/constants/payment_methods.dart';
 import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
+import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/order_payment_sheet.dart'
+    show checkoutQrUrl;
 
 import '../../helpers/test_helpers.dart';
 
@@ -564,26 +567,45 @@ void main() {
       expect(result['status'], equals('COMPLETED'));
     });
 
-    test('checkout() VNPAY returns paymentUrl', () async {
+    test('checkout() SEPAY returns VietQR qrCodeUrl', () async {
       adapter.onPost(
         '/api/payments/checkout',
         (server) => server.reply(
           200,
           apiOk({
             'orderId': 300,
-            'method': 'VNPAY',
-            'paymentUrl':
-                'https://sandbox.vnpayment.vn/paymentv2/vpcpay.html?abc=123',
+            'method': 'SEPAY',
+            'qrCodeUrl': 'https://qr.sepay.vn/img?acc=1&amount=15000',
           }),
         ),
       );
 
       final result = await service.checkout(
         300,
-        'VNPAY',
-        returnUrl: 'http://localhost/callback',
+        'SEPAY',
+        returnUrl: 'http://localhost/payments/sepay/callback',
       );
-      expect(result['paymentUrl'], startsWith('https://sandbox.vnpayment.vn'));
+      expect(checkoutQrUrl(result), startsWith('https://qr.sepay.vn'));
+    });
+
+    test('errorMessage() maps PAYMENT_METHOD_UNSUPPORTED (MoMo/VNPay đã bỏ)', () {
+      final error = DioException(
+        requestOptions: RequestOptions(path: '/api/payments/checkout'),
+        response: Response(
+          requestOptions: RequestOptions(path: '/api/payments/checkout'),
+          statusCode: 400,
+          data: {
+            'success': false,
+            'code': 'PAYMENT_METHOD_UNSUPPORTED',
+            'message': 'Payment method VNPAY is not supported',
+          },
+        ),
+      );
+
+      expect(
+        LockerOpsService.errorMessage(error),
+        PaymentMethods.unsupportedMessage,
+      );
     });
 
     test('checkout() on 400 throws exception', () async {

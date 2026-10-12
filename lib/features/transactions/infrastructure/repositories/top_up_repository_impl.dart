@@ -21,7 +21,7 @@ class TopUpRepositoryImpl implements TopUpRepository {
   @override
   Future<Either<Failure, TopUpResult>> createTopUpUrl({
     required int amount,
-    String method = 'VNPAY',
+    String method = 'SEPAY',
   }) async {
     try {
       debugPrint('[TOPUP][repo] createTopUpUrl(amount=$amount, method=$method)');

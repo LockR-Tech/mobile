@@ -760,7 +760,7 @@ class _ProfilePageState extends State<ProfilePage>
             _helpRow(
               LucideIcons.wallet,
               'Nạp ví / thanh toán',
-              'Nạp ví qua SePay hoặc VNPay ở mục Giao dịch; khi thanh toán đơn, chọn một phương thức đang được hỗ trợ (Ví Lock.R, SePay, VNPay…).',
+              'Mọi đơn thanh toán bằng chuyển khoản SePay (VietQR): quét mã hoặc bấm "Thanh toán bằng app ngân hàng" để mở app ngân hàng điền sẵn. Nạp ví cũng qua SePay ở mục Giao dịch.',
             ),
           ],
         ),

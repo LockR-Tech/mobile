@@ -12,10 +12,10 @@ class TopUpRemoteDataSourceImpl implements TopUpRemoteDataSource {
   TopUpRemoteDataSourceImpl(this._apiClient);
 
   @override
-  Future<TopUpResponseDto> createTopUpUrl({required int amount, String method = 'VNPAY'}) async {
-    final returnUrl = method == 'SEPAY'
-        ? '${EnvConfig.apiBaseUrl}/payments/sepay/callback'
-        : '${EnvConfig.apiBaseUrl}/payments/vnpay/callback';
+  Future<TopUpResponseDto> createTopUpUrl({required int amount, String method = 'SEPAY'}) async {
+    // Nạp ví chỉ qua SePay (VNPay/MoMo đã bỏ — backend trả 400
+    // PAYMENT_METHOD_UNSUPPORTED nếu nhận phương thức khác).
+    final returnUrl = '${EnvConfig.apiBaseUrl}/payments/sepay/callback';
 
     final dto = TopUpRequestDto(amount: amount, returnUrl: returnUrl, method: method);
     debugPrint('[TOPUP][ds] POST $_path payload=${dto.toJson()}');
