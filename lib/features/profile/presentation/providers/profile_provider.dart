@@ -4,26 +4,21 @@ import 'package:smart_laundry_locker/core/network/api_client.dart';
 import 'package:smart_laundry_locker/core/services/firebase_messaging_service.dart';
 import 'package:smart_laundry_locker/features/profile/application/use_cases/get_profile_use_case.dart';
 import 'package:smart_laundry_locker/features/profile/application/use_cases/update_profile_use_case.dart';
-import 'package:smart_laundry_locker/features/profile/application/use_cases/get_courier_profile_use_case.dart';
 import 'package:smart_laundry_locker/features/profile/domain/entities/user_profile.dart';
-import 'package:smart_laundry_locker/features/profile/domain/entities/courier_profile.dart';
 import 'package:smart_laundry_locker/core/services/token_service.dart';
 import 'package:flutter/foundation.dart';
 
 class ProfileProvider extends ChangeNotifier {
   final GetProfileUseCase _getProfileUseCase;
   final UpdateProfileUseCase _updateProfileUseCase;
-  final GetCourierProfileUseCase _getCourierProfileUseCase;
   final ApiClient _apiClient;
 
   ProfileProvider({
     required GetProfileUseCase getProfileUseCase,
     required UpdateProfileUseCase updateProfileUseCase,
-    required GetCourierProfileUseCase getCourierProfileUseCase,
     required ApiClient apiClient,
   }) : _getProfileUseCase = getProfileUseCase,
        _updateProfileUseCase = updateProfileUseCase,
-       _getCourierProfileUseCase = getCourierProfileUseCase,
        _apiClient = apiClient;
 
   bool _isDisposed = false;
@@ -53,14 +48,12 @@ class ProfileProvider extends ChangeNotifier {
   UserProfile? _profile;
   UserProfile? get profile => _profile;
 
-  CourierProfile? _courierProfile;
-  CourierProfile? get courierProfile => _courierProfile;
-
-  bool _isCourierLoading = false;
-  bool get isCourierLoading => _isCourierLoading;
-
-  String? _courierError;
-  String? get courierError => _courierError;
+  /// `true` khi [profile] là dữ liệu thật từ `GET /api/user/profile`. Khi tải
+  /// lỗi, [profile] có thể chỉ là bản dựng tạm từ token (tên/email) để các màn
+  /// KTV vẫn có tên hiển thị — màn Hồ sơ dựa vào cờ này để báo lỗi + "Thử lại"
+  /// thay vì coi như đã tải xong (hoặc đá người dùng ra màn đăng nhập).
+  bool _hasServerProfile = false;
+  bool get hasServerProfile => _hasServerProfile;
 
   bool _isFaceRegistered = false;
   bool get isFaceRegistered => _isFaceRegistered;
@@ -78,6 +71,7 @@ class ProfileProvider extends ChangeNotifier {
         _error = failure.message;
         _isSuccess = false;
         if (_profile == null) {
+          _hasServerProfile = false;
           final userName = await TokenService.getUserName();
           final userEmail = await TokenService.getUserEmail();
           final userId = await TokenService.getUserId();
@@ -100,6 +94,7 @@ class ProfileProvider extends ChangeNotifier {
         _error = null;
         _isSuccess = true;
         _profile = profileEntity;
+        _hasServerProfile = true;
 
         // Fetch face registration status
         final faceResult = await _getFaceRegistrationStatus(profileEntity.id);
@@ -144,7 +139,11 @@ class ProfileProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> updateProfile({String? fullName, String? phoneNumber}) async {
+  Future<void> updateProfile({
+    String? fullName,
+    String? phoneNumber,
+    String? email,
+  }) async {
     _isLoading = true;
     _error = null;
     _isSuccess = false;
@@ -153,6 +152,7 @@ class ProfileProvider extends ChangeNotifier {
     final params = UpdateProfileParams.fromForm(
       fullName: fullName,
       phoneNumber: phoneNumber,
+      email: email,
     );
 
     final result = await _updateProfileUseCase(params);
@@ -169,28 +169,7 @@ class ProfileProvider extends ChangeNotifier {
         _error = null;
         _isSuccess = true;
         _profile = updatedProfile;
-        notifyListeners();
-      },
-    );
-  }
-
-  Future<void> loadCourierProfile(String userId) async {
-    _isCourierLoading = true;
-    _courierError = null;
-    notifyListeners();
-
-    final result = await _getCourierProfileUseCase(userId);
-
-    result.fold(
-      (failure) {
-        _isCourierLoading = false;
-        _courierError = failure.message;
-        notifyListeners();
-      },
-      (courierEntity) {
-        _isCourierLoading = false;
-        _courierError = null;
-        _courierProfile = courierEntity;
+        _hasServerProfile = true;
         notifyListeners();
       },
     );
@@ -206,9 +185,8 @@ class ProfileProvider extends ChangeNotifier {
     _error = null;
     _isSuccess = false;
     _profile = null;
-    _courierProfile = null;
-    _isCourierLoading = false;
-    _courierError = null;
+    _hasServerProfile = false;
+    _isFaceRegistered = false;
     notifyListeners();
   }
 }

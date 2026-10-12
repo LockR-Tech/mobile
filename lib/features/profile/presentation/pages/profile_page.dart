@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:smart_laundry_locker/core/config/feature_flags.dart';
+import 'package:smart_laundry_locker/core/services/session_service.dart';
 import 'package:smart_laundry_locker/core/services/token_service.dart';
 import 'package:smart_laundry_locker/features/notifications/presentation/providers/notification_provider.dart';
 import 'package:smart_laundry_locker/core/network/api_client.dart';
@@ -16,6 +17,8 @@ import 'package:smart_laundry_locker/core/theme/shadcn_theme.dart';
 import 'package:smart_laundry_locker/core/theme/theme_provider.dart';
 import 'package:smart_laundry_locker/features/assistant/presentation/providers/assistant_availability.dart';
 import 'package:smart_laundry_locker/features/profile/presentation/mixins/profile_image_actions_mixin.dart';
+import 'package:smart_laundry_locker/features/profile/presentation/pages/location_permission_page.dart';
+import 'package:smart_laundry_locker/features/profile/presentation/pages/loyalty_page.dart';
 import 'package:smart_laundry_locker/features/profile/presentation/widgets/profile_header.dart';
 import 'package:smart_laundry_locker/features/profile/presentation/widgets/profile_menu_item.dart';
 import 'package:smart_laundry_locker/shared/shared.dart';
@@ -38,15 +41,17 @@ class _ProfilePageState extends State<ProfilePage>
   File? localAvatarFile;
 
   @override
-  File? localBannerFile;
-
-  @override
   bool isAvatarSyncing = false;
 
   // User data
   Map<String, dynamic>? _userData;
   bool _isLoading = true;
   bool _isLoggedIn = false;
+
+  /// Có token nhưng `GET /api/user/profile` lỗi (mạng, 5xx, 404…). Hiện lỗi +
+  /// "Thử lại" thay vì coi như chưa đăng nhập rồi đá ra màn đăng nhập. Phiên
+  /// hết hạn thật (401 không làm mới được) thì AuthInterceptor tự đăng xuất.
+  String? _loadError;
   late ProfileProvider _profileProvider;
   late DelegationProvider _delegationProvider;
 
@@ -72,6 +77,7 @@ class _ProfilePageState extends State<ProfilePage>
         setState(() {
           _isLoggedIn = false;
           _userData = null;
+          _loadError = null;
         });
       }
     }
@@ -87,6 +93,7 @@ class _ProfilePageState extends State<ProfilePage>
   Future<void> _loadUserProfile({bool forceRefresh = false}) async {
     setState(() {
       _isLoading = true;
+      _loadError = null;
     });
 
     final hasToken = await TokenService.hasToken();
@@ -103,6 +110,24 @@ class _ProfilePageState extends State<ProfilePage>
 
     await _profileProvider.loadProfile();
     if (!mounted) return;
+
+    if (!_profileProvider.hasServerProfile) {
+      // Hết phiên (AuthInterceptor đã xoá token) ⇒ coi như đã đăng xuất.
+      final stillHasToken = await TokenService.hasToken();
+      if (!mounted) return;
+      setState(() {
+        _loadError = stillHasToken
+            ? (_profileProvider.error ?? 'Không tải được hồ sơ.')
+            : null;
+        _isLoggedIn = stillHasToken && _isLoggedIn;
+        _isLoading = false;
+      });
+      return;
+    }
+    if (forceRefresh && _profileProvider.error != null) {
+      // Đã có hồ sơ cũ nhưng làm mới lỗi: vẫn hiện dữ liệu cũ, báo lỗi.
+      _showProfileSnackBar('Không làm mới được hồ sơ: ${_profileProvider.error}');
+    }
 
     final isLoggedIn = _profileProvider.profile != null;
 
@@ -161,6 +186,21 @@ class _ProfilePageState extends State<ProfilePage>
                 child: AppLoadingIndicator(message: 'Đang tải hồ sơ...'),
               ),
             ),
+          ],
+        ),
+      );
+    }
+
+    if (_loadError != null) {
+      return Scaffold(
+        backgroundColor: context.pageBg,
+        body: Column(
+          children: [
+            const BrandHeroHeader(
+              title: 'Hồ sơ',
+              subtitle: 'Quản lý tài khoản của bạn',
+            ),
+            Expanded(child: _buildLoadErrorState(_loadError!)),
           ],
         ),
       );
@@ -232,6 +272,50 @@ class _ProfilePageState extends State<ProfilePage>
     );
   }
 
+  Widget _buildLoadErrorState(String message) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(LucideIcons.cloudOff, size: 56, color: context.textMuted),
+            const SizedBox(height: 16),
+            const Text(
+              'Không tải được hồ sơ',
+              style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              message,
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 13.5, color: context.textMuted),
+            ),
+            const SizedBox(height: 20),
+            FilledButton.icon(
+              onPressed: () => _loadUserProfile(forceRefresh: true),
+              style: FilledButton.styleFrom(
+                backgroundColor: AISLShadcnTheme.navyPrimary,
+              ),
+              icon: const Icon(LucideIcons.refreshCw, size: 16),
+              label: const Text('Thử lại'),
+            ),
+            const SizedBox(height: 8),
+            TextButton(
+              onPressed: _handleLogout,
+              child: Text(
+                'Đăng xuất',
+                style: TextStyle(
+                  color: ShadTheme.of(context).colorScheme.destructive,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildMenuSection() {
     return Column(
       children: [
@@ -248,6 +332,12 @@ class _ProfilePageState extends State<ProfilePage>
               icon: LucideIcons.landmark,
               title: 'Tài khoản nhận hoàn tiền',
               onTap: () => context.push(AppRouter.refundBankAccount),
+            ),
+            ProfileMenuItem(
+              icon: LucideIcons.sparkles,
+              title: 'Điểm thưởng',
+              subtitle: 'Điểm tích lũy, hạng thành viên và lịch sử',
+              onTap: _handleLoyalty,
             ),
             // Tạm ẩn: backend chưa có AI service (/api/auth/ai/* trả 500).
             if (FeatureFlags.faceRecognitionEnabled)
@@ -276,8 +366,8 @@ class _ProfilePageState extends State<ProfilePage>
                 title: 'Gói dịch vụ',
                 onTap: _handlePlans,
               ),
-            // Tạm ẩn: backend chưa có kho voucher (/promotions/vouchers/my 404).
-            // (Trang "Ưu đãi" qua chip ở trang chủ vẫn hoạt động.)
+            // Kho voucher: `GET /api/promotions/vouchers/my` (mã đã lưu từ
+            // trang "Ưu đãi").
             if (FeatureFlags.vouchersEnabled)
               ProfileMenuItem(
                 icon: LucideIcons.ticket,
@@ -421,16 +511,9 @@ class _ProfilePageState extends State<ProfilePage>
         _buildMenuGroup(
           title: 'Cài đặt',
           items: [
-            ProfileMenuItem(
-              icon: LucideIcons.globe,
-              title: 'Ngôn ngữ',
-              onTap: _handleLanguage,
-              trailing: Icon(
-                LucideIcons.chevronRight,
-                size: 16,
-                color: ShadTheme.of(context).colorScheme.mutedForeground,
-              ),
-            ),
+            // "Ngôn ngữ" tạm ẩn: app chưa có bản dịch nào ngoài tiếng Việt
+            // (chưa có l10n/arb), hiện mục này chỉ dẫn tới thông báo "đang phát
+            // triển". Làm riêng khi có bản dịch.
             ProfileMenuItem(
               icon: LucideIcons.palette,
               title: 'Giao diện',
@@ -444,6 +527,7 @@ class _ProfilePageState extends State<ProfilePage>
             ProfileMenuItem(
               icon: LucideIcons.mapPin,
               title: 'Vị trí',
+              subtitle: 'Quyền truy cập vị trí để tìm tủ gần bạn',
               onTap: _handleLocation,
             ),
           ],
@@ -579,9 +663,11 @@ class _ProfilePageState extends State<ProfilePage>
     );
   }
 
-  void _handleEditProfile() {
+  Future<void> _handleEditProfile() async {
     if (!mounted) return;
-    context.pushNamed('profile_detail');
+    await context.pushNamed('profile_detail');
+    // Tên/SĐT/email có thể vừa đổi ⇒ dựng lại thẻ hồ sơ.
+    if (mounted) await _loadUserProfile();
   }
 
   void _handleFaceRegistration() {
@@ -604,8 +690,11 @@ class _ProfilePageState extends State<ProfilePage>
     context.push(AppRouter.myVouchers);
   }
 
-  void _handleLanguage() {
-    _showProfileSnackBar('Tính năng đang được phát triển');
+  void _handleLoyalty() {
+    if (!mounted) return;
+    Navigator.of(context).push<void>(
+      MaterialPageRoute(builder: (_) => const LoyaltyPage()),
+    );
   }
 
   void _handleTheme() {
@@ -623,7 +712,10 @@ class _ProfilePageState extends State<ProfilePage>
   }
 
   void _handleLocation() {
-    _showProfileSnackBar('Tính năng đang được phát triển');
+    if (!mounted) return;
+    Navigator.of(context).push<void>(
+      MaterialPageRoute(builder: (_) => const LocationPermissionPage()),
+    );
   }
 
   void _showQuickHelp() {
@@ -664,7 +756,7 @@ class _ProfilePageState extends State<ProfilePage>
             _helpRow(
               LucideIcons.wallet,
               'Nạp ví / thanh toán',
-              'Nạp qua VNPay ở Trang chủ; khi thanh toán đơn có thể chọn Ví, VNPay, MoMo hoặc Tiền mặt.',
+              'Nạp ví qua SePay hoặc VNPay ở mục Giao dịch; khi thanh toán đơn, chọn một phương thức đang được hỗ trợ (Ví Lock.R, SePay, VNPay…).',
             ),
           ],
         ),
@@ -839,11 +931,17 @@ class _ProfilePageState extends State<ProfilePage>
             isDestructiveAction: true,
             onPressed: () async {
               Navigator.of(dialogContext).pop();
-              await TokenService.clearTokens();
+              // Gỡ thiết bị khỏi push + thu hồi refresh token ở server rồi mới
+              // xoá token trên máy (dùng chung mọi vai trò).
+              SmartDialog.showLoading(msg: 'Đang đăng xuất...');
+              await SessionService.logout();
+              SmartDialog.dismiss();
               _profileProvider.reset();
+              if (!mounted) return;
               setState(() {
                 _userData = null;
                 _isLoggedIn = false;
+                _loadError = null;
               });
               _showProfileSnackBar('Đã đăng xuất');
             },

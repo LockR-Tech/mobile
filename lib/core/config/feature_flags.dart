@@ -22,11 +22,10 @@ class FeatureFlags {
   /// Backend chưa có → `/plans/customer`, `/pricings`, `/subscriptions/*` 404.
   static const bool subscriptionEnabled = false;
 
-  /// Kho voucher cá nhân.
-  /// Backend chưa có → `/promotions/vouchers/my` 404.
-  /// LƯU Ý: trang "Ưu đãi" (PromotionsPage, `GET /api/promotions/active`) vẫn
-  /// hoạt động bình thường và KHÔNG bị ẩn.
-  static const bool vouchersEnabled = false;
+  /// Kho voucher cá nhân ("Ưu đãi của tôi").
+  /// Backend: `GET /api/promotions/vouchers/my` (mã đã lưu), lưu mã qua
+  /// `POST /api/promotions/{id}/claim` từ trang "Ưu đãi" (`/api/promotions/active`).
+  static const bool vouchersEnabled = true;
 
   /// Quảng cáo + blog ở trang chủ.
   /// Backend chưa có → `/advertisements`, `/blogs` 404.

@@ -12,7 +12,6 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
   // Current backend (laundry-locker-microservices) user-service endpoints.
   // Self profile lives under /api/user/** (singular); get-by-id is /api/users/{id}.
   static const String _basePath = '/api/user';
-  static const String _courierBasePath = '/api/staff-applications';
 
   ProfileRemoteDataSourceImpl(
     this._apiClient, {
@@ -68,17 +67,10 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
 
   @override
   Future<Map<String, dynamic>> updateProfile({
-    required String userId,
     required Map<String, dynamic> data,
   }) async {
     // Self-update endpoint resolves the user from the JWT (X-User-Id), no id in path.
     final response = await _apiClient.put('$_basePath/profile', data: data);
-    return _extractData(response);
-  }
-
-  @override
-  Future<Map<String, dynamic>> getCourierProfile(String userId) async {
-    final response = await _apiClient.get('$_courierBasePath/user/$userId');
     return _extractData(response);
   }
 
@@ -106,42 +98,20 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
   }
 
   @override
-  Future<bool> verifyCurrentPassword({
-    required String email,
-    required String currentPassword,
-  }) async {
-    final response = await _apiClient.post(
-      '/api/auth/login',
-      data: {'identifier': email, 'password': currentPassword},
-    );
-
-    final data = _extractData(response);
-    final accessToken = data['accessToken'] ?? data['access_token'];
-    return accessToken != null && accessToken.toString().isNotEmpty;
-  }
-
-  @override
-  Future<bool> changePassword({
-    required String email,
-    required String newPassword,
-  }) async {
+  Future<dynamic> changePassword(Map<String, dynamic> body) async {
     // Self password change resolves the user from the JWT (X-User-Id).
-    final response = await _apiClient.put(
+    // `data` của response là cặp token mới (backend thu hồi refresh token cũ).
+    final response = await _apiClient.put<dynamic>(
       '$_basePath/password',
-      data: {'newPassword': newPassword},
+      data: body,
     );
-    final data = response.data;
-    if (data is Map<String, dynamic>) {
-      final success = data['success'];
-      if (success is bool) return success;
-    }
-    return true;
+    return response.data;
   }
 
   @override
   Future<bool> getFaceRegistrationStatus(String userId) async {
     final response = await _apiClient.get<dynamic>(
-      '/auth/ai/registered/$userId',
+      '/api/auth/ai/registered/$userId',
     );
     final data = response.data;
     if (data is Map<String, dynamic>) {

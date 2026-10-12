@@ -8,7 +8,6 @@ import 'package:smart_laundry_locker/features/transactions/domain/entities/top_u
 import 'package:smart_laundry_locker/features/transactions/domain/entities/spending_stats.dart';
 import 'package:smart_laundry_locker/features/transactions/domain/entities/transaction_method_total.dart';
 import 'package:smart_laundry_locker/features/transactions/domain/entities/transaction_extensions.dart';
-import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
 import 'package:flutter/foundation.dart';
 
 class TransactionProvider extends ChangeNotifier {
@@ -149,8 +148,7 @@ class TransactionProvider extends ChangeNotifier {
     };
 
     for (final tx in list) {
-      final isIncome = tx.type == 'TOP_UP' || tx.type == 'CREDIT';
-      if (isIncome) {
+      if (tx.isCredit) {
         totalIncome += tx.amount;
       } else {
         totalExpense += tx.amount;
@@ -227,145 +225,44 @@ class TransactionProvider extends ChangeNotifier {
 
     final result = await getTransactionsUseCase(page: _currentPage, limit: 10);
 
-    List<Transaction> walletTxs = [];
+    // `GET /api/wallet/transactions` đã gồm cả biến động ví lẫn thanh toán đơn
+    // trực tiếp qua cổng (SePay/VNPay/MoMo/tiền mặt) — backend ghép sẵn. Trước
+    // đây app tự dựng thêm dòng "Thanh toán SePay" từ danh sách đơn (kể cả dòng
+    // bịa `SEPAY-<orderId>` khi không có bản ghi thanh toán) ⇒ bỏ hẳn.
+    // Endpoint không phân trang: một lần tải là đủ, tải tiếp sẽ nhân đôi dòng.
     result.fold(
       (failure) {
         debugPrint('[TX][provider] wallet transactions FAILURE: ${failure.message}');
         _error = failure.message;
       },
       (data) {
-        walletTxs = data.transactions;
+        final sorted = [...data.transactions]
+          ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+        _transactions = sorted;
         _totalItems = data.total;
-        _hasReachedMax = data.transactions.isEmpty;
-        if (!_hasReachedMax) {
-          _currentPage++;
-        }
+        _error = null;
+        _hasReachedMax = true;
       },
     );
 
-    // Đồng bộ thêm các đơn thanh toán trực tiếp (SePay, VNPay...) từ danh sách đơn
-    List<Transaction> externalTxs = [];
-    try {
-      final opsService = LockerOpsService();
-      final myOrders = await opsService.myOrders();
-
-      final existingOrderIds = <int>{};
-      final existingOrderCodes = <String>{};
-      for (final t in walletTxs) {
-        if (t.relatedOrderId != null) existingOrderIds.add(t.relatedOrderId!);
-        if (t.orderCode != null && t.orderCode!.isNotEmpty) {
-          existingOrderCodes.add(t.orderCode!.toUpperCase());
-        }
-        final match = RegExp(r'#(\d+)').firstMatch(t.description);
-        if (match != null) {
-          final idNum = int.tryParse(match.group(1)!);
-          if (idNum != null) existingOrderIds.add(idNum);
-        }
-      }
-
-      for (final o in myOrders) {
-        final orderId = o['id'] is num ? (o['id'] as num).toInt() : int.tryParse('${o['id']}');
-        final orderCode = o['orderCode']?.toString();
-        final paymentStatus = '${o['paymentStatus']}'.toUpperCase();
-        final isPaid = paymentStatus == 'PAID' || paymentStatus == 'COMPLETED';
-
-        if (!isPaid || orderId == null) continue;
-
-        if (existingOrderIds.contains(orderId) ||
-            (orderCode != null && existingOrderCodes.contains(orderCode.toUpperCase()))) {
-          continue;
-        }
-
-        try {
-          final payments = await opsService.paymentsByOrder(orderId);
-          final donePayments = payments
-              .where((p) => '${p['status']}'.toUpperCase() == 'COMPLETED')
-              .toList();
-
-          if (donePayments.isNotEmpty) {
-            for (final p in donePayments) {
-              final method = (p['method'] ?? 'SEPAY').toString().toUpperCase();
-              if (method == 'WALLET') continue;
-
-              final refId = (p['referenceTransactionId'] != null && '${p['referenceTransactionId']}'.isNotEmpty)
-                  ? '${p['referenceTransactionId']}'
-                  : (p['referenceId']?.toString() ?? 'SEPAY-$orderId');
-
-              final amount = (p['amount'] is num)
-                  ? (p['amount'] as num).toDouble()
-                  : (double.tryParse('${p['amount']}') ??
-                      (o['paidAmount'] is num
-                          ? (o['paidAmount'] as num).toDouble()
-                          : (o['totalPrice'] is num ? (o['totalPrice'] as num).toDouble() : 0.0)));
-
-              final createdStr = p['createdAt'] ?? p['updatedAt'] ?? o['createdAt'];
-              final createdAt = createdStr != null
-                  ? (DateTime.tryParse('$createdStr')?.toLocal() ?? DateTime.now())
-                  : DateTime.now();
-
-              externalTxs.add(Transaction(
-                id: 'PAY-${p['id'] ?? orderId}',
-                referenceId: refId,
-                relatedOrderId: orderId,
-                orderCode: orderCode,
-                amount: amount,
-                type: 'DEBIT',
-                source: method,
-                description: 'Thanh toán đơn ${orderCode ?? '#$orderId'}',
-                balanceAfter: 0.0,
-                createdAt: createdAt,
-              ));
-            }
-          } else {
-            final amount = (o['paidAmount'] is num)
-                ? (o['paidAmount'] as num).toDouble()
-                : (o['totalPrice'] is num ? (o['totalPrice'] as num).toDouble() : 0.0);
-            final createdStr = o['createdAt'];
-            final createdAt = createdStr != null
-                ? (DateTime.tryParse('$createdStr')?.toLocal() ?? DateTime.now())
-                : DateTime.now();
-
-            externalTxs.add(Transaction(
-              id: 'ORD-$orderId',
-              referenceId: 'SEPAY-$orderId',
-              relatedOrderId: orderId,
-              orderCode: orderCode,
-              amount: amount,
-              type: 'DEBIT',
-              source: 'SEPAY',
-              description: 'Thanh toán đơn ${orderCode ?? '#$orderId'}',
-              balanceAfter: 0.0,
-              createdAt: createdAt,
-            ));
-          }
-        } catch (e) {
-          debugPrint('[TX][provider] paymentsByOrder error for order $orderId: $e');
-        }
-      }
-    } catch (e) {
-      debugPrint('[TX][provider] fetch myOrders error: $e');
-    }
-
-    final combined = <Transaction>[...walletTxs, ...externalTxs];
-    combined.sort((a, b) => b.createdAt.compareTo(a.createdAt));
-
-    if (refresh) {
-      _transactions = combined;
-    } else {
-      _transactions.addAll(combined);
-    }
-
-    if (refresh) {
-      _isLoading = false;
-    } else {
-      _isLoadingMore = false;
-    }
+    _isLoading = false;
+    _isLoadingMore = false;
 
     // Recompute stats and attempt API sync
     _spendingStats = computeStatsForPeriod(_selectedPeriod);
     fetchSpendingStats(period: _selectedPeriod);
     fetchTotalByMethod(period: _selectedPeriod);
     notifyListeners();
+  }
+
+  /// Lịch sử ví mới nhất; ném lỗi khi tải thất bại (để vòng xác nhận nạp ví
+  /// thử lại thay vì coi như "chưa có giao dịch").
+  Future<List<Transaction>> fetchWalletTransactionsOnce() async {
+    final result = await getTransactionsUseCase(page: 1, limit: 50);
+    return result.fold(
+      (failure) => throw Exception(failure.message),
+      (data) => data.transactions,
+    );
   }
 
   Future<TopUpResult?> initiateTopUp(int amount, {String method = 'VNPAY'}) async {

@@ -2,10 +2,9 @@ import 'dart:async';
 import 'dart:math' as math;
 import 'dart:typed_data';
 
+import 'package:smart_laundry_locker/core/config/feature_flags.dart';
 import 'package:smart_laundry_locker/core/network/api_client.dart';
-import 'package:smart_laundry_locker/core/presentation/pages/qr_scanner_page.dart';
 import 'package:smart_laundry_locker/core/routing/app_router.dart';
-import 'package:smart_laundry_locker/core/services/token_service.dart';
 import 'package:smart_laundry_locker/core/theme/shadcn_theme.dart';
 import 'package:smart_laundry_locker/features/auth/presentation/providers/auth_injection.dart';
 import 'package:smart_laundry_locker/features/auth/presentation/providers/login_provider.dart';
@@ -13,8 +12,11 @@ import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:go_router/go_router.dart';
-import 'package:mobile_scanner/mobile_scanner.dart';
 
+/// Đăng nhập bằng khuôn mặt (chỉ khi `FeatureFlags.faceRecognitionEnabled`).
+///
+/// Tab "Web (QR)" cũ (xác nhận đăng nhập web qua `/api/auth/qr-login/confirm`)
+/// đã bỏ: đăng nhập kiosk bằng QR nằm ở nút quét QR trên trang chủ.
 class FaceVerifyPage extends StatefulWidget {
   const FaceVerifyPage({super.key});
 
@@ -27,14 +29,10 @@ class _FaceVerifyPageState extends State<FaceVerifyPage>
   CameraController? _cameraController;
   late final LoginProvider _loginProvider;
   late final AnimationController _scanController;
-  late final TabController _tabController;
-  late final MobileScannerController _qrScannerController;
 
   bool _isVerifying = true;
   String? _errorMessage;
   bool _hasTriggeredCapture = false;
-
-  bool _isQrProcessing = false;
 
   static const double _scanBorderRadius = 28;
 
@@ -47,45 +45,23 @@ class _FaceVerifyPageState extends State<FaceVerifyPage>
     _loginProvider = AuthInjection.provideLoginProvider(ApiClient());
     _loginProvider.addListener(_onLoginStateChanged);
 
-    _tabController = TabController(length: 2, vsync: this);
-    _tabController.addListener(_onTabControllerTick);
-
-    _qrScannerController = MobileScannerController(autoStart: false);
-
     _scanController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 2200),
     )..repeat(reverse: true);
 
-    unawaited(_initializeAndVerify());
-  }
-
-  void _onTabControllerTick() {
-    if (_tabController.indexIsChanging) return;
-    unawaited(_syncHardwareForTab(_tabController.index));
-  }
-
-  Future<void> _syncHardwareForTab(int index) async {
-    if (index == 0) {
-      await _qrScannerController.stop();
-      await _initializeAndVerify();
-    } else {
-      await _disposeCameraController();
-      if (TokenService.authState.value) {
-        await _qrScannerController.start();
-      }
+    // Backend chưa có AI service ⇒ không mở camera, chỉ báo chưa hỗ trợ.
+    if (FeatureFlags.faceRecognitionEnabled) {
+      unawaited(_initializeAndVerify());
     }
   }
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
-    _tabController.removeListener(_onTabControllerTick);
-    _tabController.dispose();
     _loginProvider.removeListener(_onLoginStateChanged);
     _loginProvider.dispose();
     _scanController.dispose();
-    unawaited(_qrScannerController.dispose());
     unawaited(_disposeCameraController());
     super.dispose();
   }
@@ -96,7 +72,6 @@ class _FaceVerifyPageState extends State<FaceVerifyPage>
         state == AppLifecycleState.inactive ||
         state == AppLifecycleState.detached) {
       unawaited(_disposeCameraController());
-      unawaited(_qrScannerController.stop());
     }
   }
 
@@ -110,30 +85,6 @@ class _FaceVerifyPageState extends State<FaceVerifyPage>
 
   Future<void> _onLoginStateChanged() async {
     if (!mounted) return;
-
-    if (_loginProvider.isQrConfirmLoading) return;
-
-    if (_loginProvider.qrConfirmSuccess == true) {
-      _isQrProcessing = false;
-      if (!mounted) return;
-      SmartDialog.showToast('Xác nhận thành công');
-      _loginProvider.clearQrLoginState();
-      if (_tabController.index == 1) {
-        await _qrScannerController.start();
-      }
-      return;
-    }
-
-    if (_loginProvider.qrError != null) {
-      final err = _loginProvider.qrError!;
-      _isQrProcessing = false;
-      await _showQrErrorDialog(err);
-      _loginProvider.clearQrLoginState();
-      if (mounted && _tabController.index == 1) {
-        await _qrScannerController.start();
-      }
-      return;
-    }
 
     if (_loginProvider.isLoading) return;
 
@@ -162,88 +113,6 @@ class _FaceVerifyPageState extends State<FaceVerifyPage>
       });
       await _showVerifyFailedDialog(_loginProvider.error);
     }
-  }
-
-  Future<void> _showQrErrorDialog(String message) async {
-    if (!mounted) return;
-    await showDialog<void>(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          backgroundColor: Colors.white,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          title: const Text(
-            'Không thể xác nhận',
-            style: TextStyle(fontWeight: FontWeight.w800),
-          ),
-          content: Text(message),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text(
-                'Đóng',
-                style: TextStyle(color: AISLShadcnTheme.navyPrimary),
-              ),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  Future<void> _onQrDetected(BarcodeCapture capture) async {
-    if (_isQrProcessing) return;
-    final barcodes = capture.barcodes;
-    if (barcodes.isEmpty) return;
-    final code = barcodes.first.rawValue;
-    if (code == null || code.isEmpty) return;
-
-    _isQrProcessing = true;
-    await _qrScannerController.stop();
-    if (!mounted) return;
-
-    final confirmed = await showDialog<bool>(
-      context: context,
-      barrierDismissible: false,
-      builder: (ctx) {
-        return AlertDialog(
-          backgroundColor: Colors.white,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          title: const Text(
-            'Đăng nhập trên trình duyệt',
-            style: TextStyle(fontWeight: FontWeight.w800),
-          ),
-          content: const Text('Bạn có muốn đăng nhập trên thiết bị này không?'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(ctx).pop(false),
-              child: const Text('Hủy', style: TextStyle(color: Colors.black87)),
-            ),
-            TextButton(
-              onPressed: () => Navigator.of(ctx).pop(true),
-              child: const Text(
-                'Xác nhận',
-                style: TextStyle(color: AISLShadcnTheme.navyPrimary),
-              ),
-            ),
-          ],
-        );
-      },
-    );
-
-    if (!mounted) return;
-
-    if (confirmed != true) {
-      _isQrProcessing = false;
-      await _qrScannerController.start();
-      return;
-    }
-
-    await _loginProvider.onQrScanned(code);
   }
 
   Future<void> _initializeAndVerify() async {
@@ -276,22 +145,12 @@ class _FaceVerifyPageState extends State<FaceVerifyPage>
         await controller.dispose();
         return;
       }
-      // User có thể đã chuyển sang tab QR khi camera đang init — không gán preview Face.
-      if (_tabController.index != 0) {
-        await controller.dispose();
-        return;
-      }
       setState(() {
         _cameraController = controller;
       });
 
       await Future<void>.delayed(const Duration(milliseconds: 800));
-      if (!mounted || _hasTriggeredCapture || _tabController.index != 0) {
-        if (_tabController.index != 0) {
-          await _disposeCameraController();
-        }
-        return;
-      }
+      if (!mounted || _hasTriggeredCapture) return;
 
       _hasTriggeredCapture = true;
       final imageBytes = await _captureFrameBytes(controller);
@@ -557,76 +416,6 @@ class _FaceVerifyPageState extends State<FaceVerifyPage>
     );
   }
 
-  Widget _buildQrLoginBody(EdgeInsets padding) {
-    return ValueListenableBuilder<bool>(
-      valueListenable: TokenService.authState,
-      builder: (context, isLoggedIn, _) {
-        if (!isLoggedIn) {
-          return Center(
-            child: Padding(
-              padding: EdgeInsets.all(24 + padding.bottom),
-              child: const Text(
-                'Bạn cần đăng nhập trên ứng dụng để xác nhận đăng nhập web bằng QR.',
-                textAlign: TextAlign.center,
-                style: TextStyle(color: Colors.white70, fontSize: 15),
-              ),
-            ),
-          );
-        }
-        return Stack(
-          fit: StackFit.expand,
-          children: [
-            MobileScanner(
-              controller: _qrScannerController,
-              onDetect: _onQrDetected,
-            ),
-            Positioned.fill(
-              child: Container(
-                decoration: ShapeDecoration(
-                  shape: QrScannerOverlayShape(
-                    borderColor: AISLShadcnTheme.navyPrimary,
-                    borderRadius: 12,
-                    borderLength: 40,
-                    borderWidth: 4,
-                    cutOutSize: 280,
-                  ),
-                ),
-              ),
-            ),
-            if (_loginProvider.isQrConfirmLoading)
-              const Positioned.fill(
-                child: ColoredBox(
-                  color: Colors.black54,
-                  child: Center(
-                    child: CircularProgressIndicator(
-                      valueColor: AlwaysStoppedAnimation<Color>(
-                        AISLShadcnTheme.navyPrimary,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            Positioned(
-              left: 24,
-              right: 24,
-              bottom: 24 + padding.bottom,
-              child: Text(
-                'Đưa mã QR trên trình duyệt vào khung để quét.',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: Colors.white.withOpacity(0.92),
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  shadows: const [Shadow(color: Colors.black54, blurRadius: 6)],
-                ),
-              ),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final padding = MediaQuery.paddingOf(context);
@@ -640,29 +429,35 @@ class _FaceVerifyPageState extends State<FaceVerifyPage>
         foregroundColor: Colors.white,
         centerTitle: true,
         title: const Text(
-          'Đăng nhập FaceID / Web',
+          'Đăng nhập khuôn mặt',
           style: TextStyle(fontWeight: FontWeight.w800),
         ),
-        bottom: TabBar(
-          controller: _tabController,
-          indicatorColor: AISLShadcnTheme.navyPrimary,
-          labelColor: Colors.white,
-          unselectedLabelColor: Colors.white54,
-          tabs: const [
-            Tab(text: 'Face ID'),
-            Tab(text: 'Web (QR)'),
-          ],
-        ),
       ),
-      body: AnimatedBuilder(
-        animation: _tabController,
-        builder: (context, _) {
-          if (_tabController.index == 0) {
-            return _buildFaceBody(padding);
-          }
-          return _buildQrLoginBody(padding);
-        },
-      ),
+      body: FeatureFlags.faceRecognitionEnabled
+          ? _buildFaceBody(padding)
+          : Center(
+              child: Padding(
+                padding: const EdgeInsets.all(32),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text(
+                      'Đăng nhập bằng khuôn mặt hiện chưa được hỗ trợ.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: Colors.white, fontSize: 16),
+                    ),
+                    const SizedBox(height: 16),
+                    TextButton(
+                      onPressed: () => AppRouter.backOrHome(context),
+                      child: const Text(
+                        'Quay lại',
+                        style: TextStyle(color: AISLShadcnTheme.navyPrimary),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
     );
   }
 }

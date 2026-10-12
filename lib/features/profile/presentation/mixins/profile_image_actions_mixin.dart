@@ -6,7 +6,6 @@ import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:logger/logger.dart';
-import 'package:smart_laundry_locker/core/constants/app_constants.dart';
 import 'package:smart_laundry_locker/core/network/api_client.dart';
 import 'package:smart_laundry_locker/core/services/image_cache_manager.dart';
 import 'package:smart_laundry_locker/features/profile/domain/validators/avatar_image_validator.dart';
@@ -17,14 +16,13 @@ import 'package:shadcn_ui/shadcn_ui.dart';
 
 final _logger = Logger(printer: PrettyPrinter());
 
-/// Shared mixin chứa toàn bộ logic cho avatar/banner selection & upload flows
+/// Shared mixin chứa toàn bộ logic chọn & upload ảnh đại diện.
+///
+/// (Ảnh bìa "mô phỏng" cũ đã bỏ — backend không có endpoint ảnh bìa.)
 mixin ProfileImageActionsMixin<T extends StatefulWidget> on State<T> {
   // Abstract members to be implemented by the consuming widget
   File? get localAvatarFile;
   set localAvatarFile(File? file);
-
-  File? get localBannerFile;
-  set localBannerFile(File? file);
 
   bool get isAvatarSyncing;
   set isAvatarSyncing(bool value);
@@ -240,152 +238,6 @@ mixin ProfileImageActionsMixin<T extends StatefulWidget> on State<T> {
     }
   }
 
-  /// Upload cover image (Simulated)
-  Future<void> uploadCoverImage() async {
-    if (!mounted) return;
-
-    if (localBannerFile == null) {
-      _showSnackBar('Không có ảnh bìa nào để cập nhật', isError: true);
-      return;
-    }
-
-    final currentContext = context;
-    final uploadProgress = ValueNotifier<double>(0);
-    BuildContext? progressDialogContext;
-
-    bool isProgressValid = true;
-
-    showDialog<void>(
-      context: currentContext,
-      barrierDismissible: false,
-      barrierColor: Colors.black.withOpacity(0.35),
-      builder: (dialogContext) {
-        progressDialogContext = dialogContext;
-        return _buildProgressDialog(progress: uploadProgress);
-      },
-    );
-
-    void closeProgressDialog() =>
-        _safelyCloseDialog(progressDialogContext ?? currentContext);
-
-    void safeUpdateProgress(double value) {
-      if (isProgressValid && mounted) {
-        try {
-          uploadProgress.value = value;
-        } catch (e) {
-          _logger.w('[Banner Upload] Could not update progress: $e');
-        }
-      }
-    }
-
-    void safeDisposeProgress() {
-      if (isProgressValid) {
-        isProgressValid = false;
-        try {
-          uploadProgress.dispose();
-        } catch (e) {
-          _logger.w('[Banner Upload] Progress already disposed: $e');
-        }
-      }
-    }
-
-    try {
-      // Simulate upload
-      for (var i = 0; i <= 10; i++) {
-        await Future<void>.delayed(const Duration(milliseconds: 200));
-        safeUpdateProgress(i / 10);
-      }
-
-      if (!mounted) {
-        safeDisposeProgress();
-        return;
-      }
-
-      // Simulate success
-      SchedulerBinding.instance.addPostFrameCallback((_) {
-        if (!mounted) {
-          safeDisposeProgress();
-          return;
-        }
-
-        closeProgressDialog();
-        safeDisposeProgress();
-
-        updateState(() {
-          localBannerFile = null;
-        });
-
-        _showSnackBar(
-          'Cập nhật ảnh bìa thành công (Mô phỏng)!',
-          isError: false,
-        );
-      });
-
-      if (await localBannerFile?.exists() == true) {
-        await localBannerFile?.delete();
-      }
-    } catch (e) {
-      _logger.e('Error uploading cover', error: e);
-
-      safeDisposeProgress();
-
-      if (!mounted) return;
-
-      SchedulerBinding.instance.addPostFrameCallback((_) {
-        if (!mounted) return;
-        closeProgressDialog();
-        _showSnackBar('Lỗi: $e', isError: true);
-      });
-    }
-  }
-
-  /// Handle cover photo selection flow
-  Future<void> handleCoverSelection() async {
-    if (!mounted) return;
-
-    final source = await _showImageSourcePicker('Chọn ảnh bìa');
-    if (source == null || !mounted) return;
-
-    final coverMaxSizeMB = (AppConstants.coverMaxSizeBytes / (1024 * 1024))
-        .clamp(1, 8)
-        .toInt();
-
-    final tempFile = await ProfileImageFlow.process(
-      source: source,
-      cropRatio: const CropAspectRatio(ratioX: 16, ratioY: 9),
-      cropPreset: CropAspectRatioPreset.ratio16x9,
-      quality: 90,
-      maxWidth: AppConstants.coverMaxWidth,
-      maxHeight: AppConstants.coverMaxHeight,
-      maxSizeMB: coverMaxSizeMB,
-      minCompressQuality: 35,
-      title: 'Chỉnh sửa ảnh bìa',
-      lockAspectRatio: true,
-    );
-
-    if (tempFile == null) {
-      if (mounted) {
-        final sourceName = source == ImageSource.camera ? 'camera' : 'thư viện';
-        _showSnackBar(
-          'Không thể truy cập $sourceName. Vui lòng cấp quyền trong cài đặt.',
-          isError: true,
-        );
-      }
-      return;
-    }
-
-    if (!mounted) return;
-
-    updateState(() {
-      localBannerFile = tempFile;
-    });
-
-    _showSnackBar(
-      'Ảnh bìa đã được chọn. Nhấn "Lưu ảnh bìa" để cập nhật.',
-      isError: false,
-    );
-  }
-
   /// Cancel avatar selection
   void cancelAvatarSelection() {
     if (!mounted) return;
@@ -404,26 +256,6 @@ mixin ProfileImageActionsMixin<T extends StatefulWidget> on State<T> {
     }
 
     _showSnackBar('Đã hủy thay đổi ảnh đại diện', isError: false);
-  }
-
-  /// Cancel cover selection
-  void cancelCoverSelection() {
-    if (!mounted) return;
-
-    final file = localBannerFile;
-
-    updateState(() {
-      localBannerFile = null;
-    });
-
-    if (file != null) {
-      file.delete().catchError((Object e) {
-        _logger.w('Error deleting banner file', error: e);
-        return file;
-      });
-    }
-
-    _showSnackBar('Đã hủy ảnh bìa tạm thời', isError: false);
   }
 
   /// Show image source picker bottom sheet (centered modal style)

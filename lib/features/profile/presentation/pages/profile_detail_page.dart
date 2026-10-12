@@ -68,6 +68,11 @@ class _ProfileDetailPageState extends State<ProfileDetailPage> {
                       );
                       if (updated == true && mounted) {
                         await provider.loadProfile();
+                        // Đồng bộ ProfileProvider dùng chung (trang Hồ sơ,
+                        // trang chủ) — `this.context` nằm ngoài provider cục bộ.
+                        if (mounted) {
+                          this.context.read<ProfileProvider>().loadProfile();
+                        }
                       }
                     },
                   );
@@ -202,21 +207,9 @@ class _ProfileDetailPageState extends State<ProfileDetailPage> {
                                 color: AppColors.onBackground,
                               ),
                             ),
+                            // Backend không có cờ "đã xác thực" cho hồ sơ nên
+                            // không hiện dòng "Tài khoản chưa xác thực" giả.
                             const SizedBox(height: 12),
-                            Text(
-                              profile.isVerified
-                                  ? 'Tài khoản đã xác thực'
-                                  : 'Tài khoản chưa xác thực',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w500,
-                                color: profile.isVerified
-                                    ? Colors.green
-                                    : AppColors.error,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
                             // Badge trạng thái mới
                             Container(
                               padding: const EdgeInsets.symmetric(
@@ -311,9 +304,11 @@ class _ProfileDetailPageState extends State<ProfileDetailPage> {
                     GestureDetector(
                       onTap: () => context.push(AppRouter.security),
                       child: ProfileInputCard(
-                        label: 'Mật khẩu',
-                        value: 'password',
-                        hintText: '••••••••••••',
+                        label: profile.hasPassword
+                            ? 'Mật khẩu'
+                            : 'Mật khẩu (chưa đặt — chạm để đặt)',
+                        value: profile.hasPassword ? 'password' : '',
+                        hintText: profile.hasPassword ? '••••••••••••' : 'Chưa đặt',
                         leadingIcon: Icons.lock_outline_rounded,
                         trailing: const Icon(
                           Icons.arrow_forward_ios_rounded,
