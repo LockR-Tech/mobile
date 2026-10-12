@@ -1,19 +1,41 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:smart_laundry_locker/core/utils/app_date_time.dart';
+import 'package:smart_laundry_locker/features/drone_delivery/domain/entities/drone_incident_labels.dart';
+import 'package:smart_laundry_locker/features/drone_delivery/presentation/drone_error_messages.dart';
 import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
 
+/// Thẻ sự cố rơi kiện của một đơn drone trên màn theo dõi của khách: trạng
+/// thái xử lý, nhật ký gần nhất và phương án Lock.R đề xuất để khách phản hồi.
 class CustomerDroneIncidentCard extends StatefulWidget {
-  const CustomerDroneIncidentCard({super.key, required this.orderId});
+  const CustomerDroneIncidentCard({
+    super.key,
+    required this.orderId,
+    this.refreshKey,
+    this.expectIncident = false,
+    this.service,
+  });
+
   final int orderId;
+
+  /// Đổi giá trị (vd. chặng giao của đơn) ⇒ tải lại thẻ.
+  final Object? refreshKey;
+
+  /// Đơn đang ở chặng sự cố: lỗi tải thì báo rõ; ngược lại lỗi tải được bỏ
+  /// qua để đơn bình thường không hiện thẻ lỗi thừa.
+  final bool expectIncident;
+  final LockerOpsService? service;
+
   @override
   State<CustomerDroneIncidentCard> createState() =>
       _CustomerDroneIncidentCardState();
 }
 
 class _CustomerDroneIncidentCardState extends State<CustomerDroneIncidentCard> {
-  final _service = LockerOpsService();
+  late final LockerOpsService _service = widget.service ?? LockerOpsService();
   Map<String, dynamic>? _incident;
   bool _loading = true;
+  bool _responding = false;
   String? _error;
 
   @override
@@ -22,8 +44,17 @@ class _CustomerDroneIncidentCardState extends State<CustomerDroneIncidentCard> {
     _load();
   }
 
-  Future<void> _load() async {
-    if (mounted) {
+  @override
+  void didUpdateWidget(covariant CustomerDroneIncidentCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.refreshKey != widget.refreshKey ||
+        oldWidget.orderId != widget.orderId) {
+      _load(quiet: true);
+    }
+  }
+
+  Future<void> _load({bool quiet = false}) async {
+    if (mounted && !quiet) {
       setState(() {
         _loading = true;
         _error = null;
@@ -35,30 +66,52 @@ class _CustomerDroneIncidentCardState extends State<CustomerDroneIncidentCard> {
         (item) => '${item?['orderId']}' == '${widget.orderId}',
         orElse: () => null,
       );
-      if (mounted) setState(() => _incident = incident);
+      if (mounted) {
+        setState(() {
+          _incident = incident;
+          _error = null;
+        });
+      }
     } catch (error) {
       if (mounted) {
-        setState(() => _error = LockerOpsService.errorMessage(error));
+        setState(() => _error = droneCustomerErrorMessage(error));
       }
     } finally {
       if (mounted) setState(() => _loading = false);
     }
   }
 
+  /// Phương án mới nhất theo `version` (server cũ: `proposalVersion`).
+  static Map? _latestProposal(List<Map> proposals) {
+    Map? latest;
+    var best = -1;
+    for (final p in proposals) {
+      final v = _asInt(p['version'] ?? p['proposalVersion']) ?? 0;
+      if (latest == null || v >= best) {
+        latest = p;
+        best = v;
+      }
+    }
+    return latest;
+  }
+
+  static int? _asInt(Object? v) => v is num ? v.toInt() : int.tryParse('$v');
+
   @override
   Widget build(BuildContext context) {
-    if (_loading) {
+    if (_loading && _incident == null) {
       return const Padding(
         padding: EdgeInsets.only(bottom: 16),
         child: LinearProgressIndicator(minHeight: 2),
       );
     }
-    if (_error != null) {
+    if (_error != null && _incident == null) {
+      if (!widget.expectIncident) return const SizedBox.shrink();
       return Card(
         margin: const EdgeInsets.only(bottom: 16),
         child: ListTile(
           leading: const Icon(Icons.cloud_off_outlined),
-          title: const Text('Chưa tải được trạng thái sự cố drone'),
+          title: const Text('Chưa tải được thông tin sự cố của đơn'),
           subtitle: Text(_error!),
           trailing: IconButton(
             tooltip: 'Thử lại',
@@ -72,9 +125,15 @@ class _CustomerDroneIncidentCardState extends State<CustomerDroneIncidentCard> {
     final incident = _incident!;
     final proposals =
         (incident['proposals'] as List?)?.whereType<Map>().toList() ?? const [];
-    final latest = proposals.isEmpty ? null : proposals.last;
+    final latest = _latestProposal(proposals);
     final timeline =
         (incident['timeline'] as List?)?.whereType<Map>().toList() ?? const [];
+    final reason = '${incident['reason'] ?? ''}'.trim();
+    final awaitingResponse =
+        latest != null &&
+        '${latest['status']}'.toUpperCase() == 'AWAITING_CUSTOMER_ACCEPTANCE';
+    // Chỉ cho "Yêu cầu xem xét" khi chính sách của đơn cho phép.
+    final disputeAllowed = incident['disputeAllowed'] == true;
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
       elevation: 0,
@@ -101,15 +160,24 @@ class _CustomerDroneIncidentCardState extends State<CustomerDroneIncidentCard> {
               ],
             ),
             const SizedBox(height: 10),
-            _Line('Mã sự cố', '${incident['incidentCode']}'),
-            _Line('Trạng thái', _label('${incident['status']}')),
-            _Line('Thu hồi kiện', _label('${incident['recoveryStatus']}')),
-            _Line('Tình trạng kiện', _label('${incident['parcelStatus']}')),
-            const SizedBox(height: 8),
-            Text(
-              '${incident['reason']}',
-              style: const TextStyle(fontSize: 13, color: Color(0xFF7C2D12)),
+            if (incident['incidentCode'] != null)
+              _Line('Mã sự cố', '${incident['incidentCode']}'),
+            _Line('Trạng thái', droneIncidentStatusLabel(incident['status'])),
+            _Line(
+              'Thu hồi kiện',
+              droneRecoveryStatusLabel(incident['recoveryStatus']),
             ),
+            _Line(
+              'Tình trạng kiện',
+              droneParcelStatusLabel(incident['parcelStatus']),
+            ),
+            if (reason.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              Text(
+                reason,
+                style: const TextStyle(fontSize: 13, color: Color(0xFF7C2D12)),
+              ),
+            ],
             if (timeline.isNotEmpty) ...[
               const Divider(height: 24),
               const Text(
@@ -121,7 +189,7 @@ class _CustomerDroneIncidentCardState extends State<CustomerDroneIncidentCard> {
                 Padding(
                   padding: const EdgeInsets.only(bottom: 5),
                   child: Text(
-                    '• ${_label('${event['eventType']}')} · ${_time(event['createdAt'])}',
+                    '• ${droneIncidentEventLabel(event['eventType'])} · ${_time(event['createdAt'])}',
                     style: const TextStyle(fontSize: 12),
                   ),
                 ),
@@ -129,29 +197,46 @@ class _CustomerDroneIncidentCardState extends State<CustomerDroneIncidentCard> {
             if (latest != null) ...[
               const Divider(height: 24),
               Text(
-                'Phương án #${latest['proposalVersion']}',
+                'Phương án xử lý'
+                '${_asInt(latest['version'] ?? latest['proposalVersion']) == null ? '' : ' (lần ${_asInt(latest['version'] ?? latest['proposalVersion'])})'}',
                 style: const TextStyle(fontWeight: FontWeight.w800),
               ),
               const SizedBox(height: 5),
               Text(_proposalText(latest), style: const TextStyle(fontSize: 13)),
+              const SizedBox(height: 2),
               Text(
-                'Chính sách áp dụng khi đặt đơn: ${latest['policyVersion']}',
-                style: const TextStyle(fontSize: 11, color: Color(0xFF64748B)),
+                droneProposalStatusLabel(latest['status']),
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xFF9A3412),
+                ),
               ),
-              if (latest['status'] == 'AWAITING_CUSTOMER_ACCEPTANCE') ...[
+              if ('${latest['policyVersion'] ?? ''}'.trim().isNotEmpty)
+                Text(
+                  'Chính sách áp dụng khi đặt đơn: ${latest['policyVersion']}',
+                  style: const TextStyle(fontSize: 11, color: Color(0xFF64748B)),
+                ),
+              if (awaitingResponse) ...[
                 const SizedBox(height: 12),
                 Row(
                   children: [
-                    Expanded(
-                      child: OutlinedButton(
-                        onPressed: () => _respond('REQUEST_REVIEW'),
-                        child: const Text('Yêu cầu xem xét'),
+                    if (disputeAllowed) ...[
+                      Expanded(
+                        child: OutlinedButton(
+                          key: const ValueKey('drone-incident-review'),
+                          onPressed: _responding
+                              ? null
+                              : () => _respond('REQUEST_REVIEW'),
+                          child: const Text('Yêu cầu xem xét'),
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 8),
+                      const SizedBox(width: 8),
+                    ],
                     Expanded(
                       child: FilledButton(
-                        onPressed: () => _respond('ACCEPT'),
+                        key: const ValueKey('drone-incident-accept'),
+                        onPressed: _responding ? null : () => _respond('ACCEPT'),
                         child: const Text('Đồng ý'),
                       ),
                     ),
@@ -172,7 +257,7 @@ class _CustomerDroneIncidentCardState extends State<CustomerDroneIncidentCard> {
       context: context,
       builder: (context) => AlertDialog(
         title: Text(
-          accept ? 'Đồng ý phương án?' : 'Yêu cầu Admin xem xét lại?',
+          accept ? 'Đồng ý phương án?' : 'Yêu cầu Lock.R xem xét lại?',
         ),
         content: TextField(
           controller: note,
@@ -196,13 +281,28 @@ class _CustomerDroneIncidentCardState extends State<CustomerDroneIncidentCard> {
         ],
       ),
     );
-    if (confirmed != true || (!accept && note.text.trim().isEmpty)) {
+    if (confirmed != true) {
       note.dispose();
       return;
     }
+    if (!accept && note.text.trim().isEmpty) {
+      note.dispose();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Vui lòng nhập lý do cần xem xét.')),
+        );
+      }
+      return;
+    }
+    final incidentId = _asInt(_incident?['id']);
+    if (incidentId == null) {
+      note.dispose();
+      return;
+    }
+    setState(() => _responding = true);
     try {
       await _service.respondDroneIncident(
-        (_incident!['id'] as num).toInt(),
+        incidentId,
         decision: decision,
         note: note.text,
       );
@@ -217,15 +317,16 @@ class _CustomerDroneIncidentCardState extends State<CustomerDroneIncidentCard> {
           ),
         );
       }
-      await _load();
+      await _load(quiet: true);
     } catch (error) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(LockerOpsService.errorMessage(error))),
+          SnackBar(content: Text(droneCustomerErrorMessage(error))),
         );
       }
     } finally {
       note.dispose();
+      if (mounted) setState(() => _responding = false);
     }
   }
 
@@ -236,24 +337,18 @@ class _CustomerDroneIncidentCardState extends State<CustomerDroneIncidentCard> {
       symbol: '₫',
       decimalDigits: 0,
     ).format(amount);
-    return '${_label('${proposal['resolutionType']}')} · Bồi thường $money${proposal['redeliveryOffered'] == true ? ' · giao lại miễn phí' : ''}';
+    final parts = <String>[
+      droneResolutionTypeLabel(proposal['resolutionType']),
+      if (amount > 0) 'Bồi thường $money',
+      if (proposal['redeliveryOffered'] == true) 'giao lại miễn phí',
+      if (proposal['refundShippingFee'] == true) 'hoàn phí giao',
+    ];
+    return parts.join(' · ');
   }
 
-  static String _label(String value) => value
-      .replaceAll('_', ' ')
-      .toLowerCase()
-      .split(' ')
-      .map(
-        (word) => word.isEmpty
-            ? word
-            : '${word[0].toUpperCase()}${word.substring(1)}',
-      )
-      .join(' ');
   static String _time(dynamic value) {
-    final parsed = DateTime.tryParse('$value');
-    return parsed == null
-        ? '$value'
-        : DateFormat('dd/MM HH:mm').format(parsed.toLocal());
+    final parsed = parseServerDateTime(value);
+    return parsed == null ? '—' : DateFormat('dd/MM HH:mm').format(parsed);
   }
 }
 

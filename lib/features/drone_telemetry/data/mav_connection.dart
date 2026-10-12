@@ -14,6 +14,10 @@ abstract class MavConnection {
   /// Human-readable endpoint description for the UI.
   String get label;
 
+  /// Whether the vehicle's address is known, i.e. [send] will actually reach
+  /// it (UDP learns it from the first inbound datagram).
+  bool get peerKnown;
+
   /// Opens the link. Throws on failure.
   Future<void> connect();
 
@@ -45,6 +49,9 @@ class UdpMavConnection implements MavConnection {
 
   @override
   String get label => 'UDP ${remoteHost ?? '*'}:$remotePort (local $localPort)';
+
+  @override
+  bool get peerKnown => _socket != null && _peer != null;
 
   @override
   Future<void> connect() async {
@@ -97,6 +104,9 @@ class TcpMavConnection implements MavConnection {
 
   @override
   String get label => 'TCP $host:$port';
+
+  @override
+  bool get peerKnown => _socket != null;
 
   @override
   Future<void> connect() async {

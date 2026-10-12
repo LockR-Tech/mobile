@@ -40,4 +40,12 @@ class NotificationRepository {
   Future<void> markAllAsRead() {
     return _remoteDataSource.markAllAsRead();
   }
+
+  Future<void> deleteNotification(String notificationId) {
+    return _remoteDataSource.deleteNotification(notificationId);
+  }
+
+  Future<void> deleteAllNotifications() {
+    return _remoteDataSource.deleteAllNotifications();
+  }
 }

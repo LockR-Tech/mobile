@@ -38,6 +38,7 @@ class _FakeSendLockerOpsService extends LockerOpsService {
     String? note,
     String? promotionCode,
     String? size,
+    int? boxId,
   }) async =>
       Map.of(_order);
 
@@ -54,16 +55,14 @@ class _FakeSendLockerOpsService extends LockerOpsService {
   }) async {
     checkoutCalls++;
     lastCheckoutMethod = method;
+    if (method == 'WALLET') paid = true;
     return {'id': 1, 'orderId': orderId, 'method': method, 'status': 'COMPLETED'};
   }
 
-  /// SePay đã báo nhận tiền hay chưa. Tách khỏi `checkoutCalls` vì trang tự gọi
-  /// checkout('SEPAY') ngay khi tạo đơn để dựng mã VietQR — gọi checkout không còn
-  /// đồng nghĩa với việc khách đã chuyển khoản.
+  /// Server đã ghi nhận đơn PAID hay chưa. Thanh toán ví là tức thì nên checkout
+  /// WALLET bật cờ này.
   bool paid = false;
 
-  /// Trang bật Timer.periodic hỏi trạng thái ngay sau khi tạo đơn; không chặn ở đây
-  /// thì poll gọi qua mock dio, lỗi, rồi lặp mãi và pumpAndSettle không bao giờ lắng.
   @override
   Future<bool> orderStatus(int orderId) async => paid;
 
@@ -159,24 +158,28 @@ void main() {
 
     await tester.enterText(find.byType(TextFormField).first, '0909000000');
     await tester.tap(find.text('Tạo đơn & lấy PIN bỏ hàng'));
-    // Không pumpAndSettle: đơn vừa tạo còn UNPAID nên trang đang chạy vòng poll,
-    // trạng thái "đã lắng" sẽ không bao giờ tới.
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 600));
+    await tester.pumpAndSettle();
 
-    // Trang tự dựng mã VietQR rồi chờ SePay xác nhận. Chưa có tiền về thì không có
-    // nút mock, không mở được ô.
-    expect(service.lastCheckoutMethod, 'SEPAY');
-    expect(find.textContaining('Quét mã VietQR'), findsOneWidget);
+    // Không tự checkout khi tạo đơn; chưa trả tiền thì không mở được ô.
+    expect(service.checkoutCalls, 0);
+    expect(find.textContaining('Quét mã VietQR'), findsNothing);
     expect(find.textContaining('Mock'), findsNothing);
     expect(find.text('Mở ô để bỏ hàng'), findsNothing);
     expect(service.unlockCalls, 0);
 
-    // SePay báo đã nhận tiền: vòng poll 3 giây thấy đơn chuyển sang PAID.
-    service.paid = true;
-    await tester.pump(const Duration(seconds: 3));
+    await tester.tap(find.text('Thanh toán 15.000đ'));
+    // Không pumpAndSettle: nút đang ở trạng thái chờ (vòng quay) suốt lúc chọn
+    // phương thức.
+    await tester.pump();
     await tester.pump(const Duration(milliseconds: 600));
+    expect(find.text('Chọn phương thức thanh toán'), findsOneWidget);
+    await tester.tap(find.text('Ví của tôi'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 600));
+    await tester.pumpAndSettle();
 
+    expect(service.checkoutCalls, 1);
+    expect(service.lastCheckoutMethod, 'WALLET');
     expect(find.text('Mở ô để bỏ hàng'), findsOneWidget);
     expect(service.confirmDropCalls, 0);
 

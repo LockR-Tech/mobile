@@ -81,70 +81,22 @@ class _UserReportDetailSheetState extends State<UserReportDetailSheet> {
     if (reportId == null) return;
     setState(() => _loadingFresh = true);
 
+    // Chỉ dùng endpoint của chính chủ phiếu (token của khách). Lỗi phần nào thì
+    // giữ dữ liệu đang có của phần đó; nhật ký rỗng = phiếu chưa có nhật ký.
     Map<String, dynamic>? freshReport;
-    List<Map<String, dynamic>> logs = [];
-    List<Map<String, dynamic>> rawAttachments = [];
+    var logs = const <Map<String, dynamic>>[];
+    var rawAttachments = const <Map<String, dynamic>>[];
 
-    // 1. Tải chi tiết phiếu (ưu tiên userReport, dự phòng getMaintenanceReport)
     try {
       final rep = await _service.userReport(reportId);
-      debugPrint('[DEBUG_LOGS] userReport success: ${rep.keys}');
-      if (rep.isNotEmpty && rep['id'] != null) {
-        freshReport = rep;
-      }
-    } catch (e) {
-      debugPrint('[DEBUG_LOGS] userReport error: $e');
-    }
-
-    if (freshReport == null) {
-      try {
-        final rep = await _service.getMaintenanceReport(reportId);
-        debugPrint('[DEBUG_LOGS] getMaintenanceReport success: ${rep.keys}');
-        if (rep.isNotEmpty && rep['id'] != null) {
-          freshReport = rep;
-        }
-      } catch (e) {
-        debugPrint('[DEBUG_LOGS] getMaintenanceReport error: $e');
-      }
-    }
-
-    // 2. Tải nhật ký xử lý của KTV (ưu tiên userReportLogs, dự phòng reportLogs của KTV)
+      if (rep.isNotEmpty && rep['id'] != null) freshReport = rep;
+    } catch (_) {}
     try {
-      final l = await _service.userReportLogs(reportId);
-      debugPrint('[DEBUG_LOGS] userReportLogs success: length=${l.length}, data=$l');
-      if (l.isNotEmpty) logs = l;
-    } catch (e) {
-      debugPrint('[DEBUG_LOGS] userReportLogs error: $e');
-    }
-
-    if (logs.isEmpty) {
-      try {
-        final l = await _service.reportLogs(reportId);
-        debugPrint('[DEBUG_LOGS] reportLogs success: length=${l.length}, data=$l');
-        if (l.isNotEmpty) logs = l;
-      } catch (e) {
-        debugPrint('[DEBUG_LOGS] reportLogs error: $e');
-      }
-    }
-
-    // 3. Tải trực tiếp danh sách ảnh đính kèm minh chứng từ server
+      logs = await _service.userReportLogs(reportId);
+    } catch (_) {}
     try {
-      final atts = await _service.myReportAttachments(reportId);
-      debugPrint('[DEBUG_LOGS] myReportAttachments success: length=${atts.length}');
-      if (atts.isNotEmpty) rawAttachments = atts;
-    } catch (e) {
-      debugPrint('[DEBUG_LOGS] myReportAttachments error: $e');
-    }
-
-    if (rawAttachments.isEmpty) {
-      try {
-        final atts = await _service.reportAttachments(reportId);
-        debugPrint('[DEBUG_LOGS] reportAttachments success: length=${atts.length}');
-        if (atts.isNotEmpty) rawAttachments = atts;
-      } catch (e) {
-        debugPrint('[DEBUG_LOGS] reportAttachments error: $e');
-      }
-    }
+      rawAttachments = await _service.myReportAttachments(reportId);
+    } catch (_) {}
 
     if (!mounted) return;
     setState(() {
@@ -190,8 +142,8 @@ class _UserReportDetailSheetState extends State<UserReportDetailSheet> {
       if (logs.isNotEmpty) {
         _logs = logs;
       } else {
-        // Tự động tổng hợp các mốc xử lý từ attachments & staffNote để người dùng
-        // xem đầy đủ mọi ghi chú hiện trường & nghiệm thu của KTV
+        // Chưa có nhật ký: chỉ dựng các mốc có thật từ ảnh theo giai đoạn và ghi
+        // chú nghiệm thu của KTV (không thêm nội dung nào server không trả).
         _logs = _synthesizeLogs(
           attachments: ReportAttachment.listFrom(existingAtts),
           status: _report['status']?.toString() ?? 'OPEN',
@@ -206,8 +158,9 @@ class _UserReportDetailSheetState extends State<UserReportDetailSheet> {
     });
   }
 
-  /// Trích xuất danh sách nhật ký dự phòng từ các giai đoạn ảnh minh chứng
-  /// và ghi chú nghiệm thu của KTV để User không bị mất thông tin khi API logs bị trống.
+  /// Các mốc xử lý dựng từ dữ liệu thật của phiếu khi server chưa có nhật ký:
+  /// ảnh theo giai đoạn (kèm chú thích KTV ghi), gia hạn SLA và ghi chú nghiệm
+  /// thu. Không có dữ liệu thì không có mốc — màn hiện "chưa có nhật ký".
   List<Map<String, dynamic>> _synthesizeLogs({
     required List<ReportAttachment> attachments,
     required String status,
@@ -220,134 +173,90 @@ class _UserReportDetailSheetState extends State<UserReportDetailSheet> {
     final ktvId = _report['assignedToUserId'] ?? _report['technicianId'];
     final ktvName = _report['assignedToTechnicianName'] ?? _report['technicianName'];
     final isResolved = status == 'RESOLVED' || status == 'CLOSED';
-    final desc = (_report['description'] ?? '').toString().trim();
-    final faultReason = desc.isNotEmpty ? ' (Lý do sự cố: $desc)' : '';
-    final rawId = _report['id'];
-    final reportId = rawId is int ? rawId : int.tryParse(rawId?.toString() ?? '');
 
-    // 1. Giai đoạn kiểm tra hiện trường (INSPECTION)
+    Map<String, dynamic> attJson(ReportAttachment a) => {
+      'url': a.url,
+      'thumbnailUrl': a.thumbnailUrl,
+      'stage': a.stage,
+      'caption': a.caption,
+      'capturedAt': a.capturedAt?.toIso8601String(),
+      'createdAt': a.createdAt?.toIso8601String(),
+    };
+
+    // 1. Kiểm tra hiện trường (INSPECTION)
     final inspectionAtts = attachments.where((a) => a.stage == ReportStage.inspection).toList();
     if (inspectionAtts.isNotEmpty) {
       final first = inspectionAtts.first;
-      var cap = (first.caption ?? '').trim();
-      if (cap.isEmpty) {
-        cap = 'do cua user van con trong tu';
-      }
-      if (!cap.contains('Lý do sự cố:') && faultReason.isNotEmpty) {
-        cap = '$cap$faultReason';
-      }
-      final timeStr = first.createdAt?.toIso8601String() ??
-          first.capturedAt?.toIso8601String() ??
-          assignedAt?.toIso8601String() ??
-          createdAt?.toIso8601String();
+      final cap = (first.caption ?? '').trim();
       list.add({
         'actorUserId': ktvId,
         'actorName': ktvName,
-        'createdAt': timeStr,
-        'note': cap.startsWith('[') ? cap : '[GHI CHÚ HIỆN TRƯỜNG] $cap',
-        'attachments': inspectionAtts.map((a) => {
-          'url': a.url,
-          'thumbnailUrl': a.thumbnailUrl,
-          'stage': a.stage,
-          'caption': a.caption,
-          'capturedAt': a.capturedAt?.toIso8601String(),
-          'createdAt': a.createdAt?.toIso8601String(),
-        }).toList(),
+        'createdAt': (first.createdAt ?? first.capturedAt ?? assignedAt)
+            ?.toIso8601String(),
+        'note': cap.isEmpty
+            ? '[GHI CHÚ HIỆN TRƯỜNG] KTV đã chụp ảnh kiểm tra hiện trường.'
+            : (cap.startsWith('[') ? cap : '[GHI CHÚ HIỆN TRƯỜNG] $cap'),
+        'attachments': inspectionAtts.map(attJson).toList(),
       });
     }
 
-    // 2. Giai đoạn sửa chữa & tiến độ tại hiện trường
-    final progressAtts = attachments.where((a) => a.stage == ReportStage.progress).toList();
-    if (progressAtts.isNotEmpty) {
-      for (final att in progressAtts) {
-        final cap = (att.caption ?? '').trim();
-        final timeStr = att.createdAt?.toIso8601String() ??
-            att.capturedAt?.toIso8601String() ??
-            assignedAt?.toIso8601String();
-        list.add({
-          'actorUserId': ktvId,
-          'actorName': ktvName,
-          'createdAt': timeStr,
-          'note': cap.isNotEmpty
-              ? (cap.startsWith('[') ? cap : '[TIẾN ĐỘ SỬA CHỮA] $cap')
-              : '[TIẾN ĐỘ SỬA CHỮA] Cập nhật tiến độ kiểm tra & xử lý tại Kiosk.',
-          'attachments': [
-            {
-              'url': att.url,
-              'thumbnailUrl': att.thumbnailUrl,
-              'stage': att.stage,
-              'caption': att.caption,
-              'capturedAt': att.capturedAt?.toIso8601String(),
-              'createdAt': att.createdAt?.toIso8601String(),
-            }
-          ],
-        });
-      }
-    } else if (reportId == 19 || isResolved) {
-      // Các bước ghi chú hiện trường mà KTV đã gửi
+    // 2. Tiến độ sửa chữa (PROGRESS)
+    for (final att in attachments.where((a) => a.stage == ReportStage.progress)) {
+      final cap = (att.caption ?? '').trim();
       list.add({
         'actorUserId': ktvId,
         'actorName': ktvName,
-        'createdAt': '2026-09-29T15:08:52',
-        'note': '[GHI CHÚ HIỆN TRƯỜNG] da thay loi$faultReason',
-        'attachments': const [],
-      });
-      list.add({
-        'actorUserId': ktvId,
-        'actorName': ktvName,
-        'createdAt': '2026-09-29T17:25:33',
-        'note': '[GHI CHÚ HIỆN TRƯỜNG] hien truong dung nhu mo ta$faultReason',
-        'attachments': const [],
+        'createdAt': (att.createdAt ?? att.capturedAt)?.toIso8601String(),
+        'note': cap.isEmpty
+            ? '[TIẾN ĐỘ SỬA CHỮA] KTV cập nhật ảnh tiến độ xử lý.'
+            : (cap.startsWith('[') ? cap : '[TIẾN ĐỘ SỬA CHỮA] $cap'),
+        'attachments': [attJson(att)],
       });
     }
 
-    // 3. Gia hạn SLA (nếu có thông tin gia hạn trên phiếu)
+    // 3. Gia hạn SLA (chỉ khi phiếu có thông tin gia hạn)
     final extHours = _report['slaExtendedHours'];
-    if (extHours != null && ((extHours is num && extHours > 0) || extHours.toString() == '4')) {
-      final extReason = (_report['slaExtensionReason'] ?? 'Chờ linh kiện thay thế').toString();
+    if (extHours is num && extHours > 0) {
+      final extReason = (_report['slaExtensionReason'] ?? '').toString().trim();
       final slaDueAt = _report['slaDueAt'];
-      final dueStr = slaDueAt != null ? _fmtSec(slaDueAt) : '21:25:47 29/09/2026';
       list.add({
         'actorUserId': ktvId,
         'actorName': ktvName,
-        'createdAt': '2026-09-29T17:25:47',
-        'note': '[GIA HẠN SLA] Hệ thống đã phê duyệt gia hạn thêm +$extHours giờ cho sự cố này.\n- Hạn hoàn tất mới: $dueStr\n- Lý do: $extReason',
+        'createdAt': null,
+        'note': [
+          '[GIA HẠN SLA] Phiếu được gia hạn thêm $extHours giờ.',
+          if (slaDueAt != null) '- Hạn hoàn tất mới: ${_fmtSec(slaDueAt)}',
+          if (extReason.isNotEmpty) '- Lý do: $extReason',
+        ].join('\n'),
         'attachments': const [],
       });
     }
 
-    // 4. Giai đoạn nghiệm thu & hoàn tất (RESOLUTION)
+    // 4. Nghiệm thu & hoàn tất (RESOLUTION)
     final resolutionAtts = attachments.where((a) => a.stage == ReportStage.resolution).toList();
     if (resolutionAtts.isNotEmpty || staffNote.isNotEmpty || isResolved) {
-      String resNote = staffNote;
+      var resNote = staffNote;
       if (resNote.isEmpty && resolutionAtts.isNotEmpty) {
         resNote = (resolutionAtts.first.caption ?? '').trim();
       }
       if (resNote.isEmpty) {
-        resNote = 'ok roi, Đã thay thế linh kiện khóa điện tử';
-      } else {
-        if (!resNote.contains('Đã thay thế linh kiện') && resNote.startsWith('ok roi')) {
-          resNote = '$resNote, Đã thay thế linh kiện khóa điện tử';
-        }
+        resNote = isResolved
+            ? 'KTV đã hoàn tất phiếu.'
+            : 'KTV đã gửi ảnh nghiệm thu.';
       }
       if (!resNote.startsWith('[')) {
         resNote = '[NGHIỆM THU THÀNH CÔNG] $resNote';
       }
-      final resTime = (resolutionAtts.isNotEmpty ? (resolutionAtts.first.createdAt ?? resolutionAtts.first.capturedAt) : null) ??
+      final resTime = (resolutionAtts.isNotEmpty
+              ? (resolutionAtts.first.createdAt ?? resolutionAtts.first.capturedAt)
+              : null) ??
           resolvedAt;
       list.add({
         'actorUserId': _report['resolvedByUserId'] ?? ktvId,
         'actorName': ktvName,
-        'createdAt': resTime?.toIso8601String() ?? '2026-09-29T17:28:35',
+        'createdAt': resTime?.toIso8601String(),
         'note': resNote,
-        'attachments': resolutionAtts.map((a) => {
-          'url': a.url,
-          'thumbnailUrl': a.thumbnailUrl,
-          'stage': a.stage,
-          'caption': a.caption,
-          'capturedAt': a.capturedAt?.toIso8601String(),
-          'createdAt': a.createdAt?.toIso8601String(),
-        }).toList(),
+        'attachments': resolutionAtts.map(attJson).toList(),
       });
     }
 
@@ -622,7 +531,7 @@ class _UserReportDetailSheetState extends State<UserReportDetailSheet> {
                       if (r['assignedToUserId'] != null)
                         _MiniPill(
                           icon: Icons.engineering_outlined,
-                          text: 'KTV phụ trách: #${r['assignedToUserId']}',
+                          text: 'KTV phụ trách: ${(r['assignedToTechnicianName'] ?? '').toString().trim().isNotEmpty ? r['assignedToTechnicianName'] : '#${r['assignedToUserId']}'}',
                           color: const Color(0xFF0284C7),
                         )
                       else if (!isResolved)

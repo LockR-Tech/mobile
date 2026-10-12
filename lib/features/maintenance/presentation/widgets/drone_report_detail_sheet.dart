@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:smart_laundry_locker/core/config/business_config_service.dart';
 import 'package:smart_laundry_locker/core/media/media.dart';
 import 'package:smart_laundry_locker/core/utils/app_date_time.dart';
+import 'package:smart_laundry_locker/features/locker_ops/data/drone_technician_errors.dart';
 import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/ops_widgets.dart';
 
@@ -84,6 +85,16 @@ class _DroneReportDetailSheetState extends State<DroneReportDetailSheet> {
     return routedTo == null ||
         routedTo.isEmpty ||
         routedTo == widget.currentUserId;
+  }
+
+  int? get _slaExtensionsUsed => _asInt(_report['slaExtensionsUsed']);
+  int? get _slaExtensionsMax => _asInt(_report['slaExtensionsMax']);
+
+  /// Còn lượt gia hạn (server chưa trả số lượt thì để server quyết định).
+  bool get _canExtendSla {
+    final used = _slaExtensionsUsed;
+    final max = _slaExtensionsMax;
+    return used == null || max == null || used < max;
   }
 
   @override
@@ -226,6 +237,50 @@ class _DroneReportDetailSheetState extends State<DroneReportDetailSheet> {
     await _load();
   }
 
+  /// KTV đang giữ phiếu xin gia hạn SLA: chọn số giờ + bắt buộc lý do. Số lần
+  /// và số giờ tối đa do server kiểm (`SLA_EXTENSION_*`).
+  Future<void> _extendSla() async {
+    final id = _reportId;
+    if (id == null || _saving) return;
+    final result = await showDialog<({Map<String, dynamic> report, int hours})>(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => _ExtendSlaDialog(
+        reportId: id,
+        service: widget.service,
+        used: _slaExtensionsUsed,
+        max: _slaExtensionsMax,
+      ),
+    );
+    if (result == null || !mounted) return;
+    setState(() {
+      if (result.report.isNotEmpty) _report = result.report;
+    });
+    final used = _slaExtensionsUsed;
+    final max = _slaExtensionsMax;
+    _showMessage(
+      'Đã gia hạn SLA thêm ${result.hours} giờ'
+      '${used != null && max != null ? ' (đã dùng $used/$max lần)' : ''}.',
+    );
+    await widget.onChanged();
+    await _load();
+  }
+
+  /// KTV đang giữ phiếu trả phiếu về hàng chờ để KTV khác nhận (bắt buộc lý do).
+  Future<void> _release() async {
+    final id = _reportId;
+    if (id == null || _saving) return;
+    final released = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => _ReleaseReportDialog(reportId: id, service: widget.service),
+    );
+    if (released != true || !mounted) return;
+    _showMessage('Đã trả phiếu RPT-$id về hàng chờ.');
+    await widget.onChanged();
+    await _load();
+  }
+
   void _showMessage(String message) {
     ScaffoldMessenger.maybeOf(
       context,
@@ -243,6 +298,7 @@ class _DroneReportDetailSheetState extends State<DroneReportDetailSheet> {
     final droneCode = _text(_report['droneCode']);
     final description = _cleanDescription(_report['description']);
     final overdue = _report['overdue'] == true;
+    final slaDue = _formatDate(_report['slaDueAt']);
 
     return SafeArea(
       top: false,
@@ -370,11 +426,27 @@ class _DroneReportDetailSheetState extends State<DroneReportDetailSheet> {
                           _DetailRow(
                             label: 'KTV phụ trách',
                             value: assignedName.isNotEmpty
-                                ? assignedName
+                                ? (_assignedToMe
+                                      ? '$assignedName (bạn)'
+                                      : assignedName)
                                 : _report['assignedToUserId'] == null
                                 ? 'Chưa có KTV nhận việc'
+                                : _assignedToMe
+                                ? 'Bạn'
                                 : 'KTV #${_report['assignedToUserId']}',
                           ),
+                          if (slaDue.isNotEmpty)
+                            _DetailRow(
+                              label: 'Hạn SLA',
+                              value: overdue ? '$slaDue · đã quá hạn' : slaDue,
+                            ),
+                          if (_slaExtensionsUsed != null)
+                            _DetailRow(
+                              label: 'Gia hạn SLA',
+                              value: _slaExtensionsMax == null
+                                  ? 'Đã gia hạn $_slaExtensionsUsed lần'
+                                  : 'Đã gia hạn $_slaExtensionsUsed/$_slaExtensionsMax lần',
+                            ),
                           _DetailRow(
                             label: 'Tạo lúc',
                             value: createdAt.isEmpty ? '—' : createdAt,
@@ -453,7 +525,7 @@ class _DroneReportDetailSheetState extends State<DroneReportDetailSheet> {
                           ),
                         ),
                       ),
-                    if (_status == 'IN_PROGRESS' && _assignedToMe)
+                    if (_status == 'IN_PROGRESS' && _assignedToMe) ...[
                       SizedBox(
                         width: double.infinity,
                         child: FilledButton.icon(
@@ -466,6 +538,43 @@ class _DroneReportDetailSheetState extends State<DroneReportDetailSheet> {
                           ),
                         ),
                       ),
+                      const SizedBox(height: 10),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: OutlinedButton.icon(
+                              key: const ValueKey('drone-report-extend-sla'),
+                              onPressed: _saving || !_canExtendSla
+                                  ? null
+                                  : _extendSla,
+                              icon: const Icon(Icons.more_time_rounded, size: 18),
+                              label: Text(
+                                _slaExtensionsUsed != null &&
+                                        _slaExtensionsMax != null
+                                    ? 'Gia hạn SLA ($_slaExtensionsUsed/$_slaExtensionsMax)'
+                                    : 'Gia hạn SLA',
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: OutlinedButton.icon(
+                              key: const ValueKey('drone-report-release'),
+                              onPressed: _saving ? null : _release,
+                              icon: const Icon(
+                                Icons.assignment_return_outlined,
+                                size: 18,
+                              ),
+                              label: const Text('Trả lại phiếu'),
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: const Color(0xFFDC2626),
+                                side: const BorderSide(color: Color(0xFFFCA5A5)),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
                   ],
                 ),
               ),
@@ -514,9 +623,7 @@ class _DroneReportDetailSheetState extends State<DroneReportDetailSheet> {
                       children: [
                         _Badge(
                           icon: Icons.engineering_outlined,
-                          label: log['actorUserId'] == null
-                              ? 'Kỹ thuật viên'
-                              : 'KTV #${log['actorUserId']}',
+                          label: _logActorLabel(log),
                           color: _accent,
                         ),
                         const Spacer(),
@@ -552,6 +659,16 @@ class _DroneReportDetailSheetState extends State<DroneReportDetailSheet> {
         ],
       ],
     );
+  }
+
+  /// Tên người ghi log (`actorName`); thiếu tên thì "Bạn" / "KTV #id".
+  String _logActorLabel(Map<String, dynamic> log) {
+    final name = _text(log['actorName']);
+    if (name.isNotEmpty) return name;
+    final actorId = log['actorUserId'];
+    if (actorId == null) return 'Kỹ thuật viên';
+    if ('$actorId' == widget.currentUserId) return 'Bạn';
+    return 'KTV #$actorId';
   }
 
   Widget _buildLogEditor() {
@@ -614,6 +731,246 @@ class _DroneReportDetailSheetState extends State<DroneReportDetailSheet> {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _ExtendSlaDialog extends StatefulWidget {
+  const _ExtendSlaDialog({
+    required this.reportId,
+    required this.service,
+    required this.used,
+    required this.max,
+  });
+
+  final int reportId;
+  final LockerOpsService service;
+  final int? used;
+  final int? max;
+
+  @override
+  State<_ExtendSlaDialog> createState() => _ExtendSlaDialogState();
+}
+
+class _ExtendSlaDialogState extends State<_ExtendSlaDialog> {
+  static const _hourOptions = [2, 4, 8, 12, 24];
+
+  final _reason = TextEditingController();
+  int _hours = 4;
+  bool _sending = false;
+  String? _error;
+
+  @override
+  void dispose() {
+    _reason.dispose();
+    super.dispose();
+  }
+
+  Future<void> _submit() async {
+    final reason = _reason.text.trim();
+    if (reason.isEmpty) {
+      setState(() => _error = 'Cần nhập lý do gia hạn SLA.');
+      return;
+    }
+    setState(() {
+      _sending = true;
+      _error = null;
+    });
+    try {
+      final report = await widget.service.extendDroneReportSla(
+        widget.reportId,
+        hours: _hours,
+        reason: reason,
+      );
+      if (mounted) Navigator.pop(context, (report: report, hours: _hours));
+    } catch (error) {
+      if (!mounted) return;
+      setState(() {
+        _sending = false;
+        _error = droneTechnicianErrorMessage(
+          error,
+          unsupported: 'Máy chủ chưa hỗ trợ gia hạn SLA cho phiếu drone.',
+        );
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final used = widget.used;
+    final max = widget.max;
+    return AlertDialog(
+      title: Text('Gia hạn SLA · RPT-${widget.reportId}'),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              used != null && max != null
+                  ? 'Đã gia hạn $used/$max lần. Mỗi lần gia hạn được ghi vào nhật ký phiếu.'
+                  : 'Mỗi lần gia hạn được ghi vào nhật ký phiếu; số lần và số giờ tối đa theo cấu hình.',
+              style: const TextStyle(fontSize: 12.5),
+            ),
+            const SizedBox(height: 12),
+            const Text(
+              'Thêm thời gian',
+              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
+            ),
+            const SizedBox(height: 6),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                for (final hours in _hourOptions)
+                  ChoiceChip(
+                    label: Text('$hours giờ'),
+                    selected: _hours == hours,
+                    onSelected: _sending
+                        ? null
+                        : (_) => setState(() => _hours = hours),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _reason,
+              enabled: !_sending,
+              minLines: 2,
+              maxLines: 4,
+              maxLength: 1000,
+              decoration: const InputDecoration(
+                labelText: 'Lý do gia hạn *',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            if (_error != null)
+              Text(
+                _error!,
+                style: const TextStyle(fontSize: 12, color: Color(0xFFDC2626)),
+              ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: _sending ? null : () => Navigator.pop(context),
+          child: const Text('Hủy'),
+        ),
+        FilledButton(
+          onPressed: _sending ? null : _submit,
+          child: _sending
+              ? const SizedBox.square(
+                  dimension: 18,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : const Text('Gia hạn'),
+        ),
+      ],
+    );
+  }
+}
+
+class _ReleaseReportDialog extends StatefulWidget {
+  const _ReleaseReportDialog({required this.reportId, required this.service});
+
+  final int reportId;
+  final LockerOpsService service;
+
+  @override
+  State<_ReleaseReportDialog> createState() => _ReleaseReportDialogState();
+}
+
+class _ReleaseReportDialogState extends State<_ReleaseReportDialog> {
+  final _reason = TextEditingController();
+  bool _sending = false;
+  String? _error;
+
+  @override
+  void dispose() {
+    _reason.dispose();
+    super.dispose();
+  }
+
+  Future<void> _submit() async {
+    final reason = _reason.text.trim();
+    if (reason.isEmpty) {
+      setState(() => _error = 'Cần nhập lý do trả phiếu.');
+      return;
+    }
+    setState(() {
+      _sending = true;
+      _error = null;
+    });
+    try {
+      await widget.service.releaseDroneReport(widget.reportId, reason: reason);
+      if (mounted) Navigator.pop(context, true);
+    } catch (error) {
+      if (!mounted) return;
+      setState(() {
+        _sending = false;
+        _error = droneTechnicianErrorMessage(
+          error,
+          unsupported: 'Máy chủ chưa hỗ trợ trả phiếu drone.',
+        );
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text('Trả lại phiếu RPT-${widget.reportId}?'),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Phiếu quay về hàng chờ để KTV khác nhận; bạn không còn phụ trách phiếu này.',
+              style: TextStyle(fontSize: 12.5),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _reason,
+              enabled: !_sending,
+              minLines: 2,
+              maxLines: 4,
+              maxLength: 1000,
+              decoration: const InputDecoration(
+                labelText: 'Lý do trả phiếu *',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            if (_error != null)
+              Text(
+                _error!,
+                style: const TextStyle(fontSize: 12, color: Color(0xFFDC2626)),
+              ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: _sending ? null : () => Navigator.pop(context, false),
+          child: const Text('Hủy'),
+        ),
+        FilledButton(
+          style: FilledButton.styleFrom(
+            backgroundColor: const Color(0xFFDC2626),
+          ),
+          onPressed: _sending ? null : _submit,
+          child: _sending
+              ? const SizedBox.square(
+                  dimension: 18,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: Colors.white,
+                  ),
+                )
+              : const Text('Trả phiếu'),
+        ),
+      ],
     );
   }
 }

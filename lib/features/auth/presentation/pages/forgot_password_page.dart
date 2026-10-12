@@ -77,8 +77,8 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
 
   void _resetPassword() {
     final otp = _otpController.text.trim();
-    final password = _passwordController.text;
-    final confirm = _confirmController.text;
+    final password = _passwordController.text.trim();
+    final confirm = _confirmController.text.trim();
     if (otp.length != 6) {
       setState(() => _localError = 'Mã OTP gồm 6 chữ số.');
       return;
@@ -93,7 +93,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
     }
     setState(() => _localError = null);
     _provider.resetPassword(
-      email: _emailController.text,
+      email: _emailController.text.trim(),
       otp: otp,
       newPassword: password,
       confirmPassword: confirm,

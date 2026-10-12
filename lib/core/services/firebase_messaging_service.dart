@@ -10,7 +10,7 @@ import 'dart:math';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:smart_laundry_locker/core/network/api_client.dart';
 import 'package:smart_laundry_locker/core/routing/app_router.dart';
-import 'package:smart_laundry_locker/core/routing/role_routes.dart';
+import 'package:smart_laundry_locker/core/routing/notification_deep_link.dart';
 import 'package:smart_laundry_locker/features/notifications/domain/entities/delivery_notification.dart';
 import 'package:go_router/go_router.dart';
 
@@ -28,19 +28,9 @@ class FirebaseMessagingService {
 
   /// Push cập nhật chuyến giao drone cho customer. Giữ các type cũ trong thời
   /// gian chuyển contract; type chuẩn mới dùng một event cho mọi stage.
-  static const Set<String> droneDeliveryTypes = {
-    'DRONE_DELIVERY_STATUS_CHANGED',
-    'drone_dispatched',
-    'drone_approaching',
-    'drone_arrived',
-    'drone_delivered',
-    'drone_delayed',
-    'drone_failed',
-    'DRONE_PARCEL_DROP_REPORTED',
-    'DRONE_INCIDENT_RESOLUTION_PROPOSED',
-  };
+  static const Set<String> droneDeliveryTypes = customerDroneDeliveryTypes;
 
-  static const Set<String> maintenanceDroneTypes = {'DRONE_ORDER_CREATED'};
+  static const Set<String> maintenanceDroneTypes = droneDispatchTypes;
 
   static bool _isDroneDeliveryType(Object? type) =>
       type is String && droneDeliveryTypes.contains(type);
@@ -322,38 +312,37 @@ class FirebaseMessagingService {
   /// Điều hướng khi người dùng bấm vào noti (background/terminated qua
   /// onMessageOpenedApp/getInitialMessage, hoặc foreground qua local-notif).
   ///
-  /// Ưu tiên: đơn drone mới -> hàng đợi DRONE_TECHNICIAN; phiếu/lịch của KTV tủ
-  /// -> tab tương ứng trang KTV tủ; cập nhật chuyến drone -> timeline customer;
-  /// noti giao hàng khác -> chi tiết đơn; còn lại -> Thông báo.
+  /// Màn đích theo type + VAI TRÒ người đang đăng nhập (xem
+  /// `notification_deep_link.dart`); không có màn riêng ⇒ danh sách Thông báo.
   void _handleTapData(Map<String, dynamic> data) {
-    final type = data['type']?.toString();
+    unawaited(_openForTap(data));
+  }
+
+  Future<void> _openForTap(Map<String, dynamic> data) async {
     final delivery = DeliveryNotification.fromData(data);
-    final technicianRoute = technicianRouteForNotification(
-      type,
-      referenceType: data['referenceType']?.toString(),
-    );
+    String? location;
+    try {
+      location = await resolveNotificationLocation(
+        type: data['type']?.toString(),
+        // Noti huỷ nhiệm vụ chỉ mang `referenceId`, không có `orderId`.
+        referenceId: (data['referenceId'] ?? data['orderId'])?.toString(),
+        // Payload {orderId, status} chỉ do endpoint mốc chặng giao drone gửi
+        // (referenceType = DELIVERY).
+        referenceType:
+            data['referenceType']?.toString() ??
+            (delivery != null ? 'DELIVERY' : null),
+        orderId: data['orderId']?.toString(),
+      );
+    } catch (e) {
+      debugPrint('Cannot resolve notification route: $e');
+    }
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final context = AppRouter.navigatorKey.currentContext;
       if (context == null) return;
-
-      if (_isMaintenanceDroneType(type)) {
-        context.go(AppRouter.maintenanceHome);
-      } else if (technicianRoute != null) {
-        context.go(technicianRoute);
-      } else if (_isDroneDeliveryType(type)) {
-        // Noti huỷ nhiệm vụ chỉ mang `referenceId`, không có `orderId`.
-        final orderId =
-            (data['orderId'] ?? data['referenceId'])?.toString() ?? '';
-        context.go(AppRouter.droneDeliveryTracking, extra: orderId);
-      } else if (delivery != null) {
-        // Payload {orderId, status} chỉ do endpoint mốc chặng giao drone gửi
-        // (type = ORDER_STATUS_CHANGED, referenceType = DELIVERY) -> mở màn theo
-        // dõi drone. Trang chi tiết đơn cũ gọi API đã gỡ nên mở ra màn trống.
-        context.go(AppRouter.droneDeliveryTracking, extra: delivery.orderId);
-      } else {
-        context.go(AppRouter.notifications);
-      }
+      context.go(location ?? AppRouter.notifications);
     });
+    // Bảo đảm có frame để callback trên chạy (sau await có thể chưa có frame nào).
+    WidgetsBinding.instance.ensureVisualUpdate();
   }
 }

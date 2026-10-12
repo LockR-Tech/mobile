@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:smart_laundry_locker/core/constants/app_colors.dart';
 import 'package:smart_laundry_locker/core/network/api_client.dart';
 import 'package:smart_laundry_locker/features/profile/domain/entities/user_profile.dart';
+import 'package:smart_laundry_locker/features/profile/domain/utils/person_name.dart';
 import 'package:smart_laundry_locker/features/profile/infrastructure/data_sources/profile_remote_data_source_impl.dart';
 import 'package:smart_laundry_locker/features/profile/infrastructure/repositories/profile_repository_impl.dart';
 import 'package:smart_laundry_locker/features/profile/presentation/providers/profile_injection.dart';
@@ -27,6 +28,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
   final _formKey = GlobalKey<FormState>();
   final _fullNameController = TextEditingController();
   final _phoneController = TextEditingController();
+  final _emailController = TextEditingController();
   final ImagePicker _imagePicker = ImagePicker();
 
   late ProfileProvider _profileProvider;
@@ -41,8 +43,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
     _profileProvider = ProfileInjection.provideProfileProvider(apiClient);
 
     if (widget.profile != null) {
-      _fullNameController.text = widget.profile!.fullName;
-      _phoneController.text = widget.profile!.phoneNumber;
+      _fillForm(widget.profile!);
     }
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -50,10 +51,20 @@ class _EditProfilePageState extends State<EditProfilePage> {
     });
   }
 
+  /// Tên mặc định ("Customer" của tài khoản OTP mới) không điền sẵn để người
+  /// dùng nhập tên thật thay vì lưu lại tên giả.
+  void _fillForm(UserProfile profile) {
+    _fullNameController.text =
+        isPlaceholderName(profile.fullName) ? '' : profile.fullName;
+    _phoneController.text = profile.phoneNumber;
+    _emailController.text = profile.email;
+  }
+
   @override
   void dispose() {
     _fullNameController.dispose();
     _phoneController.dispose();
+    _emailController.dispose();
     _profileProvider.dispose();
     super.dispose();
   }
@@ -63,9 +74,15 @@ class _EditProfilePageState extends State<EditProfilePage> {
       return;
     }
 
+    final current = _profileProvider.profile ?? widget.profile;
+    final phone = _phoneController.text.trim();
+    final email = _emailController.text.trim();
     await _profileProvider.updateProfile(
       fullName: _fullNameController.text.trim(),
-      phoneNumber: _phoneController.text.trim(),
+      // Chỉ gửi định danh khi đổi — backend kiểm trùng rồi đồng bộ sang tài
+      // khoản đăng nhập, không cần làm việc đó khi giữ nguyên.
+      phoneNumber: phone != (current?.phoneNumber ?? '') ? phone : null,
+      email: email.isNotEmpty && email != (current?.email ?? '') ? email : null,
     );
 
     if (!mounted) return;
@@ -74,7 +91,19 @@ class _EditProfilePageState extends State<EditProfilePage> {
       SmartDialog.showToast('Cập nhật thành công!');
       Navigator.of(context).pop(true);
     } else if (_profileProvider.error != null) {
-      SmartDialog.showToast(_profileProvider.error!);
+      await showDialog<void>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: const Text('Không lưu được hồ sơ'),
+          content: Text(_profileProvider.error!),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Đóng'),
+            ),
+          ],
+        ),
+      );
     }
   }
 
@@ -268,11 +297,10 @@ class _EditProfilePageState extends State<EditProfilePage> {
 
               if (widget.profile == null && provider.profile != null) {
                 WidgetsBinding.instance.addPostFrameCallback((_) {
-                  if (_fullNameController.text.isEmpty) {
-                    _fullNameController.text = provider.profile!.fullName;
-                  }
-                  if (_phoneController.text.isEmpty) {
-                    _phoneController.text = provider.profile!.phoneNumber;
+                  if (_fullNameController.text.isEmpty &&
+                      _phoneController.text.isEmpty &&
+                      _emailController.text.isEmpty) {
+                    _fillForm(provider.profile!);
                   }
                 });
               }
@@ -442,13 +470,67 @@ class _EditProfilePageState extends State<EditProfilePage> {
                         ),
                         validator: (value) {
                           if (value == null || value.trim().isEmpty) {
-                            return 'Vui lòng nhập số điện thoại';
+                            // Tài khoản Google chưa có SĐT vẫn lưu được tên;
+                            // đã có SĐT thì không xoá được (backend giữ nguyên).
+                            final hadPhone = (effectiveProfile?.phoneNumber ?? '')
+                                .trim()
+                                .isNotEmpty;
+                            return hadPhone ? 'Vui lòng nhập số điện thoại' : null;
                           }
-                          if (value.trim().length < 9) {
+                          if (!RegExp(r'^\+?[0-9]{9,12}$')
+                              .hasMatch(value.trim())) {
                             return 'Số điện thoại không hợp lệ';
                           }
                           return null;
                         },
+                      ),
+
+                      const SizedBox(height: 20),
+
+                      // Email
+                      const Text(
+                        'Email',
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                          color: AppColors.onSurfaceVariant,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      TextFormField(
+                        controller: _emailController,
+                        keyboardType: TextInputType.emailAddress,
+                        autocorrect: false,
+                        decoration: InputDecoration(
+                          prefixIcon: const Icon(
+                            Icons.email_outlined,
+                            color: AppColors.onSurfaceVariant,
+                          ),
+                          filled: true,
+                          fillColor: AppColors.grey100,
+                          hintText: 'Nhập email',
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(16),
+                            borderSide: BorderSide.none,
+                          ),
+                        ),
+                        validator: (value) {
+                          final email = (value ?? '').trim();
+                          if (email.isEmpty) return null;
+                          if (!RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$')
+                              .hasMatch(email)) {
+                            return 'Email không hợp lệ';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 10),
+                      const Text(
+                        'Đổi số điện thoại hoặc email cũng đổi thông tin dùng để đăng nhập.',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: AppColors.onSurfaceVariant,
+                        ),
                       ),
 
                       const SizedBox(height: 32),

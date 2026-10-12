@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:smart_laundry_locker/core/media/photo_picker_controller.dart';
 import 'package:smart_laundry_locker/core/media/widgets/photo_picker_field.dart';
+import 'package:smart_laundry_locker/core/utils/app_date_time.dart';
+import 'package:smart_laundry_locker/features/locker_ops/data/drone_technician_errors.dart';
 import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
 import 'package:video_player/video_player.dart';
 
@@ -30,6 +32,9 @@ class _DroneJourneyCameraPanelState extends State<DroneJourneyCameraPanel> {
   VideoPlayerController? _player;
   String _state = 'CONNECTING';
   String? _error;
+  // Giữ một Idempotency-Key cho lần báo rơi kiện tới khi server xác nhận: bấm
+  // lại sau lỗi mạng không tạo thêm sự cố/phiếu trùng.
+  String? _dropIdempotencyKey;
 
   @override
   void initState() {
@@ -70,7 +75,7 @@ class _DroneJourneyCameraPanelState extends State<DroneJourneyCameraPanel> {
       if (!mounted) return;
       setState(() {
         _state = 'ERROR';
-        _error = LockerOpsService.errorMessage(error);
+        _error = droneTechnicianErrorMessage(error);
       });
     }
   }
@@ -157,18 +162,30 @@ class _DroneJourneyCameraPanelState extends State<DroneJourneyCameraPanel> {
                 spacing: 7,
                 runSpacing: 7,
                 children: [
+                  _Metric('Telemetry', _telemetryState(camera)),
                   _Metric('Pin', _battery(camera)),
-                  _Metric(
-                    'Chế độ',
-                    '${camera['flightMode'] ?? 'Không có dữ liệu'}',
-                  ),
-                  _Metric(
-                    'Telemetry',
-                    camera['telemetryLive'] == true
-                        ? 'Trực tuyến'
-                        : 'Cũ / mất kết nối',
-                  ),
+                  _Metric('Chế độ bay', _flightMode(camera)),
                   _Metric('GPS', _gps(camera)),
+                  if (_num(camera['altitudeM']) != null)
+                    _Metric(
+                      'Độ cao',
+                      '${_num(camera['altitudeM'])!.toStringAsFixed(1)} m',
+                    ),
+                  if (_num(camera['groundSpeedMs']) != null)
+                    _Metric(
+                      'Tốc độ',
+                      '${_num(camera['groundSpeedMs'])!.toStringAsFixed(1)} m/s',
+                    ),
+                  if (_num(camera['headingDeg']) != null)
+                    _Metric(
+                      'Hướng',
+                      '${_num(camera['headingDeg'])!.round()}°',
+                    ),
+                  if (parseServerDateTime(camera['observedAt']) != null)
+                    _Metric(
+                      'Số đo lúc',
+                      formatDateTimeVn(parseServerDateTime(camera['observedAt'])),
+                    ),
                 ],
               ),
             ],
@@ -187,6 +204,8 @@ class _DroneJourneyCameraPanelState extends State<DroneJourneyCameraPanel> {
     );
   }
 
+  // Backend luôn kèm số đo bay mới nhất; giá trị thiếu theo quy ước -1 /
+  // "UNKNOWN" / 0 / "" ⇒ "Không có dữ liệu".
   String _battery(Map<String, dynamic> value) {
     final battery = value['batteryPercent'];
     return battery is num && battery >= 0
@@ -194,13 +213,44 @@ class _DroneJourneyCameraPanelState extends State<DroneJourneyCameraPanel> {
         : 'Không có dữ liệu';
   }
 
+  String _telemetryState(Map<String, dynamic> value) {
+    if (value['telemetryAvailable'] == false) return 'Chưa nhận telemetry';
+    return value['telemetryLive'] == true ? 'Trực tuyến' : 'Cũ / mất kết nối';
+  }
+
+  String _flightMode(Map<String, dynamic> value) {
+    final mode = '${value['flightMode'] ?? ''}'.trim();
+    return mode.isEmpty || mode.toUpperCase() == 'UNKNOWN'
+        ? 'Không có dữ liệu'
+        : mode;
+  }
+
   String _gps(Map<String, dynamic> value) {
     final lat = value['latitude'];
     final lng = value['longitude'];
-    return lat is num && lng is num && (lat != 0 || lng != 0)
-        ? '${lat.toStringAsFixed(5)}, ${lng.toStringAsFixed(5)}'
-        : 'Không có dữ liệu';
+    if (lat is! num || lng is! num || (lat == 0 && lng == 0)) {
+      return 'Không có dữ liệu';
+    }
+    final fix = _num(value['gpsFixType'])?.toInt();
+    final satellites = _num(value['satellites'])?.toInt();
+    return [
+      '${lat.toStringAsFixed(5)}, ${lng.toStringAsFixed(5)}',
+      if (fix != null) _fixLabel(fix),
+      if (satellites != null) '$satellites vệ tinh',
+    ].join(' · ');
   }
+
+  static String _fixLabel(int fixType) => switch (fixType) {
+    0 || 1 => 'chưa có fix',
+    2 => 'fix 2D',
+    3 => 'fix 3D',
+    4 => 'DGPS',
+    5 => 'RTK float',
+    6 => 'RTK fixed',
+    _ => 'fix $fixType',
+  };
+
+  static num? _num(dynamic value) => value is num ? value : null;
 
   Future<void> _showReportDialog(Map<String, dynamic>? camera) async {
     final reason = TextEditingController();
@@ -260,10 +310,11 @@ class _DroneJourneyCameraPanelState extends State<DroneJourneyCameraPanel> {
                         if (photos.isNotEmpty) await photos.uploadAll();
                         final lat = camera?['latitude'];
                         final lng = camera?['longitude'];
+                        final idempotencyKey = _dropIdempotencyKey ??=
+                            'drop-${widget.orderId}-${DateTime.now().microsecondsSinceEpoch}';
                         await widget.service.reportDroppedParcel(
                           widget.orderId,
-                          idempotencyKey:
-                              'drop-${widget.orderId}-${DateTime.now().microsecondsSinceEpoch}',
+                          idempotencyKey: idempotencyKey,
                           reason: reason.text,
                           latitude:
                               camera?['telemetryLive'] == true && lat is num
@@ -283,13 +334,14 @@ class _DroneJourneyCameraPanelState extends State<DroneJourneyCameraPanel> {
                                     .toIso8601String()
                               : null,
                         );
+                        _dropIdempotencyKey = null;
                         if (context.mounted) Navigator.pop(context, true);
                       } catch (error) {
                         if (context.mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
                               content: Text(
-                                LockerOpsService.errorMessage(error),
+                                droneTechnicianErrorMessage(error),
                               ),
                             ),
                           );
@@ -313,7 +365,10 @@ class _DroneJourneyCameraPanelState extends State<DroneJourneyCameraPanel> {
     if (reported == true && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Đã tạo sự cố và dừng luồng giao hiện tại.'),
+          content: Text(
+            'Đã tạo sự cố rơi kiện và dừng luồng giao. Theo dõi tiếp ở mục '
+            '"Sự cố rơi kiện" trong tab Điều phối.',
+          ),
         ),
       );
       await widget.onIncidentReported();

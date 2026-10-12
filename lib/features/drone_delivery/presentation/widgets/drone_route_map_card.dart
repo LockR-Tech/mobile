@@ -8,15 +8,23 @@ import 'package:smart_laundry_locker/core/theme/shadcn_theme.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/domain/entities/drone_delivery_stage.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/domain/entities/drone_delivery_status.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/domain/entities/drone_route_geometry.dart';
+import 'package:smart_laundry_locker/features/drone_delivery/presentation/drone_live_map.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/presentation/widgets/drone_marker.dart';
 
 /// Bản đồ tóm tắt hành trình: tủ gửi A, tủ nhận B, đoạn đã bay và vị trí drone
 /// ước theo chặng hiện tại. Không cho kéo/zoom để cuộn trang không bị bản đồ "nuốt";
 /// theo dõi vị trí thật từng giây ở màn live map.
 class DroneRouteMapCard extends StatelessWidget {
-  const DroneRouteMapCard({super.key, required this.status});
+  const DroneRouteMapCard({
+    super.key,
+    required this.status,
+    this.forOperator = false,
+  });
 
   final DroneDeliveryStatus status;
+
+  /// Màn KTV drone (chi tiết nhiệm vụ) không có nút mở bản đồ trực tiếp.
+  final bool forOperator;
 
   static const Color _sourceColor = Color(0xFF0F766E);
   static const Color _plannedColor = Color(0xFF94A3B8);
@@ -139,9 +147,14 @@ class DroneRouteMapCard extends StatelessWidget {
           ),
           if (drone != null) ...[
             const SizedBox(height: 6),
-            const Text(
-              'Vị trí drone ước theo chặng bay hiện tại. Mở "Theo dõi trên bản đồ" để xem vị trí trực tiếp.',
-              style: TextStyle(fontSize: 11.5, color: Color(0xFF64748B)),
+            // KTV: số đo bay thật xem ở khung camera; khách: chỉ nhắc mở bản đồ trực tiếp khi màn có nút đó.
+            Text(
+              forOperator
+                  ? 'Vị trí drone ước theo chặng bay hiện tại. Số đo bay thật (GPS, pin, chế độ bay) xem ở khung camera phía trên.'
+                  : (droneLiveMapAvailable(status)
+                      ? 'Vị trí drone ước theo chặng bay hiện tại. Mở "Theo dõi trên bản đồ" để xem vị trí ${droneIsSimulated(status) ? 'mô phỏng' : 'trực tiếp'}.'
+                      : 'Vị trí drone ước theo chặng bay hiện tại.'),
+              style: const TextStyle(fontSize: 11.5, color: Color(0xFF64748B)),
             ),
           ],
         ],

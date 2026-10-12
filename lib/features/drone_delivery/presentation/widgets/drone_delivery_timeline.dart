@@ -48,7 +48,7 @@ class DroneDeliveryTimeline extends StatelessWidget {
     }
     // Huỷ/quá hạn/lỗi: dừng ở mốc xa nhất đã thực sự đạt, không tô xanh các
     // mốc chưa hề xảy ra.
-    if (stage.isFailure && stageTimes.isNotEmpty) {
+    if ((stage.isFailure || stage.isIncident) && stageTimes.isNotEmpty) {
       var reached = 0;
       for (final step in stageTimes.keys) {
         if (step.order > reached) reached = step.order;
@@ -89,7 +89,8 @@ class DroneDeliveryTimeline extends StatelessWidget {
           inStageFor: ongoing ? (now ?? DateTime.now()).difference(reachedAt) : null,
           details: stepDetails[steps[i]] ?? const [],
           // Màu cảnh báo chỉ áp cho mốc active khi delayed/failed.
-          overrideColor: (i == active && (stage.isDelayed || stage.isFailure))
+          overrideColor: (i == active &&
+                  (stage.isDelayed || stage.isFailure || stage.isIncident))
               ? stage.color
               : null,
         ),

@@ -1,6 +1,7 @@
 import 'package:smart_laundry_locker/features/auth/application/use_cases/register_use_case.dart';
 import 'package:smart_laundry_locker/features/auth/domain/entities/register_entity.dart';
 import 'package:flutter/foundation.dart';
+import 'package:smart_laundry_locker/core/services/token_service.dart';
 
 class RegisterProvider extends ChangeNotifier {
   final RegisterUseCase _registerUseCase;
@@ -20,6 +21,11 @@ class RegisterProvider extends ChangeNotifier {
   RegisterEntity? _registerResult;
   RegisterEntity? get registerResult => _registerResult;
 
+  /// Đã lưu token backend trả khi đăng ký ⇒ màn đăng nhập điều hướng vào app
+  /// luôn. `false` (backend cũ không trả token) ⇒ chuyển sang tab đăng nhập.
+  bool _signedIn = false;
+  bool get signedIn => _signedIn;
+
   Future<void> register({
     required String phoneNumber,
     String? fullName,
@@ -29,6 +35,7 @@ class RegisterProvider extends ChangeNotifier {
     _isLoading = true;
     _error = null;
     _isSuccess = false;
+    _signedIn = false;
     notifyListeners();
 
     final params = RegisterParams.fromForm(
@@ -40,19 +47,26 @@ class RegisterProvider extends ChangeNotifier {
 
     final result = await _registerUseCase(params);
 
-    result.fold(
-      (failure) {
+    await result.fold(
+      (failure) async {
         _isLoading = false;
         _error = failure.message;
         _isSuccess = false;
         notifyListeners();
       },
-      (entity) {
+      (entity) async {
         _isLoading = false;
         // check nếu entity.success = false (Saga rollback), hiển thị error message
         if (entity.success) {
           _error = null;
           _isSuccess = true;
+          if (entity.hasTokens) {
+            await TokenService.saveTokens(
+              entity.accessToken!,
+              entity.refreshToken!,
+            );
+            _signedIn = true;
+          }
         } else {
           _error = entity.message ?? 'Đăng ký thất bại. Vui lòng thử lại.';
           _isSuccess = false;
@@ -72,6 +86,7 @@ class RegisterProvider extends ChangeNotifier {
     _isLoading = false;
     _error = null;
     _isSuccess = false;
+    _signedIn = false;
     _registerResult = null;
     notifyListeners();
   }

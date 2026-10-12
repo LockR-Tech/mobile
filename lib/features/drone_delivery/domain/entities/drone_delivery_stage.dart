@@ -14,6 +14,10 @@ enum DroneDeliveryStage {
   delayed,
   failed,
 
+  /// Đội bay báo kiện rơi trong chuyến bay — sự cố đang được xử lý
+  /// (`deliveryStage = DROP_REPORTED`, xem thẻ sự cố của đơn).
+  dropReported,
+
   /// Đơn đã huỷ trước khi bay (khách huỷ lúc chờ điều phối hoặc đội bay huỷ).
   canceled,
 
@@ -49,6 +53,8 @@ enum DroneDeliveryStage {
         return DroneDeliveryStage.delayed;
       case 'FAILED':
         return DroneDeliveryStage.failed;
+      case 'DROP_REPORTED':
+        return DroneDeliveryStage.dropReported;
       case 'CANCELED':
       case 'CANCELLED':
         return DroneDeliveryStage.canceled;
@@ -94,6 +100,9 @@ enum DroneDeliveryStage {
       this == DroneDeliveryStage.arrived;
   bool get isDelayed => this == DroneDeliveryStage.delayed;
 
+  /// Kiện gặp sự cố (rơi) giữa chuyến — chưa kết thúc, đang xử lý.
+  bool get isIncident => this == DroneDeliveryStage.dropReported;
+
   String get title {
     switch (this) {
       case DroneDeliveryStage.awaitingDispatch:
@@ -116,6 +125,8 @@ enum DroneDeliveryStage {
         return 'Đơn hàng bị chậm';
       case DroneDeliveryStage.failed:
         return 'Giao hàng không thành công';
+      case DroneDeliveryStage.dropReported:
+        return 'Kiện hàng gặp sự cố rơi';
       case DroneDeliveryStage.canceled:
         return 'Đơn drone đã huỷ';
       case DroneDeliveryStage.completed:
@@ -149,6 +160,9 @@ enum DroneDeliveryStage {
         return eta == null ? 'Đơn đang bị chậm so với dự kiến' : 'Đơn đang bị chậm, dự kiến tới $eta';
       case DroneDeliveryStage.failed:
         return 'Nhiệm vụ không thành công, đội bay sẽ hỗ trợ bạn';
+      case DroneDeliveryStage.dropReported:
+        return 'Đội bay đã báo kiện rơi trong chuyến bay và đang thu hồi. '
+            'Lock.R sẽ gửi phương án xử lý cho bạn.';
       case DroneDeliveryStage.canceled:
         return 'Nhiệm vụ đã dừng trước khi drone cất cánh';
       case DroneDeliveryStage.completed:
@@ -181,6 +195,8 @@ enum DroneDeliveryStage {
       case DroneDeliveryStage.failed:
       case DroneDeliveryStage.expired:
         return LucideIcons.circleAlert;
+      case DroneDeliveryStage.dropReported:
+        return LucideIcons.triangleAlert;
       case DroneDeliveryStage.canceled:
         return LucideIcons.circleX;
       case DroneDeliveryStage.completed:
@@ -197,6 +213,8 @@ enum DroneDeliveryStage {
         return const Color(0xFF16A34A);
       case DroneDeliveryStage.delayed:
         return const Color(0xFFF59E0B);
+      case DroneDeliveryStage.dropReported:
+        return const Color(0xFFEA580C);
       case DroneDeliveryStage.failed:
       case DroneDeliveryStage.canceled:
       case DroneDeliveryStage.expired:

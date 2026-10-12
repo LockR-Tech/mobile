@@ -86,6 +86,7 @@ class DroneDeliveryDetail extends StatelessWidget {
     super.key,
     required this.status,
     this.forOperator = false,
+    this.viewerIsBooker = true,
     this.beforeRoute = const [],
     this.onPay,
     this.onCancel,
@@ -110,6 +111,10 @@ class DroneDeliveryDetail extends StatelessWidget {
   /// Điều phối viên thấy thêm liên hệ người gửi/người nhận.
   final bool forOperator;
 
+  /// Khách đang xem là người đặt đơn. Người nhận chỉ xem: lời nhắc trả phí /
+  /// bỏ kiện nói về người gửi, không có nút thao tác.
+  final bool viewerIsBooker;
+
   /// Widget chèn ngay dưới thẻ tiêu đề (vd nút mở live map của khách).
   final List<Widget> beforeRoute;
 
@@ -129,6 +134,7 @@ class DroneDeliveryDetail extends StatelessWidget {
           _UnpaidBanner(
             status: status,
             forOperator: forOperator,
+            viewerIsBooker: viewerIsBooker,
             onPay: onPay,
             onDeclineSurcharge: onDeclineSurcharge,
           ),
@@ -138,6 +144,7 @@ class DroneDeliveryDetail extends StatelessWidget {
           _DropBanner(
             status: status,
             forOperator: forOperator,
+            viewerIsBooker: viewerIsBooker,
             onConfirmDrop: onConfirmDrop,
           ),
         ],
@@ -148,7 +155,7 @@ class DroneDeliveryDetail extends StatelessWidget {
         ],
         ...beforeRoute,
         const SizedBox(height: 16),
-        DroneRouteMapCard(status: status),
+        DroneRouteMapCard(status: status, forOperator: forOperator),
         const SizedBox(height: 16),
         _RouteCard(status: status),
         const SizedBox(height: 16),
@@ -257,9 +264,8 @@ class _HeaderCard extends StatelessWidget {
                   icon: LucideIcons.planeTakeoff,
                   label: status.droneCode!,
                 ),
-              if (status.etaMinutes != null &&
-                  !stage.isTerminal &&
-                  stage.order >= 0)
+              // ETA chỉ có nghĩa khi drone đang bay (server trả null trước khi phóng).
+              if (status.etaMinutes != null && stage.isInFlight)
                 _InfoChip(
                   icon: LucideIcons.clock,
                   label: 'Còn khoảng ${status.etaMinutes} phút',
@@ -378,12 +384,14 @@ class _UnpaidBanner extends StatelessWidget {
   const _UnpaidBanner({
     required this.status,
     required this.forOperator,
+    this.viewerIsBooker = true,
     this.onPay,
     this.onDeclineSurcharge,
   });
 
   final DroneDeliveryStatus status;
   final bool forOperator;
+  final bool viewerIsBooker;
   final VoidCallback? onPay;
   final VoidCallback? onDeclineSurcharge;
 
@@ -393,10 +401,14 @@ class _UnpaidBanner extends StatelessWidget {
     final weights =
         'Kiện cân thực tế ${droneWeightLabel(status.payloadWeightGrams)}, nặng hơn '
         'mức ${droneWeightLabel(status.expectedWeightGrams)} đã khai báo.';
-    return forOperator
-        ? '$weights Chờ khách trả thêm $amount rồi mới phóng được.'
-        : '$weights Bạn cần trả thêm $amount để drone cất cánh. Không đồng ý thì '
-              'bạn có thể huỷ đơn: phần đã trả được hoàn và đội bay trả lại kiện.';
+    if (forOperator) {
+      return '$weights Chờ khách trả thêm $amount rồi mới phóng được.';
+    }
+    if (!viewerIsBooker) {
+      return '$weights Đang chờ người gửi trả thêm $amount để drone cất cánh.';
+    }
+    return '$weights Bạn cần trả thêm $amount để drone cất cánh. Không đồng ý thì '
+        'bạn có thể huỷ đơn: phần đã trả được hoàn và đội bay trả lại kiện.';
   }
 
   @override
@@ -424,6 +436,8 @@ class _UnpaidBanner extends StatelessWidget {
                       ? _surchargeText()
                       : forOperator
                       ? 'Khách chưa thanh toán. Chỉ tiếp nhận được sau khi đơn đã thanh toán.'
+                      : !viewerIsBooker
+                      ? 'Người gửi chưa thanh toán đơn. Đội bay tiếp nhận sau khi người gửi thanh toán.'
                       : 'Đơn chưa thanh toán. Đội bay chỉ tiếp nhận sau khi bạn thanh toán.',
                   style: const TextStyle(
                     color: color,
@@ -469,11 +483,13 @@ class _DropBanner extends StatelessWidget {
   const _DropBanner({
     required this.status,
     required this.forOperator,
+    this.viewerIsBooker = true,
     this.onConfirmDrop,
   });
 
   final DroneDeliveryStatus status;
   final bool forOperator;
+  final bool viewerIsBooker;
   final VoidCallback? onConfirmDrop;
 
   @override
@@ -501,6 +517,8 @@ class _DropBanner extends StatelessWidget {
                   forOperator
                       ? 'Người gửi chưa xác nhận bỏ kiện vào $where. Chỉ tiếp nhận '
                             'được sau khi kiện đã nằm trong ô.'
+                      : !viewerIsBooker
+                      ? 'Đang chờ người gửi bỏ kiện vào $where.'
                       : 'Bỏ kiện vào $where rồi xác nhận bên dưới. Đội bay chỉ tiếp '
                             'nhận đơn sau khi bạn xác nhận.',
                   style: const TextStyle(

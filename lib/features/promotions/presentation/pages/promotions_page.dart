@@ -1,4 +1,5 @@
 import 'package:smart_laundry_locker/core/routing/app_router.dart';
+import 'package:smart_laundry_locker/core/utils/user_error_message.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart' hide Consumer;
@@ -48,7 +49,7 @@ class _PromotionsPageState extends ConsumerState<PromotionsPage> {
       backgroundColor: context.pageBg,
       body: BrandHeroScaffold(
         header: (collapse) => BrandHeroHeader(
-          title: 'Ưu đãi & Flash Sale',
+          title: 'Ưu đãi',
           subtitle: 'Khám phá ưu đãi đang hiệu lực hôm nay',
           onBack: () => AppRouter.backOrHome(context),
           collapseProgress: collapse,
@@ -141,14 +142,17 @@ class _PromotionsPageState extends ConsumerState<PromotionsPage> {
               child: Stack(
                 fit: StackFit.expand,
                 children: [
-                  CachedNetworkImage(
-                    imageUrl: promo.effectiveImageUrl,
-                    fit: BoxFit.cover,
-                    memCacheWidth: 220,
-                    memCacheHeight: 220,
-                    placeholder: (_, __) => _gradientPlaceholder(colors),
-                    errorWidget: (_, __, ___) => _gradientPlaceholder(colors),
-                  ),
+                  if (promo.hasImage)
+                    CachedNetworkImage(
+                      imageUrl: promo.effectiveImageUrl,
+                      fit: BoxFit.cover,
+                      memCacheWidth: 220,
+                      memCacheHeight: 220,
+                      placeholder: (_, __) => _gradientPlaceholder(colors),
+                      errorWidget: (_, __, ___) => _gradientPlaceholder(colors),
+                    )
+                  else
+                    _gradientPlaceholder(colors),
                   // Discount badge bottom-left
                   Positioned(
                     bottom: 7,
@@ -183,31 +187,35 @@ class _PromotionsPageState extends ConsumerState<PromotionsPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  // Flash Sale chip
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 8, vertical: 3),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFF97316).withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: const Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(LucideIcons.zap,
-                            size: 10, color: Color(0xFFF97316)),
-                        SizedBox(width: 4),
-                        Text(
-                          'Flash Sale',
-                          style: TextStyle(
-                            color: Color(0xFFF97316),
-                            fontWeight: FontWeight.w800,
-                            fontSize: 11,
+                  // Chỉ gắn nhãn theo dữ liệu thật (sắp hết hạn), không còn
+                  // chip "Flash Sale" viết cứng cho mọi ưu đãi.
+                  if (promo.isExpiringSoon && !promo.isExpired)
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFE53E3E).withValues(alpha: 0.10),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(LucideIcons.clock,
+                              size: 10, color: Color(0xFFE53E3E)),
+                          SizedBox(width: 4),
+                          Text(
+                            'Sắp hết hạn',
+                            style: TextStyle(
+                              color: Color(0xFFE53E3E),
+                              fontWeight: FontWeight.w800,
+                              fontSize: 11,
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
-                  ),
+                        ],
+                      ),
+                    )
+                  else
+                    const SizedBox.shrink(),
                   // Title — 2 lines
                   Text(
                     promo.name,
@@ -373,10 +381,16 @@ class _PromotionsPageState extends ConsumerState<PromotionsPage> {
           duration: const Duration(seconds: 2),
         ),
       );
-    } catch (_) {
+    } catch (e) {
       messenger.showSnackBar(
-        const SnackBar(
-          content: Text('Không lưu được mã — kiểm tra đăng nhập và thử lại'),
+        SnackBar(
+          content: Text(
+            userErrorMessage(
+              e,
+              notFound: 'Máy chủ chưa hỗ trợ lưu mã. Vui lòng thử lại sau.',
+              fallback: 'Không lưu được mã — kiểm tra đăng nhập và thử lại',
+            ),
+          ),
           behavior: SnackBarBehavior.floating,
         ),
       );

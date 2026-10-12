@@ -14,11 +14,9 @@ class DroneDeliveryRemoteDataSourceImpl implements DroneDeliveryRemoteDataSource
 
   @override
   Future<DroneDeliveryResponse> getDeliveryStatus(String orderId) async {
-    // Backend chưa chắc đã có endpoint này (Phase 1 = push-only). Khi cờ tắt →
-    // trả mock để UI timeline vẫn chạy được, KHÔNG gọi endpoint chết (tránh 404
-    // làm bẩn log). Khi backend sẵn sàng chỉ cần bật cờ droneDeliveryEnabled.
+    // Cờ tắt ⇒ báo rõ, không dựng trạng thái giả.
     if (!FeatureFlags.droneDeliveryEnabled) {
-      return _mock(orderId);
+      throw ServerException('Tính năng theo dõi giao drone đang tạm tắt.');
     }
 
     final response = await _apiClient.get<Map<String, dynamic>>(
@@ -30,13 +28,4 @@ class DroneDeliveryRemoteDataSourceImpl implements DroneDeliveryRemoteDataSource
 
     return DroneDeliveryResponse.fromJson(innerData);
   }
-
-  DroneDeliveryResponse _mock(String orderId) => DroneDeliveryResponse(
-    status: 'dispatched',
-    orderId: orderId,
-    orderCode: orderId,
-    droneCode: 'DRONE-MOCK',
-    etaMinutes: 10,
-    updatedAt: DateTime.now().toUtc().toIso8601String(),
-  );
 }

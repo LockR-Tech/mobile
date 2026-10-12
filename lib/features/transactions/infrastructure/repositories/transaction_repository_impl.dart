@@ -1,6 +1,7 @@
 import 'package:smart_laundry_locker/core/errors/failures.dart';
 import 'package:dartz/dartz.dart';
 import 'package:smart_laundry_locker/core/network/api_client.dart';
+import 'package:smart_laundry_locker/core/utils/user_error_message.dart';
 import 'package:smart_laundry_locker/features/transactions/domain/entities/paginated_transactions.dart';
 import 'package:smart_laundry_locker/features/transactions/domain/entities/spending_stats.dart';
 import 'package:smart_laundry_locker/features/transactions/domain/entities/transaction_method_total.dart';
@@ -36,7 +37,11 @@ class TransactionRepositoryImpl implements TransactionRepository {
       return Left(NetworkFailure(e.message));
     } catch (e) {
       debugPrint('[TX][repo] getTransactions CATCH-ALL: $e');
-      return Left(UnknownFailure(e.toString()));
+      return Left(
+        UnknownFailure(
+          userErrorMessage(e, fallback: 'Không tải được lịch sử giao dịch.'),
+        ),
+      );
     }
   }
 

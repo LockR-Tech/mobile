@@ -7,28 +7,35 @@ part 'user_profile_model.g.dart';
 class UserProfileModel {
   final String? id;
   final String? fullName;
+  final String? firstName;
+  final String? lastName;
   final String? email;
   final String? phoneNumber;
   final String? status;
   final String? avatarUrl;
   final bool? isVerified;
   final bool? isActive;
+  final bool? hasPassword;
 
   const UserProfileModel({
     this.id,
     this.fullName,
+    this.firstName,
+    this.lastName,
     this.email,
     this.phoneNumber,
     this.status,
     this.avatarUrl,
     this.isVerified,
     this.isActive,
+    this.hasPassword,
   });
 
   factory UserProfileModel.fromJson(Map<String, dynamic> json) {
     final avatar =
         json['avatarUrl'] ?? json['imageUrl'] ?? json['image_url'] ?? json['avatar'];
     final normalized = Map<String, dynamic>.from(json);
+    if (normalized['id'] != null) normalized['id'] = normalized['id'].toString();
     if (avatar != null && avatar.toString().isNotEmpty) {
       normalized['avatarUrl'] = avatar.toString();
     }
@@ -51,12 +58,15 @@ class UserProfileModel {
     return UserProfile(
       id: id ?? '',
       fullName: fullName ?? 'Người dùng',
+      firstName: firstName ?? '',
+      lastName: lastName ?? '',
       email: email ?? '',
       phoneNumber: phoneNumber ?? '',
       status: _parseStatus(status ?? (isActive == false ? 'INACTIVE' : 'ACTIVE')),
       avatarUrl: avatarUrl,
       isVerified: isVerified ?? false,
       isActive: isActive ?? (status?.toUpperCase() != 'INACTIVE' && status?.toUpperCase() != 'BLOCKED'),
+      hasPassword: hasPassword ?? true,
     );
   }
 

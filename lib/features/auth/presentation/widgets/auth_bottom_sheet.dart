@@ -1,3 +1,5 @@
+import 'package:flutter/gestures.dart';
+import 'package:smart_laundry_locker/core/config/feature_flags.dart';
 import 'package:smart_laundry_locker/core/constants/app_colors.dart';
 import 'package:smart_laundry_locker/core/network/api_client.dart';
 import 'package:smart_laundry_locker/core/routing/app_router.dart';
@@ -51,6 +53,15 @@ class _AuthBottomSheetState extends State<AuthBottomSheet> {
   late LoginProvider _loginProvider;
   late RegisterProvider _registerProvider;
 
+  late final TapGestureRecognizer _termsRecognizer = TapGestureRecognizer()
+    ..onTap = () => context.push(
+      AppRouter.policy,
+      extra: const {
+        'title': 'Điều khoản sử dụng',
+        'assetPath': 'assets/markdown/terms_of_service.md',
+      },
+    );
+
   @override
   void initState() {
     super.initState();
@@ -91,6 +102,16 @@ class _AuthBottomSheetState extends State<AuthBottomSheet> {
   }
 
   void _onRegisterStateChanged() {
+    // Backend cấp token ngay khi đăng ký ⇒ vào app luôn.
+    if (_registerProvider.isSuccess &&
+        _registerProvider.signedIn &&
+        !_hasNavigated) {
+      _hasNavigated = true;
+      SmartDialog.showToast('Đăng ký thành công!');
+      _registerProvider.reset();
+      _navigateAfterLogin();
+      return;
+    }
     if (_registerProvider.isSuccess && !_hasNavigated) {
       // Backend issues the account immediately on register (no separate email
       // OTP gate in this environment). Instead of pushing the legacy OTP screen,
@@ -109,6 +130,7 @@ class _AuthBottomSheetState extends State<AuthBottomSheet> {
 
   @override
   void dispose() {
+    _termsRecognizer.dispose();
     _loginProvider.removeListener(_onLoginStateChanged);
     _registerProvider.removeListener(_onRegisterStateChanged);
     _loginEmailController.dispose();
@@ -376,8 +398,11 @@ class _AuthBottomSheetState extends State<AuthBottomSheet> {
               ),
             ),
           ),
-          const SizedBox(height: 8),
-          _buildFaceIdButton(),
+          // Đăng nhập khuôn mặt chỉ hiện khi backend có AI service.
+          if (FeatureFlags.faceRecognitionEnabled) ...[
+            const SizedBox(height: 8),
+            _buildFaceIdButton(),
+          ],
           const SizedBox(height: 16),
           _buildSocialLoginSection(),
           Consumer<LoginProvider>(
@@ -628,11 +653,12 @@ class _AuthBottomSheetState extends State<AuthBottomSheet> {
                   ),
                   TextSpan(
                     text: 'Điều khoản sử dụng',
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontWeight: FontWeight.w600,
                       color: AppColors.success,
                       decoration: TextDecoration.underline,
                     ),
+                    recognizer: _termsRecognizer,
                   ),
                   TextSpan(text: '.'),
                 ],

@@ -56,6 +56,7 @@ import 'package:smart_laundry_locker/features/stores/domain/entities/store.dart'
 import 'package:smart_laundry_locker/features/stores/presentation/pages/stores_page.dart';
 import 'package:smart_laundry_locker/features/stores/presentation/pages/store_detail_page.dart';
 import 'package:smart_laundry_locker/features/stores/presentation/pages/store_lockers_page.dart';
+import 'package:smart_laundry_locker/features/stores/presentation/pages/favorites_page.dart';
 import 'package:smart_laundry_locker/features/assistant/presentation/pages/assistant_chat_page.dart';
 import 'package:smart_laundry_locker/features/assistant/presentation/pages/assistant_history_page.dart';
 import 'package:latlong2/latlong.dart';
@@ -102,6 +103,7 @@ class AppRouter {
   static const String stores = '/stores';
   static const String storeDetail = '/stores/detail';
   static const String storeLockers = '/stores/lockers';
+  static const String favoriteStores = '/stores/favorites';
   static const String directions = '/directions';
   static const String droneMissionPlanner = '/drone/mission-planner';
   static const String droneFlightData = '/drone/flight-data';
@@ -132,15 +134,15 @@ class AppRouter {
     initialLocation: splash,
     observers: [FlutterSmartDialog.observer],
     refreshListenable: TokenService.authState,
-    redirect: (context, state) {
-      final isLoggedIn = TokenService.authState.value;
-      final location = state.matchedLocation;
-
-      if (!isLoggedIn && requiresSignIn(location)) {
-        return onboarding;
-      }
-
-      return null;
+    // Chặn theo đăng nhập + vai trò (xem `routeRedirect`). Chỉ đọc role từ
+    // token khi route cần biết vai trò.
+    redirect: (context, state) async {
+      final signedIn = TokenService.authState.value;
+      final uri = state.uri;
+      final roles = signedIn && isRoleRestricted(uri.path)
+          ? await TokenService.getCurrentRoles()
+          : const <String>[];
+      return routeRedirect(uri, signedIn: signedIn, roles: roles);
     },
     routes: [
       GoRoute(path: splash, builder: (context, state) => const SplashScreen()),
@@ -211,7 +213,10 @@ class AppRouter {
             // (locker_ops). The legacy OrderPage hit the old /orders/me API and
             // is no longer wired to the current backend.
             path: orders,
-            builder: (context, state) => const MyLockerOrdersPage(),
+            builder: (context, state) => MyLockerOrdersPage(
+              initialOrderId: int.tryParse(state.uri.queryParameters['orderId'] ?? ''),
+              initialTab: state.uri.queryParameters['tab'],
+            ),
           ),
           GoRoute(
             path: profile,
@@ -315,7 +320,9 @@ class AppRouter {
       GoRoute(
         path: myReports,
         name: 'my_reports',
-        builder: (context, state) => const ReportListPage(),
+        builder: (context, state) => ReportListPage(
+          initialReportId: int.tryParse(state.uri.queryParameters['reportId'] ?? ''),
+        ),
       ),
       GoRoute(
         path: qrScan,
@@ -362,15 +369,29 @@ class AppRouter {
       GoRoute(
         path: maintenanceHome,
         name: 'maintenance_home',
-        builder: (context, state) => const MaintenanceHomePage(),
+        // Deep link KTV drone: `?tab=&reportId=&scheduleId=&orderId=`.
+        builder: (context, state) {
+          final qp = state.uri.queryParameters;
+          return MaintenanceHomePage(
+            initialTab: maintenanceTabIndex(qp['tab']),
+            reportId: queryId(qp, 'reportId'),
+            scheduleId: queryId(qp, 'scheduleId'),
+            orderId: queryId(qp, 'orderId'),
+          );
+        },
       ),
       GoRoute(
         path: technicianHome,
         name: 'technician_home',
-        // `?tab=` (noti KTV tủ) mở thẳng tab tương ứng.
-        builder: (context, state) => TechnicianHomePage(
-          initialTab: technicianTabIndex(state.uri.queryParameters['tab']),
-        ),
+        // Deep link KTV tủ: `?tab=&reportId=&scheduleId=`.
+        builder: (context, state) {
+          final qp = state.uri.queryParameters;
+          return TechnicianHomePage(
+            initialTab: technicianTabIndex(qp['tab']),
+            reportId: queryId(qp, 'reportId'),
+            scheduleId: queryId(qp, 'scheduleId'),
+          );
+        },
       ),
       GoRoute(
         path: technicianProfile,
@@ -391,6 +412,7 @@ class AppRouter {
               : null;
           return SendParcelPage(
             initialLockerId: map?['initialLockerId'] as int?,
+            initialLockerName: map?['initialLockerName'] as String?,
             locationName: map?['locationName'] as String?,
           );
         },
@@ -404,6 +426,7 @@ class AppRouter {
               : null;
           return RentLockerPage(
             initialLockerId: map?['initialLockerId'] as int?,
+            initialLockerName: map?['initialLockerName'] as String?,
             locationName: map?['locationName'] as String?,
           );
         },
@@ -411,12 +434,17 @@ class AppRouter {
       GoRoute(
         path: myLockerOrders,
         name: 'my_locker_orders',
-        builder: (context, state) => const MyLockerOrdersPage(),
+        builder: (context, state) => MyLockerOrdersPage(
+          initialOrderId: int.tryParse(state.uri.queryParameters['orderId'] ?? ''),
+          initialTab: state.uri.queryParameters['tab'],
+        ),
       ),
       GoRoute(
         path: myLockerReports,
         name: 'my_locker_reports',
-        builder: (context, state) => const MyReportsPage(),
+        builder: (context, state) => MyReportsPage(
+          initialReportId: int.tryParse(state.uri.queryParameters['reportId'] ?? ''),
+        ),
       ),
       GoRoute(
         path: myVouchers,
@@ -457,6 +485,12 @@ class AppRouter {
           final store = state.extra as Store;
           return StoreLockerGridPage(store: store);
         },
+      ),
+      GoRoute(
+        // Điểm gửi yêu thích (lưu trên máy).
+        path: favoriteStores,
+        name: 'favorite_stores',
+        builder: (context, state) => const FavoritesPage(),
       ),
       GoRoute(
         path: directions,

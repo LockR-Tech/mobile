@@ -6,7 +6,6 @@ import 'package:smart_laundry_locker/core/media/media_upload.dart';
 import 'package:smart_laundry_locker/core/media/media_upload_service.dart';
 import 'package:smart_laundry_locker/core/media/report_attachment.dart';
 import 'package:smart_laundry_locker/core/network/api_client.dart';
-import 'package:smart_laundry_locker/core/services/token_service.dart';
 import 'package:smart_laundry_locker/features/maintenance/infrastructure/models/maintenance_report_model.dart';
 
 abstract class MaintenanceRemoteDataSource {
@@ -45,11 +44,12 @@ class MaintenanceRemoteDataSourceImpl implements MaintenanceRemoteDataSource {
     List<File>? photos,
     int? boxId,
   }) async {
-    final rawUserId = await TokenService.getUserId();
-    final userId = int.tryParse(rawUserId ?? '') ?? 2;
-
-    final targetLockerId =
-        int.tryParse(lockerId) ?? int.tryParse(cabinetId) ?? 1;
+    // Người báo lấy từ token ở server — không gửi `userId`. Tủ phải là id số do
+    // khách chọn; không có thì dừng, không bao giờ đoán sang tủ khác.
+    final targetLockerId = int.tryParse(lockerId) ?? int.tryParse(cabinetId);
+    if (targetLockerId == null) {
+      throw ValidationException('Vui lòng chọn tủ gặp sự cố.');
+    }
 
     final formattedDescription = description.trim();
 
@@ -74,7 +74,6 @@ class MaintenanceRemoteDataSourceImpl implements MaintenanceRemoteDataSource {
     final response = await _apiClient.post<Map<String, dynamic>>(
       '/api/lockers/$targetLockerId/report',
       data: {
-        'userId': userId,
         'title': title.trim(),
         'description': formattedDescription,
         if (boxId != null) 'boxId': boxId,
@@ -95,7 +94,7 @@ class MaintenanceRemoteDataSourceImpl implements MaintenanceRemoteDataSource {
     return MaintenanceReportModel(
       id: rawId,
       code: 'RPT-$rawId',
-      reportedById: data['userId']?.toString() ?? '$userId',
+      reportedById: data['userId']?.toString() ?? '',
       reporterName: data['reporterName']?.toString(),
       lockerId: data['lockerId']?.toString() ?? '$targetLockerId',
       lockerLabel:

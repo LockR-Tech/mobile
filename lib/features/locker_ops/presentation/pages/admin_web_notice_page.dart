@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:smart_laundry_locker/core/services/token_service.dart';
+import 'package:smart_laundry_locker/core/services/session_service.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/ops_widgets.dart';
 
 /// ADMIN signs in on mobile → the admin console only exists on the web app,
@@ -11,7 +11,7 @@ class AdminWebNoticePage extends StatelessWidget {
   const AdminWebNoticePage({super.key});
 
   Future<void> _logout(BuildContext context) async {
-    await TokenService.clearTokens();
+    await SessionService.logout();
     if (context.mounted) context.go('/onboarding');
   }
 

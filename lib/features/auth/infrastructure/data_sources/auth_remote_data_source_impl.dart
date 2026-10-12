@@ -1,10 +1,10 @@
 import 'package:smart_laundry_locker/core/network/api_client.dart';
 import 'package:smart_laundry_locker/features/auth/infrastructure/data_sources/auth_remote_data_source.dart';
 import 'package:smart_laundry_locker/features/auth/infrastructure/models/login_request_model.dart';
-import 'package:smart_laundry_locker/features/auth/infrastructure/models/qr_confirm_request_model.dart';
 import 'package:smart_laundry_locker/features/auth/infrastructure/models/register_request_model.dart';
 import 'package:smart_laundry_locker/features/auth/infrastructure/models/verify_otp_request_model.dart';
 import 'package:dio/dio.dart';
+import 'package:smart_laundry_locker/features/profile/domain/utils/person_name.dart';
 
 class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   final ApiClient _apiClient;
@@ -23,12 +23,9 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     // Backend AuthController expects: {email, phoneNumber, firstName, lastName,
     // roles:Set<String>, password}. The form collects a single fullName + role,
     // so split the name and wrap the role into a roles array.
-    final fullName = (request.fullName ?? '').trim();
-    final parts = fullName.isEmpty
-        ? <String>[]
-        : fullName.split(RegExp(r'\s+'));
-    final String lastName = parts.length > 1 ? parts.removeLast() : '';
-    final String firstName = parts.isEmpty ? fullName : parts.join(' ');
+    final name = splitFullName(request.fullName ?? '');
+    final String firstName = name.firstName;
+    final String lastName = name.lastName;
 
     final body = <String, dynamic>{
       if (request.email != null && request.email!.isNotEmpty)
@@ -64,7 +61,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     required double threshold,
   }) async {
     final response = await _apiClient.post<Map<String, dynamic>>(
-      '$_basePath/ai/verify',
+      '/api/auth/ai/verify',
       data: {'image_base64': imageBase64, 'threshold': threshold},
     );
     return _extractData(response);
@@ -113,17 +110,6 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   }
 
   @override
-  Future<Map<String, dynamic>> confirmQrLogin(
-    QrConfirmRequestModel request,
-  ) async {
-    final response = await _apiClient.post<Map<String, dynamic>>(
-      '/api/auth/qr-login/confirm',
-      data: request.toJson(),
-    );
-    return _extractData(response);
-  }
-
-  @override
   Future<Map<String, dynamic>> firebaseLogin({required String idToken}) async {
     final response = await _apiClient.post<Map<String, dynamic>>(
       '/api/auth/firebase',
@@ -138,7 +124,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     required List<String> imagesBase64,
   }) async {
     final response = await _apiClient.post<Map<String, dynamic>>(
-      '$_basePath/ai/register',
+      '/api/auth/ai/register',
       data: {'userId': userId, 'images_base64': imagesBase64},
     );
     return _extractData(response);

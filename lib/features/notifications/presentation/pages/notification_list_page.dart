@@ -5,11 +5,10 @@ import 'package:smart_laundry_locker/shared/shared.dart';
 import 'package:smart_laundry_locker/shared/widgets/unauthenticated_placeholder.dart';
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:provider/provider.dart';
 import 'package:smart_laundry_locker/core/routing/app_router.dart';
-import 'package:smart_laundry_locker/core/routing/role_routes.dart';
+import 'package:smart_laundry_locker/core/routing/notification_deep_link.dart';
 import 'package:smart_laundry_locker/core/services/token_service.dart';
 
 class NotificationListPage extends StatefulWidget {
@@ -50,7 +49,7 @@ class _NotificationListPageState extends State<NotificationListPage> {
     }
   }
 
-  void _handleNotificationTap(NotificationModel notification) {
+  Future<void> _handleNotificationTap(NotificationModel notification) async {
     context.read<NotificationProvider>().markAsRead(notification.id);
 
     final payload = notification.dataPayload;
@@ -62,45 +61,17 @@ class _NotificationListPageState extends State<NotificationListPage> {
       return;
     }
 
-    // Hành trình giao drone -> màn theo dõi drone của đúng đơn. Phải xét trước
-    // `switch`: mốc chặng giao dùng chung `type = ORDER_STATUS_CHANGED` với đơn
-    // tủ, chỉ khác `referenceType = DELIVERY`.
-    if (payload.isDroneDelivery) {
-      if (payload.referenceId != null) {
-        context.push(AppRouter.droneDeliveryTracking, extra: payload.referenceId);
-      } else {
-        _showNotificationSheet(notification);
-      }
-      return;
-    }
-    // Đơn drone mới -> hàng đợi điều phối của đội bay.
-    if (payload.isDroneDispatch) {
-      context.push(AppRouter.maintenanceHome);
-      return;
-    }
-
-    switch (payload.actionType) {
-      // Noti đơn tủ -> danh sách đơn của tôi. Trang chi tiết đơn cũ
-      // (`AppRouter.orderDetail`) gọi API `/orders/me/{id}` đã bị gỡ nên mở ra
-      // chỉ thấy màn trống — trông như bấm thông báo không có gì xảy ra.
-      case 'OPEN_ORDER_DETAIL':
-      case 'ORDER_STATUS_CHANGED':
-        context.push(AppRouter.myLockerOrders);
-        break;
-      case 'OPEN_PROMOTION_TAB':
-        context.push(AppRouter.promotions);
-        break;
-      default:
-        // Phiếu/lịch của KTV tủ -> tab tương ứng trên trang KTV tủ.
-        final technicianRoute = technicianRouteForNotification(
-          payload.actionType,
-        );
-        if (technicianRoute != null) {
-          context.go(technicianRoute);
-        } else {
-          _showNotificationSheet(notification);
-        }
-        break;
+    // Màn đích theo type + vai trò người dùng (dùng chung với bấm push).
+    final location = await resolveNotificationLocation(
+      type: payload.actionType,
+      referenceId: payload.referenceId,
+      referenceType: payload.referenceType,
+    );
+    if (!mounted) return;
+    if (location == null) {
+      _showNotificationSheet(notification);
+    } else {
+      openNotificationLocation(context, location);
     }
   }
 
@@ -210,6 +181,14 @@ class _NotificationListPageState extends State<NotificationListPage> {
                     return Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
+                        if (provider.notifications.isNotEmpty) ...[
+                          BrandCircleIconButton(
+                            icon: LucideIcons.trash2,
+                            iconSize: 18,
+                            onTap: () => _confirmDeleteAll(provider),
+                          ),
+                          const SizedBox(width: 8),
+                        ],
                         if (showMarkAll) ...[
                           GestureDetector(
                             behavior: HitTestBehavior.opaque,
@@ -288,6 +267,28 @@ class _NotificationListPageState extends State<NotificationListPage> {
                             Divider(height: 1, color: Colors.grey.shade200),
                         itemBuilder: (context, index) {
                           if (index == provider.notifications.length) {
+                            if (provider.error != null &&
+                                !provider.isLoadingMore) {
+                              return Padding(
+                                padding: const EdgeInsets.all(16),
+                                child: Column(
+                                  children: [
+                                    Text(
+                                      provider.error!,
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(
+                                        color: Colors.red.shade400,
+                                        fontSize: 13,
+                                      ),
+                                    ),
+                                    TextButton(
+                                      onPressed: provider.loadMore,
+                                      child: const Text('Thử lại'),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            }
                             if (provider.isLoadingMore) {
                               return const Padding(
                                 padding: EdgeInsets.all(16.0),
@@ -314,7 +315,7 @@ class _NotificationListPageState extends State<NotificationListPage> {
                           }
 
                           final notification = provider.notifications[index];
-                          return _buildNotificationItem(notification);
+                          return _buildDismissibleItem(notification);
                         },
                       ),
                     );
@@ -360,7 +361,7 @@ class _NotificationListPageState extends State<NotificationListPage> {
           Icon(LucideIcons.serverCrash, size: 64, color: Colors.red.shade300),
           const SizedBox(height: 16),
           Text(
-            'Lỗi kết nối',
+            'Không tải được thông báo',
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w600,
@@ -387,6 +388,78 @@ class _NotificationListPageState extends State<NotificationListPage> {
           ),
         ],
       ),
+    );
+  }
+
+  /// Xoá tất cả thông báo (`DELETE /api/notifications/all`) sau khi xác nhận.
+  Future<void> _confirmDeleteAll(NotificationProvider provider) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Xoá tất cả thông báo?'),
+        content: const Text(
+          'Toàn bộ thông báo của tài khoản sẽ bị xoá và không khôi phục được.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Hủy'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Xoá tất cả', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+    final error = await provider.deleteAllNotifications();
+    if (!mounted) return;
+    _showSnack(error ?? 'Đã xoá tất cả thông báo', isError: error != null);
+  }
+
+  void _showSnack(String message, {bool isError = false}) {
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(message),
+          behavior: SnackBarBehavior.floating,
+          backgroundColor: isError ? Colors.red.shade700 : AislBrand.navy,
+        ),
+      );
+  }
+
+  /// Vuốt sang trái để xoá một thông báo (`DELETE /api/notifications/{id}`).
+  /// Dòng biến mất ngay; server báo lỗi thì dòng quay lại kèm thông báo lỗi.
+  Widget _buildDismissibleItem(NotificationModel notification) {
+    return Dismissible(
+      key: ValueKey('notification-${notification.id}'),
+      direction: DismissDirection.endToStart,
+      background: Container(
+        color: Colors.red.shade600,
+        alignment: Alignment.centerRight,
+        padding: const EdgeInsets.symmetric(horizontal: 24),
+        child: const Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(LucideIcons.trash2, color: Colors.white, size: 20),
+            SizedBox(width: 6),
+            Text(
+              'Xoá',
+              style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700),
+            ),
+          ],
+        ),
+      ),
+      onDismissed: (_) async {
+        final error = await context
+            .read<NotificationProvider>()
+            .deleteNotification(notification.id);
+        if (!mounted) return;
+        if (error != null) _showSnack(error, isError: true);
+      },
+      child: _buildNotificationItem(notification),
     );
   }
 

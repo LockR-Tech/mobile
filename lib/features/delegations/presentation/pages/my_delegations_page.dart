@@ -1,21 +1,25 @@
-import 'package:smart_laundry_locker/core/routing/app_router.dart';
-import 'package:smart_laundry_locker/features/delegations/presentation/providers/delegation_provider.dart';
-import 'package:smart_laundry_locker/features/delegations/presentation/providers/delegation_injection.dart';
-import 'package:smart_laundry_locker/core/network/api_client.dart';
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:provider/provider.dart';
 
+import 'package:smart_laundry_locker/features/delegations/presentation/providers/delegation_provider.dart';
+import 'package:smart_laundry_locker/features/locker_ops/data/receiver_order.dart';
+import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/ops_widgets.dart';
+import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/receiver_order_card.dart';
+import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
+
+/// "Đơn ủy quyền": các đơn người khác ủy quyền cho mình lấy hộ (theo SĐT tài
+/// khoản), kèm mã lấy hàng khi hàng đã sẵn sàng, mở ô và chỉ đường.
 class MyDelegationsPage extends StatelessWidget {
-  const MyDelegationsPage({super.key});
+  const MyDelegationsPage({super.key, this.provider});
+
+  /// Cho test truyền provider có service giả.
+  final DelegationProvider? provider;
 
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (_) =>
-          DelegationInjection.provideDelegationProvider(ApiClient())
-            ..fetchMyDelegations(),
+      create: (_) => (provider ?? DelegationProvider())..fetchMyDelegations(),
       child: const _MyDelegationsView(),
     );
   }
@@ -26,203 +30,103 @@ class _MyDelegationsView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final provider = context.watch<DelegationProvider>();
     return Scaffold(
-      backgroundColor: Colors.white,
-      body: Consumer<DelegationProvider>(
-        builder: (context, provider, child) {
-          if (provider.isLoading) {
-            return CustomScrollView(
-              slivers: [
-                SliverAppBar(
-                  title: const Text(
-                    'Đơn ủy quyền',
-                    style: TextStyle(
-                      fontFamily: 'Manrope',
-                      fontSize: 20,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.black87,
-                    ),
-                  ),
-                  centerTitle: true,
-                  pinned: true,
-                  backgroundColor: Colors.white,
-                  surfaceTintColor: Colors.transparent,
-                  elevation: 0,
-                  leading: IconButton(
-                    icon: const Icon(
-                      LucideIcons.arrowLeft,
-                      color: Colors.black87,
-                    ),
-                    onPressed: () => context.pop(),
-                  ),
-                ),
-                SliverFillRemaining(
-                  child: Center(child: CircularProgressIndicator()),
-                ),
-              ],
-            );
-          }
+      backgroundColor: const Color(0xFFF2F3F5),
+      body: BrandHeroScaffold(
+        header: (collapse) => BrandHeroHeader(
+          title: 'Đơn ủy quyền',
+          subtitle: 'Đơn người khác nhờ bạn lấy hộ',
+          onBack: () => Navigator.of(context).maybePop(),
+          collapseProgress: collapse,
+          trailing: BrandCircleIconButton(
+            icon: LucideIcons.refreshCw,
+            onTap: provider.fetchMyDelegations,
+            iconSize: 18,
+          ),
+        ),
+        child: Builder(builder: (context) => _body(context, provider)),
+      ),
+    );
+  }
 
-          final delegations = provider.myDelegations
-              .where((d) => d.isActive && d.usedAt == null)
-              .toList();
-
-          return CustomScrollView(
-            slivers: [
-              SliverAppBar(
-                title: const Text(
-                  'Đơn ủy quyền',
-                  style: TextStyle(
-                    fontFamily: 'Manrope',
-                    fontSize: 20,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.black87,
-                  ),
-                ),
-                centerTitle: true,
-                pinned: true,
-                backgroundColor: Colors.white,
-                surfaceTintColor: Colors.transparent,
-                elevation: 0,
-                leading: IconButton(
-                  icon: const Icon(
-                    LucideIcons.arrowLeft,
-                    color: Colors.black87,
-                  ),
-                  onPressed: () => context.pop(),
-                ),
+  Widget _body(BuildContext context, DelegationProvider provider) {
+    final orders = provider.myDelegations;
+    if (provider.isLoading && orders.isEmpty) {
+      return const Center(
+        child: CircularProgressIndicator(color: AislBrand.navy),
+      );
+    }
+    if (provider.error != null && orders.isEmpty) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(LucideIcons.cloudOff, size: 36, color: opsMutedText),
+              const SizedBox(height: 10),
+              Text(
+                provider.error!,
+                textAlign: TextAlign.center,
+                style: const TextStyle(fontSize: 13.5, color: opsDark),
               ),
-              if (delegations.isEmpty)
-                SliverFillRemaining(
-                  child: Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          LucideIcons.packageOpen,
-                          size: 64,
-                          color: Colors.grey.shade300,
-                        ),
-                        const SizedBox(height: 16),
-                        Text(
-                          'Không có đơn ủy quyền nào',
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: Colors.grey.shade600,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                )
-              else
-                SliverPadding(
-                  padding: const EdgeInsets.all(16),
-                  sliver: SliverList(
-                    delegate: SliverChildBuilderDelegate((context, index) {
-                      final delegation = delegations[index];
-                      return Container(
-                        margin: const EdgeInsets.only(bottom: 12),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: Colors.blue.shade200),
-                        ),
-                        child: ListTile(
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 12,
-                          ),
-                          leading: Container(
-                            padding: const EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              color: Colors.blue.shade50,
-                              shape: BoxShape.circle,
-                            ),
-                            child: const Icon(
-                              LucideIcons.package,
-                              color: Colors.blue,
-                            ),
-                          ),
-                          title: const Text(
-                            'Ủy quyền từ người khác',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: Colors.black87,
-                            ),
-                          ),
-                          subtitle: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const SizedBox(height: 4),
-                              Text(
-                                'Mã OTP: ${delegation.accessCode ?? 'N/A'}',
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  color: Colors.blue.shade700,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                              if (delegation.orderDetail?.lockerLabel !=
-                                  null) ...[
-                                const SizedBox(height: 2),
-                                Text(
-                                  'Tủ: ${delegation.orderDetail!.formattedLockerLabel}',
-                                  style: const TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.black54,
-                                  ),
-                                ),
-                              ],
-                            ],
-                          ),
-                          trailing: ElevatedButton(
-                            onPressed: () {
-                              context.push(
-                                AppRouter.authorizedOpening,
-                                extra: {
-                                  'orderId': delegation.orderId,
-                                  'lockerId': delegation.orderDetail?.lockerId,
-                                  'accessCode': delegation.accessCode,
-                                },
-                              );
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.blue,
-                              foregroundColor: Colors.white,
-                              elevation: 0,
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                              ),
-                              minimumSize: const Size(0, 36),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                            ),
-                            child: const Text(
-                              'Mở tủ',
-                              style: TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                          onTap: () {
-                            context.push(
-                              AppRouter.authorizedOpening,
-                              extra: {
-                                'orderId': delegation.orderId,
-                                'lockerId': delegation.orderDetail?.lockerId,
-                                'accessCode': delegation.accessCode,
-                              },
-                            );
-                          },
-                        ),
-                      );
-                    }, childCount: delegations.length),
-                  ),
-                ),
+              const SizedBox(height: 8),
+              TextButton(
+                onPressed: provider.fetchMyDelegations,
+                child: const Text('Thử lại'),
+              ),
             ],
+          ),
+        ),
+      );
+    }
+    if (orders.isEmpty) {
+      return RefreshIndicator(
+        color: AislBrand.navy,
+        onRefresh: provider.fetchMyDelegations,
+        child: ListView(
+          children: const [
+            SizedBox(height: 40),
+            OpsEmptyState(
+              icon: LucideIcons.packageOpen,
+              title: 'Chưa có đơn ủy quyền',
+              subtitle:
+                  'Khi ai đó ủy quyền bạn lấy hộ (theo số điện thoại của bạn), đơn sẽ hiện ở đây.',
+            ),
+          ],
+        ),
+      );
+    }
+    final sorted = [...orders]
+      ..sort((a, b) {
+        if (a.isActive != b.isActive) return a.isActive ? -1 : 1;
+        final da = a.delegatedAt ?? a.createdAt;
+        final db = b.delegatedAt ?? b.createdAt;
+        if (da == null || db == null) return 0;
+        return db.compareTo(da);
+      });
+    return RefreshIndicator(
+      color: AislBrand.navy,
+      onRefresh: provider.fetchMyDelegations,
+      child: ListView.separated(
+        padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+        itemCount: sorted.length,
+        separatorBuilder: (_, _) => const SizedBox(height: 10),
+        itemBuilder: (ctx, i) {
+          final ReceiverOrder order = sorted[i];
+          return ReceiverOrderCard(
+            order: order,
+            delegatedView: true,
+            onUnlock: () async {
+              final opened = await openReceiverOrderBox(
+                ctx,
+                service: provider.service,
+                order: order,
+              );
+              if (opened) await provider.fetchMyDelegations();
+            },
+            onDirections: () => openReceiverOrderDirections(ctx, order),
           );
         },
       ),

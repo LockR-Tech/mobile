@@ -3,7 +3,6 @@ import 'dart:typed_data';
 
 import 'package:smart_laundry_locker/core/errors/failures.dart';
 import 'package:smart_laundry_locker/core/network/api_client.dart';
-import 'package:smart_laundry_locker/core/services/token_service.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:smart_laundry_locker/features/auth/domain/entities/auth_token_entity.dart';
 import 'package:smart_laundry_locker/features/auth/domain/entities/face_verify_result_entity.dart';
@@ -12,8 +11,6 @@ import 'package:smart_laundry_locker/features/auth/domain/repositories/auth_repo
 import 'package:smart_laundry_locker/features/auth/infrastructure/data_sources/auth_remote_data_source.dart';
 import 'package:smart_laundry_locker/features/auth/infrastructure/models/auth_token_model.dart';
 import 'package:smart_laundry_locker/features/auth/infrastructure/models/login_request_model.dart';
-import 'package:smart_laundry_locker/features/auth/infrastructure/models/qr_confirm_request_model.dart';
-import 'package:smart_laundry_locker/features/auth/infrastructure/models/qr_confirm_response_model.dart';
 import 'package:smart_laundry_locker/features/auth/infrastructure/models/register_request_model.dart';
 import 'package:smart_laundry_locker/features/auth/infrastructure/models/verify_otp_request_model.dart';
 import 'package:dartz/dartz.dart';
@@ -42,11 +39,17 @@ class AuthRepositoryImpl implements AuthRepository {
       final response = await _remoteDataSource.register(request);
 
       final success = response['success'] as bool? ?? true;
-      final message = response['message'] as String?;
+      final message = response['message']?.toString();
+      // Backend trả userId dạng số — ép `as String?` làm đăng ký thành công
+      // vẫn báo lỗi "type 'int' is not a subtype of 'String?'".
+      final user = response['user'];
       final userId =
-          response['userId'] as String? ??
-          response['id'] as String? ??
-          response['user']?['id'] as String?;
+          (response['userId'] ??
+                  response['id'] ??
+                  (user is Map ? user['id'] : null))
+              ?.toString();
+      final accessToken = response['accessToken']?.toString();
+      final refreshToken = response['refreshToken']?.toString();
 
       // check nếu saga trả về success: false (saga rollback hoặc lỗi)
       if (success == false) {
@@ -61,6 +64,8 @@ class AuthRepositoryImpl implements AuthRepository {
         RegisterEntity.success(
           message: message ?? 'Registration successful',
           userId: userId,
+          accessToken: accessToken,
+          refreshToken: refreshToken,
         ),
       );
     } on ServerException catch (e) {
@@ -306,38 +311,6 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<Either<Failure, bool>> confirmQrLogin(String sessionId) async {
-    try {
-      final access = await TokenService.getAccessToken();
-      if (access == null || access.isEmpty) {
-        return const Left(
-          AuthenticationFailure(
-            'Token không hợp lệ. Vui lòng đăng nhập lại trên ứng dụng.',
-          ),
-        );
-      }
-
-      final responseMap = await _remoteDataSource.confirmQrLogin(
-        QrConfirmRequestModel(sessionId: sessionId),
-      );
-      final model = QrConfirmResponseModel.fromJson(responseMap);
-      return Right(model.success);
-    } on AuthenticationException catch (e) {
-      return Left(_mapQrConfirmBackendMessage(e.message));
-    } on ValidationException catch (e) {
-      return Left(_mapQrConfirmBackendMessage(e.message));
-    } on NotFoundException catch (e) {
-      return Left(_mapQrConfirmBackendMessage(e.message));
-    } on ServerException catch (e) {
-      return Left(_mapQrConfirmBackendMessage(e.message));
-    } on NetworkException catch (e) {
-      return Left(NetworkFailure(e.message));
-    } catch (e) {
-      return Left(UnknownFailure(e.toString()));
-    }
-  }
-
-  @override
   Future<Either<Failure, bool>> faceRegister({
     required String userId,
     required List<Uint8List> imagesBytes,
@@ -444,26 +417,6 @@ Failure _mapPasswordResetBackendFailure(Object error) {
         ? message
         : 'Không thể đặt lại mật khẩu. Vui lòng thử lại.',
   );
-}
-
-Failure _mapQrConfirmBackendMessage(String message) {
-  final m = message.toLowerCase().trim();
-  if (m.contains('qr session expired') ||
-      (m.contains('expired') && m.contains('session'))) {
-    return const QrExpiredFailure();
-  }
-  if (m.contains('already used')) {
-    return const QrAlreadyUsedFailure();
-  }
-  if (m.contains('invalid mobile token')) {
-    return const AuthenticationFailure(
-      'Token không hợp lệ. Vui lòng đăng nhập lại trên ứng dụng.',
-    );
-  }
-  if (m.contains('not found')) {
-    return const QrExpiredFailure('Mã QR không hợp lệ hoặc phiên đã hết hạn.');
-  }
-  return AuthenticationFailure(message);
 }
 
 Failure _mapRegisterBackendFailure(String message) {

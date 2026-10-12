@@ -2,7 +2,6 @@
 library locker_presentation;
 
 // Pages
-export 'pages/confirm_rent_page.dart';
 export 'pages/locker_page.dart';
 export 'pages/locker_map_page.dart';
 export 'pages/locker_detail_map_page.dart';

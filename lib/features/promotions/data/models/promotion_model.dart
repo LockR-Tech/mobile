@@ -1,4 +1,5 @@
 import 'package:intl/intl.dart';
+import 'package:smart_laundry_locker/core/utils/app_date_time.dart';
 
 class PromotionModel {
   final int id;
@@ -41,16 +42,18 @@ class PromotionModel {
       maxDiscountAmount: (json['maxDiscountAmount'] as num?)?.toDouble(),
       minOrderAmount: (json['minOrderAmount'] as num?)?.toDouble(),
       status: json['status'] as String? ?? 'ACTIVE',
-      startAt: json['startAt'] != null ? DateTime.tryParse(json['startAt'].toString()) : null,
-      endAt: json['endAt'] != null ? DateTime.tryParse(json['endAt'].toString()) : null,
+      // Backend trả LocalDateTime trần (UTC) ⇒ đọc bằng hàm chung, nếu không
+      // hạn ưu đãi lệch 7 tiếng.
+      startAt: parseServerDateTime(json['startAt']),
+      endAt: parseServerDateTime(json['endAt']),
     );
   }
 
-  /// Luôn trả về URL ảnh hợp lệ: backend imageUrl nếu có, fallback ảnh đẹp theo seed
-  String get effectiveImageUrl {
-    if (imageUrl != null && imageUrl!.isNotEmpty) return imageUrl!;
-    return 'https://picsum.photos/seed/promo$id/600/400';
-  }
+  bool get hasImage => (imageUrl ?? '').trim().isNotEmpty;
+
+  /// Ảnh do admin tải lên; rỗng khi không có (UI tự vẽ nền gradient). Không
+  /// còn lấy ảnh ngẫu nhiên từ picsum — ảnh đó không liên quan tới ưu đãi.
+  String get effectiveImageUrl => hasImage ? imageUrl!.trim() : '';
 
   String get discountLabel {
     if (discountType == 'PERCENTAGE') return '-${discountValue.toInt()}%';

@@ -1,48 +1,91 @@
 import 'package:smart_laundry_locker/features/locker/domain/entities/locker_location.dart';
-import 'package:smart_laundry_locker/features/locker/infrastructure/models/responses/lockers_response.dart';
-import 'package:smart_laundry_locker/features/locker/presentation/providers/locker_provider.dart';
-import 'package:smart_laundry_locker/features/locker/presentation/providers/locker_providers.dart';
+import 'package:smart_laundry_locker/features/locker/domain/utils/locker_layout_helper.dart';
 import 'package:smart_laundry_locker/features/locker/presentation/widgets/locker_info_modal.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:smart_laundry_locker/core/routing/app_router.dart';
+import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/location_services.dart';
+import 'package:smart_laundry_locker/features/stores/presentation/pages/store_lockers_page.dart';
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
 
-class LockerDetailMapPage extends ConsumerStatefulWidget {
+/// Chi tiết một tủ trên bản đồ: vị trí, trạng thái kết nối và số ô trống theo
+/// loại ô (tải từ `GET /api/lockers/{id}/layout`).
+class LockerDetailMapPage extends StatefulWidget {
   final LockerLocation location;
+  final LockerOpsService? service;
 
-  const LockerDetailMapPage({super.key, required this.location});
+  const LockerDetailMapPage({super.key, required this.location, this.service});
 
   @override
-  ConsumerState<LockerDetailMapPage> createState() =>
-      _LockerDetailMapPageState();
+  State<LockerDetailMapPage> createState() => _LockerDetailMapPageState();
 }
 
-class _LockerDetailMapPageState extends ConsumerState<LockerDetailMapPage> {
-  late DraggableScrollableController _draggableScrollableController;
+class _LockerDetailMapPageState extends State<LockerDetailMapPage> {
+  late final DraggableScrollableController _draggableScrollableController;
+  late final LockerOpsService _service = widget.service ?? LockerOpsService();
+
+  List<LockerCellGroupCount>? _cellGroups;
+  bool _loadingCells = false;
+  String? _cellsError;
+  bool? _layoutOnline;
+  String? _layoutStatus;
 
   @override
   void initState() {
     super.initState();
     _draggableScrollableController = DraggableScrollableController();
-
-    // // Fetch locker counts cho location này
-    // WidgetsBinding.instance.addPostFrameCallback((_) {
-    //   ref
-    //       .read<LockerProvider>(lockerNotifierProvider)
-    //       .getLockerCountBySize(
-    //         cabinetId: widget.location.id, // This is wrong now, needs cabinetId
-    //       );
-    // });
+    _loadCells();
   }
 
   @override
   void dispose() {
     _draggableScrollableController.dispose();
     super.dispose();
+  }
+
+  Future<void> _loadCells() async {
+    final lockerId = int.tryParse(widget.location.id);
+    if (lockerId == null) return;
+    setState(() {
+      _loadingCells = true;
+      _cellsError = null;
+    });
+    try {
+      final layout = await _service.layout(lockerId);
+      if (!mounted) return;
+      final cells = layout['cells'];
+      setState(() {
+        _cellGroups = LockerLayoutHelper.summarizeCells(
+          cells is List ? cells : const [],
+        );
+        _layoutOnline = layout['online'] is bool ? layout['online'] as bool : null;
+        _layoutStatus = layout['status']?.toString();
+        _loadingCells = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _cellsError = LockerOpsService.errorMessage(e);
+        _loadingCells = false;
+      });
+    }
+  }
+
+  bool? get _online => _layoutOnline ?? widget.location.online;
+
+  String? get _blockReason => LockerLayoutHelper.bookingBlockReason(
+    status: _layoutStatus ?? widget.location.status,
+    online: _online,
+  );
+
+  void _openGrid() {
+    Navigator.of(context, rootNavigator: true).push<void>(
+      MaterialPageRoute(
+        builder: (_) => StoreLockerGridPage.forLocation(widget.location),
+      ),
+    );
   }
 
   void _onMapTap() {
@@ -55,14 +98,9 @@ class _LockerDetailMapPageState extends ConsumerState<LockerDetailMapPage> {
 
   @override
   Widget build(BuildContext context) {
-    final LockerProvider provider = ref.watch<LockerProvider>(
-      lockerNotifierProvider,
-    );
-    final List<LockerSizeCount> lockerSizeItems =
-        provider.state.lockerSizeItems;
-
     // ko render map nếu toạ độ ko hợp lệ
     if (!widget.location.hasValidCoordinate) {
+      final reason = _blockReason;
       return Scaffold(
         body: Column(
           children: [
@@ -78,27 +116,48 @@ class _LockerDetailMapPageState extends ConsumerState<LockerDetailMapPage> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(
+                      const Icon(
                         Icons.location_off,
                         size: 64,
-                        color: const Color(0xFF0A2342),
+                        color: Color(0xFF0A2342),
                       ),
                       const SizedBox(height: 16),
                       Text(
-                        'Toạ độ địa điểm không hợp lệ.\nKhông thể hiển thị bản đồ.',
+                        'Tủ chưa có toạ độ nên chưa hiển thị được bản đồ '
+                        'và chỉ đường.',
                         style: TextStyle(color: Colors.grey[800], fontSize: 16),
                         textAlign: TextAlign.center,
                       ),
+                      if (reason != null) ...[
+                        const SizedBox(height: 12),
+                        Text(
+                          reason,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            color: Color(0xFFB91C1C),
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
                       const SizedBox(height: 24),
                       ElevatedButton.icon(
-                        onPressed: () =>
-                            showLocationServicesSheet(context, widget.location),
+                        onPressed: reason != null
+                            ? null
+                            : () => showLocationServicesSheet(
+                                context,
+                                widget.location,
+                              ),
                         icon: const Icon(Icons.add_box_outlined, size: 18),
                         label: const Text('Đặt dịch vụ'),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AislBrand.navy,
                           foregroundColor: Colors.white,
                         ),
+                      ),
+                      const SizedBox(height: 8),
+                      OutlinedButton(
+                        onPressed: _openGrid,
+                        child: const Text('Xem sơ đồ ô tủ'),
                       ),
                       const SizedBox(height: 12),
                       TextButton(
@@ -115,82 +174,58 @@ class _LockerDetailMapPageState extends ConsumerState<LockerDetailMapPage> {
       );
     }
 
-    Widget mapStack;
-    try {
-      mapStack = Stack(
-        children: [
-          FlutterMap(
-            options: MapOptions(
-              initialCenter: widget.location.coordinate,
-              initialZoom: 15.0,
-              minZoom: 3.0,
-              maxZoom: 18.0,
-              onTap: (tapPosition, point) => _onMapTap(),
+    final mapStack = Stack(
+      children: [
+        FlutterMap(
+          options: MapOptions(
+            initialCenter: widget.location.coordinate,
+            initialZoom: 15.0,
+            minZoom: 3.0,
+            maxZoom: 18.0,
+            onTap: (tapPosition, point) => _onMapTap(),
+          ),
+          children: [
+            TileLayer(
+              urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+              userAgentPackageName: 'com.example.aisl_app',
             ),
-            children: [
-              TileLayer(
-                urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                userAgentPackageName: 'com.example.aisl_app',
-              ),
-              MarkerLayer(
-                markers: [
-                  Marker(
-                    point: widget.location.coordinate,
-                    width: 50,
-                    height: 50,
-                    child: const Icon(
-                      Icons.location_on,
-                      color: Colors.red,
-                      size: 50,
-                    ),
+            MarkerLayer(
+              markers: [
+                Marker(
+                  point: widget.location.coordinate,
+                  width: 50,
+                  height: 50,
+                  child: const Icon(
+                    Icons.location_on,
+                    color: Colors.red,
+                    size: 50,
                   ),
-                ],
-              ),
-            ],
-          ),
-          DraggableScrollableSheet(
-            controller: _draggableScrollableController,
-            initialChildSize: 0.4,
-            minChildSize: 0.15,
-            maxChildSize: 0.7,
-            builder: (context, scrollController) {
-              return LockerInfoModal(
-                location: widget.location,
-                lockerSizeItems: lockerSizeItems,
-                scrollController: scrollController,
-              );
-            },
-          ),
-        ],
-      );
-    } catch (e) {
-      mapStack = Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.warning_amber_rounded,
-                size: 48,
-                color: const Color(0xFF0A2342),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'Không thể tải bản đồ.',
-                style: TextStyle(color: Colors.grey[800], fontSize: 16),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: () => Navigator.maybePop(context),
-                child: const Text('Quay lại'),
-              ),
-            ],
-          ),
+                ),
+              ],
+            ),
+          ],
         ),
-      );
-    }
+        DraggableScrollableSheet(
+          controller: _draggableScrollableController,
+          initialChildSize: 0.45,
+          minChildSize: 0.15,
+          maxChildSize: 0.8,
+          builder: (context, scrollController) {
+            return LockerInfoModal(
+              location: widget.location,
+              scrollController: scrollController,
+              cellGroups: _cellGroups,
+              loadingCells: _loadingCells,
+              cellsError: _cellsError,
+              onRetryCells: _loadCells,
+              online: _online,
+              bookingBlockReason: _blockReason,
+              onOpenGrid: _openGrid,
+            );
+          },
+        ),
+      ],
+    );
 
     return Scaffold(
       body: Column(

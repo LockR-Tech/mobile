@@ -3,21 +3,25 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:smart_laundry_locker/core/config/business_config_service.dart';
-import 'package:smart_laundry_locker/core/config/feature_flags.dart';
 import 'package:smart_laundry_locker/core/routing/app_router.dart';
+import 'package:smart_laundry_locker/core/services/token_service.dart';
 import 'package:smart_laundry_locker/core/theme/shadcn_theme.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/domain/entities/drone_delivery_stage.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/domain/entities/drone_delivery_status.dart';
+import 'package:smart_laundry_locker/features/drone_delivery/domain/entities/drone_viewer.dart';
+import 'package:smart_laundry_locker/features/drone_delivery/presentation/drone_error_messages.dart';
+import 'package:smart_laundry_locker/features/drone_delivery/presentation/drone_live_map.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/presentation/providers/drone_delivery_providers.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/presentation/widgets/drone_approaching_sheet.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/presentation/widgets/drone_delivery_detail.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/presentation/widgets/drone_order_cancel.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/presentation/widgets/drone_order_payment.dart';
+import 'package:smart_laundry_locker/features/drone_delivery/presentation/widgets/drone_pickup_sheet.dart';
 import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
 import 'package:smart_laundry_locker/features/maintenance/presentation/widgets/customer_drone_incident_card.dart';
 
-/// Trang cho NGƯỜI NHẬN theo dõi đơn giao bằng drone (Phase 1: timeline theo
-/// push notification, CHƯA có live map).
+/// Màn theo dõi đơn giao bằng drone cho khách (người đặt hoặc người nhận):
+/// timeline tự làm mới, bản đồ hành trình, thao tác theo vai trò người xem.
 class DroneDeliveryTrackingPage extends ConsumerStatefulWidget {
   final String orderId;
 
@@ -34,6 +38,20 @@ class _DroneDeliveryTrackingPageState
   bool _paying = false;
   bool _canceling = false;
   bool _confirming = false;
+
+  /// Id tài khoản đang xem (từ JWT) — phân biệt người đặt / người nhận.
+  int? _currentUserId;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCurrentUser();
+  }
+
+  Future<void> _loadCurrentUser() async {
+    final id = int.tryParse(await TokenService.getUserId() ?? '');
+    if (mounted && id != _currentUserId) setState(() => _currentUserId = id);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -88,27 +106,46 @@ class _DroneDeliveryTrackingPageState
         color: AISLShadcnTheme.navyPrimary,
         onRefresh: () async {
           ref.invalidate(droneDeliveryStatusProvider(widget.orderId));
-          await ref.read(
-            droneDeliveryStatusProvider(widget.orderId).future,
-          );
+          try {
+            await ref.read(
+              droneDeliveryStatusProvider(widget.orderId).future,
+            );
+          } catch (_) {
+            // Lỗi đã hiện trên màn (đang thử lại); không ném ra khỏi kéo làm mới.
+          }
         },
+        // Lỗi một lần poll mà đã có dữ liệu: giữ màn cũ, chỉ báo "đang thử lại".
         child: asyncStatus.when(
+          skipError: true,
           loading: () => const _CenteredScroll(child: CircularProgressIndicator()),
           error: (err, _) => _CenteredScroll(
             child: _ErrorState(
-              message: err.toString(),
+              message: err is DroneStatusLoadException
+                  ? err.message
+                  : 'Vui lòng kiểm tra kết nối và thử lại.',
               onRetry: () =>
                   ref.invalidate(droneDeliveryStatusProvider(widget.orderId)),
             ),
           ),
-          data: (status) => _TrackingBody(
-            status: status,
-            orderId: widget.orderId,
-            onPay: () => _pay(status),
-            onCancel: () => _cancel(status),
-            onConfirmDrop: () => _confirmDrop(status),
-            onDeclineSurcharge: () => _declineSurcharge(status),
-          ),
+          data: (status) {
+            final role = droneViewerRole(status, _currentUserId);
+            final actions = DroneCustomerActions.of(status, role);
+            return _TrackingBody(
+              status: status,
+              orderId: widget.orderId,
+              reconnecting: asyncStatus.hasError,
+              viewerIsBooker: role == DroneViewerRole.booker,
+              pickup: actions.pickup,
+              onPay: actions.canPay ? () => _pay(status) : null,
+              onCancel: actions.canCancel ? () => _cancel(status) : null,
+              onConfirmDrop:
+                  actions.canConfirmDrop ? () => _confirmDrop(status) : null,
+              onDeclineSurcharge: actions.canDeclineSurcharge
+                  ? () => _declineSurcharge(status)
+                  : null,
+              onPickup: () => _pickup(actions.pickup),
+            );
+          },
         ),
       ),
     );
@@ -199,7 +236,7 @@ class _DroneDeliveryTrackingPageState
       await action(orderId);
       message = done;
     } catch (error) {
-      message = LockerOpsService.errorMessage(error);
+      message = droneCustomerErrorMessage(error);
     } finally {
       _confirming = false;
     }
@@ -225,13 +262,33 @@ class _DroneDeliveryTrackingPageState
       );
       message = droneOrderPaymentMessage(outcome);
     } catch (error) {
-      message = LockerOpsService.errorMessage(error);
+      message = droneCustomerErrorMessage(error);
     } finally {
       _paying = false;
     }
     if (!mounted) return;
     ref.invalidate(droneDeliveryStatusProvider(widget.orderId));
     messenger.showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  /// "Nhận hàng" ở chặng sẵn sàng nhận: người đặt ⇒ chi tiết đơn trong "Đơn
+  /// hàng" (mã PIN, mở ô); người nhận ⇒ mã PIN trong hàng chờ nhận.
+  void _pickup(DronePickupAction action) {
+    final orderId = int.tryParse(widget.orderId);
+    switch (action) {
+      case DronePickupAction.bookerOrder:
+      case DronePickupAction.bookerOrderForOther:
+        context.push(
+          Uri(
+            path: AppRouter.myLockerOrders,
+            queryParameters: {'orderId': widget.orderId},
+          ).toString(),
+        );
+      case DronePickupAction.receiverPin:
+        if (orderId != null) showDronePickupSheet(context, orderId: orderId);
+      case DronePickupAction.none:
+        break;
+    }
   }
 
   static String? _etaText(int? minutes) =>
@@ -241,50 +298,58 @@ class _DroneDeliveryTrackingPageState
 class _TrackingBody extends StatelessWidget {
   final DroneDeliveryStatus status;
   final String orderId;
-  final VoidCallback onPay;
-  final VoidCallback onCancel;
-  final VoidCallback onConfirmDrop;
-  final VoidCallback onDeclineSurcharge;
+  final bool reconnecting;
+  final bool viewerIsBooker;
+  final DronePickupAction pickup;
+  final VoidCallback? onPay;
+  final VoidCallback? onCancel;
+  final VoidCallback? onConfirmDrop;
+  final VoidCallback? onDeclineSurcharge;
+  final VoidCallback onPickup;
 
   const _TrackingBody({
     required this.status,
     required this.orderId,
+    required this.reconnecting,
+    required this.viewerIsBooker,
+    required this.pickup,
     required this.onPay,
     required this.onCancel,
     required this.onConfirmDrop,
     required this.onDeclineSurcharge,
+    required this.onPickup,
   });
-
-  /// Chỉ mời xem live map khi drone đang trên đường và
-  /// cờ Phase 2 bật. Các mốc arrived/delivered/failed không cần bản đồ nữa.
-  bool get _canTrackOnMap =>
-      FeatureFlags.droneLiveMapEnabled &&
-      // Cần nguồn vị trí: đơn DEMO (vị trí nội suy) hoặc drone thật còn gửi telemetry.
-      // Server cũ chưa trả `liveTracking` thì chỉ đơn DEMO có bản đồ.
-      (status.liveTracking ??
-          (status.fulfillmentMode ?? '').toUpperCase() == 'DEMO') &&
-      (status.stage == DroneDeliveryStage.departed ||
-          status.stage == DroneDeliveryStage.enRoute ||
-          status.stage == DroneDeliveryStage.approaching);
 
   @override
   Widget build(BuildContext context) {
+    final canTrackOnMap = droneLiveMapAvailable(status);
+    final simulated = droneIsSimulated(status);
     return ListView(
       physics: const AlwaysScrollableScrollPhysics(),
       padding: const EdgeInsets.all(20),
       children: [
-        const _LiveIndicator(),
+        _LiveIndicator(reconnecting: reconnecting),
         const SizedBox(height: 12),
         if (int.tryParse(orderId) case final parsed?)
-          CustomerDroneIncidentCard(orderId: parsed),
+          CustomerDroneIncidentCard(
+            orderId: parsed,
+            // Chặng đổi (vd. vừa báo rơi kiện) ⇒ tải lại thẻ sự cố.
+            refreshKey: status.status,
+            expectIncident: status.stage.isIncident,
+          ),
         DroneDeliveryDetail(
           status: status,
+          viewerIsBooker: viewerIsBooker,
           onPay: onPay,
           onCancel: onCancel,
           onConfirmDrop: onConfirmDrop,
           onDeclineSurcharge: onDeclineSurcharge,
           beforeRoute: [
-            if (_canTrackOnMap) ...[
+            if (pickup != DronePickupAction.none) ...[
+              const SizedBox(height: 16),
+              _PickupCard(action: pickup, onPickup: onPickup),
+            ],
+            if (canTrackOnMap) ...[
               const SizedBox(height: 16),
               SizedBox(
                 width: double.infinity,
@@ -296,7 +361,11 @@ class _TrackingBody extends StatelessWidget {
                   onPressed: () =>
                       context.push(AppRouter.droneLiveMap, extra: orderId),
                   icon: const Icon(LucideIcons.map, size: 18),
-                  label: const Text('Theo dõi trên bản đồ'),
+                  label: Text(
+                    simulated
+                        ? 'Theo dõi trên bản đồ (mô phỏng)'
+                        : 'Theo dõi trên bản đồ',
+                  ),
                 ),
               ),
             ],
@@ -308,27 +377,80 @@ class _TrackingBody extends StatelessWidget {
   }
 }
 
-/// Báo cho người xem biết màn hình tự cập nhật — không cần kéo để tải lại.
-class _LiveIndicator extends StatelessWidget {
-  const _LiveIndicator();
+/// Thẻ "Nhận hàng" ở chặng sẵn sàng nhận.
+class _PickupCard extends StatelessWidget {
+  const _PickupCard({required this.action, required this.onPickup});
+
+  final DronePickupAction action;
+  final VoidCallback onPickup;
 
   @override
   Widget build(BuildContext context) {
+    final forOther = action == DronePickupAction.bookerOrderForOther;
+    const color = Color(0xFF15803D);
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF0FDF4),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFFBBF7D0)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            forOther
+                ? 'Kiện đã vào tủ nhận. Mã mở ô đã được gửi cho người nhận.'
+                : 'Kiện đã vào tủ nhận. Mở mã PIN để lấy hàng tại tủ.',
+            style: const TextStyle(
+              color: color,
+              fontSize: 13.5,
+              fontWeight: FontWeight.w600,
+              height: 1.4,
+            ),
+          ),
+          const SizedBox(height: 10),
+          FilledButton.icon(
+            key: const ValueKey('drone-pickup'),
+            style: FilledButton.styleFrom(backgroundColor: color),
+            onPressed: onPickup,
+            icon: const Icon(LucideIcons.packageCheck, size: 18),
+            label: Text(forOther ? 'Xem chi tiết đơn' : 'Nhận hàng'),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Báo cho người xem biết màn hình tự cập nhật — không cần kéo để tải lại. Một
+/// lần tải lỗi thì báo đang thử lại (dữ liệu trên màn là lần tải gần nhất).
+class _LiveIndicator extends StatelessWidget {
+  const _LiveIndicator({this.reconnecting = false});
+
+  final bool reconnecting;
+
+  @override
+  Widget build(BuildContext context) {
+    final color =
+        reconnecting ? const Color(0xFFD97706) : const Color(0xFF16A34A);
     return Row(
       children: [
         Container(
           width: 8,
           height: 8,
-          decoration: const BoxDecoration(
-            color: Color(0xFF16A34A),
-            shape: BoxShape.circle,
-          ),
+          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
         ),
         const SizedBox(width: 8),
-        const Expanded(
+        Expanded(
           child: Text(
-            'Đang cập nhật trực tiếp · trạng thái tự làm mới khi có thay đổi',
-            style: TextStyle(fontSize: 12, color: Color(0xFF64748B)),
+            reconnecting
+                ? 'Mất kết nối · đang thử lại, thông tin bên dưới là lần cập nhật gần nhất'
+                : 'Đang cập nhật trực tiếp · trạng thái tự làm mới khi có thay đổi',
+            style: TextStyle(
+              fontSize: 12,
+              color: reconnecting ? color : const Color(0xFF64748B),
+            ),
           ),
         ),
       ],

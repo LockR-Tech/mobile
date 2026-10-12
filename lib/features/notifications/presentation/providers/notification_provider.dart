@@ -4,6 +4,7 @@ import 'package:smart_laundry_locker/features/notifications/infrastructure/repos
 import 'package:smart_laundry_locker/core/services/firebase_messaging_service.dart';
 import 'package:smart_laundry_locker/core/services/token_service.dart';
 import 'package:smart_laundry_locker/core/services/app_event_bus.dart';
+import 'package:smart_laundry_locker/core/utils/user_error_message.dart';
 import 'package:flutter/foundation.dart';
 import 'dart:async';
 
@@ -11,6 +12,7 @@ class NotificationProvider extends ChangeNotifier {
   final NotificationRepository _repository;
   StreamSubscription? _messageSubscription;
   StreamSubscription? _realtimeSubscription;
+  StreamSubscription? _orderUpdateSubscription;
 
   NotificationProvider(this._repository) {
     _initMessageListener();
@@ -37,6 +39,9 @@ class NotificationProvider extends ChangeNotifier {
     _handleAuthStateChanged();
     _realtimeSubscription = RealtimeNotificationService.instance.notifications
         .listen((notification) {
+          // Thông báo không có id thì không lưu ở server (không xoá/đánh dấu
+          // đọc được) — service đã lọc, chặn thêm ở đây cho chắc.
+          if (notification.id.isEmpty) return;
           final exists = _notifications.any((n) => n.id == notification.id);
           if (!exists) {
             _notifications.insert(0, notification);
@@ -51,6 +56,10 @@ class NotificationProvider extends ChangeNotifier {
             notification.dataPayload?.referenceId,
           );
         });
+    // Tin cập nhật đơn (`/user/queue/orders`) chỉ làm mới màn đơn: không thêm
+    // vào danh sách thông báo, không tăng badge (trước đây tạo dòng trống).
+    _orderUpdateSubscription = RealtimeNotificationService.instance.orderUpdates
+        .listen((update) => _emitDomainEvent(update.type, update.orderId));
   }
 
   static void _emitDomainEvent(String? actionType, String? referenceId) {
@@ -107,6 +116,7 @@ class NotificationProvider extends ChangeNotifier {
     TokenService.authState.removeListener(_handleAuthStateChanged);
     _messageSubscription?.cancel();
     _realtimeSubscription?.cancel();
+    _orderUpdateSubscription?.cancel();
     RealtimeNotificationService.instance.disconnect();
     super.dispose();
   }
@@ -169,7 +179,10 @@ class NotificationProvider extends ChangeNotifier {
       // Also refresh unread count whenever we load notifications
       await loadUnreadCount();
     } catch (e) {
-      _error = e.toString();
+      _error = userErrorMessage(
+        e,
+        fallback: 'Không tải được thông báo. Vui lòng thử lại.',
+      );
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -190,7 +203,10 @@ class NotificationProvider extends ChangeNotifier {
       );
       _notifications.addAll(response.items);
     } catch (e) {
-      _error = e.toString();
+      _error = userErrorMessage(
+        e,
+        fallback: 'Không tải thêm được thông báo. Vui lòng thử lại.',
+      );
       _currentPage--; // Revert page on failure
     } finally {
       _isLoadingMore = false;
@@ -240,6 +256,63 @@ class NotificationProvider extends ChangeNotifier {
       _unreadCount = prevCount;
       notifyListeners();
       debugPrint('Failed to mark all as read: $e');
+    }
+  }
+
+  /// Xoá một thông báo (vuốt). Xoá ngay trên màn hình, lỗi thì trả lại chỗ cũ.
+  /// Trả thông báo lỗi tiếng Việt hoặc `null` khi thành công.
+  Future<String?> deleteNotification(String id) async {
+    final index = _notifications.indexWhere((n) => n.id == id);
+    if (index == -1) return null;
+    final removed = _notifications.removeAt(index);
+    final wasUnread = !removed.isRead;
+    if (wasUnread && _unreadCount > 0) _unreadCount--;
+    notifyListeners();
+
+    try {
+      await _repository.deleteNotification(id);
+      return null;
+    } catch (e) {
+      _notifications.insert(index.clamp(0, _notifications.length), removed);
+      if (wasUnread) _unreadCount++;
+      notifyListeners();
+      debugPrint('Failed to delete notification: $e');
+      return userErrorMessage(
+        e,
+        notFound: 'Không tìm thấy thông báo hoặc máy chủ chưa hỗ trợ xoá.',
+        fallback: 'Không xoá được thông báo. Vui lòng thử lại.',
+      );
+    }
+  }
+
+  /// Xoá tất cả thông báo của tài khoản. Trả lỗi tiếng Việt hoặc `null`.
+  Future<String?> deleteAllNotifications() async {
+    if (_notifications.isEmpty) return null;
+    final previous = List<NotificationModel>.from(_notifications);
+    final previousUnread = _unreadCount;
+    final previousPage = _currentPage;
+    final previousTotalPages = _totalPages;
+    _notifications = [];
+    _unreadCount = 0;
+    _currentPage = 1;
+    _totalPages = 1;
+    notifyListeners();
+
+    try {
+      await _repository.deleteAllNotifications();
+      return null;
+    } catch (e) {
+      _notifications = previous;
+      _unreadCount = previousUnread;
+      _currentPage = previousPage;
+      _totalPages = previousTotalPages;
+      notifyListeners();
+      debugPrint('Failed to delete all notifications: $e');
+      return userErrorMessage(
+        e,
+        notFound: 'Máy chủ chưa hỗ trợ xoá thông báo. Vui lòng thử lại sau.',
+        fallback: 'Không xoá được thông báo. Vui lòng thử lại.',
+      );
     }
   }
 }

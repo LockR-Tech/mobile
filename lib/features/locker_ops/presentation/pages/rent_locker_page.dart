@@ -165,47 +165,23 @@ class _RentLockerPageState extends State<RentLockerPage>
       } else if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Hệ thống đang tiếp tục kiểm tra giao dịch chuyển khoản...'),
-            duration: Duration(seconds: 2),
+            content: Text(
+              'Chưa ghi nhận thanh toán. Nếu bạn vừa trả, vui lòng đợi giây lát rồi kiểm tra lại.',
+            ),
+            duration: Duration(seconds: 3),
           ),
         );
       }
-    } catch (_) {
+    } catch (e) {
+      _snack(LockerOpsService.errorMessage(e));
     } finally {
       if (mounted) setState(() => _checkingPayment = false);
     }
   }
 
-  Future<void> _testPaymentSuccessSimulation() async {
-    _stopPaymentPolling();
-    if (_order != null) {
-      final updated = Map<String, dynamic>.from(_order!);
-      updated['paymentStatus'] = 'PAID';
-      updated['paidAt'] = DateTime.now().toIso8601String();
-      if (updated['pinCode'] == null || (updated['pinCode'] as String).isEmpty) {
-        updated['pinCode'] = '243937';
-      }
-      setState(() => _order = updated);
-    }
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Thanh toán thành công! Mã PIN mở ô tủ đã sẵn sàng.'),
-        backgroundColor: Color(0xFF16A34A),
-      ),
-    );
-  }
-
   void _stopPaymentPolling() {
     _paymentPollTimer?.cancel();
     _paymentPollTimer = null;
-  }
-
-  Future<void> _initSepayCheckout(int orderId) async {
-    try {
-      await _service.checkout(orderId, 'SEPAY');
-    } catch (_) {
-      // Backend SePay webhook sẽ tự động xử lý nếu đã có thanh toán
-    }
   }
 
   Future<void> _loadLockers() async {
@@ -284,16 +260,9 @@ class _RentLockerPageState extends State<RentLockerPage>
         promotionCode: _promoCode,
       );
       if (!mounted) return;
+      // Không tự tạo giao dịch thanh toán: khách bấm "Thanh toán" và chọn phương
+      // thức admin đang bật. Mỗi lần bấm là một lần checkout.
       setState(() => _order = order);
-      // Nếu đơn chưa thanh toán → tự động poll trạng thái
-      final orderId = order['id'] as int?;
-      final paymentStatus = order['paymentStatus'] as String?;
-      final fee = order['totalPrice'];
-      final hasFee = fee is num ? fee > 0 : _netPrice > 0;
-      if (orderId != null && hasFee && paymentStatus != 'PAID') {
-        _initSepayCheckout(orderId);
-        _startPaymentPolling(orderId);
-      }
     } catch (e) {
       _snack(LockerOpsService.errorMessage(e));
     } finally {
@@ -343,8 +312,10 @@ class _RentLockerPageState extends State<RentLockerPage>
       );
       if (!mounted || outcome == OrderPaymentOutcome.cancelled) return;
       if (outcome == OrderPaymentOutcome.paid) {
-        // Thanh toán xong → chuyển sang danh sách đơn để user xem trạng thái.
-        context.go(AppRouter.myLockerOrders);
+        // Ở lại màn này: đơn đã PAID thì hiện mã mở ô để khách bỏ đồ tiếp.
+        _stopPaymentPolling();
+        await _refreshOrder();
+        _snack('Thanh toán thành công! Mã PIN mở ô tủ đã sẵn sàng.');
       } else if (outcome == OrderPaymentOutcome.failed) {
         showPaymentResultDialog<void>(
           context,
@@ -353,8 +324,11 @@ class _RentLockerPageState extends State<RentLockerPage>
           message: 'Giao dịch chưa hoàn tất hoặc đã bị hủy. Vui lòng thử lại.',
         );
       } else {
-        // pending — webhook chưa về, nhắc user làm mới sau.
+        // pending — webhook chưa về: tiếp tục hỏi nền để màn tự cập nhật.
         await _refreshOrder();
+        if ((_order?['paymentStatus'] as String?) != 'PAID') {
+          _startPaymentPolling(id);
+        }
         _snack('Đang chờ xác nhận thanh toán, vui lòng đợi giây lát');
       }
     } catch (e) {
@@ -488,10 +462,11 @@ class _RentLockerPageState extends State<RentLockerPage>
 
   LockerOpsService get _service => widget.service;
 
+  /// `ô số 4` theo số in trên tủ. `sendBoxId` là mã nội bộ — hiện nó thì khách
+  /// ra tủ không tìm thấy ô nào, nên thiếu số ô thì nói chung chung.
   String _resultBoxLabel(Map<String, dynamic> order) {
-    final boxNumber = widget.initialBoxNumber;
-    if (boxNumber != null) return '$boxNumber';
-    return '${order['sendBoxId'] ?? '-'}';
+    final boxNumber = widget.initialBoxNumber ?? order['sendBoxNumber'];
+    return boxNumber == null ? 'ô của đơn' : 'ô số $boxNumber';
   }
 
   @override
@@ -957,7 +932,7 @@ class _RentLockerPageState extends State<RentLockerPage>
     final hasFee = total is num ? total > 0 : _netPrice > 0;
     final unpaid = hasFee && (order['paymentStatus'] as String?) != 'PAID';
     final config = businessConfig;
-    final payLabel = 'Thanh toán ${fmtPrice(total is num ? total : _netPrice)}';
+    final payLabel = 'Thanh toán ${fmtPrice(orderAmountDue(order))}';
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
@@ -995,9 +970,11 @@ class _RentLockerPageState extends State<RentLockerPage>
                 const SizedBox(height: 14),
               ],
               if (!started && unpaid && config.requirePaymentBeforeDrop) ...[
-                InlineVietQrCard(
-                  orderId: order['id'] as int,
-                  amount: total is num ? total.toDouble() : _netPrice.toDouble(),
+                const _ResultHeadline(
+                  icon: LucideIcons.lockKeyhole,
+                  title: 'Chờ thanh toán',
+                  subtitle:
+                      'Mã mở ô sẽ hiện ngay sau khi đơn được ghi nhận đã thanh toán.',
                 ),
               ] else ...[
                 if (started) ...[
@@ -1030,43 +1007,47 @@ class _RentLockerPageState extends State<RentLockerPage>
         ).animate().fadeIn(duration: 300.ms).slideY(begin: 0.05),
         const SizedBox(height: 16),
         if (!started && unpaid && config.requirePaymentBeforeDrop) ...[
-          const OpsBanner(
-            tone: OpsBannerTone.info,
+          OpsBanner(
+            tone: OpsBannerTone.warning,
             icon: LucideIcons.badgeAlert,
-            text: 'Quét mã QR trên và chuyển khoản — mã mở ô sẽ tự hiện sau khi thanh toán.',
+            text:
+                'Đơn chưa thanh toán. Thanh toán trong ${config.autoCancelUnpaidMinutes} phút để giữ ô — mã mở ô sẽ hiện sau khi thanh toán.',
           ),
           const SizedBox(height: 12),
           OpsPrimaryButton(
-            label: 'Tôi đã chuyển khoản — Kiểm tra ngay',
-            icon: LucideIcons.circleCheck,
-            loading: _checkingPayment,
-            onPressed: _checkPaymentStatusNow,
+            label: payLabel,
+            icon: LucideIcons.wallet,
+            loading: _loading,
+            onPressed: _pay,
           ),
           const SizedBox(height: 10),
-          OutlinedButton.icon(
-            onPressed: _testPaymentSuccessSimulation,
-            icon: const Icon(LucideIcons.sparkles, color: Color(0xFF16A34A), size: 18),
-            label: const Text(
-              '⚡ Giả lập thanh toán thành công (Xem Hình 2)',
-              style: TextStyle(
-                color: Color(0xFF16A34A),
-                fontWeight: FontWeight.w700,
-                fontSize: 14,
+          Center(
+            child: TextButton.icon(
+              onPressed: _checkingPayment ? null : _checkPaymentStatusNow,
+              icon: const Icon(LucideIcons.refreshCw, size: 14, color: opsMutedText),
+              label: const Text(
+                'Đã thanh toán? Kiểm tra lại trạng thái',
+                style: TextStyle(color: opsMutedText, fontSize: 13),
               ),
-            ),
-            style: OutlinedButton.styleFrom(
-              minimumSize: const Size(double.infinity, 50),
-              side: const BorderSide(color: Color(0xFF16A34A), width: 1.5),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-              backgroundColor: const Color(0xFFF0FDF4),
             ),
           ),
         ] else if (!started) ...[
+          if (unpaid) ...[
+            // Admin cho bỏ đồ trước khi trả, nhưng bắt đầu kỳ thuê vẫn cần đơn
+            // đã thanh toán.
+            OpsPrimaryButton(
+              label: payLabel,
+              icon: LucideIcons.wallet,
+              loading: _loading,
+              onPressed: _pay,
+            ),
+            const SizedBox(height: 12),
+          ],
           OpsBanner(
             tone: OpsBannerTone.info,
             icon: LucideIcons.packageOpen,
             title: 'Đã giữ ô — bỏ đồ vào',
-            text: 'Nhập PIN để mở ô số ${_resultBoxLabel(order)} hoặc mở bằng nút bên dưới, '
+            text: 'Nhập PIN để mở ${_resultBoxLabel(order)} hoặc mở bằng nút bên dưới, '
                 'đặt đồ vào, đóng cửa rồi xác nhận để bắt đầu tính giờ thuê.',
           ),
           const SizedBox(height: 12),
@@ -1083,26 +1064,6 @@ class _RentLockerPageState extends State<RentLockerPage>
             icon: LucideIcons.check,
             loading: _loading,
             onPressed: _confirmDrop,
-          ),
-          const SizedBox(height: 10),
-          Center(
-            child: TextButton.icon(
-              onPressed: () {
-                if (_order != null) {
-                  final reset = Map<String, dynamic>.from(_order!);
-                  reset['paymentStatus'] = 'PENDING';
-                  reset['paidAt'] = null;
-                  setState(() => _order = reset);
-                  final id = reset['id'] as int?;
-                  if (id != null) _startPaymentPolling(id);
-                }
-              },
-              icon: const Icon(LucideIcons.rotateCcw, size: 14, color: opsMutedText),
-              label: const Text(
-                'Quay lại mã VietQR để test lại',
-                style: TextStyle(color: opsMutedText, fontSize: 13),
-              ),
-            ),
           ),
         ] else ...[
           if (unpaid) ...[

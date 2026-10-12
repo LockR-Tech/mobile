@@ -35,6 +35,49 @@ class _FakeMaintenanceService extends LockerOpsService {
   String? requestedScheduleTarget;
   int? completedScheduleId;
   List<Map<String, dynamic>>? completedChecklist;
+  List<Map<String, dynamic>> incidents = const [];
+  List<Map<String, dynamic>> extraQueue = const [];
+  Map<String, dynamic> droneOverride = const {};
+  int? advancedOrderId;
+  String? advancedExpectedStage;
+
+  @override
+  Future<List<Map<String, dynamic>>> droneIncidents() async => incidents;
+
+  @override
+  Future<Map<String, dynamic>> droneIncident(int incidentId) async =>
+      incidents.firstWhere(
+        (incident) => incident['id'] == incidentId,
+        orElse: () => <String, dynamic>{},
+      );
+
+  @override
+  Future<Map<String, dynamic>> droneMyPerformance() async => {
+    'totalAssigned': 3,
+    'inProgress': 0,
+    'resolved': 3,
+    'overdue': 0,
+    'penaltyLevel': 'NORMAL',
+    'penaltyReason': 'Hiệu suất hoạt động tốt, không có phiếu trễ hạn.',
+    'ratingCount': 0,
+    'averageRating': 0.0,
+  };
+
+  @override
+  Future<Map<String, dynamic>> droneMyRatingAverage() async => {
+    'count': 0,
+    'average': 0.0,
+  };
+
+  @override
+  Future<Map<String, dynamic>> advanceDroneOrder(
+    int orderId, {
+    String? expectedStage,
+  }) async {
+    advancedOrderId = orderId;
+    advancedExpectedStage = expectedStage;
+    return {'orderId': orderId};
+  }
 
   @override
   Future<List<Map<String, dynamic>>> droneReports({
@@ -98,6 +141,7 @@ class _FakeMaintenanceService extends LockerOpsService {
       'batteryPercent': 87,
       'lockerId': 3,
       'lockerName': 'Tram 3',
+      ...droneOverride,
     },
   ];
 
@@ -191,6 +235,7 @@ class _FakeMaintenanceService extends LockerOpsService {
         'paymentStatus': 'PAID',
         'totalPrice': 27000,
       },
+      ...extraQueue,
     ];
     if (deliveryStage == null) return items;
     return items
@@ -237,7 +282,8 @@ class _FakeMaintenanceService extends LockerOpsService {
       'missionStatus': 'READY_TO_LAUNCH',
       'deliveryStage': 'ACCEPTED',
       'payloadWeightGrams': payloadWeightGrams,
-      'sealCode': sealCode,
+      // Server tự sinh mã niêm phong khi app không gửi.
+      'sealCode': sealCode ?? 'NP-261010-SRVSEA',
     };
   }
 
@@ -391,13 +437,19 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Xác nhận nạp hàng'), findsOneWidget);
+    // Ô cân để trống: phải nhập số đọc trên cân, không lấy sẵn số khai báo.
     expect(
       tester
           .widget<TextField>(find.byKey(const ValueKey('drone-loading-weight')))
           .controller!
           .text,
+      isEmpty,
+    );
+    await tester.enterText(
+      find.byKey(const ValueKey('drone-loading-weight')),
       '1450',
     );
+    await tester.pump();
     // Mã niêm phong do hệ thống cấp, đội viên không nhập tay.
     expect(
       find.descendant(
@@ -417,7 +469,186 @@ void main() {
 
     expect(service.loadedOrderId, equals(23));
     expect(service.loadedWeightGrams, equals(1450));
-    expect(service.loadedSealCode, matches(RegExp(r'^NP-\d{6}-[A-Z2-9]{6}$')));
+    // App không tự sinh mã niêm phong; hiện mã server trả về.
+    expect(service.loadedSealCode, isNull);
+    expect(find.textContaining('NP-261010-SRVSEA'), findsOneWidget);
+  });
+
+  testWidgets('deep link mở đúng tab và phiếu sự cố được nhắc tới', (
+    tester,
+  ) async {
+    final service = _FakeMaintenanceService();
+    final router = GoRouter(
+      routes: [
+        GoRoute(
+          path: '/',
+          builder: (context, state) => MaintenanceHomePage(
+            service: service,
+            initialTab: 2,
+            reportId: 42,
+          ),
+        ),
+      ],
+    );
+
+    await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+    for (var i = 0; i < 6; i++) {
+      await tester.pump(const Duration(milliseconds: 300));
+    }
+
+    expect(
+      find.text('Hồ sơ chi tiết phiếu sự cố kỹ thuật Drone'),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('sự cố rơi kiện hiện ở Điều phối, cảnh báo cần RTL thủ công', (
+    tester,
+  ) async {
+    final service = _FakeMaintenanceService()
+      ..incidents = [
+        {
+          'id': 5,
+          'incidentCode': 'INC-5',
+          'orderId': 30,
+          'orderCode': 'ORD-30',
+          'droneCode': 'DRONE-09',
+          'status': 'MANUAL_INTERVENTION_REQUIRED',
+          'returnFlightStatus': 'MANUAL_INTERVENTION_REQUIRED',
+          'createdAt': '2026-10-12T08:00:00Z',
+        },
+      ];
+    final router = GoRouter(
+      routes: [
+        GoRoute(
+          path: '/',
+          builder: (context, state) => MaintenanceHomePage(service: service),
+        ),
+      ],
+    );
+
+    await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Sự cố rơi kiện (1)'), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('drone-incident-manual-return')),
+      findsOneWidget,
+    );
+    // 3 đơn trong các nhóm + 1 sự cố còn mở.
+    expect(find.text('Điều phối (4)'), findsOneWidget);
+    // Header không ghi SLA giả: bậc SLA lấy từ my-performance.
+    expect(
+      find.text('SLA: Bình thường · Chưa có phiếu đang xử lý'),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('xác nhận chặng gửi expectedStage; drone gửi tín hiệu thì ẩn nút', (
+    tester,
+  ) async {
+    final service = _FakeMaintenanceService()
+      ..extraQueue = [
+        {
+          'orderId': 24,
+          'deliveryStage': 'EN_ROUTE',
+          'missionStatus': 'EN_ROUTE',
+          'assignedByUserId': 99,
+          'droneCode': 'DRONE-09',
+          'destinationLockerId': 5,
+        },
+        {
+          'orderId': 25,
+          'deliveryStage': 'APPROACHING',
+          'missionStatus': 'APPROACHING',
+          'assignedByUserId': 99,
+          'droneCode': 'DRONE-11',
+          'destinationLockerId': 6,
+          'liveTracking': true,
+        },
+      ];
+    final router = GoRouter(
+      routes: [
+        GoRoute(
+          path: '/',
+          builder: (context, state) => MaintenanceHomePage(service: service),
+        ),
+      ],
+    );
+
+    await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+    await tester.pumpAndSettle();
+
+    // Danh sách dựng lười: cuộn tới thẻ đơn đang bay.
+    final dispatchList = find
+        .byWidgetPredicate(
+          (widget) =>
+              widget is Scrollable &&
+              widget.axisDirection == AxisDirection.down,
+        )
+        .first;
+    final advance = find.text('Xác nhận drone sắp tới tủ nhận');
+    await tester.scrollUntilVisible(advance, 150, scrollable: dispatchList);
+    await tester.pumpAndSettle();
+    await tester.tap(advance);
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(FilledButton, 'Xác nhận'));
+    await tester.pumpAndSettle();
+
+    expect(service.advancedOrderId, 24);
+    expect(service.advancedExpectedStage, 'EN_ROUTE');
+
+    // Đơn 25 đang gửi telemetry: chỉ hiện nhãn tự cập nhật, không có nút xác nhận.
+    const liveLabel = 'Drone đang gửi tín hiệu · chặng bay tự cập nhật';
+    await tester.scrollUntilVisible(
+      find.text(liveLabel),
+      150,
+      scrollable: dispatchList,
+    );
+    await tester.pumpAndSettle();
+    expect(find.text(liveLabel), findsOneWidget);
+    expect(find.text('Xác nhận drone đã tới tủ nhận'), findsNothing);
+  });
+
+  testWidgets('drone còn phiếu mở thì không cho chọn Sẵn sàng', (tester) async {
+    final service = _FakeMaintenanceService()
+      ..droneOverride = {
+        'status': 'FAULT',
+        'assignedTechnicianId': 99,
+        'assignedTechnicianName': 'KTV phụ trách 99',
+      };
+    final router = GoRouter(
+      routes: [
+        GoRoute(
+          path: '/',
+          builder: (context, state) => MaintenanceHomePage(service: service),
+        ),
+      ],
+    );
+
+    await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Đội bay (1)'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('KTV phụ trách 99'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Đổi trạng thái'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Đổi trạng thái drone'), findsOneWidget);
+    expect(
+      tester
+          .widget<ChoiceChip>(find.widgetWithText(ChoiceChip, 'Sẵn sàng'))
+          .onSelected,
+      isNull,
+    );
+    expect(
+      tester
+          .widget<ChoiceChip>(find.widgetWithText(ChoiceChip, 'Đang bảo trì'))
+          .onSelected,
+      isNotNull,
+    );
+    expect(find.textContaining('RPT-42'), findsOneWidget);
   });
 
   testWidgets('cân nặng hơn khai báo: báo trước khoản khách phải trả thêm', (
