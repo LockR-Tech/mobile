@@ -15,8 +15,11 @@ void main() {
       ),
     );
 
-    expect(find.text('Chờ đội bay tiếp nhận'), findsOneWidget);
-    expect(find.text('Đội bay đã tiếp nhận'), findsOneWidget);
+    // Đơn lấy hàng tận nhà: chờ KTV nhận → KTV tới lấy → mang về tủ → nạp → bay.
+    expect(find.text('Chờ kỹ thuật viên nhận lấy hàng'), findsOneWidget);
+    expect(find.text('Kỹ thuật viên đang tới lấy hàng'), findsOneWidget);
+    expect(find.text('Đã lấy hàng, đang mang về tủ'), findsOneWidget);
+    expect(find.text('Đang nạp hàng lên drone'), findsOneWidget);
     expect(find.text('Drone đã rời trạm'), findsOneWidget);
     expect(find.text('Drone đang trên đường'), findsOneWidget);
     expect(find.text('Sẵn sàng nhận hàng'), findsOneWidget);
@@ -29,6 +32,8 @@ void main() {
           body: SingleChildScrollView(
             child: DroneDeliveryTimeline(
               stage: DroneDeliveryStage.canceled,
+              // Đơn cũ (khách tự mang kiện ra tủ) không có hai chặng lấy hàng tận nhà.
+              steps: DroneDeliveryStage.timelineFor(homePickup: false),
               stageTimes: {
                 DroneDeliveryStage.awaitingDispatch: DateTime(2026, 10, 1, 9, 5, 7),
                 DroneDeliveryStage.accepted: DateTime(2026, 10, 1, 9, 30),
