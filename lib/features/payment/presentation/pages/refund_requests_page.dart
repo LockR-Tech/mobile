@@ -4,6 +4,7 @@ import 'dart:developer' as developer;
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
@@ -562,144 +563,568 @@ class _RefundRequestsPageState extends State<RefundRequestsPage> {
     final customerProof = _getCustomerAttachment(rf);
     final adminProof = _getAdminProof(rf);
 
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.02),
-            blurRadius: 6,
-            offset: const Offset(0, 2),
+    final rawOrderCode = rf['orderCode'] ??
+        _myOrders.firstWhere(
+          (o) => o['id'] == rf['orderId'],
+          orElse: () => const <String, dynamic>{},
+        )['orderCode'];
+    final orderCode = rawOrderCode?.toString() ?? (rf['orderId'] != null ? '#${rf['orderId']}' : '');
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () => _showRefundDetailSheet(context, rf),
+        borderRadius: BorderRadius.circular(16),
+        child: Container(
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: const Color(0xFFE2E8F0)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.025),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
           ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Header: Mã phiếu & Trạng thái
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Header: Mã phiếu & Trạng thái
               Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Icon(LucideIcons.rotateCcw, size: 16, color: statusColor),
-                  const SizedBox(width: 8),
-                  Text(
-                    'Phiếu hoàn tiền #${rf['id'] ?? ''}',
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
-                      color: Color(0xFF0F172A),
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          color: statusBg,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Icon(LucideIcons.rotateCcw, size: 14, color: statusColor),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Phiếu hoàn tiền #${rf['id'] ?? ''}',
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xFF0F172A),
+                        ),
+                      ),
+                    ],
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: statusBg,
+                      borderRadius: BorderRadius.circular(7),
+                    ),
+                    child: Text(
+                      statusText,
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        color: statusColor,
+                      ),
                     ),
                   ),
                 ],
               ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
-                decoration: BoxDecoration(
-                  color: statusBg,
-                  borderRadius: BorderRadius.circular(7),
-                ),
-                child: Text(
-                  statusText,
-                  style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
-                    color: statusColor,
+              const SizedBox(height: 12),
+
+              // Số tiền & Đơn hàng
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.baseline,
+                textBaseline: TextBaseline.alphabetic,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    'Số tiền hoàn',
+                    style: TextStyle(fontSize: 12.5, color: Color(0xFF64748B)),
                   ),
+                  Text(
+                    fmtPrice(rf['amount'] ?? 0),
+                    style: TextStyle(
+                      fontSize: 16.5,
+                      fontWeight: FontWeight.w800,
+                      color: isCompleted ? const Color(0xFF15803D) : const Color(0xFFD97706),
+                    ),
+                  ),
+                ],
+              ),
+
+              if (orderCode.isNotEmpty) ...[
+                const SizedBox(height: 6),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Row(
+                      children: [
+                        Icon(LucideIcons.package, size: 13, color: Color(0xFF64748B)),
+                        SizedBox(width: 6),
+                        Text(
+                          'Đơn hàng',
+                          style: TextStyle(fontSize: 12, color: Color(0xFF64748B)),
+                        ),
+                      ],
+                    ),
+                    Text(
+                      orderCode,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF0F172A),
+                      ),
+                    ),
+                  ],
                 ),
+              ],
+
+              if (rf['requestedAt'] != null) ...[
+                const SizedBox(height: 6),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Row(
+                      children: [
+                        Icon(LucideIcons.clock, size: 13, color: Color(0xFF64748B)),
+                        SizedBox(width: 6),
+                        Text(
+                          'Thời gian gửi',
+                          style: TextStyle(fontSize: 12, color: Color(0xFF64748B)),
+                        ),
+                      ],
+                    ),
+                    Text(
+                      fmtDateTime(rf['requestedAt']),
+                      style: const TextStyle(
+                        fontSize: 11.5,
+                        color: Color(0xFF64748B),
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+
+              const SizedBox(height: 10),
+              const Divider(height: 1, color: Color(0xFFF1F5F9)),
+              const SizedBox(height: 8),
+
+              // Footer: Badges đính kèm (nếu có) + "Xem chi tiết >"
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Wrap(
+                    spacing: 6,
+                    children: [
+                      if (adminProof != null && adminProof.trim().isNotEmpty)
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFDCFCE7),
+                            borderRadius: BorderRadius.circular(5),
+                          ),
+                          child: const Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(LucideIcons.fileCheck, size: 11, color: Color(0xFF15803D)),
+                              SizedBox(width: 3.5),
+                              Text(
+                                'Có UNC',
+                                style: TextStyle(
+                                  fontSize: 10.5,
+                                  fontWeight: FontWeight.w600,
+                                  color: Color(0xFF15803D),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      if (customerProof != null && customerProof.trim().isNotEmpty)
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFE0F2FE),
+                            borderRadius: BorderRadius.circular(5),
+                          ),
+                          child: const Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(LucideIcons.image, size: 11, color: Color(0xFF0284C7)),
+                              SizedBox(width: 3.5),
+                              Text(
+                                'Có ảnh',
+                                style: TextStyle(
+                                  fontSize: 10.5,
+                                  fontWeight: FontWeight.w600,
+                                  color: Color(0xFF0284C7),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      if (isRejected && rf['rejectionReason'] != null)
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFFFE4E6),
+                            borderRadius: BorderRadius.circular(5),
+                          ),
+                          child: const Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(LucideIcons.alertCircle, size: 11, color: Color(0xFFE11D48)),
+                              SizedBox(width: 3.5),
+                              Text(
+                                'Bị từ chối',
+                                style: TextStyle(
+                                  fontSize: 10.5,
+                                  fontWeight: FontWeight.w600,
+                                  color: Color(0xFFE11D48),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                    ],
+                  ),
+                  const Row(
+                    children: [
+                      Text(
+                        'Xem chi tiết',
+                        style: TextStyle(
+                          fontSize: 11.5,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF0284C7),
+                        ),
+                      ),
+                      SizedBox(width: 2),
+                      Icon(LucideIcons.chevronRight, size: 13, color: Color(0xFF0284C7)),
+                    ],
+                  ),
+                ],
               ),
             ],
           ),
-          const SizedBox(height: 10),
-          const Divider(height: 1, color: Color(0xFFF1F5F9)),
-          const SizedBox(height: 10),
-
-          // Thông tin chi tiết
-          if (rf['amount'] != null)
-            _buildInfoRow(
-              icon: LucideIcons.banknote,
-              label: 'Số tiền hoàn',
-              value: fmtPrice(rf['amount']),
-              valueColor: isCompleted ? const Color(0xFF15803D) : const Color(0xFFD97706),
-              isBold: true,
-            ),
-          if (rf['orderId'] != null || rf['orderCode'] != null)
-            _buildInfoRow(
-              icon: LucideIcons.package,
-              label: 'Đơn hàng',
-              value: '${rf['orderCode'] ?? _myOrders.firstWhere((o) => o['id'] == rf['orderId'], orElse: () => const <String, dynamic>{})['orderCode'] ?? '#${rf['orderId']}'}',
-            ),
-          if (rf['bankName'] != null || rf['accountNumber'] != null)
-            _buildInfoRow(
-              icon: LucideIcons.landmark,
-              label: 'Tài khoản nhận',
-              value: '${rf['bankName'] ?? ''} - ${rf['accountNumber'] ?? ''}',
-            ),
-          if (rf['accountHolderName'] != null && '${rf['accountHolderName']}'.isNotEmpty)
-            _buildInfoRow(
-              icon: LucideIcons.user,
-              label: 'Chủ tài khoản',
-              value: '${rf['accountHolderName']}'.toUpperCase(),
-            ),
-          if (rf['reason'] != null && _cleanReason(rf['reason']).isNotEmpty)
-            _buildInfoRow(
-              icon: LucideIcons.messageSquare,
-              label: 'Lý do hoàn',
-              value: _cleanReason(rf['reason']),
-            ),
-          if (_cleanTransferRef(rf['bankTransferRef']).isNotEmpty)
-            _buildInfoRow(
-              icon: LucideIcons.hash,
-              label: 'Mã GD chuyển tiền',
-              value: _cleanTransferRef(rf['bankTransferRef']),
-              valueColor: const Color(0xFF15803D),
-            ),
-          if (rf['rejectionReason'] != null && '${rf['rejectionReason']}'.isNotEmpty)
-            _buildInfoRow(
-              icon: LucideIcons.alertTriangle,
-              label: 'Lý do từ chối',
-              value: '${rf['rejectionReason']}',
-              valueColor: const Color(0xFFE11D48),
-            ),
-          if (rf['requestedAt'] != null)
-            _buildInfoRow(
-              icon: LucideIcons.clock,
-              label: 'Thời gian yêu cầu',
-              value: fmtDateTime(rf['requestedAt']),
-            ),
-          if (rf['processedAt'] != null)
-            _buildInfoRow(
-              icon: LucideIcons.calendarCheck,
-              label: 'Thời gian hoàn tất',
-              value: fmtDateTime(rf['processedAt']),
-              valueColor: const Color(0xFF15803D),
-            ),
-
-          // Ảnh minh chứng khách gửi
-          if (customerProof != null && customerProof.trim().isNotEmpty) ...[
-            const SizedBox(height: 10),
-            _buildImageAttachmentBox(
-              title: 'Ảnh minh chứng bạn đã gửi:',
-              imageUrl: customerProof,
-              iconColor: const Color(0xFF0284C7),
-            ),
-          ],
-
-          // Ảnh minh chứng chuyển khoản của Admin
-          if (adminProof != null && adminProof.trim().isNotEmpty) ...[
-            const SizedBox(height: 10),
-            _buildImageAttachmentBox(
-              title: 'Biên lai chuyển khoản từ Admin (UNC):',
-              imageUrl: adminProof,
-              iconColor: const Color(0xFF15803D),
-            ),
-          ],
-        ],
+        ),
       ),
+    );
+  }
+
+  void _showRefundDetailSheet(BuildContext context, Map<String, dynamic> rf) {
+    final status = '${rf['status'] ?? 'PENDING'}'.toUpperCase();
+    final isCompleted = status == 'COMPLETED';
+    final isRejected = status == 'REJECTED';
+
+    final statusText = isCompleted
+        ? 'Đã chuyển tiền'
+        : (isRejected ? 'Bị từ chối' : 'Chờ chuyển khoản');
+    final statusColor = isCompleted
+        ? const Color(0xFF15803D)
+        : (isRejected ? const Color(0xFFE11D48) : const Color(0xFFD97706));
+    final statusBg = isCompleted
+        ? const Color(0xFFDCFCE7)
+        : (isRejected ? const Color(0xFFFFE4E6) : const Color(0xFFFEF3C7));
+
+    final customerProof = _getCustomerAttachment(rf);
+    final adminProof = _getAdminProof(rf);
+
+    final rawOrderCode = rf['orderCode'] ??
+        _myOrders.firstWhere(
+          (o) => o['id'] == rf['orderId'],
+          orElse: () => const <String, dynamic>{},
+        )['orderCode'];
+    final orderCode = rawOrderCode?.toString() ?? (rf['orderId'] != null ? '#${rf['orderId']}' : '');
+
+    showModalBottomSheet<void>(
+      context: context,
+      useRootNavigator: true,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (sheetContext) {
+        return SafeArea(
+          child: Container(
+            constraints: BoxConstraints(
+              maxHeight: MediaQuery.of(sheetContext).size.height * 0.88,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Thanh kéo
+                Center(
+                  child: Container(
+                    margin: const EdgeInsets.only(top: 10, bottom: 6),
+                    width: 36,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFCBD5E1),
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ),
+                // Header Sheet
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Phiếu hoàn tiền #${rf['id'] ?? ''}',
+                              style: const TextStyle(
+                                fontSize: 17,
+                                fontWeight: FontWeight.w700,
+                                color: Color(0xFF0F172A),
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            const Text(
+                              'Chi tiết yêu cầu & thông tin chuyển khoản',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Color(0xFF64748B),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                        decoration: BoxDecoration(
+                          color: statusBg,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          statusText,
+                          style: TextStyle(
+                            fontSize: 11.5,
+                            fontWeight: FontWeight.w700,
+                            color: statusColor,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      IconButton(
+                        onPressed: () => Navigator.pop(sheetContext),
+                        icon: const Icon(Icons.close, size: 20, color: Color(0xFF64748B)),
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
+                      ),
+                    ],
+                  ),
+                ),
+                const Divider(height: 1, color: Color(0xFFF1F5F9)),
+
+                // Nội dung cuộn
+                Flexible(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Box số tiền nổi bật
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 14),
+                          decoration: BoxDecoration(
+                            color: statusBg.withValues(alpha: 0.5),
+                            borderRadius: BorderRadius.circular(14),
+                            border: Border.all(color: statusColor.withValues(alpha: 0.2)),
+                          ),
+                          child: Column(
+                            children: [
+                              const Text(
+                                'Số tiền hoàn',
+                                style: TextStyle(
+                                  fontSize: 12.5,
+                                  color: Color(0xFF64748B),
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                fmtPrice(rf['amount'] ?? 0),
+                                style: TextStyle(
+                                  fontSize: 26,
+                                  fontWeight: FontWeight.w800,
+                                  color: statusColor,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                isCompleted
+                                    ? 'Đã hoàn tất chuyển khoản thành công'
+                                    : (isRejected
+                                        ? 'Yêu cầu hoàn tiền đã bị từ chối'
+                                        : 'Đang chờ Admin đối soát và chuyển khoản'),
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w500,
+                                  color: statusColor,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 18),
+
+                        // Section 1: Thông tin hoàn tiền
+                        const Text(
+                          'Thông tin hoàn tiền',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                            color: Color(0xFF0F172A),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF8FAFC),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: const Color(0xFFE2E8F0)),
+                          ),
+                          child: Column(
+                            children: [
+                              if (orderCode.isNotEmpty)
+                                _buildInfoRow(
+                                  icon: LucideIcons.package,
+                                  label: 'Đơn hàng',
+                                  value: orderCode,
+                                  onCopy: () {
+                                    Clipboard.setData(ClipboardData(text: orderCode));
+                                    SmartDialog.showToast('Đã sao chép mã đơn hàng');
+                                  },
+                                ),
+                              if (rf['bankName'] != null || rf['accountNumber'] != null)
+                                _buildInfoRow(
+                                  icon: LucideIcons.landmark,
+                                  label: 'Tài khoản nhận',
+                                  value: '${rf['bankName'] ?? ''} - ${rf['accountNumber'] ?? ''}',
+                                ),
+                              if (rf['accountHolderName'] != null &&
+                                  '${rf['accountHolderName']}'.isNotEmpty)
+                                _buildInfoRow(
+                                  icon: LucideIcons.user,
+                                  label: 'Chủ tài khoản',
+                                  value: '${rf['accountHolderName']}'.toUpperCase(),
+                                ),
+                              if (rf['reason'] != null && _cleanReason(rf['reason']).isNotEmpty)
+                                _buildInfoRow(
+                                  icon: LucideIcons.messageSquare,
+                                  label: 'Lý do hoàn',
+                                  value: _cleanReason(rf['reason']),
+                                ),
+                              if (_cleanTransferRef(rf['bankTransferRef']).isNotEmpty)
+                                _buildInfoRow(
+                                  icon: LucideIcons.hash,
+                                  label: 'Mã GD chuyển tiền',
+                                  value: _cleanTransferRef(rf['bankTransferRef']),
+                                  valueColor: const Color(0xFF15803D),
+                                  onCopy: () {
+                                    Clipboard.setData(
+                                      ClipboardData(text: _cleanTransferRef(rf['bankTransferRef'])),
+                                    );
+                                    SmartDialog.showToast('Đã sao chép mã giao dịch');
+                                  },
+                                ),
+                              if (rf['rejectionReason'] != null &&
+                                  '${rf['rejectionReason']}'.isNotEmpty)
+                                _buildInfoRow(
+                                  icon: LucideIcons.alertTriangle,
+                                  label: 'Lý do từ chối',
+                                  value: '${rf['rejectionReason']}',
+                                  valueColor: const Color(0xFFE11D48),
+                                ),
+                              if (rf['requestedAt'] != null)
+                                _buildInfoRow(
+                                  icon: LucideIcons.clock,
+                                  label: 'Thời gian yêu cầu',
+                                  value: fmtDateTime(rf['requestedAt']),
+                                ),
+                              if (rf['processedAt'] != null)
+                                _buildInfoRow(
+                                  icon: LucideIcons.calendarCheck,
+                                  label: 'Thời gian hoàn tất',
+                                  value: fmtDateTime(rf['processedAt']),
+                                  valueColor: const Color(0xFF15803D),
+                                ),
+                            ],
+                          ),
+                        ),
+
+                        // Section 2: Chứng từ & Hình ảnh
+                        if ((customerProof != null && customerProof.trim().isNotEmpty) ||
+                            (adminProof != null && adminProof.trim().isNotEmpty)) ...[
+                          const SizedBox(height: 18),
+                          const Text(
+                            'Chứng từ & Hình ảnh minh chứng',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w700,
+                              color: Color(0xFF0F172A),
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          if (customerProof != null && customerProof.trim().isNotEmpty)
+                            _buildImageAttachmentBox(
+                              title: 'Ảnh minh chứng bạn đã gửi:',
+                              imageUrl: customerProof,
+                              iconColor: const Color(0xFF0284C7),
+                            ),
+                          if (customerProof != null &&
+                              customerProof.trim().isNotEmpty &&
+                              adminProof != null &&
+                              adminProof.trim().isNotEmpty)
+                            const SizedBox(height: 10),
+                          if (adminProof != null && adminProof.trim().isNotEmpty)
+                            _buildImageAttachmentBox(
+                              title: 'Biên lai chuyển khoản từ Admin (UNC):',
+                              imageUrl: adminProof,
+                              iconColor: const Color(0xFF15803D),
+                            ),
+                        ],
+
+                        const SizedBox(height: 22),
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton(
+                            onPressed: () => Navigator.pop(sheetContext),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF0F172A),
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(vertical: 13),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                            ),
+                            child: const Text(
+                              'Đóng',
+                              style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 
@@ -709,13 +1134,17 @@ class _RefundRequestsPageState extends State<RefundRequestsPage> {
     required String value,
     Color? valueColor,
     bool isBold = false,
+    VoidCallback? onCopy,
   }) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 3),
+      padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, size: 14, color: const Color(0xFF64748B)),
+          Padding(
+            padding: const EdgeInsets.only(top: 2),
+            child: Icon(icon, size: 14, color: const Color(0xFF64748B)),
+          ),
           const SizedBox(width: 8),
           Expanded(
             flex: 2,
@@ -726,14 +1155,29 @@ class _RefundRequestsPageState extends State<RefundRequestsPage> {
           ),
           Expanded(
             flex: 3,
-            child: Text(
-              value,
-              textAlign: TextAlign.right,
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: isBold ? FontWeight.w700 : FontWeight.w600,
-                color: valueColor ?? const Color(0xFF0F172A),
-              ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Flexible(
+                  child: Text(
+                    value,
+                    textAlign: TextAlign.right,
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: isBold ? FontWeight.w700 : FontWeight.w600,
+                      color: valueColor ?? const Color(0xFF0F172A),
+                    ),
+                  ),
+                ),
+                if (onCopy != null) ...[
+                  const SizedBox(width: 5),
+                  GestureDetector(
+                    onTap: onCopy,
+                    child: const Icon(LucideIcons.copy, size: 12.5, color: Color(0xFF0284C7)),
+                  ),
+                ],
+              ],
             ),
           ),
         ],
@@ -1223,6 +1667,7 @@ class _RefundRequestsPageState extends State<RefundRequestsPage> {
   void _showImageLightbox(String imageUrl) {
     showDialog(
       context: context,
+      useRootNavigator: true,
       barrierColor: Colors.black87,
       builder: (ctx) => Dialog(
         backgroundColor: Colors.transparent,
