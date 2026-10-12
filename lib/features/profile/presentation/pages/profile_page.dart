@@ -10,7 +10,6 @@ import 'package:smart_laundry_locker/features/delegations/presentation/providers
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:smart_laundry_locker/core/routing/app_router.dart';
 import 'package:smart_laundry_locker/core/theme/shadcn_theme.dart';
 import 'package:smart_laundry_locker/core/theme/theme_provider.dart';
@@ -336,50 +335,10 @@ class _ProfilePageState extends State<ProfilePage>
         _buildMenuGroup(
           title: 'Quản lý',
           items: [
-            Consumer<DelegationProvider>(
-              builder: (context, provider, child) {
-                final delegations = provider.myDelegations
-                    .where((d) => d.isActive && d.usedAt == null)
-                    .toList();
-
-                return ProfileMenuItem(
-                  icon: LucideIcons.packageOpen,
-                  title: 'Đơn ủy quyền',
-                  onTap: () => context.push(AppRouter.myDelegations),
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      if (delegations.isNotEmpty)
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 6,
-                            vertical: 2,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.blue,
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: Text(
-                            delegations.length > 99
-                                ? '99+'
-                                : '${delegations.length}',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 10,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      const SizedBox(width: 8),
-                      Icon(
-                        LucideIcons.chevronRight,
-                        size: 16,
-                        color: context.textMuted,
-                      ),
-                    ],
-                  ),
-                );
-              },
+            ProfileMenuItem(
+              icon: LucideIcons.rotateCcw,
+              title: 'Hoàn tiền',
+              onTap: () => context.push(AppRouter.refundRequests),
             ),
             // Tạm ẩn: backend chưa có lịch sử giao dịch/ví (/payments/transactions 404).
             if (FeatureFlags.transactionsEnabled)
@@ -806,7 +765,7 @@ class _ProfilePageState extends State<ProfilePage>
           borderRadius: BorderRadius.circular(24),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.1),
+              color: Colors.black.withValues(alpha: 0.1),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),
