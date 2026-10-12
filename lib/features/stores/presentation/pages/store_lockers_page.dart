@@ -4,7 +4,6 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:smart_laundry_locker/core/presentation/pages/directions_map_page.dart';
 import 'package:go_router/go_router.dart';
 import 'package:smart_laundry_locker/core/routing/app_router.dart';
-import 'package:smart_laundry_locker/features/drone_delivery/presentation/widgets/drone_booking_sheet.dart';
 import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/pages/rent_locker_page.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/pages/send_parcel_page.dart';
@@ -836,27 +835,24 @@ class _LockerCardState extends State<_LockerCard> {
   }
 
   void _showBookingSheet(BuildContext ctx, Map<String, dynamic> cell) {
-    // Ô drone (cellType DRONE từ backend) dùng luồng đặt drone riêng.
+    // DRONE cells use home pickup booking; XL cells use locker rental.
     if (LockerLayoutHelper.isDrone(cell)) {
-      showModalBottomSheet<void>(
-        context: ctx,
-        isScrollControlled: true,
-        backgroundColor: Colors.transparent,
-        builder: (_) => DroneBookingSheet(
-          cell: cell,
-          lockerName: _lockerName,
-          origin: widget.storeLatLng,
-          lockerId: _lockerId,
-          onBooked: (orderId) {
-            // Đơn vừa giữ ô drone này: nạp lại sơ đồ để ô chuyển xám ngay, rồi
-            // đưa khách tới màn theo dõi — nơi có nhắc thanh toán để đội bay
-            // tiếp nhận.
+      // Ô drone là nơi NHẬN hàng: khách gửi hàng bằng drone tới tủ này. Kiện được kỹ
+      // thuật viên tới lấy tận nhà người gửi, nên form đặt đơn mở với tủ này chọn sẵn
+      // làm tủ nhận. Quay lại thì nạp lại sơ đồ để ô vừa giữ chuyển xám.
+      ctx
+          .push(
+            AppRouter.droneBooking,
+            extra: {
+              'destinationLockerId': _lockerId,
+              'preferredBoxId': (cell['id'] as num?)?.toInt(),
+            },
+          )
+          .then((_) {
             if (!mounted) return;
-            _loadLayout(force: true);
-            context.push(AppRouter.droneDeliveryTracking, extra: '$orderId');
-          },
-        ),
-      );
+            setState(() => _layout = null);
+            _loadLayout();
+          });
       return;
     }
 

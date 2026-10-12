@@ -4,6 +4,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:smart_laundry_locker/core/routing/app_router.dart';
 import 'package:smart_laundry_locker/core/theme/shadcn_theme.dart';
 import 'package:smart_laundry_locker/core/utils/app_date_time.dart';
+import 'package:smart_laundry_locker/features/drone_delivery/domain/entities/drone_booking.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/domain/entities/drone_delivery_stage.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/domain/entities/drone_delivery_status.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/domain/entities/drone_labels.dart';
@@ -47,8 +48,14 @@ Map<DroneDeliveryStage, List<DroneTimelineDetail>> droneStepDetails(
   return {
     DroneDeliveryStage.awaitingDispatch: [
       DroneTimelineDetail('Thanh toán', status.paidAt),
-      DroneTimelineDetail('Bỏ kiện vào ô gửi', status.parcelDroppedAt),
+      // Đơn cũ: người gửi tự mang kiện ra ô gửi.
+      if (status.pickup == null)
+        DroneTimelineDetail('Bỏ kiện vào ô gửi', status.parcelDroppedAt),
     ],
+    if (status.pickup != null)
+      DroneDeliveryStage.pickedUp: [
+        DroneTimelineDetail('Lấy hàng tại nhà người gửi', status.pickup!.pickedUpAt),
+      ],
     DroneDeliveryStage.accepted: [
       DroneTimelineDetail('Nạp hàng lên drone', status.loadedAt),
       DroneTimelineDetail('Sẵn sàng phóng', status.readyToLaunchAt),
@@ -92,9 +99,14 @@ class DroneDeliveryDetail extends StatelessWidget {
     this.onCancel,
     this.onConfirmDrop,
     this.onDeclineSurcharge,
+    this.isSender = true,
   });
 
   final DroneDeliveryStatus status;
+
+  /// Người đang xem là người đặt đơn. Người nhận có tài khoản cũng xem được hành trình
+  /// nhưng không thanh toán, huỷ hay thấy mã lấy hàng thay người gửi.
+  final bool isSender;
 
   /// Người gửi xác nhận đã bỏ kiện vào ô drone ở tủ gửi.
   final VoidCallback? onConfirmDrop;
@@ -129,6 +141,10 @@ class DroneDeliveryDetail extends StatelessWidget {
           const SizedBox(height: 16),
           _StatusBanner(status: status),
         ],
+        if (status.block != null && !stage.isFailure) ...[
+          const SizedBox(height: 16),
+          _BlockBanner(status: status, forOperator: forOperator),
+        ],
         if (status.needsPaymentBeforeDispatch || status.needsSurchargePayment) ...[
           const SizedBox(height: 16),
           _UnpaidBanner(
@@ -138,6 +154,10 @@ class DroneDeliveryDetail extends StatelessWidget {
             onPay: onPay,
             onDeclineSurcharge: onDeclineSurcharge,
           ),
+        ],
+        if (status.pickup != null && !stage.isFailure) ...[
+          const SizedBox(height: 16),
+          _PickupCard(status: status, forOperator: forOperator, isSender: isSender),
         ],
         if (status.needsParcelDrop) ...[
           const SizedBox(height: 16),
@@ -166,9 +186,15 @@ class DroneDeliveryDetail extends StatelessWidget {
             stage: stage,
             stageTimes: droneStageTimes(status),
             stepDetails: droneStepDetails(status),
+            steps: DroneDeliveryStage.timelineFor(
+              homePickup: status.pickup != null,
+            ),
           ),
         ),
-        if (!forOperator && onCancel != null && status.canCustomerCancel) ...[
+        if (!forOperator &&
+            isSender &&
+            onCancel != null &&
+            status.canCustomerCancel) ...[
           const SizedBox(height: 16),
           _CancelCard(status: status, onCancel: onCancel!),
         ],
@@ -327,8 +353,14 @@ class _StatusBanner extends StatelessWidget {
   Widget build(BuildContext context) {
     final stage = status.stage;
     final color = stage.color; // amber cho delayed, đỏ cho failed/huỷ/quá hạn
-    final reason = droneCancelReasonLabel(status.cancelReason);
-    final endedAt = _endedAt(status);
+    final failure = status.failure;
+    final reason = failure == null
+        ? droneCancelReasonLabel(status.cancelReason)
+        : failure.reasonLabel ?? droneFailureReasonLabel(failure.reason);
+    final endedAt = failure?.at ?? _endedAt(status);
+    // Kiện đã rời tay người gửi thì có dòng riêng ở thẻ "kiện chờ trả".
+    final parcelCollected =
+        status.parcelReturnPending == true || status.parcelReturnedAt != null;
     // Đơn không giao được: đội bay/khách huỷ trước khi bay, hoặc chuyến bay thất bại.
     final stopped =
         stage == DroneDeliveryStage.canceled ||
@@ -338,8 +370,9 @@ class _StatusBanner extends StatelessWidget {
       if (endedAt != null) 'Lúc: ${formatDateTimeVn(endedAt)}',
       if (stopped && reason != null) 'Lý do: $reason',
       if (stopped && status.cancelNote != null) 'Ghi chú: ${status.cancelNote}',
-      if (stage == DroneDeliveryStage.failed)
-        'Đội bay sẽ liên hệ người gửi để trả lại kiện hàng.',
+      if (failure?.ticketId != null) 'Phiếu sự cố: #${failure!.ticketId}',
+      if (stage == DroneDeliveryStage.failed && !parcelCollected)
+        'Kiện hàng chưa được lấy, vẫn ở chỗ người gửi.',
       if (stopped &&
           (status.paymentStatus ?? '').toUpperCase() == 'REFUND_PENDING')
         'Yêu cầu hoàn tiền đã được ghi nhận. Admin sẽ chuyển khoản về tài '
@@ -477,6 +510,182 @@ class _UnpaidBanner extends StatelessWidget {
   }
 }
 
+/// Đơn đã thanh toán nhưng đang không phục vụ được (tạm dừng bay, phiếu sự cố trên
+/// drone/tủ/bãi đáp…): lý do, phiếu liên quan, và bao giờ đơn tự kết thúc + hoàn tiền.
+class _BlockBanner extends StatelessWidget {
+  const _BlockBanner({required this.status, required this.forOperator});
+
+  final DroneDeliveryStatus status;
+  final bool forOperator;
+
+  @override
+  Widget build(BuildContext context) {
+    const color = Color(0xFFB45309);
+    final block = status.block!;
+    final label = block.reasonLabel ?? droneFailureReasonLabel(block.reason);
+    final lines = <String>[
+      'Đơn đang gặp sự cố: $label',
+      if (block.note != null) block.note!,
+      if (block.ticketId != null) 'Phiếu sự cố: #${block.ticketId}',
+      if (block.at != null) 'Từ lúc: ${formatDateTimeVn(block.at)}',
+      if (block.autoCloseAt != null)
+        forOperator
+            ? 'Chưa khắc phục trước ${formatDateTimeVn(block.autoCloseAt)} thì đơn '
+                  'tự kết thúc "giao không hoàn tất" và hoàn tiền cho khách.'
+            : 'Nếu chưa khắc phục được trước ${formatDateTimeVn(block.autoCloseAt)}, '
+                  'đơn sẽ kết thúc và bạn được hoàn tiền.'
+      else
+        forOperator
+            ? 'Đổi phương án hoặc xác nhận giao không hoàn tất.'
+            : 'Đội bay đang xử lý.',
+    ];
+    return Container(
+      key: const ValueKey('drone-block-banner'),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFEF3C7),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFFFCD34D)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Icon(LucideIcons.triangleAlert, color: color, size: 20),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              lines.join('\n'),
+              style: const TextStyle(
+                color: color,
+                fontSize: 13.5,
+                fontWeight: FontWeight.w600,
+                height: 1.4,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Lấy hàng tận nhà: đang tìm kỹ thuật viên, ai đang tới, mã lấy hàng người gửi đọc cho
+/// kỹ thuật viên, và điểm lấy hàng.
+class _PickupCard extends StatelessWidget {
+  const _PickupCard({
+    required this.status,
+    required this.forOperator,
+    required this.isSender,
+  });
+
+  final DroneDeliveryStatus status;
+  final bool forOperator;
+  final bool isSender;
+
+  String _headline(DronePickupInfo pickup) {
+    if (pickup.isPickedUp) {
+      return 'Đã lấy hàng${pickup.pickedUpAt == null ? '' : ' lúc ${formatDateTimeVn(pickup.pickedUpAt)}'}';
+    }
+    if (pickup.isAccepted) {
+      final who = pickup.technicianName ?? 'Kỹ thuật viên';
+      return forOperator
+          ? 'Bạn đang tới lấy hàng'
+          : '$who đang tới lấy hàng';
+    }
+    if (pickup.isOffered || pickup.isSearching) {
+      return forOperator
+          ? 'Bạn được mời lấy hàng'
+          : 'Đang tìm kỹ thuật viên drone gần bạn nhất';
+    }
+    return status.isPaid
+        ? 'Chờ điều phối lấy hàng'
+        : 'Kỹ thuật viên sẽ tới lấy hàng sau khi đơn được thanh toán';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final pickup = status.pickup!;
+    final code = pickup.pickupCode;
+    final showCode =
+        !forOperator && isSender && code != null && !pickup.isPickedUp;
+    return _Card(
+      title: 'Lấy hàng tận nhà',
+      icon: LucideIcons.house,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            _headline(pickup),
+            key: const ValueKey('drone-pickup-headline'),
+            style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14.5),
+          ),
+          if (showCode) ...[
+            const SizedBox(height: 12),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 14),
+              decoration: BoxDecoration(
+                color: const Color(0xFFEEF2FF),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Column(
+                children: [
+                  const Text(
+                    'Mã lấy hàng',
+                    style: TextStyle(fontSize: 12, color: Color(0xFF4F46E5)),
+                  ),
+                  const SizedBox(height: 4),
+                  SelectableText(
+                    code,
+                    key: const ValueKey('drone-pickup-code'),
+                    style: const TextStyle(
+                      fontSize: 30,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 6,
+                      color: Color(0xFF312E81),
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  const Text(
+                    'Đọc mã này cho kỹ thuật viên khi giao kiện. Không gửi mã cho '
+                    'người khác.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 12, color: Color(0xFF4F46E5)),
+                  ),
+                ],
+              ),
+            ),
+          ],
+          const SizedBox(height: 12),
+          _Rows([
+            ('Điểm lấy hàng', pickup.address ?? '—'),
+            if (pickup.note != null) ('Chỉ dẫn', pickup.note!),
+            if (pickup.technicianName != null &&
+                (pickup.isAccepted || pickup.isPickedUp))
+              ('Kỹ thuật viên', pickup.technicianName!),
+            if (!forOperator &&
+                pickup.technicianPhone != null &&
+                (pickup.isAccepted || pickup.isPickedUp))
+              ('SĐT kỹ thuật viên', pickup.technicianPhone!),
+            if (pickup.isAccepted && pickup.technicianDistanceMeters != null)
+              (
+                'Cách điểm lấy lúc nhận việc',
+                droneDistanceLabel(pickup.technicianDistanceMeters),
+              ),
+            if (pickup.distanceToSourceLockerMeters != null)
+              (
+                'Điểm lấy hàng → tủ gửi',
+                droneDistanceLabel(pickup.distanceToSourceLockerMeters),
+              ),
+            if (pickup.technicianNote != null)
+              ('Ghi chú lúc lấy hàng', pickup.technicianNote!),
+          ]),
+        ],
+      ),
+    );
+  }
+}
+
 /// Đơn đã trả tiền nhưng ô gửi còn rỗng: nhắc người gửi bỏ kiện và xác nhận, vì đội
 /// bay chỉ tiếp nhận đơn đã có kiện.
 class _DropBanner extends StatelessWidget {
@@ -575,7 +784,8 @@ class _ParcelReturnBanner extends StatelessWidget {
     } else {
       text = inSourceBox
           ? 'Kiện của bạn còn trong ô gửi. Đội bay sẽ liên hệ để trả lại kiện.'
-          : 'Kiện của bạn đang do đội bay giữ. Đội bay sẽ liên hệ để trả lại kiện.';
+          : 'Kiện đang do kỹ thuật viên giữ và sẽ được mang trả lại'
+                '${status.pickup?.address == null ? ' cho người gửi' : ' tại ${status.pickup!.address}'}.';
     }
     return Container(
       padding: const EdgeInsets.all(14),
@@ -931,20 +1141,20 @@ class _PeopleCard extends StatelessWidget {
       title: 'Người liên quan',
       icon: LucideIcons.users,
       child: _Rows([
-        ('Người gửi', status.customerName ?? '—'),
-        if (forOperator) ('SĐT người gửi', status.customerPhone ?? '—'),
+        ('Người gửi', status.senderName ?? status.customerName ?? '—'),
+        ('SĐT người gửi', status.senderPhone ?? status.customerPhone ?? '—'),
+        if (status.senderEmail != null) ('Email người gửi', status.senderEmail!),
         ('Người nhận', status.receiverName ?? status.customerName ?? '—'),
-        if (forOperator)
-          (
-            'SĐT người nhận',
-            status.receiverPhone ?? status.customerPhone ?? '—',
-          ),
+        ('SĐT người nhận', status.receiverPhone ?? status.customerPhone ?? '—'),
+        if (status.receiverEmail != null)
+          ('Email người nhận', status.receiverEmail!),
         (
-          'Điều phối viên',
+          'Kỹ thuật viên drone',
           status.assignedByName ??
+              status.pickup?.technicianName ??
               (status.assignedByUserId == null
-                  ? 'Chưa có người tiếp nhận'
-                  : 'Đã tiếp nhận'),
+                  ? 'Chưa có người nhận việc'
+                  : 'Đã nhận việc'),
         ),
         (
           'Người nạp hàng',

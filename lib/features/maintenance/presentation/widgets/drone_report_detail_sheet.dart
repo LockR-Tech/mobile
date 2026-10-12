@@ -3,6 +3,7 @@ import 'package:smart_laundry_locker/core/config/business_config_service.dart';
 import 'package:smart_laundry_locker/core/media/media.dart';
 import 'package:smart_laundry_locker/core/utils/app_date_time.dart';
 import 'package:smart_laundry_locker/features/locker_ops/data/drone_technician_errors.dart';
+import 'package:smart_laundry_locker/features/drone_delivery/presentation/widgets/drone_orders_by_ticket.dart';
 import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/ops_widgets.dart';
 
@@ -456,6 +457,12 @@ class _DroneReportDetailSheetState extends State<DroneReportDetailSheet> {
                       ),
                     ),
                     const SizedBox(height: 12),
+                    // Phiếu này đang giữ chân đơn drone nào (bị chặn / đã giao không hoàn tất).
+                    if (_reportId != null)
+                      DroneOrdersByTicket(
+                        ticketId: _reportId!,
+                        service: widget.service,
+                      ),
                     _Section(
                       icon: Icons.description_outlined,
                       title: 'Mô tả hiện trường',

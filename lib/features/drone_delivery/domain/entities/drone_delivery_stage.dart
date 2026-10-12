@@ -4,6 +4,12 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 /// Business stages exposed by the order-based drone delivery read model.
 enum DroneDeliveryStage {
   awaitingDispatch,
+
+  /// KTV drone đã nhận và đang tới nhà người gửi lấy kiện.
+  pickupAssigned,
+
+  /// KTV đã cầm kiện, đang mang về tủ gửi để phóng drone.
+  pickedUp,
   accepted,
   launching,
   departed,
@@ -32,6 +38,10 @@ enum DroneDeliveryStage {
     switch ((raw ?? '').trim().toUpperCase()) {
       case 'AWAITING_DISPATCH':
         return DroneDeliveryStage.awaitingDispatch;
+      case 'PICKUP_ASSIGNED':
+        return DroneDeliveryStage.pickupAssigned;
+      case 'PICKED_UP':
+        return DroneDeliveryStage.pickedUp;
       case 'ACCEPTED':
       case 'LOADING_CONFIRMED':
         return DroneDeliveryStage.accepted;
@@ -69,6 +79,8 @@ enum DroneDeliveryStage {
 
   static const List<DroneDeliveryStage> timeline = [
     DroneDeliveryStage.awaitingDispatch,
+    DroneDeliveryStage.pickupAssigned,
+    DroneDeliveryStage.pickedUp,
     DroneDeliveryStage.accepted,
     DroneDeliveryStage.launching,
     DroneDeliveryStage.departed,
@@ -77,6 +89,14 @@ enum DroneDeliveryStage {
     DroneDeliveryStage.arrived,
     DroneDeliveryStage.readyForPickup,
   ];
+
+  /// Đơn cũ không lấy hàng tận nhà thì bỏ hai chặng lấy hàng.
+  static List<DroneDeliveryStage> timelineFor({required bool homePickup}) =>
+      homePickup
+      ? timeline
+      : timeline
+            .where((step) => step != pickupAssigned && step != pickedUp)
+            .toList(growable: false);
 
   int get order => timeline.indexOf(this);
 
@@ -106,9 +126,13 @@ enum DroneDeliveryStage {
   String get title {
     switch (this) {
       case DroneDeliveryStage.awaitingDispatch:
-        return 'Chờ đội bay tiếp nhận';
+        return 'Chờ kỹ thuật viên nhận lấy hàng';
+      case DroneDeliveryStage.pickupAssigned:
+        return 'Kỹ thuật viên đang tới lấy hàng';
+      case DroneDeliveryStage.pickedUp:
+        return 'Đã lấy hàng, đang mang về tủ';
       case DroneDeliveryStage.accepted:
-        return 'Đội bay đã tiếp nhận';
+        return 'Đang nạp hàng lên drone';
       case DroneDeliveryStage.launching:
         return 'Drone đang khởi phóng';
       case DroneDeliveryStage.departed:
@@ -124,7 +148,7 @@ enum DroneDeliveryStage {
       case DroneDeliveryStage.delayed:
         return 'Đơn hàng bị chậm';
       case DroneDeliveryStage.failed:
-        return 'Giao hàng không thành công';
+        return 'Giao không hoàn tất';
       case DroneDeliveryStage.dropReported:
         return 'Kiện hàng gặp sự cố rơi';
       case DroneDeliveryStage.canceled:
@@ -141,15 +165,21 @@ enum DroneDeliveryStage {
   String body(String? eta) {
     switch (this) {
       case DroneDeliveryStage.awaitingDispatch:
-        return 'Đơn đang chờ đội bay kiểm tra và nhận nhiệm vụ';
+        return 'Hệ thống đang tìm kỹ thuật viên drone rảnh gần bạn nhất';
+      case DroneDeliveryStage.pickupAssigned:
+        return 'Kỹ thuật viên đang tới điểm lấy hàng, chuẩn bị kiện và mã lấy hàng';
+      case DroneDeliveryStage.pickedUp:
+        return 'Kiện đang được mang về tủ gần bạn nhất để phóng drone';
       case DroneDeliveryStage.accepted:
-        return 'Drone đã được gán và sẵn sàng khởi hành';
+        return 'Drone đã được gán, kỹ thuật viên đang cân và nạp kiện';
       case DroneDeliveryStage.launching:
         return 'Đội bay đang thực hiện quy trình khởi phóng';
       case DroneDeliveryStage.departed:
         return 'Drone đã cất cánh khỏi trạm nguồn';
       case DroneDeliveryStage.enRoute:
-        return eta == null ? 'Drone đang bay tới tủ nhận' : 'Drone dự kiến đến trong $eta';
+        return eta == null
+            ? 'Drone đang bay tới tủ nhận'
+            : 'Drone dự kiến đến trong $eta';
       case DroneDeliveryStage.approaching:
         return 'Drone đang tiếp cận tủ nhận của bạn';
       case DroneDeliveryStage.arrived:
@@ -157,14 +187,16 @@ enum DroneDeliveryStage {
       case DroneDeliveryStage.readyForPickup:
         return 'Kiện hàng đã nằm trong tủ nhận, dùng mã PIN/QR của đơn để mở ô';
       case DroneDeliveryStage.delayed:
-        return eta == null ? 'Đơn đang bị chậm so với dự kiến' : 'Đơn đang bị chậm, dự kiến tới $eta';
+        return eta == null
+            ? 'Đơn đang bị chậm so với dự kiến'
+            : 'Đơn đang bị chậm, dự kiến tới $eta';
       case DroneDeliveryStage.failed:
-        return 'Nhiệm vụ không thành công, đội bay sẽ hỗ trợ bạn';
+        return 'Đơn giao không hoàn tất';
       case DroneDeliveryStage.dropReported:
         return 'Đội bay đã báo kiện rơi trong chuyến bay và đang thu hồi. '
             'Lock.R sẽ gửi phương án xử lý cho bạn.';
       case DroneDeliveryStage.canceled:
-        return 'Nhiệm vụ đã dừng trước khi drone cất cánh';
+        return 'Đơn đã dừng trước khi drone cất cánh';
       case DroneDeliveryStage.completed:
         return 'Người nhận đã lấy kiện hàng khỏi tủ';
       case DroneDeliveryStage.expired:
@@ -178,6 +210,10 @@ enum DroneDeliveryStage {
     switch (this) {
       case DroneDeliveryStage.awaitingDispatch:
         return LucideIcons.clock;
+      case DroneDeliveryStage.pickupAssigned:
+        return LucideIcons.bike;
+      case DroneDeliveryStage.pickedUp:
+        return LucideIcons.packageCheck;
       case DroneDeliveryStage.accepted:
         return LucideIcons.circleCheck;
       case DroneDeliveryStage.launching:
@@ -222,6 +258,8 @@ enum DroneDeliveryStage {
       case DroneDeliveryStage.unknown:
         return const Color(0xFF64748B);
       case DroneDeliveryStage.awaitingDispatch:
+      case DroneDeliveryStage.pickupAssigned:
+      case DroneDeliveryStage.pickedUp:
       case DroneDeliveryStage.accepted:
       case DroneDeliveryStage.launching:
       case DroneDeliveryStage.departed:

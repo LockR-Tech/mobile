@@ -32,37 +32,43 @@ class DroneDeliveryTimeline extends StatelessWidget {
   /// Mốc "bây giờ" để tính đã ở chặng hiện tại bao lâu; null ⇒ `DateTime.now()`.
   final DateTime? now;
 
+  /// Các chặng hiện trên timeline. Đơn cũ (người gửi tự mang kiện ra tủ) không có hai
+  /// chặng lấy hàng tận nhà — xem [DroneDeliveryStage.timelineFor].
+  final List<DroneDeliveryStage> steps;
+
   const DroneDeliveryTimeline({
     super.key,
     required this.stage,
     this.stageTimes = const {},
     this.stepDetails = const {},
     this.now,
+    this.steps = DroneDeliveryStage.timeline,
   });
 
+  int _order(DroneDeliveryStage step) => steps.indexOf(step);
+
   int get _activeIndex {
-    if (stage.order >= 0) return stage.order;
+    if (_order(stage) >= 0) return _order(stage);
     // Đã nhận hàng: mọi mốc đều xong.
     if (stage == DroneDeliveryStage.completed) {
-      return DroneDeliveryStage.timeline.length;
+      return steps.length;
     }
     // Huỷ/quá hạn/lỗi: dừng ở mốc xa nhất đã thực sự đạt, không tô xanh các
     // mốc chưa hề xảy ra.
     if ((stage.isFailure || stage.isIncident) && stageTimes.isNotEmpty) {
       var reached = 0;
       for (final step in stageTimes.keys) {
-        if (step.order > reached) reached = step.order;
+        if (_order(step) > reached) reached = _order(step);
       }
       return reached;
     }
-    if (stage.isDelayed) return DroneDeliveryStage.enRoute.order;
-    if (stage.isFailure) return DroneDeliveryStage.readyForPickup.order;
+    if (stage.isDelayed) return _order(DroneDeliveryStage.enRoute);
+    if (stage.isFailure) return _order(DroneDeliveryStage.readyForPickup);
     return 0;
   }
 
   @override
   Widget build(BuildContext context) {
-    const steps = DroneDeliveryStage.timeline;
     final active = _activeIndex;
     final rows = <Widget>[];
     DateTime? previousAt;
