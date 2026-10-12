@@ -571,6 +571,37 @@ class LockerOpsService {
     },
   );
 
+  /// KTV drone đang giữ phiếu xin gia hạn SLA (bắt buộc lý do; số lần và số giờ
+  /// tối đa do server kiểm). Trả về phiếu sau gia hạn, kèm `slaExtensionsUsed`,
+  /// `slaExtensionsMax`.
+  Future<Map<String, dynamic>> extendDroneReportSla(
+    int reportId, {
+    required int hours,
+    required String reason,
+  }) => _map(
+    'PUT',
+    '/api/drone-technician/reports/$reportId/extend-sla',
+    body: {'hours': hours, 'reason': reason.trim()},
+  );
+
+  /// KTV drone trả phiếu đang giữ về hàng chờ (OPEN, bỏ người được giao).
+  Future<Map<String, dynamic>> releaseDroneReport(
+    int reportId, {
+    required String reason,
+  }) => _map(
+    'PUT',
+    '/api/drone-technician/reports/$reportId/release',
+    body: {'reason': reason.trim()},
+  );
+
+  /// Điểm đánh giá trung bình của KTV drone đang đăng nhập (`count`, `average`).
+  Future<Map<String, dynamic>> droneMyRatingAverage() =>
+      _map('GET', '/api/drone-technician/my-rating-average');
+
+  /// Hiệu suất & chế tài SLA của KTV drone đang đăng nhập (cùng dạng bản KTV tủ).
+  Future<Map<String, dynamic>> droneMyPerformance() =>
+      _map('GET', '/api/drone-technician/my-performance');
+
   Future<Map<String, dynamic>> claimReport(int reportId) =>
       _map('PUT', '/api/locker-technician/reports/$reportId/claim');
 
@@ -1049,6 +1080,13 @@ class LockerOpsService {
     },
   );
 
+  /// Sự cố rơi kiện liên quan tới KTV drone (mình báo hoặc được giao thu hồi).
+  Future<List<Map<String, dynamic>>> droneIncidents() =>
+      _list('/api/drone-technician/drone-incidents');
+
+  Future<Map<String, dynamic>> droneIncident(int incidentId) =>
+      _map('GET', '/api/drone-technician/drone-incidents/$incidentId');
+
   // ---- Thu hồi kiện rơi (LOCKER_TECHNICIAN) ----
   Future<List<Map<String, dynamic>>> droneRecoveries() =>
       _list('/api/locker-technician/drone-recoveries');
@@ -1158,9 +1196,19 @@ class LockerOpsService {
   );
 
   /// Đơn drone thật (STANDARD): điều phối viên xác nhận drone sang chặng kế tiếp.
+  /// [expectedStage] = chặng app đang hiển thị; server đã ở chặng khác thì trả
+  /// 409 `DRONE_STAGE_CHANGED` thay vì nhảy thêm một chặng.
   /// Trả về chi tiết nhiệm vụ sau khi đổi chặng.
-  Future<Map<String, dynamic>> advanceDroneOrder(int orderId) =>
-      _map('POST', '/api/drone-technician/drone-orders/$orderId/advance');
+  Future<Map<String, dynamic>> advanceDroneOrder(
+    int orderId, {
+    String? expectedStage,
+  }) => _map(
+    'POST',
+    '/api/drone-technician/drone-orders/$orderId/advance',
+    body: expectedStage == null || expectedStage.isEmpty
+        ? null
+        : {'expectedStage': expectedStage},
+  );
 
   Future<Map<String, dynamic>> cancelDroneOrder(
     int orderId, {

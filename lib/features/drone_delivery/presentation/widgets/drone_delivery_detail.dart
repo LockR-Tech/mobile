@@ -148,7 +148,7 @@ class DroneDeliveryDetail extends StatelessWidget {
         ],
         ...beforeRoute,
         const SizedBox(height: 16),
-        DroneRouteMapCard(status: status),
+        DroneRouteMapCard(status: status, forOperator: forOperator),
         const SizedBox(height: 16),
         _RouteCard(status: status),
         const SizedBox(height: 16),

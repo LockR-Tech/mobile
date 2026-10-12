@@ -6,6 +6,7 @@ import 'package:latlong2/latlong.dart';
 import '../data/mav_connection.dart';
 import '../data/mavlink_protocol.dart';
 import '../domain/drone_telemetry.dart';
+import '../domain/flight_command_policy.dart';
 import '../domain/flight_modes.dart';
 import '../domain/mav_messages.dart';
 
@@ -13,9 +14,43 @@ enum LinkStatus { disconnected, connecting, connected, error }
 
 enum MavTransport { udp, tcp }
 
+/// Kết quả lệnh gần nhất: chờ phản hồi, drone nhận, drone từ chối, hết giờ.
+enum CommandOutcome { pending, accepted, rejected, timeout }
+
+class CommandFeedback {
+  const CommandFeedback({
+    required this.command,
+    required this.outcome,
+    required this.message,
+  });
+
+  final FlightCommand command;
+  final CommandOutcome outcome;
+  final String message;
+}
+
+class _PendingCommand {
+  _PendingCommand({
+    required this.command,
+    required this.ackId,
+    required this.timer,
+  });
+
+  final FlightCommand command;
+
+  /// `command` mong đợi trong COMMAND_ACK (MAV_CMD, hoặc id SET_MODE = 11 với
+  /// ArduPilot).
+  final int ackId;
+  final Timer timer;
+}
+
 /// Drives a live MAVLink link: owns the transport + codec, folds incoming
 /// messages into [telemetry], keeps the link alive with a 1 Hz heartbeat, and
 /// exposes vehicle commands. UI listens via [ChangeNotifier].
+///
+/// Lệnh chỉ được gửi khi [flightCommandBlockReason] cho phép (đã có heartbeat,
+/// biết địa chỉ drone, …); mỗi lệnh chờ COMMAND_ACK (hoặc heartbeat xác nhận)
+/// trong [kCommandAckTimeout] rồi báo kết quả qua [lastFeedback].
 class FlightDataController extends ChangeNotifier {
   final MavlinkProtocol _protocol = MavlinkProtocol();
 
@@ -29,6 +64,8 @@ class FlightDataController extends ChangeNotifier {
   final List<LatLng> _trail = [];
   final List<String> _messages = [];
   String? _error;
+  _PendingCommand? _pending;
+  CommandFeedback? _lastFeedback;
 
   LinkStatus get status => _status;
   DroneTelemetry get telemetry => _telemetry;
@@ -39,6 +76,27 @@ class FlightDataController extends ChangeNotifier {
 
   bool get isConnected => _status == LinkStatus.connected;
 
+  /// Đã biết địa chỉ drone để gửi lệnh (UDP học từ gói tin đầu tiên).
+  bool get peerKnown => _connection?.peerKnown ?? false;
+
+  /// Đã nhận ít nhất một HEARTBEAT trong phiên kết nối này.
+  bool get heartbeatSeen => _telemetry.lastHeartbeatAt != null;
+
+  bool get commandPending => _pending != null;
+  CommandFeedback? get lastFeedback => _lastFeedback;
+
+  FlightCommandState commandState({bool missionLocked = false}) =>
+      FlightCommandState(
+        connected: isConnected,
+        peerKnown: peerKnown,
+        heartbeatSeen: heartbeatSeen,
+        linkAlive: _telemetry.linkAlive,
+        armed: _telemetry.armed,
+        modeName: _telemetry.modeName,
+        commandPending: commandPending,
+        missionLocked: missionLocked,
+      );
+
   // ── lifecycle ──────────────────────────────────────────────────────────────
 
   Future<void> connect({
@@ -47,12 +105,6 @@ class FlightDataController extends ChangeNotifier {
     required int port,
     int localPort = 14550,
   }) async {
-    await disconnect();
-    _status = LinkStatus.connecting;
-    _error = null;
-    _streamRequested = false;
-    notifyListeners();
-
     final connection = switch (transport) {
       MavTransport.udp => UdpMavConnection(
           remoteHost: host.trim().isEmpty ? null : host.trim(),
@@ -61,6 +113,20 @@ class FlightDataController extends ChangeNotifier {
         ),
       MavTransport.tcp => TcpMavConnection(host: host.trim(), port: port),
     };
+    await attach(connection);
+  }
+
+  /// Mở [connection] và bắt đầu nhận dữ liệu (tách riêng để kiểm thử bằng
+  /// transport giả).
+  @visibleForTesting
+  Future<void> attach(MavConnection connection) async {
+    await disconnect();
+    _status = LinkStatus.connecting;
+    _error = null;
+    _streamRequested = false;
+    _telemetry = const DroneTelemetry();
+    _lastFeedback = null;
+    notifyListeners();
 
     try {
       await connection.connect();
@@ -87,6 +153,7 @@ class FlightDataController extends ChangeNotifier {
   Future<void> disconnect() async {
     _heartbeatTimer?.cancel();
     _heartbeatTimer = null;
+    _clearPending();
     await _sub?.cancel();
     _sub = null;
     await _connection?.close();
@@ -101,6 +168,7 @@ class FlightDataController extends ChangeNotifier {
     _error = message;
     _status = LinkStatus.error;
     _heartbeatTimer?.cancel();
+    _clearPending();
     notifyListeners();
   }
 
@@ -121,13 +189,74 @@ class FlightDataController extends ChangeNotifier {
       } else if (msg is StatusTextMsg && msg.text.isNotEmpty) {
         _messages.insert(0, msg.text);
         if (_messages.length > 30) _messages.removeLast();
-      } else if (msg is HeartbeatMsg && !_streamRequested) {
-        // First heartbeat: ask ArduPilot to start streaming telemetry.
-        _streamRequested = true;
-        _connection?.send(_protocol.encodeRequestDataStream());
+      } else if (msg is CommandAckMsg) {
+        _onAck(msg);
+      } else if (msg is HeartbeatMsg) {
+        if (!_streamRequested) {
+          // First heartbeat: ask ArduPilot to start streaming telemetry.
+          _streamRequested = true;
+          _connection?.send(_protocol.encodeRequestDataStream());
+        }
+        _confirmFromHeartbeat(msg);
       }
     }
     if (changed) notifyListeners();
+  }
+
+  void _onAck(CommandAckMsg ack) {
+    final pending = _pending;
+    if (pending == null || ack.command != pending.ackId) return;
+    if (ack.result == 5) {
+      // IN_PROGRESS: drone đang thực hiện, tiếp tục chờ kết quả cuối.
+      _lastFeedback = CommandFeedback(
+        command: pending.command,
+        outcome: CommandOutcome.pending,
+        message: '${pending.command.label}: ${mavResultLabel(ack.result)}',
+      );
+      return;
+    }
+    _finish(
+      ack.accepted ? CommandOutcome.accepted : CommandOutcome.rejected,
+      '${pending.command.label}: ${mavResultLabel(ack.result)}',
+    );
+  }
+
+  /// Một số autopilot không trả COMMAND_ACK cho SET_MODE/ARM: heartbeat cho
+  /// thấy đúng chế độ / trạng thái arm mới cũng coi là drone đã nhận.
+  void _confirmFromHeartbeat(HeartbeatMsg heartbeat) {
+    final pending = _pending;
+    if (pending == null) return;
+    final command = pending.command;
+    final targetMode = command.targetMode;
+    final confirmed = switch (command) {
+      FlightCommand.arm => heartbeat.armed,
+      FlightCommand.disarm => !heartbeat.armed,
+      _ => targetMode != null && heartbeat.customMode == targetMode,
+    };
+    if (!confirmed) return;
+    _finish(
+      CommandOutcome.accepted,
+      targetMode == null
+          ? '${command.label}: drone đã thực hiện'
+          : '${command.label}: drone đã chuyển sang ${ArduCopterMode.names[targetMode] ?? command.label}',
+    );
+  }
+
+  void _finish(CommandOutcome outcome, String message) {
+    final pending = _pending;
+    if (pending == null) return;
+    pending.timer.cancel();
+    _pending = null;
+    _lastFeedback = CommandFeedback(
+      command: pending.command,
+      outcome: outcome,
+      message: message,
+    );
+  }
+
+  void _clearPending() {
+    _pending?.timer.cancel();
+    _pending = null;
   }
 
   void _pushTrail(LatLng p) {
@@ -147,33 +276,68 @@ class FlightDataController extends ChangeNotifier {
 
   // ── commands ───────────────────────────────────────────────────────────────
 
-  void arm({bool force = false}) => _connection?.send(
-        _protocol.encodeCommandLong(
-          MavCmd.componentArmDisarm,
-          p1: 1,
-          p2: force ? 21196 : 0,
-        ),
-      );
+  /// Gửi [command] nếu chính sách cho phép; trả về lý do bị chặn, hoặc `null`
+  /// khi đã gửi (kết quả xem ở [lastFeedback]). [altitudeM] bắt buộc cho
+  /// TAKEOFF và phải trong trần [kMaxTakeoffAltitudeM].
+  String? sendCommand(
+    FlightCommand command, {
+    double? altitudeM,
+    bool missionLocked = false,
+  }) {
+    final blocked = flightCommandBlockReason(
+      command,
+      commandState(missionLocked: missionLocked),
+    );
+    if (blocked != null) return blocked;
+    if (command == FlightCommand.takeoff) {
+      final altitudeError = takeoffAltitudeError(altitudeM);
+      if (altitudeError != null) return altitudeError;
+    }
+    final connection = _connection;
+    if (connection == null) return 'Chưa kết nối flight controller.';
 
-  void disarm({bool force = false}) => _connection?.send(
-        _protocol.encodeCommandLong(
-          MavCmd.componentArmDisarm,
-          p1: 0,
-          p2: force ? 21196 : 0,
-        ),
-      );
-
-  void setMode(int customMode) =>
-      _connection?.send(_protocol.encodeSetMode(customMode));
-
-  void returnToLaunch() => setMode(ArduCopterMode.rtl);
-  void loiter() => setMode(ArduCopterMode.loiter);
-  void guided() => setMode(ArduCopterMode.guided);
-  void startMission() => setMode(ArduCopterMode.auto);
-
-  void takeoff(double altMeters) => _connection?.send(
-        _protocol.encodeCommandLong(MavCmd.navTakeoff, p7: altMeters),
-      );
+    final (bytes, ackId) = switch (command) {
+      FlightCommand.arm => (
+        _protocol.encodeCommandLong(MavCmd.componentArmDisarm, p1: 1),
+        MavCmd.componentArmDisarm,
+      ),
+      FlightCommand.disarm => (
+        _protocol.encodeCommandLong(MavCmd.componentArmDisarm, p1: 0),
+        MavCmd.componentArmDisarm,
+      ),
+      FlightCommand.takeoff => (
+        _protocol.encodeCommandLong(MavCmd.navTakeoff, p7: altitudeM!),
+        MavCmd.navTakeoff,
+      ),
+      FlightCommand.rtl ||
+      FlightCommand.loiter ||
+      FlightCommand.guided ||
+      FlightCommand.auto => (
+        _protocol.encodeSetMode(command.targetMode!),
+        MavMsgId.setMode,
+      ),
+    };
+    connection.send(bytes);
+    _pending = _PendingCommand(
+      command: command,
+      ackId: ackId,
+      timer: Timer(kCommandAckTimeout, () {
+        if (_pending?.command != command) return;
+        _finish(
+          CommandOutcome.timeout,
+          '${command.label}: hết giờ — không nhận được phản hồi từ drone',
+        );
+        notifyListeners();
+      }),
+    );
+    _lastFeedback = CommandFeedback(
+      command: command,
+      outcome: CommandOutcome.pending,
+      message: '${command.label}: đã gửi, đang chờ drone phản hồi…',
+    );
+    notifyListeners();
+    return null;
+  }
 
   void clearTrail() {
     _trail.clear();
@@ -183,6 +347,7 @@ class FlightDataController extends ChangeNotifier {
   @override
   void dispose() {
     _heartbeatTimer?.cancel();
+    _clearPending();
     _sub?.cancel();
     _connection?.close();
     super.dispose();

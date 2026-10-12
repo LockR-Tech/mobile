@@ -5,11 +5,10 @@ import 'package:smart_laundry_locker/shared/shared.dart';
 import 'package:smart_laundry_locker/shared/widgets/unauthenticated_placeholder.dart';
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:provider/provider.dart';
 import 'package:smart_laundry_locker/core/routing/app_router.dart';
-import 'package:smart_laundry_locker/core/routing/role_routes.dart';
+import 'package:smart_laundry_locker/core/routing/notification_deep_link.dart';
 import 'package:smart_laundry_locker/core/services/token_service.dart';
 
 class NotificationListPage extends StatefulWidget {
@@ -50,7 +49,7 @@ class _NotificationListPageState extends State<NotificationListPage> {
     }
   }
 
-  void _handleNotificationTap(NotificationModel notification) {
+  Future<void> _handleNotificationTap(NotificationModel notification) async {
     context.read<NotificationProvider>().markAsRead(notification.id);
 
     final payload = notification.dataPayload;
@@ -62,45 +61,17 @@ class _NotificationListPageState extends State<NotificationListPage> {
       return;
     }
 
-    // Hành trình giao drone -> màn theo dõi drone của đúng đơn. Phải xét trước
-    // `switch`: mốc chặng giao dùng chung `type = ORDER_STATUS_CHANGED` với đơn
-    // tủ, chỉ khác `referenceType = DELIVERY`.
-    if (payload.isDroneDelivery) {
-      if (payload.referenceId != null) {
-        context.push(AppRouter.droneDeliveryTracking, extra: payload.referenceId);
-      } else {
-        _showNotificationSheet(notification);
-      }
-      return;
-    }
-    // Đơn drone mới -> hàng đợi điều phối của đội bay.
-    if (payload.isDroneDispatch) {
-      context.push(AppRouter.maintenanceHome);
-      return;
-    }
-
-    switch (payload.actionType) {
-      // Noti đơn tủ -> danh sách đơn của tôi. Trang chi tiết đơn cũ
-      // (`AppRouter.orderDetail`) gọi API `/orders/me/{id}` đã bị gỡ nên mở ra
-      // chỉ thấy màn trống — trông như bấm thông báo không có gì xảy ra.
-      case 'OPEN_ORDER_DETAIL':
-      case 'ORDER_STATUS_CHANGED':
-        context.push(AppRouter.myLockerOrders);
-        break;
-      case 'OPEN_PROMOTION_TAB':
-        context.push(AppRouter.promotions);
-        break;
-      default:
-        // Phiếu/lịch của KTV tủ -> tab tương ứng trên trang KTV tủ.
-        final technicianRoute = technicianRouteForNotification(
-          payload.actionType,
-        );
-        if (technicianRoute != null) {
-          context.go(technicianRoute);
-        } else {
-          _showNotificationSheet(notification);
-        }
-        break;
+    // Màn đích theo type + vai trò người dùng (dùng chung với bấm push).
+    final location = await resolveNotificationLocation(
+      type: payload.actionType,
+      referenceId: payload.referenceId,
+      referenceType: payload.referenceType,
+    );
+    if (!mounted) return;
+    if (location == null) {
+      _showNotificationSheet(notification);
+    } else {
+      openNotificationLocation(context, location);
     }
   }
 

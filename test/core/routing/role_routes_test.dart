@@ -148,4 +148,114 @@ void main() {
       expect(technicianTabIndex(null), 0);
     });
   });
+
+  group('requiresSignIn — màn cần đăng nhập', () {
+    test('gửi/thuê tủ, đơn, báo sự cố, thông báo, ủy quyền, ưu đãi đã lưu', () {
+      for (final path in const [
+        '/locker/send-parcel',
+        '/locker/rent',
+        '/locker/my-orders',
+        '/locker/my-reports',
+        '/maintenance/create-report',
+        '/notifications',
+        '/my-delegations',
+        '/my-vouchers',
+        '/drone-delivery',
+        '/maintenance-home',
+        '/technician-home',
+        '/drone/flight-data',
+      ]) {
+        expect(requiresSignIn(path), isTrue, reason: path);
+      }
+    });
+
+    test('trang chủ, cửa hàng, khuyến mãi vẫn công khai', () {
+      for (final path in const ['/home', '/stores', '/promotions', '/policy']) {
+        expect(requiresSignIn(path), isFalse, reason: path);
+      }
+    });
+  });
+
+  group('routeRedirect — chặn theo vai trò', () {
+    String? redirect(String location, List<String> roles, {bool signedIn = true}) =>
+        routeRedirect(Uri.parse(location), signedIn: signedIn, roles: roles);
+
+    test('chưa đăng nhập ⇒ màn đăng nhập thay vì lỗi 401', () {
+      expect(redirect('/locker/send-parcel', const [], signedIn: false),
+          '/onboarding');
+      expect(redirect('/maintenance-home', const [], signedIn: false),
+          '/onboarding');
+      expect(redirect('/home', const [], signedIn: false), isNull);
+    });
+
+    test('khách không vào được trang KTV và công cụ bay', () {
+      const roles = ['CUSTOMER'];
+      expect(redirect('/technician-home', roles), '/home');
+      expect(redirect('/maintenance-home', roles), '/home');
+      expect(redirect('/technician-profile', roles), '/home');
+      expect(redirect('/drone/flight-data', roles), '/home');
+      expect(redirect('/drone/mission-planner', roles), '/home');
+      expect(redirect('/locker/my-orders', roles), isNull);
+    });
+
+    test('KTV drone bị đưa từ trang KTV tủ sang trang của mình, giữ tab chung', () {
+      const roles = ['DRONE_TECHNICIAN'];
+      expect(redirect('/maintenance-home?tab=mine&reportId=7', roles), isNull);
+      expect(redirect('/drone/flight-data', roles), isNull);
+      expect(redirect('/technician-profile', roles), isNull);
+      expect(
+        redirect('/technician-home?tab=mine&reportId=7', roles),
+        '/maintenance-home?tab=mine&reportId=7',
+      );
+      expect(redirect('/technician-home?tab=recovery', roles),
+          '/maintenance-home');
+    });
+
+    test('KTV tủ không vào trang KTV drone và công cụ bay', () {
+      const roles = ['LOCKER_TECHNICIAN'];
+      expect(redirect('/technician-home?tab=incidents', roles), isNull);
+      expect(
+        redirect('/maintenance-home?tab=schedules&scheduleId=3', roles),
+        '/technician-home?tab=schedules&scheduleId=3',
+      );
+      expect(redirect('/maintenance-home?tab=dispatch&orderId=9', roles),
+          '/technician-home');
+      expect(redirect('/drone/flight-data', roles), '/technician-home');
+    });
+
+    test('ADMIN được đưa về thông báo dùng web', () {
+      expect(redirect('/maintenance-home', const ['ADMIN']), '/admin-web-notice');
+      expect(redirect('/technician-home', const ['ADMIN']), '/admin-web-notice');
+    });
+  });
+
+  group('deep link trang KTV drone', () {
+    test('tab theo tên, tên lạ về Điều phối', () {
+      expect(maintenanceTabIndex('dispatch'), 0);
+      expect(maintenanceTabIndex('fleet'), 1);
+      expect(maintenanceTabIndex('incidents'), 2);
+      expect(maintenanceTabIndex('mine'), 3);
+      expect(maintenanceTabIndex('schedules'), 4);
+      expect(maintenanceTabIndex('tools'), 5);
+      expect(maintenanceTabIndex('recovery'), 0);
+      expect(maintenanceTabIndex(null), 0);
+    });
+
+    test('id trong query phải là số dương', () {
+      expect(queryId(const {'reportId': '42'}, 'reportId'), 42);
+      expect(queryId(const {'reportId': 'abc'}, 'reportId'), isNull);
+      expect(queryId(const {'reportId': '0'}, 'reportId'), isNull);
+      expect(queryId(const {}, 'reportId'), isNull);
+    });
+
+    test('ticket routed with an id carries reportId', () {
+      expect(
+        technicianRouteForNotification(
+          'locker.report.routed',
+          referenceId: '5',
+        ),
+        '/technician-home?tab=incidents&reportId=5',
+      );
+    });
+  });
 }

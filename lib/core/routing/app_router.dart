@@ -130,15 +130,15 @@ class AppRouter {
     initialLocation: splash,
     observers: [FlutterSmartDialog.observer],
     refreshListenable: TokenService.authState,
-    redirect: (context, state) {
-      final isLoggedIn = TokenService.authState.value;
-      final location = state.matchedLocation;
-
-      if (!isLoggedIn && requiresSignIn(location)) {
-        return onboarding;
-      }
-
-      return null;
+    // Chặn theo đăng nhập + vai trò (xem `routeRedirect`). Chỉ đọc role từ
+    // token khi route cần biết vai trò.
+    redirect: (context, state) async {
+      final signedIn = TokenService.authState.value;
+      final uri = state.uri;
+      final roles = signedIn && isRoleRestricted(uri.path)
+          ? await TokenService.getCurrentRoles()
+          : const <String>[];
+      return routeRedirect(uri, signedIn: signedIn, roles: roles);
     },
     routes: [
       GoRoute(path: splash, builder: (context, state) => const SplashScreen()),
@@ -329,15 +329,27 @@ class AppRouter {
       GoRoute(
         path: maintenanceHome,
         name: 'maintenance_home',
-        builder: (context, state) => const MaintenanceHomePage(),
+        // Deep link KTV drone: `?tab=&reportId=&scheduleId=&orderId=`.
+        builder: (context, state) {
+          final qp = state.uri.queryParameters;
+          return MaintenanceHomePage(
+            initialTab: maintenanceTabIndex(qp['tab']),
+            reportId: queryId(qp, 'reportId'),
+            scheduleId: queryId(qp, 'scheduleId'),
+            orderId: queryId(qp, 'orderId'),
+          );
+        },
       ),
       GoRoute(
         path: technicianHome,
         name: 'technician_home',
-        // `?tab=` (noti KTV tủ) mở thẳng tab tương ứng.
-        builder: (context, state) => TechnicianHomePage(
-          initialTab: technicianTabIndex(state.uri.queryParameters['tab']),
-        ),
+        // Deep link KTV tủ: `?tab=&reportId=&scheduleId=`. TODO: truyền
+        // `reportId: queryId(qp, 'reportId')`, `scheduleId: queryId(qp,
+        // 'scheduleId')` khi TechnicianHomePage nhận hai tham số này.
+        builder: (context, state) {
+          final qp = state.uri.queryParameters;
+          return TechnicianHomePage(initialTab: technicianTabIndex(qp['tab']));
+        },
       ),
       GoRoute(
         path: technicianProfile,
@@ -378,11 +390,15 @@ class AppRouter {
       GoRoute(
         path: myLockerOrders,
         name: 'my_locker_orders',
+        // TODO: deep link `?orderId=` (thông báo đơn) — truyền
+        // `queryId(state.uri.queryParameters, 'orderId')` khi trang nhận id đơn.
         builder: (context, state) => const MyLockerOrdersPage(),
       ),
       GoRoute(
         path: myLockerReports,
         name: 'my_locker_reports',
+        // TODO: deep link `?reportId=` (thông báo phiếu) — truyền
+        // `queryId(state.uri.queryParameters, 'reportId')` khi trang nhận id phiếu.
         builder: (context, state) => const MyReportsPage(),
       ),
       GoRoute(

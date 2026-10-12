@@ -14,9 +14,16 @@ import 'package:smart_laundry_locker/features/drone_delivery/presentation/widget
 /// ước theo chặng hiện tại. Không cho kéo/zoom để cuộn trang không bị bản đồ "nuốt";
 /// theo dõi vị trí thật từng giây ở màn live map.
 class DroneRouteMapCard extends StatelessWidget {
-  const DroneRouteMapCard({super.key, required this.status});
+  const DroneRouteMapCard({
+    super.key,
+    required this.status,
+    this.forOperator = false,
+  });
 
   final DroneDeliveryStatus status;
+
+  /// Màn KTV drone (chi tiết nhiệm vụ) không có nút mở bản đồ trực tiếp.
+  final bool forOperator;
 
   static const Color _sourceColor = Color(0xFF0F766E);
   static const Color _plannedColor = Color(0xFF94A3B8);
@@ -139,9 +146,11 @@ class DroneRouteMapCard extends StatelessWidget {
           ),
           if (drone != null) ...[
             const SizedBox(height: 6),
-            const Text(
-              'Vị trí drone ước theo chặng bay hiện tại. Mở "Theo dõi trên bản đồ" để xem vị trí trực tiếp.',
-              style: TextStyle(fontSize: 11.5, color: Color(0xFF64748B)),
+            Text(
+              forOperator
+                  ? 'Vị trí drone ước theo chặng bay hiện tại. Số đo bay thật (GPS, pin, chế độ bay) xem ở khung camera phía trên.'
+                  : 'Vị trí drone ước theo chặng bay hiện tại. Mở "Theo dõi trên bản đồ" để xem vị trí trực tiếp.',
+              style: const TextStyle(fontSize: 11.5, color: Color(0xFF64748B)),
             ),
           ],
         ],
