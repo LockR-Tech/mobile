@@ -15,6 +15,7 @@ class ProfileHeader extends StatelessWidget {
     this.onEditAvatar,
     this.onSaveAvatar,
     this.onCancelAvatar,
+    this.onEditProfile,
     this.avatarVersion = 0,
     this.localAvatarFile,
     this.isAvatarSyncing = false,
@@ -24,6 +25,7 @@ class ProfileHeader extends StatelessWidget {
   final VoidCallback? onEditAvatar;
   final VoidCallback? onSaveAvatar;
   final VoidCallback? onCancelAvatar;
+  final VoidCallback? onEditProfile;
   final int avatarVersion;
   final File? localAvatarFile;
   final bool isAvatarSyncing;
@@ -31,38 +33,20 @@ class ProfileHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 12),
-      padding: const EdgeInsets.all(26),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [
-            Color.fromARGB(255, 25, 40, 59),
-            Color.fromARGB(255, 223, 223, 238),
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(24),
-        boxShadow: [
-          BoxShadow(
-            color: AislBrand.navy.withValues(alpha: 0.30),
-            blurRadius: 16,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
           // Avatar section
           _buildAvatarSection(context),
-          const SizedBox(height: 16),
+          const SizedBox(height: 14),
 
           // Save avatar button (only when local file exists)
-          if (showSaveAvatarButton && localAvatarFile != null)
+          if (showSaveAvatarButton && localAvatarFile != null) ...[
             _buildSaveAvatarButton(context),
-          if (showSaveAvatarButton && localAvatarFile != null)
-            const SizedBox(height: 16),
+            const SizedBox(height: 14),
+          ],
 
           // User info section
           _buildUserInfoSection(context),
@@ -104,66 +88,103 @@ class ProfileHeader extends StatelessWidget {
     debugPrint('[ProfileHeader] Cache Key: $avatarCacheKey');
 
     return Stack(
+      clipBehavior: Clip.none,
       children: [
         // Avatar
         GestureDetector(
           onTap: (localAvatarFile == null && !isAvatarSyncing)
               ? onEditAvatar
               : null,
-          child: ClipOval(
-            child: Container(
-              width: 100,
-              height: 100,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.white,
-                border: Border.all(color: Colors.white, width: 3),
-              ),
-              child: ClipOval(
-                clipBehavior: Clip.hardEdge,
-                child: Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    // Base layer: Always render cached image or placeholder
-                    // This ensures widget stays in tree during transitions
-                    if (versionedAvatarUrl != null &&
-                        versionedAvatarUrl.isNotEmpty)
-                      AppCachedImage(
-                        key: ValueKey(avatarCacheKey),
-                        imageUrl: versionedAvatarUrl,
-                        cacheManager: ProfileImageCacheManager.instance,
-                        cacheKey: avatarCacheKey,
-                        fit: BoxFit.cover,
-                        fadeInDuration: Duration.zero,
-                        fadeOutDuration: Duration.zero,
-                        placeholderFadeInDuration: Duration.zero,
-                        // ✅ FIX: Disable useOldImageOnUrlChange because we use Stack overlay
-                        // Local preview acts as transition buffer, so we want immediate switch
-                        // to new image when it's ready (not keep showing old image)
-                        useOldImageOnUrlChange: false,
-                        placeholder: (context, url) =>
-                            _buildDefaultAvatar(context),
-                        errorWidget: (context, url, error) =>
-                            _buildDefaultAvatar(context),
-                      )
-                    else
-                      _buildDefaultAvatar(context),
-                    // Overlay layer: Local preview when available
-                    if (localAvatarFile != null &&
-                        localAvatarFile!.existsSync())
-                      Image.file(
-                        localAvatarFile!,
-                        fit: BoxFit.cover,
-                        width: 100,
-                        height: 100,
-                        filterQuality: FilterQuality.high,
-                      ),
-                  ],
+          child: Container(
+            width: 104,
+            height: 104,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: Colors.white,
+              border: Border.all(color: Colors.white, width: 3.5),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.10),
+                  blurRadius: 18,
+                  offset: const Offset(0, 6),
                 ),
+              ],
+            ),
+            child: ClipOval(
+              clipBehavior: Clip.hardEdge,
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  // Base layer: Always render cached image or placeholder
+                  // This ensures widget stays in tree during transitions
+                  if (versionedAvatarUrl != null &&
+                      versionedAvatarUrl.isNotEmpty)
+                    AppCachedImage(
+                      key: ValueKey(avatarCacheKey),
+                      imageUrl: versionedAvatarUrl,
+                      cacheManager: ProfileImageCacheManager.instance,
+                      cacheKey: avatarCacheKey,
+                      fit: BoxFit.cover,
+                      fadeInDuration: Duration.zero,
+                      fadeOutDuration: Duration.zero,
+                      placeholderFadeInDuration: Duration.zero,
+                      // ✅ FIX: Disable useOldImageOnUrlChange because we use Stack overlay
+                      // Local preview acts as transition buffer, so we want immediate switch
+                      // to new image when it's ready (not keep showing old image)
+                      useOldImageOnUrlChange: false,
+                      placeholder: (context, url) =>
+                          _buildDefaultAvatar(context),
+                      errorWidget: (context, url, error) =>
+                          _buildDefaultAvatar(context),
+                    )
+                  else
+                    _buildDefaultAvatar(context),
+                  // Overlay layer: Local preview when available
+                  if (localAvatarFile != null &&
+                      localAvatarFile!.existsSync())
+                    Image.file(
+                      localAvatarFile!,
+                      fit: BoxFit.cover,
+                      width: 104,
+                      height: 104,
+                      filterQuality: FilterQuality.high,
+                    ),
+                ],
               ),
             ),
           ),
         ),
+
+        // Camera badge icon at bottom right of avatar
+        if (onEditAvatar != null && localAvatarFile == null)
+          Positioned(
+            bottom: 2,
+            right: 2,
+            child: GestureDetector(
+              onTap: !isAvatarSyncing ? onEditAvatar : null,
+              child: Container(
+                width: 32,
+                height: 32,
+                decoration: BoxDecoration(
+                  color: AislBrand.navy,
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Colors.white, width: 2.5),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.16),
+                      blurRadius: 6,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: const Icon(
+                  LucideIcons.camera,
+                  size: 14,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+          ),
 
         // Cancel button (X icon) when local file exists
         if (localAvatarFile != null &&
@@ -181,9 +202,16 @@ class ProfileHeader extends StatelessWidget {
                   color: ShadTheme.of(context).colorScheme.destructive,
                   shape: BoxShape.circle,
                   border: Border.all(
-                    color: ShadTheme.of(context).colorScheme.card,
+                    color: Colors.white,
                     width: 2,
                   ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.16),
+                      blurRadius: 6,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
                 ),
                 child: Icon(
                   LucideIcons.x,
@@ -200,45 +228,52 @@ class ProfileHeader extends StatelessWidget {
   }
 
   Widget _buildSaveAvatarButton(BuildContext context) {
-    return SizedBox(
-      width: double.infinity,
-      height: 56,
-      child: ShadButton.secondary(
+    return Container(
+      constraints: const BoxConstraints(maxWidth: 220),
+      height: 44,
+      child: ShadButton(
         enabled: !isAvatarSyncing && onSaveAvatar != null,
         onPressed: isAvatarSyncing ? null : onSaveAvatar,
-        backgroundColor: ShadTheme.of(context).colorScheme.accent,
+        backgroundColor: AislBrand.navy,
         child: isAvatarSyncing
-            ? Row(
+            ? const Row(
                 mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   SizedBox(
                     width: 16,
                     height: 16,
                     child: CircularProgressIndicator(
                       strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation<Color>(
-                        ShadTheme.of(context).colorScheme.foreground,
-                      ),
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                     ),
                   ),
-                  const SizedBox(width: 8),
+                  SizedBox(width: 8),
                   Text(
                     'Đang đồng bộ...',
                     style: TextStyle(
-                      fontSize: 16,
+                      fontSize: 14,
                       fontWeight: FontWeight.w600,
-                      color: ShadTheme.of(context).colorScheme.foreground,
+                      color: Colors.white,
                     ),
                   ),
                 ],
               )
-            : Text(
-                'Lưu ảnh đại diện',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: ShadTheme.of(context).colorScheme.foreground,
-                ),
+            : const Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(LucideIcons.check, size: 16, color: Colors.white),
+                  SizedBox(width: 6),
+                  Text(
+                    'Lưu ảnh đại diện',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                  ),
+                ],
               ),
       ),
     );
@@ -252,11 +287,11 @@ class ProfileHeader extends StatelessWidget {
         : 'N';
 
     return Container(
-      width: 100,
-      height: 100,
+      width: 104,
+      height: 104,
       decoration: const BoxDecoration(
         shape: BoxShape.circle,
-        color: Color.fromARGB(255, 182, 187, 195),
+        color: Color(0xFFE2E8F0),
       ),
       child: Center(
         child: Text(
@@ -265,7 +300,7 @@ class ProfileHeader extends StatelessWidget {
             fontFamily: 'Manrope',
             fontSize: 36,
             fontWeight: FontWeight.w700,
-            color: Color.fromARGB(255, 9, 9, 9),
+            color: Color(0xFF1E293B),
           ),
         ),
       ),
@@ -273,33 +308,40 @@ class ProfileHeader extends StatelessWidget {
   }
 
   Widget _buildUserInfoSection(BuildContext context) {
-    return Column(
-      children: [
-        // Full name
-        Text(
-          user['fullName']?.toString() ?? 'Người dùng',
-          style: const TextStyle(
-            fontFamily: 'Manrope',
-            fontSize: 20,
-            fontWeight: FontWeight.w700,
-            color: Color.fromARGB(255, 14, 13, 13),
-          ),
-          textAlign: TextAlign.center,
-        ),
-        const SizedBox(height: 8),
-
-        // Email (only show if not null)
-        if (user['email'] != null)
+    return GestureDetector(
+      onTap: onEditProfile,
+      behavior: HitTestBehavior.opaque,
+      child: Column(
+        children: [
+          // Full name
           Text(
-            user['email'].toString(),
-            style: const TextStyle(
+            user['fullName']?.toString() ?? 'Người dùng',
+            style: TextStyle(
               fontFamily: 'Manrope',
-              fontSize: 14,
-              color: Color.fromARGB(255, 21, 21, 21),
+              fontSize: 20,
+              fontWeight: FontWeight.w800,
+              color: context.textPrimary,
+              letterSpacing: -0.3,
             ),
             textAlign: TextAlign.center,
           ),
-      ],
+          const SizedBox(height: 4),
+
+          // Email (only show if not null)
+          if (user['email'] != null && user['email'].toString().isNotEmpty)
+            Text(
+              user['email'].toString(),
+              style: TextStyle(
+                fontFamily: 'Manrope',
+                fontSize: 13.5,
+                fontWeight: FontWeight.w500,
+                color: context.textMuted,
+              ),
+              textAlign: TextAlign.center,
+            ),
+        ],
+      ),
     );
   }
 }
+

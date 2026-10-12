@@ -33,27 +33,45 @@ class StoreLockerGridPage extends StatefulWidget {
     this.lockerId,
     this.service,
     this.droneHint = false,
+    this.initialLocation,
   });
 
+  /// Thông tin location ban đầu (nếu mở từ LockerLocation)
+  final LockerLocation? initialLocation;
+
   /// Mở thẳng một tủ từ danh sách tủ (`GET /api/lockers`): `location.id` là id
-  /// TỦ, `location.storeId` là cửa hàng chứa tủ. Toạ độ không hợp lệ (NaN) thì
-  /// bỏ để trang không hiện "Chỉ đường".
+  /// TỦ, `location.storeId` là cửa hàng chứa tủ.
   factory StoreLockerGridPage.forLocation(
     LockerLocation location, {
     Key? key,
     bool droneHint = false,
   }) {
-    final hasCoordinate = location.hasValidCoordinate;
+    final hasLockerCoord = location.hasValidCoordinate;
+    final hasStoreCoord =
+        location.storeLatitude != null &&
+        location.storeLongitude != null &&
+        location.storeLatitude!.isFinite &&
+        location.storeLongitude!.isFinite;
+
     return StoreLockerGridPage(
       key: key,
       lockerId: int.tryParse(location.id),
       droneHint: droneHint,
+      initialLocation: location,
       store: Store(
         id: int.tryParse(location.storeId ?? '') ?? 0,
-        name: location.name,
-        address: location.address.isEmpty ? null : location.address,
-        latitude: hasCoordinate ? location.latitude : null,
-        longitude: hasCoordinate ? location.longitude : null,
+        name: location.storeName?.isNotEmpty == true
+            ? location.storeName!
+            : location.name,
+        address: location.storeAddress?.isNotEmpty == true
+            ? location.storeAddress
+            : (location.address.isEmpty ? null : location.address),
+        latitude: hasStoreCoord
+            ? location.storeLatitude
+            : (hasLockerCoord ? location.latitude : null),
+        longitude: hasStoreCoord
+            ? location.storeLongitude
+            : (hasLockerCoord ? location.longitude : null),
         active: location.isActive,
       ),
     );
@@ -118,7 +136,79 @@ class _StoreLockerGridPageState extends State<StoreLockerGridPage> {
     }
   }
 
+  Map<String, dynamic>? get _primaryLocker =>
+      _lockers.isNotEmpty ? _lockers.first : null;
+
+  String? get _currentLockerName {
+    final locker = _primaryLocker;
+    if (locker != null) {
+      final n = locker['name'] as String?;
+      final c = locker['code'] as String?;
+      if (n != null && n.isNotEmpty) return n;
+      if (c != null && c.isNotEmpty) return c;
+    }
+    return widget.initialLocation?.name;
+  }
+
+  String? get _currentLockerAddress {
+    final locker = _primaryLocker;
+    if (locker != null) {
+      final addr = locker['address'] as String?;
+      if (addr != null && addr.isNotEmpty) return addr;
+    }
+    final initAddr = widget.initialLocation?.address;
+    if (initAddr != null && initAddr.isNotEmpty) return initAddr;
+    return null;
+  }
+
+  double? get _currentLockerLat {
+    final locker = _primaryLocker;
+    if (locker != null) {
+      final lat = (locker['latitude'] as num?)?.toDouble();
+      if (lat != null && lat.isFinite) return lat;
+    }
+    if (widget.initialLocation != null &&
+        widget.initialLocation!.hasValidCoordinate) {
+      return widget.initialLocation!.latitude;
+    }
+    return null;
+  }
+
+  double? get _currentLockerLng {
+    final locker = _primaryLocker;
+    if (locker != null) {
+      final lng = (locker['longitude'] as num?)?.toDouble();
+      if (lng != null && lng.isFinite) return lng;
+    }
+    if (widget.initialLocation != null &&
+        widget.initialLocation!.hasValidCoordinate) {
+      return widget.initialLocation!.longitude;
+    }
+    return null;
+  }
+
   void _openDirections() {
+    // 1. Ưu tiên tuyệt đối toạ độ chính xác của tủ (đồng bộ với http://localhost:3000/admin/lockers/5)
+    final lat =
+        _currentLockerLat ??
+        (widget.store.hasLocation ? widget.store.latitude : null);
+    final lng =
+        _currentLockerLng ??
+        (widget.store.hasLocation ? widget.store.longitude : null);
+    if (lat == null || lng == null) return;
+
+    Navigator.of(context, rootNavigator: true).push<void>(
+      MaterialPageRoute(
+        builder: (_) => DirectionsMapPage(
+          destination: LatLng(lat, lng),
+          title: _currentLockerName ?? widget.store.name,
+          subtitle: _currentLockerAddress ?? widget.store.address,
+        ),
+      ),
+    );
+  }
+
+  void _openKioskDirections() {
     if (!widget.store.hasLocation) return;
     Navigator.of(context, rootNavigator: true).push<void>(
       MaterialPageRoute(
@@ -148,7 +238,9 @@ class _StoreLockerGridPageState extends State<StoreLockerGridPage> {
     }
     final lockerId = target['id'].toString();
     final lockerName =
-        (target['name'] as String?) ?? (target['code'] as String?) ?? 'Tủ #$lockerId';
+        (target['name'] as String?) ??
+        (target['code'] as String?) ??
+        'Tủ #$lockerId';
 
     Navigator.of(context, rootNavigator: true).push<void>(
       MaterialPageRoute(
@@ -165,13 +257,22 @@ class _StoreLockerGridPageState extends State<StoreLockerGridPage> {
 
   @override
   Widget build(BuildContext context) {
+    final lockerAddr = _currentLockerAddress ?? widget.store.address;
+    final hasLockerCoord =
+        _currentLockerLat != null && _currentLockerLng != null;
+    final hasCoord = hasLockerCoord || widget.store.hasLocation;
+    final hasKioskInfo =
+        widget.store.name.isNotEmpty &&
+        widget.store.name.trim().toLowerCase() !=
+            (_currentLockerName ?? '').trim().toLowerCase();
+
     return Scaffold(
       backgroundColor: const Color(0xFFF7FAFC),
       body: Column(
         children: [
           BrandHeroHeader(
             title: 'Tủ locker',
-            subtitle: widget.store.name,
+            subtitle: _currentLockerName ?? widget.store.name,
             onBack: () => Navigator.pop(context),
             trailing: BrandCircleIconButton(
               child: const AppLottie(
@@ -182,10 +283,21 @@ class _StoreLockerGridPageState extends State<StoreLockerGridPage> {
               onTap: () => _openReportLocker(),
             ),
           ),
-          if (widget.store.hasLocation)
+          // 1. Thanh vị trí chính xác của tủ (đồng bộ từ admin/lockers/5)
+          if (lockerAddr != null && lockerAddr.isNotEmpty)
             _AddressBar(
-              address: widget.store.address,
-              onDirections: _openDirections,
+              label: 'Vị trí tủ vật lý',
+              address: lockerAddr,
+              onDirections: hasCoord ? _openDirections : null,
+            ),
+          // 2. Thanh vị trí điểm đặt Kiosk (vị trí hiện tại được giữ lại nhưng đặt riêng biệt)
+          if (hasKioskInfo)
+            _KioskLocationBar(
+              kioskName: widget.store.name,
+              kioskAddress: widget.store.address,
+              onDirections: widget.store.hasLocation
+                  ? _openKioskDirections
+                  : null,
             ),
           if (!_loading && _error == null && _lockers.isNotEmpty)
             _SummaryBanner(count: _lockers.length),
@@ -218,7 +330,9 @@ class _StoreLockerGridPageState extends State<StoreLockerGridPage> {
         separatorBuilder: (_, __) => const SizedBox(height: 12),
         itemBuilder: (context, i) => _LockerCard(
           // Khoá theo id + lần tải để kéo làm mới thì thẻ tải lại layout.
-          key: ValueKey('locker-${_lockers[i]['id']}-${identityHashCode(_lockers)}'),
+          key: ValueKey(
+            'locker-${_lockers[i]['id']}-${identityHashCode(_lockers)}',
+          ),
           locker: _lockers[i],
           storeName: widget.store.name,
           service: _service,
@@ -244,7 +358,9 @@ class _DroneHintBanner extends StatelessWidget {
       decoration: BoxDecoration(
         color: const Color(0xFFEEF2FF),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFF6366F1).withValues(alpha: 0.3)),
+        border: Border.all(
+          color: const Color(0xFF6366F1).withValues(alpha: 0.3),
+        ),
       ),
       child: const Row(
         children: [
@@ -269,9 +385,11 @@ class _DroneHintBanner extends StatelessWidget {
 // ── Address + directions bar ──────────────────────────────────────────────────
 
 class _AddressBar extends StatelessWidget {
-  const _AddressBar({this.address, required this.onDirections});
+  const _AddressBar({this.label, this.address, this.onDirections});
+
+  final String? label;
   final String? address;
-  final VoidCallback onDirections;
+  final VoidCallback? onDirections;
 
   @override
   Widget build(BuildContext context) {
@@ -281,49 +399,224 @@ class _AddressBar extends StatelessWidget {
       decoration: BoxDecoration(
         color: AislBrand.navy.withValues(alpha: 0.06),
         borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AislBrand.navy.withValues(alpha: 0.12)),
       ),
       child: Row(
         children: [
-          const Icon(LucideIcons.mapPin, color: AislBrand.navy, size: 16),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              address ?? 'Xem vị trí trên bản đồ',
-              style: const TextStyle(
-                color: AislBrand.navy,
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-              ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
+          Container(
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              color: AislBrand.navy.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: const Icon(
+              LucideIcons.mapPin,
+              color: AislBrand.navy,
+              size: 16,
             ),
           ),
-          const SizedBox(width: 8),
-          GestureDetector(
-            onTap: onDirections,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-              decoration: BoxDecoration(
-                color: AislBrand.navy,
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: const Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.directions_rounded, color: Colors.white, size: 14),
-                  SizedBox(width: 4),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (label != null && label!.isNotEmpty) ...[
                   Text(
-                    'Chỉ đường',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 11,
-                      fontWeight: FontWeight.w600,
+                    label!.toUpperCase(),
+                    style: const TextStyle(
+                      color: AislBrand.navy,
+                      fontSize: 9.5,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 0.4,
                     ),
                   ),
+                  const SizedBox(height: 2),
                 ],
-              ),
+                Text(
+                  address ?? 'Xem vị trí trên bản đồ',
+                  style: const TextStyle(
+                    color: AislBrand.navy,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
             ),
           ),
+          if (onDirections != null) ...[
+            const SizedBox(width: 8),
+            GestureDetector(
+              onTap: onDirections,
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 11,
+                  vertical: 6,
+                ),
+                decoration: BoxDecoration(
+                  color: AislBrand.navy,
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AislBrand.navy.withValues(alpha: 0.25),
+                      blurRadius: 6,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.directions_rounded,
+                      color: Colors.white,
+                      size: 14,
+                    ),
+                    SizedBox(width: 4),
+                    Text(
+                      'Chỉ đường',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+// ── Kiosk Location Bar ────────────────────────────────────────────────────────
+
+class _KioskLocationBar extends StatelessWidget {
+  const _KioskLocationBar({
+    required this.kioskName,
+    this.kioskAddress,
+    this.onDirections,
+  });
+
+  final String kioskName;
+  final String? kioskAddress;
+  final VoidCallback? onDirections;
+
+  @override
+  Widget build(BuildContext context) {
+    final showAddress =
+        kioskAddress != null &&
+        kioskAddress!.isNotEmpty &&
+        kioskAddress!.trim().toLowerCase() != kioskName.trim().toLowerCase();
+
+    return Container(
+      margin: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              color: const Color(0xFF6366F1).withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: const Icon(
+              LucideIcons.store,
+              color: Color(0xFF4F46E5),
+              size: 15,
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Row(
+                  children: [
+                    Text(
+                      'ĐIỂM ĐẶT KIOSK',
+                      style: TextStyle(
+                        color: Color(0xFF4F46E5),
+                        fontSize: 9.5,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 0.4,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  kioskName,
+                  style: const TextStyle(
+                    color: Color(0xFF1E293B),
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                if (showAddress) ...[
+                  const SizedBox(height: 1),
+                  Text(
+                    kioskAddress!,
+                    style: const TextStyle(
+                      color: Color(0xFF64748B),
+                      fontSize: 11,
+                      fontWeight: FontWeight.w400,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ],
+            ),
+          ),
+          if (onDirections != null) ...[
+            const SizedBox(width: 8),
+            GestureDetector(
+              onTap: onDirections,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: const Color(0xFF6366F1).withValues(alpha: 0.35),
+                  ),
+                ),
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.map_outlined,
+                      color: Color(0xFF4F46E5),
+                      size: 14,
+                    ),
+                    SizedBox(width: 4),
+                    Text(
+                      'Chỉ đường',
+                      style: TextStyle(
+                        color: Color(0xFF4F46E5),
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
         ],
       ),
     );
@@ -448,8 +741,7 @@ class _LockerCardState extends State<_LockerCard> {
     _busSub = AppEventBus.instance.events.listen((event) {
       if (!mounted) return;
       if (event is LockerLayoutUpdatedEvent) {
-        if (event.lockerId == null ||
-            event.lockerId == _lockerId.toString()) {
+        if (event.lockerId == null || event.lockerId == _lockerId.toString()) {
           if (_expanded) {
             _loadLayout(force: true);
           } else {
@@ -538,7 +830,8 @@ class _LockerCardState extends State<_LockerCard> {
           if (isDisconnected)
             const _StateNotice(
               icon: LucideIcons.wifiOff,
-              text: 'Tủ đang mất kết nối với máy chủ nên tạm thời chưa đặt được ô.',
+              text:
+                  'Tủ đang mất kết nối với máy chủ nên tạm thời chưa đặt được ô.',
               color: Color(0xFFB91C1C),
               background: Color(0xFFFEF2F2),
               border: Color(0xFFFECACA),
@@ -1050,7 +1343,8 @@ class _CellGrid extends StatelessWidget {
           continue;
         }
         // Ô vali XL chiếm 2 hàng nếu ô ngay dưới đang trống.
-        final span = LockerLayoutHelper.isXl(cell) &&
+        final span =
+            LockerLayoutHelper.isXl(cell) &&
                 row < maxRow &&
                 grid[col]?[row + 1] == null
             ? 2
@@ -1247,7 +1541,9 @@ class _ScreenTile extends StatelessWidget {
                       Colors.transparent,
                     ],
                   ),
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(9)),
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(9),
+                  ),
                 ),
               ),
             ),
@@ -1287,10 +1583,14 @@ class _ScreenTile extends StatelessWidget {
                           vertical: 0.5,
                         ),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF0369A1).withValues(alpha: 0.35),
+                          color: const Color(
+                            0xFF0369A1,
+                          ).withValues(alpha: 0.35),
                           borderRadius: BorderRadius.circular(3),
                           border: Border.all(
-                            color: const Color(0xFF38BDF8).withValues(alpha: 0.4),
+                            color: const Color(
+                              0xFF38BDF8,
+                            ).withValues(alpha: 0.4),
                             width: 0.6,
                           ),
                         ),
@@ -1348,8 +1648,9 @@ class _ScreenTile extends StatelessWidget {
                               boxShadow: isOnline
                                   ? [
                                       BoxShadow(
-                                        color: const Color(0xFF22C55E)
-                                            .withValues(alpha: 0.9),
+                                        color: const Color(
+                                          0xFF22C55E,
+                                        ).withValues(alpha: 0.9),
                                         blurRadius: 4,
                                       ),
                                     ]
@@ -1810,9 +2111,7 @@ class _CellTile extends StatelessWidget {
       ),
       child: Stack(
         children: [
-          Positioned.fill(
-            child: _buildCellContent(),
-          ),
+          Positioned.fill(child: _buildCellContent()),
           if (_isFault)
             Positioned(
               left: 6,
@@ -1928,7 +2227,11 @@ class _CellTile extends StatelessWidget {
           ),
           // Giữa: Icon loại ô
           Center(
-            child: Icon(icon, color: _fg.withValues(alpha: 0.95), size: iconSize),
+            child: Icon(
+              icon,
+              color: _fg.withValues(alpha: 0.95),
+              size: iconSize,
+            ),
           ),
           // Hàng dưới: Trạng thái ô (Sẵn sàng / Đang dùng / Báo hỏng / ...)
           Center(
@@ -1967,7 +2270,11 @@ class _CellTile extends StatelessWidget {
           borderRadius: BorderRadius.circular(3),
           border: Border.all(color: const Color(0xFFEAB308), width: 0.8),
         ),
-        child: const Icon(LucideIcons.doorOpen, size: 9, color: Color(0xFF854D0E)),
+        child: const Icon(
+          LucideIcons.doorOpen,
+          size: 9,
+          color: Color(0xFF854D0E),
+        ),
       );
     }
     return Container(
@@ -1976,7 +2283,11 @@ class _CellTile extends StatelessWidget {
         color: Colors.black.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(3),
       ),
-      child: Icon(LucideIcons.doorClosed, size: 9, color: _fg.withValues(alpha: 0.8)),
+      child: Icon(
+        LucideIcons.doorClosed,
+        size: 9,
+        color: _fg.withValues(alpha: 0.8),
+      ),
     );
   }
 }
@@ -2206,7 +2517,11 @@ class _BookingSheet extends StatelessWidget {
                 ),
               );
             },
-            icon: const Icon(LucideIcons.alertTriangle, size: 14, color: Color(0xFFEF4444)),
+            icon: const Icon(
+              LucideIcons.alertTriangle,
+              size: 14,
+              color: Color(0xFFEF4444),
+            ),
             label: const Text(
               'Gặp sự cố với ô này? Báo cáo ngay',
               style: TextStyle(

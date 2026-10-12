@@ -32,6 +32,18 @@ class LockerLocationModel {
   @JsonKey(name: 'online')
   final bool? online;
 
+  @JsonKey(name: 'storeName')
+  final String? storeName;
+
+  @JsonKey(name: 'storeAddress')
+  final String? storeAddress;
+
+  @JsonKey(name: 'storeLatitude')
+  final double? storeLatitude;
+
+  @JsonKey(name: 'storeLongitude')
+  final double? storeLongitude;
+
   const LockerLocationModel({
     required this.id,
     required this.name,
@@ -45,14 +57,57 @@ class LockerLocationModel {
     this.updatedAt,
     this.storeId,
     this.online,
+    this.storeName,
+    this.storeAddress,
+    this.storeLatitude,
+    this.storeLongitude,
   });
 
-  /// Factory: Tạo từ JSON (generated)
-  factory LockerLocationModel.fromJson(Map<String, dynamic> json) =>
-      _$LockerLocationModelFromJson(json);
+  /// Factory: Tạo từ JSON
+  factory LockerLocationModel.fromJson(Map<String, dynamic> json) {
+    return LockerLocationModel(
+      id: (json['id'] ?? '').toString(),
+      name: (json['name'] ?? '').toString(),
+      address: (json['address'] ?? '').toString(),
+      latitude: (json['latitude'] as num?)?.toDouble() ?? double.nan,
+      longitude: (json['longitude'] as num?)?.toDouble() ?? double.nan,
+      description: json['description'] as String?,
+      isActive: json['isActive'] as bool? ?? true,
+      imageUrl: json['imageUrl'] as String?,
+      createdAt: json['createdAt'] == null
+          ? null
+          : DateTime.tryParse(json['createdAt'] as String),
+      updatedAt: json['updatedAt'] == null
+          ? null
+          : DateTime.tryParse(json['updatedAt'] as String),
+      storeId: json['storeId']?.toString(),
+      online: json['online'] as bool?,
+      storeName: json['storeName'] as String?,
+      storeAddress: json['storeAddress'] as String?,
+      storeLatitude: (json['storeLatitude'] as num?)?.toDouble(),
+      storeLongitude: (json['storeLongitude'] as num?)?.toDouble(),
+    );
+  }
 
-  /// Convert sang JSON (generated)
-  Map<String, dynamic> toJson() => _$LockerLocationModelToJson(this);
+  /// Convert sang JSON
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'name': name,
+    'address': address,
+    'latitude': latitude,
+    'longitude': longitude,
+    'description': description,
+    'isActive': isActive,
+    'imageUrl': imageUrl,
+    'createdAt': createdAt?.toIso8601String(),
+    'updatedAt': updatedAt?.toIso8601String(),
+    'storeId': storeId,
+    'online': online,
+    'storeName': storeName,
+    'storeAddress': storeAddress,
+    'storeLatitude': storeLatitude,
+    'storeLongitude': storeLongitude,
+  };
 
   /// Convert sang Domain Entity
   LockerLocation toEntity() {
@@ -69,6 +124,10 @@ class LockerLocationModel {
       updatedAt: updatedAt,
       storeId: storeId,
       online: online,
+      storeName: storeName,
+      storeAddress: storeAddress,
+      storeLatitude: storeLatitude,
+      storeLongitude: storeLongitude,
     );
   }
 
@@ -87,6 +146,10 @@ class LockerLocationModel {
       updatedAt: entity.updatedAt,
       storeId: entity.storeId,
       online: entity.online,
+      storeName: entity.storeName,
+      storeAddress: entity.storeAddress,
+      storeLatitude: entity.storeLatitude,
+      storeLongitude: entity.storeLongitude,
     );
   }
 }

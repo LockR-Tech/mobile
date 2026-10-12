@@ -43,8 +43,8 @@ class LockerRemoteDataSourceImpl implements LockerRemoteDataSource {
         ? (raw['data'] as List<dynamic>? ?? const <dynamic>[])
         : (raw is List ? raw : const <dynamic>[]);
 
-    // Build storeId → imageUrl map; ignore failures (images are optional).
-    final Map<String, String> storeImages = {};
+    // Build storeId → store data map (name, address, lat, lng, image)
+    final Map<String, Map<String, dynamic>> storeMap = {};
     try {
       final storesResp = await _apiClient.get<dynamic>('/api/stores');
       final storeRaw = storesResp.data;
@@ -55,14 +55,13 @@ class LockerRemoteDataSourceImpl implements LockerRemoteDataSource {
         for (final s in storeItems) {
           if (s is! Map<String, dynamic>) continue;
           final sid = s['id']?.toString();
-          final img = (s['image'] ?? s['imageUrl']) as String?;
-          if (sid != null && img != null && img.isNotEmpty) {
-            storeImages[sid] = img;
+          if (sid != null) {
+            storeMap[sid] = s;
           }
         }
       }
     } catch (_) {
-      // Store images not critical — list works fine without them.
+      // Store data not critical — list works fine without them.
     }
 
     final query = (search ?? '').trim().toLowerCase();
@@ -85,29 +84,49 @@ class LockerRemoteDataSourceImpl implements LockerRemoteDataSource {
 
       final status = isDisconnected ? 'DISCONNECTED' : rawStatus;
 
+      final store = storeId != null ? storeMap[storeId] : null;
+      final storeName = store?['name']?.toString();
+      final storeAddress = store?['address']?.toString();
+      final storeLat = (store?['latitude'] as num?)?.toDouble();
+      final storeLng = (store?['longitude'] as num?)?.toDouble();
+      final storeImg = (store?['image'] ?? store?['imageUrl']) as String?;
+
       if (query.isNotEmpty &&
           !lockerName.toLowerCase().contains(query) &&
           !code.toLowerCase().contains(query) &&
-          !addr.toLowerCase().contains(query)) {
+          !addr.toLowerCase().contains(query) &&
+          !(storeName?.toLowerCase().contains(query) ?? false) &&
+          !(storeAddress?.toLowerCase().contains(query) ?? false)) {
         continue;
       }
+
+      // Toạ độ chính xác của tủ (lấy đúng từ admin lockers/{id}):
+      // Nếu tủ có toạ độ riêng hợp lệ thì dùng; nếu chưa gán thì fallback về toạ độ điểm đặt Kiosk.
+      final double? itemLat = (item['latitude'] as num?)?.toDouble();
+      final double? itemLng = (item['longitude'] as num?)?.toDouble();
+      final double lockerLat = (itemLat != null && itemLat.isFinite)
+          ? itemLat
+          : (storeLat != null && storeLat.isFinite ? storeLat : double.nan);
+      final double lockerLng = (itemLng != null && itemLng.isFinite)
+          ? itemLng
+          : (storeLng != null && storeLng.isFinite ? storeLng : double.nan);
 
       locations.add(<String, dynamic>{
         'id': idStr,
         'name': lockerName,
-        'address': addr,
-        // Missing coordinates -> NaN so LockerLocation.hasValidCoordinate is
-        // false and the detail page shows a friendly "no map" message instead
-        // of dropping a pin at (0,0). The list itself only uses name/address.
-        'latitude': (item['latitude'] as num?)?.toDouble() ?? double.nan,
-        'longitude': (item['longitude'] as num?)?.toDouble() ?? double.nan,
+        'address': addr.isNotEmpty ? addr : (storeAddress ?? ''),
+        'latitude': lockerLat,
+        'longitude': lockerLng,
         'isActive': status == 'ACTIVE',
         'description': status,
-        // Giữ id cửa hàng riêng — `id` ở trên là id tủ.
         if (storeId != null) 'storeId': storeId,
         if (isOnline != null) 'online': isOnline,
-        if (storeId != null && storeImages.containsKey(storeId))
-          'imageUrl': storeImages[storeId],
+        if (storeImg != null && storeImg.isNotEmpty) 'imageUrl': storeImg,
+        if (storeName != null && storeName.isNotEmpty) 'storeName': storeName,
+        if (storeAddress != null && storeAddress.isNotEmpty)
+          'storeAddress': storeAddress,
+        if (storeLat != null && storeLat.isFinite) 'storeLatitude': storeLat,
+        if (storeLng != null && storeLng.isFinite) 'storeLongitude': storeLng,
       });
     }
 
