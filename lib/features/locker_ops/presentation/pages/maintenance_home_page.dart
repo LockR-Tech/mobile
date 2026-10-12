@@ -3639,9 +3639,11 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
       ),
     );
     if (ok != true || selected == null) return;
-    await _run(
+    await _runOrderAction(
+      id,
+      'change-drone',
       () => _service.changeDroneOfOrder(id, droneUnitId: selected!),
-      'Đã đổi drone · nạp lại kiện rồi phóng',
+      success: 'Đã đổi drone · nạp lại kiện rồi phóng',
     );
   }
 
@@ -3661,9 +3663,11 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
       initialReason: block is Map ? '${block['reason']}' : null,
     );
     if (result == null) return;
-    await _run(
+    await _runOrderAction(
+      id,
+      'fail-delivery',
       () => _service.failDroneOrder(id, reason: result.$1, note: result.$2),
-      'Đã đóng đơn · mang kiện trả lại người gửi',
+      success: 'Đã đóng đơn · mang kiện trả lại người gửi',
     );
   }
 
