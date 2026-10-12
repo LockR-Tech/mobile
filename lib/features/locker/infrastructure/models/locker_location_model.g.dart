@@ -22,6 +22,8 @@ LockerLocationModel _$LockerLocationModelFromJson(Map<String, dynamic> json) =>
       updatedAt: json['updatedAt'] == null
           ? null
           : DateTime.parse(json['updatedAt'] as String),
+      storeId: json['storeId'] as String?,
+      online: json['online'] as bool?,
     );
 
 Map<String, dynamic> _$LockerLocationModelToJson(
@@ -37,4 +39,6 @@ Map<String, dynamic> _$LockerLocationModelToJson(
   'imageUrl': instance.imageUrl,
   'createdAt': instance.createdAt?.toIso8601String(),
   'updatedAt': instance.updatedAt?.toIso8601String(),
+  'storeId': instance.storeId,
+  'online': instance.online,
 };

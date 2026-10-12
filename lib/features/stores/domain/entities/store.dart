@@ -1,3 +1,5 @@
+import 'package:smart_laundry_locker/core/utils/app_date_time.dart';
+
 /// A store/partner branch where lockers are hosted.
 ///
 /// Mirrors the backend `StoreResponse` returned by `GET /api/stores` and
@@ -51,7 +53,15 @@ class Store {
   bool get isActive =>
       active && (status == null || status!.toUpperCase() == 'ACTIVE');
 
-  bool get hasLocation => latitude != null && longitude != null;
+  /// Có toạ độ dùng được để vẽ bản đồ / chỉ đường. Tủ thiếu toạ độ được map
+  /// thành NaN ở danh sách tủ, nên phải loại cả NaN/vô cực và ngoài phạm vi.
+  bool get hasLocation {
+    final lat = latitude;
+    final lng = longitude;
+    if (lat == null || lng == null) return false;
+    if (!lat.isFinite || !lng.isFinite) return false;
+    return lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180;
+  }
 
   static int _asInt(Object? value) {
     if (value is int) return value;
@@ -88,22 +98,24 @@ class StoreRating {
           0,
       comment:
           (json['comment'] ?? json['content'] ?? json['review']) as String?,
-      userName:
-          (json['userName'] ?? json['user_name'] ?? json['customerName'])
-              as String?,
-      createdAt: _asDate(json['createdAt'] ?? json['created_at']),
+      userName: _asName(
+        json['userName'] ?? json['user_name'] ?? json['customerName'],
+      ),
+      createdAt: parseServerDateTime(json['createdAt'] ?? json['created_at']),
     );
+  }
+
+  /// Tên người đánh giá do backend trả (`userName`); rỗng ⇒ null để UI hiện
+  /// "Khách hàng".
+  static String? _asName(Object? value) {
+    final text = value?.toString().trim() ?? '';
+    return text.isEmpty ? null : text;
   }
 
   final double rating;
   final String? comment;
   final String? userName;
   final DateTime? createdAt;
-
-  static DateTime? _asDate(Object? value) {
-    if (value == null) return null;
-    return DateTime.tryParse('$value');
-  }
 }
 
 /// Aggregated rating summary for a store.

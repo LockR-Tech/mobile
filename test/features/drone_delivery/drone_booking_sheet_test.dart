@@ -56,7 +56,6 @@ void main() {
               required description,
               required parcelWeightGrams,
               required parcel,
-              required paymentMethod,
               required idempotencyKey,
             }) async => {'orderId': 77, 'totalPrice': 30000},
             payOrder: (context, {required orderId, required total}) async {
@@ -110,7 +109,6 @@ void main() {
             required description,
             required parcelWeightGrams,
             required parcel,
-            required paymentMethod,
             required idempotencyKey,
           }) async {
             sentDestinations.add(destinationLockerId);
@@ -180,7 +178,6 @@ void main() {
               required description,
               required parcelWeightGrams,
               required parcel,
-              required paymentMethod,
               required idempotencyKey,
             }) async {
               sent.add(parcel.toJson());
@@ -274,7 +271,6 @@ void main() {
               required description,
               required parcelWeightGrams,
               required parcel,
-              required paymentMethod,
               required idempotencyKey,
             }) async => {
               'orderId': 77,
@@ -337,7 +333,6 @@ void main() {
               required description,
               required parcelWeightGrams,
               required parcel,
-              required paymentMethod,
               required idempotencyKey,
             }) async {
               sentWeight = parcelWeightGrams;
@@ -408,7 +403,6 @@ void main() {
               required description,
               required parcelWeightGrams,
               required parcel,
-              required paymentMethod,
               required idempotencyKey,
             }) async {
               sentWeight = parcelWeightGrams;
@@ -484,7 +478,6 @@ void main() {
               required description,
               required parcelWeightGrams,
               required parcel,
-              required paymentMethod,
               required idempotencyKey,
             }) async {
               calls++;

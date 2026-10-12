@@ -4,7 +4,6 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:smart_laundry_locker/core/routing/app_router.dart';
 import 'package:smart_laundry_locker/core/theme/shadcn_theme.dart';
 import 'package:smart_laundry_locker/features/locker/domain/entities/locker_location.dart';
-import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
 
 /// A bookable service that can be ordered AT a given locker location.
 /// These are the 3 location-scoped entries lifted from the old home
@@ -193,92 +192,6 @@ class _ServiceTile extends StatelessWidget {
                 color: Color(0xFF94A3B8),
               ),
             ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-/// A compact row of locker utilities that are NOT location-scoped orders
-/// (pickup by OTP, my locker orders, authorized opening). Shown on the
-/// "Tủ" tab so these shortcuts remain reachable after the home grid moved.
-class LockerUtilitiesRow extends StatelessWidget {
-  const LockerUtilitiesRow({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        _UtilityChip(
-          icon: LucideIcons.package,
-          label: 'Đơn tủ',
-          color: const Color(0xFFE91E63),
-          onTap: () => context.go(AppRouter.orders),
-        ),
-        const SizedBox(width: 10),
-        _UtilityChip(
-          icon: LucideIcons.lockOpen,
-          label: 'Ủy quyền',
-          color: AISLShadcnTheme.navyPrimary,
-          onTap: () => context.push(AppRouter.authorizedOpening),
-        ),
-      ],
-    );
-  }
-}
-
-class _UtilityChip extends StatelessWidget {
-  const _UtilityChip({
-    required this.icon,
-    required this.label,
-    required this.color,
-    required this.onTap,
-  });
-
-  final IconData icon;
-  final String label;
-  final Color color;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return Expanded(
-      child: Material(
-        color: context.cardBg,
-        borderRadius: BorderRadius.circular(14),
-        child: InkWell(
-          borderRadius: BorderRadius.circular(14),
-          onTap: onTap,
-          child: Container(
-            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: context.borderColor),
-            ),
-            child: Column(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: color.withValues(alpha: 0.12),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(icon, color: color, size: 20),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  label,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
-                    color: context.textPrimary,
-                  ),
-                ),
-              ],
-            ),
           ),
         ),
       ),

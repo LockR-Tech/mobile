@@ -18,27 +18,17 @@ class LockerLayoutHelper {
     return enriched;
   }
 
-  /// Chuẩn hoá danh sách ô tủ
+  /// Chuẩn hoá danh sách ô tủ. Loại ô lấy NGUYÊN từ `cellType` của backend
+  /// (STANDARD / DRONE / XL — `CellType` ở locker-service); không suy ra từ vị
+  /// trí cột hay số ô. Thiếu `cellType` (dữ liệu cũ) thì chỉ ô `size == XL` là
+  /// ô vali, còn lại là ô thường — không bao giờ tự coi là ô drone.
   static List<Map<String, dynamic>> enrichCells(List rawCells) {
     final enrichedCells = rawCells.map((c) {
       if (c is! Map) return <String, dynamic>{};
       final map = Map<String, dynamic>.from(c);
-      final boxNum = (map['boxNumber'] as num?)?.toInt();
-      final col = (map['colIndex'] as num?)?.toInt();
-      final cellType = (map['cellType'] as String?)?.toUpperCase();
-
-      final size = (map['size'] as String?)?.toUpperCase();
-      // Ô vali (XL, size XL, hoặc cột 0): là ô thường (thuê tủ lưu đồ lớn, KHÔNG PHẢI drone)
-      if (cellType == 'XL' || size == 'XL' || col == 0) {
-        map['cellType'] = 'XL';
-        map['isDrone'] = false;
-      } else if (cellType == 'DRONE' ||
-          (cellType == null && (boxNum == 2 || boxNum == 3))) {
-        map['cellType'] = 'DRONE';
-        map['isDrone'] = true;
-      } else {
-        map['isDrone'] = false;
-      }
+      final type = cellType(map);
+      map['cellType'] = type;
+      map['isDrone'] = type == 'DRONE';
       return map;
     }).toList();
 
@@ -49,23 +39,80 @@ class LockerLayoutHelper {
     return enrichedCells;
   }
 
-  /// Kiểm tra ô vali lớn XL (cột 0 trạm Kiosk hoặc loại/kích cỡ XL)
-  static bool isXl(Map<String, dynamic> cell) {
-    final cellType = (cell['cellType'] as String?)?.toUpperCase();
-    final size = (cell['size'] as String?)?.toUpperCase();
-    final col = (cell['colIndex'] as num?)?.toInt();
-    return cellType == 'XL' || size == 'XL' || col == 0;
+  /// Loại ô đã chuẩn hoá: `cellType` của backend, thiếu thì suy từ `size`.
+  static String cellType(Map<String, dynamic> cell) {
+    final raw = (cell['cellType'] as String?)?.trim().toUpperCase() ?? '';
+    if (raw.isNotEmpty) return raw;
+    final size = (cell['size'] as String?)?.trim().toUpperCase();
+    return size == 'XL' ? 'XL' : 'STANDARD';
   }
 
-  /// Kiểm tra ô Drone nóc tủ
-  static bool isDrone(Map<String, dynamic> cell) {
-    if (isXl(cell)) return false;
-    final cellType = (cell['cellType'] as String?)?.toUpperCase();
-    final boxNum = (cell['boxNumber'] as num?)?.toInt();
-    return cell['isDrone'] == true ||
-        cellType == 'DRONE' ||
-        ((cellType == null || cellType.isEmpty) && (boxNum == 2 || boxNum == 3));
+  /// Ô vali lớn XL — chỉ theo loại ô backend trả.
+  static bool isXl(Map<String, dynamic> cell) => cellType(cell) == 'XL';
+
+  /// Ô nhận hàng drone — chỉ theo loại ô backend trả.
+  static bool isDrone(Map<String, dynamic> cell) => cellType(cell) == 'DRONE';
+
+  /// Lý do không cho đặt ô ở tủ này; `null` = đặt được.
+  ///
+  /// [online] là cờ `online` của `GET /api/lockers` hoặc của layout (`null` khi
+  /// server cũ chưa trả — không tự đoán là mất kết nối).
+  static String? bookingBlockReason({String? status, bool? online}) {
+    final st = (status ?? 'ACTIVE').trim().toUpperCase();
+    if (online == false || st == 'DISCONNECTED') {
+      return 'Tủ đang mất kết nối nên chưa đặt được ô. Vui lòng chọn tủ khác hoặc thử lại sau.';
+    }
+    if (st == 'MAINTENANCE') {
+      return 'Tủ đang bảo trì nên tạm ngưng nhận đơn. Vui lòng chọn tủ khác.';
+    }
+    if (st != 'ACTIVE') {
+      return 'Tủ đang tạm ngưng hoạt động nên chưa đặt được ô.';
+    }
+    return null;
   }
+
+  /// Đếm ô theo loại cho thẻ thông tin tủ (bản đồ): ô thường theo kích cỡ, ô
+  /// vali XL, ô drone. Thứ tự: S, M, L, XL, Drone, khác.
+  static List<LockerCellGroupCount> summarizeCells(List rawCells) {
+    final groups = <String, LockerCellGroupCount>{};
+    for (final c in rawCells) {
+      if (c is! Map) continue;
+      final cell = Map<String, dynamic>.from(c);
+      final type = cellType(cell);
+      final size = (cell['size'] as String?)?.trim().toUpperCase() ?? '';
+      final key = switch (type) {
+        'DRONE' => 'DRONE',
+        'XL' => 'XL',
+        _ => switch (size) {
+          'SMALL' || 'S' => 'SMALL',
+          'MEDIUM' || 'M' => 'MEDIUM',
+          'LARGE' || 'L' => 'LARGE',
+          _ => 'STANDARD',
+        },
+      };
+      final available = status(cell) == 'AVAILABLE' ? 1 : 0;
+      final prev = groups[key];
+      groups[key] = LockerCellGroupCount(
+        key: key,
+        label: _groupLabels[key] ?? key,
+        available: (prev?.available ?? 0) + available,
+        total: (prev?.total ?? 0) + 1,
+      );
+    }
+    final order = _groupLabels.keys.toList();
+    final result = groups.values.toList()
+      ..sort((a, b) => order.indexOf(a.key).compareTo(order.indexOf(b.key)));
+    return result;
+  }
+
+  static const _groupLabels = <String, String>{
+    'SMALL': 'Ô nhỏ (S)',
+    'MEDIUM': 'Ô vừa (M)',
+    'LARGE': 'Ô lớn (L)',
+    'STANDARD': 'Ô thường',
+    'XL': 'Ô vali (XL)',
+    'DRONE': 'Ô drone',
+  };
 
   /// Trạng thái mở cửa
   static bool isDoorOpen(Map<String, dynamic> cell) {
@@ -81,8 +128,8 @@ class LockerLayoutHelper {
   /// Nhãn loại ô cho người dùng
   static String typeLabel(Map<String, dynamic> cell) {
     if (isDrone(cell)) return 'Drone (Nóc tủ)';
-    if (isXl(cell)) return 'Vali (XL - Cột 1)';
-    return 'Tiêu chuẩn (Vừa)';
+    if (isXl(cell)) return 'Vali (XL)';
+    return 'Tiêu chuẩn';
   }
 
   /// Nhãn trạng thái hiển thị
@@ -173,4 +220,19 @@ class LockerLayoutHelper {
         ),
     };
   }
+}
+
+/// Số ô (trống / tổng) của một nhóm loại ô trong tủ.
+class LockerCellGroupCount {
+  const LockerCellGroupCount({
+    required this.key,
+    required this.label,
+    required this.available,
+    required this.total,
+  });
+
+  final String key;
+  final String label;
+  final int available;
+  final int total;
 }

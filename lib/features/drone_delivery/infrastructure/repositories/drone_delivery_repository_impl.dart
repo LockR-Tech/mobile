@@ -25,8 +25,21 @@ class DroneDeliveryRepositoryImpl implements DroneDeliveryRepository {
       return Left(NetworkFailure(e.message));
     } on NotFoundException catch (e) {
       return Left(NotFoundFailure(e.message));
-    } catch (e) {
-      return Left(UnknownFailure(e.toString()));
+    } on AuthorizationException {
+      return const Left(
+        ServerFailure(
+          'Bạn không có quyền xem đơn drone này. Chỉ người đặt và người nhận '
+          'theo dõi được đơn.',
+        ),
+      );
+    } on AuthenticationException catch (e) {
+      return Left(ServerFailure(e.message));
+    } on ValidationException catch (e) {
+      return Left(ServerFailure(e.message));
+    } catch (_) {
+      return const Left(
+        UnknownFailure('Không tải được trạng thái giao hàng. Đang thử lại...'),
+      );
     }
   }
 }

@@ -76,17 +76,12 @@ class LockerRemoteDataSourceImpl implements LockerRemoteDataSource {
       final addr = (item['address'] ?? '').toString();
       final rawStatus = (item['status'] ?? 'ACTIVE').toString().toUpperCase();
       final storeId = item['storeId']?.toString();
-      final bool? isOnline = item['online'] as bool?;
+      // `online` do locker-service tính (bộ điều khiển có tín hiệu trong cửa sổ
+      // online). Server cũ chưa trả ⇒ null ⇒ không tự đoán là mất kết nối.
+      final bool? isOnline = item['online'] is bool ? item['online'] as bool : null;
 
-      // Tủ thật TU01 (CAB-TU01) ở admin hiện đang mất kết nối (Pi gateway offline)
-      final isCabinetTU01 = idStr == '7' ||
-          code == 'CAB-TU01' ||
-          lockerName.contains('TU01') ||
-          lockerName.contains('Tủ thật');
-
-      final bool isDisconnected = isOnline == false ||
-          rawStatus == 'DISCONNECTED' ||
-          (isCabinetTU01 && isOnline != true);
+      final bool isDisconnected =
+          isOnline == false || rawStatus == 'DISCONNECTED';
 
       final status = isDisconnected ? 'DISCONNECTED' : rawStatus;
 
@@ -108,6 +103,9 @@ class LockerRemoteDataSourceImpl implements LockerRemoteDataSource {
         'longitude': (item['longitude'] as num?)?.toDouble() ?? double.nan,
         'isActive': status == 'ACTIVE',
         'description': status,
+        // Giữ id cửa hàng riêng — `id` ở trên là id tủ.
+        if (storeId != null) 'storeId': storeId,
+        if (isOnline != null) 'online': isOnline,
         if (storeId != null && storeImages.containsKey(storeId))
           'imageUrl': storeImages[storeId],
       });

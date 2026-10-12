@@ -1,7 +1,6 @@
 import 'package:geolocator/geolocator.dart';
 import 'package:smart_laundry_locker/features/locker/domain/entities/locker_location.dart';
 import 'package:smart_laundry_locker/features/locker/presentation/pages/locker_map_page.dart';
-import 'package:smart_laundry_locker/features/stores/domain/entities/store.dart';
 import 'package:smart_laundry_locker/features/stores/presentation/pages/store_lockers_page.dart';
 import 'package:smart_laundry_locker/features/locker/presentation/providers/locker_provider.dart';
 import 'package:smart_laundry_locker/features/locker/presentation/providers/locker_providers.dart';
@@ -159,16 +158,8 @@ class _LockerPageState extends ConsumerState<LockerPage> {
   void _navigateToMap(LockerLocation location) {
     Navigator.of(context, rootNavigator: true).push<void>(
       MaterialPageRoute(
-        builder: (_) => StoreLockerGridPage(
-          store: Store(
-            id: int.tryParse(location.id) ?? 0,
-            name: location.name,
-            address: location.address,
-            latitude: location.latitude,
-            longitude: location.longitude,
-            active: location.isActive,
-          ),
-        ),
+        // `location.id` là id tủ — mở đúng tủ đó, không coi là id cửa hàng.
+        builder: (_) => StoreLockerGridPage.forLocation(location),
       ),
     );
   }

@@ -15,6 +15,13 @@ class LockerLocation {
   final DateTime? createdAt;
   final DateTime? updatedAt;
 
+  /// Cửa hàng chứa tủ (`LockerResponse.storeId`); `id` ở trên là id TỦ.
+  final String? storeId;
+
+  /// Bộ điều khiển tủ đang có tín hiệu (`LockerResponse.online`); null khi
+  /// server chưa trả trường này.
+  final bool? online;
+
   const LockerLocation({
     required this.id,
     required this.name,
@@ -26,6 +33,8 @@ class LockerLocation {
     this.imageUrl,
     this.createdAt,
     this.updatedAt,
+    this.storeId,
+    this.online,
   });
 
   /// Business logic: Lấy tọa độ LatLng
@@ -71,6 +80,8 @@ class LockerLocation {
     String? imageUrl,
     DateTime? createdAt,
     DateTime? updatedAt,
+    String? storeId,
+    bool? online,
   }) {
     return LockerLocation(
       id: id ?? this.id,
@@ -83,6 +94,8 @@ class LockerLocation {
       imageUrl: imageUrl ?? this.imageUrl,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      storeId: storeId ?? this.storeId,
+      online: online ?? this.online,
     );
   }
 

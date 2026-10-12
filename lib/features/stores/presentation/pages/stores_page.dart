@@ -7,6 +7,7 @@ import 'package:smart_laundry_locker/core/network/api_client.dart';
 import 'package:smart_laundry_locker/core/routing/app_router.dart';
 import 'package:smart_laundry_locker/core/theme/shadcn_theme.dart';
 import 'package:smart_laundry_locker/features/stores/domain/entities/store.dart';
+import 'package:smart_laundry_locker/features/stores/infrastructure/services/favorite_stores_service.dart';
 import 'package:smart_laundry_locker/features/stores/infrastructure/services/store_service.dart';
 import 'package:smart_laundry_locker/features/stores/presentation/widgets/store_card.dart';
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
@@ -23,7 +24,11 @@ class StoresPage extends StatefulWidget {
 
 class _StoresPageState extends State<StoresPage> {
   final StoreService _service = StoreService(ApiClient());
+  final FavoriteStoresService _favService = FavoriteStoresService();
   final TextEditingController _searchCtrl = TextEditingController();
+
+  /// Điểm gửi yêu thích (lưu trên máy) — để vẽ nút tim trên từng thẻ.
+  Set<int> _favoriteIds = <int>{};
 
   List<Store> _all = const [];
   List<Store> _visible = const [];
@@ -35,6 +40,34 @@ class _StoresPageState extends State<StoresPage> {
   void initState() {
     super.initState();
     _load();
+    _loadFavorites();
+  }
+
+  Future<void> _loadFavorites() async {
+    try {
+      final ids = await _favService.getFavoriteIds();
+      if (mounted) setState(() => _favoriteIds = ids);
+    } catch (_) {
+      // Không đọc được bộ nhớ máy: vẫn hiện danh sách, chỉ thiếu trạng thái tim.
+    }
+  }
+
+  Future<void> _toggleFavorite(Store store) async {
+    try {
+      final now = await _favService.toggle(store.id);
+      if (!mounted) return;
+      setState(() {
+        _favoriteIds = {..._favoriteIds};
+        if (now) {
+          _favoriteIds.add(store.id);
+        } else {
+          _favoriteIds.remove(store.id);
+        }
+      });
+      _toast(now ? 'Đã thêm vào yêu thích' : 'Đã bỏ khỏi yêu thích');
+    } catch (_) {
+      _toast('Không lưu được danh sách yêu thích.');
+    }
   }
 
   @override
@@ -141,10 +174,24 @@ class _StoresPageState extends State<StoresPage> {
           BrandHeroHeader(
             title: 'Điểm gửi',
             subtitle: 'Khám phá điểm tủ & đối tác liên kết',
-            trailing: BrandCircleIconButton(
-              icon: LucideIcons.refreshCw,
-              onTap: _load,
-              iconSize: 18,
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                BrandCircleIconButton(
+                  icon: LucideIcons.heart,
+                  onTap: () async {
+                    await context.push(AppRouter.favoriteStores);
+                    if (mounted) _loadFavorites();
+                  },
+                  iconSize: 18,
+                ),
+                const SizedBox(width: 8),
+                BrandCircleIconButton(
+                  icon: LucideIcons.refreshCw,
+                  onTap: _load,
+                  iconSize: 18,
+                ),
+              ],
             ),
           ),
           _buildSearchBar(),
@@ -248,7 +295,12 @@ class _StoresPageState extends State<StoresPage> {
           final store = _visible[index];
           return StoreCard(
             store: store,
-            onTap: () => context.push(AppRouter.storeDetail, extra: store),
+            isFavorite: _favoriteIds.contains(store.id),
+            onToggleFavorite: () => _toggleFavorite(store),
+            onTap: () async {
+              await context.push(AppRouter.storeDetail, extra: store);
+              if (mounted) _loadFavorites();
+            },
           );
         },
       ),

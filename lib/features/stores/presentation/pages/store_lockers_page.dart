@@ -10,22 +10,66 @@ import 'package:smart_laundry_locker/features/locker_ops/presentation/pages/rent
 import 'package:smart_laundry_locker/features/locker_ops/presentation/pages/send_parcel_page.dart';
 import 'package:smart_laundry_locker/features/stores/domain/entities/store.dart';
 import 'package:smart_laundry_locker/features/maintenance/presentation/pages/create_report_page.dart';
+import 'package:smart_laundry_locker/features/locker/domain/entities/locker_location.dart';
 import 'package:smart_laundry_locker/features/locker/domain/utils/locker_layout_helper.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:smart_laundry_locker/shared/shared.dart';
 import 'dart:async';
-import 'dart:math' as math;
 import 'package:smart_laundry_locker/core/services/app_event_bus.dart';
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
 
-/// Hiển thị lưới ô tủ locker tại một cửa hàng cụ thể.
-/// Load danh sách tủ (cabinets) qua GET /api/lockers?storeId=X,
-/// sau đó lazy-load layout từng tủ khi user mở rộng thẻ tủ.
+/// Hiển thị lưới ô tủ locker.
+///
+/// - Có [lockerId] (mở từ danh sách tủ / trang chủ / bản đồ): chỉ tải đúng tủ đó
+///   qua `GET /api/lockers/{id}`.
+/// - Không có [lockerId] (mở từ cửa hàng): tải các tủ của cửa hàng qua
+///   `GET /api/lockers?storeId=`.
+///
+/// Không đoán tủ theo tên hay mã: lỗi tải thì báo lỗi + Thử lại. Layout từng tủ
+/// được tải khi khách mở rộng thẻ tủ.
 class StoreLockerGridPage extends StatefulWidget {
-  const StoreLockerGridPage({super.key, required this.store, this.service});
+  const StoreLockerGridPage({
+    super.key,
+    required this.store,
+    this.lockerId,
+    this.service,
+    this.droneHint = false,
+  });
 
+  /// Mở thẳng một tủ từ danh sách tủ (`GET /api/lockers`): `location.id` là id
+  /// TỦ, `location.storeId` là cửa hàng chứa tủ. Toạ độ không hợp lệ (NaN) thì
+  /// bỏ để trang không hiện "Chỉ đường".
+  factory StoreLockerGridPage.forLocation(
+    LockerLocation location, {
+    Key? key,
+    bool droneHint = false,
+  }) {
+    final hasCoordinate = location.hasValidCoordinate;
+    return StoreLockerGridPage(
+      key: key,
+      lockerId: int.tryParse(location.id),
+      droneHint: droneHint,
+      store: Store(
+        id: int.tryParse(location.storeId ?? '') ?? 0,
+        name: location.name,
+        address: location.address.isEmpty ? null : location.address,
+        latitude: hasCoordinate ? location.latitude : null,
+        longitude: hasCoordinate ? location.longitude : null,
+        active: location.isActive,
+      ),
+    );
+  }
+
+  /// Cửa hàng chứa tủ — tên/địa chỉ/toạ độ để hiển thị và chỉ đường. `store.id`
+  /// là id CỬA HÀNG (0 khi không rõ), không bao giờ là id tủ.
   final Store store;
+
+  /// Id tủ cần mở thẳng; null ⇒ liệt kê các tủ của [store].
+  final int? lockerId;
   final LockerOpsService? service;
+
+  /// Mở từ lối vào "Gửi bằng drone": nhắc khách chạm ô drone để đặt.
+  final bool droneHint;
 
   @override
   State<StoreLockerGridPage> createState() => _StoreLockerGridPageState();
@@ -49,69 +93,21 @@ class _StoreLockerGridPageState extends State<StoreLockerGridPage> {
       _error = null;
     });
     try {
-      List<Map<String, dynamic>> lockers = [];
-      // 1. Thử lấy danh sách tủ theo storeId
-      if (widget.store.id > 0) {
-        try {
-          lockers = await _service.lockersByStore(widget.store.id);
-        } catch (_) {}
+      final List<Map<String, dynamic>> lockers;
+      final lockerId = widget.lockerId;
+      if (lockerId != null && lockerId > 0) {
+        final locker = await _service.locker(lockerId);
+        lockers = locker['id'] == null ? const [] : [locker];
+      } else if (widget.store.id > 0) {
+        lockers = await _service.lockersByStore(widget.store.id);
+      } else {
+        lockers = const [];
       }
-
-      // 2. Nếu không tìm thấy tủ nào, có thể widget.store.id chính là lockerId
-      if (lockers.isEmpty && widget.store.id > 0) {
-        try {
-          final direct = await _service.locker(widget.store.id);
-          if (direct.isNotEmpty && direct['id'] != null) {
-            lockers = [direct];
-          }
-        } catch (_) {}
-      }
-
-      // 3. Nếu vẫn không thấy, lấy danh sách tất cả tủ trên hệ thống và tìm theo id, storeId hoặc tên/mã
-      if (lockers.isEmpty) {
-        try {
-          final allGlobal = await _service.lockers();
-          final targetId = widget.store.id.toString();
-          lockers = allGlobal.where((l) {
-            final lId = l['id']?.toString();
-            final sId = l['storeId']?.toString();
-            return (targetId != '0' && (lId == targetId || sId == targetId));
-          }).toList();
-
-          if (lockers.isEmpty && widget.store.name.isNotEmpty) {
-            final targetName = widget.store.name.trim().toLowerCase();
-            lockers = allGlobal.where((l) {
-              final name = (l['name'] ?? '').toString().trim().toLowerCase();
-              final code = (l['code'] ?? '').toString().trim().toLowerCase();
-              return name.contains(targetName) ||
-                  targetName.contains(name) ||
-                  code.contains(targetName) ||
-                  targetName.contains(code);
-            }).toList();
-          }
-        } catch (_) {}
-      }
-
       if (!mounted) return;
       setState(() {
-        // Đồng bộ với Admin: Hiển thị đầy đủ mọi tủ (kể cả bảo trì, mất kết nối, tạm đóng)
-        _lockers = lockers.map((l) {
-          final lId = (l['id'] as num?)?.toInt();
-          final code = (l['code'] ?? '').toString();
-          final name = (l['name'] ?? '').toString();
-          final isCabinetTU01 = lId == 7 ||
-              code == 'CAB-TU01' ||
-              name.contains('TU01') ||
-              name.contains('Tủ thật');
-          final isOnline = l['online'] as bool?;
-          if (isOnline == false || (isCabinetTU01 && isOnline != true)) {
-            final copy = Map<String, dynamic>.from(l);
-            copy['status'] = 'DISCONNECTED';
-            copy['online'] = false;
-            return copy;
-          }
-          return l;
-        }).toList();
+        // Đồng bộ với Admin: hiển thị mọi tủ (kể cả bảo trì, mất kết nối, tạm
+        // đóng); trạng thái kết nối lấy từ `online` của server.
+        _lockers = lockers;
         _loading = false;
       });
     } catch (e) {
@@ -124,6 +120,7 @@ class _StoreLockerGridPageState extends State<StoreLockerGridPage> {
   }
 
   void _openDirections() {
+    if (!widget.store.hasLocation) return;
     Navigator.of(context, rootNavigator: true).push<void>(
       MaterialPageRoute(
         builder: (_) => DirectionsMapPage(
@@ -136,11 +133,23 @@ class _StoreLockerGridPageState extends State<StoreLockerGridPage> {
   }
 
   void _openReportLocker([Map<String, dynamic>? locker]) {
-    final target = locker ?? (_lockers.isNotEmpty ? _lockers.first : null);
-    final lockerId = target != null ? (target['id']?.toString() ?? '') : '';
-    final lockerName = target != null
-        ? (target['name'] as String? ?? target['code'] as String? ?? 'Tủ Kiosk')
-        : 'Tủ Kiosk';
+    final target = locker ?? (_lockers.length == 1 ? _lockers.first : null);
+    if (target == null || target['id'] == null) {
+      // Nhiều tủ (hoặc chưa tải xong): để trang báo sự cố tự cho khách chọn tủ.
+      Navigator.of(context, rootNavigator: true).push<void>(
+        MaterialPageRoute(
+          builder: (_) => CreateReportPage(
+            cabinetId: '',
+            lockerId: '',
+            locationName: widget.store.name,
+          ),
+        ),
+      );
+      return;
+    }
+    final lockerId = target['id'].toString();
+    final lockerName =
+        (target['name'] as String?) ?? (target['code'] as String?) ?? 'Tủ #$lockerId';
 
     Navigator.of(context, rootNavigator: true).push<void>(
       MaterialPageRoute(
@@ -181,6 +190,8 @@ class _StoreLockerGridPageState extends State<StoreLockerGridPage> {
             ),
           if (!_loading && _error == null && _lockers.isNotEmpty)
             _SummaryBanner(count: _lockers.length),
+          if (widget.droneHint && !_loading && _error == null)
+            const _DroneHintBanner(),
           Expanded(child: _buildBody()),
         ],
       ),
@@ -207,6 +218,8 @@ class _StoreLockerGridPageState extends State<StoreLockerGridPage> {
         itemCount: _lockers.length,
         separatorBuilder: (_, __) => const SizedBox(height: 12),
         itemBuilder: (context, i) => _LockerCard(
+          // Khoá theo id + lần tải để kéo làm mới thì thẻ tải lại layout.
+          key: ValueKey('locker-${_lockers[i]['id']}-${identityHashCode(_lockers)}'),
           locker: _lockers[i],
           storeName: widget.store.name,
           service: _service,
@@ -215,6 +228,40 @@ class _StoreLockerGridPageState extends State<StoreLockerGridPage> {
               ? LatLng(widget.store.latitude!, widget.store.longitude!)
               : const LatLng(10.762622, 106.660172),
         ),
+      ),
+    );
+  }
+}
+
+/// Nhắc khách vào từ lối "Gửi bằng drone": ô drone là ô màu tím.
+class _DroneHintBanner extends StatelessWidget {
+  const _DroneHintBanner();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      decoration: BoxDecoration(
+        color: const Color(0xFFEEF2FF),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFF6366F1).withValues(alpha: 0.3)),
+      ),
+      child: const Row(
+        children: [
+          Icon(Icons.flight_rounded, color: Color(0xFF4F46E5), size: 18),
+          SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              'Chạm vào ô drone còn trống (màu tím) để gửi hàng bằng drone tới tủ khác.',
+              style: TextStyle(
+                fontSize: 12,
+                color: Color(0xFF4338CA),
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -340,6 +387,7 @@ class _SummaryBanner extends StatelessWidget {
 
 class _LockerCard extends StatefulWidget {
   const _LockerCard({
+    super.key,
     required this.locker,
     required this.storeName,
     required this.service,
@@ -376,6 +424,21 @@ class _LockerCardState extends State<_LockerCard> {
       (_layout?['cells'] as List?)?.cast<Map<String, dynamic>>() ??
       const <Map<String, dynamic>>[];
 
+  /// Trạng thái vận hành: layout mới nhất, chưa có thì theo danh sách tủ.
+  String get _statusStr =>
+      ((_layout?['status'] ?? widget.locker['status']) as String?)
+          ?.toUpperCase() ??
+      'ACTIVE';
+
+  /// Cờ `online` của server (layout mới nhất, chưa có thì danh sách tủ); null
+  /// khi server cũ chưa trả.
+  bool? get _online {
+    final fromLayout = _layout?['online'];
+    if (fromLayout is bool) return fromLayout;
+    final fromList = widget.locker['online'];
+    return fromList is bool ? fromList : null;
+  }
+
   @override
   void initState() {
     super.initState();
@@ -388,11 +451,10 @@ class _LockerCardState extends State<_LockerCard> {
       if (event is LockerLayoutUpdatedEvent) {
         if (event.lockerId == null ||
             event.lockerId == _lockerId.toString()) {
-          setState(() {
-            _layout = null;
-          });
           if (_expanded) {
-            _loadLayout();
+            _loadLayout(force: true);
+          } else {
+            setState(() => _layout = null);
           }
         }
       }
@@ -405,8 +467,10 @@ class _LockerCardState extends State<_LockerCard> {
     super.dispose();
   }
 
-  Future<void> _loadLayout() async {
-    if (_layout != null || _loadingLayout) return;
+  /// Tải layout tủ. [force] = tải lại dù đã có (mở lại thẻ, quay về từ màn đặt,
+  /// có sự kiện đổi layout). Lỗi ⇒ hiện lỗi thật + Thử lại, không vẽ lưới giả.
+  Future<void> _loadLayout({bool force = false}) async {
+    if (_loadingLayout || (_layout != null && !force)) return;
     setState(() {
       _loadingLayout = true;
       _layoutError = null;
@@ -415,50 +479,41 @@ class _LockerCardState extends State<_LockerCard> {
       final layout = await widget.service.layout(_lockerId);
       if (mounted) {
         setState(() {
-          _layout = _enrichLayout(layout);
+          _layout = LockerLayoutHelper.enrichLayout(layout);
           _loadingLayout = false;
         });
       }
     } catch (e) {
       if (mounted) {
-        // API failed — still show demo grid so UI is never empty
         setState(() {
-          _layout = _enrichLayout({});
+          _layoutError = LockerOpsService.errorMessage(e);
           _loadingLayout = false;
         });
       }
     }
   }
 
-  static Map<String, dynamic> _enrichLayout(Map<String, dynamic> raw) {
-    return LockerLayoutHelper.enrichLayout(raw);
-  }
-
   void _toggle() {
     setState(() => _expanded = !_expanded);
-    if (_expanded) _loadLayout();
+    // Mở lại thẻ thì tải lại để thấy ô vừa có người đặt.
+    if (_expanded) _loadLayout(force: true);
   }
 
   @override
   Widget build(BuildContext context) {
-    final cells =
-        (_layout?['cells'] as List?)?.cast<Map<String, dynamic>>() ??
-        const <Map<String, dynamic>>[];
+    final cells = _currentCells;
     final totalCells =
         (_layout?['totalCells'] as num?)?.toInt() ?? cells.length;
     final available = cells.where((c) => c['status'] == 'AVAILABLE').length;
 
-    final statusStr = ((_layout?['status'] ?? widget.locker['status']) as String?)?.toUpperCase() ?? 'ACTIVE';
-    final bool? onlineField = _layout?['online'] as bool?;
-    final bool isCabinetTU01 = _lockerId == 7 ||
-        widget.locker['code'] == 'CAB-TU01' ||
-        _lockerName.contains('TU01') ||
-        _lockerName.contains('Tủ thật');
-    final bool isDisconnected = onlineField == false ||
-        statusStr == 'DISCONNECTED' ||
-        (isCabinetTU01 && onlineField != true);
+    final statusStr = _statusStr;
+    final bool isDisconnected = _online == false || statusStr == 'DISCONNECTED';
     final bool isMaintenance = statusStr == 'MAINTENANCE';
     final bool isActive = statusStr == 'ACTIVE' && !isDisconnected;
+    final blockReason = LockerLayoutHelper.bookingBlockReason(
+      status: statusStr,
+      online: _online,
+    );
 
     return Container(
       decoration: BoxDecoration(
@@ -482,62 +537,38 @@ class _LockerCardState extends State<_LockerCard> {
             totalCells: totalCells,
           ),
           if (isDisconnected)
-            Container(
-              margin: const EdgeInsets.fromLTRB(16, 0, 16, 10),
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              decoration: BoxDecoration(
-                color: const Color(0xFFFEF2F2),
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: const Color(0xFFFECACA)),
-              ),
-              child: const Row(
-                children: [
-                  Icon(LucideIcons.wifiOff, size: 16, color: Color(0xFFDC2626)),
-                  SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      'Bộ điều khiển Kiosk mất kết nối (Offline).',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xFFB91C1C),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+            const _StateNotice(
+              icon: LucideIcons.wifiOff,
+              text: 'Tủ đang mất kết nối với máy chủ nên tạm thời chưa đặt được ô.',
+              color: Color(0xFFB91C1C),
+              background: Color(0xFFFEF2F2),
+              border: Color(0xFFFECACA),
             )
           else if (isMaintenance)
-            Container(
-              margin: const EdgeInsets.fromLTRB(16, 0, 16, 10),
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              decoration: BoxDecoration(
-                color: const Color(0xFFFFFBEB),
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: const Color(0xFFFDE68A)),
-              ),
-              child: const Row(
-                children: [
-                  Icon(LucideIcons.wrench, size: 16, color: Color(0xFFD97706)),
-                  SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      'Tủ đang trong chế độ bảo trì kỹ thuật.',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xFFB45309),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+            const _StateNotice(
+              icon: LucideIcons.wrench,
+              text: 'Tủ đang bảo trì kỹ thuật, tạm ngưng nhận đơn.',
+              color: Color(0xFFB45309),
+              background: Color(0xFFFFFBEB),
+              border: Color(0xFFFDE68A),
+            )
+          else if (!isActive)
+            const _StateNotice(
+              icon: LucideIcons.ban,
+              text: 'Tủ đang tạm ngưng hoạt động.',
+              color: Color(0xFF475569),
+              background: Color(0xFFF1F5F9),
+              border: Color(0xFFE2E8F0),
             ),
           AnimatedSize(
             duration: const Duration(milliseconds: 300),
             curve: Curves.easeInOut,
             child: _expanded
-                ? _buildExpandedContent(cells, isActive: isActive)
+                ? _buildExpandedContent(
+                    cells,
+                    isOnline: !isDisconnected,
+                    blockReason: blockReason,
+                  )
                 : const SizedBox.shrink(),
           ),
         ],
@@ -698,7 +729,11 @@ class _LockerCardState extends State<_LockerCard> {
     );
   }
 
-  Widget _buildExpandedContent(List<Map<String, dynamic>> cells, {bool isActive = true}) {
+  Widget _buildExpandedContent(
+    List<Map<String, dynamic>> cells, {
+    required bool isOnline,
+    required String? blockReason,
+  }) {
     return Column(
       children: [
         const Divider(height: 1, color: Color(0xFFF0F4F8)),
@@ -715,17 +750,14 @@ class _LockerCardState extends State<_LockerCard> {
         else if (_layoutError != null)
           _LayoutErrorRow(
             message: _layoutError!,
-            onRetry: () {
-              _layout = null;
-              _loadLayout();
-            },
+            onRetry: () => _loadLayout(force: true),
           )
         else if (cells.isEmpty)
           const Padding(
             padding: EdgeInsets.symmetric(vertical: 28),
             child: Center(
               child: Text(
-                'Không có dữ liệu ô tủ',
+                'Tủ chưa có ô nào được cấu hình',
                 style: TextStyle(color: Colors.grey),
               ),
             ),
@@ -733,14 +765,29 @@ class _LockerCardState extends State<_LockerCard> {
         else
           _CellGrid(
             cells: cells,
-            isOnline: isActive,
+            isOnline: isOnline,
+            lockerId: _lockerId,
             lockerName: _lockerName,
-            lockerCode: widget.locker['code']?.toString() ?? 'CAB-TU01',
-            onCellTap: (cell) => _showBookingSheet(context, cell),
+            lockerCode: widget.locker['code']?.toString(),
+            storeName: widget.storeName,
+            onCellTap: (cell) {
+              // Tủ mất kết nối / bảo trì / tạm ngưng: không mở đặt ô, báo lý do.
+              if (blockReason != null) {
+                _showBlocked(context, blockReason);
+                return;
+              }
+              _showBookingSheet(context, cell);
+            },
             onFaultTap: (cell) => _showFaultHint(context, cell),
           ),
       ],
     );
+  }
+
+  void _showBlocked(BuildContext ctx, String reason) {
+    ScaffoldMessenger.of(ctx)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text(reason)));
   }
 
   void _showFaultHint(BuildContext ctx, Map<String, dynamic> cell) {
@@ -780,11 +827,6 @@ class _LockerCardState extends State<_LockerCard> {
       );
   }
 
-  String _cellTypeForBooking(Map<String, dynamic> cell) {
-    if (LockerLayoutHelper.isXl(cell)) return 'XL';
-    return 'STANDARD';
-  }
-
   String _boxLabel(Map<String, dynamic> cell) {
     final boxNum = (cell['boxNumber'] as num?)?.toInt();
     if (boxNum != null) return 'Ô số $boxNum';
@@ -794,17 +836,8 @@ class _LockerCardState extends State<_LockerCard> {
   }
 
   void _showBookingSheet(BuildContext ctx, Map<String, dynamic> cell) {
-    // DRONE cells use a dedicated booking flow. Ô vali (XL) là ô thuê tủ thường.
-    final boxNum = (cell['boxNumber'] as num?)?.toInt();
-    final cellType = (cell['cellType'] as String?)?.toUpperCase();
-    final isXl = LockerLayoutHelper.isXl(cell);
-    final isDrone = !isXl &&
-        (cell['isDrone'] == true ||
-            cellType == 'DRONE' ||
-            ((cell['cellType'] == null || cell['cellType'] == '') &&
-                (boxNum == 2 || boxNum == 3)));
-
-    if (isDrone) {
+    // Ô drone (cellType DRONE từ backend) dùng luồng đặt drone riêng.
+    if (LockerLayoutHelper.isDrone(cell)) {
       showModalBottomSheet<void>(
         context: ctx,
         isScrollControlled: true,
@@ -819,8 +852,7 @@ class _LockerCardState extends State<_LockerCard> {
             // đưa khách tới màn theo dõi — nơi có nhắc thanh toán để đội bay
             // tiếp nhận.
             if (!mounted) return;
-            setState(() => _layout = null);
-            _loadLayout();
+            _loadLayout(force: true);
             context.push(AppRouter.droneDeliveryTracking, extra: '$orderId');
           },
         ),
@@ -828,7 +860,9 @@ class _LockerCardState extends State<_LockerCard> {
       return;
     }
 
-    final bookingCellType = _cellTypeForBooking(cell);
+    final isXl = LockerLayoutHelper.isXl(cell);
+    final boxId = (cell['id'] as num?)?.toInt();
+    final boxNumber = (cell['boxNumber'] as num?)?.toInt();
     showModalBottomSheet<void>(
       context: ctx,
       isScrollControlled: true,
@@ -838,113 +872,210 @@ class _LockerCardState extends State<_LockerCard> {
         lockerId: _lockerId,
         lockerName: _lockerName,
         storeName: widget.storeName,
-        onRent: () {
+        onRent: () async {
           Navigator.pop(ctx);
-          Navigator.push<void>(
+          await Navigator.push<void>(
             ctx,
             MaterialPageRoute(
-                builder: (_) => RentLockerPage(
-                  initialLockerId: _lockerId,
-                  initialLockerName: _lockerName,
-                  locationName: widget.storeName,
-                  initialCellType: bookingCellType,
-                  initialBoxId: (cell['id'] as num?)?.toInt(),
-                  initialBoxNumber: (cell['boxNumber'] as num?)?.toInt(),
-                ),
-              ),
-            );
-        },
-        onSend: () {
-          Navigator.pop(ctx);
-          Navigator.push<void>(
-            ctx,
-            MaterialPageRoute(
-              builder: (_) => SendParcelPage(
+              builder: (_) => RentLockerPage(
                 initialLockerId: _lockerId,
                 initialLockerName: _lockerName,
                 locationName: widget.storeName,
+                initialCellType: isXl ? 'XL' : 'STANDARD',
+                initialBoxId: boxId,
+                initialBoxNumber: boxNumber,
               ),
             ),
           );
+          // Quay về: tải lại để thấy ô vừa đặt.
+          if (mounted && _expanded) _loadLayout(force: true);
         },
+        // Ô vali XL chỉ để thuê giữ đồ, không gửi hàng C2C (CellType.XL).
+        onSend: isXl
+            ? null
+            : () async {
+                Navigator.pop(ctx);
+                await Navigator.push<void>(
+                  ctx,
+                  MaterialPageRoute(
+                    builder: (_) => SendParcelPage(
+                      initialLockerId: _lockerId,
+                      initialLockerName: _lockerName,
+                      locationName: widget.storeName,
+                      // Giữ đúng ô khách vừa chọn trên sơ đồ.
+                      initialBoxId: boxId,
+                      initialBoxNumber: boxNumber,
+                    ),
+                  ),
+                );
+                if (mounted && _expanded) _loadLayout(force: true);
+              },
       ),
     );
   }
 }
 
+class _StateNotice extends StatelessWidget {
+  const _StateNotice({
+    required this.icon,
+    required this.text,
+    required this.color,
+    required this.background,
+    required this.border,
+  });
+
+  final IconData icon;
+  final String text;
+  final Color color;
+  final Color background;
+  final Color border;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.fromLTRB(16, 0, 16, 10),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: background,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: border),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, size: 16, color: color),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              text,
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: color,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Sơ đồ ô theo đúng `rowIndex`/`colIndex`/`cellType` backend trả. Ô vali XL
+/// chiếm 2 hàng. Màn hình kiosk (không có trong layout) vẽ vào ô trống đầu tiên
+/// của cột ngoài cùng bên trái, nếu cột đó có chỗ trống.
 class _CellGrid extends StatelessWidget {
   const _CellGrid({
     required this.cells,
     required this.onCellTap,
     required this.onFaultTap,
+    required this.lockerId,
+    required this.lockerName,
+    required this.storeName,
+    this.lockerCode,
     this.isOnline = true,
-    this.lockerName = 'Tủ Kiosk',
-    this.lockerCode = 'CAB-TU01',
   });
   final List<Map<String, dynamic>> cells;
   final ValueChanged<Map<String, dynamic>> onCellTap;
   final ValueChanged<Map<String, dynamic>> onFaultTap;
   final bool isOnline;
+  final int lockerId;
   final String lockerName;
-  final String lockerCode;
+  final String? lockerCode;
+  final String storeName;
 
-  bool _isXl(Map<String, dynamic> cell) => LockerLayoutHelper.isXl(cell);
+  static const double _rowHeight = 80;
+  static const double _gap = 6;
+
+  VoidCallback? _tapFor(Map<String, dynamic> cell) =>
+      switch ((cell['status'] as String?)?.toUpperCase()) {
+        'AVAILABLE' => () => onCellTap(cell),
+        'FAULT' => () => onFaultTap(cell),
+        _ => null,
+      };
+
+  Widget _sized(double height, Widget? child) => Padding(
+    padding: const EdgeInsets.only(bottom: _gap),
+    child: SizedBox(height: height, child: child),
+  );
 
   @override
   Widget build(BuildContext context) {
     if (cells.isEmpty) return const SizedBox.shrink();
 
-    // 1. Phân loại cột Kiosk (Cột 0) và các cột ô vật lý tiêu chuẩn (Cột >= 1)
-    final hasKioskCol = cells.any(
-      (c) =>
-          ((c['colIndex'] as num?)?.toInt() == 0) ||
-          LockerLayoutHelper.isXl(c),
+    final positioned = cells.every(
+      (c) => c['rowIndex'] is num && c['colIndex'] is num,
     );
-    final col0Cell = hasKioskCol
-        ? cells.firstWhere(
-            (c) =>
-                ((c['colIndex'] as num?)?.toInt() == 0) ||
-                LockerLayoutHelper.isXl(c),
-            orElse: () => cells.first,
-          )
-        : null;
+    if (!positioned) return _buildFlow(context);
 
-    final standardCells = cells
-        .where((c) =>
-            c != col0Cell && ((c['colIndex'] as num?)?.toInt() ?? 1) > 0)
-        .toList();
-
-    // Xác định dải rowIndex của các ô (1-based theo DB hoặc 0-based)
-    int minRow = 1;
-    int maxRow = 1;
-    int maxCol = 1;
-
-    for (final c in standardCells) {
-      final r = (c['rowIndex'] as num?)?.toInt() ?? 1;
-      final col = (c['colIndex'] as num?)?.toInt() ?? 1;
+    var minRow = 1 << 30, maxRow = -1, minCol = 1 << 30, maxCol = -1;
+    final grid = <int, Map<int, Map<String, dynamic>>>{};
+    for (final c in cells) {
+      final r = (c['rowIndex'] as num).toInt();
+      final col = (c['colIndex'] as num).toInt();
       if (r < minRow) minRow = r;
       if (r > maxRow) maxRow = r;
+      if (col < minCol) minCol = col;
       if (col > maxCol) maxCol = col;
+      grid.putIfAbsent(col, () => {})[r] = c;
     }
 
-    final totalRows = math.max(3, maxRow - minRow + 1);
-    final numCols = math.max(1, maxCol);
-
-    final grid = List.generate(
-      totalRows,
-      (_) => List<Map<String, dynamic>?>.filled(numCols + 1, null),
-    );
-
-    for (final c in standardCells) {
-      final r = (c['rowIndex'] as num?)?.toInt() ?? minRow;
-      final col = (c['colIndex'] as num?)?.toInt() ?? 1;
-      final rowOffset = r - minRow;
-      if (rowOffset >= 0 && rowOffset < totalRows && col <= numCols) {
-        grid[rowOffset][col] = c;
+    var screenPlaced = false;
+    final columns = <Widget>[];
+    for (var col = minCol; col <= maxCol; col++) {
+      final colChildren = <Widget>[];
+      var skip = 0;
+      for (var row = minRow; row <= maxRow; row++) {
+        if (skip > 0) {
+          skip--;
+          continue;
+        }
+        final cell = grid[col]?[row];
+        if (cell == null) {
+          final showScreen = !screenPlaced && col == minCol;
+          if (showScreen) screenPlaced = true;
+          colChildren.add(
+            _sized(
+              _rowHeight,
+              showScreen
+                  ? _ScreenTile(
+                      isOnline: isOnline,
+                      onTap: () => _showScreenDetailSheet(
+                        context,
+                        isOnline: isOnline,
+                        lockerId: lockerId,
+                        lockerName: lockerName,
+                        lockerCode: lockerCode,
+                        storeName: storeName,
+                      ),
+                    )
+                  : null,
+            ),
+          );
+          continue;
+        }
+        // Ô vali XL chiếm 2 hàng nếu ô ngay dưới đang trống.
+        final span = LockerLayoutHelper.isXl(cell) &&
+                row < maxRow &&
+                grid[col]?[row + 1] == null
+            ? 2
+            : 1;
+        skip = span - 1;
+        colChildren.add(
+          _sized(
+            _rowHeight * span + _gap * (span - 1),
+            _CellTile(cell: cell, onTap: _tapFor(cell)),
+          ),
+        );
       }
+      columns.add(
+        Expanded(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 3),
+            child: Column(children: colChildren),
+          ),
+        ),
+      );
     }
-
-    final totalColumnsToRender = hasKioskCol ? (numCols + 1) : numCols;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -954,99 +1085,45 @@ class _CellGrid extends StatelessWidget {
           padding: const EdgeInsets.fromLTRB(14, 4, 14, 16),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
-            children: List.generate(totalColumnsToRender, (colIdx) {
-              final colChildren = <Widget>[];
-              int skipRows = 0;
+            children: columns,
+          ),
+        ),
+      ],
+    );
+  }
 
-              // Cột 0 của trạm Kiosk: Hàng 1 là Màn hình cảm ứng 7 inch;
-              // Các hàng còn lại (hàng 2..totalRows) là Ô Vali XL (Box 9/10)
-              if (hasKioskCol && colIdx == 0) {
-                // 1. Màn hình 7 inch (Waveshare 1024x600 IPS)
-                colChildren.add(
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 6),
-                    child: SizedBox(
-                      height: 80.0,
-                      child: _ScreenTile(
-                        isOnline: isOnline,
-                        onTap: () => _showScreenDetailSheet(
-                          context,
-                          isOnline: isOnline,
-                          lockerName: lockerName,
-                          lockerCode: lockerCode,
-                        ),
-                      ),
-                    ),
-                  ),
-                );
-
-                // 2. Ô Vali XL (kéo dài các hàng dưới màn hình)
-                if (col0Cell != null) {
-                  final span = (totalRows > 1) ? (totalRows - 1) : 1;
-                  final height = 80.0 * span + 6.0 * (span - 1);
-                  colChildren.add(
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 6),
-                      child: SizedBox(
-                        height: height,
-                        child: _CellTile(
-                          cell: col0Cell,
-                          onTap: switch ((col0Cell['status'] as String?)
-                              ?.toUpperCase()) {
-                            'AVAILABLE' => () => onCellTap(col0Cell),
-                            'FAULT' => () => onFaultTap(col0Cell),
-                            _ => null,
-                          },
-                        ),
-                      ),
-                    ),
-                  );
-                }
-              } else {
-                final col = hasKioskCol ? colIdx : (colIdx + 1);
-
-                for (int row = 0; row < totalRows; row++) {
-                  if (skipRows > 0) {
-                    skipRows--;
-                    continue;
-                  }
-
-                  final cell = (col <= numCols) ? grid[row][col] : null;
-                  final span = cell != null ? (_isXl(cell) ? 2 : 1) : 1;
-                  skipRows = span - 1;
-
-                  final height = 80.0 * span + 6.0 * (span - 1);
-
-                  colChildren.add(
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 6),
-                      child: SizedBox(
-                        height: height,
-                        child: cell != null
-                            ? _CellTile(
-                                cell: cell,
-                                onTap: switch ((cell['status'] as String?)
-                                    ?.toUpperCase()) {
-                                  'AVAILABLE' => () => onCellTap(cell),
-                                  'FAULT' => () => onFaultTap(cell),
-                                  _ => null,
-                                },
-                              )
-                            : null,
-                      ),
-                    ),
-                  );
-                }
-              }
-
-              return Expanded(
+  /// Layout thiếu toạ độ ô (dữ liệu cũ): xếp theo số ô, 3 cột.
+  Widget _buildFlow(BuildContext context) {
+    const perRow = 3;
+    final rows = <Widget>[];
+    for (var i = 0; i < cells.length; i += perRow) {
+      final slice = cells.skip(i).take(perRow).toList();
+      rows.add(
+        Row(
+          children: [
+            for (var j = 0; j < perRow; j++)
+              Expanded(
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 3),
-                  child: Column(children: colChildren),
+                  child: _sized(
+                    _rowHeight,
+                    j < slice.length
+                        ? _CellTile(cell: slice[j], onTap: _tapFor(slice[j]))
+                        : null,
+                  ),
                 ),
-              );
-            }),
-          ),
+              ),
+          ],
+        ),
+      );
+    }
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const _GridLegend(),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(14, 4, 14, 16),
+          child: Column(children: rows),
         ),
       ],
     );
@@ -1103,8 +1180,10 @@ class _GridLegend extends StatelessWidget {
 void _showScreenDetailSheet(
   BuildContext context, {
   required bool isOnline,
+  required int lockerId,
   required String lockerName,
-  required String lockerCode,
+  required String storeName,
+  String? lockerCode,
 }) {
   showModalBottomSheet<void>(
     context: context,
@@ -1112,8 +1191,10 @@ void _showScreenDetailSheet(
     backgroundColor: Colors.transparent,
     builder: (_) => _KioskScreenDetailSheet(
       isOnline: isOnline,
+      lockerId: lockerId,
       lockerName: lockerName,
       lockerCode: lockerCode,
+      storeName: storeName,
     ),
   );
 }
@@ -1307,19 +1388,26 @@ class _ScreenTile extends StatelessWidget {
   }
 }
 
+/// Thông tin màn hình kiosk của tủ: trạng thái kết nối do server báo và cách
+/// dùng. Không ghi thông số phần cứng cứng trong app (mỗi tủ có thể khác).
 class _KioskScreenDetailSheet extends StatelessWidget {
   const _KioskScreenDetailSheet({
     required this.isOnline,
+    required this.lockerId,
     required this.lockerName,
-    required this.lockerCode,
+    required this.storeName,
+    this.lockerCode,
   });
 
   final bool isOnline;
+  final int lockerId;
   final String lockerName;
-  final String lockerCode;
+  final String? lockerCode;
+  final String storeName;
 
   @override
   Widget build(BuildContext context) {
+    final code = (lockerCode ?? '').trim();
     return Container(
       decoration: const BoxDecoration(
         color: Colors.white,
@@ -1379,7 +1467,7 @@ class _KioskScreenDetailSheet extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const Text(
-                        'Màn hình cảm ứng 7" Kiosk',
+                        'Màn hình kiosk',
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w800,
@@ -1388,7 +1476,7 @@ class _KioskScreenDetailSheet extends StatelessWidget {
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        '$lockerName ($lockerCode)',
+                        code.isEmpty ? lockerName : '$lockerName ($code)',
                         style: const TextStyle(
                           fontSize: 12,
                           color: Color(0xFF64748B),
@@ -1429,7 +1517,7 @@ class _KioskScreenDetailSheet extends StatelessWidget {
                       ),
                       const SizedBox(width: 5),
                       Text(
-                        isOnline ? 'Trực tuyến' : 'Ngoại tuyến',
+                        isOnline ? 'Trực tuyến' : 'Mất kết nối',
                         style: TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.w700,
@@ -1443,44 +1531,6 @@ class _KioskScreenDetailSheet extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 18),
-            // Thông số hiển thị
-            _buildSectionTitle('Thông số phần cứng màn hình', LucideIcons.cpu),
-            const SizedBox(height: 8),
-            _buildInfoCard([
-              _buildSpecRow('Model phần cứng', 'Waveshare 7inch HDMI LCD (C)'),
-              _buildSpecRow('Tấm nền hiển thị', 'IPS chống chói (Góc nhìn 178°)'),
-              _buildSpecRow('Độ phân giải', '1024 × 600 pixels @ 60Hz'),
-              _buildSpecRow('Cổng truyền video', 'Micro-HDMI to HDMI (HDMI-1 từ Pi 4)'),
-            ]),
-            const SizedBox(height: 14),
-            _buildSectionTitle('Cảm ứng & Điều khiển', LucideIcons.tablet),
-            const SizedBox(height: 8),
-            _buildInfoCard([
-              _buildSpecRow(
-                'Công nghệ cảm ứng',
-                'Điện dung 5 điểm (Capacitive 5-point)',
-              ),
-              _buildSpecRow(
-                'Giao tiếp cảm ứng',
-                'Micro-USB to USB-A (Chuẩn HID Plug&Play)',
-              ),
-              _buildSpecRow('IC điều khiển', 'Goodix GT911 Touch Controller'),
-            ]),
-            const SizedBox(height: 14),
-            _buildSectionTitle('Ứng dụng Kiosk Web', LucideIcons.globe),
-            const SizedBox(height: 8),
-            _buildInfoCard([
-              _buildSpecRow(
-                'Chế độ chạy',
-                'Google Chromium Kiosk Mode (Toàn màn hình)',
-              ),
-              _buildSpecRow('Địa chỉ nội bộ', 'http://localhost:3002/'),
-              _buildSpecRow(
-                'Tự động bật sáng',
-                'DPMS Blanking (Tiết kiệm điện sau 5p)',
-              ),
-            ]),
             const SizedBox(height: 16),
             // Khung hướng dẫn khách hàng
             Container(
@@ -1497,7 +1547,9 @@ class _KioskScreenDetailSheet extends StatelessWidget {
                   SizedBox(width: 10),
                   Expanded(
                     child: Text(
-                      'Khách hàng có thể thao tác nhập mã PIN/OTP hoặc quét mã QR đơn hàng trực tiếp trên màn hình 7 inch này tại trạm tủ để nhận đồ mà không cần mở ứng dụng.',
+                      'Tại màn hình kiosk, bạn có thể nhập mã PIN của đơn để mở ô, '
+                      'hoặc đăng nhập bằng cách quét mã QR trên kiosk với nút quét '
+                      'ở trang chủ ứng dụng.',
                       style: TextStyle(
                         fontSize: 12,
                         color: Color(0xFF15803D),
@@ -1509,6 +1561,18 @@ class _KioskScreenDetailSheet extends StatelessWidget {
                 ],
               ),
             ),
+            if (!isOnline) ...[
+              const SizedBox(height: 10),
+              const Text(
+                'Tủ đang mất kết nối với máy chủ: màn hình có thể không phản hồi '
+                'và chưa đặt được ô mới.',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Color(0xFFB91C1C),
+                  height: 1.4,
+                ),
+              ),
+            ],
             const SizedBox(height: 18),
             SizedBox(
               width: double.infinity,
@@ -1526,18 +1590,18 @@ class _KioskScreenDetailSheet extends StatelessWidget {
                   Navigator.of(context, rootNavigator: true).push<void>(
                     MaterialPageRoute(
                       builder: (_) => CreateReportPage(
-                        cabinetId: lockerCode,
-                        lockerId: lockerCode,
+                        cabinetId: '$lockerId',
+                        lockerId: '$lockerId',
                         cabinetName: lockerName,
                         lockerName: lockerName,
-                        locationName: '',
+                        locationName: storeName,
                       ),
                     ),
                   );
                 },
                 icon: const Icon(LucideIcons.alertCircle, size: 16),
                 label: const Text(
-                  'Báo sự cố màn hình Kiosk',
+                  'Báo sự cố màn hình kiosk',
                   style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
                 ),
               ),
@@ -1556,7 +1620,7 @@ class _KioskScreenDetailSheet extends StatelessWidget {
                 ),
                 onPressed: () => Navigator.pop(context),
                 child: const Text(
-                  'Đóng thông tin màn hình',
+                  'Đóng',
                   style: TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.w700,
@@ -1567,66 +1631,6 @@ class _KioskScreenDetailSheet extends StatelessWidget {
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildSectionTitle(String title, IconData icon) {
-    return Row(
-      children: [
-        Icon(icon, size: 14, color: const Color(0xFF475569)),
-        const SizedBox(width: 6),
-        Text(
-          title,
-          style: const TextStyle(
-            fontSize: 12.5,
-            fontWeight: FontWeight.w700,
-            color: Color(0xFF334155),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildInfoCard(List<Widget> children) {
-    return Container(
-      decoration: BoxDecoration(
-        color: const Color(0xFFF8FAFC),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
-      ),
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-      child: Column(children: children),
-    );
-  }
-
-  Widget _buildSpecRow(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            label,
-            style: const TextStyle(
-              fontSize: 11.5,
-              color: Color(0xFF64748B),
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-          const SizedBox(width: 8),
-          Flexible(
-            child: Text(
-              value,
-              textAlign: TextAlign.end,
-              style: const TextStyle(
-                fontSize: 11.5,
-                color: Color(0xFF0F172A),
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-        ],
       ),
     );
   }
@@ -1693,20 +1697,12 @@ class _CellTile extends StatelessWidget {
   final VoidCallback? onTap;
 
   String get _status => ((cell['status'] as String?) ?? '').toUpperCase();
-  String get _cellType => ((cell['cellType'] as String?) ?? 'STANDARD').toUpperCase();
   int? get _boxNumber => (cell['boxNumber'] as num?)?.toInt();
-  int? get _colIndex => (cell['colIndex'] as num?)?.toInt();
 
+  // Loại ô lấy đúng `cellType` backend trả: XL = ô vali (thuê giữ đồ), DRONE =
+  // ô nhận hàng drone. Không suy theo vị trí cột hay số ô.
   bool get _isXl => LockerLayoutHelper.isXl(cell);
-
-  // Ô vali (XL, ô #1) là ô giữ đồ thông thường (thuê tủ), KHÔNG PHẢI drone.
-  // Chỉ ô có cellType DRONE (hoặc fallback ô #2, #3 trên nóc nếu chưa cấu hình cellType) mới là Drone.
-  bool get _isDrone =>
-      !_isXl &&
-      (cell['isDrone'] == true ||
-          _cellType == 'DRONE' ||
-          ((cell['cellType'] == null || cell['cellType'] == '') &&
-              (_boxNumber == 2 || _boxNumber == 3)));
+  bool get _isDrone => LockerLayoutHelper.isDrone(cell);
 
   bool get _isAvailable => _status == 'AVAILABLE';
   bool get _isFault => _status == 'FAULT';
@@ -1777,13 +1773,6 @@ class _CellTile extends StatelessWidget {
     }
     return Colors.white;
   }
-
-  String get _sizeLabel => switch ((cell['size'] as String?) ?? '') {
-    'SMALL' => 'S',
-    'MEDIUM' => 'M',
-    'LARGE' => 'L',
-    _ => (cell['cellType'] as String? ?? '?').substring(0, 1).toUpperCase(),
-  };
 
   @override
   Widget build(BuildContext context) {
@@ -1890,7 +1879,7 @@ class _CellTile extends StatelessWidget {
   }
 
   Widget _buildCellContent() {
-    final isXl = _isXl || ((_cellType == 'XL' || _sizeLabel == 'L') && !_isDrone);
+    final isXl = _isXl;
     final icon = _isDrone
         ? Icons.flight_rounded
         : (isXl ? LucideIcons.luggage : LucideIcons.box);
@@ -2005,7 +1994,7 @@ class _BookingSheet extends StatelessWidget {
     required this.lockerName,
     required this.storeName,
     required this.onRent,
-    required this.onSend,
+    this.onSend,
   });
 
   final Map<String, dynamic> cell;
@@ -2013,7 +2002,9 @@ class _BookingSheet extends StatelessWidget {
   final String lockerName;
   final String storeName;
   final VoidCallback onRent;
-  final VoidCallback onSend;
+
+  /// null ⇒ ô này không gửi hàng được (ô vali XL chỉ để thuê giữ đồ).
+  final VoidCallback? onSend;
 
   bool get _isXl => LockerLayoutHelper.isXl(cell);
 
@@ -2175,22 +2166,32 @@ class _BookingSheet extends StatelessWidget {
                   onTap: onRent,
                 ),
               ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _ServiceButton(
-                  lottieAsset: AppLottieAssets.box,
-                  label: 'Gửi hàng',
-                  sublabel: 'Chuyển C2C',
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFF1D4ED8), Color(0xFF0284C7)],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
+              if (onSend != null) ...[
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _ServiceButton(
+                    lottieAsset: AppLottieAssets.box,
+                    label: 'Gửi hàng',
+                    sublabel: 'Chuyển C2C',
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF1D4ED8), Color(0xFF0284C7)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    onTap: onSend!,
                   ),
-                  onTap: onSend,
                 ),
-              ),
+              ],
             ],
           ),
+          if (onSend == null) ...[
+            const SizedBox(height: 10),
+            const Text(
+              'Ô vali chỉ dùng để thuê giữ đồ, không nhận gửi hàng.',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 12, color: AislBrand.textMuted),
+            ),
+          ],
           const SizedBox(height: 12),
           TextButton.icon(
             onPressed: () {

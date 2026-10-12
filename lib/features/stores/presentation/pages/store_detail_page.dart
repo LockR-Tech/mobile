@@ -7,6 +7,7 @@ import 'package:smart_laundry_locker/core/network/api_client.dart';
 import 'package:smart_laundry_locker/core/routing/app_router.dart';
 import 'package:smart_laundry_locker/core/theme/shadcn_theme.dart';
 import 'package:smart_laundry_locker/features/stores/domain/entities/store.dart';
+import 'package:smart_laundry_locker/features/stores/infrastructure/services/favorite_stores_service.dart';
 import 'package:smart_laundry_locker/features/stores/infrastructure/services/store_service.dart';
 import 'package:smart_laundry_locker/features/stores/presentation/pages/store_lockers_page.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -29,11 +30,16 @@ class StoreDetailPage extends StatefulWidget {
 
 class _StoreDetailPageState extends State<StoreDetailPage> {
   final StoreService _service = StoreService(ApiClient());
+  final FavoriteStoresService _favService = FavoriteStoresService();
 
   Store? _store;
   List<StoreRating> _ratings = const [];
   bool _loading = true;
   String? _error;
+
+  /// Lỗi tải đánh giá (khác "chưa có đánh giá").
+  String? _ratingsError;
+  bool _favorite = false;
 
   @override
   void initState() {
@@ -50,15 +56,23 @@ class _StoreDetailPageState extends State<StoreDetailPage> {
     try {
       final store = _store ?? await _service.getStore(widget.storeId!);
       List<StoreRating> ratings = const [];
+      String? ratingsError;
       try {
         ratings = await _service.getRatings(store.id);
       } catch (_) {
-        // Ratings are best-effort; store detail still renders without them.
+        // Trang vẫn hiện thông tin cửa hàng; mục đánh giá báo lỗi + Thử lại.
+        ratingsError = 'Không tải được đánh giá.';
       }
+      var favorite = false;
+      try {
+        favorite = await _favService.isFavorite(store.id);
+      } catch (_) {}
       if (!mounted) return;
       setState(() {
         _store = store;
         _ratings = ratings;
+        _ratingsError = ratingsError;
+        _favorite = favorite;
         _loading = false;
       });
     } catch (e) {
@@ -102,6 +116,19 @@ class _StoreDetailPageState extends State<StoreDetailPage> {
     }
   }
 
+  Future<void> _toggleFavorite() async {
+    final store = _store;
+    if (store == null) return;
+    try {
+      final now = await _favService.toggle(store.id);
+      if (!mounted) return;
+      setState(() => _favorite = now);
+      _toast(now ? 'Đã thêm vào yêu thích' : 'Đã bỏ khỏi yêu thích');
+    } catch (_) {
+      _toast('Không lưu được danh sách yêu thích.');
+    }
+  }
+
   void _toast(String message) {
     if (!mounted) return;
     ScaffoldMessenger.of(context)
@@ -119,6 +146,13 @@ class _StoreDetailPageState extends State<StoreDetailPage> {
             title: 'Chi tiết điểm gửi',
             subtitle: _store?.name ?? 'Điểm tủ & đối tác liên kết',
             onBack: () => Navigator.of(context).pop(),
+            trailing: _store == null
+                ? null
+                : BrandCircleIconButton(
+                    icon: _favorite ? Icons.favorite : Icons.favorite_border,
+                    onTap: _toggleFavorite,
+                    iconSize: 20,
+                  ),
           ),
           Expanded(
             child: _loading
@@ -327,7 +361,19 @@ class _StoreDetailPageState extends State<StoreDetailPage> {
             style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
           ),
           const SizedBox(height: 12),
-          if (!summary.hasRatings)
+          if (_ratingsError != null)
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    _ratingsError!,
+                    style: const TextStyle(color: Colors.redAccent),
+                  ),
+                ),
+                TextButton(onPressed: _load, child: const Text('Thử lại')),
+              ],
+            )
+          else if (!summary.hasRatings)
             const Padding(
               padding: EdgeInsets.symmetric(vertical: 16),
               child: Center(
