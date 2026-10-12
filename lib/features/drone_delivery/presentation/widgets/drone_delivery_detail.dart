@@ -150,7 +150,9 @@ class DroneDeliveryDetail extends StatelessWidget {
           _UnpaidBanner(
             status: status,
             forOperator: forOperator,
-            viewerIsBooker: viewerIsBooker,
+            // [viewerIsBooker] và [isSender] cùng nghĩa: thiếu một trong hai
+            // là người nhận — chỉ xem, không có nút thanh toán.
+            viewerIsBooker: viewerIsBooker && isSender,
             onPay: onPay,
             onDeclineSurcharge: onDeclineSurcharge,
           ),
@@ -164,7 +166,7 @@ class DroneDeliveryDetail extends StatelessWidget {
           _DropBanner(
             status: status,
             forOperator: forOperator,
-            viewerIsBooker: viewerIsBooker,
+            viewerIsBooker: viewerIsBooker && isSender,
             onConfirmDrop: onConfirmDrop,
           ),
         ],
@@ -482,7 +484,8 @@ class _UnpaidBanner extends StatelessWidget {
               ),
             ],
           ),
-          if (!forOperator && onPay != null) ...[
+          // Chỉ người đặt đơn trả tiền; người nhận chỉ xem lời nhắc.
+          if (!forOperator && viewerIsBooker && onPay != null) ...[
             const SizedBox(height: 10),
             SizedBox(
               width: double.infinity,
@@ -494,7 +497,10 @@ class _UnpaidBanner extends StatelessWidget {
               ),
             ),
           ],
-          if (!forOperator && surcharge && onDeclineSurcharge != null)
+          if (!forOperator &&
+              viewerIsBooker &&
+              surcharge &&
+              onDeclineSurcharge != null)
             SizedBox(
               width: double.infinity,
               child: TextButton(
