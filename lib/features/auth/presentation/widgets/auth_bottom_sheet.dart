@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/gestures.dart';
 import 'package:smart_laundry_locker/core/config/feature_flags.dart';
 import 'package:smart_laundry_locker/core/constants/app_colors.dart';
@@ -8,6 +10,10 @@ import 'package:smart_laundry_locker/core/services/token_service.dart';
 import 'package:smart_laundry_locker/features/auth/presentation/providers/auth_injection.dart';
 import 'package:smart_laundry_locker/features/auth/presentation/providers/login_provider.dart';
 import 'package:smart_laundry_locker/features/auth/presentation/providers/register_provider.dart';
+import 'package:smart_laundry_locker/features/auth/presentation/widgets/complete_profile_dialog.dart';
+import 'package:smart_laundry_locker/features/auth/presentation/widgets/phone_otp_dialog.dart';
+import 'package:smart_laundry_locker/features/auth/presentation/widgets/social_login_options.dart';
+import 'package:smart_laundry_locker/features/profile/presentation/providers/profile_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -85,13 +91,16 @@ class _AuthBottomSheetState extends State<AuthBottomSheet> {
 
   Future<void> _navigateAfterLogin() async {
     if (!mounted) return;
+    // Đăng nhập SĐT lần đầu: tài khoản chỉ có tên "User" ⇒ hỏi "Hoàn tất đăng
+    // ký" sau khi vào trang chủ. Lấy provider trước khi đóng sheet.
+    final viaPhone = _loginProvider.lastLoginViaPhone;
+    final profileProvider = context.read<ProfileProvider>();
     // Đóng bottom sheet trước
     Navigator.of(context, rootNavigator: true).pop(true);
     // Lấy roles từ token và navigate đến trang phù hợp
     try {
       final roles = await TokenService.getCurrentRoles();
-      if (!mounted) return;
-      // Sử dụng AppRouter.navigatorKey để navigate ngay cả khi context đã dispose
+      // Sử dụng AppRouter.navigatorKey để navigate ngay cả khi sheet đã dispose
       final navContext = AppRouter.navigatorKey.currentContext;
       if (navContext != null && navContext.mounted) {
         navContext.go(homeForRoles(roles));
@@ -99,6 +108,7 @@ class _AuthBottomSheetState extends State<AuthBottomSheet> {
     } catch (_) {
       // fallback: không navigate, ProfilePage sẽ tự reload
     }
+    if (viaPhone) unawaited(CompleteProfileDialog.maybeShow(profileProvider));
   }
 
   void _onRegisterStateChanged() {
@@ -736,6 +746,31 @@ class _AuthBottomSheetState extends State<AuthBottomSheet> {
   }
 
   Widget _buildSocialLoginSection() {
+    // Web chưa cấu hình Firebase ⇒ không có nút nào (chỉ đăng nhập email);
+    // Facebook ẩn theo FeatureFlags.facebookLoginEnabled.
+    final options = SocialLoginOptions.current();
+    if (!options.any) return const SizedBox.shrink();
+    final buttons = <Widget>[
+      if (options.google)
+        _buildSocialButton(
+          icon: Icons.g_mobiledata,
+          label: 'Google',
+          onTap: () => _loginProvider.loginWithGoogle(),
+        ),
+      if (options.facebook)
+        _buildSocialButton(
+          icon: Icons.facebook,
+          iconColor: const Color(0xFF1877F2),
+          label: 'Facebook',
+          onTap: () => _loginProvider.loginWithFacebook(),
+        ),
+      if (options.phone)
+        _buildSocialButton(
+          icon: Icons.phone_android,
+          label: 'SĐT',
+          onTap: () => _showPhoneOtpDialog(),
+        ),
+    ];
     return Column(
       children: [
         Row(
@@ -757,30 +792,10 @@ class _AuthBottomSheetState extends State<AuthBottomSheet> {
         const SizedBox(height: 16),
         Row(
           children: [
-            Expanded(
-              child: _buildSocialButton(
-                icon: Icons.g_mobiledata,
-                label: 'Google',
-                onTap: () => _loginProvider.loginWithGoogle(),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _buildSocialButton(
-                icon: Icons.facebook,
-                iconColor: const Color(0xFF1877F2),
-                label: 'Facebook',
-                onTap: () => _loginProvider.loginWithFacebook(),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _buildSocialButton(
-                icon: Icons.phone_android,
-                label: 'SĐT',
-                onTap: () => _showPhoneOtpDialog(),
-              ),
-            ),
+            for (var i = 0; i < buttons.length; i++) ...[
+              if (i > 0) const SizedBox(width: 12),
+              Expanded(child: buttons[i]),
+            ],
           ],
         ),
       ],
@@ -820,133 +835,6 @@ class _AuthBottomSheetState extends State<AuthBottomSheet> {
     );
   }
 
-  void _showPhoneOtpDialog() {
-    final phoneController = TextEditingController();
-    final otpController = TextEditingController();
-    _loginProvider.clearPhoneVerification();
-
-    SmartDialog.show(
-      builder: (context) {
-        return ChangeNotifierProvider.value(
-          value: _loginProvider,
-          child: Consumer<LoginProvider>(
-            builder: (context, provider, _) {
-              // Step is driven by the provider so the async codeSent callback
-              // actually reveals the OTP field.
-              final codeSent = provider.verificationId != null;
-              if (provider.isSuccess) {
-                WidgetsBinding.instance.addPostFrameCallback(
-                  (_) => SmartDialog.dismiss(),
-                );
-              }
-              return Container(
-                margin: const EdgeInsets.symmetric(horizontal: 24),
-                padding: const EdgeInsets.all(24),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Text(
-                      codeSent ? 'Nhập mã OTP' : 'Đăng nhập bằng số điện thoại',
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    if (!codeSent) ...[
-                      TextField(
-                        controller: phoneController,
-                        keyboardType: TextInputType.phone,
-                        autofocus: true,
-                        decoration: const InputDecoration(
-                          labelText: 'Số điện thoại',
-                          hintText: '0911649183',
-                          border: OutlineInputBorder(),
-                        ),
-                      ),
-                      const Padding(
-                        padding: EdgeInsets.only(top: 6),
-                        child: Text(
-                          'Nhập số nội địa (0xxx) hoặc quốc tế (+84xxx) đều được.',
-                          style: TextStyle(fontSize: 12, color: Colors.grey),
-                        ),
-                      ),
-                    ] else
-                      TextField(
-                        controller: otpController,
-                        keyboardType: TextInputType.number,
-                        autofocus: true,
-                        decoration: const InputDecoration(
-                          labelText: 'Mã OTP (6 số)',
-                          border: OutlineInputBorder(),
-                        ),
-                      ),
-                    const SizedBox(height: 24),
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: provider.isLoading
-                            ? null
-                            : () async {
-                                FocusScope.of(context).unfocus();
-                                if (!codeSent) {
-                                  final phone = phoneController.text.trim();
-                                  if (phone.isEmpty) return;
-                                  await provider.sendPhoneOtp(phone);
-                                } else {
-                                  final code = otpController.text.trim();
-                                  if (code.isEmpty) return;
-                                  await provider.confirmPhoneOtp(code);
-                                }
-                              },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.success,
-                          foregroundColor: Colors.white,
-                        ),
-                        child: provider.isLoading
-                            ? const SizedBox(
-                                height: 20,
-                                width: 20,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color: Colors.white,
-                                ),
-                              )
-                            : Text(codeSent ? 'Xác nhận' : 'Gửi mã OTP'),
-                      ),
-                    ),
-                    if (codeSent)
-                      TextButton(
-                        onPressed: provider.isLoading
-                            ? null
-                            : () {
-                                otpController.clear();
-                                provider.clearPhoneVerification();
-                              },
-                        child: const Text('Đổi số điện thoại'),
-                      ),
-                    if (provider.error != null)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 8.0),
-                        child: Text(
-                          provider.error!,
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(color: Colors.red),
-                        ),
-                      ),
-                  ],
-                ),
-              );
-            },
-          ),
-        );
-      },
-    );
-  }
+  void _showPhoneOtpDialog() =>
+      PhoneOtpDialog.show(_loginProvider, accentColor: AppColors.success);
 }

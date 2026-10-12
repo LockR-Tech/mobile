@@ -683,7 +683,7 @@ class _WithdrawPageState extends State<WithdrawPage> {
                                     ),
                                     const SizedBox(height: 4),
                                     Text(
-                                      'Chỉ rút được phần tiền đã nạp hoặc được hoàn qua cổng SePay/VNPay. Yêu cầu rút được quản trị viên duyệt rồi chuyển khoản; bạn theo dõi trạng thái ở mục "Yêu cầu rút tiền".',
+                                      'Chỉ rút được phần tiền đã nạp hoặc được hoàn qua cổng thanh toán (SePay). Yêu cầu rút được quản trị viên duyệt rồi chuyển khoản; bạn theo dõi trạng thái ở mục "Yêu cầu rút tiền".',
                                       style: TextStyle(fontSize: 12, color: Colors.green.shade900, height: 1.3),
                                     ),
                                   ],
@@ -816,7 +816,7 @@ class _WithdrawPageState extends State<WithdrawPage> {
                   Icon(LucideIcons.badgeCheck, size: 16, color: Colors.greenAccent.shade200),
                   const SizedBox(width: 6),
                   const Text(
-                    'Được rút (SePay/VNPay):',
+                    'Được rút (tiền nạp/hoàn):',
                     style: TextStyle(color: Colors.white70, fontSize: 12),
                   ),
                 ],

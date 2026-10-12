@@ -10,7 +10,7 @@ class InitiateTopUpUseCase {
 
   Future<Either<Failure, TopUpResult>> call({
     required int amount,
-    String method = 'VNPAY',
+    String method = 'SEPAY',
   }) {
     return repository.createTopUpUrl(amount: amount, method: method);
   }

@@ -156,6 +156,9 @@ class FirebaseMessagingService {
 
   /// Get the device FCM token (useful for sending to your backend to register this device)
   Future<String?> getToken() async {
+    // Web chỉ dùng Firebase Auth: chưa có service worker/VAPID cho push, gọi
+    // getToken sẽ bật hộp xin quyền thông báo rồi lỗi.
+    if (kIsWeb) return null;
     try {
       String? token = await _firebaseMessaging.getToken();
       debugPrint("FCM Token: $token");

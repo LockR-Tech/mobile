@@ -5,6 +5,6 @@ import 'package:dartz/dartz.dart';
 abstract class TopUpRepository {
   Future<Either<Failure, TopUpResult>> createTopUpUrl({
     required int amount,
-    String method = 'VNPAY',
+    String method = 'SEPAY',
   });
 }

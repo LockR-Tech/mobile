@@ -17,10 +17,15 @@ import 'package:flutter/foundation.dart'
 class DefaultFirebaseOptions {
   static FirebaseOptions get currentPlatform {
     if (kIsWeb) {
-      throw UnsupportedError(
-        'DefaultFirebaseOptions have not been configured for web - '
-        'you can reconfigure this by running the FlutterFire CLI again.',
-      );
+      // Chưa dán cấu hình Web App ⇒ main.dart không khởi tạo Firebase trên web
+      // (nút đăng nhập SĐT/Google ẩn, đăng nhập email vẫn dùng được).
+      if (!isWebConfigured) {
+        throw UnsupportedError(
+          'DefaultFirebaseOptions have not been configured for web - '
+          'paste the Web App config into DefaultFirebaseOptions.web.',
+        );
+      }
+      return web;
     }
     switch (defaultTargetPlatform) {
       case TargetPlatform.android:
@@ -57,6 +62,54 @@ class DefaultFirebaseOptions {
     storageBucket: 'laundry-locker-19a9d.firebasestorage.app',
   );
 
+  // ---------------------------------------------------------------------------
+  // WEB — project `laundry-locker-19a9d` (cùng project với Android).
+  //
+  // TODO(owner): Firebase console → Project settings → General → Your apps →
+  // Web app (</>) → "SDK setup and configuration" → chọn "Config". Dán từng giá
+  // trị của object `firebaseConfig` vào hằng cùng tên bên dưới (apiKey,
+  // authDomain, projectId, storageBucket, messagingSenderId, appId,
+  // measurementId). Cấu hình web là thông tin công khai, commit được.
+  //
+  // Khi [_webApiKey] hoặc [_webAppId] còn bắt đầu bằng `PASTE_`,
+  // [isWebConfigured] = false: bản web không khởi tạo Firebase và ẩn nút đăng
+  // nhập SĐT/Google. Các hằng còn lại đã điền sẵn theo project (giống Android) —
+  // đối chiếu lại với config khi dán.
+  // ---------------------------------------------------------------------------
+  static const String _webApiKey = 'PASTE_WEB_API_KEY';
+  static const String _webAuthDomain = 'laundry-locker-19a9d.firebaseapp.com';
+  static const String _webProjectId = 'laundry-locker-19a9d';
+  static const String _webStorageBucket =
+      'laundry-locker-19a9d.firebasestorage.app';
+  static const String _webMessagingSenderId = '1007589685877';
+  static const String _webAppId = 'PASTE_WEB_APP_ID';
+
+  /// Tuỳ chọn (Google Analytics): `'G-…'`, hoặc để `null` nếu config không có.
+  static const String? _webMeasurementId = null;
+
+  /// `true` khi đã dán cấu hình Web App thật (không còn giá trị `PASTE_…`).
+  static bool get isWebConfigured =>
+      !_webApiKey.startsWith('PASTE_') && !_webAppId.startsWith('PASTE_');
+
+  static const FirebaseOptions web = FirebaseOptions(
+    apiKey: _webApiKey,
+    authDomain: _webAuthDomain,
+    projectId: _webProjectId,
+    storageBucket: _webStorageBucket,
+    messagingSenderId: _webMessagingSenderId,
+    appId: _webAppId,
+    measurementId: _webMeasurementId,
+  );
+
+  // TODO(owner): cấu hình iOS dưới đây thuộc project KHÁC (`db-wsb-project`,
+  // bundle `com.example.aislApp`), trong khi app iOS có bundle
+  // `com.laundrylocker.smartLaundryLocker` và backend chỉ xác minh token của
+  // project `laundry-locker-19a9d` ⇒ đăng nhập SĐT/Google trên iOS sẽ bị backend
+  // từ chối. Cần thêm iOS app vào `laundry-locker-19a9d` rồi chạy
+  // `flutterfire configure --project=laundry-locker-19a9d` (sinh lại file này,
+  // ios/Runner/GoogleService-Info.plist và firebase.json). Không tự điền giá trị.
+  // Lưu ý: FlutterFire CLI ghi đè cả file — nhớ giữ lại getter
+  // [isWebConfigured] (main.dart và FirebaseAuthService dùng).
   static const FirebaseOptions ios = FirebaseOptions(
     apiKey: 'AIzaSyBiPS5GMKTrtxV8WDesMvJmjC8D0-6X4eM',
     appId: '1:816941944331:ios:7e6400403ff54b06ee410e',

@@ -40,7 +40,7 @@ class WalletProvider extends ChangeNotifier {
   double get withdrawableBalance => _withdrawableBalance;
 
   /// `false` khi không đọc được `GET /api/wallet/withdrawable-balance`. Khi đó
-  /// KHÔNG được coi cả số dư là rút được (chỉ tiền nạp/hoàn qua SePay/VNPay mới
+  /// KHÔNG được coi cả số dư là rút được (chỉ tiền nạp/hoàn qua cổng thanh toán mới
   /// rút được) — màn rút tiền báo "chưa xác định" và để backend kiểm.
   bool _withdrawableKnown = false;
   bool get withdrawableKnown => _withdrawableKnown;

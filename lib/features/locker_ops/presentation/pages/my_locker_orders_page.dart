@@ -849,7 +849,6 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
         service: _service,
         orderId: orderId,
         total: total,
-        enabledMethods: businessConfig.enabledPaymentMethods,
         description: description,
       );
       if (!mounted || outcome == OrderPaymentOutcome.cancelled) return;
@@ -910,7 +909,6 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
           service: _service,
           orderId: orderId,
           total: due,
-          enabledMethods: businessConfig.enabledPaymentMethods,
         );
       } catch (e) {
         _snack(LockerOpsService.errorMessage(e));
@@ -1103,7 +1101,6 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
           service: _service,
           orderId: orderId,
           total: due,
-          enabledMethods: businessConfig.enabledPaymentMethods,
           description: 'Phí quá hạn',
         );
       } catch (e) {

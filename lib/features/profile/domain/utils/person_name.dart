@@ -45,8 +45,9 @@ PersonName splitFullName(String fullName) {
 }
 
 /// Tên mặc định backend đặt cho tài khoản tạo nhanh (đăng nhập OTP email,
-/// đăng ký nhanh ở kiosk) khi người dùng chưa nhập tên.
-const _placeholderNames = {'customer', 'khach', 'khách', 'người dùng'};
+/// đăng ký nhanh ở kiosk, đăng nhập SĐT/Firebase lần đầu = "User") khi người
+/// dùng chưa nhập tên.
+const _placeholderNames = {'customer', 'khach', 'khách', 'người dùng', 'user'};
 
 /// `true` khi tên chỉ là tên mặc định — form sửa hồ sơ để trống ô tên thay vì
 /// điền sẵn "Customer" để người dùng nhập tên thật.

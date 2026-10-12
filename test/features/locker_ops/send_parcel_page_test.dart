@@ -55,12 +55,18 @@ class _FakeSendLockerOpsService extends LockerOpsService {
   }) async {
     checkoutCalls++;
     lastCheckoutMethod = method;
-    if (method == 'WALLET') paid = true;
-    return {'id': 1, 'orderId': orderId, 'method': method, 'status': 'COMPLETED'};
+    // Backend cũ chưa có `bankTransfer`: app đọc số tiền/nội dung từ URL ảnh QR.
+    return {
+      'id': 1,
+      'orderId': orderId,
+      'method': method,
+      'status': 'PENDING',
+      'qrCodeUrl':
+          'https://img.vietqr.io/image/970422-0123456789-compact2.jpg?amount=15000&addInfo=LKR91&accountName=LOCKR',
+    };
   }
 
-  /// Server đã ghi nhận đơn PAID hay chưa. Thanh toán ví là tức thì nên checkout
-  /// WALLET bật cờ này.
+  /// Server đã ghi nhận đơn PAID hay chưa (test bật khi "tiền về").
   bool paid = false;
 
   @override
@@ -158,28 +164,30 @@ void main() {
 
     await tester.enterText(find.byType(TextFormField).first, '0909000000');
     await tester.tap(find.text('Tạo đơn & lấy PIN bỏ hàng'));
-    await tester.pumpAndSettle();
+    // Mã VietQR có vòng chờ chạy liên tục ⇒ chỉ pump theo khung.
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 600));
 
-    // Không tự checkout khi tạo đơn; chưa trả tiền thì không mở được ô.
-    expect(service.checkoutCalls, 0);
-    expect(find.textContaining('Quét mã VietQR'), findsNothing);
+    // Tạo đơn xong hiện ngay mã VietQR SePay (một checkout); chưa trả tiền thì
+    // không mở được ô; không có bảng chọn / ví.
+    expect(service.checkoutCalls, 1);
+    expect(service.lastCheckoutMethod, 'SEPAY');
+    expect(find.text('Quét mã VietQR để thanh toán'), findsOneWidget);
+    expect(find.text('LKR91'), findsOneWidget);
+    expect(find.text('Ví của tôi'), findsNothing);
     expect(find.textContaining('Mock'), findsNothing);
     expect(find.text('Mở ô để bỏ hàng'), findsNothing);
     expect(service.unlockCalls, 0);
 
-    await tester.tap(find.text('Thanh toán 15.000đ'));
-    // Không pumpAndSettle: nút đang ở trạng thái chờ (vòng quay) suốt lúc chọn
-    // phương thức.
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 600));
-    expect(find.text('Chọn phương thức thanh toán'), findsOneWidget);
-    await tester.tap(find.text('Ví của tôi'));
+    // Tiền về: lần hỏi nền kế tiếp (~3 s) thấy PAID, hiện bước mở ô.
+    service.paid = true;
+    await tester.pump(const Duration(seconds: 3));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 600));
     await tester.pumpAndSettle();
 
     expect(service.checkoutCalls, 1);
-    expect(service.lastCheckoutMethod, 'WALLET');
+    expect(find.text('Quét mã VietQR để thanh toán'), findsNothing);
     expect(find.text('Mở ô để bỏ hàng'), findsOneWidget);
     expect(service.confirmDropCalls, 0);
 

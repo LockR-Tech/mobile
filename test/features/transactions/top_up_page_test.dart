@@ -53,7 +53,8 @@ void main() {
     expect(find.textContaining('Số tiền nạp: 60.000'), findsOneWidget);
     expect(find.textContaining('từ 20.000'), findsOneWidget);
     expect(find.textContaining('3.000.000'), findsOneWidget);
-    expect(find.text('VNPAY'), findsOneWidget);
+    // Nạp ví chỉ còn SePay (VNPay/MoMo đã bỏ).
+    expect(find.text('VNPAY'), findsNothing);
     expect(find.text('SePay (VietQR)'), findsOneWidget);
 
     await tester.tap(find.textContaining('90.000').first);
@@ -89,6 +90,26 @@ void main() {
     // Chờ toast tự đóng để không còn timer treo.
     await tester.pump(const Duration(seconds: 5));
     await tester.pumpAndSettle();
+  });
+
+  testWidgets('admin còn bật VNPAY/MOMO mà tắt SEPAY ⇒ vẫn tạm ngưng nạp', (
+    tester,
+  ) async {
+    useBusinessConfig(
+      BusinessConfig.fromPublicMaps(
+        payment: {'app.payment.enabled-methods': 'WALLET,VNPAY,MOMO'},
+      ),
+    );
+
+    await _pumpTopUp(tester);
+
+    expect(find.text('VNPAY'), findsNothing);
+    expect(find.textContaining('MoMo'), findsNothing);
+    expect(find.text('SePay (VietQR)'), findsNothing);
+    expect(
+      find.text('Dịch vụ nạp tiền đang tạm ngưng. Vui lòng thử lại sau.'),
+      findsOneWidget,
+    );
   });
 
   testWidgets('admin chỉ bật SEPAY ⇒ chỉ hiển thị SePay', (tester) async {

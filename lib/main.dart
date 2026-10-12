@@ -214,10 +214,21 @@ class _AislNotifyWidget extends StatelessWidget {
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Firebase chỉ chạy trên Android/iOS. Web chưa được cấu hình
-  // DefaultFirebaseOptions nên gọi vào sẽ ném lỗi đỏ "have not been configured
-  // for web" — bỏ qua hẳn trên web để console sạch.
-  if (!kIsWeb) {
+  if (kIsWeb) {
+    // Web chỉ khởi tạo Firebase khi đã dán cấu hình Web App vào
+    // DefaultFirebaseOptions.web — chưa có thì bỏ qua hẳn (nút SĐT/Google ẩn,
+    // console sạch). Web chỉ dùng Firebase Auth, không đăng ký push.
+    if (DefaultFirebaseOptions.isWebConfigured) {
+      try {
+        // Firebase JS SDK tải từ CDN: không để mạng chậm/chặn treo khởi động.
+        await Firebase.initializeApp(
+          options: DefaultFirebaseOptions.currentPlatform,
+        ).timeout(const Duration(seconds: 10));
+      } catch (e) {
+        debugPrint("Firebase web init failed: $e");
+      }
+    }
+  } else {
     try {
       // Firebase is also auto-initialized natively (google-services plugin), so
       // calling initializeApp again throws `[core/duplicate-app]` — which used to

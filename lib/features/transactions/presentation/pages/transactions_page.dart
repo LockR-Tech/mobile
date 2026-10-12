@@ -135,7 +135,7 @@ class _TransactionsPageState extends State<TransactionsPage> {
 
                               const SizedBox(height: 16),
 
-                              // Card 3: Bộ lọc hình thức giao dịch (Ví, SePay, VNPay, Rút tiền)
+                              // Card 3: Bộ lọc hình thức giao dịch (Ví, SePay, Rút tiền; VNPay/MoMo nếu có giao dịch cũ)
                               _PaymentMethodFilterBar(provider: provider),
 
                               const SizedBox(height: 8),
@@ -912,7 +912,7 @@ class _ServiceBreakdownList extends StatelessWidget {
   }
 }
 
-/// Danh sách tổng tiền và giao dịch cho từng hình thức thanh toán (Ví, SePay, VNPay, MoMo, Rút tiền...)
+/// Danh sách tổng tiền và giao dịch cho từng hình thức thanh toán (Ví, SePay, Rút tiền; VNPay/MoMo chỉ khi có giao dịch cũ)
 class _MethodBreakdownList extends StatelessWidget {
   final TransactionProvider provider;
   final List<Transaction> periodTransactions;
@@ -955,14 +955,16 @@ class _MethodBreakdownList extends StatelessWidget {
         'color': const Color(0xFF0284C7),
         'icon': Icons.qr_code_2_rounded,
       },
-      {
-        'key': 'VNPAY',
-        'title': 'Cổng VNPay',
-        'amount': vnpayAmt,
-        'count': vnpayCnt,
-        'color': const Color(0xFFE11D48),
-        'icon': Icons.credit_card_rounded,
-      },
+      // VNPay/MoMo đã ngừng hỗ trợ: chỉ hiện khi còn giao dịch cũ.
+      if (vnpayAmt > 0 || vnpayCnt > 0)
+        {
+          'key': 'VNPAY',
+          'title': 'Cổng VNPay',
+          'amount': vnpayAmt,
+          'count': vnpayCnt,
+          'color': const Color(0xFFE11D48),
+          'icon': Icons.credit_card_rounded,
+        },
       if (momoAmt > 0 || momoCnt > 0)
         {
           'key': 'MOMO',
@@ -1063,7 +1065,7 @@ class _MethodBreakdownList extends StatelessWidget {
   }
 }
 
-/// Thanh bộ lọc hình thức giao dịch (Ví Lock.R, SePay QR, VNPay, Rút tiền...)
+/// Thanh bộ lọc hình thức giao dịch (Ví Lock.R, SePay QR, Rút tiền; VNPay/MoMo chỉ khi có giao dịch cũ)
 class _PaymentMethodFilterBar extends StatelessWidget {
   final TransactionProvider provider;
 
@@ -1071,11 +1073,17 @@ class _PaymentMethodFilterBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // VNPay/MoMo đã ngừng hỗ trợ: chỉ còn bộ lọc khi lịch sử có giao dịch cũ.
+    bool hasHistory(String key) =>
+        provider.selectedMethod == key || provider.getMethodCount(key) > 0;
     final filters = [
       {'key': 'ALL', 'label': 'Tất cả hình thức', 'icon': Icons.tune_rounded},
       {'key': 'WALLET', 'label': 'Ví Lock.R', 'icon': Icons.account_balance_wallet_rounded},
       {'key': 'SEPAY', 'label': 'Cổng SePay', 'icon': Icons.qr_code_2_rounded},
-      {'key': 'VNPAY', 'label': 'Cổng VNPay', 'icon': Icons.credit_card_rounded},
+      if (hasHistory('VNPAY'))
+        {'key': 'VNPAY', 'label': 'Cổng VNPay', 'icon': Icons.credit_card_rounded},
+      if (hasHistory('MOMO'))
+        {'key': 'MOMO', 'label': 'Ví MoMo', 'icon': Icons.account_balance_wallet_outlined},
       {'key': 'WITHDRAW', 'label': 'Rút tiền', 'icon': Icons.outbox_rounded},
     ];
 

@@ -10,7 +10,7 @@ class TopUpRequestDto {
     required this.returnUrl,
     this.bankCode = '',
     this.locale = 'vn',
-    this.method = 'VNPAY',
+    this.method = 'SEPAY',
   });
 
   Map<String, dynamic> toJson() => {

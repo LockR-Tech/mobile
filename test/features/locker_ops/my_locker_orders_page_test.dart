@@ -104,6 +104,29 @@ class _FakeFaultyOrderLockerOpsService extends LockerOpsService {
 
   int reportOrderFaultCalls = 0;
   int reportFaultCalls = 0;
+  final checkoutMethods = <String>[];
+
+  @override
+  Future<Map<String, dynamic>> checkout(
+    int orderId,
+    String method, {
+    String? bankCode,
+    String? returnUrl,
+    String? description,
+  }) async {
+    checkoutMethods.add(method);
+    return {
+      'id': 5,
+      'orderId': orderId,
+      'method': method,
+      'status': 'PENDING',
+      'qrCodeUrl':
+          'https://img.vietqr.io/image/970422-0123456789-compact2.jpg?amount=15000&addInfo=LKR41&accountName=LOCKR',
+    };
+  }
+
+  @override
+  Future<bool> orderStatus(int orderId) async => false;
 
   @override
   Future<List<Map<String, dynamic>>> myOrders() async => [
@@ -221,18 +244,20 @@ void main() {
     useBusinessConfig();
   });
 
-  testWidgets('chỉ hiện phương thức admin đang bật, không có tiền mặt tự xác nhận', (tester) async {
+  testWidgets('nút Thanh toán vào thẳng mã VietQR SePay — không bảng chọn, không ví', (tester) async {
     useBusinessConfig(
       BusinessConfig.fromPublicMaps(
-        payment: {'app.payment.enabled-methods': 'VNPAY,CASH'},
+        // Admin còn bật VNPAY/MOMO/WALLET/CASH (cấu hình cũ) cũng không có bảng chọn.
+        payment: {'app.payment.enabled-methods': 'VNPAY,MOMO,CASH,WALLET,SEPAY'},
       ),
     );
+    final service = _FakeFaultyOrderLockerOpsService();
 
     await tester.pumpWidget(
       MaterialApp(
         home: MediaQuery(
           data: const MediaQueryData(size: Size(390, 844)),
-          child: MyLockerOrdersPage(service: _FakeFaultyOrderLockerOpsService()),
+          child: MyLockerOrdersPage(service: service),
         ),
       ),
     );
@@ -242,14 +267,27 @@ void main() {
     await tester.pumpAndSettle();
     await tester.ensureVisible(find.text('Thanh toán 15.000đ'));
     await tester.tap(find.text('Thanh toán 15.000đ'));
-    await tester.pumpAndSettle();
+    // Mã VietQR có vòng chờ chạy liên tục ⇒ không pumpAndSettle.
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 600));
 
-    expect(find.text('Chọn phương thức thanh toán'), findsOneWidget);
-    expect(find.text('VNPay'), findsOneWidget);
-    // Admin bật CASH vẫn không hiện: ở tủ không có ai thu tiền để xác nhận.
-    expect(find.text('Tiền mặt'), findsNothing);
+    expect(service.checkoutMethods, ['SEPAY']);
+    expect(find.text('Chọn phương thức thanh toán'), findsNothing);
+    expect(find.text('Quét mã VietQR để thanh toán'), findsOneWidget);
+    expect(find.text('LKR41'), findsOneWidget);
     expect(find.text('Ví của tôi'), findsNothing);
+    expect(find.text('Tiền mặt'), findsNothing);
+    expect(find.text('VNPay'), findsNothing);
     expect(find.text('MoMo'), findsNothing);
+
+    // Đóng bảng (chưa trả) để luồng thanh toán kết thúc gọn.
+    Navigator.of(
+      tester.element(find.text('Quét mã VietQR để thanh toán')),
+    ).pop();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 600));
+    await tester.pump(const Duration(seconds: 5));
+    expect(service.checkoutMethods, ['SEPAY']);
   });
 
   testWidgets('gia hạn dùng số giờ mặc định và tối đa theo cấu hình admin', (

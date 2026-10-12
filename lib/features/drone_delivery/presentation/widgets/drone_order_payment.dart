@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:smart_laundry_locker/core/config/business_config_service.dart';
 import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/order_payment_sheet.dart';
 
@@ -12,22 +11,18 @@ typedef DroneOrderPayer =
 
 /// Quy tắc F1.02: đội bay chỉ tiếp nhận đơn đã thanh toán, nên đơn drone thu tiền
 /// ngay tại chỗ (lúc vừa đặt, hoặc từ màn theo dõi) thay vì bắt khách sang danh
-/// sách đơn. Dùng chung bảng thanh toán với đơn tủ để theo đúng các phương thức
-/// admin đang bật. Lỗi gọi API được ném ra cho nơi gọi tự báo.
+/// sách đơn. Dùng chung bảng thanh toán SePay VietQR với đơn tủ (phương thức
+/// duy nhất). Lỗi tạo mã hiện ngay trong bảng.
 Future<OrderPaymentOutcome> payDroneOrder(
   BuildContext context, {
   required int orderId,
   required double total,
 }) {
-  final config = BusinessConfigService.instance;
-  // Làm mới nền danh sách phương thức admin bật (trong TTL thì không gọi mạng).
-  config.refresh();
   return payOrderAndAwaitPaid(
     context,
     service: LockerOpsService(),
     orderId: orderId,
     total: total,
-    enabledMethods: config.current.enabledPaymentMethods,
   );
 }
 

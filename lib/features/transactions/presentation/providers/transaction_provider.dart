@@ -45,7 +45,8 @@ class TransactionProvider extends ChangeNotifier {
   String _selectedPeriod = 'ALL';
   String get selectedPeriod => _selectedPeriod;
 
-  // Methods: 'ALL', 'WALLET', 'SEPAY', 'VNPAY', 'WITHDRAW'
+  // Methods: 'ALL', 'WALLET', 'SEPAY', 'WITHDRAW' (+ 'VNPAY'/'MOMO' khi còn giao
+  // dịch cũ qua hai cổng đã bỏ)
   String _selectedMethod = 'ALL';
   String get selectedMethod => _selectedMethod;
 
@@ -265,7 +266,7 @@ class TransactionProvider extends ChangeNotifier {
     );
   }
 
-  Future<TopUpResult?> initiateTopUp(int amount, {String method = 'VNPAY'}) async {
+  Future<TopUpResult?> initiateTopUp(int amount, {String method = 'SEPAY'}) async {
     if (_isCreatingTopUpUrl) return null;
     debugPrint('[TOPUP][provider] initiateTopUp(amount=$amount, method=$method)');
     if (amount <= 0) {

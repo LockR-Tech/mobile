@@ -6,7 +6,7 @@ enum TopUpConfirmationStatus {
   /// Ví đã có giao dịch cộng tiền với `referenceId == txnRef`.
   confirmed,
 
-  /// Hết thời gian chờ mà chưa thấy giao dịch — có thể webhook SePay/IPN VNPay
+  /// Hết thời gian chờ mà chưa thấy giao dịch — có thể webhook SePay
   /// tới muộn. KHÔNG được báo thành công.
   pending,
 }
@@ -42,7 +42,7 @@ Transaction? findTopUpCredit(Iterable<Transaction> transactions, String txnRef) 
 
 /// Hỏi lại lịch sử ví cho tới khi thấy giao dịch nạp khớp [txnRef].
 ///
-/// Trang quay về của SePay/VNPay chỉ cho biết trình duyệt đã quay lại, KHÔNG
+/// Trang quay về của SePay chỉ cho biết trình duyệt đã quay lại, KHÔNG
 /// chứng minh tiền đã vào ví (return SePay chỉ đọc trạng thái; tiền cộng khi
 /// webhook/IPN tới). Vì vậy chỉ báo thành công khi chính ví có giao dịch.
 ///

@@ -6,15 +6,17 @@ import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/or
 import '../../helpers/test_helpers.dart';
 
 class _FakePayService extends LockerOpsService {
-  _FakePayService({this.qrCodeUrl}) : super(dio: createMockDio().dio);
+  _FakePayService({this.qrCodeUrl, this.bankTransfer})
+    : super(dio: createMockDio().dio);
 
   final String? qrCodeUrl;
+  final Map<String, dynamic>? bankTransfer;
   int checkoutCalls = 0;
   String? lastMethod;
   bool paid = false;
 
   @override
-  Future<num> walletBalance() async => 0;
+  Future<num> walletBalance() async => 999999;
 
   @override
   Future<Map<String, dynamic>> checkout(
@@ -32,19 +34,12 @@ class _FakePayService extends LockerOpsService {
       'method': method,
       'status': 'PENDING',
       if (qrCodeUrl != null) 'qrCodeUrl': qrCodeUrl,
-      'content': 'LOCKR 42',
+      if (bankTransfer != null) 'bankTransfer': bankTransfer,
     };
   }
 
   @override
   Future<bool> orderStatus(int orderId) async => paid;
-
-  @override
-  Future<bool> awaitOrderPaid(
-    int orderId, {
-    Duration timeout = const Duration(seconds: 60),
-    Duration interval = const Duration(milliseconds: 1500),
-  }) async => paid;
 }
 
 Widget _host(_FakePayService service, void Function(Object?) onResult) =>
@@ -60,7 +55,6 @@ Widget _host(_FakePayService service, void Function(Object?) onResult) =>
                     service: service,
                     orderId: 42,
                     total: 15000,
-                    enabledMethods: const ['SEPAY'],
                   ),
                 );
               } catch (e) {
@@ -72,6 +66,12 @@ Widget _host(_FakePayService service, void Function(Object?) onResult) =>
         ),
       ),
     );
+
+/// Mã QR có vòng chờ chạy liên tục ⇒ chỉ pump theo khung, không pumpAndSettle.
+Future<void> _settleSheet(WidgetTester tester) async {
+  await tester.pump();
+  await tester.pump(const Duration(milliseconds: 500));
+}
 
 void main() {
   group('checkoutQrUrl', () {
@@ -87,65 +87,115 @@ void main() {
     });
   });
 
-  testWidgets('SePay: đúng một checkout cho một lần trả, hiện mã của server', (
+  testWidgets(
+    'chỉ SePay: bấm trả là vào thẳng mã VietQR (không bảng chọn, không ví), đúng một checkout',
+    (tester) async {
+      await tester.binding.setSurfaceSize(const Size(400, 1200));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+      final service = _FakePayService(
+        qrCodeUrl:
+            'https://img.vietqr.io/image/970422-0123456789-compact2.jpg?amount=15000&addInfo=LKR42&accountName=LOCKR',
+        bankTransfer: {
+          'bankBin': '970422',
+          'accountNo': '0123456789',
+          'accountName': 'LOCKR',
+          'amount': 15000,
+          'transferContent': 'LKR42',
+        },
+      );
+      Object? result;
+      await tester.pumpWidget(_host(service, (r) => result = r));
+
+      await tester.tap(find.text('Trả'));
+      await _settleSheet(tester);
+
+      expect(service.checkoutCalls, 1);
+      expect(service.lastMethod, 'SEPAY');
+      expect(find.text('Chọn phương thức thanh toán'), findsNothing);
+      expect(find.text('Ví của tôi'), findsNothing);
+      expect(find.text('Quét mã VietQR để thanh toán'), findsOneWidget);
+      expect(find.text('LKR42'), findsOneWidget);
+      expect(find.text('Sao chép'), findsOneWidget);
+      expect(find.text('Thanh toán bằng app ngân hàng'), findsOneWidget);
+      expect(find.text('Tôi đã chuyển khoản — Kiểm tra ngay'), findsOneWidget);
+      final image = tester.widget<Image>(
+        find
+            .descendant(of: find.byType(ClipRRect), matching: find.byType(Image))
+            .first,
+      );
+      expect(
+        (image.image as NetworkImage).url,
+        startsWith('https://img.vietqr.io/image/970422-0123456789'),
+      );
+
+      // Chưa có tiền: "Kiểm tra ngay" báo chưa ghi nhận, không tạo giao dịch mới.
+      await tester.tap(find.text('Tôi đã chuyển khoản — Kiểm tra ngay'));
+      await _settleSheet(tester);
+      expect(find.textContaining('Chưa ghi nhận thanh toán'), findsOneWidget);
+      expect(service.checkoutCalls, 1);
+
+      // Tiền về: lần hỏi kế tiếp (~3 s) thấy PAID, bảng tự đóng.
+      service.paid = true;
+      await tester.pump(const Duration(seconds: 3));
+      await tester.pump();
+      expect(find.text('Thanh toán thành công!'), findsOneWidget);
+      await tester.pump(const Duration(seconds: 2));
+      await tester.pumpAndSettle();
+      expect(result, OrderPaymentOutcome.paid);
+      expect(service.checkoutCalls, 1);
+    },
+  );
+
+  testWidgets('server không trả QR lẫn bankTransfer ⇒ báo lỗi, không dùng tài khoản viết sẵn', (
     tester,
   ) async {
-    await tester.binding.setSurfaceSize(const Size(400, 900));
+    await tester.binding.setSurfaceSize(const Size(400, 1200));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    final service = _FakePayService();
+    Object? result;
+    await tester.pumpWidget(_host(service, (r) => result = r));
+
+    await tester.tap(find.text('Trả'));
+    await _settleSheet(tester);
+
+    expect(service.checkoutCalls, 1);
+    expect(find.textContaining('chưa trả mã VietQR'), findsOneWidget);
+    expect(find.text('Quét mã VietQR để thanh toán'), findsNothing);
+    expect(find.text('Thử lại'), findsOneWidget);
+
+    // "Thử lại" là lần duy nhất được tạo giao dịch mới.
+    await tester.tap(find.text('Thử lại'));
+    await _settleSheet(tester);
+    expect(service.checkoutCalls, 2);
+
+    Navigator.of(tester.element(find.text('Thử lại'))).pop();
+    await tester.pumpAndSettle();
+    expect(result, OrderPaymentOutcome.cancelled);
+  });
+
+  testWidgets('đóng bảng khi đã có mã mà tiền chưa về ⇒ "đang chờ"', (tester) async {
+    await tester.binding.setSurfaceSize(const Size(400, 1200));
     addTearDown(() => tester.binding.setSurfaceSize(null));
     final service = _FakePayService(
-      qrCodeUrl: 'https://img.vietqr.io/image/x.jpg',
+      bankTransfer: {
+        'bankBin': '970422',
+        'accountNo': '0123456789',
+        'amount': 15000,
+        'transferContent': 'LKR42',
+      },
     );
     Object? result;
     await tester.pumpWidget(_host(service, (r) => result = r));
 
     await tester.tap(find.text('Trả'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('SePay (VietQR)'));
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 500));
-
-    expect(service.checkoutCalls, 1);
-    expect(service.lastMethod, 'SEPAY');
+    await _settleSheet(tester);
+    // Không có ảnh QR nhưng có STK ⇒ vẫn chuyển khoản được.
     expect(find.text('Quét mã VietQR để thanh toán'), findsOneWidget);
-    expect(find.text('Nội dung: LOCKR 42'), findsOneWidget);
-    final image = tester.widget<Image>(
-      find
-          .descendant(of: find.byType(ClipRRect), matching: find.byType(Image))
-          .first,
-    );
-    expect(
-      (image.image as NetworkImage).url,
-      'https://img.vietqr.io/image/x.jpg',
-    );
+    expect(find.textContaining('0123456789'), findsOneWidget);
 
-    // Tiền về: sheet tự đóng, kết quả "đã thanh toán", không checkout thêm.
-    service.paid = true;
-    await tester.pump(const Duration(seconds: 3));
-    await tester.pump(const Duration(seconds: 2));
+    Navigator.of(tester.element(find.text('LKR42'))).pop();
     await tester.pumpAndSettle();
-    expect(result, OrderPaymentOutcome.paid);
+    expect(result, OrderPaymentOutcome.pending);
     expect(service.checkoutCalls, 1);
   });
-
-  testWidgets(
-    'SePay không trả mã QR ⇒ báo lỗi, không dùng tài khoản viết sẵn',
-    (tester) async {
-      final service = _FakePayService();
-      Object? result;
-      await tester.pumpWidget(_host(service, (r) => result = r));
-
-      await tester.tap(find.text('Trả'));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('SePay (VietQR)'));
-      await tester.pumpAndSettle();
-
-      expect(service.checkoutCalls, 1);
-      expect(result, isA<LockerOpsException>());
-      expect(
-        LockerOpsService.errorMessage(result!),
-        contains('chưa trả mã VietQR'),
-      );
-      expect(find.text('Quét mã VietQR để thanh toán'), findsNothing);
-    },
-  );
 }

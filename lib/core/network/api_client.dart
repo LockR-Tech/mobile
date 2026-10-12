@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:smart_laundry_locker/core/constants/payment_methods.dart';
 import 'package:smart_laundry_locker/core/network/dio_client.dart';
 import 'package:smart_laundry_locker/core/services/token_service.dart';
 import 'package:dio/dio.dart';
@@ -213,6 +214,12 @@ class ApiClient {
       }
     } else if (data != null) {
       message = data.toString();
+    }
+
+    // Mã nghiệp vụ mà message server không dành cho người dùng cuối.
+    if (data is Map<String, dynamic> &&
+        data['code'] == PaymentMethods.unsupportedErrorCode) {
+      message = PaymentMethods.unsupportedMessage;
     }
 
     final cleanMessage = _cleanErrorMessage(message);

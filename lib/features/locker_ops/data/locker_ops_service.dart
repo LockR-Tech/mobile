@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:smart_laundry_locker/core/constants/payment_methods.dart';
 import 'package:smart_laundry_locker/core/media/media_upload.dart';
 import 'package:smart_laundry_locker/core/network/dio_client.dart';
 import 'package:smart_laundry_locker/features/locker_ops/data/device_restart_result.dart';
@@ -229,9 +230,10 @@ class LockerOpsService {
     return raw is num ? raw : num.tryParse('$raw') ?? 0;
   }
 
-  /// Thanh toán đơn theo phương thức WALLET | VNPAY | MOMO | CASH.
-  /// WALLET/CASH trả về payment đã COMPLETED; VNPAY/MOMO trả `url`/`deeplink`/`qr`
-  /// để mở cổng thanh toán. `returnUrl` để WebView detect callback.
+  /// Tạo giao dịch thanh toán đơn. App khách chỉ gửi `SEPAY` (xem
+  /// `SepayPaymentController`); VNPAY/MOMO bị backend trả 400
+  /// `PAYMENT_METHOD_UNSUPPORTED`. SEPAY trả `qrCodeUrl` VietQR và
+  /// `bankTransfer {bankBin, accountNo, accountName, amount, transferContent}`.
   Future<Map<String, dynamic>> checkout(
     int orderId,
     String method, {
@@ -1533,6 +1535,8 @@ class LockerOpsService {
         'Vui lòng thanh toán đơn drone trước khi mở tủ nhận hàng.',
     // ── Đơn của khách (order-service) ──
     'ORDER_STATUS_INVALID': 'Đơn không còn ở trạng thái cho phép thao tác này.',
+    // ── Thanh toán: MoMo/VNPay đã bỏ ──
+    PaymentMethods.unsupportedErrorCode: PaymentMethods.unsupportedMessage,
   };
 
   // ── Mã lỗi luồng KTV tủ ──

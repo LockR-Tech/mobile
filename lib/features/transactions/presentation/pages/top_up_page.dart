@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:intl/intl.dart';
 import 'package:smart_laundry_locker/core/config/business_config_provider.dart';
-import 'package:smart_laundry_locker/core/constants/app_assets.dart';
+import 'package:smart_laundry_locker/core/constants/payment_methods.dart';
 import 'package:smart_laundry_locker/core/network/api_client.dart';
 import 'package:smart_laundry_locker/core/theme/shadcn_theme.dart';
 import 'package:smart_laundry_locker/features/transactions/domain/top_up_confirmation.dart';
@@ -27,7 +27,15 @@ class _TopUpPageState extends State<TopUpPage> with BusinessConfigStateMixin {
   /// Mốc nạp nhanh + số tiền mặc định do admin cấu hình.
   List<int> get _amounts => businessConfig.topupPresets;
   late int _selectedAmount;
-  String _selectedMethod = 'SEPAY';
+
+  /// Nạp ví chỉ qua SePay VietQR (VNPay/MoMo đã bỏ).
+  static const String _method = PaymentMethods.sepay;
+
+  /// Admin còn bật SePay (`app.payment.enabled-methods`).
+  bool get _sepayEnabled => PaymentMethods.enabledAmong(
+    businessConfig.enabledPaymentMethods,
+    allowed: PaymentMethods.topUp,
+  ).isNotEmpty;
 
   /// Người dùng đã tự chọn mốc — cấu hình đổi thì không ghi đè lựa chọn.
   bool _amountTouched = false;
@@ -44,31 +52,19 @@ class _TopUpPageState extends State<TopUpPage> with BusinessConfigStateMixin {
   void initState() {
     super.initState();
     _selectedAmount = businessConfig.topupDefaultAmount;
-    if (businessConfig.isPaymentMethodEnabled('SEPAY')) {
-      _selectedMethod = 'SEPAY';
-    } else if (businessConfig.isPaymentMethodEnabled('VNPAY')) {
-      _selectedMethod = 'VNPAY';
-    }
     _provider = TransactionInjection.provideTransactionProvider(ApiClient());
   }
 
   @override
   void onBusinessConfigChanged(BusinessConfig config) {
     if (!_amountTouched) _selectedAmount = config.topupDefaultAmount;
-    if (!config.isPaymentMethodEnabled(_selectedMethod)) {
-      if (config.isPaymentMethodEnabled('SEPAY')) {
-        _selectedMethod = 'SEPAY';
-      } else if (config.isPaymentMethodEnabled('VNPAY')) {
-        _selectedMethod = 'VNPAY';
-      }
-    }
   }
 
   /// Kiểm tra trước khi gọi API. Trả `false` (và báo lỗi) nếu không nạp được.
   bool _validateTopUp() {
     final config = businessConfig;
-    if (!config.isPaymentMethodEnabled(_selectedMethod)) {
-      SmartDialog.showToast('Phương thức $_selectedMethod đang tạm ngưng.');
+    if (!_sepayEnabled) {
+      SmartDialog.showToast('Dịch vụ nạp tiền đang tạm ngưng.');
       return false;
     }
     final error = config.validateTopupAmount(_selectedAmount, _formatCurrency);
@@ -128,12 +124,7 @@ class _TopUpPageState extends State<TopUpPage> with BusinessConfigStateMixin {
                     style: const TextStyle(fontSize: 13, color: Colors.grey),
                   ),
                   const SizedBox(height: 32),
-                  _PaymentMethodSection(
-                    selectedMethod: _selectedMethod,
-                    onMethodChanged: (m) => setState(() => _selectedMethod = m),
-                    vnpayEnabled: businessConfig.isPaymentMethodEnabled('VNPAY'),
-                    sepayEnabled: businessConfig.isPaymentMethodEnabled('SEPAY'),
-                  ),
+                  _PaymentMethodSection(sepayEnabled: _sepayEnabled),
                   const SizedBox(height: 32),
                   SizedBox(height: screenH * 0.08),
                 ],
@@ -148,12 +139,12 @@ class _TopUpPageState extends State<TopUpPage> with BusinessConfigStateMixin {
           isLoading: provider.isCreatingTopUpUrl,
           onPressed: () async {
             debugPrint(
-              '[TOPUP][page] pressed selectedAmount=$_selectedAmount, method=$_selectedMethod',
+              '[TOPUP][page] pressed selectedAmount=$_selectedAmount, method=$_method',
             );
             if (!_validateTopUp()) return;
             final result = await provider.initiateTopUp(
               _selectedAmount,
-              method: _selectedMethod,
+              method: _method,
             );
             if (!mounted) return;
             if (result == null || result.paymentUrl.isEmpty) {
@@ -450,22 +441,15 @@ class _TopUpAmountGrid extends StatelessWidget {
   }
 }
 
+/// Phương thức nạp: chỉ SePay VietQR (VNPay/MoMo đã bỏ).
 class _PaymentMethodSection extends StatelessWidget {
-  const _PaymentMethodSection({
-    required this.selectedMethod,
-    required this.onMethodChanged,
-    required this.vnpayEnabled,
-    required this.sepayEnabled,
-  });
+  const _PaymentMethodSection({required this.sepayEnabled});
 
-  final String selectedMethod;
-  final ValueChanged<String> onMethodChanged;
-  final bool vnpayEnabled;
   final bool sepayEnabled;
 
   @override
   Widget build(BuildContext context) {
-    if (!vnpayEnabled && !sepayEnabled) {
+    if (!sepayEnabled) {
       return Container(
         width: double.infinity,
         padding: const EdgeInsets.all(16),
@@ -492,150 +476,87 @@ class _PaymentMethodSection extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 16),
-        if (sepayEnabled)
-          _PaymentMethodCard(
-            isSelected: selectedMethod == 'SEPAY',
-            onTap: () => onMethodChanged('SEPAY'),
-            iconWidget: Container(
-              width: 48,
-              height: 48,
-              decoration: BoxDecoration(
-                color: const Color(0xFFEFF6FF),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: const Icon(
-                Icons.qr_code_2_rounded,
-                color: Color(0xFF0284C7),
-                size: 30,
-              ),
+        _PaymentMethodCard(
+          iconWidget: Container(
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(
+              color: const Color(0xFFEFF6FF),
+              borderRadius: BorderRadius.circular(10),
             ),
-            title: 'SePay (VietQR)',
-            subtitle: 'Quét mã VietQR chuyển khoản nhanh 24/7',
-            badge: 'Khuyên dùng',
-          ),
-        if (sepayEnabled && vnpayEnabled) const SizedBox(height: 12),
-        if (vnpayEnabled)
-          _PaymentMethodCard(
-            isSelected: selectedMethod == 'VNPAY',
-            onTap: () => onMethodChanged('VNPAY'),
-            iconWidget: SizedBox(
-              width: 58,
-              child: Image.asset(
-                AppAssets.vnpayLogo,
-                height: 28,
-                fit: BoxFit.contain,
-              ),
+            child: const Icon(
+              Icons.qr_code_2_rounded,
+              color: Color(0xFF0284C7),
+              size: 30,
             ),
-            title: 'VNPAY',
-            subtitle: 'Cổng thanh toán điện tử VNPAY',
           ),
+          title: 'SePay (VietQR)',
+          subtitle: 'Quét mã VietQR chuyển khoản nhanh 24/7',
+        ),
       ],
     );
   }
 }
 
+/// Thẻ phương thức nạp (luôn ở trạng thái đã chọn — chỉ còn một phương thức).
 class _PaymentMethodCard extends StatelessWidget {
-  final bool isSelected;
-  final VoidCallback onTap;
   final Widget iconWidget;
   final String title;
   final String subtitle;
-  final String? badge;
 
   const _PaymentMethodCard({
-    required this.isSelected,
-    required this.onTap,
     required this.iconWidget,
     required this.title,
     required this.subtitle,
-    this.badge,
   });
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 150),
-        width: double.infinity,
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(
-            color: isSelected
-                ? AISLShadcnTheme.navyPrimary
-                : const Color(0xFFE2E8F0),
-            width: isSelected ? 2.0 : 1.0,
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AISLShadcnTheme.navyPrimary, width: 2.0),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.02),
+            blurRadius: 8,
+            offset: const Offset(0, 3),
           ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.02),
-              blurRadius: 8,
-              offset: const Offset(0, 3),
-            ),
-          ],
-        ),
-        child: Row(
-          children: [
-            iconWidget,
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Text(
-                        title,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black87,
-                        ),
-                      ),
-                      if (badge != null) ...[
-                        const SizedBox(width: 8),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 6,
-                            vertical: 2,
-                          ),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFDCFCE7),
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          child: Text(
-                            badge!,
-                            style: const TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w600,
-                              color: Color(0xFF15803D),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ],
+        ],
+      ),
+      child: Row(
+        children: [
+          iconWidget,
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
                   ),
-                  const SizedBox(height: 3),
-                  Text(
-                    subtitle,
-                    style: const TextStyle(fontSize: 13, color: Colors.grey),
-                  ),
-                ],
-              ),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  subtitle,
+                  style: const TextStyle(fontSize: 13, color: Colors.grey),
+                ),
+              ],
             ),
-            Icon(
-              isSelected
-                  ? Icons.radio_button_checked
-                  : Icons.radio_button_unchecked,
-              color: isSelected
-                  ? AISLShadcnTheme.navyPrimary
-                  : const Color(0xFFCBD5E1),
-              size: 22,
-            ),
-          ],
-        ),
+          ),
+          const Icon(
+            Icons.radio_button_checked,
+            color: AISLShadcnTheme.navyPrimary,
+            size: 22,
+          ),
+        ],
       ),
     );
   }
@@ -708,20 +629,14 @@ class _TopUpWebViewPageState extends State<TopUpWebViewPage> {
           onPageFinished: (_) => setState(() => _isLoading = false),
           onNavigationRequest: (request) {
             final url = request.url;
-            if ((url.contains('/payments/vnpay/callback') ||
-                    url.contains('/payments/vnpay/return') ||
-                    url.contains('/payments/sepay/callback') ||
+            // Trang quay về của SePay (cổng duy nhất còn dùng để nạp ví).
+            if ((url.contains('/payments/sepay/callback') ||
                     url.contains('/payments/sepay/return')) &&
                 !_popped) {
               _popped = true;
-              final uri = Uri.tryParse(url);
-              bool isSuccess = true;
-              if (url.contains('/vnpay/')) {
-                isSuccess = uri?.queryParameters['vnp_ResponseCode'] == '00';
-              } else if (url.contains('/sepay/')) {
-                final status = uri?.queryParameters['status'];
-                isSuccess = status == null || (!status.contains('cancel') && !status.contains('failed'));
-              }
+              final status = Uri.tryParse(url)?.queryParameters['status'];
+              final isSuccess = status == null ||
+                  (!status.contains('cancel') && !status.contains('failed'));
               WidgetsBinding.instance.addPostFrameCallback((_) {
                 if (mounted) Navigator.of(context).pop(isSuccess);
               });
