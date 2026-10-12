@@ -5,6 +5,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:smart_laundry_locker/core/config/business_config_service.dart';
 import 'package:smart_laundry_locker/core/config/feature_flags.dart';
 import 'package:smart_laundry_locker/core/routing/app_router.dart';
+import 'package:smart_laundry_locker/core/services/token_service.dart';
 import 'package:smart_laundry_locker/core/theme/shadcn_theme.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/domain/entities/drone_delivery_stage.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/domain/entities/drone_delivery_status.dart';
@@ -34,6 +35,18 @@ class _DroneDeliveryTrackingPageState
   bool _paying = false;
   bool _canceling = false;
   bool _confirming = false;
+
+  /// Tài khoản đang xem — để biết họ là người gửi (được thanh toán, huỷ, thấy mã lấy
+  /// hàng) hay người nhận (chỉ theo dõi).
+  int? _viewerUserId;
+
+  @override
+  void initState() {
+    super.initState();
+    TokenService.getUserId().then((id) {
+      if (mounted) setState(() => _viewerUserId = int.tryParse(id ?? ''));
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -104,6 +117,7 @@ class _DroneDeliveryTrackingPageState
           data: (status) => _TrackingBody(
             status: status,
             orderId: widget.orderId,
+            isSender: status.isSender(_viewerUserId),
             onPay: () => _pay(status),
             onCancel: () => _cancel(status),
             onConfirmDrop: () => _confirmDrop(status),
@@ -245,10 +259,12 @@ class _TrackingBody extends StatelessWidget {
   final VoidCallback onCancel;
   final VoidCallback onConfirmDrop;
   final VoidCallback onDeclineSurcharge;
+  final bool isSender;
 
   const _TrackingBody({
     required this.status,
     required this.orderId,
+    required this.isSender,
     required this.onPay,
     required this.onCancel,
     required this.onConfirmDrop,
@@ -283,6 +299,7 @@ class _TrackingBody extends StatelessWidget {
           onCancel: onCancel,
           onConfirmDrop: onConfirmDrop,
           onDeclineSurcharge: onDeclineSurcharge,
+          isSender: isSender,
           beforeRoute: [
             if (_canTrackOnMap) ...[
               const SizedBox(height: 16),

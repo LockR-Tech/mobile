@@ -10,7 +10,9 @@ import 'package:smart_laundry_locker/core/services/app_event_bus.dart';
 import 'package:smart_laundry_locker/features/assistant/presentation/widgets/assistant_entry.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/domain/entities/drone_delivery_stage.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/domain/entities/drone_delivery_status.dart';
+import 'package:smart_laundry_locker/features/drone_delivery/domain/entities/drone_booking.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/domain/entities/drone_labels.dart';
+import 'package:smart_laundry_locker/features/drone_delivery/presentation/widgets/drone_pickup_queue.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/domain/entities/drone_parcel.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/infrastructure/models/drone_delivery_response.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/presentation/widgets/drone_delivery_detail.dart';
@@ -1235,9 +1237,27 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
     final visibleDeliveries = _deliveries
         .where(_matchesDispatchFilter)
         .toList();
+    // Đơn lấy hàng tận nhà đi qua lời mời của hệ thống (DronePickupQueue bên dưới);
+    // hàng chờ tiếp nhận chung chỉ còn dành cho đơn cũ khách tự mang kiện ra tủ.
     final awaiting = visibleDeliveries
-        .where((d) => d['deliveryStage'] == 'AWAITING_DISPATCH')
+        .where(
+          (d) => d['deliveryStage'] == 'AWAITING_DISPATCH' && d['pickup'] is! Map,
+        )
         .toList(growable: false);
+    final hasPickupWork = _deliveries.any(
+      (d) =>
+          d['pickup'] is Map &&
+          const {
+            'OFFERED',
+            'ACCEPTED',
+            'PICKED_UP',
+          }.contains('${(d['pickup'] as Map)['status']}'.toUpperCase()) &&
+          const {
+            'AWAITING_DISPATCH',
+            'PICKUP_ASSIGNED',
+            'PICKED_UP',
+          }.contains('${d['deliveryStage']}'.toUpperCase()),
+    );
     final awaitingLoading = visibleDeliveries
         .where(
           (d) =>
@@ -1278,6 +1298,13 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
       child: ListView(
         padding: const EdgeInsets.all(12),
         children: [
+          DronePickupQueue(
+            service: _service,
+            deliveries: _deliveries,
+            onChanged: _load,
+            onOpenDetail: _showDeliveryDetail,
+            onAssignDrone: _acceptFlow,
+          ),
           _buildDispatchFilters(),
           const SizedBox(height: 8),
           // ── Đơn hàng drone order-based cho đội bay ───────────────────────
@@ -1370,6 +1397,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
           ],
 
           if (awaiting.isEmpty &&
+              !hasPickupWork &&
               parcelReturns.isEmpty &&
               awaitingLoading.isEmpty &&
               readyToLaunch.isEmpty &&
@@ -2970,6 +2998,42 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                   ),
                 ),
               ],
+              if (order['block'] is Map) ...[
+                const SizedBox(height: 8),
+                _MiniPill(
+                  icon: Icons.warning_amber_rounded,
+                  text:
+                      'Đang gặp sự cố: '
+                      '${(order['block'] as Map)['reasonLabel'] ?? droneFailureReasonLabel('${(order['block'] as Map)['reason']}')}'
+                      '${(order['block'] as Map)['ticketId'] == null ? '' : ' · phiếu #${(order['block'] as Map)['ticketId']}'}',
+                  color: const Color(0xFFB45309),
+                ),
+              ],
+              if (_canChangeDrone(order)) ...[
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    OutlinedButton.icon(
+                      key: const ValueKey('drone-change-drone'),
+                      onPressed: () => _changeDroneFlow(order),
+                      icon: const Icon(Icons.swap_horiz, size: 16),
+                      label: const Text('Đổi drone'),
+                    ),
+                    OutlinedButton.icon(
+                      key: const ValueKey('drone-fail-blocked'),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: const Color(0xFFDC2626),
+                        side: const BorderSide(color: Color(0xFFDC2626)),
+                      ),
+                      onPressed: () => _failDeliveryFlow(order),
+                      icon: const Icon(Icons.report_problem_outlined, size: 16),
+                      label: const Text('Giao không hoàn tất'),
+                    ),
+                  ],
+                ),
+              ],
               if (_canReportFailure(order)) ...[
                 const SizedBox(height: 8),
                 SizedBox(
@@ -3119,6 +3183,111 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
         'APPROACHING',
         'ARRIVED',
       }.contains('${order['deliveryStage']}');
+
+  /// Đơn đã gán drone (chưa phóng) đang gặp sự cố: KTV phụ trách đổi drone khác ở tủ gửi
+  /// hoặc xác nhận giao không hoàn tất.
+  bool _canChangeDrone(Map<String, dynamic> order) =>
+      order['block'] is Map &&
+      order['assignedByUserId'] != null &&
+      _ownsMission(order) &&
+      '${order['deliveryStage']}' == 'ACCEPTED';
+
+  Future<void> _changeDroneFlow(Map<String, dynamic> order) async {
+    final id = _asInt(order['orderId']);
+    if (id == null) return;
+    final candidates = _drones
+        .where(
+          (d) =>
+              d['status'] == 'IDLE' &&
+              _asInt(d['id']) != _asInt(order['droneUnitId']) &&
+              _asInt(d['lockerId']) == _asInt(order['sourceLockerId']),
+        )
+        .toList(growable: false);
+    if (candidates.isEmpty) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Tủ gửi không còn drone nào khác đang sẵn sàng. Hãy xác nhận giao '
+              'không hoàn tất nếu không khắc phục được.',
+            ),
+          ),
+        );
+      }
+      return;
+    }
+    int? selected = _asInt(candidates.first['id']);
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setLocal) => AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: const Text('Đổi drone'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Chọn drone khác đang sẵn sàng tại tủ gửi. Kiện phải được nạp và '
+                'kiểm lại trên drone mới.',
+              ),
+              const SizedBox(height: 12),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  for (final d in candidates)
+                    ChoiceChip(
+                      label: Text('${d['code']} · ${d['batteryPercent'] ?? '?'}%'),
+                      selected: selected == _asInt(d['id']),
+                      onSelected: (_) =>
+                          setLocal(() => selected = _asInt(d['id'])),
+                    ),
+                ],
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text('Hủy'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: const Text('Đổi drone'),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (ok != true || selected == null) return;
+    await _run(
+      () => _service.changeDroneOfOrder(id, droneUnitId: selected!),
+      'Đã đổi drone · nạp lại kiện rồi phóng',
+    );
+  }
+
+  /// KTV phụ trách xác nhận đơn giao không hoàn tất (đơn đang bị sự cố chặn).
+  Future<void> _failDeliveryFlow(Map<String, dynamic> order) async {
+    final id = _asInt(order['orderId']);
+    if (id == null) return;
+    final block = order['block'];
+    final result = await showDroneReasonDialog(
+      context,
+      title: 'Giao không hoàn tất',
+      intro:
+          'Đơn sẽ đóng lại, người gửi được hoàn tiền và bạn mang kiện trả lại '
+          'người gửi. Không hoàn tác được.',
+      reasons: droneDeliveryFailureReasons,
+      confirmLabel: 'Xác nhận',
+      initialReason: block is Map ? '${block['reason']}' : null,
+    );
+    if (result == null) return;
+    await _run(
+      () => _service.failDroneOrder(id, reason: result.$1, note: result.$2),
+      'Đã đóng đơn · mang kiện trả lại người gửi',
+    );
+  }
 
   Future<void> _advanceFlow(Map<String, dynamic> order) async {
     final orderId = _asInt(order['orderId']);
@@ -3675,7 +3844,14 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
       () => inFlight
           ? _service.failDroneOrder(
               orderId,
-              reasonCode: selectedReason.code,
+              // Sự cố khi drone đã phóng: mã số của hộp chọn → mã lý do của backend.
+              reason: const {
+                1: 'WEATHER',
+                2: 'FLIGHT_INCIDENT',
+                3: 'LANDING_PAD_FAULT',
+                4: 'OPERATIONAL',
+                5: 'OTHER',
+              }[selectedReason.code],
               note: note,
             )
           : _service.cancelDroneOrder(
@@ -3726,7 +3902,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
             children: [
               Icon(Icons.flight, color: Color(0xFF6366F1)),
               SizedBox(width: 8),
-              Text('Tiếp nhận nhiệm vụ'),
+              Text('Gán drone cho đơn'),
             ],
           ),
           content: Column(
@@ -3769,7 +3945,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                 ),
               ),
               onPressed: () => Navigator.pop(ctx, true),
-              child: const Text('Tiếp nhận ngay'),
+              child: const Text('Gán drone'),
             ),
           ],
         ),

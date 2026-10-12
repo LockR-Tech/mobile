@@ -49,6 +49,7 @@ import 'package:smart_laundry_locker/features/locker_ops/presentation/pages/my_l
 import 'package:smart_laundry_locker/features/locker_ops/presentation/pages/my_reports_page.dart';
 import 'package:smart_laundry_locker/features/drone_mission/presentation/mission_planner_page.dart';
 import 'package:smart_laundry_locker/features/drone_telemetry/presentation/flight_data_page.dart';
+import 'package:smart_laundry_locker/features/drone_delivery/presentation/pages/drone_booking_page.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/presentation/pages/drone_delivery_tracking_page.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/presentation/pages/drone_live_map_page.dart';
 import 'package:smart_laundry_locker/features/stores/domain/entities/store.dart';
@@ -105,6 +106,7 @@ class AppRouter {
   static const String droneFlightData = '/drone/flight-data';
   static const String droneDeliveryTracking = '/drone-delivery';
   static const String droneLiveMap = '/drone-delivery/live-map';
+  static const String droneBooking = '/drone-delivery/book';
   static const String assistant = '/assistant';
   static const String assistantHistory = '/assistant/history';
 
@@ -468,6 +470,24 @@ class AppRouter {
               state.uri.queryParameters['orderId'] ??
               '';
           return DroneDeliveryTrackingPage(orderId: orderId);
+        },
+      ),
+      GoRoute(
+        path: droneBooking,
+        name: 'drone_booking',
+        builder: (context, state) {
+          // `extra`: tủ khách đang xem (chọn sẵn làm tủ nhận) và ô drone đã chạm.
+          final extra = state.extra is Map ? state.extra as Map : const {};
+          int? asInt(dynamic value) =>
+              value is num ? value.toInt() : int.tryParse('$value');
+          return DroneBookingPage(
+            initialDestinationLockerId: asInt(extra['destinationLockerId']),
+            preferredBoxId: asInt(extra['preferredBoxId']),
+            onBooked: (orderId) => context.pushReplacement(
+              droneDeliveryTracking,
+              extra: '$orderId',
+            ),
+          );
         },
       ),
       GoRoute(

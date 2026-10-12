@@ -3599,9 +3599,14 @@ class _DetailSheet extends StatelessWidget {
           ),
           onTap: () => onReport(boxId),
         ),
-      // Đơn drone huỷ được tới khi đội bay tiếp nhận (chặng AWAITING_DISPATCH).
+      // Đơn drone huỷ được tới khi kỹ thuật viên đã cầm kiện: còn chờ điều phối
+      // (AWAITING_DISPATCH) hoặc kỹ thuật viên đang tới lấy (PICKUP_ASSIGNED).
       if (rawStatus == 'INITIALIZED' ||
-          (isDroneDelivery && status.toUpperCase() == 'AWAITING_DISPATCH'))
+          (isDroneDelivery &&
+              const {
+                'AWAITING_DISPATCH',
+                'PICKUP_ASSIGNED',
+              }.contains(status.toUpperCase())))
         OpsSheetAction(
           label: 'Hủy đơn',
           icon: LucideIcons.circleX,
