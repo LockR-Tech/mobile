@@ -39,7 +39,7 @@ class BusinessConfig {
     this.droneBaseWeightGrams = 500,
     this.droneWeightStepGrams = 250,
     this.droneWeightStepFee = 0,
-    this.droneWeightOptionsGrams = const [500, 750, 1000, 1500, 2000, 3000],
+    this.droneWeightOptionsGrams = const [500, 1000, 2000, 3000, 4000, 5000],
     this.droneMaxPayloadWeightGrams = 5000,
     this.droneWeightToleranceGrams = 50,
     this.droneFlightsSuspended = false,

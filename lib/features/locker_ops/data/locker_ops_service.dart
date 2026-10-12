@@ -188,38 +188,33 @@ class LockerOpsService {
     },
   );
 
+  /// Đặt giao drone lấy hàng tận nhà. [body] là
+  /// `DroneBookingRequest.toJson()` — điểm lấy hàng, liên hệ người gửi/người nhận,
+  /// tủ nhận và khai báo kiện; hệ thống tự chọn tủ gửi gần điểm lấy hàng nhất.
   Future<Map<String, dynamic>> createDroneDeliveryOrder({
-    required int sourceLockerId,
-    required int destinationLockerId,
-    int? sourceBoxId,
-    int? preferredBoxId,
-    String? receiverPhone,
-    String? receiverName,
-    String? receiverEmail,
-    String? description,
-    required int parcelWeightGrams,
-    required String paymentMethod,
-
-    /// Khai báo kiện (`DroneParcelDeclaration.toJson`): loại hàng, kích thước, giá trị,
-    /// dễ vỡ và cam kết không gửi hàng cấm — backend bắt buộc cam kết này.
-    Map<String, dynamic>? parcel,
+    required Map<String, dynamic> body,
     required String idempotencyKey,
   }) => _map(
     'POST',
     '/api/orders/drone-deliveries',
     headers: {'Idempotency-Key': idempotencyKey},
+    body: body,
+  );
+
+  /// Hỏi trước khi đặt: drone cất cánh ở tủ nào, bao xa, phí bao nhiêu.
+  Future<Map<String, dynamic>> quoteDroneDelivery({
+    required int destinationLockerId,
+    required double pickupLatitude,
+    required double pickupLongitude,
+    required int parcelWeightGrams,
+  }) => _map(
+    'POST',
+    '/api/orders/drone-deliveries/quote',
     body: {
-      'sourceLockerId': sourceLockerId,
       'destinationLockerId': destinationLockerId,
-      if (sourceBoxId != null) 'sourceBoxId': sourceBoxId,
-      if (preferredBoxId != null) 'preferredBoxId': preferredBoxId,
-      if (receiverPhone != null) 'receiverPhone': receiverPhone,
-      if (receiverName != null) 'receiverName': receiverName,
-      if (receiverEmail != null) 'receiverEmail': receiverEmail,
-      if (description != null) 'description': description,
+      'pickupLatitude': pickupLatitude,
+      'pickupLongitude': pickupLongitude,
       'parcelWeightGrams': parcelWeightGrams,
-      'paymentMethod': paymentMethod,
-      ...?parcel,
     },
   );
 
@@ -1088,8 +1083,12 @@ class LockerOpsService {
     },
   );
 
-  Future<Map<String, dynamic>> confirmDroneRecoveryHubHandover(int incidentId) =>
-      _map('POST', '/api/locker-technician/drone-recoveries/$incidentId/hub-handover');
+  Future<Map<String, dynamic>> confirmDroneRecoveryHubHandover(
+    int incidentId,
+  ) => _map(
+    'POST',
+    '/api/locker-technician/drone-recoveries/$incidentId/hub-handover',
+  );
 
   // ---- Khách hàng theo dõi sự cố và phản hồi phương án ----
   Future<List<Map<String, dynamic>>> myDroneIncidents() =>
@@ -1180,15 +1179,94 @@ class LockerOpsService {
   /// với [cancelDroneOrder].
   Future<Map<String, dynamic>> failDroneOrder(
     int orderId, {
-    required int reasonCode,
+
+    /// Mã trong `DroneFailureReasons` của backend; null = lấy lý do đơn đang bị chặn.
+    String? reason,
     String? note,
   }) => _map(
     'POST',
     '/api/drone-technician/drone-orders/$orderId/fail',
     body: {
-      'reasonCode': reasonCode,
+      if (reason != null) 'reason': reason,
       if (note != null && note.trim().isNotEmpty) 'note': note.trim(),
     },
+  );
+
+  // ---- Lấy hàng tận nhà (KTV drone) ----
+
+  /// KTV drone đang trong ca không, vị trí gần nhất và có đang bận không.
+  Future<Map<String, dynamic>> droneTechnicianPresence() =>
+      _map('GET', '/api/drone-technician/drone-orders/presence');
+
+  /// Vào/ra ca và gửi vị trí; trường null thì giữ nguyên.
+  Future<Map<String, dynamic>> updateDroneTechnicianPresence({
+    bool? onDuty,
+    double? latitude,
+    double? longitude,
+  }) => _map(
+    'PUT',
+    '/api/drone-technician/drone-orders/presence',
+    body: {
+      if (onDuty != null) 'onDuty': onDuty,
+      if (latitude != null) 'latitude': latitude,
+      if (longitude != null) 'longitude': longitude,
+    },
+  );
+
+  Future<Map<String, dynamic>> acceptDronePickup(int orderId) =>
+      _map('POST', '/api/drone-technician/drone-orders/$orderId/pickup/accept');
+
+  Future<Map<String, dynamic>> declineDronePickup(int orderId) => _map(
+    'POST',
+    '/api/drone-technician/drone-orders/$orderId/pickup/decline',
+  );
+
+  /// Đã cầm kiện tại nhà người gửi: [pickupCode] do người gửi đọc.
+  Future<Map<String, dynamic>> confirmDronePickup(
+    int orderId, {
+    required String pickupCode,
+    String? note,
+  }) => _map(
+    'POST',
+    '/api/drone-technician/drone-orders/$orderId/pickup/confirm',
+    body: {
+      'pickupCode': pickupCode.trim(),
+      'parcelMatched': true,
+      if (note != null && note.trim().isNotEmpty) 'note': note.trim(),
+    },
+  );
+
+  /// Tới nơi nhưng không lấy được kiện ⇒ đơn giao không hoàn tất, hoàn tiền.
+  Future<Map<String, dynamic>> failDronePickup(
+    int orderId, {
+    required String reason,
+    String? note,
+  }) => _map(
+    'POST',
+    '/api/drone-technician/drone-orders/$orderId/pickup/fail',
+    body: {
+      'reason': reason,
+      if (note != null && note.trim().isNotEmpty) 'note': note.trim(),
+    },
+  );
+
+  /// Drone đã gán gặp sự cố trước khi phóng: đổi sang drone rảnh khác ở tủ gửi.
+  Future<Map<String, dynamic>> changeDroneOfOrder(
+    int orderId, {
+    required int droneUnitId,
+  }) => _map(
+    'POST',
+    '/api/drone-technician/drone-orders/$orderId/change-drone',
+    body: {'droneUnitId': droneUnitId},
+  );
+
+  /// Đơn drone đang bị một phiếu sự cố chặn hoặc đã kết thúc vì phiếu đó.
+  Future<List<Map<String, dynamic>>> droneOrdersByTicket(
+    int ticketId, {
+    bool lockerTechnician = false,
+  }) => _list(
+    '/api/${lockerTechnician ? 'locker-technician' : 'drone-technician'}'
+    '/drone-orders/by-ticket/$ticketId',
   );
 
   /// Người gửi xác nhận đã bỏ kiện vào ô drone ở tủ gửi — đội bay chỉ tiếp nhận
@@ -1285,7 +1363,43 @@ class LockerOpsService {
     // ── Luồng giao drone (order-service / locker-service) ──
     'DRONE_ROUTE_REQUIRED': 'Cần chọn cả tủ gửi và tủ nhận.',
     'DRONE_ROUTE_INVALID': 'Tủ gửi và tủ nhận phải khác nhau.',
-    'DRONE_ROUTE_TOO_FAR': 'Hai tủ cách nhau quá tầm bay của drone.',
+    'DRONE_ROUTE_TOO_FAR':
+        'Tủ nhận nằm ngoài tầm bay của drone từ khu vực lấy hàng này.',
+    'DRONE_PICKUP_OUT_OF_RANGE':
+        'Điểm lấy hàng nằm ngoài vùng phục vụ: chưa có tủ drone nào đủ gần.',
+    'DRONE_NO_SOURCE_LOCKER':
+        'Hiện chưa có tủ nào gần bạn sẵn sàng phóng drone. Vui lòng thử lại sau.',
+    'DRONE_LOCKER_LOCATION_MISSING':
+        'Tủ nhận chưa có toạ độ nên chưa giao drone tới được.',
+    'DRONE_PICKUP_ADDRESS_REQUIRED': 'Cần nhập địa chỉ lấy hàng.',
+    'DRONE_PICKUP_LOCATION_REQUIRED': 'Cần chọn vị trí lấy hàng trên bản đồ.',
+    'DRONE_SENDER_NAME_REQUIRED': 'Cần nhập tên người gửi.',
+    'DRONE_SENDER_PHONE_INVALID': 'Số điện thoại người gửi không hợp lệ.',
+    'DRONE_SENDER_EMAIL_INVALID': 'Email người gửi không hợp lệ.',
+    'DRONE_RECEIVER_NAME_REQUIRED': 'Cần nhập tên người nhận.',
+    'DRONE_RECEIVER_EMAIL_INVALID': 'Email người nhận không hợp lệ.',
+    'DRONE_PARCEL_CATEGORY_REQUIRED': 'Cần chọn loại hàng.',
+    'DRONE_PICKUP_NOT_OFFERED': 'Việc lấy hàng này không còn được mời cho bạn.',
+    'DRONE_PICKUP_OFFER_EXPIRED': 'Lời mời lấy hàng đã hết hạn.',
+    'DRONE_PICKUP_NOT_ASSIGNED_TO_USER':
+        'Việc lấy hàng này không thuộc về bạn.',
+    'DRONE_PICKUP_NOT_FOUND':
+        'Đơn chưa có việc lấy hàng (có thể chưa thanh toán).',
+    'DRONE_PICKUP_CODE_INVALID':
+        'Mã lấy hàng không đúng. Nhờ người gửi đọc lại mã trong đơn.',
+    'DRONE_PICKUP_PARCEL_NOT_VERIFIED':
+        'Cần xác nhận kiện đúng khai báo, hoặc báo không lấy được hàng.',
+    'DRONE_PARCEL_NOT_PICKED_UP': 'Kiện chưa được lấy từ người gửi.',
+    'DRONE_ORDER_BLOCKED':
+        'Đơn đang tạm dừng vì sự cố, chưa đi lấy hàng lúc này.',
+    'DRONE_TECHNICIAN_LOCATION_REQUIRED':
+        'Cần bật định vị để vào ca nhận việc lấy hàng.',
+    'DRONE_TECHNICIAN_HAS_ACTIVE_PICKUP':
+        'Bạn còn việc lấy hàng đã nhận. Hoàn tất hoặc báo không lấy được trước khi ra ca.',
+    'DRONE_TECHNICIAN_OFF_DUTY': 'Kỹ thuật viên này chưa vào ca.',
+    'DRONE_TECHNICIAN_BUSY': 'Kỹ thuật viên này đang bận việc khác.',
+    'DRONE_FAILURE_REASON_INVALID': 'Lý do không hợp lệ cho thao tác này.',
+    'DRONE_UNCHANGED': 'Drone này đang được gán cho nhiệm vụ rồi.',
     'DRONE_FLIGHTS_SUSPENDED':
         'Dịch vụ giao drone đang tạm dừng (thời tiết hoặc sự cố vận hành).',
     'DRONE_OUTSIDE_FLIGHT_HOURS': 'Ngoài khung giờ được phép phóng drone.',

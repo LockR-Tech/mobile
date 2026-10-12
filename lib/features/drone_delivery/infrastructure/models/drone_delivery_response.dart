@@ -136,8 +136,58 @@ class DroneDeliveryResponse {
     parcelHeldAt: _text(raw['parcelHeldAt']),
     parcelReturnedAt: parseServerDateTime(raw['parcelReturnedAt']),
     parcelReturnNote: _text(raw['parcelReturnNote']),
+    senderUserId: _asInt(raw['userId']),
+    pickup: _pickup(raw['pickup']),
+    senderName: _text(_field(raw['sender'], 'name')),
+    senderPhone: _text(_field(raw['sender'], 'phone')),
+    senderEmail: _text(_field(raw['sender'], 'email')),
+    receiverEmail: _text(raw['receiverEmail']),
+    block: _incident(raw['block']),
+    failure: _incident(raw['failure']),
     journeyEvents: _events(raw['journeyEvents']),
   );
+
+  static dynamic _field(dynamic map, String key) =>
+      map is Map ? map[key] : null;
+
+  static DronePickupInfo? _pickup(dynamic value) {
+    if (value is! Map) return null;
+    return DronePickupInfo(
+      status: _text(value['status']),
+      address: _text(value['address']),
+      latitude: _asDouble(value['latitude']),
+      longitude: _asDouble(value['longitude']),
+      note: _text(value['note']),
+      distanceToSourceLockerMeters: _asInt(
+        value['distanceToSourceLockerMeters'],
+      ),
+      technicianId: _asInt(value['technicianId']),
+      technicianName: _text(value['technicianName']),
+      technicianPhone: _text(value['technicianPhone']),
+      technicianDistanceMeters: _asInt(value['technicianDistanceMeters']),
+      offerExpiresAt: parseServerDateTime(value['offerExpiresAt']),
+      acceptedAt: parseServerDateTime(value['acceptedAt']),
+      pickedUpAt: parseServerDateTime(value['pickedUpAt']),
+      pickupCode: _text(value['pickupCode']),
+      failureReason: _text(value['failureReason']),
+      failureNote: _text(value['failureNote']),
+      technicianNote: _text(value['technicianNote']),
+    );
+  }
+
+  static DroneIncidentLink? _incident(dynamic value) {
+    if (value is! Map) return null;
+    final reason = _text(value['reason']);
+    if (reason == null) return null;
+    return DroneIncidentLink(
+      reason: reason,
+      reasonLabel: _text(value['reasonLabel']),
+      ticketId: _asInt(value['ticketId']),
+      note: _text(value['note']),
+      at: parseServerDateTime(value['at']),
+      autoCloseAt: parseServerDateTime(value['autoCloseAt']),
+    );
+  }
 
   /// Chuỗi đã cắt khoảng trắng; rỗng/null ⇒ null để UI hiện dấu `—`.
   static String? _text(dynamic value) {

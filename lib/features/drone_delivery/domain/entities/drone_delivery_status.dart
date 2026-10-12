@@ -102,6 +102,23 @@ class DroneDeliveryStatus {
   final DateTime? parcelReturnedAt;
   final String? parcelReturnNote;
 
+  /// Tài khoản đã đặt đơn (người gửi). Người nhận có tài khoản cũng xem được hành
+  /// trình nhưng không được thao tác thay người gửi.
+  final int? senderUserId;
+
+  /// Lấy hàng tận nhà; null với đơn cũ (người gửi tự mang kiện ra tủ).
+  final DronePickupInfo? pickup;
+  final String? senderName;
+  final String? senderPhone;
+  final String? senderEmail;
+  final String? receiverEmail;
+
+  /// Đơn đang gặp sự cố nhưng chưa kết thúc; null khi không bị chặn.
+  final DroneIncidentLink? block;
+
+  /// Đơn đã kết thúc "giao không hoàn tất"; null với đơn khác.
+  final DroneIncidentLink? failure;
+
   /// Mốc hành trình, mới nhất trước.
   final List<DroneJourneyEvent> journeyEvents;
 
@@ -170,6 +187,14 @@ class DroneDeliveryStatus {
     this.parcelHeldAt,
     this.parcelReturnedAt,
     this.parcelReturnNote,
+    this.senderUserId,
+    this.pickup,
+    this.senderName,
+    this.senderPhone,
+    this.senderEmail,
+    this.receiverEmail,
+    this.block,
+    this.failure,
     this.journeyEvents = const [],
   });
 
@@ -194,18 +219,30 @@ class DroneDeliveryStatus {
   /// chưa tiếp nhận được (`DRONE_PARCEL_NOT_DROPPED`). Server cũ không theo dõi
   /// mốc này ([parcelReturnPending] null) thì không nhắc.
   bool get needsParcelDrop =>
+      pickup == null &&
       parcelReturnPending != null &&
       stage == DroneDeliveryStage.awaitingDispatch &&
       isPaid &&
       parcelDroppedAt == null;
 
   /// Số tiền khách cần trả lúc này.
-  double? get payableAmount =>
-      (amountDue ?? 0) > 0 ? amountDue : (needsSurchargePayment ? weightSurcharge : totalPrice);
+  double? get payableAmount => (amountDue ?? 0) > 0
+      ? amountDue
+      : (needsSurchargePayment ? weightSurcharge : totalPrice);
 
   /// Người đặt chỉ huỷ được khi đội bay chưa tiếp nhận (khớp
   /// `OrderService.assertDroneCancelable`); sau đó chỉ đội bay huỷ được.
-  bool get canCustomerCancel => stage == DroneDeliveryStage.awaitingDispatch;
+  /// Đơn lấy hàng tận nhà: huỷ được tới khi kỹ thuật viên đã cầm kiện.
+  bool get canCustomerCancel =>
+      stage == DroneDeliveryStage.awaitingDispatch ||
+      stage == DroneDeliveryStage.pickupAssigned;
+
+  /// Người đang xem có phải người đặt đơn không. Không biết (server cũ, chưa đăng
+  /// nhập) thì coi như phải, để không giấu thao tác của người gửi.
+  bool isSender(int? viewerUserId) =>
+      senderUserId == null ||
+      viewerUserId == null ||
+      senderUserId == viewerUserId;
 
   DateTime? get stageChangedAt =>
       journeyEvents.isEmpty ? updatedAt : journeyEvents.first.occurredAt;
@@ -292,4 +329,84 @@ class DroneJourneyEvent {
   bool get isPickupCodeSent =>
       (fromStage ?? '').toUpperCase() == 'READY_FOR_PICKUP' &&
       toStage.toUpperCase() == 'READY_FOR_PICKUP';
+}
+
+/// Việc lấy hàng tận nhà của một đơn drone (`DronePickupView` của order-service).
+class DronePickupInfo {
+  const DronePickupInfo({
+    this.status,
+    this.address,
+    this.latitude,
+    this.longitude,
+    this.note,
+    this.distanceToSourceLockerMeters,
+    this.technicianId,
+    this.technicianName,
+    this.technicianPhone,
+    this.technicianDistanceMeters,
+    this.offerExpiresAt,
+    this.acceptedAt,
+    this.pickedUpAt,
+    this.pickupCode,
+    this.failureReason,
+    this.failureNote,
+    this.technicianNote,
+  });
+
+  /// SEARCHING | OFFERED | ACCEPTED | PICKED_UP | FAILED | CANCELED; null khi đơn
+  /// chưa thanh toán.
+  final String? status;
+  final String? address;
+  final double? latitude;
+  final double? longitude;
+
+  /// Chỉ dẫn của người gửi cho kỹ thuật viên.
+  final String? note;
+  final int? distanceToSourceLockerMeters;
+  final int? technicianId;
+  final String? technicianName;
+  final String? technicianPhone;
+
+  /// Kỹ thuật viên → điểm lấy hàng lúc được mời.
+  final int? technicianDistanceMeters;
+
+  /// Hạn kỹ thuật viên trả lời lời mời.
+  final DateTime? offerExpiresAt;
+  final DateTime? acceptedAt;
+  final DateTime? pickedUpAt;
+
+  /// Mã người gửi đọc cho kỹ thuật viên khi giao kiện. Server chỉ trả cho người gửi.
+  final String? pickupCode;
+  final String? failureReason;
+  final String? failureNote;
+  final String? technicianNote;
+
+  String get _status => (status ?? '').toUpperCase();
+  bool get isSearching => _status == 'SEARCHING';
+  bool get isOffered => _status == 'OFFERED';
+  bool get isAccepted => _status == 'ACCEPTED';
+  bool get isPickedUp => _status == 'PICKED_UP';
+}
+
+/// Lý do và phiếu sự cố gắn với một đơn đang bị chặn hoặc đã giao không hoàn tất.
+class DroneIncidentLink {
+  const DroneIncidentLink({
+    required this.reason,
+    this.reasonLabel,
+    this.ticketId,
+    this.note,
+    this.at,
+    this.autoCloseAt,
+  });
+
+  final String reason;
+  final String? reasonLabel;
+
+  /// Phiếu sự cố của đội kỹ thuật; null khi không xác định được phiếu.
+  final int? ticketId;
+  final String? note;
+  final DateTime? at;
+
+  /// Đơn đang bị chặn sẽ tự kết thúc lúc này nếu chưa ai xử lý.
+  final DateTime? autoCloseAt;
 }
