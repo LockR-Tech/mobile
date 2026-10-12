@@ -209,7 +209,10 @@ class AppRouter {
             // (locker_ops). The legacy OrderPage hit the old /orders/me API and
             // is no longer wired to the current backend.
             path: orders,
-            builder: (context, state) => const MyLockerOrdersPage(),
+            builder: (context, state) => MyLockerOrdersPage(
+              initialOrderId: int.tryParse(state.uri.queryParameters['orderId'] ?? ''),
+              initialTab: state.uri.queryParameters['tab'],
+            ),
           ),
           GoRoute(
             path: profile,
@@ -282,7 +285,9 @@ class AppRouter {
       GoRoute(
         path: myReports,
         name: 'my_reports',
-        builder: (context, state) => const ReportListPage(),
+        builder: (context, state) => ReportListPage(
+          initialReportId: int.tryParse(state.uri.queryParameters['reportId'] ?? ''),
+        ),
       ),
       GoRoute(
         path: qrScan,
@@ -372,6 +377,7 @@ class AppRouter {
               : null;
           return SendParcelPage(
             initialLockerId: map?['initialLockerId'] as int?,
+            initialLockerName: map?['initialLockerName'] as String?,
             locationName: map?['locationName'] as String?,
           );
         },
@@ -385,6 +391,7 @@ class AppRouter {
               : null;
           return RentLockerPage(
             initialLockerId: map?['initialLockerId'] as int?,
+            initialLockerName: map?['initialLockerName'] as String?,
             locationName: map?['locationName'] as String?,
           );
         },
@@ -392,16 +399,17 @@ class AppRouter {
       GoRoute(
         path: myLockerOrders,
         name: 'my_locker_orders',
-        // TODO: deep link `?orderId=` (thông báo đơn) — truyền
-        // `queryId(state.uri.queryParameters, 'orderId')` khi trang nhận id đơn.
-        builder: (context, state) => const MyLockerOrdersPage(),
+        builder: (context, state) => MyLockerOrdersPage(
+          initialOrderId: int.tryParse(state.uri.queryParameters['orderId'] ?? ''),
+          initialTab: state.uri.queryParameters['tab'],
+        ),
       ),
       GoRoute(
         path: myLockerReports,
         name: 'my_locker_reports',
-        // TODO: deep link `?reportId=` (thông báo phiếu) — truyền
-        // `queryId(state.uri.queryParameters, 'reportId')` khi trang nhận id phiếu.
-        builder: (context, state) => const MyReportsPage(),
+        builder: (context, state) => MyReportsPage(
+          initialReportId: int.tryParse(state.uri.queryParameters['reportId'] ?? ''),
+        ),
       ),
       GoRoute(
         path: myVouchers,

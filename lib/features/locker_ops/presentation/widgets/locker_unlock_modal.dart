@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -24,14 +25,16 @@ class LockerUnlockActionResult {
 }
 
 /// Modal hiện đại hỗ trợ 3 phương thức mở tủ:
-/// 1. Bluetooth BLE (Proximity 1-chạm kèm chế độ mô phỏng Demo)
+/// 1. Bluetooth BLE (Proximity 1-chạm; chế độ mô phỏng chỉ có ở bản debug)
 /// 2. Quét mã QR dán trên thân tủ
 /// 3. Mã PIN / OTP nhập trực tiếp trên màn hình Kiosk
 class LockerUnlockModal extends StatefulWidget {
   final String lockerName;
   final String lockerCode;
   final int lockerId;
-  final int boxId;
+
+  /// Ô cần mở; có thể chưa biết khi mở bằng mã (server tự tra ô theo mã).
+  final int? boxId;
   final String boxLabel;
   final String pinCode;
   final bool isRentalReturning;
@@ -43,7 +46,7 @@ class LockerUnlockModal extends StatefulWidget {
     required this.lockerName,
     required this.lockerCode,
     required this.lockerId,
-    required this.boxId,
+    this.boxId,
     required this.boxLabel,
     required this.pinCode,
     this.isRentalReturning = false,
@@ -56,7 +59,7 @@ class LockerUnlockModal extends StatefulWidget {
     required String lockerName,
     required String lockerCode,
     required int lockerId,
-    required int boxId,
+    int? boxId,
     required String boxLabel,
     required String pinCode,
     bool isRentalReturning = false,
@@ -135,7 +138,10 @@ class _LockerUnlockModalState extends State<LockerUnlockModal> with SingleTicker
     });
   }
 
+  /// Giả lập phát hiện tủ — chỉ để thử trên bản debug khi chưa có phần cứng;
+  /// bản phát hành không có nút này.
   void _triggerSimulationMode() {
+    if (!kDebugMode) return;
     setState(() {
       _isBleScanning = false;
       _bleError = null;
@@ -596,20 +602,22 @@ class _LockerUnlockModalState extends State<LockerUnlockModal> with SingleTicker
                   onPressed: _startBleScan,
                 ),
               ),
-              const SizedBox(width: 10),
-              // NÚT MÔ PHỎNG RPi DÀNH CHO DEMO KHI CHƯA GẮN PHẦN CỨNG
-              Expanded(
-                child: FilledButton.icon(
-                  style: FilledButton.styleFrom(
-                    backgroundColor: const Color(0xFF6366F1),
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              // Nút mô phỏng chỉ có ở bản debug (thử khi chưa gắn phần cứng).
+              if (kDebugMode) ...[
+                const SizedBox(width: 10),
+                Expanded(
+                  child: FilledButton.icon(
+                    style: FilledButton.styleFrom(
+                      backgroundColor: const Color(0xFF6366F1),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                    icon: const Icon(LucideIcons.sparkles, size: 16),
+                    label: const Text('Mô phỏng RPi', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700)),
+                    onPressed: _triggerSimulationMode,
                   ),
-                  icon: const Icon(LucideIcons.sparkles, size: 16),
-                  label: const Text('Mô phỏng RPi', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700)),
-                  onPressed: _triggerSimulationMode,
                 ),
-              ),
+              ],
             ],
           ),
         ],

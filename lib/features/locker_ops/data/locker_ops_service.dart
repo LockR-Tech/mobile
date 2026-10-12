@@ -7,6 +7,18 @@ import 'package:smart_laundry_locker/features/locker_ops/data/force_open_result.
 export 'package:smart_laundry_locker/features/locker_ops/data/device_restart_result.dart';
 export 'package:smart_laundry_locker/features/locker_ops/data/force_open_result.dart';
 
+/// Lỗi phía app trong luồng đơn/thanh toán, [message] đã là câu tiếng Việt cho
+/// người dùng (vd. server không trả mã VietQR). [LockerOpsService.errorMessage]
+/// trả nguyên câu này.
+class LockerOpsException implements Exception {
+  const LockerOpsException(this.message);
+
+  final String message;
+
+  @override
+  String toString() => message;
+}
+
 /// Thin typed gateway client for the locker flow (Phase 1+2 backend).
 /// All calls go through the API gateway with the JWT already attached
 /// by [DioClient]/AuthInterceptor.
@@ -193,6 +205,16 @@ class LockerOpsService {
   Future<Map<String, dynamic>> loyaltyPoints() =>
       _map('GET', '/api/loyalty/points');
 
+  /// Tài khoản điểm của chính người dùng (server lấy người dùng từ token):
+  /// `{points, tier, tierLabel?…}`.
+  Future<Map<String, dynamic>> loyaltySummary() =>
+      _map('GET', '/api/loyalty/summary');
+
+  /// Voucher người dùng đã lưu (`status` SAVED / USED / EXPIRED, kèm thông tin
+  /// khuyến mãi: `code`, `name`, `discountType`, `minOrderAmount`…).
+  Future<List<Map<String, dynamic>>> myVouchers() =>
+      _list('/api/promotions/vouchers/my');
+
   /// Payments recorded for an order (latest first by convention).
   Future<List<Map<String, dynamic>>> paymentsByOrder(int orderId) =>
       _list('/api/payments/order/$orderId');
@@ -279,6 +301,9 @@ class LockerOpsService {
   Future<Map<String, dynamic>> cancelOrder(int orderId) =>
       _map('PUT', '/api/orders/$orderId/cancel');
 
+  /// Ủy quyền người khác lấy hộ (chỉ đơn STORING/RETURNED của chính mình). Server
+  /// cấp PIN mới — PIN cũ hết hiệu lực — và người được ủy quyền thấy đơn ở
+  /// [delegatedToMe].
   Future<Map<String, dynamic>> delegate(
     int orderId, {
     required String phone,
@@ -287,7 +312,105 @@ class LockerOpsService {
   }) => _map(
     'POST',
     '/api/orders/$orderId/delegate',
-    body: {'phone': phone, 'name': name, 'note': note},
+    body: {
+      'phone': phone,
+      if (name != null && name.trim().isNotEmpty) 'name': name.trim(),
+      if (note != null && note.trim().isNotEmpty) 'note': note.trim(),
+    },
+  );
+
+  /// Đơn mà tôi là người nhận (`ReceiverOrderResponse`): có `pickupPin`/`qrToken`
+  /// khi `readyForPickup`.
+  Future<List<Map<String, dynamic>>> incomingOrders({
+    bool activeOnly = false,
+    int? limit,
+  }) => _list(
+    '/api/orders/incoming',
+    query: {'activeOnly': activeOnly, if (limit != null) 'limit': limit},
+  );
+
+  /// Đơn người khác ủy quyền cho tôi lấy hộ (cùng DTO với [incomingOrders]).
+  Future<List<Map<String, dynamic>>> delegatedToMe({bool activeOnly = false}) =>
+      _list('/api/orders/delegated-to-me', query: {'activeOnly': activeOnly});
+
+  /// Mở ô chỉ bằng mã (PIN/QR/mã ủy quyền) — server tự tra ô theo mã.
+  /// Trả `{accepted, message, boxId…}`; `accepted == false` là chưa mở.
+  Future<Map<String, dynamic>> unlockWithCode(int lockerId, String code) =>
+      _map(
+        'POST',
+        '/api/iot/unlock-with-code',
+        body: {'lockerId': lockerId, 'code': code.trim()},
+      );
+
+  /// Cấp PIN mới cho đơn của mình; PIN cũ hết hiệu lực.
+  Future<Map<String, dynamic>> resetPin(int orderId) =>
+      _map('POST', '/api/orders/$orderId/reset-pin');
+
+  // ---- Đánh giá / khiếu nại đơn ----
+  /// Đánh giá đơn đã hoàn tất (1–5 sao). Gửi lại thì server ghi đè.
+  Future<Map<String, dynamic>> rateOrder(
+    int orderId,
+    int rating, {
+    String? comment,
+  }) => _map(
+    'POST',
+    '/api/orders/$orderId/rate',
+    body: {
+      'rating': rating,
+      if (comment != null && comment.trim().isNotEmpty) 'comment': comment.trim(),
+    },
+  );
+
+  /// Đánh giá của đơn; `null` khi chưa đánh giá (server trả 404).
+  Future<Map<String, dynamic>?> orderRating(int orderId) async {
+    try {
+      final res = await _map('GET', '/api/orders/$orderId/rating');
+      return res.isEmpty ? null : res;
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 404) return null;
+      rethrow;
+    }
+  }
+
+  Future<Map<String, dynamic>> complainOrder(
+    int orderId, {
+    required String description,
+    String? type,
+  }) => _map(
+    'POST',
+    '/api/orders/$orderId/complaint',
+    body: {'description': description.trim(), if (type != null) 'type': type},
+  );
+
+  /// Khiếu nại của chính mình (mới nhất trước).
+  Future<List<Map<String, dynamic>>> myOrderComplaints() =>
+      _list('/api/orders/my-complaints');
+
+  /// Đánh giá của chính mình (mới nhất trước).
+  Future<List<Map<String, dynamic>>> myOrderRatings() =>
+      _list('/api/orders/my-ratings');
+
+  // ---- Hoàn tiền ----
+  /// Các yêu cầu hoàn tiền của đơn (chỉ chủ đơn).
+  Future<List<Map<String, dynamic>>> orderRefunds(int orderId) =>
+      _list('/api/payments/order/$orderId/refunds');
+
+  /// Khách gửi yêu cầu hoàn tiền. Bỏ trống [amount] thì server hoàn toàn bộ khoản
+  /// đã trả; không gửi tài khoản ngân hàng thì server dùng tài khoản đã lưu
+  /// (chưa lưu ⇒ `BANK_ACCOUNT_REQUIRED`). Cùng hợp đồng với
+  /// `PaymentService.requestRefund` nhưng giữ nguyên mã lỗi của server để báo đúng.
+  Future<Map<String, dynamic>> requestRefund(
+    int orderId, {
+    required String reason,
+    num? amount,
+  }) => _map(
+    'POST',
+    '/api/payments/refund-request',
+    body: {
+      'orderId': orderId,
+      'reason': reason.trim(),
+      if (amount != null && amount > 0) 'amount': amount,
+    },
   );
 
   /// Báo hỏng ô. [attachments] = ReportAttachmentRequest[≤5] (stage REPORT),
@@ -343,9 +466,14 @@ class LockerOpsService {
   );
 
   /// All fault reports the signed-in customer has filed, newest first.
-  /// Mỗi phiếu có `attachments[]`.
+  /// Mỗi phiếu có `attachments[]`, `orderId`, `orderCode`.
   Future<List<Map<String, dynamic>>> myReports() =>
       _list('/api/lockers/my-reports');
+
+  /// Phiếu của chính khách gắn với một đơn — lọc bằng trường có cấu trúc
+  /// (`GET /api/lockers/my-reports?orderId=`), không dò mã đơn trong ghi chú.
+  Future<List<Map<String, dynamic>>> myReportsForOrder(int orderId) =>
+      _list('/api/lockers/my-reports', query: {'orderId': orderId});
 
   /// Chi tiết 1 phiếu của người dùng
   Future<Map<String, dynamic>> userReport(int reportId) =>
@@ -1232,6 +1360,17 @@ class LockerOpsService {
     return code?.toString();
   }
 
+  /// Endpoint chưa có trên máy chủ đang chạy (backend chưa deploy bản mới):
+  /// 404/405/501 mà không kèm mã nghiệp vụ (gateway / Spring trả trang lỗi mặc
+  /// định). 404 nghiệp vụ (`NOT_FOUND`, `ORDER_NOT_FOUND`…) luôn có `code`.
+  static bool isEndpointUnavailable(Object error) {
+    if (error is! DioException) return false;
+    final status = error.response?.statusCode;
+    if (status != 404 && status != 405 && status != 501) return false;
+    final code = errorCode(error);
+    return code == null || code.isEmpty;
+  }
+
   /// Các mã lỗi mà server trả `message` tiếng Anh — hiển thị bản tiếng Việt.
   static const _codeMessages = <String, String>{
     'RESOLUTION_PHOTO_REQUIRED':
@@ -1304,6 +1443,8 @@ class LockerOpsService {
     'DRONE_FAULT_REASON_REQUIRED': 'Cần nhập lý do khi báo drone lỗi.',
     'DRONE_PAYMENT_REQUIRED_BEFORE_PICKUP':
         'Vui lòng thanh toán đơn drone trước khi mở tủ nhận hàng.',
+    // ── Đơn của khách (order-service) ──
+    'ORDER_STATUS_INVALID': 'Đơn không còn ở trạng thái cho phép thao tác này.',
   };
 
   // ── Mã lỗi luồng KTV tủ ──
@@ -1362,6 +1503,7 @@ class LockerOpsService {
   /// Human-readable message from an [ApiResponse] error payload.
   static String errorMessage(Object error) {
     if (error is MediaUploadException) return error.message;
+    if (error is LockerOpsException) return error.message;
     if (error is DioException) {
       final data = error.response?.data;
       final mediaMessage = data is Map

@@ -429,7 +429,7 @@ class _ProfilePageState extends State<ProfilePage>
             Consumer<DelegationProvider>(
               builder: (context, provider, child) {
                 final delegations = provider.myDelegations
-                    .where((d) => d.isActive && d.usedAt == null)
+                    .where((d) => d.isActive)
                     .toList();
 
                 return ProfileMenuItem(

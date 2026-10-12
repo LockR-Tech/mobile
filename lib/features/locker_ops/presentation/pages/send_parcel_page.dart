@@ -72,6 +72,9 @@ class _SendParcelPageState extends State<SendParcelPage>
 
   Timer? _paymentPollTimer;
 
+  /// Tên tủ hiển thị khi mở từ lưới ô mà nơi gọi chỉ truyền id.
+  String? _lockerName;
+
   int get _netFee => (_fee - _discount).clamp(0, _fee);
 
   @override
@@ -82,8 +85,23 @@ class _SendParcelPageState extends State<SendParcelPage>
       // Đến từ lưới ô — tủ đã xác định, bỏ qua gọi API load danh sách tủ.
       _lockerId = widget.initialLockerId;
       _loadingLockers = false;
+      _lockerName = widget.initialLockerName;
+      if (_lockerName == null || _lockerName!.trim().isEmpty) {
+        _loadLockerName(widget.initialLockerId!);
+      }
     } else {
       _loadLockers();
+    }
+  }
+
+  Future<void> _loadLockerName(int lockerId) async {
+    try {
+      final locker = await _service.locker(lockerId);
+      final name = locker['name']?.toString().trim();
+      if (!mounted || name == null || name.isEmpty) return;
+      setState(() => _lockerName = name);
+    } catch (_) {
+      // Không tra được thì giữ nhãn chung "Tủ đã chọn".
     }
   }
 
@@ -132,14 +150,6 @@ class _SendParcelPageState extends State<SendParcelPage>
     _paymentPollTimer = null;
   }
 
-  Future<void> _initSepayCheckout(int orderId) async {
-    try {
-      await _service.checkout(orderId, 'SEPAY');
-    } catch (_) {
-      // Backend SePay webhook sẽ tự động xử lý nếu đã có thanh toán
-    }
-  }
-
   Future<void> _loadLockers() async {
     try {
       final lockers = await _service.lockers();
@@ -180,16 +190,9 @@ class _SendParcelPageState extends State<SendParcelPage>
         size: _size,
       );
       if (!mounted) return;
+      // Không tự tạo giao dịch thanh toán: khách bấm "Thanh toán" và chọn phương
+      // thức admin đang bật. Mỗi lần bấm là một lần checkout.
       setState(() => _order = order);
-      // Nếu đơn chưa thanh toán → tự động poll trạng thái
-      final orderId = order['id'] as int?;
-      final paymentStatus = order['paymentStatus'] as String?;
-      final fee = order['totalPrice'];
-      final hasFee = fee is num ? fee > 0 : _netFee > 0;
-      if (orderId != null && hasFee && paymentStatus != 'PAID') {
-        _initSepayCheckout(orderId);
-        _startPaymentPolling(orderId);
-      }
     } catch (e) {
       _snack(LockerOpsService.errorMessage(e));
     } finally {
@@ -214,7 +217,6 @@ class _SendParcelPageState extends State<SendParcelPage>
     }
   }
 
-  // ignore: unused_element
   Future<void> _pay() async {
     final id = _order?['id'] as int?;
     if (id == null) return;
@@ -232,8 +234,10 @@ class _SendParcelPageState extends State<SendParcelPage>
       );
       if (!mounted || outcome == OrderPaymentOutcome.cancelled) return;
       if (outcome == OrderPaymentOutcome.paid) {
-        // Thanh toán xong → chuyển sang danh sách đơn để user xem trạng thái.
-        context.go(AppRouter.myLockerOrders);
+        // Ở lại màn này: đơn đã PAID thì hiện mã mở ô để khách bỏ đồ tiếp.
+        _stopPaymentPolling();
+        await _refreshOrder();
+        _snack('Thanh toán thành công! Mã PIN mở ô tủ đã sẵn sàng.');
       } else if (outcome == OrderPaymentOutcome.failed) {
         await showPaymentResultDialog(
           context,
@@ -244,8 +248,11 @@ class _SendParcelPageState extends State<SendParcelPage>
           primaryButtonText: 'Đã hiểu',
         );
       } else {
-        // pending — webhook chưa về, nhắc user làm mới sau.
+        // pending — webhook chưa về: tiếp tục hỏi nền để màn tự cập nhật.
         await _refreshOrder();
+        if ((_order?['paymentStatus'] as String?) != 'PAID') {
+          _startPaymentPolling(id);
+        }
         _snack('Đang chờ xác nhận thanh toán, vui lòng đợi giây lát');
       }
     } catch (e) {
@@ -614,7 +621,7 @@ class _SendParcelPageState extends State<SendParcelPage>
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  widget.initialLockerName ?? widget.locationName ?? 'Tủ đã chọn',
+                  _lockerName ?? widget.locationName ?? 'Tủ đã chọn',
                   style: const TextStyle(
                     fontWeight: FontWeight.w800,
                     fontSize: 14.5,
@@ -683,9 +690,11 @@ class _SendParcelPageState extends State<SendParcelPage>
                 const SizedBox(height: 14),
               ],
               if (!isDropped && mustPayFirst) ...[
-                InlineVietQrCard(
-                  orderId: order['id'] as int,
-                  amount: total is num ? total.toDouble() : _netFee.toDouble(),
+                const _ResultHeadline(
+                  icon: LucideIcons.lockKeyhole,
+                  title: 'Chờ thanh toán',
+                  subtitle:
+                      'Mã bỏ hàng sẽ hiện ngay sau khi đơn được ghi nhận đã thanh toán.',
                 ),
               ] else ...[
                 if (!isDropped) ...[
@@ -693,7 +702,7 @@ class _SendParcelPageState extends State<SendParcelPage>
                     icon: LucideIcons.packageOpen,
                     title: 'Bước 1 — Bỏ hàng vào ô',
                     subtitle:
-                        'Đến tủ, nhập PIN bên dưới để mở ô số ${order['sendBoxId'] ?? '-'}, '
+                        'Đến tủ, nhập PIN bên dưới để mở ${order['sendBoxNumber'] == null ? 'ô của đơn' : 'ô số ${order['sendBoxNumber']}'}, '
                         'đặt hàng vào rồi đóng cửa.',
                   ),
                 ] else ...[
@@ -768,12 +777,42 @@ class _SendParcelPageState extends State<SendParcelPage>
         ).animate().fadeIn(duration: 300.ms).slideY(begin: 0.05),
         const SizedBox(height: 16),
         if (!isDropped && mustPayFirst) ...[
-          const OpsBanner(
-            tone: OpsBannerTone.info,
+          OpsBanner(
+            tone: OpsBannerTone.warning,
             icon: LucideIcons.badgeAlert,
-            text: 'Quét mã QR trên và chuyển khoản — mã mở ô sẽ tự hiện sau khi thanh toán.',
+            text:
+                'Đơn chưa thanh toán. Thanh toán trong ${config.autoCancelUnpaidMinutes} phút để giữ ô — mã bỏ hàng sẽ hiện sau khi thanh toán.',
+          ),
+          const SizedBox(height: 12),
+          OpsPrimaryButton(
+            label: 'Thanh toán ${fmtPrice(orderAmountDue(order))}',
+            icon: LucideIcons.wallet,
+            loading: _loading,
+            onPressed: _pay,
+          ),
+          const SizedBox(height: 10),
+          Center(
+            child: TextButton.icon(
+              onPressed: _loading ? null : _refreshOrder,
+              icon: const Icon(LucideIcons.refreshCw, size: 14, color: opsMutedText),
+              label: const Text(
+                'Đã thanh toán? Kiểm tra lại trạng thái',
+                style: TextStyle(color: opsMutedText, fontSize: 13),
+              ),
+            ),
           ),
         ] else if (!isDropped) ...[
+          if (hasFee && unpaid) ...[
+            // Admin cho bỏ hàng trước khi trả, nhưng xác nhận bỏ hàng vẫn cần
+            // đơn đã thanh toán.
+            OpsPrimaryButton(
+              label: 'Thanh toán ${fmtPrice(orderAmountDue(order))}',
+              icon: LucideIcons.wallet,
+              loading: _loading,
+              onPressed: _pay,
+            ),
+            const SizedBox(height: 12),
+          ],
           const OpsBanner(
             tone: OpsBannerTone.info,
             icon: LucideIcons.lockKeyholeOpen,
