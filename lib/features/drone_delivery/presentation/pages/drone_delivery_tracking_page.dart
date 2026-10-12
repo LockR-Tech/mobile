@@ -344,6 +344,7 @@ class _TrackingBody extends StatelessWidget {
           onCancel: onCancel,
           onConfirmDrop: onConfirmDrop,
           onDeclineSurcharge: onDeclineSurcharge,
+          isSender: viewerIsBooker,
           beforeRoute: [
             if (pickup != DronePickupAction.none) ...[
               const SizedBox(height: 16),
