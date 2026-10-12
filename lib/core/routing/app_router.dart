@@ -343,12 +343,14 @@ class AppRouter {
       GoRoute(
         path: technicianHome,
         name: 'technician_home',
-        // Deep link KTV tủ: `?tab=&reportId=&scheduleId=`. TODO: truyền
-        // `reportId: queryId(qp, 'reportId')`, `scheduleId: queryId(qp,
-        // 'scheduleId')` khi TechnicianHomePage nhận hai tham số này.
+        // Deep link KTV tủ: `?tab=&reportId=&scheduleId=`.
         builder: (context, state) {
           final qp = state.uri.queryParameters;
-          return TechnicianHomePage(initialTab: technicianTabIndex(qp['tab']));
+          return TechnicianHomePage(
+            initialTab: technicianTabIndex(qp['tab']),
+            reportId: queryId(qp, 'reportId'),
+            scheduleId: queryId(qp, 'scheduleId'),
+          );
         },
       ),
       GoRoute(
