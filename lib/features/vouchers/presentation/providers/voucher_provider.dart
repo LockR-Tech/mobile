@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:smart_laundry_locker/core/utils/user_error_message.dart';
 import '../../data/models/voucher_model.dart';
 import '../../data/repositories/voucher_repository.dart';
 
@@ -21,7 +22,12 @@ class VoucherProvider extends ChangeNotifier {
     try {
       _vouchers = await _repository.getMyVouchers(status: status);
     } catch (e) {
-      _error = e.toString();
+      _vouchers = [];
+      _error = userErrorMessage(
+        e,
+        notFound: 'Máy chủ chưa hỗ trợ kho ưu đãi. Vui lòng thử lại sau.',
+        fallback: 'Không tải được ưu đãi của bạn. Vui lòng thử lại.',
+      );
     } finally {
       _isLoading = false;
       notifyListeners();

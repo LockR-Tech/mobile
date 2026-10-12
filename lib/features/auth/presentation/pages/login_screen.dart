@@ -1,3 +1,4 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:go_router/go_router.dart';
@@ -56,6 +57,16 @@ class _LoginScreenState extends State<LoginScreen>
 
   late final LoginProvider _loginProvider;
   late final RegisterProvider _registerProvider;
+
+  /// "Điều khoản sử dụng" mở trang điều khoản (trước đây chỉ là chữ tô màu).
+  late final TapGestureRecognizer _termsRecognizer = TapGestureRecognizer()
+    ..onTap = () => context.push(
+      AppRouter.policy,
+      extra: const {
+        'title': 'Điều khoản sử dụng',
+        'assetPath': 'assets/markdown/terms_of_service.md',
+      },
+    );
   bool _hasNavigated = false;
 
   late final AnimationController _animationController;
@@ -102,6 +113,7 @@ class _LoginScreenState extends State<LoginScreen>
   void dispose() {
     _loginProvider.removeListener(_onAuthChanged);
     _registerProvider.removeListener(_onAuthChanged);
+    _termsRecognizer.dispose();
     _animationController.dispose();
     _identifierController.dispose();
     _loginPasswordController.dispose();
@@ -123,8 +135,18 @@ class _LoginScreenState extends State<LoginScreen>
       return;
     }
 
-    // Backend issues the account immediately on register (no separate email
-    // OTP gate). Move the user to the Login tab with their identifier prefilled.
+    // Backend cấp token ngay khi đăng ký ⇒ vào app luôn, không bắt đăng nhập lại.
+    if (_registerProvider.isSuccess &&
+        _registerProvider.signedIn &&
+        !_hasNavigated) {
+      _hasNavigated = true;
+      SmartDialog.showToast('Đăng ký thành công!');
+      _registerProvider.reset();
+      _navigateAfterLogin();
+      return;
+    }
+
+    // Backend cũ không trả token ⇒ chuyển sang tab đăng nhập, điền sẵn định danh.
     if (_registerProvider.isSuccess) {
       final identifier = _emailController.text.trim().isNotEmpty
           ? _emailController.text.trim()
@@ -156,7 +178,8 @@ class _LoginScreenState extends State<LoginScreen>
 
   void _handleLogin() {
     final identifier = _identifierController.text.trim();
-    final password = _loginPasswordController.text;
+    // Cắt khoảng trắng như form đăng ký/đổi mật khẩu để mật khẩu luôn khớp.
+    final password = _loginPasswordController.text.trim();
     if (identifier.isEmpty || password.isEmpty) {
       setState(() => _loginError = 'Nhập email/SĐT và mật khẩu');
       return;
@@ -622,17 +645,19 @@ class _LoginScreenState extends State<LoginScreen>
         Expanded(
           child: GestureDetector(
             onTap: () => setState(() => _agreeToTerms = !_agreeToTerms),
-            child: const Text.rich(
+            child: Text.rich(
               TextSpan(
-                style: TextStyle(fontSize: 13, color: _kMuted),
+                style: const TextStyle(fontSize: 13, color: _kMuted),
                 children: [
-                  TextSpan(text: 'Tôi đồng ý với '),
+                  const TextSpan(text: 'Tôi đồng ý với '),
                   TextSpan(
                     text: 'Điều khoản sử dụng',
-                    style: TextStyle(
+                    style: const TextStyle(
                       color: _kBlue,
                       fontWeight: FontWeight.w600,
+                      decoration: TextDecoration.underline,
                     ),
+                    recognizer: _termsRecognizer,
                   ),
                 ],
               ),

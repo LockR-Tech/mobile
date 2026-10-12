@@ -4,7 +4,6 @@ import 'package:smart_laundry_locker/core/network/api_client.dart';
 import 'package:smart_laundry_locker/core/services/token_service.dart';
 import 'package:smart_laundry_locker/core/errors/failures.dart';
 import 'package:smart_laundry_locker/features/auth/domain/entities/face_verify_result_entity.dart';
-import 'package:smart_laundry_locker/features/auth/application/use_cases/confirm_qr_login_use_case.dart';
 import 'package:smart_laundry_locker/features/auth/application/use_cases/login_use_case.dart';
 import 'package:smart_laundry_locker/features/auth/application/use_cases/login_with_face_use_case.dart';
 import 'package:smart_laundry_locker/features/auth/application/use_cases/social_login_use_case.dart';
@@ -12,13 +11,11 @@ import 'package:smart_laundry_locker/features/auth/application/use_cases/send_em
 import 'package:smart_laundry_locker/features/auth/application/use_cases/verify_email_login_otp_use_case.dart';
 import 'package:smart_laundry_locker/core/services/firebase_auth_service.dart';
 import 'package:smart_laundry_locker/features/auth/domain/entities/auth_token_entity.dart';
-import 'package:smart_laundry_locker/features/auth/infrastructure/utils/qr_session_id_parser.dart';
 import 'package:flutter/foundation.dart';
 
 class LoginProvider extends ChangeNotifier {
   final LoginUseCase _loginUseCase;
   final LoginWithFaceUseCase _loginWithFaceUseCase;
-  final ConfirmQrLoginUseCase _confirmQrLoginUseCase;
   final SocialLoginUseCase _socialLoginUseCase;
   final SendEmailLoginOtpUseCase _sendEmailLoginOtpUseCase;
   final VerifyEmailLoginOtpUseCase _verifyEmailLoginOtpUseCase;
@@ -28,7 +25,6 @@ class LoginProvider extends ChangeNotifier {
   LoginProvider({
     required LoginUseCase loginUseCase,
     required LoginWithFaceUseCase loginWithFaceUseCase,
-    required ConfirmQrLoginUseCase confirmQrLoginUseCase,
     required SocialLoginUseCase socialLoginUseCase,
     required SendEmailLoginOtpUseCase sendEmailLoginOtpUseCase,
     required VerifyEmailLoginOtpUseCase verifyEmailLoginOtpUseCase,
@@ -36,7 +32,6 @@ class LoginProvider extends ChangeNotifier {
     required ApiClient apiClient,
   }) : _loginUseCase = loginUseCase,
        _loginWithFaceUseCase = loginWithFaceUseCase,
-       _confirmQrLoginUseCase = confirmQrLoginUseCase,
        _socialLoginUseCase = socialLoginUseCase,
        _sendEmailLoginOtpUseCase = sendEmailLoginOtpUseCase,
        _verifyEmailLoginOtpUseCase = verifyEmailLoginOtpUseCase,
@@ -60,63 +55,6 @@ class LoginProvider extends ChangeNotifier {
 
   bool _isFaceMatched = false;
   bool get isFaceMatched => _isFaceMatched;
-
-  bool _isQrConfirmLoading = false;
-  bool get isQrConfirmLoading => _isQrConfirmLoading;
-
-  bool? _qrConfirmSuccess;
-  bool? get qrConfirmSuccess => _qrConfirmSuccess;
-
-  String? _qrError;
-  String? get qrError => _qrError;
-
-  Future<void> onQrScanned(String qrRawContent) async {
-    _isQrConfirmLoading = true;
-    _qrError = null;
-    _qrConfirmSuccess = null;
-    notifyListeners();
-
-    final sessionId = parseQrSessionId(qrRawContent);
-    if (sessionId == null || sessionId.isEmpty) {
-      _isQrConfirmLoading = false;
-      _qrError = 'Không đọc được mã phiên từ QR. Vui lòng thử mã khác.';
-      notifyListeners();
-      return;
-    }
-
-    final result = await _confirmQrLoginUseCase(
-      ConfirmQrLoginParams(sessionId: sessionId),
-    );
-
-    result.fold(_handleQrFailure, (ok) {
-      _isQrConfirmLoading = false;
-      _qrConfirmSuccess = ok;
-      _qrError = ok ? null : 'Xác nhận thất bại.';
-      notifyListeners();
-    });
-  }
-
-  void _handleQrFailure(Failure failure) {
-    _isQrConfirmLoading = false;
-    _qrConfirmSuccess = false;
-    if (failure is QrExpiredFailure) {
-      _qrError = failure.message;
-    } else if (failure is QrAlreadyUsedFailure) {
-      _qrError = failure.message;
-    } else if (failure is AuthenticationFailure) {
-      _qrError = failure.message;
-    } else {
-      _qrError = failure.message;
-    }
-    notifyListeners();
-  }
-
-  void clearQrLoginState() {
-    _isQrConfirmLoading = false;
-    _qrConfirmSuccess = null;
-    _qrError = null;
-    notifyListeners();
-  }
 
   Future<void> login({required String email, required String password}) async {
     _isLoading = true;
@@ -360,9 +298,6 @@ class LoginProvider extends ChangeNotifier {
     _matchedUserId = null;
     _authToken = null;
     _verificationId = null;
-    _isQrConfirmLoading = false;
-    _qrConfirmSuccess = null;
-    _qrError = null;
     notifyListeners();
   }
 }

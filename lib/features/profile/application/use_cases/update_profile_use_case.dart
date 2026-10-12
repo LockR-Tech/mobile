@@ -12,6 +12,7 @@ class UpdateProfileUseCase {
     return await _repository.updateProfile(
       fullName: params.fullName,
       phoneNumber: params.phoneNumber,
+      email: params.email,
     );
   }
 }
@@ -19,13 +20,19 @@ class UpdateProfileUseCase {
 class UpdateProfileParams {
   final String? fullName;
   final String? phoneNumber;
+  final String? email;
 
-  const UpdateProfileParams({this.fullName, this.phoneNumber});
+  const UpdateProfileParams({this.fullName, this.phoneNumber, this.email});
 
   factory UpdateProfileParams.fromForm({
     String? fullName,
     String? phoneNumber,
+    String? email,
   }) {
-    return UpdateProfileParams(fullName: fullName, phoneNumber: phoneNumber);
+    return UpdateProfileParams(
+      fullName: fullName,
+      phoneNumber: phoneNumber,
+      email: email,
+    );
   }
 }

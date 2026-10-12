@@ -86,19 +86,8 @@ class _ImageBanner extends StatelessWidget {
         child: Stack(
           fit: StackFit.expand,
           children: [
-            CachedNetworkImage(
-              imageUrl: promo.effectiveImageUrl,
-              fit: BoxFit.cover,
-              placeholder: (_, __) => DecoratedBox(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: colors,
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                ),
-              ),
-              errorWidget: (_, __, ___) => DecoratedBox(
+            if (!promo.hasImage)
+              DecoratedBox(
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: colors,
@@ -109,8 +98,33 @@ class _ImageBanner extends StatelessWidget {
                 child: const Center(
                   child: Icon(LucideIcons.ticket, size: 52, color: Colors.white30),
                 ),
+              )
+            else
+              CachedNetworkImage(
+                imageUrl: promo.effectiveImageUrl,
+                fit: BoxFit.cover,
+                placeholder: (_, __) => DecoratedBox(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: colors,
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                  ),
+                ),
+                errorWidget: (_, __, ___) => DecoratedBox(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: colors,
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                  ),
+                  child: const Center(
+                    child: Icon(LucideIcons.ticket, size: 52, color: Colors.white30),
+                  ),
+                ),
               ),
-            ),
             // Dark overlay for legibility
             Container(
               decoration: BoxDecoration(
@@ -118,33 +132,6 @@ class _ImageBanner extends StatelessWidget {
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                   colors: [Colors.transparent, Colors.black.withValues(alpha: 0.55)],
-                ),
-              ),
-            ),
-            // Flash Sale chip
-            Positioned(
-              top: 12,
-              left: 12,
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF97316),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: const Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(LucideIcons.zap, size: 12, color: Colors.white),
-                    SizedBox(width: 4),
-                    Text(
-                      'Flash Sale',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w800,
-                        fontSize: 12,
-                      ),
-                    ),
-                  ],
                 ),
               ),
             ),
@@ -600,13 +587,11 @@ class _HowToUse extends StatelessWidget {
               style: TextStyle(fontSize: 13, color: Colors.grey.shade500),
             )
           else ...[
-            _step('1', 'Sao chép mã khuyến mãi ở trên'),
+            _step('1', 'Vào trang Thuê tủ hoặc Gửi hàng và chọn ô tủ'),
             const SizedBox(height: 8),
-            _step('2', 'Vào trang đặt dịch vụ (Thuê tủ / Gửi hàng)'),
+            _step('2', 'Ở mục "Mã giảm giá", chạm "Chọn mã giảm giá" rồi chọn mã này trong danh sách'),
             const SizedBox(height: 8),
-            _step('3', 'Nhập mã vào ô "Mã giảm giá" và nhấn Áp dụng'),
-            const SizedBox(height: 8),
-            _step('4', 'Mức giảm sẽ được trừ vào tổng tiền thanh toán'),
+            _step('3', 'Mức giảm được trừ vào tổng tiền nếu đơn đủ điều kiện (đơn tối thiểu, tủ áp dụng)'),
           ],
         ],
       ),

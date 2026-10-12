@@ -35,7 +35,6 @@ abstract class AuthRepository {
   Future<Either<Failure, void>> sendEmailLoginOtp(String email);
   Future<Either<Failure, AuthTokenEntity>> verifyEmailLoginOtp(String email, String otp);
 
-  Future<Either<Failure, bool>> confirmQrLogin(String sessionId);
 
   Future<Either<Failure, bool>> faceRegister({
     required String userId,

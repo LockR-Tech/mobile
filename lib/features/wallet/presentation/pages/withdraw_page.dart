@@ -7,7 +7,10 @@ import 'package:provider/provider.dart';
 import 'package:smart_laundry_locker/core/routing/app_router.dart';
 import 'package:smart_laundry_locker/core/theme/shadcn_theme.dart';
 import 'package:smart_laundry_locker/core/utils/currency_formatter.dart';
+import 'package:smart_laundry_locker/core/utils/user_error_message.dart';
+import 'package:smart_laundry_locker/features/payment/data/payment_service.dart';
 import 'package:smart_laundry_locker/features/wallet/data/vietnamese_banks.dart';
+import 'package:smart_laundry_locker/features/wallet/presentation/pages/withdrawal_requests_page.dart';
 import 'package:smart_laundry_locker/features/wallet/presentation/providers/wallet_provider.dart';
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
 
@@ -39,6 +42,37 @@ class _WithdrawPageState extends State<WithdrawPage> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<WalletProvider>().getWalletBalance();
     });
+    _prefillSavedBankAccount();
+  }
+
+  /// Điền sẵn tài khoản đã lưu ở "Tài khoản nhận hoàn tiền"
+  /// (`GET /api/payments/bank-account`) — không đè lên chữ người dùng đã gõ.
+  Future<void> _prefillSavedBankAccount() async {
+    final account = await PaymentService().getSavedBankAccount();
+    if (!mounted || account == null) return;
+    setState(() {
+      final code = account.bankCode.trim().toUpperCase();
+      if (code.isNotEmpty) {
+        for (final bank in vietnameseBanks) {
+          if (bank.code.toUpperCase() == code) {
+            _selectedBank = bank;
+            break;
+          }
+        }
+      }
+      if (_accountNumberController.text.trim().isEmpty) {
+        _accountNumberController.text = account.accountNumber;
+      }
+      if (_accountHolderController.text.trim().isEmpty) {
+        _accountHolderController.text = account.accountHolderName.toUpperCase();
+      }
+    });
+  }
+
+  void _openWithdrawalRequests() {
+    Navigator.of(context).push<void>(
+      MaterialPageRoute(builder: (_) => const WithdrawalRequestsPage()),
+    );
   }
 
   @override
@@ -103,9 +137,11 @@ class _WithdrawPageState extends State<WithdrawPage> {
       return;
     }
 
-    if (_enteredAmount > withdrawable) {
+    // Không đọc được số dư được rút ⇒ để backend kiểm (không tự coi cả ví là
+    // rút được).
+    if (wallet.withdrawableKnown && _enteredAmount > withdrawable) {
       SmartDialog.showToast(
-        'Số tiền rút vượt quá số dư hợp lệ từ SePay (${CurrencyFormatter.formatVnd(withdrawable)})',
+        'Số tiền rút vượt quá số dư được rút (${CurrencyFormatter.formatVnd(withdrawable)})',
       );
       return;
     }
@@ -199,7 +235,9 @@ class _WithdrawPageState extends State<WithdrawPage> {
     } catch (e) {
       SmartDialog.dismiss();
       if (!mounted) return;
-      SmartDialog.showToast('Lỗi rút tiền: ${e.toString()}');
+      SmartDialog.showToast(
+        userErrorMessage(e, fallback: 'Không gửi được yêu cầu rút tiền.'),
+      );
     } finally {
       if (mounted) setState(() => _isSubmitting = false);
     }
@@ -266,7 +304,7 @@ class _WithdrawPageState extends State<WithdrawPage> {
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      'Trạng thái: Đang chờ duyệt. Tiền sẽ được chuyển về tài khoản ${_selectedBank!.shortName} của bạn sau khi quản trị viên phê duyệt.',
+                      'Trạng thái: Đang chờ duyệt. Tiền sẽ được chuyển về tài khoản ${_selectedBank!.shortName} của bạn sau khi quản trị viên phê duyệt. Theo dõi ở mục "Yêu cầu rút tiền".',
                       style: TextStyle(fontSize: 12, color: Colors.blue.shade900),
                     ),
                   ),
@@ -327,13 +365,22 @@ class _WithdrawPageState extends State<WithdrawPage> {
       body: Consumer<WalletProvider>(
         builder: (context, wallet, child) {
           final totalBalance = wallet.balance;
+          final withdrawableKnown = wallet.withdrawableKnown;
           final withdrawable = wallet.withdrawableBalance;
+          // Chưa biết phần được rút ⇒ không chặn ở app, backend sẽ kiểm.
+          final maxWithdrawable =
+              withdrawableKnown ? withdrawable : double.infinity;
 
           return Column(
             children: [
               BrandHeroHeader(
                 title: 'Rút tiền về tài khoản',
                 subtitle: 'Rút tiền từ ví Lock.R về tài khoản ngân hàng',
+                trailing: BrandCircleIconButton(
+                  icon: LucideIcons.history,
+                  iconSize: 18,
+                  onTap: _openWithdrawalRequests,
+                ),
               ),
               Expanded(
                 child: SingleChildScrollView(
@@ -344,8 +391,21 @@ class _WithdrawPageState extends State<WithdrawPage> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         // Dual Balance Card
-                        _buildBalanceCard(totalBalance, withdrawable),
-                        const SizedBox(height: 20),
+                        _buildBalanceCard(
+                          totalBalance,
+                          withdrawableKnown ? withdrawable : null,
+                          onRetry: wallet.getWalletBalance,
+                        ),
+                        const SizedBox(height: 8),
+                        Align(
+                          alignment: Alignment.centerRight,
+                          child: TextButton.icon(
+                            onPressed: _openWithdrawalRequests,
+                            icon: const Icon(LucideIcons.history, size: 16),
+                            label: const Text('Xem các yêu cầu rút tiền'),
+                          ),
+                        ),
+                        const SizedBox(height: 12),
 
                         // Form Section
                         Card(
@@ -562,8 +622,8 @@ class _WithdrawPageState extends State<WithdrawPage> {
                                     if (_enteredAmount < 10000) {
                                       return 'Số tiền rút tối thiểu là 10.000 đ';
                                     }
-                                    if (_enteredAmount > withdrawable) {
-                                      return 'Số tiền vượt quá số dư hợp lệ từ SePay';
+                                    if (_enteredAmount > maxWithdrawable) {
+                                      return 'Số tiền vượt quá số dư được rút';
                                     }
                                     return null;
                                   },
@@ -575,13 +635,13 @@ class _WithdrawPageState extends State<WithdrawPage> {
                                   spacing: 8,
                                   runSpacing: 8,
                                   children: [
-                                    _buildQuickChip(50000, '50.000 đ', withdrawable),
-                                    _buildQuickChip(100000, '100.000 đ', withdrawable),
-                                    _buildQuickChip(200000, '200.000 đ', withdrawable),
-                                    if (withdrawable > 0)
+                                    _buildQuickChip(50000, '50.000 đ', maxWithdrawable),
+                                    _buildQuickChip(100000, '100.000 đ', maxWithdrawable),
+                                    _buildQuickChip(200000, '200.000 đ', maxWithdrawable),
+                                    if (withdrawableKnown && withdrawable > 0)
                                       ActionChip(
                                         label: const Text(
-                                          'Tối đa từ SePay',
+                                          'Rút tối đa',
                                           style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
                                         ),
                                         backgroundColor: AISLShadcnTheme.navySurface,
@@ -623,7 +683,7 @@ class _WithdrawPageState extends State<WithdrawPage> {
                                     ),
                                     const SizedBox(height: 4),
                                     Text(
-                                      'Chỉ cho phép rút tiền có nguồn gốc từ tiền thật đã nạp hoặc hoàn tiền qua cổng SePay. Yêu cầu rút sẽ được quản trị viên duyệt và chuyển khoản trong vòng 24 giờ làm việc.',
+                                      'Chỉ rút được phần tiền đã nạp hoặc được hoàn qua cổng SePay/VNPay. Yêu cầu rút được quản trị viên duyệt rồi chuyển khoản; bạn theo dõi trạng thái ở mục "Yêu cầu rút tiền".',
                                       style: TextStyle(fontSize: 12, color: Colors.green.shade900, height: 1.3),
                                     ),
                                   ],
@@ -639,7 +699,10 @@ class _WithdrawPageState extends State<WithdrawPage> {
                           width: double.infinity,
                           height: 52,
                           child: ElevatedButton(
-                            onPressed: _isSubmitting || withdrawable < 10000 ? null : _handleSubmit,
+                            onPressed: _isSubmitting ||
+                                    (withdrawableKnown && withdrawable < 10000)
+                                ? null
+                                : _handleSubmit,
                             style: ElevatedButton.styleFrom(
                               backgroundColor: AISLShadcnTheme.navyPrimary,
                               disabledBackgroundColor: Colors.grey.shade300,
@@ -674,7 +737,12 @@ class _WithdrawPageState extends State<WithdrawPage> {
     );
   }
 
-  Widget _buildBalanceCard(double totalBalance, double withdrawable) {
+  /// [withdrawable] `null` = không đọc được số dư được rút.
+  Widget _buildBalanceCard(
+    double totalBalance,
+    double? withdrawable, {
+    required VoidCallback onRetry,
+  }) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -748,19 +816,32 @@ class _WithdrawPageState extends State<WithdrawPage> {
                   Icon(LucideIcons.badgeCheck, size: 16, color: Colors.greenAccent.shade200),
                   const SizedBox(width: 6),
                   const Text(
-                    'Được rút từ SePay:',
+                    'Được rút (SePay/VNPay):',
                     style: TextStyle(color: Colors.white70, fontSize: 12),
                   ),
                 ],
               ),
-              Text(
-                CurrencyFormatter.formatVnd(withdrawable),
-                style: TextStyle(
-                  color: Colors.greenAccent.shade200,
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
+              if (withdrawable != null)
+                Text(
+                  CurrencyFormatter.formatVnd(withdrawable),
+                  style: TextStyle(
+                    color: Colors.greenAccent.shade200,
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                  ),
+                )
+              else
+                GestureDetector(
+                  onTap: onRetry,
+                  child: const Text(
+                    'Chưa xác định · thử lại',
+                    style: TextStyle(
+                      color: Colors.amberAccent,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                 ),
-              ),
             ],
           ),
         ],

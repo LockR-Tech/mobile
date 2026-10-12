@@ -71,4 +71,13 @@ class NotificationRemoteDataSource {
   Future<void> markAllAsRead() async {
     await _apiClient.patch<dynamic>('/api/notifications/read-all');
   }
+
+  /// Chỉ xoá được thông báo của chính mình (của người khác ⇒ 404).
+  Future<void> deleteNotification(String notificationId) async {
+    await _apiClient.delete<dynamic>('/api/notifications/$notificationId');
+  }
+
+  Future<void> deleteAllNotifications() async {
+    await _apiClient.delete<dynamic>('/api/notifications/all');
+  }
 }

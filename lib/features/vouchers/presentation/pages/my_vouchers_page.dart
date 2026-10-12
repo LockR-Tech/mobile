@@ -4,6 +4,8 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:smart_laundry_locker/core/routing/app_router.dart';
+import 'package:smart_laundry_locker/core/services/token_service.dart';
+import 'package:smart_laundry_locker/shared/widgets/unauthenticated_placeholder.dart';
 import 'package:smart_laundry_locker/shared/shared.dart';
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
 import '../providers/voucher_provider.dart';
@@ -27,7 +29,9 @@ class _MyVouchersPageState extends State<MyVouchersPage>
     _tabController = TabController(length: 2, vsync: this);
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<VoucherProvider>().loadMyVouchers();
+      if (TokenService.authState.value) {
+        context.read<VoucherProvider>().loadMyVouchers();
+      }
     });
   }
 
@@ -73,10 +77,21 @@ class _MyVouchersPageState extends State<MyVouchersPage>
           Expanded(
             child: Consumer<VoucherProvider>(
               builder: (context, provider, child) {
+                // Kho voucher gắn với tài khoản: chưa đăng nhập thì mời đăng
+                // nhập thay vì gọi API rồi hiện lỗi 401.
+                if (!TokenService.authState.value) {
+                  return UnauthenticatedPlaceholder(
+                    message: 'Bạn cần đăng nhập để xem ưu đãi đã lưu',
+                    onAuthSuccess: () => provider.loadMyVouchers(),
+                  );
+                }
                 if (provider.isLoading) {
                   return const Center(
                     child: AppLoadingIndicator(message: 'Đang tải ưu đãi...'),
                   );
+                }
+                if (provider.error != null) {
+                  return _buildErrorState(provider);
                 }
 
                 final activeVouchers = provider.vouchers
@@ -98,6 +113,33 @@ class _MyVouchersPageState extends State<MyVouchersPage>
                   ],
                 );
               },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildErrorState(VoucherProvider provider) {
+    return RefreshIndicator(
+      onRefresh: () => provider.loadMyVouchers(),
+      child: ListView(
+        padding: const EdgeInsets.all(32),
+        children: [
+          const SizedBox(height: 60),
+          Icon(LucideIcons.cloudOff, size: 56, color: Colors.grey.shade400),
+          const SizedBox(height: 16),
+          Text(
+            provider.error!,
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
+          ),
+          const SizedBox(height: 12),
+          Center(
+            child: TextButton.icon(
+              onPressed: () => provider.loadMyVouchers(),
+              icon: const Icon(LucideIcons.refreshCw, size: 16),
+              label: const Text('Thử lại'),
             ),
           ),
         ],

@@ -1,5 +1,4 @@
 import 'package:smart_laundry_locker/core/network/api_client.dart';
-import 'package:smart_laundry_locker/features/auth/application/use_cases/confirm_qr_login_use_case.dart';
 import 'package:smart_laundry_locker/features/auth/application/use_cases/forgot_password_use_case.dart';
 import 'package:smart_laundry_locker/features/auth/application/use_cases/login_use_case.dart';
 import 'package:smart_laundry_locker/features/auth/application/use_cases/login_with_face_use_case.dart';
@@ -34,7 +33,6 @@ class AuthInjection {
     final repository = AuthRepositoryImpl(remoteDataSource: remoteDataSource);
     final loginUseCase = LoginUseCase(repository);
     final loginWithFaceUseCase = LoginWithFaceUseCase(repository);
-    final confirmQrLoginUseCase = ConfirmQrLoginUseCase(repository);
     final socialLoginUseCase = SocialLoginUseCase(repository);
     final sendEmailLoginOtpUseCase = SendEmailLoginOtpUseCase(repository);
     final verifyEmailLoginOtpUseCase = VerifyEmailLoginOtpUseCase(repository);
@@ -43,7 +41,6 @@ class AuthInjection {
     return LoginProvider(
       loginUseCase: loginUseCase,
       loginWithFaceUseCase: loginWithFaceUseCase,
-      confirmQrLoginUseCase: confirmQrLoginUseCase,
       socialLoginUseCase: socialLoginUseCase,
       sendEmailLoginOtpUseCase: sendEmailLoginOtpUseCase,
       verifyEmailLoginOtpUseCase: verifyEmailLoginOtpUseCase,

@@ -4,6 +4,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:smart_laundry_locker/core/routing/app_router.dart';
 import 'package:smart_laundry_locker/core/routing/role_routes.dart';
 import 'package:smart_laundry_locker/core/services/biometric_service.dart';
+import 'package:smart_laundry_locker/core/services/session_service.dart';
 import 'package:smart_laundry_locker/core/services/token_service.dart';
 import 'package:smart_laundry_locker/shared/shared.dart';
 import 'package:smart_laundry_locker/shared/widgets/app_lottie.dart';
@@ -51,8 +52,8 @@ class _SplashScreenState extends State<SplashScreen>
   }
 
   Future<void> _checkAuthAndNavigate() async {
-    // Thời gian hiển thị splash screen tầm 4s theo yêu cầu
-    await Future<void>.delayed(const Duration(seconds: 5));
+    // Chỉ chờ hết hiệu ứng logo (~0,9 s) — trước đây chờ cứng 5 s mỗi lần mở app.
+    await Future<void>.delayed(const Duration(milliseconds: 900));
     if (!mounted) return;
 
     final hasToken = await TokenService.hasToken();
@@ -95,7 +96,8 @@ class _SplashScreenState extends State<SplashScreen>
   }
 
   Future<void> _signOutInstead() async {
-    await TokenService.clearTokens();
+    // Đăng xuất dùng chung: gỡ push + thu hồi refresh token rồi mới xoá token.
+    await SessionService.logout();
     if (!mounted) return;
     context.go(AppRouter.onboarding);
   }

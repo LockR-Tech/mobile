@@ -5,6 +5,8 @@ import 'package:smart_laundry_locker/core/config/business_config_provider.dart';
 import 'package:smart_laundry_locker/core/constants/app_assets.dart';
 import 'package:smart_laundry_locker/core/network/api_client.dart';
 import 'package:smart_laundry_locker/core/theme/shadcn_theme.dart';
+import 'package:smart_laundry_locker/features/transactions/domain/top_up_confirmation.dart';
+import 'package:smart_laundry_locker/features/transactions/domain/entities/transaction.dart';
 import 'package:smart_laundry_locker/features/transactions/presentation/providers/transaction_injection.dart';
 import 'package:smart_laundry_locker/features/transactions/presentation/providers/transaction_provider.dart';
 import 'package:smart_laundry_locker/features/wallet/presentation/providers/wallet_provider.dart';
@@ -183,47 +185,192 @@ class _TopUpPageState extends State<TopUpPage> with BusinessConfigStateMixin {
             );
 
             if (!mounted) return;
-            if (ok == true) {
-              await walletProvider.getWalletBalance();
-              if (mounted) {
-                final fmtAmount = NumberFormat.currency(
-                  locale: 'vi_VN',
-                  symbol: 'đ',
-                  decimalDigits: 0,
-                ).format(_selectedAmount);
-
-                await showPaymentResultDialog<void>(
-                  context,
-                  type: PaymentStatusType.success,
-                  title: 'Nạp tiền thành công!',
-                  amountText: '+$fmtAmount',
-                  message: 'Số dư ví của bạn đã được cập nhật thành công.',
-                );
-                if (mounted) Navigator.of(context).pop(true);
-              }
-            } else if (ok == false) {
-              if (mounted) {
-                final fmtAmount = NumberFormat.currency(
-                  locale: 'vi_VN',
-                  symbol: 'đ',
-                  decimalDigits: 0,
-                ).format(_selectedAmount);
-
-                await showPaymentResultDialog<void>(
-                  context,
-                  type: PaymentStatusType.failure,
-                  title: 'Thanh toán thất bại',
-                  amountText: fmtAmount,
-                  message: 'Giao dịch nạp ví đã bị hủy hoặc không thành công. Vui lòng kiểm tra lại.',
-                );
-              }
-            }
+            await _afterGateway(
+              gatewayResult: ok,
+              txnRef: result.txnRef,
+              provider: provider,
+              walletProvider: walletProvider,
+            );
           },
         ),
       ),
     );
   },
       ),
+    );
+  }
+}
+
+extension on _TopUpPageState {
+  String _fmtVnd(num amount) => NumberFormat.currency(
+    locale: 'vi_VN',
+    symbol: 'đ',
+    decimalDigits: 0,
+  ).format(amount);
+
+  /// Sau khi rời cổng thanh toán: chỉ báo thành công khi ví đã có giao dịch
+  /// nạp khớp `txnRef` (poll `GET /api/wallet/transactions` tối đa ~60 s).
+  /// Trang quay về của cổng chỉ chứng minh trình duyệt đã quay lại.
+  ///
+  /// - [gatewayResult] `false`: cổng báo huỷ/thất bại ⇒ báo thất bại.
+  /// - `true`: chờ xác nhận; quá hạn ⇒ "Đang xử lý" (không báo thành công giả).
+  /// - `null` (người dùng tự đóng trang thanh toán): kiểm một lần, có thì báo
+  ///   thành công, chưa có thì nhắc tiền sẽ vào khi cổng xác nhận.
+  Future<void> _afterGateway({
+    required bool? gatewayResult,
+    required String txnRef,
+    required TransactionProvider provider,
+    required WalletProvider walletProvider,
+  }) async {
+    if (gatewayResult == false) {
+      await showPaymentResultDialog<void>(
+        context,
+        type: PaymentStatusType.failure,
+        title: 'Thanh toán thất bại',
+        amountText: _fmtVnd(_selectedAmount),
+        message:
+            'Giao dịch nạp ví đã bị hủy hoặc không thành công. Vui lòng kiểm tra lại.',
+      );
+      return;
+    }
+
+    final TopUpConfirmation confirmation;
+    if (gatewayResult == true) {
+      confirmation =
+          await showDialog<TopUpConfirmation>(
+            context: context,
+            barrierDismissible: false,
+            builder: (_) => _TopUpConfirmDialog(
+              txnRef: txnRef,
+              fetchTransactions: provider.fetchWalletTransactionsOnce,
+            ),
+          ) ??
+          const TopUpConfirmation.pending();
+    } else {
+      confirmation = await waitForTopUpCredit(
+        txnRef: txnRef,
+        fetchTransactions: provider.fetchWalletTransactionsOnce,
+        attempts: 1,
+      );
+    }
+    if (!mounted) return;
+    await walletProvider.getWalletBalance();
+    if (!mounted) return;
+
+    if (confirmation.isConfirmed) {
+      final credited = confirmation.transaction!.amount;
+      await showPaymentResultDialog<void>(
+        context,
+        type: PaymentStatusType.success,
+        title: 'Nạp tiền thành công!',
+        amountText: '+${_fmtVnd(credited)}',
+        message: 'Số dư ví của bạn đã được cập nhật.',
+      );
+      if (mounted) Navigator.of(context).pop(true);
+      return;
+    }
+
+    if (gatewayResult == null) {
+      SmartDialog.showToast(
+        'Chưa ghi nhận giao dịch nạp. Nếu bạn đã thanh toán, số dư sẽ được cộng khi cổng thanh toán xác nhận.',
+        displayTime: const Duration(seconds: 4),
+      );
+      return;
+    }
+
+    await showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Row(
+          children: [
+            Icon(Icons.hourglass_top_rounded, color: Color(0xFFD97706)),
+            SizedBox(width: 8),
+            Text('Đang xử lý'),
+          ],
+        ),
+        content: Text(
+          'Hệ thống chưa nhận được xác nhận từ cổng thanh toán cho giao dịch '
+          '${_fmtVnd(_selectedAmount)}${txnRef.isNotEmpty ? ' (mã $txnRef)' : ''}. '
+          'Số dư sẽ được cộng ngay khi cổng xác nhận — bạn có thể xem lại ở '
+          'Lịch sử giao dịch. Nếu sau vài phút vẫn chưa có, vui lòng liên hệ hỗ trợ.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Đã hiểu'),
+          ),
+        ],
+      ),
+    );
+    if (mounted) Navigator.of(context).pop(true);
+  }
+}
+
+/// Hộp thoại chờ xác nhận nạp ví; người dùng có thể "Kiểm tra sau".
+class _TopUpConfirmDialog extends StatefulWidget {
+  const _TopUpConfirmDialog({
+    required this.txnRef,
+    required this.fetchTransactions,
+  });
+
+  final String txnRef;
+  final Future<List<Transaction>> Function() fetchTransactions;
+
+  @override
+  State<_TopUpConfirmDialog> createState() => _TopUpConfirmDialogState();
+}
+
+class _TopUpConfirmDialogState extends State<_TopUpConfirmDialog> {
+  bool _cancelled = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _run();
+  }
+
+  Future<void> _run() async {
+    final result = await waitForTopUpCredit(
+      txnRef: widget.txnRef,
+      fetchTransactions: widget.fetchTransactions,
+      isCancelled: () => _cancelled || !mounted,
+    );
+    if (mounted && !_cancelled) Navigator.of(context).pop(result);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      content: const Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          SizedBox(height: 8),
+          CircularProgressIndicator(),
+          SizedBox(height: 18),
+          Text(
+            'Đang xác nhận giao dịch với hệ thống...',
+            textAlign: TextAlign.center,
+            style: TextStyle(fontWeight: FontWeight.w700),
+          ),
+          SizedBox(height: 6),
+          Text(
+            'Có thể mất tới 1 phút sau khi bạn thanh toán.',
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 13, color: Colors.grey),
+          ),
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () {
+            _cancelled = true;
+            Navigator.of(context).pop(const TopUpConfirmation.pending());
+          },
+          child: const Text('Kiểm tra sau'),
+        ),
+      ],
     );
   }
 }

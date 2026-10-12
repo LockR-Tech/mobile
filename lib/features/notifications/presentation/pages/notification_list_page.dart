@@ -181,6 +181,14 @@ class _NotificationListPageState extends State<NotificationListPage> {
                     return Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
+                        if (provider.notifications.isNotEmpty) ...[
+                          BrandCircleIconButton(
+                            icon: LucideIcons.trash2,
+                            iconSize: 18,
+                            onTap: () => _confirmDeleteAll(provider),
+                          ),
+                          const SizedBox(width: 8),
+                        ],
                         if (showMarkAll) ...[
                           GestureDetector(
                             behavior: HitTestBehavior.opaque,
@@ -259,6 +267,28 @@ class _NotificationListPageState extends State<NotificationListPage> {
                             Divider(height: 1, color: Colors.grey.shade200),
                         itemBuilder: (context, index) {
                           if (index == provider.notifications.length) {
+                            if (provider.error != null &&
+                                !provider.isLoadingMore) {
+                              return Padding(
+                                padding: const EdgeInsets.all(16),
+                                child: Column(
+                                  children: [
+                                    Text(
+                                      provider.error!,
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(
+                                        color: Colors.red.shade400,
+                                        fontSize: 13,
+                                      ),
+                                    ),
+                                    TextButton(
+                                      onPressed: provider.loadMore,
+                                      child: const Text('Thử lại'),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            }
                             if (provider.isLoadingMore) {
                               return const Padding(
                                 padding: EdgeInsets.all(16.0),
@@ -285,7 +315,7 @@ class _NotificationListPageState extends State<NotificationListPage> {
                           }
 
                           final notification = provider.notifications[index];
-                          return _buildNotificationItem(notification);
+                          return _buildDismissibleItem(notification);
                         },
                       ),
                     );
@@ -331,7 +361,7 @@ class _NotificationListPageState extends State<NotificationListPage> {
           Icon(LucideIcons.serverCrash, size: 64, color: Colors.red.shade300),
           const SizedBox(height: 16),
           Text(
-            'Lỗi kết nối',
+            'Không tải được thông báo',
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w600,
@@ -358,6 +388,78 @@ class _NotificationListPageState extends State<NotificationListPage> {
           ),
         ],
       ),
+    );
+  }
+
+  /// Xoá tất cả thông báo (`DELETE /api/notifications/all`) sau khi xác nhận.
+  Future<void> _confirmDeleteAll(NotificationProvider provider) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Xoá tất cả thông báo?'),
+        content: const Text(
+          'Toàn bộ thông báo của tài khoản sẽ bị xoá và không khôi phục được.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Hủy'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Xoá tất cả', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+    final error = await provider.deleteAllNotifications();
+    if (!mounted) return;
+    _showSnack(error ?? 'Đã xoá tất cả thông báo', isError: error != null);
+  }
+
+  void _showSnack(String message, {bool isError = false}) {
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(message),
+          behavior: SnackBarBehavior.floating,
+          backgroundColor: isError ? Colors.red.shade700 : AislBrand.navy,
+        ),
+      );
+  }
+
+  /// Vuốt sang trái để xoá một thông báo (`DELETE /api/notifications/{id}`).
+  /// Dòng biến mất ngay; server báo lỗi thì dòng quay lại kèm thông báo lỗi.
+  Widget _buildDismissibleItem(NotificationModel notification) {
+    return Dismissible(
+      key: ValueKey('notification-${notification.id}'),
+      direction: DismissDirection.endToStart,
+      background: Container(
+        color: Colors.red.shade600,
+        alignment: Alignment.centerRight,
+        padding: const EdgeInsets.symmetric(horizontal: 24),
+        child: const Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(LucideIcons.trash2, color: Colors.white, size: 20),
+            SizedBox(width: 6),
+            Text(
+              'Xoá',
+              style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700),
+            ),
+          ],
+        ),
+      ),
+      onDismissed: (_) async {
+        final error = await context
+            .read<NotificationProvider>()
+            .deleteNotification(notification.id);
+        if (!mounted) return;
+        if (error != null) _showSnack(error, isError: true);
+      },
+      child: _buildNotificationItem(notification),
     );
   }
 

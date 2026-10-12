@@ -10,6 +10,8 @@ import 'package:smart_laundry_locker/features/transactions/domain/entities/trans
 import 'package:smart_laundry_locker/features/transactions/domain/entities/spending_stats.dart';
 import 'package:smart_laundry_locker/features/transactions/presentation/providers/transaction_injection.dart';
 import 'package:smart_laundry_locker/features/transactions/presentation/providers/transaction_provider.dart';
+import 'package:smart_laundry_locker/features/wallet/domain/withdrawal_request.dart';
+import 'package:smart_laundry_locker/features/wallet/presentation/pages/withdrawal_requests_page.dart';
 import 'package:smart_laundry_locker/features/wallet/presentation/providers/wallet_provider.dart';
 import 'package:smart_laundry_locker/core/utils/currency_formatter.dart';
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
@@ -33,7 +35,10 @@ class _TransactionsPageState extends State<TransactionsPage> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _provider.fetchTransactions(refresh: true).then((_) {
         if (!mounted) return;
-        context.read<WalletProvider>().getWalletBalance();
+        final wallet = context.read<WalletProvider>();
+        wallet.getWalletBalance();
+        // Trạng thái thật của các giao dịch rút (chờ duyệt / đã chuyển / từ chối).
+        wallet.fetchWithdrawals();
       });
     });
   }
@@ -62,6 +67,7 @@ class _TransactionsPageState extends State<TransactionsPage> {
                     onTap: () async {
                       await provider.fetchTransactions(refresh: true);
                       await walletProvider.getWalletBalance();
+                      await walletProvider.fetchWithdrawals();
                     },
                   ),
                 ),
@@ -70,7 +76,9 @@ class _TransactionsPageState extends State<TransactionsPage> {
                     onRefresh: () async {
                       await provider.fetchTransactions(refresh: true);
                       if (!context.mounted) return;
-                      await context.read<WalletProvider>().getWalletBalance();
+                      final wallet = context.read<WalletProvider>();
+                      await wallet.getWalletBalance();
+                      await wallet.fetchWithdrawals();
                     },
                     child: CustomScrollView(
                       physics: const AlwaysScrollableScrollPhysics(
@@ -106,7 +114,21 @@ class _TransactionsPageState extends State<TransactionsPage> {
                                   }
                                 },
                               ),
-                              const SizedBox(height: 12),
+                              Padding(
+                                padding: const EdgeInsets.fromLTRB(16, 4, 16, 0),
+                                child: Align(
+                                  alignment: Alignment.centerRight,
+                                  child: TextButton.icon(
+                                    onPressed: () => Navigator.of(context).push<void>(
+                                      MaterialPageRoute(
+                                        builder: (_) => const WithdrawalRequestsPage(),
+                                      ),
+                                    ),
+                                    icon: const Icon(Icons.history_rounded, size: 18),
+                                    label: const Text('Yêu cầu rút tiền'),
+                                  ),
+                                ),
+                              ),
 
                               // Card 2: Thống kê chi tiêu & phân bổ dịch vụ theo kỳ (Ngày, Tháng, Năm, Tất cả)
                               _SpendingStatsCard(provider: provider),
@@ -382,7 +404,7 @@ class _SpendingStatsCardState extends State<_SpendingStatsCard> {
               const SizedBox(width: 10),
               Expanded(
                 child: _MetricItem(
-                  label: 'Tổng nạp vào',
+                  label: 'Tổng tiền vào',
                   value: '+$incomeFmt',
                   valueColor: const Color(0xFF16A34A),
                   icon: Icons.south_west_rounded,
@@ -671,6 +693,9 @@ class _ServiceBreakdownList extends StatelessWidget {
     final laundryAmt = stats.byService['LAUNDRY'] ?? 0.0;
     final topupAmt = stats.byService['TOPUP'] ?? 0.0;
     final withdrawAmt = stats.byService['WITHDRAW'] ?? 0.0;
+    final refundAmt = stats.byService['REFUND'] ?? 0.0;
+    final adjustAmt = stats.byService['ADJUST'] ?? 0.0;
+    final orderAmt = stats.byService['ORDER'] ?? 0.0;
     final otherAmt = stats.byService['OTHER'] ?? 0.0;
 
     // Đếm số lượt theo dịch vụ trong kỳ
@@ -679,6 +704,9 @@ class _ServiceBreakdownList extends StatelessWidget {
     int laundryCount = 0;
     int topupCount = 0;
     int withdrawCount = 0;
+    int refundCount = 0;
+    int adjustCount = 0;
+    int orderCount = 0;
     int otherCount = 0;
 
     for (final tx in periodTransactions) {
@@ -698,13 +726,30 @@ class _ServiceBreakdownList extends StatelessWidget {
         case 'WITHDRAW':
           withdrawCount++;
           break;
+        case 'REFUND':
+          refundCount++;
+          break;
+        case 'ADJUST':
+          adjustCount++;
+          break;
+        case 'ORDER':
+          orderCount++;
+          break;
         default:
           otherCount++;
           break;
       }
     }
 
-    final totalVolume = rentalAmt + sendAmt + laundryAmt + topupAmt + withdrawAmt + otherAmt;
+    final totalVolume = rentalAmt +
+        sendAmt +
+        laundryAmt +
+        topupAmt +
+        withdrawAmt +
+        refundAmt +
+        adjustAmt +
+        orderAmt +
+        otherAmt;
 
     final services = <Map<String, dynamic>>[
       {
@@ -748,10 +793,37 @@ class _ServiceBreakdownList extends StatelessWidget {
         'color': const Color(0xFFEA580C),
         'icon': Icons.outbox_rounded,
       },
+      if (orderAmt > 0 || orderCount > 0)
+        {
+          'key': 'ORDER',
+          'title': 'Thanh toán đơn khác',
+          'amount': orderAmt,
+          'count': orderCount,
+          'color': const Color(0xFF0369A1),
+          'icon': Icons.shopping_bag_outlined,
+        },
+      if (refundAmt > 0 || refundCount > 0)
+        {
+          'key': 'REFUND',
+          'title': 'Hoàn tiền vào ví',
+          'amount': refundAmt,
+          'count': refundCount,
+          'color': const Color(0xFF0891B2),
+          'icon': Icons.replay_rounded,
+        },
+      if (adjustAmt > 0 || adjustCount > 0)
+        {
+          'key': 'ADJUST',
+          'title': 'Điều chỉnh số dư',
+          'amount': adjustAmt,
+          'count': adjustCount,
+          'color': const Color(0xFF7C2D12),
+          'icon': Icons.tune_rounded,
+        },
       if (otherAmt > 0 || otherCount > 0)
         {
           'key': 'OTHER',
-          'title': 'Khác / Điều chỉnh',
+          'title': 'Khác',
           'amount': otherAmt,
           'count': otherCount,
           'color': const Color(0xFF64748B),
@@ -1159,8 +1231,8 @@ class _PaymentMethodFilterBar extends StatelessWidget {
                     const SizedBox(width: 8),
                     Text(
                       provider.selectedMethod == 'ALL'
-                          ? 'Tổng tiền (tất cả):'
-                          : 'Tổng tiền ${currentFilter['label']}:',
+                          ? 'Tất cả (${provider.getMethodCount('ALL')} GD):'
+                          : '${currentFilter['label']} (${provider.getMethodCount(provider.selectedMethod)} GD):',
                       style: const TextStyle(
                         fontSize: 12,
                         color: Color(0xFF64748B),
@@ -1169,13 +1241,37 @@ class _PaymentMethodFilterBar extends StatelessWidget {
                     ),
                   ],
                 ),
-                Text(
-                  '${NumberFormat.currency(locale: 'vi_VN', symbol: 'đ', decimalDigits: 0).format(provider.getMethodAmount(provider.selectedMethod))} (${provider.getMethodCount(provider.selectedMethod)} GD)',
-                  style: const TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w700,
-                    color: Color(0xFF0F172A),
-                  ),
+                Builder(
+                  builder: (_) {
+                    // Hiện riêng tiền vào / tiền ra — cộng gộp hai chiều ra
+                    // một con số không có nghĩa.
+                    final totals = sumIncomeExpense(provider.filteredTransactions);
+                    final fmt = NumberFormat.currency(
+                      locale: 'vi_VN',
+                      symbol: 'đ',
+                      decimalDigits: 0,
+                    );
+                    return Text.rich(
+                      TextSpan(
+                        children: [
+                          TextSpan(
+                            text: '+${fmt.format(totals.income)}',
+                            style: const TextStyle(color: Color(0xFF16A34A)),
+                          ),
+                          const TextSpan(text: '  ·  '),
+                          TextSpan(
+                            text: '-${fmt.format(totals.expense)}',
+                            style: const TextStyle(color: Color(0xFFDC2626)),
+                          ),
+                        ],
+                      ),
+                      style: const TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFF0F172A),
+                      ),
+                    );
+                  },
                 ),
               ],
             ),
@@ -1211,10 +1307,19 @@ class _TransactionsSliverList extends StatelessWidget {
             child: Center(
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
-                child: Text(
-                  'Lỗi: ${provider.error}',
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(color: Colors.red),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      provider.error!,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(color: Colors.red),
+                    ),
+                    TextButton(
+                      onPressed: () => provider.fetchTransactions(refresh: true),
+                      child: const Text('Thử lại'),
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -1320,8 +1425,7 @@ class _MBStyleTransactionItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isIncome =
-        transaction.type == 'TOP_UP' || transaction.type == 'CREDIT';
+    final isIncome = transaction.isCredit;
     final dotColor =
         isIncome ? const Color(0xFF16A34A) : const Color(0xFFEA580C);
     final amountSign = isIncome ? '+' : '-';
@@ -1347,64 +1451,180 @@ class _MBStyleTransactionItem extends StatelessWidget {
     final serviceLabel = transaction.detectedServiceLabel;
     final serviceColor = transaction.detectedServiceColor;
 
-    final isWallet = transaction.detectedMethod == 'WALLET';
-    final title = isIncome
-        ? 'Thông báo nạp tiền ví'
-        : (isWallet ? 'Thông báo biến động số dư' : 'Thanh toán đơn qua $methodLabel');
-    final infoPart = isWallet ? 'SD: $balanceFmt' : 'PT: $methodLabel';
-    final content =
-        'GD: $amountSign$amountFmt | $infoPart\nND: ${transaction.description}';
+    // Giao dịch rút: trạng thái lấy từ yêu cầu rút (mô tả backend ghi cứng
+    // "[Chờ duyệt]" lúc tạo, sau khi duyệt vẫn giữ nguyên).
+    final isWithdrawal =
+        transaction.detectedService == 'WITHDRAW' && !isIncome;
+    final withdrawal = isWithdrawal
+        ? context.watch<WalletProvider>().withdrawalFor(transaction.referenceId)
+        : null;
+    final statusText = isWithdrawal
+        ? (withdrawal?.statusLabel ?? 'Xem trạng thái ở "Yêu cầu rút tiền"')
+        : 'Thành công';
+    final statusColor = isWithdrawal
+        ? (withdrawal != null
+              ? withdrawalStatusColor(withdrawal.status)
+              : const Color(0xFF64748B))
+        : const Color(0xFF16A34A);
 
-    final descLower = transaction.description.toLowerCase();
-    final isFailed = descLower.contains('thất bại') ||
-        descLower.contains('failed') ||
-        descLower.contains('hủy') ||
-        descLower.contains('cancel');
+    final title = transaction.displayTitle;
+    final showBalance = transaction.affectsWalletBalance;
+    final infoPart = showBalance ? 'SD: $balanceFmt' : 'PT: $methodLabel';
+    final description = transaction.displayDescription;
+    final content = [
+      'GD: $amountSign$amountFmt | $infoPart',
+      if (description.isNotEmpty) 'ND: $description',
+      if (isWithdrawal) 'Trạng thái: $statusText',
+    ].join('\n');
 
     return InkWell(
       onTap: () {
-        showPaymentResultDialog<void>(
-          context,
-          type: isFailed ? PaymentStatusType.failure : PaymentStatusType.success,
-          title: isFailed ? 'Giao dịch không thành công' : 'Giao dịch thành công',
-          amountText: '$amountSign$amountFmt',
-          message: transaction.description,
-          detailsWidget: Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(
-              color: const Color(0xFFF8FAFC),
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: Colors.grey.shade200),
-            ),
-            child: Column(
-              children: [
-                _dialogRow('Hình thức GD', methodLabel),
-                const SizedBox(height: 6),
-                _dialogRow('Dịch vụ', serviceLabel),
-                const SizedBox(height: 6),
-                _dialogRow('Loại GD', isIncome ? 'Cộng tiền vào ví' : 'Trừ tiền'),
-                const SizedBox(height: 6),
-                _dialogRow('Số tiền', '$amountSign$amountFmt'),
-                const SizedBox(height: 6),
-                _dialogRow(
-                  'Thời gian',
-                  DateFormat('HH:mm:ss dd/MM/yyyy').format(transaction.createdAt.toLocal()),
-                ),
-                if (transaction.referenceId != null && transaction.referenceId!.isNotEmpty) ...[
+        showModalBottomSheet<void>(
+          context: context,
+          useRootNavigator: true,
+          backgroundColor: Colors.white,
+          showDragHandle: true,
+          isScrollControlled: true,
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.vertical(top: Radius.circular(26)),
+          ),
+          builder: (ctx) => SafeArea(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontSize: 17,
+                      fontWeight: FontWeight.w800,
+                      color: Color(0xFF0F172A),
+                    ),
+                  ),
                   const SizedBox(height: 6),
-                  _dialogRow('Mã GD', transaction.referenceId!),
-                ],
-                if (transaction.orderCode != null && transaction.orderCode!.isNotEmpty) ...[
+                  Text(
+                    '$amountSign$amountFmt',
+                    style: TextStyle(
+                      fontSize: 26,
+                      fontWeight: FontWeight.w800,
+                      color: dotColor,
+                    ),
+                  ),
                   const SizedBox(height: 6),
-                  _dialogRow('Mã đơn', transaction.orderCode!),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: statusColor.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text(
+                        statusText,
+                        style: TextStyle(
+                          color: statusColor,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ),
+                  ),
+                  if (withdrawal?.rejectionReason != null) ...[
+                    const SizedBox(height: 8),
+                    Text(
+                      'Lý do từ chối: ${withdrawal!.rejectionReason}',
+                      style: const TextStyle(
+                        fontSize: 13,
+                        color: Color(0xFF991B1B),
+                      ),
+                    ),
+                  ],
+                  if (description.isNotEmpty) ...[
+                    const SizedBox(height: 10),
+                    Text(
+                      description,
+                      style: const TextStyle(
+                        fontSize: 13.5,
+                        color: Color(0xFF475569),
+                        height: 1.4,
+                      ),
+                    ),
+                  ],
+                  const SizedBox(height: 14),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF8FAFC),
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: Colors.grey.shade200),
+                    ),
+                    child: Column(
+                      children: [
+                        _dialogRow('Hình thức GD', methodLabel),
+                        const SizedBox(height: 6),
+                        _dialogRow('Loại', serviceLabel),
+                        const SizedBox(height: 6),
+                        _dialogRow(
+                          'Chiều tiền',
+                          isIncome
+                              ? 'Cộng vào ví'
+                              : (showBalance ? 'Trừ từ ví' : 'Trả trực tiếp qua cổng'),
+                        ),
+                        const SizedBox(height: 6),
+                        _dialogRow(
+                          'Thời gian',
+                          DateFormat('HH:mm:ss dd/MM/yyyy')
+                              .format(transaction.createdAt.toLocal()),
+                        ),
+                        if (transaction.referenceId != null &&
+                            transaction.referenceId!.isNotEmpty) ...[
+                          const SizedBox(height: 6),
+                          _dialogRow('Mã GD', transaction.referenceId!),
+                        ],
+                        if (transaction.orderCode != null &&
+                            transaction.orderCode!.isNotEmpty) ...[
+                          const SizedBox(height: 6),
+                          _dialogRow('Mã đơn', transaction.orderCode!),
+                        ],
+                        if (showBalance) ...[
+                          const SizedBox(height: 6),
+                          _dialogRow('Số dư ví sau GD', balanceFmt),
+                        ],
+                      ],
+                    ),
+                  ),
+                  if (isWithdrawal) ...[
+                    const SizedBox(height: 10),
+                    TextButton(
+                      onPressed: () {
+                        Navigator.pop(ctx);
+                        Navigator.of(context).push<void>(
+                          MaterialPageRoute(
+                            builder: (_) => const WithdrawalRequestsPage(),
+                          ),
+                        );
+                      },
+                      child: const Text('Xem các yêu cầu rút tiền'),
+                    ),
+                  ],
+                  const SizedBox(height: 8),
+                  FilledButton(
+                    onPressed: () => Navigator.pop(ctx),
+                    style: FilledButton.styleFrom(
+                      backgroundColor: AISLShadcnTheme.navyPrimary,
+                      minimumSize: const Size.fromHeight(46),
+                    ),
+                    child: const Text('Đóng'),
+                  ),
                 ],
-                const SizedBox(height: 6),
-                _dialogRow('Số dư ví sau GD', balanceFmt),
-              ],
+              ),
             ),
           ),
-          primaryButtonText: 'Đóng',
         );
       },
       child: Container(
@@ -1544,7 +1764,7 @@ class _MBStyleTransactionItem extends StatelessWidget {
 
   Widget _dialogRow(String label, String value) {
     return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           label,
@@ -1553,12 +1773,16 @@ class _MBStyleTransactionItem extends StatelessWidget {
             color: Color(0xFF64748B),
           ),
         ),
-        Text(
-          value,
-          style: const TextStyle(
-            fontSize: 13,
-            fontWeight: FontWeight.w700,
-            color: Color(0xFF0F172A),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Text(
+            value,
+            textAlign: TextAlign.right,
+            style: const TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w700,
+              color: Color(0xFF0F172A),
+            ),
           ),
         ),
       ],

@@ -1,3 +1,5 @@
+import 'package:smart_laundry_locker/core/utils/app_date_time.dart';
+
 /// Một voucher trong ví (promotion_claims + thông tin promotion đi kèm).
 /// Backend trả: {id (claimId), promotionId, code, name, description,
 /// discountType, discountValue, maxDiscountAmount, minOrderAmount, lockerId,
@@ -39,9 +41,8 @@ class VoucherModel {
       id: '${json['id'] ?? ''}',
       code: json['code'] as String? ?? '',
       status: rawStatus == 'SAVED' ? 'UNUSED' : rawStatus,
-      expiresAt: json['endAt'] != null
-          ? DateTime.tryParse(json['endAt'].toString())
-          : null,
+      // LocalDateTime trần (UTC) ⇒ đọc bằng hàm chung để HSD không lệch 7 giờ.
+      expiresAt: parseServerDateTime(json['endAt']),
       rewardValue:
           double.tryParse((json['discountValue'] ?? 0).toString()) ?? 0.0,
       campaignId: '${json['promotionId'] ?? ''}',
