@@ -47,18 +47,51 @@ final droneDeliveryRealtimeTickProvider = StreamProvider.autoDispose
 /// Trạng thái giao drone hiện tại theo [orderId]. Poll backend mỗi 3 giây để
 /// timeline tiến triển ngay cả khi FCM đến trễ; FCM vẫn làm provider khởi tạo
 /// lại để lấy mốc quan trọng sớm hơn.
+///
+/// Một lần gọi lỗi (mất mạng, server chập chờn) KHÔNG dừng việc theo dõi: phát
+/// lỗi để UI báo "đang thử lại" nhưng vẫn giữ dữ liệu cũ (`AsyncError` mang giá
+/// trị trước), rồi tự thử lại với nhịp giãn dần. Tắt retry mặc định của Riverpod
+/// để vòng poll này là nơi duy nhất quyết định việc thử lại.
 final droneDeliveryStatusProvider = StreamProvider.autoDispose
     .family<DroneDeliveryStatus, String>((ref, orderId) async* {
       ref.watch(droneDeliveryFcmTickProvider(orderId));
       ref.watch(droneDeliveryRealtimeTickProvider(orderId));
       final useCase = ref.watch(getDroneDeliveryStatusUseCaseProvider);
 
+      var failures = 0;
       while (true) {
         final result = await useCase.execute(orderId);
-        yield result.fold(
-          (failure) => throw Exception(failure.message),
-          (status) => status,
-        );
-        await Future<void>.delayed(const Duration(seconds: 3));
+        DroneDeliveryStatus? status;
+        String? errorMessage;
+        result.fold((f) => errorMessage = f.message, (s) => status = s);
+        if (status != null) {
+          failures = 0;
+          yield status!;
+        } else {
+          failures++;
+          yield* Stream<DroneDeliveryStatus>.error(
+            DroneStatusLoadException(
+              errorMessage ?? 'Không tải được trạng thái giao hàng.',
+            ),
+          );
+        }
+        await Future<void>.delayed(droneStatusPollDelay(failures));
       }
-    });
+    }, retry: (_, __) => null);
+
+/// Nhịp poll: 3 giây khi ổn định; lỗi liên tiếp thì giãn dần (tối đa 30 giây).
+Duration droneStatusPollDelay(int consecutiveFailures) {
+  if (consecutiveFailures <= 0) return const Duration(seconds: 3);
+  final seconds = 3 * (1 << (consecutiveFailures - 1).clamp(0, 4));
+  return Duration(seconds: seconds > 30 ? 30 : seconds);
+}
+
+/// Lỗi tải trạng thái đơn drone; [message] là câu hiển thị cho khách.
+class DroneStatusLoadException implements Exception {
+  const DroneStatusLoadException(this.message);
+
+  final String message;
+
+  @override
+  String toString() => message;
+}

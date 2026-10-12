@@ -38,6 +38,7 @@ class _FakeSendLockerOpsService extends LockerOpsService {
     String? note,
     String? promotionCode,
     String? size,
+    int? boxId,
   }) async =>
       Map.of(_order);
 

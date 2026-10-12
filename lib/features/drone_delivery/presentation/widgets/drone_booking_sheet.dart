@@ -22,9 +22,26 @@ typedef DroneOrderCreator =
       required String? description,
       required int parcelWeightGrams,
       required DroneParcelDeclaration parcel,
-      required String paymentMethod,
       required String idempotencyKey,
     });
+
+/// Lý do tủ không nhận được drone (hiện cạnh tên tủ trong danh sách tủ nhận);
+/// `null` = nhận được. Dữ liệu từ `GET /api/lockers` hoặc layout của tủ:
+/// `status`, `online`, `landingPadStatus` (OK / FAULT / MAINTENANCE).
+String? droneDestinationBlockReason({
+  Object? status,
+  Object? online,
+  Object? landingPadStatus,
+}) {
+  if (online == false) return 'mất kết nối';
+  final st = '${status ?? 'ACTIVE'}'.trim().toUpperCase();
+  if (st != 'ACTIVE') return st == 'MAINTENANCE' ? 'đang bảo trì' : 'tạm ngưng';
+  final pad = landingPadStatus == null
+      ? 'OK'
+      : '$landingPadStatus'.trim().toUpperCase();
+  if (pad.isEmpty || pad == 'OK') return null;
+  return pad == 'MAINTENANCE' ? 'bãi đáp đang bảo trì' : 'bãi đáp đang lỗi';
+}
 
 class DroneBookingSheet extends StatefulWidget {
   const DroneBookingSheet({
@@ -83,6 +100,10 @@ class _DroneBookingSheetState extends State<DroneBookingSheet>
   bool _loadingDestinations = true;
   List<Map<String, dynamic>> _destinations = const [];
   Map<int, int> _freeCells = const {};
+
+  /// Tủ nhận không dùng được (mất kết nối, bãi đáp bảo trì/lỗi…) ⇒ lý do.
+  Map<int, String> _blocked = const {};
+  String? _destinationsError;
   Map<String, dynamic>? _pendingOrder;
   int? _destinationLockerId;
   int? _weightGrams;
@@ -106,6 +127,12 @@ class _DroneBookingSheetState extends State<DroneBookingSheet>
   }
 
   Future<void> _loadDestinations() async {
+    if (mounted) {
+      setState(() {
+        _loadingDestinations = true;
+        _destinationsError = null;
+      });
+    }
     try {
       final all =
           widget.destinationLockers ?? await LockerOpsService().lockers();
@@ -113,13 +140,20 @@ class _DroneBookingSheetState extends State<DroneBookingSheet>
       final destinations = all
           .where((locker) {
             final id = _asInt(locker['id']);
-            return id != null &&
-                id != sourceId &&
-                locker['landingPad'] == true &&
-                '${locker['status']}'.toUpperCase() == 'ACTIVE';
+            return id != null && id != sourceId && locker['landingPad'] == true;
           })
           .toList(growable: false);
-      final freeCells = await _loadFreeCells(destinations);
+      final blocked = <int, String>{
+        for (final locker in destinations)
+          if (droneDestinationBlockReason(
+                status: locker['status'],
+                online: locker['online'],
+                landingPadStatus: locker['landingPadStatus'],
+              )
+              case final reason?)
+            _asInt(locker['id'])!: reason,
+      };
+      final freeCells = await _loadFreeCells(destinations, blocked);
       final pendingOrder = freeCells.values.any((free) => free == 0)
           ? await _loadPendingUnpaidOrder()
           : null;
@@ -127,46 +161,71 @@ class _DroneBookingSheetState extends State<DroneBookingSheet>
       setState(() {
         _destinations = destinations;
         _freeCells = freeCells;
+        _blocked = blocked;
         _pendingOrder = pendingOrder;
+        bool usable(int? id) =>
+            id != null && freeCells[id] != 0 && !blocked.containsKey(id);
         // Ưu tiên tủ còn ô nhận; giữ lựa chọn cũ nếu tủ đó vẫn nhận được.
         final current = _destinationLockerId;
         final keep =
-            current != null &&
-            freeCells[current] != 0 &&
+            usable(current) &&
             destinations.any((locker) => _asInt(locker['id']) == current);
         if (!keep) {
           final open = destinations.where(
-            (locker) => freeCells[_asInt(locker['id'])] != 0,
+            (locker) => usable(_asInt(locker['id'])),
+          );
+          final notBlocked = destinations.where(
+            (locker) => !blocked.containsKey(_asInt(locker['id'])),
           );
           final pick = open.isNotEmpty
               ? open.first
-              : (destinations.isEmpty ? null : destinations.first);
+              : (notBlocked.isEmpty ? null : notBlocked.first);
           _destinationLockerId = pick == null ? null : _asInt(pick['id']);
         }
       });
-    } catch (_) {
-      if (mounted) setState(() => _destinations = const []);
+    } catch (error) {
+      if (mounted) {
+        setState(() {
+          _destinations = const [];
+          _destinationsError = LockerOpsService.errorMessage(error);
+        });
+      }
     } finally {
       if (mounted) setState(() => _loadingDestinations = false);
     }
   }
 
   /// Số ô DRONE còn trống ở từng tủ nhận; thiếu khoá = không tra được (vẫn cho
-  /// chọn, server là nơi quyết định cuối). Danh sách tủ do nơi gọi truyền sẵn thì
-  /// chỉ tra khi nơi gọi cũng truyền [DroneBookingSheet.freeDroneCells].
+  /// chọn, server là nơi quyết định cuối). Tra từ layout thì cập nhật luôn
+  /// [blocked] theo trạng thái bãi đáp / kết nối mới nhất của tủ. Danh sách tủ
+  /// do nơi gọi truyền sẵn thì chỉ tra khi nơi gọi cũng truyền
+  /// [DroneBookingSheet.freeDroneCells].
   Future<Map<int, int>> _loadFreeCells(
     List<Map<String, dynamic>> destinations,
+    Map<int, String> blocked,
   ) async {
-    final lookup =
-        widget.freeDroneCells ??
-        (widget.destinationLockers == null ? _freeDroneCellsFromLayout : null);
-    if (lookup == null) return const {};
+    final lookup = widget.freeDroneCells;
+    final fromLayout = lookup == null && widget.destinationLockers == null;
+    if (lookup == null && !fromLayout) return const {};
     final result = <int, int>{};
     await Future.wait(
       destinations.map((locker) async {
         final id = _asInt(locker['id'])!;
+        if (blocked.containsKey(id)) return;
         try {
-          final free = await lookup(id);
+          if (lookup != null) {
+            final free = await lookup(id);
+            if (free != null) result[id] = free;
+            return;
+          }
+          final layout = await LockerOpsService().layout(id);
+          final reason = droneDestinationBlockReason(
+            status: layout['status'],
+            online: layout['online'],
+            landingPadStatus: layout['landingPadStatus'],
+          );
+          if (reason != null) blocked[id] = reason;
+          final free = _freeDroneCells(layout);
           if (free != null) result[id] = free;
         } catch (_) {}
       }),
@@ -174,8 +233,8 @@ class _DroneBookingSheetState extends State<DroneBookingSheet>
     return result;
   }
 
-  static Future<int?> _freeDroneCellsFromLayout(int lockerId) async {
-    final layout = await LockerOpsService().layout(lockerId);
+  /// Ô DRONE còn trống theo `cellType` backend trả (không đoán theo số ô).
+  static int? _freeDroneCells(Map<String, dynamic> layout) {
     final cells = layout['cells'];
     if (cells is! List) return null;
     return cells
@@ -187,6 +246,9 @@ class _DroneBookingSheetState extends State<DroneBookingSheet>
         )
         .length;
   }
+
+  bool get _destinationBlocked =>
+      _destinationLockerId != null && _blocked.containsKey(_destinationLockerId);
 
   /// Đơn drone của chính khách đang chờ thanh toán — đơn này vẫn giữ ô drone ở cả
   /// hai tủ, thường là lý do tủ nhận báo hết ô.
@@ -269,6 +331,13 @@ class _DroneBookingSheetState extends State<DroneBookingSheet>
       _showMessage(_destinationFullMessage());
       return;
     }
+    if (_destinationBlocked) {
+      _showMessage(
+        '${_destinationName() ?? 'Tủ nhận'} hiện không nhận drone '
+        '(${_blocked[destinationLockerId]}). Hãy chọn tủ nhận khác.',
+      );
+      return;
+    }
 
     setState(() => _submitting = true);
     SmartDialog.showLoading<void>(msg: 'Đang tạo đơn drone...');
@@ -287,7 +356,6 @@ class _DroneBookingSheetState extends State<DroneBookingSheet>
             required description,
             required parcelWeightGrams,
             required parcel,
-            required paymentMethod,
             required idempotencyKey,
           }) {
             return LockerOpsService().createDroneDeliveryOrder(
@@ -301,7 +369,6 @@ class _DroneBookingSheetState extends State<DroneBookingSheet>
               description: description,
               parcelWeightGrams: parcelWeightGrams,
               parcel: parcel.toJson(),
-              paymentMethod: paymentMethod,
               idempotencyKey: idempotencyKey,
             );
           };
@@ -318,9 +385,7 @@ class _DroneBookingSheetState extends State<DroneBookingSheet>
         description: description,
         parcelWeightGrams: _selectedWeight,
         parcel: parcel,
-        // Chỉ là phương thức dự kiến ghi trên đơn; tiền thu thật ở bước thanh
-        // toán. App khách không còn tiền mặt tự xác nhận.
-        paymentMethod: 'WALLET',
+        // Không gửi phương thức thanh toán: tiền thu ở bước thanh toán ngay sau.
         idempotencyKey:
             'drone-$sourceLockerId-$destinationLockerId-${DateTime.now().microsecondsSinceEpoch}',
       );
@@ -636,19 +701,23 @@ class _DroneBookingSheetState extends State<DroneBookingSheet>
                 final id = _asInt(locker['id'])!;
                 final name = locker['name'] ?? locker['code'] ?? 'Tủ #$id';
                 final free = _freeCells[id];
-                final suffix = switch (free) {
-                  null => '',
-                  0 => ' · hết ô nhận',
-                  _ => ' · còn $free ô drone',
-                };
+                final blockedReason = _blocked[id];
+                final suffix = blockedReason != null
+                    ? ' · $blockedReason'
+                    : switch (free) {
+                        null => '',
+                        0 => ' · hết ô nhận',
+                        _ => ' · còn $free ô drone',
+                      };
+                final enabled = free != 0 && blockedReason == null;
                 return DropdownMenuItem<int>(
                   value: id,
-                  // Tủ hết ô nhận vẫn hiện để khách biết lý do, nhưng không chọn được.
-                  enabled: free != 0,
+                  // Tủ không nhận được vẫn hiện để khách biết lý do, nhưng không chọn được.
+                  enabled: enabled,
                   child: Text(
                     '$name$suffix',
                     overflow: TextOverflow.ellipsis,
-                    style: free == 0 ? const TextStyle(color: Colors.grey) : null,
+                    style: enabled ? null : const TextStyle(color: Colors.grey),
                   ),
                 );
               }).toList(),
@@ -657,6 +726,32 @@ class _DroneBookingSheetState extends State<DroneBookingSheet>
                   : (value) => setState(() => _destinationLockerId = value),
             ),
             const SizedBox(height: 12),
+            if (_destinationsError != null) ...[
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      'Không tải được danh sách tủ nhận: $_destinationsError',
+                      style: const TextStyle(
+                        fontSize: 12.5,
+                        color: Color(0xFFDC2626),
+                      ),
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: _loadingDestinations ? null : _loadDestinations,
+                    child: const Text('Thử lại'),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+            ] else if (!_loadingDestinations && _destinations.isEmpty) ...[
+              const Text(
+                'Chưa có tủ nào khác có bãi đáp drone để nhận hàng.',
+                style: TextStyle(fontSize: 12.5, color: Color(0xFFB45309)),
+              ),
+              const SizedBox(height: 12),
+            ],
             if (_destinationFull) ...[
               _DestinationFullNotice(
                 message: _destinationFullMessage(),
@@ -932,6 +1027,7 @@ class _DroneBookingSheetState extends State<DroneBookingSheet>
                     _submitting ||
                         _loadingDestinations ||
                         _destinationFull ||
+                        _destinationBlocked ||
                         businessConfig.droneFlightsSuspended
                     ? null
                     : _confirm,

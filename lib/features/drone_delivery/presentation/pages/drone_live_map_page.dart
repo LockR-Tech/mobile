@@ -11,6 +11,7 @@ import 'package:smart_laundry_locker/core/theme/shadcn_theme.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/domain/entities/drone_labels.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/domain/entities/drone_position_snapshot.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/domain/entities/drone_route_geometry.dart';
+import 'package:smart_laundry_locker/features/drone_delivery/presentation/drone_live_map.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/presentation/providers/drone_delivery_providers.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/presentation/providers/drone_live_map_providers.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/presentation/widgets/drone_marker.dart';
@@ -215,6 +216,8 @@ class _DroneLiveMapPageState extends ConsumerState<DroneLiveMapPage>
 
     // Toạ độ tủ gửi/tủ nhận lấy từ read model hành trình (cùng provider màn timeline).
     final route = ref.watch(droneDeliveryStatusProvider(widget.orderId)).value;
+    // Đơn DEMO: vị trí do server nội suy theo chặng, không phải GPS thật.
+    final simulated = route != null && droneIsSimulated(route);
     final source = route?.sourceLocker;
     final destination = route?.destinationLocker;
     final sourcePoint = source != null && source.hasCoordinates
@@ -299,7 +302,7 @@ class _DroneLiveMapPageState extends ConsumerState<DroneLiveMapPage>
             ],
           ),
 
-          _TopBar(orderId: widget.orderId),
+          _TopBar(orderId: widget.orderId, simulated: simulated),
 
           if (_signalLost && _lastSnapshotAt != null)
             _SignalLostBanner(at: _lastSnapshotAt!),
@@ -330,6 +333,7 @@ class _DroneLiveMapPageState extends ConsumerState<DroneLiveMapPage>
               remainingKm: _remainingKm(pos),
               arrivalAt: _arrivalAt,
               speedMps: _speedMps,
+              simulated: simulated,
             ),
         ],
       ),
@@ -339,7 +343,8 @@ class _DroneLiveMapPageState extends ConsumerState<DroneLiveMapPage>
 
 class _TopBar extends StatelessWidget {
   final String orderId;
-  const _TopBar({required this.orderId});
+  final bool simulated;
+  const _TopBar({required this.orderId, this.simulated = false});
 
   @override
   Widget build(BuildContext context) {
@@ -374,9 +379,9 @@ class _TopBar extends StatelessWidget {
                 ),
               ],
             ),
-            child: const Text(
-              'Theo dõi drone',
-              style: TextStyle(
+            child: Text(
+              simulated ? 'Theo dõi drone · mô phỏng' : 'Theo dõi drone',
+              style: const TextStyle(
                 fontWeight: FontWeight.w700,
                 color: AISLShadcnTheme.navyPrimary,
               ),
@@ -502,12 +507,14 @@ class _BottomStatusCard extends StatelessWidget {
   final double? remainingKm;
   final DateTime? arrivalAt;
   final double? speedMps;
+  final bool simulated;
 
   const _BottomStatusCard({
     required this.snapshot,
     this.remainingKm,
     this.arrivalAt,
     this.speedMps,
+    this.simulated = false,
   });
 
   String get _subtitle {
@@ -612,7 +619,7 @@ class _BottomStatusCard extends StatelessWidget {
                 const SizedBox(width: 6),
                 Expanded(
                   child: Text(
-                    'Vĩ độ, kinh độ: '
+                    '${simulated ? 'Vị trí mô phỏng' : 'Vĩ độ, kinh độ'}: '
                     '${droneCoordinateLabel(snapshot.lat, snapshot.lng)}',
                     style: const TextStyle(
                       fontSize: 12,

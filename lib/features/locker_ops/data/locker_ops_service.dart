@@ -154,11 +154,15 @@ class LockerOpsService {
     String? note,
     String? promotionCode,
     String? size,
+
+    /// Ô khách đã chọn trên sơ đồ tủ; bỏ trống thì server tự chọn theo [size].
+    int? boxId,
   }) => _map(
     'POST',
     '/api/orders/send',
     body: {
       'lockerId': lockerId,
+      if (boxId != null) 'boxId': boxId,
       'receiverPhone': receiverPhone,
       'receiverName': receiverName,
       'note': note,
@@ -198,7 +202,9 @@ class LockerOpsService {
     String? receiverEmail,
     String? description,
     required int parcelWeightGrams,
-    required String paymentMethod,
+
+    /// Server không còn dùng (tiền thu ở bước thanh toán); chỉ gửi khi có.
+    String? paymentMethod,
 
     /// Khai báo kiện (`DroneParcelDeclaration.toJson`): loại hàng, kích thước, giá trị,
     /// dễ vỡ và cam kết không gửi hàng cấm — backend bắt buộc cam kết này.
@@ -218,7 +224,7 @@ class LockerOpsService {
       if (receiverEmail != null) 'receiverEmail': receiverEmail,
       if (description != null) 'description': description,
       'parcelWeightGrams': parcelWeightGrams,
-      'paymentMethod': paymentMethod,
+      if (paymentMethod != null) 'paymentMethod': paymentMethod,
       ...?parcel,
     },
   );
@@ -974,40 +980,6 @@ class LockerOpsService {
     '/api/drone-technician/drones/$id/logs',
     body: {'note': note},
   );
-
-  // ---- Drone delivery requests (khách tạo -> đội bay điều phối) ----
-
-  /// Khách tạo yêu cầu giao hàng bằng drone tới 1 tủ (ô DRONE tuỳ chọn).
-  Future<Map<String, dynamic>> createDroneDelivery({
-    required int lockerId,
-    int? boxId,
-    String? receiverPhone,
-    String? description,
-  }) => _map(
-    'POST',
-    '/api/drone-deliveries',
-    body: {
-      'lockerId': lockerId,
-      if (boxId != null) 'boxId': boxId,
-      if (receiverPhone != null) 'receiverPhone': receiverPhone,
-      if (description != null) 'description': description,
-    },
-  );
-
-  /// Các yêu cầu giao drone của chính khách (mọi trạng thái, mới nhất trước).
-  Future<List<Map<String, dynamic>>> myDroneDeliveries() =>
-      _list('/api/drone-deliveries/my');
-
-  /// Khách huỷ yêu cầu khi còn PENDING.
-  Future<Map<String, dynamic>> cancelDroneDelivery(int id) =>
-      _map('PUT', '/api/drone-deliveries/$id/cancel');
-
-  /// Hàng đợi điều phối cho đội bay (DRONE_TECHNICIAN); lọc theo [status] nếu có.
-  Future<List<Map<String, dynamic>>> droneDeliveryQueue({String? status}) =>
-      _list(
-        '/api/drone-technician/drone-deliveries',
-        query: status == null ? null : {'status': status},
-      );
 
   /// Hàng đợi order-based cho đội bay theo Phase 2.
   Future<List<Map<String, dynamic>>> droneOrderQueue({String? deliveryStage}) =>

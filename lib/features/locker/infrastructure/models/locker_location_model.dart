@@ -26,6 +26,12 @@ class LockerLocationModel {
   @JsonKey(name: 'updatedAt')
   final DateTime? updatedAt;
 
+  @JsonKey(name: 'storeId')
+  final String? storeId;
+
+  @JsonKey(name: 'online')
+  final bool? online;
+
   const LockerLocationModel({
     required this.id,
     required this.name,
@@ -37,6 +43,8 @@ class LockerLocationModel {
     this.imageUrl,
     this.createdAt,
     this.updatedAt,
+    this.storeId,
+    this.online,
   });
 
   /// Factory: Tạo từ JSON (generated)
@@ -59,6 +67,8 @@ class LockerLocationModel {
       imageUrl: imageUrl,
       createdAt: createdAt,
       updatedAt: updatedAt,
+      storeId: storeId,
+      online: online,
     );
   }
 
@@ -75,6 +85,8 @@ class LockerLocationModel {
       imageUrl: entity.imageUrl,
       createdAt: entity.createdAt,
       updatedAt: entity.updatedAt,
+      storeId: entity.storeId,
+      online: entity.online,
     );
   }
 }

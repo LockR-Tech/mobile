@@ -17,8 +17,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart' hide Consumer;
 import 'package:smart_laundry_locker/features/locker/domain/entities/locker_location.dart';
 import 'package:smart_laundry_locker/features/locker/presentation/providers/locker_provider.dart';
 import 'package:smart_laundry_locker/features/locker/presentation/providers/locker_providers.dart';
-import 'package:smart_laundry_locker/features/stores/domain/entities/store.dart';
 import 'package:smart_laundry_locker/features/stores/presentation/pages/store_lockers_page.dart';
+import 'package:smart_laundry_locker/features/drone_delivery/presentation/widgets/drone_locker_picker_sheet.dart';
+import 'package:smart_laundry_locker/core/services/token_service.dart';
 import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/ops_widgets.dart'
     show statusLabel, typeLabel, statusColor, fmtDateTime;
@@ -68,74 +69,90 @@ class _HomePageState extends ConsumerState<HomePage>
     super.dispose();
   }
 
+  /// Đơn đã kết thúc — không còn là "đơn đang xử lý".
+  static const _finishedStatuses = {
+    'COMPLETED',
+    'CANCELED',
+    'CANCELLED',
+    'EXPIRED',
+    'REFUNDED',
+  };
+
+  /// Đơn đang xử lý gần nhất của khách; không có (hoặc lỗi / chưa đăng nhập)
+  /// thì ẩn thẻ — không bao giờ hiện đơn mẫu.
   Future<void> _loadActiveOrder() async {
+    if (!TokenService.authState.value) {
+      if (mounted) setState(() => _activeOrder = null);
+      return;
+    }
     try {
       final orders = await _opsService.myOrders();
-      if (orders.isNotEmpty && mounted) {
-        final active = orders.firstWhere(
-          (o) {
-            final s = (o['status'] as String? ?? '').toUpperCase();
-            return s != 'COMPLETED' && s != 'CANCELED';
-          },
-          orElse: () => orders.first,
-        );
+      if (!mounted) return;
+      final active = orders.where((o) {
+        final s = (o['status'] as String? ?? '').toUpperCase();
+        return s.isNotEmpty && !_finishedStatuses.contains(s);
+      }).firstOrNull;
+      if (active == null) {
+        setState(() => _activeOrder = null);
+        return;
+      }
 
-        final lockerId = int.tryParse(
-          '${active['lockerId'] ?? active['destinationLockerId'] ?? ''}',
-        );
-        String? lockerName = active['lockerName']?.toString();
-        int? boxNumber = int.tryParse('${active['boxNumber'] ?? ''}');
+      final lockerId = int.tryParse(
+        '${active['lockerId'] ?? active['destinationLockerId'] ?? ''}',
+      );
+      String? lockerName = active['lockerName']?.toString();
+      int? boxNumber = int.tryParse('${active['boxNumber'] ?? ''}');
 
-        if (lockerId != null) {
-          if (lockerName == null || lockerName.isEmpty) {
-            final locations = ref.read(lockerNotifierProvider).state.locations;
-            final matched =
-                locations.where((loc) => loc.id == '$lockerId').firstOrNull;
-            if (matched != null) {
-              lockerName = matched.name;
-            } else {
-              try {
-                final info = await _opsService.locker(lockerId);
-                lockerName = info['name']?.toString();
-              } catch (_) {}
-            }
+      if (lockerId != null) {
+        if (lockerName == null || lockerName.isEmpty) {
+          final locations = ref.read(lockerNotifierProvider).state.locations;
+          final matched =
+              locations.where((loc) => loc.id == '$lockerId').firstOrNull;
+          if (matched != null) {
+            lockerName = matched.name;
+          } else {
+            try {
+              final info = await _opsService.locker(lockerId);
+              lockerName = info['name']?.toString();
+            } catch (_) {}
           }
+        }
 
-          if (boxNumber == null) {
-            final boxId = int.tryParse(
-              '${active['sendBoxId'] ?? active['receiveBoxId'] ?? active['boxId'] ?? ''}',
-            );
-            if (boxId != null) {
-              try {
-                final layout = await _opsService.layout(lockerId);
-                final cells = layout['cells'] as List?;
-                if (cells != null) {
-                  for (final c in cells) {
-                    if (int.tryParse('${c['id'] ?? ''}') == boxId) {
-                      boxNumber = int.tryParse('${c['boxNumber'] ?? ''}');
-                      break;
-                    }
+        if (boxNumber == null) {
+          final boxId = int.tryParse(
+            '${active['sendBoxId'] ?? active['receiveBoxId'] ?? active['boxId'] ?? ''}',
+          );
+          if (boxId != null) {
+            try {
+              final layout = await _opsService.layout(lockerId);
+              final cells = layout['cells'] as List?;
+              if (cells != null) {
+                for (final c in cells) {
+                  if (int.tryParse('${c['id'] ?? ''}') == boxId) {
+                    boxNumber = int.tryParse('${c['boxNumber'] ?? ''}');
+                    break;
                   }
                 }
-              } catch (_) {}
-            }
+              }
+            } catch (_) {}
           }
         }
+      }
 
-        final resolved = Map<String, dynamic>.from(active);
-        if (lockerName != null && lockerName.isNotEmpty) {
-          resolved['lockerName'] = lockerName;
-        }
-        if (boxNumber != null) {
-          resolved['boxNumber'] = boxNumber;
-        }
+      final resolved = Map<String, dynamic>.from(active);
+      if (lockerName != null && lockerName.isNotEmpty) {
+        resolved['lockerName'] = lockerName;
+      }
+      if (boxNumber != null) {
+        resolved['boxNumber'] = boxNumber;
+      }
 
-        if (mounted) {
-          setState(() => _activeOrder = resolved);
-        }
+      if (mounted) {
+        setState(() => _activeOrder = resolved);
       }
     } catch (_) {
-      // Keep sample card if network or not logged in
+      // Lỗi mạng: ẩn thẻ thay vì hiện dữ liệu mẫu.
+      if (mounted) setState(() => _activeOrder = null);
     }
   }
 
@@ -176,12 +193,16 @@ class _HomePageState extends ConsumerState<HomePage>
             _buildHeroCard(context),
             const SizedBox(height: 20),
             _buildQuickActionBadges(context),
-            const SizedBox(height: 20),
-            _buildActiveShipmentSection(context),
+            const SizedBox(height: 16),
+            _buildDroneEntryCard(context),
+            if (_activeOrder != null) ...[
+              const SizedBox(height: 20),
+              _buildActiveShipmentSection(context, _activeOrder!),
+            ],
             const SizedBox(height: 24),
             _buildPopularLockersSection(context),
             const SizedBox(height: 24),
-            _buildFlashSaleSection(context),
+            _buildPromotionsSection(context),
             const SizedBox(height: 28),
           ],
         ),
@@ -502,7 +523,7 @@ class _HomePageState extends ConsumerState<HomePage>
                           children: [
                             Flexible(
                               child: Text(
-                                'Hello, $displayName!',
+                                'Xin chào, $displayName!',
                                 style: const TextStyle(
                                   color: Colors.white,
                                   fontSize: 22,
@@ -665,7 +686,100 @@ class _HomePageState extends ConsumerState<HomePage>
     );
   }
 
-  Widget _buildActiveShipmentSection(BuildContext context) {
+  /// Lối vào "Gửi bằng drone": chọn tủ gửi có bãi đáp rồi chạm ô drone.
+  Widget _buildDroneEntryCard(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: Material(
+        color: isDark ? const Color(0xFF1E1B4B) : const Color(0xFFEEF2FF),
+        borderRadius: BorderRadius.circular(18),
+        child: InkWell(
+          key: const ValueKey('home-drone-entry'),
+          borderRadius: BorderRadius.circular(18),
+          onTap: () => showDroneLockerPicker(context),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            child: Row(
+              children: [
+                SizedBox(
+                  width: 44,
+                  height: 44,
+                  child: AppLottie(
+                    AppLottieAssets.airplaneBox,
+                    fallback: (context) => const Icon(
+                      Icons.flight_takeoff_rounded,
+                      color: Color(0xFF4F46E5),
+                      size: 26,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Gửi hàng bằng drone',
+                        style: TextStyle(
+                          fontSize: 14.5,
+                          fontWeight: FontWeight.w800,
+                          color: isDark ? Colors.white : const Color(0xFF312E81),
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        'Chọn tủ có bãi đáp, bỏ kiện vào ô drone — drone bay tới tủ nhận.',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: isDark
+                              ? Colors.white70
+                              : const Color(0xFF4338CA),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const Icon(
+                  LucideIcons.chevronRight,
+                  size: 18,
+                  color: Color(0xFF6366F1),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  static bool _isDroneOrder(String rawType) =>
+      rawType.toUpperCase().contains('DRONE');
+
+  static String _orderTypeLabel(String rawType) =>
+      _isDroneOrder(rawType) ? 'Giao bằng drone' : typeLabel(rawType);
+
+  /// Chặng hiển thị: đơn drone dùng `deliveryStage`, đơn khác dùng `status`.
+  static String _displayStatus(Map<String, dynamic> order) {
+    final type = '${order['type'] ?? ''}';
+    final stage = '${order['deliveryStage'] ?? ''}'.trim();
+    if (_isDroneOrder(type) && stage.isNotEmpty) return stage.toUpperCase();
+    return '${order['status'] ?? ''}'.toUpperCase();
+  }
+
+  void _openActiveOrder(Map<String, dynamic> order) {
+    final id = order['id'] ?? order['orderId'];
+    if (_isDroneOrder('${order['type'] ?? ''}') && id != null) {
+      context.push(AppRouter.droneDeliveryTracking, extra: '$id');
+      return;
+    }
+    context.go(AppRouter.orders);
+  }
+
+  Widget _buildActiveShipmentSection(
+    BuildContext context,
+    Map<String, dynamic> order,
+  ) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final cardBg = isDark ? const Color(0xFF1E293B) : Colors.white;
     final cardBorder =
@@ -673,40 +787,30 @@ class _HomePageState extends ConsumerState<HomePage>
     final titleColor = isDark ? Colors.white : const Color(0xFF0F172A);
     final subColor = isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B);
 
-    final order = _activeOrder;
-    final orderCode = order != null &&
-            order['orderCode'] != null &&
-            order['orderCode'].toString().isNotEmpty
-        ? '#${order['orderCode']}'
-        : '#ORD-20260920-7D7BP5';
-    final rawType = order != null ? (order['type'] as String? ?? '') : '';
-    final boxNum = order != null ? order['boxNumber'] : null;
-    final typeName = typeLabel(rawType.isNotEmpty ? rawType : 'RENTAL');
-    final subtitle = order != null
-        ? (boxNum != null ? '$typeName • Ô số $boxNum' : typeName)
-        : 'Thuê tủ • Ô số 5';
-    final routeText = order != null
-        ? (order['lockerName'] as String? ?? 'Tủ demo capstone 3x3')
-        : 'Tủ demo capstone 3x3';
-    final rawStatus =
-        order != null ? (order['status'] as String? ?? 'STORING') : 'STORING';
+    final code = '${order['orderCode'] ?? ''}'.trim();
+    final orderCode = code.isNotEmpty ? '#$code' : 'Đơn #${order['id'] ?? ''}';
+    final rawType = order['type'] as String? ?? '';
+    final boxNum = order['boxNumber'];
+    final typeName = _orderTypeLabel(rawType);
+    final subtitle = boxNum != null ? '$typeName • Ô số $boxNum' : typeName;
+    final routeText = (order['lockerName'] as String?)?.trim() ?? '';
+    final rawStatus = _displayStatus(order);
     final displayStatus = statusLabel(rawStatus);
     final sColor = statusColor(rawStatus);
-    final deadline = order != null ? order['pickupDeadline'] : null;
+    final deadline = order['pickupDeadline'];
     final deadlineStr = deadline != null ? fmtDateTime(deadline) : null;
-    final isDelivered = rawStatus.toUpperCase() == 'COMPLETED';
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Section Header: Active shipment + See all >
+          // Tiêu đề: Đơn đang xử lý + Xem tất cả >
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Active shipment',
+                'Đơn đang xử lý',
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w800,
@@ -720,7 +824,7 @@ class _HomePageState extends ConsumerState<HomePage>
                 child: Row(
                   children: [
                     Text(
-                      'See all',
+                      'Xem tất cả',
                       style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
@@ -741,7 +845,7 @@ class _HomePageState extends ConsumerState<HomePage>
           const SizedBox(height: 12),
           // Shipment Card
           GestureDetector(
-            onTap: () => context.go(AppRouter.orders),
+            onTap: () => _openActiveOrder(order),
             child: Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
@@ -823,16 +927,17 @@ class _HomePageState extends ConsumerState<HomePage>
                               ),
                             ),
                             const SizedBox(height: 2),
-                            Text(
-                              routeText,
-                              style: TextStyle(
-                                fontSize: 11.5,
-                                fontWeight: FontWeight.w400,
-                                color: subColor.withValues(alpha: 0.8),
+                            if (routeText.isNotEmpty)
+                              Text(
+                                routeText,
+                                style: TextStyle(
+                                  fontSize: 11.5,
+                                  fontWeight: FontWeight.w400,
+                                  color: subColor.withValues(alpha: 0.8),
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                               ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
                           ],
                         ),
                       ),
@@ -873,27 +978,27 @@ class _HomePageState extends ConsumerState<HomePage>
                               ],
                             ),
                           ),
-                          const SizedBox(height: 6),
-                          Text(
-                            deadlineStr != null
-                                ? 'Hạn lấy đồ'
-                                : (isDelivered ? 'Trạng thái' : 'Dự kiến'),
-                            style: TextStyle(
-                              fontSize: 10.5,
-                              color: subColor,
-                              fontWeight: FontWeight.w500,
+                          // Chỉ hiện mốc thời gian thật của đơn (hạn lấy hàng).
+                          if (deadlineStr != null) ...[
+                            const SizedBox(height: 6),
+                            Text(
+                              'Hạn lấy đồ',
+                              style: TextStyle(
+                                fontSize: 10.5,
+                                color: subColor,
+                                fontWeight: FontWeight.w500,
+                              ),
                             ),
-                          ),
-                          const SizedBox(height: 1),
-                          Text(
-                            deadlineStr ??
-                                (isDelivered ? 'Đã hoàn tất' : '2:30 PM'),
-                            style: TextStyle(
-                              fontSize: 12.5,
-                              fontWeight: FontWeight.w800,
-                              color: titleColor,
+                            const SizedBox(height: 1),
+                            Text(
+                              deadlineStr,
+                              style: TextStyle(
+                                fontSize: 12.5,
+                                fontWeight: FontWeight.w800,
+                                color: titleColor,
+                              ),
                             ),
-                          ),
+                          ],
                         ],
                       ),
                     ],
@@ -912,7 +1017,7 @@ class _HomePageState extends ConsumerState<HomePage>
 
   Widget _buildShipmentStepper(
     BuildContext context, {
-    Map<String, dynamic>? order,
+    required Map<String, dynamic> order,
   }) {
     final activeColor = const Color(0xFF10B981);
     final inactiveColor = const Color(0xFFCBD5E1);
@@ -921,37 +1026,46 @@ class _HomePageState extends ConsumerState<HomePage>
     final textColor = isDark ? Colors.white : const Color(0xFF0F172A);
     final mutedText = const Color(0xFF94A3B8);
 
-    final rawStatus = (order?['status'] as String? ?? '').toUpperCase();
-    final rawType = (order?['type'] as String? ?? '').toUpperCase();
+    final rawStatus = (order['status'] as String? ?? '').toUpperCase();
+    final rawType = (order['type'] as String? ?? '').toUpperCase();
     final isRental = rawType.contains('RENT') || rawType.contains('STORAGE');
+    final isDrone = _isDroneOrder(rawType);
 
     final List<String> titles;
-    final List<String?> times;
     final int activeStepCount;
 
-    final createdStr = order?['createdAt'] != null
-        ? fmtDateTime(order!['createdAt'])
-        : '12 Sep, 10:24';
+    // Chỉ mốc tạo đơn có giờ thật; các mốc khác không bịa giờ.
+    final createdStr = order['createdAt'] != null
+        ? fmtDateTime(order['createdAt'])
+        : null;
+    final List<String?> times = [createdStr, null, null, null];
 
-    if (order == null) {
-      titles = const ['Picked up', 'In transit', 'Out for delivery', 'Delivered'];
-      times = const ['12 Sep, 10:24', '13 Sep, 08:40', null, null];
-      activeStepCount = 2;
+    if (isDrone) {
+      final stage = '${order['deliveryStage'] ?? ''}'.toUpperCase();
+      titles = const ['Tạo đơn', 'Đội bay nhận', 'Đang bay', 'Vào tủ nhận'];
+      activeStepCount = switch (stage) {
+        'ACCEPTED' || 'LOADING_CONFIRMED' => 2,
+        'LAUNCHING' ||
+        'DEPARTED' ||
+        'EN_ROUTE' ||
+        'APPROACHING' ||
+        'ARRIVED' ||
+        'DELAYED' ||
+        'DROP_REPORTED' => 3,
+        'READY_FOR_PICKUP' => 4,
+        _ => 1,
+      };
     } else if (isRental) {
       titles = const ['Tạo đơn', 'Bỏ vào tủ', 'Đang lưu tủ', 'Hoàn tất'];
-      times = [createdStr, null, null, null];
       if (rawStatus == 'INITIALIZED') {
         activeStepCount = 1;
       } else if (rawStatus == 'STORING') {
         activeStepCount = 3;
-      } else if (rawStatus == 'COMPLETED') {
-        activeStepCount = 4;
       } else {
         activeStepCount = 2;
       }
     } else {
-      titles = const ['Tạo đơn', 'Đã vào tủ', 'Vận chuyển', 'Đã nhận'];
-      times = [createdStr, null, null, null];
+      titles = const ['Tạo đơn', 'Đã vào tủ', 'Vận chuyển', 'Chờ nhận'];
       if (rawStatus == 'INITIALIZED') {
         activeStepCount = 1;
       } else if (rawStatus == 'STORING') {
@@ -959,9 +1073,9 @@ class _HomePageState extends ConsumerState<HomePage>
       } else if (rawStatus == 'COLLECTED' ||
           rawStatus == 'PROCESSING' ||
           rawStatus == 'RETURNED' ||
-          rawStatus == 'READY_FOR_PICKUP') {
+          rawStatus == 'READY') {
         activeStepCount = 3;
-      } else if (rawStatus == 'COMPLETED') {
+      } else if (rawStatus == 'READY_FOR_PICKUP') {
         activeStepCount = 4;
       } else {
         activeStepCount = 2;
@@ -1283,6 +1397,27 @@ class _HomePageState extends ConsumerState<HomePage>
                     ),
                     _buildUtilityItem(
                       ctx,
+                      icon: LucideIcons.heart,
+                      label: 'Yêu thích',
+                      color: const Color(0xFFEF4444),
+                      onTap: () {
+                        Navigator.pop(ctx);
+                        context.push(AppRouter.favoriteStores);
+                      },
+                    ),
+                    _buildUtilityItem(
+                      ctx,
+                      icon: Icons.flight_takeoff_rounded,
+                      lottieAsset: AppLottieAssets.airplaneBox,
+                      label: 'Gửi drone',
+                      color: const Color(0xFF6366F1),
+                      onTap: () {
+                        Navigator.pop(ctx);
+                        showDroneLockerPicker(context);
+                      },
+                    ),
+                    _buildUtilityItem(
+                      ctx,
                       icon: LucideIcons.bell,
                       label: 'Thông báo',
                       color: const Color(0xFF06B6D4),
@@ -1431,16 +1566,8 @@ class _HomePageState extends ConsumerState<HomePage>
     return GestureDetector(
       onTap: () => Navigator.of(context, rootNavigator: true).push<void>(
         MaterialPageRoute(
-          builder: (_) => StoreLockerGridPage(
-            store: Store(
-              id: int.tryParse(location.id) ?? 0,
-              name: location.name,
-              address: location.address,
-              latitude: location.latitude,
-              longitude: location.longitude,
-              active: location.isActive,
-            ),
-          ),
+          // `location.id` là id tủ — mở đúng tủ đó, không coi là id cửa hàng.
+          builder: (_) => StoreLockerGridPage.forLocation(location),
         ),
       ),
       child: Container(
@@ -1569,9 +1696,9 @@ class _HomePageState extends ConsumerState<HomePage>
     );
   }
 
-  // ── Flash Sale section ─────────────────────────────────────────────────────
+  // ── Ưu đãi đang diễn ra ─────────────────────────────────────────────────────
 
-  Widget _buildFlashSaleSection(BuildContext context) {
+  Widget _buildPromotionsSection(BuildContext context) {
     final PromotionProvider promoProvider = ref.watch(promotionNotifierProvider);
     final promos = promoProvider.promotions;
     final isLoading = promoProvider.isLoading;
@@ -1586,7 +1713,7 @@ class _HomePageState extends ConsumerState<HomePage>
           padding: const EdgeInsets.symmetric(horizontal: 20),
           child: BrandSectionHeader(
             icon: LucideIcons.zap,
-            title: 'Flash Sale',
+            title: 'Ưu đãi đang diễn ra',
             lottieAsset: lottieAsset,
             onSeeAll: () => context.push(AppRouter.promotions),
             highlightColor: const Color(0xFFE11D48),
@@ -1597,14 +1724,14 @@ class _HomePageState extends ConsumerState<HomePage>
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20),
           child: isLoading && promos.isEmpty
-              ? _buildFlashSaleSkeleton()
+              ? _buildPromotionsSkeleton()
               : Column(
                   children: [
                     for (int i = 0; i < promos.take(10).length; i++) ...[
                       if (i > 0)
                         Divider(height: 1, color: context.dividerColor),
                       RepaintBoundary(
-                        child: _FlashSaleCard(
+                        child: _PromotionCard(
                           promo: promos[i],
                           colors: _gradients[i % _gradients.length],
                         ),
@@ -1617,7 +1744,7 @@ class _HomePageState extends ConsumerState<HomePage>
     );
   }
 
-  Widget _buildFlashSaleSkeleton() {
+  Widget _buildPromotionsSkeleton() {
     return Column(
       children: List.generate(
         2,
@@ -1677,13 +1804,13 @@ class _HomePageState extends ConsumerState<HomePage>
 
 }
 
-// ── Flash Sale card — extracted for RepaintBoundary isolation ────────────────
+// ── Thẻ ưu đãi — extracted for RepaintBoundary isolation ────────────────
 
-class _FlashSaleCard extends StatelessWidget {
+class _PromotionCard extends StatelessWidget {
   final PromotionModel promo;
   final List<Color> colors;
 
-  const _FlashSaleCard({required this.promo, required this.colors});
+  const _PromotionCard({required this.promo, required this.colors});
 
   @override
   Widget build(BuildContext context) {
@@ -1713,14 +1840,18 @@ class _FlashSaleCard extends StatelessWidget {
                 child: Stack(
                   fit: StackFit.expand,
                   children: [
-                    CachedNetworkImage(
-                      imageUrl: promo.effectiveImageUrl,
-                      fit: BoxFit.cover,
-                      memCacheWidth: 220,
-                      memCacheHeight: 220,
-                      placeholder: (_, __) => _gradientBg(),
-                      errorWidget: (_, __, ___) => _gradientBg(),
-                    ),
+                    // Ưu đãi không có ảnh ⇒ nền gradient, không gọi mạng.
+                    if (promo.effectiveImageUrl.trim().isNotEmpty)
+                      CachedNetworkImage(
+                        imageUrl: promo.effectiveImageUrl,
+                        fit: BoxFit.cover,
+                        memCacheWidth: 220,
+                        memCacheHeight: 220,
+                        placeholder: (_, __) => _gradientBg(),
+                        errorWidget: (_, __, ___) => _gradientBg(),
+                      )
+                    else
+                      _gradientBg(),
                     Positioned(
                       bottom: 7,
                       left: 7,
@@ -1754,31 +1885,6 @@ class _FlashSaleCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    // Flash Sale chip
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 3),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFF97316).withValues(alpha: 0.12),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: const Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(LucideIcons.zap,
-                              size: 10, color: Color(0xFFF97316)),
-                          SizedBox(width: 4),
-                          Text(
-                            'Flash Sale',
-                            style: TextStyle(
-                              color: Color(0xFFF97316),
-                              fontWeight: FontWeight.w800,
-                              fontSize: 11,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
                     // Title — 2 lines
                     Text(
                       promo.name,

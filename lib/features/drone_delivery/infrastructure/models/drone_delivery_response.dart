@@ -81,6 +81,8 @@ class DroneDeliveryResponse {
     paymentStatus: raw['paymentStatus']?.toString(),
     missionStatus: raw['missionStatus']?.toString(),
     fulfillmentMode: raw['fulfillmentMode']?.toString(),
+    userId: _asInt(raw['userId']),
+    receiverUserId: _asInt(raw['receiverUserId']),
     liveTracking: raw['liveTracking'] as bool?,
     totalPrice: _asDouble(raw['totalPrice']),
     weightSurcharge: _asDouble(raw['weightSurcharge']),

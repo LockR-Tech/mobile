@@ -21,6 +21,12 @@ class DroneDeliveryStatus {
   final String? missionStatus;
   final String? fulfillmentMode;
 
+  /// Người đặt đơn (`userId`) và người nhận có tài khoản (`receiverUserId`) —
+  /// app dùng để chỉ cho người đặt thấy thao tác trả phí/huỷ/bỏ kiện, còn người
+  /// nhận thấy nút nhận hàng. Null với server cũ chưa trả.
+  final int? userId;
+  final int? receiverUserId;
+
   /// Backend đang có nguồn vị trí trực tiếp cho đơn này (đơn DEMO đang bay, hoặc drone
   /// thật còn gửi telemetry); null với server cũ chưa trả field này.
   final bool? liveTracking;
@@ -118,6 +124,8 @@ class DroneDeliveryStatus {
     this.paymentStatus,
     this.missionStatus,
     this.fulfillmentMode,
+    this.userId,
+    this.receiverUserId,
     this.liveTracking,
     this.totalPrice,
     this.weightSurcharge,

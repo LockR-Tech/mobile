@@ -55,6 +55,7 @@ import 'package:smart_laundry_locker/features/stores/domain/entities/store.dart'
 import 'package:smart_laundry_locker/features/stores/presentation/pages/stores_page.dart';
 import 'package:smart_laundry_locker/features/stores/presentation/pages/store_detail_page.dart';
 import 'package:smart_laundry_locker/features/stores/presentation/pages/store_lockers_page.dart';
+import 'package:smart_laundry_locker/features/stores/presentation/pages/favorites_page.dart';
 import 'package:smart_laundry_locker/features/assistant/presentation/pages/assistant_chat_page.dart';
 import 'package:smart_laundry_locker/features/assistant/presentation/pages/assistant_history_page.dart';
 import 'package:latlong2/latlong.dart';
@@ -100,6 +101,7 @@ class AppRouter {
   static const String stores = '/stores';
   static const String storeDetail = '/stores/detail';
   static const String storeLockers = '/stores/lockers';
+  static const String favoriteStores = '/stores/favorites';
   static const String directions = '/directions';
   static const String droneMissionPlanner = '/drone/mission-planner';
   static const String droneFlightData = '/drone/flight-data';
@@ -424,6 +426,12 @@ class AppRouter {
           final store = state.extra as Store;
           return StoreLockerGridPage(store: store);
         },
+      ),
+      GoRoute(
+        // Điểm gửi yêu thích (lưu trên máy).
+        path: favoriteStores,
+        name: 'favorite_stores',
+        builder: (context, state) => const FavoritesPage(),
       ),
       GoRoute(
         path: directions,

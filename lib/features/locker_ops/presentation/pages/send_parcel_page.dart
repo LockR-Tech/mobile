@@ -28,7 +28,13 @@ class SendParcelPage extends StatefulWidget {
     this.initialLockerName,
     this.locationName,
     this.service,
+    this.initialBoxId,
+    this.initialBoxNumber,
   });
+
+  /// Ô khách đã chọn trên sơ đồ tủ (gửi kèm `boxId` khi tạo đơn).
+  final int? initialBoxId;
+  final int? initialBoxNumber;
 
   final LockerOpsService? service;
 
@@ -171,6 +177,7 @@ class _SendParcelPageState extends State<SendParcelPage>
       final order = await _service.createSend(
         lockerId: _lockerId!,
         receiverPhone: _phoneCtrl.text.trim(),
+        boxId: widget.initialBoxId,
         receiverName:
             _nameCtrl.text.trim().isEmpty ? null : _nameCtrl.text.trim(),
         receiverEmail:
@@ -629,6 +636,11 @@ class _SendParcelPageState extends State<SendParcelPage>
                     style: const TextStyle(fontSize: 12, color: opsMutedText),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
+                  ),
+                if (widget.initialBoxNumber != null)
+                  Text(
+                    'Ô số ${widget.initialBoxNumber}',
+                    style: const TextStyle(fontSize: 12, color: opsMutedText),
                   ),
               ],
             ),

@@ -8,6 +8,7 @@ import 'package:smart_laundry_locker/core/theme/shadcn_theme.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/domain/entities/drone_delivery_stage.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/domain/entities/drone_delivery_status.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/domain/entities/drone_route_geometry.dart';
+import 'package:smart_laundry_locker/features/drone_delivery/presentation/drone_live_map.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/presentation/widgets/drone_marker.dart';
 
 /// Bản đồ tóm tắt hành trình: tủ gửi A, tủ nhận B, đoạn đã bay và vị trí drone
@@ -139,9 +140,12 @@ class DroneRouteMapCard extends StatelessWidget {
           ),
           if (drone != null) ...[
             const SizedBox(height: 6),
-            const Text(
-              'Vị trí drone ước theo chặng bay hiện tại. Mở "Theo dõi trên bản đồ" để xem vị trí trực tiếp.',
-              style: TextStyle(fontSize: 11.5, color: Color(0xFF64748B)),
+            // Chỉ nhắc mở bản đồ trực tiếp khi màn theo dõi có nút đó.
+            Text(
+              droneLiveMapAvailable(status)
+                  ? 'Vị trí drone ước theo chặng bay hiện tại. Mở "Theo dõi trên bản đồ" để xem vị trí ${droneIsSimulated(status) ? 'mô phỏng' : 'trực tiếp'}.'
+                  : 'Vị trí drone ước theo chặng bay hiện tại.',
+              style: const TextStyle(fontSize: 11.5, color: Color(0xFF64748B)),
             ),
           ],
         ],
