@@ -6,15 +6,17 @@ import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/sc
 import '../../helpers/test_helpers.dart';
 
 class _FakeLockerOpsService extends LockerOpsService {
-  _FakeLockerOpsService({this.logs = const []})
+  _FakeLockerOpsService({this.logs = const [], this.fail = false})
       : super(dio: createMockDio().dio);
 
   final List<Map<String, dynamic>> logs;
+  final bool fail;
   int logsCalledForScheduleId = -1;
 
   @override
   Future<List<Map<String, dynamic>>> scheduleInspectionLogs(int scheduleId) async {
     logsCalledForScheduleId = scheduleId;
+    if (fail) throw Exception('network down');
     return logs;
   }
 }
@@ -169,7 +171,8 @@ void main() {
     expect(startedSchedule?['id'], 15);
   });
 
-  testWidgets('renders previous inspection item-by-item breakdown from schedule lastDoneAt',
+  testWidgets(
+      'schedule chỉ có lastDoneAt/lastResult ⇒ chỉ hiện kết quả chung, không bịa từng mục (D18)',
       (tester) async {
     final fakeService = _FakeLockerOpsService(logs: []);
 
@@ -214,14 +217,102 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 300));
 
-    // Must show previous inspection header
+    // Kết quả chung lấy từ lịch.
     expect(find.textContaining('ĐẠT — Toàn bộ tiêu chí đạt yêu cầu'), findsOneWidget);
-    expect(find.textContaining('Chi tiết đánh giá từng hạng mục (3 mục):'), findsOneWidget);
-
-    // Must show each item with badge '✓ Đạt'
+    // Không có nhật ký chi tiết ⇒ không dựng kết quả từng mục.
+    expect(find.textContaining('Chi tiết đánh giá từng hạng mục'), findsNothing);
+    expect(find.text('✓ Đạt'), findsNothing);
+    expect(find.textContaining('không lưu kết quả từng hạng mục'), findsOneWidget);
+    // Không suy tên KTV kiểm tra từ người được giao lịch.
+    expect(find.textContaining('KTV: KTV Kiosk'), findsNothing);
+    // Checklist SOP vẫn hiện ở mục bộ tiêu chí.
     expect(find.textContaining('Cảm biến nhận diện ô tủ'), findsWidgets);
-    expect(find.textContaining('Khóa chốt điện tử'), findsWidgets);
-    expect(find.textContaining('Nguồn điện & pin UPS'), findsWidgets);
-    expect(find.text('✓ Đạt'), findsNWidgets(3));
+  });
+
+  testWidgets('log chỉ chấm một phần checklist ⇒ không tự thêm mục chưa chấm',
+      (tester) async {
+    final fakeService = _FakeLockerOpsService(
+      logs: [
+        {
+          'id': 5,
+          'status': 'PASSED',
+          'createdAt': '2026-09-24T10:00:00',
+          'checklistResults':
+              '[{"label":"Khóa chốt điện tử","result":"PASS","note":""}]',
+        }
+      ],
+    );
+    final schedule = {
+      'id': 21,
+      'lockerId': 3,
+      'title': 'Kiểm tra khoá',
+      'intervalDays': 7,
+      'checklistItems': ['Khóa chốt điện tử', 'Nguồn điện & pin UPS'],
+      'nextDueAt': '2026-09-30T09:00:00',
+      'lastDoneAt': '2026-09-24T10:00:00',
+      'due': false,
+    };
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: ScheduleDetailModalSheet(
+            schedule: schedule,
+            service: fakeService,
+            isMine: true,
+            onOpenDirections: (_) {},
+            onOpenReport: (_) {},
+            onStartInspection: (_) {},
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+
+    expect(find.textContaining('Chi tiết đánh giá từng hạng mục (1 mục):'), findsOneWidget);
+    expect(find.text('✓ Đạt'), findsOneWidget);
+  });
+
+  testWidgets('lỗi tải nhật ký ⇒ báo lỗi + Thử lại (không coi là chưa kiểm tra)',
+      (tester) async {
+    final fakeService = _FakeLockerOpsService(fail: true);
+    final schedule = {
+      'id': 22,
+      'lockerId': 3,
+      'title': 'Kiểm tra nguồn',
+      'intervalDays': 7,
+      'checklistItems': <String>[],
+      'nextDueAt': '2026-09-30T09:00:00',
+      'due': false,
+    };
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: ScheduleDetailModalSheet(
+            schedule: schedule,
+            service: fakeService,
+            isMine: true,
+            onOpenDirections: (_) {},
+            onOpenReport: (_) {},
+            onStartInspection: (_) {},
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+
+    expect(find.textContaining('Không tải được nhật ký kiểm tra'), findsOneWidget);
+    expect(find.text('Thử lại'), findsOneWidget);
+    expect(find.textContaining('Chưa có dữ liệu kiểm tra lần trước'), findsNothing);
+  });
+
+  test('previousInspectionOutcome không mặc định là ĐẠT', () {
+    expect(previousInspectionOutcome('PASSED'), isTrue);
+    expect(previousInspectionOutcome('fail'), isFalse);
+    expect(previousInspectionOutcome(null), isNull);
+    expect(previousInspectionOutcome('UNKNOWN'), isNull);
   });
 }

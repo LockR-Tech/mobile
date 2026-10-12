@@ -1,11 +1,8 @@
 import 'package:smart_laundry_locker/core/utils/app_date_time.dart';
 import 'dart:async';
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:smart_laundry_locker/core/config/business_config_service.dart';
 import 'package:smart_laundry_locker/core/media/media.dart';
 import 'package:smart_laundry_locker/core/routing/app_router.dart';
@@ -13,6 +10,8 @@ import 'package:smart_laundry_locker/core/services/token_service.dart';
 import 'package:smart_laundry_locker/features/assistant/presentation/widgets/assistant_entry.dart';
 import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/utils/locker_maps.dart';
+import 'package:smart_laundry_locker/features/locker_ops/presentation/utils/technician_rules.dart';
+import 'package:smart_laundry_locker/features/locker_ops/presentation/utils/technician_session.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/complete_inspection_sheet.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/locker_picker.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/ops_widgets.dart';
@@ -30,13 +29,40 @@ import 'package:smart_laundry_locker/features/maintenance/presentation/widgets/d
 /// + IoT device management. Drone fleet operations live with the
 /// DRONE_TECHNICIAN role.
 class TechnicianHomePage extends StatefulWidget {
-  const TechnicianHomePage({this.initialTab = 0, super.key});
+  const TechnicianHomePage({
+    this.initialTab = 0,
+    this.reportId,
+    this.scheduleId,
+    super.key,
+  });
 
   /// Tab mở sẵn (xem `technicianTabs` trong role_routes) — noti KTV tủ trỏ tới.
   final int initialTab;
 
+  /// Deep link `?reportId=` ⇒ mở chi tiết phiếu sau khi tải xong.
+  final int? reportId;
+
+  /// Deep link `?scheduleId=` ⇒ mở chi tiết lịch kiểm tra định kỳ.
+  final int? scheduleId;
+
   @override
   State<TechnicianHomePage> createState() => _TechnicianHomePageState();
+}
+
+/// Các phần dữ liệu tải độc lập trên trang KTV tủ — lỗi phần nào báo phần đó.
+enum _Section {
+  faults,
+  reports,
+  mine,
+  routed,
+  recoveries,
+  lockers,
+  myLockers,
+  schedules,
+  rating,
+  performance,
+  anomalies,
+  devices,
 }
 
 class _TechnicianHomePageState extends State<TechnicianHomePage>
@@ -67,6 +93,10 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
   // Cảnh báo phần cứng toàn cục (GAP 2): ô cửa-mở-bất-thường trên mọi tủ.
   List<Map<String, dynamic>> _anomalies = [];
   bool _loading = true;
+  // Đã tải xong ít nhất một lần — tải lại sau đó không che cả 6 tab bằng spinner.
+  bool _loadedOnce = false;
+  // Lỗi tải theo từng phần (câu tiếng Việt), hiện banner + "Thử lại" tại tab tương ứng.
+  final Map<_Section, String> _errors = {};
   String? _myUserId;
   String? _jwtUserName;
   String? _jwtUserEmail;
@@ -78,39 +108,14 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
   int? _selectedLockerId;
   Map<String, dynamic>? _layout;
   bool _layoutLoading = false;
+  String? _layoutError;
   // Box-health (GAP 2): trạng thái phần cứng cửa từ iot-service cho tủ đang chọn.
   List<Map<String, dynamic>> _boxHealth = [];
 
   // IoT devices tab state
   List<Map<String, dynamic>> _devices = [];
-  String? _devicesError;
 
-  // Local SLA extensions cache (đồng bộ với Admin localStorage: locker_sla_extensions_v1)
-  Map<int, Map<String, dynamic>> _localSlaExtensions = {};
   StreamSubscription<AppEvent>? _busSub;
-
-  Future<void> _loadLocalSlaExtensions() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final raw = prefs.getString('locker_sla_extensions_v1');
-      if (raw != null && raw.isNotEmpty) {
-        final decoded = jsonDecode(raw);
-        if (decoded is Map) {
-          _localSlaExtensions = decoded.map((k, v) =>
-              MapEntry(int.parse('$k'), Map<String, dynamic>.from(v as Map)));
-        }
-      }
-    } catch (_) {}
-  }
-
-  Future<void> _saveLocalSlaExtensions() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final mapped =
-          _localSlaExtensions.map((k, v) => MapEntry(k.toString(), v));
-      await prefs.setString('locker_sla_extensions_v1', jsonEncode(mapped));
-    } catch (_) {}
-  }
 
   List<Map<String, dynamic>> get _lockerOptions => _lockers
       .where((locker) => _asInt(locker['id']) != null)
@@ -128,9 +133,6 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
   @override
   void initState() {
     super.initState();
-    _loadLocalSlaExtensions().then((_) {
-      if (mounted) setState(() {});
-    });
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         try {
@@ -150,15 +152,74 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
         }
       }
     });
-    _load();
+    _load().then((_) => _openDeepLinkTarget(
+          reportId: widget.reportId,
+          scheduleId: widget.scheduleId,
+        ));
   }
 
   @override
   void didUpdateWidget(covariant TechnicianHomePage oldWidget) {
     super.didUpdateWidget(oldWidget);
-    // Bấm noti khi đang ở sẵn trang này ⇒ chỉ đổi tab.
+    // Bấm noti khi đang ở sẵn trang này ⇒ đổi tab và mở đúng chi tiết.
     if (widget.initialTab != oldWidget.initialTab) {
       _tabs.animateTo(widget.initialTab.clamp(0, 5));
+    }
+    final reportChanged =
+        widget.reportId != null && widget.reportId != oldWidget.reportId;
+    final scheduleChanged =
+        widget.scheduleId != null && widget.scheduleId != oldWidget.scheduleId;
+    if (reportChanged || scheduleChanged) {
+      final reportId = reportChanged ? widget.reportId : null;
+      final scheduleId = scheduleChanged ? widget.scheduleId : null;
+      // Chờ khung hình hiện tại dựng xong rồi mới tải lại (không setState giữa build).
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        _load().then(
+          (_) => _openDeepLinkTarget(reportId: reportId, scheduleId: scheduleId),
+        );
+      });
+    }
+  }
+
+  /// Deep link từ thông báo: mở chi tiết phiếu / lịch. Không có trong danh sách
+  /// đã tải ⇒ tải riêng phiếu đó; không tải được ⇒ báo rõ.
+  Future<void> _openDeepLinkTarget({int? reportId, int? scheduleId}) async {
+    if (!mounted) return;
+    if (reportId != null) {
+      await _openReportById(reportId);
+      return;
+    }
+    if (scheduleId != null) {
+      Map<String, dynamic>? schedule;
+      for (final s in _schedules) {
+        if (_asInt(s['id']) == scheduleId) {
+          schedule = s;
+          break;
+        }
+      }
+      if (schedule != null) {
+        _showScheduleDetailModal(schedule);
+      } else {
+        _showErrorText(
+          _errors[_Section.schedules] ??
+              'Không tìm thấy lịch kiểm tra #$scheduleId (có thể đã bị xoá hoặc không thuộc tủ bạn xem được).',
+        );
+      }
+    }
+  }
+
+  /// Chạy một lần tải; lỗi ghi vào [errors] theo [section] và trả `null`.
+  static Future<T?> _attempt<T>(
+    Map<_Section, String> errors,
+    _Section section,
+    Future<T> Function() call,
+  ) async {
+    try {
+      return await call();
+    } catch (e) {
+      errors[section] = LockerOpsService.errorMessage(e);
+      return null;
     }
   }
 
@@ -168,106 +229,100 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
       _myUserId = await TokenService.getUserId();
       _jwtUserName = await TokenService.getUserName();
       _jwtUserEmail = await TokenService.getUserEmail();
-      List<Map<String, dynamic>> rawFaults = [];
-      try {
-        rawFaults = await _service.faults();
-      } catch (_) {}
+      final errors = <_Section, String>{};
+      // Các phần độc lập tải song song; phần lỗi giữ dữ liệu cũ và báo lỗi riêng.
+      final faultsF = _attempt(errors, _Section.faults, _service.faults);
+      final reportsF =
+          _attempt(errors, _Section.reports, _service.allKioskReports);
+      final mineF =
+          _attempt(errors, _Section.mine, () => _service.reports(mine: true));
+      final routedF = _attempt(errors, _Section.routed, _service.routedReports);
+      final recoveriesF =
+          _attempt(errors, _Section.recoveries, _service.droneRecoveries);
+      final lockersF = _attempt(errors, _Section.lockers, _service.lockers);
+      final myLockersF =
+          _attempt(errors, _Section.myLockers, _service.myLockers);
+      // Lịch bảo trì định kỳ — chỉ lịch của tủ (target=LOCKER); lịch drone thuộc
+      // đội bay. Lọc "Của tôi" làm tại chỗ theo `assignedTechnicianId`.
+      final schedulesF = _attempt(
+        errors,
+        _Section.schedules,
+        () => _service.maintenanceSchedules(target: 'LOCKER'),
+      );
+      final ratingF =
+          _attempt(errors, _Section.rating, () => _service.myRatingAverage());
+      final perfF = _attempt(
+        errors,
+        _Section.performance,
+        () => _service.myPerformance(),
+      );
+      final anomaliesF =
+          _attempt(errors, _Section.anomalies, _service.boxAnomalies);
+      final devicesF = _attempt(errors, _Section.devices, _service.techDevices);
 
-      List<Map<String, dynamic>> rawReports = [];
-      try {
-        rawReports = await _service.allKioskReports();
-      } catch (_) {}
-
-      List<Map<String, dynamic>> rawMine = [];
-      try {
-        rawMine = await _service.reports(mine: true);
-      } catch (_) {}
-
-      List<Map<String, dynamic>> rawRouted = [];
-      try {
-        rawRouted = await _service.routedReports();
-      } catch (_) {}
-
-      List<Map<String, dynamic>> droneRecoveries = [];
-      try {
-        droneRecoveries = await _service.droneRecoveries();
-      } catch (_) {}
-
-      List<Map<String, dynamic>> lockers = [];
-      try {
-        lockers = await _service.lockers();
-      } catch (_) {}
-
-      List<Map<String, dynamic>> myLockers = [];
-      try {
-        myLockers = await _service.myLockers();
-      } catch (_) {}
+      final rawFaults = await faultsF;
+      final rawReports = await reportsF;
+      final rawMine = await mineF;
+      final rawRouted = await routedF;
+      final droneRecoveries = await recoveriesF;
+      final fetchedLockers = await lockersF;
+      final fetchedMyLockers = await myLockersF;
+      final schedules = await schedulesF;
+      final rating = await ratingF;
+      final perf = await perfF;
+      final anomalies = await anomaliesF;
+      final devices = await devicesF;
       if (!mounted) return;
-      final kioskAllReports = rawReports.where((r) => !_isDroneReport(r)).toList();
+
+      final kioskAllReports = (rawReports ?? _reports)
+          .where((r) => !_isDroneReport(r))
+          .toList();
       kioskAllReports.sort(_compareReportsNewestFirst);
       // `assignedToUserId` là nguồn sự thật: phiếu KTV tủ tự báo đã được server
       // tự giao (IN_PROGRESS) — không đoán "của tôi" theo người báo nữa.
-      final Map<dynamic, Map<String, dynamic>> myReportsMap = {};
-      for (final r in [...rawMine, ...kioskAllReports]) {
-        final id = r['id'];
-        if (id != null && !_isDroneReport(r) && _isAssignedToMe(r)) {
-          myReportsMap.putIfAbsent(id, () => r);
+      final List<Map<String, dynamic>> myReportsList;
+      if (rawMine == null && rawReports == null) {
+        myReportsList = _myReports;
+      } else {
+        final Map<dynamic, Map<String, dynamic>> myReportsMap = {};
+        for (final r in [...?rawMine, ...kioskAllReports]) {
+          final id = r['id'];
+          if (id != null && !_isDroneReport(r) && _isAssignedToMe(r)) {
+            myReportsMap.putIfAbsent(id, () => r);
+          }
         }
+        myReportsList = myReportsMap.values.toList();
+        myReportsList.sort(_compareReportsAssignedOrClaimedFirst);
       }
-      final myReportsList = myReportsMap.values.toList();
-      myReportsList.sort(_compareReportsAssignedOrClaimedFirst);
-      final sortedRouted = rawRouted.where((r) => !_isDroneReport(r)).toList();
+      final sortedRouted = (rawRouted ?? _routedReports)
+          .where((r) => !_isDroneReport(r))
+          .toList();
       sortedRouted.sort(_compareReportsNewestFirst);
+      final sortedSchedules = (schedules ?? _schedules).toList();
+      sortedSchedules.sort(_compareSchedulesNewestFirst);
+      final lockers = fetchedLockers ?? _lockers;
+      final myLockers = fetchedMyLockers ?? _myLockers;
       setState(() {
-        _faults = rawFaults.where((f) => !_isDroneFault(f)).toList();
+        _errors
+          ..clear()
+          ..addAll(errors);
+        if (rawFaults != null) {
+          _faults = rawFaults.where((f) => !_isDroneFault(f)).toList();
+        }
         _reports = kioskAllReports;
         _myReports = myReportsList;
         _routedReports = sortedRouted;
-        _droneRecoveries = droneRecoveries;
+        if (droneRecoveries != null) _droneRecoveries = droneRecoveries;
         _lockers = lockers;
         _myLockers = myLockers;
+        _schedules = sortedSchedules;
+        if (rating != null) _ratingAverage = rating;
+        if (perf != null) _myPerformance = perf;
+        if (anomalies != null) {
+          _anomalies = anomalies.where((a) => !_isDroneAnomaly(a)).toList();
+        }
+        if (devices != null) _devices = devices;
       });
-      // Lịch bảo trì định kỳ — chỉ lịch của tủ (target=LOCKER); lịch drone thuộc
-      // đội bay (DRONE_TECHNICIAN). Lọc "Của tôi" làm tại chỗ theo
-      // `assignedTechnicianId` (đúng như `mine=true` của server) để đổi bộ lọc
-      // không phải gọi lại. Không để vỡ trang nếu BE chưa deploy.
-      try {
-        final schedules = await _service.maintenanceSchedules(target: 'LOCKER');
-        if (mounted) {
-          final sortedSchedules = schedules.toList();
-          sortedSchedules.sort(_compareSchedulesNewestFirst);
-          setState(() => _schedules = sortedSchedules);
-        }
-      } catch (_) {}
-      try {
-        final avg = await _service.myRatingAverage();
-        if (mounted) setState(() => _ratingAverage = avg);
-      } catch (_) {}
-      try {
-        final perf = await _service.myPerformance();
-        if (mounted) setState(() => _myPerformance = perf);
-      } catch (_) {}
-      // Cảnh báo phần cứng toàn cục (GAP 2) — best-effort, không vỡ trang nếu BE/IoT chưa có.
-      try {
-        final anomalies = await _service.boxAnomalies();
-        if (mounted) {
-          setState(() => _anomalies = anomalies.where((a) => !_isDroneAnomaly(a)).toList());
-        }
-      } catch (_) {}
-      // Thiết bị IoT — best-effort; tab riêng hiển thị lỗi nếu có.
-      try {
-        final devices = await _service.techDevices();
-        if (mounted) {
-          setState(() {
-            _devices = devices;
-            _devicesError = null;
-          });
-        }
-      } catch (e) {
-        if (mounted) {
-          setState(() => _devicesError = LockerOpsService.errorMessage(e));
-        }
-      }
       final validSelected = lockers.any(
         (locker) => _asInt(locker['id']) == _selectedLockerId,
       );
@@ -296,21 +351,28 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
         );
       }
     } finally {
-      if (mounted) setState(() => _loading = false);
+      if (mounted) {
+        setState(() {
+          _loading = false;
+          _loadedOnce = true;
+        });
+      }
     }
   }
 
   Future<void> _selectLocker(int lockerId) async {
     setState(() {
+      if (_selectedLockerId != lockerId) _layout = null;
       _selectedLockerId = lockerId;
       _layoutLoading = true;
+      _layoutError = null;
       _boxHealth = [];
     });
     try {
       final layout = await _service.layout(lockerId);
-      if (!mounted) return;
+      if (!mounted || _selectedLockerId != lockerId) return;
       setState(() => _layout = layout);
-      // Box-health phần cứng (GAP 2) — best-effort, không vỡ trang nếu BE chưa deploy.
+      // Box-health phần cứng (GAP 2) — không có dữ liệu cảm biến thì card tự báo.
       try {
         final health = await _service.boxHealth(lockerId);
         if (mounted && _selectedLockerId == lockerId) {
@@ -318,15 +380,36 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
         }
       } catch (_) {}
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(LockerOpsService.errorMessage(e))),
-        );
+      if (mounted && _selectedLockerId == lockerId) {
+        setState(() {
+          _layout = null;
+          _layoutError = LockerOpsService.errorMessage(e);
+        });
       }
     } finally {
       if (mounted) setState(() => _layoutLoading = false);
     }
   }
+
+  /// Banner lỗi của các phần [sections] (gộp câu trùng) kèm nút "Thử lại".
+  /// Không có lỗi ⇒ không chiếm chỗ.
+  Widget _sectionErrorBanner(List<_Section> sections) {
+    final messages = <String>{
+      for (final s in sections)
+        if (_errors[s] != null) _errors[s]!,
+    };
+    if (messages.isEmpty) return const SizedBox.shrink();
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: _RetryBanner(
+        message: 'Không tải được đầy đủ dữ liệu: ${messages.join(' · ')}',
+        onRetry: _loading ? null : _load,
+      ),
+    );
+  }
+
+  bool _hasError(List<_Section> sections) =>
+      sections.any((s) => _errors[s] != null);
 
   Future<void> _logout() async {
     final confirmed = await showDialog<bool>(
@@ -341,7 +424,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
           ],
         ),
         content: const Text(
-          'Bạn có chắc chắn muốn kết thúc ca trực và đăng xuất khỏi tài khoản KTV Kiosk không?',
+          'Bạn có chắc chắn muốn kết thúc ca trực và đăng xuất khỏi tài khoản KTV tủ không?',
         ),
         actions: [
           TextButton(
@@ -362,22 +445,23 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
         ],
       ),
     );
-    if (confirmed == true) {
-      await TokenService.clearTokens();
-      if (mounted) context.go('/onboarding');
+    if (confirmed == true && mounted) {
+      await logoutTechnician(context);
     }
   }
 
+  TechnicianSlaStatus get _slaStatus =>
+      TechnicianSlaStatus.fromPerformance(_myPerformance);
+
   void _showKtvProfileSheet([String? resolvedName]) {
-    final calculatedOverdue = _myReports
+    final myOverdue = _myReports
         .where((r) => r['status'] == 'IN_PROGRESS' && _isReportOverdue(r))
         .length;
-    final myOverdue = calculatedOverdue;
     final myResolved = _myReports.where((r) => r['status'] == 'RESOLVED').length;
     final myInProgress = _myReports.where((r) => r['status'] == 'IN_PROGRESS').length;
     final myTotal = _myReports.length;
-    final avgRating = _ratingAverage?['average']?.toString() ?? '5.0';
-    final ratingCount = _ratingAverage?['count']?.toString() ?? '0';
+    final rating = ratingSummary(_ratingAverage);
+    final sla = _slaStatus;
 
     String? profileName;
     String? profileEmail;
@@ -400,8 +484,8 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
       }
     } catch (_) {}
 
-    final techName = resolvedName ?? profileName ?? _jwtUserName ?? 'Kỹ thuật viên Kiosk';
-    final techEmail = profileEmail ?? _jwtUserEmail ?? 'ktv.kiosk@laundrylocker.vn';
+    final techName = resolvedName ?? profileName ?? _jwtUserName ?? 'Kỹ thuật viên tủ';
+    final techEmail = profileEmail ?? _jwtUserEmail;
     final techPhone = profilePhone ?? 'Chưa cập nhật SĐT';
 
     showModalBottomSheet<void>(
@@ -473,19 +557,6 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                                   ),
                                 ),
                         ),
-                        Positioned(
-                          right: 0,
-                          bottom: 0,
-                          child: Container(
-                            width: 16,
-                            height: 16,
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF16A34A),
-                              shape: BoxShape.circle,
-                              border: Border.all(color: Colors.white, width: 2),
-                            ),
-                          ),
-                        ),
                       ],
                     ),
                     const SizedBox(width: 14),
@@ -493,48 +564,28 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Row(
-                            children: [
-                              Flexible(
-                                child: Text(
-                                  techName,
-                                  style: const TextStyle(
-                                    fontSize: 17,
-                                    fontWeight: FontWeight.bold,
-                                    color: opsDark,
-                                  ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                              const SizedBox(width: 6),
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFFDCFCE7),
-                                  borderRadius: BorderRadius.circular(6),
-                                ),
-                                child: const Text(
-                                  'Trực ca',
-                                  style: TextStyle(
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.w700,
-                                    color: Color(0xFF166534),
-                                  ),
-                                ),
-                              ),
-                            ],
+                          Text(
+                            techName,
+                            style: const TextStyle(
+                              fontSize: 17,
+                              fontWeight: FontWeight.bold,
+                              color: opsDark,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
                           const SizedBox(height: 4),
                           const Text(
-                            'KTV Kiosk (Tủ & Phần cứng) · Sẵn sàng',
+                            'Kỹ thuật viên tủ (ô tủ & phần cứng)',
                             style: TextStyle(fontSize: 12.5, color: opsMutedText, fontWeight: FontWeight.w600),
                           ),
-                          const SizedBox(height: 2),
-                          Text(
-                            techEmail,
-                            style: const TextStyle(fontSize: 12, color: opsMutedText),
-                          ),
+                          if (techEmail != null && techEmail.isNotEmpty) ...[
+                            const SizedBox(height: 2),
+                            Text(
+                              techEmail,
+                              style: const TextStyle(fontSize: 12, color: opsMutedText),
+                            ),
+                          ],
                         ],
                       ),
                     ),
@@ -547,7 +598,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                 Row(
                   children: [
                     Expanded(
-                      child: _buildProfileStatTile('Tổng ca', '$myTotal', const Color(0xFF4F46E5)),
+                      child: _buildProfileStatTile('Phiếu đã nhận', '$myTotal', const Color(0xFF4F46E5)),
                     ),
                     const SizedBox(width: 8),
                     Expanded(
@@ -583,38 +634,61 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                           const Icon(Icons.star_rounded, color: Color(0xFFF59E0B), size: 20),
                           const SizedBox(width: 8),
                           const Text('Đánh giá chất lượng: ', style: TextStyle(fontSize: 13, color: opsDark)),
-                          Text('$avgRating/5', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: opsDark)),
-                          Text(' ($ratingCount lượt)', style: const TextStyle(fontSize: 12, color: opsMutedText)),
+                          Flexible(
+                            child: Text(
+                              rating ?? 'Chưa có đánh giá',
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: rating == null ? FontWeight.w500 : FontWeight.bold,
+                                color: rating == null ? opsMutedText : opsDark,
+                              ),
+                            ),
+                          ),
                         ],
                       ),
                       const SizedBox(height: 8),
                       Row(
                         children: [
                           Icon(
-                            myOverdue == 0 ? Icons.verified_user_outlined : Icons.warning_amber_rounded,
-                            color: myOverdue == 0 ? const Color(0xFF16A34A) : const Color(0xFFD97706),
+                            !sla.known
+                                ? Icons.help_outline
+                                : sla.level == 'NORMAL'
+                                    ? Icons.verified_user_outlined
+                                    : Icons.warning_amber_rounded,
+                            color: _slaLevelColor(sla.level),
                             size: 20,
                           ),
                           const SizedBox(width: 8),
                           const Text('Quy chế SLA: ', style: TextStyle(fontSize: 13, color: opsDark)),
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                            decoration: BoxDecoration(
-                              color: myOverdue == 0 ? const Color(0xFFECFDF5) : const Color(0xFFFFFBEB),
-                              borderRadius: BorderRadius.circular(6),
-                              border: Border.all(color: myOverdue == 0 ? const Color(0xFFA7F3D0) : const Color(0xFFFDE68A)),
-                            ),
-                            child: Text(
-                              myOverdue == 0 ? 'Đạt chuẩn SLA' : 'Cảnh báo SLA (Mức 1)',
-                              style: TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.bold,
-                                color: myOverdue == 0 ? const Color(0xFF166534) : const Color(0xFF92400E),
+                          Flexible(
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: _slaLevelColor(sla.level).withValues(alpha: 0.1),
+                                borderRadius: BorderRadius.circular(6),
+                                border: Border.all(
+                                  color: _slaLevelColor(sla.level).withValues(alpha: 0.35),
+                                ),
+                              ),
+                              child: Text(
+                                sla.label,
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.bold,
+                                  color: _slaLevelColor(sla.level),
+                                ),
                               ),
                             ),
                           ),
                         ],
                       ),
+                      if (sla.reason != null) ...[
+                        const SizedBox(height: 6),
+                        Text(
+                          sla.reason!,
+                          style: const TextStyle(fontSize: 12, color: opsMutedText),
+                        ),
+                      ],
                       if (techPhone.isNotEmpty) ...[
                         const SizedBox(height: 8),
                         Row(
@@ -638,7 +712,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                           Navigator.of(ctx).pop();
                           Navigator.of(context).push(
                             MaterialPageRoute(
-                              builder: (_) => const TechnicianProfilePage(),
+                              builder: (_) => const TechnicianProfilePage(droneTechnician: false),
                             ),
                           );
                         },
@@ -741,7 +815,9 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
             ),
             const SizedBox(height: 12),
             const Text(
-              'Quy chế SLA: Kỹ thuật viên có từ 3 phiếu sự cố quá hạn sẽ tạm thời không thể nhận thêm việc mới. Vui lòng chuyển sang tab "Việc của tôi" và hoàn tất các công việc tồn đọng.',
+              'Quy chế SLA: khi số phiếu quá hạn vượt ngưỡng do quản trị cấu hình, '
+              'KTV tạm thời không nhận được việc mới. Vui lòng chuyển sang tab '
+              '"Việc của tôi" và hoàn tất các công việc tồn đọng.',
               style: TextStyle(fontSize: 12.5, color: opsMutedText),
             ),
           ],
@@ -788,9 +864,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
   void _showError(Object e) {
     if (!mounted) return;
     final msg = LockerOpsService.errorMessage(e);
-    if (msg.contains('SLA_RESTRICTED') ||
-        msg.contains('hạn chế nhận thêm') ||
-        msg.contains('quá hạn SLA')) {
+    if (LockerOpsService.errorCode(e) == 'TECHNICIAN_SLA_RESTRICTED') {
       _showSlaRestrictedDialog(msg);
       return;
     }
@@ -837,6 +911,20 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
         me.isNotEmpty &&
         r['assignedToUserId']?.toString() == me;
   }
+
+  /// "KTV Nguyễn Văn A" (tên server trả) hoặc "KTV #12" khi chưa có tên.
+  String _assigneeLabel(Map<String, dynamic> r) {
+    final name = r['assignedToTechnicianName']?.toString().trim() ?? '';
+    if (name.isNotEmpty) return 'KTV $name';
+    return 'KTV #${r['assignedToUserId']}';
+  }
+
+  Color _slaLevelColor(String? level) => switch (level) {
+    'NORMAL' => const Color(0xFF16A34A),
+    'WARNING' => const Color(0xFFD97706),
+    'RESTRICTED' || 'SUSPENDED' => const Color(0xFFDC2626),
+    _ => opsMutedText,
+  };
 
   Set<int> get _myLockerIds =>
       _myLockers.map((l) => _asInt(l['id'])).whereType<int>().toSet();
@@ -909,7 +997,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
     }
     if (status != 'OPEN') {
       _showInfo(
-        'Phiếu RPT-$reportId đang do KTV #${ticket['assignedToUserId']} xử lý — '
+        'Phiếu RPT-$reportId đang do ${_assigneeLabel(ticket)} xử lý — '
         'chỉ người được giao mới hoàn tất được.',
       );
       return;
@@ -1002,13 +1090,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
     if (_jwtUserEmail != null && _jwtUserEmail!.trim().isNotEmpty) {
       return _jwtUserEmail!.trim();
     }
-    for (final r in _myReports) {
-      final name = (r['assigneeName'] ?? r['reporterName'] ?? '').toString().trim();
-      if (name.isNotEmpty && !name.toLowerCase().contains('customer')) {
-        return name;
-      }
-    }
-    return 'Kỹ thuật viên Kiosk';
+    return 'Kỹ thuật viên tủ';
   }
 
   Widget _avatarFallback(String name) {
@@ -1148,9 +1230,13 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
       avatarUrl = context.watch<ProfileProvider>().profile?.avatarUrl;
     } catch (_) {}
 
-    final overdueCount = _myReports
-        .where((r) => r['status'] == 'IN_PROGRESS' && _isReportOverdue(r))
-        .length;
+    // Số phiếu trễ: ưu tiên số server tính; mức chế tài chỉ lấy từ server
+    // (ngưỡng do admin cấu hình) — không tự suy theo ngưỡng cố định.
+    final sla = _slaStatus;
+    final overdueCount = sla.overdue ??
+        _myReports
+            .where((r) => r['status'] == 'IN_PROGRESS' && _isReportOverdue(r))
+            .length;
     final inProgressCount =
         _myReports.where((r) => r['status'] == 'IN_PROGRESS').length;
 
@@ -1159,30 +1245,37 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
     final String slaText;
     final Color slaTextColor;
 
-    if (overdueCount >= 5) {
-      slaIcon = Icons.cancel;
-      slaColor = const Color(0xFFEF4444);
-      slaText = 'SLA: Đình chỉ ($overdueCount ca trễ hạn)';
-      slaTextColor = const Color(0xFFFCA5A5);
-    } else if (overdueCount >= 3) {
-      slaIcon = Icons.block;
-      slaColor = const Color(0xFFF87171);
-      slaText = 'SLA: Hạn chế ($overdueCount ca trễ hạn)';
-      slaTextColor = const Color(0xFFFCA5A5);
-    } else if (overdueCount >= 1) {
-      slaIcon = Icons.warning_amber_rounded;
-      slaColor = const Color(0xFFFBBF24);
-      slaText = 'SLA: Cảnh báo ($overdueCount ca trễ hạn)';
-      slaTextColor = const Color(0xFFFDE68A);
-    } else {
-      slaIcon = Icons.verified_rounded;
-      slaColor = const Color(0xFF34D399);
-      slaTextColor = const Color(0xFFA7F3D0);
-      if (inProgressCount > 0) {
-        slaText = 'SLA: Bình thường ($inProgressCount ca trong hạn)';
-      } else {
-        slaText = 'SLA: Bình thường · Đạt chuẩn';
-      }
+    switch (sla.level) {
+      case 'SUSPENDED':
+        slaIcon = Icons.cancel;
+        slaColor = const Color(0xFFEF4444);
+        slaText = 'SLA: Đình chỉ ($overdueCount phiếu trễ hạn)';
+        slaTextColor = const Color(0xFFFCA5A5);
+      case 'RESTRICTED':
+        slaIcon = Icons.block;
+        slaColor = const Color(0xFFF87171);
+        slaText = 'SLA: Hạn chế nhận việc ($overdueCount phiếu trễ hạn)';
+        slaTextColor = const Color(0xFFFCA5A5);
+      case 'WARNING':
+        slaIcon = Icons.warning_amber_rounded;
+        slaColor = const Color(0xFFFBBF24);
+        slaText = 'SLA: Cảnh báo ($overdueCount phiếu trễ hạn)';
+        slaTextColor = const Color(0xFFFDE68A);
+      case 'NORMAL':
+        slaIcon = Icons.verified_rounded;
+        slaColor = const Color(0xFF34D399);
+        slaTextColor = const Color(0xFFA7F3D0);
+        slaText = inProgressCount > 0
+            ? 'SLA: Bình thường ($inProgressCount phiếu đang xử lý)'
+            : 'SLA: Bình thường';
+      default:
+        // Chưa tải được trạng thái từ server ⇒ chỉ nêu số liệu thật đang có.
+        slaIcon = Icons.help_outline;
+        slaColor = const Color(0xFF94A3B8);
+        slaTextColor = const Color(0xFFCBD5E1);
+        slaText = overdueCount > 0
+            ? 'SLA: $overdueCount phiếu trễ hạn · chưa tải được mức chế tài'
+            : 'SLA: chưa tải được trạng thái';
     }
 
     return Container(
@@ -1289,29 +1382,6 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                                               _avatarFallback(displayName),
                                         )
                                       : _avatarFallback(displayName),
-                                ),
-                              ),
-                              Positioned(
-                                bottom: 1,
-                                right: 1,
-                                child: Container(
-                                  width: 13,
-                                  height: 13,
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFF10B981),
-                                    shape: BoxShape.circle,
-                                    border: Border.all(
-                                      color: const Color(0xFF061A30),
-                                      width: 2,
-                                    ),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: const Color(0xFF10B981)
-                                            .withValues(alpha: 0.6),
-                                        blurRadius: 4,
-                                      ),
-                                    ],
-                                  ),
                                 ),
                               ),
                             ],
@@ -1433,7 +1503,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                               onTap: () {
                                 Navigator.of(context).push(
                                   MaterialPageRoute(
-                                    builder: (_) => const TechnicianProfilePage(),
+                                    builder: (_) => const TechnicianProfilePage(droneTechnician: false),
                                   ),
                                 );
                               },
@@ -1511,9 +1581,9 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
 
   @override
   Widget build(BuildContext context) {
-    // Tab Sự cố: Đếm tất cả sự cố Kiosk (OPEN + IN_PROGRESS + RESOLVED) — khớp với Admin portal
+    // Tab Sự cố: chỉ đếm phiếu còn mở (OPEN + IN_PROGRESS), không tính phiếu đã xong.
     final openReports = _reports.where((r) => r['status'] == 'OPEN').toList();
-    final openCount = _reports.length; // Tổng phiếu toàn hệ thống, giống Admin portal
+    final openCount = openReportCount(_reports);
 
     // Tab Việc của tôi: Đếm các sự cố do chính KTV đang phụ trách xử lý
     final mineInProgress = _myReports.where((r) => r['status'] == 'IN_PROGRESS').length;
@@ -1562,8 +1632,10 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
               ],
             ),
           ),
+          if (_loading && _loadedOnce)
+            const LinearProgressIndicator(minHeight: 2, color: opsPrimary),
           Expanded(
-            child: _loading
+            child: _loading && !_loadedOnce
                 ? const Center(
                     child: CircularProgressIndicator(color: AislBrand.navy),
                   )
@@ -1579,6 +1651,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                         items: _droneRecoveries,
                         service: _service,
                         onRefresh: _load,
+                        error: _errors[_Section.recoveries],
                       ),
                     ],
                   ),
@@ -1599,11 +1672,14 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
       child: ListView(
         padding: const EdgeInsets.all(16),
         children: [
+          _sectionErrorBanner(const [_Section.lockers, _Section.myLockers]),
           const OpsSectionLabel('Chọn tủ để kiểm tra', icon: Icons.warehouse_outlined),
           if (lockerOptions.isEmpty)
-            const OpsEmptyState(
+            OpsEmptyState(
               icon: Icons.warehouse_outlined,
-              title: 'Chưa có tủ nào',
+              title: _hasError(const [_Section.lockers])
+                  ? 'Chưa tải được danh sách tủ'
+                  : 'Chưa có tủ nào',
             )
           else
             LockerPickerField(
@@ -1623,6 +1699,11 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
             const Padding(
               padding: EdgeInsets.all(24),
               child: Center(child: CircularProgressIndicator(color: opsPrimary)),
+            )
+          else if (_layoutError != null && _selectedLockerId != null)
+            _RetryBanner(
+              message: 'Không tải được sơ đồ tủ: $_layoutError',
+              onRetry: () => _selectLocker(_selectedLockerId!),
             )
           else if (_layout != null) ...[
             _layoutSummary(),
@@ -1876,13 +1957,11 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
       );
     }
 
-    // Lọc ô vali đứng XL
-    final xlCells = cells.where((c) {
-      final type = (c['cellType'] ?? '').toString().toUpperCase();
-      final col = _asInt(c['colIndex']);
-      final num = _asInt(c['boxNumber']);
-      return type == 'XL' || col == 0 || num == 10;
-    }).toList();
+    // Cột vali đứng: chỉ ô server đánh dấu `cellType == 'XL'` (không đoán theo
+    // cột/số ô).
+    final xlCells = cells
+        .where((c) => (c['cellType'] ?? '').toString().toUpperCase() == 'XL')
+        .toList();
 
     // Các ô thường và Drone
     final standardCells = cells.where((c) => !xlCells.contains(c)).toList();
@@ -2153,6 +2232,9 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
     final hasLocation =
         _asDouble(locker['latitude']) != null ||
         (address != null && address.trim().isNotEmpty);
+    // Cờ `online` của bộ điều khiển tủ (server tính); máy chủ cũ không trả ⇒ ẩn.
+    final rawOnline = locker['online'] ?? _layout?['online'];
+    final bool? online = rawOnline is bool ? rawOnline : null;
 
     return Container(
       width: double.infinity,
@@ -2229,6 +2311,16 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
             spacing: 8,
             runSpacing: 7,
             children: [
+              if (online != null)
+                _MiniPill(
+                  icon: online ? Icons.wifi : Icons.wifi_off,
+                  text: online
+                      ? 'Bộ điều khiển: trực tuyến'
+                      : 'Bộ điều khiển: mất kết nối',
+                  color: online
+                      ? const Color(0xFF16A34A)
+                      : const Color(0xFFDC2626),
+                ),
               _MiniPill(
                 icon: Icons.event_available_outlined,
                 text: 'Đã giữ chỗ: $reserved',
@@ -2285,9 +2377,178 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
               ),
             ],
           ),
+          const SizedBox(height: 10),
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              onPressed: _asInt(locker['id']) == null
+                  ? null
+                  : () => _reportLockerFlow(locker),
+              icon: const Icon(Icons.report_gmailerrorred_outlined, size: 16),
+              label: const Text('Báo sự cố cả tủ'),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: const Color(0xFFDC2626),
+                side: const BorderSide(color: Color(0xFFFCA5A5)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                textStyle: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700),
+              ),
+            ),
+          ),
         ],
       ),
     );
+  }
+
+  /// "Báo sự cố cả tủ" (không gắn ô): tiêu đề, mô tả, ảnh và tuỳ chọn chặn cả
+  /// tủ (MAINTENANCE — ngưng nhận đơn tới khi phiếu hoàn tất).
+  Future<void> _reportLockerFlow(Map<String, dynamic> locker) async {
+    final lockerId = _asInt(locker['id']);
+    if (lockerId == null) return;
+    final titleCtrl = TextEditingController();
+    final descCtrl = TextEditingController();
+    final photos = PhotoPickerController(
+      maxPhotos:
+          BusinessConfigService.instance.current.reportPhotosPerRequestReporter,
+    );
+    var blocking = false;
+    var submitting = false;
+    String? dialogError;
+    final lockerLabel = '${locker['name'] ?? 'Tủ'} · ${locker['code'] ?? '#$lockerId'}';
+
+    final created = await showDialog<Map<String, dynamic>>(
+      context: context,
+      barrierDismissible: false,
+      // Controller được huỷ khi dialog gỡ khỏi cây (sau hiệu ứng đóng).
+      builder: (ctx) => ControllerDisposer(
+        controllers: [photos, titleCtrl, descCtrl],
+        child: StatefulBuilder(
+          builder: (ctx, setLocal) => AlertDialog(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            title: const Text('Báo sự cố cả tủ'),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    lockerLabel,
+                    style: const TextStyle(fontSize: 12.5, color: opsMutedText),
+                  ),
+                  const SizedBox(height: 10),
+                  TextField(
+                    controller: titleCtrl,
+                    enabled: !submitting,
+                    decoration: const InputDecoration(
+                      labelText: 'Tiêu đề',
+                      hintText: 'VD: Màn hình kiosk không lên, mất nguồn...',
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: descCtrl,
+                    enabled: !submitting,
+                    minLines: 2,
+                    maxLines: 4,
+                    decoration: const InputDecoration(labelText: 'Mô tả chi tiết'),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    'Ảnh hiện trường (tuỳ chọn, tối đa ${photos.maxPhotos})',
+                    style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 8),
+                  PhotoPickerField(
+                    controller: photos,
+                    enabled: !submitting,
+                    thumbSize: 64,
+                    accentColor: opsPrimary,
+                  ),
+                  const SizedBox(height: 8),
+                  SwitchListTile(
+                    contentPadding: EdgeInsets.zero,
+                    value: blocking,
+                    onChanged: submitting
+                        ? null
+                        : (v) => setLocal(() => blocking = v),
+                    title: const Text(
+                      'Chặn cả tủ (ngưng nhận đơn)',
+                      style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                    ),
+                    subtitle: const Text(
+                      'Tủ chuyển sang bảo trì cho tới khi phiếu được hoàn tất.',
+                      style: TextStyle(fontSize: 11.5),
+                    ),
+                  ),
+                  if (dialogError != null) ...[
+                    const SizedBox(height: 6),
+                    Text(
+                      dialogError!,
+                      style: const TextStyle(fontSize: 12, color: Color(0xFFDC2626)),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: submitting ? null : () => Navigator.pop(ctx),
+                child: const Text('Hủy'),
+              ),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFDC2626),
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                onPressed: submitting
+                    ? null
+                    : () async {
+                        final title = titleCtrl.text.trim();
+                        final desc = descCtrl.text.trim();
+                        if (title.isEmpty || desc.isEmpty) {
+                          setLocal(() => dialogError = 'Vui lòng nhập tiêu đề và mô tả.');
+                          return;
+                        }
+                        setLocal(() {
+                          submitting = true;
+                          dialogError = null;
+                        });
+                        try {
+                          final attachments = await photos.uploadAll();
+                          final report = await _service.reportLocker(
+                            lockerId,
+                            title,
+                            desc,
+                            blocking: blocking,
+                            attachments: attachments,
+                          );
+                          if (ctx.mounted) Navigator.pop(ctx, report);
+                        } catch (e) {
+                          if (ctx.mounted) {
+                            setLocal(() {
+                              submitting = false;
+                              dialogError = LockerOpsService.errorMessage(e);
+                            });
+                          }
+                        }
+                      },
+                child: Text(submitting ? 'Đang gửi...' : 'Gửi báo cáo'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+    if (created == null || !mounted) return;
+    final id = created['id'];
+    _showInfo(
+      id != null
+          ? 'Đã tạo phiếu RPT-$id cho $lockerLabel${blocking ? ' — tủ tạm ngưng nhận đơn' : ''}.'
+          : 'Đã gửi báo sự cố cho $lockerLabel.',
+    );
+    await _load();
   }
 
   Widget _layoutSummary() {
@@ -2459,7 +2720,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                     fontWeight: FontWeight.w500,
                   ),
                 ),
-                if (isTall) ...[
+                if (isTall && type.toUpperCase() == 'XL') ...[
                   const SizedBox(height: 8),
                   Container(
                     padding: const EdgeInsets.symmetric(
@@ -2581,7 +2842,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
           Icons.lock_open,
           'Mở tủ khẩn cấp',
           const Color(0xFFEA580C),
-          () => _forceOpenFlow(boxId),
+          () => _forceOpenFlow(boxId, boxNumber: cell['boxNumber']),
         ));
 
         return SafeArea(
@@ -2644,120 +2905,31 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
     );
   }
 
-  /// Mở tủ khẩn cấp không cần PIN khách — luôn xác nhận trước vì hành động
-  /// được ghi vào audit log (credential MASTER) phía backend.
-  Future<void> _forceOpenFlow(int boxId) async {
-    final reasons = [
-      'Khách hàng quên mã PIN / không liên lạc được',
-      'Cửa tủ bị kẹt cơ học / lỗi chốt từ',
-      'Kiểm tra định kỳ theo yêu cầu Ban Quản Lý',
-      'Sự cố khẩn cấp / nghi ngờ rò rỉ hoặc dị vật',
-    ];
-    String selectedReason = reasons.first;
-    XFile? incidentPhoto;
-
-    final ok = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setLocal) => AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          title: const Row(
-            children: [
-              Icon(Icons.lock_open, color: Color(0xFFEA580C), size: 24),
-              SizedBox(width: 8),
-              Expanded(
-                child: Text('Mở tủ khẩn cấp (Master)', style: TextStyle(fontSize: 16)),
-              ),
-            ],
-          ),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Tủ sẽ được mở qua lệnh Master MQTT. Hành động này sẽ được lưu vào hệ thống Audit Log bảo mật.',
-                  style: TextStyle(fontSize: 12.5, color: opsMutedText),
-                ),
-                const SizedBox(height: 12),
-                const Text(
-                  'Lý do can thiệp:',
-                  style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 4),
-                DropdownButtonFormField<String>(
-                  initialValue: selectedReason,
-                  isExpanded: true,
-                  decoration: InputDecoration(
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                  ),
-                  items: reasons
-                      .map((r) => DropdownMenuItem(
-                            value: r,
-                            child: Text(r, style: const TextStyle(fontSize: 12)),
-                          ))
-                      .toList(),
-                  onChanged: (val) {
-                    if (val != null) setLocal(() => selectedReason = val);
-                  },
-                ),
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    OutlinedButton.icon(
-                      onPressed: () async {
-                        final picker = ImagePicker();
-                        final img = await picker.pickImage(
-                          source: ImageSource.camera,
-                          maxWidth: 1000,
-                          maxHeight: 1000,
-                        );
-                        if (img != null) {
-                          setLocal(() => incidentPhoto = img);
-                        }
-                      },
-                      icon: Icon(
-                        incidentPhoto != null ? Icons.check : Icons.camera_alt_outlined,
-                        size: 16,
-                        color: incidentPhoto != null ? const Color(0xFF16A34A) : opsPrimary,
-                      ),
-                      label: Text(
-                        incidentPhoto != null ? 'Đã chụp hiện trường' : 'Chụp ảnh hiện trường',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: incidentPhoto != null ? const Color(0xFF16A34A) : opsPrimary,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('Hủy'),
-            ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFEA580C),
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              ),
-              onPressed: () => Navigator.pop(ctx, true),
-              child: const Text('Xác nhận mở'),
-            ),
-          ],
-        ),
-      ),
+  /// Mở tủ khẩn cấp không cần PIN khách — luôn hỏi lý do trước vì hành động
+  /// được ghi vào audit log (credential MASTER) phía backend. Ô đang có phiếu
+  /// giao cho mình ⇒ lý do + ghi chú + ảnh được ghi thêm vào nhật ký phiếu đó.
+  Future<void> _forceOpenFlow(int boxId, {Object? boxNumber}) async {
+    final openReportId = _openReportIdForBox(boxId);
+    final openReport = openReportId == null ? null : _findReport(openReportId);
+    final reportId =
+        openReport != null && _isAssignedToMe(openReport) ? openReportId : null;
+    final boxLabel = 'Ô #${boxNumber ?? boxId}';
+    final input = await _promptForceOpen(
+      context,
+      boxLabel: boxLabel,
+      reportId: reportId,
     );
-    if (ok != true) return;
+    if (input == null || !mounted) return;
     try {
-      final result = await _service.forceOpenBox(boxId);
+      final result = await _service.forceOpenBox(
+        boxId,
+        reason: input.reason,
+        note: input.note,
+        attachments: input.attachments,
+        reportId: reportId,
+      );
       if (result.accepted) {
-        _showInfo('Đã gửi lệnh mở tủ khẩn cấp (Lý do: $selectedReason)');
+        _showInfo(_forceOpenSuccessText(result, boxLabel));
       } else {
         // Backend trả 200 cả khi tủ không mở được (TIMEOUT/FAILED/JAMMED) ⇒ báo lỗi.
         _showErrorText(result.failureMessage);
@@ -3047,7 +3219,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
 
   Widget _buildQueue() {
     // Tab "Sự cố": Toàn bộ sự cố Kiosk để KTV duyệt — OPEN thì nhận việc, còn lại là tham khảo.
-    // Dữ liệu từ /api/admin/lockers/reports — khớp 100% với Admin portal.
+    // Dữ liệu từ /api/locker-technician/reports?all=true.
     // Bộ lọc trạng thái: khi chọn một trạng thái thì các nhóm còn lại rỗng nên
     // danh sách bên dưới chỉ còn đúng nhóm đó.
     bool statusShown(String status) =>
@@ -3078,6 +3250,13 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
       child: ListView(
         padding: const EdgeInsets.all(12),
         children: [
+          _sectionErrorBanner(const [
+            _Section.reports,
+            _Section.faults,
+            _Section.routed,
+            _Section.myLockers,
+            _Section.anomalies,
+          ]),
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: Row(
@@ -3247,7 +3426,8 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                 icon: Icons.assignment_late_outlined,
               ),
               for (final r in _routedReports) _reportCard(r, isQueueView: true),
-            ] else if (faults.isEmpty)
+            ] else if (faults.isEmpty &&
+                !_hasError(const [_Section.routed, _Section.faults]))
               const OpsEmptyState(
                 icon: Icons.check_circle_outline,
                 title: 'Không có phiếu nào chờ bạn',
@@ -3392,11 +3572,15 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
             const SizedBox(height: 8),
           ],
 
-          if (!routedView && _reports.isEmpty && _faults.isEmpty)
+          // Chỉ khẳng định "không có sự cố" khi đã tải được dữ liệu thật.
+          if (!routedView &&
+              _reports.isEmpty &&
+              _faults.isEmpty &&
+              !_hasError(const [_Section.reports, _Section.faults]))
             const OpsEmptyState(
               icon: Icons.check_circle_outline,
               title: 'Không có sự cố nào',
-              subtitle: 'Tất cả các trạm Kiosk hiện đang vận hành ổn định.',
+              subtitle: 'Chưa có phiếu sự cố hay ô lỗi nào trên hệ thống.',
             ),
         ],
       ),
@@ -3404,14 +3588,14 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
   }
 
   Widget _buildShiftSummary() {
-    // Đồng bộ chuẩn xác 100% với Web Admin Portal (technician-detail.tsx):
-    // Tính toán trực tiếp và nhất quán từ danh sách phiếu _myReports của KTV Kiosk
+    // Số liệu đếm từ danh sách phiếu thật của KTV (server trả).
     final totalAssigned = _myReports.length;
     final inProgress = _myReports.where((r) => r['status'] == 'IN_PROGRESS').length;
     final resolved = _myReports.where((r) => r['status'] == 'RESOLVED').length;
     final overdue = _myReports
         .where((r) => r['status'] == 'IN_PROGRESS' && _isReportOverdue(r))
         .length;
+    final rating = ratingSummary(_ratingAverage);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -3421,7 +3605,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
           children: [
             Expanded(
               child: _MetricCard(
-                label: 'Tổng ca\nphụ trách',
+                label: 'Phiếu\nđã nhận',
                 value: '$totalAssigned',
                 icon: Icons.inventory_2_outlined,
                 color: const Color(0xFF475569),
@@ -3458,20 +3642,16 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
             ),
           ],
         ),
-        if ((_ratingAverage?['count'] as int?) != null &&
-            (_ratingAverage!['count'] as int) > 0) ...[
-          const SizedBox(height: 8),
-          OpsBanner(
-            text:
-                'Điểm đánh giá của bạn: ${_ratingAverage!['average']}/5 (${_ratingAverage!['count']} lượt)',
-            icon: Icons.star_rate_rounded,
-            tone: OpsBannerTone.success,
-          ),
-        ],
-        if (_myReports.isNotEmpty || _myPerformance != null) ...[
-          const SizedBox(height: 10),
-          _buildSlaPenaltyCard(),
-        ],
+        const SizedBox(height: 8),
+        OpsBanner(
+          text: rating != null
+              ? 'Điểm đánh giá của bạn: $rating'
+              : 'Chưa có đánh giá nào từ khách cho các phiếu bạn xử lý.',
+          icon: Icons.star_rate_rounded,
+          tone: rating != null ? OpsBannerTone.success : OpsBannerTone.info,
+        ),
+        const SizedBox(height: 10),
+        _buildSlaPenaltyCard(),
         const SizedBox(height: 10),
         const OpsBanner(
           text:
@@ -3483,77 +3663,59 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
     );
   }
 
+  /// Trạng thái chế tài SLA do server tính (`my-performance`): mức, lý do và
+  /// số liệu. Không tự suy mức theo ngưỡng cố định ở máy.
   Widget _buildSlaPenaltyCard() {
-    // Đồng bộ 100% với Web Admin Portal: tính toán chuẩn xác từ danh sách phiếu thực tế
-    final overdue = _myReports
-        .where((r) => r['status'] == 'IN_PROGRESS' && _isReportOverdue(r))
-        .length;
-    final inProgress = _myReports.where((r) => r['status'] == 'IN_PROGRESS').length;
-    final resolved = _myReports.where((r) => r['status'] == 'RESOLVED').length;
-
-    // Phân loại mức chế tài theo quy chuẩn Admin Portal:
-    String penaltyLevel = 'NORMAL';
-    if (overdue >= 5) {
-      penaltyLevel = 'SUSPENDED';
-    } else if (overdue >= 3) {
-      penaltyLevel = 'RESTRICTED';
-    } else if (overdue >= 1) {
-      penaltyLevel = 'WARNING';
-    } else {
-      penaltyLevel = 'NORMAL';
-    }
-
-    String reason = '';
-    if (overdue >= 5) {
-      reason = 'Vi phạm nghiêm trọng: có từ $overdue phiếu trễ hạn SLA. Đề xuất đình chỉ công tác & khóa tài khoản.';
-    } else if (overdue >= 3) {
-      reason = 'Hạn chế nhận việc: có $overdue phiếu trễ hạn SLA. Tạm ngưng phân công mới.';
-    } else if (overdue >= 1) {
-      reason = 'Cảnh báo thời gian SLA (Mức 1): Đang có $overdue phiếu sự cố bị quá hạn thời gian xử lý quy định (> 4 giờ). Cần đẩy nhanh tiến độ.';
-    } else {
-      reason = 'Hiệu suất hoạt động tốt, các sự cố phụ trách đều trong hạn SLA (hoặc đã được phê duyệt gia hạn).';
-    }
+    final sla = _slaStatus;
+    final overdue = sla.overdue ??
+        _myReports
+            .where((r) => r['status'] == 'IN_PROGRESS' && _isReportOverdue(r))
+            .length;
+    final inProgress = sla.inProgress ??
+        _myReports.where((r) => r['status'] == 'IN_PROGRESS').length;
+    final resolved =
+        sla.resolved ?? _myReports.where((r) => r['status'] == 'RESOLVED').length;
 
     Color bg;
     Color border;
     Color textColor;
     IconData icon;
     String title;
-    String badgeText;
 
-    switch (penaltyLevel) {
+    switch (sla.level) {
       case 'RESTRICTED':
         bg = const Color(0xFFFEF2F2);
         border = const Color(0xFFFCA5A5);
         textColor = const Color(0xFF991B1B);
         icon = Icons.block;
         title = 'Đang bị hạn chế nhận việc mới';
-        badgeText = 'HẠN CHẾ (Mức 2)';
-        break;
       case 'WARNING':
         bg = const Color(0xFFFFFBEB);
         border = const Color(0xFFFDE68A);
         textColor = const Color(0xFF92400E);
         icon = Icons.warning_amber_rounded;
         title = 'Cảnh báo vi phạm thời gian SLA';
-        badgeText = 'CẢNH BÁO (Mức 1)';
-        break;
       case 'SUSPENDED':
         bg = const Color(0xFF450A0A);
         border = const Color(0xFFDC2626);
         textColor = Colors.white;
         icon = Icons.cancel;
         title = 'Tài khoản trong diện đình chỉ';
-        badgeText = 'ĐÌNH CHỈ (Mức 3)';
-        break;
-      default:
+      case 'NORMAL':
         bg = const Color(0xFFF0FDF4);
         border = const Color(0xFFBBF7D0);
         textColor = const Color(0xFF166534);
         icon = Icons.verified_user_outlined;
         title = 'Hồ sơ kỹ thuật viên tốt';
-        badgeText = 'BÌNH THƯỜNG';
+      default:
+        bg = const Color(0xFFF8FAFC);
+        border = const Color(0xFFE2E8F0);
+        textColor = const Color(0xFF475569);
+        icon = Icons.help_outline;
+        title = 'Chưa tải được trạng thái SLA';
     }
+    final reason = sla.reason ??
+        (sla.known ? null : 'Kéo xuống để tải lại trạng thái chế tài từ máy chủ.');
 
     return Container(
       width: double.infinity,
@@ -3595,26 +3757,27 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                   ),
                 ),
               ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3.5),
-                decoration: BoxDecoration(
-                  color: textColor.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: textColor.withValues(alpha: 0.2)),
-                ),
-                child: Text(
-                  badgeText,
-                  style: TextStyle(
-                    fontSize: 10.5,
-                    fontWeight: FontWeight.w800,
-                    color: textColor,
-                    letterSpacing: 0.2,
+              if (sla.known)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3.5),
+                  decoration: BoxDecoration(
+                    color: textColor.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: textColor.withValues(alpha: 0.2)),
+                  ),
+                  child: Text(
+                    sla.label.toUpperCase(),
+                    style: TextStyle(
+                      fontSize: 10.5,
+                      fontWeight: FontWeight.w800,
+                      color: textColor,
+                      letterSpacing: 0.2,
+                    ),
                   ),
                 ),
-              ),
             ],
           ),
-          if (reason.isNotEmpty) ...[
+          if (reason != null) ...[
             const SizedBox(height: 8),
             Text(
               reason,
@@ -3683,11 +3846,16 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
       child: ListView(
         padding: const EdgeInsets.all(12),
         children: [
+          _sectionErrorBanner(const [
+            _Section.mine,
+            _Section.performance,
+            _Section.rating,
+          ]),
           // 1. Toàn bộ tổng quan ca trực & thống kê KPI của KTV đưa về đây
           _buildShiftSummary(),
           const SizedBox(height: 14),
 
-          if (active.isEmpty && done.isEmpty)
+          if (active.isEmpty && done.isEmpty && !_hasError(const [_Section.mine]))
             const OpsEmptyState(
               icon: Icons.engineering_outlined,
               title: 'Bạn chưa nhận việc nào',
@@ -3753,6 +3921,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
       child: ListView(
         padding: const EdgeInsets.all(12),
         children: [
+          _sectionErrorBanner(const [_Section.schedules]),
           const OpsBanner(
             tone: OpsBannerTone.info,
             icon: Icons.event_repeat,
@@ -3814,7 +3983,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
           ),
           const SizedBox(height: 12),
 
-          if (displayed.isEmpty)
+          if (displayed.isEmpty && !_hasError(const [_Section.schedules]))
             OpsEmptyState(
               icon: Icons.event_available_outlined,
               title: _scheduleFilter == 'DUE'
@@ -4396,42 +4565,14 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
     return ct == 'DRONE' || ln.contains('drone');
   }
 
-
+  /// Hạn xử lý của phiếu: `slaDueAt` server tính (đã gồm gia hạn); thiếu thì
+  /// `createdAt + slaHours` của server. Không đoán số giờ SLA ở máy.
   DateTime? _getEffectiveDueAt(Map<String, dynamic> r) {
-    final reportId = _asInt(r['id']);
-    // 1. Kiểm tra bộ nhớ cục bộ nếu KTV hoặc Admin vừa gia hạn trên máy
-    if (reportId != null && _localSlaExtensions.containsKey(reportId)) {
-      final ext = _localSlaExtensions[reportId]!;
-      final extDue = _parseDate(ext['extendedDueAt']);
-      if (extDue != null) return extDue;
-    }
-
-    final extHours = (_localSlaExtensions[reportId]?['extensionHours'] ??
-            r['slaExtendedHours'] as num? ??
-            0)
-        .toInt();
-    final slaHours = (r['slaHours'] as num? ?? 4).toInt();
     final dueAt = _parseDate(r['slaDueAt']);
+    if (dueAt != null) return dueAt;
+    final slaHours = (r['slaHours'] as num?)?.toInt();
     final created = _parseDate(r['createdAt']);
-    final now = DateTime.now();
-
-    // 2. Mốc gia hạn chuẩn xác từ Backend (Backend extendSla đã tính: now + extHours)
-    if (dueAt != null) {
-      return dueAt;
-    }
-
-    // 3. Nếu phiếu có số giờ gia hạn nhưng chưa có slaDueAt trong DB
-    if (extHours > 0) {
-      final reqAtStr = _localSlaExtensions[reportId]?['requestedAt'];
-      final reqAt = _parseDate(reqAtStr);
-      if (reqAt != null) {
-        return reqAt.add(Duration(hours: extHours));
-      }
-      return now.add(Duration(hours: extHours));
-    }
-
-    // 4. Chưa gia hạn: trả về createdAt + slaHours
-    if (created != null) {
+    if (created != null && slaHours != null) {
       return created.add(Duration(hours: slaHours));
     }
     return null;
@@ -4439,352 +4580,177 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
 
   bool _isReportOverdue(Map<String, dynamic> r) {
     if (r['status'] == 'RESOLVED') return false;
-    final now = DateTime.now();
     final effectiveDue = _getEffectiveDueAt(r);
     if (effectiveDue != null) {
-      return now.isAfter(effectiveDue);
+      return DateTime.now().isAfter(effectiveDue);
     }
     return r['overdue'] == true;
   }
 
-  Future<void> _submitExtendSla(
-      int reportId, int hours, String reason, DateTime newDue) async {
-    try {
-      await _service.extendReportSla(reportId,
-          extensionHours: hours, reason: reason);
-    } catch (e) {
-      debugPrint('Cloud extendReportSla failed, applying local fallback: $e');
-    }
-    // Lưu vào bộ nhớ cục bộ để đồng bộ tức thời
-    _localSlaExtensions[reportId] = {
-      'reportId': reportId,
-      'extendedDueAt': newDue.toIso8601String(),
-      'extensionHours': hours,
-      'reason': reason,
-      'requestedAt': DateTime.now().toIso8601String(),
-    };
-    await _saveLocalSlaExtensions();
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          backgroundColor: const Color(0xFF059669),
-          content: Text(
-              'Đã gia hạn SLA thành công thêm +$hours giờ cho phiếu RPT-$reportId'),
-        ),
-      );
-    }
-    await _load();
-  }
+  SlaExtensionPolicy _slaPolicy(Map<String, dynamic> r) =>
+      SlaExtensionPolicy.fromReport(r, myUserId: _myUserId);
 
-  void _openExtendSlaSheet(Map<String, dynamic> r) {
+  /// Sheet gia hạn SLA (CONTRACTS §4): gửi `{hours, reason}`, lỗi hiện ngay
+  /// trong sheet theo mã server; thành công ⇒ báo hạn mới và tải lại phiếu.
+  Future<void> _openExtendSlaSheet(Map<String, dynamic> r) async {
     final reportId = _asInt(r['id']);
     if (reportId == null) return;
-    int selectedHours = 4;
-    final reasonController = TextEditingController();
-    final now = DateTime.now();
-    final currentDue = _getEffectiveDueAt(r) ?? now;
-    final baseDue = currentDue.isAfter(now) ? currentDue : now;
-
-    showModalBottomSheet<void>(
+    final policy = _slaPolicy(r);
+    if (!policy.visible) {
+      _showInfo('Chỉ KTV đang được giao phiếu mới gia hạn được SLA.');
+      return;
+    }
+    if (policy.limitReached) {
+      _showErrorText(
+        'Phiếu RPT-$reportId đã gia hạn ${policy.used}/${policy.max} lần — liên hệ admin nếu cần thêm thời gian.',
+      );
+      return;
+    }
+    final updated = await showModalBottomSheet<Map<String, dynamic>>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.white,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
-      builder: (ctx) {
-        return StatefulBuilder(
-          builder: (ctx, setModalState) {
-            final newDue = baseDue.add(Duration(hours: selectedHours));
-            return SafeArea(
-              top: false,
-              child: Padding(
-                padding: EdgeInsets.only(
-                  left: 20,
-                  right: 20,
-                  top: 16,
-                  bottom: MediaQuery.of(ctx).viewInsets.bottom + 20,
-                ),
-                child: SingleChildScrollView(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Center(
-                        child: Container(
-                          width: 44,
-                          height: 4,
-                          decoration: BoxDecoration(
-                            color: Colors.grey.shade300,
-                            borderRadius: BorderRadius.circular(2),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 14),
-                      Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFFEF3C7),
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: const Icon(Icons.more_time_rounded,
-                                color: Color(0xFFD97706), size: 22),
-                          ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Gia hạn SLA phiếu RPT-${r['id']}',
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                    color: opsDark,
-                                  ),
-                                ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  '${r['title'] ?? ''}',
-                                  style: const TextStyle(
-                                      fontSize: 12, color: opsMutedText),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 14),
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFFFFBEB),
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: const Color(0xFFFDE68A)),
-                        ),
-                        child: Column(
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                const Text('Hạn hiện tại:',
-                                    style: TextStyle(
-                                        fontSize: 12.5,
-                                        color: Color(0xFF92400E))),
-                                const SizedBox(width: 8),
-                                Flexible(
-                                  child: Text(_formatFullDateTime(currentDue),
-                                      style: const TextStyle(
-                                          fontSize: 12.5,
-                                          fontWeight: FontWeight.w600,
-                                          color: Color(0xFF92400E)),
-                                      textAlign: TextAlign.end,
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis),
-                                ),
-                              ],
-                            ),
-                            const Divider(height: 12, color: Color(0xFFFDE68A)),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                const Text('Hạn mới sau gia hạn:',
-                                    style: TextStyle(
-                                        fontSize: 12.5,
-                                        fontWeight: FontWeight.bold,
-                                        color: Color(0xFFB45309))),
-                                const SizedBox(width: 8),
-                                Flexible(
-                                  child: Text(_formatFullDateTime(newDue),
-                                      style: const TextStyle(
-                                          fontSize: 12.5,
-                                          fontWeight: FontWeight.bold,
-                                          color: Color(0xFFB45309)),
-                                      textAlign: TextAlign.end,
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 14),
-                      const Text('Chọn thời gian gia hạn:',
-                          style: TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.bold,
-                              color: opsDark)),
-                      const SizedBox(height: 8),
-                      Row(
-                        children: [2, 4, 8, 24].map((hrs) {
-                          final isSel = selectedHours == hrs;
-                          return Expanded(
-                            child: Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 3),
-                              child: InkWell(
-                                onTap: () =>
-                                    setModalState(() => selectedHours = hrs),
-                                borderRadius: BorderRadius.circular(10),
-                                child: Container(
-                                  padding:
-                                      const EdgeInsets.symmetric(vertical: 10),
-                                  decoration: BoxDecoration(
-                                    color: isSel
-                                        ? const Color(0xFFD97706)
-                                        : Colors.white,
-                                    borderRadius: BorderRadius.circular(10),
-                                    border: Border.all(
-                                      color: isSel
-                                          ? const Color(0xFFD97706)
-                                          : const Color(0xFFE2E8F0),
-                                      width: isSel ? 1.5 : 1,
-                                    ),
-                                  ),
-                                  child: Center(
-                                    child: Text(
-                                      '+$hrs h',
-                                      style: TextStyle(
-                                        fontSize: 13,
-                                        fontWeight: isSel
-                                            ? FontWeight.bold
-                                            : FontWeight.w600,
-                                        color: isSel ? Colors.white : opsDark,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          );
-                        }).toList(),
-                      ),
-                      const SizedBox(height: 14),
-                      const Text('Lý do gia hạn (bắt buộc):',
-                          style: TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.bold,
-                              color: opsDark)),
-                      const SizedBox(height: 6),
-                      TextField(
-                        controller: reasonController,
-                        maxLines: 2,
-                        style: const TextStyle(fontSize: 13),
-                        decoration: InputDecoration(
-                          hintText: 'Nhập lý do cần thêm thời gian xử lý...',
-                          hintStyle: const TextStyle(
-                              fontSize: 12.5, color: opsMutedText),
-                          border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10)),
-                          contentPadding: const EdgeInsets.all(10),
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Wrap(
-                        spacing: 6,
-                        runSpacing: 6,
-                        children: [
-                          'Chờ linh kiện thay thế',
-                          'Cần kiểm tra sâu mạch điện',
-                          'Tủ khó tiếp cận',
-                          'Phối hợp bên vận hành tòa nhà',
-                        ].map((preset) {
-                          return InkWell(
-                            onTap: () => setModalState(
-                                () => reasonController.text = preset),
-                            borderRadius: BorderRadius.circular(6),
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 8, vertical: 4),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFF1F5F9),
-                                borderRadius: BorderRadius.circular(6),
-                                border:
-                                    Border.all(color: const Color(0xFFCBD5E1)),
-                              ),
-                              child: Text(preset,
-                                  style: const TextStyle(
-                                      fontSize: 11, color: Color(0xFF475569))),
-                            ),
-                          );
-                        }).toList(),
-                      ),
-                      const SizedBox(height: 18),
-                      SizedBox(
-                        width: double.infinity,
-                        height: 46,
-                        child: ElevatedButton.icon(
-                          onPressed: () async {
-                            final reason = reasonController.text.trim();
-                            if (reason.isEmpty) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                    content: Text(
-                                        'Vui lòng nhập lý do gia hạn SLA')),
-                              );
-                              return;
-                            }
-                            Navigator.of(ctx).pop();
-                            await _submitExtendSla(
-                                reportId, selectedHours, reason, newDue);
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFFD97706),
-                            foregroundColor: Colors.white,
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12)),
-                          ),
-                          icon:
-                              const Icon(Icons.check_circle_outline, size: 18),
-                          label: const Text('Xác nhận gia hạn SLA',
-                              style: TextStyle(
-                                  fontWeight: FontWeight.bold, fontSize: 14)),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            );
-          },
-        );
-      },
+      builder: (_) => _ExtendSlaSheet(
+        report: r,
+        service: _service,
+        currentDue: _getEffectiveDueAt(r),
+        policy: policy,
+      ),
     );
+    if (updated == null || !mounted) return;
+    final newDue = _parseDate(updated['slaDueAt']);
+    final usage = SlaExtensionPolicy.fromReport(updated, myUserId: _myUserId)
+        .usageLabel;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        backgroundColor: const Color(0xFF059669),
+        content: Text(
+          'Đã gia hạn SLA phiếu RPT-$reportId'
+          '${newDue != null ? ' — hạn mới ${_formatFullDateTime(newDue)}' : ''}'
+          '${usage != null ? ' ($usage)' : ''}.',
+        ),
+      ),
+    );
+    AppEventBus.instance.emit(ReportUpdatedEvent(reportId: reportId.toString()));
+    await _load();
   }
 
-  // ---- Tab 5: thiết bị IoT (router/controller gắn trên tủ) ----
-  Widget _buildIotDevices() {
-    if (_devicesError != null) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: OpsBanner(
-            tone: OpsBannerTone.warning,
-            icon: Icons.construction_outlined,
-            text: _devicesError!,
+  /// KTV đang giữ phiếu trả phiếu về hàng chờ (bắt buộc lý do).
+  Future<void> _releaseReportFlow(Map<String, dynamic> r) async {
+    final reportId = _asInt(r['id']);
+    if (reportId == null) return;
+    final reasonCtrl = TextEditingController();
+    var sending = false;
+    String? error;
+    final released = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => ControllerDisposer(
+        controllers: [reasonCtrl],
+        child: StatefulBuilder(
+          builder: (ctx, setLocal) => AlertDialog(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            title: Text('Trả lại phiếu RPT-$reportId'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Phiếu về lại hàng chờ để KTV khác nhận; lý do được ghi vào nhật ký phiếu.',
+                  style: TextStyle(fontSize: 12.5, color: opsMutedText),
+                ),
+                const SizedBox(height: 10),
+                TextField(
+                  controller: reasonCtrl,
+                  enabled: !sending,
+                  autofocus: true,
+                  minLines: 1,
+                  maxLines: 3,
+                  maxLength: 1000,
+                  decoration: InputDecoration(
+                    labelText: 'Lý do trả phiếu (bắt buộc)',
+                    hintText: 'VD: Cần linh kiện không có sẵn, đổi ca trực...',
+                    errorText: error,
+                  ),
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: sending ? null : () => Navigator.pop(ctx, false),
+                child: const Text('Hủy'),
+              ),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF64748B),
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                onPressed: sending
+                    ? null
+                    : () async {
+                        final reason = reasonCtrl.text.trim();
+                        if (reason.isEmpty) {
+                          setLocal(() => error = 'Vui lòng nhập lý do trả phiếu.');
+                          return;
+                        }
+                        setLocal(() {
+                          sending = true;
+                          error = null;
+                        });
+                        try {
+                          await _service.releaseReport(reportId, reason: reason);
+                          if (ctx.mounted) Navigator.pop(ctx, true);
+                        } catch (e) {
+                          if (ctx.mounted) {
+                            setLocal(() {
+                              sending = false;
+                              error = LockerOpsService.errorMessage(e);
+                            });
+                          }
+                        }
+                      },
+                child: Text(sending ? 'Đang gửi...' : 'Trả lại phiếu'),
+              ),
+            ],
           ),
         ),
-      );
-    }
+      ),
+    );
+    if (released != true || !mounted) return;
+    _showInfo('Đã trả phiếu RPT-$reportId về hàng chờ.');
+    AppEventBus.instance.emit(ReportUpdatedEvent(reportId: reportId.toString()));
+    await _load();
+  }
+
+  // ---- Tab 5: thiết bị IoT (bộ điều khiển gắn trên tủ) ----
+  Widget _buildIotDevices() {
+    final error = _errors[_Section.devices];
     return RefreshIndicator(
       onRefresh: _load,
       child: ListView(
         padding: const EdgeInsets.all(12),
         children: [
+          if (error != null)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: _RetryBanner(
+                message: 'Không tải được danh sách thiết bị: $error',
+                onRetry: _loading ? null : _load,
+              ),
+            ),
           const OpsSectionLabel(
             'Thiết bị IoT',
             icon: Icons.device_hub_outlined,
           ),
-          if (_devices.isEmpty)
+          if (_devices.isEmpty && error == null)
             const OpsEmptyState(
               icon: Icons.device_hub_outlined,
               title: 'Không có thiết bị nào',
-              subtitle: 'Chưa có thiết bị IoT nào được phân công.',
+              subtitle: 'Chưa có bộ điều khiển nào gắn với tủ bạn phụ trách.',
             )
           else
             for (final device in _devices)
@@ -4798,16 +4764,13 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                         width: 44,
                         height: 44,
                         decoration: BoxDecoration(
-                          color:
-                              _deviceStatusColor(device['status'] as String?)
-                                  .withValues(alpha: 0.12),
+                          color: _deviceStatusColor(device['status'] as String?)
+                              .withValues(alpha: 0.12),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Icon(
                           Icons.router_outlined,
-                          color: _deviceStatusColor(
-                            device['status'] as String?,
-                          ),
+                          color: _deviceStatusColor(device['status'] as String?),
                         ),
                       ),
                       const SizedBox(width: 12),
@@ -4816,21 +4779,30 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              '${device['name'] ?? 'Thiết bị #${device['id']}'}',
+                              '${device['deviceId'] ?? device['name'] ?? 'Thiết bị #${device['id']}'}',
                               style: const TextStyle(
                                 fontWeight: FontWeight.w800,
                                 fontSize: 14,
                                 color: opsDark,
                               ),
                             ),
-                            if ((device['model'] ?? '').toString().isNotEmpty)
+                            if (deviceLockerLabel(device) != null)
                               Text(
-                                device['model'].toString(),
+                                deviceLockerLabel(device)!,
                                 style: const TextStyle(
                                   fontSize: 12,
                                   color: opsMutedText,
                                 ),
                               ),
+                            Text(
+                              device['lastSeenAt'] != null
+                                  ? 'Tín hiệu cuối: ${fmtDateTime(device['lastSeenAt'])}'
+                                  : 'Chưa nhận tín hiệu nào',
+                              style: const TextStyle(
+                                fontSize: 11.5,
+                                color: opsMutedText,
+                              ),
+                            ),
                           ],
                         ),
                       ),
@@ -4843,15 +4815,17 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
           const OpsBanner(
             tone: OpsBannerTone.info,
             icon: Icons.touch_app_outlined,
-            text: 'Chạm vào thiết bị để xem chi tiết, nhật ký và điều khiển.',
+            text:
+                'Trạng thái do máy chủ tính theo tín hiệu gần nhất của thiết bị. '
+                'Chạm vào thiết bị để xem nhật ký hoặc khởi động lại bộ điều khiển.',
           ),
         ],
       ),
     );
   }
 
-  /// Bottom sheet chi tiết + nhật ký + điều khiển (restart / đổi trạng thái)
-  /// cho một thiết bị IoT.
+  /// Bottom sheet chi tiết + nhật ký + điều khiển (khởi động lại / đánh dấu
+  /// mất kết nối) cho một thiết bị IoT.
   Future<void> _deviceSheet(Map<String, dynamic> device) async {
     final id = _asInt(device['id']);
     if (id == null) return;
@@ -4974,10 +4948,11 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
     final hasInspection =
         attachments.any((a) => a.stage == ReportStage.inspection);
 
-    final extHours = (_localSlaExtensions[r['id']]?['extensionHours'] ?? r['slaExtendedHours'] as num? ?? 0).toInt();
+    final extHours = (r['slaExtendedHours'] as num? ?? 0).toInt();
     final isExtended = extHours > 0;
     final effectiveDue = _getEffectiveDueAt(r);
     final isOverdue = _isReportOverdue(r);
+    final slaPolicy = _slaPolicy(r);
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
@@ -5086,7 +5061,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                     _SlaCountdownBadge(
                       dueAt: effectiveDue,
                       createdAt: createdAt,
-                      slaHours: (r['slaHours'] as num? ?? 4).toInt(),
+                      slaHours: (r['slaHours'] as num?)?.toInt(),
                       status: status,
                       isExtended: isExtended,
                       extendedHours: extHours,
@@ -5173,7 +5148,9 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                           border: Border.all(color: const Color(0xFFFDE68A)),
                         ),
                         child: Text(
-                          '+$extHours h SLA',
+                          slaPolicy.max != null
+                              ? '+$extHours h SLA · ${slaPolicy.used ?? 0}/${slaPolicy.max}'
+                              : '+$extHours h SLA',
                           style: const TextStyle(
                             fontSize: 10.5,
                             fontWeight: FontWeight.w700,
@@ -5261,38 +5238,51 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                           ),
                         // Nút gia hạn, nghiệm thu & hoàn tất nếu IN_PROGRESS của KTV
                         if (!isQueueView && status == 'IN_PROGRESS' && isAssignedToMe) ...[
-                          // Nút gia hạn SLA nhanh
-                          InkWell(
-                            onTap: () => _openExtendSlaSheet(r),
-                            borderRadius: BorderRadius.circular(8),
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFFFFBEB),
-                                borderRadius: BorderRadius.circular(8),
-                                border: Border.all(color: const Color(0xFFFDE68A)),
-                              ),
-                              child: const Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(
-                                    Icons.more_time_rounded,
-                                    size: 13,
-                                    color: Color(0xFFD97706),
+                          // Nút gia hạn SLA nhanh — chỉ người được giao, còn lượt.
+                          if (slaPolicy.visible)
+                            InkWell(
+                              onTap: slaPolicy.canExtend
+                                  ? () => _openExtendSlaSheet(r)
+                                  : null,
+                              borderRadius: BorderRadius.circular(8),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+                                decoration: BoxDecoration(
+                                  color: slaPolicy.canExtend
+                                      ? const Color(0xFFFFFBEB)
+                                      : const Color(0xFFF1F5F9),
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(
+                                    color: slaPolicy.canExtend
+                                        ? const Color(0xFFFDE68A)
+                                        : const Color(0xFFE2E8F0),
                                   ),
-                                  SizedBox(width: 3.5),
-                                  Text(
-                                    'Gia hạn',
-                                    style: TextStyle(
-                                      fontSize: 10.5,
-                                      fontWeight: FontWeight.w700,
-                                      color: Color(0xFFD97706),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      Icons.more_time_rounded,
+                                      size: 13,
+                                      color: slaPolicy.canExtend
+                                          ? const Color(0xFFD97706)
+                                          : opsMutedText,
                                     ),
-                                  ),
-                                ],
+                                    const SizedBox(width: 3.5),
+                                    Text(
+                                      slaPolicy.canExtend ? 'Gia hạn' : 'Hết lượt gia hạn',
+                                      style: TextStyle(
+                                        fontSize: 10.5,
+                                        fontWeight: FontWeight.w700,
+                                        color: slaPolicy.canExtend
+                                            ? const Color(0xFFD97706)
+                                            : opsMutedText,
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
-                          ),
                           InkWell(
                             onTap: () => _inspectionFlow(r),
                             borderRadius: BorderRadius.circular(8),
@@ -5381,9 +5371,10 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
     final reporterPhone = (r['reporterPhone'] ?? '').toString().trim();
     final lockerAddress = (r['lockerAddress'] ?? '').toString().trim();
     final overdue = _isReportOverdue(r);
-    final extHours = (_localSlaExtensions[r['id']]?['extensionHours'] ?? r['slaExtendedHours'] as num? ?? 0).toInt();
+    final extHours = (r['slaExtendedHours'] as num? ?? 0).toInt();
     final isExtended = extHours > 0;
     final effectiveDue = _getEffectiveDueAt(r);
+    final slaPolicy = _slaPolicy(r);
     final userReportPhotos = attachments
         .where((a) => a.stage == ReportStage.report)
         .toList();
@@ -5474,7 +5465,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                             _SlaCountdownBadge(
                               dueAt: effectiveDue,
                               createdAt: createdAt,
-                              slaHours: (r['slaHours'] as num? ?? 4).toInt(),
+                              slaHours: (r['slaHours'] as num?)?.toInt(),
                               status: status,
                               isExtended: isExtended,
                               extendedHours: extHours,
@@ -5482,7 +5473,8 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                             if (isExtended && !overdue)
                               _MiniPill(
                                 icon: Icons.more_time,
-                                text: 'Đã gia hạn SLA (+$extHours h)',
+                                text: 'Đã gia hạn SLA (+$extHours h)'
+                                    '${slaPolicy.usageLabel != null ? ' · ${slaPolicy.usageLabel}' : ''}',
                                 color: const Color(0xFFD97706),
                               ),
                             if (isExtended && overdue)
@@ -5503,12 +5495,12 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                                 text: ageLabel,
                                 color: overdue
                                     ? const Color(0xFFDC2626)
-                                    : (createdAt != null ? _slaColor(createdAt) : opsPrimary),
+                                    : _slaColor(effectiveDue),
                               ),
                             if (r['assignedToUserId'] != null)
                               _MiniPill(
                                 icon: Icons.engineering_outlined,
-                                text: 'KTV #${r['assignedToUserId']}${assignedToMe ? ' (bạn)' : ''}',
+                                text: '${_assigneeLabel(r)}${assignedToMe ? ' (bạn)' : ''}',
                               ),
                             if (createdAt != null)
                               _MiniPill(
@@ -5521,10 +5513,10 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                                 text: 'Hạn SLA: ${_formatFullDateTime(effectiveDue)}',
                                 color: overdue ? const Color(0xFFDC2626) : const Color(0xFF2563EB),
                               ),
-                            if (isExtended && (r['slaExtensionReason'] != null || _localSlaExtensions[r['id']]?['reason'] != null))
+                            if (isExtended && (r['slaExtensionReason'] ?? '').toString().trim().isNotEmpty)
                               _MiniPill(
                                 icon: Icons.comment_outlined,
-                                text: 'Lý do gia hạn: ${_localSlaExtensions[r['id']]?['reason'] ?? r['slaExtensionReason']}',
+                                text: 'Lý do gia hạn: ${r['slaExtensionReason']}',
                                 color: const Color(0xFF92400E),
                               ),
                             ..._ticketBadges(r),
@@ -5681,6 +5673,16 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                         const SizedBox(height: 16),
                       ],
 
+                      // Ảnh KTV đã gắn vào phiếu — xoá được ảnh tải nhầm.
+                      if (status == 'IN_PROGRESS' && assignedToMe && _asInt(r['id']) != null) ...[
+                        _MyReportPhotosSection(
+                          reportId: _asInt(r['id'])!,
+                          service: _service,
+                          myUserId: _myUserId,
+                        ),
+                        const SizedBox(height: 16),
+                      ],
+
                       // Nhật ký & Lịch sử xử lý KTV (được chuyển từ hình 3 sang)
                       _ReportLogsSection(
                         reportId: _asInt(r['id']) ?? 0,
@@ -5796,13 +5798,30 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                           ),
                         ),
                         const SizedBox(height: 6),
+                        SizedBox(
+                          width: double.infinity,
+                          height: 36,
+                          child: TextButton.icon(
+                            onPressed: () {
+                              Navigator.pop(ctx);
+                              _releaseReportFlow(r);
+                            },
+                            icon: const Icon(Icons.undo_rounded, size: 15),
+                            label: const Text(
+                              'Trả lại phiếu về hàng chờ',
+                              style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600),
+                            ),
+                            style: TextButton.styleFrom(foregroundColor: const Color(0xFF64748B)),
+                          ),
+                        ),
+                        const SizedBox(height: 4),
                       ],
                       if (status == 'IN_PROGRESS' && !assignedToMe) ...[
                         OpsBanner(
                           tone: OpsBannerTone.info,
                           icon: Icons.engineering_outlined,
                           text: r['assignedToUserId'] != null
-                              ? 'Phiếu đang do KTV #${r['assignedToUserId']} xử lý — chỉ người được giao mới hoàn tất được.'
+                              ? 'Phiếu đang do ${_assigneeLabel(r)} xử lý — chỉ người được giao mới hoàn tất được.'
                               : 'Phiếu đang được xử lý.',
                         ),
                         const SizedBox(height: 6),
@@ -5836,19 +5855,22 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                               ),
                             ),
                           ),
-                          if (status == 'IN_PROGRESS') ...[
+                          // Chỉ KTV đang được giao phiếu mới gia hạn được (CONTRACTS §4).
+                          if (slaPolicy.visible) ...[
                             const SizedBox(width: 8),
                             Expanded(
                               child: SizedBox(
                                 height: 36,
                                 child: OutlinedButton.icon(
-                                  onPressed: () {
-                                    Navigator.pop(ctx);
-                                    _openExtendSlaSheet(r);
-                                  },
+                                  onPressed: slaPolicy.canExtend
+                                      ? () {
+                                          Navigator.pop(ctx);
+                                          _openExtendSlaSheet(r);
+                                        }
+                                      : null,
                                   icon: const Icon(Icons.more_time, size: 14, color: Color(0xFFD97706)),
-                                  label: const Text(
-                                    'Gia hạn SLA',
+                                  label: Text(
+                                    slaPolicy.buttonLabel,
                                     style: TextStyle(fontSize: 12, color: Color(0xFFD97706), fontWeight: FontWeight.w700),
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
@@ -6074,10 +6096,12 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
     return 'Vừa mở';
   }
 
-  Color _slaColor(DateTime createdAt) {
-    final age = DateTime.now().difference(createdAt);
-    if (age.inHours >= 4) return const Color(0xFFDC2626);
-    if (age.inHours >= 1) return const Color(0xFFD97706);
+  /// Màu theo thời gian còn lại tới hạn SLA server trả (không dùng ngưỡng cố định).
+  Color _slaColor(DateTime? dueAt) {
+    if (dueAt == null) return opsPrimary;
+    final left = dueAt.difference(DateTime.now());
+    if (left.isNegative) return const Color(0xFFDC2626);
+    if (left.inHours < 1) return const Color(0xFFD97706);
     return opsPrimary;
   }
 
@@ -6089,8 +6113,9 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
   }
 }
 
-/// Bottom sheet chi tiết thiết bị IoT: thông tin, nhật ký audit và điều khiển
-/// (đổi trạng thái ONLINE/OFFLINE/ERROR, restart).
+/// Bottom sheet chi tiết thiết bị IoT: thông tin (trạng thái do server tính),
+/// nhật ký truy cập của tủ và điều khiển (khởi động lại bộ điều khiển, đánh dấu
+/// mất kết nối / lỗi). ONLINE không đặt tay được.
 class _IotDeviceSheet extends StatefulWidget {
   const _IotDeviceSheet({required this.deviceId, required this.service});
 
@@ -6104,9 +6129,13 @@ class _IotDeviceSheet extends StatefulWidget {
 class _IotDeviceSheetState extends State<_IotDeviceSheet> {
   Map<String, dynamic>? _device;
   List<Map<String, dynamic>> _logs = const [];
+  String? _logsError;
   bool _loading = true;
   bool _busy = false;
   String? _error;
+
+  /// Kết quả lần khởi động lại gần nhất (hiện ngay trong sheet).
+  DeviceRestartResult? _restartResult;
 
   @override
   void initState() {
@@ -6117,11 +6146,18 @@ class _IotDeviceSheetState extends State<_IotDeviceSheet> {
   Future<void> _load() async {
     try {
       final detail = await widget.service.techDeviceDetail(widget.deviceId);
-      final logs = await widget.service.techDeviceLogs(widget.deviceId);
+      List<Map<String, dynamic>> logs = const [];
+      String? logsError;
+      try {
+        logs = await widget.service.techDeviceLogs(widget.deviceId);
+      } catch (e) {
+        logsError = LockerOpsService.errorMessage(e);
+      }
       if (!mounted) return;
       setState(() {
         _device = detail;
         _logs = logs;
+        _logsError = logsError;
         _error = null;
         _loading = false;
       });
@@ -6134,36 +6170,16 @@ class _IotDeviceSheetState extends State<_IotDeviceSheet> {
     }
   }
 
-  Future<void> _changeStatus(String newStatus) async {
-    setState(() => _busy = true);
-    try {
-      await widget.service.techUpdateStatus(widget.deviceId, newStatus);
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Đã cập nhật trạng thái: $newStatus')),
-        );
-      }
-      await _load();
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(LockerOpsService.errorMessage(e))),
-        );
-      }
-    } finally {
-      if (mounted) setState(() => _busy = false);
-    }
-  }
+  String get _deviceLabel =>
+      '${_device?['deviceId'] ?? _device?['name'] ?? '#${widget.deviceId}'}';
 
-  Future<void> _restart() async {
-    final confirmed = await showDialog<bool>(
+  Future<bool> _confirm(String title, String message, String action) async {
+    final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('Restart thiết bị'),
-        content: Text(
-          'Thiết bị "${_device?['name'] ?? '#${widget.deviceId}'}" sẽ được restart. Xác nhận tiếp tục?',
-        ),
+        title: Text(title),
+        content: Text(message),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
@@ -6173,30 +6189,43 @@ class _IotDeviceSheetState extends State<_IotDeviceSheet> {
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFFDC2626),
               foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             ),
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Restart'),
+            child: Text(action),
           ),
         ],
       ),
     );
-    if (confirmed != true) return;
+    return ok == true;
+  }
+
+  /// Đánh dấu tay OFFLINE / ERROR (vd. đã rút điện bộ điều khiển).
+  Future<void> _markStatus(String status) async {
+    final label = status == 'ERROR' ? 'lỗi' : 'mất kết nối';
+    final ok = await _confirm(
+      'Đánh dấu thiết bị $label',
+      'Thiết bị "$_deviceLabel" sẽ được đánh dấu $label cho tới khi bộ điều khiển '
+          'gửi tín hiệu trở lại. Tiếp tục?',
+      'Đánh dấu',
+    );
+    if (!ok || !mounted) return;
     setState(() => _busy = true);
     try {
-      await widget.service.techRestartDevice(widget.deviceId);
+      await widget.service.techUpdateStatus(widget.deviceId, status);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Đã gửi lệnh restart thiết bị')),
+          SnackBar(content: Text('Đã đánh dấu thiết bị $label.')),
         );
       }
       await _load();
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(LockerOpsService.errorMessage(e))),
+          SnackBar(
+            backgroundColor: const Color(0xFFDC2626),
+            content: Text(LockerOpsService.errorMessage(e)),
+          ),
         );
       }
     } finally {
@@ -6204,28 +6233,56 @@ class _IotDeviceSheetState extends State<_IotDeviceSheet> {
     }
   }
 
-  String _fieldLabel(String key) => switch (key) {
-        'model' => 'Model',
-        'firmwareVersion' => 'Firmware',
-        'ipAddress' => 'IP',
-        'macAddress' => 'MAC',
-        'location' => 'Vị trí',
-        'lastSeen' => 'Lần cuối thấy',
-        _ => key,
-      };
-
-  String _fmtDate(dynamic value) {
-    final d = parseServerDateTime(value);
-    if (d == null) return '';
-    String two(int n) => n.toString().padLeft(2, '0');
-    return '${two(d.hour)}:${two(d.minute)} ${two(d.day)}/${two(d.month)}/${d.year}';
+  /// Khởi động lại bộ điều khiển tủ (CONTRACTS §3) và báo đúng kết quả
+  /// ACCEPTED / TIMEOUT / FAILED.
+  Future<void> _restart() async {
+    final ok = await _confirm(
+      'Khởi động lại bộ điều khiển',
+      'Bộ điều khiển "$_deviceLabel" sẽ khởi động lại tiến trình điều khiển tủ '
+          '(không khởi động lại máy). Trong lúc đó tủ tạm không mở ô được. Tiếp tục?',
+      'Khởi động lại',
+    );
+    if (!ok || !mounted) return;
+    setState(() {
+      _busy = true;
+      _restartResult = null;
+    });
+    try {
+      final result = await widget.service.techRestartDevice(widget.deviceId);
+      if (!mounted) return;
+      setState(() => _restartResult = result);
+      await _load();
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            backgroundColor: const Color(0xFFDC2626),
+            content: Text(LockerOpsService.errorMessage(e)),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final device = _device;
-    final currentStatus = (device?['status'] as String?) ?? 'ONLINE';
-    const statuses = ['ONLINE', 'OFFLINE', 'ERROR'];
+    final lockerLabel = device == null ? null : deviceLockerLabel(device);
+    final rows = <(String, String)>[
+      if (device?['deviceId'] != null) ('Mã thiết bị', '${device!['deviceId']}'),
+      if (lockerLabel != null) ('Tủ', lockerLabel),
+      (
+        'Tín hiệu cuối',
+        device?['lastSeenAt'] != null
+            ? fmtDateTime(device!['lastSeenAt'])
+            : 'Chưa nhận tín hiệu',
+      ),
+      if (device?['online'] is bool)
+        ('Kết nối', device!['online'] == true ? 'Trực tuyến' : 'Mất kết nối'),
+    ];
+    final restart = _restartResult;
     return SafeArea(
       top: false,
       child: Padding(
@@ -6238,192 +6295,217 @@ class _IotDeviceSheetState extends State<_IotDeviceSheet> {
                 ),
               )
             : _error != null
-                ? Padding(
-                    padding: const EdgeInsets.all(12),
-                    child: OpsBanner(
-                      tone: OpsBannerTone.warning,
-                      icon: Icons.construction_outlined,
-                      text: _error!,
-                    ),
+                ? _RetryBanner(
+                    message: 'Không tải được thiết bị: $_error',
+                    onRetry: () {
+                      setState(() => _loading = true);
+                      _load();
+                    },
                   )
-                : Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          const Icon(Icons.router_outlined, color: opsPrimary),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: Text(
-                              '${device?['name'] ?? 'Thiết bị #${widget.deviceId}'}',
-                              style: const TextStyle(
-                                fontWeight: FontWeight.w900,
-                                fontSize: 15,
-                                color: opsDark,
+                : SingleChildScrollView(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            const Icon(Icons.router_outlined, color: opsPrimary),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Text(
+                                _deviceLabel,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w900,
+                                  fontSize: 15,
+                                  color: opsDark,
+                                ),
                               ),
                             ),
-                          ),
-                          _DeviceStatusBadge(device?['status'] as String?),
-                        ],
-                      ),
-                      const SizedBox(height: 12),
-                      for (final field in [
-                        'model',
-                        'firmwareVersion',
-                        'ipAddress',
-                        'macAddress',
-                        'location',
-                        'lastSeen',
-                      ])
-                        if (device?[field] != null &&
-                            '${device?[field]}'.isNotEmpty)
+                            _DeviceStatusBadge(device?['status'] as String?),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                        for (final row in rows)
                           Padding(
                             padding: const EdgeInsets.only(bottom: 6),
                             child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  _fieldLabel(field),
+                                  row.$1,
                                   style: const TextStyle(
                                     fontSize: 13,
                                     color: opsMutedText,
                                   ),
                                 ),
-                                const Spacer(),
-                                Text(
-                                  '${device?[field]}',
-                                  style: const TextStyle(
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w700,
-                                    color: opsDark,
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Text(
+                                    row.$2,
+                                    textAlign: TextAlign.end,
+                                    style: const TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w700,
+                                      color: opsDark,
+                                    ),
                                   ),
                                 ),
                               ],
                             ),
                           ),
-                      const SizedBox(height: 8),
-                      const Text(
-                        'Thay đổi trạng thái',
-                        style: TextStyle(
-                          fontWeight: FontWeight.w700,
-                          color: opsDark,
+                        const SizedBox(height: 6),
+                        const Text(
+                          'Trạng thái do máy chủ tính theo tín hiệu gần nhất; '
+                          'chỉ đánh dấu tay khi biết chắc thiết bị đã mất kết nối hoặc hỏng.',
+                          style: TextStyle(fontSize: 11.5, color: opsMutedText),
                         ),
-                      ),
-                      const SizedBox(height: 8),
-                      Wrap(
-                        spacing: 10,
-                        children: [
-                          for (final s in statuses)
-                            ChoiceChip(
-                              label: Text(s),
-                              selected: currentStatus == s,
-                              onSelected: _busy
-                                  ? null
-                                  : (selected) {
-                                      if (selected) _changeStatus(s);
-                                    },
-                            ),
+                        const SizedBox(height: 12),
+                        if (restart != null) ...[
+                          OpsBanner(
+                            tone: restart.isAccepted
+                                ? OpsBannerTone.success
+                                : restart.isUnconfirmed
+                                    ? OpsBannerTone.warning
+                                    : OpsBannerTone.danger,
+                            icon: restart.isAccepted
+                                ? Icons.check_circle_outline
+                                : Icons.error_outline,
+                            text: restart.displayMessage,
+                          ),
+                          const SizedBox(height: 12),
                         ],
-                      ),
-                      const SizedBox(height: 12),
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton.icon(
-                          onPressed: _busy ? null : _restart,
-                          icon: _busy
-                              ? const SizedBox(
-                                  width: 18,
-                                  height: 18,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    color: Colors.white,
-                                  ),
-                                )
-                              : const Icon(Icons.restart_alt, size: 18),
-                          label: const Text('Restart thiết bị'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFFDC2626),
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(vertical: 12),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(14),
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton.icon(
+                            onPressed: _busy ? null : _restart,
+                            icon: _busy
+                                ? const SizedBox(
+                                    width: 18,
+                                    height: 18,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: Colors.white,
+                                    ),
+                                  )
+                                : const Icon(Icons.restart_alt, size: 18),
+                            label: Text(
+                              _busy ? 'Đang chờ tủ phản hồi...' : 'Khởi động lại bộ điều khiển',
+                            ),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFFDC2626),
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(14),
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                      const SizedBox(height: 12),
-                      const OpsSectionLabel(
-                        'Nhật ký hoạt động',
-                        icon: Icons.history_edu_outlined,
-                      ),
-                      if (_logs.isEmpty)
-                        const Padding(
-                          padding: EdgeInsets.only(bottom: 8),
-                          child: Text(
-                            'Chưa có nhật ký.',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: opsMutedText,
-                            ),
-                          ),
-                        )
-                      else
-                        ConstrainedBox(
-                          constraints: const BoxConstraints(maxHeight: 220),
-                          child: ListView(
-                            shrinkWrap: true,
-                            children: [
-                              for (final log in _logs)
-                                Padding(
-                                  padding: const EdgeInsets.only(bottom: 8),
-                                  child: Container(
-                                    padding: const EdgeInsets.all(12),
-                                    decoration: BoxDecoration(
-                                      color: opsSurface,
-                                      borderRadius: BorderRadius.circular(12),
-                                      border: Border.all(color: opsBorder),
-                                    ),
-                                    child: Row(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        const Icon(
-                                          Icons.circle,
-                                          size: 8,
-                                          color: opsPrimary,
-                                        ),
-                                        const SizedBox(width: 10),
-                                        Expanded(
-                                          child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Text(
-                                                '${log['message'] ?? log['event'] ?? log['action'] ?? ''}',
-                                                style: const TextStyle(
-                                                  fontSize: 13,
-                                                  color: opsDark,
-                                                ),
-                                              ),
-                                              if (log['createdAt'] != null)
-                                                Text(
-                                                  _fmtDate(log['createdAt']),
-                                                  style: const TextStyle(
-                                                    fontSize: 11,
-                                                    color: opsMutedText,
-                                                  ),
-                                                ),
-                                            ],
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: OutlinedButton(
+                                onPressed: _busy || device?['status'] == 'OFFLINE'
+                                    ? null
+                                    : () => _markStatus('OFFLINE'),
+                                child: const Text(
+                                  'Đánh dấu mất kết nối',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(fontSize: 12),
                                 ),
-                            ],
-                          ),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: OutlinedButton(
+                                onPressed: _busy || device?['status'] == 'ERROR'
+                                    ? null
+                                    : () => _markStatus('ERROR'),
+                                style: OutlinedButton.styleFrom(
+                                  foregroundColor: const Color(0xFFEA580C),
+                                ),
+                                child: const Text(
+                                  'Đánh dấu lỗi',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(fontSize: 12),
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
-                    ],
+                        const SizedBox(height: 12),
+                        const OpsSectionLabel(
+                          'Nhật ký hoạt động',
+                          icon: Icons.history_edu_outlined,
+                        ),
+                        if (_logsError != null)
+                          Text(
+                            'Không tải được nhật ký: $_logsError',
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: Color(0xFFDC2626),
+                            ),
+                          )
+                        else if (_logs.isEmpty)
+                          const Padding(
+                            padding: EdgeInsets.only(bottom: 8),
+                            child: Text(
+                              'Chưa có nhật ký.',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: opsMutedText,
+                              ),
+                            ),
+                          )
+                        else
+                          for (final log in _logs.take(30))
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 8),
+                              child: Container(
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: opsSurface,
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(color: opsBorder),
+                                ),
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Icon(
+                                      Icons.circle,
+                                      size: 8,
+                                      color: opsPrimary,
+                                    ),
+                                    const SizedBox(width: 10),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            '${log['message'] ?? log['result'] ?? log['event'] ?? log['action'] ?? ''}',
+                                            style: const TextStyle(
+                                              fontSize: 13,
+                                              color: opsDark,
+                                            ),
+                                          ),
+                                          if (log['createdAt'] != null)
+                                            Text(
+                                              fmtDateTime(log['createdAt']),
+                                              style: const TextStyle(
+                                                fontSize: 11,
+                                                color: opsMutedText,
+                                              ),
+                                            ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                      ],
+                    ),
                   ),
       ),
     );
@@ -6458,6 +6540,7 @@ class _ReportLogsSectionState extends State<_ReportLogsSection> {
   final _photos = PhotoPickerController(maxPhotos: _staffPhotosPerRequest);
   List<Map<String, dynamic>> _logs = const [];
   bool _loading = true;
+  String? _loadError;
   bool _sending = false;
   bool _showInput = false;
 
@@ -6490,16 +6573,22 @@ class _ReportLogsSectionState extends State<_ReportLogsSection> {
   }
 
   Future<void> _load() async {
+    if (mounted && !_loading) setState(() => _loading = true);
     try {
       final logs = await widget.service.reportLogs(widget.reportId);
       if (!mounted) return;
       setState(() {
         _logs = logs;
+        _loadError = null;
         _loading = false;
       });
-    } catch (_) {
+    } catch (e) {
       if (!mounted) return;
-      setState(() => _loading = false);
+      // Lỗi tải ≠ "chưa có nhật ký": giữ dữ liệu cũ (nếu có) và báo lỗi.
+      setState(() {
+        _loadError = LockerOpsService.errorMessage(e);
+        _loading = false;
+      });
     }
   }
 
@@ -6652,6 +6741,11 @@ class _ReportLogsSectionState extends State<_ReportLogsSection> {
             padding: EdgeInsets.all(16),
             child: Center(child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))),
           )
+        else if (_loadError != null && _logs.isEmpty)
+          _RetryBanner(
+            message: 'Không tải được nhật ký xử lý: $_loadError',
+            onRetry: _load,
+          )
         else if (_logs.isEmpty)
           Container(
             width: double.infinity,
@@ -6703,7 +6797,11 @@ class _ReportLogsSectionState extends State<_ReportLogsSection> {
                                   borderRadius: BorderRadius.circular(6),
                                 ),
                                 child: Text(
-                                  log['actorUserId'] != null ? 'KTV #${log['actorUserId']}' : 'Kỹ thuật viên',
+                                  (log['actorName'] ?? '').toString().trim().isNotEmpty
+                                      ? '${log['actorName']}'
+                                      : log['actorUserId'] != null
+                                          ? 'KTV #${log['actorUserId']}'
+                                          : 'Kỹ thuật viên',
                                   style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFF0369A1)),
                                 ),
                               ),
@@ -6885,8 +6983,8 @@ List<ReportAttachment> _extractReportBeforeAttachments(Map<String, dynamic> r) {
     ...ReportAttachment.listFrom(r['attachments']),
   ];
 
-  if (repId != null && _inspectionAttachmentsCache.containsKey(repId)) {
-    result.addAll(_inspectionAttachmentsCache[repId]!);
+  if (repId != null && technicianInspectionCache.containsKey(repId)) {
+    result.addAll(technicianInspectionCache[repId]!);
   }
 
   final beforeList = result.where((a) {
@@ -6897,9 +6995,6 @@ List<ReportAttachment> _extractReportBeforeAttachments(Map<String, dynamic> r) {
   return {for (final a in beforeList) a.url: a}.values.toList();
 }
 
-/// Bộ nhớ cache tạm ảnh hiện trường vừa tải lên theo reportId
-/// để đồng bộ tức thì giữa modal Kiểm tra ô và modal Nghiệm thu.
-final Map<int, List<ReportAttachment>> _inspectionAttachmentsCache = {};
 
 /// Modal nghiệm thu hoàn tất sự cố kèm chụp ảnh trước/sau và ghi chú kỹ thuật.
 class _ResolveVerificationSheet extends StatefulWidget {
@@ -6938,7 +7033,12 @@ class _ResolveVerificationSheetState extends State<_ResolveVerificationSheet> {
   bool _submitting = false;
   // Ảnh INSPECTION đã gắn nhưng resolve lỗi ⇒ lần thử lại không gắn lần 2.
   bool _inspectionSaved = false;
-  bool _quickFixAndUnlock = true;
+  // "Mở thử ô sau sửa": mặc định TẮT; chỉ cho bật khi đã xác nhận ô không giữ
+  // đơn nào (không OCCUPIED/RESERVED, không có đơn đang hoạt động).
+  bool _quickFixAndUnlock = false;
+  bool _testOpenAllowed = false;
+  bool _checkingTestOpen = false;
+  String? _testOpenBlockedReason;
   String? _error;
 
   final _quickNotes = const [
@@ -6953,9 +7053,50 @@ class _ResolveVerificationSheetState extends State<_ResolveVerificationSheet> {
     super.initState();
     _initAttachments();
     _fetchAttachmentsFromServer();
+    _checkTestOpenSafety();
     _beforePhotos.addListener(_onPhotosChanged);
     _progressPhotos.addListener(_onPhotosChanged);
     _afterPhotos.addListener(_onPhotosChanged);
+  }
+
+  /// Chỉ đề nghị "Mở thử ô" khi chắc chắn ô không có đồ/đơn của khách. Không
+  /// tra được ⇒ không đề nghị (an toàn hơn mở nhầm ô có đồ).
+  Future<void> _checkTestOpenSafety() async {
+    final boxId = _asInt(widget.report['boxId']);
+    final lockerId = _asInt(widget.report['lockerId']);
+    final category = widget.report['category']?.toString();
+    if (boxId == null || lockerId == null || (category != null && category != 'BOX')) {
+      return;
+    }
+    setState(() => _checkingTestOpen = true);
+    String? blocked;
+    try {
+      final layout = await widget.service.layout(lockerId);
+      String? cellStatus;
+      for (final c in (layout['cells'] as List?) ?? const []) {
+        if (c is Map && _asInt(c['id']) == boxId) {
+          cellStatus = c['status']?.toString();
+          break;
+        }
+      }
+      if (cellStatus == null) {
+        blocked = 'Không tìm thấy ô trong sơ đồ tủ.';
+      } else {
+        final order = await widget.service.getActiveOrderByBox(boxId);
+        if (cellHoldsOrder(cellStatus: cellStatus, hasActiveOrder: order != null)) {
+          blocked = 'Ô đang giữ đồ/đơn của khách — không mở thử.';
+        }
+      }
+    } catch (e) {
+      blocked = 'Không kiểm tra được ô (${LockerOpsService.errorMessage(e)}).';
+    }
+    if (!mounted) return;
+    setState(() {
+      _checkingTestOpen = false;
+      _testOpenAllowed = blocked == null;
+      _testOpenBlockedReason = blocked;
+      if (!_testOpenAllowed) _quickFixAndUnlock = false;
+    });
   }
 
   void _initAttachments() {
@@ -6992,7 +7133,7 @@ class _ResolveVerificationSheetState extends State<_ResolveVerificationSheet> {
         final progressFromServer = parsed
             .where((a) => a.stage == ReportStage.progress)
             .toList();
-        final cached = _inspectionAttachmentsCache[repId] ?? [];
+        final cached = technicianInspectionCache[repId] ?? [];
 
         setState(() {
           _existingInspection = {
@@ -7003,7 +7144,7 @@ class _ResolveVerificationSheetState extends State<_ResolveVerificationSheet> {
           _existingResolution =
               parsed.where((a) => a.stage == ReportStage.resolution).toList();
         });
-        _inspectionAttachmentsCache[repId] = _existingInspection;
+        technicianInspectionCache[repId] = _existingInspection;
       }
     } catch (_) {}
   }
@@ -7084,22 +7225,31 @@ class _ResolveVerificationSheetState extends State<_ResolveVerificationSheet> {
         attachments: resolution,
       );
 
-      // Nếu KTV chọn "Sửa tại chỗ xong & Tự động mở ô tủ"
+      // "Mở thử ô sau sửa" (KTV bật, ô không giữ đơn). Phiếu đã đóng ở bước
+      // trên — server tự trả ô về hoạt động, không cần clear-fault thêm.
       final boxId = _asInt(widget.report['boxId']);
       final lockerId = _asInt(widget.report['lockerId']);
-      // Lý do ô chưa mở được (null = đã mở / không yêu cầu mở). Phiếu đã đóng ở
-      // bước trên nên vẫn hoàn tất, nhưng không được báo "đã mở khóa ô".
+      final boxLabel = 'ô #${widget.report['boxNumber'] ?? boxId}';
+      // Lý do ô chưa mở được (null = đã mở / không yêu cầu mở): vẫn hoàn tất
+      // phiếu nhưng không được báo là đã mở ô.
       String? openError;
-      if (_quickFixAndUnlock && boxId != null) {
+      var opened = false;
+      if (_quickFixAndUnlock && _testOpenAllowed && boxId != null) {
         try {
-          final opened = await widget.service.forceOpenBox(boxId);
-          if (!opened.accepted) openError = opened.failureMessage;
+          final result = await widget.service.forceOpenBox(
+            boxId,
+            reason: 'Mở thử ô sau khi sửa xong phiếu RPT-$reportId',
+          );
+          if (result.accepted) {
+            opened = true;
+          } else {
+            openError = result.failureMessage;
+          }
         } catch (e) {
           openError = LockerOpsService.errorMessage(e);
         }
-        try {
-          await widget.service.clearFault(boxId);
-        } catch (_) {}
+      }
+      if (boxId != null) {
         AppEventBus.instance.emit(
           LockerLayoutUpdatedEvent(
             lockerId: lockerId?.toString(),
@@ -7113,8 +7263,8 @@ class _ResolveVerificationSheetState extends State<_ResolveVerificationSheet> {
         final restored = switch (widget.report['category']) {
           'LANDING_PAD' => 'Bãi đáp đã hoạt động lại.',
           'LOCKER' => 'Tủ đã hoạt động lại.',
-          _ => _quickFixAndUnlock
-              ? 'Đã mở khóa ô tủ và đưa ô về hoạt động bình thường.'
+          _ => opened
+              ? 'Ô đã hoạt động lại, đã gửi lệnh mở thử $boxLabel.'
               : 'Ô tủ đã hoạt động lại.',
         };
         Navigator.pop(context);
@@ -7128,7 +7278,7 @@ class _ResolveVerificationSheetState extends State<_ResolveVerificationSheet> {
                   backgroundColor: const Color(0xFFDC2626),
                   duration: const Duration(seconds: 6),
                   content: Text(
-                    'Đã nghiệm thu và hoàn tất sự cố, nhưng chưa mở được ô: $openError',
+                    'Đã nghiệm thu và hoàn tất sự cố, nhưng chưa mở thử được $boxLabel: $openError',
                   ),
                 ),
         );
@@ -7396,67 +7546,83 @@ class _ResolveVerificationSheetState extends State<_ResolveVerificationSheet> {
               ),
               const SizedBox(height: 14),
 
-              // Tuỳ chọn Sửa tại chỗ xong (Tự động mở khóa ô tủ)
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                decoration: BoxDecoration(
-                  color: _quickFixAndUnlock ? const Color(0xFFF0FDF4) : const Color(0xFFF8FAFC),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: _quickFixAndUnlock ? const Color(0xFF86EFAC) : opsBorder,
-                    width: 1.2,
+              // "Mở thử ô sau sửa": chỉ hiện khi ô không giữ đơn; mặc định TẮT.
+              if (_checkingTestOpen)
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 4),
+                  child: Text(
+                    'Đang kiểm tra ô trước khi cho phép mở thử...',
+                    style: TextStyle(fontSize: 11.5, color: opsMutedText),
                   ),
-                ),
-                child: Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: _quickFixAndUnlock
-                            ? const Color(0xFF16A34A).withValues(alpha: 0.12)
-                            : Colors.grey.shade200,
-                        shape: BoxShape.circle,
-                      ),
-                      child: Icon(
-                        _quickFixAndUnlock ? Icons.lock_open_rounded : Icons.lock_outline,
-                        color: _quickFixAndUnlock ? const Color(0xFF16A34A) : opsMutedText,
-                        size: 20,
-                      ),
+                )
+              else if (_testOpenAllowed)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: _quickFixAndUnlock ? const Color(0xFFF0FDF4) : const Color(0xFFF8FAFC),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: _quickFixAndUnlock ? const Color(0xFF86EFAC) : opsBorder,
+                      width: 1.2,
                     ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            'Sửa tại chỗ xong & Tự động mở ô tủ',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 13,
-                              color: Color(0xFF166534),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: _quickFixAndUnlock
+                              ? const Color(0xFF16A34A).withValues(alpha: 0.12)
+                              : Colors.grey.shade200,
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          _quickFixAndUnlock ? Icons.lock_open_rounded : Icons.lock_outline,
+                          color: _quickFixAndUnlock ? const Color(0xFF16A34A) : opsMutedText,
+                          size: 20,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Mở thử ô sau sửa',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 13,
+                                color: Color(0xFF166534),
+                              ),
                             ),
-                          ),
-                          const SizedBox(height: 2),
-                          Text(
-                            boxLabel != null
-                                ? 'Tự động mở chốt điện tử ô #$boxLabel và khôi phục hoạt động khi xác nhận.'
-                                : 'Tự động mở chốt điện tử ô tủ và khôi phục hoạt động khi xác nhận.',
-                            style: TextStyle(
-                              fontSize: 11,
-                              color: _quickFixAndUnlock ? const Color(0xFF15803D) : opsMutedText,
+                            const SizedBox(height: 2),
+                            Text(
+                              boxLabel != null
+                                  ? 'Sau khi hoàn tất phiếu, gửi lệnh mở ô #$boxLabel để kiểm tra chốt khoá.'
+                                  : 'Sau khi hoàn tất phiếu, gửi lệnh mở ô để kiểm tra chốt khoá.',
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: _quickFixAndUnlock ? const Color(0xFF15803D) : opsMutedText,
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                    ),
-                    Switch(
-                      value: _quickFixAndUnlock,
-                      activeThumbColor: const Color(0xFF16A34A),
-                      onChanged: (val) => setState(() => _quickFixAndUnlock = val),
-                    ),
-                  ],
+                      Switch(
+                        value: _quickFixAndUnlock,
+                        activeThumbColor: const Color(0xFF16A34A),
+                        onChanged: _submitting
+                            ? null
+                            : (val) => setState(() => _quickFixAndUnlock = val),
+                      ),
+                    ],
+                  ),
+                )
+              else if (_testOpenBlockedReason != null)
+                Text(
+                  'Không đề nghị mở thử ô: $_testOpenBlockedReason',
+                  style: const TextStyle(fontSize: 11.5, color: opsMutedText),
                 ),
-              ),
 
               if (_error != null) ...[
                 const SizedBox(height: 12),
@@ -7723,6 +7889,8 @@ class _BoxIncidentResolutionSheetState
   int? _targetBoxId;
   Map<String, dynamic>? _activeOrder;
   bool _loadingOrder = false;
+  // Không tra được đơn trong ô (mạng/5xx) — KHÔNG coi như ô trống.
+  String? _orderLookupError;
   bool _lockBox = false; // Toggle khóa ô tủ hay giữ hoạt động
   bool _openingBox = false; // Loading mở khẩn cấp
 
@@ -7745,8 +7913,7 @@ class _BoxIncidentResolutionSheetState
     _selectedBoxId = hasRepBox
         ? repBoxId
         : (widget.cells.isNotEmpty ? _asInt(widget.cells.first['id']) : null);
-    _sealCtrl.text =
-        'SEAL-${DateTime.now().millisecondsSinceEpoch % 100000}';
+    // Mã Seal để trống: KTV nhập đúng mã in trên túi niêm phong (bắt buộc với HUB_ESCROW).
     if (_selectedBoxId != null) {
       _checkActiveOrder(_selectedBoxId!);
     }
@@ -7784,14 +7951,14 @@ class _BoxIncidentResolutionSheetState
               stage: ReportStage.report,
               createdAt: createdAt,
             ));
-        final cached = _inspectionAttachmentsCache[reportId] ?? [];
+        final cached = technicianInspectionCache[reportId] ?? [];
         setState(() {
           _existingInspection = {
             for (final a in [...userAtts, ...beforeFromServer, ...cached]) a.url: a
           }.values.toList();
           _existingProgress = progressFromServer;
         });
-        _inspectionAttachmentsCache[reportId] = _existingInspection;
+        technicianInspectionCache[reportId] = _existingInspection;
       }
     } catch (_) {}
   }
@@ -7823,7 +7990,10 @@ class _BoxIncidentResolutionSheetState
   }
 
   Future<void> _checkActiveOrder(int boxId) async {
-    setState(() => _loadingOrder = true);
+    setState(() {
+      _loadingOrder = true;
+      _orderLookupError = null;
+    });
     try {
       final order = await widget.service.getActiveOrderByBox(boxId);
       final hasOrder = order != null &&
@@ -7846,13 +8016,15 @@ class _BoxIncidentResolutionSheetState
           }
         });
       }
-    } catch (_) {
+    } catch (e) {
+      // Không tra được ⇒ báo rõ, chọn phương án an toàn (khoá ô) thay vì coi như ô trống.
       if (mounted) {
         setState(() {
           _activeOrder = null;
-          _action = 'QUICK_FIX';
+          _orderLookupError = LockerOpsService.errorMessage(e);
+          _action = 'LOCK_ONLY';
           _targetBoxId = null;
-          _lockBox = false;
+          _lockBox = true;
         });
       }
     } finally {
@@ -7862,16 +8034,29 @@ class _BoxIncidentResolutionSheetState
 
   Future<void> _forceOpenBox() async {
     if (_selectedBoxId == null || _openingBox) return;
+    final boxNum = _currentCell?['boxNumber'] ?? _selectedBoxId;
+    final reportId = _asInt(widget.report['id']);
+    final input = await _promptForceOpen(
+      context,
+      boxLabel: 'Ô #$boxNum',
+      reportId: reportId,
+    );
+    if (input == null || !mounted) return;
     setState(() => _openingBox = true);
     try {
-      final result = await widget.service.forceOpenBox(_selectedBoxId!);
+      final result = await widget.service.forceOpenBox(
+        _selectedBoxId!,
+        reason: input.reason,
+        note: input.note,
+        attachments: input.attachments,
+        reportId: reportId,
+      );
       if (!mounted) return;
-      final boxNum = _currentCell?['boxNumber'] ?? _selectedBoxId;
       // Backend trả 200 cả khi tủ không mở được (TIMEOUT/FAILED/JAMMED) ⇒ báo lỗi.
       _showForceOpenSnack(
         success: result.accepted,
         message: result.accepted
-            ? 'Đã mở ô #$boxNum thành công!'
+            ? _forceOpenSuccessText(result, 'ô #$boxNum')
             : 'Lỗi mở ô: ${result.failureMessage}',
       );
     } catch (e) {
@@ -7909,12 +8094,18 @@ class _BoxIncidentResolutionSheetState
   }
 
   Future<void> _submit() async {
-    if (_selectedBoxId == null) {
-      setState(() => _error = 'Vui lòng chọn ô sự cố.');
-      return;
-    }
-    if (_action == 'RELOCATE' && _targetBoxId == null) {
-      setState(() => _error = 'Vui lòng chọn ô trống để chuyển hàng sang.');
+    final repId = _asInt(widget.report['id']);
+    final invalid = repId == null
+        ? 'Phiếu không hợp lệ.'
+        : validateBoxIncidentInput(
+            action: _action,
+            selectedBoxId: _selectedBoxId,
+            targetBoxId: _targetBoxId,
+            customerOtp: _otpCtrl.text,
+            sealNumber: _sealCtrl.text,
+          );
+    if (invalid != null) {
+      setState(() => _error = invalid);
       return;
     }
     setState(() {
@@ -7926,49 +8117,6 @@ class _BoxIncidentResolutionSheetState
       final progressAttachments = _progressPhotos.isNotEmpty
           ? await _progressPhotos.uploadAll()
           : <Map<String, dynamic>>[];
-      final repId = _asInt(widget.report['id']);
-      if (attachments.isNotEmpty && repId != null) {
-        final newAtts = attachments
-            .map((att) => ReportAttachment(
-                  stage: ReportStage.inspection,
-                  url: (att['url'] ?? att['secureUrl'] ?? '').toString(),
-                  thumbnailUrl:
-                      (att['thumbnailUrl'] ?? att['url'] ?? '').toString(),
-                  publicId: att['publicId']?.toString(),
-                ))
-            .toList();
-        _existingInspection = {
-          for (final a in [..._existingInspection, ...newAtts]) a.url: a
-        }.values.toList();
-        _inspectionAttachmentsCache[repId] = _existingInspection;
-
-        final currentRaw = (widget.report['attachments'] as List?) ?? [];
-        widget.report['attachments'] = [
-          ...currentRaw,
-          ...attachments.map((a) => {...a, 'stage': 'INSPECTION'}),
-        ];
-      }
-
-      if (progressAttachments.isNotEmpty && repId != null) {
-        final newAtts = progressAttachments
-            .map((att) => ReportAttachment(
-                  stage: ReportStage.progress,
-                  url: (att['url'] ?? att['secureUrl'] ?? '').toString(),
-                  thumbnailUrl:
-                      (att['thumbnailUrl'] ?? att['url'] ?? '').toString(),
-                  publicId: att['publicId']?.toString(),
-                ))
-            .toList();
-        _existingProgress = {
-          for (final a in [..._existingProgress, ...newAtts]) a.url: a
-        }.values.toList();
-
-        final currentRaw = (widget.report['attachments'] as List?) ?? [];
-        widget.report['attachments'] = [
-          ...currentRaw,
-          ...progressAttachments.map((a) => {...a, 'stage': 'PROGRESS'}),
-        ];
-      }
 
       final rawDesc = (widget.report['description'] as String?)?.trim();
       final rawTitle = (widget.report['title'] as String?)?.trim();
@@ -7981,18 +8129,66 @@ class _BoxIncidentResolutionSheetState
           ? (reasonPrefix.isNotEmpty ? '$reasonPrefix $ktvNote (Lý do sự cố: $reportedReason)' : '$ktvNote (Lý do sự cố: $reportedReason)')
           : (reasonPrefix.isNotEmpty ? '$reasonPrefix $reportedReason' : reportedReason);
 
+      // Lỗi server (ô đích không trống, bàn giao thất bại, thiếu Seal…) được
+      // ném nguyên vẹn và hiện bên dưới — không có đường dự phòng giả thành công.
       await widget.service.resolveBoxIncident(
-        reportId: widget.report['id'] as int,
+        reportId: repId!,
         boxId: _selectedBoxId!,
         action: _action,
-        targetBoxId: _targetBoxId,
+        targetBoxId: _action == 'RELOCATE' ? _targetBoxId : null,
         lockBox: _lockBox,
         reason: fullReason,
-        customerOtp: _otpCtrl.text.trim(),
-        sealNumber: _sealCtrl.text.trim(),
+        customerOtp: _action == 'HANDOVER' ? _otpCtrl.text.trim() : null,
+        sealNumber: _action == 'HUB_ESCROW' ? _sealCtrl.text.trim() : null,
         attachments: attachments,
         progressAttachments: progressAttachments,
       );
+
+      // Server đã nhận ảnh ⇒ cập nhật bộ nhớ tạm để sheet nghiệm thu thấy ngay.
+      if (attachments.isNotEmpty) {
+        final newAtts = attachments
+            .map((att) => ReportAttachment(
+                  stage: ReportStage.inspection,
+                  url: (att['url'] ?? att['secureUrl'] ?? '').toString(),
+                  thumbnailUrl:
+                      (att['thumbnailUrl'] ?? att['url'] ?? '').toString(),
+                  publicId: att['publicId']?.toString(),
+                ))
+            .where((a) => a.url.isNotEmpty)
+            .toList();
+        _existingInspection = {
+          for (final a in [..._existingInspection, ...newAtts]) a.url: a
+        }.values.toList();
+        technicianInspectionCache[repId] = _existingInspection;
+
+        final currentRaw = (widget.report['attachments'] as List?) ?? [];
+        widget.report['attachments'] = [
+          ...currentRaw,
+          ...attachments.map((a) => {...a, 'stage': 'INSPECTION'}),
+        ];
+      }
+
+      if (progressAttachments.isNotEmpty) {
+        final newAtts = progressAttachments
+            .map((att) => ReportAttachment(
+                  stage: ReportStage.progress,
+                  url: (att['url'] ?? att['secureUrl'] ?? '').toString(),
+                  thumbnailUrl:
+                      (att['thumbnailUrl'] ?? att['url'] ?? '').toString(),
+                  publicId: att['publicId']?.toString(),
+                ))
+            .where((a) => a.url.isNotEmpty)
+            .toList();
+        _existingProgress = {
+          for (final a in [..._existingProgress, ...newAtts]) a.url: a
+        }.values.toList();
+
+        final currentRaw = (widget.report['attachments'] as List?) ?? [];
+        widget.report['attachments'] = [
+          ...currentRaw,
+          ...progressAttachments.map((a) => {...a, 'stage': 'PROGRESS'}),
+        ];
+      }
 
       // Đồng bộ EventBus cho toàn hệ thống mobile
       AppEventBus.instance.emit(
@@ -8169,7 +8365,29 @@ class _BoxIncidentResolutionSheetState
                 ),
               ] else ...[
                 // Banner trạng thái ô & Nút mở khẩn cấp
-                if (_activeOrder != null) ...[
+                if (_orderLookupError != null) ...[
+                  _RetryBanner(
+                    message:
+                        'Không tra được đơn trong ô ($_orderLookupError). Kiểm tra thực tế '
+                        '(mở khẩn cấp) trước khi chọn phương án — tạm thời chỉ khoá ô.',
+                    onRetry: _selectedBoxId == null
+                        ? null
+                        : () => _checkActiveOrder(_selectedBoxId!),
+                  ),
+                  const SizedBox(height: 8),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: OutlinedButton.icon(
+                      onPressed: _openingBox ? null : _forceOpenBox,
+                      icon: const Icon(Icons.lock_open, size: 14),
+                      label: Text(_openingBox ? 'Đang mở...' : 'Mở khẩn cấp'),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: const Color(0xFFEA580C),
+                        side: const BorderSide(color: Color(0xFFEA580C)),
+                      ),
+                    ),
+                  ),
+                ] else if (_activeOrder != null) ...[
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
@@ -8437,8 +8655,8 @@ class _BoxIncidentResolutionSheetState
                       child: TextField(
                         controller: _otpCtrl,
                         decoration: InputDecoration(
-                          labelText: 'Mã OTP / PIN của khách (tuỳ chọn)',
-                          hintText: 'Nhập mã để xác thực nếu có',
+                          labelText: 'Mã PIN 6 số hoặc mã QR của đơn (bắt buộc)',
+                          hintText: 'Khách đọc/đưa mã lấy hàng để xác nhận bàn giao',
                           isDense: true,
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(10),
@@ -8473,7 +8691,8 @@ class _BoxIncidentResolutionSheetState
                       child: TextField(
                         controller: _sealCtrl,
                         decoration: InputDecoration(
-                          labelText: 'Mã Seal niêm phong',
+                          labelText: 'Mã Seal niêm phong (bắt buộc)',
+                          hintText: 'Nhập đúng mã in trên túi niêm phong',
                           isDense: true,
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(10),
@@ -8933,12 +9152,797 @@ int _countCells(
     .length;
 
 String _cellTypeLabel(String? type) => switch (type) {
-  'DRONE' => 'Ô Kiosk',
+  'DRONE' => 'Ô drone',
   'XL' => 'XL',
   'STANDARD' => 'Chuẩn',
   null => 'Chuẩn',
   _ => type,
 };
+
+/// Lý do mở khẩn cấp hay gặp; mục cuối cho phép nhập lý do khác.
+const _forceOpenReasons = [
+  'Khách quên mã PIN / không liên lạc được',
+  'Cửa ô bị kẹt cơ học / lỗi chốt từ',
+  'Kiểm tra ô khi xử lý phiếu sự cố',
+  'Kiểm tra theo yêu cầu ban quản lý',
+  'Sự cố khẩn cấp / nghi rò rỉ hoặc dị vật',
+];
+const _forceOpenOtherReason = 'Lý do khác…';
+
+/// Dữ liệu KTV nhập trước khi mở ô khẩn cấp (CONTRACTS §2).
+class _ForceOpenInput {
+  const _ForceOpenInput({
+    required this.reason,
+    this.note,
+    this.attachments = const [],
+  });
+
+  final String reason;
+  final String? note;
+
+  /// ReportAttachmentRequest đã tải lên — chỉ có khi mở gắn với một phiếu.
+  final List<Map<String, dynamic>> attachments;
+}
+
+/// Câu báo khi tủ nhận lệnh mở. Máy chủ cũ không trả `status` ⇒ chỉ nói "đã gửi lệnh".
+String _forceOpenSuccessText(ForceOpenResult result, String boxLabel) {
+  if (result.status == null) return 'Đã gửi lệnh mở khẩn cấp $boxLabel.';
+  return result.message ?? 'Tủ xác nhận đã mở $boxLabel.';
+}
+
+/// Dialog nhập lý do mở khẩn cấp (bắt buộc), ghi chú và — khi gắn với phiếu
+/// [reportId] — ảnh hiện trường (tải lên ngay trong dialog để thấy tiến độ).
+/// `null` = KTV huỷ.
+Future<_ForceOpenInput?> _promptForceOpen(
+  BuildContext context, {
+  required String boxLabel,
+  int? reportId,
+}) {
+  var selected = _forceOpenReasons.first;
+  final otherCtrl = TextEditingController();
+  final noteCtrl = TextEditingController();
+  final photos = PhotoPickerController(maxPhotos: _staffPhotosPerRequest);
+  var uploading = false;
+  String? error;
+
+  return showDialog<_ForceOpenInput>(
+    context: context,
+    barrierDismissible: false,
+    // Controller được huỷ khi dialog gỡ khỏi cây (sau hiệu ứng đóng).
+    builder: (ctx) => ControllerDisposer(
+      controllers: [otherCtrl, noteCtrl, photos],
+      child: StatefulBuilder(
+        builder: (ctx, setLocal) => AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: Row(
+            children: [
+              const Icon(Icons.lock_open, color: Color(0xFFEA580C), size: 24),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  'Mở khẩn cấp $boxLabel',
+                  style: const TextStyle(fontSize: 16),
+                ),
+              ),
+            ],
+          ),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  reportId != null
+                      ? 'Ô được mở bằng lệnh Master và ghi vào nhật ký truy cập. '
+                            'Lý do, ghi chú và ảnh được lưu vào nhật ký phiếu RPT-$reportId.'
+                      : 'Ô được mở bằng lệnh Master và ghi vào nhật ký truy cập kèm lý do.',
+                  style: const TextStyle(fontSize: 12.5, color: opsMutedText),
+                ),
+                const SizedBox(height: 12),
+                const Text(
+                  'Lý do can thiệp (bắt buộc):',
+                  style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 4),
+                DropdownButtonFormField<String>(
+                  initialValue: selected,
+                  isExpanded: true,
+                  decoration: InputDecoration(
+                    contentPadding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                  ),
+                  items: [
+                    for (final r in [..._forceOpenReasons, _forceOpenOtherReason])
+                      DropdownMenuItem(
+                        value: r,
+                        child: Text(r, style: const TextStyle(fontSize: 12)),
+                      ),
+                  ],
+                  onChanged: uploading
+                      ? null
+                      : (val) {
+                          if (val != null) setLocal(() => selected = val);
+                        },
+                ),
+                if (selected == _forceOpenOtherReason) ...[
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: otherCtrl,
+                    enabled: !uploading,
+                    maxLength: 255,
+                    decoration: const InputDecoration(
+                      labelText: 'Nhập lý do',
+                      isDense: true,
+                    ),
+                  ),
+                ],
+                const SizedBox(height: 8),
+                TextField(
+                  controller: noteCtrl,
+                  enabled: !uploading,
+                  minLines: 1,
+                  maxLines: 3,
+                  maxLength: 1000,
+                  decoration: const InputDecoration(
+                    labelText: 'Ghi chú (tuỳ chọn)',
+                    isDense: true,
+                  ),
+                ),
+                if (reportId != null) ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    'Ảnh hiện trường (tuỳ chọn, tối đa ${photos.maxPhotos})',
+                    style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 8),
+                  PhotoPickerField(
+                    controller: photos,
+                    enabled: !uploading,
+                    thumbSize: 64,
+                    accentColor: const Color(0xFFEA580C),
+                  ),
+                ],
+                if (error != null) ...[
+                  const SizedBox(height: 8),
+                  Text(
+                    error!,
+                    style: const TextStyle(fontSize: 12, color: Color(0xFFDC2626)),
+                  ),
+                ],
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: uploading ? null : () => Navigator.pop(ctx),
+              child: const Text('Hủy'),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFEA580C),
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+              onPressed: uploading
+                  ? null
+                  : () async {
+                      final reason = selected == _forceOpenOtherReason
+                          ? otherCtrl.text.trim()
+                          : selected;
+                      if (reason.isEmpty) {
+                        setLocal(() => error = 'Vui lòng nhập lý do mở khẩn cấp.');
+                        return;
+                      }
+                      setLocal(() {
+                        uploading = true;
+                        error = null;
+                      });
+                      try {
+                        final attachments = reportId != null
+                            ? await photos.uploadAll()
+                            : const <Map<String, dynamic>>[];
+                        if (ctx.mounted) {
+                          final note = noteCtrl.text.trim();
+                          Navigator.pop(
+                            ctx,
+                            _ForceOpenInput(
+                              reason: reason,
+                              note: note.isEmpty ? null : note,
+                              attachments: attachments,
+                            ),
+                          );
+                        }
+                      } catch (e) {
+                        if (ctx.mounted) {
+                          setLocal(() {
+                            uploading = false;
+                            error = LockerOpsService.errorMessage(e);
+                          });
+                        }
+                      }
+                    },
+              child: Text(uploading ? 'Đang tải ảnh...' : 'Xác nhận mở'),
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
+}
+
+/// Sheet gia hạn SLA: chọn số giờ (lọc theo trần admin cấu hình), lý do bắt
+/// buộc; gửi `{hours, reason}` và chỉ đóng khi server chấp nhận — trả về phiếu
+/// sau gia hạn. Lỗi (SLA_EXTENSION_*) hiện ngay trong sheet.
+class _ExtendSlaSheet extends StatefulWidget {
+  const _ExtendSlaSheet({
+    required this.report,
+    required this.service,
+    required this.currentDue,
+    required this.policy,
+  });
+
+  final Map<String, dynamic> report;
+  final LockerOpsService service;
+  final DateTime? currentDue;
+  final SlaExtensionPolicy policy;
+
+  @override
+  State<_ExtendSlaSheet> createState() => _ExtendSlaSheetState();
+}
+
+class _ExtendSlaSheetState extends State<_ExtendSlaSheet> {
+  static const _presetReasons = [
+    'Chờ linh kiện thay thế',
+    'Cần kiểm tra sâu mạch điện',
+    'Tủ khó tiếp cận',
+    'Phối hợp bên vận hành tòa nhà',
+  ];
+
+  final _reasonCtrl = TextEditingController();
+  SlaExtensionLimits _limits = const SlaExtensionLimits();
+  int _hours = 4;
+  bool _submitting = false;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadLimits();
+  }
+
+  @override
+  void dispose() {
+    _reasonCtrl.dispose();
+    super.dispose();
+  }
+
+  /// Đọc trần giờ/lần để chỉ cho chọn mức hợp lệ. Không đọc được thì server
+  /// vẫn kiểm và trả lỗi rõ (SLA_EXTENSION_HOURS_EXCEEDED).
+  Future<void> _loadLimits() async {
+    try {
+      final settings = await widget.service.lockerPublicSettings();
+      if (!mounted) return;
+      final limits = SlaExtensionLimits.fromSettings(settings);
+      final options = limits.hourOptions();
+      setState(() {
+        _limits = limits;
+        if (!options.contains(_hours)) {
+          _hours = options.where((h) => h <= _hours).fold(options.first, (a, b) => b);
+        }
+      });
+    } catch (_) {
+      // Giữ lựa chọn mặc định; server là nơi quyết định giới hạn.
+    }
+  }
+
+  Future<void> _submit() async {
+    final reportId = _asInt(widget.report['id']);
+    if (reportId == null) return;
+    final reason = _reasonCtrl.text.trim();
+    if (reason.isEmpty) {
+      setState(() => _error = 'Vui lòng nhập lý do gia hạn SLA.');
+      return;
+    }
+    setState(() {
+      _submitting = true;
+      _error = null;
+    });
+    try {
+      final updated = await widget.service.extendReportSla(
+        reportId,
+        hours: _hours,
+        reason: reason,
+      );
+      if (mounted) Navigator.pop(context, updated);
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _submitting = false;
+          _error = LockerOpsService.errorMessage(e);
+        });
+      }
+    }
+  }
+
+  String _fmt(DateTime dt) {
+    String two(int n) => n.toString().padLeft(2, '0');
+    return '${two(dt.hour)}:${two(dt.minute)} ${two(dt.day)}/${two(dt.month)}/${dt.year}';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final now = DateTime.now();
+    final current = widget.currentDue;
+    final base = current != null && current.isAfter(now) ? current : now;
+    final preview = base.add(Duration(hours: _hours));
+    final options = _limits.hourOptions();
+    final usage = widget.policy.usageLabel ??
+        (_limits.maxExtensions != null
+            ? 'Tối đa ${_limits.maxExtensions} lần mỗi phiếu'
+            : null);
+    final capText = _limits.maxHoursPerExtension != null
+        ? ' (tối đa ${_limits.maxHoursPerExtension} giờ/lần)'
+        : '';
+
+    return SafeArea(
+      top: false,
+      child: Padding(
+        padding: EdgeInsets.only(
+          left: 20,
+          right: 20,
+          top: 16,
+          bottom: MediaQuery.of(context).viewInsets.bottom + 20,
+        ),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 44,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade300,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 14),
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFEF3C7),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Icon(Icons.more_time_rounded,
+                        color: Color(0xFFD97706), size: 22),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Gia hạn SLA phiếu RPT-${widget.report['id']}',
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: opsDark,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          '${widget.report['title'] ?? ''}',
+                          style: const TextStyle(fontSize: 12, color: opsMutedText),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              if (usage != null) ...[
+                const SizedBox(height: 10),
+                _MiniPill(
+                  icon: Icons.repeat,
+                  text: usage,
+                  color: const Color(0xFFB45309),
+                ),
+              ],
+              const SizedBox(height: 12),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFFFBEB),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: const Color(0xFFFDE68A)),
+                ),
+                child: Column(
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text('Hạn hiện tại:',
+                            style: TextStyle(fontSize: 12.5, color: Color(0xFF92400E))),
+                        Text(
+                          current != null ? _fmt(current) : 'Chưa xác định',
+                          style: const TextStyle(
+                            fontSize: 12.5,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF92400E),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const Divider(height: 12, color: Color(0xFFFDE68A)),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text('Hạn mới (dự kiến):',
+                            style: TextStyle(
+                                fontSize: 12.5,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFFB45309))),
+                        Text(
+                          _fmt(preview),
+                          style: const TextStyle(
+                            fontSize: 12.5,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFFB45309),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 14),
+              Text(
+                'Chọn thời gian gia hạn$capText:',
+                style: const TextStyle(
+                    fontSize: 13, fontWeight: FontWeight.bold, color: opsDark),
+              ),
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 6,
+                runSpacing: 6,
+                children: [
+                  for (final h in options)
+                    ChoiceChip(
+                      label: Text('+$h giờ'),
+                      selected: _hours == h,
+                      selectedColor: const Color(0xFFFDE68A),
+                      onSelected: _submitting
+                          ? null
+                          : (_) => setState(() => _hours = h),
+                    ),
+                ],
+              ),
+              const SizedBox(height: 14),
+              const Text('Lý do gia hạn (bắt buộc):',
+                  style: TextStyle(
+                      fontSize: 13, fontWeight: FontWeight.bold, color: opsDark)),
+              const SizedBox(height: 6),
+              TextField(
+                controller: _reasonCtrl,
+                enabled: !_submitting,
+                maxLines: 2,
+                maxLength: 1000,
+                style: const TextStyle(fontSize: 13),
+                decoration: InputDecoration(
+                  hintText: 'Nhập lý do cần thêm thời gian xử lý...',
+                  hintStyle: const TextStyle(fontSize: 12.5, color: opsMutedText),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                  contentPadding: const EdgeInsets.all(10),
+                ),
+              ),
+              Wrap(
+                spacing: 6,
+                runSpacing: 6,
+                children: [
+                  for (final preset in _presetReasons)
+                    ActionChip(
+                      label: Text(preset, style: const TextStyle(fontSize: 11)),
+                      visualDensity: VisualDensity.compact,
+                      onPressed: _submitting
+                          ? null
+                          : () => setState(() => _reasonCtrl.text = preset),
+                    ),
+                ],
+              ),
+              if (_error != null) ...[
+                const SizedBox(height: 10),
+                OpsBanner(
+                  tone: OpsBannerTone.danger,
+                  icon: Icons.error_outline,
+                  text: _error!,
+                ),
+              ],
+              const SizedBox(height: 16),
+              SizedBox(
+                width: double.infinity,
+                height: 46,
+                child: ElevatedButton.icon(
+                  onPressed: _submitting ? null : _submit,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFD97706),
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                  icon: _submitting
+                      ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                        )
+                      : const Icon(Icons.check_circle_outline, size: 18),
+                  label: Text(
+                    _submitting ? 'Đang gửi...' : 'Xác nhận gia hạn SLA',
+                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Ảnh KTV đã gắn vào phiếu (INSPECTION / PROGRESS / RESOLUTION) kèm nút xoá
+/// ảnh tải nhầm. Server chỉ cho xoá ảnh của chính mình (ATTACHMENT_DELETE_FORBIDDEN).
+class _MyReportPhotosSection extends StatefulWidget {
+  const _MyReportPhotosSection({
+    required this.reportId,
+    required this.service,
+    required this.myUserId,
+  });
+
+  final int reportId;
+  final LockerOpsService service;
+  final String? myUserId;
+
+  @override
+  State<_MyReportPhotosSection> createState() => _MyReportPhotosSectionState();
+}
+
+class _MyReportPhotosSectionState extends State<_MyReportPhotosSection> {
+  List<ReportAttachment> _photos = const [];
+  bool _loading = true;
+  String? _error;
+  int? _deletingId;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    try {
+      final raw = await widget.service.reportAttachments(widget.reportId);
+      if (!mounted) return;
+      final me = int.tryParse(widget.myUserId ?? '');
+      setState(() {
+        _photos = ReportAttachment.listFrom(raw)
+            .where((a) =>
+                a.id != null &&
+                a.stage != ReportStage.report &&
+                (a.uploadedByUserId == null || a.uploadedByUserId == me))
+            .toList();
+        _error = null;
+        _loading = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _error = LockerOpsService.errorMessage(e);
+        _loading = false;
+      });
+    }
+  }
+
+  Future<void> _delete(ReportAttachment photo) async {
+    final id = photo.id;
+    if (id == null) return;
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Text('Xoá ảnh này?'),
+        content: Text(
+          '${ReportStage.label(photo.stage)} sẽ bị gỡ khỏi phiếu RPT-${widget.reportId}.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Hủy'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFDC2626),
+              foregroundColor: Colors.white,
+            ),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Xoá'),
+          ),
+        ],
+      ),
+    );
+    if (ok != true || !mounted) return;
+    setState(() => _deletingId = id);
+    try {
+      await widget.service.deleteReportAttachment(widget.reportId, id);
+      technicianInspectionCache[widget.reportId]
+          ?.removeWhere((a) => a.id == id || a.url == photo.url);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Đã xoá ảnh khỏi phiếu.')),
+        );
+      }
+      await _load();
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            backgroundColor: const Color(0xFFDC2626),
+            content: Text(LockerOpsService.errorMessage(e)),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _deletingId = null);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_loading) return const SizedBox.shrink();
+    if (_error != null) {
+      return _RetryBanner(
+        message: 'Không tải được ảnh của phiếu: $_error',
+        onRetry: () {
+          setState(() => _loading = true);
+          _load();
+        },
+      );
+    }
+    if (_photos.isEmpty) return const SizedBox.shrink();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            const Icon(Icons.photo_library_outlined, size: 16, color: opsPrimary),
+            const SizedBox(width: 6),
+            Text(
+              'Ảnh bạn đã gắn (${_photos.length}) — chạm ✕ để xoá ảnh tải nhầm',
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 12.5,
+                color: opsDark,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            for (final p in _photos)
+              Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(10),
+                    child: Image.network(
+                      p.previewUrl,
+                      width: 72,
+                      height: 72,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => Container(
+                        width: 72,
+                        height: 72,
+                        color: const Color(0xFFF1F5F9),
+                        child: const Icon(Icons.broken_image_outlined,
+                            color: opsMutedText),
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    left: 4,
+                    bottom: 4,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.55),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Text(
+                        switch (p.stage) {
+                          ReportStage.inspection => 'Hiện trường',
+                          ReportStage.progress => 'Đang sửa',
+                          ReportStage.resolution => 'Nghiệm thu',
+                          _ => 'Ảnh',
+                        },
+                        style: const TextStyle(fontSize: 9, color: Colors.white),
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    right: -6,
+                    top: -6,
+                    child: _deletingId == p.id
+                        ? const SizedBox(
+                            width: 22,
+                            height: 22,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : InkWell(
+                            onTap: _deletingId != null ? null : () => _delete(p),
+                            child: Container(
+                              width: 22,
+                              height: 22,
+                              decoration: const BoxDecoration(
+                                color: Color(0xFFDC2626),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(Icons.close, size: 14, color: Colors.white),
+                            ),
+                          ),
+                  ),
+                ],
+              ),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+/// Banner lỗi tải kèm nút "Thử lại" (không thay dữ liệu bằng trạng thái rỗng).
+class _RetryBanner extends StatelessWidget {
+  const _RetryBanner({required this.message, required this.onRetry});
+
+  final String message;
+  final VoidCallback? onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(12, 10, 6, 10),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFEF2F2),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFFECACA)),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.error_outline, size: 18, color: Color(0xFFDC2626)),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              message,
+              style: const TextStyle(fontSize: 12.5, color: Color(0xFF991B1B)),
+            ),
+          ),
+          TextButton(
+            onPressed: onRetry,
+            child: const Text('Thử lại'),
+          ),
+        ],
+      ),
+    );
+  }
+}
 
 /// Pill nhỏ trong banner tổng quan sự cố của tab "Sự cố" (Queue).
 class _QueueStatChip extends StatelessWidget {
@@ -9095,7 +10099,9 @@ class _MiniPill extends StatelessWidget {
 class _SlaCountdownBadge extends StatefulWidget {
   final DateTime? dueAt;
   final DateTime? createdAt;
-  final int slaHours;
+
+  /// Số giờ SLA server trả; `null` ⇒ chỉ dựa vào [dueAt].
+  final int? slaHours;
   final String status;
   final bool isExtended;
   final int? extendedHours;
@@ -9103,7 +10109,7 @@ class _SlaCountdownBadge extends StatefulWidget {
   const _SlaCountdownBadge({
     required this.dueAt,
     this.createdAt,
-    this.slaHours = 4,
+    this.slaHours,
     required this.status,
     this.isExtended = false,
     this.extendedHours,
@@ -9137,8 +10143,10 @@ class _SlaCountdownBadgeState extends State<_SlaCountdownBadge> {
     if (widget.status == 'RESOLVED') return const SizedBox.shrink();
 
     DateTime? targetTime = widget.dueAt;
-    if (targetTime == null && widget.createdAt != null) {
-      targetTime = widget.createdAt!.add(Duration(hours: widget.slaHours));
+    if (targetTime == null &&
+        widget.createdAt != null &&
+        widget.slaHours != null) {
+      targetTime = widget.createdAt!.add(Duration(hours: widget.slaHours!));
     }
     if (targetTime == null) return const SizedBox.shrink();
 
