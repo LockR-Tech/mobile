@@ -44,6 +44,7 @@ const _signInRoutes = <String>{
   AppRouter.topUp,
   AppRouter.withdraw,
   AppRouter.refundBankAccount,
+  AppRouter.refundRequests,
   // Trợ lý hỏi đáp gọi API cần JWT
   AppRouter.assistant,
   // Đơn, gửi/thuê tủ, theo dõi drone

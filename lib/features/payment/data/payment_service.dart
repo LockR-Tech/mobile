@@ -51,10 +51,12 @@ class PaymentService {
     required int orderId,
     required num amount,
     required String reason,
+    String? customerAttachmentUrl,
     String? bankName,
     String? bankCode,
     String? accountNumber,
     String? accountHolderName,
+    bool? saveAsDefault,
   }) async {
     try {
       final payload = <String, dynamic>{
@@ -62,10 +64,14 @@ class PaymentService {
         'amount': amount,
         'reason': reason,
       };
+      if (customerAttachmentUrl != null && customerAttachmentUrl.isNotEmpty) {
+        payload['customerAttachmentUrl'] = customerAttachmentUrl;
+      }
       if (bankName != null) payload['bankName'] = bankName;
       if (bankCode != null) payload['bankCode'] = bankCode;
       if (accountNumber != null) payload['accountNumber'] = accountNumber;
       if (accountHolderName != null) payload['accountHolderName'] = accountHolderName;
+      if (saveAsDefault != null) payload['saveAsDefault'] = saveAsDefault;
 
       final response = await _apiClient.post<dynamic>(
         '/api/payments/refund-request',
@@ -80,6 +86,54 @@ class PaymentService {
       developer.log('Error requesting refund: $e', name: 'PaymentService');
       rethrow;
     }
+  }
+
+  /// Lấy danh sách các yêu cầu hoàn tiền của tôi
+  Future<List<Map<String, dynamic>>> myRefunds({List<int>? orderIds}) async {
+    try {
+      final response = await _apiClient.get<dynamic>('/api/payments/my-refunds');
+      final body = response.data;
+      List? rawList;
+      if (body is Map<String, dynamic> && body['data'] is List) {
+        rawList = body['data'] as List;
+      } else if (body is List) {
+        rawList = body;
+      }
+      if (rawList != null && rawList.isNotEmpty) {
+        return rawList
+            .whereType<Map>()
+            .map((e) => Map<String, dynamic>.from(e))
+            .toList();
+      }
+    } catch (e) {
+      developer.log('API /my-refunds fallback: $e', name: 'PaymentService');
+    }
+
+    // Fallback qua /api/payments/order/{id}/refunds (có sẵn trên live backend)
+    if (orderIds != null && orderIds.isNotEmpty) {
+      final List<Map<String, dynamic>> allRefunds = [];
+      await Future.wait(orderIds.take(25).map((oId) async {
+        try {
+          final res = await _apiClient.get<dynamic>('/api/payments/order/$oId/refunds');
+          final b = res.data;
+          List list = [];
+          if (b is Map<String, dynamic> && b['data'] is List) {
+            list = b['data'] as List;
+          } else if (b is List) {
+            list = b;
+          }
+          for (final item in list) {
+            if (item is Map) {
+              allRefunds.add(Map<String, dynamic>.from(item));
+            }
+          }
+        } catch (_) {}
+      }));
+      allRefunds.sort((a, b) => ((b['id'] as num?) ?? 0).compareTo((a['id'] as num?) ?? 0));
+      return allRefunds;
+    }
+
+    return [];
   }
 
   /// Lấy cấu hình quy tắc hoàn tiền từ Admin (ADR-0005 public settings - không hardcode)

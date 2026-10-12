@@ -28,6 +28,7 @@ import 'package:smart_laundry_locker/features/subscription/presentation/pages/pl
 import 'package:smart_laundry_locker/features/transactions/presentation/pages/transactions_page.dart';
 import 'package:smart_laundry_locker/features/transactions/presentation/pages/top_up_page.dart';
 import 'package:smart_laundry_locker/features/payment/presentation/pages/refund_bank_account_page.dart';
+import 'package:smart_laundry_locker/features/payment/presentation/pages/refund_requests_page.dart';
 import 'package:smart_laundry_locker/features/wallet/presentation/pages/withdraw_page.dart';
 import 'package:smart_laundry_locker/core/presentation/pages/qr_scanner_page.dart';
 import 'package:smart_laundry_locker/core/presentation/pages/directions_map_page.dart';
@@ -73,6 +74,7 @@ class AppRouter {
   static const String profileDetail = '/profile/detail';
   static const String editProfile = '/profile/edit';
   static const String refundBankAccount = '/profile/bank-account';
+  static const String refundRequests = '/profile/refund-requests';
   static const String security = '/profile/security';
   static const String plans = '/profile/plans';
   static const String transactions = '/transactions';
@@ -250,6 +252,37 @@ class AppRouter {
         path: withdraw,
         name: 'withdraw',
         builder: (context, state) => const WithdrawPage(),
+      ),
+      GoRoute(
+        path: refundRequests,
+        name: 'refund_requests',
+        builder: (context, state) {
+          final extra = state.extra;
+          int? orderId;
+          Map<String, dynamic>? order;
+          if (extra is Map<String, dynamic>) {
+            final rawId = extra['orderId'];
+            if (rawId is int) {
+              orderId = rawId;
+            } else if (rawId is num) {
+              orderId = rawId.toInt();
+            } else if (rawId is String) {
+              orderId = int.tryParse(rawId);
+            }
+            order = extra['order'] as Map<String, dynamic>?;
+          } else if (extra is int) {
+            orderId = extra;
+          } else if (extra is num) {
+            orderId = extra.toInt();
+          } else if (extra is String) {
+            orderId = int.tryParse(extra);
+          }
+          orderId ??= int.tryParse(state.uri.queryParameters['orderId'] ?? '');
+          return RefundRequestsPage(
+            initialOrderId: orderId,
+            initialOrder: order,
+          );
+        },
       ),
       GoRoute(
         path: policy,
