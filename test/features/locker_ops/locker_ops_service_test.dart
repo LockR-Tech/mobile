@@ -460,24 +460,25 @@ void main() {
             'deliveryStage': 'AWAITING_DISPATCH',
           }),
         ),
-        // Chỉ khớp khi body mang đúng tủ gửi (Locker A) và tủ nhận (Locker B).
+        // Chỉ khớp khi body đi nguyên vẹn: điểm lấy hàng và tủ nhận, không còn tủ gửi
+        // (hệ thống tự chọn tủ gần điểm lấy hàng nhất).
         data: {
-          'sourceLockerId': 4,
           'destinationLockerId': 5,
-          'preferredBoxId': 9001,
-          'description': 'Tai lieu',
+          'pickupAddress': '12 Nguyen Hue',
+          'pickupLatitude': 10.7,
+          'pickupLongitude': 106.7,
           'parcelWeightGrams': 1200,
-          'paymentMethod': 'CASH',
         },
       );
 
       final result = await service.createDroneDeliveryOrder(
-        sourceLockerId: 4,
-        destinationLockerId: 5,
-        preferredBoxId: 9001,
-        description: 'Tai lieu',
-        parcelWeightGrams: 1200,
-        paymentMethod: 'CASH',
+        body: {
+          'destinationLockerId': 5,
+          'pickupAddress': '12 Nguyen Hue',
+          'pickupLatitude': 10.7,
+          'pickupLongitude': 106.7,
+          'parcelWeightGrams': 1200,
+        },
         idempotencyKey: 'idem-1',
       );
 

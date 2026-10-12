@@ -365,7 +365,7 @@ void main() {
 
     await tester.tap(find.text('Tiếp nhận'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Tiếp nhận ngay'));
+    await tester.tap(find.text('Gán drone'));
     await tester.pumpAndSettle();
 
     expect(service.acceptedOrderId, equals(21));
