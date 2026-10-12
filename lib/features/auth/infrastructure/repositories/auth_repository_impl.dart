@@ -3,6 +3,7 @@ import 'dart:typed_data';
 
 import 'package:smart_laundry_locker/core/errors/failures.dart';
 import 'package:smart_laundry_locker/core/network/api_client.dart';
+import 'package:smart_laundry_locker/core/utils/firebase_auth_errors.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:smart_laundry_locker/features/auth/domain/entities/auth_token_entity.dart';
 import 'package:smart_laundry_locker/features/auth/domain/entities/face_verify_result_entity.dart';
@@ -204,13 +205,20 @@ class AuthRepositoryImpl implements AuthRepository {
       final tokenModel = AuthTokenModel.fromJson(response);
       return Right(tokenModel.toEntity());
     } on ServerException catch (e) {
-      return Left(ServerFailure(e.message));
+      return Left(ServerFailure(firebaseLoginBackendMessage(e.message)));
+    } on ValidationException catch (e) {
+      // 400 AUTH_FIREBASE_INVALID: token hết hạn / khác project Firebase.
+      return Left(ValidationFailure(firebaseLoginBackendMessage(e.message)));
     } on NetworkException catch (e) {
       return Left(NetworkFailure(e.message));
     } on AuthenticationException catch (e) {
       return Left(AuthenticationFailure(e.message));
+    } on AuthorizationException catch (e) {
+      return Left(AuthorizationFailure(e.message));
     } catch (e) {
-      return Left(UnknownFailure(e.toString()));
+      return const Left(
+        UnknownFailure('Đăng nhập thất bại. Vui lòng thử lại.'),
+      );
     }
   }
 

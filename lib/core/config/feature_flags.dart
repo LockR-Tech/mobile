@@ -10,8 +10,14 @@ class FeatureFlags {
   const FeatureFlags._();
 
   /// Ví / số dư người dùng.
-  /// Backend đã có wallet service (`GET /api/wallet`, cộng tiền sau topup VNPay).
+  /// Backend đã có wallet service (`GET /api/wallet`, cộng tiền sau nạp SePay).
   static const bool walletEnabled = true;
+
+  /// Nút "Facebook" ở màn đăng nhập/đăng ký.
+  /// Chủ sản phẩm không dùng đăng nhập Facebook ⇒ ẩn. Code (`loginWithFacebook`,
+  /// `FirebaseAuthService.signInWithFacebook`, cấu hình native) vẫn giữ — đổi cờ
+  /// về `true` để bật lại.
+  static const bool facebookLoginEnabled = false;
 
   /// Nạp tiền + lịch sử giao dịch (phụ thuộc ví).
   /// Backend: nạp qua `POST /api/payments/topup/create` → cộng ví; lịch sử ví
