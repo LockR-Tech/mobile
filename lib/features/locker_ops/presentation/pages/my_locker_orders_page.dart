@@ -1,8 +1,6 @@
 import 'dart:async';
-import 'dart:convert';
 import 'package:smart_laundry_locker/core/services/app_event_bus.dart';
 import 'package:smart_laundry_locker/core/utils/app_date_time.dart';
-import 'package:smart_laundry_locker/shared/widgets/app_cached_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
@@ -4366,399 +4364,134 @@ class _PaymentTraceRowsState extends State<_PaymentTraceRows> {
         ? const Color(0xFFDCFCE7)
         : (isRejected ? const Color(0xFFFFE4E6) : const Color(0xFFFEF3C7));
 
-    final customerProof = rf['customerAttachmentUrl'] as String? ??
-        () {
-          final reason = rf['reason']?.toString() ?? '';
-          final match = RegExp(
-            r'\[Ảnh minh chứng:\s*(https?://[^\s\]]+|data:image/[^;]+;base64,[^\s\]]+)\]',
-            caseSensitive: false,
-          ).firstMatch(reason);
-          return match?.group(1);
-        }();
-    final cleanReasonText = (rf['reason']?.toString() ?? '')
-        .replaceAll(
-          RegExp(
-            r'\s*\[Ảnh minh chứng:\s*(https?://[^\s\]]+|data:image/[^;]+;base64,[^\s\]]+)\]',
-            caseSensitive: false,
-          ),
-          '',
-        )
-        .trim();
+    final bankDisplay = [
+      if (rf['bankName'] != null || rf['bankCode'] != null)
+        '${rf['bankName'] ?? rf['bankCode']}',
+      if (rf['accountNumber'] != null && '${rf['accountNumber']}'.isNotEmpty)
+        '${rf['accountNumber']}',
+    ].join(' - ');
 
-    final proofUrl = rf['proofImageUrl'] as String? ??
-        () {
-          final ref = rf['bankTransferRef']?.toString() ?? '';
-          final match = RegExp(r'https?://[^\s|]+').firstMatch(ref);
-          return match?.group(0);
-        }();
-    final cleanTransferRef = (rf['bankTransferRef']?.toString() ?? '')
-        .replaceAll(RegExp(r'\s*\|\s*https?://[^\s|]+', caseSensitive: false), '')
-        .replaceAll(RegExp(r'https?://[^\s|]+', caseSensitive: false), '')
-        .trim();
+    final timeDisplay = rf['processedAt'] != null
+        ? fmtDateTime(rf['processedAt'])
+        : (rf['requestedAt'] != null ? fmtDateTime(rf['requestedAt']) : null);
 
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF8FAFC),
+    void onNavigateRefunds() {
+      if (Navigator.canPop(context)) {
+        Navigator.pop(context);
+      }
+      context.push(
+        AppRouter.refundRequests,
+        extra: {
+          'orderId': widget.orderId ?? widget.order?['id'] ?? rf['orderId'],
+          'order': widget.order,
+        },
+      );
+    }
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onNavigateRefunds,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        child: Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: const Color(0xFFF8FAFC),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: const Color(0xFFE2E8F0)),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Header
               Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Icon(LucideIcons.rotateCcw, size: 15, color: statusColor),
-                  const SizedBox(width: 6),
-                  Text(
-                    'Hoàn tiền #${rf['id'] ?? ''}',
-                    style: const TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w700,
-                      color: Color(0xFF0F172A),
+                  Row(
+                    children: [
+                      Icon(LucideIcons.rotateCcw, size: 15, color: statusColor),
+                      const SizedBox(width: 6),
+                      Text(
+                        'Hoàn tiền #${rf['id'] ?? ''}',
+                        style: const TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xFF0F172A),
+                        ),
+                      ),
+                    ],
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: statusBg,
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Text(
+                      statusText,
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        color: statusColor,
+                      ),
                     ),
                   ),
                 ],
               ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                decoration: BoxDecoration(
-                  color: statusBg,
-                  borderRadius: BorderRadius.circular(6),
+              const SizedBox(height: 8),
+
+              // Số tiền hoàn
+              if (rf['amount'] != null)
+                OpsInfoRow(
+                  icon: LucideIcons.banknote,
+                  label: 'Số tiền hoàn',
+                  value: fmtPrice(rf['amount']),
+                  valueColor: isCompleted ? const Color(0xFF15803D) : const Color(0xFFD97706),
                 ),
-                child: Text(
-                  statusText,
-                  style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
-                    color: statusColor,
+
+              // Tài khoản nhận
+              if (bankDisplay.isNotEmpty)
+                OpsInfoRow(
+                  icon: LucideIcons.building2,
+                  label: 'Tài khoản nhận',
+                  value: bankDisplay,
+                ),
+
+              // Thời gian hoàn tất / yêu cầu
+              if (timeDisplay != null)
+                OpsInfoRow(
+                  icon: LucideIcons.clock,
+                  label: isCompleted ? 'Thời gian hoàn tất' : 'Thời gian yêu cầu',
+                  value: timeDisplay,
+                ),
+
+              const SizedBox(height: 8),
+              const Divider(height: 1, color: Color(0xFFE2E8F0)),
+              const SizedBox(height: 8),
+
+              // Dòng chữ xem chi tiết ở mục hoàn tiền
+              const Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    children: [
+                      Icon(LucideIcons.arrowUpRight, size: 13, color: Color(0xFF0284C7)),
+                      SizedBox(width: 5),
+                      Text(
+                        'Xem chi tiết ở mục Hoàn tiền',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF0284C7),
+                        ),
+                      ),
+                    ],
                   ),
-                ),
+                  Icon(LucideIcons.chevronRight, size: 13, color: Color(0xFF0284C7)),
+                ],
               ),
             ],
           ),
-          const SizedBox(height: 10),
-          if (rf['amount'] != null)
-            OpsInfoRow(
-              icon: LucideIcons.banknote,
-              label: 'Số tiền hoàn',
-              value: fmtPrice(rf['amount']),
-              valueColor: isCompleted ? const Color(0xFF15803D) : const Color(0xFFD97706),
-            ),
-          if (rf['bankName'] != null || rf['bankCode'] != null)
-            OpsInfoRow(
-              icon: LucideIcons.building2,
-              label: 'Ngân hàng nhận',
-              value: '${rf['bankName'] ?? rf['bankCode']}',
-            ),
-          if (rf['accountNumber'] != null)
-            OpsInfoRow(
-              icon: LucideIcons.creditCard,
-              label: 'Số tài khoản',
-              value: '${rf['accountNumber']}',
-            ),
-          if (rf['accountHolderName'] != null && '${rf['accountHolderName']}'.isNotEmpty)
-            OpsInfoRow(
-              icon: LucideIcons.user,
-              label: 'Chủ tài khoản',
-              value: '${rf['accountHolderName']}'.toUpperCase(),
-            ),
-          if (cleanTransferRef.isNotEmpty)
-            OpsInfoRow(
-              icon: LucideIcons.hash,
-              label: 'Mã GD chuyển tiền',
-              value: cleanTransferRef,
-            ),
-          if (cleanReasonText.isNotEmpty)
-            OpsInfoRow(
-              icon: LucideIcons.messageSquare,
-              label: 'Lý do hoàn',
-              value: cleanReasonText,
-            ),
-          if (rf['rejectionReason'] != null && '${rf['rejectionReason']}'.isNotEmpty)
-            OpsInfoRow(
-              icon: LucideIcons.alertTriangle,
-              label: 'Lý do từ chối',
-              value: '${rf['rejectionReason']}',
-              valueColor: const Color(0xFFE11D48),
-            ),
-          if (rf['requestedAt'] != null)
-            OpsInfoRow(
-              icon: LucideIcons.clock,
-              label: 'Thời gian yêu cầu',
-              value: fmtDateTime(rf['requestedAt']),
-            ),
-          if (rf['processedAt'] != null)
-            OpsInfoRow(
-              icon: LucideIcons.calendarCheck,
-              label: 'Thời gian hoàn tất',
-              value: fmtDateTime(rf['processedAt']),
-              valueColor: const Color(0xFF15803D),
-            ),
-
-          // Hiển thị ảnh minh chứng khách gửi
-          if (customerProof != null && customerProof.trim().isNotEmpty) ...[
-            const SizedBox(height: 10),
-            Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: const Color(0xFFBAE6FD)),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      const Icon(LucideIcons.image, size: 14, color: Color(0xFF0284C7)),
-                      const SizedBox(width: 6),
-                      const Expanded(
-                        child: Text(
-                          'Ảnh minh chứng từ khách hàng:',
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w700,
-                            color: Color(0xFF0F172A),
-                          ),
-                        ),
-                      ),
-                      InkWell(
-                        onTap: () => _showProofLightbox(context, customerProof),
-                        borderRadius: BorderRadius.circular(4),
-                        child: const Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(
-                                'Phóng to',
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w600,
-                                  color: Color(0xFF0284C7),
-                                ),
-                              ),
-                              SizedBox(width: 2),
-                              Icon(LucideIcons.externalLink, size: 11, color: Color(0xFF0284C7)),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  GestureDetector(
-                    onTap: () => _showProofLightbox(context, customerProof),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(8),
-                      child: Container(
-                        constraints: const BoxConstraints(maxHeight: 180),
-                        width: double.infinity,
-                        color: const Color(0xFFF1F5F9),
-                        child: _buildProofImageWidget(
-                          customerProof,
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-
-          // Hiển thị ảnh minh chứng chuyển khoản của Admin
-          if (proofUrl != null && proofUrl.trim().isNotEmpty) ...[
-            const SizedBox(height: 10),
-            Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: const Color(0xFFCBD5E1)),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      const Icon(LucideIcons.image, size: 14, color: Color(0xFF15803D)),
-                      const SizedBox(width: 6),
-                      const Expanded(
-                        child: Text(
-                          'Ảnh minh chứng chuyển khoản (UNC):',
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w700,
-                            color: Color(0xFF0F172A),
-                          ),
-                        ),
-                      ),
-                      InkWell(
-                        onTap: () => _showProofLightbox(context, proofUrl),
-                        borderRadius: BorderRadius.circular(4),
-                        child: const Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(
-                                'Phóng to',
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w600,
-                                  color: Color(0xFF15803D),
-                                ),
-                              ),
-                              SizedBox(width: 2),
-                              Icon(LucideIcons.externalLink, size: 11, color: Color(0xFF15803D)),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  GestureDetector(
-                    onTap: () => _showProofLightbox(context, proofUrl),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(8),
-                      child: Container(
-                        constraints: const BoxConstraints(maxHeight: 180),
-                        width: double.infinity,
-                        color: const Color(0xFFF1F5F9),
-                        child: _buildProofImageWidget(
-                          proofUrl,
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  const Text(
-                    '✓ Quản trị viên đã xác nhận chuyển khoản và đính kèm biên lai giao dịch thành công. Chạm vào ảnh để phóng to đối soát.',
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: Color(0xFF64748B),
-                      fontStyle: FontStyle.italic,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-
-  static Widget _buildProofImageWidget(
-    String url, {
-    required BoxFit fit,
-    Widget? errorWidget,
-  }) {
-    if (url.startsWith('data:')) {
-      try {
-        final comma = url.indexOf(',');
-        final base64Str = comma != -1 ? url.substring(comma + 1) : url;
-        final bytes = base64Decode(base64Str);
-        return Image.memory(
-          bytes,
-          fit: fit,
-          errorBuilder: (_, __, ___) =>
-              errorWidget ??
-              const Center(
-                child: Padding(
-                  padding: EdgeInsets.all(16),
-                  child: Icon(Icons.broken_image, color: Colors.grey, size: 32),
-                ),
-              ),
-        );
-      } catch (_) {
-        return errorWidget ??
-            const Center(
-              child: Padding(
-                padding: EdgeInsets.all(16),
-                child: Icon(Icons.broken_image, color: Colors.grey, size: 32),
-              ),
-            );
-      }
-    }
-    return AppCachedImage(
-      imageUrl: url,
-      fit: fit,
-      errorWidget: (_, __, ___) =>
-          errorWidget ??
-          const Center(
-            child: Padding(
-              padding: EdgeInsets.all(16),
-              child: Icon(Icons.broken_image, color: Colors.grey, size: 32),
-            ),
-          ),
-    );
-  }
-
-  static void _showProofLightbox(BuildContext context, String imageUrl) {
-    showDialog(
-      context: context,
-      barrierColor: Colors.black87,
-      builder: (ctx) => Dialog(
-        backgroundColor: Colors.transparent,
-        insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text(
-                  'Biên lai chuyển khoản hoàn tiền',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                IconButton(
-                  onPressed: () => Navigator.of(ctx).pop(),
-                  icon: const Icon(Icons.close, color: Colors.white, size: 24),
-                  tooltip: 'Đóng',
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Flexible(
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: Container(
-                  color: Colors.black,
-                  constraints: const BoxConstraints(maxHeight: 520),
-                  child: InteractiveViewer(
-                    panEnabled: true,
-                    minScale: 0.8,
-                    maxScale: 4.0,
-                    child: _buildProofImageWidget(
-                      imageUrl,
-                      fit: BoxFit.contain,
-                      errorWidget: const Padding(
-                        padding: EdgeInsets.all(32),
-                        child: Icon(Icons.broken_image, color: Colors.white54, size: 48),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 10),
-            const Text(
-              'Chạm 2 ngón tay để phóng to hoặc thu nhỏ ảnh',
-              style: TextStyle(color: Colors.white70, fontSize: 11),
-            ),
-          ],
         ),
       ),
     );
