@@ -124,8 +124,8 @@ class LockerItem extends StatelessWidget {
           const SizedBox(width: 14),
           // Info
           Expanded(
-            child: SizedBox(
-              height: 110,
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(minHeight: 110),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -178,10 +178,10 @@ class LockerItem extends StatelessWidget {
                         ],
                       ),
                     ),
-                  // Name — 2 lines
+                  // Name — Tên tủ đồ
                   Text(
                     location.name,
-                    maxLines: 2,
+                    maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                       fontWeight: FontWeight.w700,
@@ -190,7 +190,34 @@ class LockerItem extends StatelessWidget {
                       height: 1.3,
                     ),
                   ),
-                  // Address
+                  // Điểm đặt Kiosk (giữ lại địa điểm đặt kiosk ở vị trí riêng biệt)
+                  if (location.storeName != null &&
+                      location.storeName!.isNotEmpty &&
+                      location.storeName!.trim().toLowerCase() !=
+                          location.name.trim().toLowerCase())
+                    Row(
+                      children: [
+                        const Icon(
+                          LucideIcons.store,
+                          size: 11,
+                          color: Color(0xFF4F46E5),
+                        ),
+                        const SizedBox(width: 4),
+                        Expanded(
+                          child: Text(
+                            'Kiosk: ${location.storeName}',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                              color: Color(0xFF4F46E5),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  // Vị trí chính xác của tủ (đồng bộ từ admin/lockers/5)
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -205,12 +232,12 @@ class LockerItem extends StatelessWidget {
                           location.address.isNotEmpty
                               ? location.address
                               : 'Chưa có địa chỉ',
-                          maxLines: 2,
+                          maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
-                            fontSize: 12,
+                            fontSize: 11.5,
                             color: context.textMuted,
-                            height: 1.4,
+                            height: 1.3,
                           ),
                         ),
                       ),

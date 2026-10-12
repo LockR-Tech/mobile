@@ -242,7 +242,7 @@ class _ProfilePageState extends State<ProfilePage>
                   physics: const AlwaysScrollableScrollPhysics(),
                   child: Column(
                     children: [
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 12),
 
                       if (_userData != null)
                         ProfileHeader(
@@ -254,9 +254,10 @@ class _ProfilePageState extends State<ProfilePage>
                           onEditAvatar: handleAvatarSelection,
                           onSaveAvatar: uploadAvatarImage,
                           onCancelAvatar: cancelAvatarSelection,
+                          onEditProfile: _handleEditProfile,
                         ),
 
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 16),
 
                       _buildMenuSection(),
                       const SizedBox(height: 100),

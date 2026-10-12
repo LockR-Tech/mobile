@@ -22,6 +22,12 @@ class LockerLocation {
   /// server chưa trả trường này.
   final bool? online;
 
+  /// Thông tin địa điểm đặt Kiosk (Store / Điểm đặt tủ)
+  final String? storeName;
+  final String? storeAddress;
+  final double? storeLatitude;
+  final double? storeLongitude;
+
   const LockerLocation({
     required this.id,
     required this.name,
@@ -35,10 +41,23 @@ class LockerLocation {
     this.updatedAt,
     this.storeId,
     this.online,
+    this.storeName,
+    this.storeAddress,
+    this.storeLatitude,
+    this.storeLongitude,
   });
 
-  /// Business logic: Lấy tọa độ LatLng
+  /// Business logic: Lấy tọa độ LatLng của tủ
   LatLng get coordinate => LatLng(latitude, longitude);
+
+  /// Tọa độ địa điểm đặt Kiosk (Store)
+  LatLng? get storeCoordinate =>
+      (storeLatitude != null &&
+              storeLongitude != null &&
+              storeLatitude!.isFinite &&
+              storeLongitude!.isFinite)
+          ? LatLng(storeLatitude!, storeLongitude!)
+          : null;
 
   /// getter trả về true nếu latitude và longitude hợp lệ, false nếu không
   bool get hasValidCoordinate {
@@ -82,6 +101,10 @@ class LockerLocation {
     DateTime? updatedAt,
     String? storeId,
     bool? online,
+    String? storeName,
+    String? storeAddress,
+    double? storeLatitude,
+    double? storeLongitude,
   }) {
     return LockerLocation(
       id: id ?? this.id,
@@ -96,6 +119,10 @@ class LockerLocation {
       updatedAt: updatedAt ?? this.updatedAt,
       storeId: storeId ?? this.storeId,
       online: online ?? this.online,
+      storeName: storeName ?? this.storeName,
+      storeAddress: storeAddress ?? this.storeAddress,
+      storeLatitude: storeLatitude ?? this.storeLatitude,
+      storeLongitude: storeLongitude ?? this.storeLongitude,
     );
   }
 
