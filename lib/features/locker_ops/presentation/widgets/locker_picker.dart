@@ -10,6 +10,7 @@ class LockerPickerField extends StatelessWidget {
     required this.lockers,
     required this.selectedId,
     required this.onSelected,
+    this.placeholder,
     super.key,
   });
 
@@ -17,10 +18,15 @@ class LockerPickerField extends StatelessWidget {
   final int? selectedId;
   final ValueChanged<Map<String, dynamic>> onSelected;
 
+  /// Có giá trị ⇒ chưa chọn thì hiện câu này thay vì tự lấy tủ đầu danh sách
+  /// (màn cần khách chọn tủ rõ ràng, vd. báo sự cố).
+  final String? placeholder;
+
   Map<String, dynamic>? get _selected {
     for (final l in lockers) {
       if (l['id'] == selectedId) return l;
     }
+    if (placeholder != null) return null;
     return lockers.isNotEmpty ? lockers.first : null;
   }
 
@@ -55,7 +61,9 @@ class LockerPickerField extends StatelessWidget {
                 children: [
                   Text(
                     selected == null
-                        ? 'Chưa có tủ khả dụng'
+                        ? (lockers.isNotEmpty && placeholder != null
+                              ? placeholder!
+                              : 'Chưa có tủ khả dụng')
                         : '${selected['name'] ?? selected['code'] ?? 'Tủ'}',
                     style: const TextStyle(
                       fontWeight: FontWeight.w800,

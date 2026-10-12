@@ -11,23 +11,40 @@ import 'package:smart_laundry_locker/core/media/media.dart';
 import 'package:smart_laundry_locker/core/routing/app_router.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/presentation/widgets/drone_order_cancel.dart';
 import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
+import 'package:smart_laundry_locker/features/locker_ops/data/receiver_order.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/utils/business_rules_text.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/utils/locker_maps.dart';
+import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/delegate_order_dialog.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/locker_unlock_modal.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/ops_widgets.dart';
+import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/order_feedback_section.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/order_payment_sheet.dart';
+import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/order_refund_section.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/order_status_timeline.dart';
+import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/receiver_order_card.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/user_report_detail_sheet.dart';
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
 import 'package:smart_laundry_locker/shared/shared.dart';
 
 /// All locker orders of the signed-in customer, with the full action set gated
 /// to the backend state machine: confirm drop, pickup/complete, delegate,
-/// extend/end rental, report fault, cancel.
+/// extend/end rental, report fault, cancel — plus "Hàng chờ nhận" (orders sent
+/// to me, `GET /api/orders/incoming`).
 class MyLockerOrdersPage extends StatefulWidget {
-  const MyLockerOrdersPage({super.key, this.service});
+  const MyLockerOrdersPage({
+    super.key,
+    this.service,
+    this.initialOrderId,
+    this.initialTab,
+  });
 
   final LockerOpsService? service;
+
+  /// Deep link `/locker/my-orders?orderId=<id>`: mở chi tiết đơn này sau khi tải.
+  final int? initialOrderId;
+
+  /// `incoming` ⇒ mở thẳng mục "Hàng chờ nhận".
+  final String? initialTab;
 
   @override
   State<MyLockerOrdersPage> createState() => _MyLockerOrdersPageState();
@@ -37,19 +54,34 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
     with BusinessConfigStateMixin {
   late final LockerOpsService _service = widget.service ?? LockerOpsService();
   List<Map<String, dynamic>> _orders = [];
-  Map<int, Map<int, int>> _lockerBoxesMap = {};
 
-  /// Bản ghi tủ đầy đủ theo `lockerId` (tên, địa chỉ, toạ độ) — trang vẫn gọi
-  /// `GET /api/lockers/{id}` sẵn, nên giữ cả bản ghi để bảng chi tiết hiện được
-  /// địa điểm đặt tủ mà không phải gọi mạng thêm lần nữa.
-  Map<int, Map<String, dynamic>> _lockersMap = {};
+  /// Sơ đồ ô (`boxId` → số ô in trên tủ) và bản ghi tủ theo `lockerId`. Giữ qua
+  /// các lần tải lại: tủ không đổi theo từng đơn, chỉ tải lại khi có sự kiện cập
+  /// nhật sơ đồ tủ hoặc khách bấm làm mới.
+  final Map<int, Map<int, int>> _lockerBoxesMap = {};
+
+  /// Bản ghi tủ đầy đủ theo `lockerId` (tên, địa chỉ, toạ độ) để bảng chi tiết hiện
+  /// được địa điểm đặt tủ mà không phải gọi mạng thêm lần nữa.
+  final Map<int, Map<String, dynamic>> _lockersMap = {};
   Map<int, Map<String, dynamic>> _activeReportsByBox = {};
   Map<int, Map<String, dynamic>> _latestReportByBox = {};
+
+  /// Phiếu sự cố gắn với đơn theo trường có cấu trúc `orderId` / `orderCode` của
+  /// `GET /api/lockers/my-reports` (không dò mã đơn trong ghi chú).
+  Map<int, Map<String, dynamic>> _reportByOrderId = {};
   Map<String, Map<String, dynamic>> _reportByOrderCode = {};
-  Map<String, List<Map<String, dynamic>>> _reportLogsByOrderCode = {};
   bool _loading = true;
   String _typeFilter = 'ALL';
+
+  /// "Hàng chờ nhận" (đơn người khác gửi tới mình) tách khỏi "Đơn của tôi" —
+  /// không phải đơn của mình nên không trộn vào các bộ lọc trạng thái/loại đơn.
+  late bool _showIncoming = widget.initialTab == 'incoming';
   StreamSubscription<AppEvent>? _eventSub;
+
+  List<ReceiverOrder> _incoming = const [];
+  bool _incomingLoading = true;
+  String? _incomingError;
+  bool _openedInitialOrder = false;
 
   @override
   void initState() {
@@ -57,11 +89,11 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
     _load();
     _eventSub = AppEventBus.instance.events.listen((event) {
       if (!mounted) return;
-      if (event is OrderChangedEvent ||
+      if (event is LockerLayoutUpdatedEvent) {
+        _load(refreshLockers: true);
+      } else if (event is OrderChangedEvent ||
           event is PaymentCompletedEvent ||
-          event is PaymentFailedEvent ||
-          event is LockerLayoutUpdatedEvent) {
-        debugPrint('[MyLockerOrdersPage] Real-time event received: $event, refreshing orders...');
+          event is PaymentFailedEvent) {
         _load();
       }
     });
@@ -73,21 +105,20 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
     super.dispose();
   }
 
-  Future<void> _load() async {
+  Future<void> _refresh() => _load(refreshLockers: true);
+
+  Future<void> _load({bool refreshLockers = false}) async {
     setState(() => _loading = true);
+    final incomingDone = _loadIncoming();
     try {
       final orders = await _service.myOrders();
-      final reports = await _service.myReports();
+      // Phiếu sự cố chỉ để gắn cảnh báo lên đơn — lỗi tải phiếu không được làm
+      // mất cả danh sách đơn.
+      var reports = const <Map<String, dynamic>>[];
+      try {
+        reports = await _service.myReports();
+      } catch (_) {}
 
-      final Map<int, Map<String, dynamic>> latestReportByBox = {};
-      for (final r in reports) {
-        final bId = _asInt(r['boxId']);
-        if (bId != null) {
-          latestReportByBox[bId] ??= r;
-        }
-      }
-
-      // Fetch box layouts to display box numbers instead of box IDs
       final lockerIds = <int>{};
       for (final o in orders) {
         final origin = _asInt(o['lockerId']);
@@ -95,143 +126,35 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
         final dest = _asInt(o['destinationLockerId']);
         if (dest != null) lockerIds.add(dest);
       }
-
+      if (refreshLockers) {
+        _lockersMap.clear();
+        _lockerBoxesMap.clear();
+      }
+      // Tải song song, mỗi tủ một lần; tủ đã có trong bộ nhớ thì bỏ qua.
+      await Future.wait(
+        lockerIds
+            .where((id) => !_lockerBoxesMap.containsKey(id))
+            .map(_loadLocker),
+      );
       if (!mounted) return;
 
-      final Map<int, Map<int, int>> lockerBoxesMap = {};
-      final Map<int, Map<String, dynamic>> lockersMap = {};
-
-      for (final lId in lockerIds) {
-        try {
-          final info = await _service.locker(lId);
-          debugPrint('Locker $lId info: $info');
-          lockersMap[lId] = info;
-        } catch (e) {
-          debugPrint('Locker $lId fetch error: $e');
-        }
-
-        try {
-          final layout = await _service.layout(lId);
-          debugPrint('Layout $lId info: $layout');
-          final cells = layout['cells'] as List?;
-          final map = <int, int>{};
-          if (cells != null) {
-            for (final c in cells) {
-              final cId = _asInt(c['id']);
-              final bNum = _asInt(c['boxNumber']);
-              if (cId != null && bNum != null) {
-                map[cId] = bNum;
-              }
-            }
-          }
-          lockerBoxesMap[lId] = map;
-        } catch (e) {
-          debugPrint('Layout $lId fetch error: $e');
-        }
-      }
-
-      final Map<String, Map<String, dynamic>> reportByOrderCode = {};
-      final Map<String, List<Map<String, dynamic>>> reportLogsByOrderCode = {};
-
+      final latestReportByBox = <int, Map<String, dynamic>>{};
+      final reportByOrderId = <int, Map<String, dynamic>>{};
+      final reportByOrderCode = <String, Map<String, dynamic>>{};
       for (final r in reports) {
-        final directCode = r['orderCode']?.toString().trim();
-        if (directCode != null && directCode.isNotEmpty) {
-          reportByOrderCode[directCode] = r;
-          reportByOrderCode[directCode.toUpperCase()] = r;
-        }
+        final bId = _asInt(r['boxId']);
+        if (bId != null) latestReportByBox[bId] ??= r;
+        final oId = _asInt(r['orderId']);
+        if (oId != null) reportByOrderId[oId] ??= r;
+        final code = r['orderCode']?.toString().trim().toUpperCase();
+        if (code != null && code.isNotEmpty) reportByOrderCode[code] ??= r;
       }
 
-      // Tra cứu nhật ký các phiếu sự cố để gắn kết trực tiếp với đơn hàng
-      // (đặc biệt khi KTV đã điều chuyển đơn hàng sang ô mới khác ô ban đầu)
-      await Future.wait(reports.map((r) async {
-        final rId = _asInt(r['id']);
-        if (rId == null) return;
-        List<Map<String, dynamic>> logs = [];
-        try {
-          logs = await _service.userReportLogs(rId);
-        } catch (_) {}
-        if (logs.isEmpty) {
-          try {
-            logs = await _service.reportLogs(rId);
-          } catch (_) {}
-        }
-        if (logs.isEmpty) return;
-
-        for (final log in logs) {
-          final note = (log['note'] ??
-                  log['description'] ??
-                  log['message'] ??
-                  log['content'] ??
-                  log['staffNote'] ??
-                  '')
-              .toString();
-
-          // 1. Quét theo mã đơn trong ghi chú
-          final matches = RegExp(r'ORD-[A-Za-z0-9\-_]+', caseSensitive: false)
-              .allMatches(note);
-          for (final m in matches) {
-            final code = m.group(0)!;
-            reportByOrderCode[code] = r;
-            reportByOrderCode[code.toUpperCase()] = r;
-            reportLogsByOrderCode[code] = logs;
-            reportLogsByOrderCode[code.toUpperCase()] = logs;
-          }
-
-          // 2. Nếu log điều chuyển sang ô mới ("sang ô #4"):
-          // Tự động tìm đơn hàng đang hoạt động (chưa hủy/chưa hoàn tất) ở ô đích
-          final mNew = RegExp(r'sang ô #?(\d+)', caseSensitive: false).firstMatch(note);
-          if (mNew != null) {
-            final targetBoxNum = int.tryParse(mNew.group(1)!);
-            if (targetBoxNum != null) {
-              final rLockerId = _asInt(r['lockerId']);
-              for (final o in orders) {
-                final oLockerId = _asInt(o['lockerId'] ?? o['destinationLockerId']);
-                if (rLockerId != null && oLockerId != null && rLockerId != oLockerId) {
-                  continue;
-                }
-                final rawStatus = (o['status'] as String? ?? '').toUpperCase();
-                // Bỏ qua các đơn đã hủy hoặc đã hoàn tất trong quá khứ!
-                if (rawStatus == 'CANCELED' || rawStatus == 'COMPLETED') continue;
-
-                // Đơn hàng ở ô đích phải được tạo trước hoặc trong lúc sự cố được xử lý
-                final oDate = _parseOrderDate(o);
-                final rResolved = parseServerDateTime(r['resolvedAt']) ??
-                    parseServerDateTime(r['updatedAt']) ??
-                    parseServerDateTime(r['createdAt']);
-                if (oDate != null && rResolved != null && oDate.isAfter(rResolved)) {
-                  continue;
-                }
-
-                final oBoxId = _asInt(o['sendBoxId'] ?? o['receiveBoxId']);
-                int? oBoxNum;
-                if (oLockerId != null && oBoxId != null) {
-                  oBoxNum = lockerBoxesMap[oLockerId]?[oBoxId];
-                }
-                oBoxNum ??= _asInt(o['sendBoxNumber'] ?? o['receiveBoxNumber']);
-
-                if (oBoxNum == targetBoxNum || oBoxId == targetBoxNum) {
-                  final code = o['orderCode']?.toString();
-                  if (code != null) {
-                    reportByOrderCode[code] = r;
-                    reportByOrderCode[code.toUpperCase()] = r;
-                    reportLogsByOrderCode[code] = logs;
-                    reportLogsByOrderCode[code.toUpperCase()] = logs;
-                  }
-                }
-              }
-            }
-          }
-        }
-      }));
-
-      if (!mounted) return;
       setState(() {
-        _lockerBoxesMap = lockerBoxesMap;
-        _lockersMap = lockersMap;
         _activeReportsByBox = _activeReportsByBoxMap(reports);
         _latestReportByBox = latestReportByBox;
+        _reportByOrderId = reportByOrderId;
         _reportByOrderCode = reportByOrderCode;
-        _reportLogsByOrderCode = reportLogsByOrderCode;
         _orders = orders;
       });
     } catch (e) {
@@ -239,8 +162,75 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
     } finally {
       if (mounted) setState(() => _loading = false);
     }
+    await incomingDone;
+    _openInitialOrderOnce();
   }
 
+  Future<void> _loadLocker(int lockerId) async {
+    final results = await Future.wait([
+      _service.locker(lockerId).then<Map<String, dynamic>?>((v) => v).catchError(
+        (Object _) => null,
+      ),
+      _service.layout(lockerId).then<Map<String, dynamic>?>((v) => v).catchError(
+        (Object _) => null,
+      ),
+    ]);
+    final info = results[0];
+    if (info != null) _lockersMap[lockerId] = info;
+    final layout = results[1];
+    if (layout == null) return;
+    final map = <int, int>{};
+    final cells = layout['cells'];
+    if (cells is List) {
+      for (final c in cells.whereType<Map>()) {
+        final cId = _asInt(c['id']);
+        final bNum = _asInt(c['boxNumber']);
+        if (cId != null && bNum != null) map[cId] = bNum;
+      }
+    }
+    _lockerBoxesMap[lockerId] = map;
+  }
+
+  /// "Hàng chờ nhận": lỗi chỉ hiện trong mục này, không ảnh hưởng đơn của mình.
+  Future<void> _loadIncoming() async {
+    if (mounted) setState(() => _incomingLoading = true);
+    try {
+      final raw = await _service.incomingOrders();
+      if (!mounted) return;
+      setState(() {
+        _incoming = ReceiverOrder.listFrom(raw);
+        _incomingError = null;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(
+        () => _incomingError = LockerOpsService.isEndpointUnavailable(e)
+            ? 'Máy chủ chưa hỗ trợ mục Hàng chờ nhận. Vui lòng thử lại sau.'
+            : LockerOpsService.errorMessage(e),
+      );
+    } finally {
+      if (mounted) setState(() => _incomingLoading = false);
+    }
+  }
+
+  void _openInitialOrderOnce() {
+    final id = widget.initialOrderId;
+    if (id == null || _openedInitialOrder || !mounted) return;
+    _openedInitialOrder = true;
+    final order = _orders.where((o) => _asInt(o['id']) == id).firstOrNull;
+    if (order != null) {
+      _openDetail(order);
+      return;
+    }
+    // Đơn mình là người nhận (thông báo hàng tới) ⇒ mở mục Hàng chờ nhận.
+    if (_incoming.any((o) => o.id == id)) {
+      setState(() => _showIncoming = true);
+    } else {
+      _snack('Không tìm thấy đơn trong danh sách của bạn.');
+    }
+  }
+
+  int get _incomingReadyCount => _incoming.where((o) => o.isActive).length;
   bool _isRecent(Map<String, dynamic> o) {
     final d = _parseOrderDate(o);
     if (d == null) return true;
@@ -386,14 +376,13 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
   /// Tra cứu phiếu sự cố gắn liền với đơn hàng (ưu tiên phiếu theo mã đơn,
   /// sau đó phiếu đang mở, nếu không có thì lấy phiếu sự cố đã xử lý mới nhất của ô tủ).
   Map<String, dynamic>? _incidentReportForOrder(Map<String, dynamic> order) {
-    final code = order['orderCode']?.toString();
-    if (code != null) {
-      if (_reportByOrderCode.containsKey(code)) {
-        return _reportByOrderCode[code];
-      }
-      if (_reportByOrderCode.containsKey(code.toUpperCase())) {
-        return _reportByOrderCode[code.toUpperCase()];
-      }
+    final orderId = _asInt(order['id']);
+    final byId = orderId == null ? null : _reportByOrderId[orderId];
+    if (byId != null) return byId;
+    final code = order['orderCode']?.toString().trim().toUpperCase();
+    if (code != null && code.isNotEmpty) {
+      final byCode = _reportByOrderCode[code];
+      if (byCode != null) return byCode;
     }
 
     final rawStatus = (order['status'] as String? ?? '').toUpperCase();
@@ -425,15 +414,6 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
       }
     }
     return null;
-  }
-
-  /// Lấy danh sách nhật ký xử lý của KTV liên quan đến đơn hàng (nếu có)
-  List<Map<String, dynamic>> _incidentLogsForOrder(Map<String, dynamic> order) {
-    final code = order['orderCode']?.toString();
-    if (code != null && _reportLogsByOrderCode.containsKey(code)) {
-      return _reportLogsByOrderCode[code]!;
-    }
-    return const [];
   }
 
   /// Số ô in trên tủ, tra từ sơ đồ tủ đã tải. Dùng cho MỌI câu thông báo cho người
@@ -901,12 +881,13 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
     }
   }
 
-  /// Luồng thanh toán và lấy đồ hoàn tất (dành cho đơn quá hạn/hết hạn hoặc đơn cần thanh toán rồi chốt xong luôn).
+  /// Thanh toán phần còn nợ (nếu có) rồi chốt đơn đã lấy đồ (đơn quá hạn/hết hạn).
+  /// Chỉ chốt đơn khi server đã ghi nhận PAID; mọi lỗi hiện đúng câu server trả.
   Future<void> _payAndCompleteFlow(Map<String, dynamic> order) async {
     final orderId = _asInt(order['id']);
     if (orderId == null) return;
 
-    // Cập nhật phí quá hạn nếu có trước khi tính toán
+    // Cập nhật phí quá hạn trước khi tính tiền; lỗi thì dùng số liệu đang có.
     try {
       final assessed = await _service.assessOvertime(orderId);
       if (assessed.isNotEmpty) {
@@ -919,81 +900,45 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
     final due = orderAmountDue(order);
     final paymentStatus =
         (order['paymentStatus'] as String? ?? 'UNPAID').toUpperCase();
-    final needsPayment = due > 0 || paymentStatus != 'PAID';
+    final needsPayment = paymentStatus != 'PAID' && due > 0;
 
     if (needsPayment) {
       businessConfigService.refresh();
+      final OrderPaymentOutcome outcome;
       try {
-        final outcome = await payOrderAndAwaitPaid(
+        outcome = await payOrderAndAwaitPaid(
           context,
           service: _service,
           orderId: orderId,
           total: due,
           enabledMethods: businessConfig.enabledPaymentMethods,
         );
-        if (!mounted || outcome == OrderPaymentOutcome.cancelled) return;
-        if (outcome == OrderPaymentOutcome.failed) {
-          showPaymentResultDialog<void>(
-            context,
-            type: PaymentStatusType.failure,
-            title: 'Thanh toán thất bại',
-            amountText: '${due.toInt()} đ',
-            message:
-                'Giao dịch chưa hoàn tất hoặc đã bị hủy. Vui lòng thử lại.',
-          );
-          await _load();
-          return;
-        }
-
-        // Đã thanh toán thành công -> chờ backend propagate payment event
-        // trước khi gọi complete (tránh race condition với assertPaidBefore*)
-        _snack('Đã thanh toán thành công — Đang hoàn tất đơn hàng...');
-        await Future.delayed(const Duration(milliseconds: 1500));
-        try {
-          final isRental =
-              (order['type'] as String? ?? '').toUpperCase() == 'RENTAL';
-          if (isRental) {
-            try {
-              await _service.endRental(orderId);
-            } catch (_) {
-              // endRental thất bại -> thử complete thông thường
-              await _service.completePickup(orderId);
-            }
-          } else {
-            await _service.completePickup(orderId);
-          }
-          if (mounted) {
-            showPaymentResultDialog<void>(
-              context,
-              type: PaymentStatusType.success,
-              title: 'Hoàn tất đơn hàng!',
-              amountText: '${due.toInt()} đ',
-              message:
-                  'Bạn đã thanh toán và lấy đồ thành công. Đơn hàng đã hoàn tất.',
-            );
-          }
-        } catch (e) {
-          // Cả endRental lẫn completePickup đều thất bại (ví dụ backend deploy bản cũ chưa cho EXPIRED complete)
-          // -> Đơn đã trả tiền thành công; hiện thông báo rõ ràng cho khách
-          if (mounted) {
-            final rawStatus = (order['status'] as String? ?? '').toUpperCase();
-            showPaymentResultDialog<void>(
-              context,
-              type: PaymentStatusType.success,
-              title: 'Thanh toán thành công!',
-              amountText: '${due.toInt()} đ',
-              message: rawStatus == 'EXPIRED'
-                  ? 'Bạn đã thanh toán phí quá hạn thành công. Do đơn đã quá hạn lưu tủ ${BusinessConfigService.instance.current.overdueReleaseHoursLabel}, đồ đang được lưu giữ an toàn tại quầy/kho. Vui lòng đọc mã đơn cho nhân viên để nhận đồ!'
-                  : 'Thanh toán thành công. Vui lòng cho nhân viên biết để hoàn tất đơn.',
-            );
-          }
-        }
-        await _load();
       } catch (e) {
         _snack(LockerOpsService.errorMessage(e));
+        return;
+      }
+      if (!mounted || outcome == OrderPaymentOutcome.cancelled) return;
+      if (outcome == OrderPaymentOutcome.failed) {
+        showPaymentResultDialog<void>(
+          context,
+          type: PaymentStatusType.failure,
+          title: 'Thanh toán thất bại',
+          amountText: fmtPrice(due),
+          message: 'Giao dịch chưa hoàn tất hoặc đã bị hủy. Vui lòng thử lại.',
+        );
+        await _load();
+        return;
+      }
+      if (outcome == OrderPaymentOutcome.pending) {
+        // Chưa có xác nhận PAID thì chưa chốt đơn — server cũng sẽ từ chối.
+        _snack(
+          'Đang chờ xác nhận thanh toán — bấm lại "Xác nhận lấy đồ" sau khi '
+          'đơn hiện Đã thanh toán.',
+        );
+        await _load();
+        return;
       }
     } else {
-      // Đã thanh toán hoặc không còn nợ phí -> Xác nhận đã lấy đồ để kết thúc đơn
       final confirm = await showDialog<bool>(
         context: context,
         builder: (ctx) => AlertDialog(
@@ -1033,88 +978,93 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
           ],
         ),
       );
+      if (confirm != true || !mounted) return;
+    }
 
-      if (confirm == true && mounted) {
-        try {
-          final isRental =
-              (order['type'] as String? ?? '').toUpperCase() == 'RENTAL';
-          if (isRental) {
-            try {
-              await _service.endRental(orderId);
-            } catch (_) {
-              await _service.completePickup(orderId);
-            }
-          } else {
-            await _service.completePickup(orderId);
-          }
-          _snack('Đã nhận đồ — đơn hoàn tất');
-          await _load();
-        } catch (e) {
-          final rawStatus = (order['status'] as String? ?? '').toUpperCase();
-          if (rawStatus == 'EXPIRED' && mounted) {
-            await showDialog<void>(
-              context: context,
-              builder: (ctx) => AlertDialog(
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(18),
-                ),
-                title: const Row(
-                  children: [
-                    Icon(LucideIcons.circleCheck, color: Color(0xFF16A34A)),
-                    SizedBox(width: 8),
-                    Text(
-                      'Đã ghi nhận nhận đồ',
-                      style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
-                    ),
-                  ],
-                ),
-                content: Text(
-                  'Đơn hàng của bạn đã thanh toán đầy đủ. Do đơn đã quá hạn lưu tủ ${BusinessConfigService.instance.current.overdueReleaseHoursLabel}, đồ được bàn giao trực tiếp bởi nhân viên tại quầy. Nhân viên sẽ đóng trạng thái đơn trên hệ thống giúp bạn!',
-                  style: const TextStyle(fontSize: 14, height: 1.4),
-                ),
-                actions: [
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AislBrand.navy,
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                    onPressed: () => Navigator.pop(ctx),
-                    child: const Text('Đã hiểu'),
-                  ),
-                ],
-              ),
-            );
-            await _load();
-          } else {
-            _snack(LockerOpsService.errorMessage(e));
-          }
-        }
+    try {
+      await _completeOrder(order, orderId);
+      if (!mounted) return;
+      if (needsPayment) {
+        showPaymentResultDialog<void>(
+          context,
+          type: PaymentStatusType.success,
+          title: 'Hoàn tất đơn hàng!',
+          amountText: fmtPrice(due),
+          message: 'Bạn đã thanh toán và lấy đồ thành công. Đơn hàng đã hoàn tất.',
+        );
+      } else {
+        _snack('Đã nhận đồ — đơn hoàn tất');
       }
+    } catch (e) {
+      if (!mounted) return;
+      final reason = LockerOpsService.errorMessage(e);
+      if (needsPayment) {
+        // Tiền đã nhận nhưng chốt đơn lỗi: nói đúng hai việc, không hứa thay ai.
+        await showDialog<void>(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(18),
+            ),
+            title: const Text('Đã thanh toán — chưa hoàn tất đơn'),
+            content: Text(
+              'Hệ thống đã ghi nhận thanh toán nhưng chưa hoàn tất được đơn: '
+              '$reason\nBạn có thể thử lại "Xác nhận lấy đồ" hoặc gửi khiếu nại '
+              'trong chi tiết đơn.',
+              style: const TextStyle(fontSize: 14, height: 1.4),
+            ),
+            actions: [
+              FilledButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: const Text('Đã hiểu'),
+              ),
+            ],
+          ),
+        );
+      } else {
+        _snack(reason);
+      }
+    }
+    await _load();
+  }
+
+  /// Chốt đơn đã lấy đồ: đơn thuê kết thúc kỳ thuê, đơn khác hoàn tất.
+  Future<void> _completeOrder(Map<String, dynamic> order, int orderId) async {
+    final isRental =
+        (order['type'] as String? ?? '').toUpperCase() == 'RENTAL';
+    if (!isRental) {
+      await _service.completePickup(orderId);
+      return;
+    }
+    try {
+      await _service.endRental(orderId);
+    } catch (_) {
+      // Đơn thuê đã hết hạn lưu tủ có thể không còn ở bước "kết thúc thuê":
+      // thử hoàn tất thường; vẫn lỗi thì lỗi đó được báo cho khách.
+      await _service.completePickup(orderId);
     }
   }
 
-  /// Luồng thanh toán phí quá hạn để mở ô tủ (Pay-to-Unlock).
+  /// Thanh toán phí quá giờ để mở ô (Pay-to-Unlock): xem bảng kê, chọn phương
+  /// thức admin đang bật, chỉ mở ô khi server đã ghi nhận PAID.
   Future<void> _payOvertimeFlow(Map<String, dynamic> order, num fee) async {
     final orderId = _asInt(order['id']);
     if (orderId == null) return;
 
+    var assessedOk = false;
     try {
       final assessed = await _service.assessOvertime(orderId);
       if (assessed.isNotEmpty) {
         order = assessed;
+        assessedOk = true;
       }
-    } catch (_) {}
-
-    num balance = 0;
-    try {
-      balance = await _service.walletBalance();
     } catch (_) {}
 
     if (!mounted) return;
 
+    // Số tiền thu = phần còn nợ server tính sau khi áp phí quá hạn. Không gọi
+    // được assess thì dùng phí tạm tính để hiện; server vẫn tự tính tiền thật.
+    final due = assessedOk ? orderAmountDue(order) : fee.toDouble();
     final lockerName = _lockerNameOf(order) ?? 'Tủ Lock.R';
     final boxId = _asInt(order['receiveBoxId'] ?? order['sendBoxId']);
     final boxLabel = _boxLabelFor(order, boxId);
@@ -1122,7 +1072,7 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
     final durationText = fmtOverdueDuration(deadline);
     final config = businessConfig;
 
-    final paidAndOpen = await showModalBottomSheet<bool>(
+    final confirmed = await showModalBottomSheet<bool>(
       context: context,
       useRootNavigator: true,
       isScrollControlled: true,
@@ -1133,30 +1083,63 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
       ),
       builder: (ctx) => _PayOvertimeConfirmationSheet(
         order: order,
-        fee: fee,
-        walletBalance: balance,
+        amountDue: due,
         lockerName: lockerName,
         boxLabel: boxLabel,
         overdueDurationText: durationText.isNotEmpty
             ? durationText
             : 'Đã quá hạn',
         overtimeRate: config.pickupOvertimeFeePerHour,
-        service: _service,
-        enabledMethods: config.enabledPaymentMethods,
       ),
     );
+    if (confirmed != true || !mounted) return;
 
-    if (paidAndOpen == true && mounted) {
-      _snack('Đã thanh toán phí quá giờ — chuẩn bị mở ô');
-      await _load();
-      if (mounted) {
-        final updated = _orders.firstWhere(
-          (o) => _asInt(o['id']) == orderId,
-          orElse: () => order,
+    if (due > 0 &&
+        (order['paymentStatus'] as String? ?? '').toUpperCase() != 'PAID') {
+      businessConfigService.refresh();
+      final OrderPaymentOutcome outcome;
+      try {
+        outcome = await payOrderAndAwaitPaid(
+          context,
+          service: _service,
+          orderId: orderId,
+          total: due,
+          enabledMethods: businessConfig.enabledPaymentMethods,
+          description: 'Phí quá hạn',
         );
-        _openLockerFlow(updated);
+      } catch (e) {
+        _snack(LockerOpsService.errorMessage(e));
+        return;
       }
+      if (!mounted || outcome == OrderPaymentOutcome.cancelled) return;
+      if (outcome == OrderPaymentOutcome.failed) {
+        showPaymentResultDialog<void>(
+          context,
+          type: PaymentStatusType.failure,
+          title: 'Thanh toán thất bại',
+          amountText: fmtPrice(due),
+          message: 'Giao dịch chưa hoàn tất hoặc đã bị hủy. Vui lòng thử lại.',
+        );
+        await _load();
+        return;
+      }
+      if (outcome == OrderPaymentOutcome.pending) {
+        _snack(
+          'Đang chờ xác nhận thanh toán — mở ô sau khi đơn hiện Đã thanh toán.',
+        );
+        await _load();
+        return;
+      }
+      _snack('Đã thanh toán phí quá giờ — chuẩn bị mở ô');
     }
+
+    await _load();
+    if (!mounted) return;
+    final updated = _orders.firstWhere(
+      (o) => _asInt(o['id']) == orderId,
+      orElse: () => order,
+    );
+    _openLockerFlow(updated);
   }
 
   /// Thực hiện mở khóa vật lý qua backend IoT
@@ -1255,7 +1238,74 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
     }
   }
 
+  /// "Ủy quyền lấy hộ": server đổi PIN và người được ủy quyền thấy đơn ở mục
+  /// "Đơn ủy quyền" của họ.
+  Future<void> _delegateOrder(int orderId) async {
+    final res = await showDelegateOrderDialog(
+      context,
+      service: _service,
+      orderId: orderId,
+    );
+    if (res == null || !mounted) return;
+    final phone = res['receiverPhone']?.toString();
+    _snack(
+      'Đã ủy quyền lấy hộ${phone == null || phone.isEmpty ? '' : ' cho $phone'}. '
+      'Mã PIN cũ đã hết hiệu lực.',
+    );
+    await _load();
+  }
+
+  /// "Đổi mã PIN": cấp PIN mới, PIN cũ hết hiệu lực.
+  Future<void> _resetPin(Map<String, dynamic> order) async {
+    final orderId = _asInt(order['id']);
+    if (orderId == null) return;
+    final isSend = _isSend(order);
+    final status = (order['status'] as String? ?? '').toUpperCase();
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+        title: const Text('Đổi mã PIN?'),
+        content: Text(
+          isSend && status == 'STORING'
+              ? 'Mã PIN hiện tại sẽ hết hiệu lực. Người nhận cần mã mới để lấy hàng '
+                    '— hãy gửi lại mã mới cho họ.'
+              : 'Mã PIN hiện tại sẽ hết hiệu lực ngay và được thay bằng mã mới.',
+          style: const TextStyle(fontSize: 14, height: 1.4),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Hủy'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Đổi mã'),
+          ),
+        ],
+      ),
+    );
+    if (confirm != true || !mounted) return;
+    try {
+      final res = await _service.resetPin(orderId);
+      final pin = res['pinCode']?.toString();
+      _snack(
+        pin == null || pin.isEmpty
+            ? 'Đã đổi mã PIN — xem mã mới trong chi tiết đơn.'
+            : 'Đã đổi mã PIN mới: $pin',
+      );
+      await _load();
+    } catch (e) {
+      _snack(
+        LockerOpsService.isEndpointUnavailable(e)
+            ? 'Máy chủ chưa hỗ trợ đổi mã PIN.'
+            : LockerOpsService.errorMessage(e),
+      );
+    }
+  }
+
   void _openDetail(Map<String, dynamic> order) {
+    final faultReport = _incidentReportForOrder(order);
     showModalBottomSheet<void>(
       context: context,
       useRootNavigator: true,
@@ -1272,88 +1322,103 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
         builder: (ctx, controller) => SingleChildScrollView(
           controller: controller,
           padding: const EdgeInsets.fromLTRB(20, 4, 20, 24),
-          child: _DetailSheet(
-            order: order,
+          // Nhật ký KTV của phiếu chỉ tải khi mở chi tiết (không tải cho mọi
+          // phiếu lúc vào danh sách).
+          child: _ReportLogsLoader(
+            report: faultReport,
             service: _service,
-            faultReport: _incidentReportForOrder(order),
-            faultLogs: _incidentLogsForOrder(order),
-            lockerName: _lockerNameOf(order),
-            locker: _lockerOf(order),
-            sendBoxNumber:
-                _lockerBoxesMap[_asInt(order['lockerId'])]?[_asInt(
-                  order['sendBoxId'],
-                )],
-            receiveBoxNumber:
-                _lockerBoxesMap[_asInt(
-                  order['destinationLockerId'] ?? order['lockerId'],
-                )]?[_asInt(order['receiveBoxId'])],
-            onReorder: (id) async {
-              Navigator.pop(ctx);
-              await _runAction(
-                () => _service.reorder(id),
-                'Đã tạo đơn mới — xem trong danh sách',
-              );
-            },
-            onConfirmDrop: (id) async {
-              Navigator.pop(ctx);
-              await _runAction(
-                () => _service.confirmDrop(id),
-                'Đã xác nhận bỏ đồ',
-              );
-            },
-            onComplete: (id) async {
-              Navigator.pop(ctx);
-              await _runAction(
-                () => _service.completePickup(id),
-                'Đã nhận đồ — đơn hoàn tất',
-              );
-            },
-            onEndRental: (id) async {
-              Navigator.pop(ctx);
-              await _showRentalCompletionGuide(order);
-            },
-            onExtend: (id) async {
-              Navigator.pop(ctx);
-              await _extendDialog(id);
-            },
-            onReport: (boxId) async {
-              Navigator.pop(ctx);
-              final orderId = _asInt(order['id']);
-              if (orderId == null) return;
-              await _reportDialog(
-                orderId: orderId,
-                boxLabel: _boxLabelFor(order, boxId),
-              );
-            },
-            onCancel: (id) async {
-              Navigator.pop(ctx);
-              if ('${order['type']}'.toUpperCase() == 'DRONE_DELIVERY') {
-                await _cancelDroneOrder(order, id);
-                return;
-              }
-              await _runAction(() => _service.cancelOrder(id), 'Đã hủy đơn');
-            },
-            onDirections: () => _openLockerDirections(order),
-            onPay: (_) async {
-              Navigator.pop(ctx);
-              await _payDialog(order);
-            },
-            onPayOvertime: (id, fee) async {
-              Navigator.pop(ctx);
-              await _payOvertimeFlow(order, fee);
-            },
-            onPayAndComplete: (id) async {
-              Navigator.pop(ctx);
-              await _payAndCompleteFlow(order);
-            },
-            onOpenLocker: () {
-              Navigator.pop(ctx);
-              _openLockerFlow(order);
-            },
-            onTrackDrone: (id) {
-              Navigator.pop(ctx);
-              context.go(AppRouter.droneDeliveryTracking, extra: '$id');
-            },
+            builder: (logs) => _DetailSheet(
+              order: order,
+              service: _service,
+              faultReport: faultReport,
+              faultLogs: logs,
+              lockerName: _lockerNameOf(order),
+              locker: _lockerOf(order),
+              sendBoxNumber:
+                  _lockerBoxesMap[_asInt(order['lockerId'])]?[_asInt(
+                    order['sendBoxId'],
+                  )],
+              receiveBoxNumber:
+                  _lockerBoxesMap[_asInt(
+                    order['destinationLockerId'] ?? order['lockerId'],
+                  )]?[_asInt(order['receiveBoxId'])],
+              onReorder: (id) async {
+                Navigator.pop(ctx);
+                await _runAction(
+                  () => _service.reorder(id),
+                  'Đã tạo đơn mới — xem trong danh sách',
+                );
+              },
+              onConfirmDrop: (id) async {
+                Navigator.pop(ctx);
+                await _runAction(
+                  () => _service.confirmDrop(id),
+                  'Đã xác nhận bỏ đồ',
+                );
+              },
+              onComplete: (id) async {
+                Navigator.pop(ctx);
+                await _runAction(
+                  () => _service.completePickup(id),
+                  'Đã nhận đồ — đơn hoàn tất',
+                );
+              },
+              onEndRental: (id) async {
+                Navigator.pop(ctx);
+                await _showRentalCompletionGuide(order);
+              },
+              onExtend: (id) async {
+                Navigator.pop(ctx);
+                await _extendDialog(id);
+              },
+              onReport: (boxId) async {
+                Navigator.pop(ctx);
+                final orderId = _asInt(order['id']);
+                if (orderId == null) return;
+                await _reportDialog(
+                  orderId: orderId,
+                  boxLabel: _boxLabelFor(order, boxId),
+                );
+              },
+              onCancel: (id) async {
+                Navigator.pop(ctx);
+                if ('${order['type']}'.toUpperCase() == 'DRONE_DELIVERY') {
+                  await _cancelDroneOrder(order, id);
+                  return;
+                }
+                await _runAction(() => _service.cancelOrder(id), 'Đã hủy đơn');
+              },
+              onDirections: () => _openLockerDirections(order),
+              onPay: (_) async {
+                Navigator.pop(ctx);
+                await _payDialog(order);
+              },
+              onPayOvertime: (id, fee) async {
+                Navigator.pop(ctx);
+                await _payOvertimeFlow(order, fee);
+              },
+              onPayAndComplete: (id) async {
+                Navigator.pop(ctx);
+                await _payAndCompleteFlow(order);
+              },
+              onOpenLocker: () {
+                Navigator.pop(ctx);
+                _openLockerFlow(order);
+              },
+              onTrackDrone: (id) {
+                Navigator.pop(ctx);
+                context.go(AppRouter.droneDeliveryTracking, extra: '$id');
+              },
+              onDelegate: (id) async {
+                Navigator.pop(ctx);
+                await _delegateOrder(id);
+              },
+              onResetPin: () async {
+                Navigator.pop(ctx);
+                await _resetPin(order);
+              },
+              onChanged: _load,
+            ),
           ),
         ),
       ),
@@ -1363,6 +1428,7 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
   @override
   Widget build(BuildContext context) {
     final groups = _groupedOrders;
+    final showIncoming = _showIncoming;
 
     // Flatten groups into a mixed list of date-headers + order items
     final items = <_ListItem>[];
@@ -1382,76 +1448,99 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
             subtitle: 'Quản lý các đơn hàng của bạn',
             trailing: BrandCircleIconButton(
               icon: LucideIcons.refreshCw,
-              onTap: _load,
+              onTap: _refresh,
               iconSize: 18,
             ),
           ),
 
+          _ScopeTabs(
+            showIncoming: showIncoming,
+            incomingReadyCount: _incomingReadyCount,
+            onChanged: (incoming) => setState(() => _showIncoming = incoming),
+          ),
+
           // ── Service type & status filter chips ────────────────────────────
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.fromLTRB(16, 10, 16, 12),
-            child: Row(
-              children: [
-                _TypeChip(
-                  label: 'Tất cả',
-                  count: _orders.length,
-                  selected: _typeFilter == 'ALL',
-                  onTap: () => _setFilter('ALL'),
-                ),
-                const SizedBox(width: 8),
-                _TypeChip(
-                  label: 'Gần đây',
-                  count: _countRecent,
-                  selected: _typeFilter == 'RECENT',
-                  onTap: () => _setFilter('RECENT'),
-                ),
-                const SizedBox(width: 8),
-                _TypeChip(
-                  label: 'Đang dùng',
-                  count: _countActive,
-                  selected: _typeFilter == 'ACTIVE',
-                  onTap: () => _setFilter('ACTIVE'),
-                ),
-                const SizedBox(width: 8),
-                _TypeChip(
-                  label: 'Hoàn thành',
-                  count: _countCompleted,
-                  selected: _typeFilter == 'COMPLETED',
-                  onTap: () => _setFilter('COMPLETED'),
-                ),
-                const SizedBox(width: 8),
-                _TypeChip(
-                  label: 'Thuê tủ',
-                  count: _countRental,
-                  selected: _typeFilter == 'RENTAL',
-                  onTap: () => _setFilter('RENTAL'),
-                ),
-                const SizedBox(width: 8),
-                _TypeChip(
-                  label: 'Gửi hàng',
-                  count: _countSend,
-                  selected: _typeFilter == 'SEND',
-                  onTap: () => _setFilter('SEND'),
-                ),
-                if (_countCanceled > 0) ...[
+          if (!showIncoming)
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.fromLTRB(16, 10, 16, 12),
+              child: Row(
+                children: [
+                  _TypeChip(
+                    label: 'Tất cả',
+                    count: _orders.length,
+                    selected: _typeFilter == 'ALL',
+                    onTap: () => _setFilter('ALL'),
+                  ),
                   const SizedBox(width: 8),
                   _TypeChip(
-                    label: 'Đã hủy',
-                    count: _countCanceled,
-                    selected: _typeFilter == 'CANCELED',
-                    onTap: () => _setFilter('CANCELED'),
+                    label: 'Gần đây',
+                    count: _countRecent,
+                    selected: _typeFilter == 'RECENT',
+                    onTap: () => _setFilter('RECENT'),
                   ),
+                  const SizedBox(width: 8),
+                  _TypeChip(
+                    label: 'Đang dùng',
+                    count: _countActive,
+                    selected: _typeFilter == 'ACTIVE',
+                    onTap: () => _setFilter('ACTIVE'),
+                  ),
+                  const SizedBox(width: 8),
+                  _TypeChip(
+                    label: 'Hoàn thành',
+                    count: _countCompleted,
+                    selected: _typeFilter == 'COMPLETED',
+                    onTap: () => _setFilter('COMPLETED'),
+                  ),
+                  const SizedBox(width: 8),
+                  _TypeChip(
+                    label: 'Thuê tủ',
+                    count: _countRental,
+                    selected: _typeFilter == 'RENTAL',
+                    onTap: () => _setFilter('RENTAL'),
+                  ),
+                  const SizedBox(width: 8),
+                  _TypeChip(
+                    label: 'Gửi hàng',
+                    count: _countSend,
+                    selected: _typeFilter == 'SEND',
+                    onTap: () => _setFilter('SEND'),
+                  ),
+                  if (_countCanceled > 0) ...[
+                    const SizedBox(width: 8),
+                    _TypeChip(
+                      label: 'Đã hủy',
+                      count: _countCanceled,
+                      selected: _typeFilter == 'CANCELED',
+                      onTap: () => _setFilter('CANCELED'),
+                    ),
+                  ],
                 ],
-              ],
+              ),
             ),
-          ),
 
           const SizedBox(height: 8),
 
           // ── Grouped list ─────────────────────────────────────────────────
           Expanded(
-            child: _loading
+            child: showIncoming
+                ? _IncomingOrdersView(
+                    orders: _incoming,
+                    loading: _incomingLoading,
+                    error: _incomingError,
+                    onRefresh: _loadIncoming,
+                    onUnlock: (o) async {
+                      final opened = await openReceiverOrderBox(
+                        context,
+                        service: _service,
+                        order: o,
+                      );
+                      if (opened) await _loadIncoming();
+                    },
+                    onDirections: (o) => openReceiverOrderDirections(context, o),
+                  )
+                : _loading
                 ? const Center(
                     child: AppLoadingIndicator(
                       message: 'Đang tải danh sách đơn...',
@@ -1467,7 +1556,7 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
                   )
                 : RefreshIndicator(
                     color: AislBrand.navy,
-                    onRefresh: _load,
+                    onRefresh: _refresh,
                     child: ListView.builder(
                       padding: const EdgeInsets.fromLTRB(0, 0, 0, 120),
                       itemCount: items.length,
@@ -1494,7 +1583,6 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
                               _OrderCard(
                                     order: o,
                                     faultReport: _incidentReportForOrder(o),
-                                    faultLogs: _incidentLogsForOrder(o),
                                     lockerName: _lockerNameOf(o),
                                     sendBoxNumber:
                                         _lockerBoxesMap[_asInt(
@@ -1502,7 +1590,8 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
                                         )]?[_asInt(o['sendBoxId'])],
                                     receiveBoxNumber:
                                         _lockerBoxesMap[_asInt(
-                                          o['lockerId'],
+                                          o['destinationLockerId'] ??
+                                              o['lockerId'],
                                         )]?[_asInt(o['receiveBoxId'])],
                                     onTap: () => _openDetail(o),
                                     onPayAndComplete: () =>
@@ -1529,6 +1618,229 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
                   ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// Tải nhật ký KTV của phiếu gắn với đơn khi mở chi tiết, rồi dựng lại bảng chi
+/// tiết với nhật ký đó (dùng cho hồ sơ điều chuyển ô). Lỗi / chưa có ⇒ rỗng.
+class _ReportLogsLoader extends StatefulWidget {
+  const _ReportLogsLoader({
+    required this.report,
+    required this.service,
+    required this.builder,
+  });
+
+  final Map<String, dynamic>? report;
+  final LockerOpsService service;
+  final Widget Function(List<Map<String, dynamic>> logs) builder;
+
+  @override
+  State<_ReportLogsLoader> createState() => _ReportLogsLoaderState();
+}
+
+class _ReportLogsLoaderState extends State<_ReportLogsLoader> {
+  List<Map<String, dynamic>> _logs = const [];
+
+  @override
+  void initState() {
+    super.initState();
+    final reportId = _asInt(widget.report?['id']);
+    if (reportId != null) _loadLogs(reportId);
+  }
+
+  Future<void> _loadLogs(int reportId) async {
+    try {
+      final logs = await widget.service.userReportLogs(reportId);
+      if (mounted && logs.isNotEmpty) setState(() => _logs = logs);
+    } catch (_) {
+      // Không có nhật ký thì chi tiết đơn vẫn hiện bình thường.
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) => widget.builder(_logs);
+}
+
+/// Mục "Hàng chờ nhận": đơn người khác gửi tới mình, kèm mã lấy hàng khi sẵn sàng.
+class _IncomingOrdersView extends StatelessWidget {
+  const _IncomingOrdersView({
+    required this.orders,
+    required this.loading,
+    required this.error,
+    required this.onRefresh,
+    required this.onUnlock,
+    required this.onDirections,
+  });
+
+  final List<ReceiverOrder> orders;
+  final bool loading;
+  final String? error;
+  final Future<void> Function() onRefresh;
+  final void Function(ReceiverOrder order) onUnlock;
+  final void Function(ReceiverOrder order) onDirections;
+
+  @override
+  Widget build(BuildContext context) {
+    if (loading && orders.isEmpty) {
+      return const Center(
+        child: AppLoadingIndicator(message: 'Đang tải hàng chờ nhận...'),
+      );
+    }
+    if (error != null && orders.isEmpty) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(LucideIcons.cloudOff, size: 36, color: opsMutedText),
+              const SizedBox(height: 10),
+              Text(
+                error!,
+                textAlign: TextAlign.center,
+                style: const TextStyle(fontSize: 13.5, color: opsDark),
+              ),
+              const SizedBox(height: 8),
+              TextButton(onPressed: onRefresh, child: const Text('Thử lại')),
+            ],
+          ),
+        ),
+      );
+    }
+    if (orders.isEmpty) {
+      return RefreshIndicator(
+        color: AislBrand.navy,
+        onRefresh: onRefresh,
+        child: ListView(
+          children: const [
+            SizedBox(height: 40),
+            OpsEmptyState(
+              icon: LucideIcons.inbox,
+              title: 'Chưa có hàng chờ nhận',
+              subtitle:
+                  'Khi có người gửi hàng tới số điện thoại của bạn, đơn sẽ hiện ở đây.',
+            ),
+          ],
+        ),
+      );
+    }
+    // Đơn đang chờ lấy lên trước, sau đó tới các đơn đã xong.
+    final sorted = [...orders]
+      ..sort((a, b) {
+        if (a.isActive != b.isActive) return a.isActive ? -1 : 1;
+        final da = a.createdAt;
+        final db = b.createdAt;
+        if (da == null || db == null) return 0;
+        return db.compareTo(da);
+      });
+    return RefreshIndicator(
+      color: AislBrand.navy,
+      onRefresh: onRefresh,
+      child: ListView.separated(
+        padding: const EdgeInsets.fromLTRB(16, 0, 16, 120),
+        itemCount: sorted.length,
+        separatorBuilder: (_, _) => const SizedBox(height: 10),
+        itemBuilder: (ctx, i) => ReceiverOrderCard(
+          order: sorted[i],
+          onUnlock: () => onUnlock(sorted[i]),
+          onDirections: () => onDirections(sorted[i]),
+        ),
+      ),
+    );
+  }
+}
+
+/// "Đơn của tôi" | "Hàng chờ nhận" (kèm số đơn đang chờ lấy).
+class _ScopeTabs extends StatelessWidget {
+  const _ScopeTabs({
+    required this.showIncoming,
+    required this.incomingReadyCount,
+    required this.onChanged,
+  });
+
+  final bool showIncoming;
+  final int incomingReadyCount;
+  final ValueChanged<bool> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    Widget tab(String label, bool selected, VoidCallback onTap, {int? badge}) {
+      return Expanded(
+        child: Material(
+          color: selected ? context.cardBg : Colors.transparent,
+          borderRadius: BorderRadius.circular(12),
+          child: InkWell(
+            borderRadius: BorderRadius.circular(12),
+            onTap: onTap,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 9),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Flexible(
+                    child: Text(
+                      label,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 13.5,
+                        fontWeight: selected ? FontWeight.w800 : FontWeight.w600,
+                        color: selected ? context.textPrimary : context.textMuted,
+                      ),
+                    ),
+                  ),
+                  if (badge != null && badge > 0) ...[
+                    const SizedBox(width: 6),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 7,
+                        vertical: 1.5,
+                      ),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFDC2626),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Text(
+                        '$badge',
+                        style: const TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w800,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
+      child: Container(
+        padding: const EdgeInsets.all(4),
+        decoration: BoxDecoration(
+          color: context.isDark
+              ? Colors.white.withValues(alpha: 0.06)
+              : const Color(0xFFE2E8F0),
+          borderRadius: BorderRadius.circular(14),
+        ),
+        child: Row(
+          children: [
+            tab('Đơn của tôi', !showIncoming, () => onChanged(false)),
+            tab(
+              'Hàng chờ nhận',
+              showIncoming,
+              () => onChanged(true),
+              badge: incomingReadyCount,
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -1639,7 +1951,6 @@ class _OrderCard extends StatelessWidget {
   const _OrderCard({
     required this.order,
     this.faultReport,
-    this.faultLogs = const [],
     this.lockerName,
     this.sendBoxNumber,
     this.receiveBoxNumber,
@@ -1650,7 +1961,6 @@ class _OrderCard extends StatelessWidget {
 
   final Map<String, dynamic> order;
   final Map<String, dynamic>? faultReport;
-  final List<Map<String, dynamic>> faultLogs;
   final String? lockerName;
   final int? sendBoxNumber;
   final int? receiveBoxNumber;
@@ -2011,7 +2321,6 @@ class _OrderCard extends StatelessWidget {
                 padding: const EdgeInsets.fromLTRB(16, 0, 16, 14),
                 child: _FaultOrderBanner(
                   report: faultReport!,
-                  logs: faultLogs,
                   boxLabel: _orderBoxLabel(
                     sendBoxNumber: sendBoxNumber,
                     receiveBoxNumber: receiveBoxNumber,
@@ -2320,121 +2629,32 @@ String _displayStatus(Map<String, dynamic> order, String? fallback) {
   return fallback ?? '';
 }
 
-/// BottomSheet xác nhận thanh toán phí quá giờ để mở tủ (Pay-to-Unlock).
-class _PayOvertimeConfirmationSheet extends StatefulWidget {
+/// Bảng kê phí quá giờ trước khi trả để mở ô (Pay-to-Unlock). Đóng với `true`
+/// khi khách bấm thanh toán — phương thức chọn ở bước sau theo cấu hình admin.
+class _PayOvertimeConfirmationSheet extends StatelessWidget {
   const _PayOvertimeConfirmationSheet({
     required this.order,
-    required this.fee,
-    required this.walletBalance,
+    required this.amountDue,
     required this.lockerName,
     required this.boxLabel,
     required this.overdueDurationText,
     required this.overtimeRate,
-    required this.service,
-    required this.enabledMethods,
   });
 
   final Map<String, dynamic> order;
-  final num fee;
-  final num walletBalance;
+
+  /// Số tiền còn phải trả sau khi server áp phí quá hạn (`amountDue`).
+  final double amountDue;
   final String lockerName;
   final String boxLabel;
   final String overdueDurationText;
   final int overtimeRate;
-  final LockerOpsService service;
-  final List<String> enabledMethods;
-
-  @override
-  State<_PayOvertimeConfirmationSheet> createState() =>
-      _PayOvertimeConfirmationSheetState();
-}
-
-class _PayOvertimeConfirmationSheetState
-    extends State<_PayOvertimeConfirmationSheet> {
-  bool _loading = false;
-  String? _error;
-
-  Future<void> _payWithWallet() async {
-    final orderId = _asInt(widget.order['id']);
-    if (orderId == null) return;
-    setState(() {
-      _loading = true;
-      _error = null;
-    });
-
-    try {
-      try {
-        await widget.service.assessOvertime(orderId);
-      } catch (_) {}
-      await widget.service.checkout(
-        orderId,
-        'WALLET',
-        description: 'Phí quá hạn',
-      );
-      final paid = await widget.service.awaitOrderPaid(orderId);
-      if (!mounted) return;
-      if (paid) {
-        Navigator.pop(context, true);
-      } else {
-        setState(() {
-          _loading = false;
-          _error =
-              'Hệ thống đang xử lý thanh toán, vui lòng kiểm tra lại sau ít giây.';
-        });
-      }
-    } catch (e) {
-      if (!mounted) return;
-      setState(() {
-        _loading = false;
-        _error = LockerOpsService.errorMessage(e);
-      });
-    }
-  }
-
-  Future<void> _payWithSepay() async {
-    final orderId = _asInt(widget.order['id']);
-    if (orderId == null) return;
-    setState(() {
-      _loading = true;
-      _error = null;
-    });
-
-    try {
-      try {
-        await widget.service.assessOvertime(orderId);
-      } catch (_) {}
-
-      if (!mounted) return;
-
-      final outcome = await payWithSepayAndAwaitPaid(
-        context,
-        service: widget.service,
-        orderId: orderId,
-        total: widget.fee.toDouble(),
-        description: 'Phí quá hạn',
-      );
-
-      if (outcome == OrderPaymentOutcome.paid && mounted) {
-        Navigator.pop(context, true);
-      } else if (mounted) {
-        setState(() {
-          _loading = false;
-        });
-      }
-    } catch (e) {
-      if (!mounted) return;
-      setState(() {
-        _loading = false;
-        _error = LockerOpsService.errorMessage(e);
-      });
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
-    final hasEnoughWallet = widget.walletBalance >= widget.fee;
-    final deadline = widget.order['pickupDeadline'];
+    final deadline = order['pickupDeadline'];
     final config = BusinessConfigService.instance.current;
+    final overtimeFee = _asDouble(order['pickupOvertimeFee']);
 
     return Padding(
       padding: EdgeInsets.only(
@@ -2476,7 +2696,7 @@ class _PayOvertimeConfirmationSheetState
                       ),
                     ),
                     Text(
-                      '${widget.lockerName} · ${widget.boxLabel}',
+                      '$lockerName · $boxLabel',
                       style: const TextStyle(fontSize: 13, color: opsMutedText),
                     ),
                   ],
@@ -2496,16 +2716,12 @@ class _PayOvertimeConfirmationSheetState
             child: Column(
               children: [
                 _breakdownRow('Hạn trả ban đầu', fmtDateTime(deadline)),
-                _breakdownRow('Thời điểm mở tủ', fmtDateTime(DateTime.now())),
                 _breakdownRow(
                   'Thời gian quá hạn',
-                  widget.overdueDurationText,
+                  overdueDurationText,
                   valueColor: const Color(0xFFDC2626),
                 ),
-                _breakdownRow(
-                  'Đơn giá quá giờ',
-                  '${fmtPrice(widget.overtimeRate)}/giờ',
-                ),
+                _breakdownRow('Đơn giá quá giờ', '${fmtPrice(overtimeRate)}/giờ'),
                 if (config.pickupMaxOvertimePercent > 0 ||
                     config.pickupMaxOvertimeFee > 0)
                   _breakdownRow(
@@ -2517,6 +2733,8 @@ class _PayOvertimeConfirmationSheetState
                         '${config.pickupMaxOvertimePercent}% đơn',
                     ].join(' & '),
                   ),
+                if (overtimeFee != null && overtimeFee > 0)
+                  _breakdownRow('Phí quá giờ', fmtPrice(overtimeFee)),
                 const Padding(
                   padding: EdgeInsets.symmetric(vertical: 8),
                   child: Divider(height: 1, color: opsBorder),
@@ -2525,7 +2743,7 @@ class _PayOvertimeConfirmationSheetState
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     const Text(
-                      'Tổng phí quá giờ:',
+                      'Cần thanh toán:',
                       style: TextStyle(
                         fontWeight: FontWeight.w800,
                         fontSize: 15,
@@ -2533,7 +2751,7 @@ class _PayOvertimeConfirmationSheetState
                       ),
                     ),
                     Text(
-                      fmtPrice(widget.fee),
+                      fmtPrice(amountDue),
                       style: const TextStyle(
                         fontWeight: FontWeight.w900,
                         fontSize: 20,
@@ -2545,100 +2763,14 @@ class _PayOvertimeConfirmationSheetState
               ],
             ),
           ),
-          const SizedBox(height: 14),
-          // Số dư ví (kèm badge Demo)
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-            decoration: BoxDecoration(
-              color: hasEnoughWallet
-                  ? const Color(0xFFF0FDF4)
-                  : const Color(0xFFF8FAFC),
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(
-                color: hasEnoughWallet
-                    ? const Color(0xFFBBF7D0)
-                    : const Color(0xFFE2E8F0),
-              ),
-            ),
-            child: Row(
-              children: [
-                Icon(
-                  LucideIcons.wallet,
-                  size: 20,
-                  color: hasEnoughWallet
-                      ? const Color(0xFF16A34A)
-                      : const Color(0xFF64748B),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Text(
-                            'Số dư ví khả dụng: ${fmtPrice(widget.walletBalance)}',
-                            style: TextStyle(
-                              fontWeight: FontWeight.w700,
-                              fontSize: 13,
-                              color: hasEnoughWallet
-                                  ? const Color(0xFF15803D)
-                                  : const Color(0xFF334155),
-                            ),
-                          ),
-                          const SizedBox(width: 6),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 6,
-                              vertical: 1.5,
-                            ),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFE2E8F0),
-                              borderRadius: BorderRadius.circular(6),
-                            ),
-                            child: const Text(
-                              'Demo',
-                              style: TextStyle(
-                                fontSize: 10,
-                                fontWeight: FontWeight.bold,
-                                color: Color(0xFF475569),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      if (!hasEnoughWallet)
-                        Text(
-                          'Còn thiếu ${fmtPrice(widget.fee - widget.walletBalance)} nếu trả qua ví demo',
-                          style: const TextStyle(
-                            fontSize: 11.5,
-                            color: Color(0xFF64748B),
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-          if (_error != null) ...[
-            const SizedBox(height: 10),
-            Text(
-              _error!,
-              style: const TextStyle(fontSize: 12, color: Color(0xFFDC2626)),
-              textAlign: TextAlign.center,
-            ),
-          ],
           const SizedBox(height: 18),
-
-          // 1. NÚT CHÍNH: Thanh toán bằng SePay (VietQR)
           FilledButton.icon(
-            onPressed: _loading ? null : _payWithSepay,
-            icon: const Icon(LucideIcons.qrCode, size: 19),
+            onPressed: () => Navigator.pop(context, true),
+            icon: const Icon(LucideIcons.creditCard, size: 19),
             label: Text(
-              _loading
-                  ? 'Đang khởi tạo SePay...'
-                  : 'Thanh toán SePay (VietQR) • ${fmtPrice(widget.fee)}',
+              amountDue > 0
+                  ? 'Thanh toán ${fmtPrice(amountDue)}'
+                  : 'Mở ô lấy đồ',
               style: const TextStyle(
                 fontWeight: FontWeight.w800,
                 fontSize: 14.5,
@@ -2654,40 +2786,9 @@ class _PayOvertimeConfirmationSheetState
               elevation: 0,
             ),
           ),
-
-          // 2. NÚT PHỤ: Trừ ví demo (nếu ví có đủ tiền)
-          if (hasEnoughWallet) ...[
-            const SizedBox(height: 10),
-            FilledButton.icon(
-              onPressed: _loading ? null : _payWithWallet,
-              icon: _loading
-                  ? const SizedBox(
-                      width: 18,
-                      height: 18,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: Colors.white,
-                      ),
-                    )
-                  : const Icon(LucideIcons.doorOpen, size: 18),
-              label: Text(
-                _loading
-                    ? 'Đang thanh toán & mở tủ...'
-                    : 'Trừ ví demo ${fmtPrice(widget.fee)} & Mở tủ ngay',
-                style: const TextStyle(fontWeight: FontWeight.w800),
-              ),
-              style: FilledButton.styleFrom(
-                backgroundColor: const Color(0xFFEA580C),
-                padding: const EdgeInsets.symmetric(vertical: 14),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14),
-                ),
-              ),
-            ),
-          ],
           const SizedBox(height: 8),
           TextButton(
-            onPressed: _loading ? null : () => Navigator.pop(context, false),
+            onPressed: () => Navigator.pop(context, false),
             child: const Text('Để sau'),
           ),
         ],
@@ -2745,7 +2846,7 @@ String _boxRouteLabel(
 ]) {
   if (sendBoxNumber == null && receiveBoxNumber == null) {
     return (status ?? '').toUpperCase() == 'EXPIRED'
-        ? 'Đã giải phóng ô (Bảo quản tại quầy)'
+        ? 'Đã giải phóng ô'
         : 'Chưa gán ô';
   }
   if (sendBoxNumber != null && receiveBoxNumber != null) {
@@ -3302,6 +3403,9 @@ class _DetailSheet extends StatelessWidget {
     required this.onOpenLocker,
     required this.onTrackDrone,
     this.onPayAndComplete,
+    this.onDelegate,
+    this.onResetPin,
+    this.onChanged,
   });
 
   final Map<String, dynamic> order;
@@ -3327,6 +3431,15 @@ class _DetailSheet extends StatelessWidget {
   final VoidCallback onOpenLocker;
   final void Function(int orderId) onTrackDrone;
   final void Function(int orderId)? onPayAndComplete;
+
+  /// "Ủy quyền lấy hộ" (đơn STORING/RETURNED).
+  final void Function(int orderId)? onDelegate;
+
+  /// "Đổi mã PIN".
+  final VoidCallback? onResetPin;
+
+  /// Tải lại danh sách sau thao tác trong các mục con (hoàn tiền…).
+  final Future<void> Function()? onChanged;
 
   @override
   Widget build(BuildContext context) {
@@ -3584,8 +3697,26 @@ class _DetailSheet extends StatelessWidget {
           onTap: () => onEndRental(id),
         ),
       ],
-      // "Ủy quyền người khác lấy hộ" đã gỡ theo yêu cầu nghiệp vụ — người nhận
-      // lấy hàng bằng mã PIN, không cần uỷ quyền thêm một lớp nữa.
+      // Ủy quyền lấy hộ: server chỉ nhận khi đồ đang nằm trong ô (STORING/RETURNED).
+      if (onDelegate != null &&
+          !isDroneDelivery &&
+          (rawStatus == 'STORING' || rawStatus == 'RETURNED'))
+        OpsSheetAction(
+          label: 'Ủy quyền lấy hộ',
+          icon: LucideIcons.userPlus,
+          onTap: () => onDelegate!(id),
+        ),
+      if (onResetPin != null &&
+          !isDroneDelivery &&
+          '${order['pinCode'] ?? ''}'.isNotEmpty &&
+          (rawStatus == 'INITIALIZED' ||
+              rawStatus == 'STORING' ||
+              rawStatus == 'RETURNED'))
+        OpsSheetAction(
+          label: 'Đổi mã PIN',
+          icon: LucideIcons.keyRound,
+          onTap: onResetPin!,
+        ),
       if (boxId != null &&
           rawStatus != 'COMPLETED' &&
           rawStatus != 'CANCELED' &&
@@ -4002,6 +4133,20 @@ class _DetailSheet extends StatelessWidget {
           logs: faultLogs,
           service: service,
         ),
+        if (OrderRefundSection.appliesTo(paymentStatus: paymentStatus)) ...[
+          const SizedBox(height: 8),
+          OrderRefundSection(
+            orderId: id,
+            status: rawStatus,
+            paymentStatus: paymentStatus,
+            service: service,
+            onChanged: onChanged,
+          ),
+        ],
+        if (OrderFeedbackSection.appliesTo(rawStatus)) ...[
+          const SizedBox(height: 8),
+          OrderFeedbackSection(orderId: id, status: rawStatus, service: service),
+        ],
         const SizedBox(height: 8),
       ],
     );
@@ -4265,7 +4410,8 @@ class _OrderIncidentResolutionSectionState
     }
   }
   List<Map<String, dynamic>> _incidentEvents = const [];
-  List<Map<String, dynamic>> _attachments = const [];
+  // Danh sách thường (không const): còn thêm ảnh từ nhật ký vào sau.
+  List<Map<String, dynamic>> _attachments = [];
   Map<String, dynamic>? _resolvedReport;
   bool _loading = true;
 
@@ -4325,16 +4471,13 @@ class _OrderIncidentResolutionSectionState
         }
       }
 
-      // Nếu chưa có report truyền vào, thử trích xuất reportId từ ghi chú sự cố
-      if (_resolvedReport == null) {
-        for (final ev in incidents) {
-          final n = (ev['note'] ?? ev['description'] ?? '').toString();
-          final m = RegExp(r'RPT-(\d+)', caseSensitive: false).firstMatch(n);
-          if (m != null) {
-            _resolvedReport = {'id': int.tryParse(m.group(1)!)};
-            break;
-          }
-        }
+      // Chưa có phiếu truyền vào mà timeline có ghi chú sự cố ⇒ hỏi phiếu gắn với
+      // đơn theo `orderId` (trường có cấu trúc, không dò mã trong ghi chú).
+      if (_resolvedReport == null && incidents.isNotEmpty) {
+        try {
+          final linked = await svc.myReportsForOrder(widget.orderId);
+          if (linked.isNotEmpty) _resolvedReport = linked.first;
+        } catch (_) {}
       }
 
       // Bổ sung ảnh từ widget.logs nếu có
@@ -4360,6 +4503,7 @@ class _OrderIncidentResolutionSectionState
         } catch (_) {}
       }
 
+      if (!mounted) return;
       setState(() {
         _incidentEvents = incidents;
         _loading = false;

@@ -7,8 +7,6 @@ import 'package:smart_laundry_locker/features/orders/presentation/providers/orde
 import 'package:smart_laundry_locker/features/locker/domain/entities/cabinet.dart';
 import 'package:smart_laundry_locker/features/locker/presentation/providers/locker_provider.dart';
 import 'package:smart_laundry_locker/features/locker/presentation/providers/locker_injection.dart';
-import 'package:smart_laundry_locker/features/delegations/presentation/providers/delegation_provider.dart';
-import 'package:smart_laundry_locker/features/delegations/presentation/providers/delegation_injection.dart';
 import 'package:smart_laundry_locker/features/profile/presentation/providers/profile_provider.dart';
 import 'package:smart_laundry_locker/features/profile/presentation/providers/profile_injection.dart';
 import 'package:smart_laundry_locker/core/network/api_client.dart';
@@ -16,7 +14,6 @@ import 'package:smart_laundry_locker/core/network/api_client.dart';
 import 'package:smart_laundry_locker/core/theme/shadcn_theme.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:smart_laundry_locker/features/maintenance/presentation/pages/create_report_page.dart';
-import 'package:smart_laundry_locker/features/delegations/presentation/pages/search_delegatee_page.dart';
 import 'package:smart_laundry_locker/shared/widgets/app_bar.dart';
 import 'package:smart_laundry_locker/shared/shared.dart';
 import 'package:flutter/material.dart';
@@ -43,7 +40,6 @@ class CustomerOrderDetailPage extends StatefulWidget {
 class _CustomerOrderDetailPageState extends State<CustomerOrderDetailPage> {
   late OrderProvider _provider;
   late LockerProvider _lockerProvider;
-  late DelegationProvider _delegationProvider;
   late ProfileProvider _profileProvider;
   String? _fetchedLockerName;
   Cabinet? _originCabinet;
@@ -70,12 +66,8 @@ class _CustomerOrderDetailPageState extends State<CustomerOrderDetailPage> {
       }
     });
     _lockerProvider = LockerInjection.provideLockerProvider(apiClient);
-    _delegationProvider = DelegationInjection.provideDelegationProvider(
-      apiClient,
-    );
     _profileProvider = ProfileInjection.provideProfileProvider(apiClient);
 
-    _delegationProvider.fetchDelegationByOrderId(currentId);
     _profileProvider.loadProfile();
 
     _provider.fetchOrderDetail(currentId).then((_) async {
@@ -133,7 +125,6 @@ class _CustomerOrderDetailPageState extends State<CustomerOrderDetailPage> {
     _eventSub?.cancel();
     _provider.dispose();
     _lockerProvider.dispose();
-    _delegationProvider.dispose();
     super.dispose();
   }
 
@@ -158,15 +149,13 @@ class _CustomerOrderDetailPageState extends State<CustomerOrderDetailPage> {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider.value(value: _provider),
-        ChangeNotifierProvider.value(value: _delegationProvider),
         ChangeNotifierProvider.value(value: _profileProvider),
       ],
-      child: Consumer3<OrderProvider, DelegationProvider, ProfileProvider>(
+      child: Consumer2<OrderProvider, ProfileProvider>(
         builder:
             (
               context,
               orderProvider,
-              delegationProvider,
               profileProvider,
               child,
             ) {
@@ -243,9 +232,6 @@ class _CustomerOrderDetailPageState extends State<CustomerOrderDetailPage> {
                         final String currentId =
                             widget.order?.id ?? widget.orderId;
                         await _provider.fetchOrderDetail(currentId);
-                        await _delegationProvider.fetchDelegationByOrderId(
-                          currentId,
-                        );
                         SmartDialog.showToast('Đã cập nhật thông tin');
                       },
                     ),
@@ -291,15 +277,6 @@ class _CustomerOrderDetailPageState extends State<CustomerOrderDetailPage> {
                       const SizedBox(height: 20),
 
                       _buildRentingDetails(order, displayDetail),
-                      if (order.status == 'ACTIVE') ...[
-                        const SizedBox(height: 20),
-                        _buildDelegationInfo(
-                          context,
-                          order,
-                          delegationProvider,
-                          details,
-                        ),
-                      ],
                       const SizedBox(height: 20),
                       if (order.status == 'ACTIVE')
                         _buildActionButtons(
@@ -1347,371 +1324,6 @@ class _CustomerOrderDetailPageState extends State<CustomerOrderDetailPage> {
         setState(() {});
       });
     });
-  }
-
-  Widget _buildDelegationInfo(
-    BuildContext context,
-    Order order,
-    DelegationProvider delegationProvider,
-    List<OrderDetail> details,
-  ) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Row(
-                children: [
-                  Icon(LucideIcons.users, size: 20, color: Colors.blue),
-                  SizedBox(width: 10),
-                  Text(
-                    'Ủy quyền lấy hàng',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                      color: Colors.black87,
-                    ),
-                  ),
-                ],
-              ),
-              if (delegationProvider.isLoading)
-                const SizedBox(
-                  width: 16,
-                  height: 16,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          if (delegationProvider.currentDelegation != null &&
-              delegationProvider.currentDelegation!.isActive)
-            _buildActiveDelegationCard(context, delegationProvider)
-          else
-            _buildEmptyDelegationCard(
-              context,
-              order,
-              delegationProvider,
-              details,
-            ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildActiveDelegationCard(
-    BuildContext context,
-    DelegationProvider delegationProvider,
-  ) {
-    final delegation = delegationProvider.currentDelegation!;
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.blue.withOpacity(0.05),
-        border: Border.all(color: Colors.blue.withOpacity(0.3)),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: const BoxDecoration(
-                  color: Colors.white,
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(
-                  LucideIcons.userCheck,
-                  color: Colors.blue,
-                  size: 20,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Đã ủy quyền cho:',
-                      style: TextStyle(fontSize: 12, color: Colors.black54),
-                    ),
-                    Text(
-                      delegation.delegateeId ??
-                          'N/A', // If we don't return email, change later
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                        color: Colors.black87,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              Expanded(
-                child: OutlinedButton(
-                  onPressed: () {
-                    // Show Delegation Detail Modal
-                    _showDelegationDetailModal(context, delegationProvider);
-                  },
-                  style: OutlinedButton.styleFrom(
-                    side: const BorderSide(color: Colors.blue),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                  child: const Text(
-                    'Thông tin ủy quyền',
-                    style: TextStyle(color: Colors.blue),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showDelegationDetailModal(
-    BuildContext context,
-    DelegationProvider delegationProvider,
-  ) {
-    final delegation = delegationProvider.currentDelegation!;
-    showModalBottomSheet<void>(
-      context: context,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (_) {
-        return Container(
-          padding: const EdgeInsets.all(24),
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'Thông tin ủy quyền',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87,
-                ),
-              ),
-              const SizedBox(height: 20),
-              _buildInfoRow(
-                'Trạng thái',
-                'Đang hoạt động',
-                valueColor: Colors.blue,
-              ),
-              const Divider(height: 24),
-              _buildInfoRow(
-                'Ngày ủy quyền',
-                DateFormat('dd/MM/yyyy HH:mm').format(delegation.createdAt),
-              ),
-              const SizedBox(height: 24),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.pop(context); // Close modal
-                    _showRevokeConfirmation(
-                      context,
-                      delegationProvider,
-                      delegation.id,
-                    );
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.red,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  child: const Text('Hủy quyền'),
-                ),
-              ),
-              const SizedBox(height: 24),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  void _showRevokeConfirmation(
-    BuildContext context,
-    DelegationProvider delegationProvider,
-    String delegationId,
-  ) {
-    SmartDialog.show<void>(
-      builder: (_) => Container(
-        width: 320,
-        padding: const EdgeInsets.all(24),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.red.withOpacity(0.1),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(LucideIcons.userX, color: Colors.red, size: 32),
-            ),
-            const SizedBox(height: 16),
-            const Text(
-              'Xác nhận hủy ủy quyền',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 12),
-            Text(
-              'Bạn có chắc chắn muốn hủy quyền của người này không? Người được ủy quyền sẽ không thể lấy hàng nữa.',
-              textAlign: TextAlign.center,
-              style: const TextStyle(color: Colors.black54, fontSize: 14),
-            ),
-            const SizedBox(height: 24),
-            Row(
-              children: [
-                Expanded(
-                  child: TextButton(
-                    onPressed: () => SmartDialog.dismiss<void>(),
-                    child: const Text(
-                      'Không',
-                      style: TextStyle(color: Colors.grey),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: () async {
-                      SmartDialog.dismiss<void>();
-                      SmartDialog.showLoading<void>(msg: 'Đang hủy quyền...');
-                      final success = await delegationProvider.revokeDelegation(
-                        delegationId,
-                      );
-                      SmartDialog.dismiss<void>();
-                      if (success) {
-                        SmartDialog.showToast('Hủy quyền thành công');
-                        if (mounted)
-                          delegationProvider.fetchDelegationByOrderId(
-                            widget.order!.id,
-                          );
-                      } else {
-                        SmartDialog.showToast(
-                          delegationProvider.error ?? 'Hủy quyền thất bại',
-                        );
-                      }
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue,
-                      shape: const StadiumBorder(),
-                    ),
-                    child: const Text(
-                      'Xác nhận',
-                      style: TextStyle(color: Colors.white),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildEmptyDelegationCard(
-    BuildContext context,
-    Order order,
-    DelegationProvider delegationProvider,
-    List<OrderDetail> details,
-  ) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.grey[50],
-        border: Border.all(color: Colors.grey[300]!),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Column(
-        children: [
-          const Icon(LucideIcons.userPlus, size: 32, color: Colors.grey),
-          const SizedBox(height: 12),
-          Text(
-            'Chưa có người được ủy quyền',
-            style: const TextStyle(color: Colors.black54, fontSize: 14),
-          ),
-          const SizedBox(height: 16),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: () {
-                // Navigate to SearchDelegateePage
-                Navigator.push(
-                  context,
-                  MaterialPageRoute<void>(
-                    builder: (routeContext) =>
-                        _buildSearchDelegateeRoute(order, delegationProvider),
-                  ),
-                ).then((_) {
-                  if (context.mounted)
-                    delegationProvider.fetchDelegationByOrderId(order.id);
-                });
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blue,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
-              child: const Text(
-                'Ủy quyền',
-                style: TextStyle(color: Colors.white),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSearchDelegateeRoute(Order order, DelegationProvider provider) {
-    return ChangeNotifierProvider.value(
-      value: provider,
-      child: SearchDelegateePage(order: order),
-    );
   }
 
   Widget _buildRouteInfo(Order order, List<OrderDetail> details) {

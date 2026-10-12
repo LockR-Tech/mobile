@@ -7,8 +7,8 @@ import 'package:smart_laundry_locker/core/network/api_client.dart';
 import 'package:smart_laundry_locker/core/theme/shadcn_theme.dart';
 import 'package:smart_laundry_locker/core/services/app_event_bus.dart';
 import 'package:smart_laundry_locker/features/locker/domain/utils/locker_layout_helper.dart';
-import 'package:smart_laundry_locker/features/locker/presentation/providers/locker_injection.dart';
-import 'package:smart_laundry_locker/features/locker/presentation/providers/locker_provider.dart';
+import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
+import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/locker_picker.dart';
 import 'package:smart_laundry_locker/features/maintenance/infrastructure/data_sources/maintenance_remote_datasource.dart';
 import 'package:smart_laundry_locker/features/maintenance/presentation/providers/maintenance_injection.dart';
 import 'package:smart_laundry_locker/features/maintenance/presentation/providers/maintenance_provider.dart';
@@ -53,13 +53,14 @@ class _CreateReportPageState extends State<CreateReportPage> {
   final List<File> _capturedPhotos = [];
   final ImagePicker _picker = ImagePicker();
   late MaintenanceProvider _provider;
-  late LockerProvider _lockerProvider;
-  final ApiClient _apiClient = ApiClient();
+  final LockerOpsService _service = LockerOpsService();
 
+  /// Tủ chọn từ `GET /api/lockers` (id số). Không có tủ truyền vào thì khách
+  /// phải tự chọn — không bao giờ mặc định một tủ nào.
   bool _isLoadingLockerOptions = true;
   String? _lockerOptionsError;
-  List<_LockerAddressOption> _lockerOptions = [];
-  String? _selectedLockerOptionId;
+  List<Map<String, dynamic>> _lockers = [];
+  int? _selectedLockerId;
 
   Map<String, dynamic>? _layout;
   List<Map<String, dynamic>> _boxes = [];
@@ -69,13 +70,135 @@ class _CreateReportPageState extends State<CreateReportPage> {
   bool _isScreenIssueSelected = false;
   StreamSubscription<AppEvent>? _busSub;
 
-  String? get _currentLockerId {
-    if (widget.lockerId.isNotEmpty) return widget.lockerId;
-    if (_selectedLockerOptionId != null && _selectedLockerOptionId!.contains('::')) {
-      final parts = _selectedLockerOptionId!.split('::');
-      if (parts.length > 1) return parts[1];
+  /// Tủ do nơi mở trang truyền vào. Nơi gọi cũ gửi `cabinetId` = tủ và
+  /// `lockerId` = ô (mô hình cũ); nơi gọi mới gửi cả hai bằng id tủ — nên ưu tiên
+  /// `cabinetId`.
+  int? get _presetLockerId =>
+      int.tryParse(widget.cabinetId) ?? int.tryParse(widget.lockerId);
+
+  String? get _currentLockerId => _selectedLockerId?.toString();
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.initialBoxId != null) {
+      _selectedBoxId = widget.initialBoxId;
     }
-    return null;
+    if (widget.initialLayout != null) {
+      _layout = LockerLayoutHelper.enrichLayout(widget.initialLayout!);
+      _boxes = (_layout!['cells'] as List?)?.cast<Map<String, dynamic>>() ?? [];
+    } else if (widget.initialCells != null) {
+      _boxes = LockerLayoutHelper.enrichCells(widget.initialCells!);
+    }
+
+    _provider = MaintenanceInjection.provideMaintenanceProvider(ApiClient());
+    _selectedLockerId = _presetLockerId;
+    _loadLockerAddressOptions();
+
+    // Lắng nghe sự kiện đồng bộ thời gian thực từ EventBus
+    _busSub = AppEventBus.instance.events.listen((event) {
+      if (!mounted) return;
+      if (event is LockerLayoutUpdatedEvent) {
+        final currentId = _currentLockerId;
+        if (event.lockerId == null || event.lockerId == currentId) {
+          if (currentId != null && currentId.isNotEmpty) {
+            _loadBoxesForLocker(currentId);
+          }
+        }
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _busSub?.cancel();
+    _titleController.dispose();
+    _descriptionController.dispose();
+    _provider.dispose();
+    super.dispose();
+  }
+
+  Future<void> _loadBoxesForLocker(String lockerId) async {
+    final parsedId = int.tryParse(lockerId);
+    if (parsedId == null) return;
+    setState(() => _isLoadingBoxes = true);
+    try {
+      final data = await _service.layout(parsedId);
+      if (!mounted || _selectedLockerId != parsedId) return;
+      if (data['cells'] is List) {
+        final enriched = LockerLayoutHelper.enrichLayout(data);
+        setState(() {
+          _layout = enriched;
+          _boxes = (enriched['cells'] as List?)?.cast<Map<String, dynamic>>() ?? [];
+          if (_selectedBoxId == null && widget.initialBoxId != null) {
+            _selectedBoxId = widget.initialBoxId;
+          }
+        });
+      }
+    } catch (_) {
+      // Không tải được sơ đồ ô: vẫn báo được sự cố cấp tủ (ô là tuỳ chọn).
+    } finally {
+      if (mounted) setState(() => _isLoadingBoxes = false);
+    }
+  }
+
+  Future<void> _loadLockerAddressOptions() async {
+    setState(() {
+      _isLoadingLockerOptions = true;
+      _lockerOptionsError = null;
+    });
+    try {
+      final lockers = await _service.lockers();
+      if (!mounted) return;
+      final preset = _presetLockerId;
+      setState(() {
+        _lockers = lockers.where((l) => l['id'] is num).toList();
+        // Tủ truyền vào không có trong danh sách (vd. đang bảo trì) vẫn giữ
+        // nguyên lựa chọn — server sẽ kiểm tra.
+        _selectedLockerId = preset ?? _selectedLockerId;
+        _isLoadingLockerOptions = false;
+        _lockerOptionsError = _lockers.isEmpty && preset == null
+            ? 'Không tìm thấy tủ nào để báo sự cố.'
+            : null;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _isLoadingLockerOptions = false;
+        _lockerOptionsError = _presetLockerId != null
+            ? null
+            : _friendlyErrorMessage(LockerOpsService.errorMessage(e));
+      });
+    }
+    final current = _selectedLockerId;
+    if (current != null && widget.initialLayout == null) {
+      _loadBoxesForLocker('$current');
+    }
+  }
+
+  void _selectLocker(Map<String, dynamic> locker) {
+    final id = (locker['id'] as num?)?.toInt();
+    if (id == null || id == _selectedLockerId) return;
+    setState(() {
+      _selectedLockerId = id;
+      _selectedBoxId = null;
+      _isScreenIssueSelected = false;
+      _layout = null;
+      _boxes = [];
+    });
+    _loadBoxesForLocker('$id');
+  }
+
+  /// Tên hiển thị của tủ đang chọn.
+  String get _selectedLockerLabel {
+    final id = _selectedLockerId;
+    if (id == null) return '';
+    for (final l in _lockers) {
+      if ((l['id'] as num?)?.toInt() == id) {
+        return '${l['name'] ?? l['code'] ?? 'Tủ #$id'}';
+      }
+    }
+    return widget.cabinetName ?? widget.lockerName ?? 'Tủ #$id';
   }
 
   String _friendlyErrorMessage(String? rawError) {
@@ -98,213 +221,16 @@ class _CreateReportPageState extends State<CreateReportPage> {
     } catch (_) {}
 
     final normalized = message.toLowerCase();
-    if (normalized.contains('hardware') ||
-        normalized.contains('phần cứng') ||
-        normalized.contains('locker')) {
-      return 'Lỗi phần cứng';
-    }
-    if (normalized.contains('iot') ||
-        normalized.contains('mqtt') ||
-        normalized.contains('device')) {
-      return 'Lỗi IOT';
-    }
     if (normalized.contains('network') ||
         normalized.contains('timeout') ||
-        normalized.contains('socket') ||
-        normalized.contains('kết nối')) {
+        normalized.contains('socket')) {
       return 'Lỗi kết nối mạng';
     }
-    if (normalized.contains('auth') ||
-        normalized.contains('unauthorized') ||
-        normalized.contains('forbidden') ||
-        normalized.contains('token')) {
-      return 'Lỗi xác thực';
+    if (normalized.contains('unauthorized') || normalized.contains('token')) {
+      return 'Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại.';
     }
 
     return message;
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    if (widget.initialBoxId != null) {
-      _selectedBoxId = widget.initialBoxId;
-    }
-    if (widget.initialLayout != null) {
-      _layout = LockerLayoutHelper.enrichLayout(widget.initialLayout!);
-      _boxes = (_layout!['cells'] as List?)?.cast<Map<String, dynamic>>() ?? [];
-    } else if (widget.initialCells != null) {
-      _boxes = LockerLayoutHelper.enrichCells(widget.initialCells!);
-    }
-
-    _provider = MaintenanceInjection.provideMaintenanceProvider(ApiClient());
-    _lockerProvider = LockerInjection.provideLockerProvider(ApiClient());
-    _loadLockerAddressOptions();
-
-    // Lắng nghe sự kiện đồng bộ thời gian thực từ EventBus
-    _busSub = AppEventBus.instance.events.listen((event) {
-      if (!mounted) return;
-      if (event is LockerLayoutUpdatedEvent) {
-        final currentId = _currentLockerId;
-        if (event.lockerId == null || event.lockerId == currentId) {
-          if (currentId != null && currentId.isNotEmpty) {
-            _loadBoxesForLocker(currentId);
-          }
-        }
-      }
-    });
-  }
-
-  @override
-  void dispose() {
-    _busSub?.cancel();
-    _titleController.dispose();
-    _descriptionController.dispose();
-    _lockerProvider.dispose();
-    _provider.dispose();
-    super.dispose();
-  }
-
-  Future<void> _loadBoxesForLocker(String lockerId) async {
-    final parsedId = int.tryParse(lockerId);
-    if (parsedId == null) return;
-    setState(() => _isLoadingBoxes = true);
-    try {
-      final res = await _apiClient.get('/api/lockers/$parsedId/layout');
-      final raw = res.data;
-      final data = raw is Map ? raw['data'] : null;
-      if (data is Map<String, dynamic>) {
-        final enriched = LockerLayoutHelper.enrichLayout(data);
-        if (mounted) {
-          setState(() {
-            _layout = enriched;
-            _boxes = (enriched['cells'] as List?)?.cast<Map<String, dynamic>>() ?? [];
-            if (_selectedBoxId == null && widget.initialBoxId != null) {
-              _selectedBoxId = widget.initialBoxId;
-            }
-          });
-        }
-      } else if (data is Map && data['cells'] is List) {
-        final enrichedCells = LockerLayoutHelper.enrichCells(data['cells'] as List);
-        if (mounted) {
-          setState(() {
-            _boxes = enrichedCells;
-            if (_selectedBoxId == null && widget.initialBoxId != null) {
-              _selectedBoxId = widget.initialBoxId;
-            }
-          });
-        }
-      }
-    } catch (_) {
-    } finally {
-      if (mounted) setState(() => _isLoadingBoxes = false);
-    }
-  }
-
-  Future<void> _loadLockerAddressOptions() async {
-    setState(() {
-      _isLoadingLockerOptions = true;
-      _lockerOptionsError = null;
-    });
-
-    if (widget.lockerId.isNotEmpty && widget.cabinetId.isNotEmpty) {
-      final address = widget.locationName ?? 'Địa chỉ trạm';
-      final cabinetName = widget.cabinetName ?? 'Trạm';
-      final lockerLabel = widget.lockerName ?? 'Ô tủ';
-      final optionId = '${widget.cabinetId}::${widget.lockerId}';
-
-      final option = _LockerAddressOption(
-        id: optionId,
-        lockerId: widget.lockerId,
-        cabinetId: widget.cabinetId,
-        displayLabel: '$address - $cabinetName - Ô $lockerLabel',
-      );
-
-      setState(() {
-        _lockerOptions = [option];
-        _selectedLockerOptionId = optionId;
-        _isLoadingLockerOptions = false;
-      });
-      _loadBoxesForLocker(widget.lockerId);
-      return;
-    }
-
-    await _lockerProvider.getLocations();
-    if (!mounted) return;
-    if (_lockerProvider.state.error != null) {
-      setState(() {
-        _isLoadingLockerOptions = false;
-        _lockerOptionsError = _friendlyErrorMessage(
-          _lockerProvider.state.error,
-        );
-      });
-      return;
-    }
-
-    final options = <_LockerAddressOption>[];
-    final locations = _lockerProvider.state.locations;
-
-    for (final location in locations) {
-      await _lockerProvider.getCustomerCabinets(location.id);
-      if (!mounted) return;
-
-      final cabinets = List.of(_lockerProvider.state.cabinets);
-      for (final cabinet in cabinets) {
-        await _lockerProvider.getCabinetLockers(cabinet.id);
-        if (!mounted) return;
-
-        final lockers = _lockerProvider.state.lockers
-            .where((locker) => locker.isActive)
-            .toList();
-
-        for (final locker in lockers) {
-          final address = (cabinet.address?.trim().isNotEmpty ?? false)
-              ? cabinet.address!.trim()
-              : location.address;
-          final lockerLabel = locker.displayPosition;
-          final optionId = '${cabinet.id}::${locker.id}';
-
-          options.add(
-            _LockerAddressOption(
-              id: optionId,
-              lockerId: locker.id,
-              cabinetId: cabinet.id,
-              displayLabel: '$address - ${cabinet.name} - Ô $lockerLabel',
-            ),
-          );
-        }
-      }
-    }
-
-    options.sort((a, b) => a.displayLabel.compareTo(b.displayLabel));
-
-    String? selectedId;
-    if (widget.lockerId.isNotEmpty && widget.cabinetId.isNotEmpty) {
-      final matched = options.where(
-        (o) => o.lockerId == widget.lockerId && o.cabinetId == widget.cabinetId,
-      );
-      if (matched.isNotEmpty) {
-        selectedId = matched.first.id;
-      }
-    }
-    selectedId ??= options.isNotEmpty ? options.first.id : null;
-
-    setState(() {
-      _lockerOptions = options;
-      _selectedLockerOptionId = selectedId;
-      _isLoadingLockerOptions = false;
-      _lockerOptionsError = options.isEmpty
-          ? 'Không tìm thấy locker khả dụng để báo cáo'
-          : null;
-    });
-
-    if (selectedId != null) {
-      final matchedOpt = options.firstWhere(
-        (o) => o.id == selectedId,
-        orElse: () => options.first,
-      );
-      _loadBoxesForLocker(matchedOpt.lockerId);
-    }
   }
 
   Future<void> _submitReport() async {
@@ -316,8 +242,9 @@ class _CreateReportPageState extends State<CreateReportPage> {
       SmartDialog.showToast('Vui lòng nhập mô tả chi tiết');
       return;
     }
-    if (_selectedLockerOptionId == null) {
-      SmartDialog.showToast('Vui lòng chọn tủ đồ bị lỗi');
+    final lockerId = _selectedLockerId;
+    if (lockerId == null) {
+      SmartDialog.showToast('Vui lòng chọn tủ gặp sự cố');
       return;
     }
     if (_capturedPhotos.isEmpty) {
@@ -327,20 +254,9 @@ class _CreateReportPageState extends State<CreateReportPage> {
 
     SmartDialog.showLoading<void>(msg: 'Đang gửi báo cáo...');
 
-    final selectedOption = _lockerOptions.firstWhere(
-      (o) => o.id == _selectedLockerOptionId,
-      orElse: () => _lockerOptions.first,
-    );
-    final lockerId = widget.lockerId.isNotEmpty
-        ? widget.lockerId
-        : selectedOption.lockerId;
-    final cabinetId = widget.cabinetId.isNotEmpty
-        ? widget.cabinetId
-        : selectedOption.cabinetId;
-
     final result = await _provider.createReport(
-      lockerId: lockerId,
-      cabinetId: cabinetId,
+      lockerId: '$lockerId',
+      cabinetId: '$lockerId',
       title: _titleController.text,
       description: _descriptionController.text,
       photos: _capturedPhotos,
@@ -353,7 +269,7 @@ class _CreateReportPageState extends State<CreateReportPage> {
       SmartDialog.showToast('Gửi báo cáo thành công');
       AppEventBus.instance.emit(ReportUpdatedEvent(reportId: result.id.toString()));
       AppEventBus.instance.emit(LockerLayoutUpdatedEvent(
-        lockerId: lockerId,
+        lockerId: '$lockerId',
         boxId: _selectedBoxId?.toString(),
       ));
       if (mounted) Navigator.of(context).pop();
@@ -556,6 +472,8 @@ class _CreateReportPageState extends State<CreateReportPage> {
   }
 
   Widget _buildLockerAddressDropdown() {
+    final presetOnly =
+        _presetLockerId != null && _lockers.every((l) => l['id'] != _presetLockerId);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -607,21 +525,11 @@ class _CreateReportPageState extends State<CreateReportPage> {
               ],
             ),
           )
-        else
+        else if (presetOnly)
+          // Tủ do màn trước truyền vào nhưng không có trong danh sách tải được:
+          // giữ đúng tủ đó, không cho đổi sang tủ khác.
           CustomInput(
-            controller: TextEditingController(
-              text: _lockerOptions
-                  .firstWhere(
-                    (o) => o.id == _selectedLockerOptionId,
-                    orElse: () => const _LockerAddressOption(
-                      id: '',
-                      lockerId: '',
-                      cabinetId: '',
-                      displayLabel: '',
-                    ),
-                  )
-                  .displayLabel,
-            ),
+            controller: TextEditingController(text: _selectedLockerLabel),
             enabled: false,
             backgroundColor: Colors.white,
             borderColor: Colors.grey.shade300,
@@ -629,6 +537,13 @@ class _CreateReportPageState extends State<CreateReportPage> {
               color: Colors.black,
               fontWeight: FontWeight.w500,
             ),
+          )
+        else
+          LockerPickerField(
+            lockers: _lockers,
+            selectedId: _selectedLockerId,
+            placeholder: 'Chạm để chọn tủ gặp sự cố',
+            onSelected: _selectLocker,
           ),
       ],
     );
@@ -1770,18 +1685,4 @@ class _CreateReportPageState extends State<CreateReportPage> {
       ],
     );
   }
-}
-
-class _LockerAddressOption {
-  final String id;
-  final String lockerId;
-  final String cabinetId;
-  final String displayLabel;
-
-  const _LockerAddressOption({
-    required this.id,
-    required this.lockerId,
-    required this.cabinetId,
-    required this.displayLabel,
-  });
 }

@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import 'package:smart_laundry_locker/core/config/env_config.dart';
@@ -17,16 +18,32 @@ enum OrderPaymentOutcome {
   /// Đã thanh toán nhưng server chưa ghi nhận xong trong thời gian chờ.
   pending,
 
-  /// Khách đóng bảng chọn phương thức.
+  /// Khách đóng bảng chọn phương thức / thoát cổng thanh toán khi chưa trả.
   cancelled,
 
-  /// Thanh toán thất bại.
+  /// Cổng thanh toán báo thất bại.
   failed,
+}
+
+/// URL ảnh VietQR trong response checkout SePay (`qrCodeUrl`, bản cũ `qr`).
+/// `null` khi server không trả — KHÔNG tự dựng mã từ tài khoản viết sẵn trong app.
+String? checkoutQrUrl(Map<String, dynamic> checkout) {
+  for (final key in const ['qrCodeUrl', 'qr']) {
+    final value = checkout[key]?.toString().trim();
+    if (value != null &&
+        (value.startsWith('https://') || value.startsWith('http://'))) {
+      return value;
+    }
+  }
+  return null;
 }
 
 /// Chọn phương thức (ví, VNPay, MoMo, SePay — app khách không tự xác nhận tiền mặt),
 /// thanh toán, rồi chờ tới khi đơn thật sự PAID mới cho sang bước bỏ hàng.
-/// Lỗi gọi API được ném ra cho nơi gọi tự báo.
+///
+/// Mỗi lần gọi tạo đúng MỘT giao dịch checkout. Lỗi gọi API (và
+/// [LockerOpsException] khi server không trả mã QR / liên kết thanh toán) được
+/// ném ra cho nơi gọi tự báo bằng [LockerOpsService.errorMessage].
 Future<OrderPaymentOutcome> payOrderAndAwaitPaid(
   BuildContext context, {
   required LockerOpsService service,
@@ -69,92 +86,103 @@ Future<OrderPaymentOutcome> payOrderAndAwaitPaid(
     returnUrl: returnUrl,
     description: description,
   );
-  // Backend PaymentResponse dùng field "paymentUrl" (không phải "url")
-  final url = (res['paymentUrl'] ?? res['url'] ?? res['deeplink']) as String?;
-
-  if (!context.mounted) return OrderPaymentOutcome.cancelled;
-
-  if (method == 'SEPAY') {
-    return payWithSepayAndAwaitPaid(
-      context,
-      service: service,
-      orderId: orderId,
-      total: total,
-      description: description,
-    );
-  } else if ((method == 'VNPAY' || method == 'MOMO') && url != null && url.isNotEmpty) {
-    if (!context.mounted) return OrderPaymentOutcome.cancelled;
-    await Navigator.of(context).push<bool>(
-      MaterialPageRoute(builder: (_) => TopUpWebViewPage(paymentUrl: url)),
-    );
+  final status = '${res['status'] ?? ''}'.toUpperCase();
+  if (status == 'FAILED' || status == 'CANCELED' || status == 'CANCELLED') {
+    return OrderPaymentOutcome.failed;
   }
 
-  // Tăng timeout lên 60s để webhook có thời gian xử lý
-  final paid = await service.awaitOrderPaid(orderId,
-      timeout: const Duration(seconds: 60));
+  switch (method) {
+    case 'SEPAY':
+      final qrUrl = checkoutQrUrl(res);
+      if (qrUrl == null) {
+        throw const LockerOpsException(
+          'Máy chủ chưa trả mã VietQR cho giao dịch này. '
+          'Vui lòng thử lại hoặc chọn phương thức khác.',
+        );
+      }
+      if (!context.mounted) return OrderPaymentOutcome.pending;
+      final paidInSheet = await showModalBottomSheet<bool>(
+        context: context,
+        useRootNavigator: true,
+        isScrollControlled: true,
+        backgroundColor: Colors.white,
+        showDragHandle: true,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(26)),
+        ),
+        builder: (_) => _SepayVietQrSheet(
+          service: service,
+          orderId: orderId,
+          amount: total,
+          qrImageUrl: qrUrl,
+          transferContent: res['content']?.toString(),
+        ),
+      );
+      if (paidInSheet == true) return OrderPaymentOutcome.paid;
+      // Khách đóng mã trước khi tiền về: hỏi lại một lần. Chuyển khoản có thể đã
+      // đi nhưng webhook chưa tới ⇒ "đang chờ", không phải thất bại.
+      return await _isPaidNow(service, orderId)
+          ? OrderPaymentOutcome.paid
+          : OrderPaymentOutcome.pending;
+    case 'VNPAY':
+    case 'MOMO':
+      final url = (res['paymentUrl'] ?? res['url'] ?? res['deeplink'])
+          ?.toString();
+      if (url == null || url.isEmpty) {
+        throw const LockerOpsException(
+          'Không nhận được liên kết cổng thanh toán. Vui lòng thử lại.',
+        );
+      }
+      if (!context.mounted) return OrderPaymentOutcome.pending;
+      final gatewayOk = await Navigator.of(context).push<bool>(
+        MaterialPageRoute(builder: (_) => TopUpWebViewPage(paymentUrl: url)),
+      );
+      if (gatewayOk != true) {
+        // Cổng báo lỗi (false) hoặc khách thoát giữa chừng (null).
+        if (await _isPaidNow(service, orderId)) return OrderPaymentOutcome.paid;
+        return gatewayOk == false
+            ? OrderPaymentOutcome.failed
+            : OrderPaymentOutcome.cancelled;
+      }
+      break;
+  }
+
+  // Server ghi PAID bất đồng bộ (sự kiện payment → order): chờ webhook tối đa 60s.
+  final paid = await service.awaitOrderPaid(
+    orderId,
+    timeout: const Duration(seconds: 60),
+  );
   return paid ? OrderPaymentOutcome.paid : OrderPaymentOutcome.pending;
 }
 
-/// Thanh toán trực tiếp qua cổng SePay (VietQR) và chờ xác nhận thanh toán thành công
-Future<OrderPaymentOutcome> payWithSepayAndAwaitPaid(
-  BuildContext context, {
-  required LockerOpsService service,
-  required int orderId,
-  required double total,
-  String? description,
-}) async {
-  final returnUrl = '${EnvConfig.apiBaseUrl}/payments/sepay/callback';
-  final res = await service.checkout(
-    orderId,
-    'SEPAY',
-    returnUrl: returnUrl,
-    description: description,
-  );
-  final qrCodeUrl = (res['qrCodeUrl'] ?? res['qr']) as String?;
-  final effectiveQrUrl = (qrCodeUrl != null && qrCodeUrl.isNotEmpty)
-      ? qrCodeUrl
-      : 'https://img.vietqr.io/image/970422-0000234917957-compact2.jpg?amount=${total.toInt()}&addInfo=PAY-$orderId&accountName=TRUONG%20NGUYEN%20THAI%20BINH';
-
-  if (!context.mounted) return OrderPaymentOutcome.cancelled;
-
-  await showModalBottomSheet<void>(
-    context: context,
-    useRootNavigator: true,
-    isScrollControlled: true,
-    backgroundColor: Colors.white,
-    showDragHandle: true,
-    shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.vertical(top: Radius.circular(26)),
-    ),
-    builder: (_) => _SepayVietQrSheet(
-      service: service,
-      orderId: orderId,
-      amount: total,
-      qrImageUrl: effectiveQrUrl,
-    ),
-  );
-
-  final paid = await service.awaitOrderPaid(orderId,
-      timeout: const Duration(seconds: 60));
-  return paid ? OrderPaymentOutcome.paid : OrderPaymentOutcome.pending;
+Future<bool> _isPaidNow(LockerOpsService service, int orderId) async {
+  try {
+    return await service.orderStatus(orderId);
+  } catch (_) {
+    return false;
+  }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SePay VietQR inline bottom sheet
 // ─────────────────────────────────────────────────────────────────────────────
 
+/// Hiện mã VietQR server trả về và tự hỏi trạng thái đơn mỗi 3 giây. Đóng với
+/// `true` khi đơn đã PAID.
 class _SepayVietQrSheet extends StatefulWidget {
   const _SepayVietQrSheet({
     required this.service,
     required this.orderId,
     required this.amount,
     required this.qrImageUrl,
+    this.transferContent,
   });
 
   final LockerOpsService service;
   final int orderId;
   final double amount;
   final String qrImageUrl;
+  final String? transferContent;
 
   @override
   State<_SepayVietQrSheet> createState() => _SepayVietQrSheetState();
@@ -191,7 +219,7 @@ class _SepayVietQrSheetState extends State<_SepayVietQrSheet> {
         });
         // Tự đóng sheet sau 1.5s
         await Future<void>.delayed(const Duration(milliseconds: 1500));
-        if (mounted) Navigator.of(context).pop();
+        if (mounted) Navigator.of(context).pop(true);
       }
     } catch (_) {
     } finally {
@@ -201,7 +229,9 @@ class _SepayVietQrSheetState extends State<_SepayVietQrSheet> {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
+    final content = widget.transferContent?.trim();
+    // Cuộn được: màn thấp (hoặc chữ phóng to) không làm tràn mã QR + số tiền.
+    return SingleChildScrollView(
       padding: EdgeInsets.only(
         left: 20,
         right: 20,
@@ -249,7 +279,7 @@ class _SepayVietQrSheetState extends State<_SepayVietQrSheet> {
               iconSize: 100,
             )
           else
-            // QR image from VietQR.io
+            // Mã VietQR do server sinh cho đúng giao dịch này.
             ClipRRect(
               borderRadius: BorderRadius.circular(16),
               child: Image.network(
@@ -294,6 +324,37 @@ class _SepayVietQrSheetState extends State<_SepayVietQrSheet> {
               ),
             ),
           ),
+          if (content != null && content.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Flexible(
+                  child: Text(
+                    'Nội dung: $content',
+                    style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                      color: opsDark,
+                    ),
+                  ),
+                ),
+                IconButton(
+                  tooltip: 'Sao chép nội dung',
+                  icon: const Icon(LucideIcons.copy, size: 16),
+                  onPressed: () {
+                    Clipboard.setData(ClipboardData(text: content));
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Đã sao chép nội dung chuyển khoản'),
+                        duration: Duration(seconds: 2),
+                      ),
+                    );
+                  },
+                ),
+              ],
+            ),
+          ],
           const SizedBox(height: 8),
           const Text(
             'Tự động xác nhận sau khi chuyển khoản thành công',

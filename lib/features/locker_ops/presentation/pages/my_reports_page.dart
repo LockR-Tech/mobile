@@ -8,6 +8,7 @@ import 'package:smart_laundry_locker/core/media/media.dart';
 import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/ops_widgets.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/user_report_detail_sheet.dart';
+import 'package:smart_laundry_locker/features/maintenance/presentation/pages/create_report_page.dart';
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
 
 /// Tối đa ảnh REPORT trên 1 phiếu (hợp đồng media-storage). Backend không công
@@ -25,7 +26,10 @@ int get _maxReportPhotosPerRequest =>
 /// without having to ask maintenance directly. Shows the report photos by
 /// stage and lets the owner add more REPORT photos while not RESOLVED.
 class MyReportsPage extends StatefulWidget {
-  const MyReportsPage({super.key});
+  const MyReportsPage({super.key, this.initialReportId});
+
+  /// Deep link `/locker/my-reports?reportId=<id>`: mở chi tiết phiếu sau khi tải.
+  final int? initialReportId;
 
   @override
   State<MyReportsPage> createState() => _MyReportsPageState();
@@ -35,11 +39,37 @@ class _MyReportsPageState extends State<MyReportsPage> {
   final _service = LockerOpsService();
   List<Map<String, dynamic>> _reports = [];
   bool _loading = true;
+  bool _openedInitial = false;
 
   @override
   void initState() {
     super.initState();
     _load();
+  }
+
+  Future<void> _createReport() async {
+    await Navigator.of(context).push<void>(
+      MaterialPageRoute<void>(
+        builder: (_) => const CreateReportPage(lockerId: '', cabinetId: ''),
+      ),
+    );
+    if (mounted) await _load();
+  }
+
+  void _openInitialReportOnce() {
+    final id = widget.initialReportId;
+    if (id == null || _openedInitial || !mounted) return;
+    _openedInitial = true;
+    final report = _reports
+        .where((r) => '${r['id']}' == '$id')
+        .firstOrNull;
+    // Phiếu chưa có trong danh sách (vừa tạo / danh sách lỗi) vẫn mở được: sheet
+    // tự tải chi tiết bằng id.
+    UserReportDetailSheet.show(
+      context,
+      report: report ?? {'id': id},
+      onChanged: _load,
+    );
   }
 
   Future<void> _load() async {
@@ -58,12 +88,20 @@ class _MyReportsPageState extends State<MyReportsPage> {
     } finally {
       if (mounted) setState(() => _loading = false);
     }
+    _openInitialReportOnce();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF2F3F5),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: _createReport,
+        backgroundColor: AislBrand.navy,
+        foregroundColor: Colors.white,
+        icon: const Icon(LucideIcons.triangleAlert, size: 18),
+        label: const Text('Báo sự cố'),
+      ),
       body: BrandHeroScaffold(
         header: (collapse) => BrandHeroHeader(
           title: 'Báo cáo của tôi',
@@ -85,13 +123,14 @@ class _MyReportsPageState extends State<MyReportsPage> {
                 ? const OpsEmptyState(
                     icon: LucideIcons.clipboardCheck,
                     title: 'Chưa có báo cáo nào',
-                    subtitle: 'Báo lỗi ô tủ từ chi tiết đơn sẽ hiện ở đây.',
+                    subtitle:
+                        'Báo lỗi từ chi tiết đơn hoặc nút "Báo sự cố" sẽ hiện ở đây.',
                   )
                 : RefreshIndicator(
                     color: AislBrand.navy,
                     onRefresh: _load,
                     child: ListView.separated(
-                      padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+                      padding: const EdgeInsets.fromLTRB(16, 12, 16, 96),
                       itemCount: _reports.length,
                       separatorBuilder: (_, _) => const SizedBox(height: 10),
                       itemBuilder: (ctx, i) =>

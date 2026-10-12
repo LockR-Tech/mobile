@@ -18,13 +18,10 @@ class _FakeRentLockerOpsService extends LockerOpsService {
   String? lastCheckoutMethod;
   int? lastConfirmOrderId;
 
-  /// SePay đã báo nhận tiền hay chưa. Tách khỏi `checkoutCalls` vì trang tự gọi
-  /// checkout('SEPAY') ngay khi tạo đơn để dựng mã VietQR — gọi checkout không còn
-  /// đồng nghĩa với việc khách đã chuyển khoản.
+  /// Server đã ghi nhận đơn PAID hay chưa. Thanh toán ví là tức thì nên checkout
+  /// WALLET bật cờ này.
   bool paid = false;
 
-  /// Trang bật Timer.periodic hỏi trạng thái ngay sau khi tạo đơn; không chặn ở đây
-  /// thì poll gọi qua mock dio, lỗi, rồi lặp mãi và pumpAndSettle không bao giờ lắng.
   @override
   Future<bool> orderStatus(int orderId) async => paid;
 
@@ -91,6 +88,7 @@ class _FakeRentLockerOpsService extends LockerOpsService {
     checkoutCalls++;
     lastCheckoutOrderId = orderId;
     lastCheckoutMethod = method;
+    if (method == 'WALLET') paid = true;
     return {
       'id': 991,
       'orderId': orderId,
@@ -224,30 +222,34 @@ void main() {
     await tester.pumpAndSettle();
 
     await tester.tap(find.text('Thuê ngay'));
-    // Không pumpAndSettle: đơn vừa tạo còn UNPAID nên trang chạy vòng poll SePay,
-    // trạng thái "đã lắng" sẽ không bao giờ tới.
-    await tester.pump();
-    for (var i = 0; i < 4; i++) {
-      await tester.pump(const Duration(milliseconds: 500));
-    }
+    await tester.pumpAndSettle();
 
     expect(service.createRentalBoxId, 5004);
-    // Chưa trả tiền: trang chỉ mời chuyển khoản, chưa lộ mã mở ô và chưa cho mở.
-    expect(find.textContaining('Quét mã VietQR'), findsOneWidget);
+    // Tạo đơn KHÔNG tự tạo giao dịch thanh toán: chưa checkout, chưa lộ mã mở ô,
+    // chưa cho mở; chỉ có nút "Thanh toán" mở bộ chọn phương thức.
+    expect(service.checkoutCalls, 0);
+    expect(find.textContaining('Quét mã VietQR'), findsNothing);
+    expect(find.textContaining('Giả lập'), findsNothing);
     expect(find.textContaining('mở ô số 4'), findsNothing);
     expect(find.textContaining('Hết hạn thuê:'), findsNothing);
     expect(find.text('Mở ô để bỏ đồ'), findsNothing);
     expect(service.unlockCalls, 0);
+
+    await tester.tap(find.text('Thanh toán 20.000đ'));
+    // Không pumpAndSettle: nút đang ở trạng thái chờ (vòng quay) suốt lúc chọn
+    // phương thức.
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 600));
+    expect(find.text('Chọn phương thức thanh toán'), findsOneWidget);
+    await tester.tap(find.text('Ví của tôi'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 600));
+    await tester.pumpAndSettle();
+
+    // Đúng một lần checkout cho lần thanh toán này.
+    expect(service.checkoutCalls, 1);
     expect(service.lastCheckoutOrderId, 81);
-    expect(service.lastCheckoutMethod, 'SEPAY');
-
-    // SePay báo đã nhận tiền: vòng poll 3 giây thấy đơn chuyển sang PAID.
-    service.paid = true;
-    await tester.pump(const Duration(seconds: 3));
-    for (var i = 0; i < 4; i++) {
-      await tester.pump(const Duration(milliseconds: 500));
-    }
-
+    expect(service.lastCheckoutMethod, 'WALLET');
     expect(find.textContaining('mở ô số 4'), findsOneWidget);
     expect(service.confirmDropCalls, 0);
 

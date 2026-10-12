@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
@@ -5,6 +7,65 @@ import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:smart_laundry_locker/core/presentation/pages/qr_scanner_page.dart'
     show QrScannerOverlayShape;
 import 'package:smart_laundry_locker/core/theme/shadcn_theme.dart';
+import 'package:smart_laundry_locker/shared/widgets/controller_disposer.dart';
+
+/// Nội dung quét được (hoặc gõ tay) có đúng là tủ [expectedId] / [expectedCode]
+/// không. So khớp CHÍNH XÁC, không dùng `contains` — "LOC-1" không được khớp
+/// "LOC-12", tủ 1 không được khớp tủ 17.
+///
+/// Nhận các dạng:
+/// - Tem QR của admin: JSON `{"type":"LOCKER_BOX","lockerId":7,"lockerCode":"CAB-TU01",…}`.
+///   Có `lockerId` thì id phải đúng (kèm `lockerCode` thì mã cũng phải đúng).
+/// - Liên kết `lockr://…?lockerId=7`, `https://…/lockers/7`.
+/// - Chuỗi trần: mã tủ (không phân biệt hoa thường) hoặc id tủ.
+bool lockerQrMatches(
+  String raw, {
+  required String expectedCode,
+  int? expectedId,
+}) {
+  final text = raw.trim();
+  if (text.isEmpty) return false;
+  final code = expectedCode.trim().toUpperCase();
+
+  bool codeEq(Object? v) =>
+      code.isNotEmpty && v != null && '$v'.trim().toUpperCase() == code;
+  bool idEq(Object? v) =>
+      expectedId != null && v != null && int.tryParse('$v'.trim()) == expectedId;
+
+  if (text.startsWith('{')) {
+    try {
+      final decoded = jsonDecode(text);
+      if (decoded is! Map) return false;
+      final id = decoded['lockerId'];
+      final c = decoded['lockerCode'] ?? decoded['code'];
+      if (id != null && expectedId != null) {
+        return idEq(id) && (c == null || code.isEmpty || codeEq(c));
+      }
+      return codeEq(c);
+    } catch (_) {
+      return false;
+    }
+  }
+
+  final uri = Uri.tryParse(text);
+  const linkSchemes = {'http', 'https', 'lockr'};
+  if (uri != null && linkSchemes.contains(uri.scheme.toLowerCase())) {
+    final qId = uri.queryParameters['lockerId'];
+    if (qId != null) return idEq(qId);
+    final qCode = uri.queryParameters['lockerCode'] ?? uri.queryParameters['code'];
+    if (qCode != null) return codeEq(qCode);
+    final segments = uri.pathSegments;
+    final i = segments.indexWhere(
+      (seg) => seg.toLowerCase() == 'lockers' || seg.toLowerCase() == 'locker',
+    );
+    if (i >= 0 && i + 1 < segments.length) {
+      return idEq(segments[i + 1]) || codeEq(segments[i + 1]);
+    }
+    return false;
+  }
+
+  return codeEq(text) || idEq(text);
+}
 
 class LockerQrScannerDialog extends StatefulWidget {
   const LockerQrScannerDialog({
@@ -61,30 +122,67 @@ class _LockerQrScannerDialogState extends State<LockerQrScannerDialog> {
     super.dispose();
   }
 
-  bool _matchesLocker(String raw) {
-    final clean = raw.trim().toUpperCase();
-    final targetCode = widget.expectedLockerCode.trim().toUpperCase();
+  bool _matchesLocker(String raw) => lockerQrMatches(
+    raw,
+    expectedCode: widget.expectedLockerCode,
+    expectedId: widget.expectedLockerId,
+  );
 
-    // 1. Khớp trực tiếp mã tủ (VD: "LOC-01-001" hoặc URL/JSON chứa "LOC-01-001")
-    if (targetCode.isNotEmpty && clean.contains(targetCode)) {
-      return true;
+  /// Không dùng được camera (hỏng, thiếu sáng, chưa cấp quyền): gõ mã tủ in
+  /// trên thân tủ.
+  Future<void> _enterCodeManually() async {
+    final ctrl = TextEditingController();
+    String? error;
+    final matched = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => ControllerDisposer(
+        controllers: [ctrl],
+        child: StatefulBuilder(
+          builder: (ctx, setLocal) {
+            void submit() {
+              if (_matchesLocker(ctrl.text)) {
+                Navigator.pop(ctx, true);
+              } else {
+                setLocal(
+                  () => error = ctrl.text.trim().isEmpty
+                      ? 'Vui lòng nhập mã tủ.'
+                      : 'Mã tủ không khớp với ${widget.lockerName ?? 'tủ này'}.',
+                );
+              }
+            }
+
+            return AlertDialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(18),
+              ),
+              title: const Text('Nhập mã tủ'),
+              content: TextField(
+                controller: ctrl,
+                autofocus: true,
+                textCapitalization: TextCapitalization.characters,
+                textInputAction: TextInputAction.done,
+                onSubmitted: (_) => submit(),
+                decoration: InputDecoration(
+                  hintText: 'Mã in trên thân tủ',
+                  errorText: error,
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(ctx, false),
+                  child: const Text('Hủy'),
+                ),
+                FilledButton(onPressed: submit, child: const Text('Xác nhận')),
+              ],
+            );
+          },
+        ),
+      ),
+    );
+    if (matched == true && mounted) {
+      HapticFeedback.mediumImpact();
+      Navigator.of(context).pop(true);
     }
-
-    // 2. Khớp ID tủ nếu có (VD: "1", "lockerId=1", "/lockers/1", {"lockerId": 1})
-    if (widget.expectedLockerId != null) {
-      final idStr = '${widget.expectedLockerId}';
-      if (clean == idStr ||
-          clean.contains('LOCKERID=$idStr') ||
-          clean.contains('LOCKERID:$idStr') ||
-          clean.contains('LOCKERID":$idStr') ||
-          clean.contains('LOCKERID": $idStr') ||
-          clean.contains('LOCKER/$idStr') ||
-          clean.contains('/LOCKERS/$idStr')) {
-        return true;
-      }
-    }
-
-    return false;
   }
 
   void _onDetect(BarcodeCapture capture) async {
@@ -289,6 +387,23 @@ class _LockerQrScannerDialogState extends State<LockerQrScannerDialog> {
                           color: Colors.white60,
                           fontSize: 12,
                           height: 1.4,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      TextButton.icon(
+                        onPressed: _isProcessing ? null : _enterCodeManually,
+                        icon: const Icon(
+                          LucideIcons.keyboard,
+                          size: 16,
+                          color: Colors.white,
+                        ),
+                        label: const Text(
+                          'Không quét được? Nhập mã tủ',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 12.5,
+                            fontWeight: FontWeight.w700,
+                          ),
                         ),
                       ),
                     ],
