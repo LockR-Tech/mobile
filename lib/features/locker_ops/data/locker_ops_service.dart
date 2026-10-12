@@ -1,8 +1,10 @@
 import 'package:dio/dio.dart';
 import 'package:smart_laundry_locker/core/media/media_upload.dart';
 import 'package:smart_laundry_locker/core/network/dio_client.dart';
+import 'package:smart_laundry_locker/features/locker_ops/data/device_restart_result.dart';
 import 'package:smart_laundry_locker/features/locker_ops/data/force_open_result.dart';
 
+export 'package:smart_laundry_locker/features/locker_ops/data/device_restart_result.dart';
 export 'package:smart_laundry_locker/features/locker_ops/data/force_open_result.dart';
 
 /// Thin typed gateway client for the locker flow (Phase 1+2 backend).
@@ -12,55 +14,6 @@ class LockerOpsService {
   LockerOpsService({Dio? dio}) : _dio = dio ?? DioClient.instance.dio;
 
   final Dio _dio;
-
-  static String? _cachedTechReadToken;
-  static DateTime? _techTokenExpiry;
-
-  /// Lấy token KTV chỉ dùng để đọc thông tin công khai/nhật ký xử lý khi tài khoản
-  /// khách (CUSTOMER) bị gateway chặn 403 Forbidden.
-  Future<String?> _getTechReadToken() async {
-    if (_cachedTechReadToken != null &&
-        _techTokenExpiry != null &&
-        DateTime.now().isBefore(_techTokenExpiry!)) {
-      return _cachedTechReadToken;
-    }
-    try {
-      final res = await _dio.post(
-        '/api/auth/login',
-        data: {
-          'identifier': 'huynqbse180211@fpt.edu.vn',
-          'password': 'password',
-        },
-      );
-      final data = res.data?['data'];
-      final token = data?['accessToken']?.toString();
-      if (token != null && token.isNotEmpty) {
-        _cachedTechReadToken = token;
-        _techTokenExpiry = DateTime.now().add(const Duration(hours: 12));
-        return _cachedTechReadToken;
-      }
-    } catch (_) {}
-
-    // Fallback mật khẩu demo
-    try {
-      final res = await _dio.post(
-        '/api/auth/login',
-        data: {
-          'identifier': 'huynqbse180211@fpt.edu.vn',
-          'password': '12345678',
-        },
-      );
-      final data = res.data?['data'];
-      final token = data?['accessToken']?.toString();
-      if (token != null && token.isNotEmpty) {
-        _cachedTechReadToken = token;
-        _techTokenExpiry = DateTime.now().add(const Duration(hours: 12));
-        return _cachedTechReadToken;
-      }
-    } catch (_) {}
-
-    return null;
-  }
 
   Future<List<Map<String, dynamic>>> _list(
     String path, {
@@ -398,14 +351,10 @@ class LockerOpsService {
   Future<Map<String, dynamic>> userReport(int reportId) =>
       _map('GET', '/api/lockers/reports/$reportId');
 
-  /// Nhật ký xử lý của KTV trên phiếu (người dùng xem tiến độ)
-  Future<List<Map<String, dynamic>>> userReportLogs(int reportId) async {
-    try {
-      final list = await _list('/api/lockers/reports/$reportId/logs');
-      if (list.isNotEmpty) return list;
-    } catch (_) {}
-    return reportLogs(reportId);
-  }
+  /// Nhật ký xử lý của KTV trên phiếu (chủ phiếu xem tiến độ) — đọc bằng token
+  /// của chính khách. Danh sách rỗng = phiếu chưa có nhật ký.
+  Future<List<Map<String, dynamic>>> userReportLogs(int reportId) =>
+      _list('/api/lockers/reports/$reportId/logs');
 
   /// Ảnh của phiếu do chính khách gửi (chỉ chủ phiếu).
   Future<List<Map<String, dynamic>>> myReportAttachments(int reportId) =>
@@ -472,26 +421,10 @@ class LockerOpsService {
   Future<List<Map<String, dynamic>>> myLockers() =>
       _list('/api/locker-technician/lockers', query: {'mine': true});
 
-  /// Tất cả phiếu sự cố Kiosk (OPEN + IN_PROGRESS + RESOLVED) — ưu tiên endpoint maintenance,
-  /// dùng cho tab "Sự cố" trên Mobile để KTV thấy toàn bộ hệ thống (giống Admin portal).
-  Future<List<Map<String, dynamic>>> allKioskReports() async {
-    try {
-      final list = await _list(
-        '/api/locker-technician/reports',
-        query: {'all': true},
-      );
-      if (list.isNotEmpty) return list;
-    } catch (_) {}
-    try {
-      final adminList = await _list('/api/admin/lockers/reports');
-      if (adminList.isNotEmpty) return adminList;
-    } catch (_) {}
-    try {
-      return await reports();
-    } catch (_) {
-      return const [];
-    }
-  }
+  /// Tất cả phiếu sự cố (OPEN + IN_PROGRESS + RESOLVED) cho tab "Sự cố" của KTV.
+  /// Lỗi được ném ra để màn hình báo lỗi + "Thử lại" (không đổi sang API khác).
+  Future<List<Map<String, dynamic>>> allKioskReports() =>
+      _list('/api/locker-technician/reports', query: {'all': true});
 
   // ---- Phiếu sự cố Drone (DRONE_TECHNICIAN) ----
   // Có route riêng, tuyệt đối không đi qua /api/locker-technician/** vì gateway
@@ -605,26 +538,21 @@ class LockerOpsService {
   Future<Map<String, dynamic>> claimReport(int reportId) =>
       _map('PUT', '/api/locker-technician/reports/$reportId/claim');
 
-  /// 1 phiếu (LOCKER_TECHNICIAN/DRONE_TECHNICIAN/ADMIN), có `attachments[]`.
-  Future<Map<String, dynamic>> getMaintenanceReport(int reportId) async {
-    try {
-      return await _map('GET', '/api/locker-technician/reports/$reportId');
-    } on DioException catch (e) {
-      if (e.response?.statusCode == 403 || e.response?.statusCode == 401) {
-        final token = await _getTechReadToken();
-        if (token != null) {
-          try {
-            return await _map(
-              'GET',
-              '/api/locker-technician/reports/$reportId',
-              headers: {'Authorization': 'Bearer $token'},
-            );
-          } catch (_) {}
-        }
-      }
-      rethrow;
-    }
-  }
+  /// 1 phiếu (LOCKER_TECHNICIAN/ADMIN), có `attachments[]`. Khách xem phiếu
+  /// của mình qua [userReport].
+  Future<Map<String, dynamic>> getMaintenanceReport(int reportId) =>
+      _map('GET', '/api/locker-technician/reports/$reportId');
+
+  /// KTV đang giữ phiếu trả phiếu về hàng chờ (OPEN, bỏ người được giao).
+  /// [reason] bắt buộc (`REPORT_RELEASE_REASON_REQUIRED`).
+  Future<Map<String, dynamic>> releaseReport(
+    int reportId, {
+    required String reason,
+  }) => _map(
+    'PUT',
+    '/api/locker-technician/reports/$reportId/release',
+    body: {'reason': reason.trim()},
+  );
 
   /// Hoàn tất phiếu. Ảnh [attachments] lưu stage RESOLUTION trước khi đóng.
   /// Không có [note]/[attachments] ⇒ PUT không body (như cũ).
@@ -648,26 +576,32 @@ class LockerOpsService {
     );
   }
 
-  /// Tra cứu đơn hàng đang giữ ô (nếu có).
+  /// Tra cứu đơn hàng đang giữ ô; `null` khi ô không có đơn (kể cả 404).
+  /// Lỗi khác (mạng, 5xx, 403) được ném ra: nơi gọi phải báo "không tra được"
+  /// thay vì coi như ô trống.
   Future<Map<String, dynamic>?> getActiveOrderByBox(int boxId) async {
+    final Map<String, dynamic> res;
     try {
-      final res = await _map(
+      res = await _map(
         'GET',
         '/api/locker-technician/boxes/$boxId/active-order',
       );
-      if (res.isEmpty ||
-          (res['id'] == null &&
-              res['orderId'] == null &&
-              res['orderCode'] == null)) {
-        return null;
-      }
-      return res;
-    } catch (_) {
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 404) return null;
+      rethrow;
+    }
+    if (res.isEmpty ||
+        (res['id'] == null &&
+            res['orderId'] == null &&
+            res['orderCode'] == null)) {
       return null;
     }
+    return res;
   }
 
   /// Xử lý sự cố ô tủ theo các kịch bản (RELOCATE / HANDOVER / HUB_ESCROW / QUICK_FIX / LOCK_ONLY).
+  /// Lỗi server (TARGET_BOX_NOT_AVAILABLE, HANDOVER_FAILED, ORDER_RELOCATE_FAILED…)
+  /// được ném nguyên vẹn cho màn hình báo đúng lý do — không có đường dự phòng.
   Future<Map<String, dynamic>> resolveBoxIncident({
     required int reportId,
     required int boxId,
@@ -679,79 +613,25 @@ class LockerOpsService {
     List<Map<String, dynamic>>? attachments,
     List<Map<String, dynamic>>? progressAttachments,
     bool? lockBox,
-  }) async {
-    try {
-      return await _map(
-        'POST',
-        '/api/locker-technician/reports/$reportId/resolve-box-incident',
-        body: {
-          'boxId': boxId,
-          'action': action,
-          if (targetBoxId != null) 'targetBoxId': targetBoxId,
-          if (reason != null && reason.isNotEmpty) 'reason': reason,
-          if (customerOtp != null && customerOtp.isNotEmpty)
-            'customerOtp': customerOtp,
-          if (sealNumber != null && sealNumber.isNotEmpty)
-            'sealNumber': sealNumber,
-          if (attachments != null && attachments.isNotEmpty)
-            'attachments': attachments,
-          if (progressAttachments != null && progressAttachments.isNotEmpty)
-            'progressAttachments': progressAttachments,
-          if (lockBox != null) 'lockBox': lockBox,
-        },
-      );
-    } catch (_) {
-      // Fallback an toàn tới các API production sẵn có nếu remote endpoint lỗi hoặc chưa deploy
-      final faultReason = reason != null && reason.isNotEmpty
-          ? reason
-          : 'KTV xác nhận lỗi ô tủ và khóa bảo trì';
-
-      // 1. Khóa ô thành FAULT qua API boxes/$boxId/fault (cập nhật DB & gửi WebSocket)
-      try {
-        await reportFault(boxId, faultReason, attachments: attachments);
-      } catch (_) {}
-
-      // 2. Lưu ảnh hiện trường nếu có
-      if (attachments != null && attachments.isNotEmpty) {
-        try {
-          await addReportAttachments(reportId, 'INSPECTION', attachments);
-        } catch (_) {}
-      }
-
-      // 3. Lưu ảnh trong quá trình sửa nếu có
-      if (progressAttachments != null && progressAttachments.isNotEmpty) {
-        try {
-          await addReportAttachments(reportId, 'PROGRESS', progressAttachments);
-        } catch (_) {}
-      }
-
-      // 4. Ghi log xử lý vào phiếu
-      try {
-        final logNote = switch (action) {
-          'RELOCATE' =>
-            '[ĐIỀU CHUYỂN Ô] Đã chuyển hàng sang ô trống mới và khóa bảo trì ô sự cố. $faultReason',
-          'HANDOVER' =>
-            '[BÀN GIAO TRỰC TIẾP] Đã bàn giao đồ trực tiếp cho khách và khóa bảo trì ô sự cố. $faultReason',
-          'HUB_ESCROW' =>
-            '[NIÊM PHONG VỀ HUB] Đã niêm phong hàng đưa về Hub (Mã Seal: ${sealNumber ?? "N/A"}) và khóa bảo trì ô sự cố.',
-          _ =>
-            '[XÁC NHẬN & KHÓA Ô] KTV kiểm tra hiện trường, xác nhận lỗi và khóa bảo trì ô. $faultReason',
-        };
-        await addReportLog(
-          reportId,
-          logNote,
-          attachments: progressAttachments ?? attachments,
-        );
-      } catch (_) {}
-
-      return {
-        'success': true,
-        'action': action,
-        'boxId': boxId,
-        'fallback': true,
-      };
-    }
-  }
+  }) => _map(
+    'POST',
+    '/api/locker-technician/reports/$reportId/resolve-box-incident',
+    body: {
+      'boxId': boxId,
+      'action': action,
+      if (targetBoxId != null) 'targetBoxId': targetBoxId,
+      if (reason != null && reason.isNotEmpty) 'reason': reason,
+      if (customerOtp != null && customerOtp.isNotEmpty)
+        'customerOtp': customerOtp,
+      if (sealNumber != null && sealNumber.isNotEmpty)
+        'sealNumber': sealNumber,
+      if (attachments != null && attachments.isNotEmpty)
+        'attachments': attachments,
+      if (progressAttachments != null && progressAttachments.isNotEmpty)
+        'progressAttachments': progressAttachments,
+      if (lockBox != null) 'lockBox': lockBox,
+    },
+  );
 
   /// Ảnh của phiếu, lọc theo [stage] (REPORT/INSPECTION/PROGRESS/RESOLUTION).
   Future<List<Map<String, dynamic>>> reportAttachments(
@@ -800,34 +680,10 @@ class LockerOpsService {
   Future<Map<String, dynamic>> returnToService(int boxId) =>
       _map('POST', '/api/locker-technician/boxes/$boxId/return-to-service');
 
-  /// Nhật ký xử lý của 1 phiếu bảo trì (work-log nhiều bước).
-  Future<List<Map<String, dynamic>>> reportLogs(int reportId) async {
-    try {
-      final list = await _list('/api/locker-technician/reports/$reportId/logs');
-      if (list.isNotEmpty) return list;
-    } on DioException catch (e) {
-      if (e.response?.statusCode == 403 || e.response?.statusCode == 401) {
-        final token = await _getTechReadToken();
-        if (token != null) {
-          try {
-            final res = await _dio.get(
-              '/api/locker-technician/reports/$reportId/logs',
-              options: Options(headers: {'Authorization': 'Bearer $token'}),
-            );
-            var data = res.data?['data'];
-            if (data is Map && data['content'] is List) data = data['content'];
-            if (data is List) {
-              return data
-                  .whereType<Map>()
-                  .map((e) => Map<String, dynamic>.from(e))
-                  .toList();
-            }
-          } catch (_) {}
-        }
-      }
-    } catch (_) {}
-    return const [];
-  }
+  /// Nhật ký xử lý của 1 phiếu bảo trì (work-log nhiều bước) — chỉ KTV/admin.
+  /// Lỗi được ném ra để màn hình phân biệt "lỗi tải" với "chưa có nhật ký".
+  Future<List<Map<String, dynamic>>> reportLogs(int reportId) =>
+      _list('/api/locker-technician/reports/$reportId/logs');
 
   /// Dòng nhật ký; [attachments] (≤10) lưu stage PROGRESS gắn với dòng này.
   Future<Map<String, dynamic>> addReportLog(
@@ -907,43 +763,93 @@ class LockerOpsService {
   /// Mở ô khẩn cấp không cần PIN khách — luôn được ghi vào audit log
   /// (credential MASTER) ở backend. Backend trả 200 cả khi ô chưa mở: nơi gọi
   /// phải kiểm tra [ForceOpenResult.accepted] trước khi báo thành công.
-  Future<ForceOpenResult> forceOpenBox(int boxId) async =>
-      ForceOpenResult.fromResponse(
-        await _map('POST', '/api/locker-technician/boxes/$boxId/force-open'),
-      );
+  ///
+  /// App KTV luôn gửi [reason]; [note] + [attachments] (ReportAttachmentRequest
+  /// từ `PhotoPickerController.uploadAll()`) + [reportId] ⇒ backend ghi thêm một
+  /// dòng nhật ký vào phiếu đó. Backend cũ bỏ qua body.
+  Future<ForceOpenResult> forceOpenBox(
+    int boxId, {
+    String? reason,
+    String? note,
+    List<Map<String, dynamic>>? attachments,
+    int? reportId,
+  }) async => ForceOpenResult.fromResponse(
+    await _map(
+      'POST',
+      '/api/locker-technician/boxes/$boxId/force-open',
+      body: forceOpenBody(
+        reason: reason,
+        note: note,
+        attachments: attachments,
+        reportId: reportId,
+      ),
+    ),
+  );
 
-  /// Điểm đánh giá trung bình KTV nhận được từ các report mình xử lý.
-  Future<Map<String, dynamic>> myRatingAverage() =>
-      _map('GET', '/api/locker-technician/my-rating-average');
+  /// Body của [forceOpenBox]; `null` khi không có gì để gửi (giữ tương thích
+  /// với web admin không gửi body).
+  static Map<String, dynamic>? forceOpenBody({
+    String? reason,
+    String? note,
+    List<Map<String, dynamic>>? attachments,
+    int? reportId,
+  }) {
+    final r = reason?.trim();
+    final n = note?.trim();
+    final body = <String, dynamic>{
+      if (r != null && r.isNotEmpty) 'reason': r,
+      if (n != null && n.isNotEmpty) 'note': n,
+      if (attachments != null && attachments.isNotEmpty)
+        'attachments': attachments,
+      if (reportId != null) 'reportId': reportId,
+    };
+    return body.isEmpty ? null : body;
+  }
 
-  /// Thống kê hiệu suất & trạng thái chế tài SLA của chính KTV đang đăng nhập.
-  Future<Map<String, dynamic>> myPerformance() =>
-      _map('GET', '/api/locker-technician/my-performance');
+  /// Điểm đánh giá trung bình KTV nhận được từ các phiếu mình xử lý
+  /// (`{count, average}`). [drone] ⇒ endpoint của KTV drone.
+  Future<Map<String, dynamic>> myRatingAverage({bool drone = false}) => _map(
+    'GET',
+    drone
+        ? '/api/drone-technician/my-rating-average'
+        : '/api/locker-technician/my-rating-average',
+  );
 
-  /// KTV xin gia hạn thêm thời gian xử lý sự cố (SLA extension).
+  /// Thống kê hiệu suất & trạng thái chế tài SLA của chính KTV đang đăng nhập
+  /// (`totalAssigned, inProgress, resolved, overdue, penaltyLevel, penaltyReason,
+  /// ratingCount, averageRating`). [drone] ⇒ endpoint của KTV drone.
+  Future<Map<String, dynamic>> myPerformance({bool drone = false}) => _map(
+    'GET',
+    drone
+        ? '/api/drone-technician/my-performance'
+        : '/api/locker-technician/my-performance',
+  );
+
+  /// KTV đang được giao phiếu tự gia hạn SLA: body `{hours, reason}`; server
+  /// giới hạn số lần / số giờ (SLA_EXTENSION_*), trả phiếu sau gia hạn kèm
+  /// `slaExtensionsUsed` / `slaExtensionsMax`. Không có đường dự phòng.
   Future<Map<String, dynamic>> extendReportSla(
     int reportId, {
-    required int extensionHours,
-    String? reason,
-  }) async {
-    final body = {
-      'extensionHours': extensionHours,
-      if (reason != null && reason.isNotEmpty) 'reason': reason,
-    };
-    try {
-      return await _map(
-        'PUT',
-        '/api/locker-technician/reports/$reportId/extend-sla',
-        body: body,
-      );
-    } catch (_) {
-      return await _map(
-        'PUT',
-        '/api/admin/lockers/reports/$reportId/extend-sla',
-        body: body,
-      );
-    }
-  }
+    required int hours,
+    required String reason,
+  }) => _map(
+    'PUT',
+    '/api/locker-technician/reports/$reportId/extend-sla',
+    body: extendSlaBody(hours: hours, reason: reason),
+  );
+
+  /// Cấu hình công khai scope locker (`GET /api/settings/locker/public`) — đọc
+  /// giới hạn tự gia hạn SLA (`app.maintenance.sla-max-extensions`,
+  /// `app.maintenance.sla-max-hours-per-extension`).
+  Future<Map<String, dynamic>> lockerPublicSettings() =>
+      _map('GET', '/api/settings/locker/public');
+
+  /// Body gia hạn SLA. Gửi kèm `extensionHours` (cùng giá trị) để máy chủ chưa
+  /// cập nhật — vốn chỉ đọc tên trường cũ — vẫn hiểu đúng số giờ.
+  static Map<String, dynamic> extendSlaBody({
+    required int hours,
+    required String reason,
+  }) => {'hours': hours, 'extensionHours': hours, 'reason': reason.trim()};
 
   /// Box-health cho bảo trì: trạng thái logic (theo đơn) đặt cạnh trạng thái
   /// phần cứng cửa cabinet báo lên (GAP 2). Mỗi phần tử:
@@ -1297,7 +1203,8 @@ class LockerOpsService {
   Future<Map<String, dynamic>> techDeviceDetail(int id) =>
       _map('GET', '/api/locker-technician/devices/$id');
 
-  /// Cập nhật trạng thái thiết bị (ONLINE / OFFLINE / ERROR).
+  /// Đánh dấu tay thiết bị OFFLINE / ERROR (vd. đã rút điện trước khi hết cửa
+  /// sổ online). ONLINE do server tự tính theo `lastSeenAt`, không đặt tay.
   Future<void> techUpdateStatus(int id, String status) async {
     await _map(
       'PUT',
@@ -1310,10 +1217,12 @@ class LockerOpsService {
   Future<List<Map<String, dynamic>>> techDeviceLogs(int id) =>
       _list('/api/locker-technician/devices/$id/logs');
 
-  /// Gửi lệnh restart thiết bị IoT.
-  Future<void> techRestartDevice(int id) async {
-    await _map('POST', '/api/locker-technician/devices/$id/restart');
-  }
+  /// Khởi động lại bộ điều khiển tủ và chờ tủ trả lời. Backend trả 200 cho cả
+  /// ACCEPTED / TIMEOUT / FAILED: nơi gọi phải đọc [DeviceRestartResult].
+  Future<DeviceRestartResult> techRestartDevice(int id) async =>
+      DeviceRestartResult.fromResponse(
+        await _map('POST', '/api/locker-technician/devices/$id/restart'),
+      );
 
   /// Mã lỗi nghiệp vụ (`code` của ApiResponse lỗi), ví dụ `REPORT_OPEN`.
   static String? errorCode(Object error) {
@@ -1397,6 +1306,59 @@ class LockerOpsService {
         'Vui lòng thanh toán đơn drone trước khi mở tủ nhận hàng.',
   };
 
+  // ── Mã lỗi luồng KTV tủ ──
+  /// Mã mà `message` server là tiếng Anh / lẫn chi tiết kỹ thuật ⇒ luôn thay
+  /// bằng câu tiếng Việt cố định.
+  static const _technicianCodeMessages = <String, String>{
+    'HANDOVER_FAILED':
+        'Bàn giao trực tiếp thất bại — kiểm tra lại mã PIN 6 số hoặc mã QR của đơn rồi thử lại.',
+    'INVALID_OTP': 'Mã PIN/QR của đơn không đúng.',
+    'ORDER_RELOCATE_FAILED':
+        'Không chuyển được đơn sang ô mới. Hàng vẫn ở ô cũ — thử lại hoặc chọn phương án khác.',
+    'VALIDATION_ERROR': 'Dữ liệu gửi lên không hợp lệ, vui lòng kiểm tra lại.',
+    'INTERNAL_ERROR':
+        'Máy chủ gặp lỗi hoặc chưa hỗ trợ thao tác này. Vui lòng thử lại sau.',
+    'NOT_FOUND': 'Không tìm thấy dữ liệu (có thể đã bị xoá hoặc thay đổi).',
+  };
+
+  /// Mã mà server đã kèm câu tiếng Việt có số liệu cụ thể (giới hạn, số phiếu…)
+  /// ⇒ ưu tiên câu của server, chỉ dùng câu dưới đây khi server không gửi.
+  static const _technicianCodeFallbacks = <String, String>{
+    'SLA_EXTENSION_NOT_ASSIGNEE':
+        'Chỉ KTV đang được giao phiếu mới gia hạn được SLA.',
+    'SLA_EXTENSION_LIMIT_REACHED':
+        'Phiếu đã hết lượt tự gia hạn SLA — liên hệ admin nếu cần thêm thời gian.',
+    'SLA_EXTENSION_HOURS_EXCEEDED': 'Số giờ gia hạn vượt mức cho phép mỗi lần.',
+    'SLA_EXTENSION_REASON_REQUIRED': 'Cần nêu lý do gia hạn SLA.',
+    'INVALID_EXTENSION_HOURS': 'Thời gian gia hạn phải từ 1 giờ trở lên.',
+    'TECHNICIAN_SLA_RESTRICTED':
+        'Bạn đang có quá nhiều phiếu trễ hạn SLA nên tạm thời không nhận được việc mới.',
+    'REPORT_RELEASE_REASON_REQUIRED': 'Cần nêu lý do trả phiếu về hàng chờ.',
+    'REPORT_NOT_CLAIMED': 'Phiếu đang ở hàng chờ, chưa có KTV nhận.',
+    'REPORT_ALREADY_RESOLVED': 'Phiếu đã được hoàn tất.',
+    'REPORT_OPEN': 'Ô/bãi đáp đang có phiếu sự cố mở — hoàn tất phiếu đó trước.',
+    'TARGET_BOX_REQUIRED': 'Cần chọn ô trống đích để điều chuyển hàng.',
+    'TARGET_BOX_NOT_AVAILABLE':
+        'Ô đích không còn trống — tải lại sơ đồ và chọn ô khác.',
+    'BOX_NOT_FAULT': 'Ô không còn ở trạng thái lỗi.',
+    'HANDOVER_OTP_REQUIRED': 'Cần mã PIN 6 số hoặc mã QR của đơn để bàn giao.',
+    'HANDOVER_OTP_UNAVAILABLE':
+        'Đơn chưa có mã lấy hàng nên chưa bàn giao trực tiếp được.',
+    'SEAL_NUMBER_REQUIRED': 'Nhập mã Seal in trên túi niêm phong.',
+    'INCIDENT_ACTION_INVALID': 'Phương án xử lý không hợp lệ.',
+    'INCIDENT_BOX_NOT_IN_LOCKER': 'Ô đã chọn không thuộc tủ của phiếu.',
+    'FORCE_OPEN_REPORT_REQUIRED':
+        'Ảnh khi mở khẩn cấp chỉ lưu được khi mở từ một phiếu sự cố.',
+    'FORCE_OPEN_REPORT_MISMATCH': 'Phiếu sự cố không thuộc tủ của ô này.',
+    'DRONE_REPORT_REQUIRED': 'Phiếu này không phải phiếu drone.',
+    'DEVICE_NOT_PAIRED': 'Thiết bị chưa được gắn với tủ nào.',
+    'DEVICE_NOT_IN_SCOPE': 'Thiết bị không thuộc tủ bạn phụ trách.',
+    'DEVICE_STATUS_ONLINE_NOT_ALLOWED':
+        'Trạng thái trực tuyến do máy chủ tự tính, không đặt tay được.',
+    'LOCKER_SERVICE_UNAVAILABLE':
+        'Dịch vụ tủ đang tạm gián đoạn, vui lòng thử lại sau.',
+  };
+
   /// Human-readable message from an [ApiResponse] error payload.
   static String errorMessage(Object error) {
     if (error is MediaUploadException) return error.message;
@@ -1406,11 +1368,19 @@ class LockerOpsService {
           ? MediaErrorMessages.forCode(data['code']?.toString())
           : null;
       if (mediaMessage != null) return mediaMessage;
-      final codeMessage = _codeMessages[errorCode(error)];
+      final code = errorCode(error);
+      final codeMessage = _codeMessages[code] ?? _technicianCodeMessages[code];
       if (codeMessage != null) return codeMessage;
-      if (data is Map && data['message'] is String) {
-        return data['message'] as String;
+      final serverMessage = data is Map && data['message'] is String
+          ? (data['message'] as String).trim()
+          : '';
+      // 404 không kèm mã nghiệp vụ = máy chủ chưa có API này (bản cũ).
+      if (code == null && error.response?.statusCode == 404) {
+        return 'Máy chủ chưa hỗ trợ chức năng này. Vui lòng cập nhật hệ thống rồi thử lại.';
       }
+      if (serverMessage.isNotEmpty) return serverMessage;
+      final fallback = _technicianCodeFallbacks[code];
+      if (fallback != null) return fallback;
       if (error.response?.statusCode == 403) {
         return 'Bạn không có quyền thực hiện thao tác này';
       }

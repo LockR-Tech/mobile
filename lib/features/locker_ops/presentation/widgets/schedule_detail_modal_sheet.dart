@@ -19,6 +19,16 @@ int? _asInt(dynamic value) {
 /// 2. Chi tiết kết quả kiểm tra lần trước (Đạt/Không đạt, chi tiết từng hạng mục checklist
 ///    kèm ghi chú riêng từng mục, ghi chú hiện trường KTV, ảnh minh chứng hiện trường KTV đã chụp,
 ///    phiếu sự cố kỹ thuật liên quan phát sinh nếu không đạt).
+/// Kết quả chung của lần kiểm tra trước: `true` = ĐẠT, `false` = KHÔNG ĐẠT,
+/// `null` = nhật ký không ghi kết quả (không mặc định là ĐẠT).
+bool? previousInspectionOutcome(dynamic status) {
+  final raw = status?.toString().trim().toUpperCase();
+  if (raw == null || raw.isEmpty) return null;
+  if (raw == 'FAILED' || raw == 'FAIL') return false;
+  if (raw == 'PASSED' || raw == 'PASS') return true;
+  return null;
+}
+
 class ScheduleDetailModalSheet extends StatefulWidget {
   const ScheduleDetailModalSheet({
     required this.schedule,
@@ -44,6 +54,7 @@ class ScheduleDetailModalSheet extends StatefulWidget {
 
 class _ScheduleDetailModalSheetState extends State<ScheduleDetailModalSheet> {
   bool _loadingLogs = true;
+  String? _logsError;
   Map<String, dynamic>? _latestLog;
   List<Map<String, dynamic>> _checklistEvaluations = [];
 
@@ -58,6 +69,12 @@ class _ScheduleDetailModalSheetState extends State<ScheduleDetailModalSheet> {
     if (id == null) {
       if (mounted) setState(() => _loadingLogs = false);
       return;
+    }
+    if (mounted && !_loadingLogs) {
+      setState(() {
+        _loadingLogs = true;
+        _logsError = null;
+      });
     }
     try {
       final logs = await widget.service.scheduleInspectionLogs(id);
@@ -79,11 +96,21 @@ class _ScheduleDetailModalSheetState extends State<ScheduleDetailModalSheet> {
         setState(() {
           _latestLog = first;
           _checklistEvaluations = parsedEvaluations;
+          _logsError = null;
           _loadingLogs = false;
         });
         return;
       }
-    } catch (_) {}
+    } catch (e) {
+      // Lỗi tải ≠ "chưa có lần kiểm tra": báo lỗi + cho thử lại.
+      if (mounted) {
+        setState(() {
+          _logsError = LockerOpsService.errorMessage(e);
+          _loadingLogs = false;
+        });
+      }
+      return;
+    }
     if (mounted) setState(() => _loadingLogs = false);
   }
 
@@ -244,63 +271,17 @@ class _ScheduleDetailModalSheetState extends State<ScheduleDetailModalSheet> {
         s['lastDoneAt'] != null ||
         s['lastResult'] != null ||
         _latestLog != null;
-    final rawLogStatus = (_latestLog?['status'] ?? s['lastResult'] ?? 'PASSED')
-        .toString()
-        .toUpperCase();
-    final isPassed = rawLogStatus != 'FAILED' && rawLogStatus != 'FAIL';
+    final overall = previousInspectionOutcome(
+      _latestLog?['status'] ?? s['lastResult'],
+    );
+    final isPassed = overall == true;
     final logCreatedAt = _latestLog?['createdAt'] ?? s['lastDoneAt'];
-    final logTechName =
-        _latestLog?['technicianName'] ??
-        s['assignedTechnicianName'] ??
-        (isDrone ? 'Kỹ thuật viên Drone' : 'Kỹ thuật viên Kiosk');
+    // Chỉ nêu tên KTV khi nhật ký ghi rõ người kiểm tra (không suy từ người được giao).
+    final logTechName = _latestLog?['technicianName']?.toString().trim();
 
-    // Checklist 6 hạng mục SOP tiêu chuẩn trạm tủ Kiosk
-    const defaultKioskChecklist = [
-      '🧹 Vệ sinh tủ & ngoại quan sạch sẽ',
-      '🔒 Kiểm tra khóa điện tử & tiếp điểm cửa',
-      '⚡ Kiểm tra cảm biến nhận diện ô tủ',
-      '🔋 Kiểm tra nguồn cấp & pin lưu điện UPS',
-      '📱 Màn hình cảm ứng & camera / quét QR',
-      '📶 Tín hiệu kết nối IoT 4G / WiFi ổn định',
-    ];
-    const defaultDroneChecklist = [
-      '🛩️ Kiểm tra thân vỏ, càng đáp và cánh quạt',
-      '🔋 Kiểm tra pin, đầu nối và chu kỳ sạc',
-      '⚙️ Kiểm tra động cơ và độ rung bất thường',
-      '🧭 Kiểm tra GPS, IMU và cảm biến độ cao',
-      '📡 Kiểm tra kết nối điều khiển và telemetry',
-      '📷 Kiểm tra camera, tải trọng và cơ cấu thả hàng',
-    ];
-
-    // Xây dựng danh sách chi tiết từng hạng mục để hiển thị trong mục Kết quả kiểm tra lần trước
-    final List<Map<String, dynamic>> itemsToShow = [];
-    if (_checklistEvaluations.isNotEmpty) {
-      itemsToShow.addAll(_checklistEvaluations);
-      final evaluatedLabels = _checklistEvaluations
-          .map((e) => (e['label'] ?? '').toString().trim().toLowerCase())
-          .toSet();
-      for (final baseItem in checklistItems) {
-        final norm = baseItem.trim().toLowerCase();
-        if (!evaluatedLabels.contains(norm)) {
-          itemsToShow.add({
-            'label': baseItem,
-            'result': isPassed ? 'PASS' : 'FAIL',
-            'note': '',
-          });
-        }
-      }
-    } else if (hasPreviousRecord) {
-      final baseItems = checklistItems.isNotEmpty
-          ? checklistItems
-          : (isDrone ? defaultDroneChecklist : defaultKioskChecklist);
-      for (final item in baseItems) {
-        itemsToShow.add({
-          'label': item,
-          'result': isPassed ? 'PASS' : 'FAIL',
-          'note': '',
-        });
-      }
-    }
+    // Kết quả từng hạng mục: CHỈ những gì nhật ký đã lưu — không tự suy từ kết
+    // quả chung hay từ checklist mẫu.
+    final List<Map<String, dynamic>> itemsToShow = [..._checklistEvaluations];
 
     return SizedBox(
       height: MediaQuery.of(context).size.height * 0.88,
@@ -908,17 +889,45 @@ class _ScheduleDetailModalSheetState extends State<ScheduleDetailModalSheet> {
                               ),
                             ),
                           ),
+                        ] else if (_logsError != null) ...[
+                          Row(
+                            children: [
+                              const Icon(
+                                Icons.error_outline,
+                                size: 16,
+                                color: Color(0xFFDC2626),
+                              ),
+                              const SizedBox(width: 6),
+                              Expanded(
+                                child: Text(
+                                  'Không tải được nhật ký kiểm tra: $_logsError',
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    color: Color(0xFF991B1B),
+                                  ),
+                                ),
+                              ),
+                              TextButton(
+                                onPressed: _loadInspectionLogs,
+                                child: const Text('Thử lại'),
+                              ),
+                            ],
+                          ),
                         ] else if (hasPreviousRecord) ...[
                           // Banner tổng quan kết quả lần trước
                           Container(
                             padding: const EdgeInsets.all(10),
                             decoration: BoxDecoration(
-                              color: isPassed
+                              color: overall == null
+                                  ? const Color(0xFFF8FAFC)
+                                  : isPassed
                                   ? const Color(0xFFF0FDF4)
                                   : const Color(0xFFFEF2F2),
                               borderRadius: BorderRadius.circular(10),
                               border: Border.all(
-                                color: isPassed
+                                color: overall == null
+                                    ? const Color(0xFFE2E8F0)
+                                    : isPassed
                                     ? const Color(0xFFBBF7D0)
                                     : const Color(0xFFFECACA),
                               ),
@@ -926,11 +935,15 @@ class _ScheduleDetailModalSheetState extends State<ScheduleDetailModalSheet> {
                             child: Row(
                               children: [
                                 Icon(
-                                  isPassed
+                                  overall == null
+                                      ? Icons.help_outline
+                                      : isPassed
                                       ? Icons.check_circle_rounded
                                       : Icons.cancel_rounded,
                                   size: 20,
-                                  color: isPassed
+                                  color: overall == null
+                                      ? opsMutedText
+                                      : isPassed
                                       ? const Color(0xFF16A34A)
                                       : const Color(0xFFDC2626),
                                 ),
@@ -941,20 +954,25 @@ class _ScheduleDetailModalSheetState extends State<ScheduleDetailModalSheet> {
                                         CrossAxisAlignment.start,
                                     children: [
                                       Text(
-                                        isPassed
+                                        overall == null
+                                            ? 'Đã kiểm tra — không có kết quả chung trong nhật ký'
+                                            : isPassed
                                             ? 'ĐẠT — Toàn bộ tiêu chí đạt yêu cầu'
                                             : 'KHÔNG ĐẠT — Có hạng mục bị lỗi cần xử lý',
                                         style: TextStyle(
                                           fontWeight: FontWeight.bold,
                                           fontSize: 12.5,
-                                          color: isPassed
+                                          color: overall == null
+                                              ? opsDark
+                                              : isPassed
                                               ? const Color(0xFF166534)
                                               : const Color(0xFF991B1B),
                                         ),
                                       ),
                                       const SizedBox(height: 2),
                                       Text(
-                                        'Thời gian: ${_formatDateTime(logCreatedAt)} · KTV: $logTechName',
+                                        'Thời gian: ${_formatDateTime(logCreatedAt)}'
+                                        '${logTechName != null && logTechName.isNotEmpty ? ' · KTV: $logTechName' : ''}',
                                         style: const TextStyle(
                                           fontSize: 11,
                                           color: opsMutedText,
@@ -995,11 +1013,9 @@ class _ScheduleDetailModalSheetState extends State<ScheduleDetailModalSheet> {
                                   final item = itemsToShow[i];
                                   final itemLabel = (item['label'] ?? '')
                                       .toString();
-                                  final itemResult =
-                                      (item['result'] ??
-                                              (isPassed ? 'PASS' : 'FAIL'))
-                                          .toString()
-                                          .toUpperCase();
+                                  final itemResult = (item['result'] ?? 'NA')
+                                      .toString()
+                                      .toUpperCase();
                                   final itemNote = (item['note'] ?? '')
                                       .toString()
                                       .trim();
@@ -1154,6 +1170,16 @@ class _ScheduleDetailModalSheetState extends State<ScheduleDetailModalSheet> {
                               ),
                             ],
                             const SizedBox(height: 6),
+                          ] else ...[
+                            const Text(
+                              'Nhật ký lần trước không lưu kết quả từng hạng mục — chỉ có kết quả chung ở trên.',
+                              style: TextStyle(
+                                fontSize: 11.5,
+                                color: opsMutedText,
+                                fontStyle: FontStyle.italic,
+                              ),
+                            ),
+                            const SizedBox(height: 10),
                           ],
 
                           // Ghi chú chung của KTV khi kiểm tra

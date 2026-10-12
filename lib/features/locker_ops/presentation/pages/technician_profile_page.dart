@@ -1,22 +1,28 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
-import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:smart_laundry_locker/core/network/api_client.dart';
 import 'package:smart_laundry_locker/core/services/token_service.dart';
 import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
+import 'package:smart_laundry_locker/features/locker_ops/presentation/utils/technician_rules.dart';
+import 'package:smart_laundry_locker/features/locker_ops/presentation/utils/technician_session.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/ops_widgets.dart';
 import 'package:smart_laundry_locker/features/profile/infrastructure/data_sources/profile_remote_data_source_impl.dart';
 import 'package:smart_laundry_locker/features/profile/infrastructure/repositories/profile_repository_impl.dart';
 import 'package:smart_laundry_locker/features/profile/presentation/providers/profile_provider.dart';
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
 
-/// Trang xem và chỉnh sửa hồ sơ dành riêng cho Kỹ thuật viên Kiosk (KTV).
-/// Cho phép cập nhật Họ và tên, Số điện thoại, và Đổi ảnh đại diện trực tiếp.
+/// Trang xem và chỉnh sửa hồ sơ dùng chung cho KTV tủ và KTV drone: cập nhật
+/// họ tên, số điện thoại, ảnh đại diện; chỉ số công việc lấy theo VAI TRÒ
+/// (`/api/locker-technician/*` hoặc `/api/drone-technician/*`).
 class TechnicianProfilePage extends StatefulWidget {
-  const TechnicianProfilePage({super.key});
+  const TechnicianProfilePage({this.droneTechnician, super.key});
+
+  /// `true` = KTV drone, `false` = KTV tủ; `null` ⇒ tự xác định theo vai trò
+  /// trong token đăng nhập.
+  final bool? droneTechnician;
 
   @override
   State<TechnicianProfilePage> createState() => _TechnicianProfilePageState();
@@ -35,8 +41,12 @@ class _TechnicianProfilePageState extends State<TechnicianProfilePage> {
 
   List<Map<String, dynamic>> _myReports = [];
   Map<String, dynamic>? _ratingAverage;
+  Map<String, dynamic>? _performance;
+  bool _statsLoading = true;
+  String? _statsError;
   String? _jwtUserName;
   String? _jwtUserEmail;
+  late bool _isDrone = widget.droneTechnician ?? false;
 
   @override
   void initState() {
@@ -46,6 +56,10 @@ class _TechnicianProfilePageState extends State<TechnicianProfilePage> {
 
   Future<void> _loadInitialData() async {
     final profileProvider = context.read<ProfileProvider>();
+    if (widget.droneTechnician == null) {
+      final roles = await TokenService.getCurrentRoles();
+      if (mounted) setState(() => _isDrone = isDroneTechnicianRoles(roles));
+    }
     if (profileProvider.profile == null) {
       await profileProvider.loadProfile();
     }
@@ -64,20 +78,47 @@ class _TechnicianProfilePageState extends State<TechnicianProfilePage> {
       _fullNameController.text = _jwtUserName!;
     }
 
-    try {
-      final reports = await _service.reports(mine: true);
-      Map<String, dynamic>? rating;
-      try {
-        rating = await _service.myRatingAverage();
-      } catch (_) {}
+    await _loadStats();
+  }
 
-      if (mounted) {
-        setState(() {
-          _myReports = reports;
-          _ratingAverage = rating;
-        });
-      }
-    } catch (_) {}
+  /// Chỉ số công việc theo vai trò. Lỗi ⇒ báo lỗi + "Thử lại", không hiện số 0.
+  Future<void> _loadStats() async {
+    if (mounted) {
+      setState(() {
+        _statsLoading = true;
+        _statsError = null;
+      });
+    }
+    final drone = _isDrone;
+    final errors = <String>{};
+    List<Map<String, dynamic>>? reports;
+    Map<String, dynamic>? rating;
+    Map<String, dynamic>? performance;
+    try {
+      reports = drone
+          ? await _service.droneReports(mine: true)
+          : await _service.reports(mine: true);
+    } catch (e) {
+      errors.add(LockerOpsService.errorMessage(e));
+    }
+    try {
+      rating = await _service.myRatingAverage(drone: drone);
+    } catch (e) {
+      errors.add(LockerOpsService.errorMessage(e));
+    }
+    try {
+      performance = await _service.myPerformance(drone: drone);
+    } catch (e) {
+      errors.add(LockerOpsService.errorMessage(e));
+    }
+    if (!mounted) return;
+    setState(() {
+      if (reports != null) _myReports = reports;
+      if (rating != null) _ratingAverage = rating;
+      if (performance != null) _performance = performance;
+      _statsLoading = false;
+      _statsError = errors.isEmpty ? null : errors.join(' · ');
+    });
   }
 
   @override
@@ -140,7 +181,7 @@ class _TechnicianProfilePageState extends State<TechnicianProfilePage> {
               ),
               const SizedBox(height: 14),
               const Text(
-                'Ảnh đại diện KTV',
+                'Ảnh đại diện',
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
@@ -319,7 +360,10 @@ class _TechnicianProfilePageState extends State<TechnicianProfilePage> {
             Text('Đăng xuất ca trực'),
           ],
         ),
-        content: const Text('Bạn có chắc chắn muốn kết thúc ca trực và đăng xuất khỏi tài khoản KTV Kiosk không?'),
+        content: Text(
+          'Bạn có chắc chắn muốn kết thúc ca trực và đăng xuất khỏi tài khoản '
+          '${technicianRoleLabel(drone: _isDrone)} không?',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
@@ -336,9 +380,8 @@ class _TechnicianProfilePageState extends State<TechnicianProfilePage> {
         ],
       ),
     );
-    if (confirmed == true) {
-      await TokenService.clearTokens();
-      if (mounted) context.go('/onboarding');
+    if (confirmed == true && mounted) {
+      await logoutTechnician(context);
     }
   }
 
@@ -347,18 +390,21 @@ class _TechnicianProfilePageState extends State<TechnicianProfilePage> {
     final profile = context.watch<ProfileProvider>().profile;
     final displayName = (profile?.fullName.trim().isNotEmpty ?? false)
         ? profile!.fullName
-        : (_jwtUserName ?? 'Kỹ thuật viên Kiosk');
+        : (_jwtUserName ??
+            (_isDrone ? 'Kỹ thuật viên drone' : 'Kỹ thuật viên tủ'));
     final email = (profile?.email.trim().isNotEmpty ?? false)
         ? profile!.email
-        : (_jwtUserEmail ?? 'kiosk1@gmail.com');
+        : _jwtUserEmail;
     final avatarUrl = profile?.avatarUrl;
 
-    // Shift metrics calculation
+    // Số liệu thật: danh sách phiếu đang/đã được giao + trạng thái SLA server tính.
+    final sla = TechnicianSlaStatus.fromPerformance(_performance);
     final totalAssigned = _myReports.length;
     final inProgress = _myReports.where((r) => r['status'] == 'IN_PROGRESS').length;
     final resolved = _myReports.where((r) => r['status'] == 'RESOLVED').length;
-    final overdue = _myReports.where((r) => r['status'] == 'IN_PROGRESS' && r['overdue'] == true).length;
-    final avgRating = _ratingAverage?['average']?.toString() ?? '5.0';
+    final overdue = sla.overdue ??
+        _myReports.where((r) => r['status'] == 'IN_PROGRESS' && r['overdue'] == true).length;
+    final rating = ratingSummary(_ratingAverage);
 
     return Scaffold(
       backgroundColor: const Color(0xFFF6F8FA),
@@ -377,13 +423,24 @@ class _TechnicianProfilePageState extends State<TechnicianProfilePage> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   // Operational summary cards
-                  _buildShiftMetricsCard(
-                    total: totalAssigned,
-                    inProgress: inProgress,
-                    resolved: resolved,
-                    overdue: overdue,
-                    avgRating: avgRating,
-                  ),
+                  if (_statsError != null) ...[
+                    _buildStatsError(),
+                    const SizedBox(height: 12),
+                  ],
+                  if (_statsLoading && _myReports.isEmpty && _performance == null)
+                    const Padding(
+                      padding: EdgeInsets.all(16),
+                      child: Center(child: CircularProgressIndicator(color: opsPrimary)),
+                    )
+                  else
+                    _buildShiftMetricsCard(
+                      total: totalAssigned,
+                      inProgress: inProgress,
+                      resolved: resolved,
+                      overdue: overdue,
+                      rating: rating,
+                      sla: sla,
+                    ),
 
                   const SizedBox(height: 16),
 
@@ -627,44 +684,25 @@ class _TechnicianProfilePageState extends State<TechnicianProfilePage> {
                         width: 0.8,
                       ),
                     ),
-                    child: const Row(
+                    child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.precision_manufacturing_rounded, size: 12, color: Color(0xFF7DD3FC)),
-                        SizedBox(width: 4),
+                        Icon(
+                          _isDrone
+                              ? Icons.flight_rounded
+                              : Icons.precision_manufacturing_rounded,
+                          size: 12,
+                          color: const Color(0xFF7DD3FC),
+                        ),
+                        const SizedBox(width: 4),
                         Text(
-                          'KIOSK · Kỹ thuật viên trạm tủ',
-                          style: TextStyle(
+                          _isDrone
+                              ? 'DRONE · Kỹ thuật viên drone'
+                              : 'KIOSK · Kỹ thuật viên tủ',
+                          style: const TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.w700,
                             color: Color(0xFFBAE6FD),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF10B981).withValues(alpha: 0.25),
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(
-                        color: const Color(0xFF34D399).withValues(alpha: 0.5),
-                        width: 0.8,
-                      ),
-                    ),
-                    child: const Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.circle, size: 7, color: Color(0xFF34D399)),
-                        SizedBox(width: 4),
-                        Text(
-                          'Trực ca',
-                          style: TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w700,
-                            color: Color(0xFFA7F3D0),
                           ),
                         ),
                       ],
@@ -692,12 +730,47 @@ class _TechnicianProfilePageState extends State<TechnicianProfilePage> {
     );
   }
 
+  Widget _buildStatsError() {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(12, 10, 6, 10),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFEF2F2),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFFECACA)),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.error_outline, size: 18, color: Color(0xFFDC2626)),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              'Không tải được đầy đủ chỉ số: $_statsError',
+              style: const TextStyle(fontSize: 12.5, color: Color(0xFF991B1B)),
+            ),
+          ),
+          TextButton(
+            onPressed: _statsLoading ? null : _loadStats,
+            child: const Text('Thử lại'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Color _slaColor(String? level) => switch (level) {
+    'NORMAL' => const Color(0xFF166534),
+    'WARNING' => const Color(0xFF92400E),
+    'RESTRICTED' || 'SUSPENDED' => const Color(0xFF991B1B),
+    _ => opsMutedText,
+  };
+
   Widget _buildShiftMetricsCard({
     required int total,
     required int inProgress,
     required int resolved,
     required int overdue,
-    required String avgRating,
+    required String? rating,
+    required TechnicianSlaStatus sla,
   }) {
     return Container(
       padding: const EdgeInsets.all(14),
@@ -732,16 +805,16 @@ class _TechnicianProfilePageState extends State<TechnicianProfilePage> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
                 decoration: BoxDecoration(
-                  color: overdue == 0 ? const Color(0xFFECFDF5) : const Color(0xFFFFFBEB),
+                  color: _slaColor(sla.level).withValues(alpha: 0.08),
                   borderRadius: BorderRadius.circular(6),
-                  border: Border.all(color: overdue == 0 ? const Color(0xFFA7F3D0) : const Color(0xFFFDE68A)),
+                  border: Border.all(color: _slaColor(sla.level).withValues(alpha: 0.3)),
                 ),
                 child: Text(
-                  overdue == 0 ? 'Đạt chuẩn SLA' : 'Cảnh báo SLA',
+                  'SLA: ${sla.label}',
                   style: TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w700,
-                    color: overdue == 0 ? const Color(0xFF166534) : const Color(0xFF92400E),
+                    color: _slaColor(sla.level),
                   ),
                 ),
               ),
@@ -750,7 +823,7 @@ class _TechnicianProfilePageState extends State<TechnicianProfilePage> {
           const SizedBox(height: 12),
           Row(
             children: [
-              Expanded(child: _metricTile('Tổng ca', '$total', const Color(0xFF475569))),
+              Expanded(child: _metricTile('Phiếu đã nhận', '$total', const Color(0xFF475569))),
               const SizedBox(width: 6),
               Expanded(child: _metricTile('Đang làm', '$inProgress', const Color(0xFF2563EB))),
               const SizedBox(width: 6),
@@ -777,12 +850,26 @@ class _TechnicianProfilePageState extends State<TechnicianProfilePage> {
                 const Icon(Icons.star_rounded, color: Color(0xFFF59E0B), size: 18),
                 const SizedBox(width: 6),
                 const Text('Đánh giá chất lượng: ', style: TextStyle(fontSize: 12.5, color: opsDark)),
-                Text('$avgRating/5.0', style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.bold, color: opsDark)),
-                const Spacer(),
-                const Text('SLA 4h tiêu chuẩn', style: TextStyle(fontSize: 11.5, color: opsMutedText)),
+                Expanded(
+                  child: Text(
+                    rating ?? 'Chưa có đánh giá',
+                    style: TextStyle(
+                      fontSize: 12.5,
+                      fontWeight: rating == null ? FontWeight.w500 : FontWeight.bold,
+                      color: rating == null ? opsMutedText : opsDark,
+                    ),
+                  ),
+                ),
               ],
             ),
           ),
+          if (sla.reason != null) ...[
+            const SizedBox(height: 8),
+            Text(
+              sla.reason!,
+              style: TextStyle(fontSize: 11.5, color: _slaColor(sla.level)),
+            ),
+          ],
         ],
       ),
     );
@@ -811,7 +898,7 @@ class _TechnicianProfilePageState extends State<TechnicianProfilePage> {
     );
   }
 
-  Widget _buildFormCard({required String email}) {
+  Widget _buildFormCard({required String? email}) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -938,7 +1025,7 @@ class _TechnicianProfilePageState extends State<TechnicianProfilePage> {
                   const SizedBox(width: 10),
                   Expanded(
                     child: Text(
-                      email,
+                      email == null || email.isEmpty ? 'Chưa có email' : email,
                       style: const TextStyle(fontSize: 14, color: Color(0xFF475569), fontWeight: FontWeight.w500),
                     ),
                   ),
@@ -971,22 +1058,26 @@ class _TechnicianProfilePageState extends State<TechnicianProfilePage> {
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(color: const Color(0xFFBAE6FD)),
               ),
-              child: const Row(
+              child: Row(
                 children: [
-                  Icon(Icons.verified_user_rounded, color: Color(0xFF0284C7), size: 20),
-                  SizedBox(width: 10),
+                  const Icon(Icons.verified_user_rounded, color: Color(0xFF0284C7), size: 20),
+                  const SizedBox(width: 10),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Kỹ thuật viên Kiosk (Tủ & Phần cứng)',
-                          style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF0369A1)),
+                          _isDrone
+                              ? 'Kỹ thuật viên drone (đội bay)'
+                              : 'Kỹ thuật viên tủ (ô tủ & phần cứng)',
+                          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF0369A1)),
                         ),
-                        SizedBox(height: 2),
+                        const SizedBox(height: 2),
                         Text(
-                          'Quyền quản trị ô tủ vật lý, thiết bị IoT và xử lý sự cố trạm Kiosk.',
-                          style: TextStyle(fontSize: 11.5, color: Color(0xFF0284C7)),
+                          _isDrone
+                              ? 'Điều phối, bảo trì drone và xử lý phiếu sự cố drone.'
+                              : 'Bảo trì ô tủ, thiết bị IoT và xử lý phiếu sự cố tại tủ.',
+                          style: const TextStyle(fontSize: 11.5, color: Color(0xFF0284C7)),
                         ),
                       ],
                     ),

@@ -11,11 +11,16 @@ class DroneRecoveryQueue extends StatelessWidget {
     required this.items,
     required this.service,
     required this.onRefresh,
+    this.error,
   });
 
   final List<Map<String, dynamic>> items;
   final LockerOpsService service;
   final Future<void> Function() onRefresh;
+
+  /// Lỗi tải danh sách (câu tiếng Việt) — hiện kèm "Thử lại", không coi là
+  /// "chưa có nhiệm vụ".
+  final String? error;
 
   @override
   Widget build(BuildContext context) => RefreshIndicator(
@@ -26,7 +31,31 @@ class DroneRecoveryQueue extends StatelessWidget {
       children: [
         const _Banner(),
         const SizedBox(height: 12),
-        if (items.isEmpty)
+        if (error != null) ...[
+          Container(
+            padding: const EdgeInsets.fromLTRB(12, 10, 6, 10),
+            decoration: BoxDecoration(
+              color: const Color(0xFFFEF2F2),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: const Color(0xFFFECACA)),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.error_outline, size: 18, color: Color(0xFFDC2626)),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'Không tải được nhiệm vụ thu hồi: $error',
+                    style: const TextStyle(fontSize: 12.5, color: Color(0xFF991B1B)),
+                  ),
+                ),
+                TextButton(onPressed: onRefresh, child: const Text('Thử lại')),
+              ],
+            ),
+          ),
+          const SizedBox(height: 12),
+        ],
+        if (items.isEmpty && error == null)
           const Padding(
             padding: EdgeInsets.symmetric(vertical: 64),
             child: Column(
@@ -346,6 +375,58 @@ class _DroneRecoveryDetailState extends State<DroneRecoveryDetail> {
     );
   }
 
+  /// Vị trí hiện tại (xin quyền nếu cần); `null` khi tắt định vị / từ chối /
+  /// hết giờ chờ.
+  Future<Position?> _currentPosition() async {
+    try {
+      if (!await Geolocator.isLocationServiceEnabled()) return null;
+      var permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+      }
+      if (permission != LocationPermission.always &&
+          permission != LocationPermission.whileInUse) {
+        return null;
+      }
+      return await Geolocator.getCurrentPosition(
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.high,
+          timeLimit: Duration(seconds: 15),
+        ),
+      );
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// Không lấy được GPS ⇒ hỏi KTV có gửi không kèm toạ độ hay không.
+  Future<bool> _confirmWithoutGps() async {
+    if (!mounted) return false;
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Không lấy được vị trí GPS'),
+        content: const Text(
+          'Kết quả thu hồi cần toạ độ nơi chụp để Admin đối chiếu. Hãy bật định vị '
+          'và cấp quyền vị trí rồi thử lại. Chỉ gửi không kèm GPS khi thật sự không '
+          'thể định vị — Admin sẽ thấy bằng chứng thiếu toạ độ.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Thử lại sau'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: TextButton.styleFrom(foregroundColor: const Color(0xFFDC2626)),
+            child: const Text('Vẫn gửi không kèm GPS'),
+          ),
+        ],
+      ),
+    );
+    return ok == true;
+  }
+
   Future<void> _handover() async {
     setState(() => _busy = true);
     try {
@@ -474,44 +555,27 @@ class _DroneRecoveryDetailState extends State<DroneRecoveryDetail> {
                           }
                           setLocal(() => sending = true);
                           try {
+                            // Lấy GPS trước khi gửi; không có GPS ⇒ phải xác nhận rõ.
+                            final position = await _currentPosition();
+                            if (position == null) {
+                              final proceed = await _confirmWithoutGps();
+                              if (!proceed) {
+                                if (sheetContext.mounted) {
+                                  setLocal(() => sending = false);
+                                }
+                                return;
+                              }
+                            }
                             final uploaded = await photos.uploadAll(
                               caption: 'Bằng chứng thu hồi kiện',
                             );
-                            Position? position;
-                            try {
-                              position = await Geolocator.getCurrentPosition(
-                                locationSettings: const LocationSettings(
-                                  accuracy: LocationAccuracy.high,
-                                ),
-                              );
-                            } catch (_) {}
-                            final evidence = uploaded
-                                .map(
-                                  (value) => {
-                                    'media': {
-                                      for (final key in [
-                                        'publicId',
-                                        'version',
-                                        'signature',
-                                        'format',
-                                        'bytes',
-                                        'width',
-                                        'height',
-                                      ])
-                                        if (value[key] != null) key: value[key],
-                                    },
-                                    'caption': value['caption'],
-                                    'capturedAt': DateTime.now()
-                                        .toUtc()
-                                        .toIso8601String(),
-                                    if (position != null) ...{
-                                      'latitude': position.latitude,
-                                      'longitude': position.longitude,
-                                      'gpsAccuracyM': position.accuracy,
-                                    },
-                                  },
-                                )
-                                .toList();
+                            final evidence = buildRecoveryEvidence(
+                              uploaded,
+                              photos.photos,
+                              latitude: position?.latitude,
+                              longitude: position?.longitude,
+                              gpsAccuracyM: position?.accuracy,
+                            );
                             await widget.service.submitDroneRecovery(
                               widget.incidentId,
                               outcome: outcome,
@@ -530,7 +594,9 @@ class _DroneRecoveryDetailState extends State<DroneRecoveryDetail> {
                             await _load();
                           } catch (error) {
                             _message(LockerOpsService.errorMessage(error));
-                            setLocal(() => sending = false);
+                            if (sheetContext.mounted) {
+                              setLocal(() => sending = false);
+                            }
                           }
                         },
                   child: sending
@@ -546,6 +612,51 @@ class _DroneRecoveryDetailState extends State<DroneRecoveryDetail> {
     photos.dispose();
     note.dispose();
   }
+}
+
+/// Dựng `evidence[]` gửi kèm kết quả thu hồi: `capturedAt` = lúc chụp từng
+/// ảnh (UTC ISO); toạ độ ưu tiên toạ độ gắn với ảnh lúc chụp, rồi tới vị trí
+/// lúc gửi. [uploaded] và [photos] cùng thứ tự (`PhotoPickerController.uploadAll`).
+@visibleForTesting
+List<Map<String, dynamic>> buildRecoveryEvidence(
+  List<Map<String, dynamic>> uploaded,
+  List<PendingPhoto> photos, {
+  double? latitude,
+  double? longitude,
+  double? gpsAccuracyM,
+}) {
+  final result = <Map<String, dynamic>>[];
+  for (var i = 0; i < uploaded.length; i++) {
+    final value = uploaded[i];
+    final photo = i < photos.length ? photos[i] : null;
+    final photoLat = photo?.latitude;
+    final photoLng = photo?.longitude;
+    final hasPhotoGps = photoLat != null && photoLng != null;
+    final lat = hasPhotoGps ? photoLat : latitude;
+    final lng = hasPhotoGps ? photoLng : longitude;
+    result.add({
+      'media': {
+        for (final key in [
+          'publicId',
+          'version',
+          'signature',
+          'format',
+          'bytes',
+          'width',
+          'height',
+        ])
+          if (value[key] != null) key: value[key],
+      },
+      'caption': value['caption'],
+      'capturedAt': (photo?.capturedAt ?? DateTime.now()).toUtc().toIso8601String(),
+      if (lat != null && lng != null) ...{
+        'latitude': lat,
+        'longitude': lng,
+        if (!hasPhotoGps && gpsAccuracyM != null) 'gpsAccuracyM': gpsAccuracyM,
+      },
+    });
+  }
+  return result;
 }
 
 class _Info extends StatelessWidget {
