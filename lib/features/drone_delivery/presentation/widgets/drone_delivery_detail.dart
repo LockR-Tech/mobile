@@ -1192,6 +1192,14 @@ class _MissionCard extends StatelessWidget {
         ),
         ('Drone', status.droneCode ?? 'Chưa phân công'),
         ('Trạng thái nhiệm vụ', droneMissionStatusLabel(status.missionStatus)),
+        (
+          'Vĩ độ hiện tại',
+          status.currentLatitude?.toStringAsFixed(6) ?? 'Chưa có dữ liệu',
+        ),
+        (
+          'Kinh độ hiện tại',
+          status.currentLongitude?.toStringAsFixed(6) ?? 'Chưa có dữ liệu',
+        ),
         ('Khối lượng thực tế', droneWeightLabel(status.payloadWeightGrams)),
         ('Mã niêm phong', status.sealCode ?? 'Chưa niêm phong'),
         ('Đúng kiện, đúng đơn', _check(status.parcelMatched)),

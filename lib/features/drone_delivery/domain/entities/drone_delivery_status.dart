@@ -30,6 +30,11 @@ class DroneDeliveryStatus {
   /// Backend đang có nguồn vị trí trực tiếp cho đơn này (đơn DEMO đang bay, hoặc drone
   /// thật còn gửi telemetry); null với server cũ chưa trả field này.
   final bool? liveTracking;
+
+  /// Vị trí hiện tại dùng chung cho khách, admin và KTV. Backend có thể trả
+  /// null cho tới khi telemetry được nối vào read model trạng thái đơn.
+  final double? currentLatitude;
+  final double? currentLongitude;
   final double? totalPrice;
 
   /// Phí thu thêm vì đội bay cân kiện nặng hơn khối lượng khai báo; null khi không lệch.
@@ -144,6 +149,8 @@ class DroneDeliveryStatus {
     this.userId,
     this.receiverUserId,
     this.liveTracking,
+    this.currentLatitude,
+    this.currentLongitude,
     this.totalPrice,
     this.weightSurcharge,
     this.amountDue,
