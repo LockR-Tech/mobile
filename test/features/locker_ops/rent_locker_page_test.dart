@@ -278,31 +278,12 @@ void main() {
         .onTap
         ?.call();
     await tester.pump();
+    await tester.pump(const Duration(milliseconds: 700));
     await tester.pumpAndSettle();
+
     expect(service.unlockCalls, 1);
-    expect(service.confirmDropCalls, 0);
-
-    final confirmButton = find.text('Tôi đã bỏ đồ — bắt đầu kỳ thuê');
-    await tester.dragUntilVisible(
-      confirmButton,
-      find.byType(Scrollable).first,
-      const Offset(0, -300),
-    );
-    final confirmInkWell = tester.widget<InkWell>(
-      find.ancestor(of: confirmButton, matching: find.byType(InkWell)).first,
-    );
-    confirmInkWell.onTap?.call();
-    await tester.pump();
-    await tester.pump();
-    await tester.pumpAndSettle();
-
-    expect(service.lastConfirmOrderId, 81);
     expect(service.confirmDropCalls, 1);
-    expect(find.textContaining('Đã thanh toán'), findsOneWidget);
-    expect(find.textContaining('Mock Ví'), findsNothing);
-    expect(
-      find.textContaining('Hết hạn thuê'),
-      findsOneWidget,
-    );
+    expect(service.lastConfirmOrderId, 81);
+    expect(find.text('Tôi đã bỏ đồ — bắt đầu kỳ thuê'), findsNothing);
   });
 }

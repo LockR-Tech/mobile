@@ -30,9 +30,12 @@ class CreateReportPage extends StatefulWidget {
   final int? initialBoxId;
   final Map<String, dynamic>? initialLayout;
   final List<Map<String, dynamic>>? initialCells;
+  final bool isEmbedded;
+  final VoidCallback? onSuccess;
+  final VoidCallback? onCancel;
 
   const CreateReportPage({
-    Key? key,
+    super.key,
     required this.lockerId,
     required this.cabinetId,
     this.lockerName,
@@ -41,7 +44,10 @@ class CreateReportPage extends StatefulWidget {
     this.initialBoxId,
     this.initialLayout,
     this.initialCells,
-  }) : super(key: key);
+    this.isEmbedded = false,
+    this.onSuccess,
+    this.onCancel,
+  });
 
   @override
   State<CreateReportPage> createState() => _CreateReportPageState();
@@ -272,7 +278,18 @@ class _CreateReportPageState extends State<CreateReportPage> {
         lockerId: '$lockerId',
         boxId: _selectedBoxId?.toString(),
       ));
-      if (mounted) Navigator.of(context).pop();
+      if (widget.isEmbedded) {
+        _titleController.clear();
+        _descriptionController.clear();
+        _capturedPhotos.clear();
+        _selectedBoxId = null;
+        _isScreenIssueSelected = false;
+      }
+      if (widget.onSuccess != null) {
+        widget.onSuccess!();
+      } else if (mounted) {
+        Navigator.of(context).pop();
+      }
     } else {
       final friendlyError = _friendlyErrorMessage(_provider.error);
       SmartDialog.showToast('Gửi báo cáo thất bại: $friendlyError');
@@ -337,12 +354,14 @@ class _CreateReportPageState extends State<CreateReportPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F7),
-      appBar: const CustomAppBar(
-        title: 'Báo cáo sự cố',
-        centerTitle: true,
-        showBackButton: true,
-      ),
+      backgroundColor: widget.isEmbedded ? const Color(0xFFF8FAFC) : const Color(0xFFF5F5F7),
+      appBar: widget.isEmbedded
+          ? null
+          : const CustomAppBar(
+              title: 'Báo cáo sự cố',
+              centerTitle: true,
+              showBackButton: true,
+            ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -371,13 +390,20 @@ class _CreateReportPageState extends State<CreateReportPage> {
         ),
       ),
       bottomNavigationBar: SafeArea(
+        top: false,
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Row(
             children: [
               Expanded(
                 child: OutlinedButton(
-                  onPressed: () => Navigator.of(context).pop(),
+                  onPressed: () {
+                    if (widget.onCancel != null) {
+                      widget.onCancel!();
+                    } else {
+                      Navigator.of(context).pop();
+                    }
+                  },
                   style: OutlinedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     side: BorderSide(color: Colors.grey.shade400),
@@ -385,9 +411,9 @@ class _CreateReportPageState extends State<CreateReportPage> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  child: const Text(
-                    'Trở về',
-                    style: TextStyle(
+                  child: Text(
+                    widget.isEmbedded ? 'Hủy / Danh sách' : 'Trở về',
+                    style: const TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 16,
                       color: Colors.black87,
