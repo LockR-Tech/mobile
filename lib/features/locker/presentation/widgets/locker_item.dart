@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:smart_laundry_locker/features/locker/domain/entities/locker_location.dart';
@@ -278,10 +276,12 @@ class LockerItem extends StatelessWidget {
           )
         : itemContent;
 
-    return GestureDetector(
-      onTap: onTap,
-      behavior: HitTestBehavior.opaque,
-      child: cardWidget,
+    return RepaintBoundary(
+      child: GestureDetector(
+        onTap: onTap,
+        behavior: HitTestBehavior.opaque,
+        child: cardWidget,
+      ),
     );
   }
 }
@@ -358,55 +358,49 @@ class _StatusChip extends StatelessWidget {
 
     final hasGlow = active || isMaintenance || isDisconnected;
 
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(20),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
-          decoration: BoxDecoration(
-            color: active
-                ? Colors.black.withValues(alpha: 0.42)
-                : Colors.black.withValues(alpha: 0.52),
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(
-              color: borderColor,
-              width: 0.8,
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+      decoration: BoxDecoration(
+        color: active
+            ? Colors.black.withValues(alpha: 0.62)
+            : Colors.black.withValues(alpha: 0.72),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: borderColor,
+          width: 0.8,
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 6,
+            height: 6,
+            decoration: BoxDecoration(
+              color: dotColor,
+              shape: BoxShape.circle,
+              boxShadow: hasGlow
+                  ? [
+                      BoxShadow(
+                        color: dotColor.withValues(alpha: 0.9),
+                        blurRadius: 4,
+                        spreadRadius: 0.8,
+                      ),
+                    ]
+                  : null,
             ),
           ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 6,
-                height: 6,
-                decoration: BoxDecoration(
-                  color: dotColor,
-                  shape: BoxShape.circle,
-                  boxShadow: hasGlow
-                      ? [
-                          BoxShadow(
-                            color: dotColor.withValues(alpha: 0.9),
-                            blurRadius: 4,
-                            spreadRadius: 0.8,
-                          ),
-                        ]
-                      : null,
-                ),
-              ),
-              const SizedBox(width: 4.5),
-              Text(
-                text,
-                style: const TextStyle(
-                  fontSize: 10.5,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.white,
-                  letterSpacing: 0.2,
-                ),
-              ),
-            ],
+          const SizedBox(width: 4.5),
+          Text(
+            text,
+            style: const TextStyle(
+              fontSize: 10.5,
+              fontWeight: FontWeight.w700,
+              color: Colors.white,
+              letterSpacing: 0.2,
+            ),
           ),
-        ),
+        ],
       ),
     );
   }

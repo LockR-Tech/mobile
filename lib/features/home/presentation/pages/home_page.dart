@@ -36,12 +36,15 @@ class HomePage extends ConsumerStatefulWidget {
 class _HomePageState extends ConsumerState<HomePage>
     with SingleTickerProviderStateMixin {
   final LockerOpsService _opsService = LockerOpsService();
+  static Map<String, dynamic>? _cachedActiveOrder;
   Map<String, dynamic>? _activeOrder;
   StreamSubscription<AppEvent>? _eventSub;
 
   @override
   void initState() {
     super.initState();
+    _activeOrder = _cachedActiveOrder;
+    TokenService.authState.addListener(_onAuthChanged);
     _eventSub = AppEventBus.instance.events.listen((event) {
       if (!mounted) return;
       if (event is OrderChangedEvent ||
@@ -63,8 +66,16 @@ class _HomePageState extends ConsumerState<HomePage>
     });
   }
 
+  void _onAuthChanged() {
+    if (!TokenService.authState.value) {
+      _cachedActiveOrder = null;
+      if (mounted) setState(() => _activeOrder = null);
+    }
+  }
+
   @override
   void dispose() {
+    TokenService.authState.removeListener(_onAuthChanged);
     _eventSub?.cancel();
     super.dispose();
   }
@@ -82,6 +93,7 @@ class _HomePageState extends ConsumerState<HomePage>
   /// thì ẩn thẻ — không bao giờ hiện đơn mẫu.
   Future<void> _loadActiveOrder() async {
     if (!TokenService.authState.value) {
+      _cachedActiveOrder = null;
       if (mounted) setState(() => _activeOrder = null);
       return;
     }
@@ -93,7 +105,8 @@ class _HomePageState extends ConsumerState<HomePage>
         return s.isNotEmpty && !_finishedStatuses.contains(s);
       }).firstOrNull;
       if (active == null) {
-        setState(() => _activeOrder = null);
+        _cachedActiveOrder = null;
+        if (mounted) setState(() => _activeOrder = null);
         return;
       }
 
@@ -147,12 +160,15 @@ class _HomePageState extends ConsumerState<HomePage>
         resolved['boxNumber'] = boxNumber;
       }
 
+      _cachedActiveOrder = resolved;
       if (mounted) {
         setState(() => _activeOrder = resolved);
       }
     } catch (_) {
-      // Lỗi mạng: ẩn thẻ thay vì hiện dữ liệu mẫu.
-      if (mounted) setState(() => _activeOrder = null);
+      // Lỗi mạng trong nền: giữ nguyên đơn cũ nếu đã có, không xoá thẻ làm gián đoạn UI
+      if (_cachedActiveOrder == null && mounted) {
+        setState(() => _activeOrder = null);
+      }
     }
   }
 
@@ -190,14 +206,16 @@ class _HomePageState extends ConsumerState<HomePage>
           children: [
             _buildTopAppBar(context),
             const SizedBox(height: 12),
-            _buildHeroCard(context),
+            RepaintBoundary(child: _buildHeroCard(context)),
             const SizedBox(height: 20),
-            _buildQuickActionBadges(context),
+            RepaintBoundary(child: _buildQuickActionBadges(context)),
             const SizedBox(height: 16),
-            _buildDroneEntryCard(context),
+            RepaintBoundary(child: _buildDroneEntryCard(context)),
             if (_activeOrder != null) ...[
               const SizedBox(height: 20),
-              _buildActiveShipmentSection(context, _activeOrder!),
+              RepaintBoundary(
+                child: _buildActiveShipmentSection(context, _activeOrder!),
+              ),
             ],
             const SizedBox(height: 24),
             _buildPopularLockersSection(context),
@@ -357,6 +375,8 @@ class _HomePageState extends ConsumerState<HomePage>
                       ? CachedNetworkImage(
                           imageUrl: profile.avatarUrl!,
                           fit: BoxFit.cover,
+                          memCacheWidth: 120,
+                          memCacheHeight: 120,
                           errorWidget: (_, __, ___) => _avatarFallback(name),
                         )
                       : _avatarFallback(name),
@@ -1563,13 +1583,14 @@ class _HomePageState extends ConsumerState<HomePage>
   Widget _buildLockerHorizontalCard(BuildContext context, LockerLocation location) {
     final colors = _gradientForLocation(location.id);
     final initials = _initialsForName(location.name);
-    return GestureDetector(
-      onTap: () => Navigator.of(context, rootNavigator: true).push<void>(
-        MaterialPageRoute(
-          // `location.id` là id tủ — mở đúng tủ đó, không coi là id cửa hàng.
-          builder: (_) => StoreLockerGridPage.forLocation(location),
+    return RepaintBoundary(
+      child: GestureDetector(
+        onTap: () => Navigator.of(context, rootNavigator: true).push<void>(
+          MaterialPageRoute(
+            // `location.id` là id tủ — mở đúng tủ đó, không coi là id cửa hàng.
+            builder: (_) => StoreLockerGridPage.forLocation(location),
+          ),
         ),
-      ),
       child: Container(
         width: 250,
         decoration: BoxDecoration(
@@ -1592,6 +1613,8 @@ class _HomePageState extends ConsumerState<HomePage>
                   ? CachedNetworkImage(
                       imageUrl: location.imageUrl!,
                       fit: BoxFit.cover,
+                      memCacheWidth: 500,
+                      memCacheHeight: 320,
                       placeholder: (_, __) => _lockerCardGradient(colors, initials),
                       errorWidget: (_, __, ___) => _lockerCardGradient(colors, initials),
                     )
@@ -1672,8 +1695,9 @@ class _HomePageState extends ConsumerState<HomePage>
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 
   Widget _lockerCardGradient(List<Color> colors, String initials) {
     return Container(
@@ -1702,7 +1726,7 @@ class _HomePageState extends ConsumerState<HomePage>
     final PromotionProvider promoProvider = ref.watch(promotionNotifierProvider);
     final promos = promoProvider.promotions;
     final isLoading = promoProvider.isLoading;
-    const String? lottieAsset = AppLottieAssets.uuDai;
+    const String lottieAsset = AppLottieAssets.uuDai;
 
     if (!isLoading && promos.isEmpty) return const SizedBox.shrink();
 

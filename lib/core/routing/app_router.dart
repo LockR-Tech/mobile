@@ -200,29 +200,48 @@ class AppRouter {
         path: lockerMap,
         builder: (context, state) => const LockerMapPage(),
       ),
-      ShellRoute(
-        builder: (context, state, child) {
-          return MainNavigationWrapper(child: child);
+      StatefulShellRoute.indexedStack(
+        builder: (context, state, navigationShell) {
+          return MainNavigationWrapper(navigationShell: navigationShell);
         },
-        routes: [
-          GoRoute(path: home, builder: (context, state) => const HomePage()),
-          GoRoute(
-            path: lockers,
-            builder: (context, state) => const LockerPage(),
+        branches: [
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: home,
+                builder: (context, state) => const HomePage(),
+              ),
+            ],
           ),
-          GoRoute(
-            // Bottom-nav "Đơn hàng" shows the customer's real locker orders
-            // (locker_ops). The legacy OrderPage hit the old /orders/me API and
-            // is no longer wired to the current backend.
-            path: orders,
-            builder: (context, state) => MyLockerOrdersPage(
-              initialOrderId: int.tryParse(state.uri.queryParameters['orderId'] ?? ''),
-              initialTab: state.uri.queryParameters['tab'],
-            ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: lockers,
+                builder: (context, state) => const LockerPage(),
+              ),
+            ],
           ),
-          GoRoute(
-            path: profile,
-            builder: (context, state) => const ProfilePage(),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                // Bottom-nav "Đơn hàng" shows the customer's real locker orders
+                // (locker_ops). The legacy OrderPage hit the old /orders/me API and
+                // is no longer wired to the current backend.
+                path: orders,
+                builder: (context, state) => MyLockerOrdersPage(
+                  initialOrderId: int.tryParse(state.uri.queryParameters['orderId'] ?? ''),
+                  initialTab: state.uri.queryParameters['tab'],
+                ),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: profile,
+                builder: (context, state) => const ProfilePage(),
+              ),
+            ],
           ),
         ],
       ),
