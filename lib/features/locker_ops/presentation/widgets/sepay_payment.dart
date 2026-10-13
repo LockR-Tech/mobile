@@ -25,12 +25,14 @@ class SepayPaymentController extends ChangeNotifier
     required this.service,
     required this.orderId,
     required this.amount,
+    this.orderCode,
     this.description,
     this.pollInterval = const Duration(seconds: 3),
   });
 
   final LockerOpsService service;
   final int orderId;
+  final String? orderCode;
 
   /// Số tiền dự kiến — chỉ dùng khi server không trả số tiền của giao dịch.
   final num amount;
@@ -94,6 +96,7 @@ class SepayPaymentController extends ChangeNotifier
         orderId,
         PaymentMethods.orderPayment,
         description: description,
+        orderCode: orderCode,
       );
       if (_disposed) return;
       final status = '${res['status'] ?? ''}'.toUpperCase();
@@ -106,7 +109,12 @@ class SepayPaymentController extends ChangeNotifier
         // Đơn 0đ / đã trả trước đó: hỏi lại trạng thái đơn cho chắc.
         unawaited(_checkPaid());
       }
-      final transfer = SepayTransfer.fromCheckout(res, fallbackAmount: amount);
+      final transfer = SepayTransfer.fromCheckout(
+        res,
+        fallbackAmount: amount,
+        orderId: orderId,
+        orderCode: orderCode,
+      );
       if (!transfer.isUsable) {
         _error =
             'Máy chủ chưa trả mã VietQR cho giao dịch này. Vui lòng thử lại sau.';
@@ -222,6 +230,11 @@ class InlineVietQrCard extends StatelessWidget {
     final qr = transfer.qrImageUrl;
     final content = transfer.transferContent;
     final amount = transfer.amount;
+    final screenHeight = MediaQuery.sizeOf(context).height;
+    final qrMaxHeight = screenHeight >= 780
+        ? 320.0
+        : (screenHeight >= 680 ? 260.0 : 210.0);
+
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
@@ -240,7 +253,7 @@ class InlineVietQrCard extends StatelessWidget {
         children: [
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: const BoxDecoration(
               gradient: LinearGradient(
                 colors: [Color(0xFF1E40AF), Color(0xFF3B82F6)],
@@ -249,15 +262,15 @@ class InlineVietQrCard extends StatelessWidget {
             ),
             child: const Row(
               children: [
-                Icon(LucideIcons.qrCode, color: Colors.white, size: 20),
-                SizedBox(width: 10),
+                Icon(LucideIcons.qrCode, color: Colors.white, size: 18),
+                SizedBox(width: 8),
                 Expanded(
                   child: Text(
                     'Quét mã VietQR để thanh toán',
                     style: TextStyle(
                       color: Colors.white,
                       fontWeight: FontWeight.w700,
-                      fontSize: 15,
+                      fontSize: 14.5,
                     ),
                   ),
                 ),
@@ -266,61 +279,66 @@ class InlineVietQrCard extends StatelessWidget {
           ),
           if (qr != null)
             Padding(
-              padding: const EdgeInsets.fromLTRB(20, 20, 20, 4),
+              padding: const EdgeInsets.fromLTRB(16, 14, 16, 8),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(12),
-                child: Image.network(
-                  qr,
-                  width: double.infinity,
-                  fit: BoxFit.fitWidth,
-                  loadingBuilder: (_, child, progress) => progress == null
-                      ? child
-                      : const SizedBox(
-                          height: 200,
-                          child: Center(child: AppLoadingIndicator(size: 64)),
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(maxHeight: qrMaxHeight),
+                  child: Image.network(
+                    qr,
+                    fit: BoxFit.contain,
+                    loadingBuilder: (_, child, progress) => progress == null
+                        ? child
+                        : SizedBox(
+                            height: qrMaxHeight,
+                            child: const Center(
+                              child: AppLoadingIndicator(size: 48),
+                            ),
+                          ),
+                    errorBuilder: (_, __, ___) => const SizedBox(
+                      height: 150,
+                      child: Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              LucideIcons.imageOff,
+                              size: 32,
+                              color: opsMutedText,
+                            ),
+                            SizedBox(height: 6),
+                            Text(
+                              'Không tải được mã QR',
+                              style: TextStyle(color: opsMutedText, fontSize: 13),
+                            ),
+                          ],
                         ),
-                  errorBuilder: (_, __, ___) => const SizedBox(
-                    height: 160,
-                    child: Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            LucideIcons.imageOff,
-                            size: 36,
-                            color: opsMutedText,
-                          ),
-                          SizedBox(height: 8),
-                          Text(
-                            'Không tải được mã QR',
-                            style: TextStyle(color: opsMutedText),
-                          ),
-                        ],
                       ),
                     ),
                   ),
                 ),
               ),
             )
-          else
+          else ...[
             const _NoQrHint(),
-          if (transfer.accountNo != null)
-            _InfoLine(
-              label: 'Số tài khoản:',
-              value: [
-                transfer.accountNo!,
-                if (transfer.accountName != null) transfer.accountName!,
-              ].join(' · '),
-            ),
+            if (transfer.accountNo != null)
+              _InfoLine(
+                label: 'Số tài khoản:',
+                value: [
+                  transfer.accountNo!,
+                  if (transfer.accountName != null) transfer.accountName!,
+                ].join(' · '),
+              ),
+          ],
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 const Flexible(
                   child: Text(
                     'Số tiền cần chuyển:',
-                    style: TextStyle(color: opsMutedText, fontSize: 13),
+                    style: TextStyle(color: opsMutedText, fontSize: 13.5),
                   ),
                 ),
                 const SizedBox(width: 8),
@@ -328,7 +346,7 @@ class InlineVietQrCard extends StatelessWidget {
                   amount == null ? '—' : fmtPrice(amount),
                   style: const TextStyle(
                     fontWeight: FontWeight.w800,
-                    fontSize: 16,
+                    fontSize: 17,
                     color: opsDark,
                   ),
                 ),
@@ -336,9 +354,9 @@ class InlineVietQrCard extends StatelessWidget {
             ),
           ),
           if (content != null) ...[
-            const Divider(height: 1, indent: 20, endIndent: 20),
+            const Divider(height: 1, indent: 16, endIndent: 16),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               child: Row(
                 children: [
                   Expanded(
@@ -347,14 +365,14 @@ class InlineVietQrCard extends StatelessWidget {
                       children: [
                         const Text(
                           'Nội dung chuyển khoản:',
-                          style: TextStyle(color: opsMutedText, fontSize: 12),
+                          style: TextStyle(color: opsMutedText, fontSize: 11.5),
                         ),
                         const SizedBox(height: 2),
                         Text(
                           content,
                           style: const TextStyle(
                             fontWeight: FontWeight.w800,
-                            fontSize: 15,
+                            fontSize: 16,
                             color: opsDark,
                             letterSpacing: 0.5,
                           ),
@@ -376,6 +394,9 @@ class InlineVietQrCard extends StatelessWidget {
                     label: const Text('Sao chép'),
                     style: TextButton.styleFrom(
                       foregroundColor: const Color(0xFF3B82F6),
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      minimumSize: Size.zero,
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                       textStyle: const TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
@@ -387,19 +408,19 @@ class InlineVietQrCard extends StatelessWidget {
             ),
           ],
           Container(
-            margin: const EdgeInsets.fromLTRB(20, 0, 20, 16),
-            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+            margin: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+            padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 14),
             decoration: BoxDecoration(
               color: const Color(0xFFF8FAFC),
-              borderRadius: BorderRadius.circular(14),
+              borderRadius: BorderRadius.circular(12),
               border: Border.all(color: const Color(0xFFE2E8F0)),
             ),
             child: const Row(
               children: [
                 SizedBox(
-                  width: 44,
-                  height: 44,
-                  child: AppLoadingIndicator(size: 44),
+                  width: 36,
+                  height: 36,
+                  child: AppLoadingIndicator(size: 36),
                 ),
                 SizedBox(width: 12),
                 Expanded(
@@ -419,7 +440,7 @@ class InlineVietQrCard extends StatelessWidget {
                         'Tự động cập nhật ngay sau khi nhận được tiền.',
                         style: TextStyle(
                           color: opsMutedText,
-                          fontSize: 12,
+                          fontSize: 11.5,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
@@ -435,12 +456,13 @@ class InlineVietQrCard extends StatelessWidget {
   }
 }
 
-/// "Thanh toán bằng app ngân hàng" + "Tôi đã chuyển khoản — Kiểm tra ngay".
-class SepayPaymentActions extends StatefulWidget {
+/// Nút "Thanh toán bằng app ngân hàng" cố định hoặc lồng trong trang.
+class SepayPaymentActions extends StatelessWidget {
   const SepayPaymentActions({
     super.key,
     required this.controller,
     this.openBankApp = showBankAppPicker,
+    this.isPinned = false,
   });
 
   final SepayPaymentController controller;
@@ -452,72 +474,57 @@ class SepayPaymentActions extends StatefulWidget {
   })
   openBankApp;
 
-  @override
-  State<SepayPaymentActions> createState() => _SepayPaymentActionsState();
-}
-
-class _SepayPaymentActionsState extends State<SepayPaymentActions> {
-  /// Kết quả lần "Kiểm tra ngay" gần nhất khi chưa thấy tiền.
-  String? _hint;
-
-  Future<void> _checkNow() async {
-    setState(() => _hint = null);
-    final paid = await widget.controller.checkNow();
-    if (!mounted || paid) return;
-    setState(
-      () => _hint =
-          'Chưa ghi nhận thanh toán. Nếu bạn vừa chuyển khoản, vui lòng đợi giây lát rồi kiểm tra lại.',
-    );
-  }
+  /// Cố định ở đáy màn hình kèm padding Safe Area.
+  final bool isPinned;
 
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
-      listenable: widget.controller,
+      listenable: controller,
       builder: (context, _) {
-        final controller = widget.controller;
         final transfer = controller.transfer;
         if (controller.paid || transfer == null) return const SizedBox.shrink();
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // Web không mở được app ngân hàng trên điện thoại ⇒ chỉ quét mã.
-            if (!kIsWeb && transfer.canOpenBankApp) ...[
-              OutlinedButton.icon(
-                onPressed: () => widget.openBankApp(context, transfer: transfer),
-                icon: const Icon(LucideIcons.landmark, size: 18),
-                label: const Text('Thanh toán bằng app ngân hàng'),
-                style: OutlinedButton.styleFrom(
-                  minimumSize: const Size(double.infinity, 50),
-                  foregroundColor: const Color(0xFF1E40AF),
-                  side: const BorderSide(color: Color(0xFF3B82F6), width: 1.4),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  textStyle: const TextStyle(
-                    fontWeight: FontWeight.w700,
-                    fontSize: 15,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 10),
-            ],
-            OpsPrimaryButton(
-              label: 'Tôi đã chuyển khoản — Kiểm tra ngay',
-              icon: LucideIcons.circleCheck,
-              loading: controller.checking,
-              onPressed: _checkNow,
+        if (kIsWeb || !transfer.canOpenBankApp) return const SizedBox.shrink();
+
+        final button = OutlinedButton.icon(
+          onPressed: () => openBankApp(context, transfer: transfer),
+          icon: const Icon(LucideIcons.landmark, size: 18),
+          label: const Text('Thanh toán bằng app ngân hàng'),
+          style: OutlinedButton.styleFrom(
+            minimumSize: const Size(double.infinity, 50),
+            foregroundColor: const Color(0xFF1E40AF),
+            side: const BorderSide(color: Color(0xFF3B82F6), width: 1.4),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
             ),
-            if (_hint != null)
-              Padding(
-                padding: const EdgeInsets.only(top: 8),
-                child: Text(
-                  _hint!,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(fontSize: 12, color: opsMutedText),
-                ),
+            backgroundColor: Colors.white,
+            textStyle: const TextStyle(
+              fontWeight: FontWeight.w700,
+              fontSize: 15,
+            ),
+          ),
+        );
+
+        if (!isPinned) return button;
+
+        return Container(
+          padding: EdgeInsets.only(
+            left: 16,
+            right: 16,
+            top: 10,
+            bottom: MediaQuery.of(context).padding.bottom + 10,
+          ),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.06),
+                blurRadius: 10,
+                offset: const Offset(0, -4),
               ),
-          ],
+            ],
+          ),
+          child: button,
         );
       },
     );

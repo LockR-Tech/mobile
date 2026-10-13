@@ -62,11 +62,55 @@ class SepayTransfer {
   factory SepayTransfer.fromCheckout(
     Map<String, dynamic> checkout, {
     num? fallbackAmount,
+    int? orderId,
+    String? orderCode,
   }) {
     final raw = checkout['bankTransfer'];
     final bank = raw is Map ? raw : const {};
-    final qrUrl = checkoutQrUrl(checkout);
+    var qrUrl = checkoutQrUrl(checkout);
     final qr = _VietQrImageInfo.parse(qrUrl);
+
+    final resolvedOrderId = orderId ??
+        (checkout['orderId'] is num ? (checkout['orderId'] as num).toInt() : null);
+    final resolvedOrderCode = _text(orderCode) ??
+        _text(checkout['orderCode']);
+
+    var content = _text(bank['transferContent']) ??
+        qr?.addInfo ??
+        _text(checkout['content']);
+
+    // Đảm bảo nội dung chuyển khoản cho đơn hàng chứa cả orderId và mã đơn (nếu có)
+    if (resolvedOrderId != null && resolvedOrderId > 0) {
+      if (content != null && content.toUpperCase().startsWith('PAY-$resolvedOrderId-ORD')) {
+        // Đã có dạng chuẩn PAY-{orderId}-{orderCode} từ server, giữ nguyên
+      } else if (content != null && content.toUpperCase().startsWith('PAY')) {
+        if (resolvedOrderCode != null && resolvedOrderCode.isNotEmpty) {
+          content = 'PAY-$resolvedOrderId-$resolvedOrderCode';
+        } else {
+          content = 'PAY-$resolvedOrderId';
+        }
+      } else if (content == null || content.isEmpty) {
+        if (resolvedOrderCode != null && resolvedOrderCode.isNotEmpty) {
+          content = 'PAY-$resolvedOrderId-$resolvedOrderCode';
+        } else {
+          content = 'PAY-$resolvedOrderId';
+        }
+      }
+      // Nếu content là nội dung tùy biến / test mock khác không bắt đầu bằng PAY (ví dụ 'LKR81', 'CU'), giữ nguyên
+    } else if (content != null) {
+      final payMatch = RegExp(r'^PAY[-_\s]?(\d+)(?:[-_]\d+)?$', caseSensitive: false).firstMatch(content);
+      if (payMatch != null) {
+        content = 'PAY-${payMatch.group(1)}';
+      }
+    }
+
+    // Nếu qrUrl chứa addInfo cũ (ví dụ PAY-83 hoặc PAY-83-1791877232939), cập nhật lại addInfo cho đúng content
+    if (qrUrl != null && content != null && content.toUpperCase().startsWith('PAY-') && qrUrl.contains('addInfo=')) {
+      final payQrParamRegex = RegExp(r'addInfo=PAY[-_\s]?\d+(?:[-_]\d+)?(?=&|$)', caseSensitive: false);
+      if (payQrParamRegex.hasMatch(qrUrl)) {
+        qrUrl = qrUrl.replaceAll(payQrParamRegex, 'addInfo=${Uri.encodeComponent(content)}');
+      }
+    }
 
     return SepayTransfer(
       qrImageUrl: qrUrl,
@@ -78,10 +122,7 @@ class SepayTransfer {
           qr?.amount ??
           _money(checkout['amount']) ??
           _money(fallbackAmount),
-      transferContent:
-          _text(bank['transferContent']) ??
-          qr?.addInfo ??
-          _text(checkout['content']),
+      transferContent: content,
     );
   }
 

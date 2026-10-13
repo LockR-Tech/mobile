@@ -154,6 +154,7 @@ class _RentLockerPageState extends State<RentLockerPage>
     final payment = SepayPaymentController(
       service: _service,
       orderId: id,
+      orderCode: order['orderCode'] as String?,
       amount: orderAmountDue(order),
     )..addListener(_onPaymentChanged);
     _payment = payment;
@@ -307,6 +308,7 @@ class _RentLockerPageState extends State<RentLockerPage>
         context,
         service: _service,
         orderId: id,
+        orderCode: order?['orderCode'] as String?,
         total: due ?? _netPrice.toDouble(),
         description: description,
       );
@@ -479,8 +481,14 @@ class _RentLockerPageState extends State<RentLockerPage>
         body: Column(
           children: [
             BrandHeroHeader(
-              title: 'Thuê tủ giữ đồ',
-              subtitle: 'Chọn điểm tủ & thời gian sử dụng',
+              eyebrow: _order == null ? null : 'LOCK.R • THANH TOÁN',
+              title: _order == null
+                  ? 'Thuê tủ giữ đồ'
+                  : 'Đơn ${_order!['orderCode'] ?? '#${_order!['id']}'}',
+              subtitle: _order == null ? 'Chọn điểm tủ & thời gian sử dụng' : null,
+              trailing: _order == null
+                  ? null
+                  : StatusChip(_order!['status'] as String?),
               onBack: _handleBack,
             ),
             Expanded(
@@ -488,7 +496,14 @@ class _RentLockerPageState extends State<RentLockerPage>
             ),
           ],
         ),
-        bottomNavigationBar: _order == null ? Container(
+        bottomNavigationBar: _buildBottomBar(),
+      ),
+    );
+  }
+
+  Widget? _buildBottomBar() {
+    if (_order == null) {
+      return Container(
         padding: EdgeInsets.only(
           left: 16,
           right: 16,
@@ -518,9 +533,23 @@ class _RentLockerPageState extends State<RentLockerPage>
             ),
           ],
         ),
-      ) : null,
-      ),
-    );
+      );
+    }
+
+    final payment = _payment;
+    final order = _order!;
+    final started = order['status'] == 'STORING';
+    final unpaid = _isUnpaid(order);
+    final payFirst = !started && unpaid && businessConfig.requirePaymentBeforeDrop;
+
+    if (payFirst && payment != null) {
+      return SepayPaymentActions(
+        controller: payment,
+        isPinned: true,
+      );
+    }
+
+    return null;
   }
 
   Widget _buildForm() {
@@ -928,8 +957,25 @@ class _RentLockerPageState extends State<RentLockerPage>
     final unpaid = _isUnpaid(order);
     final config = businessConfig;
     final payment = _payment;
-    // Phải trả trước khi lấy mã mở ô ⇒ mã VietQR thế chỗ mã PIN.
     final payFirst = !started && unpaid && config.requirePaymentBeforeDrop;
+
+    // Phải trả trước khi lấy mã mở ô ⇒ hiển thị trực tiếp khung VietQR gọn gàng
+    if (payFirst && payment != null) {
+      return ListView(
+        padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+        children: [
+          SepayQrSection(controller: payment),
+          const SizedBox(height: 12),
+          OpsBanner(
+            tone: OpsBannerTone.info,
+            icon: LucideIcons.badgeAlert,
+            text:
+                'Quét mã QR trên và chuyển khoản trong ${config.autoCancelUnpaidMinutes} phút để giữ ô — mã mở ô sẽ tự hiện sau khi thanh toán.',
+          ),
+        ],
+      );
+    }
+
     final payLabel = 'Thanh toán ${fmtPrice(orderAmountDue(order))}';
     return ListView(
       padding: const EdgeInsets.all(16),
@@ -942,7 +988,7 @@ class _RentLockerPageState extends State<RentLockerPage>
                 children: [
                   Expanded(
                     child: Text(
-                      'Đơn ${order['orderCode'] ?? ''}',
+                      'Đơn ${order['orderCode'] ?? '#${order['id']}'}',
                       style: const TextStyle(
                         fontWeight: FontWeight.w800,
                         color: opsDark,
@@ -953,7 +999,7 @@ class _RentLockerPageState extends State<RentLockerPage>
                 ],
               ),
               const Divider(height: 24, color: opsBorder),
-              if (order['id'] is int && !payFirst) ...[
+              if (order['id'] is int) ...[
                 Align(
                   alignment: Alignment.centerLeft,
                   child: PaymentStatusChip(
@@ -966,24 +1012,20 @@ class _RentLockerPageState extends State<RentLockerPage>
                 ),
                 const SizedBox(height: 14),
               ],
-              if (payFirst) ...[
-                if (payment != null) SepayQrSection(controller: payment),
-              ] else ...[
-                if (started) ...[
-                  _ResultHeadline(
-                    icon: LucideIcons.lockKeyhole,
-                    title: 'Kỳ thuê đang chạy',
-                    subtitle:
-                        'PIN mở ô nhiều lần tới ${fmtDateTime(order['pickupDeadline'])}.',
-                  ),
-                  const SizedBox(height: 16),
-                ],
-                AccessCredentials(
-                  pin: order['pinCode'] as String?,
-                  qrToken: order['qrToken'] as String?,
-                  caption: 'PIN dùng nhiều lần trong kỳ thuê',
+              if (started) ...[
+                _ResultHeadline(
+                  icon: LucideIcons.lockKeyhole,
+                  title: 'Kỳ thuê đang chạy',
+                  subtitle:
+                      'PIN mở ô nhiều lần tới ${fmtDateTime(order['pickupDeadline'])}.',
                 ),
+                const SizedBox(height: 16),
               ],
+              AccessCredentials(
+                pin: order['pinCode'] as String?,
+                qrToken: order['qrToken'] as String?,
+                caption: 'PIN dùng nhiều lần trong kỳ thuê',
+              ),
               if (order['pickupDeadline'] != null) ...[
                 const SizedBox(height: 16),
                 OpsBanner(
@@ -998,22 +1040,9 @@ class _RentLockerPageState extends State<RentLockerPage>
           ),
         ).animate().fadeIn(duration: 300.ms).slideY(begin: 0.05),
         const SizedBox(height: 16),
-        if (payFirst) ...[
-          OpsBanner(
-            tone: OpsBannerTone.info,
-            icon: LucideIcons.badgeAlert,
-            text:
-                'Quét mã QR trên và chuyển khoản trong ${config.autoCancelUnpaidMinutes} phút để giữ ô — mã mở ô sẽ tự hiện sau khi thanh toán.',
-          ),
-          const SizedBox(height: 12),
-          if (payment != null) SepayPaymentActions(controller: payment),
-        ] else if (!started) ...[
+        if (!started) ...[
           if (unpaid && payment != null) ...[
-            // Admin cho bỏ đồ trước khi trả, nhưng bắt đầu kỳ thuê vẫn cần đơn
-            // đã thanh toán.
             SepayQrSection(controller: payment),
-            const SizedBox(height: 12),
-            SepayPaymentActions(controller: payment),
             const SizedBox(height: 12),
           ],
           OpsBanner(
