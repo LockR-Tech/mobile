@@ -99,6 +99,7 @@ class ReceiverOrderCard extends StatelessWidget {
     required this.onUnlock,
     required this.onDirections,
     this.delegatedView = false,
+    this.onTap,
   });
 
   final ReceiverOrder order;
@@ -107,6 +108,9 @@ class ReceiverOrderCard extends StatelessWidget {
 
   /// `true` ở màn "Đơn ủy quyền" (mình là người lấy hộ).
   final bool delegatedView;
+
+  /// Chạm thẻ ⇒ mở chi tiết đơn.
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -125,6 +129,7 @@ class ReceiverOrderCard extends StatelessWidget {
     final ownerLabel = delegatedView ? 'Người ủy quyền' : 'Người gửi';
 
     return OpsCard(
+      onTap: onTap,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -174,7 +179,7 @@ class ReceiverOrderCard extends StatelessWidget {
             OpsInfoRow(
               icon: LucideIcons.clock,
               label: 'Hạn lấy',
-              value: fmtDateTime(order.pickupDeadline!.toIso8601String()),
+              value: fmtDateTime(order.pickupDeadline),
               valueColor: order.overdue ? const Color(0xFFDC2626) : null,
             ),
           if (delegatedView && (order.delegateNote ?? '').isNotEmpty)
@@ -228,6 +233,22 @@ class ReceiverOrderCard extends StatelessWidget {
               label: 'Chỉ đường tới tủ',
               icon: LucideIcons.map,
               onTap: onDirections,
+            ),
+          if (onTap != null)
+            const Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  'Xem chi tiết đơn',
+                  style: TextStyle(
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w700,
+                    color: opsPrimary,
+                  ),
+                ),
+                SizedBox(width: 2),
+                Icon(LucideIcons.chevronRight, size: 15, color: opsPrimary),
+              ],
             ),
         ],
       ),
