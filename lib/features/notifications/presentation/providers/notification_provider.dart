@@ -82,6 +82,7 @@ class NotificationProvider extends ChangeNotifier {
         action == 'ORDER_CANCELLED' ||
         action == 'ORDER_CANCELED') {
       bus.emit(OrderChangedEvent(orderId: referenceId));
+      bus.emit(const LockerLayoutUpdatedEvent());
     }
 
     if (action == 'PAYMENT_COMPLETED') {

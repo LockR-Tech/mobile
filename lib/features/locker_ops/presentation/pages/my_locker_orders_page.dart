@@ -1407,6 +1407,11 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
                   return;
                 }
                 await _runAction(() => _service.cancelOrder(id), 'Đã hủy đơn');
+                final lockerId = order['lockerId'] ?? order['locker']?['id'];
+                AppEventBus.instance.emit(LockerLayoutUpdatedEvent(
+                  lockerId: lockerId?.toString(),
+                ));
+                AppEventBus.instance.emit(OrderChangedEvent(orderId: id.toString()));
               },
               onDirections: () => _openLockerDirections(order),
               onPay: (_) async {

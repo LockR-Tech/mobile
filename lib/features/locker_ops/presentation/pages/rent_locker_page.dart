@@ -16,6 +16,7 @@ import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/se
 import 'package:smart_laundry_locker/features/locker/domain/utils/locker_layout_helper.dart';
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
 import 'package:smart_laundry_locker/shared/shared.dart';
+import 'package:smart_laundry_locker/core/services/app_event_bus.dart';
 
 /// RENTAL flow: chọn tủ + loại ô + thời lượng, trả tiền theo giờ, PIN dùng
 /// nhiều lần tới hết hạn thuê (khớp `order-service` createRental/extend/end).
@@ -459,6 +460,10 @@ class _RentLockerPageState extends State<RentLockerPage>
       try {
         await _service.cancelOrder(orderId);
         _snack('Đã hủy đơn thuê tủ và giải phóng ô tủ.');
+        AppEventBus.instance.emit(LockerLayoutUpdatedEvent(
+          lockerId: _lockerId?.toString(),
+        ));
+        AppEventBus.instance.emit(OrderChangedEvent(orderId: orderId.toString()));
       } catch (_) {}
     }
     if (mounted) {
