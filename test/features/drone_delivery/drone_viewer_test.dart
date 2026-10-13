@@ -23,9 +23,13 @@ void main() {
         'deliveryStage': 'AWAITING_DISPATCH',
         'userId': 10,
         'receiverUserId': 20,
+        'currentLatitude': 10.776889,
+        'currentLongitude': 106.700806,
       }).toEntity();
       expect(status.userId, 10);
       expect(status.receiverUserId, 20);
+      expect(status.currentLatitude, 10.776889);
+      expect(status.currentLongitude, 106.700806);
     });
 
     test('chỉ người đặt thấy trả phí / huỷ', () {

@@ -84,6 +84,8 @@ class DroneDeliveryResponse {
     userId: _asInt(raw['userId']),
     receiverUserId: _asInt(raw['receiverUserId']),
     liveTracking: raw['liveTracking'] as bool?,
+    currentLatitude: _asDouble(raw['currentLatitude']),
+    currentLongitude: _asDouble(raw['currentLongitude']),
     totalPrice: _asDouble(raw['totalPrice']),
     weightSurcharge: _asDouble(raw['weightSurcharge']),
     amountDue: _asDouble(raw['amountDue']),
