@@ -4,6 +4,7 @@ import 'package:smart_laundry_locker/core/config/business_config.dart';
 import 'package:smart_laundry_locker/core/network/dio_client.dart';
 import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/pages/send_parcel_page.dart';
+import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/pickup_code_share_actions.dart';
 
 import '../../helpers/test_helpers.dart';
 
@@ -104,6 +105,14 @@ class _FakeSendLockerOpsService extends LockerOpsService {
 
   @override
   Future<List<Map<String, dynamic>>> paymentsByOrder(int orderId) async => const [];
+
+  /// Bản ghi tủ — màn kết quả tra địa chỉ để ghi vào tin nhắn chia sẻ mã.
+  @override
+  Future<Map<String, dynamic>> locker(int lockerId) async => {
+    'id': lockerId,
+    'name': 'Tủ demo',
+    'address': 'Toà Thử Nghiệm',
+  };
 }
 
 void main() {
@@ -190,6 +199,8 @@ void main() {
     expect(find.text('Quét mã VietQR để thanh toán'), findsNothing);
     expect(find.text('Mở ô để bỏ hàng'), findsOneWidget);
     expect(service.confirmDropCalls, 0);
+    // PIN bỏ hàng là của người gửi — chưa có gì để chia sẻ cho người nhận.
+    expect(find.text('Chia sẻ mã cho người nhận'), findsNothing);
 
     await tester.tap(find.text('Mở ô để bỏ hàng'));
     await tester.pump();
@@ -202,5 +213,17 @@ void main() {
     await tester.pump(const Duration(milliseconds: 600));
     expect(service.confirmDropCalls, 1);
     expect(find.text('Bước 2 — Đã bỏ hàng xong'), findsOneWidget);
+
+    // Bỏ hàng xong: PIN nhận hàng mới, người gửi tự chia sẻ được cho người nhận.
+    await tester.pumpAndSettle();
+    expect(find.text('Chia sẻ mã cho người nhận'), findsOneWidget);
+    expect(find.text('Nhắn SMS'), findsOneWidget);
+    final share = tester
+        .widget<PickupCodeShareActions>(find.byType(PickupCodeShareActions))
+        .share;
+    expect(share.code, '222222');
+    expect(share.receiverPhone, '0909000000');
+    expect(share.message, contains('gửi tới tủ Tủ demo, Toà Thử Nghiệm.'));
+    expect(share.message, contains('Mã lấy hàng: 222222.'));
   });
 }

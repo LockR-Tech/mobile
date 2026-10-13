@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/pages/my_locker_orders_page.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/ops_widgets.dart';
+import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/pickup_code_share_actions.dart';
 
 import '../../helpers/test_helpers.dart';
 
@@ -29,6 +30,9 @@ class _FakeService extends LockerOpsService {
       'pinCode': '654321',
       'orderCode': 'ORD-61',
       'createdAt': '2026-07-15T10:00:00',
+      'userId': 99,
+      'receiverName': 'Lê Bình',
+      'receiverPhone': '0912000111',
     },
   ];
 
@@ -135,6 +139,32 @@ void main() {
     expect(creds.pin, '246810');
     // Đơn của chính mình không lẫn vào mục này.
     expect(find.text('#ORD-61'), findsNothing);
+    // Mình là người nhận: không có nút chia sẻ mã cho người nhận.
+    expect(find.text('Chia sẻ mã cho người nhận'), findsNothing);
+    expect(find.byType(PickupCodeShareActions), findsNothing);
+  });
+
+  testWidgets('người gửi chia sẻ mã nhận hàng từ chi tiết đơn gửi đã vào ô', (
+    tester,
+  ) async {
+    await _pump(tester, _FakeService());
+
+    await tester.tap(find.text('Tủ kiểm thử'));
+    await tester.pumpAndSettle();
+
+    await tester.ensureVisible(find.text('Chia sẻ mã cho người nhận'));
+    expect(find.text('Chia sẻ mã cho người nhận'), findsOneWidget);
+    expect(find.text('Nhắn SMS'), findsOneWidget);
+    expect(find.text('Sao chép tin nhắn'), findsOneWidget);
+    final share = tester
+        .widget<PickupCodeShareActions>(find.byType(PickupCodeShareActions))
+        .share;
+    expect(share.receiverPhone, '0912000111');
+    expect(
+      share.message,
+      'Lock.R: Bạn có kiện hàng gửi tới tủ Tủ kiểm thử. Ô số 3. '
+      'Mã lấy hàng: 654321. Nhập mã tại màn hình tủ (kiosk) để mở ô.',
+    );
   });
 
   testWidgets(

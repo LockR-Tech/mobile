@@ -12,6 +12,7 @@ import 'package:smart_laundry_locker/core/routing/app_router.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/presentation/widgets/drone_order_cancel.dart';
 import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
 import 'package:smart_laundry_locker/features/locker_ops/data/receiver_order.dart';
+import 'package:smart_laundry_locker/features/locker_ops/domain/pickup_code_share.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/utils/business_rules_text.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/utils/locker_maps.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/delegate_order_dialog.dart';
@@ -20,6 +21,7 @@ import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/op
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/order_feedback_section.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/order_payment_sheet.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/order_status_timeline.dart';
+import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/pickup_code_share_actions.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/receiver_order_card.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/user_report_detail_sheet.dart';
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
@@ -3489,6 +3491,18 @@ class _DetailSheet extends StatelessWidget {
       logs: faultLogs,
     );
 
+    // Mã người nhận cần để mở ô (đơn gửi hàng / giao drone đã vào ô). "Đơn của
+    // tôi" chỉ gồm đơn mình đặt nên người xem ở đây luôn là người gửi; người
+    // nhận xem mã ở "Hàng chờ nhận", không có nút chia sẻ.
+    final receiverShare = canUsePickupActions
+        ? pickupCodeShareForOrder(
+            order,
+            lockerName: lockerName,
+            lockerAddress: lockerAddress,
+            boxNumber: receiveBoxNumber ?? sendBoxNumber,
+          )
+        : null;
+
     void handleViewReport() {
       if (faultReport != null) {
         UserReportDetailSheet.show(context, report: faultReport!);
@@ -4133,6 +4147,10 @@ class _DetailSheet extends StatelessWidget {
                 ),
               ),
             ),
+          if (receiverShare != null) ...[
+            const SizedBox(height: 14),
+            PickupCodeShareActions(share: receiverShare),
+          ],
         ],
         const SizedBox(height: 16),
         ...actions,

@@ -8,10 +8,12 @@ import 'package:smart_laundry_locker/core/config/business_config_provider.dart';
 import 'package:smart_laundry_locker/core/routing/app_router.dart';
 import 'package:smart_laundry_locker/core/theme/shadcn_theme.dart';
 import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
+import 'package:smart_laundry_locker/features/locker_ops/domain/pickup_code_share.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/utils/business_rules_text.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/locker_picker.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/ops_widgets.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/order_extras.dart';
+import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/pickup_code_share_actions.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/sepay_payment.dart';
 import 'package:smart_laundry_locker/shared/shared.dart';
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
@@ -82,6 +84,11 @@ class _SendParcelPageState extends State<SendParcelPage>
   /// Tên tủ hiển thị khi mở từ lưới ô mà nơi gọi chỉ truyền id.
   String? _lockerName;
 
+  /// Địa chỉ tủ cho tin nhắn chia sẻ mã — tải một lần khi hàng đã vào ô mà
+  /// danh sách tủ không có sẵn (mở từ lưới ô).
+  String? _lockerAddress;
+  bool _lockerInfoRequested = false;
+
   int get _netFee => (_fee - _discount).clamp(0, _fee);
 
   @override
@@ -110,6 +117,69 @@ class _SendParcelPageState extends State<SendParcelPage>
     } catch (_) {
       // Không tra được thì giữ nhãn chung "Tủ đã chọn".
     }
+  }
+
+  /// Bản ghi tủ của đơn trong danh sách tủ đã tải (luồng chọn tủ).
+  Map<String, dynamic>? _listedLocker(Map<String, dynamic> order) {
+    final id = order['lockerId'] ?? _lockerId;
+    for (final locker in _lockers) {
+      if (locker['id'] == id) return locker;
+    }
+    return null;
+  }
+
+  /// Hàng đã vào ô ⇒ người gửi sắp chia sẻ mã: tra tên + địa chỉ tủ nếu danh
+  /// sách tủ không có sẵn. Lỗi thì tin nhắn bỏ phần địa chỉ.
+  Future<void> _loadLockerInfoForShare(Map<String, dynamic> order) async {
+    if (_lockerInfoRequested ||
+        (order['status'] as String?) != 'STORING' ||
+        _listedLocker(order) != null) {
+      return;
+    }
+    final lockerId = (order['lockerId'] as int?) ?? _lockerId;
+    if (lockerId == null) return;
+    _lockerInfoRequested = true;
+    try {
+      final locker = await _service.locker(lockerId);
+      if (!mounted) return;
+      final name = locker['name']?.toString().trim();
+      final address = locker['address']?.toString().trim();
+      setState(() {
+        if ((_lockerName ?? '').trim().isEmpty &&
+            name != null &&
+            name.isNotEmpty) {
+          _lockerName = name;
+        }
+        if (address != null && address.isNotEmpty) _lockerAddress = address;
+      });
+    } catch (_) {
+      // Không tra được địa chỉ thì tin nhắn chỉ ghi tên tủ.
+    }
+  }
+
+  /// Mã người nhận cần, khi người gửi nên tự chuyển (hàng đã vào ô).
+  PickupCodeShare? _receiverShare(Map<String, dynamic> order) {
+    final listed = _listedLocker(order);
+    final listedName = listed?['name']?.toString().trim();
+    final listedAddress = listed?['address']?.toString().trim();
+    final rawBox = order['sendBoxNumber'];
+    final boxNumber = rawBox is int
+        ? rawBox
+        : int.tryParse('${rawBox ?? ''}') ??
+              (widget.initialBoxId != null &&
+                      order['sendBoxId'] == widget.initialBoxId
+                  ? widget.initialBoxNumber
+                  : null);
+    return pickupCodeShareForOrder(
+      order,
+      lockerName: (listedName == null || listedName.isEmpty)
+          ? _lockerName
+          : listedName,
+      lockerAddress: (listedAddress == null || listedAddress.isEmpty)
+          ? _lockerAddress ?? widget.locationName
+          : listedAddress,
+      boxNumber: boxNumber,
+    );
   }
 
   // Người gửi có thể thanh toán qua cổng ngoài hoặc xác nhận bỏ hàng ngay tại
@@ -251,6 +321,7 @@ class _SendParcelPageState extends State<SendParcelPage>
         };
       });
       _syncPayment();
+      unawaited(_loadLockerInfoForShare(fresh));
     } catch (_) {
       // Giữ bản đang hiển thị; lần sau quay lại app sẽ thử tải lại.
     }
@@ -290,7 +361,8 @@ class _SendParcelPageState extends State<SendParcelPage>
       if (!mounted) return;
       setState(() => _order = updated);
       _syncPayment();
-      _snack('Đã gửi PIN nhận hàng tới người nhận');
+      unawaited(_loadLockerInfoForShare(updated));
+      _snack('Đã bỏ hàng. Gửi mã lấy hàng cho người nhận bằng nút Chia sẻ bên dưới.');
     } catch (e) {
       _snack(LockerOpsService.errorMessage(e));
     } finally {
@@ -556,9 +628,9 @@ class _SendParcelPageState extends State<SendParcelPage>
             tone: OpsBannerTone.info,
             icon: LucideIcons.send,
             text:
-                'Khi bạn bỏ hàng xong, hệ thống nhắn mã mở tủ tới số điện thoại '
-                'người nhận (và email nếu có). Người nhận đã có tài khoản Lock.R '
-                'còn nhận thêm thông báo trong app.',
+                'Bỏ hàng xong, bấm "Chia sẻ mã cho người nhận" để gửi mã lấy hàng '
+                'qua Zalo, Messenger hoặc SMS. Người nhận đã có tài khoản Lock.R '
+                'trùng số điện thoại còn thấy đơn và nhận thông báo trong app.',
           ),
           const SizedBox(height: 20),
           const OpsSectionLabel('Ghi chú', icon: LucideIcons.stickyNote),
@@ -658,6 +730,7 @@ class _SendParcelPageState extends State<SendParcelPage>
     final config = businessConfig;
     final mustPayFirst = hasFee && unpaid && config.requirePaymentBeforeDrop;
     final payment = _payment;
+    final receiverShare = isDropped ? _receiverShare(order) : null;
 
     return ListView(
       padding: const EdgeInsets.all(16),
@@ -719,6 +792,12 @@ class _SendParcelPageState extends State<SendParcelPage>
                       ? 'Người nhận nhập PIN tại tủ để lấy hàng'
                       : 'Nhập PIN tại tủ để mở ô và bỏ hàng',
                 ),
+                // Chỉ PIN nhận hàng (sau khi bỏ hàng) mới chia sẻ; PIN bỏ hàng
+                // là của người gửi.
+                if (receiverShare != null) ...[
+                  const SizedBox(height: 14),
+                  PickupCodeShareActions(share: receiverShare),
+                ],
               ],
               // Người nhận vừa nhập ở bước trước nhưng màn kết quả không hiện
               // lại, nên không kiểm tra được mình gõ đúng số chưa.
