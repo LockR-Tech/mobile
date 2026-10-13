@@ -228,6 +228,7 @@ class _SendParcelPageState extends State<SendParcelPage>
     final payment = SepayPaymentController(
       service: _service,
       orderId: id,
+      orderCode: order['orderCode'] as String?,
       amount: orderAmountDue(order),
     )..addListener(_onPaymentChanged);
     _payment = payment;
@@ -468,8 +469,14 @@ class _SendParcelPageState extends State<SendParcelPage>
         body: Column(
           children: [
             BrandHeroHeader(
-              title: 'Gửi hàng qua tủ',
-              subtitle: 'Gửi đồ nhanh chóng & tiện lợi',
+              eyebrow: _order == null ? null : 'LOCK.R • THANH TOÁN',
+              title: _order == null
+                  ? 'Gửi hàng qua tủ'
+                  : 'Đơn ${_order!['orderCode'] ?? '#${_order!['id']}'}',
+              subtitle: _order == null ? 'Gửi đồ nhanh chóng & tiện lợi' : null,
+              trailing: _order == null
+                  ? null
+                  : StatusChip(_order!['status'] as String?),
               onBack: _handleBack,
             ),
             Expanded(
@@ -477,7 +484,14 @@ class _SendParcelPageState extends State<SendParcelPage>
             ),
           ],
         ),
-        bottomNavigationBar: _order == null ? Container(
+        bottomNavigationBar: _buildBottomBar(),
+      ),
+    );
+  }
+
+  Widget? _buildBottomBar() {
+    if (_order == null) {
+      return Container(
         padding: EdgeInsets.only(
           left: 16,
           right: 16,
@@ -533,9 +547,25 @@ class _SendParcelPageState extends State<SendParcelPage>
             ),
           ],
         ),
-      ) : null,
-      ),
-    );
+      );
+    }
+
+    final payment = _payment;
+    final order = _order!;
+    final isDropped = order['status'] == 'STORING';
+    final total = order['totalPrice'];
+    final hasFee = total is num ? total > 0 : _netFee > 0;
+    final unpaid = (order['paymentStatus'] as String?) != 'PAID';
+    final mustPayFirst = hasFee && unpaid && businessConfig.requirePaymentBeforeDrop;
+
+    if (!isDropped && mustPayFirst && payment != null) {
+      return SepayPaymentActions(
+        controller: payment,
+        isPinned: true,
+      );
+    }
+
+    return null;
   }
 
   // ---- Stage 1: form ----
@@ -730,6 +760,24 @@ class _SendParcelPageState extends State<SendParcelPage>
     final config = businessConfig;
     final mustPayFirst = hasFee && unpaid && config.requirePaymentBeforeDrop;
     final payment = _payment;
+
+    // Phải trả trước khi lấy mã mở ô ⇒ hiển thị trực tiếp khung VietQR gọn gàng
+    if (!isDropped && mustPayFirst && payment != null) {
+      return ListView(
+        padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+        children: [
+          SepayQrSection(controller: payment),
+          const SizedBox(height: 12),
+          OpsBanner(
+            tone: OpsBannerTone.info,
+            icon: LucideIcons.badgeAlert,
+            text:
+                'Quét mã QR trên và chuyển khoản trong ${config.autoCancelUnpaidMinutes} phút để giữ ô — mã bỏ hàng sẽ tự hiện sau khi thanh toán.',
+          ),
+        ],
+      );
+    }
+
     final receiverShare = isDropped ? _receiverShare(order) : null;
 
     return ListView(
@@ -745,7 +793,7 @@ class _SendParcelPageState extends State<SendParcelPage>
                 children: [
                   Expanded(
                     child: Text(
-                      'Đơn ${order['orderCode'] ?? ''}',
+                      'Đơn ${order['orderCode'] ?? '#${order['id']}'}',
                       style: const TextStyle(
                         fontWeight: FontWeight.w800,
                         color: opsDark,

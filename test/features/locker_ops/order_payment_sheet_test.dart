@@ -25,6 +25,7 @@ class _FakePayService extends LockerOpsService {
     String? bankCode,
     String? returnUrl,
     String? description,
+    String? orderCode,
   }) async {
     checkoutCalls++;
     lastMethod = method;
@@ -117,7 +118,7 @@ void main() {
       expect(find.text('LKR42'), findsOneWidget);
       expect(find.text('Sao chép'), findsOneWidget);
       expect(find.text('Thanh toán bằng app ngân hàng'), findsOneWidget);
-      expect(find.text('Tôi đã chuyển khoản — Kiểm tra ngay'), findsOneWidget);
+      expect(find.text('Tôi đã chuyển khoản — Kiểm tra ngay'), findsNothing);
       final image = tester.widget<Image>(
         find
             .descendant(of: find.byType(ClipRRect), matching: find.byType(Image))
@@ -127,12 +128,6 @@ void main() {
         (image.image as NetworkImage).url,
         startsWith('https://img.vietqr.io/image/970422-0123456789'),
       );
-
-      // Chưa có tiền: "Kiểm tra ngay" báo chưa ghi nhận, không tạo giao dịch mới.
-      await tester.tap(find.text('Tôi đã chuyển khoản — Kiểm tra ngay'));
-      await _settleSheet(tester);
-      expect(find.textContaining('Chưa ghi nhận thanh toán'), findsOneWidget);
-      expect(service.checkoutCalls, 1);
 
       // Tiền về: lần hỏi kế tiếp (~3 s) thấy PAID, bảng tự đóng.
       service.paid = true;

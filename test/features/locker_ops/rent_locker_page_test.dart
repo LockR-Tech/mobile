@@ -83,6 +83,7 @@ class _FakeRentLockerOpsService extends LockerOpsService {
     String? bankCode,
     String? returnUrl,
     String? description,
+    String? orderCode,
   }) async {
     checkoutCalls++;
     lastCheckoutOrderId = orderId;
@@ -243,7 +244,7 @@ void main() {
     expect(find.text('Số tiền cần chuyển:'), findsOneWidget);
     expect(find.text('20.000đ'), findsWidgets);
     expect(find.text('LKR81'), findsOneWidget);
-    expect(find.text('Tôi đã chuyển khoản — Kiểm tra ngay'), findsOneWidget);
+    expect(find.text('Thanh toán bằng app ngân hàng'), findsOneWidget);
     expect(find.text('Chọn phương thức thanh toán'), findsNothing);
     expect(find.text('Ví của tôi'), findsNothing);
     expect(find.textContaining('Giả lập'), findsNothing);
@@ -255,13 +256,9 @@ void main() {
     await tester.pump(const Duration(seconds: 7));
     expect(service.checkoutCalls, 1);
 
-    // Tiền về ⇒ "Kiểm tra ngay" thấy PAID, màn chuyển sang bước PIN / mở ô.
+    // Tiền về ⇒ hỏi định kỳ thấy PAID, màn chuyển sang bước PIN / mở ô.
     service.paid = true;
-    await tester.ensureVisible(find.text('Tôi đã chuyển khoản — Kiểm tra ngay'));
-    await tester.pump();
-    await tester.tap(find.text('Tôi đã chuyển khoản — Kiểm tra ngay'));
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 600));
+    await tester.pump(const Duration(seconds: 4));
     await tester.pumpAndSettle();
 
     expect(service.checkoutCalls, 1);

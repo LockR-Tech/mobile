@@ -36,6 +36,7 @@ Future<OrderPaymentOutcome> payOrderAndAwaitPaid(
   required LockerOpsService service,
   required int orderId,
   required double total,
+  String? orderCode,
 
   /// Lý do trả tiền, hiện lên chi tiết đơn để phân biệt nhiều lần trả trên cùng
   /// một đơn. Nơi gọi biết rõ mới truyền; không truyền thì server tự suy.
@@ -44,6 +45,7 @@ Future<OrderPaymentOutcome> payOrderAndAwaitPaid(
   final controller = SepayPaymentController(
     service: service,
     orderId: orderId,
+    orderCode: orderCode,
     amount: total,
     description: description,
   );

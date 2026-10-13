@@ -244,6 +244,7 @@ class LockerOpsService {
     /// thuê rồi gia hạn — nên chi tiết đơn cần biết khoản nào là gì. Bỏ trống thì
     /// server tự suy ra đây là lần trả đầu hay trả bổ sung.
     String? description,
+    String? orderCode,
   }) => _map(
     'POST',
     '/api/payments/checkout',
@@ -253,6 +254,7 @@ class LockerOpsService {
       if (bankCode != null) 'bankCode': bankCode,
       if (returnUrl != null) 'returnUrl': returnUrl,
       if (description != null) 'description': description,
+      if (orderCode != null) 'orderCode': orderCode,
     },
   );
 
