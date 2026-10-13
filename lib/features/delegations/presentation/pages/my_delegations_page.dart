@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import 'package:smart_laundry_locker/features/delegations/presentation/providers/delegation_provider.dart';
 import 'package:smart_laundry_locker/features/locker_ops/data/receiver_order.dart';
+import 'package:smart_laundry_locker/features/locker_ops/presentation/pages/receiver_order_detail_page.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/ops_widgets.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/receiver_order_card.dart';
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
@@ -127,6 +128,15 @@ class _MyDelegationsView extends StatelessWidget {
               if (opened) await provider.fetchMyDelegations();
             },
             onDirections: () => openReceiverOrderDirections(ctx, order),
+            onTap: () async {
+              await ReceiverOrderDetailPage.open(
+                ctx,
+                order: order,
+                service: provider.service,
+                delegatedView: true,
+              );
+              await provider.fetchMyDelegations();
+            },
           );
         },
       ),

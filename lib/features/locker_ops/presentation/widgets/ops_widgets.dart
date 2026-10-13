@@ -84,6 +84,7 @@ String typeLabel(String? type) => switch (type) {
   'RENTAL' => 'Thuê tủ',
   'STORAGE' => 'Gửi đồ',
   'PARCEL' => 'Nhận hàng',
+  'DRONE_DELIVERY' => 'Giao bằng drone',
   _ => type ?? '',
 };
 

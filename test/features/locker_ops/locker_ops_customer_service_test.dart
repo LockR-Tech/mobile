@@ -59,6 +59,23 @@ void main() {
       expect(res['pinCode'], '654321');
     });
 
+    test('receiverOrderDetail() gọi /incoming/{id} hoặc /delegated-to-me/{id}', () async {
+      adapter
+        ..onGet(
+          '/api/orders/incoming/90',
+          (server) => server.reply(200, apiOk({'id': 90, 'viewerRole': 'RECEIVER'})),
+        )
+        ..onGet(
+          '/api/orders/delegated-to-me/91',
+          (server) => server.reply(200, apiOk({'id': 91, 'viewerRole': 'DELEGATE'})),
+        );
+      expect((await service.receiverOrderDetail(90))['viewerRole'], 'RECEIVER');
+      expect(
+        (await service.receiverOrderDetail(91, delegated: true))['viewerRole'],
+        'DELEGATE',
+      );
+    });
+
     test('unlockWithCode() gửi {lockerId, code}', () async {
       adapter.onPost(
         '/api/iot/unlock-with-code',

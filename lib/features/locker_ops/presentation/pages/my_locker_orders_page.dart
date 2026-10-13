@@ -11,13 +11,16 @@ import 'package:smart_laundry_locker/core/media/media.dart';
 import 'package:smart_laundry_locker/core/routing/app_router.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/presentation/widgets/drone_order_cancel.dart';
 import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
+import 'package:smart_laundry_locker/features/locker_ops/data/order_milestone.dart';
 import 'package:smart_laundry_locker/features/locker_ops/data/receiver_order.dart';
 import 'package:smart_laundry_locker/features/locker_ops/domain/pickup_code_share.dart';
+import 'package:smart_laundry_locker/features/locker_ops/presentation/pages/receiver_order_detail_page.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/utils/business_rules_text.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/utils/locker_maps.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/delegate_order_dialog.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/locker_unlock_modal.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/ops_widgets.dart';
+import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/order_detail_widgets.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/order_feedback_section.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/order_payment_sheet.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/order_status_timeline.dart';
@@ -126,6 +129,9 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
         if (origin != null) lockerIds.add(origin);
         final dest = _asInt(o['destinationLockerId']);
         if (dest != null) lockerIds.add(dest);
+        // Tủ gửi của đơn drone — chi tiết đơn hiện "Gửi từ tủ".
+        final source = _asInt(o['sourceLockerId']);
+        if (source != null) lockerIds.add(source);
       }
       if (refreshLockers) {
         _lockersMap.clear();
@@ -223,12 +229,25 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
       _openDetail(order);
       return;
     }
-    // Đơn mình là người nhận (thông báo hàng tới) ⇒ mở mục Hàng chờ nhận.
-    if (_incoming.any((o) => o.id == id)) {
+    // Đơn mình là người nhận (thông báo hàng tới) ⇒ mở mục Hàng chờ nhận và
+    // chi tiết đơn đó.
+    final incoming = _incoming.where((o) => o.id == id).firstOrNull;
+    if (incoming != null) {
       setState(() => _showIncoming = true);
+      _openIncomingDetail(incoming);
     } else {
       _snack('Không tìm thấy đơn trong danh sách của bạn.');
     }
+  }
+
+  Future<void> _openIncomingDetail(ReceiverOrder order) async {
+    await ReceiverOrderDetailPage.open(
+      context,
+      order: order,
+      service: _service,
+    );
+    // Có thể đã mở ô lấy hàng trong màn chi tiết.
+    if (mounted) await _loadIncoming();
   }
 
   int get _incomingReadyCount => _incoming.where((o) => o.isActive).length;
@@ -1332,6 +1351,9 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
               faultLogs: logs,
               lockerName: _lockerNameOf(order),
               locker: _lockerOf(order),
+              sourceLockerName:
+                  _lockersMap[_asInt(order['sourceLockerId'])]?['name']
+                      ?.toString(),
               sendBoxNumber:
                   _lockerBoxesMap[_asInt(order['lockerId'])]?[_asInt(
                     order['sendBoxId'],
@@ -1537,6 +1559,7 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
                       if (opened) await _loadIncoming();
                     },
                     onDirections: (o) => openReceiverOrderDirections(context, o),
+                    onOpen: _openIncomingDetail,
                   )
                 : _loading
                 ? const Center(
@@ -1670,6 +1693,7 @@ class _IncomingOrdersView extends StatelessWidget {
     required this.onRefresh,
     required this.onUnlock,
     required this.onDirections,
+    this.onOpen,
   });
 
   final List<ReceiverOrder> orders;
@@ -1678,6 +1702,9 @@ class _IncomingOrdersView extends StatelessWidget {
   final Future<void> Function() onRefresh;
   final void Function(ReceiverOrder order) onUnlock;
   final void Function(ReceiverOrder order) onDirections;
+
+  /// Chạm thẻ ⇒ mở chi tiết đơn.
+  final void Function(ReceiverOrder order)? onOpen;
 
   @override
   Widget build(BuildContext context) {
@@ -1744,6 +1771,7 @@ class _IncomingOrdersView extends StatelessWidget {
           order: sorted[i],
           onUnlock: () => onUnlock(sorted[i]),
           onDirections: () => onDirections(sorted[i]),
+          onTap: onOpen == null ? null : () => onOpen!(sorted[i]),
         ),
       ),
     );
@@ -3386,6 +3414,7 @@ class _DetailSheet extends StatelessWidget {
     this.faultLogs = const [],
     this.lockerName,
     this.locker,
+    this.sourceLockerName,
     this.sendBoxNumber,
     this.receiveBoxNumber,
     required this.onReorder,
@@ -3414,6 +3443,9 @@ class _DetailSheet extends StatelessWidget {
 
   /// Bản ghi tủ đầy đủ để hiện địa điểm; `null` khi chưa tải được.
   final Map<String, dynamic>? locker;
+
+  /// Tên tủ gửi của đơn drone (đã tải trong danh sách); `null` khi không có.
+  final String? sourceLockerName;
   final int? sendBoxNumber;
   final int? receiveBoxNumber;
   final void Function(int orderId) onReorder;
@@ -3520,6 +3552,41 @@ class _DetailSheet extends StatelessWidget {
       if (receiverPhone != null && receiverPhone.isNotEmpty) receiverPhone,
     ].join(' · ');
     final customerNote = (order['customerNote'] as String?)?.trim();
+    // Phần chi tiết bổ sung của OrderResponse (cùng nguồn với chi tiết đơn phía
+    // người nhận): kiện hàng, mốc thời gian, ủy quyền, liên hệ, đơn drone.
+    String? text(String key) {
+      final v = order[key]?.toString().trim();
+      return v == null || v.isEmpty ? null : v;
+    }
+
+    final receiverEmail = text('receiverEmail');
+    final delegateNote = text('delegateNote');
+    final delegateLabel = [
+      text('delegateName'),
+      text('delegatePhone'),
+    ].whereType<String>().join(' · ');
+    final delegatedAt = order['delegatedAt'];
+    final intendedReceiveAt = order['intendedReceiveAt'];
+    final paidAt = order['paidAt'];
+    final routeDistance = _asInt(order['routeDistanceMeters']);
+    final originalPrice = _asDouble(order['originalPrice']) ?? 0;
+    final parcel = OrderParcel.tryParse(order['parcel']);
+    final milestones = OrderMilestone.listFrom(order['milestones']);
+    final blockLabel = text('deliveryBlockReasonLabel');
+    final failureLabel = text('failureReasonLabel');
+    final rawLines = order['orderDetails'];
+    final serviceLines = <String>[
+      if (rawLines is List)
+        for (final line in rawLines.whereType<Map>())
+          [
+            (line['description']?.toString().trim() ?? '').isNotEmpty
+                ? line['description'].toString().trim()
+                : 'Dịch vụ #${line['serviceId'] ?? ''}',
+            if (_asInt(line['quantity']) != null)
+              '× ${_asInt(line['quantity'])}',
+            if (line['price'] != null) '— ${fmtPrice(line['price'])}',
+          ].join(' '),
+    ];
     final deliveryAddress = (order['deliveryAddress'] as String?)?.trim();
     final rentalHours = _asInt(order['rentalDurationHours']);
     final discountAmount = _asDouble(order['discount']) ?? 0;
@@ -4020,11 +4087,68 @@ class _DetailSheet extends StatelessWidget {
                   label: 'Người nhận',
                   value: receiverLabel,
                 ),
+              if (receiverEmail != null)
+                OrderContactRow(
+                  icon: LucideIcons.mail,
+                  label: 'Email người nhận',
+                  value: receiverEmail,
+                ),
+              if (delegatedAt != null) ...[
+                OpsInfoRow(
+                  icon: LucideIcons.userPlus,
+                  label: 'Ủy quyền lấy hộ cho',
+                  value: delegateLabel.isEmpty
+                      ? 'Người được ủy quyền'
+                      : delegateLabel,
+                  valueColor: const Color(0xFF7C3AED),
+                ),
+                if (delegateNote != null)
+                  OpsInfoRow(
+                    icon: LucideIcons.messageSquareText,
+                    label: 'Lời nhắn ủy quyền',
+                    value: delegateNote,
+                  ),
+                OpsInfoRow(
+                  icon: LucideIcons.clock,
+                  label: 'Ủy quyền lúc',
+                  value: fmtDateTime(delegatedAt),
+                ),
+              ],
+              if (intendedReceiveAt != null)
+                OpsInfoRow(
+                  icon: LucideIcons.calendarClock,
+                  label: 'Dự kiến người nhận lấy',
+                  value: fmtDateTime(intendedReceiveAt),
+                ),
               if (deliveryAddress != null && deliveryAddress.isNotEmpty)
                 OpsInfoRow(
                   icon: LucideIcons.truck,
                   label: 'Địa chỉ giao',
                   value: deliveryAddress,
+                ),
+              if (isDroneDelivery && sourceLockerName != null)
+                OpsInfoRow(
+                  icon: LucideIcons.planeTakeoff,
+                  label: 'Gửi từ tủ',
+                  value: sourceLockerName!,
+                ),
+              if (isDroneDelivery && routeDistance != null)
+                OpsInfoRow(
+                  icon: LucideIcons.route,
+                  label: 'Quãng đường bay',
+                  value: fmtDistanceMeters(routeDistance),
+                ),
+              for (final line in serviceLines)
+                OpsInfoRow(
+                  icon: LucideIcons.listChecks,
+                  label: 'Dịch vụ',
+                  value: line,
+                ),
+              if (discountAmount > 0 && originalPrice > 0)
+                OpsInfoRow(
+                  icon: LucideIcons.tag,
+                  label: 'Giá gốc',
+                  value: fmtPrice(originalPrice),
                 ),
               if (hasExtra)
                 OpsInfoRow(
@@ -4083,6 +4207,12 @@ class _DetailSheet extends StatelessWidget {
                               ? const Color(0xFFD97706)
                               : const Color(0xFFB45309))),
               ),
+              if (paidAt != null && paymentStatus != 'UNPAID')
+                OpsInfoRow(
+                  icon: LucideIcons.receiptText,
+                  label: 'Thanh toán lúc',
+                  value: fmtDateTime(paidAt),
+                ),
               // Hình thức thanh toán + mã giao dịch lấy từ payment-service.
               _PaymentTraceRows(
                 orderId: _asInt(order['id']),
@@ -4099,6 +4229,49 @@ class _DetailSheet extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 16),
+        OrderDetailSection(
+          title: 'Kiện hàng',
+          icon: LucideIcons.package,
+          rows: orderParcelRows(parcel),
+        ),
+        OrderDetailSection(
+          title: 'Sự cố giao hàng',
+          icon: LucideIcons.triangleAlert,
+          rows: [
+            if (blockLabel != null)
+              OpsInfoRow(
+                icon: LucideIcons.circlePause,
+                label: 'Đang tạm dừng',
+                value: blockLabel,
+                valueColor: const Color(0xFFEA580C),
+              ),
+            if (blockLabel != null && order['deliveryBlockedAt'] != null)
+              OpsInfoRow(
+                icon: LucideIcons.clock,
+                label: 'Tạm dừng lúc',
+                value: fmtDateTime(order['deliveryBlockedAt']),
+              ),
+            if (failureLabel != null)
+              OpsInfoRow(
+                icon: LucideIcons.circleX,
+                label: 'Giao không hoàn tất',
+                value: failureLabel,
+                valueColor: const Color(0xFFDC2626),
+              ),
+            if (failureLabel != null && order['failedAt'] != null)
+              OpsInfoRow(
+                icon: LucideIcons.clock,
+                label: 'Ghi nhận lúc',
+                value: fmtDateTime(order['failedAt']),
+              ),
+            if (order['parcelReturnedAt'] != null)
+              OpsInfoRow(
+                icon: LucideIcons.undo2,
+                label: 'Đã trả kiện cho bạn',
+                value: fmtDateTime(order['parcelReturnedAt']),
+              ),
+          ],
+        ),
         if (order['pinCode'] != null && canUsePickupActions) ...[
           if (relocation.isRelocated)
             Center(
@@ -4157,6 +4330,13 @@ class _DetailSheet extends StatelessWidget {
         const SizedBox(height: 20),
         const Divider(height: 1, color: opsBorder),
         const SizedBox(height: 12),
+        OrderDetailSection(
+          title: 'Mốc thời gian',
+          icon: LucideIcons.milestone,
+          footer: milestones.isEmpty
+              ? null
+              : OrderMilestoneTimeline(milestones: milestones),
+        ),
         OrderStatusTimeline(orderId: id, service: service),
         const SizedBox(height: 12),
         _OrderIncidentResolutionSection(

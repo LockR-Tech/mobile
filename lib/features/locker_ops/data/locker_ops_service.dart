@@ -338,6 +338,20 @@ class LockerOpsService {
   Future<List<Map<String, dynamic>>> delegatedToMe({bool activeOnly = false}) =>
       _list('/api/orders/delegated-to-me', query: {'activeOnly': activeOnly});
 
+  /// Chi tiết một đơn gửi tới tôi / ủy quyền cho tôi (`ReceiverOrderDetailResponse`):
+  /// liên hệ người gửi, kiện hàng, tủ/ô, mốc thời gian, hành trình drone. Hai
+  /// đường cùng quy tắc quyền; [delegated] chỉ chọn đường khớp với màn đang mở.
+  /// Đơn không thuộc danh sách của mình ⇒ server trả 404 `NOT_FOUND`.
+  Future<Map<String, dynamic>> receiverOrderDetail(
+    int orderId, {
+    bool delegated = false,
+  }) => _map(
+    'GET',
+    delegated
+        ? '/api/orders/delegated-to-me/$orderId'
+        : '/api/orders/incoming/$orderId',
+  );
+
   /// Mở ô chỉ bằng mã (PIN/QR/mã ủy quyền) — server tự tra ô theo mã.
   /// Trả `{accepted, message, boxId…}`; `accepted == false` là chưa mở.
   Future<Map<String, dynamic>> unlockWithCode(int lockerId, String code) =>

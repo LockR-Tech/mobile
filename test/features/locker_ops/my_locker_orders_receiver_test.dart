@@ -78,6 +78,32 @@ class _FakeService extends LockerOpsService {
     ];
   }
 
+  int detailCalls = 0;
+
+  @override
+  Future<Map<String, dynamic>> receiverOrderDetail(
+    int orderId, {
+    bool delegated = false,
+  }) async {
+    detailCalls++;
+    return {
+      'id': orderId,
+      'orderCode': 'ORD-90',
+      'type': 'SEND',
+      'status': 'STORING',
+      'viewerRole': 'RECEIVER',
+      'senderName': 'Nguyễn An',
+      'senderPhone': '0900000010',
+      'lockerId': 7,
+      'lockerName': 'Tủ thư viện',
+      'boxNumber': 2,
+      'boxSize': 'SMALL',
+      'readyForPickup': true,
+      'pickupPin': '246810',
+      'parcel': {'description': 'Hộp quà sinh nhật'},
+    };
+  }
+
   @override
   Future<Map<String, dynamic>> delegate(
     int orderId, {
@@ -94,6 +120,42 @@ class _FakeService extends LockerOpsService {
   Future<Map<String, dynamic>> resetPin(int orderId) async {
     resetPinCalls++;
     return {'id': orderId, 'pinCode': '111222'};
+  }
+}
+
+/// Đơn của tôi có đủ phần chi tiết mới của OrderResponse.
+class _RichSenderService extends _FakeService {
+  @override
+  Future<List<Map<String, dynamic>>> myOrders() async {
+    final base = (await super.myOrders()).single;
+    return [
+      {
+        ...base,
+        'receiverEmail': 'binh@example.com',
+        'delegateName': 'Chị Hoa',
+        'delegatePhone': '0933444555',
+        'delegateNote': 'Lấy giúp em',
+        'delegatedAt': '2026-07-15T12:00:00',
+        'paidAt': '2026-07-15T10:02:00',
+        'parcel': {
+          'description': 'Hộp bánh',
+          'weightGrams': 1500,
+          'fragile': true,
+        },
+        'milestones': [
+          {
+            'code': 'CREATED',
+            'label': 'Đơn được tạo',
+            'occurredAt': '2026-07-15T10:00:00',
+          },
+          {
+            'code': 'STORED',
+            'label': 'Hàng đã vào ô, chờ lấy',
+            'occurredAt': '2026-07-15T10:30:00',
+          },
+        ],
+      },
+    ];
   }
 }
 
@@ -239,5 +301,69 @@ void main() {
     await tester.pumpAndSettle();
     expect(service.resetPinCalls, 1);
     expect(find.text('Đã đổi mã PIN mới: 111222'), findsOneWidget);
+  });
+
+  testWidgets('chạm đơn trong Hàng chờ nhận mở màn chi tiết đầy đủ', (
+    tester,
+  ) async {
+    final service = _FakeService();
+    await _pump(tester, service);
+
+    await tester.tap(find.text('Hàng chờ nhận'));
+    await tester.pumpAndSettle();
+    expect(find.text('Xem chi tiết đơn'), findsOneWidget);
+
+    await tester.tap(find.text('#ORD-90'));
+    await tester.pumpAndSettle();
+
+    expect(service.detailCalls, 1);
+    expect(find.text('Chi tiết đơn nhận'), findsOneWidget);
+    final scroll = find.byType(Scrollable).first;
+    for (final text in ['0900000010', 'Nhỏ (S)', 'Hộp quà sinh nhật']) {
+      await tester.scrollUntilVisible(find.text(text), 200, scrollable: scroll);
+      expect(find.text(text), findsOneWidget);
+    }
+  });
+
+  testWidgets('chi tiết Đơn của tôi có kiện hàng, ủy quyền, mốc thời gian', (
+    tester,
+  ) async {
+    await _pump(tester, _RichSenderService());
+
+    await tester.tap(find.text('Tủ kiểm thử'));
+    await tester.pumpAndSettle();
+
+    await tester.ensureVisible(find.text('Email người nhận'));
+    expect(find.text('binh@example.com'), findsOneWidget);
+    expect(find.text('Ủy quyền lấy hộ cho'), findsOneWidget);
+    expect(find.text('Chị Hoa · 0933444555'), findsOneWidget);
+    expect(find.text('Lấy giúp em'), findsOneWidget);
+    expect(find.text('Thanh toán lúc'), findsOneWidget);
+
+    await tester.ensureVisible(find.text('Hộp bánh'));
+    expect(find.text('Kiện hàng'), findsOneWidget);
+    expect(find.text('1,5 kg'), findsOneWidget);
+    expect(find.text('Có — nhẹ tay'), findsOneWidget);
+
+    await tester.ensureVisible(find.text('Mốc thời gian'));
+    expect(find.text('Đơn được tạo'), findsOneWidget);
+    expect(find.text('Hàng đã vào ô, chờ lấy'), findsOneWidget);
+    // Mã và nút chia sẻ của người gửi vẫn còn.
+    await tester.ensureVisible(find.text('Chia sẻ mã cho người nhận'));
+    expect(find.text('Chia sẻ mã cho người nhận'), findsOneWidget);
+  });
+
+  testWidgets('đơn cũ không có phần chi tiết ⇒ không hiện mục rỗng', (
+    tester,
+  ) async {
+    await _pump(tester, _FakeService());
+
+    await tester.tap(find.text('Tủ kiểm thử'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Kiện hàng'), findsNothing);
+    expect(find.text('Mốc thời gian'), findsNothing);
+    expect(find.text('Sự cố giao hàng'), findsNothing);
+    expect(find.text('Ủy quyền lấy hộ cho'), findsNothing);
   });
 }

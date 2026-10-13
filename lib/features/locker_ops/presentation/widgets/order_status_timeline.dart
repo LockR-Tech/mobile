@@ -3,6 +3,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/ops_widgets.dart';
+import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/order_detail_widgets.dart';
 
 /// Lịch sử chuyển trạng thái của một đơn, lấy từ `GET /api/orders/{id}/timeline`.
 ///
@@ -173,100 +174,19 @@ class _TimelineTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final newStatus = event['newStatus']?.toString();
     final oldStatus = event['oldStatus']?.toString();
-    final note = event['note']?.toString();
-    final color = statusColor(newStatus);
-
-    return IntrinsicHeight(
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Cột chấm + đường nối.
-          Column(
-            children: [
-              Container(
-                width: 11,
-                height: 11,
-                margin: const EdgeInsets.only(top: 4),
-                decoration: BoxDecoration(
-                  color: isLatest ? color : color.withValues(alpha: 0.30),
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: color.withValues(alpha: isLatest ? 0.35 : 0.20),
-                    width: 3,
-                  ),
-                ),
-              ),
-              if (!isLast)
-                Expanded(
-                  child: Container(width: 2, color: opsBorder),
-                ),
-            ],
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Padding(
-              padding: EdgeInsets.only(bottom: isLast ? 0 : 14),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(
-                        child: Text(
-                          statusLabel(newStatus),
-                          style: TextStyle(
-                            fontSize: 13.5,
-                            fontWeight: isLatest
-                                ? FontWeight.w800
-                                : FontWeight.w700,
-                            color: isLatest ? opsDark : const Color(0xFF475569),
-                          ),
-                        ),
-                      ),
-                      Text(
-                        // Giờ:phút:giây theo giờ máy, cùng định dạng với các
-                        // mốc thời gian khác trong app.
-                        fmtDateTime(event['createdAt']),
-                        style: const TextStyle(
-                          fontSize: 11.5,
-                          color: opsMutedText,
-                          fontFeatures: [FontFeature.tabularFigures()],
-                        ),
-                      ),
-                    ],
-                  ),
-                  // Trạng thái trước đó giúp đọc được đơn đã đi qua đường nào,
-                  // nhất là khi có bước bị bỏ qua.
-                  if (oldStatus != null && oldStatus.isNotEmpty)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 1),
-                      child: Text(
-                        'Từ ${statusLabel(oldStatus)}',
-                        style: const TextStyle(
-                          fontSize: 11.5,
-                          color: opsMutedText,
-                        ),
-                      ),
-                    ),
-                  if (note != null && note.trim().isNotEmpty)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 3),
-                      child: Text(
-                        note.trim(),
-                        style: const TextStyle(
-                          fontSize: 12,
-                          color: Color(0xFF475569),
-                          height: 1.35,
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
+    return OrderTimelineTile(
+      title: statusLabel(newStatus),
+      // Giờ:phút:giây theo giờ máy, cùng định dạng với các mốc thời gian khác.
+      time: fmtDateTime(event['createdAt']),
+      color: statusColor(newStatus),
+      isLast: isLast,
+      isLatest: isLatest,
+      // Trạng thái trước đó giúp đọc được đơn đã đi qua đường nào, nhất là khi
+      // có bước bị bỏ qua.
+      subtitle: oldStatus != null && oldStatus.isNotEmpty
+          ? 'Từ ${statusLabel(oldStatus)}'
+          : null,
+      note: event['note']?.toString(),
     );
   }
 }
