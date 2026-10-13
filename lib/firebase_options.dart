@@ -54,38 +54,35 @@ class DefaultFirebaseOptions {
     }
   }
 
+  // Project Firebase `lockr-drone-delivery` (từ 2026-10-13). Backend phải dùng
+  // khoá service account của CÙNG project (FIREBASE_CREDENTIALS_JSON) thì mới
+  // xác minh được token đăng nhập SĐT/Google.
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyCqdITzgaApbsPeFn2aAbtKbOEVLIQvYo8',
-    appId: '1:1007589685877:android:1afa036d6ef7aba040963c',
-    messagingSenderId: '1007589685877',
-    projectId: 'laundry-locker-19a9d',
-    storageBucket: 'laundry-locker-19a9d.firebasestorage.app',
+    apiKey: 'AIzaSyBY3Y7DNWPp0PO1p7AckAqKM7PAJODsXdo',
+    appId: '1:711645742956:android:bc544396274749e99e5549',
+    messagingSenderId: '711645742956',
+    projectId: 'lockr-drone-delivery',
+    storageBucket: 'lockr-drone-delivery.firebasestorage.app',
   );
 
   // ---------------------------------------------------------------------------
-  // WEB — project `laundry-locker-19a9d` (cùng project với Android).
+  // WEB — Web app "LockR Web" của project `lockr-drone-delivery` (dùng chung với
+  // kiosk). Cấu hình web là thông tin công khai, commit được. Tên miền chạy bản
+  // web phải nằm trong Authentication → Settings → Authorized domains.
   //
-  // TODO(owner): Firebase console → Project settings → General → Your apps →
-  // Web app (</>) → "SDK setup and configuration" → chọn "Config". Dán từng giá
-  // trị của object `firebaseConfig` vào hằng cùng tên bên dưới (apiKey,
-  // authDomain, projectId, storageBucket, messagingSenderId, appId,
-  // measurementId). Cấu hình web là thông tin công khai, commit được.
-  //
-  // Khi [_webApiKey] hoặc [_webAppId] còn bắt đầu bằng `PASTE_`,
-  // [isWebConfigured] = false: bản web không khởi tạo Firebase và ẩn nút đăng
-  // nhập SĐT/Google. Các hằng còn lại đã điền sẵn theo project (giống Android) —
-  // đối chiếu lại với config khi dán.
+  // Khi [_webApiKey] hoặc [_webAppId] bắt đầu bằng `PASTE_`, [isWebConfigured] =
+  // false: bản web không khởi tạo Firebase và ẩn nút đăng nhập SĐT/Google.
   // ---------------------------------------------------------------------------
-  static const String _webApiKey = 'PASTE_WEB_API_KEY';
-  static const String _webAuthDomain = 'laundry-locker-19a9d.firebaseapp.com';
-  static const String _webProjectId = 'laundry-locker-19a9d';
+  static const String _webApiKey = 'AIzaSyCSLusjnxRPPzq9YzoksMqHNpyxNiDBK5g';
+  static const String _webAuthDomain = 'lockr-drone-delivery.firebaseapp.com';
+  static const String _webProjectId = 'lockr-drone-delivery';
   static const String _webStorageBucket =
-      'laundry-locker-19a9d.firebasestorage.app';
-  static const String _webMessagingSenderId = '1007589685877';
-  static const String _webAppId = 'PASTE_WEB_APP_ID';
+      'lockr-drone-delivery.firebasestorage.app';
+  static const String _webMessagingSenderId = '711645742956';
+  static const String _webAppId = '1:711645742956:web:ac207916956336879e5549';
 
-  /// Tuỳ chọn (Google Analytics): `'G-…'`, hoặc để `null` nếu config không có.
-  static const String? _webMeasurementId = null;
+  /// Tuỳ chọn (Google Analytics).
+  static const String? _webMeasurementId = 'G-8BWNVPC08F';
 
   /// `true` khi đã dán cấu hình Web App thật (không còn giá trị `PASTE_…`).
   static bool get isWebConfigured =>
@@ -104,9 +101,9 @@ class DefaultFirebaseOptions {
   // TODO(owner): cấu hình iOS dưới đây thuộc project KHÁC (`db-wsb-project`,
   // bundle `com.example.aislApp`), trong khi app iOS có bundle
   // `com.laundrylocker.smartLaundryLocker` và backend chỉ xác minh token của
-  // project `laundry-locker-19a9d` ⇒ đăng nhập SĐT/Google trên iOS sẽ bị backend
-  // từ chối. Cần thêm iOS app vào `laundry-locker-19a9d` rồi chạy
-  // `flutterfire configure --project=laundry-locker-19a9d` (sinh lại file này,
+  // project `lockr-drone-delivery` ⇒ đăng nhập SĐT/Google trên iOS sẽ bị backend
+  // từ chối. Cần thêm iOS app vào `lockr-drone-delivery` rồi chạy
+  // `flutterfire configure --project=lockr-drone-delivery` (sinh lại file này,
   // ios/Runner/GoogleService-Info.plist và firebase.json). Không tự điền giá trị.
   // Lưu ý: FlutterFire CLI ghi đè cả file — nhớ giữ lại getter
   // [isWebConfigured] (main.dart và FirebaseAuthService dùng).
