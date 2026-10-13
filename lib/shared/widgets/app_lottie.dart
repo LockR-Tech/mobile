@@ -91,23 +91,27 @@ class AppLottie extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (asset == AppLottieAssets.chatbox) {
-      return ChatboxFallbackImage(
-        width: width,
-        height: height,
-        fit: fit,
+      return RepaintBoundary(
+        child: ChatboxFallbackImage(
+          width: width,
+          height: height,
+          fit: fit,
+        ),
       );
     }
 
-    return Lottie.asset(
-      asset,
-      width: width,
-      height: height,
-      fit: fit,
-      alignment: alignment,
-      animate: animate,
-      repeat: repeat,
-      errorBuilder: (context, error, stackTrace) =>
-          fallback?.call(context) ?? const SizedBox.shrink(),
+    return RepaintBoundary(
+      child: Lottie.asset(
+        asset,
+        width: width,
+        height: height,
+        fit: fit,
+        alignment: alignment,
+        animate: animate,
+        repeat: repeat,
+        errorBuilder: (context, error, stackTrace) =>
+            fallback?.call(context) ?? const SizedBox.shrink(),
+      ),
     );
   }
 }

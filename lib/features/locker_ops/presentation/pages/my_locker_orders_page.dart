@@ -2,7 +2,6 @@ import 'dart:async';
 import 'package:smart_laundry_locker/core/services/app_event_bus.dart';
 import 'package:smart_laundry_locker/core/utils/app_date_time.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
@@ -468,21 +467,23 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
 
   /// Orders grouped by date label, sorted newest-first within each group.
   List<MapEntry<String, List<Map<String, dynamic>>>> get _groupedOrders {
-    final sorted = List<Map<String, dynamic>>.from(_visible)
+    final visible = _visible;
+    if (visible.isEmpty) return const [];
+
+    final withDates = visible
+        .map((o) => (order: o, date: _parseOrderDate(o)))
+        .toList()
       ..sort((a, b) {
-        final da = _parseOrderDate(a);
-        final db = _parseOrderDate(b);
-        if (da == null && db == null) return 0;
-        if (da == null) return 1;
-        if (db == null) return -1;
-        return db.compareTo(da);
+        if (a.date == null && b.date == null) return 0;
+        if (a.date == null) return 1;
+        if (b.date == null) return -1;
+        return b.date!.compareTo(a.date!);
       });
 
     final map = <String, List<Map<String, dynamic>>>{};
-    for (final o in sorted) {
-      final d = _parseOrderDate(o);
-      final key = d == null ? 'Không rõ ngày' : _dateGroupLabel(d);
-      (map[key] ??= []).add(o);
+    for (final item in withDates) {
+      final key = item.date == null ? 'Không rõ ngày' : _dateGroupLabel(item.date!);
+      (map[key] ??= []).add(item.order);
     }
     return map.entries.toList();
   }
@@ -1605,39 +1606,31 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
                         final o = item.order!;
                         return Padding(
                           padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
-                          child:
-                              _OrderCard(
-                                    order: o,
-                                    faultReport: _incidentReportForOrder(o),
-                                    lockerName: _lockerNameOf(o),
-                                    sendBoxNumber:
-                                        _lockerBoxesMap[_asInt(
-                                          o['lockerId'],
-                                        )]?[_asInt(o['sendBoxId'])],
-                                    receiveBoxNumber:
-                                        _lockerBoxesMap[_asInt(
-                                          o['destinationLockerId'] ??
-                                              o['lockerId'],
-                                        )]?[_asInt(o['receiveBoxId'])],
-                                    onTap: () => _openDetail(o),
-                                    onPayAndComplete: () =>
-                                        _payAndCompleteFlow(o),
-                                    onViewReport: () {
-                                      final r = _incidentReportForOrder(o);
-                                      if (r != null) {
-                                        UserReportDetailSheet.show(context, report: r);
-                                      }
-                                    },
-                                  )
-                                  .animate()
-                                  .fadeIn(delay: (i * 30).ms, duration: 200.ms)
-                                  .slideY(
-                                    begin: 0.05,
-                                    end: 0,
-                                    delay: (i * 30).ms,
-                                    duration: 200.ms,
-                                    curve: Curves.easeOut,
-                                  ),
+                          child: RepaintBoundary(
+                            child: _OrderCard(
+                              order: o,
+                              faultReport: _incidentReportForOrder(o),
+                              lockerName: _lockerNameOf(o),
+                              sendBoxNumber:
+                                  _lockerBoxesMap[_asInt(
+                                    o['lockerId'],
+                                  )]?[_asInt(o['sendBoxId'])],
+                              receiveBoxNumber:
+                                  _lockerBoxesMap[_asInt(
+                                    o['destinationLockerId'] ??
+                                        o['lockerId'],
+                                  )]?[_asInt(o['receiveBoxId'])],
+                              onTap: () => _openDetail(o),
+                              onPayAndComplete: () =>
+                                  _payAndCompleteFlow(o),
+                              onViewReport: () {
+                                final r = _incidentReportForOrder(o);
+                                if (r != null) {
+                                  UserReportDetailSheet.show(context, report: r);
+                                }
+                              },
+                            ),
+                          ),
                         );
                       },
                     ),
