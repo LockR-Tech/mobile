@@ -120,6 +120,8 @@ void main() {
     expect(find.text('Đã lấy hàng, đang mang về tủ'), findsOneWidget);
     expect(find.text('gui@gmail.com'), findsOneWidget);
     expect(find.text('nhan@gmail.com'), findsOneWidget);
+    // Mã lấy hàng tận nhà là để đọc cho kỹ thuật viên, không chia sẻ cho người nhận.
+    expect(find.text('Chia sẻ mã cho người nhận'), findsNothing);
   });
 
   testWidgets('người nhận chỉ theo dõi: không thấy mã lấy hàng, không huỷ, không thanh toán', (

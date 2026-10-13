@@ -401,7 +401,7 @@ class _PickupCard extends StatelessWidget {
         children: [
           Text(
             forOther
-                ? 'Kiện đã vào tủ nhận. Mã mở ô đã được gửi cho người nhận.'
+                ? 'Kiện đã vào tủ nhận. Vào "Xem chi tiết đơn" để chia sẻ mã mở ô cho người nhận.'
                 : 'Kiện đã vào tủ nhận. Mở mã PIN để lấy hàng tại tủ.',
             style: const TextStyle(
               color: color,

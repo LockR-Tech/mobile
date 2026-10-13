@@ -356,6 +356,8 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byType(AccessCredentials), findsNothing);
+    // Chưa trả tiền, chưa vào ô ⇒ không có mã nào để chia sẻ.
+    expect(find.text('Chia sẻ mã cho người nhận'), findsNothing);
   });
 
   testWidgets('shows pay action after extending a previously paid rental', (
