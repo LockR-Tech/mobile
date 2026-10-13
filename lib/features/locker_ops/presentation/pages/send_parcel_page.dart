@@ -17,6 +17,7 @@ import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/pi
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/sepay_payment.dart';
 import 'package:smart_laundry_locker/shared/shared.dart';
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
+import 'package:smart_laundry_locker/core/services/app_event_bus.dart';
 
 /// SEND flow (gửi hàng C2C qua tủ).
 /// Stage 1: tạo đơn + nhận PIN bỏ hàng. Stage 2: thanh toán → mở ô → bỏ hàng →
@@ -442,6 +443,10 @@ class _SendParcelPageState extends State<SendParcelPage>
       try {
         await _service.cancelOrder(orderId);
         _snack('Đã hủy đơn hàng và giải phóng ô tủ.');
+        AppEventBus.instance.emit(LockerLayoutUpdatedEvent(
+          lockerId: _lockerId?.toString(),
+        ));
+        AppEventBus.instance.emit(OrderChangedEvent(orderId: orderId.toString()));
       } catch (_) {}
     }
     if (mounted) {

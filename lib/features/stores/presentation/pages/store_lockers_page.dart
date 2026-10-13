@@ -748,6 +748,12 @@ class _LockerCardState extends State<_LockerCard> {
             setState(() => _layout = null);
           }
         }
+      } else if (event is OrderChangedEvent) {
+        if (_expanded) {
+          _loadLayout(force: true);
+        } else {
+          setState(() => _layout = null);
+        }
       }
     });
   }
