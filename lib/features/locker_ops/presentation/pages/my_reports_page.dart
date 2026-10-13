@@ -1,25 +1,12 @@
-import 'dart:math' as math;
-
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
-import 'package:smart_laundry_locker/core/config/business_config_service.dart';
 import 'package:smart_laundry_locker/core/media/media.dart';
 import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/ops_widgets.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/user_report_detail_sheet.dart';
 import 'package:smart_laundry_locker/features/maintenance/presentation/pages/create_report_page.dart';
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
-
-/// Tối đa ảnh REPORT trên 1 phiếu (hợp đồng media-storage). Backend không công
-/// khai quy tắc này qua `/api/settings/locker/public` nên app giữ mặc định;
-/// server vẫn chặn nếu admin đổi.
-const _maxReportPhotosPerReport = 10;
-
-/// Tối đa ảnh mỗi lần bổ sung — admin cấu hình
-/// (`app.maintenance.report-photos-per-request-reporter`).
-int get _maxReportPhotosPerRequest =>
-    BusinessConfigService.instance.current.reportPhotosPerRequestReporter;
 
 /// View of the customer's own locker fault reports
 /// (`GET /api/lockers/my-reports`), so they can see claim/resolve progress
@@ -41,19 +28,12 @@ class _MyReportsPageState extends State<MyReportsPage> {
   bool _loading = true;
   bool _openedInitial = false;
 
+  int _selectedTab = 0;
+
   @override
   void initState() {
     super.initState();
     _load();
-  }
-
-  Future<void> _createReport() async {
-    await Navigator.of(context).push<void>(
-      MaterialPageRoute<void>(
-        builder: (_) => const CreateReportPage(lockerId: '', cabinetId: ''),
-      ),
-    );
-    if (mounted) await _load();
   }
 
   void _openInitialReportOnce() {
@@ -91,150 +71,214 @@ class _MyReportsPageState extends State<MyReportsPage> {
     _openInitialReportOnce();
   }
 
+  Widget _buildTabButton({
+    required int index,
+    required String title,
+    required IconData icon,
+    int? count,
+  }) {
+    final isSelected = _selectedTab == index;
+    return GestureDetector(
+      onTap: () => setState(() => _selectedTab = index),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelected ? Colors.white : Colors.transparent,
+          borderRadius: BorderRadius.circular(9),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.06),
+                    blurRadius: 4,
+                    offset: const Offset(0, 1),
+                  ),
+                ]
+              : null,
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              icon,
+              size: 15,
+              color: isSelected ? const Color(0xFF0F172A) : const Color(0xFF64748B),
+            ),
+            const SizedBox(width: 6),
+            Text(
+              title,
+              style: TextStyle(
+                fontSize: 12.5,
+                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                color: isSelected ? const Color(0xFF0F172A) : const Color(0xFF64748B),
+              ),
+            ),
+            if (count != null && count > 0) ...[
+              const SizedBox(width: 4),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                decoration: BoxDecoration(
+                  color: isSelected ? const Color(0xFF0F172A) : const Color(0xFFCBD5E1),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Text(
+                  '$count',
+                  style: TextStyle(
+                    fontSize: 10.5,
+                    fontWeight: FontWeight.w700,
+                    color: isSelected ? Colors.white : const Color(0xFF475569),
+                  ),
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildReportsList() {
+    if (_loading) {
+      return const Center(
+        child: CircularProgressIndicator(color: AislBrand.navy),
+      );
+    }
+    if (_reports.isEmpty) {
+      return RefreshIndicator(
+        color: AislBrand.navy,
+        onRefresh: _load,
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(16, 24, 16, 32),
+          children: [
+            const OpsEmptyState(
+              icon: LucideIcons.clipboardCheck,
+              title: 'Chưa có báo cáo nào',
+              subtitle:
+                  'Báo lỗi từ chi tiết đơn hoặc tab "Báo sự cố mới" sẽ hiện ở đây.',
+            ),
+            const SizedBox(height: 16),
+            Center(
+              child: ElevatedButton.icon(
+                onPressed: () => setState(() => _selectedTab = 1),
+                icon: const Icon(LucideIcons.plusCircle, size: 16),
+                label: const Text('Báo sự cố ngay'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF0F172A),
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+    return RefreshIndicator(
+      color: AislBrand.navy,
+      onRefresh: _load,
+      child: ListView.separated(
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+        itemCount: _reports.length,
+        separatorBuilder: (_, _) => const SizedBox(height: 10),
+        itemBuilder: (ctx, i) => _ReportCard(report: _reports[i], onChanged: _load),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF2F3F5),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _createReport,
-        backgroundColor: AislBrand.navy,
-        foregroundColor: Colors.white,
-        icon: const Icon(LucideIcons.triangleAlert, size: 18),
-        label: const Text('Báo sự cố'),
-      ),
-      body: BrandHeroScaffold(
-        header: (collapse) => BrandHeroHeader(
-          title: 'Báo cáo của tôi',
-          subtitle: 'Theo dõi các báo lỗi ô tủ bạn đã gửi',
-          onBack: () => Navigator.of(context).maybePop(),
-          collapseProgress: collapse,
-          trailing: BrandCircleIconButton(
-            icon: LucideIcons.refreshCw,
-            onTap: _load,
-            iconSize: 18,
+      backgroundColor: const Color(0xFFF8FAFC),
+      body: Column(
+        children: [
+          BrandHeroHeader(
+            eyebrow: 'LOCK.R • BÁO CÁO',
+            title: 'Báo cáo của tôi',
+            subtitle: 'Theo dõi tiến độ xử lý và gửi báo cáo sự cố ô tủ',
+            onBack: () => Navigator.of(context).maybePop(),
+            trailing: BrandCircleIconButton(
+              icon: LucideIcons.refreshCw,
+              iconSize: 18,
+              onTap: _load,
+            ),
           ),
-        ),
-        child: Builder(
-          builder: (context) => _loading
-                ? const Center(
-                    child: CircularProgressIndicator(color: AislBrand.navy),
-                  )
-                : _reports.isEmpty
-                ? const OpsEmptyState(
-                    icon: LucideIcons.clipboardCheck,
-                    title: 'Chưa có báo cáo nào',
-                    subtitle:
-                        'Báo lỗi từ chi tiết đơn hoặc nút "Báo sự cố" sẽ hiện ở đây.',
-                  )
-                : RefreshIndicator(
-                    color: AislBrand.navy,
-                    onRefresh: _load,
-                    child: ListView.separated(
-                      padding: const EdgeInsets.fromLTRB(16, 12, 16, 96),
-                      itemCount: _reports.length,
-                      separatorBuilder: (_, _) => const SizedBox(height: 10),
-                      itemBuilder: (ctx, i) =>
-                          _ReportCard(report: _reports[i], onChanged: _load),
-                    ),
+          Container(
+            margin: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+            padding: const EdgeInsets.all(3),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF1F5F9),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: const Color(0xFFE2E8F0)),
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: _buildTabButton(
+                    index: 0,
+                    title: 'Báo cáo của tôi',
+                    count: _reports.length,
+                    icon: LucideIcons.history,
                   ),
-        ),
+                ),
+                Expanded(
+                  child: _buildTabButton(
+                    index: 1,
+                    title: 'Báo sự cố mới',
+                    icon: LucideIcons.plusCircle,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Expanded(
+            child: _selectedTab == 0
+                ? _buildReportsList()
+                : CreateReportPage(
+                    lockerId: '',
+                    cabinetId: '',
+                    isEmbedded: true,
+                    onSuccess: () {
+                      _load();
+                      setState(() => _selectedTab = 0);
+                    },
+                    onCancel: () {
+                      setState(() => _selectedTab = 0);
+                    },
+                  ),
+          ),
+        ],
       ),
     );
   }
 }
 
-class _ReportCard extends StatefulWidget {
+class _ReportCard extends StatelessWidget {
   const _ReportCard({required this.report, required this.onChanged});
   final Map<String, dynamic> report;
   final Future<void> Function() onChanged;
 
   @override
-  State<_ReportCard> createState() => _ReportCardState();
-}
-
-class _ReportCardState extends State<_ReportCard> {
-  final _service = LockerOpsService();
-  Map<String, dynamic>? _rating;
-  bool _loadingRating = false;
-  bool _submitting = false;
-
-  @override
-  void initState() {
-    super.initState();
-    if (widget.report['status'] == 'RESOLVED') {
-      _loadRating();
-    }
-  }
-
-  Future<void> _loadRating() async {
-    setState(() => _loadingRating = true);
-    try {
-      final rating = await _service.getReportRating(widget.report['id'] as int);
-      if (mounted) setState(() => _rating = rating);
-    } finally {
-      if (mounted) setState(() => _loadingRating = false);
-    }
-  }
-
-  Future<void> _submitRating(int stars) async {
-    setState(() => _submitting = true);
-    try {
-      final result = await _service.rateReport(widget.report['id'] as int, stars, null);
-      if (mounted) setState(() => _rating = result);
-    } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(LockerOpsService.errorMessage(e))),
-      );
-    } finally {
-      if (mounted) setState(() => _submitting = false);
-    }
-  }
-
-  Future<void> _addPhotos(int reportId, int existingReportPhotos) async {
-    final added = await showModalBottomSheet<bool>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.white,
-      showDragHandle: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(26)),
-      ),
-      builder: (_) => _AddReportPhotosSheet(
-        reportId: reportId,
-        service: _service,
-        maxPhotos: math.min(
-          _maxReportPhotosPerRequest,
-          _maxReportPhotosPerReport - existingReportPhotos,
-        ),
-      ),
-    );
-    if (added == true && mounted) {
-      ScaffoldMessenger.of(context)
-        ..hideCurrentSnackBar()
-        ..showSnackBar(
-          const SnackBar(content: Text('Đã bổ sung ảnh cho báo cáo')),
-        );
-      await widget.onChanged();
-    }
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final report = widget.report;
-    final status = report['status'] as String?;
-    final description = report['description'] as String?;
+    final status = (report['status'] as String? ?? 'OPEN').toUpperCase();
+    final isResolved = status == 'RESOLVED' || status == 'CLOSED';
+    final isInProgress = status == 'IN_PROGRESS';
+
+    final statusText = isResolved
+        ? 'Đã xong'
+        : (isInProgress ? 'Đang xử lý' : 'Chờ tiếp nhận');
+    final statusColor = isResolved
+        ? const Color(0xFF15803D)
+        : (isInProgress ? const Color(0xFFD97706) : const Color(0xFF0284C7));
+    final statusBg = isResolved
+        ? const Color(0xFFDCFCE7)
+        : (isInProgress ? const Color(0xFFFEF3C7) : const Color(0xFFE0F2FE));
+
+    final title = report['title']?.toString().trim();
+    final description = report['description']?.toString().trim();
     final lockerLabel =
         report['lockerName'] ?? report['lockerCode'] ?? report['lockerId'];
-    final reportId = report['id'] is int ? report['id'] as int : null;
     final attachments = ReportAttachment.listFrom(report['attachments']);
-    final reportPhotoCount = attachments
-        .where((a) => a.stage == ReportStage.report)
-        .length;
-    final canAddPhotos =
-        reportId != null &&
-        status != 'RESOLVED' &&
-        reportPhotoCount < _maxReportPhotosPerReport;
 
     return Material(
       color: Colors.transparent,
@@ -242,304 +286,276 @@ class _ReportCardState extends State<_ReportCard> {
         onTap: () => UserReportDetailSheet.show(
           context,
           report: report,
-          onChanged: widget.onChanged,
+          onChanged: onChanged,
         ),
         borderRadius: BorderRadius.circular(16),
-        child: OpsCard(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    child: Text(
-                      report['title']?.toString() ?? 'Báo cáo ô tủ',
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w700,
-                        fontSize: 15,
-                        color: opsDark,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  StatusChip(status),
-                  const SizedBox(width: 4),
-                  const Icon(LucideIcons.chevronRight, size: 16, color: opsMutedText),
-                ],
-              ),
-              if (description != null && description.isNotEmpty) ...[
-                const SizedBox(height: 6),
-                Text(
-                  description,
-                  style: const TextStyle(fontSize: 13, color: opsMutedText),
-                ),
-              ],
-              const SizedBox(height: 12),
-              OpsInfoRow(
-                icon: LucideIcons.warehouse,
-                label: 'Tủ',
-                value: '${lockerLabel ?? '-'}',
-              ),
-              if (report['boxNumber'] != null)
-                OpsInfoRow(
-                  icon: LucideIcons.grid3x3,
-                  label: 'Ô',
-                  value: '${report['boxNumber']}',
-                ),
-              OpsInfoRow(
-                icon: LucideIcons.calendar,
-                label: 'Gửi lúc',
-                value: fmtDateTime(report['createdAt']),
-              ),
-              if (attachments.isNotEmpty)
-                AttachmentStageGallery(
-                  attachments: attachments,
-                  stages: const [
-                    ReportStage.report,
-                    ReportStage.inspection,
-                    ReportStage.progress,
-                    ReportStage.resolution,
-                  ],
-                  labels: const {
-                    ReportStage.report: 'Ảnh hiện trường (bạn gửi)',
-                    ReportStage.inspection: 'Ảnh kỹ thuật viên kiểm tra',
-                    ReportStage.progress: 'Ảnh trong quá trình sửa',
-                    ReportStage.resolution: 'Ảnh nghiệm thu',
-                  },
-                  accentColor: AislBrand.navy,
-                ),
-              if (canAddPhotos)
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: TextButton.icon(
-                    onPressed: () => _addPhotos(reportId, reportPhotoCount),
-                    icon: const Icon(LucideIcons.imagePlus, size: 16),
-                    label: Text(
-                      reportPhotoCount == 0 ? 'Thêm ảnh sự cố' : 'Bổ sung ảnh',
-                    ),
-                    style: TextButton.styleFrom(foregroundColor: AislBrand.navy),
-                  ),
-                ),
-              if (status == 'IN_PROGRESS')
-                const Padding(
-                  padding: EdgeInsets.only(top: 10),
-                  child: OpsBanner(
-                    tone: OpsBannerTone.info,
-                    icon: LucideIcons.userCheck,
-                    text: 'Đội bảo trì đang xử lý báo cáo này.',
-                  ),
-                )
-              else if (status == 'RESOLVED') ...[
-                const Padding(
-                  padding: EdgeInsets.only(top: 10),
-                  child: OpsBanner(
-                    tone: OpsBannerTone.success,
-                    icon: LucideIcons.circleCheck,
-                    text: 'Báo cáo đã được xử lý xong.',
-                  ),
-                ),
-                const SizedBox(height: 10),
-                if (_loadingRating)
-                  const SizedBox(
-                    height: 20,
-                    child: Center(
-                      child: SizedBox(
-                        width: 16,
-                        height: 16,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      ),
-                    ),
-                  )
-                else if (_rating != null)
-                  Row(
-                    children: [
-                      ...List.generate(
-                        5,
-                        (i) => Icon(
-                          i < (_rating!['rating'] as int)
-                              ? LucideIcons.star
-                              : LucideIcons.star,
-                          size: 16,
-                          color: i < (_rating!['rating'] as int)
-                              ? const Color(0xFFF59E0B)
-                              : opsBorder,
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      const Text(
-                        'Bạn đã đánh giá',
-                        style: TextStyle(fontSize: 12, color: opsMutedText),
-                      ),
-                    ],
-                  )
-                else
-                  Row(
-                    children: [
-                      const Text(
-                        'Đánh giá xử lý: ',
-                        style: TextStyle(fontSize: 12, color: opsMutedText),
-                      ),
-                      ...List.generate(
-                        5,
-                        (i) => IconButton(
-                          padding: EdgeInsets.zero,
-                          constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
-                          icon: const Icon(LucideIcons.star, size: 18, color: Color(0xFFF59E0B)),
-                          onPressed: _submitting ? null : () => _submitRating(i + 1),
-                        ),
-                      ),
-                    ],
-                  ),
-              ],
-              const SizedBox(height: 10),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF1F5F9),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'Nhấn để xem chi tiết tiến trình & xử lý',
-                      style: TextStyle(
-                        fontSize: 11.5,
-                        fontWeight: FontWeight.w600,
-                        color: opsPrimary,
-                      ),
-                    ),
-                    Icon(LucideIcons.arrowRight, size: 13, color: opsPrimary),
-                  ],
-                ),
+        child: Container(
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: const Color(0xFFE2E8F0)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.025),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
               ),
             ],
           ),
-        ),
-      ),
-    );
-  }
-}
-
-/// Sheet chọn ảnh → upload Cloudinary → `POST /api/lockers/reports/{id}/attachments`.
-class _AddReportPhotosSheet extends StatefulWidget {
-  const _AddReportPhotosSheet({
-    required this.reportId,
-    required this.service,
-    required this.maxPhotos,
-  });
-
-  final int reportId;
-  final LockerOpsService service;
-  final int maxPhotos;
-
-  @override
-  State<_AddReportPhotosSheet> createState() => _AddReportPhotosSheetState();
-}
-
-class _AddReportPhotosSheetState extends State<_AddReportPhotosSheet> {
-  late final PhotoPickerController _photos = PhotoPickerController(
-    maxPhotos: widget.maxPhotos,
-  );
-  bool _submitting = false;
-  String? _error;
-
-  @override
-  void dispose() {
-    _photos.dispose();
-    super.dispose();
-  }
-
-  Future<void> _submit() async {
-    if (_photos.isEmpty) {
-      setState(() => _error = 'Vui lòng chọn ít nhất 1 ảnh.');
-      return;
-    }
-    setState(() {
-      _submitting = true;
-      _error = null;
-    });
-    try {
-      final attachments = await _photos.uploadAll();
-      await widget.service.addMyReportAttachments(widget.reportId, attachments);
-      if (mounted) Navigator.pop(context, true);
-    } catch (e) {
-      if (mounted) {
-        setState(() => _error = LockerOpsService.errorMessage(e));
-      }
-    } finally {
-      if (mounted) setState(() => _submitting = false);
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.only(
-        bottom: MediaQuery.of(context).viewInsets.bottom,
-      ),
-      child: SafeArea(
-        top: false,
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
           child: Column(
-            mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'Bổ sung ảnh sự cố',
-                style: TextStyle(
-                  fontWeight: FontWeight.w800,
-                  fontSize: 16,
-                  color: opsDark,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                'Tối đa ${widget.maxPhotos} ảnh mỗi lần. Ảnh giúp đội bảo trì '
-                'chuẩn bị đúng linh kiện trước khi tới.',
-                style: const TextStyle(fontSize: 12.5, color: opsMutedText),
-              ),
-              const SizedBox(height: 14),
-              PhotoPickerField(
-                controller: _photos,
-                enabled: !_submitting,
-                thumbSize: 80,
-                accentColor: AislBrand.navy,
-              ),
-              if (_error != null) ...[
-                const SizedBox(height: 10),
-                OpsBanner(
-                  tone: OpsBannerTone.danger,
-                  icon: LucideIcons.circleAlert,
-                  text: _error!,
-                ),
-              ],
-              const SizedBox(height: 16),
-              SizedBox(
-                width: double.infinity,
-                child: FilledButton.icon(
-                  onPressed: _submitting ? null : _submit,
-                  style: FilledButton.styleFrom(
-                    backgroundColor: AislBrand.navy,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
+              // Header: Mã phiếu & Trạng thái
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          color: statusBg,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Icon(
+                          isResolved
+                              ? LucideIcons.circleCheck
+                              : (isInProgress ? LucideIcons.wrench : LucideIcons.alertTriangle),
+                          size: 14,
+                          color: statusColor,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Phiếu sự cố #${report['id'] ?? ''}',
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xFF0F172A),
+                        ),
+                      ),
+                    ],
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: statusBg,
+                      borderRadius: BorderRadius.circular(7),
+                    ),
+                    child: Text(
+                      statusText,
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        color: statusColor,
+                      ),
                     ),
                   ),
-                  icon: _submitting
-                      ? const SizedBox(
-                          width: 18,
-                          height: 18,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: Colors.white,
-                          ),
-                        )
-                      : const Icon(LucideIcons.upload, size: 18),
-                  label: Text(_submitting ? 'Đang tải ảnh...' : 'Gửi ảnh'),
+                ],
+              ),
+              const SizedBox(height: 10),
+
+              // Tiêu đề sự cố & Mô tả ngắn
+              if (title != null && title.isNotEmpty) ...[
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFF0F172A),
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
+                if (description != null && description.isNotEmpty) ...[
+                  const SizedBox(height: 3),
+                  Text(
+                    description,
+                    style: const TextStyle(
+                      fontSize: 12.5,
+                      color: Color(0xFF64748B),
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+                const SizedBox(height: 8),
+              ] else if (description != null && description.isNotEmpty) ...[
+                Text(
+                  description,
+                  style: const TextStyle(
+                    fontSize: 13.5,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF0F172A),
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 8),
+              ],
+
+              // Điểm tủ
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Row(
+                    children: [
+                      Icon(LucideIcons.warehouse, size: 13, color: Color(0xFF64748B)),
+                      SizedBox(width: 6),
+                      Text(
+                        'Điểm tủ',
+                        style: TextStyle(fontSize: 12, color: Color(0xFF64748B)),
+                      ),
+                    ],
+                  ),
+                  Flexible(
+                    child: Text(
+                      '${lockerLabel ?? '-'}',
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF0F172A),
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      textAlign: TextAlign.end,
+                    ),
+                  ),
+                ],
+              ),
+
+              // Ô tủ (nếu có)
+              if (report['boxNumber'] != null) ...[
+                const SizedBox(height: 6),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Row(
+                      children: [
+                        Icon(LucideIcons.grid3x3, size: 13, color: Color(0xFF64748B)),
+                        SizedBox(width: 6),
+                        Text(
+                          'Ô tủ',
+                          style: TextStyle(fontSize: 12, color: Color(0xFF64748B)),
+                        ),
+                      ],
+                    ),
+                    Text(
+                      'Ô số ${report['boxNumber']}',
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF0F172A),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+
+              // Thời gian gửi
+              if (report['createdAt'] != null) ...[
+                const SizedBox(height: 6),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Row(
+                      children: [
+                        Icon(LucideIcons.clock, size: 13, color: Color(0xFF64748B)),
+                        SizedBox(width: 6),
+                        Text(
+                          'Thời gian gửi',
+                          style: TextStyle(fontSize: 12, color: Color(0xFF64748B)),
+                        ),
+                      ],
+                    ),
+                    Text(
+                      fmtDateTime(report['createdAt']),
+                      style: const TextStyle(
+                        fontSize: 11.5,
+                        color: Color(0xFF64748B),
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+
+              const SizedBox(height: 10),
+              const Divider(height: 1, color: Color(0xFFF1F5F9)),
+              const SizedBox(height: 8),
+
+              // Footer: Badges đính kèm + Xem chi tiết >
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Wrap(
+                    spacing: 6,
+                    children: [
+                      if (attachments.isNotEmpty)
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFE0F2FE),
+                            borderRadius: BorderRadius.circular(5),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(LucideIcons.image, size: 11, color: Color(0xFF0284C7)),
+                              SizedBox(width: 3.5),
+                              Text(
+                                '${attachments.length} ảnh',
+                                style: const TextStyle(
+                                  fontSize: 10.5,
+                                  fontWeight: FontWeight.w600,
+                                  color: Color(0xFF0284C7),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      if (isResolved)
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFDCFCE7),
+                            borderRadius: BorderRadius.circular(5),
+                          ),
+                          child: const Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(LucideIcons.circleCheck, size: 11, color: Color(0xFF15803D)),
+                              SizedBox(width: 3.5),
+                              Text(
+                                'Đã hoàn tất',
+                                style: TextStyle(
+                                  fontSize: 10.5,
+                                  fontWeight: FontWeight.w600,
+                                  color: Color(0xFF15803D),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                    ],
+                  ),
+                  const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'Xem chi tiết',
+                        style: TextStyle(
+                          fontSize: 11.5,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF0284C7),
+                        ),
+                      ),
+                      SizedBox(width: 2),
+                      Icon(LucideIcons.chevronRight, size: 13, color: Color(0xFF0284C7)),
+                    ],
+                  ),
+                ],
               ),
             ],
           ),

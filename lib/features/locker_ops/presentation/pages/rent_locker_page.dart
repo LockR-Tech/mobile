@@ -336,37 +336,42 @@ class _RentLockerPageState extends State<RentLockerPage>
     }
   }
 
+  void _navigateToOrders() {
+    if (!mounted) return;
+    final router = GoRouter.maybeOf(context);
+    if (router != null) {
+      Navigator.of(context, rootNavigator: true).popUntil((route) => route.isFirst);
+      Future.microtask(() {
+        router.go(AppRouter.orders);
+      });
+    } else {
+      Navigator.of(context).maybePop();
+    }
+  }
+
   Future<void> _openBox() async {
     final order = _order;
     final lockerId = order?['lockerId'] as int?;
     final boxId = order?['sendBoxId'] as int?;
     final pin = order?['pinCode'] as String?;
+    final orderId = order?['id'] as int?;
+    if (orderId == null) return;
+
     if (lockerId == null || boxId == null || pin == null || pin.isEmpty) {
       _snack('Đơn chưa có thông tin ô/PIN để mở tủ.');
       return;
     }
     setState(() => _loading = true);
+    bool unlockedSuccessfully = false;
     try {
       final res = await _service.unlock(lockerId, boxId, pin);
-      final message = res['message']?.toString();
-      _snack(
-        res['accepted'] == true
-            ? 'Ô đã mở — đặt đồ vào, đóng cửa rồi bấm xác nhận.'
-            : (message == null || message.isEmpty ? 'Không mở được ô' : message),
-      );
-    } catch (e) {
-      _snack(LockerOpsService.errorMessage(e));
-    } finally {
-      if (mounted) setState(() => _loading = false);
+      unlockedSuccessfully = res['accepted'] == true;
+    } catch (_) {
+      unlockedSuccessfully = false;
     }
-  }
 
-  Future<void> _confirmDrop() async {
-    final id = _order?['id'] as int?;
-    if (id == null) return;
-    setState(() => _loading = true);
     try {
-      final updated = await _service.confirmDrop(id);
+      final updated = await _service.confirmDrop(orderId);
       if (!mounted) return;
       setState(() {
         final wasPaid = (_order?['paymentStatus'] as String?) == 'PAID';
@@ -377,7 +382,16 @@ class _RentLockerPageState extends State<RentLockerPage>
         };
       });
       _syncPayment();
-      _snack('Bắt đầu kỳ thuê — PIN dùng nhiều lần');
+
+      if (unlockedSuccessfully) {
+        _snack('Ô đã mở thành công — bắt đầu kỳ thuê!');
+      } else {
+        _snack('Không mở được ô thật (giả lập: đã xác nhận bỏ đồ & bắt đầu kỳ thuê)');
+      }
+
+      await Future<void>.delayed(const Duration(milliseconds: 600));
+      if (!mounted) return;
+      _navigateToOrders();
     } catch (e) {
       _snack(LockerOpsService.errorMessage(e));
     } finally {
@@ -1049,8 +1063,7 @@ class _RentLockerPageState extends State<RentLockerPage>
             tone: OpsBannerTone.info,
             icon: LucideIcons.packageOpen,
             title: 'Đã giữ ô — bỏ đồ vào',
-            text: 'Nhập PIN để mở ${_resultBoxLabel(order)} hoặc mở bằng nút bên dưới, '
-                'đặt đồ vào, đóng cửa rồi xác nhận để bắt đầu tính giờ thuê.',
+            text: 'Nhập PIN để mở ${_resultBoxLabel(order)} hoặc mở bằng nút bên dưới để bắt đầu kỳ thuê.',
           ),
           const SizedBox(height: 12),
           OpsPrimaryButton(
@@ -1059,13 +1072,6 @@ class _RentLockerPageState extends State<RentLockerPage>
             color: opsPrimary,
             loading: _loading,
             onPressed: _openBox,
-          ),
-          const SizedBox(height: 12),
-          OpsPrimaryButton(
-            label: 'Tôi đã bỏ đồ — bắt đầu kỳ thuê',
-            icon: LucideIcons.check,
-            loading: _loading,
-            onPressed: _confirmDrop,
           ),
         ] else ...[
           if (unpaid) ...[
@@ -1087,13 +1093,7 @@ class _RentLockerPageState extends State<RentLockerPage>
           OpsPrimaryButton(
             label: 'Xong — xem trong Đơn của tôi',
             icon: LucideIcons.house,
-            onPressed: () {
-              final router = GoRouter.of(context);
-              Navigator.of(context, rootNavigator: true).popUntil((route) => route.isFirst);
-              Future.microtask(() {
-                router.go(AppRouter.orders);
-              });
-            },
+            onPressed: _navigateToOrders,
           ),
         ],
       ],

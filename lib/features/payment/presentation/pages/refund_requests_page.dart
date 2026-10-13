@@ -17,6 +17,7 @@ import 'package:smart_laundry_locker/features/payment/data/payment_service.dart'
 import 'package:smart_laundry_locker/features/payment/data/user_bank_account.dart';
 import 'package:smart_laundry_locker/features/wallet/data/vietnamese_banks.dart';
 import 'package:smart_laundry_locker/shared/widgets/app_cached_image.dart';
+import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
 
 class RefundRequestsPage extends StatefulWidget {
   const RefundRequestsPage({
@@ -346,37 +347,37 @@ class _RefundRequestsPageState extends State<RefundRequestsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        surfaceTintColor: Colors.transparent,
-        leading: IconButton(
-          icon: const Icon(LucideIcons.arrowLeft, color: Color(0xFF0F172A)),
-          onPressed: () => AppRouter.backOrHome(context),
-        ),
-        title: const Text(
-          'Hoàn tiền',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w700,
-            color: Color(0xFF0F172A),
+      body: Column(
+        children: [
+          BrandHeroHeader(
+            eyebrow: 'LOCK.R • THANH TOÁN',
+            title: 'Hoàn tiền',
+            subtitle: 'Quản lý và tạo yêu cầu hoàn tiền cho đơn hàng',
+            onBack: () => AppRouter.backOrHome(context),
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                BrandCircleIconButton(
+                  icon: LucideIcons.refreshCw,
+                  iconSize: 18,
+                  onTap: () => _loadRefunds(),
+                ),
+                const SizedBox(width: 8),
+                BrandCircleIconButton(
+                  icon: LucideIcons.helpCircle,
+                  iconSize: 18,
+                  onTap: _showRulesDialog,
+                ),
+              ],
+            ),
           ),
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(LucideIcons.helpCircle, color: Color(0xFF64748B), size: 20),
-            tooltip: 'Quy định hoàn tiền',
-            onPressed: _showRulesDialog,
-          ),
-        ],
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(48),
-          child: Container(
-            margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+          Container(
+            margin: const EdgeInsets.fromLTRB(16, 12, 16, 8),
             padding: const EdgeInsets.all(3),
             decoration: BoxDecoration(
               color: const Color(0xFFF1F5F9),
               borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: const Color(0xFFE2E8F0)),
             ),
             child: Row(
               children: [
@@ -398,9 +399,11 @@ class _RefundRequestsPageState extends State<RefundRequestsPage> {
               ],
             ),
           ),
-        ),
+          Expanded(
+            child: _selectedTab == 0 ? _buildRefundsList() : _buildCreateRequestForm(),
+          ),
+        ],
       ),
-      body: _selectedTab == 0 ? _buildRefundsList() : _buildCreateRequestForm(),
     );
   }
 
@@ -1096,27 +1099,36 @@ class _RefundRequestsPageState extends State<RefundRequestsPage> {
                               iconColor: const Color(0xFF15803D),
                             ),
                         ],
-
-                        const SizedBox(height: 22),
-                        SizedBox(
-                          width: double.infinity,
-                          child: ElevatedButton(
-                            onPressed: () => Navigator.pop(sheetContext),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF0F172A),
-                              foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(vertical: 13),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                            ),
-                            child: const Text(
-                              'Đóng',
-                              style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
-                            ),
-                          ),
-                        ),
                       ],
+                    ),
+                  ),
+                ),
+
+                // Nút đóng cố định ở chân modal (không bị cuộn)
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.fromLTRB(20, 10, 20, 12),
+                  decoration: const BoxDecoration(
+                    color: Colors.white,
+                    border: Border(top: BorderSide(color: Color(0xFFF1F5F9))),
+                  ),
+                  child: SizedBox(
+                    width: double.infinity,
+                    height: 46,
+                    child: ElevatedButton(
+                      onPressed: () => Navigator.pop(sheetContext),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF0F172A),
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: const Text(
+                        'Đóng',
+                        style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
+                      ),
                     ),
                   ),
                 ),
