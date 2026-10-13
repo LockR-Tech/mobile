@@ -14,6 +14,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "711645742956-khftrjklmo7hc55eqejuqk0ms9cjgbo6.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.laundrylocker.mobile",
+            "certificate_hash": "a31a755ec416e8d97d4c750e864ce06308b84585"
+          }
+        },
+        {
           "client_id": "711645742956-309l0olmahm9rn4ul6kffc4dfiipagon.apps.googleusercontent.com",
           "client_type": 3
         }
