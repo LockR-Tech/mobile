@@ -17,7 +17,7 @@ abstract class EnvConfig {
   // Admin) can verify. PUBLIC value (also present in
   // android/app/google-services.json oauth_client type 3), not a secret.
   static const String googleWebClientId =
-      '1007589685877-s8jcspo0fsils3f97sqgrmfaqhakrsam.apps.googleusercontent.com';
+      '711645742956-309l0olmahm9rn4ul6kffc4dfiipagon.apps.googleusercontent.com';
 
   // @EnviedField(varName: 'GOOGLE_MAPS_API_KEY', defaultValue: '')
   // static const String googleMapsApiKey = _EnvConfig.googleMapsApiKey;
