@@ -474,6 +474,37 @@ void main() {
     expect(find.textContaining('NP-261010-SRVSEA'), findsOneWidget);
   });
 
+  testWidgets('shows loading validation inside the dialog', (tester) async {
+    final service = _FakeMaintenanceService();
+    final router = GoRouter(
+      routes: [
+        GoRoute(
+          path: '/',
+          builder: (context, state) => MaintenanceHomePage(service: service),
+        ),
+      ],
+    );
+
+    await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Xác nhận nạp'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Xác nhận đã nạp'));
+    await tester.pump();
+
+    expect(find.text('Xác nhận nạp hàng'), findsOneWidget);
+    expect(
+      find.text('Vui lòng nhập khối lượng thực tế lớn hơn 0'),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey('drone-loading-checklist-error')),
+      findsOneWidget,
+    );
+    expect(find.byType(SnackBar), findsNothing);
+    expect(service.loadedOrderId, isNull);
+  });
+
   testWidgets('deep link mở đúng tab và phiếu sự cố được nhắc tới', (
     tester,
   ) async {
