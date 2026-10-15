@@ -45,6 +45,12 @@ class PickupGeocoder {
         'format': 'json',
         'q': text,
         'countrycodes': 'vn',
+        // Rank results in the current HCMC service area first. Keep this as a
+        // bias (not `bounded`) so an address outside the box can still appear.
+        // Nominatim uses left,top,right,bottom for viewbox.
+        'viewbox': '106.35,11.15,107.05,10.35',
+        'addressdetails': '1',
+        'dedupe': '1',
         'limit': '6',
       });
       final response = await _client
@@ -61,7 +67,11 @@ class PickupGeocoder {
         final name = '${item['display_name'] ?? ''}'.trim();
         if (latitude == null || longitude == null || name.isEmpty) continue;
         results.add(
-          PickupLocation(latitude: latitude, longitude: longitude, address: name),
+          PickupLocation(
+            latitude: latitude,
+            longitude: longitude,
+            address: name,
+          ),
         );
       }
       return results;

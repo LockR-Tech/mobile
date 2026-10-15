@@ -378,7 +378,8 @@ class LockerOpsService {
     '/api/orders/$orderId/rate',
     body: {
       'rating': rating,
-      if (comment != null && comment.trim().isNotEmpty) 'comment': comment.trim(),
+      if (comment != null && comment.trim().isNotEmpty)
+        'comment': comment.trim(),
     },
   );
 
@@ -772,8 +773,7 @@ class LockerOpsService {
       if (reason != null && reason.isNotEmpty) 'reason': reason,
       if (customerOtp != null && customerOtp.isNotEmpty)
         'customerOtp': customerOtp,
-      if (sealNumber != null && sealNumber.isNotEmpty)
-        'sealNumber': sealNumber,
+      if (sealNumber != null && sealNumber.isNotEmpty) 'sealNumber': sealNumber,
       if (attachments != null && attachments.isNotEmpty)
         'attachments': attachments,
       if (progressAttachments != null && progressAttachments.isNotEmpty)
@@ -1454,7 +1454,7 @@ class LockerOpsService {
     'DRONE_ROUTE_TOO_FAR':
         'Tủ nhận nằm ngoài tầm bay của drone từ khu vực lấy hàng này.',
     'DRONE_PICKUP_OUT_OF_RANGE':
-        'Điểm lấy hàng nằm ngoài vùng phục vụ: chưa có tủ drone nào đủ gần.',
+        'Vị trí ghim nằm ngoài bán kính lấy hàng của tủ gửi drone. Khoảng cách này tính từ nhà bạn đến tủ gửi, khác quãng đường bay giữa hai tủ. Hãy kiểm tra ghim trên bản đồ rồi chọn lại vị trí.',
     'DRONE_NO_SOURCE_LOCKER':
         'Hiện chưa có tủ nào gần bạn sẵn sàng phóng drone. Vui lòng thử lại sau.',
     'DRONE_LOCKER_LOCATION_MISSING':
@@ -1585,7 +1585,8 @@ class LockerOpsService {
     'REPORT_RELEASE_REASON_REQUIRED': 'Cần nêu lý do trả phiếu về hàng chờ.',
     'REPORT_NOT_CLAIMED': 'Phiếu đang ở hàng chờ, chưa có KTV nhận.',
     'REPORT_ALREADY_RESOLVED': 'Phiếu đã được hoàn tất.',
-    'REPORT_OPEN': 'Ô/bãi đáp đang có phiếu sự cố mở — hoàn tất phiếu đó trước.',
+    'REPORT_OPEN':
+        'Ô/bãi đáp đang có phiếu sự cố mở — hoàn tất phiếu đó trước.',
     'TARGET_BOX_REQUIRED': 'Cần chọn ô trống đích để điều chuyển hàng.',
     'TARGET_BOX_NOT_AVAILABLE':
         'Ô đích không còn trống — tải lại sơ đồ và chọn ô khác.',
