@@ -84,7 +84,9 @@ class _PickupLocationPickerPageState extends State<PickupLocationPickerPage> {
       _addressController.text = initial.address;
     } else {
       // Mở lần đầu: thử lấy luôn vị trí hiện tại cho người gửi.
-      WidgetsBinding.instance.addPostFrameCallback((_) => _useCurrentLocation());
+      WidgetsBinding.instance.addPostFrameCallback(
+        (_) => _useCurrentLocation(),
+      );
     }
   }
 
@@ -113,7 +115,11 @@ class _PickupLocationPickerPageState extends State<PickupLocationPickerPage> {
 
   /// Ghim điểm mới và tra địa chỉ của nó. Người dùng có thể đã ghim điểm khác trong lúc
   /// chờ — chỉ lượt tra mới nhất được ghi vào ô địa chỉ.
-  Future<void> _moveTo(LatLng point, {double? zoom, String? knownAddress}) async {
+  Future<void> _moveTo(
+    LatLng point, {
+    double? zoom,
+    String? knownAddress,
+  }) async {
     final lookup = ++_lookup;
     setState(() {
       _point = point;
@@ -248,6 +254,10 @@ class _PickupLocationPickerPageState extends State<PickupLocationPickerPage> {
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
+                    subtitle: Text(
+                      '${result.latitude.toStringAsFixed(5)}, '
+                      '${result.longitude.toStringAsFixed(5)} · chạm để xem ghim',
+                    ),
                     onTap: () => _moveTo(
                       LatLng(result.latitude, result.longitude),
                       zoom: 17,
@@ -272,7 +282,8 @@ class _PickupLocationPickerPageState extends State<PickupLocationPickerPage> {
                       TileLayer(
                         urlTemplate:
                             'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                        userAgentPackageName: 'com.example.smart_laundry_locker',
+                        userAgentPackageName:
+                            'com.example.smart_laundry_locker',
                       ),
                       if (point != null)
                         MarkerLayer(
@@ -335,7 +346,8 @@ class _PickupLocationPickerPageState extends State<PickupLocationPickerPage> {
                             ? 'Chạm lên bản đồ để ghim điểm lấy hàng'
                             : 'Vĩ độ ${point.latitude.toStringAsFixed(5)} · '
                                   'kinh độ ${point.longitude.toStringAsFixed(5)}'
-                                  ' · sửa lại địa chỉ nếu chưa đúng',
+                                  ' · vị trí ghim dùng để tính vùng phục vụ; kiểm tra ghim '
+                                  'có đúng địa chỉ trước khi xác nhận',
                         suffixIcon: _resolving
                             ? const Padding(
                                 padding: EdgeInsets.all(12),
