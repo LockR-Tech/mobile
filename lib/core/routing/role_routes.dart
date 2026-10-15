@@ -227,22 +227,66 @@ String? technicianRouteForNotification(
   String? referenceId,
 }) {
   final id = int.tryParse(referenceId?.trim() ?? '');
-  final lockerAssignment = referenceType == 'LOCKER';
-  return switch (type) {
-    'locker.report.routed' => technicianHomeLocation(
-      tab: 'incidents',
-      reportId: id,
-    ),
-    'locker.report.assigned' =>
-      lockerAssignment
-          ? technicianHomeLocation(tab: 'incidents')
-          : technicianHomeLocation(tab: 'mine', reportId: id),
-    'locker.schedule.due' => technicianHomeLocation(
-      tab: 'schedules',
-      scheduleId: id,
-    ),
-    'DRONE_PARCEL_RECOVERY_ASSIGNED' ||
-    'drone.parcel.recovery.assigned' => technicianHomeLocation(tab: 'recovery'),
-    _ => null,
-  };
+  final refType = (referenceType ?? '').trim().toUpperCase();
+  final kind = (type ?? '').trim();
+  final normalized = kind.toLowerCase().replaceAll('_', '.');
+
+  // Không xử lý thông báo dành riêng cho KTV drone
+  if (normalized.startsWith('drone.report.') ||
+      normalized.startsWith('drone.schedule.') ||
+      normalized == 'drone.order.created') {
+    return null;
+  }
+
+  // Thu hồi kiện hàng rơi từ drone giao cho KTV tủ
+  if (normalized == 'drone.parcel.recovery.assigned' ||
+      refType == 'DRONE_PARCEL_INCIDENT' ||
+      refType == 'RECOVERY') {
+    return technicianHomeLocation(tab: 'recovery');
+  }
+
+  // Lịch bảo trì định kỳ tủ
+  if (normalized == 'locker.schedule.due' ||
+      (normalized == 'locker.report.assigned' && refType == 'MAINTENANCE_SCHEDULE') ||
+      refType == 'MAINTENANCE_SCHEDULE' ||
+      refType == 'SCHEDULE') {
+    return technicianHomeLocation(tab: 'schedules', scheduleId: id);
+  }
+
+  // Phân công KTV phụ trách tủ
+  if (normalized == 'locker.report.assigned' && refType == 'LOCKER') {
+    return technicianHomeLocation(tab: 'incidents');
+  }
+
+  // Giao phiếu sự cố hoặc phiếu gán trực tiếp cho KTV tủ
+  if (normalized == 'locker.report.assigned') {
+    return technicianHomeLocation(tab: 'mine', reportId: id);
+  }
+
+  // Phiếu sự cố mới được định tuyến chờ KTV nhận
+  if (normalized == 'locker.report.routed') {
+    return technicianHomeLocation(tab: 'incidents', reportId: id);
+  }
+
+  // Báo hỏng ô tủ
+  if (normalized == 'locker.box.fault') {
+    return technicianHomeLocation(tab: 'incidents', reportId: id);
+  }
+
+  // Khách hàng đánh giá phiếu sự cố đã xử lý
+  if (normalized == 'locker.report.rated' ||
+      refType == 'LOCKER_REPORT_RATING') {
+    return technicianHomeLocation(tab: 'mine', reportId: id);
+  }
+
+  // Cảnh báo phần cứng hoặc thiết bị IoT
+  if (normalized == 'iot.device.status.changed' || refType == 'DEVICE') {
+    return technicianHomeLocation(tab: 'devices');
+  }
+
+  if (refType == 'LOCKER_REPORT' || refType == 'REPORT') {
+    return technicianHomeLocation(tab: 'mine', reportId: id);
+  }
+
+  return null;
 }

@@ -102,11 +102,23 @@ void main() {
         '/technician-home?tab=incidents&reportId=5',
       );
       expect(
+        link('LOCKER_REPORT_ROUTED', role, referenceId: '5'),
+        '/technician-home?tab=incidents&reportId=5',
+      );
+      expect(
         link('locker.report.assigned', role, referenceId: '6'),
         '/technician-home?tab=mine&reportId=6',
       );
       expect(
+        link('LOCKER_REPORT_ASSIGNED', role, referenceId: '6'),
+        '/technician-home?tab=mine&reportId=6',
+      );
+      expect(
         link('locker.schedule.due', role, referenceId: '9'),
+        '/technician-home?tab=schedules&scheduleId=9',
+      );
+      expect(
+        link('LOCKER_SCHEDULE_DUE', role, referenceId: '9'),
         '/technician-home?tab=schedules&scheduleId=9',
       );
     });
@@ -120,6 +132,49 @@ void main() {
           referenceType: 'LOCKER',
         ),
         '/technician-home?tab=incidents',
+      );
+    });
+
+    test('phân công lịch bảo trì mở tab schedules kèm scheduleId', () {
+      expect(
+        link(
+          'locker.report.assigned',
+          role,
+          referenceId: '15',
+          referenceType: 'MAINTENANCE_SCHEDULE',
+        ),
+        '/technician-home?tab=schedules&scheduleId=15',
+      );
+    });
+
+    test('thu hồi kiện hàng rơi từ drone mở tab recovery', () {
+      expect(
+        link('DRONE_PARCEL_RECOVERY_ASSIGNED', role, referenceId: '77'),
+        '/technician-home?tab=recovery',
+      );
+      expect(
+        link(
+          'UNKNOWN',
+          role,
+          referenceId: '77',
+          referenceType: 'DRONE_PARCEL_INCIDENT',
+        ),
+        '/technician-home?tab=recovery',
+      );
+    });
+
+    test('đánh giá của khách và báo lỗi ô mở đúng tab', () {
+      expect(
+        link('locker.report.rated', role, referenceId: '12'),
+        '/technician-home?tab=mine&reportId=12',
+      );
+      expect(
+        link('LOCKER_BOX_FAULT', role, referenceId: '88'),
+        '/technician-home?tab=incidents&reportId=88',
+      );
+      expect(
+        link('IOT_DEVICE_STATUS_CHANGED', role),
+        '/technician-home?tab=devices',
       );
     });
 

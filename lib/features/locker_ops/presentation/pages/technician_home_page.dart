@@ -21,6 +21,9 @@ import 'package:smart_laundry_locker/features/profile/presentation/providers/pro
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/pages/technician_profile_page.dart';
 import 'package:smart_laundry_locker/core/services/app_event_bus.dart';
+import 'package:smart_laundry_locker/core/network/api_client.dart';
+import 'package:smart_laundry_locker/core/services/firebase_messaging_service.dart';
+import 'package:smart_laundry_locker/features/notifications/presentation/providers/notification_provider.dart';
 import 'package:smart_laundry_locker/features/locker/domain/utils/locker_layout_helper.dart';
 import 'package:smart_laundry_locker/features/maintenance/presentation/widgets/drone_recovery_queue.dart';
 
@@ -140,6 +143,12 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
           if (profileProvider.profile == null) {
             profileProvider.loadProfile();
           }
+        } catch (_) {}
+        try {
+          context.read<NotificationProvider>().loadUnreadCount();
+        } catch (_) {}
+        try {
+          FirebaseMessagingService.instance.updateBackendDeviceToken(ApiClient());
         } catch (_) {}
       }
     });
@@ -1497,6 +1506,58 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                                 ),
                               ),
                             ),
+                            // Thông báo với badge số lượng chưa đọc
+                            Consumer<NotificationProvider>(
+                              builder: (context, notiProvider, _) {
+                                final unread = notiProvider.unreadCount;
+                                return Stack(
+                                  clipBehavior: Clip.none,
+                                  children: [
+                                    _headerActionButton(
+                                      icon: Icons.notifications_none_rounded,
+                                      tooltip: 'Thông báo',
+                                      onTap: () =>
+                                          context.push(AppRouter.notifications),
+                                    ),
+                                    if (unread > 0)
+                                      Positioned(
+                                        top: -3,
+                                        right: -3,
+                                        child: Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 4.5,
+                                            vertical: 1.5,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color: const Color(0xFFEF4444),
+                                            borderRadius:
+                                                BorderRadius.circular(10),
+                                            border: Border.all(
+                                              color: Colors.white,
+                                              width: 1.5,
+                                            ),
+                                          ),
+                                          constraints: const BoxConstraints(
+                                            minWidth: 17,
+                                            minHeight: 17,
+                                          ),
+                                          alignment: Alignment.center,
+                                          child: Text(
+                                            unread > 99 ? '99+' : '$unread',
+                                            style: const TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 9.5,
+                                              fontWeight: FontWeight.w800,
+                                              height: 1,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                  ],
+                                );
+                              },
+                            ),
+                            const SizedBox(width: 6),
                             _headerActionButton(
                               icon: Icons.person_outline_rounded,
                               tooltip: 'Hồ sơ & Chỉnh sửa',

@@ -94,11 +94,17 @@ class NotificationProvider extends ChangeNotifier {
       bus.emit(OrderChangedEvent(orderId: referenceId));
     }
 
-    if (action.contains('REPORT')) {
+    if (action.contains('REPORT') ||
+        action.contains('SCHEDULE') ||
+        action.contains('RECOVERY') ||
+        action.contains('RATING')) {
       bus.emit(ReportUpdatedEvent(reportId: referenceId));
     }
 
-    if (action.contains('LOCKER') || action.contains('BOX')) {
+    if (action.contains('LOCKER') ||
+        action.contains('BOX') ||
+        action.contains('DEVICE') ||
+        action.contains('IOT')) {
       bus.emit(LockerLayoutUpdatedEvent(lockerId: referenceId));
       bus.emit(ReportUpdatedEvent(reportId: referenceId));
     }

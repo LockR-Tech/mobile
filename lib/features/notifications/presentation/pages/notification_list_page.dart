@@ -549,16 +549,35 @@ class _NotificationListPageState extends State<NotificationListPage> {
 
   IconData _getIconForType(String? actionType) {
     if (actionType == null) return LucideIcons.bell;
-    switch (actionType) {
+    final normalized = actionType.trim().toUpperCase().replaceAll('.', '_');
+    switch (normalized) {
       case 'DRONE_ORDER_CREATED':
         return LucideIcons.planeTakeoff;
       case 'OPEN_ORDER_DETAIL':
         return LucideIcons.package;
       case 'ORDER_STATUS_CHANGED':
       case 'DRONE_DELIVERY_STATUS_CHANGED':
+      case 'DELIVERY_STATUS_CHANGED':
         return LucideIcons.truck; // trạng thái giao hàng (drone)
       case 'OPEN_PROMOTION_TAB':
         return LucideIcons.tag;
+      case 'LOCKER_REPORT_ROUTED':
+      case 'LOCKER_BOX_FAULT':
+        return LucideIcons.alertTriangle;
+      case 'LOCKER_REPORT_ASSIGNED':
+      case 'DRONE_REPORT_ASSIGNED':
+        return LucideIcons.clipboardCheck;
+      case 'LOCKER_SCHEDULE_DUE':
+      case 'DRONE_SCHEDULE_DUE':
+      case 'MAINTENANCE_SCHEDULE':
+        return LucideIcons.calendarClock;
+      case 'DRONE_PARCEL_RECOVERY_ASSIGNED':
+        return LucideIcons.packageSearch;
+      case 'LOCKER_REPORT_RATED':
+      case 'LOCKER_REPORT_RATING':
+        return LucideIcons.star;
+      case 'IOT_DEVICE_STATUS_CHANGED':
+        return LucideIcons.cpu;
       default:
         return LucideIcons.bell;
     }

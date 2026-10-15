@@ -9,6 +9,7 @@ import 'package:provider/provider.dart';
 import 'package:smart_laundry_locker/core/network/api_client.dart';
 import 'package:smart_laundry_locker/core/routing/app_router.dart';
 import 'package:smart_laundry_locker/core/routing/role_routes.dart';
+import 'package:smart_laundry_locker/core/services/firebase_messaging_service.dart';
 import 'package:smart_laundry_locker/core/services/token_service.dart';
 import 'package:smart_laundry_locker/features/auth/presentation/providers/auth_injection.dart';
 import 'package:smart_laundry_locker/features/auth/presentation/providers/login_provider.dart';
@@ -177,6 +178,9 @@ class _LoginScreenState extends State<LoginScreen>
     final profileProvider = context.read<ProfileProvider>();
     try {
       if (!viaPhone) profileProvider.loadProfile();
+      unawaited(
+        FirebaseMessagingService.instance.updateBackendDeviceToken(ApiClient()),
+      );
       final roles = await TokenService.getCurrentRoles();
       if (!mounted) return;
       context.go(homeForRoles(roles));
