@@ -5,6 +5,10 @@ Do workflow `deploy-web.yml` tự ghi sau mỗi lần chạy, kể cả khi th�
 
 | Thời điểm (UTC) | Kết quả | Commit | Người đẩy | Ghi chú |
 |---|---|---|---|---|
+| 2026-10-16 08:57 | success | [`819cf5e`](https://github.com/LockR-Tech/mobile/commit/819cf5eedfaaeb83470b3614c93cc7f9b506416a) | @TruongNguyenThaiBinh77 | build 55M |
+| 2026-10-15 18:04 | success | [`a617094`](https://github.com/LockR-Tech/mobile/commit/a617094424933973ec41dc5ca8a395f35c1be137) | @TruongNguyenThaiBinh77 | build 55M |
+| 2026-10-15 12:22 | success | [`d9cfc00`](https://github.com/LockR-Tech/mobile/commit/d9cfc0073e4893095767d15dc4f634194eb900ed) | @LeThiYenVi | build 55M |
+| 2026-10-14 14:59 | success | [`a69b07d`](https://github.com/LockR-Tech/mobile/commit/a69b07d46c747bb7242b9da8b5588c2ac88ef4d8) | @LeThiYenVi | build 55M |
 | 2026-10-13 18:53 | success | [`2fd84b9`](https://github.com/LockR-Tech/mobile/commit/2fd84b90701ad472578685583692b7e17eca07e4) | @TruongNguyenThaiBinh77 | build 55M |
 | 2026-10-13 17:33 | success | [`93e4c7b`](https://github.com/LockR-Tech/mobile/commit/93e4c7bde244ada1729b6d2af561c122546f9601) | @TruongNguyenThaiBinh77 | build 55M |
 | 2026-10-13 16:51 | success | [`1c57ff4`](https://github.com/LockR-Tech/mobile/commit/1c57ff470802e62674af14173a1cb3c45e477dc8) | @TruongNguyenThaiBinh77 | build 55M |

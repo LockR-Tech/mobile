@@ -102,6 +102,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
   String _schedulePriorityFilter = 'ALL';
   String _scheduleSort = 'DUE';
   final _scheduleSearchController = TextEditingController();
+
   /// Lần tải đầu (chưa có dữ liệu nào) mới che cả màn bằng vòng quay; các lần
   /// tải lại giữ nguyên giao diện 6 tab và chỉ hiện thanh tiến trình mảnh.
   bool _loading = true;
@@ -985,13 +986,13 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
     final displayName = _resolvedTechnicianName(context);
     // Bậc SLA do server tính (my-performance); chưa có thì không ghi "Bình thường".
     final headerPenalty = _penaltyInfo(_performance?['penaltyLevel']);
-    final slaTextColor =
-        switch ('${_performance?['penaltyLevel'] ?? ''}'.toUpperCase()) {
-          'NORMAL' => const Color(0xFFA7F3D0),
-          'WARNING' => const Color(0xFFFDE68A),
-          'RESTRICTED' || 'SUSPENDED' => const Color(0xFFFCA5A5),
-          _ => const Color(0xFFCBD5E1),
-        };
+    final slaTextColor = switch ('${_performance?['penaltyLevel'] ?? ''}'
+        .toUpperCase()) {
+      'NORMAL' => const Color(0xFFA7F3D0),
+      'WARNING' => const Color(0xFFFDE68A),
+      'RESTRICTED' || 'SUSPENDED' => const Color(0xFFFCA5A5),
+      _ => const Color(0xFFCBD5E1),
+    };
     String? avatarUrl;
     try {
       avatarUrl = context.watch<ProfileProvider>().profile?.avatarUrl;
@@ -1469,7 +1470,8 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
     // hàng chờ tiếp nhận chung chỉ còn dành cho đơn cũ khách tự mang kiện ra tủ.
     final awaiting = visibleDeliveries
         .where(
-          (d) => d['deliveryStage'] == 'AWAITING_DISPATCH' && d['pickup'] is! Map,
+          (d) =>
+              d['deliveryStage'] == 'AWAITING_DISPATCH' && d['pickup'] is! Map,
         )
         .toList(growable: false);
     final hasPickupWork = visibleDeliveries.any(
@@ -1807,9 +1809,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
       _myDroneReports.where((r) => r['status'] != 'RESOLVED').length +
       _schedules
           .where(_isScheduleMine)
-          .where(
-            (s) => !_myTaskIsDone((type: 'MAINTENANCE', data: s)),
-          )
+          .where((s) => !_myTaskIsDone((type: 'MAINTENANCE', data: s)))
           .length;
 
   bool _matchesDispatchFilter(Map<String, dynamic> delivery, [String? filter]) {
@@ -3678,7 +3678,9 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setLocal) => AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
           title: const Text('Đổi drone'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
@@ -3695,7 +3697,9 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                 children: [
                   for (final d in candidates)
                     ChoiceChip(
-                      label: Text('${d['code']} · ${d['batteryPercent'] ?? '?'}%'),
+                      label: Text(
+                        '${d['code']} · ${d['batteryPercent'] ?? '?'}%',
+                      ),
                       selected: selected == _asInt(d['id']),
                       onSelected: (_) =>
                           setLocal(() => selected = _asInt(d['id'])),
@@ -4018,6 +4022,8 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
     var parcelMatched = false;
     var payloadSecured = false;
     var compartmentLocked = false;
+    var weightInvalid = false;
+    var checklistIncomplete = false;
 
     final confirmed = await showDialog<bool>(
       context: context,
@@ -4040,10 +4046,13 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                   key: const ValueKey('drone-loading-weight'),
                   controller: weightCtrl,
                   keyboardType: TextInputType.number,
-                  onChanged: (_) => setLocal(() {}),
-                  decoration: const InputDecoration(
+                  onChanged: (_) => setLocal(() => weightInvalid = false),
+                  decoration: InputDecoration(
                     labelText: 'Khối lượng cân thực tế (gram) *',
                     hintText: 'Nhập số gram đọc trên cân',
+                    errorText: weightInvalid
+                        ? 'Vui lòng nhập khối lượng thực tế lớn hơn 0'
+                        : null,
                     isDense: true,
                   ),
                 ),
@@ -4088,26 +4097,45 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                   dense: true,
                   contentPadding: EdgeInsets.zero,
                   value: parcelMatched,
-                  onChanged: (value) =>
-                      setLocal(() => parcelMatched = value ?? false),
+                  onChanged: (value) => setLocal(() {
+                    parcelMatched = value ?? false;
+                    checklistIncomplete = false;
+                  }),
                   title: const Text('Đúng kiện hàng và đúng đơn'),
                 ),
                 CheckboxListTile(
                   dense: true,
                   contentPadding: EdgeInsets.zero,
                   value: payloadSecured,
-                  onChanged: (value) =>
-                      setLocal(() => payloadSecured = value ?? false),
+                  onChanged: (value) => setLocal(() {
+                    payloadSecured = value ?? false;
+                    checklistIncomplete = false;
+                  }),
                   title: const Text('Kiện hàng đã được cố định'),
                 ),
                 CheckboxListTile(
                   dense: true,
                   contentPadding: EdgeInsets.zero,
                   value: compartmentLocked,
-                  onChanged: (value) =>
-                      setLocal(() => compartmentLocked = value ?? false),
+                  onChanged: (value) => setLocal(() {
+                    compartmentLocked = value ?? false;
+                    checklistIncomplete = false;
+                  }),
                   title: const Text('Khoang hàng đã khóa'),
                 ),
+                if (checklistIncomplete)
+                  const Padding(
+                    padding: EdgeInsets.only(bottom: 8),
+                    child: Text(
+                      'Vui lòng hoàn tất toàn bộ checklist',
+                      key: ValueKey('drone-loading-checklist-error'),
+                      style: TextStyle(
+                        color: Colors.red,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
                 TextField(
                   controller: noteCtrl,
                   minLines: 1,
@@ -4128,18 +4156,14 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
             FilledButton(
               onPressed: () {
                 final weight = int.tryParse(weightCtrl.text.trim());
-                if (weight == null ||
-                    weight <= 0 ||
-                    !parcelMatched ||
-                    !payloadSecured ||
-                    !compartmentLocked) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text(
-                        'Nhập khối lượng thực tế và hoàn tất checklist',
-                      ),
-                    ),
-                  );
+                final invalidWeight = weight == null || weight <= 0;
+                final incompleteChecklist =
+                    !parcelMatched || !payloadSecured || !compartmentLocked;
+                if (invalidWeight || incompleteChecklist) {
+                  setLocal(() {
+                    weightInvalid = invalidWeight;
+                    checklistIncomplete = incompleteChecklist;
+                  });
                   return;
                 }
                 Navigator.pop(ctx, true);
@@ -4364,8 +4388,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
     final atSource = _drones
         .where(
           (d) =>
-              sourceLockerId == null ||
-              _asInt(d['lockerId']) == sourceLockerId,
+              sourceLockerId == null || _asInt(d['lockerId']) == sourceLockerId,
         )
         .toList(growable: false);
     final candidates = atSource
@@ -4420,8 +4443,9 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                       ),
                       selected: selectedDroneId == _asInt(d['id']),
                       onSelected: _droneIneligibleReason(d) == null
-                          ? (_) =>
-                                setLocal(() => selectedDroneId = _asInt(d['id']))
+                          ? (_) => setLocal(
+                              () => selectedDroneId = _asInt(d['id']),
+                            )
                           : null,
                     ),
                 ],

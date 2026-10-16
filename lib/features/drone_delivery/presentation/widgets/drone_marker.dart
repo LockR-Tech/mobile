@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:smart_laundry_locker/core/theme/shadcn_theme.dart';
 
-/// Marker drone trên live map: chấm tròn navy + icon máy bay xoay theo heading.
+/// Marker drone trên live map: chấm tròn navy + icon drone xoay theo heading.
 /// [headingDeg] = 0 là hướng Bắc; xoay theo chiều kim đồng hồ.
 class DroneMarker extends StatelessWidget {
   final double headingDeg;
@@ -38,7 +38,7 @@ class DroneMarker extends StatelessWidget {
         ),
         padding: const EdgeInsets.all(7),
         child: const Icon(
-          LucideIcons.navigation,
+          LucideIcons.plane,
           color: Colors.white,
           size: 20,
         ),
