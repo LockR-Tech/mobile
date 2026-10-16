@@ -822,4 +822,46 @@ void main() {
       );
     },
   );
+
+  testWidgets(
+    'dispatch shows pickup work that currently keeps the drone technician busy',
+    (tester) async {
+      final service = _FakeMaintenanceService()
+        ..extraQueue = [
+          {
+            'orderId': 31,
+            'orderCode': 'ORD-31',
+            'deliveryStage': 'PICKUP_ASSIGNED',
+            'parcelCategory': 'DOCUMENT',
+            'parcelWeightGrams': 800,
+            'sender': {'name': 'Nguoi gui A', 'phone': '0901000001'},
+            'pickup': {'status': 'ACCEPTED', 'address': '12 Nguyen Hue'},
+          },
+          {
+            'orderId': 32,
+            'orderCode': 'ORD-32',
+            'deliveryStage': 'PICKED_UP',
+            'parcelCategory': 'FOOD',
+            'parcelWeightGrams': 1200,
+            'sourceLocker': {'name': 'Tu gui A'},
+            'pickup': {'status': 'PICKED_UP', 'address': '20 Le Loi'},
+          },
+        ];
+      final router = GoRouter(
+        routes: [
+          GoRoute(
+            path: '/',
+            builder: (context, state) => MaintenanceHomePage(service: service),
+          ),
+        ],
+      );
+
+      await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Đang đi lấy hàng (1)'), findsOneWidget);
+      expect(find.text('Đã lấy hàng · mang về tủ gửi (1)'), findsOneWidget);
+      expect(find.text('Điều phối (5)'), findsOneWidget);
+    },
+  );
 }
