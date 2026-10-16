@@ -47,7 +47,30 @@ class DroneDeliveryTimeline extends StatelessWidget {
 
   int _order(DroneDeliveryStage step) => steps.indexOf(step);
 
+  /// Chặng cuối cùng đã thực sự đạt trước khi phát sinh sự cố. Không suy diễn
+  /// các chặng còn lại là đã hoàn tất chỉ vì đơn chuyển sang DROP_REPORTED.
+  int get _lastReachedIndex {
+    var reached = -1;
+    for (final step in stageTimes.keys) {
+      final index = _order(step);
+      if (index > reached) reached = index;
+    }
+    // Báo rơi chỉ có thể phát sinh sau khi drone đã bay. Dữ liệu cũ không có
+    // journeyEvents vẫn dừng progress ở chặng bay thay vì tô tới tủ nhận.
+    return reached >= 0
+        ? reached
+        : _order(DroneDeliveryStage.enRoute).clamp(0, steps.length - 1);
+  }
+
+  List<DroneDeliveryStage> get _renderedSteps {
+    if (!stage.isIncident) return steps;
+    final rendered = List<DroneDeliveryStage>.from(steps);
+    rendered.insert(_lastReachedIndex + 1, DroneDeliveryStage.dropReported);
+    return rendered;
+  }
+
   int get _activeIndex {
+    if (stage.isIncident) return _lastReachedIndex + 1;
     if (_order(stage) >= 0) return _order(stage);
     // Đã nhận hàng: mọi mốc đều xong.
     if (stage == DroneDeliveryStage.completed) {
@@ -70,32 +93,38 @@ class DroneDeliveryTimeline extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final active = _activeIndex;
+    final renderedSteps = _renderedSteps;
     final rows = <Widget>[];
     DateTime? previousAt;
-    for (int i = 0; i < steps.length; i++) {
+    for (int i = 0; i < renderedSteps.length; i++) {
       final state = _stateFor(i, active);
-      final reachedAt = state == _NodeState.pending ? null : stageTimes[steps[i]];
+      final step = renderedSteps[i];
+      final reachedAt = state == _NodeState.pending ? null : stageTimes[step];
       // Chặng hiện tại còn đang diễn ra: đếm từ lúc vào chặng tới giờ. Chặng cuối
       // (hàng vào ô) là nơi chờ người nhận, không phải một chặng bay.
       final ongoing =
           state == _NodeState.current &&
           reachedAt != null &&
           !stage.isFailure &&
-          steps[i] != DroneDeliveryStage.readyForPickup;
+          !stage.isIncident &&
+          step != DroneDeliveryStage.readyForPickup;
       rows.add(
         _TimelineRow(
-          step: steps[i],
+          step: step,
           isFirst: i == 0,
-          isLast: i == steps.length - 1,
+          isLast: i == renderedSteps.length - 1,
           state: state,
           reachedAt: reachedAt,
           sincePrevious: reachedAt != null && previousAt != null
               ? reachedAt.difference(previousAt)
               : null,
-          inStageFor: ongoing ? (now ?? DateTime.now()).difference(reachedAt) : null,
-          details: stepDetails[steps[i]] ?? const [],
+          inStageFor: ongoing
+              ? (now ?? DateTime.now()).difference(reachedAt)
+              : null,
+          details: stepDetails[step] ?? const [],
           // Màu cảnh báo chỉ áp cho mốc active khi delayed/failed.
-          overrideColor: (i == active &&
+          overrideColor:
+              (i == active &&
                   (stage.isDelayed || stage.isFailure || stage.isIncident))
               ? stage.color
               : null,
@@ -160,7 +189,8 @@ class _TimelineRow extends StatelessWidget {
     }
   }
 
-  bool get _isActive => state == _NodeState.current || state == _NodeState.failed;
+  bool get _isActive =>
+      state == _NodeState.current || state == _NodeState.failed;
 
   @override
   Widget build(BuildContext context) {
