@@ -50,7 +50,9 @@ class _HomePageState extends ConsumerState<HomePage>
       if (event is OrderChangedEvent ||
           event is PaymentCompletedEvent ||
           event is PaymentFailedEvent) {
-        debugPrint('[HomePage] Order/payment event received: $event, refreshing active order...');
+        debugPrint(
+          '[HomePage] Order/payment event received: $event, refreshing active order...',
+        );
         _loadActiveOrder();
       }
     });
@@ -119,8 +121,9 @@ class _HomePageState extends ConsumerState<HomePage>
       if (lockerId != null) {
         if (lockerName == null || lockerName.isEmpty) {
           final locations = ref.read(lockerNotifierProvider).state.locations;
-          final matched =
-              locations.where((loc) => loc.id == '$lockerId').firstOrNull;
+          final matched = locations
+              .where((loc) => loc.id == '$lockerId')
+              .firstOrNull;
           if (matched != null) {
             lockerName = matched.name;
           } else {
@@ -300,11 +303,7 @@ class _HomePageState extends ConsumerState<HomePage>
                   shape: BoxShape.circle,
                 ),
                 child: Center(
-                  child: Icon(
-                    LucideIcons.scanLine,
-                    size: 20,
-                    color: textColor,
-                  ),
+                  child: Icon(LucideIcons.scanLine, size: 20, color: textColor),
                 ),
               ),
             ),
@@ -328,11 +327,7 @@ class _HomePageState extends ConsumerState<HomePage>
                     child: Stack(
                       alignment: Alignment.center,
                       children: [
-                        Icon(
-                          LucideIcons.bell,
-                          size: 21,
-                          color: textColor,
-                        ),
+                        Icon(LucideIcons.bell, size: 21, color: textColor),
                         if (count > 0)
                           Positioned(
                             top: 9,
@@ -370,7 +365,8 @@ class _HomePageState extends ConsumerState<HomePage>
                   ),
                 ),
                 child: ClipOval(
-                  child: (profile?.avatarUrl != null &&
+                  child:
+                      (profile?.avatarUrl != null &&
                           profile!.avatarUrl!.isNotEmpty)
                       ? CachedNetworkImage(
                           imageUrl: profile.avatarUrl!,
@@ -426,8 +422,10 @@ class _HomePageState extends ConsumerState<HomePage>
     if (profile == null) return 'Bạn';
     final name = profile.fullName.trim();
     if (name.isNotEmpty && name.toLowerCase() != 'người dùng') {
-      final parts =
-          name.split(RegExp(r'\s+')).where((w) => w.isNotEmpty).toList();
+      final parts = name
+          .split(RegExp(r'\s+'))
+          .where((w) => w.isNotEmpty)
+          .toList();
       if (parts.isNotEmpty) {
         return _capitalizeWords(parts.last);
       }
@@ -555,10 +553,7 @@ class _HomePageState extends ConsumerState<HomePage>
                               ),
                             ),
                             const SizedBox(width: 6),
-                            const Text(
-                              '👋',
-                              style: TextStyle(fontSize: 20),
-                            ),
+                            const Text('👋', style: TextStyle(fontSize: 20)),
                           ],
                         ),
                         const SizedBox(height: 8),
@@ -679,17 +674,10 @@ class _HomePageState extends ConsumerState<HomePage>
                       lottieAsset,
                       width: 46,
                       height: 46,
-                      fallback: (context) => Icon(
-                        icon,
-                        color: iconColor,
-                        size: 26,
-                      ),
+                      fallback: (context) =>
+                          Icon(icon, color: iconColor, size: 26),
                     )
-                  : Icon(
-                      icon,
-                      color: iconColor,
-                      size: 26,
-                    ),
+                  : Icon(icon, color: iconColor, size: 26),
             ),
           ),
           const SizedBox(height: 8),
@@ -744,7 +732,9 @@ class _HomePageState extends ConsumerState<HomePage>
                         style: TextStyle(
                           fontSize: 14.5,
                           fontWeight: FontWeight.w800,
-                          color: isDark ? Colors.white : const Color(0xFF312E81),
+                          color: isDark
+                              ? Colors.white
+                              : const Color(0xFF312E81),
                         ),
                       ),
                       const SizedBox(height: 2),
@@ -802,8 +792,9 @@ class _HomePageState extends ConsumerState<HomePage>
   ) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final cardBg = isDark ? const Color(0xFF1E293B) : Colors.white;
-    final cardBorder =
-        isDark ? Colors.white.withValues(alpha: 0.1) : const Color(0xFFF1F5F9);
+    final cardBorder = isDark
+        ? Colors.white.withValues(alpha: 0.1)
+        : const Color(0xFFF1F5F9);
     final titleColor = isDark ? Colors.white : const Color(0xFF0F172A);
     final subColor = isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B);
 
@@ -852,11 +843,7 @@ class _HomePageState extends ConsumerState<HomePage>
                       ),
                     ),
                     const SizedBox(width: 4),
-                    Icon(
-                      LucideIcons.chevronRight,
-                      size: 14,
-                      color: subColor,
-                    ),
+                    Icon(LucideIcons.chevronRight, size: 14, color: subColor),
                   ],
                 ),
               ),
@@ -912,7 +899,9 @@ class _HomePageState extends ConsumerState<HomePage>
                           fallback: (context) => Icon(
                             (rawType.toUpperCase().contains('SEND') ||
                                     rawType.toUpperCase().contains('DRONE') ||
-                                    rawType.toUpperCase().contains('DELIVERY') ||
+                                    rawType.toUpperCase().contains(
+                                      'DELIVERY',
+                                    ) ||
                                     rawType.toUpperCase().contains('PARCEL'))
                                 ? LucideIcons.plane
                                 : LucideIcons.box,
@@ -1062,7 +1051,10 @@ class _HomePageState extends ConsumerState<HomePage>
 
     if (isDrone) {
       final stage = '${order['deliveryStage'] ?? ''}'.toUpperCase();
-      titles = const ['Tạo đơn', 'Đội bay nhận', 'Đang bay', 'Vào tủ nhận'];
+      final dropReported = stage == 'DROP_REPORTED';
+      titles = dropReported
+          ? const ['Tạo đơn', 'Đội bay nhận', 'Đang bay', 'Báo rơi kiện']
+          : const ['Tạo đơn', 'Đội bay nhận', 'Đang bay', 'Vào tủ nhận'];
       activeStepCount = switch (stage) {
         'ACCEPTED' || 'LOADING_CONFIRMED' => 2,
         'LAUNCHING' ||
@@ -1070,8 +1062,8 @@ class _HomePageState extends ConsumerState<HomePage>
         'EN_ROUTE' ||
         'APPROACHING' ||
         'ARRIVED' ||
-        'DELAYED' ||
-        'DROP_REPORTED' => 3,
+        'DELAYED' => 3,
+        'DROP_REPORTED' => 4,
         'READY_FOR_PICKUP' => 4,
         _ => 1,
       };
@@ -1102,6 +1094,11 @@ class _HomePageState extends ConsumerState<HomePage>
       }
     }
 
+    final dropReported =
+        isDrone &&
+        '${order['deliveryStage'] ?? ''}'.toUpperCase() == 'DROP_REPORTED';
+    const incidentColor = Color(0xFFEA580C);
+
     return LayoutBuilder(
       builder: (context, constraints) {
         final totalWidth = constraints.maxWidth;
@@ -1125,24 +1122,27 @@ class _HomePageState extends ConsumerState<HomePage>
                         Expanded(
                           child: Container(
                             height: 2.5,
-                            color:
-                                activeStepCount >= 2 ? activeColor : lineColor,
+                            color: activeStepCount >= 2
+                                ? activeColor
+                                : lineColor,
                           ),
                         ),
                         // Line 2-3
                         Expanded(
                           child: Container(
                             height: 2.5,
-                            color:
-                                activeStepCount >= 3 ? activeColor : lineColor,
+                            color: activeStepCount >= 3
+                                ? activeColor
+                                : lineColor,
                           ),
                         ),
                         // Line 3-4
                         Expanded(
                           child: Container(
                             height: 2.5,
-                            color:
-                                activeStepCount >= 4 ? activeColor : lineColor,
+                            color: activeStepCount >= 4
+                                ? (dropReported ? incidentColor : activeColor)
+                                : lineColor,
                           ),
                         ),
                       ],
@@ -1157,7 +1157,9 @@ class _HomePageState extends ConsumerState<HomePage>
                             isActive: activeStepCount >= 1,
                             activeColor: activeColor,
                             inactiveColor: inactiveColor,
-                            circleBg: isDark ? const Color(0xFF1E293B) : Colors.white,
+                            circleBg: isDark
+                                ? const Color(0xFF1E293B)
+                                : Colors.white,
                           ),
                         ),
                       ),
@@ -1167,7 +1169,9 @@ class _HomePageState extends ConsumerState<HomePage>
                             isActive: activeStepCount >= 2,
                             activeColor: activeColor,
                             inactiveColor: inactiveColor,
-                            circleBg: isDark ? const Color(0xFF1E293B) : Colors.white,
+                            circleBg: isDark
+                                ? const Color(0xFF1E293B)
+                                : Colors.white,
                           ),
                         ),
                       ),
@@ -1177,7 +1181,9 @@ class _HomePageState extends ConsumerState<HomePage>
                             isActive: activeStepCount >= 3,
                             activeColor: activeColor,
                             inactiveColor: inactiveColor,
-                            circleBg: isDark ? const Color(0xFF1E293B) : Colors.white,
+                            circleBg: isDark
+                                ? const Color(0xFF1E293B)
+                                : Colors.white,
                           ),
                         ),
                       ),
@@ -1185,9 +1191,16 @@ class _HomePageState extends ConsumerState<HomePage>
                         child: Center(
                           child: _buildStepCircle(
                             isActive: activeStepCount >= 4,
-                            activeColor: activeColor,
+                            activeColor: dropReported
+                                ? incidentColor
+                                : activeColor,
                             inactiveColor: inactiveColor,
-                            circleBg: isDark ? const Color(0xFF1E293B) : Colors.white,
+                            circleBg: isDark
+                                ? const Color(0xFF1E293B)
+                                : Colors.white,
+                            activeIcon: dropReported
+                                ? LucideIcons.triangleAlert
+                                : LucideIcons.check,
                           ),
                         ),
                       ),
@@ -1228,6 +1241,7 @@ class _HomePageState extends ConsumerState<HomePage>
                   isActive: activeStepCount >= 4,
                   textColor: textColor,
                   mutedColor: mutedText,
+                  activeTextColor: dropReported ? incidentColor : null,
                 ),
               ],
             ),
@@ -1242,6 +1256,7 @@ class _HomePageState extends ConsumerState<HomePage>
     required Color activeColor,
     required Color inactiveColor,
     Color circleBg = Colors.white,
+    IconData activeIcon = LucideIcons.check,
   }) {
     return Container(
       width: 22,
@@ -1256,11 +1271,7 @@ class _HomePageState extends ConsumerState<HomePage>
       ),
       child: Center(
         child: isActive
-            ? const Icon(
-                LucideIcons.check,
-                color: Colors.white,
-                size: 13,
-              )
+            ? Icon(activeIcon, color: Colors.white, size: 13)
             : null,
       ),
     );
@@ -1272,6 +1283,7 @@ class _HomePageState extends ConsumerState<HomePage>
     required bool isActive,
     required Color textColor,
     required Color mutedColor,
+    Color? activeTextColor,
   }) {
     return Expanded(
       child: Column(
@@ -1282,7 +1294,7 @@ class _HomePageState extends ConsumerState<HomePage>
             style: TextStyle(
               fontSize: 10.5,
               fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
-              color: isActive ? textColor : mutedColor,
+              color: isActive ? (activeTextColor ?? textColor) : mutedColor,
             ),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
@@ -1559,13 +1571,21 @@ class _HomePageState extends ConsumerState<HomePage>
     if (state.error != null && state.locations.isEmpty) {
       return Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20),
-        child: _storeMessage(LucideIcons.triangleAlert, state.error!, const Color(0xFFE53E3E)),
+        child: _storeMessage(
+          LucideIcons.triangleAlert,
+          state.error!,
+          const Color(0xFFE53E3E),
+        ),
       );
     }
     if (state.locations.isEmpty) {
       return Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20),
-        child: _storeMessage(LucideIcons.store, 'Chưa có nơi đặt locker nào', const Color(0xFFA0AEC0)),
+        child: _storeMessage(
+          LucideIcons.store,
+          'Chưa có nơi đặt locker nào',
+          const Color(0xFFA0AEC0),
+        ),
       );
     }
     return SizedBox(
@@ -1575,12 +1595,16 @@ class _HomePageState extends ConsumerState<HomePage>
         padding: const EdgeInsets.symmetric(horizontal: 20),
         itemCount: state.locations.length,
         separatorBuilder: (_, __) => const SizedBox(width: 14),
-        itemBuilder: (_, index) => _buildLockerHorizontalCard(context, state.locations[index]),
+        itemBuilder: (_, index) =>
+            _buildLockerHorizontalCard(context, state.locations[index]),
       ),
     );
   }
 
-  Widget _buildLockerHorizontalCard(BuildContext context, LockerLocation location) {
+  Widget _buildLockerHorizontalCard(
+    BuildContext context,
+    LockerLocation location,
+  ) {
     final colors = _gradientForLocation(location.id);
     final initials = _initialsForName(location.name);
     return RepaintBoundary(
@@ -1591,118 +1615,142 @@ class _HomePageState extends ConsumerState<HomePage>
             builder: (_) => StoreLockerGridPage.forLocation(location),
           ),
         ),
-      child: Container(
-        width: 250,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.12),
-              blurRadius: 12,
-              offset: const Offset(0, 6),
-            ),
-          ],
-        ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(20),
-          child: Stack(
-            fit: StackFit.expand,
-            children: [
-              // Background image or gradient
-              (location.imageUrl != null && location.imageUrl!.isNotEmpty)
-                  ? CachedNetworkImage(
-                      imageUrl: location.imageUrl!,
-                      fit: BoxFit.cover,
-                      memCacheWidth: 500,
-                      memCacheHeight: 320,
-                      placeholder: (_, __) => _lockerCardGradient(colors, initials),
-                      errorWidget: (_, __, ___) => _lockerCardGradient(colors, initials),
-                    )
-                  : _lockerCardGradient(colors, initials),
-              // Dark bottom overlay
-              Positioned.fill(
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [Colors.transparent, Colors.black.withValues(alpha: 0.60)],
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      stops: const [0.4, 1.0],
-                    ),
-                  ),
-                ),
-              ),
-              // Status badge top-left
-              Positioned(
-                top: 12,
-                left: 12,
-                child: BrandStatusBadge(
-                  label: location.status == 'MAINTENANCE'
-                      ? 'Bảo trì'
-                      : (location.status == 'DISCONNECTED'
-                          ? 'Mất kết nối'
-                          : (location.isActive ? 'Hoạt động' : 'Tạm ngưng')),
-                  dotColor: location.status == 'MAINTENANCE'
-                      ? const Color(0xFFF59E0B)
-                      : (location.status == 'DISCONNECTED'
-                          ? const Color(0xFFEF4444)
-                          : (location.isActive ? AislBrand.statusGreen : Colors.grey)),
-                  textColor: location.status == 'MAINTENANCE'
-                      ? const Color(0xFFB45309)
-                      : (location.status == 'DISCONNECTED'
-                          ? const Color(0xFFDC2626)
-                          : (location.isActive ? AislBrand.statusGreenText : Colors.grey.shade700)),
-                ),
-              ),
-              // Name + address bottom
-              Positioned(
-                bottom: 14,
-                left: 14,
-                right: 14,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      location.name,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Row(
-                      children: [
-                        const Icon(LucideIcons.mapPin, color: Colors.white60, size: 11),
-                        const SizedBox(width: 3),
-                        Expanded(
-                          child: Text(
-                            location.address.isNotEmpty ? location.address : 'Chưa có địa chỉ',
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(color: Colors.white60, fontSize: 11),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
+        child: Container(
+          width: 250,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.12),
+                blurRadius: 12,
+                offset: const Offset(0, 6),
               ),
             ],
           ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(20),
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                // Background image or gradient
+                (location.imageUrl != null && location.imageUrl!.isNotEmpty)
+                    ? CachedNetworkImage(
+                        imageUrl: location.imageUrl!,
+                        fit: BoxFit.cover,
+                        memCacheWidth: 500,
+                        memCacheHeight: 320,
+                        placeholder: (_, __) =>
+                            _lockerCardGradient(colors, initials),
+                        errorWidget: (_, __, ___) =>
+                            _lockerCardGradient(colors, initials),
+                      )
+                    : _lockerCardGradient(colors, initials),
+                // Dark bottom overlay
+                Positioned.fill(
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          Colors.transparent,
+                          Colors.black.withValues(alpha: 0.60),
+                        ],
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        stops: const [0.4, 1.0],
+                      ),
+                    ),
+                  ),
+                ),
+                // Status badge top-left
+                Positioned(
+                  top: 12,
+                  left: 12,
+                  child: BrandStatusBadge(
+                    label: location.status == 'MAINTENANCE'
+                        ? 'Bảo trì'
+                        : (location.status == 'DISCONNECTED'
+                              ? 'Mất kết nối'
+                              : (location.isActive
+                                    ? 'Hoạt động'
+                                    : 'Tạm ngưng')),
+                    dotColor: location.status == 'MAINTENANCE'
+                        ? const Color(0xFFF59E0B)
+                        : (location.status == 'DISCONNECTED'
+                              ? const Color(0xFFEF4444)
+                              : (location.isActive
+                                    ? AislBrand.statusGreen
+                                    : Colors.grey)),
+                    textColor: location.status == 'MAINTENANCE'
+                        ? const Color(0xFFB45309)
+                        : (location.status == 'DISCONNECTED'
+                              ? const Color(0xFFDC2626)
+                              : (location.isActive
+                                    ? AislBrand.statusGreenText
+                                    : Colors.grey.shade700)),
+                  ),
+                ),
+                // Name + address bottom
+                Positioned(
+                  bottom: 14,
+                  left: 14,
+                  right: 14,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        location.name,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          const Icon(
+                            LucideIcons.mapPin,
+                            color: Colors.white60,
+                            size: 11,
+                          ),
+                          const SizedBox(width: 3),
+                          Expanded(
+                            child: Text(
+                              location.address.isNotEmpty
+                                  ? location.address
+                                  : 'Chưa có địa chỉ',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                color: Colors.white60,
+                                fontSize: 11,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
       ),
-    ),
-  );
-}
+    );
+  }
 
   Widget _lockerCardGradient(List<Color> colors, String initials) {
     return Container(
       decoration: BoxDecoration(
-        gradient: LinearGradient(colors: colors, begin: Alignment.topLeft, end: Alignment.bottomRight),
+        gradient: LinearGradient(
+          colors: colors,
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
       ),
       child: Center(
         child: Column(
@@ -1710,10 +1758,19 @@ class _HomePageState extends ConsumerState<HomePage>
           children: [
             Text(
               initials,
-              style: const TextStyle(color: Colors.white, fontSize: 36, fontWeight: FontWeight.w800, letterSpacing: 2),
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 36,
+                fontWeight: FontWeight.w800,
+                letterSpacing: 2,
+              ),
             ),
             const SizedBox(height: 4),
-            const Icon(LucideIcons.lockKeyhole, color: Colors.white38, size: 22),
+            const Icon(
+              LucideIcons.lockKeyhole,
+              color: Colors.white38,
+              size: 22,
+            ),
           ],
         ),
       ),
@@ -1723,7 +1780,9 @@ class _HomePageState extends ConsumerState<HomePage>
   // ── Ưu đãi đang diễn ra ─────────────────────────────────────────────────────
 
   Widget _buildPromotionsSection(BuildContext context) {
-    final PromotionProvider promoProvider = ref.watch(promotionNotifierProvider);
+    final PromotionProvider promoProvider = ref.watch(
+      promotionNotifierProvider,
+    );
     final promos = promoProvider.promotions;
     final isLoading = promoProvider.isLoading;
     const String lottieAsset = AppLottieAssets.uuDai;
@@ -1776,10 +1835,7 @@ class _HomePageState extends ConsumerState<HomePage>
           padding: const EdgeInsets.only(bottom: 14),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(20),
-            child: Container(
-              height: 200,
-              color: const Color(0xFFE2E8F0),
-            ),
+            child: Container(height: 200, color: const Color(0xFFE2E8F0)),
           ),
         ),
       ),
@@ -1825,7 +1881,6 @@ class _HomePageState extends ConsumerState<HomePage>
     final n = parts.first;
     return n.length >= 2 ? n.substring(0, 2).toUpperCase() : n.toUpperCase();
   }
-
 }
 
 // ── Thẻ ưu đãi — extracted for RepaintBoundary isolation ────────────────
@@ -1840,14 +1895,12 @@ class _PromotionCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final String? sub =
         (promo.description != null && promo.description!.isNotEmpty)
-            ? promo.description
-            : null;
+        ? promo.description
+        : null;
 
     return GestureDetector(
       onTap: () => Navigator.of(context, rootNavigator: true).push<void>(
-        MaterialPageRoute(
-          builder: (_) => PromotionDetailPage(promo: promo),
-        ),
+        MaterialPageRoute(builder: (_) => PromotionDetailPage(promo: promo)),
       ),
       behavior: HitTestBehavior.opaque,
       child: Padding(
@@ -1881,7 +1934,9 @@ class _PromotionCard extends StatelessWidget {
                       left: 7,
                       child: Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 3),
+                          horizontal: 8,
+                          vertical: 3,
+                        ),
                         decoration: BoxDecoration(
                           color: const Color(0xFFE53E3E),
                           borderRadius: BorderRadius.circular(20),
@@ -1965,12 +2020,15 @@ class _PromotionCard extends StatelessWidget {
                           onTap: () => _copyCode(context),
                           child: Container(
                             padding: const EdgeInsets.symmetric(
-                                horizontal: 9, vertical: 4),
+                              horizontal: 9,
+                              vertical: 4,
+                            ),
                             decoration: BoxDecoration(
                               color: AislBrand.navy.withValues(alpha: 0.06),
                               borderRadius: BorderRadius.circular(8),
                               border: Border.all(
-                                  color: AislBrand.navy.withValues(alpha: 0.18)),
+                                color: AislBrand.navy.withValues(alpha: 0.18),
+                              ),
                             ),
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
@@ -1986,8 +2044,11 @@ class _PromotionCard extends StatelessWidget {
                                   ),
                                 ),
                                 const SizedBox(width: 5),
-                                const Icon(LucideIcons.copy,
-                                    size: 12, color: AislBrand.navy),
+                                const Icon(
+                                  LucideIcons.copy,
+                                  size: 12,
+                                  color: AislBrand.navy,
+                                ),
                               ],
                             ),
                           ),
@@ -2011,24 +2072,22 @@ class _PromotionCard extends StatelessWidget {
         content: Text('Đã sao chép: ${promo.code}'),
         backgroundColor: AislBrand.navy,
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         duration: const Duration(seconds: 2),
       ),
     );
   }
 
   Widget _gradientBg() => DecoratedBox(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: colors,
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-        ),
-        child: const Center(
-          child: Icon(LucideIcons.ticket, size: 32, color: Colors.white24),
-        ),
-      );
+    decoration: BoxDecoration(
+      gradient: LinearGradient(
+        colors: colors,
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+      ),
+    ),
+    child: const Center(
+      child: Icon(LucideIcons.ticket, size: 32, color: Colors.white24),
+    ),
+  );
 }
-
