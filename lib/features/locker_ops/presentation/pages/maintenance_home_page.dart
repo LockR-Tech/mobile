@@ -1462,6 +1462,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
   // ---- Tab điều phối đơn drone ----
   Widget _buildDispatchQueue() {
     final visibleDeliveries = _deliveries
+        .where(_shownInDispatch)
         .where(_matchesDispatchFilter)
         .toList();
     // Đơn lấy hàng tận nhà đi qua lời mời của hệ thống (DronePickupQueue bên dưới);
@@ -1471,7 +1472,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
           (d) => d['deliveryStage'] == 'AWAITING_DISPATCH' && d['pickup'] is! Map,
         )
         .toList(growable: false);
-    final hasPickupWork = _deliveries.any(
+    final hasPickupWork = visibleDeliveries.any(
       (d) =>
           d['pickup'] is Map &&
           const {
@@ -1515,6 +1516,22 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
     final delivered = visibleDeliveries
         .where((d) => d['deliveryStage'] == 'READY_FOR_PICKUP')
         .toList(growable: false);
+    final canceled = visibleDeliveries
+        .where(
+          (delivery) =>
+              delivery['parcelReturnPending'] != true &&
+              _isCanceledDelivery(delivery),
+        )
+        .toList(growable: false);
+    final otherAssignedWork = visibleDeliveries
+        .where(
+          (d) =>
+              !_hasActivePickup(d) &&
+              d['parcelReturnPending'] != true &&
+              !_isCanceledDelivery(d) &&
+              !_isKnownDispatchGroup(d),
+        )
+        .toList(growable: false);
     // Đơn đã đóng mà không giao được, kiện còn chờ trả cho người gửi: việc phải làm
     // nên luôn hiện, không phụ thuộc bộ lọc chặng.
     final parcelReturns = _deliveries
@@ -1529,7 +1546,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
         children: [
           DronePickupQueue(
             service: _service,
-            deliveries: _deliveries,
+            deliveries: visibleDeliveries,
             onChanged: _load,
             onOpenDetail: _showDeliveryDetail,
             onAssignDrone: _acceptFlow,
@@ -1659,6 +1676,26 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
               _deliveryCard(order, action: _DeliveryAction.track),
             const SizedBox(height: 8),
           ],
+          if (otherAssignedWork.isNotEmpty) ...[
+            OpsSectionLabel(
+              'Công việc đang phụ trách (${otherAssignedWork.length})',
+              icon: Icons.assignment_ind_outlined,
+            ),
+            const SizedBox(height: 8),
+            for (final order in otherAssignedWork)
+              _deliveryCard(order, action: _DeliveryAction.track),
+            const SizedBox(height: 8),
+          ],
+          if (canceled.isNotEmpty) ...[
+            OpsSectionLabel(
+              'Đã hủy (${canceled.length})',
+              icon: Icons.cancel_outlined,
+            ),
+            const SizedBox(height: 8),
+            for (final order in canceled)
+              _deliveryCard(order, action: _DeliveryAction.track),
+            const SizedBox(height: 8),
+          ],
           if (awaiting.isNotEmpty ||
               parcelReturns.isNotEmpty ||
               activeIncidents.isNotEmpty ||
@@ -1667,7 +1704,9 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
               readyToLaunch.isNotEmpty ||
               launching.isNotEmpty ||
               inFlight.isNotEmpty ||
-              delivered.isNotEmpty) ...[
+              delivered.isNotEmpty ||
+              otherAssignedWork.isNotEmpty ||
+              canceled.isNotEmpty) ...[
             const Divider(),
             const SizedBox(height: 8),
           ],
@@ -1682,7 +1721,9 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
               readyToLaunch.isEmpty &&
               launching.isEmpty &&
               inFlight.isEmpty &&
-              delivered.isEmpty)
+              delivered.isEmpty &&
+              otherAssignedWork.isEmpty &&
+              canceled.isEmpty)
             const OpsEmptyState(
               icon: Icons.inbox_outlined,
               title: 'Không có đơn drone đang chờ',
@@ -1696,17 +1737,57 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
   List<Map<String, dynamic>> get _activeIncidents =>
       _incidents.where(droneIncidentActive).toList(growable: false);
 
+  String _pickupStatus(Map<String, dynamic> delivery) {
+    final pickup = delivery['pickup'];
+    return pickup is Map ? '${pickup['status']}'.toUpperCase() : '';
+  }
+
+  bool _hasActivePickup(Map<String, dynamic> delivery) => const {
+    'OFFERED',
+    'ACCEPTED',
+    'PICKED_UP',
+  }.contains(_pickupStatus(delivery));
+
+  bool _isCanceledDelivery(Map<String, dynamic> delivery) {
+    final status = '${delivery['status']}'.toUpperCase();
+    final stage = '${delivery['deliveryStage']}'.toUpperCase();
+    final mission = '${delivery['missionStatus']}'.toUpperCase();
+    return status == 'CANCELED' ||
+        stage == 'CANCELED' ||
+        stage == 'FAILED' ||
+        mission == 'CANCELED' ||
+        mission == 'FAILED';
+  }
+
+  bool _isKnownDispatchGroup(Map<String, dynamic> delivery) {
+    final stage = '${delivery['deliveryStage']}'.toUpperCase();
+    final mission = '${delivery['missionStatus']}'.toUpperCase();
+    if (stage == 'AWAITING_DISPATCH' && delivery['pickup'] is! Map) {
+      return true;
+    }
+    if (stage == 'ACCEPTED' &&
+        const {'AWAITING_LOADING', 'READY_TO_LAUNCH'}.contains(mission)) {
+      return true;
+    }
+    return stage == 'LAUNCHING' ||
+        stage == 'READY_FOR_PICKUP' ||
+        _flightFailureStages.contains(stage);
+  }
+
   /// Đơn có hiện trong một nhóm của tab Điều phối (bỏ qua bộ lọc chặng).
   bool _shownInDispatch(Map<String, dynamic> delivery) {
     if (delivery['parcelReturnPending'] == true) return true;
-    final stage = '${delivery['deliveryStage']}';
+    if (_hasActivePickup(delivery) || _isCanceledDelivery(delivery)) {
+      return true;
+    }
+    final stage = '${delivery['deliveryStage']}'.toUpperCase();
+    final mission = '${delivery['missionStatus']}'.toUpperCase();
     if (stage == 'ACCEPTED') {
-      return const {
-        'AWAITING_LOADING',
-        'READY_TO_LAUNCH',
-      }.contains(delivery['missionStatus']);
+      return const {'AWAITING_LOADING', 'READY_TO_LAUNCH'}.contains(mission);
     }
     return stage == 'AWAITING_DISPATCH' ||
+        stage == 'PICKUP_ASSIGNED' ||
+        stage == 'PICKED_UP' ||
         stage == 'READY_FOR_PICKUP' ||
         _flightFailureStages.contains(stage);
   }
@@ -1731,13 +1812,22 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
           )
           .length;
 
-  bool _matchesDispatchFilter(Map<String, dynamic> delivery) {
-    switch (_dispatchFilter) {
+  bool _matchesDispatchFilter(Map<String, dynamic> delivery, [String? filter]) {
+    switch (filter ?? _dispatchFilter) {
       case 'WAITING':
-        return delivery['deliveryStage'] == 'AWAITING_DISPATCH';
+        return delivery['deliveryStage'] == 'AWAITING_DISPATCH' &&
+            _pickupStatus(delivery) != 'ACCEPTED';
       case 'WORKING':
-        return delivery['deliveryStage'] == 'ACCEPTED' ||
-            delivery['deliveryStage'] == 'LAUNCHING';
+        return const {
+              'ACCEPTED',
+              'PICKED_UP',
+            }.contains(_pickupStatus(delivery)) ||
+            const {
+              'PICKUP_ASSIGNED',
+              'PICKED_UP',
+              'ACCEPTED',
+              'LAUNCHING',
+            }.contains('${delivery['deliveryStage']}'.toUpperCase());
       case 'FLYING':
         return const {
           'DEPARTED',
@@ -1747,32 +1837,20 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
         }.contains(delivery['deliveryStage']);
       case 'DONE':
         return delivery['deliveryStage'] == 'READY_FOR_PICKUP';
+      case 'CANCELED':
+        return _isCanceledDelivery(delivery);
       default:
         return true;
     }
   }
 
   Widget _buildDispatchFilters() {
-    int count(String filter) => _deliveries.where((d) {
-      switch (filter) {
-        case 'WAITING':
-          return d['deliveryStage'] == 'AWAITING_DISPATCH';
-        case 'WORKING':
-          return d['deliveryStage'] == 'ACCEPTED' ||
-              d['deliveryStage'] == 'LAUNCHING';
-        case 'FLYING':
-          return const {
-            'DEPARTED',
-            'EN_ROUTE',
-            'APPROACHING',
-            'ARRIVED',
-          }.contains(d['deliveryStage']);
-        case 'DONE':
-          return d['deliveryStage'] == 'READY_FOR_PICKUP';
-        default:
-          return true;
-      }
-    }).length;
+    int count(String filter) {
+      return _deliveries
+          .where(_shownInDispatch)
+          .where((delivery) => _matchesDispatchFilter(delivery, filter))
+          .length;
+    }
 
     final options = [
       ('ALL', 'Mọi trạng thái', Icons.filter_list_rounded, opsPrimary),
@@ -1785,6 +1863,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
       ),
       ('FLYING', 'Đang bay', Icons.flight_outlined, const Color(0xFF2563EB)),
       ('DONE', 'Đã giao', Icons.check_circle_outline, const Color(0xFF16A34A)),
+      ('CANCELED', 'Đã hủy', Icons.cancel_outlined, const Color(0xFF64748B)),
     ];
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
@@ -5068,43 +5147,43 @@ class _DroneLogSheetState extends State<_DroneLogSheet> {
                 ),
               )
             else
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: TextField(
-                      controller: _noteCtrl,
-                      minLines: 1,
-                      maxLines: 3,
-                      decoration: InputDecoration(
-                        hintText: 'Thêm bước xử lý / ghi chú...',
-                        isDense: true,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: opsBorder),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: _noteCtrl,
+                        minLines: 1,
+                        maxLines: 3,
+                        decoration: InputDecoration(
+                          hintText: 'Thêm bước xử lý / ghi chú...',
+                          isDense: true,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(color: opsBorder),
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                  const SizedBox(width: 8),
-                  IconButton.filled(
-                    onPressed: _sending ? null : _add,
-                    style: IconButton.styleFrom(backgroundColor: opsPrimary),
-                    icon: _sending
-                        ? const SizedBox(
-                            width: 18,
-                            height: 18,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: Colors.white,
-                            ),
-                          )
-                        : const Icon(Icons.send),
-                  ),
-                ],
+                    const SizedBox(width: 8),
+                    IconButton.filled(
+                      onPressed: _sending ? null : _add,
+                      style: IconButton.styleFrom(backgroundColor: opsPrimary),
+                      icon: _sending
+                          ? const SizedBox(
+                              width: 18,
+                              height: 18,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
+                            )
+                          : const Icon(Icons.send),
+                    ),
+                  ],
+                ),
               ),
-            ),
           ],
         ),
       ),
@@ -5202,32 +5281,30 @@ class _DroneOrderDetailSheetState extends State<_DroneOrderDetailSheet> {
           style: TextStyle(fontSize: 12, color: opsMutedText),
         ),
         const SizedBox(height: 14),
-        if (status != null)
-          ...[
-            if (status.status.toUpperCase() == _dropReportedStage) ...[
-              const OpsBanner(
-                tone: OpsBannerTone.danger,
-                icon: Icons.report_gmailerrorred_outlined,
-                text:
-                    'Đơn đã báo rơi kiện và dừng giao. Theo dõi tiến trình xử lý ở mục '
-                    '"Sự cố rơi kiện" trong tab Điều phối.',
-              ),
-              const SizedBox(height: 14),
-            ],
-            if (status.stage.isInFlight) ...[
-              DroneJourneyCameraPanel(
-                orderId: widget.orderId,
-                service: widget.service,
-                onIncidentReported: () async {
-                  await _refresh();
-                  await widget.onChanged();
-                },
-              ),
-              const SizedBox(height: 14),
-            ],
-            DroneDeliveryDetail(status: status, forOperator: true),
-          ]
-        else if (_error != null)
+        if (status != null) ...[
+          if (status.status.toUpperCase() == _dropReportedStage) ...[
+            const OpsBanner(
+              tone: OpsBannerTone.danger,
+              icon: Icons.report_gmailerrorred_outlined,
+              text:
+                  'Đơn đã báo rơi kiện và dừng giao. Theo dõi tiến trình xử lý ở mục '
+                  '"Sự cố rơi kiện" trong tab Điều phối.',
+            ),
+            const SizedBox(height: 14),
+          ],
+          if (status.stage.isInFlight) ...[
+            DroneJourneyCameraPanel(
+              orderId: widget.orderId,
+              service: widget.service,
+              onIncidentReported: () async {
+                await _refresh();
+                await widget.onChanged();
+              },
+            ),
+            const SizedBox(height: 14),
+          ],
+          DroneDeliveryDetail(status: status, forOperator: true),
+        ] else if (_error != null)
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 32),
             child: Column(
