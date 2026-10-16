@@ -30,6 +30,7 @@ Color statusColor(String? status) => switch (status) {
   'AWAITING_DISPATCH' => const Color(0xFF2563EB),
   'ACCEPTED' => const Color(0xFF7C3AED),
   'LAUNCHING' => const Color(0xFFD97706),
+  'DROP_REPORTED' => const Color(0xFFEA580C),
   // Các chặng bay của đơn drone (deliveryStage).
   'DEPARTED' || 'EN_ROUTE' || 'APPROACHING' => const Color(0xFF1E5A8A),
   'ARRIVED' => const Color(0xFF0D9488),
@@ -59,6 +60,7 @@ String statusLabel(String? status) => switch (status) {
   'AWAITING_DISPATCH' => 'Chờ điều phối',
   'ACCEPTED' => 'Đã tiếp nhận',
   'LAUNCHING' => 'Đang khởi phóng',
+  'DROP_REPORTED' => 'Đã báo rơi kiện',
   'DEPARTED' => 'Drone đã rời trạm',
   'EN_ROUTE' => 'Drone đang bay',
   'APPROACHING' => 'Drone sắp đến',
@@ -390,7 +392,9 @@ class OpsBanner extends StatelessWidget {
                     fontSize: 12.5,
                     height: 1.35,
                     color: color,
-                    fontWeight: title != null ? FontWeight.w500 : FontWeight.w600,
+                    fontWeight: title != null
+                        ? FontWeight.w500
+                        : FontWeight.w600,
                   ),
                 ),
               ],
@@ -425,7 +429,9 @@ class OpsPrimaryButton extends StatelessWidget {
     return SizedBox(
       width: double.infinity,
       child: Material(
-        color: onPressed == null || loading ? color.withValues(alpha: 0.5) : color,
+        color: onPressed == null || loading
+            ? color.withValues(alpha: 0.5)
+            : color,
         borderRadius: BorderRadius.circular(16),
         child: InkWell(
           borderRadius: BorderRadius.circular(16),
@@ -626,54 +632,60 @@ class AccessCredentials extends StatelessWidget {
       children: [
         if (showQr && qrToken != null && qrToken!.isNotEmpty) ...[
           Container(
-            padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: opsBorder),
-              boxShadow: const [
-                BoxShadow(
-                  color: Color(0x140A2342),
-                  blurRadius: 22,
-                  offset: Offset(0, 10),
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: opsBorder),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Color(0x140A2342),
+                      blurRadius: 22,
+                      offset: Offset(0, 10),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-            child: QrImageView(
-              data: qrToken!,
-              size: 168,
-              eyeStyle: const QrEyeStyle(
-                eyeShape: QrEyeShape.square,
-                color: opsDark,
-              ),
-              dataModuleStyle: const QrDataModuleStyle(
-                dataModuleShape: QrDataModuleShape.square,
-                color: opsDark,
-              ),
-            ),
-          ).animate().fadeIn(duration: 350.ms).scale(begin: const Offset(0.92, 0.92)),
+                child: QrImageView(
+                  data: qrToken!,
+                  size: 168,
+                  eyeStyle: const QrEyeStyle(
+                    eyeShape: QrEyeShape.square,
+                    color: opsDark,
+                  ),
+                  dataModuleStyle: const QrDataModuleStyle(
+                    dataModuleShape: QrDataModuleShape.square,
+                    color: opsDark,
+                  ),
+                ),
+              )
+              .animate()
+              .fadeIn(duration: 350.ms)
+              .scale(begin: const Offset(0.92, 0.92)),
           const SizedBox(height: 16),
         ] else if (showSuccessAnimation) ...[
           SizedBox(
-            width: animationSize,
-            height: animationSize,
-            child: AppLottie(
-              AppLottieAssets.daThanhToan,
-              fallback: (context) => Container(
-                width: 90,
-                height: 90,
-                decoration: const BoxDecoration(
-                  color: Color(0xFFDCFCE7),
-                  shape: BoxShape.circle,
+                width: animationSize,
+                height: animationSize,
+                child: AppLottie(
+                  AppLottieAssets.daThanhToan,
+                  fallback: (context) => Container(
+                    width: 90,
+                    height: 90,
+                    decoration: const BoxDecoration(
+                      color: Color(0xFFDCFCE7),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      LucideIcons.circleCheck,
+                      size: 52,
+                      color: Color(0xFF16A34A),
+                    ),
+                  ),
                 ),
-                child: const Icon(
-                  LucideIcons.circleCheck,
-                  size: 52,
-                  color: Color(0xFF16A34A),
-                ),
-              ),
-            ),
-          ).animate().fadeIn(duration: 350.ms).scale(begin: const Offset(0.9, 0.9)),
+              )
+              .animate()
+              .fadeIn(duration: 350.ms)
+              .scale(begin: const Offset(0.9, 0.9)),
           const SizedBox(height: 8),
         ],
         GestureDetector(
@@ -734,7 +746,11 @@ class AccessCredentials extends StatelessWidget {
         Text(
           caption,
           textAlign: TextAlign.center,
-          style: const TextStyle(fontSize: 11.5, color: opsMutedText, height: 1.3),
+          style: const TextStyle(
+            fontSize: 11.5,
+            color: opsMutedText,
+            height: 1.3,
+          ),
         ),
       ],
     );
