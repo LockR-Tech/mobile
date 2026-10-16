@@ -25,7 +25,13 @@ Map<DroneDeliveryStage, DateTime> droneStageTimes(DroneDeliveryStatus status) {
   for (final event in status.journeyEvents.reversed) {
     final stage = DroneDeliveryStage.fromRaw(event.toStage);
     final at = event.occurredAt;
-    if (stage.order < 0 || at == null || event.isPickupCodeSent) continue;
+    // DROP_REPORTED không thuộc luồng giao bình thường nhưng vẫn phải giữ giờ
+    // để timeline hiển thị đúng lúc đội bay báo sự cố.
+    if ((stage.order < 0 && !stage.isIncident) ||
+        at == null ||
+        event.isPickupCodeSent) {
+      continue;
+    }
     times.putIfAbsent(stage, () => at);
   }
   final createdAt = status.createdAt;
@@ -54,7 +60,10 @@ Map<DroneDeliveryStage, List<DroneTimelineDetail>> droneStepDetails(
     ],
     if (status.pickup != null)
       DroneDeliveryStage.pickedUp: [
-        DroneTimelineDetail('Lấy hàng tại nhà người gửi', status.pickup!.pickedUpAt),
+        DroneTimelineDetail(
+          'Lấy hàng tại nhà người gửi',
+          status.pickup!.pickedUpAt,
+        ),
       ],
     DroneDeliveryStage.accepted: [
       DroneTimelineDetail('Nạp hàng lên drone', status.loadedAt),
@@ -79,7 +88,8 @@ DateTime? _endedAt(DroneDeliveryStatus status) => switch (status.stage) {
     status.firstReachedAt('CANCELED') ?? status.updatedAt,
   DroneDeliveryStage.expired =>
     status.firstReachedAt('EXPIRED') ?? status.updatedAt,
-  DroneDeliveryStage.failed => status.firstReachedAt('FAILED') ?? status.updatedAt,
+  DroneDeliveryStage.failed =>
+    status.firstReachedAt('FAILED') ?? status.updatedAt,
   _ => null,
 };
 
@@ -145,7 +155,8 @@ class DroneDeliveryDetail extends StatelessWidget {
           const SizedBox(height: 16),
           _BlockBanner(status: status, forOperator: forOperator),
         ],
-        if (status.needsPaymentBeforeDispatch || status.needsSurchargePayment) ...[
+        if (status.needsPaymentBeforeDispatch ||
+            status.needsSurchargePayment) ...[
           const SizedBox(height: 16),
           _UnpaidBanner(
             status: status,
@@ -159,7 +170,11 @@ class DroneDeliveryDetail extends StatelessWidget {
         ],
         if (status.pickup != null && !stage.isFailure) ...[
           const SizedBox(height: 16),
-          _PickupCard(status: status, forOperator: forOperator, isSender: isSender),
+          _PickupCard(
+            status: status,
+            forOperator: forOperator,
+            isSender: isSender,
+          ),
         ],
         if (status.needsParcelDrop) ...[
           const SizedBox(height: 16),
@@ -493,7 +508,9 @@ class _UnpaidBanner extends StatelessWidget {
                 style: FilledButton.styleFrom(backgroundColor: color),
                 onPressed: onPay,
                 icon: const Icon(LucideIcons.wallet, size: 18),
-                label: Text(surcharge ? 'Trả thêm phí chênh' : 'Thanh toán ngay'),
+                label: Text(
+                  surcharge ? 'Trả thêm phí chênh' : 'Thanh toán ngay',
+                ),
               ),
             ),
           ],
@@ -594,9 +611,7 @@ class _PickupCard extends StatelessWidget {
     }
     if (pickup.isAccepted) {
       final who = pickup.technicianName ?? 'Kỹ thuật viên';
-      return forOperator
-          ? 'Bạn đang tới lấy hàng'
-          : '$who đang tới lấy hàng';
+      return forOperator ? 'Bạn đang tới lấy hàng' : '$who đang tới lấy hàng';
     }
     if (pickup.isOffered || pickup.isSearching) {
       return forOperator
@@ -776,7 +791,8 @@ class _ParcelReturnBanner extends StatelessWidget {
   Widget build(BuildContext context) {
     final returned = status.parcelReturnedAt != null;
     final color = returned ? const Color(0xFF16A34A) : const Color(0xFFB45309);
-    final inSourceBox = (status.parcelHeldAt ?? '').toUpperCase() == 'SOURCE_BOX';
+    final inSourceBox =
+        (status.parcelHeldAt ?? '').toUpperCase() == 'SOURCE_BOX';
     final String text;
     if (returned) {
       text =
@@ -1149,7 +1165,8 @@ class _PeopleCard extends StatelessWidget {
       child: _Rows([
         ('Người gửi', status.senderName ?? status.customerName ?? '—'),
         ('SĐT người gửi', status.senderPhone ?? status.customerPhone ?? '—'),
-        if (status.senderEmail != null) ('Email người gửi', status.senderEmail!),
+        if (status.senderEmail != null)
+          ('Email người gửi', status.senderEmail!),
         ('Người nhận', status.receiverName ?? status.customerName ?? '—'),
         ('SĐT người nhận', status.receiverPhone ?? status.customerPhone ?? '—'),
         if (status.receiverEmail != null)
@@ -1205,7 +1222,8 @@ class _MissionCard extends StatelessWidget {
         ('Đúng kiện, đúng đơn', _check(status.parcelMatched)),
         ('Kiện đã cố định', _check(status.payloadSecured)),
         ('Khoang hàng đã khoá', _check(status.compartmentLocked)),
-        if (status.loadingNote != null) ('Ghi chú nạp hàng', status.loadingNote!),
+        if (status.loadingNote != null)
+          ('Ghi chú nạp hàng', status.loadingNote!),
       ]),
     );
   }
@@ -1267,7 +1285,8 @@ class _JourneyRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final stage = DroneDeliveryStage.fromRaw(event.toStage);
-    final actor = event.actorName ??
+    final actor =
+        event.actorName ??
         (event.actorUserId == null ? 'Hệ thống' : 'Nhân viên Lock.R');
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
