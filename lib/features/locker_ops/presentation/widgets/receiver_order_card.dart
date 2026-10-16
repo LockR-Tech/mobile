@@ -393,14 +393,6 @@ class ReceiverOrderCard extends StatelessWidget {
                                   color: Color(0xFF0284C7),
                                   width: 1.4,
                                 );
-                              } else if (isDone) {
-                                actionLabel = 'Xem lại';
-                                actionBgColor = null;
-                                actionTextColor = context.textPrimary;
-                                actionBorderSide = BorderSide(
-                                  color: context.borderColor,
-                                  width: 1.5,
-                                );
                               } else {
                                 actionLabel = 'Chi tiết';
                                 actionBgColor = null;
@@ -445,28 +437,6 @@ class ReceiverOrderCard extends StatelessWidget {
                           ),
                         ],
                       ),
-                      if (onTap != null) ...[
-                        const SizedBox(height: 10),
-                        const Row(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Xem chi tiết đơn',
-                              style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w700,
-                                color: opsPrimary,
-                              ),
-                            ),
-                            SizedBox(width: 3),
-                            Icon(
-                              LucideIcons.chevronRight,
-                              size: 14,
-                              color: opsPrimary,
-                            ),
-                          ],
-                        ),
-                      ],
                     ],
                   ),
                 ),

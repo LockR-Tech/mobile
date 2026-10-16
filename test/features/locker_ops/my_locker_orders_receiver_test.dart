@@ -311,7 +311,7 @@ void main() {
 
     await tester.tap(find.text('Hàng chờ nhận'));
     await tester.pumpAndSettle();
-    expect(find.text('Xem chi tiết đơn'), findsOneWidget);
+    expect(find.text('#ORD-90'), findsOneWidget);
 
     await tester.tap(find.text('#ORD-90'));
     await tester.pumpAndSettle();
