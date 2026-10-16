@@ -6,6 +6,8 @@ import 'package:smart_laundry_locker/features/locker_ops/data/receiver_order.dar
 import 'package:smart_laundry_locker/features/locker_ops/presentation/utils/locker_maps.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/locker_unlock_modal.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/ops_widgets.dart';
+import 'package:smart_laundry_locker/shared/widgets/app_lottie.dart';
+import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
 
 /// Mở ô của một đơn mình là người nhận / người lấy hộ: xác nhận đang đứng tại tủ
 /// (Bluetooth hoặc quét tem QR trên tủ) rồi gọi `POST /api/iot/unlock-with-code`
@@ -90,8 +92,8 @@ Future<void> openReceiverOrderDirections(
   }
 }
 
-/// Thẻ một đơn phía người nhận: người gửi, tủ/ô, hạn lấy, mã lấy hàng khi đã sẵn
-/// sàng, nút mở ô và chỉ đường.
+/// Thẻ một đơn phía người nhận: đồng bộ phong cách với _OrderCard của "Đơn của tôi",
+/// có minh hoạ 3D Lottie, tinh gọn thông tin và bo góc chuẩn Customer Design System.
 class ReceiverOrderCard extends StatelessWidget {
   const ReceiverOrderCard({
     super.key,
@@ -114,144 +116,485 @@ class ReceiverOrderCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final status =
-        (order.type == 'DRONE_DELIVERY' &&
+    final isDone = order.isFinished;
+    final overdue = order.overdue && !isDone;
+    final status = (order.type == 'DRONE_DELIVERY' &&
             (order.deliveryStage ?? '').isNotEmpty)
         ? order.deliveryStage
         : order.status;
-    final hasLocation =
-        order.lockerLatitude != null && order.lockerLongitude != null ||
-        (order.lockerAddress ?? '').isNotEmpty;
-    final lockerLine = [
-      order.lockerName ?? 'Tủ Lock.R',
-      if ((order.lockerCode ?? '').isNotEmpty) '(${order.lockerCode})',
-    ].join(' ');
-    final ownerLabel = delegatedView ? 'Người ủy quyền' : 'Người gửi';
+    final sColor = statusColor(status);
+    final isDrone = order.type == 'DRONE_DELIVERY';
+    final lockerTitle = (order.lockerName ?? '').trim().isNotEmpty
+        ? order.lockerName!.trim()
+        : ((order.lockerCode ?? '').trim().isNotEmpty
+            ? 'Tủ ${order.lockerCode}'
+            : 'Tủ Lock.R');
 
-    return OpsCard(
-      onTap: onTap,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  order.displayCode,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w800,
-                    fontSize: 14.5,
-                    color: opsDark,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 8),
-              StatusChip(status),
-            ],
-          ),
-          const SizedBox(height: 8),
-          if ((order.senderName ?? '').isNotEmpty)
-            OpsInfoRow(
-              icon: LucideIcons.user,
-              label: ownerLabel,
-              value: order.senderName!,
-            ),
-          OpsInfoRow(
-            icon: LucideIcons.warehouse,
-            label: 'Tủ',
-            value: lockerLine,
-          ),
-          if ((order.lockerAddress ?? '').isNotEmpty)
-            OpsInfoRow(
-              icon: LucideIcons.mapPin,
-              label: 'Địa điểm',
-              value: order.lockerAddress!,
-            ),
-          if (order.boxNumber != null)
-            OpsInfoRow(
-              icon: LucideIcons.grid3x3,
-              label: 'Ô',
-              value: 'Ô số ${order.boxNumber}',
-            ),
-          if (order.pickupDeadline != null)
-            OpsInfoRow(
-              icon: LucideIcons.clock,
-              label: 'Hạn lấy',
-              value: fmtDateTime(order.pickupDeadline),
-              valueColor: order.overdue ? const Color(0xFFDC2626) : null,
-            ),
-          if (delegatedView && (order.delegateNote ?? '').isNotEmpty)
-            OpsInfoRow(
-              icon: LucideIcons.stickyNote,
-              label: 'Lời nhắn',
-              value: order.delegateNote!,
-            ),
-          const SizedBox(height: 10),
-          if (!delegatedView && order.delegated)
-            const OpsBanner(
-              tone: OpsBannerTone.info,
-              icon: LucideIcons.userCheck,
-              text:
-                  'Chủ đơn đã ủy quyền người khác lấy hộ nên mã lấy hàng không '
-                  'còn hiện ở đây.',
-            )
-          else if (order.isActive && (order.pickupPin ?? '').isNotEmpty) ...[
-            Center(
-              child: AccessCredentials(
-                pin: order.pickupPin,
-                qrToken: order.qrToken,
-                caption: 'Nhập PIN tại tủ hoặc mở ô ngay trên app',
-              ),
-            ),
-            if (order.overdue) ...[
-              const SizedBox(height: 8),
-              const OpsBanner(
-                tone: OpsBannerTone.danger,
-                icon: LucideIcons.triangleAlert,
-                text: 'Đơn đã quá hạn lấy — có thể phát sinh phí quá giờ.',
-              ),
-            ],
-          ] else if (!order.isFinished)
-            const OpsBanner(
-              tone: OpsBannerTone.info,
-              icon: LucideIcons.hourglass,
-              text:
-                  'Hàng chưa sẵn sàng. Mã lấy hàng sẽ hiện khi hàng đã nằm trong ô.',
-            ),
-          const SizedBox(height: 10),
-          if (order.canUnlockWithCode)
-            OpsSheetAction(
-              label: 'Mở ${order.boxLabel} lấy hàng',
-              icon: LucideIcons.doorOpen,
-              primary: true,
-              onTap: onUnlock,
-            ),
-          if (hasLocation && !order.isFinished)
-            OpsSheetAction(
-              label: 'Chỉ đường tới tủ',
-              icon: LucideIcons.map,
-              onTap: onDirections,
-            ),
-          if (onTap != null)
-            const Row(
-              mainAxisAlignment: MainAxisAlignment.center,
+    return Material(
+      color: context.cardBg,
+      borderRadius: BorderRadius.circular(16),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onTap,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Stack(
+              clipBehavior: Clip.antiAlias,
               children: [
-                Text(
-                  'Xem chi tiết đơn',
-                  style: TextStyle(
-                    fontSize: 12.5,
-                    fontWeight: FontWeight.w700,
-                    color: opsPrimary,
+                // 3D Lottie asset in bottom-right corner (compact, elegant, non-obtrusive)
+                Positioned(
+                  bottom: -2,
+                  right: -2,
+                  child: IgnorePointer(
+                    child: SizedBox(
+                      width: isDrone ? 122 : 112,
+                      height: isDrone ? 112 : 104,
+                      child: AppLottie(
+                        isDrone
+                            ? AppLottieAssets.airplaneBox
+                            : AppLottieAssets.box,
+                        alignment: Alignment.bottomRight,
+                      ),
+                    ),
                   ),
                 ),
-                SizedBox(width: 2),
-                Icon(LucideIcons.chevronRight, size: 15, color: opsPrimary),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Order Code + Status Badge Row
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Expanded(
+                            child: Text(
+                              order.displayCode,
+                              style: TextStyle(
+                                fontSize: 14.5,
+                                fontWeight: FontWeight.w800,
+                                color: context.textPrimary,
+                                letterSpacing: -0.2,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 9,
+                              vertical: 3.5,
+                            ),
+                            decoration: BoxDecoration(
+                              color: (isDone
+                                      ? const Color(0xFF16A34A)
+                                      : overdue
+                                          ? const Color(0xFFDC2626)
+                                          : sColor)
+                                  .withValues(alpha: 0.12),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Text(
+                              statusLabel(status),
+                              style: TextStyle(
+                                fontSize: 11.5,
+                                fontWeight: FontWeight.w700,
+                                color: isDone
+                                    ? const Color(0xFF16A34A)
+                                    : overdue
+                                        ? const Color(0xFFDC2626)
+                                        : sColor,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 6),
+
+                      // Sender label / Service type + Deadline
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 4,
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        children: [
+                          if ((order.senderName ?? '').isNotEmpty) ...[
+                            Text(
+                              delegatedView ? 'Người ủy quyền:' : 'Người gửi:',
+                              style: TextStyle(
+                                fontSize: 12.5,
+                                color: context.textMuted,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            Text(
+                              order.senderName!,
+                              style: TextStyle(
+                                fontSize: 12.5,
+                                color: context.textPrimary,
+                                fontWeight: FontWeight.w700,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ] else
+                            Text(
+                              isDrone
+                                  ? 'Giao Drone'
+                                  : (delegatedView ? 'Lấy hộ' : 'Hàng nhận'),
+                              style: TextStyle(
+                                fontSize: 12.5,
+                                color: context.textMuted,
+                                fontWeight: FontWeight.w600,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          if (order.pickupDeadline != null) ...[
+                            Text(
+                              '•',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: context.textMuted,
+                              ),
+                            ),
+                            Text(
+                              'Hạn lấy: ${fmtDateTime(order.pickupDeadline)}',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: overdue
+                                    ? const Color(0xFFDC2626)
+                                    : context.textMuted,
+                                fontWeight: overdue
+                                    ? FontWeight.w700
+                                    : FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                      if (delegatedView && (order.delegateNote ?? '').isNotEmpty) ...[
+                        const SizedBox(height: 4),
+                        Text(
+                          order.delegateNote!,
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontStyle: FontStyle.italic,
+                            color: context.textMuted,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                      const SizedBox(height: 12),
+
+                      // Route: Tủ and Ô
+                      Padding(
+                        padding: const EdgeInsets.only(right: 120),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _RouteRow(
+                              isOrigin: true,
+                              text: lockerTitle,
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.only(
+                                left: 7.25,
+                                top: 2,
+                                bottom: 2,
+                              ),
+                              child: Container(
+                                width: 1.5,
+                                height: 10,
+                                color: const Color(0xFFCBD5E1),
+                              ),
+                            ),
+                            _RouteRow(
+                              isOrigin: false,
+                              text: order.boxNumber != null
+                                  ? 'Ô số ${order.boxNumber}'
+                                  : 'Ô lưu đồ',
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 14),
+
+                      if (!delegatedView && order.delegated)
+                        const OpsBanner(
+                          tone: OpsBannerTone.info,
+                          icon: LucideIcons.userCheck,
+                          text:
+                              'Chủ đơn đã ủy quyền người khác lấy hộ nên mã lấy hàng không '
+                              'còn hiện ở đây.',
+                        )
+                      else if (order.isActive && (order.pickupPin ?? '').isNotEmpty) ...[
+                        Center(
+                          child: AccessCredentials(
+                            pin: order.pickupPin,
+                            qrToken: order.qrToken,
+                            caption: 'Nhập PIN tại tủ hoặc mở ô ngay trên app',
+                            showSuccessAnimation: false,
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                      ] else if (!order.isFinished) ...[
+                        const OpsBanner(
+                          tone: OpsBannerTone.info,
+                          icon: LucideIcons.hourglass,
+                          text:
+                              'Hàng chưa sẵn sàng. Mã lấy hàng sẽ hiện khi hàng đã nằm trong ô.',
+                        ),
+                        const SizedBox(height: 10),
+                      ],
+
+                      // Bottom action row: Status text or PIN preview + Action Button
+                      Wrap(
+                        spacing: 12,
+                        runSpacing: 8,
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        children: [
+                          if (isDone)
+                            const Text(
+                              'Đã nhận hàng',
+                              style: TextStyle(
+                                fontSize: 13.5,
+                                fontWeight: FontWeight.w700,
+                                color: Color(0xFF16A34A),
+                              ),
+                            )
+                          else if (order.delegated)
+                            Text(
+                              'Đã ủy quyền lấy hộ',
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                                color: context.textMuted,
+                              ),
+                            ),
+
+                          // Action button pill
+                          Builder(
+                            builder: (ctx) {
+                              final String actionLabel;
+                              final Color? actionBgColor;
+                              final Color actionTextColor;
+                              final BorderSide actionBorderSide;
+
+                              if (order.canUnlockWithCode) {
+                                actionLabel = 'Mở ${order.boxLabel} lấy hàng';
+                                actionBgColor = const Color(0xFF0284C7)
+                                    .withValues(alpha: 0.12);
+                                actionTextColor = const Color(0xFF0284C7);
+                                actionBorderSide = const BorderSide(
+                                  color: Color(0xFF0284C7),
+                                  width: 1.4,
+                                );
+                              } else if (isDone) {
+                                actionLabel = 'Xem lại';
+                                actionBgColor = null;
+                                actionTextColor = context.textPrimary;
+                                actionBorderSide = BorderSide(
+                                  color: context.borderColor,
+                                  width: 1.5,
+                                );
+                              } else {
+                                actionLabel = 'Chi tiết';
+                                actionBgColor = null;
+                                actionTextColor = context.textPrimary;
+                                actionBorderSide = BorderSide(
+                                  color: context.borderColor,
+                                  width: 1.5,
+                                );
+                              }
+
+                              return GestureDetector(
+                                onTap: () {
+                                  if (order.canUnlockWithCode) {
+                                    onUnlock();
+                                  } else if (onTap != null) {
+                                    onTap!();
+                                  }
+                                },
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 14,
+                                    vertical: 6,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: actionBgColor,
+                                    border: Border.fromBorderSide(
+                                      actionBorderSide,
+                                    ),
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                  child: Text(
+                                    actionLabel,
+                                    style: TextStyle(
+                                      fontSize: 12.5,
+                                      fontWeight: FontWeight.w700,
+                                      color: actionTextColor,
+                                    ),
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        ],
+                      ),
+                      if (onTap != null) ...[
+                        const SizedBox(height: 10),
+                        const Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Xem chi tiết đơn',
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w700,
+                                color: opsPrimary,
+                              ),
+                            ),
+                            SizedBox(width: 3),
+                            Icon(
+                              LucideIcons.chevronRight,
+                              size: 14,
+                              color: opsPrimary,
+                            ),
+                          ],
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
               ],
             ),
-        ],
+
+            // Overdue banner (if any)
+            if (overdue)
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
+                color: const Color(0xFFFEF2F2),
+                child: const Row(
+                  children: [
+                    Icon(
+                      LucideIcons.triangleAlert,
+                      size: 13,
+                      color: Color(0xFFDC2626),
+                    ),
+                    SizedBox(width: 6),
+                    Expanded(
+                      child: Text(
+                        'Đơn đã quá hạn lấy — hãy lấy hàng sớm để tránh phát sinh thêm phí.',
+                        style: TextStyle(
+                          fontSize: 11.5,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFFDC2626),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+            // Delegated notice banner (if delegated)
+            if (!delegatedView && order.delegated)
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
+                color: const Color(0xFFF0F9FF),
+                child: const Row(
+                  children: [
+                    Icon(
+                      LucideIcons.userCheck,
+                      size: 13,
+                      color: Color(0xFF0284C7),
+                    ),
+                    SizedBox(width: 6),
+                    Expanded(
+                      child: Text(
+                        'Chủ đơn đã ủy quyền người khác lấy hộ — mã lấy hàng đã chuyển sang người lấy hộ.',
+                        style: TextStyle(
+                          fontSize: 11.5,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF0369A1),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+          ],
+        ),
       ),
+    );
+  }
+}
+
+class _RouteRow extends StatelessWidget {
+  const _RouteRow({required this.isOrigin, required this.text});
+  final bool isOrigin;
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(top: 2),
+          child: Container(
+            width: 16,
+            height: 16,
+            decoration: BoxDecoration(
+              shape: isOrigin ? BoxShape.circle : BoxShape.rectangle,
+              borderRadius: isOrigin ? null : BorderRadius.circular(4),
+              border: Border.all(
+                color: isOrigin
+                    ? const Color(0xFF94A3B8)
+                    : const Color(0xFF0F172A),
+                width: 2,
+              ),
+            ),
+            child: isOrigin
+                ? null
+                : Center(
+                    child: Container(
+                      width: 6,
+                      height: 6,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF0F172A),
+                        borderRadius: BorderRadius.circular(1),
+                      ),
+                    ),
+                  ),
+          ),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Text(
+            text,
+            style: const TextStyle(
+              fontSize: 13.5,
+              fontWeight: FontWeight.w600,
+              color: Color(0xFF1F2937),
+              height: 1.25,
+            ),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+      ],
     );
   }
 }

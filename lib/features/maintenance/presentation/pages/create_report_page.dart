@@ -582,26 +582,31 @@ class _CreateReportPageState extends State<CreateReportPage> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Row(
-              children: [
-                const Text(
-                  'Chọn ô gặp sự cố tại Kiosk:',
-                  style: TextStyle(
+            Expanded(
+              child: Text.rich(
+                TextSpan(
+                  text: 'Chọn ô gặp sự cố ',
+                  style: const TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
                     color: Colors.black87,
                   ),
+                  children: [
+                    TextSpan(
+                      text: '(Tuỳ chọn)',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.normal,
+                        color: Colors.grey.shade600,
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(width: 6),
-                Text(
-                  '(Tuỳ chọn)',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey.shade600,
-                  ),
-                ),
-              ],
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
             ),
+            const SizedBox(width: 8),
             Row(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -632,7 +637,7 @@ class _CreateReportPageState extends State<CreateReportPage> {
                   ),
                 ),
                 if (_selectedBoxId != null || _isScreenIssueSelected) ...[
-                  const SizedBox(width: 8),
+                  const SizedBox(width: 6),
                   GestureDetector(
                     onTap: () {
                       setState(() {
@@ -641,7 +646,7 @@ class _CreateReportPageState extends State<CreateReportPage> {
                       });
                     },
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3.5),
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3.5),
                       decoration: BoxDecoration(
                         color: const Color(0xFFFEF2F2),
                         borderRadius: BorderRadius.circular(6),
@@ -651,7 +656,7 @@ class _CreateReportPageState extends State<CreateReportPage> {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Icon(Icons.close, size: 12, color: Color(0xFFDC2626)),
-                          SizedBox(width: 3),
+                          SizedBox(width: 2.5),
                           Text(
                             'Bỏ chọn',
                             style: TextStyle(
@@ -806,6 +811,38 @@ class _CreateReportPageState extends State<CreateReportPage> {
                           ],
                         ),
                       ),
+                      const SizedBox(width: 8),
+                      GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            _selectedBoxId = null;
+                            _isScreenIssueSelected = false;
+                          });
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(6),
+                            border: Border.all(color: const Color(0xFFA7F3D0)),
+                          ),
+                          child: const Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.close, size: 12, color: Color(0xFF065F46)),
+                              SizedBox(width: 2.5),
+                              Text(
+                                'Bỏ chọn',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w600,
+                                  color: Color(0xFF065F46),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
                     ],
                   ),
                 );
@@ -820,11 +857,11 @@ class _CreateReportPageState extends State<CreateReportPage> {
                 borderRadius: BorderRadius.circular(10),
                 border: Border.all(color: const Color(0xFFBAE6FD)),
               ),
-              child: const Row(
+              child: Row(
                 children: [
-                  Icon(LucideIcons.monitor, size: 18, color: Color(0xFF0284C7)),
-                  SizedBox(width: 8),
-                  Expanded(
+                  const Icon(LucideIcons.monitor, size: 18, color: Color(0xFF0284C7)),
+                  const SizedBox(width: 8),
+                  const Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -846,6 +883,37 @@ class _CreateReportPageState extends State<CreateReportPage> {
                           ),
                         ),
                       ],
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        _isScreenIssueSelected = false;
+                      });
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(6),
+                        border: Border.all(color: const Color(0xFFBAE6FD)),
+                      ),
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.close, size: 12, color: Color(0xFF0284C7)),
+                          SizedBox(width: 2.5),
+                          Text(
+                            'Bỏ chọn',
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                              color: Color(0xFF0284C7),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ],

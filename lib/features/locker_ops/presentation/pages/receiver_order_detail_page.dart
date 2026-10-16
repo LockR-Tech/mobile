@@ -13,6 +13,7 @@ import 'package:smart_laundry_locker/features/locker_ops/data/receiver_order_det
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/ops_widgets.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/order_detail_widgets.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/receiver_order_card.dart';
+import 'package:smart_laundry_locker/shared/widgets/app_lottie.dart';
 
 /// Chi tiết một đơn phía người nhận ("Hàng chờ nhận") hoặc người lấy hộ ("Đơn
 /// ủy quyền"): mã lấy hàng, người gửi, người nhận/ủy quyền, tủ & ô, kiện hàng,
@@ -654,11 +655,21 @@ class _Header extends StatelessWidget {
               decoration: BoxDecoration(
                 color: statusColor(status).withValues(alpha: 0.10),
                 borderRadius: BorderRadius.circular(14),
+                border: Border.all(
+                  color: statusColor(status).withValues(alpha: 0.18),
+                  width: 1,
+                ),
               ),
-              child: Icon(
-                detail.isDrone ? LucideIcons.plane : typeIcon(o.type),
-                color: statusColor(status),
-                size: 24,
+              padding: const EdgeInsets.all(4),
+              child: AppLottie(
+                detail.isDrone
+                    ? AppLottieAssets.airplaneBox
+                    : AppLottieAssets.box,
+                fallback: (context) => Icon(
+                  detail.isDrone ? LucideIcons.plane : typeIcon(o.type),
+                  color: statusColor(status),
+                  size: 24,
+                ),
               ),
             ),
             const SizedBox(width: 12),
