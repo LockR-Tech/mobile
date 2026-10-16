@@ -1322,133 +1322,116 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
     }
   }
 
-  void _openDetail(Map<String, dynamic> order) {
-    final faultReport = _incidentReportForOrder(order);
-    showModalBottomSheet<void>(
-      context: context,
-      useRootNavigator: true,
-      isScrollControlled: true,
-      backgroundColor: Colors.white,
-      showDragHandle: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(26)),
-      ),
-      builder: (ctx) => DraggableScrollableSheet(
-        expand: false,
-        initialChildSize: 0.78,
-        maxChildSize: 0.95,
-        builder: (ctx, controller) => SingleChildScrollView(
-          controller: controller,
-          padding: const EdgeInsets.fromLTRB(20, 4, 20, 24),
-          // Nhật ký KTV của phiếu chỉ tải khi mở chi tiết (không tải cho mọi
-          // phiếu lúc vào danh sách).
-          child: _ReportLogsLoader(
-            report: faultReport,
-            service: _service,
-            builder: (logs) => _DetailSheet(
-              order: order,
-              service: _service,
-              faultReport: faultReport,
-              faultLogs: logs,
-              lockerName: _lockerNameOf(order),
-              locker: _lockerOf(order),
-              sourceLockerName:
-                  _lockersMap[_asInt(order['sourceLockerId'])]?['name']
-                      ?.toString(),
-              sendBoxNumber:
-                  _lockerBoxesMap[_asInt(order['lockerId'])]?[_asInt(
-                    order['sendBoxId'],
-                  )],
-              receiveBoxNumber:
-                  _lockerBoxesMap[_asInt(
-                    order['destinationLockerId'] ?? order['lockerId'],
-                  )]?[_asInt(order['receiveBoxId'])],
-              onReorder: (id) async {
-                Navigator.pop(ctx);
-                await _runAction(
-                  () => _service.reorder(id),
-                  'Đã tạo đơn mới — xem trong danh sách',
-                );
-              },
-              onConfirmDrop: (id) async {
-                Navigator.pop(ctx);
-                await _runAction(
-                  () => _service.confirmDrop(id),
-                  'Đã xác nhận bỏ đồ',
-                );
-              },
-              onComplete: (id) async {
-                Navigator.pop(ctx);
-                await _runAction(
-                  () => _service.completePickup(id),
-                  'Đã nhận đồ — đơn hoàn tất',
-                );
-              },
-              onEndRental: (id) async {
-                Navigator.pop(ctx);
-                await _showRentalCompletionGuide(order);
-              },
-              onExtend: (id) async {
-                Navigator.pop(ctx);
-                await _extendDialog(id);
-              },
-              onReport: (boxId) async {
-                Navigator.pop(ctx);
-                final orderId = _asInt(order['id']);
-                if (orderId == null) return;
-                await _reportDialog(
-                  orderId: orderId,
-                  boxLabel: _boxLabelFor(order, boxId),
-                );
-              },
-              onCancel: (id) async {
-                Navigator.pop(ctx);
-                if ('${order['type']}'.toUpperCase() == 'DRONE_DELIVERY') {
-                  await _cancelDroneOrder(order, id);
-                  return;
-                }
-                await _runAction(() => _service.cancelOrder(id), 'Đã hủy đơn');
-                final lockerId = order['lockerId'] ?? order['locker']?['id'];
-                AppEventBus.instance.emit(LockerLayoutUpdatedEvent(
-                  lockerId: lockerId?.toString(),
-                ));
-                AppEventBus.instance.emit(OrderChangedEvent(orderId: id.toString()));
-              },
-              onDirections: () => _openLockerDirections(order),
-              onPay: (_) async {
-                Navigator.pop(ctx);
-                await _payDialog(order);
-              },
-              onPayOvertime: (id, fee) async {
-                Navigator.pop(ctx);
-                await _payOvertimeFlow(order, fee);
-              },
-              onPayAndComplete: (id) async {
-                Navigator.pop(ctx);
-                await _payAndCompleteFlow(order);
-              },
-              onOpenLocker: () {
-                Navigator.pop(ctx);
-                _openLockerFlow(order);
-              },
-              onTrackDrone: (id) {
-                Navigator.pop(ctx);
-                context.go(AppRouter.droneDeliveryTracking, extra: '$id');
-              },
-              onDelegate: (id) async {
-                Navigator.pop(ctx);
-                await _delegateOrder(id);
-              },
-              onResetPin: () async {
-                Navigator.pop(ctx);
-                await _resetPin(order);
-              },
-              onChanged: _load,
-            ),
-          ),
+  Future<void> _openDetail(Map<String, dynamic> order) async {
+    await Navigator.of(context).push<void>(
+      MaterialPageRoute<void>(
+        builder: (ctx) => _MyLockerOrderDetailPage(
+          order: order,
+          service: _service,
+          onRefreshOrder: () async {
+            await _load();
+            final id = _asInt(order['id']);
+            return _orders.where((o) => _asInt(o['id']) == id).firstOrNull;
+          },
+          incidentReportForOrder: _incidentReportForOrder,
+          lockerNameOf: _lockerNameOf,
+          lockerOf: _lockerOf,
+          sourceLockerName:
+              _lockersMap[_asInt(order['sourceLockerId'])]?['name']
+                  ?.toString(),
+          sendBoxNumber:
+              _lockerBoxesMap[_asInt(order['lockerId'])]?[_asInt(
+                order['sendBoxId'],
+              )],
+          receiveBoxNumber:
+              _lockerBoxesMap[_asInt(
+                order['destinationLockerId'] ?? order['lockerId'],
+              )]?[_asInt(order['receiveBoxId'])],
+          onReorder: (id) async {
+            Navigator.pop(ctx);
+            await _runAction(
+              () => _service.reorder(id),
+              'Đã tạo đơn mới — xem trong danh sách',
+            );
+          },
+          onConfirmDrop: (id) async {
+            Navigator.pop(ctx);
+            await _runAction(
+              () => _service.confirmDrop(id),
+              'Đã xác nhận bỏ đồ',
+            );
+          },
+          onComplete: (id) async {
+            Navigator.pop(ctx);
+            await _runAction(
+              () => _service.completePickup(id),
+              'Đã nhận đồ — đơn hoàn tất',
+            );
+          },
+          onEndRental: (id) async {
+            Navigator.pop(ctx);
+            await _showRentalCompletionGuide(order);
+          },
+          onExtend: (id) async {
+            Navigator.pop(ctx);
+            await _extendDialog(id);
+          },
+          onReport: (boxId) async {
+            Navigator.pop(ctx);
+            final orderId = _asInt(order['id']);
+            if (orderId == null) return;
+            await _reportDialog(
+              orderId: orderId,
+              boxLabel: _boxLabelFor(order, boxId),
+            );
+          },
+          onCancel: (id) async {
+            Navigator.pop(ctx);
+            if ('${order['type']}'.toUpperCase() == 'DRONE_DELIVERY') {
+              await _cancelDroneOrder(order, id);
+              return;
+            }
+            await _runAction(() => _service.cancelOrder(id), 'Đã hủy đơn');
+            final lockerId = order['lockerId'] ?? order['locker']?['id'];
+            AppEventBus.instance.emit(LockerLayoutUpdatedEvent(
+              lockerId: lockerId?.toString(),
+            ));
+            AppEventBus.instance.emit(OrderChangedEvent(orderId: id.toString()));
+          },
+          onDirections: () => _openLockerDirections(order),
+          onPay: (_) async {
+            Navigator.pop(ctx);
+            await _payDialog(order);
+          },
+          onPayOvertime: (id, fee) async {
+            Navigator.pop(ctx);
+            await _payOvertimeFlow(order, fee);
+          },
+          onPayAndComplete: (id) async {
+            Navigator.pop(ctx);
+            await _payAndCompleteFlow(order);
+          },
+          onOpenLocker: () {
+            Navigator.pop(ctx);
+            _openLockerFlow(order);
+          },
+          onTrackDrone: (id) {
+            Navigator.pop(ctx);
+            context.go(AppRouter.droneDeliveryTracking, extra: '$id');
+          },
+          onDelegate: (id) async {
+            Navigator.pop(ctx);
+            await _delegateOrder(id);
+          },
+          onResetPin: () async {
+            Navigator.pop(ctx);
+            await _resetPin(order);
+          },
+          onChanged: _load,
         ),
       ),
     );
+    if (mounted) await _load();
   }
 
   @override
@@ -2017,14 +2000,14 @@ class _OrderCard extends StatelessWidget {
             Stack(
               clipBehavior: Clip.antiAlias,
               children: [
-                // 3D asset nestled in bottom-right corner (matching sample image 2)
+                // 3D asset nestled in bottom-right corner (compact, elegant, non-obtrusive)
                 Positioned(
-                  bottom: -6,
-                  right: -4,
+                  bottom: -2,
+                  right: -2,
                   child: IgnorePointer(
                     child: SizedBox(
-                      width: 162,
-                      height: 150,
+                      width: _isDeliveryOrder(type) ? 122 : 112,
+                      height: _isDeliveryOrder(type) ? 112 : 104,
                       child: AppLottie(
                         _isDeliveryOrder(type)
                             ? AppLottieAssets.airplaneBox
@@ -2132,7 +2115,7 @@ class _OrderCard extends StatelessWidget {
                       const SizedBox(height: 12),
                       // Route: Tủ and Ô
                       Padding(
-                        padding: const EdgeInsets.only(right: 90),
+                        padding: const EdgeInsets.only(right: 120),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -2140,7 +2123,18 @@ class _OrderCard extends StatelessWidget {
                               isOrigin: true,
                               text: lockerName ?? 'Chưa tra được tên tủ',
                             ),
-                            const SizedBox(height: 8),
+                            Padding(
+                              padding: const EdgeInsets.only(
+                                left: 7.25,
+                                top: 2,
+                                bottom: 2,
+                              ),
+                              child: Container(
+                                width: 1.5,
+                                height: 10,
+                                color: const Color(0xFFCBD5E1),
+                              ),
+                            ),
                             _RouteRow(
                               isOrigin: false,
                               text: _orderBoxLabel(
@@ -2370,30 +2364,34 @@ class _RouteRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        SizedBox(
-          width: 16,
-          child: Center(
-            child: isOrigin
-                ? Container(
-                    width: 10,
-                    height: 10,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: const Color(0xFF9CA3AF),
-                        width: 2,
+        Padding(
+          padding: const EdgeInsets.only(top: 2),
+          child: SizedBox(
+            width: 16,
+            child: Center(
+              child: isOrigin
+                  ? Container(
+                      width: 10,
+                      height: 10,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: const Color(0xFF9CA3AF),
+                          width: 2,
+                        ),
+                      ),
+                    )
+                  : Container(
+                      width: 10,
+                      height: 10,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF374151),
+                        borderRadius: BorderRadius.circular(2),
                       ),
                     ),
-                  )
-                : Container(
-                    width: 10,
-                    height: 10,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF374151),
-                      borderRadius: BorderRadius.circular(2),
-                    ),
-                  ),
+            ),
           ),
         ),
         const SizedBox(width: 10),
@@ -2401,11 +2399,12 @@ class _RouteRow extends StatelessWidget {
           child: Text(
             text,
             style: const TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
+              fontSize: 13.5,
+              fontWeight: FontWeight.w600,
               color: Color(0xFF1F2937),
+              height: 1.25,
             ),
-            maxLines: 1,
+            maxLines: 2,
             overflow: TextOverflow.ellipsis,
           ),
         ),
@@ -3400,6 +3399,160 @@ class _OrderRelocationCard extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+class _MyLockerOrderDetailPage extends StatefulWidget {
+  const _MyLockerOrderDetailPage({
+    required this.order,
+    required this.service,
+    required this.onRefreshOrder,
+    required this.incidentReportForOrder,
+    required this.lockerNameOf,
+    required this.lockerOf,
+    this.sourceLockerName,
+    this.sendBoxNumber,
+    this.receiveBoxNumber,
+    required this.onReorder,
+    required this.onConfirmDrop,
+    required this.onComplete,
+    required this.onEndRental,
+    required this.onExtend,
+    required this.onReport,
+    required this.onCancel,
+    required this.onDirections,
+    required this.onPay,
+    required this.onPayOvertime,
+    required this.onOpenLocker,
+    required this.onTrackDrone,
+    this.onPayAndComplete,
+    this.onDelegate,
+    this.onResetPin,
+    this.onChanged,
+  });
+
+  final Map<String, dynamic> order;
+  final LockerOpsService service;
+  final Future<Map<String, dynamic>?> Function() onRefreshOrder;
+  final Map<String, dynamic>? Function(Map<String, dynamic> order) incidentReportForOrder;
+  final String? Function(Map<String, dynamic> order) lockerNameOf;
+  final Map<String, dynamic>? Function(Map<String, dynamic> order) lockerOf;
+  final String? sourceLockerName;
+  final int? sendBoxNumber;
+  final int? receiveBoxNumber;
+  final void Function(int orderId) onReorder;
+  final void Function(int orderId) onConfirmDrop;
+  final void Function(int orderId) onComplete;
+  final void Function(int orderId) onEndRental;
+  final void Function(int orderId) onExtend;
+  final void Function(int boxId) onReport;
+  final void Function(int orderId) onCancel;
+  final VoidCallback onDirections;
+  final void Function(int orderId) onPay;
+  final void Function(int orderId, num fee) onPayOvertime;
+  final VoidCallback onOpenLocker;
+  final void Function(int orderId) onTrackDrone;
+  final void Function(int orderId)? onPayAndComplete;
+  final void Function(int orderId)? onDelegate;
+  final VoidCallback? onResetPin;
+  final Future<void> Function()? onChanged;
+
+  @override
+  State<_MyLockerOrderDetailPage> createState() =>
+      _MyLockerOrderDetailPageState();
+}
+
+class _MyLockerOrderDetailPageState extends State<_MyLockerOrderDetailPage> {
+  late Map<String, dynamic> _currentOrder = widget.order;
+  bool _refreshing = false;
+
+  Future<void> _refresh() async {
+    if (_refreshing) return;
+    setState(() => _refreshing = true);
+    try {
+      final updated = await widget.onRefreshOrder();
+      if (mounted && updated != null) {
+        setState(() => _currentOrder = updated);
+      }
+    } catch (_) {
+    } finally {
+      if (mounted) setState(() => _refreshing = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final faultReport = widget.incidentReportForOrder(_currentOrder);
+    final orderCode = _currentOrder['orderCode']?.toString();
+    final displayTitle = (orderCode != null && orderCode.isNotEmpty)
+        ? '#$orderCode'
+        : 'Chi tiết đơn #${_currentOrder['id'] ?? ''}';
+
+    return Scaffold(
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        foregroundColor: opsDark,
+        surfaceTintColor: Colors.white,
+        elevation: 0,
+        title: Text(
+          displayTitle,
+          style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 17),
+        ),
+        actions: [
+          IconButton(
+            onPressed: _refreshing ? null : _refresh,
+            icon: const Icon(LucideIcons.refreshCw, size: 18),
+            tooltip: 'Tải lại',
+          ),
+        ],
+        bottom: _refreshing
+            ? const PreferredSize(
+                preferredSize: Size.fromHeight(2),
+                child: LinearProgressIndicator(minHeight: 2),
+              )
+            : null,
+      ),
+      body: RefreshIndicator(
+        color: opsDark,
+        onRefresh: _refresh,
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.fromLTRB(20, 12, 20, 40),
+          child: _ReportLogsLoader(
+            report: faultReport,
+            service: widget.service,
+            builder: (logs) => _DetailSheet(
+              order: _currentOrder,
+              service: widget.service,
+              faultReport: faultReport,
+              faultLogs: logs,
+              lockerName: widget.lockerNameOf(_currentOrder),
+              locker: widget.lockerOf(_currentOrder),
+              sourceLockerName: widget.sourceLockerName,
+              sendBoxNumber: widget.sendBoxNumber,
+              receiveBoxNumber: widget.receiveBoxNumber,
+              onReorder: widget.onReorder,
+              onConfirmDrop: widget.onConfirmDrop,
+              onComplete: widget.onComplete,
+              onEndRental: widget.onEndRental,
+              onExtend: widget.onExtend,
+              onReport: widget.onReport,
+              onCancel: widget.onCancel,
+              onDirections: widget.onDirections,
+              onPay: widget.onPay,
+              onPayOvertime: widget.onPayOvertime,
+              onPayAndComplete: widget.onPayAndComplete,
+              onOpenLocker: widget.onOpenLocker,
+              onTrackDrone: widget.onTrackDrone,
+              onDelegate: widget.onDelegate,
+              onResetPin: widget.onResetPin,
+              onChanged: _refresh,
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
