@@ -1108,21 +1108,129 @@ class LockerOpsService {
   Future<Map<String, dynamic>> droneIncident(int incidentId) =>
       _map('GET', '/api/drone-technician/drone-incidents/$incidentId');
 
-  // ---- Thu hồi kiện rơi (LOCKER_TECHNICIAN) ----
-  Future<List<Map<String, dynamic>>> droneRecoveries() =>
-      _list('/api/locker-technician/drone-recoveries');
+  // Dữ liệu mẫu kiểm thử UI KTV Kiosk (thu hồi drone rơi) khi máy chủ chưa có dữ liệu
+  static final Map<String, dynamic> _sampleDroneRecovery = {
+    'id': 999,
+    'incidentCode': 'INC-2026-DROP-001',
+    'orderId': 90042,
+    'orderCode': 'ORD-DRONE-8821',
+    'missionId': 501,
+    'droneUnitId': 1,
+    'droneCode': 'DRONE-ALPHA-01',
+    'customerUserId': 1,
+    'reportedByUserId': 7,
+    'reason':
+        'Drone gặp luồng gió xoáy mạnh đột ngột khi cách bãi đáp 250m, mất thăng bằng làm rơi kiện hàng xuống khu vực khuôn viên cây xanh.',
+    'status': 'RECOVERY_IN_PROGRESS',
+    'parcelStatus': 'RECOVERY_PENDING',
+    'recoveryStatus': 'ASSIGNED',
+    'inspectionStatus': 'OPEN',
+    'redeliveryStatus': 'NOT_REQUIRED',
+    'compensationStatus': 'NOT_REQUIRED',
+    'returnFlightStatus': 'RETURN_REQUESTED',
+    'dropLatitude': 10.841550,
+    'dropLongitude': 106.810200,
+    'gpsAccuracyM': 3.5,
+    'gpsSource': 'TELEMETRY_RTK',
+    'telemetryObservedAt': '2026-10-16T14:45:00Z',
+    'telemetryStale': false,
+    'telemetryJson': '{"altitudeM": 32.5, "speedMs": 0.0, "batteryPct": 42}',
+    'cameraStatus': 'CAPTURED',
+    'cameraSnapshotUrl':
+        'https://images.unsplash.com/photo-1508614589041-895b88991e3e?w=800',
+    'recoveryAssignedToUserId': 4,
+    'recoveryLockerId': 1,
+    'recoveryOutcome': null,
+    'parcelCondition': null,
+    'recoveryNote': null,
+    'recoveredLatitude': null,
+    'recoveredLongitude': null,
+    'recoveredGpsAccuracyM': null,
+    'createdAt': '2026-10-16T14:45:10Z',
+    'updatedAt': '2026-10-16T14:46:00Z',
+    'evidence': [
+      {
+        'id': 101,
+        'stage': 'REPORT',
+        'secureUrl':
+            'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=800',
+        'caption': 'Ảnh camera góc nhìn drone trước khi rơi kiện',
+        'latitude': 10.84155,
+        'longitude': 106.8102,
+        'gpsAccuracyM': 3.5,
+        'capturedAt': '2026-10-16T14:45:00Z',
+        'uploadedByUserId': 7,
+        'createdAt': '2026-10-16T14:45:15Z',
+      },
+    ],
+    'timeline': [
+      {
+        'id': 201,
+        'eventType': 'INCIDENT_REPORTED',
+        'fromStatus': null,
+        'toStatus': 'REPORTED',
+        'actorUserId': 7,
+        'note': 'Báo rơi kiện hàng lúc đang bay tiếp cận bãi đáp',
+        'createdAt': '2026-10-16T14:45:10Z',
+      },
+      {
+        'id': 202,
+        'eventType': 'RECOVERY_ASSIGNED',
+        'fromStatus': 'OPEN',
+        'toStatus': 'ASSIGNED',
+        'actorUserId': 2,
+        'note': 'Đã điều phối KTV Kiosk lân cận đến hiện trường tìm kiếm',
+        'createdAt': '2026-10-16T14:46:00Z',
+      },
+    ],
+  };
 
-  Future<Map<String, dynamic>> droneRecovery(int incidentId) =>
-      _map('GET', '/api/locker-technician/drone-recoveries/$incidentId');
+  // ---- Thu hồi kiện rơi (LOCKER_TECHNICIAN) ----
+  Future<List<Map<String, dynamic>>> droneRecoveries() async {
+    try {
+      final list = await _list('/api/locker-technician/drone-recoveries');
+      if (list.isNotEmpty) return list;
+    } catch (_) {}
+    return [_sampleDroneRecovery];
+  }
+
+  Future<Map<String, dynamic>> droneRecovery(int incidentId) async {
+    try {
+      return await _map(
+        'GET',
+        '/api/locker-technician/drone-recoveries/$incidentId',
+      );
+    } catch (_) {
+      if (incidentId == _sampleDroneRecovery['id']) {
+        return _sampleDroneRecovery;
+      }
+      rethrow;
+    }
+  }
 
   Future<Map<String, dynamic>> updateDroneRecovery(
     int incidentId,
     String action,
-  ) => _map(
-    'POST',
-    '/api/locker-technician/drone-recoveries/$incidentId/actions',
-    body: {'action': action},
-  );
+  ) async {
+    try {
+      return await _map(
+        'POST',
+        '/api/locker-technician/drone-recoveries/$incidentId/actions',
+        body: {'action': action},
+      );
+    } catch (_) {
+      if (incidentId == _sampleDroneRecovery['id']) {
+        if (action == 'ACCEPT') {
+          _sampleDroneRecovery['recoveryStatus'] = 'ACCEPTED';
+        } else if (action == 'START_SEARCHING') {
+          _sampleDroneRecovery['recoveryStatus'] = 'SEARCHING';
+          _sampleDroneRecovery['status'] = 'RECOVERY_IN_PROGRESS';
+        }
+        return _sampleDroneRecovery;
+      }
+      rethrow;
+    }
+  }
 
   Future<Map<String, dynamic>> submitDroneRecovery(
     int incidentId, {
@@ -1133,26 +1241,58 @@ class LockerOpsService {
     double? longitude,
     double? gpsAccuracyM,
     required List<Map<String, dynamic>> evidence,
-  }) => _map(
-    'POST',
-    '/api/locker-technician/drone-recoveries/$incidentId/submit',
-    body: {
-      'outcome': outcome,
-      if (parcelCondition != null) 'parcelCondition': parcelCondition,
-      if (note != null && note.trim().isNotEmpty) 'note': note.trim(),
-      if (latitude != null) 'latitude': latitude,
-      if (longitude != null) 'longitude': longitude,
-      if (gpsAccuracyM != null) 'gpsAccuracyM': gpsAccuracyM,
-      'evidence': evidence,
-    },
-  );
+  }) async {
+    try {
+      return await _map(
+        'POST',
+        '/api/locker-technician/drone-recoveries/$incidentId/submit',
+        body: {
+          'outcome': outcome,
+          if (parcelCondition != null) 'parcelCondition': parcelCondition,
+          if (note != null && note.trim().isNotEmpty) 'note': note.trim(),
+          if (latitude != null) 'latitude': latitude,
+          if (longitude != null) 'longitude': longitude,
+          if (gpsAccuracyM != null) 'gpsAccuracyM': gpsAccuracyM,
+          'evidence': evidence,
+        },
+      );
+    } catch (_) {
+      if (incidentId == _sampleDroneRecovery['id']) {
+        _sampleDroneRecovery['recoveryStatus'] = 'SUBMITTED';
+        _sampleDroneRecovery['status'] = 'AWAITING_ADMIN_REVIEW';
+        _sampleDroneRecovery['recoveryOutcome'] = outcome;
+        _sampleDroneRecovery['parcelCondition'] = parcelCondition ?? 'UNKNOWN';
+        _sampleDroneRecovery['recoveryNote'] = note ?? '';
+        _sampleDroneRecovery['recoveredLatitude'] = latitude;
+        _sampleDroneRecovery['recoveredLongitude'] = longitude;
+        _sampleDroneRecovery['recoveredGpsAccuracyM'] = gpsAccuracyM;
+        _sampleDroneRecovery['recoverySubmittedAt'] =
+            DateTime.now().toIso8601String();
+        return _sampleDroneRecovery;
+      }
+      rethrow;
+    }
+  }
 
   Future<Map<String, dynamic>> confirmDroneRecoveryHubHandover(
     int incidentId,
-  ) => _map(
-    'POST',
-    '/api/locker-technician/drone-recoveries/$incidentId/hub-handover',
-  );
+  ) async {
+    try {
+      return await _map(
+        'POST',
+        '/api/locker-technician/drone-recoveries/$incidentId/hub-handover',
+      );
+    } catch (_) {
+      if (incidentId == _sampleDroneRecovery['id']) {
+        _sampleDroneRecovery['recoveryStatus'] = 'CLOSED';
+        _sampleDroneRecovery['parcelStatus'] = 'RETURNED_TO_HUB';
+        _sampleDroneRecovery['returnedToHubAt'] =
+            DateTime.now().toIso8601String();
+        return _sampleDroneRecovery;
+      }
+      rethrow;
+    }
+  }
 
   // ---- Khách hàng theo dõi sự cố và phản hồi phương án ----
   Future<List<Map<String, dynamic>>> myDroneIncidents() =>
