@@ -177,14 +177,13 @@ class _DroneJourneyCameraPanelState extends State<DroneJourneyCameraPanel> {
                       '${_num(camera['groundSpeedMs'])!.toStringAsFixed(1)} m/s',
                     ),
                   if (_num(camera['headingDeg']) != null)
-                    _Metric(
-                      'Hướng',
-                      '${_num(camera['headingDeg'])!.round()}°',
-                    ),
+                    _Metric('Hướng', '${_num(camera['headingDeg'])!.round()}°'),
                   if (parseServerDateTime(camera['observedAt']) != null)
                     _Metric(
                       'Số đo lúc',
-                      formatDateTimeVn(parseServerDateTime(camera['observedAt'])),
+                      formatDateTimeVn(
+                        parseServerDateTime(camera['observedAt']),
+                      ),
                     ),
                 ],
               ),
@@ -272,6 +271,12 @@ class _DroneJourneyCameraPanelState extends State<DroneJourneyCameraPanel> {
                   style: TextStyle(color: Color(0xFF92400E), fontSize: 12),
                 ),
                 const SizedBox(height: 12),
+                _DropIncidentSnapshot(
+                  orderId: widget.orderId,
+                  camera: camera,
+                  cameraState: _state,
+                ),
+                const SizedBox(height: 12),
                 TextField(
                   controller: reason,
                   maxLength: 1000,
@@ -340,9 +345,7 @@ class _DroneJourneyCameraPanelState extends State<DroneJourneyCameraPanel> {
                         if (context.mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
-                              content: Text(
-                                droneTechnicianErrorMessage(error),
-                              ),
+                              content: Text(droneTechnicianErrorMessage(error)),
                             ),
                           );
                           setDialogState(() => sending = false);
@@ -360,8 +363,13 @@ class _DroneJourneyCameraPanelState extends State<DroneJourneyCameraPanel> {
         ),
       ),
     );
-    reason.dispose();
-    photos.dispose();
+    // `showDialog` hoàn tất Future trước khi route dialog tháo xong khỏi cây.
+    // PhotoPickerField vẫn đang lắng nghe `photos` ở frame animation cuối; dispose
+    // ngay tại đây sẽ làm Flutter báo `_dependents.isEmpty`.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      reason.dispose();
+      photos.dispose();
+    });
     if (reported == true && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -398,6 +406,173 @@ class _StatePill extends StatelessWidget {
             : const Color(0xFF9A3412),
       ),
     ),
+  );
+}
+
+/// Ngữ cảnh bất biến được lưu cùng sự cố. KTV nhìn lại đúng telemetry đang có
+/// trước khi mô tả, nhưng không thể sửa/suy diễn vị trí hay số liệu bay.
+class _DropIncidentSnapshot extends StatelessWidget {
+  const _DropIncidentSnapshot({
+    required this.orderId,
+    required this.camera,
+    required this.cameraState,
+  });
+
+  final int orderId;
+  final Map<String, dynamic>? camera;
+  final String cameraState;
+
+  static num? _num(dynamic value) => value is num ? value : null;
+
+  @override
+  Widget build(BuildContext context) {
+    final telemetryLive = camera?['telemetryLive'] == true;
+    final simulatedLocation = camera?['locationSource'] == 'SIMULATION_FPT_HCM';
+    final lat = _num(camera?['latitude']);
+    final lng = _num(camera?['longitude']);
+    final hasLocation =
+        (telemetryLive || simulatedLocation) &&
+        lat != null &&
+        lng != null &&
+        (lat != 0 || lng != 0);
+    final observedAt = parseServerDateTime(camera?['observedAt']);
+    final battery = _num(camera?['batteryPercent']);
+    final altitude = _num(camera?['altitudeM']);
+    final speed = _num(camera?['groundSpeedMs']);
+    final flightMode = '${camera?['flightMode'] ?? ''}'.trim();
+
+    final rows = <_SnapshotValue>[
+      _SnapshotValue('Đơn', '#$orderId'),
+      _SnapshotValue('Drone', '${camera?['droneCode'] ?? 'Chưa có dữ liệu'}'),
+      _SnapshotValue(
+        'Chặng bay',
+        _journeyLabel(camera?['journeyStatus']?.toString()),
+      ),
+      _SnapshotValue(
+        'Telemetry',
+        telemetryLive ? 'Trực tuyến' : 'Cũ / chưa kết nối',
+      ),
+      _SnapshotValue(
+        'Vị trí lưu vào phiếu',
+        hasLocation
+            ? '${lat.toStringAsFixed(5)}, ${lng.toStringAsFixed(5)}'
+                  '${simulatedLocation ? ' · Mô phỏng FPT HCM' : ''}'
+            : 'Chưa có vị trí GPS tin cậy',
+        warning: !hasLocation,
+      ),
+      if (observedAt != null)
+        _SnapshotValue('Số đo lúc', formatDateTimeVn(observedAt)),
+      if (battery != null && battery >= 0)
+        _SnapshotValue('Pin', '${battery.toInt()}%'),
+      if (flightMode.isNotEmpty && flightMode.toUpperCase() != 'UNKNOWN')
+        _SnapshotValue('Chế độ bay', flightMode),
+      if (altitude != null)
+        _SnapshotValue('Độ cao', '${altitude.toStringAsFixed(1)} m'),
+      if (speed != null)
+        _SnapshotValue('Tốc độ', '${speed.toStringAsFixed(1)} m/s'),
+      _SnapshotValue('Camera', _cameraLabel(cameraState)),
+    ];
+
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFFF7ED),
+        border: Border.all(color: const Color(0xFFFED7AA)),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Row(
+            children: [
+              Icon(
+                Icons.location_searching,
+                size: 17,
+                color: Color(0xFF9A3412),
+              ),
+              SizedBox(width: 7),
+              Text(
+                'Dữ liệu tự ghi vào phiếu',
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w800,
+                  color: Color(0xFF7C2D12),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          for (final row in rows) ...[
+            _SnapshotRow(value: row),
+            if (row != rows.last) const SizedBox(height: 4),
+          ],
+          if (!hasLocation) ...[
+            const SizedBox(height: 7),
+            const Text(
+              'Hệ thống không tự tạo toạ độ khi telemetry không trực tuyến.',
+              style: TextStyle(fontSize: 11, color: Color(0xFF9A3412)),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  static String _cameraLabel(String state) => switch (state) {
+    'LIVE' => 'Đang trực tiếp',
+    'UNAVAILABLE' => 'Chưa khả dụng',
+    'ERROR' => 'Lỗi kết nối',
+    _ => 'Đang kết nối',
+  };
+
+  static String _journeyLabel(String? status) =>
+      switch ((status ?? '').toUpperCase()) {
+        'LAUNCHING' => 'Đang khởi phóng',
+        'DEPARTED' => 'Đã rời trạm',
+        'EN_ROUTE' => 'Đang bay tới tủ nhận',
+        'APPROACHING' => 'Đang tiếp cận tủ nhận',
+        'ARRIVED' => 'Đã đến tủ nhận',
+        _ => status?.trim().isNotEmpty == true ? status! : 'Chưa có dữ liệu',
+      };
+}
+
+class _SnapshotValue {
+  const _SnapshotValue(this.label, this.value, {this.warning = false});
+
+  final String label;
+  final String value;
+  final bool warning;
+}
+
+class _SnapshotRow extends StatelessWidget {
+  const _SnapshotRow({required this.value});
+
+  final _SnapshotValue value;
+
+  @override
+  Widget build(BuildContext context) => Row(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      SizedBox(
+        width: 126,
+        child: Text(
+          value.label,
+          style: const TextStyle(fontSize: 11.5, color: Color(0xFF78716C)),
+        ),
+      ),
+      Expanded(
+        child: Text(
+          value.value,
+          style: TextStyle(
+            fontSize: 11.5,
+            fontWeight: FontWeight.w700,
+            color: value.warning
+                ? const Color(0xFF9A3412)
+                : const Color(0xFF292524),
+          ),
+        ),
+      ),
+    ],
   );
 }
 
