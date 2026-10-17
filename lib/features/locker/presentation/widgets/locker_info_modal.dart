@@ -26,6 +26,9 @@ class LockerInfoModal extends StatelessWidget {
   /// Mở sơ đồ ô của tủ.
   final VoidCallback? onOpenGrid;
 
+  /// Mục "Ưu đãi tại tủ này" (tự ẩn khi tủ không có mã riêng).
+  final Widget? offers;
+
   const LockerInfoModal({
     super.key,
     required this.location,
@@ -37,6 +40,7 @@ class LockerInfoModal extends StatelessWidget {
     this.online,
     this.bookingBlockReason,
     this.onOpenGrid,
+    this.offers,
   });
 
   @override
@@ -122,6 +126,11 @@ class LockerInfoModal extends StatelessWidget {
               ),
               child: _buildCellCounts(),
             ),
+            if (offers != null)
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+                child: offers,
+              ),
             if (bookingBlockReason != null)
               Padding(
                 padding: EdgeInsets.fromLTRB(
