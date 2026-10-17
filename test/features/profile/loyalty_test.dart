@@ -15,6 +15,53 @@ void main() {
     expect(s.tierLabel, 'Bạc');
     expect(loyaltyTierLabel('PLATINUM'), 'Bạch kim');
     expect(loyaltyTierLabel('BRONZE'), 'Đồng');
+    // Server cũ chưa có lifetimePoints ⇒ xếp hạng theo điểm hiện có.
+    expect(s.lifetimePoints, isNull);
+    expect(s.tierPoints, 620);
+  });
+
+  test('hạng theo tổng điểm đã tích, không theo điểm còn lại', () {
+    final s = LoyaltySummary.fromJson({
+      'points': 120,
+      'lifetimePoints': 2400,
+      'stamps': 0,
+      'tier': 'GOLD',
+    });
+    expect(s.points, 120);
+    expect(s.lifetimePoints, 2400);
+    expect(s.tierPoints, 2400);
+  });
+
+  test('nhãn đủ 5 loại giao dịch điểm', () {
+    expect(pointTransactionLabel('ORDER_EARN', orderId: 9), 'Tích điểm đơn hàng #9');
+    expect(
+      pointTransactionLabel('ORDER_REDEEM', orderId: 9),
+      'Dùng điểm thanh toán đơn #9',
+    );
+    expect(
+      pointTransactionLabel('ORDER_REDEEM_REFUND', orderId: 9),
+      'Hoàn điểm đơn huỷ #9',
+    );
+    expect(pointTransactionLabel('ADJUSTMENT'), 'Điều chỉnh điểm');
+    expect(pointTransactionLabel('REDEEM'), 'Đổi điểm');
+    expect(pointTransactionLabel('LẠ'), 'Biến động điểm');
+
+    final redeem = PointTransaction.fromJson({
+      'id': 5,
+      'orderId': 9,
+      'points': -70,
+      'type': 'order_redeem',
+    });
+    expect(redeem.isCredit, isFalse);
+    expect(redeem.isOrderRedemption, isTrue);
+    final refund = PointTransaction.fromJson({
+      'id': 6,
+      'orderId': 9,
+      'points': 70,
+      'type': 'ORDER_REDEEM_REFUND',
+    });
+    expect(refund.isCredit, isTrue);
+    expect(refund.typeLabel, 'Hoàn điểm đơn huỷ #9');
   });
 
   test('lịch sử điểm: nhãn loại và chiều cộng/trừ', () {

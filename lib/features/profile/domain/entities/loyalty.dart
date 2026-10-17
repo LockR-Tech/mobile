@@ -1,28 +1,40 @@
 import 'package:smart_laundry_locker/core/utils/app_date_time.dart';
 
 /// Tài khoản điểm thưởng của chính người dùng (`GET /api/loyalty/summary`,
-/// loyalty-service lấy người dùng từ token): `{id, userId, points, stamps, tier}`.
+/// loyalty-service lấy người dùng từ token):
+/// `{id, userId, points, lifetimePoints, stamps, tier}`.
 class LoyaltySummary {
+  /// Điểm hiện có (dùng được để thanh toán).
   final int points;
+
+  /// Tổng điểm đã tích từ trước tới nay — căn cứ xếp hạng; tiêu điểm không
+  /// làm giảm số này. `null` với server cũ chưa trả.
+  final int? lifetimePoints;
   final int stamps;
 
   /// `BRONZE | SILVER | GOLD | PLATINUM` — backend tính theo ngưỡng admin cấu
-  /// hình (`app.loyalty.tier-*-points`).
+  /// hình (`app.loyalty.tier-*-points`) trên tổng điểm đã tích.
   final String tier;
 
   const LoyaltySummary({
     required this.points,
+    this.lifetimePoints,
     required this.stamps,
     required this.tier,
   });
 
   factory LoyaltySummary.fromJson(Map<String, dynamic> json) {
+    final lifetime = json['lifetimePoints'];
     return LoyaltySummary(
       points: _asInt(json['points']),
+      lifetimePoints: lifetime == null ? null : _asInt(lifetime),
       stamps: _asInt(json['stamps']),
       tier: (json['tier'] ?? 'BRONZE').toString().toUpperCase(),
     );
   }
+
+  /// Số điểm dùng để tính hạng: tổng điểm đã tích, server cũ thì điểm hiện có.
+  int get tierPoints => lifetimePoints ?? points;
 
   String get tierLabel => loyaltyTierLabel(tier);
 }
@@ -57,6 +69,10 @@ class PointTransaction {
 
   bool get isCredit => points >= 0;
 
+  /// Dùng điểm để thanh toán / được hoàn lại khi đơn huỷ.
+  bool get isOrderRedemption =>
+      type == 'ORDER_REDEEM' || type == 'ORDER_REDEEM_REFUND';
+
   String get typeLabel => pointTransactionLabel(type, orderId: orderId);
 }
 
@@ -75,11 +91,14 @@ String loyaltyTierLabel(String tier) {
 }
 
 String pointTransactionLabel(String type, {int? orderId}) {
+  final order = orderId != null ? ' #$orderId' : '';
   switch (type.toUpperCase()) {
     case 'ORDER_EARN':
-      return orderId != null
-          ? 'Tích điểm đơn hàng #$orderId'
-          : 'Tích điểm đơn hàng';
+      return 'Tích điểm đơn hàng$order';
+    case 'ORDER_REDEEM':
+      return 'Dùng điểm thanh toán đơn$order';
+    case 'ORDER_REDEEM_REFUND':
+      return 'Hoàn điểm đơn huỷ$order';
     case 'REDEEM':
       return 'Đổi điểm';
     case 'ADJUSTMENT':
