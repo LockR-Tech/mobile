@@ -1,4 +1,5 @@
 import 'package:smart_laundry_locker/core/utils/app_date_time.dart';
+import 'package:smart_laundry_locker/features/promotions/data/models/promotion_model.dart';
 
 /// Một voucher trong ví (promotion_claims + thông tin promotion đi kèm).
 /// Backend trả: {id (claimId), promotionId, code, name, description,
@@ -19,6 +20,8 @@ class VoucherModel {
 
   /// Mã chỉ áp dụng tại một tủ/kiosk cụ thể (null = toàn hệ thống).
   final int? lockerId;
+  final String? lockerCode;
+  final String? lockerName;
 
   VoucherModel({
     required this.id,
@@ -31,6 +34,8 @@ class VoucherModel {
     required this.rewardType,
     required this.giftDescription,
     this.lockerId,
+    this.lockerCode,
+    this.lockerName,
   });
 
   factory VoucherModel.fromJson(Map<String, dynamic> json) {
@@ -51,7 +56,16 @@ class VoucherModel {
           ? 'DISCOUNT_PERCENT'
           : 'DISCOUNT_FIXED',
       giftDescription: json['description'] as String? ?? '',
-      lockerId: (json['lockerId'] as num?)?.toInt(),
+      lockerId: promotionLockerId(json['lockerId']),
+      lockerCode: json['lockerCode']?.toString(),
+      lockerName: json['lockerName']?.toString(),
     );
   }
+
+  /// `Áp dụng tại: Tủ A` hoặc `Toàn hệ thống`.
+  String get scopeLabel => promotionScopeLabel(
+    lockerId: lockerId,
+    lockerName: lockerName,
+    lockerCode: lockerCode,
+  );
 }

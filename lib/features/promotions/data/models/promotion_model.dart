@@ -15,6 +15,12 @@ class PromotionModel {
   final DateTime? startAt;
   final DateTime? endAt;
 
+  /// Tủ duy nhất được dùng mã (null = toàn hệ thống). Server trả kèm
+  /// `lockerCode`/`lockerName` để hiện `Áp dụng tại: <tên tủ>`.
+  final int? lockerId;
+  final String? lockerCode;
+  final String? lockerName;
+
   const PromotionModel({
     required this.id,
     required this.code,
@@ -28,6 +34,9 @@ class PromotionModel {
     required this.status,
     this.startAt,
     this.endAt,
+    this.lockerId,
+    this.lockerCode,
+    this.lockerName,
   });
 
   factory PromotionModel.fromJson(Map<String, dynamic> json) {
@@ -46,8 +55,33 @@ class PromotionModel {
       // hạn ưu đãi lệch 7 tiếng.
       startAt: parseServerDateTime(json['startAt']),
       endAt: parseServerDateTime(json['endAt']),
+      lockerId: promotionLockerId(json['lockerId']),
+      lockerCode: _text(json['lockerCode']),
+      lockerName: _text(json['lockerName']),
     );
   }
+
+  /// Mã chỉ dùng được ở một tủ.
+  bool get isLockerScoped => lockerId != null;
+
+  /// Tên tủ được dùng mã; `null` = toàn hệ thống.
+  String? get lockerDisplayName => promotionLockerDisplayName(
+    lockerId: lockerId,
+    lockerName: lockerName,
+    lockerCode: lockerCode,
+  );
+
+  /// `Áp dụng tại: Tủ A` hoặc `Toàn hệ thống`.
+  String get scopeLabel => promotionScopeLabel(
+    lockerId: lockerId,
+    lockerName: lockerName,
+    lockerCode: lockerCode,
+  );
+
+  /// Dùng được ở tủ [currentLockerId]: mã toàn hệ thống, hoặc mã của đúng tủ
+  /// đó. Chưa chọn tủ ⇒ chỉ mã toàn hệ thống.
+  bool usableAt(int? currentLockerId) =>
+      lockerId == null || (currentLockerId != null && lockerId == currentLockerId);
 
   bool get hasImage => (imageUrl ?? '').trim().isNotEmpty;
 
@@ -91,4 +125,41 @@ class PromotionModel {
     final f = NumberFormat('#,###', 'vi_VN');
     return 'Đơn tối thiểu ${f.format(minOrderAmount)}đ';
   }
+}
+
+/// `lockerId` của khuyến mãi; 0/âm/rác ⇒ null (toàn hệ thống).
+int? promotionLockerId(dynamic raw) {
+  final id = raw is num ? raw.toInt() : int.tryParse('${raw ?? ''}');
+  return id != null && id > 0 ? id : null;
+}
+
+/// Tên tủ duy nhất được dùng mã (thiếu tên thì mã tủ, rồi `Tủ #id`); `null`
+/// khi mã dùng toàn hệ thống.
+String? promotionLockerDisplayName({
+  int? lockerId,
+  String? lockerName,
+  String? lockerCode,
+}) {
+  if (lockerId == null) return null;
+  return _text(lockerName) ?? _text(lockerCode) ?? 'Tủ #$lockerId';
+}
+
+/// Nhãn phạm vi áp dụng của một mã: `Toàn hệ thống` hoặc
+/// `Áp dụng tại: <tên tủ>`.
+String promotionScopeLabel({
+  int? lockerId,
+  String? lockerName,
+  String? lockerCode,
+}) {
+  final name = promotionLockerDisplayName(
+    lockerId: lockerId,
+    lockerName: lockerName,
+    lockerCode: lockerCode,
+  );
+  return name == null ? 'Toàn hệ thống' : 'Áp dụng tại: $name';
+}
+
+String? _text(dynamic raw) {
+  final value = raw?.toString().trim();
+  return value == null || value.isEmpty ? null : value;
 }

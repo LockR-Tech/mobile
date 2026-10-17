@@ -9,6 +9,7 @@ import 'package:smart_laundry_locker/core/theme/shadcn_theme.dart';
 import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/utils/business_rules_text.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/locker_picker.dart';
+import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/loyalty_redeem_toggle.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/ops_widgets.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/order_extras.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/order_payment_sheet.dart';
@@ -76,6 +77,10 @@ class _RentLockerPageState extends State<RentLockerPage>
   Map<String, dynamic>? _order;
   int _discount = 0;
   String? _promoCode;
+
+  /// Điểm thưởng khách bật dùng (gửi `pointsToUse`) và số tiền giảm ước tính.
+  int _pointsToUse = 0;
+  int _pointsDiscount = 0;
   Map<String, int>? _availableCounts;
 
   /// Thanh toán SePay của đơn vừa tạo (mã VietQR hiện ngay trên màn).
@@ -243,7 +248,12 @@ class _RentLockerPageState extends State<RentLockerPage>
   /// Tạm tính hiển thị theo giá admin cấu hình — server tự tính tiền thật.
   int get _price => businessConfig.rentalRateFor(_cellType) * _hours.round();
 
-  int get _netPrice => (_price - _discount).clamp(0, _price);
+  /// Tạm tính sau mã giảm giá — số tiền dùng để hỏi được dùng bao nhiêu điểm.
+  int get _priceAfterVoucher => (_price - _discount).clamp(0, _price);
+
+  /// Tạm tính sau mã giảm giá và điểm thưởng.
+  int get _netPrice =>
+      (_priceAfterVoucher - _pointsDiscount).clamp(0, _priceAfterVoucher);
 
   Future<void> _create() async {
     if (_lockerId == null) return;
@@ -256,11 +266,15 @@ class _RentLockerPageState extends State<RentLockerPage>
         hours: _hours.round(),
         note: _noteCtrl.text.trim().isEmpty ? null : _noteCtrl.text.trim(),
         promotionCode: _promoCode,
+        pointsToUse: _pointsToUse > 0 ? _pointsToUse : null,
       );
       if (!mounted) return;
       setState(() => _order = order);
       // Chưa trả ⇒ hiện mã VietQR SePay ngay (một checkout cho đơn này).
+      // Voucher + điểm trừ hết ⇒ server đã ghi PAID, đi thẳng bước mở ô.
       _syncPayment();
+      final notice = loyaltyRedeemSkippedNotice(_pointsToUse, order);
+      if (notice != null) _snack(notice);
     } catch (e) {
       _snack(LockerOpsService.errorMessage(e));
     } finally {
@@ -697,18 +711,30 @@ class _RentLockerPageState extends State<RentLockerPage>
             focusedBorder: _border(opsPrimary, width: 1.6),
           ),
         ),
+        // Admin đặt 0 mã mỗi đơn ⇒ tắt nhập mã.
+        if (config.maxVouchersPerOrder > 0) ...[
+          const SizedBox(height: 16),
+          const OpsSectionLabel('Mã giảm giá', icon: LucideIcons.ticket),
+          PromoCodeField(
+            orderTotal: _price,
+            lockerId: _lockerId,
+            service: _service,
+            onChanged: (discount, code) => setState(() {
+              _discount = discount;
+              _promoCode = code;
+            }),
+          ),
+        ],
         const SizedBox(height: 16),
-        const OpsSectionLabel('Mã giảm giá', icon: LucideIcons.ticket),
-        PromoCodeField(
-          orderTotal: _price,
-          lockerId: _lockerId,
-          onChanged: (discount, code) => setState(() {
-            _discount = discount;
-            _promoCode = code;
+        const OpsSectionLabel('Điểm thưởng', icon: LucideIcons.sparkles),
+        LoyaltyRedeemToggle(
+          orderTotal: _priceAfterVoucher,
+          service: _service,
+          onChanged: (points, discount) => setState(() {
+            _pointsToUse = points;
+            _pointsDiscount = discount;
           }),
         ),
-        const SizedBox(height: 10),
-        const LoyaltyPointsHint(),
       ].animate(interval: 40.ms).fadeIn(duration: 250.ms).slideY(begin: 0.06),
     );
   }
@@ -726,33 +752,45 @@ class _RentLockerPageState extends State<RentLockerPage>
         children: [
           const Icon(LucideIcons.wallet, color: Colors.white70, size: 22),
           const SizedBox(width: 12),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'Tạm tính',
-                style: TextStyle(color: Colors.white70, fontSize: 12),
-              ),
-              Text(
-                '${typeLabel('RENTAL')} · ${_hours.round()} giờ',
-                style: const TextStyle(color: Colors.white, fontSize: 12),
-              ),
-              if (_discount > 0)
-                Text(
-                  'Giảm: -${fmtPrice(_discount)}',
-                  style: const TextStyle(
-                    color: Color(0xFF86EFAC),
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
-                  ),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Tạm tính',
+                  style: TextStyle(color: Colors.white70, fontSize: 12),
                 ),
-            ],
+                Text(
+                  '${typeLabel('RENTAL')} · ${_hours.round()} giờ',
+                  style: const TextStyle(color: Colors.white, fontSize: 12),
+                ),
+                if (_discount > 0)
+                  Text(
+                    'Giảm: -${fmtPrice(_discount)}',
+                    style: const TextStyle(
+                      color: Color(0xFF86EFAC),
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                if (_pointsDiscount > 0)
+                  Text(
+                    'Điểm thưởng: '
+                    '${loyaltyPointsDiscountText(_pointsToUse, _pointsDiscount)}',
+                    style: const TextStyle(
+                      color: Color(0xFFFDE68A),
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+              ],
+            ),
           ),
-          const Spacer(),
+          const SizedBox(width: 8),
           Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              if (_discount > 0)
+              if (_netPrice != _price)
                 Text(
                   fmtPrice(_price),
                   style: const TextStyle(
@@ -983,6 +1021,13 @@ class _RentLockerPageState extends State<RentLockerPage>
       return ListView(
         padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
         children: [
+          if (orderHasDiscounts(order)) ...[
+            OpsCard(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              child: OrderDiscountRows(order: order),
+            ),
+            const SizedBox(height: 12),
+          ],
           SepayQrSection(controller: payment),
           const SizedBox(height: 12),
           OpsBanner(
@@ -1029,6 +1074,11 @@ class _RentLockerPageState extends State<RentLockerPage>
                     service: widget.service,
                   ),
                 ),
+                const SizedBox(height: 14),
+              ],
+              // Tiền thật server tính (mã giảm giá + điểm thưởng).
+              if (orderHasDiscounts(order)) ...[
+                OrderDiscountRows(order: order),
                 const SizedBox(height: 14),
               ],
               if (started) ...[

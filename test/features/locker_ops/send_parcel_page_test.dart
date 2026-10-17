@@ -16,6 +16,24 @@ class _FakeSendLockerOpsService extends LockerOpsService {
   int confirmDropCalls = 0;
   String? lastCheckoutMethod;
 
+  /// `pointsToUse` app gửi khi tạo đơn.
+  int? sentPointsToUse;
+
+  /// Kết quả redeem-preview; null ⇒ máy chủ chưa hỗ trợ (lỗi).
+  Map<String, dynamic>? redeemPreview;
+  final List<int> previewTotals = [];
+
+  /// Ghi đè đơn server trả khi tạo (vd. đơn được giảm hết, PAID ngay).
+  Map<String, dynamic>? createdOverride;
+
+  @override
+  Future<Map<String, dynamic>> loyaltyRedeemPreview(int orderTotal) async {
+    previewTotals.add(orderTotal);
+    final preview = redeemPreview;
+    if (preview == null) throw StateError('no loyalty');
+    return preview;
+  }
+
   final Map<String, dynamic> _order = {
     'id': 91,
     'type': 'SEND',
@@ -40,8 +58,16 @@ class _FakeSendLockerOpsService extends LockerOpsService {
     String? promotionCode,
     String? size,
     int? boxId,
-  }) async =>
-      Map.of(_order);
+    int? pointsToUse,
+  }) async {
+    sentPointsToUse = pointsToUse;
+    final created = createdOverride;
+    if (created != null) {
+      _order.addAll(created);
+      paid = created['paymentStatus'] == 'PAID';
+    }
+    return Map.of(_order);
+  }
 
   @override
   Future<num> walletBalance() async => 50000;
@@ -226,5 +252,107 @@ void main() {
     expect(share.receiverPhone, '0909000000');
     expect(share.message, contains('gửi tới tủ Tủ demo, Toà Thử Nghiệm.'));
     expect(share.message, contains('Mã lấy hàng: 222222.'));
+  });
+
+  testWidgets(
+    'bật dùng điểm: hoá đơn tạm trừ điểm, gửi pointsToUse; server trả 0đ ⇒ '
+    'bỏ qua SePay, đi thẳng bước bỏ hàng',
+    (tester) async {
+      useBusinessConfig();
+      await tester.binding.setSurfaceSize(const Size(800, 2200));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+      final service = _FakeSendLockerOpsService()
+        // Phí 15.000đ, tối đa 50% ⇒ 75 điểm × 100đ = 7.500đ.
+        ..redeemPreview = {
+          'enabled': true,
+          'balance': 500,
+          'vndPerPoint': 100,
+          'maxPercent': 50,
+          'minPoints': 10,
+          'maxPoints': 75,
+          'maxDiscount': 7500,
+        }
+        ..createdOverride = {
+          'originalPrice': 15000,
+          'discount': 7500,
+          'promotionCode': 'GIAM50',
+          'pointsUsed': 75,
+          'pointsDiscount': 7500,
+          'totalPrice': 0,
+          'amountDue': 0,
+          'paymentStatus': 'PAID',
+        };
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: SendParcelPage(
+            initialLockerId: 5,
+            initialLockerName: 'Tủ demo',
+            service: service,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // Hỏi số điểm theo số tiền sau voucher (chưa áp mã ⇒ đủ phí).
+      expect(service.previewTotals, [15000]);
+      expect(find.text('Dùng 75 điểm · giảm 7.500đ'), findsOneWidget);
+      expect(find.text('Điểm thưởng'), findsWidgets);
+
+      await tester.tap(find.byKey(const ValueKey('loyalty-redeem-switch')));
+      await tester.pumpAndSettle();
+      expect(find.text('-7.500đ (75 điểm)'), findsOneWidget);
+      expect(find.text('7.500đ'), findsOneWidget);
+
+      await tester.enterText(find.byType(TextFormField).first, '0909000000');
+      await tester.tap(find.text('Tạo đơn & lấy PIN bỏ hàng'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 600));
+      await tester.pumpAndSettle();
+
+      expect(service.sentPointsToUse, 75);
+      // Server ghi PAID (0đ) ⇒ không tạo checkout SePay, hiện ngay mã bỏ hàng.
+      expect(service.checkoutCalls, 0);
+      expect(find.text('Quét mã VietQR để thanh toán'), findsNothing);
+      expect(find.text('Mở ô để bỏ hàng'), findsOneWidget);
+      // Bảng giá theo số liệu server.
+      expect(find.text('-7.500đ (GIAM50)'), findsOneWidget);
+      expect(find.text('-7.500đ (75 điểm)'), findsOneWidget);
+      expect(find.text('0đ'), findsOneWidget);
+      expect(find.text('Đã thanh toán'), findsOneWidget);
+    },
+  );
+
+  testWidgets('máy chủ chưa hỗ trợ dùng điểm ⇒ không gửi pointsToUse', (
+    tester,
+  ) async {
+    useBusinessConfig();
+    await tester.binding.setSurfaceSize(const Size(800, 2200));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    final service = _FakeSendLockerOpsService();
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: SendParcelPage(
+          initialLockerId: 5,
+          initialLockerName: 'Tủ demo',
+          service: service,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const ValueKey('loyalty-redeem-switch')), findsNothing);
+    expect(
+      find.text('Chưa tải được điểm thưởng — đơn được tính đủ giá.'),
+      findsOneWidget,
+    );
+
+    await tester.enterText(find.byType(TextFormField).first, '0909000000');
+    await tester.tap(find.text('Tạo đơn & lấy PIN bỏ hàng'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 600));
+    expect(service.sentPointsToUse, isNull);
+    expect(service.checkoutCalls, 1);
   });
 }

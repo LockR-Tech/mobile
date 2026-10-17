@@ -4,6 +4,8 @@ import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
+import 'package:smart_laundry_locker/features/promotions/data/models/promotion_model.dart';
+import 'package:smart_laundry_locker/features/promotions/presentation/widgets/promotion_scope_tag.dart';
 import '../../data/models/voucher_model.dart';
 
 class VoucherDetailPage extends StatelessWidget {
@@ -84,7 +86,15 @@ class VoucherDetailPage extends StatelessWidget {
                     _DescriptionCard(description: voucher.giftDescription),
                   ],
                   const SizedBox(height: 20),
-                  _HowToUseCard(isActive: _isActive, isExpired: _isExpired),
+                  _HowToUseCard(
+                    isActive: _isActive,
+                    isExpired: _isExpired,
+                    lockerName: promotionLockerDisplayName(
+                      lockerId: voucher.lockerId,
+                      lockerName: voucher.lockerName,
+                      lockerCode: voucher.lockerCode,
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -455,6 +465,17 @@ class _InfoSection extends StatelessWidget {
           ),
           const _Divider(),
           _InfoRow(
+            icon: voucher.lockerId != null
+                ? LucideIcons.mapPin
+                : LucideIcons.globe,
+            label: 'Phạm vi',
+            value: voucher.scopeLabel,
+            valueColor: voucher.lockerId != null
+                ? PromotionScopeTag.scopedColor
+                : PromotionScopeTag.globalColor,
+          ),
+          const _Divider(),
+          _InfoRow(
             icon: LucideIcons.checkCircle,
             label: 'Trạng thái',
             valueWidget: Container(
@@ -589,9 +610,16 @@ class _DescriptionCard extends StatelessWidget {
 // ── How-to-use card ──────────────────────────────────────────────────────────
 
 class _HowToUseCard extends StatelessWidget {
-  const _HowToUseCard({required this.isActive, required this.isExpired});
+  const _HowToUseCard({
+    required this.isActive,
+    required this.isExpired,
+    this.lockerName,
+  });
   final bool isActive;
   final bool isExpired;
+
+  /// Mã chỉ dùng ở một tủ — hướng dẫn đặt đúng tủ đó.
+  final String? lockerName;
 
   @override
   Widget build(BuildContext context) {
@@ -635,7 +663,9 @@ class _HowToUseCard extends StatelessWidget {
             const SizedBox(height: 8),
             _Step(
               step: '2',
-              text: 'Vào trang đặt dịch vụ (Thuê tủ / Gửi hàng)',
+              text: lockerName == null
+                  ? 'Vào trang đặt dịch vụ (Thuê tủ / Gửi hàng / Gửi drone)'
+                  : 'Đặt dịch vụ tại $lockerName (đơn drone: tủ drone cất cánh)',
             ),
             const SizedBox(height: 8),
             _Step(

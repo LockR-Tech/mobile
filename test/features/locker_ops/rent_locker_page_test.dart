@@ -21,6 +21,30 @@ class _FakeRentLockerOpsService extends LockerOpsService {
   /// Server đã ghi nhận đơn PAID hay chưa (test bật khi "tiền về").
   bool paid = false;
 
+  /// Bật trả lời redeem-preview (theo đúng công thức server, số dư [balance]).
+  bool loyaltyEnabled = false;
+  int balance = 1000;
+  final List<int> previewTotals = [];
+  int? sentPointsToUse;
+
+  @override
+  Future<Map<String, dynamic>> loyaltyRedeemPreview(int orderTotal) async {
+    previewTotals.add(orderTotal);
+    if (!loyaltyEnabled) throw StateError('no loyalty');
+    final cap = (orderTotal * 50) ~/ (100 * 100);
+    var points = cap < balance ? cap : balance;
+    if (points < 10) points = 0;
+    return {
+      'enabled': true,
+      'balance': balance,
+      'vndPerPoint': 100,
+      'maxPercent': 50,
+      'minPoints': 10,
+      'maxPoints': points,
+      'maxDiscount': points * 100,
+    };
+  }
+
   @override
   Future<bool> orderStatus(int orderId) async => paid;
 
@@ -71,8 +95,10 @@ class _FakeRentLockerOpsService extends LockerOpsService {
     String? note,
     String? promotionCode,
     int? boxId,
+    int? pointsToUse,
   }) async {
     createRentalBoxId = boxId;
+    sentPointsToUse = pointsToUse;
     return Map.of(_createdOrder);
   }
 
@@ -286,4 +312,60 @@ void main() {
     expect(service.lastConfirmOrderId, 81);
     expect(find.text('Tôi đã bỏ đồ — bắt đầu kỳ thuê'), findsNothing);
   });
+
+  testWidgets(
+    'điểm thưởng: đổi giờ thuê thì tạm tính đổi ngay và hỏi lại server, '
+    'tạo đơn gửi pointsToUse',
+    (tester) async {
+      useBusinessConfig(
+        BusinessConfig.fromPublicMaps(
+          order: {
+            'app.order.rental-rate-standard': 5000,
+            'app.order.rental-default-hours': 4,
+            'app.order.rental-quick-hours': [4, 8],
+          },
+        ),
+      );
+      await tester.binding.setSurfaceSize(const Size(800, 2200));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+      final service = _FakeRentLockerOpsService()
+        ..loyaltyEnabled = true
+        ..balance = 150;
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: RentLockerPage(
+            initialLockerId: 5,
+            initialLockerName: 'Tủ demo',
+            initialCellType: 'STANDARD',
+            service: service,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // 4 giờ × 5.000đ = 20.000đ ⇒ tối đa 50% = 100 điểm.
+      expect(service.previewTotals, [20000]);
+      await tester.tap(find.byKey(const ValueKey('loyalty-redeem-switch')));
+      await tester.pumpAndSettle();
+      expect(find.text('Điểm thưởng: -10.000đ (100 điểm)'), findsOneWidget);
+      expect(find.text('10.000đ'), findsOneWidget);
+
+      // 8 giờ = 40.000đ ⇒ 50% = 200 điểm nhưng chỉ có 150 điểm.
+      await tester.tap(find.text('8h'));
+      await tester.pump();
+      await tester.pump();
+      expect(find.text('Điểm thưởng: -15.000đ (150 điểm)'), findsOneWidget);
+      expect(find.text('25.000đ'), findsOneWidget);
+      // Hỏi lại server sau khi ngừng đổi (debounce).
+      await tester.pump(const Duration(milliseconds: 500));
+      await tester.pumpAndSettle();
+      expect(service.previewTotals, [20000, 40000]);
+
+      await tester.tap(find.text('Thuê ngay'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 600));
+      expect(service.sentPointsToUse, 150);
+    },
+  );
 }

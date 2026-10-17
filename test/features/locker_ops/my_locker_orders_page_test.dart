@@ -99,6 +99,60 @@ class _FakeRentalExtendLockerOpsService extends LockerOpsService {
   Future<List<Map<String, dynamic>>> myReports() async => const [];
 }
 
+/// Đơn thuê đã trả, được giảm bằng mã và điểm thưởng.
+class _FakeDiscountedOrderService extends LockerOpsService {
+  _FakeDiscountedOrderService() : super(dio: createMockDio().dio);
+
+  @override
+  Future<List<Map<String, dynamic>>> myOrders() async => [
+    {
+      'id': 51,
+      'type': 'RENTAL',
+      'status': 'STORING',
+      'paymentStatus': 'PAID',
+      'originalPrice': 20000,
+      'discount': 5000,
+      'promotionCode': 'GIAM5K',
+      'pointsUsed': 75,
+      'pointsDiscount': 7500,
+      'totalPrice': 7500,
+      'paidAmount': 7500,
+      'pickupDeadline': DateTime.now()
+          .toUtc()
+          .add(const Duration(hours: 5))
+          .toIso8601String()
+          .split('.')
+          .first,
+      'lockerId': 6,
+      'sendBoxId': 6001,
+      'pinCode': '111222',
+      'orderCode': 'ORD-51',
+      'createdAt': DateTime.now()
+          .toUtc()
+          .subtract(const Duration(hours: 1))
+          .toIso8601String()
+          .split('.')
+          .first,
+    },
+  ];
+
+  @override
+  Future<Map<String, dynamic>> locker(int lockerId) async => {
+    'id': lockerId,
+    'name': 'Tủ điểm',
+  };
+
+  @override
+  Future<Map<String, dynamic>> layout(int lockerId) async => {
+    'cells': [
+      {'id': 6001, 'boxNumber': 2},
+    ],
+  };
+
+  @override
+  Future<List<Map<String, dynamic>>> myReports() async => const [];
+}
+
 class _FakeFaultyOrderLockerOpsService extends LockerOpsService {
   _FakeFaultyOrderLockerOpsService() : super(dio: createMockDio().dio);
 
@@ -431,6 +485,29 @@ void main() {
       );
     },
   );
+
+  testWidgets('chi tiết đơn hiện dòng mã giảm giá và điểm thưởng đã dùng', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: MediaQuery(
+          data: const MediaQueryData(size: Size(390, 844)),
+          child: MyLockerOrdersPage(service: _FakeDiscountedOrderService()),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Tủ điểm'));
+    await tester.pumpAndSettle();
+
+    await tester.ensureVisible(find.text('Điểm thưởng'));
+    expect(find.text('Giá gốc'), findsOneWidget);
+    expect(find.text('-5.000đ (GIAM5K)'), findsOneWidget);
+    expect(find.text('Điểm thưởng'), findsOneWidget);
+    expect(find.text('-7.500đ (75 điểm)'), findsOneWidget);
+  });
 
   testWidgets('reports fault through the order endpoint from order detail', (
     tester,

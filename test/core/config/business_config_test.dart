@@ -235,6 +235,52 @@ void main() {
       expect(restored, equals(original));
     });
 
+    test('dùng điểm và số mã mỗi đơn: mặc định theo hợp đồng, đọc key admin', () {
+      expect(defaults.loyaltyVndPerPoint, 1000);
+      expect(defaults.redeemEnabled, isTrue);
+      expect(defaults.redeemVndPerPoint, 100);
+      expect(defaults.redeemMaxPercent, 50);
+      expect(defaults.redeemMinPoints, 10);
+      expect(defaults.maxVouchersPerOrder, 1);
+
+      final config = BusinessConfig.fromPublicMaps(
+        order: {'app.order.max-vouchers-per-order': 0},
+        loyalty: {
+          'app.loyalty.vnd-per-point': 2000,
+          'app.loyalty.redeem-enabled': 'false',
+          'app.loyalty.redeem-vnd-per-point': 50,
+          'app.loyalty.redeem-max-percent': 30,
+          'app.loyalty.redeem-min-points': 0,
+        },
+      );
+      expect(config.maxVouchersPerOrder, 0);
+      expect(config.loyaltyVndPerPoint, 2000);
+      expect(config.redeemEnabled, isFalse);
+      expect(config.redeemVndPerPoint, 50);
+      expect(config.redeemMaxPercent, 30);
+      expect(config.redeemMinPoints, 0);
+
+      // Ngoài miền hợp lệ ⇒ mặc định.
+      final bad = BusinessConfig.fromPublicMaps(
+        loyalty: {
+          'app.loyalty.redeem-vnd-per-point': 0,
+          'app.loyalty.redeem-max-percent': 150,
+          'app.loyalty.redeem-min-points': -5,
+        },
+      );
+      expect(bad.redeemVndPerPoint, 100);
+      expect(bad.redeemMaxPercent, 50);
+      expect(bad.redeemMinPoints, 10);
+
+      final restored = BusinessConfig.fromPublicMaps(
+        order: config.toPublicMaps()['order'],
+        loyalty: config.toPublicMaps()['loyalty'],
+      );
+      expect(restored.maxVouchersPerOrder, 0);
+      expect(restored.redeemEnabled, isFalse);
+      expect(restored.redeemMaxPercent, 30);
+    });
+
     test('validateTopupAmount trả lỗi tiếng Việt khi ngoài giới hạn', () {
       String fmt(int v) => '$vđ';
       expect(defaults.validateTopupAmount(100000, fmt), isNull);
