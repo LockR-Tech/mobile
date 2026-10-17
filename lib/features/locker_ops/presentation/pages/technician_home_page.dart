@@ -26,6 +26,7 @@ import 'package:smart_laundry_locker/core/services/firebase_messaging_service.da
 import 'package:smart_laundry_locker/features/notifications/presentation/providers/notification_provider.dart';
 import 'package:smart_laundry_locker/features/locker/domain/utils/locker_layout_helper.dart';
 import 'package:smart_laundry_locker/features/maintenance/presentation/widgets/drone_recovery_queue.dart';
+import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/technician_shift_card.dart';
 
 /// Home for the LOCKER_TECHNICIAN role (kỹ thuật viên tủ): physical locker
 /// maintenance (fault cells, work queue, preventive schedules, landing pad)
@@ -1629,6 +1630,12 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                           ),
                         ],
                       ),
+                    ),
+                    const SizedBox(height: 10),
+                    TechnicianShiftCard(
+                      service: _service,
+                      isDrone: false,
+                      margin: EdgeInsets.zero,
                     ),
                   ],
                 ),

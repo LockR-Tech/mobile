@@ -23,6 +23,7 @@ import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/op
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/complete_inspection_sheet.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/schedule_detail_modal_sheet.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/pages/technician_profile_page.dart';
+import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/technician_shift_card.dart';
 import 'package:smart_laundry_locker/features/maintenance/presentation/widgets/drone_report_detail_sheet.dart';
 import 'package:smart_laundry_locker/features/maintenance/presentation/widgets/drone_journey_camera_panel.dart';
 import 'package:smart_laundry_locker/features/maintenance/presentation/widgets/drone_parcel_incident_card.dart';
@@ -1236,6 +1237,12 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                   ),
                 ),
               ],
+              const SizedBox(height: 10),
+              TechnicianShiftCard(
+                service: _service,
+                isDrone: true,
+                margin: EdgeInsets.zero,
+              ),
             ],
           ),
         ),
