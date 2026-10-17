@@ -31,3 +31,21 @@ String sendPickupPolicyText(BusinessConfig config) =>
 String dronePickupPolicyText(BusinessConfig config) =>
     'Người nhận có ${config.dronePickupHoursLimit} giờ để lấy hàng kể từ lúc '
     'drone thả hàng vào ô. ${overtimePolicyText(config)}';
+
+/// Cách tích điểm: `Tích 1 điểm cho mỗi 1.000đ bạn thanh toán, cộng khi đơn hoàn tất.`
+String loyaltyEarnRuleText(BusinessConfig config) =>
+    'Tích 1 điểm cho mỗi ${fmtPrice(config.loyaltyVndPerPoint)} bạn thanh '
+    'toán, cộng khi đơn hoàn tất.';
+
+/// Cách dùng điểm khi thanh toán:
+/// `1 điểm = 100đ khi thanh toán, dùng tối đa 50% giá trị đơn (từ 10 điểm).`
+String loyaltyRedeemRuleText(BusinessConfig config) {
+  if (!config.redeemEnabled) {
+    return 'Hiện chưa áp dụng dùng điểm để thanh toán.';
+  }
+  final min = config.redeemMinPoints > 0
+      ? ' (từ ${config.redeemMinPoints} điểm)'
+      : '';
+  return '1 điểm = ${fmtPrice(config.redeemVndPerPoint)} khi thanh toán, dùng '
+      'tối đa ${config.redeemMaxPercent}% giá trị đơn$min.';
+}

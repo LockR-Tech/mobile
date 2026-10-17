@@ -64,6 +64,12 @@ class BusinessConfig {
     required this.tierPlatinumPoints,
     required this.stampsPerReward,
     required this.pointsRewardCost,
+    this.loyaltyVndPerPoint = 1000,
+    this.redeemEnabled = true,
+    this.redeemVndPerPoint = 100,
+    this.redeemMaxPercent = 50,
+    this.redeemMinPoints = 10,
+    this.maxVouchersPerOrder = 1,
     required this.nearbyDefaultRadiusKm,
   });
 
@@ -155,6 +161,10 @@ class BusinessConfig {
   final int droneDispatchTimeoutMinutes;
   final int droneSurchargeTimeoutMinutes;
 
+  /// Số mã giảm giá tối đa mỗi đơn (`app.order.max-vouchers-per-order`);
+  /// 0 = tắt nhập mã ở app.
+  final int maxVouchersPerOrder;
+
   List<int> get droneMaxParcelSizeCm => [
     droneMaxParcelLengthCm,
     droneMaxParcelWidthCm,
@@ -187,6 +197,22 @@ class BusinessConfig {
   final int tierPlatinumPoints;
   final int stampsPerReward;
   final int pointsRewardCost;
+
+  /// Tích điểm: số đồng khách đã trả cho 1 điểm (`app.loyalty.vnd-per-point`).
+  final int loyaltyVndPerPoint;
+
+  /// Cho phép dùng điểm thưởng để thanh toán đơn (`app.loyalty.redeem-enabled`).
+  final bool redeemEnabled;
+
+  /// Giá trị 1 điểm khi dùng để thanh toán, VND (`app.loyalty.redeem-vnd-per-point`).
+  final int redeemVndPerPoint;
+
+  /// % tối đa số tiền đơn (sau voucher) được trả bằng điểm, 1–100
+  /// (`app.loyalty.redeem-max-percent`).
+  final int redeemMaxPercent;
+
+  /// Số điểm tối thiểu mỗi lần dùng (`app.loyalty.redeem-min-points`).
+  final int redeemMinPoints;
 
   // ---- Scope `store` ----
   /// Bán kính tìm cửa hàng gần đây mặc định (km).
@@ -419,6 +445,10 @@ class BusinessConfig {
         o['app.order.drone-dispatch-timeout-minutes'],
         d.droneDispatchTimeoutMinutes,
       ),
+      maxVouchersPerOrder: _int(
+        o['app.order.max-vouchers-per-order'],
+        d.maxVouchersPerOrder,
+      ),
       droneSurchargeTimeoutMinutes: _int(
         o['app.order.drone-surcharge-timeout-minutes'],
         d.droneSurchargeTimeoutMinutes,
@@ -453,6 +483,22 @@ class BusinessConfig {
       ),
       stampsPerReward: _int(y['app.loyalty.stamps-per-reward'], d.stampsPerReward, min: 1),
       pointsRewardCost: _int(y['app.loyalty.points-reward-cost'], d.pointsRewardCost, min: 1),
+      loyaltyVndPerPoint: _int(
+        y['app.loyalty.vnd-per-point'],
+        d.loyaltyVndPerPoint,
+        min: 1,
+      ),
+      redeemEnabled: _bool(y['app.loyalty.redeem-enabled'], d.redeemEnabled),
+      redeemVndPerPoint: _int(
+        y['app.loyalty.redeem-vnd-per-point'],
+        d.redeemVndPerPoint,
+        min: 1,
+      ),
+      redeemMaxPercent: _percent(
+        y['app.loyalty.redeem-max-percent'],
+        d.redeemMaxPercent,
+      ),
+      redeemMinPoints: _int(y['app.loyalty.redeem-min-points'], d.redeemMinPoints),
       nearbyDefaultRadiusKm: _double(
         s['app.store.nearby-default-radius-km'],
         d.nearbyDefaultRadiusKm,
@@ -529,6 +575,7 @@ class BusinessConfig {
       'app.order.drone-unpaid-cancel-minutes': droneUnpaidCancelMinutes,
       'app.order.drone-dispatch-timeout-minutes': droneDispatchTimeoutMinutes,
       'app.order.drone-surcharge-timeout-minutes': droneSurchargeTimeoutMinutes,
+      'app.order.max-vouchers-per-order': maxVouchersPerOrder,
     },
     'payment': {
       'app.payment.topup-min-amount': topupMinAmount,
@@ -551,6 +598,11 @@ class BusinessConfig {
       'app.loyalty.tier-platinum-points': tierPlatinumPoints,
       'app.loyalty.stamps-per-reward': stampsPerReward,
       'app.loyalty.points-reward-cost': pointsRewardCost,
+      'app.loyalty.vnd-per-point': loyaltyVndPerPoint,
+      'app.loyalty.redeem-enabled': redeemEnabled,
+      'app.loyalty.redeem-vnd-per-point': redeemVndPerPoint,
+      'app.loyalty.redeem-max-percent': redeemMaxPercent,
+      'app.loyalty.redeem-min-points': redeemMinPoints,
     },
     'store': {'app.store.nearby-default-radius-km': nearbyDefaultRadiusKm},
   };
@@ -609,6 +661,12 @@ class BusinessConfig {
       value = int.tryParse(raw.trim());
     }
     return value != null && value >= min ? value : fallback;
+  }
+
+  /// Phần trăm 1–100; ngoài miền ⇒ mặc định.
+  static int _percent(dynamic raw, int fallback) {
+    final value = _int(raw, -1, min: 1);
+    return value >= 1 && value <= 100 ? value : fallback;
   }
 
   static double _double(dynamic raw, double fallback) {
