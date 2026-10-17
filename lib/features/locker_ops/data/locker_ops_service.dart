@@ -685,6 +685,45 @@ class LockerOpsService {
   Future<Map<String, dynamic>> droneMyPerformance() =>
       _map('GET', '/api/drone-technician/my-performance');
 
+  // ---- Technician Presence & Live Location (LOCKER_TECHNICIAN & DRONE_TECHNICIAN) ----
+
+  /// Cập nhật trạng thái ca làm việc (vào ca/kết thúc ca) và tọa độ GPS của KTV.
+  Future<Map<String, dynamic>> updateTechnicianPresence({
+    required bool onDuty,
+    double? latitude,
+    double? longitude,
+    double? accuracyM,
+    double? headingDeg,
+    double? speedMs,
+    double? altitudeM,
+    int? batteryLevel,
+    String? deviceInfo,
+  }) => _map(
+    'POST',
+    '/api/maintenance/technician/presence',
+    body: {
+      'onDuty': onDuty,
+      if (latitude != null) 'latitude': latitude,
+      if (longitude != null) 'longitude': longitude,
+      if (accuracyM != null) 'accuracyM': accuracyM,
+      if (headingDeg != null) 'headingDeg': headingDeg,
+      if (speedMs != null) 'speedMs': speedMs,
+      if (altitudeM != null) 'altitudeM': altitudeM,
+      if (batteryLevel != null) 'batteryLevel': batteryLevel,
+      if (deviceInfo != null) 'deviceInfo': deviceInfo,
+    },
+  );
+
+  /// Lấy vị trí GPS và trạng thái ca làm việc của KTV hiện tại.
+  Future<Map<String, dynamic>> getTechnicianPresence() =>
+      _map('GET', '/api/maintenance/technician/presence');
+
+  /// Danh sách KTV đang trực (on-duty) phục vụ điều phối và giám sát.
+  Future<List<Map<String, dynamic>>> getActiveTechnicians({String? type}) =>
+      _list('/api/maintenance/technicians/presence', query: {
+        if (type != null && type.isNotEmpty) 'type': type,
+      });
+
   Future<Map<String, dynamic>> claimReport(int reportId) =>
       _map('PUT', '/api/locker-technician/reports/$reportId/claim');
 

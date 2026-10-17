@@ -63,3 +63,5 @@ app.*.map.json
 .env
 .env.*
 !.env.example
+# Widget Preview related
+.widget_preview/
