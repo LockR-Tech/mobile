@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:smart_laundry_locker/features/promotions/data/models/promotion_model.dart';
+import 'package:smart_laundry_locker/features/promotions/presentation/widgets/promotion_scope_tag.dart';
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
 
 class PromotionDetailPage extends StatelessWidget {
@@ -59,7 +60,10 @@ class PromotionDetailPage extends StatelessWidget {
                     _DescCard(text: promo.description!),
                   ],
                   const SizedBox(height: 20),
-                  _HowToUse(isExpired: promo.isExpired),
+                  _HowToUse(
+                    isExpired: promo.isExpired,
+                    lockerName: promo.lockerDisplayName,
+                  ),
                 ],
               ),
             ),
@@ -397,6 +401,15 @@ class _InfoSection extends StatelessWidget {
             value: rewardText,
             valueColor: AislBrand.navy,
           ),
+          const _Div(),
+          _Row(
+            icon: promo.isLockerScoped ? LucideIcons.mapPin : LucideIcons.globe,
+            label: 'Phạm vi',
+            value: promo.scopeLabel,
+            valueColor: promo.isLockerScoped
+                ? PromotionScopeTag.scopedColor
+                : PromotionScopeTag.globalColor,
+          ),
           if (promo.maxDiscountAmount != null &&
               promo.maxDiscountAmount! > 0) ...[
             const _Div(),
@@ -551,8 +564,11 @@ class _DescCard extends StatelessWidget {
 // ── How to use ────────────────────────────────────────────────────────────────
 
 class _HowToUse extends StatelessWidget {
-  const _HowToUse({required this.isExpired});
+  const _HowToUse({required this.isExpired, this.lockerName});
   final bool isExpired;
+
+  /// Mã chỉ dùng ở một tủ — hướng dẫn đặt đúng tủ đó.
+  final String? lockerName;
 
   @override
   Widget build(BuildContext context) {
@@ -587,7 +603,13 @@ class _HowToUse extends StatelessWidget {
               style: TextStyle(fontSize: 13, color: Colors.grey.shade500),
             )
           else ...[
-            _step('1', 'Vào trang Thuê tủ hoặc Gửi hàng và chọn ô tủ'),
+            _step(
+              '1',
+              lockerName == null
+                  ? 'Vào trang Thuê tủ, Gửi hàng hoặc Gửi drone và chọn tủ'
+                  : 'Vào trang Thuê tủ, Gửi hàng hoặc Gửi drone tại $lockerName '
+                      '(đơn drone: tủ drone cất cánh)',
+            ),
             const SizedBox(height: 8),
             _step('2', 'Ở mục "Mã giảm giá", chạm "Chọn mã giảm giá" rồi chọn mã này trong danh sách'),
             const SizedBox(height: 8),

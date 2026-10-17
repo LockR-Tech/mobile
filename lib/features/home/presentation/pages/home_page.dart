@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:smart_laundry_locker/features/promotions/data/models/promotion_model.dart';
 import 'package:smart_laundry_locker/features/promotions/presentation/pages/promotion_detail_page.dart';
 import 'package:smart_laundry_locker/features/promotions/presentation/providers/promotion_provider.dart';
+import 'package:smart_laundry_locker/features/promotions/presentation/widgets/promotion_scope_tag.dart';
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
@@ -1989,6 +1990,12 @@ class _PromotionCard extends StatelessWidget {
                       )
                     else
                       const SizedBox.shrink(),
+                    // Phạm vi: toàn hệ thống hay chỉ một tủ.
+                    PromotionScopeTag(
+                      label: promo.scopeLabel,
+                      lockerScoped: promo.isLockerScoped,
+                      fontSize: 10.5,
+                    ),
                     // Bottom: expiry + code chip
                     Row(
                       children: [
