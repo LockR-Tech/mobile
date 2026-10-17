@@ -123,6 +123,10 @@ class LockerOpsService {
 
     /// Ô khách đã chọn trên sơ đồ tủ; bỏ trống thì server tự chọn theo [size].
     int? boxId,
+
+    /// Số điểm thưởng muốn dùng (`maxPoints` của redeem-preview). Server tự
+    /// kẹp lại theo quy tắc và trả `pointsUsed`/`pointsDiscount` thật.
+    int? pointsToUse,
   }) => _map(
     'POST',
     '/api/orders/send',
@@ -135,6 +139,7 @@ class LockerOpsService {
       if (receiverEmail != null) 'receiverEmail': receiverEmail,
       if (size != null) 'size': size,
       if (promotionCode != null) 'promotionCode': promotionCode,
+      if (pointsToUse != null && pointsToUse > 0) 'pointsToUse': pointsToUse,
     },
   );
 
@@ -145,6 +150,9 @@ class LockerOpsService {
     String? note,
     String? promotionCode,
     int? boxId,
+
+    /// Số điểm thưởng muốn dùng — xem [createSend].
+    int? pointsToUse,
   }) => _map(
     'POST',
     '/api/orders/rental',
@@ -155,6 +163,7 @@ class LockerOpsService {
       'hours': hours,
       'note': note,
       if (promotionCode != null) 'promotionCode': promotionCode,
+      if (pointsToUse != null && pointsToUse > 0) 'pointsToUse': pointsToUse,
     },
   );
 
@@ -190,15 +199,37 @@ class LockerOpsService {
 
   // ---- Promotions / loyalty / payments ----
   /// Validate a promo code. Returns `{code, valid, reason?, promotion:{...}}`.
-  /// [lockerId] để backend check mã có scope theo tủ/kiosk; đăng nhập rồi thì
-  /// backend còn check lượt dùng còn lại của chính user.
+  /// [lockerId] để backend check mã theo tủ (mã của tủ khác ⇒ `valid:false`
+  /// kèm lý do nêu tên tủ áp dụng); [orderTotal] để kiểm đơn tối thiểu; đăng
+  /// nhập rồi thì backend còn check lượt dùng còn lại của chính user.
   Future<Map<String, dynamic>> validatePromotion(
     String code, {
     int? lockerId,
+    int? orderTotal,
   }) => _map(
     'GET',
     '/api/promotions/validate/$code',
+    query: {
+      if (lockerId != null) 'lockerId': lockerId,
+      if (orderTotal != null) 'orderTotal': orderTotal,
+    },
+  );
+
+  /// Khuyến mãi đang chạy. Có [lockerId] ⇒ server chỉ trả mã toàn hệ thống +
+  /// mã của đúng tủ đó; mỗi mã có `lockerId`/`lockerCode`/`lockerName` (null
+  /// = toàn hệ thống).
+  Future<List<Map<String, dynamic>>> activePromotions({int? lockerId}) => _list(
+    '/api/promotions/active',
     query: lockerId == null ? null : {'lockerId': lockerId},
+  );
+
+  /// Xem trước dùng điểm cho đơn [orderTotal] đ (số tiền SAU voucher):
+  /// `{enabled, balance, vndPerPoint, maxPercent, minPoints, maxPoints,
+  /// maxDiscount}`. `maxPoints = 0` khi tắt hoặc chưa đủ điểm tối thiểu.
+  Future<Map<String, dynamic>> loyaltyRedeemPreview(int orderTotal) => _map(
+    'GET',
+    '/api/loyalty/redeem-preview',
+    query: {'orderTotal': orderTotal},
   );
 
   /// Current user's loyalty account: `{id, userId, points, stamps, tier}`.
@@ -211,9 +242,12 @@ class LockerOpsService {
       _map('GET', '/api/loyalty/summary');
 
   /// Voucher người dùng đã lưu (`status` SAVED / USED / EXPIRED, kèm thông tin
-  /// khuyến mãi: `code`, `name`, `discountType`, `minOrderAmount`…).
-  Future<List<Map<String, dynamic>>> myVouchers() =>
-      _list('/api/promotions/vouchers/my');
+  /// khuyến mãi: `code`, `name`, `discountType`, `minOrderAmount`, `lockerId`,
+  /// `lockerName`…). Có [lockerId] ⇒ chỉ mã dùng được ở tủ đó.
+  Future<List<Map<String, dynamic>>> myVouchers({int? lockerId}) => _list(
+    '/api/promotions/vouchers/my',
+    query: lockerId == null ? null : {'lockerId': lockerId},
+  );
 
   /// Payments recorded for an order (latest first by convention).
   Future<List<Map<String, dynamic>>> paymentsByOrder(int orderId) =>

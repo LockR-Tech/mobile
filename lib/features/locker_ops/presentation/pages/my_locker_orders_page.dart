@@ -18,6 +18,7 @@ import 'package:smart_laundry_locker/features/locker_ops/presentation/utils/busi
 import 'package:smart_laundry_locker/features/locker_ops/presentation/utils/locker_maps.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/delegate_order_dialog.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/locker_unlock_modal.dart';
+import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/loyalty_redeem_toggle.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/ops_widgets.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/order_detail_widgets.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/order_feedback_section.dart';
@@ -3742,6 +3743,9 @@ class _DetailSheet extends StatelessWidget {
     final rentalHours = _asInt(order['rentalDurationHours']);
     final discountAmount = _asDouble(order['discount']) ?? 0;
     final promotionCode = (order['promotionCode'] as String?)?.trim();
+    // Điểm thưởng server đã trừ khi tạo đơn (`pointsUsed` điểm = `pointsDiscount` đ).
+    final pointsUsed = orderPointsUsed(order);
+    final pointsDiscount = orderPointsDiscount(order);
     final createdAt = order['createdAt'];
 
     final config = BusinessConfigService.instance.current;
@@ -4295,7 +4299,7 @@ class _DetailSheet extends StatelessWidget {
                   label: 'Dịch vụ',
                   value: line,
                 ),
-              if (discountAmount > 0 && originalPrice > 0)
+              if ((discountAmount > 0 || pointsUsed > 0) && originalPrice > 0)
                 OpsInfoRow(
                   icon: LucideIcons.tag,
                   label: 'Giá gốc',
@@ -4315,6 +4319,13 @@ class _DetailSheet extends StatelessWidget {
                   value: promotionCode != null && promotionCode.isNotEmpty
                       ? '-${fmtPrice(discountAmount)} ($promotionCode)'
                       : '-${fmtPrice(discountAmount)}',
+                  valueColor: const Color(0xFF15803D),
+                ),
+              if (pointsUsed > 0)
+                OpsInfoRow(
+                  icon: LucideIcons.sparkles,
+                  label: 'Điểm thưởng',
+                  value: loyaltyPointsDiscountText(pointsUsed, pointsDiscount),
                   valueColor: const Color(0xFF15803D),
                 ),
               OpsInfoRow(

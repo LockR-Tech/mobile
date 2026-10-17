@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:smart_laundry_locker/core/config/business_config.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/domain/entities/drone_booking.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/presentation/pages/drone_booking_page.dart';
+import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/order_payment_sheet.dart';
 
 import '../../helpers/test_helpers.dart';
@@ -20,6 +21,58 @@ const _lockers = [
   {'id': 7, 'name': 'Locker D', 'landingPad': false, 'status': 'ACTIVE'},
   {'id': 8, 'name': 'Locker E', 'landingPad': true, 'status': 'MAINTENANCE'},
 ];
+
+/// Mã giảm giá + điểm thưởng cho đơn drone (tủ gửi = tủ #3).
+class _FakeOffersService extends LockerOpsService {
+  _FakeOffersService() : super(dio: createMockDio().dio);
+
+  final List<int?> activeLockerIds = [];
+  final List<({String code, int? lockerId, int? orderTotal})> validated = [];
+  final List<int> previewTotals = [];
+
+  @override
+  Future<List<Map<String, dynamic>>> activePromotions({int? lockerId}) async {
+    activeLockerIds.add(lockerId);
+    return [
+      {'id': 1, 'code': 'TOANQUOC', 'name': 'Giảm 5.000đ', 'discountType': 'FIXED_AMOUNT', 'discountValue': 5000},
+      {'id': 2, 'code': 'TUA', 'name': 'Giảm 10.000đ tại tủ A', 'discountType': 'FIXED_AMOUNT', 'discountValue': 10000, 'lockerId': 3, 'lockerName': 'Locker A'},
+      // Server cũ trả lẫn mã của tủ khác ⇒ app tự lọc bỏ.
+      {'id': 3, 'code': 'TUKHAC', 'name': 'Tủ khác', 'discountType': 'FIXED_AMOUNT', 'discountValue': 9000, 'lockerId': 9, 'lockerName': 'Locker Z'},
+    ];
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> myVouchers({int? lockerId}) async => const [];
+
+  @override
+  Future<Map<String, dynamic>> validatePromotion(
+    String code, {
+    int? lockerId,
+    int? orderTotal,
+  }) async {
+    validated.add((code: code, lockerId: lockerId, orderTotal: orderTotal));
+    return {
+      'code': code,
+      'valid': true,
+      'promotion': {'code': code, 'discountType': 'FIXED_AMOUNT', 'discountValue': 10000, 'lockerId': 3},
+    };
+  }
+
+  @override
+  Future<Map<String, dynamic>> loyaltyRedeemPreview(int orderTotal) async {
+    previewTotals.add(orderTotal);
+    final points = (orderTotal * 50) ~/ (100 * 100);
+    return {
+      'enabled': true,
+      'balance': 1000,
+      'vndPerPoint': 100,
+      'maxPercent': 50,
+      'minPoints': 10,
+      'maxPoints': points,
+      'maxDiscount': points * 100,
+    };
+  }
+}
 
 void main() {
   setUp(() => useBusinessConfig());
@@ -45,6 +98,11 @@ void main() {
       email: 'gui@gmail.com',
     ),
     Object? quoteError,
+    LockerOpsService? service,
+    Map<String, dynamic> createResponse = const {
+      'orderId': 77,
+      'totalPrice': 24000,
+    },
   }) async {
     tester.view.physicalSize = const Size(1200, 5000);
     tester.view.devicePixelRatio = 1;
@@ -69,6 +127,7 @@ void main() {
             });
             if (quoteError != null) throw quoteError;
             return const DroneQuote(
+              sourceLockerId: 3,
               sourceLockerName: 'Locker A',
               sourceLockerAddress: '1 Lê Lợi',
               pickupDistanceMeters: 110,
@@ -79,7 +138,7 @@ void main() {
           createOrder: (request, key) async {
             created.add(request);
             steps.add('create');
-            return {'orderId': 77, 'totalPrice': 24000};
+            return createResponse;
           },
           payOrder: (context, {required orderId, required total}) async {
             steps.add('pay $orderId $total');
@@ -87,6 +146,7 @@ void main() {
           },
           onBooked: (orderId) => steps.add('booked $orderId'),
           showMessage: messages.add,
+          service: service,
         ),
       ),
     );
@@ -262,6 +322,68 @@ void main() {
     // Ô 9001 thuộc tủ khách mở form từ đó, không phải tủ vừa đổi sang.
     expect(json.containsKey('preferredBoxId'), isFalse);
   });
+
+  testWidgets(
+    'mã giảm giá theo tủ gửi + điểm thưởng: chỉ hiện mã dùng được ở tủ gửi, '
+    'gửi promotionCode/pointsToUse; server trả PAID ⇒ không mở thanh toán',
+    (tester) async {
+      final service = _FakeOffersService();
+      await pump(
+        tester,
+        service: service,
+        createResponse: const {
+          'orderId': 77,
+          'totalPrice': 0,
+          'paymentStatus': 'PAID',
+          'pointsUsed': 70,
+        },
+      );
+      await tester.tap(find.byKey(const ValueKey('drone-pickup-location')));
+      await tester.pumpAndSettle();
+      await fillReceiver(tester);
+      await tester.tap(find.byKey(const ValueKey('drone-category-DOCUMENT')));
+      await tester.tap(find.byKey(const ValueKey('drone-prohibited-declaration')));
+      await tester.pumpAndSettle();
+
+      // Có báo giá (tủ gửi #3) ⇒ mở mục ưu đãi; điểm hỏi theo phí 24.000đ.
+      expect(find.text('Ưu đãi'), findsOneWidget);
+      expect(service.previewTotals, [24000]);
+
+      await tester.tap(find.text('Chọn mã giảm giá'));
+      await tester.pumpAndSettle();
+      expect(service.activeLockerIds, [3]);
+      expect(find.text('TOANQUOC'), findsOneWidget);
+      expect(find.text('TUA'), findsOneWidget);
+      expect(find.text('TUKHAC'), findsNothing);
+      expect(find.text('Toàn hệ thống'), findsOneWidget);
+      expect(find.text('Áp dụng tại: Locker A'), findsOneWidget);
+
+      await tester.tap(find.text('TUA'));
+      await tester.pumpAndSettle();
+      expect(service.validated.single, (code: 'TUA', lockerId: 3, orderTotal: 24000));
+      expect(find.text('Đã áp mã "TUA"'), findsOneWidget);
+
+      // Sau voucher còn 14.000đ ⇒ hỏi lại điểm theo số tiền mới (debounce).
+      await tester.pump(const Duration(milliseconds: 500));
+      await tester.pumpAndSettle();
+      expect(service.previewTotals.last, 14000);
+      await tester.tap(find.byKey(const ValueKey('loyalty-redeem-switch')));
+      await tester.pumpAndSettle();
+      expect(find.text('-7.000đ (70 điểm)'), findsOneWidget);
+      expect(find.textContaining('Tạo đơn và thanh toán 7.000đ'), findsOneWidget);
+
+      await submit(tester);
+      final json = created.single.toJson();
+      expect(json['promotionCode'], 'TUA');
+      expect(json['pointsToUse'], 70);
+      // Đơn đã PAID (0đ) ⇒ không mở bảng thanh toán.
+      expect(steps, ['create', 'booked 77']);
+      expect(
+        messages.last,
+        'Đơn đã được thanh toán bằng ưu đãi. Đội bay sẽ tiếp nhận đơn của bạn.',
+      );
+    },
+  );
 
   testWidgets('tạm dừng bay: báo rõ và không cho tạo đơn', (tester) async {
     useBusinessConfig(
