@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import 'package:smart_laundry_locker/core/routing/app_router.dart';
 import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/location_services.dart';
+import 'package:smart_laundry_locker/features/promotions/presentation/widgets/locker_offers_section.dart';
 import 'package:smart_laundry_locker/features/stores/presentation/pages/store_lockers_page.dart';
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
 
@@ -85,6 +86,17 @@ class _LockerDetailMapPageState extends State<LockerDetailMapPage> {
       MaterialPageRoute(
         builder: (_) => StoreLockerGridPage.forLocation(widget.location),
       ),
+    );
+  }
+
+  /// "Ưu đãi tại tủ này" — mã giảm giá chỉ dùng ở tủ này; tự ẩn khi không có.
+  Widget? _offersSection({EdgeInsetsGeometry padding = const EdgeInsets.only(bottom: 8)}) {
+    final lockerId = int.tryParse(widget.location.id);
+    if (lockerId == null) return null;
+    return LockerOffersSection(
+      lockerId: lockerId,
+      service: _service,
+      padding: padding,
     );
   }
 
@@ -221,6 +233,7 @@ class _LockerDetailMapPageState extends State<LockerDetailMapPage> {
               online: _online,
               bookingBlockReason: _blockReason,
               onOpenGrid: _openGrid,
+              offers: _offersSection(),
             );
           },
         ),

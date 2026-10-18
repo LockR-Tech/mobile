@@ -4,8 +4,7 @@ import 'package:smart_laundry_locker/core/config/business_config_provider.dart';
 import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/ops_widgets.dart';
 import 'package:smart_laundry_locker/features/promotions/data/models/promotion_model.dart';
-import 'package:smart_laundry_locker/features/promotions/data/repositories/promotion_repository.dart';
-import 'package:smart_laundry_locker/core/network/api_client.dart';
+import 'package:smart_laundry_locker/features/promotions/presentation/widgets/promotion_scope_tag.dart';
 
 /// Compute the discount (in VND) a validated [promotion] grants on [total].
 /// Mirrors the order-service Promotion model (discountType / discountValue /
@@ -31,19 +30,25 @@ int computePromotionDiscount(Map<String, dynamic>? promotion, int total) {
 
 /// A promo-code input that validates against `/api/promotions/validate/{code}`
 /// and reports the applied discount + code back to the parent.
+///
+/// Mã theo tủ chỉ hợp lệ ở đúng [lockerId]; đổi tủ ⇒ kiểm lại mã. Đổi
+/// [orderTotal] (vd. số giờ thuê, phí drone) ⇒ tính lại mức giảm theo mã đã áp.
 class PromoCodeField extends StatefulWidget {
   const PromoCodeField({
     super.key,
     required this.orderTotal,
     required this.onChanged,
     this.lockerId,
+    this.service,
   });
 
   /// Current order subtotal (VND), used to compute percentage discounts.
   final int orderTotal;
 
-  /// Tủ đang đặt — backend dùng để check mã có scope theo tủ/kiosk.
+  /// Tủ đặt đơn (đơn drone: tủ gửi) — mã theo tủ chỉ dùng được ở đúng tủ này.
   final int? lockerId;
+
+  final LockerOpsService? service;
 
   /// Called with the applied discount (VND) and the code (null when cleared).
   final void Function(int discount, String? code) onChanged;
@@ -53,54 +58,111 @@ class PromoCodeField extends StatefulWidget {
 }
 
 class _PromoCodeFieldState extends State<PromoCodeField> {
-  final _service = LockerOpsService();
+  LockerOpsService? _ownService;
   bool _loading = false;
   String? _appliedCode;
   String? _error;
 
+  /// Khuyến mãi của mã đang áp (để tính lại khi số tiền đơn đổi).
+  Map<String, dynamic>? _promotion;
+
+  /// Lần kiểm mã mới nhất — bỏ kết quả của lần cũ về muộn.
+  int _request = 0;
+
+  /// Dựng lười: màn mở độc lập (test, chưa init mạng) chỉ lỗi khi thật sự gọi.
+  LockerOpsService get _service =>
+      widget.service ?? (_ownService ??= LockerOpsService());
+
+  @override
+  void didUpdateWidget(covariant PromoCodeField oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final code = _appliedCode;
+    if (code == null) return;
+    if (oldWidget.lockerId != widget.lockerId) {
+      // Mã theo tủ có thể không dùng được ở tủ mới ⇒ hỏi lại server.
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _apply(code);
+      });
+      return;
+    }
+    if (oldWidget.orderTotal != widget.orderTotal) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _recompute();
+      });
+    }
+  }
+
+  /// Tính lại mức giảm của mã đang áp theo số tiền đơn mới.
+  void _recompute() {
+    final code = _appliedCode;
+    if (code == null) return;
+    final discount = computePromotionDiscount(_promotion, widget.orderTotal);
+    if (discount <= 0) {
+      _reject('Đơn chưa đủ điều kiện áp mã này');
+      return;
+    }
+    widget.onChanged(discount, code);
+  }
+
+  void _reject(String message) {
+    setState(() {
+      _error = message;
+      _appliedCode = null;
+      _promotion = null;
+    });
+    widget.onChanged(0, null);
+  }
+
   Future<void> _apply(String code) async {
     if (code.isEmpty) return;
+    final request = ++_request;
     setState(() {
       _loading = true;
       _error = null;
     });
     try {
-      final res =
-          await _service.validatePromotion(code, lockerId: widget.lockerId);
+      final res = await _service.validatePromotion(
+        code,
+        lockerId: widget.lockerId,
+        orderTotal: widget.orderTotal,
+      );
+      if (!mounted || request != _request) return;
       final valid = res['valid'] == true;
-      final promotion = res['promotion'] as Map<String, dynamic>?;
+      final rawPromotion = res['promotion'];
+      final promotion = rawPromotion is Map
+          ? Map<String, dynamic>.from(rawPromotion)
+          : null;
       if (!valid || promotion == null) {
-        setState(() {
-          _error =
-              (res['reason'] as String?) ?? 'Mã không hợp lệ hoặc đã hết hạn';
-          _appliedCode = null;
-        });
-        widget.onChanged(0, null);
+        _reject(
+          (res['reason'] as String?) ?? 'Mã không hợp lệ hoặc đã hết hạn',
+        );
         return;
       }
       final discount = computePromotionDiscount(promotion, widget.orderTotal);
       if (discount <= 0) {
-        setState(() {
-          _error = 'Đơn chưa đủ điều kiện áp mã này';
-          _appliedCode = null;
-        });
-        widget.onChanged(0, null);
+        _reject('Đơn chưa đủ điều kiện áp mã này');
         return;
       }
-      setState(() => _appliedCode = code);
+      setState(() {
+        _appliedCode = code;
+        _promotion = promotion;
+      });
       widget.onChanged(discount, code);
     } catch (e) {
-      setState(() => _error = LockerOpsService.errorMessage(e));
-      widget.onChanged(0, null);
+      if (!mounted || request != _request) return;
+      _reject(LockerOpsService.errorMessage(e));
     } finally {
-      if (mounted) setState(() => _loading = false);
+      if (mounted && request == _request) setState(() => _loading = false);
     }
   }
 
   void _clear() {
+    _request++;
     setState(() {
       _appliedCode = null;
+      _promotion = null;
       _error = null;
+      _loading = false;
     });
     widget.onChanged(0, null);
   }
@@ -117,6 +179,8 @@ class _PromoCodeFieldState extends State<PromoCodeField> {
       builder: (ctx) => _VoucherPickerSheet(
         orderTotal: widget.orderTotal,
         currentCode: _appliedCode,
+        lockerId: widget.lockerId,
+        service: _service,
       ),
     );
     if (code != null) {
@@ -229,22 +293,33 @@ List<PromotionModel> mergeVoucherOptions(
   ];
 }
 
+/// Chỉ giữ mã dùng được ở tủ [lockerId] (mã toàn hệ thống + mã của đúng tủ).
+/// Server đã lọc theo `?lockerId=`; lọc lại ở app phòng server cũ trả hết.
+List<PromotionModel> vouchersUsableAt(
+  List<PromotionModel> options,
+  int? lockerId,
+) => options.where((p) => p.usableAt(lockerId)).toList(growable: false);
+
 class _VoucherPickerSheet extends StatefulWidget {
   const _VoucherPickerSheet({
     required this.orderTotal,
+    required this.service,
     this.currentCode,
+    this.lockerId,
   });
 
   final int orderTotal;
   final String? currentCode;
+
+  /// Tủ đặt đơn — chỉ hiện mã dùng được ở tủ này.
+  final int? lockerId;
+  final LockerOpsService service;
 
   @override
   State<_VoucherPickerSheet> createState() => _VoucherPickerSheetState();
 }
 
 class _VoucherPickerSheetState extends State<_VoucherPickerSheet> {
-  final _repo = PromotionRepository(ApiClient());
-  final _service = LockerOpsService();
   List<PromotionModel>? _promotions;
 
   /// Mã voucher khách đã lưu — hiện nhãn "Đã lưu".
@@ -259,17 +334,25 @@ class _VoucherPickerSheetState extends State<_VoucherPickerSheet> {
 
   Future<void> _load() async {
     // Hai nguồn độc lập: lỗi nguồn nào thì bỏ nguồn đó, vẫn hiện nguồn còn lại.
+    final lockerId = widget.lockerId;
     var active = const <PromotionModel>[];
     var saved = const <PromotionModel>[];
     try {
-      active = await _repo.getActivePromotions();
+      active = (await widget.service.activePromotions(lockerId: lockerId))
+          .map(PromotionModel.fromJson)
+          .toList(growable: false);
     } catch (_) {}
     try {
-      saved = usableSavedVouchers(await _service.myVouchers());
+      saved = usableSavedVouchers(
+        await widget.service.myVouchers(lockerId: lockerId),
+      );
     } catch (_) {}
     if (!mounted) return;
     setState(() {
-      _promotions = mergeVoucherOptions(saved, active);
+      _promotions = vouchersUsableAt(
+        mergeVoucherOptions(saved, active),
+        lockerId,
+      );
       _savedCodes = {for (final v in saved) v.code.toUpperCase()};
       _loading = false;
     });
@@ -299,12 +382,15 @@ class _VoucherPickerSheetState extends State<_VoucherPickerSheet> {
             child: Center(child: CircularProgressIndicator(color: opsPrimary)),
           )
         else if (_promotions == null || _promotions!.isEmpty)
-          const Padding(
-            padding: EdgeInsets.all(32),
+          Padding(
+            padding: const EdgeInsets.all(32),
             child: Center(
               child: Text(
-                'Chưa có mã giảm giá nào.',
-                style: TextStyle(color: opsMutedText),
+                widget.lockerId == null
+                    ? 'Chưa có mã giảm giá nào.'
+                    : 'Chưa có mã giảm giá dùng được ở tủ này.',
+                textAlign: TextAlign.center,
+                style: const TextStyle(color: opsMutedText),
               ),
             ),
           )
@@ -381,6 +467,12 @@ class _VoucherPickerSheetState extends State<_VoucherPickerSheet> {
                                   maxLines: 2,
                                   overflow: TextOverflow.ellipsis,
                                 ),
+                                const SizedBox(height: 4),
+                                PromotionScopeTag(
+                                  label: p.scopeLabel,
+                                  lockerScoped: p.isLockerScoped,
+                                  fontSize: 10.5,
+                                ),
                                 if (p.minOrderLabel != null) ...[
                                   const SizedBox(height: 4),
                                   Text(
@@ -445,77 +537,20 @@ String? loyaltyTierLabel({String? tierLabel, String? tier}) {
 
 /// "Bạn đang có 120 điểm · hạng Đồng · còn 380 điểm lên hạng Bạc"
 /// (hạng cao nhất ⇒ "· hạng cao nhất"). Chỉ dùng số điểm thật của tài khoản.
-String loyaltyHintText(int points, String? tierLabel, BusinessConfig config) {
-  final next = nextLoyaltyTierText(points, config);
+/// Hạng tính theo tổng điểm đã tích ([lifetimePoints]; server cũ chưa trả thì
+/// dùng [points]) — tiêu điểm không làm tụt hạng.
+String loyaltyHintText(
+  int points,
+  String? tierLabel,
+  BusinessConfig config, {
+  int? lifetimePoints,
+}) {
+  final next = nextLoyaltyTierText(lifetimePoints ?? points, config);
   return [
     'Bạn đang có $points điểm',
     if (tierLabel != null && tierLabel.isNotEmpty) 'hạng $tierLabel',
     next ?? 'hạng cao nhất',
   ].join(' · ');
-}
-
-/// Small informational chip showing the user's loyalty points balance.
-class LoyaltyPointsHint extends StatefulWidget {
-  const LoyaltyPointsHint({super.key, this.service});
-
-  final LockerOpsService? service;
-
-  @override
-  State<LoyaltyPointsHint> createState() => _LoyaltyPointsHintState();
-}
-
-class _LoyaltyPointsHintState extends State<LoyaltyPointsHint>
-    with BusinessConfigStateMixin {
-  late final LockerOpsService _service = widget.service ?? LockerOpsService();
-  int? _points;
-  String? _tierLabel;
-
-  @override
-  void initState() {
-    super.initState();
-    _load();
-  }
-
-  Future<void> _load() async {
-    try {
-      // Tài khoản của chính người dùng (server lấy từ token).
-      final res = await _service.loyaltySummary();
-      if (!mounted) return;
-      final raw = res['points'];
-      final points = raw is num ? raw.toInt() : int.tryParse('${raw ?? ''}');
-      setState(() {
-        _points = points;
-        _tierLabel = loyaltyTierLabel(
-          tierLabel: res['tierLabel']?.toString(),
-          tier: res['tier']?.toString(),
-        );
-      });
-    } catch (_) {
-      // Điểm thưởng là phần phụ — lỗi thì ẩn, không đoán số điểm.
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final points = _points;
-    if (points == null) return const SizedBox.shrink();
-    return Row(
-      children: [
-        const Icon(LucideIcons.sparkles, size: 15, color: Color(0xFFCA8A04)),
-        const SizedBox(width: 6),
-        Expanded(
-          child: Text(
-            loyaltyHintText(points, _tierLabel, businessConfig),
-            style: const TextStyle(
-              fontSize: 12.5,
-              color: opsMutedText,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
 }
 
 /// Fetches the order's payments and renders the latest payment status.

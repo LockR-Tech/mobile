@@ -10,7 +10,9 @@ import 'package:smart_laundry_locker/features/drone_delivery/presentation/pages/
 import 'package:smart_laundry_locker/features/drone_delivery/presentation/widgets/drone_order_payment.dart';
 import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/utils/business_rules_text.dart';
+import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/loyalty_redeem_toggle.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/ops_widgets.dart';
+import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/order_extras.dart';
 import 'package:smart_laundry_locker/features/profile/presentation/providers/profile_provider.dart';
 
 typedef DroneOrderCreator =
@@ -61,6 +63,7 @@ class DroneBookingPage extends StatefulWidget {
     this.pickLocation = _pushLocationPicker,
     this.onBooked,
     this.showMessage,
+    this.service,
   });
 
   /// Tủ khách đang xem khi bấm "giao drone" — chọn sẵn làm tủ nhận.
@@ -78,6 +81,10 @@ class DroneBookingPage extends StatefulWidget {
   final PickupLocationPicker pickLocation;
   final ValueChanged<int>? onBooked;
   final ValueChanged<String>? showMessage;
+
+  /// Client gọi API (tủ, báo giá, tạo đơn, mã giảm giá, điểm thưởng); null thì
+  /// dựng mặc định khi cần.
+  final LockerOpsService? service;
 
   @override
   State<DroneBookingPage> createState() => _DroneBookingPageState();
@@ -119,6 +126,47 @@ class _DroneBookingPageState extends State<DroneBookingPage>
   String? _quoteProblem;
   bool _quoting = false;
   int _quoteRequest = 0;
+
+  /// Mã giảm giá đã áp (theo tủ gửi của báo giá) và điểm thưởng khách bật dùng.
+  int _discount = 0;
+  String? _promoCode;
+  int _pointsToUse = 0;
+  int _pointsDiscount = 0;
+
+  LockerOpsService? _ownService;
+
+  /// Dựng lười, chỉ khi thật sự gọi API (trong try) — màn mở độc lập vẫn chạy.
+  LockerOpsService get _ops =>
+      widget.service ?? (_ownService ??= LockerOpsService());
+
+  /// Phí giao theo báo giá (hoặc bảng giá admin khi chưa có báo giá).
+  int get _fee =>
+      (_quote?.fee ?? businessConfig.droneDeliveryFeeFor(_selectedWeight))
+          .round();
+
+  /// Phí sau mã giảm giá — số tiền dùng để hỏi được dùng bao nhiêu điểm.
+  int get _feeAfterVoucher => (_fee - _discount).clamp(0, _fee);
+
+  /// Tạm tính sau mã giảm giá và điểm thưởng.
+  int get _netFee =>
+      (_feeAfterVoucher - _pointsDiscount).clamp(0, _feeAfterVoucher);
+
+  /// Báo giá mất hoặc đổi tủ gửi ⇒ mã đã áp (kiểm theo tủ gửi cũ) và điểm phải
+  /// chọn lại.
+  void _resetOffersFor(DroneQuote? next) {
+    final previous = _quote;
+    if (next != null &&
+        previous != null &&
+        next.sourceLockerId == previous.sourceLockerId) {
+      return;
+    }
+    _discount = 0;
+    _promoCode = null;
+    if (next == null) {
+      _pointsToUse = 0;
+      _pointsDiscount = 0;
+    }
+  }
 
   int get _selectedWeight {
     final choices = businessConfig.droneWeightChoices;
@@ -164,8 +212,7 @@ class _DroneBookingPageState extends State<DroneBookingPage>
 
   Future<void> _loadDestinations() async {
     try {
-      final all =
-          widget.destinationLockers ?? await LockerOpsService().lockers();
+      final all = widget.destinationLockers ?? await _ops.lockers();
       final destinations = all
           .where(
             (locker) =>
@@ -231,6 +278,7 @@ class _DroneBookingPageState extends State<DroneBookingPage>
     final destination = _destinationLockerId;
     if (pickup == null || destination == null) {
       setState(() {
+        _resetOffersFor(null);
         _quote = null;
         _quoteProblem = null;
       });
@@ -250,7 +298,7 @@ class _DroneBookingPageState extends State<DroneBookingPage>
             required pickupLongitude,
             required parcelWeightGrams,
           }) async => DroneQuote.fromJson(
-            await LockerOpsService().quoteDroneDelivery(
+            await _ops.quoteDroneDelivery(
               destinationLockerId: destinationLockerId,
               pickupLatitude: pickupLatitude,
               pickupLongitude: pickupLongitude,
@@ -265,12 +313,14 @@ class _DroneBookingPageState extends State<DroneBookingPage>
       );
       if (!mounted || request != _quoteRequest) return;
       setState(() {
+        _resetOffersFor(quote);
         _quote = quote;
         _quoting = false;
       });
     } catch (error) {
       if (!mounted || request != _quoteRequest) return;
       setState(() {
+        _resetOffersFor(null);
         _quote = null;
         _quoting = false;
         _quoteProblem = LockerOpsService.errorMessage(error);
@@ -397,6 +447,8 @@ class _DroneBookingPageState extends State<DroneBookingPage>
         fragile: _fragile,
         prohibitedItemsDeclared: true,
       ),
+      promotionCode: _promoCode,
+      pointsToUse: _pointsToUse > 0 ? _pointsToUse : null,
     );
   }
 
@@ -408,7 +460,7 @@ class _DroneBookingPageState extends State<DroneBookingPage>
     try {
       final create =
           widget.createOrder ??
-          (request, key) => LockerOpsService().createDroneDeliveryOrder(
+          (request, key) => _ops.createDroneDeliveryOrder(
             body: request.toJson(),
             idempotencyKey: key,
           );
@@ -420,10 +472,17 @@ class _DroneBookingPageState extends State<DroneBookingPage>
       if (!mounted) return;
       // Kỹ thuật viên chỉ được mời tới lấy hàng sau khi đơn đã thanh toán ⇒ mở thanh
       // toán ngay. Khách đóng bảng thanh toán thì vẫn tới màn theo dõi, nơi trả tiếp được.
-      final message = await _payCreatedOrder(orderId, response);
+      // Mã giảm giá + điểm trừ hết phí ⇒ server đã ghi PAID, bỏ qua bước SePay.
+      final message = orderFullyCovered(response)
+          ? 'Đơn đã được thanh toán bằng ưu đãi. Đội bay sẽ tiếp nhận đơn của bạn.'
+          : await _payCreatedOrder(orderId, response);
       if (!mounted) return;
       widget.onBooked?.call(orderId);
-      _showMessage(message);
+      final notice = loyaltyRedeemSkippedNotice(
+        request.pointsToUse ?? 0,
+        response,
+      );
+      _showMessage(notice == null ? message : '$notice $message');
     } catch (error) {
       _showMessage(LockerOpsService.errorMessage(error));
     } finally {
@@ -440,9 +499,11 @@ class _DroneBookingPageState extends State<DroneBookingPage>
       final outcome = await (widget.payOrder ?? payDroneOrder)(
         context,
         orderId: orderId,
+        // Server là nguồn đúng (`amountDue`/`totalPrice`); server cũ không trả
+        // số tiền thì dùng tạm tính trên màn.
         total: due > 0
             ? due
-            : businessConfig.droneDeliveryFeeFor(_selectedWeight).toDouble(),
+            : (_netFee > 0 ? _netFee : _fee).toDouble(),
       );
       return droneOrderPaymentMessage(outcome);
     } catch (error) {
@@ -711,6 +772,8 @@ class _DroneBookingPageState extends State<DroneBookingPage>
               ),
             ],
           ]),
+          // Mã giảm giá kiểm theo tủ gửi ⇒ chỉ mở khi đã biết drone cất cánh ở đâu.
+          if (_quote != null) _offersSection(_quote!),
           const SizedBox(height: 8),
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -760,13 +823,81 @@ class _DroneBookingPageState extends State<DroneBookingPage>
                   )
                 : const Icon(Icons.send_rounded, size: 18),
             label: Text(
-              'Tạo đơn và thanh toán ${fmtPrice(fee)}',
+              _netFee > 0
+                  ? 'Tạo đơn và thanh toán ${fmtPrice(_netFee)}'
+                  : 'Tạo đơn (ưu đãi đã trừ hết phí)',
               style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
             ),
           ),
         ],
       ),
     );
+  }
+
+  /// Mã giảm giá (theo tủ gửi) + điểm thưởng + tạm tính sau giảm.
+  Widget _offersSection(DroneQuote quote) {
+    final fee = _fee;
+    return _section('Ưu đãi', Icons.local_offer_outlined, [
+      if (businessConfig.maxVouchersPerOrder > 0) ...[
+        PromoCodeField(
+          // Đổi tủ gửi ⇒ ô mã làm lại từ đầu (mã cũ kiểm theo tủ cũ).
+          key: ValueKey('drone-promo-${quote.sourceLockerId}'),
+          orderTotal: fee,
+          lockerId: quote.sourceLockerId,
+          service: widget.service,
+          onChanged: (discount, code) => setState(() {
+            _discount = discount;
+            _promoCode = code;
+          }),
+        ),
+        const SizedBox(height: 6),
+        Text(
+          'Mã riêng của tủ chỉ dùng được khi drone cất cánh tại '
+          '${quote.sourceLockerName}.',
+          style: const TextStyle(fontSize: 12, color: Colors.black54),
+        ),
+        const SizedBox(height: 12),
+      ],
+      LoyaltyRedeemToggle(
+        orderTotal: _feeAfterVoucher,
+        service: widget.service,
+        onChanged: (points, discount) => setState(() {
+          _pointsToUse = points;
+          _pointsDiscount = discount;
+        }),
+      ),
+      if (_discount > 0 || _pointsDiscount > 0) ...[
+        const SizedBox(height: 10),
+        OpsInfoRow(
+          icon: Icons.flight_takeoff,
+          label: 'Phí giao drone',
+          value: fmtPrice(fee),
+        ),
+        if (_discount > 0)
+          OpsInfoRow(
+            icon: Icons.local_offer_outlined,
+            label: 'Mã giảm giá',
+            value: _promoCode == null
+                ? '-${fmtPrice(_discount)}'
+                : '-${fmtPrice(_discount)} ($_promoCode)',
+            valueColor: const Color(0xFF15803D),
+          ),
+        if (_pointsDiscount > 0)
+          OpsInfoRow(
+            icon: Icons.auto_awesome_outlined,
+            label: 'Điểm thưởng',
+            value: loyaltyPointsDiscountText(_pointsToUse, _pointsDiscount),
+            valueColor: const Color(0xFF15803D),
+          ),
+        OpsInfoRow(
+          key: const ValueKey('drone-net-fee'),
+          icon: Icons.payments_outlined,
+          label: 'Tạm tính',
+          value: fmtPrice(_netFee),
+          valueColor: opsDark,
+        ),
+      ],
+    ]);
   }
 
   Widget _section(String title, IconData icon, List<Widget> children) => Padding(

@@ -11,6 +11,7 @@ import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service
 import 'package:smart_laundry_locker/features/locker_ops/domain/pickup_code_share.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/utils/business_rules_text.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/locker_picker.dart';
+import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/loyalty_redeem_toggle.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/ops_widgets.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/order_extras.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/pickup_code_share_actions.dart';
@@ -77,6 +78,10 @@ class _SendParcelPageState extends State<SendParcelPage>
   Map<String, dynamic>? _order;
   int _discount = 0;
   String? _promoCode;
+
+  /// Điểm thưởng khách bật dùng (gửi `pointsToUse`) và số tiền giảm ước tính.
+  int _pointsToUse = 0;
+  int _pointsDiscount = 0;
   String _size = 'MEDIUM';
 
   /// Thanh toán SePay của đơn vừa tạo (mã VietQR hiện ngay trên màn).
@@ -90,7 +95,12 @@ class _SendParcelPageState extends State<SendParcelPage>
   String? _lockerAddress;
   bool _lockerInfoRequested = false;
 
-  int get _netFee => (_fee - _discount).clamp(0, _fee);
+  /// Phí sau mã giảm giá — số tiền dùng để hỏi được dùng bao nhiêu điểm.
+  int get _feeAfterVoucher => (_fee - _discount).clamp(0, _fee);
+
+  /// Tạm tính sau mã giảm giá và điểm thưởng.
+  int get _netFee =>
+      (_feeAfterVoucher - _pointsDiscount).clamp(0, _feeAfterVoucher);
 
   @override
   void initState() {
@@ -295,11 +305,15 @@ class _SendParcelPageState extends State<SendParcelPage>
         note: _noteCtrl.text.trim().isEmpty ? null : _noteCtrl.text.trim(),
         promotionCode: _promoCode,
         size: _size,
+        pointsToUse: _pointsToUse > 0 ? _pointsToUse : null,
       );
       if (!mounted) return;
       setState(() => _order = order);
       // Chưa trả ⇒ hiện mã VietQR SePay ngay (một checkout cho đơn này).
+      // Voucher + điểm trừ hết ⇒ server đã ghi PAID, đi thẳng bước bỏ hàng.
       _syncPayment();
+      final notice = loyaltyRedeemSkippedNotice(_pointsToUse, order);
+      if (notice != null) _snack(notice);
     } catch (e) {
       _snack(LockerOpsService.errorMessage(e));
     } finally {
@@ -516,13 +530,25 @@ class _SendParcelPageState extends State<SendParcelPage>
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
+            if (_discount > 0)
+              _adjustmentLine(
+                icon: LucideIcons.badgePercent,
+                label: 'Mã giảm giá',
+                value: '-${fmtPrice(_discount)}',
+              ),
+            if (_pointsDiscount > 0)
+              _adjustmentLine(
+                icon: LucideIcons.sparkles,
+                label: 'Điểm thưởng',
+                value: loyaltyPointsDiscountText(_pointsToUse, _pointsDiscount),
+              ),
             Row(
               children: [
                 const Icon(LucideIcons.receiptText, size: 16, color: opsMutedText),
                 const SizedBox(width: 6),
                 const Text('Phí gửi', style: TextStyle(color: opsMutedText)),
                 const Spacer(),
-                if (_discount > 0) ...[
+                if (_netFee != _fee) ...[
                   Text(
                     fmtPrice(_fee),
                     style: const TextStyle(
@@ -571,6 +597,36 @@ class _SendParcelPageState extends State<SendParcelPage>
     }
 
     return null;
+  }
+
+  /// Một dòng giảm trừ trong hoá đơn tạm (mã giảm giá / điểm thưởng).
+  Widget _adjustmentLine({
+    required IconData icon,
+    required String label,
+    required String value,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 6),
+      child: Row(
+        children: [
+          Icon(icon, size: 15, color: const Color(0xFF15803D)),
+          const SizedBox(width: 6),
+          Text(
+            label,
+            style: const TextStyle(fontSize: 13, color: opsMutedText),
+          ),
+          const Spacer(),
+          Text(
+            value,
+            style: const TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w700,
+              color: Color(0xFF15803D),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   // ---- Stage 1: form ----
@@ -681,18 +737,30 @@ class _SendParcelPageState extends State<SendParcelPage>
             icon: LucideIcons.clock,
             text: sendPickupPolicyText(businessConfig),
           ),
+          // Admin đặt 0 mã mỗi đơn ⇒ tắt nhập mã.
+          if (businessConfig.maxVouchersPerOrder > 0) ...[
+            const SizedBox(height: 20),
+            const OpsSectionLabel('Mã giảm giá', icon: LucideIcons.ticket),
+            PromoCodeField(
+              orderTotal: _fee,
+              lockerId: _lockerId,
+              service: _service,
+              onChanged: (discount, code) => setState(() {
+                _discount = discount;
+                _promoCode = code;
+              }),
+            ),
+          ],
           const SizedBox(height: 20),
-          const OpsSectionLabel('Mã giảm giá', icon: LucideIcons.ticket),
-          PromoCodeField(
-            orderTotal: _fee,
-            lockerId: _lockerId,
-            onChanged: (discount, code) => setState(() {
-              _discount = discount;
-              _promoCode = code;
+          const OpsSectionLabel('Điểm thưởng', icon: LucideIcons.sparkles),
+          LoyaltyRedeemToggle(
+            orderTotal: _feeAfterVoucher,
+            service: _service,
+            onChanged: (points, discount) => setState(() {
+              _pointsToUse = points;
+              _pointsDiscount = discount;
             }),
           ),
-          const SizedBox(height: 10),
-          const LoyaltyPointsHint(),
         ].animate(interval: 40.ms).fadeIn(duration: 250.ms).slideY(begin: 0.06),
       ),
     );
@@ -771,6 +839,13 @@ class _SendParcelPageState extends State<SendParcelPage>
       return ListView(
         padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
         children: [
+          if (orderHasDiscounts(order)) ...[
+            OpsCard(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              child: OrderDiscountRows(order: order),
+            ),
+            const SizedBox(height: 12),
+          ],
           SepayQrSection(controller: payment),
           const SizedBox(height: 12),
           OpsBanner(
@@ -812,8 +887,16 @@ class _SendParcelPageState extends State<SendParcelPage>
               if (order['id'] is int && !(mustPayFirst && !isDropped)) ...[
                 Align(
                   alignment: Alignment.centerLeft,
-                  child: PaymentStatusChip(orderId: order['id'] as int),
+                  child: PaymentStatusChip(
+                    orderId: order['id'] as int,
+                    service: _service,
+                  ),
                 ),
+                const SizedBox(height: 14),
+              ],
+              // Tiền thật server tính (mã giảm giá + điểm thưởng).
+              if (orderHasDiscounts(order)) ...[
+                OrderDiscountRows(order: order),
                 const SizedBox(height: 14),
               ],
               if (!isDropped && mustPayFirst) ...[

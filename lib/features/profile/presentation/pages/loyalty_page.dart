@@ -4,13 +4,16 @@ import 'package:smart_laundry_locker/core/config/business_config_provider.dart';
 import 'package:smart_laundry_locker/core/theme/shadcn_theme.dart';
 import 'package:smart_laundry_locker/core/utils/app_date_time.dart';
 import 'package:smart_laundry_locker/core/utils/user_error_message.dart';
+import 'package:smart_laundry_locker/features/locker_ops/presentation/utils/business_rules_text.dart';
 import 'package:smart_laundry_locker/features/profile/domain/entities/loyalty.dart';
 import 'package:smart_laundry_locker/features/profile/infrastructure/data_sources/loyalty_remote_data_source.dart';
 import 'package:smart_laundry_locker/shared/shared.dart';
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
 
 /// "Điểm thưởng": điểm hiện có, hạng thành viên và lịch sử cộng/trừ điểm.
-/// Điểm do backend tự cộng khi đơn hoàn tất (mỗi đơn một lần).
+/// Điểm do backend tự cộng khi đơn hoàn tất (mỗi đơn một lần); dùng điểm để
+/// giảm tiền khi đặt đơn. Hạng tính theo tổng điểm đã tích (tiêu điểm không
+/// tụt hạng).
 class LoyaltyPage extends StatefulWidget {
   const LoyaltyPage({super.key, this.dataSource});
 
@@ -137,6 +140,8 @@ class _LoyaltyPageState extends State<LoyaltyPage>
         padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
         children: [
           _buildSummaryCard(summary),
+          const SizedBox(height: 12),
+          _buildRulesCard(),
           const SizedBox(height: 18),
           Text(
             'Lịch sử điểm',
@@ -173,8 +178,9 @@ class _LoyaltyPageState extends State<LoyaltyPage>
 
   Widget _buildSummaryCard(LoyaltySummary summary) {
     final config = businessConfig;
+    // Hạng theo tổng điểm đã tích, không theo điểm còn lại sau khi tiêu.
     final next = nextLoyaltyTier(
-      summary.points,
+      summary.tierPoints,
       silverPoints: config.tierSilverPoints,
       goldPoints: config.tierGoldPoints,
       platinumPoints: config.tierPlatinumPoints,
@@ -242,10 +248,64 @@ class _LoyaltyPageState extends State<LoyaltyPage>
                 : 'Còn ${next.missing} điểm để lên hạng ${next.name}.',
             style: const TextStyle(color: Colors.white70, fontSize: 13),
           ),
+          if (summary.lifetimePoints != null) ...[
+            const SizedBox(height: 4),
+            Text(
+              'Tổng điểm đã tích: ${summary.lifetimePoints} điểm '
+              '(dùng để xếp hạng, tiêu điểm không tụt hạng)',
+              style: const TextStyle(color: Colors.white60, fontSize: 12),
+            ),
+          ],
         ],
       ),
     );
   }
+
+  /// Cách tích và dùng điểm theo cấu hình admin (public settings).
+  Widget _buildRulesCard() {
+    final config = businessConfig;
+    return Container(
+      key: const ValueKey('loyalty-rules'),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: context.cardBg,
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _ruleLine(LucideIcons.gift, loyaltyEarnRuleText(config)),
+          const SizedBox(height: 8),
+          _ruleLine(LucideIcons.wallet, loyaltyRedeemRuleText(config)),
+        ],
+      ),
+    );
+  }
+
+  Widget _ruleLine(IconData icon, String text) => Row(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Icon(icon, size: 16, color: const Color(0xFFCA8A04)),
+      const SizedBox(width: 8),
+      Expanded(
+        child: Text(
+          text,
+          style: TextStyle(
+            fontSize: 13,
+            color: context.textPrimary,
+            height: 1.35,
+          ),
+        ),
+      ),
+    ],
+  );
+
+  IconData _historyIcon(PointTransaction tx) => switch (tx.type) {
+    'ORDER_REDEEM' => LucideIcons.wallet,
+    'ORDER_REDEEM_REFUND' => LucideIcons.undo2,
+    'ADJUSTMENT' => LucideIcons.slidersHorizontal,
+    _ => tx.isCredit ? LucideIcons.arrowDownLeft : LucideIcons.arrowUpRight,
+  };
 
   Widget _buildHistoryRow(PointTransaction tx) {
     final color = tx.isCredit
@@ -267,11 +327,7 @@ class _LoyaltyPageState extends State<LoyaltyPage>
               color: color.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(10),
             ),
-            child: Icon(
-              tx.isCredit ? LucideIcons.arrowDownLeft : LucideIcons.arrowUpRight,
-              size: 18,
-              color: color,
-            ),
+            child: Icon(_historyIcon(tx), size: 18, color: color),
           ),
           const SizedBox(width: 12),
           Expanded(

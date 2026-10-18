@@ -8,6 +8,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:smart_laundry_locker/features/promotions/data/models/promotion_model.dart';
 import 'package:smart_laundry_locker/features/promotions/presentation/pages/promotion_detail_page.dart';
 import 'package:smart_laundry_locker/features/promotions/presentation/providers/promotion_provider.dart';
+import 'package:smart_laundry_locker/features/promotions/presentation/widgets/promotion_scope_tag.dart';
 import 'package:smart_laundry_locker/features/vouchers/data/repositories/voucher_repository.dart';
 import 'package:smart_laundry_locker/shared/shared.dart';
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
@@ -187,35 +188,46 @@ class _PromotionsPageState extends ConsumerState<PromotionsPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  // Chỉ gắn nhãn theo dữ liệu thật (sắp hết hạn), không còn
-                  // chip "Flash Sale" viết cứng cho mọi ưu đãi.
-                  if (promo.isExpiringSoon && !promo.isExpired)
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 3),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFE53E3E).withValues(alpha: 0.10),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: const Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(LucideIcons.clock,
-                              size: 10, color: Color(0xFFE53E3E)),
-                          SizedBox(width: 4),
-                          Text(
-                            'Sắp hết hạn',
-                            style: TextStyle(
-                              color: Color(0xFFE53E3E),
-                              fontWeight: FontWeight.w800,
-                              fontSize: 11,
-                            ),
+                  // Chỉ gắn nhãn theo dữ liệu thật (sắp hết hạn, phạm vi
+                  // áp dụng), không còn chip "Flash Sale" viết cứng.
+                  Row(
+                    children: [
+                      if (promo.isExpiringSoon && !promo.isExpired) ...[
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 3),
+                          decoration: BoxDecoration(
+                            color:
+                                const Color(0xFFE53E3E).withValues(alpha: 0.10),
+                            borderRadius: BorderRadius.circular(20),
                           ),
-                        ],
+                          child: const Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(LucideIcons.clock,
+                                  size: 10, color: Color(0xFFE53E3E)),
+                              SizedBox(width: 4),
+                              Text(
+                                'Sắp hết hạn',
+                                style: TextStyle(
+                                  color: Color(0xFFE53E3E),
+                                  fontWeight: FontWeight.w800,
+                                  fontSize: 11,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                      ],
+                      Flexible(
+                        child: PromotionScopeTag(
+                          label: promo.scopeLabel,
+                          lockerScoped: promo.isLockerScoped,
+                        ),
                       ),
-                    )
-                  else
-                    const SizedBox.shrink(),
+                    ],
+                  ),
                   // Title — 2 lines
                   Text(
                     promo.name,

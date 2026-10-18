@@ -49,6 +49,8 @@ class DroneBookingRequest {
     required this.parcelWeightGrams,
     this.description,
     required this.parcel,
+    this.promotionCode,
+    this.pointsToUse,
   });
 
   final int destinationLockerId;
@@ -64,6 +66,12 @@ class DroneBookingRequest {
   final int parcelWeightGrams;
   final String? description;
   final DroneParcelDeclaration parcel;
+
+  /// Mã giảm giá — server kiểm theo TỦ GỬI (tủ drone cất cánh).
+  final String? promotionCode;
+
+  /// Số điểm thưởng muốn dùng (`maxPoints` của redeem-preview); server kẹp lại.
+  final int? pointsToUse;
 
   Map<String, dynamic> toJson() => {
     'destinationLockerId': destinationLockerId,
@@ -81,12 +89,16 @@ class DroneBookingRequest {
     'parcelWeightGrams': parcelWeightGrams,
     if (description != null) 'description': description,
     ...parcel.toJson(),
+    if (promotionCode != null && promotionCode!.isNotEmpty)
+      'promotionCode': promotionCode,
+    if (pointsToUse != null && pointsToUse! > 0) 'pointsToUse': pointsToUse,
   };
 }
 
 /// Báo trước cho người gửi: drone cất cánh ở tủ nào, bao xa, phí bao nhiêu.
 class DroneQuote {
   const DroneQuote({
+    this.sourceLockerId,
     required this.sourceLockerName,
     this.sourceLockerAddress,
     required this.pickupDistanceMeters,
@@ -94,6 +106,8 @@ class DroneQuote {
     required this.fee,
   });
 
+  /// Tủ gửi (nơi drone cất cánh) — mã giảm giá theo tủ được kiểm theo tủ này.
+  final int? sourceLockerId;
   final String sourceLockerName;
   final String? sourceLockerAddress;
 
@@ -109,7 +123,10 @@ class DroneQuote {
     final map = source is Map ? source : const {};
     final name = '${map['name'] ?? map['code'] ?? ''}'.trim();
     final address = '${map['address'] ?? ''}'.trim();
+    final rawId = map['lockerId'] ?? map['id'];
+    final sourceId = rawId is num ? rawId.toInt() : int.tryParse('${rawId ?? ''}');
     return DroneQuote(
+      sourceLockerId: sourceId,
       sourceLockerName: name.isEmpty ? 'Tủ #${map['lockerId'] ?? '?'}' : name,
       sourceLockerAddress: address.isEmpty ? null : address,
       pickupDistanceMeters: _int(json['pickupDistanceMeters']),

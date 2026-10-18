@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:smart_laundry_locker/core/routing/app_router.dart';
 import 'package:smart_laundry_locker/core/services/token_service.dart';
+import 'package:smart_laundry_locker/features/promotions/presentation/widgets/promotion_scope_tag.dart';
 import 'package:smart_laundry_locker/shared/widgets/unauthenticated_placeholder.dart';
 import 'package:smart_laundry_locker/shared/shared.dart';
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
@@ -232,7 +233,7 @@ class _MyVouchersPageState extends State<MyVouchersPage>
     }
 
     return Container(
-      height: 100,
+      height: 118,
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
@@ -313,6 +314,13 @@ class _MyVouchersPageState extends State<MyVouchersPage>
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 4),
+                    PromotionScopeTag(
+                      label: voucher.scopeLabel,
+                      lockerScoped: voucher.lockerId != null,
+                      fontSize: 10.5,
+                      muted: isInactive,
                     ),
                     const Spacer(),
                     Row(
