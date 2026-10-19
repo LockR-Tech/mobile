@@ -141,6 +141,17 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
       )
       .toList(growable: false);
 
+  /// Drone mà KTV này trực tiếp phụ trách.
+  List<Map<String, dynamic>> get _myDrones => _drones
+      .where(
+        (drone) =>
+            _myUserId != null &&
+            _myUserId!.isNotEmpty &&
+            drone['assignedTechnicianId'] != null &&
+            '${drone['assignedTechnicianId']}' == _myUserId,
+      )
+      .toList(growable: false);
+
   @override
   void initState() {
     super.initState();
@@ -370,29 +381,77 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
     });
   }
 
+  /// ID của KTV phụ trách drone liên quan đến phiếu sự cố.
+  /// Ưu tiên `routedToUserId` trên phiếu, nếu không có thì tra từ danh sách drone `_drones`.
+  String? _droneAssignedTechnicianId(Map<String, dynamic> report) {
+    final routed = report['routedToUserId']?.toString().trim();
+    if (routed != null && routed.isNotEmpty && routed != 'null') {
+      return routed;
+    }
+    final droneId = _asInt(report['droneUnitId']);
+    if (droneId != null) {
+      for (final d in _drones) {
+        if (_asInt(d['id']) == droneId) {
+          final techId = d['assignedTechnicianId']?.toString().trim();
+          if (techId != null && techId.isNotEmpty && techId != 'null') {
+            return techId;
+          }
+          break;
+        }
+      }
+    }
+    return null;
+  }
+
+  /// Logic kiểm tra hiển thị sự cố cho KTV Drone:
+  /// - Tab sự cố chỉ hiện sự cố mà mình được phân công (được ai nhận rồi thì chỉ hiển thị cho người đó).
+  /// - Khi có sự cố mới:
+  ///   + Drone đã có KTV phụ trách: CHỈ hiển thị cho KTV phụ trách drone đó xem và nhận việc.
+  ///   + Drone chưa có KTV phụ trách: hiển thị cho tất cả KTV drone xem trong danh sách chờ nhận.
+  bool _isDroneReportVisibleToMe(Map<String, dynamic> report) {
+    final currentUserId = _myUserId;
+    if (currentUserId == null || currentUserId.isEmpty) return false;
+
+    final assignedTo = report['assignedToUserId']?.toString().trim();
+    if (assignedTo != null && assignedTo.isNotEmpty && assignedTo != 'null') {
+      return assignedTo == currentUserId;
+    }
+
+    // Sự cố mới (chưa có người nhận)
+    final droneTech = _droneAssignedTechnicianId(report);
+    if (droneTech != null) {
+      return droneTech == currentUserId;
+    }
+
+    return true;
+  }
+
   Future<void> _loadDroneReports() async {
     try {
       final reports = await _service.droneReports(all: true);
       final currentUserId = _myUserId;
-      final mine = reports
+      final visibleReports = reports
+          .where(_isDroneReportVisibleToMe)
+          .toList(growable: false);
+      final mine = visibleReports
           .where(
             (report) =>
                 currentUserId != null &&
                 '${report['assignedToUserId']}' == currentUserId,
           )
           .toList(growable: false);
-      // Chỉ phiếu đang chờ được định tuyến đích danh cho mình.
-      final routed = reports
+      // Chỉ phiếu sự cố mới trên drone mà mình phụ trách
+      final routed = visibleReports
           .where(
             (report) =>
                 report['status'] == 'OPEN' &&
                 currentUserId != null &&
-                '${report['routedToUserId']}' == currentUserId,
+                _droneAssignedTechnicianId(report) == currentUserId,
           )
           .toList(growable: false);
       if (!mounted) return;
       setState(() {
-        _droneReports = reports;
+        _droneReports = visibleReports;
         _myDroneReports = mine;
         _routedDroneReports = routed;
         _droneReportLoadError = null;
@@ -402,10 +461,12 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
       // phân công không biến mất hoàn toàn khỏi mobile.
       try {
         final mine = await _service.droneReports(mine: true);
+        final visibleMine =
+            mine.where(_isDroneReportVisibleToMe).toList(growable: false);
         if (!mounted) return;
         setState(() {
-          _myDroneReports = mine;
-          _droneReports = mine;
+          _myDroneReports = visibleMine;
+          _droneReports = visibleMine;
           _routedDroneReports = const [];
           _droneReportLoadError =
               'Không tải được hàng đợi sự cố chung — đang hiện phiếu giao cho bạn.';
@@ -1236,7 +1297,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                     const SizedBox(width: 4),
                     _droneHudChip(
                       Icons.flight_outlined,
-                      '${_drones.length}',
+                      '${_myDrones.length}',
                       'Đội bay',
                       const Color(0xFF34D399),
                       false,
@@ -1410,7 +1471,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
               ),
               tabs: [
                 Tab(text: 'Điều phối ($_dispatchCount)'),
-                Tab(text: 'Đội bay (${_drones.length})'),
+                Tab(text: 'Đội bay (${_myDrones.length})'),
                 Tab(text: 'Sự cố ($_activeDroneReportCount)'),
                 Tab(text: 'Việc của tôi ($_activeMyWorkCount)'),
                 Tab(text: 'Định kỳ (${_schedules.length})'),
@@ -1568,8 +1629,6 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
     final parcelReturns = _deliveries
         .where((d) => d['parcelReturnPending'] == true)
         .toList(growable: false);
-    // Sự cố rơi kiện còn mở: việc phải theo dõi nên luôn hiện, không theo bộ lọc.
-    final activeIncidents = _activeIncidents;
     return RefreshIndicator(
       onRefresh: _load,
       child: ListView(
@@ -1591,42 +1650,6 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
               text: _deliveriesLoadError!,
             ),
             _retryButton(),
-            const SizedBox(height: 8),
-          ],
-          if (_incidentsLoadError != null) ...[
-            OpsBanner(
-              tone: OpsBannerTone.warning,
-              icon: Icons.cloud_off_outlined,
-              text: _incidentsLoadError!,
-            ),
-            _retryButton(),
-            const SizedBox(height: 8),
-          ],
-          if (activeIncidents.isNotEmpty) ...[
-            OpsSectionLabel(
-              'Sự cố rơi kiện (${activeIncidents.length})',
-              icon: Icons.report_gmailerrorred_outlined,
-            ),
-            const SizedBox(height: 8),
-            for (final incident in activeIncidents)
-              DroneParcelIncidentCard(
-                incident: incident,
-                onTap: () => DroneParcelIncidentSheet.show(
-                  context,
-                  incident: incident,
-                  service: _service,
-                ),
-              ),
-            const SizedBox(height: 8),
-          ],
-          if (_dropReportedOrders.isNotEmpty) ...[
-            OpsSectionLabel(
-              'Sự cố rơi kiện (${_dropReportedOrders.length})',
-              icon: Icons.report_gmailerrorred_outlined,
-            ),
-            const SizedBox(height: 8),
-            for (final order in _dropReportedOrders)
-              _deliveryCard(order, action: _DeliveryAction.track),
             const SizedBox(height: 8),
           ],
           // ── Đơn hàng drone order-based cho đội bay ───────────────────────
@@ -1729,8 +1752,6 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
           ],
           if (awaiting.isNotEmpty ||
               parcelReturns.isNotEmpty ||
-              activeIncidents.isNotEmpty ||
-              _dropReportedOrders.isNotEmpty ||
               awaitingLoading.isNotEmpty ||
               readyToLaunch.isNotEmpty ||
               launching.isNotEmpty ||
@@ -1745,8 +1766,6 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
           if (awaiting.isEmpty &&
               !hasPickupWork &&
               parcelReturns.isEmpty &&
-              activeIncidents.isEmpty &&
-              _dropReportedOrders.isEmpty &&
               _deliveriesLoadError == null &&
               awaitingLoading.isEmpty &&
               readyToLaunch.isEmpty &&
@@ -1823,11 +1842,8 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
         _flightFailureStages.contains(stage);
   }
 
-  /// Số mục tab Điều phối thật sự hiện: đơn trong các nhóm + sự cố rơi kiện còn mở.
-  int get _dispatchCount =>
-      _deliveries.where(_shownInDispatch).length +
-      _activeIncidents.length +
-      _dropReportedOrders.length;
+  /// Số mục tab Điều phối thật sự hiện: chỉ tính đơn hàng.
+  int get _dispatchCount => _deliveries.where(_shownInDispatch).length;
 
   /// Phiếu sự cố chưa hoàn tất (không đếm phiếu đã RESOLVED).
   int get _activeDroneReportCount =>
@@ -1954,7 +1970,8 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
     // Phiếu được định tuyến đích danh cho mình hiện thành nhóm riêng ở đầu
     // (chỉ khi không lọc trạng thái), không lặp lại trong hàng đợi chung.
     final showRouted =
-        _routedDroneReports.isNotEmpty && _droneReportStatusFilter == 'ALL';
+        _routedDroneReports.isNotEmpty &&
+        (_droneReportStatusFilter == 'ALL' || _droneReportStatusFilter == 'OPEN');
     final routedIds = showRouted
         ? _routedDroneReports.map((r) => '${r['id']}').toSet()
         : const <String>{};
@@ -2638,8 +2655,12 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
 
   bool _canClaimDroneReport(Map<String, dynamic> report) {
     if (report['status'] != 'OPEN') return false;
-    final routedTo = report['routedToUserId']?.toString();
-    return routedTo == null || routedTo.isEmpty || routedTo == _myUserId;
+    final assignedTo = report['assignedToUserId']?.toString().trim();
+    if (assignedTo != null && assignedTo.isNotEmpty && assignedTo != 'null') {
+      return false;
+    }
+    final droneTech = _droneAssignedTechnicianId(report);
+    return droneTech == null || droneTech == _myUserId;
   }
 
   Future<void> _confirmClaimDroneReport(Map<String, dynamic> report) async {
@@ -2719,14 +2740,14 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
             _retryButton(),
           ],
           const SizedBox(height: 12),
-          if (_drones.isEmpty && _dronesLoadError == null)
+          if (_myDrones.isEmpty && _dronesLoadError == null)
             const OpsEmptyState(
               icon: Icons.flight_outlined,
-              title: 'Chưa có drone nào',
-              subtitle: 'Đội drone sẽ hiện ở đây khi được thêm vào hệ thống.',
+              title: 'Chưa phụ trách drone nào',
+              subtitle: 'Các drone bạn được phân công phụ trách sẽ hiển thị ở đây.',
             )
           else
-            for (final d in _drones) _droneCard(d),
+            for (final d in _myDrones) _droneCard(d),
         ],
       ),
     );

@@ -82,9 +82,14 @@ class _DroneReportDetailSheetState extends State<DroneReportDetailSheet> {
 
   bool get _canClaim {
     if (_status != 'OPEN') return false;
-    final routedTo = _report['routedToUserId']?.toString();
+    final assignedTo = _report['assignedToUserId']?.toString().trim();
+    if (assignedTo != null && assignedTo.isNotEmpty && assignedTo != 'null') {
+      return false;
+    }
+    final routedTo = _report['routedToUserId']?.toString().trim();
     return routedTo == null ||
         routedTo.isEmpty ||
+        routedTo == 'null' ||
         routedTo == widget.currentUserId;
   }
 

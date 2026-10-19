@@ -38,6 +38,8 @@ class _FakeMaintenanceService extends LockerOpsService {
   List<Map<String, dynamic>> incidents = const [];
   List<Map<String, dynamic>> extraQueue = const [];
   Map<String, dynamic> droneOverride = const {};
+  List<Map<String, dynamic>>? customReports;
+  List<Map<String, dynamic>>? customDrones;
   int? advancedOrderId;
   String? advancedExpectedStage;
 
@@ -85,6 +87,14 @@ class _FakeMaintenanceService extends LockerOpsService {
     bool routed = false,
     bool all = false,
   }) async {
+    if (customReports != null) {
+      if (mine) {
+        return customReports!
+            .where((r) => '${r['assignedToUserId']}' == '99')
+            .toList();
+      }
+      return customReports!;
+    }
     if (mine && droneReport['assignedToUserId'] != 99) return const [];
     return [Map<String, dynamic>.from(droneReport)];
   }
@@ -133,17 +143,20 @@ class _FakeMaintenanceService extends LockerOpsService {
   }
 
   @override
-  Future<List<Map<String, dynamic>>> droneUnits() async => [
-    {
-      'id': 9,
-      'code': 'DRONE-09',
-      'status': 'IDLE',
-      'batteryPercent': 87,
-      'lockerId': 3,
-      'lockerName': 'Tram 3',
-      ...droneOverride,
-    },
-  ];
+  Future<List<Map<String, dynamic>>> droneUnits() async {
+    if (customDrones != null) return customDrones!;
+    return [
+      {
+        'id': 9,
+        'code': 'DRONE-09',
+        'status': 'IDLE',
+        'batteryPercent': 87,
+        'lockerId': 3,
+        'lockerName': 'Tram 3',
+        ...droneOverride,
+      },
+    ];
+  }
 
   @override
   Future<List<Map<String, dynamic>>> maintenanceSchedules({
@@ -321,6 +334,13 @@ class _FakeMaintenanceService extends LockerOpsService {
   }
 }
 
+void _setPhoneViewport(WidgetTester tester) {
+  tester.view.physicalSize = const Size(800, 1200);
+  tester.view.devicePixelRatio = 1.0;
+  addTearDown(tester.view.resetPhysicalSize);
+  addTearDown(tester.view.resetDevicePixelRatio);
+}
+
 void main() {
   setUp(() {
     createMockApiClient();
@@ -421,6 +441,7 @@ void main() {
   testWidgets('requires full loading checklist before mission is ready', (
     tester,
   ) async {
+    _setPhoneViewport(tester);
     final service = _FakeMaintenanceService();
     final router = GoRouter(
       routes: [
@@ -475,6 +496,7 @@ void main() {
   });
 
   testWidgets('shows loading validation inside the dialog', (tester) async {
+    _setPhoneViewport(tester);
     final service = _FakeMaintenanceService();
     final router = GoRouter(
       routes: [
@@ -533,7 +555,7 @@ void main() {
     );
   });
 
-  testWidgets('sự cố rơi kiện hiện ở Điều phối, cảnh báo cần RTL thủ công', (
+  testWidgets('tab Điều phối chỉ hiện đơn hàng, không hiện sự cố rơi kiện', (
     tester,
   ) async {
     final service = _FakeMaintenanceService()
@@ -561,13 +583,13 @@ void main() {
     await tester.pumpWidget(MaterialApp.router(routerConfig: router));
     await tester.pumpAndSettle();
 
-    expect(find.text('Sự cố rơi kiện (1)'), findsOneWidget);
+    // Tab Điều phối chỉ tính đơn hàng (3 đơn), không gộp sự cố rơi kiện.
+    expect(find.text('Điều phối (3)'), findsOneWidget);
+    expect(find.text('Sự cố rơi kiện (1)'), findsNothing);
     expect(
       find.byKey(const ValueKey('drone-incident-manual-return')),
-      findsOneWidget,
+      findsNothing,
     );
-    // 3 đơn trong các nhóm + 1 sự cố còn mở.
-    expect(find.text('Điều phối (4)'), findsOneWidget);
     // Header không ghi SLA giả: bậc SLA lấy từ my-performance.
     expect(
       find.text('SLA: Bình thường · Chưa có phiếu đang xử lý'),
@@ -685,6 +707,7 @@ void main() {
   testWidgets('cân nặng hơn khai báo: báo trước khoản khách phải trả thêm', (
     tester,
   ) async {
+    _setPhoneViewport(tester);
     useBusinessConfig(
       BusinessConfig.fromPublicMaps(
         order: {'app.order.drone-weight-step-fee': 3000},
@@ -816,6 +839,11 @@ void main() {
         ],
       );
 
+      tester.view.physicalSize = const Size(800, 1200);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
       await tester.pumpWidget(MaterialApp.router(routerConfig: router));
       await tester.pumpAndSettle();
 
@@ -893,6 +921,228 @@ void main() {
       expect(find.text('Đang đi lấy hàng (1)'), findsOneWidget);
       expect(find.text('Đã lấy hàng · mang về tủ gửi (1)'), findsOneWidget);
       expect(find.text('Điều phối (5)'), findsOneWidget);
+    },
+  );
+
+  testWidgets('tab Đội bay chỉ hiện drone mà mình được phụ trách', (tester) async {
+    _setPhoneViewport(tester);
+    final service = _FakeMaintenanceService()
+      ..customDrones = [
+        {
+          'id': 1,
+          'code': 'DRONE-MY-01',
+          'status': 'IDLE',
+          'batteryPercent': 95,
+          'assignedTechnicianId': 99,
+          'assignedTechnicianName': 'KTV 99',
+        },
+        {
+          'id': 2,
+          'code': 'DRONE-OTHER-02',
+          'status': 'IDLE',
+          'batteryPercent': 80,
+          'assignedTechnicianId': 88,
+          'assignedTechnicianName': 'KTV 88',
+        },
+        {
+          'id': 3,
+          'code': 'DRONE-FREE-03',
+          'status': 'IDLE',
+          'batteryPercent': 70,
+          'assignedTechnicianId': null,
+        },
+      ];
+    final router = GoRouter(
+      routes: [
+        GoRoute(
+          path: '/',
+          builder: (context, state) => MaintenanceHomePage(service: service),
+        ),
+      ],
+    );
+
+    await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+    await tester.pumpAndSettle();
+
+    // Tab Đội bay và HUD chip chỉ đếm drone của mình (1 drone)
+    expect(find.text('Đội bay (1)'), findsOneWidget);
+    await tester.tap(find.text('Đội bay (1)'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('DRONE-MY-01'), findsOneWidget);
+    expect(find.text('DRONE-OTHER-02'), findsNothing);
+    expect(find.text('DRONE-FREE-03'), findsNothing);
+  });
+
+  testWidgets(
+    'sự cố mới trên drone có KTV phụ trách: chỉ hiển thị cho KTV phụ trách đó xem và nhận việc',
+    (tester) async {
+      _setPhoneViewport(tester);
+      final service = _FakeMaintenanceService()
+        ..customDrones = [
+          {
+            'id': 10,
+            'code': 'DRONE-10',
+            'status': 'FAULT',
+            'assignedTechnicianId': 99,
+          },
+          {
+            'id': 20,
+            'code': 'DRONE-20',
+            'status': 'FAULT',
+            'assignedTechnicianId': 88,
+          },
+        ]
+        ..customReports = [
+          {
+            'id': 101,
+            'title': 'Lỗi motor Drone 10',
+            'description': 'Motor số 2 kêu to',
+            'status': 'OPEN',
+            'category': 'DRONE',
+            'droneUnitId': 10,
+            'droneCode': 'DRONE-10',
+            'assignedToUserId': null,
+            'createdAt': '2026-10-10T08:00:00Z',
+          },
+          {
+            'id': 201,
+            'title': 'Lỗi cánh quạt Drone 20',
+            'description': 'Cánh nứt',
+            'status': 'OPEN',
+            'category': 'DRONE',
+            'droneUnitId': 20,
+            'droneCode': 'DRONE-20',
+            'assignedToUserId': null,
+            'createdAt': '2026-10-10T08:00:00Z',
+          },
+        ];
+      final router = GoRouter(
+        routes: [
+          GoRoute(
+            path: '/',
+            builder: (context, state) => MaintenanceHomePage(service: service),
+          ),
+        ],
+      );
+
+      await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+      await tester.pumpAndSettle();
+
+      // Chỉ thấy 1 sự cố của Drone-10 (do KTV 99 phụ trách)
+      expect(find.text('Sự cố (1)'), findsOneWidget);
+      await tester.tap(find.text('Sự cố (1)'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Lỗi motor Drone 10'), findsOneWidget);
+      expect(find.text('Lỗi cánh quạt Drone 20'), findsNothing);
+      expect(find.text('Nhận xử lý'), findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    'sự cố mới trên drone chưa có KTV phụ trách: hiển thị cho tất cả KTV xem và nhận',
+    (tester) async {
+      _setPhoneViewport(tester);
+      final service = _FakeMaintenanceService()
+        ..customDrones = [
+          {
+            'id': 30,
+            'code': 'DRONE-30',
+            'status': 'FAULT',
+            'assignedTechnicianId': null,
+          },
+        ]
+        ..customReports = [
+          {
+            'id': 301,
+            'title': 'Sự cố nguồn Drone 30',
+            'description': 'Pin tụt nhanh',
+            'status': 'OPEN',
+            'category': 'DRONE',
+            'droneUnitId': 30,
+            'droneCode': 'DRONE-30',
+            'assignedToUserId': null,
+            'createdAt': '2026-10-10T08:00:00Z',
+          },
+        ];
+      final router = GoRouter(
+        routes: [
+          GoRoute(
+            path: '/',
+            builder: (context, state) => MaintenanceHomePage(service: service),
+          ),
+        ],
+      );
+
+      await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Sự cố (1)'), findsOneWidget);
+      await tester.tap(find.text('Sự cố (1)'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Sự cố nguồn Drone 30'), findsOneWidget);
+      expect(find.text('Nhận xử lý'), findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    'sự cố đã có người nhận: chỉ hiển thị cho người đã nhận, ẩn với người khác',
+    (tester) async {
+      _setPhoneViewport(tester);
+      final service = _FakeMaintenanceService()
+        ..customDrones = [
+          {
+            'id': 10,
+            'code': 'DRONE-10',
+            'status': 'IN_SERVICE',
+            'assignedTechnicianId': 99,
+          },
+        ]
+        ..customReports = [
+          {
+            'id': 101,
+            'title': 'Phiếu đã nhận bởi KTV khác',
+            'description': 'KTV 88 đang xử lý',
+            'status': 'IN_PROGRESS',
+            'category': 'DRONE',
+            'droneUnitId': 10,
+            'droneCode': 'DRONE-10',
+            'assignedToUserId': 88,
+            'createdAt': '2026-10-10T08:00:00Z',
+          },
+          {
+            'id': 102,
+            'title': 'Phiếu đã nhận bởi tôi',
+            'description': 'Tôi đang xử lý',
+            'status': 'IN_PROGRESS',
+            'category': 'DRONE',
+            'droneUnitId': 10,
+            'droneCode': 'DRONE-10',
+            'assignedToUserId': 99,
+            'createdAt': '2026-10-10T08:00:00Z',
+          },
+        ];
+      final router = GoRouter(
+        routes: [
+          GoRoute(
+            path: '/',
+            builder: (context, state) => MaintenanceHomePage(service: service),
+          ),
+        ],
+      );
+
+      await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+      await tester.pumpAndSettle();
+
+      // Chỉ hiển thị phiếu 102 được nhận bởi 99, ẩn phiếu 101 được nhận bởi 88
+      expect(find.text('Sự cố (1)'), findsOneWidget);
+      await tester.tap(find.text('Sự cố (1)'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Phiếu đã nhận bởi tôi'), findsOneWidget);
+      expect(find.text('Phiếu đã nhận bởi KTV khác'), findsNothing);
     },
   );
 }
