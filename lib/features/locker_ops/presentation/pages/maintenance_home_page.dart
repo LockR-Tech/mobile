@@ -99,7 +99,6 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
   // Lịch bảo trì định kỳ của drone (droneUnitId != null) — lịch tủ thuộc LOCKER_TECHNICIAN.
   List<Map<String, dynamic>> _schedules = [];
   String? _scheduleLoadError;
-  bool _mySchedulesOnly = true;
   String _scheduleDueFilter = 'ALL';
   String _schedulePriorityFilter = 'ALL';
   String _scheduleSort = 'DUE';
@@ -300,11 +299,14 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
 
   Future<void> _loadSchedules() async {
     try {
-      final schedules = await _service.maintenanceSchedules(target: 'DRONE');
+      final schedules = await _service.maintenanceSchedules(
+        mine: true,
+        target: 'DRONE',
+      );
       if (!mounted) return;
       setState(() {
         _schedules = schedules
-            .where((s) => s['droneUnitId'] != null)
+            .where((s) => s['droneUnitId'] != null && _isScheduleMine(s))
             .toList(growable: false);
         _scheduleLoadError = null;
       });
@@ -381,23 +383,26 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
     });
   }
 
-  /// ID của KTV phụ trách drone liên quan đến phiếu sự cố.
-  /// Ưu tiên `routedToUserId` trên phiếu, nếu không có thì tra từ danh sách drone `_drones`.
-  String? _droneAssignedTechnicianId(Map<String, dynamic> report) {
-    final routed = report['routedToUserId']?.toString().trim();
+  /// ID của KTV phụ trách drone liên quan đến phiếu sự cố hoặc sự cố rơi kiện.
+  /// Ưu tiên `routedToUserId` trên phiếu, nếu không có thì tra từ danh sách drone `_drones` theo ID hoặc mã drone.
+  String? _droneAssignedTechnicianId(Map<String, dynamic> item) {
+    final routed = item['routedToUserId']?.toString().trim();
     if (routed != null && routed.isNotEmpty && routed != 'null') {
       return routed;
     }
-    final droneId = _asInt(report['droneUnitId']);
-    if (droneId != null) {
-      for (final d in _drones) {
-        if (_asInt(d['id']) == droneId) {
-          final techId = d['assignedTechnicianId']?.toString().trim();
-          if (techId != null && techId.isNotEmpty && techId != 'null') {
-            return techId;
-          }
-          break;
+    final droneId = _asInt(item['droneUnitId']);
+    final droneCode = item['droneCode']?.toString().trim();
+    for (final d in _drones) {
+      final matchesId = droneId != null && _asInt(d['id']) == droneId;
+      final matchesCode = droneCode != null &&
+          droneCode.isNotEmpty &&
+          d['code']?.toString().trim() == droneCode;
+      if (matchesId || matchesCode) {
+        final techId = d['assignedTechnicianId']?.toString().trim();
+        if (techId != null && techId.isNotEmpty && techId != 'null') {
+          return techId;
         }
+        break;
       }
     }
     return null;
@@ -424,6 +429,79 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
     }
 
     return true;
+  }
+
+  /// Logic kiểm tra hiển thị sự cố rơi kiện theo đúng phân công và phụ trách.
+  bool _isIncidentVisibleToMe(Map<String, dynamic> incident) {
+    final currentUserId = _myUserId;
+    if (currentUserId == null || currentUserId.isEmpty) return false;
+
+    // Đã có người nhận
+    final assignedTo = (incident['recoveryAssignedToUserId'] ??
+            incident['assignedToUserId'])
+        ?.toString()
+        .trim();
+    if (assignedTo != null && assignedTo.isNotEmpty && assignedTo != 'null') {
+      return assignedTo == currentUserId;
+    }
+
+    // Sự cố mới: chỉ hiện cho KTV phụ trách drone, hoặc mọi KTV nếu drone chưa có phụ trách
+    final droneTech = _droneAssignedTechnicianId(incident);
+    if (droneTech != null) {
+      return droneTech == currentUserId;
+    }
+
+    return true;
+  }
+
+  bool _isDropReportedOrderVisibleToMe(Map<String, dynamic> order) {
+    final currentUserId = _myUserId;
+    if (currentUserId == null || currentUserId.isEmpty) return false;
+
+    final assignedTo = (order['recoveryAssignedToUserId'] ??
+            order['assignedByUserId'] ??
+            order['assignedTechnicianId'])
+        ?.toString()
+        .trim();
+    if (assignedTo != null && assignedTo.isNotEmpty && assignedTo != 'null') {
+      return assignedTo == currentUserId;
+    }
+
+    final droneTech = _droneAssignedTechnicianId(order);
+    if (droneTech != null) {
+      return droneTech == currentUserId;
+    }
+
+    return true;
+  }
+
+  bool _incidentMatchesStatusFilter(Map<String, dynamic> incident) {
+    final status = '${incident['status'] ?? ''}'.toUpperCase();
+    final isResolved = status == 'RESOLVED' || status == 'CLOSED';
+    final isOpen = status == 'REPORTED' ||
+        status == 'EVIDENCE_PENDING' ||
+        status == 'OPEN';
+    return switch (_droneReportStatusFilter) {
+      'OPEN' => isOpen,
+      'IN_PROGRESS' => !isResolved && !isOpen,
+      'RESOLVED' => isResolved,
+      _ => !isResolved,
+    };
+  }
+
+  bool _incidentMatchesSearch(Map<String, dynamic> incident, String query) {
+    if (query.isEmpty) return true;
+    final searchable = [
+      incident['id'],
+      incident['incidentCode'],
+      incident['orderId'],
+      incident['orderCode'],
+      incident['droneCode'],
+      incident['reason'],
+      incident['description'],
+      incident['status'],
+    ].where((value) => value != null).join(' ').toLowerCase();
+    return searchable.contains(query);
   }
 
   Future<void> _loadDroneReports() async {
@@ -1062,7 +1140,17 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
   );
 
   Widget _buildDroneTechnicianHeader() {
-    final waiting = _droneReports.where((r) => r['status'] == 'OPEN').length;
+    final openIncidentsCount = _incidents
+            .where(_isIncidentVisibleToMe)
+            .where((i) {
+              final s = '${i['status'] ?? ''}'.toUpperCase();
+              return s == 'REPORTED' || s == 'EVIDENCE_PENDING' || s == 'OPEN';
+            })
+            .length +
+        _dropReportedOrders.where(_isDropReportedOrderVisibleToMe).length;
+    final waiting =
+        _droneReports.where((r) => r['status'] == 'OPEN').length +
+        openIncidentsCount;
     final working = _myDroneReports
         .where((r) => r['status'] == 'IN_PROGRESS')
         .length;
@@ -1785,7 +1873,10 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
   }
 
   List<Map<String, dynamic>> get _activeIncidents =>
-      _incidents.where(droneIncidentActive).toList(growable: false);
+      _incidents
+          .where(_isIncidentVisibleToMe)
+          .where(droneIncidentActive)
+          .toList(growable: false);
 
   String _pickupStatus(Map<String, dynamic> delivery) {
     final pickup = delivery['pickup'];
@@ -1845,9 +1936,13 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
   /// Số mục tab Điều phối thật sự hiện: chỉ tính đơn hàng.
   int get _dispatchCount => _deliveries.where(_shownInDispatch).length;
 
-  /// Phiếu sự cố chưa hoàn tất (không đếm phiếu đã RESOLVED).
+  /// Phiếu sự cố chưa hoàn tất (gồm phiếu kỹ thuật drone và sự cố rơi kiện).
   int get _activeDroneReportCount =>
-      _droneReports.where((r) => r['status'] != 'RESOLVED').length;
+      _droneReports.where((r) => r['status'] != 'RESOLVED').length +
+      _activeIncidents.length +
+      _dropReportedOrders
+          .where(_isDropReportedOrderVisibleToMe)
+          .length;
 
   /// Việc của tôi còn phải làm: phiếu chưa hoàn tất + lịch chưa xong.
   int get _activeMyWorkCount =>
@@ -2025,13 +2120,96 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
     final visibleReports = reports
         .take(_droneReportVisibleCount)
         .toList(growable: false);
-    final openCount = _droneReports.where((r) => r['status'] == 'OPEN').length;
-    final inProgressCount = _droneReports
-        .where((r) => r['status'] == 'IN_PROGRESS')
+
+    final visibleIncidents = _incidents
+        .where(_isIncidentVisibleToMe)
+        .where(_incidentMatchesStatusFilter)
+        .where((i) => _incidentMatchesSearch(i, query))
+        .where((i) {
+          if (_droneReportDroneFilter == 'ALL') return true;
+          final code = '${i['droneCode'] ?? i['droneUnitId'] ?? ''}';
+          return code == _droneReportDroneFilter;
+        })
+        .where((i) {
+          final assignedTo =
+              (i['recoveryAssignedToUserId'] ?? i['assignedToUserId'])
+                  ?.toString()
+                  .trim();
+          return switch (_droneReportAssignmentFilter) {
+            'MINE' => assignedTo == _myUserId,
+            'UNASSIGNED' => assignedTo == null ||
+                assignedTo.isEmpty ||
+                assignedTo == 'null',
+            _ => true,
+          };
+        })
+        .toList(growable: false);
+
+    final visibleDropOrders = _dropReportedOrders
+        .where(_isDropReportedOrderVisibleToMe)
+        .where((o) =>
+            _droneReportStatusFilter == 'ALL' ||
+            _droneReportStatusFilter == 'OPEN')
+        .where((o) => _incidentMatchesSearch(o, query))
+        .where((o) {
+          if (_droneReportDroneFilter == 'ALL') return true;
+          final code = '${o['droneCode'] ?? o['droneUnitId'] ?? ''}';
+          return code == _droneReportDroneFilter;
+        })
+        .where((o) {
+          final assignedTo =
+              (o['assignedByUserId'] ?? o['assignedTechnicianId'])
+                  ?.toString()
+                  .trim();
+          return switch (_droneReportAssignmentFilter) {
+            'MINE' => assignedTo == _myUserId,
+            'UNASSIGNED' => assignedTo == null ||
+                assignedTo.isEmpty ||
+                assignedTo == 'null',
+            _ => true,
+          };
+        })
+        .toList(growable: false);
+
+    final openIncidentCount = _incidents
+            .where(_isIncidentVisibleToMe)
+            .where((i) {
+              final s = '${i['status'] ?? ''}'.toUpperCase();
+              return s == 'REPORTED' || s == 'EVIDENCE_PENDING' || s == 'OPEN';
+            })
+            .length +
+        _dropReportedOrders.where(_isDropReportedOrderVisibleToMe).length;
+    final inProgressIncidentCount = _incidents
+        .where(_isIncidentVisibleToMe)
+        .where((i) {
+          final s = '${i['status'] ?? ''}'.toUpperCase();
+          return s != 'RESOLVED' &&
+              s != 'CLOSED' &&
+              s != 'REPORTED' &&
+              s != 'EVIDENCE_PENDING' &&
+              s != 'OPEN';
+        })
         .length;
-    final resolvedCount = _droneReports
-        .where((r) => r['status'] == 'RESOLVED')
+    final resolvedIncidentCount = _incidents
+        .where(_isIncidentVisibleToMe)
+        .where((i) {
+          final s = '${i['status'] ?? ''}'.toUpperCase();
+          return s == 'RESOLVED' || s == 'CLOSED';
+        })
         .length;
+
+    final openCount =
+        _droneReports.where((r) => r['status'] == 'OPEN').length +
+        openIncidentCount;
+    final inProgressCount =
+        _droneReports.where((r) => r['status'] == 'IN_PROGRESS').length +
+        inProgressIncidentCount;
+    final resolvedCount =
+        _droneReports.where((r) => r['status'] == 'RESOLVED').length +
+        resolvedIncidentCount;
+    final totalCount = _droneReports.length +
+        _incidents.where(_isIncidentVisibleToMe).length +
+        _dropReportedOrders.where(_isDropReportedOrderVisibleToMe).length;
 
     return RefreshIndicator(
       onRefresh: _load,
@@ -2045,6 +2223,13 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
               text: _droneReportLoadError!,
             ),
             _retryButton(),
+          ] else if (_incidentsLoadError != null) ...[
+            OpsBanner(
+              tone: OpsBannerTone.warning,
+              icon: Icons.cloud_off_outlined,
+              text: _incidentsLoadError!,
+            ),
+            _retryButton(),
           ] else
             OpsBanner(
               tone: openCount > 0 ? OpsBannerTone.warning : OpsBannerTone.info,
@@ -2052,7 +2237,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                   ? Icons.warning_amber_rounded
                   : Icons.flight_outlined,
               text: openCount > 0
-                  ? 'Có $openCount phiếu sự cố Drone đang chờ KTV tiếp nhận xử lý.'
+                  ? 'Có $openCount sự cố Drone đang chờ tiếp nhận xử lý.'
                   : 'Hàng đợi sự cố Drone. Phiếu mới được ưu tiên hiển thị để đội bay tiếp nhận kịp thời.',
             ),
           const SizedBox(height: 10),
@@ -2067,7 +2252,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
             child: Row(
               children: [
                 for (final option in [
-                  ('ALL', 'Tất cả', _droneReports.length, Icons.filter_list),
+                  ('ALL', 'Tất cả', totalCount, Icons.filter_list),
                   ('OPEN', 'Chờ nhận', openCount, Icons.fiber_new_rounded),
                   (
                     'IN_PROGRESS',
@@ -2108,6 +2293,37 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
           const SizedBox(height: 8),
           _buildReportAdvancedFilters(),
           const SizedBox(height: 12),
+          if (visibleIncidents.any(droneIncidentNeedsManualReturn)) ...[
+            const DroneManualReturnBanner(),
+            const SizedBox(height: 8),
+          ],
+          if (visibleIncidents.isNotEmpty) ...[
+            OpsSectionLabel(
+              'Sự cố rơi kiện (${visibleIncidents.length})',
+              icon: Icons.report_gmailerrorred_outlined,
+            ),
+            const SizedBox(height: 8),
+            for (final incident in visibleIncidents)
+              DroneParcelIncidentCard(
+                incident: incident,
+                onTap: () => DroneParcelIncidentSheet.show(
+                  context,
+                  incident: incident,
+                  service: _service,
+                ),
+              ),
+            const SizedBox(height: 12),
+          ],
+          if (visibleDropOrders.isNotEmpty) ...[
+            OpsSectionLabel(
+              'Sự cố rơi kiện (${visibleDropOrders.length})',
+              icon: Icons.report_gmailerrorred_outlined,
+            ),
+            const SizedBox(height: 8),
+            for (final order in visibleDropOrders)
+              _deliveryCard(order, action: _DeliveryAction.track),
+            const SizedBox(height: 12),
+          ],
           if (showRouted) ...[
             OpsSectionLabel(
               'Gửi trực tiếp cho bạn (${_routedDroneReports.length})',
@@ -2116,16 +2332,28 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
             const SizedBox(height: 8),
             for (final report in _routedDroneReports) _droneReportCard(report),
             const SizedBox(height: 4),
-            const OpsSectionLabel('Hàng đợi chung', icon: Icons.inbox_outlined),
+            const OpsSectionLabel('Hàng đợi kỹ thuật chung', icon: Icons.inbox_outlined),
             const SizedBox(height: 8),
+          ] else if (visibleIncidents.isNotEmpty || visibleDropOrders.isNotEmpty) ...[
+            if (reports.isNotEmpty) ...[
+              OpsSectionLabel(
+                'Sự cố kỹ thuật Drone (${reports.length})',
+                icon: Icons.build_circle_outlined,
+              ),
+              const SizedBox(height: 8),
+            ],
           ],
-          if (reports.isEmpty && _droneReportLoadError == null && !showRouted)
+          if (reports.isEmpty &&
+              _droneReportLoadError == null &&
+              !showRouted &&
+              visibleIncidents.isEmpty &&
+              visibleDropOrders.isEmpty)
             const OpsEmptyState(
               icon: Icons.check_circle_outline,
               title: 'Không có phiếu sự cố Drone',
               subtitle: 'Đội bay hiện không có sự cố phù hợp bộ lọc.',
             )
-          else if (reports.isEmpty && showRouted)
+          else if (showRouted && reports.isEmpty)
             const Padding(
               padding: EdgeInsets.symmetric(vertical: 8),
               child: Text(
@@ -2756,12 +2984,9 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
   // ---- Tab lịch bảo trì ----
   Widget _buildMaintenanceSchedules() {
     final query = _scheduleSearchController.text.trim().toLowerCase();
-    final allSchedules = [..._schedules];
-    final mine = allSchedules.where(_isScheduleMine).toList();
-    final scope = _mySchedulesOnly ? mine : allSchedules;
-    final dueCount = scope.where((s) => s['due'] == true).length;
-    final upcomingCount = scope.length - dueCount;
-    final schedules = scope.where((schedule) {
+    final dueCount = _schedules.where((s) => s['due'] == true).length;
+    final upcomingCount = _schedules.length - dueCount;
+    final schedules = _schedules.where((schedule) {
       final dueMatches = switch (_scheduleDueFilter) {
         'DUE' => schedule['due'] == true,
         'UPCOMING' => schedule['due'] != true,
@@ -2826,33 +3051,10 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
             scrollDirection: Axis.horizontal,
             child: Row(
               children: [
-                _droneFilterChip(
-                  label: 'Của tôi (${mine.length})',
-                  selected: _mySchedulesOnly,
-                  icon: Icons.person_outline,
-                  activeColor: const Color(0xFF7C3AED),
-                  onTap: () => setState(() => _mySchedulesOnly = true),
-                ),
-                const SizedBox(width: 7),
-                _droneFilterChip(
-                  label: 'Tất cả (${allSchedules.length})',
-                  selected: !_mySchedulesOnly,
-                  icon: Icons.groups_outlined,
-                  activeColor: const Color(0xFF0284C7),
-                  onTap: () => setState(() => _mySchedulesOnly = false),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 6),
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              children: [
                 for (final option in [
                   (
                     'ALL',
-                    'Mọi hạn (${scope.length})',
+                    'Tất cả (${_schedules.length})',
                     Icons.event_note_outlined,
                   ),
                   ('DUE', 'Đến hạn ($dueCount)', Icons.warning_amber_rounded),
@@ -2917,10 +3119,12 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
           if (schedules.isEmpty && _scheduleLoadError == null)
             OpsEmptyState(
               icon: Icons.event_available_outlined,
-              title: _mySchedulesOnly
-                  ? 'Không có lịch Drone được giao phù hợp'
+              title: _schedules.isEmpty
+                  ? 'Chưa có lịch bảo trì định kỳ nào'
                   : 'Không có lịch bảo trì Drone phù hợp',
-              subtitle: 'Thử đổi bộ lọc hoặc kéo xuống để tải lại dữ liệu.',
+              subtitle: _schedules.isEmpty
+                  ? 'Các lịch bảo trì Drone bạn được phân công phụ trách sẽ hiển thị ở đây.'
+                  : 'Thử đổi bộ lọc hoặc kéo xuống để tải lại dữ liệu.',
             )
           else
             for (final s in schedules)

@@ -40,6 +40,7 @@ class _FakeMaintenanceService extends LockerOpsService {
   Map<String, dynamic> droneOverride = const {};
   List<Map<String, dynamic>>? customReports;
   List<Map<String, dynamic>>? customDrones;
+  List<Map<String, dynamic>>? customSchedules;
   int? advancedOrderId;
   String? advancedExpectedStage;
 
@@ -164,6 +165,7 @@ class _FakeMaintenanceService extends LockerOpsService {
     String? target,
   }) async {
     requestedScheduleTarget = target;
+    if (customSchedules != null) return customSchedules!;
     return const [
       {
         'id': 71,
@@ -1143,6 +1145,197 @@ void main() {
 
       expect(find.text('Phiếu đã nhận bởi tôi'), findsOneWidget);
       expect(find.text('Phiếu đã nhận bởi KTV khác'), findsNothing);
+    },
+  );
+
+  testWidgets(
+    'sự cố rơi kiện: hiển thị trong tab Sự cố theo đúng phân quyền (chưa nhận/đã nhận/phụ trách drone)',
+    (tester) async {
+      _setPhoneViewport(tester);
+      final service = _FakeMaintenanceService()
+        ..customDrones = [
+          {
+            'id': 10,
+            'code': 'DRONE-10',
+            'status': 'IN_SERVICE',
+            'assignedTechnicianId': 99,
+          },
+          {
+            'id': 20,
+            'code': 'DRONE-20',
+            'status': 'IN_SERVICE',
+            'assignedTechnicianId': 88,
+          },
+          {
+            'id': 30,
+            'code': 'DRONE-30',
+            'status': 'IN_SERVICE',
+            'assignedTechnicianId': null,
+          },
+        ]
+        ..incidents = [
+          // Case 1: Sự cố mới trên Drone 10 (do KTV 99 phụ trách) -> KTV 99 PHẢI thấy
+          {
+            'id': 1,
+            'incidentCode': 'INC-01',
+            'orderId': 101,
+            'orderCode': 'ORD-101',
+            'droneCode': 'DRONE-10',
+            'droneUnitId': 10,
+            'status': 'REPORTED',
+            'returnFlightStatus': 'COMMAND_ACCEPTED',
+            'createdAt': '2026-10-12T08:00:00Z',
+          },
+          // Case 2: Sự cố mới trên Drone 20 (do KTV 88 phụ trách) -> KTV 99 KHÔNG được thấy
+          {
+            'id': 2,
+            'incidentCode': 'INC-02',
+            'orderId': 102,
+            'orderCode': 'ORD-102',
+            'droneCode': 'DRONE-20',
+            'droneUnitId': 20,
+            'status': 'REPORTED',
+            'returnFlightStatus': 'COMMAND_ACCEPTED',
+            'createdAt': '2026-10-12T08:00:00Z',
+          },
+          // Case 3: Sự cố mới trên Drone 30 (chưa ai phụ trách) -> KTV 99 PHẢI thấy trong hàng chờ
+          {
+            'id': 3,
+            'incidentCode': 'INC-03',
+            'orderId': 103,
+            'orderCode': 'ORD-103',
+            'droneCode': 'DRONE-30',
+            'droneUnitId': 30,
+            'status': 'REPORTED',
+            'returnFlightStatus': 'COMMAND_ACCEPTED',
+            'createdAt': '2026-10-12T08:00:00Z',
+          },
+          // Case 4: Sự cố trên Drone 10 nhưng đã có KTV 88 nhận -> KTV 99 KHÔNG được thấy
+          {
+            'id': 4,
+            'incidentCode': 'INC-04',
+            'orderId': 104,
+            'orderCode': 'ORD-104',
+            'droneCode': 'DRONE-10',
+            'droneUnitId': 10,
+            'recoveryAssignedToUserId': 88,
+            'status': 'INVESTIGATING',
+            'returnFlightStatus': 'COMMAND_ACCEPTED',
+            'createdAt': '2026-10-12T08:00:00Z',
+          },
+          // Case 5: Sự cố trên Drone 20 nhưng do KTV 99 đã nhận -> KTV 99 PHẢI thấy
+          {
+            'id': 5,
+            'incidentCode': 'INC-05',
+            'orderId': 105,
+            'orderCode': 'ORD-105',
+            'droneCode': 'DRONE-20',
+            'droneUnitId': 20,
+            'recoveryAssignedToUserId': 99,
+            'status': 'INVESTIGATING',
+            'returnFlightStatus': 'COMMAND_ACCEPTED',
+            'createdAt': '2026-10-12T08:00:00Z',
+          },
+        ]
+        ..customReports = const [];
+
+      final router = GoRouter(
+        routes: [
+          GoRoute(
+            path: '/',
+            builder: (context, state) => MaintenanceHomePage(
+              service: service,
+              initialTab: 2,
+            ),
+          ),
+        ],
+      );
+
+      await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+      await tester.pumpAndSettle();
+
+      // Chỉ có 3 sự cố hiển thị với KTV 99 (INC-01, INC-03, INC-05)
+      expect(find.text('Sự cố (3)'), findsOneWidget);
+      expect(find.text('Sự cố rơi kiện (3)'), findsOneWidget);
+
+      expect(find.textContaining('INC-01'), findsOneWidget);
+      expect(find.textContaining('INC-02'), findsNothing);
+      expect(find.textContaining('INC-03'), findsOneWidget);
+      expect(find.textContaining('INC-04'), findsNothing);
+      expect(find.textContaining('INC-05'), findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    'tab Định kỳ chỉ lấy và hiển thị danh sách lịch do chính KTV đó phụ trách',
+    (tester) async {
+      _setPhoneViewport(tester);
+      final service = _FakeMaintenanceService()
+        ..customSchedules = [
+          {
+            'id': 701,
+            'droneUnitId': 9,
+            'droneCode': 'DRONE-09',
+            'title': 'Bảo trì động cơ DRONE-09 (của tôi)',
+            'description': 'Kiểm tra motor',
+            'priority': 'HIGH',
+            'intervalDays': 15,
+            'nextDueAt': '2026-10-09T08:00:00Z',
+            'due': true,
+            'active': true,
+            'assignedTechnicianId': 99,
+            'assignedTechnicianName': 'Bảo Huy Nguyễn',
+            'checklistItems': ['Motor 1', 'Motor 2'],
+          },
+          {
+            'id': 702,
+            'droneUnitId': 10,
+            'droneCode': 'DRONE-10',
+            'title': 'Bảo trì cánh quạt DRONE-10 (của KTV khác)',
+            'description': 'Kiểm tra cánh quạt',
+            'priority': 'NORMAL',
+            'intervalDays': 30,
+            'nextDueAt': '2026-10-15T08:00:00Z',
+            'due': false,
+            'active': true,
+            'assignedTechnicianId': 88,
+            'assignedTechnicianName': 'KTV Khác',
+            'checklistItems': ['Cánh quạt'],
+          },
+        ];
+
+      final router = GoRouter(
+        routes: [
+          GoRoute(
+            path: '/',
+            builder: (context, state) => MaintenanceHomePage(
+              service: service,
+              initialTab: 4,
+            ),
+          ),
+        ],
+      );
+
+      await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+      await tester.pumpAndSettle();
+
+      // Tab text chỉ tính lịch của mình: 1 lịch
+      expect(find.text('Định kỳ (1)'), findsOneWidget);
+
+      // Hiển thị lịch của tôi, không hiển thị lịch của KTV khác
+      expect(find.text('Bảo trì động cơ DRONE-09 (của tôi)'), findsOneWidget);
+      expect(
+        find.text('Bảo trì cánh quạt DRONE-10 (của KTV khác)'),
+        findsNothing,
+      );
+
+      // Filter chips hiển thị số lượng theo danh sách của KTV
+      expect(find.text('Tất cả (1)'), findsOneWidget);
+      expect(find.text('Đến hạn (1)'), findsOneWidget);
+      expect(find.text('Sắp tới (0)'), findsOneWidget);
+
+      // Không còn toggle chip "Của tôi" / "Tất cả"
+      expect(find.text('Của tôi (1)'), findsNothing);
     },
   );
 }
