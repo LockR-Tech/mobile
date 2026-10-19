@@ -303,6 +303,7 @@ class _LoyaltyPageState extends State<LoyaltyPage>
   IconData _historyIcon(PointTransaction tx) => switch (tx.type) {
     'ORDER_REDEEM' => LucideIcons.wallet,
     'ORDER_REDEEM_REFUND' => LucideIcons.undo2,
+    'ORDER_EARN_REVERSAL' => LucideIcons.rotateCcw,
     'ADJUSTMENT' => LucideIcons.slidersHorizontal,
     _ => tx.isCredit ? LucideIcons.arrowDownLeft : LucideIcons.arrowUpRight,
   };
