@@ -784,6 +784,19 @@ class _HomePageState extends ConsumerState<HomePage>
       context.push(AppRouter.droneDeliveryTracking, extra: '$id');
       return;
     }
+    if (id != null) {
+      context.go(
+        Uri(
+          path: AppRouter.orders,
+          queryParameters: {
+            'orderId': '$id',
+            't': '${DateTime.now().millisecondsSinceEpoch}',
+          },
+        ).toString(),
+        extra: order,
+      );
+      return;
+    }
     context.go(AppRouter.orders);
   }
 

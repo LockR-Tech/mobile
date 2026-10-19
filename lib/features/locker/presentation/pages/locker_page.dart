@@ -27,6 +27,7 @@ class _LockerPageState extends ConsumerState<LockerPage> {
   String? _mostUsedLocationId;
   String? _mostUsedLocationName;
   Position? _userPosition;
+  String _selectedKiosk = 'ALL';
 
   @override
   void initState() {
@@ -37,6 +38,67 @@ class _LockerPageState extends ConsumerState<LockerPage> {
     _onAuthStateChanged();
     _loadMostUsedLocation();
     _fetchUserPosition();
+  }
+
+  static String _kioskNameOf(LockerLocation loc) {
+    final name = loc.storeName?.trim();
+    if (name != null && name.isNotEmpty) return name;
+    return 'Kiosk khác';
+  }
+
+  Map<String, int> _getKioskCounts(List<LockerLocation> list) {
+    final counts = <String, int>{};
+    for (final loc in list) {
+      final k = _kioskNameOf(loc);
+      counts[k] = (counts[k] ?? 0) + 1;
+    }
+    return counts;
+  }
+
+  bool _isMostUsedLocation(LockerLocation loc) {
+    return loc.id == _mostUsedLocationId ||
+        (_mostUsedLocationName != null &&
+            loc.name.trim().toLowerCase() ==
+                _mostUsedLocationName!.trim().toLowerCase());
+  }
+
+  List<MapEntry<String, List<LockerLocation>>> _groupLocationsByKiosk(
+    List<LockerLocation> locations,
+  ) {
+    if (locations.isEmpty) return const [];
+
+    final map = <String, List<LockerLocation>>{};
+    for (final loc in locations) {
+      final kiosk = _kioskNameOf(loc);
+      (map[kiosk] ??= []).add(loc);
+    }
+
+    final entries = map.entries.toList();
+    if (_mostUsedLocationId != null || _mostUsedLocationName != null) {
+      entries.sort((a, b) {
+        final aHasMostUsed = a.value.any(_isMostUsedLocation);
+        final bHasMostUsed = b.value.any(_isMostUsedLocation);
+        if (aHasMostUsed && !bHasMostUsed) return -1;
+        if (!aHasMostUsed && bHasMostUsed) return 1;
+        return a.key.compareTo(b.key);
+      });
+    } else {
+      entries.sort((a, b) => a.key.compareTo(b.key));
+    }
+
+    for (final entry in entries) {
+      if (_mostUsedLocationId != null || _mostUsedLocationName != null) {
+        entry.value.sort((a, b) {
+          final aIs = _isMostUsedLocation(a);
+          final bIs = _isMostUsedLocation(b);
+          if (aIs && !bIs) return -1;
+          if (!aIs && bIs) return 1;
+          return 0;
+        });
+      }
+    }
+
+    return entries;
   }
 
   void _onAuthStateChanged() {
@@ -76,8 +138,8 @@ class _LockerPageState extends ConsumerState<LockerPage> {
         counts.forEach((id, count) {
           if (count > maxCount) {
             maxCount = count;
-            bestId = id;
           }
+          bestId = id;
         });
         if (bestId.isNotEmpty && mounted) {
           setState(() {
@@ -164,6 +226,114 @@ class _LockerPageState extends ConsumerState<LockerPage> {
     );
   }
 
+  Widget _buildKioskHeader(String kioskName, int count) {
+    return Container(
+      margin: const EdgeInsets.fromLTRB(16, 14, 16, 6),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      decoration: BoxDecoration(
+        color: context.isDark
+            ? Colors.white.withValues(alpha: 0.05)
+            : const Color(0xFFF1F5F9),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: context.isDark
+              ? Colors.white.withValues(alpha: 0.08)
+              : const Color(0xFFE2E8F0),
+        ),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              color: const Color(0xFFEEF2FF),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: const Icon(
+              LucideIcons.store,
+              size: 14,
+              color: Color(0xFF4F46E5),
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              'Kiosk: $kioskName',
+              style: TextStyle(
+                fontSize: 13.5,
+                fontWeight: FontWeight.w700,
+                color: context.textPrimary,
+                letterSpacing: -0.2,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+            decoration: BoxDecoration(
+              color: context.isDark
+                  ? Colors.white.withValues(alpha: 0.1)
+                  : Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: context.isDark
+                    ? Colors.white.withValues(alpha: 0.12)
+                    : const Color(0xFFCBD5E1),
+              ),
+            ),
+            child: Text(
+              '$count tủ',
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w700,
+                color: context.isDark ? Colors.white : const Color(0xFF475569),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildKioskFilterChips(List<LockerLocation> allLocations) {
+    final kioskCounts = _getKioskCounts(allLocations);
+    if (kioskCounts.isEmpty) return const SizedBox.shrink();
+
+    final activeKiosk =
+        (_selectedKiosk != 'ALL' && !kioskCounts.containsKey(_selectedKiosk))
+            ? 'ALL'
+            : _selectedKiosk;
+
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      padding: const EdgeInsets.fromLTRB(20, 0, 20, 10),
+      child: Row(
+        children: [
+          _KioskChip(
+            label: 'Tất cả',
+            count: allLocations.length,
+            selected: activeKiosk == 'ALL',
+            onTap: () => setState(() => _selectedKiosk = 'ALL'),
+          ),
+          for (final entry in kioskCounts.entries) ...[
+            const SizedBox(width: 8),
+            _KioskChip(
+              label: entry.key,
+              count: entry.value,
+              selected: activeKiosk == entry.key,
+              onTap: () {
+                setState(() {
+                  _selectedKiosk = activeKiosk == entry.key ? 'ALL' : entry.key;
+                });
+              },
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final LockerProvider provider = ref.watch<LockerProvider>(
@@ -212,7 +382,7 @@ class _LockerPageState extends ConsumerState<LockerPage> {
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
+                padding: const EdgeInsets.fromLTRB(20, 16, 20, 10),
                 child: TextField(
                   controller: _searchController,
                   decoration: InputDecoration(
@@ -237,6 +407,9 @@ class _LockerPageState extends ConsumerState<LockerPage> {
                   ),
                 ),
               ),
+              if (state.locations.isNotEmpty) ...[
+                _buildKioskFilterChips(state.locations),
+              ],
               Expanded(child: _buildLocationsList(state)),
             ],
           ),
@@ -291,23 +464,82 @@ class _LockerPageState extends ConsumerState<LockerPage> {
       );
     }
 
-    // Rearrange locations so most-used location is at index 0
-    final locations = List<LockerLocation>.of(state.locations);
-    if (_mostUsedLocationId != null && locations.isNotEmpty) {
-      final mostUsedIdx = locations.indexWhere(
-        (loc) =>
-            loc.id == _mostUsedLocationId ||
-            (_mostUsedLocationName != null &&
-                loc.name.trim().toLowerCase() ==
-                    _mostUsedLocationName!.trim().toLowerCase()),
+    final allLocations = state.locations;
+    final kioskCounts = _getKioskCounts(allLocations);
+    final activeKiosk =
+        (_selectedKiosk != 'ALL' && !kioskCounts.containsKey(_selectedKiosk))
+            ? 'ALL'
+            : _selectedKiosk;
+
+    final filteredLocations = activeKiosk == 'ALL'
+        ? allLocations
+        : allLocations.where((loc) => _kioskNameOf(loc) == activeKiosk).toList();
+
+    if (filteredLocations.isEmpty) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: context.isDark
+                      ? Colors.white.withValues(alpha: 0.08)
+                      : const Color(0xFFF1F5F9),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  LucideIcons.store,
+                  size: 32,
+                  color: context.textMuted,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Không tìm thấy tủ tại địa điểm này',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                  color: context.textPrimary,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 6),
+              Text(
+                'Thử chọn địa điểm khác hoặc xem tất cả địa điểm khả dụng.',
+                style: TextStyle(fontSize: 13, color: context.textMuted),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 18),
+              OutlinedButton.icon(
+                onPressed: () => setState(() => _selectedKiosk = 'ALL'),
+                icon: const Icon(LucideIcons.rotateCcw, size: 15),
+                label: const Text('Xem tất cả địa điểm'),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: const Color(0xFF0F172A),
+                  side: const BorderSide(color: Color(0xFFCBD5E1)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
       );
-      if (mostUsedIdx > 0) {
-        final topItem = locations.removeAt(mostUsedIdx);
-        locations.insert(0, topItem);
+    }
+
+    final groups = _groupLocationsByKiosk(filteredLocations);
+    final items = <_LockerListItem>[];
+    for (final entry in groups) {
+      items.add(_LockerListItem.header(entry.key, entry.value.length));
+      for (final loc in entry.value) {
+        items.add(_LockerListItem.location(loc));
       }
     }
 
-    // List of locations
     return RefreshIndicator(
       onRefresh: () async {
         await Future.wait([
@@ -318,44 +550,140 @@ class _LockerPageState extends ConsumerState<LockerPage> {
           _fetchUserPosition(),
         ]);
       },
-      child: ListView.separated(
+      child: ListView.builder(
         controller: _scrollController,
-        padding: const EdgeInsets.fromLTRB(16, 4, 16, 100),
-        itemCount: locations.length + (state.isLoadingMore ? 1 : 0),
-        separatorBuilder: (_, index) {
-          final isTopMostUsed = index == 0 &&
-              _mostUsedLocationId != null &&
-              locations.isNotEmpty &&
-              (locations[0].id == _mostUsedLocationId ||
-                  (_mostUsedLocationName != null &&
-                      locations[0].name.trim().toLowerCase() ==
-                          _mostUsedLocationName!.trim().toLowerCase()));
-          if (isTopMostUsed) {
-            return const SizedBox(height: 6);
-          }
-          return Divider(height: 1, color: context.dividerColor);
-        },
+        padding: const EdgeInsets.fromLTRB(0, 4, 0, 100),
+        itemCount: items.length + (state.isLoadingMore ? 1 : 0),
         itemBuilder: (context, index) {
-          // Loading more indicator - show skeleton row
-          if (index >= locations.length) {
+          if (index >= items.length) {
             return const Padding(
-              padding: EdgeInsets.symmetric(vertical: 8),
+              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               child: _LockerItemSkeleton(),
             );
           }
 
-          final location = locations[index];
-          final isMostUsed = location.id == _mostUsedLocationId ||
-              (_mostUsedLocationName != null &&
-                  location.name.trim().toLowerCase() ==
-                      _mostUsedLocationName!.trim().toLowerCase());
-          return LockerItem(
-            location: location,
-            isMostUsed: isMostUsed,
-            userPosition: _userPosition,
-            onTap: () => _navigateToMap(location),
+          final item = items[index];
+          if (item.isHeader) {
+            return _buildKioskHeader(item.header!, item.count ?? 0);
+          }
+
+          final location = item.location!;
+          final isMostUsed = _isMostUsedLocation(location);
+
+          final isNextAlsoLocation =
+              index + 1 < items.length && !items[index + 1].isHeader;
+
+          return Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: LockerItem(
+                  location: location,
+                  isMostUsed: isMostUsed,
+                  userPosition: _userPosition,
+                  onTap: () => _navigateToMap(location),
+                ),
+              ),
+              if (isNextAlsoLocation)
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Divider(height: 1, color: context.dividerColor),
+                ),
+            ],
           );
         },
+      ),
+    );
+  }
+}
+
+class _LockerListItem {
+  const _LockerListItem._({this.header, this.count, this.location});
+  factory _LockerListItem.header(String h, int count) =>
+      _LockerListItem._(header: h, count: count);
+  factory _LockerListItem.location(LockerLocation loc) =>
+      _LockerListItem._(location: loc);
+
+  final String? header;
+  final int? count;
+  final LockerLocation? location;
+
+  bool get isHeader => header != null;
+}
+
+class _KioskChip extends StatelessWidget {
+  const _KioskChip({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+    this.count,
+  });
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+  final int? count;
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = context.isDark;
+    final activeBg = isDark ? Colors.white : const Color(0xFF0F172A);
+    final activeFg = isDark ? const Color(0xFF0F172A) : Colors.white;
+    final inactiveBg = isDark
+        ? Colors.white.withValues(alpha: 0.06)
+        : const Color(0xFFF1F5F9);
+    final inactiveBorder = isDark
+        ? Colors.white.withValues(alpha: 0.12)
+        : const Color(0xFFE2E8F0);
+    final inactiveFg = context.textPrimary;
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(20),
+        splashColor: isDark
+            ? Colors.white.withValues(alpha: 0.1)
+            : const Color(0xFF0F172A).withValues(alpha: 0.08),
+        highlightColor: Colors.transparent,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7.5),
+          decoration: BoxDecoration(
+            color: selected ? activeBg : inactiveBg,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: selected ? activeBg : inactiveBorder,
+              width: 1.5,
+            ),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: selected ? FontWeight.w700 : FontWeight.w600,
+                  color: selected ? activeFg : inactiveFg,
+                ),
+              ),
+              if (count != null) ...[
+                const SizedBox(width: 5),
+                Text(
+                  '($count)',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+                    color: selected
+                        ? activeFg.withValues(alpha: 0.75)
+                        : context.textMuted,
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
       ),
     );
   }

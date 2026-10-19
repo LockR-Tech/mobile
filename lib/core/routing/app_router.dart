@@ -228,10 +228,26 @@ class AppRouter {
                 // (locker_ops). The legacy OrderPage hit the old /orders/me API and
                 // is no longer wired to the current backend.
                 path: orders,
-                builder: (context, state) => MyLockerOrdersPage(
-                  initialOrderId: int.tryParse(state.uri.queryParameters['orderId'] ?? ''),
-                  initialTab: state.uri.queryParameters['tab'],
-                ),
+                builder: (context, state) {
+                  int? orderId = int.tryParse(state.uri.queryParameters['orderId'] ?? '');
+                  if (orderId == null && state.extra is Map<String, dynamic>) {
+                    final raw = (state.extra as Map<String, dynamic>)['id'] ??
+                        (state.extra as Map<String, dynamic>)['orderId'];
+                    if (raw is int) orderId = raw;
+                    if (raw is num) orderId = raw.toInt();
+                    if (raw is String) orderId = int.tryParse(raw);
+                  } else if (orderId == null && state.extra is int) {
+                    orderId = state.extra as int;
+                  }
+                  return MyLockerOrdersPage(
+                    initialOrderId: orderId,
+                    initialTab: state.uri.queryParameters['tab'],
+                    openToken: state.uri.queryParameters['t'],
+                    initialOrder: state.extra is Map<String, dynamic>
+                        ? state.extra as Map<String, dynamic>
+                        : null,
+                  );
+                },
               ),
             ],
           ),
@@ -455,10 +471,26 @@ class AppRouter {
       GoRoute(
         path: myLockerOrders,
         name: 'my_locker_orders',
-        builder: (context, state) => MyLockerOrdersPage(
-          initialOrderId: int.tryParse(state.uri.queryParameters['orderId'] ?? ''),
-          initialTab: state.uri.queryParameters['tab'],
-        ),
+        builder: (context, state) {
+          int? orderId = int.tryParse(state.uri.queryParameters['orderId'] ?? '');
+          if (orderId == null && state.extra is Map<String, dynamic>) {
+            final raw = (state.extra as Map<String, dynamic>)['id'] ??
+                (state.extra as Map<String, dynamic>)['orderId'];
+            if (raw is int) orderId = raw;
+            if (raw is num) orderId = raw.toInt();
+            if (raw is String) orderId = int.tryParse(raw);
+          } else if (orderId == null && state.extra is int) {
+            orderId = state.extra as int;
+          }
+          return MyLockerOrdersPage(
+            initialOrderId: orderId,
+            initialTab: state.uri.queryParameters['tab'],
+            openToken: state.uri.queryParameters['t'],
+            initialOrder: state.extra is Map<String, dynamic>
+                ? state.extra as Map<String, dynamic>
+                : null,
+          );
+        },
       ),
       GoRoute(
         path: myLockerReports,
