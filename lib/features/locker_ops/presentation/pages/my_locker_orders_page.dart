@@ -40,6 +40,8 @@ class MyLockerOrdersPage extends StatefulWidget {
     this.service,
     this.initialOrderId,
     this.initialTab,
+    this.openToken,
+    this.initialOrder,
   });
 
   final LockerOpsService? service;
@@ -49,6 +51,12 @@ class MyLockerOrdersPage extends StatefulWidget {
 
   /// `incoming` ⇒ mở thẳng mục "Hàng chờ nhận".
   final String? initialTab;
+
+  /// Dấu hiệu mở lại chi tiết đơn khi ấn vào card đơn đang xử lý nhiều lần.
+  final String? openToken;
+
+  /// Dữ liệu đơn đã nạp sẵn (ví dụ truyền từ trang chủ) để mở ngay lập tức.
+  final Map<String, dynamic>? initialOrder;
 
   @override
   State<MyLockerOrdersPage> createState() => _MyLockerOrdersPageState();
@@ -85,11 +93,19 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
   List<ReceiverOrder> _incoming = const [];
   bool _incomingLoading = true;
   String? _incomingError;
+  String _incomingFilter = 'ALL';
   bool _openedInitialOrder = false;
+  String? _lastOpenedToken;
+  int? _lastOpenedId;
 
   @override
   void initState() {
     super.initState();
+    if (widget.initialOrderId != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _openInitialOrderOnce();
+      });
+    }
     _load();
     _eventSub = AppEventBus.instance.events.listen((event) {
       if (!mounted) return;
@@ -101,6 +117,22 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
         _load();
       }
     });
+  }
+
+  @override
+  void didUpdateWidget(covariant MyLockerOrdersPage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final hasNewToken =
+        widget.openToken != null && widget.openToken != oldWidget.openToken;
+    final hasNewId =
+        widget.initialOrderId != null &&
+        widget.initialOrderId != oldWidget.initialOrderId;
+    if (hasNewToken || hasNewId) {
+      _openedInitialOrder = false;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _openInitialOrderOnce();
+      });
+    }
   }
 
   @override
@@ -220,12 +252,23 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
     }
   }
 
-  void _openInitialOrderOnce() {
+  Future<void> _openInitialOrderOnce({bool canRetry = true}) async {
     final id = widget.initialOrderId;
-    if (id == null || _openedInitialOrder || !mounted) return;
-    _openedInitialOrder = true;
-    final order = _orders.where((o) => _asInt(o['id']) == id).firstOrNull;
+    if (id == null || !mounted) return;
+    if (_openedInitialOrder &&
+        widget.openToken == _lastOpenedToken &&
+        id == _lastOpenedId) {
+      return;
+    }
+
+    final order = _orders.where((o) => _asInt(o['id']) == id).firstOrNull ??
+        (widget.initialOrder != null && _asInt(widget.initialOrder!['id']) == id
+            ? widget.initialOrder
+            : null);
     if (order != null) {
+      _openedInitialOrder = true;
+      _lastOpenedToken = widget.openToken;
+      _lastOpenedId = id;
       _openDetail(order);
       return;
     }
@@ -233,11 +276,23 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
     // chi tiết đơn đó.
     final incoming = _incoming.where((o) => o.id == id).firstOrNull;
     if (incoming != null) {
+      _openedInitialOrder = true;
+      _lastOpenedToken = widget.openToken;
+      _lastOpenedId = id;
       setState(() => _showIncoming = true);
       _openIncomingDetail(incoming);
-    } else {
-      _snack('Không tìm thấy đơn trong danh sách của bạn.');
+      return;
     }
+
+    if (canRetry) {
+      await _load();
+      if (!mounted) return;
+      return _openInitialOrderOnce(canRetry: false);
+    }
+    _openedInitialOrder = true;
+    _lastOpenedToken = widget.openToken;
+    _lastOpenedId = id;
+    _snack('Không tìm thấy đơn trong danh sách của bạn.');
   }
 
   Future<void> _openIncomingDetail(ReceiverOrder order) async {
@@ -251,6 +306,77 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
   }
 
   int get _incomingReadyCount => _incoming.where((o) => o.isActive).length;
+
+  bool _isIncomingRecent(ReceiverOrder o) {
+    final d = _parseIncomingDate(o);
+    if (d == null) return true;
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final day = DateTime(d.year, d.month, d.day);
+    final diff = today.difference(day).inDays.abs();
+    return diff <= 7;
+  }
+
+  int get _incomingCountRecent => _incoming.where(_isIncomingRecent).length;
+  int get _incomingCountActive => _incoming.where((o) => o.isActive).length;
+  int get _incomingCountCompleted =>
+      _incoming.where((o) => o.status == 'COMPLETED').length;
+  int get _incomingCountDrone => _incoming
+      .where((o) => (o.type ?? '').toUpperCase() == 'DRONE_DELIVERY')
+      .length;
+  int get _incomingCountSend =>
+      _incoming.where((o) => (o.type ?? '').toUpperCase() == 'SEND').length;
+  int get _incomingCountCanceled => _incoming
+      .where((o) => o.status == 'CANCELED' || o.status == 'CANCELLED')
+      .length;
+
+  void _setIncomingFilter(String key) {
+    setState(() {
+      _incomingFilter = (_incomingFilter == key && key != 'ALL') ? 'ALL' : key;
+    });
+  }
+
+  List<ReceiverOrder> get _visibleIncoming {
+    return _incoming.where((o) {
+      return switch (_incomingFilter) {
+        'ACTIVE' => o.isActive,
+        'RECENT' => _isIncomingRecent(o),
+        'COMPLETED' => o.status == 'COMPLETED',
+        'DRONE' => (o.type ?? '').toUpperCase() == 'DRONE_DELIVERY',
+        'SEND' => (o.type ?? '').toUpperCase() == 'SEND',
+        'CANCELED' => o.status == 'CANCELED' || o.status == 'CANCELLED',
+        'ALL' => true,
+        _ => true,
+      };
+    }).toList();
+  }
+
+  static DateTime? _parseIncomingDate(ReceiverOrder o) {
+    return o.createdAt ?? o.pickupDeadline ?? o.completedAt;
+  }
+
+  List<MapEntry<String, List<ReceiverOrder>>> get _groupedIncomingOrders {
+    final visible = _visibleIncoming;
+    if (visible.isEmpty) return const [];
+
+    final withDates = visible
+        .map((o) => (order: o, date: _parseIncomingDate(o)))
+        .toList()
+      ..sort((a, b) {
+        if (a.date == null && b.date == null) return 0;
+        if (a.date == null) return 1;
+        if (b.date == null) return -1;
+        return b.date!.compareTo(a.date!);
+      });
+
+    final map = <String, List<ReceiverOrder>>{};
+    for (final item in withDates) {
+      final key =
+          item.date == null ? 'Không rõ ngày' : _dateGroupLabel(item.date!);
+      (map[key] ??= []).add(item.order);
+    }
+    return map.entries.toList();
+  }
   bool _isRecent(Map<String, dynamic> o) {
     final d = _parseOrderDate(o);
     if (d == null) return true;
@@ -811,11 +937,12 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
     final lockerId = isPickup
         ? _asInt(order['destinationLockerId'] ?? order['lockerId'])
         : _asInt(order['lockerId'] ?? order['destinationLockerId']);
-    return _lockersMap[lockerId];
+    return _lockersMap[lockerId] ?? (order['locker'] as Map<String, dynamic>?);
   }
 
   String? _lockerNameOf(Map<String, dynamic> order) =>
-      _lockerOf(order)?['name']?.toString();
+      _lockerOf(order)?['name']?.toString() ??
+      order['lockerName']?.toString();
 
   Future<void> _openLockerDirections(Map<String, dynamic> order) async {
     final rawStatus = (order['status'] as String? ?? '').toUpperCase();
@@ -1085,6 +1212,10 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
     // Số tiền thu = phần còn nợ server tính sau khi áp phí quá hạn. Không gọi
     // được assess thì dùng phí tạm tính để hiện; server vẫn tự tính tiền thật.
     final due = assessedOk ? orderAmountDue(order) : fee.toDouble();
+    if (due <= 0) {
+      _snack('Đơn hàng không có phí quá giờ cần thanh toán');
+      return;
+    }
     final lockerName = _lockerNameOf(order) ?? 'Tủ Lock.R';
     final boxId = _asInt(order['receiveBoxId'] ?? order['sendBoxId']);
     final boxLabel = _boxLabelFor(order, boxId);
@@ -1340,15 +1471,18 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
           lockerOf: _lockerOf,
           sourceLockerName:
               _lockersMap[_asInt(order['sourceLockerId'])]?['name']
-                  ?.toString(),
+                  ?.toString() ??
+              order['sourceLockerName']?.toString(),
           sendBoxNumber:
               _lockerBoxesMap[_asInt(order['lockerId'])]?[_asInt(
                 order['sendBoxId'],
-              )],
+              )] ??
+              _asInt(order['sendBoxNumber'] ?? order['boxNumber']),
           receiveBoxNumber:
               _lockerBoxesMap[_asInt(
                 order['destinationLockerId'] ?? order['lockerId'],
-              )]?[_asInt(order['receiveBoxId'])],
+              )]?[_asInt(order['receiveBoxId'])] ??
+              _asInt(order['receiveBoxNumber'] ?? order['boxNumber']),
           onReorder: (id) async {
             Navigator.pop(ctx);
             await _runAction(
@@ -1529,6 +1663,69 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
                   ],
                 ],
               ),
+            )
+          else
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.fromLTRB(16, 10, 16, 12),
+              child: Row(
+                children: [
+                  _TypeChip(
+                    label: 'Tất cả',
+                    count: _incoming.length,
+                    selected: _incomingFilter == 'ALL',
+                    onTap: () => _setIncomingFilter('ALL'),
+                  ),
+                  const SizedBox(width: 8),
+                  _TypeChip(
+                    label: 'Gần đây',
+                    count: _incomingCountRecent,
+                    selected: _incomingFilter == 'RECENT',
+                    onTap: () => _setIncomingFilter('RECENT'),
+                  ),
+                  const SizedBox(width: 8),
+                  _TypeChip(
+                    label: 'Chờ lấy',
+                    count: _incomingCountActive,
+                    selected: _incomingFilter == 'ACTIVE',
+                    onTap: () => _setIncomingFilter('ACTIVE'),
+                  ),
+                  const SizedBox(width: 8),
+                  _TypeChip(
+                    label: 'Hoàn thành',
+                    count: _incomingCountCompleted,
+                    selected: _incomingFilter == 'COMPLETED',
+                    onTap: () => _setIncomingFilter('COMPLETED'),
+                  ),
+                  if (_incomingCountDrone > 0) ...[
+                    const SizedBox(width: 8),
+                    _TypeChip(
+                      label: 'Giao drone',
+                      count: _incomingCountDrone,
+                      selected: _incomingFilter == 'DRONE',
+                      onTap: () => _setIncomingFilter('DRONE'),
+                    ),
+                  ],
+                  if (_incomingCountSend > 0) ...[
+                    const SizedBox(width: 8),
+                    _TypeChip(
+                      label: 'Gửi hàng',
+                      count: _incomingCountSend,
+                      selected: _incomingFilter == 'SEND',
+                      onTap: () => _setIncomingFilter('SEND'),
+                    ),
+                  ],
+                  if (_incomingCountCanceled > 0) ...[
+                    const SizedBox(width: 8),
+                    _TypeChip(
+                      label: 'Đã hủy',
+                      count: _incomingCountCanceled,
+                      selected: _incomingFilter == 'CANCELED',
+                      onTap: () => _setIncomingFilter('CANCELED'),
+                    ),
+                  ],
+                ],
+              ),
             ),
 
           const SizedBox(height: 8),
@@ -1538,6 +1735,8 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
             child: showIncoming
                 ? _IncomingOrdersView(
                     orders: _incoming,
+                    groups: _groupedIncomingOrders,
+                    filter: _incomingFilter,
                     loading: _incomingLoading,
                     error: _incomingError,
                     onRefresh: _loadIncoming,
@@ -1671,6 +1870,8 @@ class _ReportLogsLoaderState extends State<_ReportLogsLoader> {
 class _IncomingOrdersView extends StatelessWidget {
   const _IncomingOrdersView({
     required this.orders,
+    this.groups,
+    this.filter,
     required this.loading,
     required this.error,
     required this.onRefresh,
@@ -1680,6 +1881,8 @@ class _IncomingOrdersView extends StatelessWidget {
   });
 
   final List<ReceiverOrder> orders;
+  final List<MapEntry<String, List<ReceiverOrder>>>? groups;
+  final String? filter;
   final bool loading;
   final String? error;
   final Future<void> Function() onRefresh;
@@ -1734,6 +1937,74 @@ class _IncomingOrdersView extends StatelessWidget {
         ),
       );
     }
+
+    if (groups != null) {
+      if (groups!.isEmpty) {
+        return RefreshIndicator(
+          color: AislBrand.navy,
+          onRefresh: onRefresh,
+          child: ListView(
+            children: const [
+              SizedBox(height: 40),
+              OpsEmptyState(
+                icon: LucideIcons.packageOpen,
+                title: 'Không có đơn phù hợp',
+                subtitle:
+                    'Không tìm thấy đơn hàng chờ nhận nào theo bộ lọc đã chọn.',
+              ),
+            ],
+          ),
+        );
+      }
+
+      // Flatten groups into a mixed list of date-headers + order items
+      final items = <_IncomingListItem>[];
+      for (final entry in groups!) {
+        items.add(_IncomingListItem.header(entry.key));
+        for (final o in entry.value) {
+          items.add(_IncomingListItem.order(o));
+        }
+      }
+
+      return RefreshIndicator(
+        color: AislBrand.navy,
+        onRefresh: onRefresh,
+        child: ListView.builder(
+          padding: const EdgeInsets.fromLTRB(0, 0, 0, 120),
+          itemCount: items.length,
+          itemBuilder: (ctx, i) {
+            final item = items[i];
+            if (item.isHeader) {
+              return Padding(
+                padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
+                child: Text(
+                  item.header!,
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: ctx.textMuted,
+                    letterSpacing: 0.3,
+                  ),
+                ),
+              );
+            }
+            final o = item.order!;
+            return Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
+              child: RepaintBoundary(
+                child: ReceiverOrderCard(
+                  order: o,
+                  onUnlock: () => onUnlock(o),
+                  onDirections: () => onDirections(o),
+                  onTap: onOpen == null ? null : () => onOpen!(o),
+                ),
+              ),
+            );
+          },
+        ),
+      );
+    }
+
     // Đơn đang chờ lấy lên trước, sau đó tới các đơn đã xong.
     final sorted = [...orders]
       ..sort((a, b) {
@@ -1759,6 +2030,16 @@ class _IncomingOrdersView extends StatelessWidget {
       ),
     );
   }
+}
+
+class _IncomingListItem {
+  const _IncomingListItem.header(this.header) : order = null;
+  const _IncomingListItem.order(this.order) : header = null;
+
+  final String? header;
+  final ReceiverOrder? order;
+
+  bool get isHeader => header != null;
 }
 
 /// "Đơn của tôi" | "Hàng chờ nhận" (kèm số đơn đang chờ lấy).
@@ -3770,7 +4051,7 @@ class _DetailSheet extends StatelessWidget {
 
     num calcOvertime() {
       final backendFee = _asDouble(order['pickupOvertimeFee']);
-      if (backendFee != null && backendFee > 0) return backendFee;
+      if (backendFee != null) return backendFee > 0 ? backendFee : 0;
       if (!overdue) return 0;
       final parsedD = parseDate(deadline);
       if (parsedD == null) return 0;

@@ -5409,10 +5409,10 @@ const _operationalDroneStatuses = {'IDLE', 'CHARGING'};
 /// Chặng của đơn đã báo rơi kiện (chưa có trong [DroneDeliveryStage]).
 const _dropReportedStage = 'DROP_REPORTED';
 
-/// Pin tối thiểu để nhận đơn — mặc định của backend
-/// (`app.order.drone-min-preflight-battery-percent`, không công khai cho app);
+/// Pin tối thiểu để nhận đơn — đọc từ cấu hình admin (`app.locker.drone-low-battery-percent`);
 /// server vẫn kiểm lại và trả `DRONE_BATTERY_TOO_LOW`.
-const _minPreflightBatteryPercent = 20;
+int get _minPreflightBatteryPercent =>
+    BusinessConfigService.instance.current.droneLowBatteryPercent;
 
 List<String> _manualDroneStatuses(String current) {
   // Drone đang có nhiệm vụ chỉ được báo lỗi; drone đang bay đi luồng báo

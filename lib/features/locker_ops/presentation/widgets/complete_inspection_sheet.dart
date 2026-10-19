@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:smart_laundry_locker/core/config/business_config_service.dart';
 import 'package:smart_laundry_locker/core/media/media.dart';
 import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/ops_widgets.dart';
@@ -74,7 +75,9 @@ class _CompleteInspectionSheetState extends State<CompleteInspectionSheet> {
 
   final _noteCtrl = TextEditingController();
   final _faultReasonCtrl = TextEditingController();
-  final _photos = PhotoPickerController(maxPhotos: 3);
+  final _photos = PhotoPickerController(
+    maxPhotos: BusinessConfigService.instance.current.reportPhotosPerRequestStaff,
+  );
 
   List<Map<String, dynamic>>? _cells;
   bool _cellsLoading = false;
