@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:smart_laundry_locker/core/config/business_config.dart';
 import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/order_payment_sheet.dart';
 
@@ -41,6 +42,21 @@ class _FakePayService extends LockerOpsService {
 
   @override
   Future<bool> orderStatus(int orderId) async => paid;
+
+  int? simulatedPaymentId;
+  num? simulatedAmount;
+
+  @override
+  Future<Map<String, dynamic>> simulatePayment({
+    int? paymentId,
+    String? referenceId,
+    num? amount,
+  }) async {
+    simulatedPaymentId = paymentId;
+    simulatedAmount = amount;
+    paid = true;
+    return {'id': paymentId, 'status': 'COMPLETED'};
+  }
 }
 
 Widget _host(_FakePayService service, void Function(Object?) onResult) =>
@@ -75,6 +91,60 @@ Future<void> _settleSheet(WidgetTester tester) async {
 }
 
 void main() {
+  group('giả lập thanh toán', () {
+    _FakePayService fake() => _FakePayService(
+      qrCodeUrl:
+          'https://img.vietqr.io/image/970422-0123456789-compact2.jpg?amount=15000&addInfo=LKR42&accountName=LOCKR',
+    );
+
+    /// Bảng QR có vòng hỏi trạng thái ⇒ cho đơn PAID để bảng tự đóng và dừng hẹn giờ.
+    Future<void> closeSheet(WidgetTester tester, _FakePayService service) async {
+      service.paid = true;
+      await tester.pump(const Duration(seconds: 3));
+      await tester.pump(const Duration(seconds: 2));
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('admin tắt ⇒ không có nút giả lập', (tester) async {
+      useBusinessConfig();
+      await tester.binding.setSurfaceSize(const Size(400, 1200));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+      final service = fake();
+      await tester.pumpWidget(_host(service, (_) {}));
+      await tester.tap(find.text('Trả'));
+      await _settleSheet(tester);
+
+      expect(find.byKey(const Key('payment-simulate')), findsNothing);
+      await closeSheet(tester, service);
+    });
+
+    testWidgets('admin bật ⇒ bấm giả lập với số tiền nhập, đơn thành đã trả', (tester) async {
+      useBusinessConfig(BusinessConfig.fromPublicMaps(
+        payment: {'app.payment.simulation-enabled': true},
+      ));
+      await tester.binding.setSurfaceSize(const Size(400, 1200));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+      final service = fake();
+      Object? result;
+      await tester.pumpWidget(_host(service, (r) => result = r));
+      await tester.tap(find.text('Trả'));
+      await _settleSheet(tester);
+
+      await tester.ensureVisible(find.byKey(const Key('payment-simulate')));
+      await tester.tap(find.byKey(const Key('payment-simulate')));
+      await _settleSheet(tester);
+      await tester.enterText(find.byKey(const Key('payment-simulate-amount')), '1000');
+      await tester.tap(find.byKey(const Key('payment-simulate-confirm')));
+      await _settleSheet(tester);
+
+      expect(service.simulatedPaymentId, 1);
+      expect(service.simulatedAmount, 1000);
+      expect(find.text('Thanh toán thành công!'), findsOneWidget);
+      await closeSheet(tester, service);
+      expect(result, OrderPaymentOutcome.paid);
+    });
+  });
+
   group('checkoutQrUrl', () {
     test('lấy qrCodeUrl của response, không tự dựng', () {
       expect(

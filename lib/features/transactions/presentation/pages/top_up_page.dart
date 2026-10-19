@@ -5,6 +5,8 @@ import 'package:smart_laundry_locker/core/config/business_config_provider.dart';
 import 'package:smart_laundry_locker/core/constants/payment_methods.dart';
 import 'package:smart_laundry_locker/core/network/api_client.dart';
 import 'package:smart_laundry_locker/core/theme/shadcn_theme.dart';
+import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
+import 'package:smart_laundry_locker/features/payment/presentation/widgets/payment_simulation_button.dart';
 import 'package:smart_laundry_locker/features/transactions/domain/top_up_confirmation.dart';
 import 'package:smart_laundry_locker/features/transactions/domain/entities/transaction.dart';
 import 'package:smart_laundry_locker/features/transactions/presentation/providers/transaction_injection.dart';
@@ -170,8 +172,13 @@ class _TopUpPageState extends State<TopUpPage> with BusinessConfigStateMixin {
 
             final ok = await Navigator.of(context).push<bool>(
               MaterialPageRoute(
-                builder: (_) =>
-                    TopUpWebViewPage(paymentUrl: result.paymentUrl),
+                builder: (_) => TopUpWebViewPage(
+                  paymentUrl: result.paymentUrl,
+                  amount: _selectedAmount,
+                  onSimulate: result.txnRef.isEmpty
+                      ? null
+                      : (amount) => _simulateTopUp(result.txnRef, amount),
+                ),
               ),
             );
 
@@ -193,6 +200,16 @@ class _TopUpPageState extends State<TopUpPage> with BusinessConfigStateMixin {
 }
 
 extension on _TopUpPageState {
+  /// Nút "Giả lập thanh toán" (admin bật khi test): server coi như đã nhận
+  /// chuyển khoản nạp ví mã [txnRef].
+  Future<void> _simulateTopUp(String txnRef, num amount) async {
+    try {
+      await LockerOpsService().simulatePayment(referenceId: txnRef, amount: amount);
+    } catch (e) {
+      throw Exception(LockerOpsService.errorMessage(e));
+    }
+  }
+
   String _fmtVnd(num amount) => NumberFormat.currency(
     locale: 'vi_VN',
     symbol: 'đ',
@@ -607,7 +624,18 @@ class _ActionBottomButton extends StatelessWidget {
 class TopUpWebViewPage extends StatefulWidget {
   final String paymentUrl;
 
-  const TopUpWebViewPage({super.key, required this.paymentUrl});
+  /// Số tiền nạp — điền sẵn cho nút giả lập.
+  final num amount;
+
+  /// Giả lập đã chuyển khoản (null = không hiện nút).
+  final Future<void> Function(num amount)? onSimulate;
+
+  const TopUpWebViewPage({
+    super.key,
+    required this.paymentUrl,
+    this.amount = 0,
+    this.onSimulate,
+  });
 
   @override
   State<TopUpWebViewPage> createState() => _TopUpWebViewPageState();
@@ -653,6 +681,23 @@ class _TopUpWebViewPageState extends State<TopUpWebViewPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Thanh toán'), centerTitle: true),
+      bottomNavigationBar: widget.onSimulate == null
+          ? null
+          : SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: PaymentSimulationButton(
+                  defaultAmount: widget.amount,
+                  onSimulate: (amount) async {
+                    await widget.onSimulate!(amount);
+                    if (mounted && !_popped) {
+                      _popped = true;
+                      Navigator.of(context).pop(true);
+                    }
+                  },
+                ),
+              ),
+            ),
       body: Stack(
         children: [
           WebViewWidget(controller: _controller),

@@ -9,6 +9,7 @@ import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/ops_widgets.dart';
 import 'package:smart_laundry_locker/features/payment/domain/sepay_transfer.dart';
 import 'package:smart_laundry_locker/features/payment/presentation/widgets/bank_app_picker_sheet.dart';
+import 'package:smart_laundry_locker/features/payment/presentation/widgets/payment_simulation_button.dart';
 import 'package:smart_laundry_locker/shared/shared.dart';
 
 /// Một lần thanh toán SePay (VietQR) cho một đơn — dùng chung cho thuê tủ, gửi
@@ -42,6 +43,7 @@ class SepayPaymentController extends ChangeNotifier
   final Duration pollInterval;
 
   SepayTransfer? _transfer;
+  int? _paymentId;
   String? _error;
   bool _creating = false;
   bool _gatewayFailed = false;
@@ -55,6 +57,9 @@ class SepayPaymentController extends ChangeNotifier
 
   /// Thông tin chuyển khoản của giao dịch (null khi đang tạo / lỗi).
   SepayTransfer? get transfer => _transfer;
+
+  /// Id giao dịch checkout (để giả lập thanh toán khi test).
+  int? get paymentId => _paymentId;
   String? get error => _error;
   bool get creating => _creating;
   bool get paid => _paid;
@@ -121,6 +126,8 @@ class SepayPaymentController extends ChangeNotifier
         return;
       }
       _transfer = transfer;
+      final id = res['id'];
+      _paymentId = id is num ? id.toInt() : int.tryParse('${id ?? ''}');
     } catch (e) {
       if (_disposed) return;
       _error = LockerOpsService.errorMessage(e);
@@ -128,6 +135,20 @@ class SepayPaymentController extends ChangeNotifier
       _creating = false;
       _notify();
     }
+  }
+
+  /// Nút "Giả lập thanh toán" (test): server coi như đã nhận [amount] đồng cho
+  /// giao dịch này, rồi hỏi lại trạng thái đơn ngay. Lỗi (admin đã tắt, tài
+  /// khoản không được phép…) ném lên cho nút báo.
+  Future<void> simulate(num amount) async {
+    final id = _paymentId;
+    if (id == null || _paid) return;
+    try {
+      await service.simulatePayment(paymentId: id, amount: amount);
+    } catch (e) {
+      throw Exception(LockerOpsService.errorMessage(e));
+    }
+    await checkNow();
   }
 
   /// Khách bấm "Tôi đã chuyển khoản — Kiểm tra ngay". Trả `true` khi đơn PAID.
@@ -203,7 +224,20 @@ class SepayQrSection extends StatelessWidget {
             iconSize: 100,
           );
         }
-        if (transfer != null) return InlineVietQrCard(transfer: transfer);
+        if (transfer != null) {
+          return Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              InlineVietQrCard(transfer: transfer),
+              if (controller.paymentId != null)
+                PaymentSimulationButton(
+                  defaultAmount: transfer.amount ?? controller.amount,
+                  onSimulate: controller.simulate,
+                ),
+            ],
+          );
+        }
         if (controller.error != null) {
           return _SepayErrorBox(
             message: controller.error!,
