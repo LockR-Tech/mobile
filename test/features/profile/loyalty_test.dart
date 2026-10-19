@@ -42,6 +42,10 @@ void main() {
       pointTransactionLabel('ORDER_REDEEM_REFUND', orderId: 9),
       'Hoàn điểm đơn huỷ #9',
     );
+    expect(
+      pointTransactionLabel('ORDER_EARN_REVERSAL', orderId: 9),
+      'Thu hồi điểm đơn được hoàn tiền #9',
+    );
     expect(pointTransactionLabel('ADJUSTMENT'), 'Điều chỉnh điểm');
     expect(pointTransactionLabel('REDEEM'), 'Đổi điểm');
     expect(pointTransactionLabel('LẠ'), 'Biến động điểm');

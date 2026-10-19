@@ -1109,7 +1109,8 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
         overdueDurationText: durationText.isNotEmpty
             ? durationText
             : 'Đã quá hạn',
-        overtimeRate: config.pickupOvertimeFeePerHour,
+        overtimeRate: overtimeRateOf(order, config),
+        overtimeCapped: overtimeCappedOf(order),
       ),
     );
     if (confirmed != true || !mounted) return;
@@ -2636,6 +2637,17 @@ int? _asInt(dynamic value) {
   return int.tryParse('$value');
 }
 
+/// Đơn giá mỗi giờ quá hạn server áp cho đơn (`overtimeRatePerHour`: đơn thuê
+/// = giá thuê loại ô × tỉ lệ admin đặt). Server cũ chưa trả thì dùng phí quá hạn
+/// mỗi giờ trong cấu hình.
+num overtimeRateOf(Map<String, dynamic> order, BusinessConfig config) =>
+    _asDouble(order['overtimeRatePerHour']) ?? config.pickupOvertimeFeePerHour;
+
+/// Có áp trần phí quá hạn không — đơn thuê ô thì không (server trả
+/// `overtimeCapped = false`).
+bool overtimeCappedOf(Map<String, dynamic> order) =>
+    order['overtimeCapped'] != false;
+
 double? _asDouble(dynamic value) {
   if (value is double) return value;
   if (value is num) return value.toDouble();
@@ -2663,6 +2675,7 @@ class _PayOvertimeConfirmationSheet extends StatelessWidget {
     required this.boxLabel,
     required this.overdueDurationText,
     required this.overtimeRate,
+    required this.overtimeCapped,
   });
 
   final Map<String, dynamic> order;
@@ -2672,7 +2685,10 @@ class _PayOvertimeConfirmationSheet extends StatelessWidget {
   final String lockerName;
   final String boxLabel;
   final String overdueDurationText;
-  final int overtimeRate;
+  final num overtimeRate;
+
+  /// Đơn thuê ô không áp trần phí quá hạn (ở quá giờ tính như thuê thêm).
+  final bool overtimeCapped;
 
   @override
   Widget build(BuildContext context) {
@@ -2746,8 +2762,9 @@ class _PayOvertimeConfirmationSheet extends StatelessWidget {
                   valueColor: const Color(0xFFDC2626),
                 ),
                 _breakdownRow('Đơn giá quá giờ', '${fmtPrice(overtimeRate)}/giờ'),
-                if (config.pickupMaxOvertimePercent > 0 ||
-                    config.pickupMaxOvertimeFee > 0)
+                if (overtimeCapped &&
+                    (config.pickupMaxOvertimePercent > 0 ||
+                        config.pickupMaxOvertimeFee > 0))
                   _breakdownRow(
                     'Quy định mức trần',
                     [
@@ -3757,6 +3774,12 @@ class _DetailSheet extends StatelessWidget {
       if (!overdue) return 0;
       final parsedD = parseDate(deadline);
       if (parsedD == null) return 0;
+      if (!overtimeCappedOf(order)) {
+        // Đơn thuê: mỗi giờ đã bắt đầu tính trọn giờ theo đơn giá server trả.
+        final minutes = DateTime.now().difference(parsedD).inMinutes;
+        final hours = (minutes + 59) ~/ 60;
+        return hours > 0 ? hours * overtimeRateOf(order, config) : 0;
+      }
       final diffHours = DateTime.now().difference(parsedD).inHours;
       final raw = diffHours * config.pickupOvertimeFeePerHour;
       final maxPercent = config.pickupMaxOvertimePercent;
@@ -4200,10 +4223,11 @@ class _DetailSheet extends StatelessWidget {
                 OpsInfoRow(
                   icon: LucideIcons.receiptText,
                   label: 'Đơn giá quá giờ',
-                  value: '${fmtPrice(config.pickupOvertimeFeePerHour)}/giờ',
+                  value: '${fmtPrice(overtimeRateOf(order, config))}/giờ',
                 ),
-                if (config.pickupMaxOvertimePercent > 0 ||
-                    config.pickupMaxOvertimeFee > 0)
+                if (overtimeCappedOf(order) &&
+                    (config.pickupMaxOvertimePercent > 0 ||
+                        config.pickupMaxOvertimeFee > 0))
                   OpsInfoRow(
                     icon: LucideIcons.shieldAlert,
                     label: 'Quy định trần',
