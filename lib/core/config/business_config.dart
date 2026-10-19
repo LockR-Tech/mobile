@@ -55,6 +55,7 @@ class BusinessConfig {
     required this.topupDefaultAmount,
     required this.topupPresets,
     required this.enabledPaymentMethods,
+    this.paymentSimulationEnabled = false,
     required this.reportPhotosPerRequestReporter,
     required this.reportPhotosPerRequestStaff,
     required this.cellDimensionsStandard,
@@ -179,6 +180,9 @@ class BusinessConfig {
 
   /// Mã phương thức thanh toán đang bật, viết hoa (`CASH`, `WALLET`, …).
   final List<String> enabledPaymentMethods;
+
+  /// Admin bật nút "Giả lập thanh toán" (chỉ để test) trên màn VietQR.
+  final bool paymentSimulationEnabled;
 
   // ---- Scope `locker` ----
   /// Số ảnh hiện trường tối đa mỗi lần người báo gửi (stage REPORT).
@@ -460,6 +464,10 @@ class BusinessConfig {
       enabledPaymentMethods: List.unmodifiable(
         _methods(p['app.payment.enabled-methods'], d.enabledPaymentMethods),
       ),
+      paymentSimulationEnabled: _bool(
+        p['app.payment.simulation-enabled'],
+        d.paymentSimulationEnabled,
+      ),
       reportPhotosPerRequestReporter: _int(
         l['app.maintenance.report-photos-per-request-reporter'],
         d.reportPhotosPerRequestReporter,
@@ -583,6 +591,7 @@ class BusinessConfig {
       'app.payment.topup-default-amount': topupDefaultAmount,
       'app.payment.topup-presets': topupPresets,
       'app.payment.enabled-methods': enabledPaymentMethods.join(','),
+      'app.payment.simulation-enabled': paymentSimulationEnabled,
     },
     'locker': {
       'app.maintenance.report-photos-per-request-reporter':
