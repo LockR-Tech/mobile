@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:smart_laundry_locker/core/utils/app_date_time.dart';
 import 'package:smart_laundry_locker/features/locker_ops/data/drone_technician_errors.dart';
 import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
+import 'package:smart_laundry_locker/features/maintenance/presentation/widgets/drone_recovery_queue.dart';
 
 // Sự cố rơi kiện phía KTV drone: thẻ trong tab Điều phối và sheet chi tiết
 // (`GET /api/drone-technician/drone-incidents[/{id}]`).
@@ -343,6 +344,43 @@ class _DroneParcelIncidentSheetState extends State<DroneParcelIncidentSheet> {
                 : 'Không có toạ độ',
           ),
           _row('Camera', '${incident['cameraStatus'] ?? '—'}'),
+          if (incident['id'] != null &&
+              ['ASSIGNED', 'ACCEPTED', 'SEARCHING', 'PARCEL_FOUND', 'VERIFIED']
+                  .contains('${incident['recoveryStatus']}'.toUpperCase())) ...[
+            const SizedBox(height: 12),
+            FilledButton.icon(
+              style: FilledButton.styleFrom(
+                backgroundColor: const Color(0xFF0284C7),
+                padding: const EdgeInsets.symmetric(vertical: 12),
+              ),
+              onPressed: () {
+                final id = int.tryParse('${incident['id']}');
+                if (id == null) return;
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => Scaffold(
+                      appBar: AppBar(
+                        title: Text(
+                          'Thu hồi sự cố ${incident['incidentCode'] ?? '#$id'}',
+                        ),
+                      ),
+                      body: SafeArea(
+                        child: DroneRecoveryDetail(
+                          incidentId: id,
+                          service: widget.service,
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              },
+              icon: const Icon(Icons.travel_explore_outlined),
+              label: const Text(
+                'Mở nhiệm vụ tìm kiếm & thu hồi kiện',
+                style: TextStyle(fontWeight: FontWeight.w700),
+              ),
+            ),
+          ],
           if (timeline.isNotEmpty) ...[
             const SizedBox(height: 14),
             const Text(

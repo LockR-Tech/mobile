@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:smart_laundry_locker/core/routing/app_router.dart';
 import 'package:smart_laundry_locker/core/utils/app_date_time.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/domain/entities/drone_incident_labels.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/presentation/drone_error_messages.dart';
 import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
+import 'package:smart_laundry_locker/features/payment/data/payment_service.dart';
 
 /// Thẻ sự cố rơi kiện của một đơn drone trên màn theo dõi của khách: trạng
 /// thái xử lý, nhật ký gần nhất và phương án Lock.R đề xuất để khách phản hồi.
@@ -36,6 +39,7 @@ class _CustomerDroneIncidentCardState extends State<CustomerDroneIncidentCard> {
   Map<String, dynamic>? _incident;
   bool _loading = true;
   bool _responding = false;
+  bool _hasBankAccount = true;
   String? _error;
 
   @override
@@ -66,9 +70,17 @@ class _CustomerDroneIncidentCardState extends State<CustomerDroneIncidentCard> {
         (item) => '${item?['orderId']}' == '${widget.orderId}',
         orElse: () => null,
       );
+      bool hasBank = true;
+      try {
+        final bankAcc = await PaymentService().getSavedBankAccount();
+        hasBank = bankAcc != null && bankAcc.accountNumber.trim().isNotEmpty;
+      } catch (_) {
+        hasBank = true;
+      }
       if (mounted) {
         setState(() {
           _incident = incident;
+          _hasBankAccount = hasBank;
           _error = null;
         });
       }
@@ -134,6 +146,14 @@ class _CustomerDroneIncidentCardState extends State<CustomerDroneIncidentCard> {
         '${latest['status']}'.toUpperCase() == 'AWAITING_CUSTOMER_ACCEPTANCE';
     // Chỉ cho "Yêu cầu xem xét" khi chính sách của đơn cho phép.
     final disputeAllowed = incident['disputeAllowed'] == true;
+    final hasCompensation = latest != null &&
+        (latest['resolutionType'] == 'COMPENSATION_ONLY' ||
+            latest['resolutionType'] == 'REDELIVERY_PARTIAL_COMPENSATION' ||
+            (_asInt(latest['compensationAmount']) ?? 0) > 0);
+    final compensationActive = hasCompensation ||
+        ['AWAITING_APPROVAL', 'PAYMENT_PENDING', 'PENDING', 'ACCEPTED']
+            .contains('${incident['compensationStatus']}'.toUpperCase());
+    final showBankWarning = compensationActive && !_hasBankAccount;
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
       elevation: 0,
@@ -217,6 +237,74 @@ class _CustomerDroneIncidentCardState extends State<CustomerDroneIncidentCard> {
                   'Chính sách áp dụng khi đặt đơn: ${latest['policyVersion']}',
                   style: const TextStyle(fontSize: 11, color: Color(0xFF64748B)),
                 ),
+              if (showBankWarning) ...[
+                const SizedBox(height: 12),
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFEF2F2),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: const Color(0xFFFECACA)),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Row(
+                        children: [
+                          Icon(
+                            Icons.account_balance_outlined,
+                            size: 20,
+                            color: Color(0xFFDC2626),
+                          ),
+                          SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              'Chưa có tài khoản ngân hàng nhận bồi thường',
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w700,
+                                color: Color(0xFF991B1B),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      const Text(
+                        'Phương án giải quyết có khoản hoàn tiền/bồi thường. Bạn cần liên kết tài khoản ngân hàng để hệ thống thực hiện chuyển khoản.',
+                        style: TextStyle(fontSize: 12, color: Color(0xFF7F1D1D)),
+                      ),
+                      const SizedBox(height: 8),
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: TextButton.icon(
+                          key: const ValueKey('drone-incident-add-bank-btn'),
+                          style: TextButton.styleFrom(
+                            foregroundColor: const Color(0xFFDC2626),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 4,
+                            ),
+                            visualDensity: VisualDensity.compact,
+                          ),
+                          onPressed: () async {
+                            await context.push(AppRouter.refundBankAccount);
+                            _load(quiet: true);
+                          },
+                          icon: const Icon(Icons.arrow_forward, size: 16),
+                          label: const Text(
+                            'Cập nhật tài khoản ngân hàng',
+                            style: TextStyle(
+                              fontWeight: FontWeight.w700,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
               if (awaitingResponse) ...[
                 const SizedBox(height: 12),
                 Row(
