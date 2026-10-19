@@ -24,6 +24,7 @@ import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/co
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/schedule_detail_modal_sheet.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/pages/technician_profile_page.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/technician_shift_card.dart';
+import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/technician_location_permission_sheet.dart';
 import 'package:smart_laundry_locker/features/maintenance/presentation/widgets/drone_report_detail_sheet.dart';
 import 'package:smart_laundry_locker/features/maintenance/presentation/widgets/drone_journey_camera_panel.dart';
 import 'package:smart_laundry_locker/features/maintenance/presentation/widgets/drone_parcel_incident_card.dart';
@@ -145,14 +146,16 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
+      TechnicianLocationPermissionSheet.checkAndPrompt(context);
       try {
         final profileProvider = context.read<ProfileProvider>();
         if (profileProvider.profile == null) profileProvider.loadProfile();
       } catch (_) {}
     });
     _load();
+    // Watchdog định kỳ 20 giây (thay vì 3s làm nháy màn hình), kèm EventBus tức thời
     _deliveryRefreshTimer = Timer.periodic(
-      const Duration(seconds: 3),
+      const Duration(seconds: 20),
       (_) => _refreshDeliveries(),
     );
     _eventSubscription = AppEventBus.instance.events.listen((event) {
@@ -187,10 +190,29 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
     super.dispose();
   }
 
+  static bool _areDeliveriesEqual(
+    List<Map<String, dynamic>> a,
+    List<Map<String, dynamic>> b,
+  ) {
+    if (identical(a, b)) return true;
+    if (a.length != b.length) return false;
+    for (var i = 0; i < a.length; i++) {
+      if (a[i]['id'] != b[i]['id'] ||
+          a[i]['deliveryStage'] != b[i]['deliveryStage'] ||
+          a[i]['status'] != b[i]['status'] ||
+          a[i]['updatedAt'] != b[i]['updatedAt']) {
+        return false;
+      }
+    }
+    return true;
+  }
+
   Future<void> _refreshDeliveries() async {
     try {
       final deliveries = await _service.droneOrderQueue();
-      if (mounted) {
+      if (!mounted) return;
+      // Chỉ cập nhật state khi danh sách đơn thực sự thay đổi để tránh nháy màn hình
+      if (!_areDeliveriesEqual(_deliveries, deliveries)) {
         setState(() {
           _deliveries = deliveries;
           _deliveriesLoadError = null;

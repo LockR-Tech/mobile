@@ -27,6 +27,7 @@ import 'package:smart_laundry_locker/features/notifications/presentation/provide
 import 'package:smart_laundry_locker/features/locker/domain/utils/locker_layout_helper.dart';
 import 'package:smart_laundry_locker/features/maintenance/presentation/widgets/drone_recovery_queue.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/technician_shift_card.dart';
+import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/technician_location_permission_sheet.dart';
 
 /// Home for the LOCKER_TECHNICIAN role (kỹ thuật viên tủ): physical locker
 /// maintenance (fault cells, work queue, preventive schedules, landing pad)
@@ -120,6 +121,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
   List<Map<String, dynamic>> _devices = [];
 
   StreamSubscription<AppEvent>? _busSub;
+  Timer? _busDebounceTimer;
 
   List<Map<String, dynamic>> get _lockerOptions => _lockers
       .where((locker) => _asInt(locker['id']) != null)
@@ -139,6 +141,8 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
+        // Kiểm tra và hỏi quyền vị trí lần đầu cho KTV
+        TechnicianLocationPermissionSheet.checkAndPrompt(context);
         try {
           final profileProvider = context.read<ProfileProvider>();
           if (profileProvider.profile == null) {
@@ -153,13 +157,15 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
         } catch (_) {}
       }
     });
+    // Debounce sự kiện bus và cập nhật ngầm không giật màn hình
     _busSub = AppEventBus.instance.events.listen((event) {
       if (!mounted) return;
       if (event is LockerLayoutUpdatedEvent || event is ReportUpdatedEvent) {
-        _load();
-        if (_selectedLockerId != null) {
-          _selectLocker(_selectedLockerId!);
-        }
+        _busDebounceTimer?.cancel();
+        _busDebounceTimer = Timer(const Duration(milliseconds: 1200), () {
+          if (!mounted) return;
+          _load(silent: true);
+        });
       }
     });
     _load().then((_) => _openDeepLinkTarget(
@@ -233,8 +239,10 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
     }
   }
 
-  Future<void> _load() async {
-    setState(() => _loading = true);
+  Future<void> _load({bool silent = false}) async {
+    if (!silent) {
+      setState(() => _loading = true);
+    }
     try {
       _myUserId = await TokenService.getUserId();
       _jwtUserName = await TokenService.getUserName();
@@ -351,7 +359,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
           _selectedLockerId = null;
           _layout = null;
         });
-      } else {
+      } else if (!silent || _selectedLockerId != nextSelectedId) {
         await _selectLocker(nextSelectedId);
       }
     } catch (e) {
@@ -6175,6 +6183,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
 
   @override
   void dispose() {
+    _busDebounceTimer?.cancel();
     _busSub?.cancel();
     _tabs.dispose();
     super.dispose();

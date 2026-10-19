@@ -4,9 +4,16 @@ import 'package:geolocator/geolocator.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:smart_laundry_locker/core/utils/app_date_time.dart';
 import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
+import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/technician_location_permission_sheet.dart';
 
-/// Thẻ hiển thị và điều khiển Ca làm việc & Vị trí GPS hiện tại của Kỹ thuật viên
-/// (dùng chung cho cả KTV Kiosk/Tủ và KTV Drone).
+/// Thẻ hiển thị và điều khiển Ca trực & Vị trí GPS hiện tại của Kỹ thuật viên.
+///
+/// Nguyên tắc thiết kế:
+/// - Khi VÀO CA: kích hoạt truy cập vị trí (bao gồm chạy ngầm) để phục vụ điều phối sự cố/drone.
+/// - Khi HẾT CA: ngắt hoàn toàn quyền truy cập vị trí để đảm bảo quyền riêng tư.
+/// - Không quản lý chấm công ca trực (không đếm giờ/hiển thị thời gian chấm công).
+/// - Chỉ hiển thị trạng thái GPS thân thiện trên thanh chính (không hiện số toạ độ thô hay tên khu vực).
+/// - Thông tin toạ độ chi tiết được xem trong Modal khi cần kiểm tra kỹ thuật.
 class TechnicianShiftCard extends StatefulWidget {
   const TechnicianShiftCard({
     super.key,
@@ -33,11 +40,7 @@ class _TechnicianShiftCardState extends State<TechnicianShiftCard> {
   double? _latitude;
   double? _longitude;
   double? _accuracyM;
-  double? _altitudeM;
-  double? _speedMs;
-  String? _deviceInfo;
   DateTime? _lastLocatedAt;
-  DateTime? _shiftStartedAt;
   Timer? _periodicLocationTimer;
 
   @override
@@ -77,30 +80,21 @@ class _TechnicianShiftCardState extends State<TechnicianShiftCard> {
     _latitude = (data['latitude'] as num?)?.toDouble();
     _longitude = (data['longitude'] as num?)?.toDouble();
     _accuracyM = (data['accuracyM'] as num?)?.toDouble();
-    _altitudeM = (data['altitudeM'] as num?)?.toDouble();
-    _speedMs = (data['speedMs'] as num?)?.toDouble();
-    final infoRaw = data['deviceInfo']?.toString().trim();
-    if (infoRaw != null && infoRaw.isNotEmpty) {
-      _deviceInfo = infoRaw;
-    }
     final locatedRaw = data['lastLocatedAt']?.toString();
     _lastLocatedAt = (locatedRaw != null && locatedRaw.isNotEmpty)
         ? parseServerDateTime(locatedRaw)
-        : null;
-    final shiftRaw = data['shiftStartedAt']?.toString();
-    _shiftStartedAt = (shiftRaw != null && shiftRaw.isNotEmpty)
-        ? parseServerDateTime(shiftRaw)
         : null;
 
     widget.onPresenceChanged?.call(data);
   }
 
-  /// Bật hẹn giờ định kỳ đồng bộ vị trí mỗi 2 phút khi đang trong ca trực
+  /// Bật hẹn giờ định kỳ đồng bộ vị trí mỗi 2 phút khi đang trong ca trực.
+  /// Sử dụng silent: true để không hiện SnackBar làm gián đoạn trải nghiệm KTV.
   void _startPeriodicLocationSync() {
     _periodicLocationTimer?.cancel();
     _periodicLocationTimer = Timer.periodic(const Duration(minutes: 2), (_) {
       if (_onDuty && mounted) {
-        _syncLocationOnly();
+        _syncLocationOnly(silent: true);
       }
     });
   }
@@ -125,7 +119,22 @@ class _TechnicianShiftCardState extends State<TechnicianShiftCard> {
 
     LocationPermission permission = await Geolocator.checkPermission();
     if (permission == LocationPermission.denied) {
-      permission = await Geolocator.requestPermission();
+      if (mounted) {
+        final granted = await showModalBottomSheet<bool>(
+          context: context,
+          isScrollControlled: true,
+          backgroundColor: Colors.white,
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          builder: (ctx) => const TechnicianLocationPermissionSheet(),
+        );
+        if (granted != true) return null;
+      }
+      permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+      }
       if (permission == LocationPermission.denied) {
         if (mounted) {
           _showSnackBar(
@@ -172,8 +181,9 @@ class _TechnicianShiftCardState extends State<TechnicianShiftCard> {
     }
   }
 
-  /// Chỉ làm mới vị trí GPS và gửi lên backend
-  Future<void> _syncLocationOnly() async {
+  /// Làm mới vị trí GPS và gửi lên backend.
+  /// [silent] = true: cập nhật ngầm không hiện SnackBar giật màn hình.
+  Future<void> _syncLocationOnly({bool silent = false}) async {
     if (_updating) return;
     setState(() => _updating = true);
     try {
@@ -198,28 +208,78 @@ class _TechnicianShiftCardState extends State<TechnicianShiftCard> {
           _applyPresenceData(res);
           _updating = false;
         });
-        _showSnackBar('Đã cập nhật vị trí GPS thành công.');
+        if (!silent) {
+          _showSnackBar('Đã cập nhật vị trí GPS thành công.');
+        }
       } else {
         if (mounted) setState(() => _updating = false);
       }
     } catch (e) {
       if (!mounted) return;
       setState(() => _updating = false);
-      _showSnackBar(
-        'Không thể cập nhật vị trí: ${LockerOpsService.errorMessage(e)}',
-        isError: true,
-      );
+      if (!silent) {
+        _showSnackBar(
+          'Không thể cập nhật vị trí: ${LockerOpsService.errorMessage(e)}',
+          isError: true,
+        );
+      }
     }
   }
 
-  /// Chuyển đổi trạng thái ca trực (Bắt đầu ca / Kết thúc ca)
+  /// Chuyển đổi trạng thái ca trực (Vào ca / Hết ca).
+  /// Khi Hết ca: hiển thị hộp thoại xác nhận trước khi ngắt vị trí.
   Future<void> _toggleDuty(bool nextOnDuty) async {
+    if (!nextOnDuty) {
+      final confirm = await showDialog<bool>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          title: const Text(
+            'Kết thúc ca trực?',
+            style: TextStyle(fontWeight: FontWeight.w700, fontSize: 17),
+          ),
+          content: const Text(
+            'Hệ thống sẽ ngừng điều phối sự cố mới và ngắt hoàn toàn quyền truy cập vị trí của bạn.',
+            style: TextStyle(fontSize: 14, color: Color(0xFF475569), height: 1.4),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text('Hủy', style: TextStyle(color: Color(0xFF64748B))),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFEF4444),
+                foregroundColor: Colors.white,
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              onPressed: () => Navigator.pop(ctx, true),
+              child: const Text(
+                'Kết thúc ca',
+                style: TextStyle(fontWeight: FontWeight.w700),
+              ),
+            ),
+          ],
+        ),
+      );
+      if (confirm != true) return;
+    }
+
     setState(() => _updating = true);
     try {
       Position? pos;
       if (nextOnDuty) {
-        // Vào ca thì bắt buộc cố gắng lấy GPS
+        // Vào ca: bắt buộc lấy vị trí GPS
         pos = await _determinePosition();
+        if (pos == null) {
+          if (mounted) setState(() => _updating = false);
+          return;
+        }
       }
 
       final res = await _service.updateTechnicianPresence(
@@ -245,10 +305,10 @@ class _TechnicianShiftCardState extends State<TechnicianShiftCard> {
 
       if (nextOnDuty) {
         _startPeriodicLocationSync();
-        _showSnackBar('Đã bắt đầu ca làm việc và ghi nhận vị trí.');
+        _showSnackBar('Đã vào ca làm việc và kích hoạt định vị GPS.');
       } else {
         _stopPeriodicLocationSync();
-        _showSnackBar('Đã kết thúc ca làm việc.');
+        _showSnackBar('Đã kết thúc ca và tắt định vị GPS.');
       }
     } catch (e) {
       if (!mounted) return;
@@ -266,7 +326,8 @@ class _TechnicianShiftCardState extends State<TechnicianShiftCard> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(text),
-        backgroundColor: isError ? const Color(0xFFDC2626) : const Color(0xFF0F172A),
+        backgroundColor:
+            isError ? const Color(0xFFDC2626) : const Color(0xFF0F172A),
         behavior: SnackBarBehavior.floating,
         duration: const Duration(seconds: 3),
       ),
@@ -282,17 +343,7 @@ class _TechnicianShiftCardState extends State<TechnicianShiftCard> {
     return formatDateTimeVn(time);
   }
 
-  String _formatShiftDuration(DateTime? start, {bool compact = false}) {
-    if (start == null) return '';
-    final diff = DateTime.now().difference(start);
-    final hours = diff.inHours;
-    final mins = diff.inMinutes % 60;
-    if (hours > 0) {
-      return compact ? '${hours}h ${mins}p' : '$hours giờ $mins phút';
-    }
-    return '$mins phút';
-  }
-
+  /// Mở Modal hiển thị chi tiết thông tin kỹ thuật GPS & Quyền riêng tư
   void _openLocationDetailsModal() {
     showModalBottomSheet<void>(
       context: context,
@@ -318,6 +369,7 @@ class _TechnicianShiftCardState extends State<TechnicianShiftCard> {
                 ),
               ),
               const SizedBox(height: 16),
+              // Header
               Row(
                 children: [
                   Container(
@@ -329,8 +381,12 @@ class _TechnicianShiftCardState extends State<TechnicianShiftCard> {
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
-                      _onDuty ? Icons.work_history_rounded : Icons.work_off_outlined,
-                      color: _onDuty ? const Color(0xFF10B981) : const Color(0xFF64748B),
+                      _onDuty
+                          ? Icons.gps_fixed_rounded
+                          : Icons.location_off_outlined,
+                      color: _onDuty
+                          ? const Color(0xFF10B981)
+                          : const Color(0xFF64748B),
                       size: 24,
                     ),
                   ),
@@ -340,18 +396,25 @@ class _TechnicianShiftCardState extends State<TechnicianShiftCard> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          _onDuty ? 'Đang trong ca làm việc' : 'Ngoài ca làm việc',
+                          _onDuty
+                              ? 'Đang trong ca làm việc'
+                              : 'Ngoài ca làm việc',
                           style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w700,
                             color: Color(0xFF0F172A),
                           ),
                         ),
-                        if (_onDuty && _shiftStartedAt != null)
-                          Text(
-                            'Bắt đầu lúc: ${formatDateTimeVn(_shiftStartedAt)} (${_formatShiftDuration(_shiftStartedAt)})',
-                            style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                        const SizedBox(height: 2),
+                        Text(
+                          _onDuty
+                              ? 'Vị trí được truy cập để điều phối công việc gần bạn nhất'
+                              : 'Định vị GPS đã ngắt kết nối hoàn toàn',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey.shade600,
                           ),
+                        ),
                       ],
                     ),
                   ),
@@ -361,7 +424,7 @@ class _TechnicianShiftCardState extends State<TechnicianShiftCard> {
               const Divider(),
               const SizedBox(height: 12),
               const Text(
-                'TỌA ĐỘ VỊ TRÍ HIỆN TẠI',
+                'THÔNG TIN GPS THIẾT BỊ',
                 style: TextStyle(
                   fontSize: 11,
                   fontWeight: FontWeight.w700,
@@ -371,12 +434,6 @@ class _TechnicianShiftCardState extends State<TechnicianShiftCard> {
               ),
               const SizedBox(height: 10),
               if (_latitude != null && _longitude != null) ...[
-                if (_deviceInfo != null && _deviceInfo!.isNotEmpty)
-                  _infoRow(
-                    Icons.place_outlined,
-                    'Khu vực trực',
-                    _deviceInfo!,
-                  ),
                 _infoRow(
                   Icons.pin_drop_outlined,
                   'Tọa độ GPS',
@@ -387,18 +444,6 @@ class _TechnicianShiftCardState extends State<TechnicianShiftCard> {
                     Icons.gps_fixed_rounded,
                     'Độ chính xác GPS',
                     '±${_accuracyM!.toStringAsFixed(1)} mét',
-                  ),
-                if (_altitudeM != null && _altitudeM! > 0)
-                  _infoRow(
-                    Icons.height_rounded,
-                    'Độ cao',
-                    '${_altitudeM!.toStringAsFixed(1)} mét',
-                  ),
-                if (_speedMs != null && _speedMs! > 0)
-                  _infoRow(
-                    Icons.speed_rounded,
-                    'Tốc độ di chuyển',
-                    '${(_speedMs! * 3.6).toStringAsFixed(1)} km/h',
                   ),
                 _infoRow(
                   Icons.access_time_rounded,
@@ -419,7 +464,10 @@ class _TechnicianShiftCardState extends State<TechnicianShiftCard> {
                             'https://www.google.com/maps/search/?api=1&query=$_latitude,$_longitude',
                           );
                           if (await canLaunchUrl(uri)) {
-                            await launchUrl(uri, mode: LaunchMode.externalApplication);
+                            await launchUrl(
+                              uri,
+                              mode: LaunchMode.externalApplication,
+                            );
                           }
                         },
                       ),
@@ -435,7 +483,7 @@ class _TechnicianShiftCardState extends State<TechnicianShiftCard> {
                         ),
                         onPressed: () {
                           Navigator.pop(ctx);
-                          _syncLocationOnly();
+                          _syncLocationOnly(silent: false);
                         },
                       ),
                     ),
@@ -456,7 +504,10 @@ class _TechnicianShiftCardState extends State<TechnicianShiftCard> {
                       Expanded(
                         child: Text(
                           'Chưa ghi nhận tọa độ GPS. Hãy bật ca trực hoặc nhấn Cập nhật vị trí.',
-                          style: TextStyle(fontSize: 13, color: Color(0xFF64748B)),
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: Color(0xFF64748B),
+                          ),
                         ),
                       ),
                     ],
@@ -474,11 +525,35 @@ class _TechnicianShiftCardState extends State<TechnicianShiftCard> {
                     ),
                     onPressed: () {
                       Navigator.pop(ctx);
-                      _syncLocationOnly();
+                      _syncLocationOnly(silent: false);
                     },
                   ),
                 ),
               ],
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF1F5F9),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Row(
+                  children: [
+                    Icon(Icons.shield_outlined, size: 16, color: Color(0xFF64748B)),
+                    SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Cam kết quyền riêng tư: Hệ thống chỉ truy cập vị trí khi bạn trong ca. Khi hết ca, định vị tự động tắt hoàn toàn.',
+                        style: TextStyle(
+                          fontSize: 11.5,
+                          color: Color(0xFF64748B),
+                          height: 1.35,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ],
           ),
         ),
@@ -516,7 +591,8 @@ class _TechnicianShiftCardState extends State<TechnicianShiftCard> {
   Widget build(BuildContext context) {
     if (_loading) {
       return Container(
-        margin: widget.margin ?? const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+        margin: widget.margin ??
+            const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
           color: Colors.white.withValues(alpha: 0.08),
@@ -529,7 +605,10 @@ class _TechnicianShiftCardState extends State<TechnicianShiftCard> {
             SizedBox(
               width: 16,
               height: 16,
-              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white70),
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                color: Colors.white70,
+              ),
             ),
             SizedBox(width: 10),
             Flexible(
@@ -547,8 +626,10 @@ class _TechnicianShiftCardState extends State<TechnicianShiftCard> {
 
     final hasLocation = _latitude != null && _longitude != null;
 
+    // Giao diện tinh gọn, không hiện toạ độ số thô hay khu vực trực
     return Container(
-      margin: widget.margin ?? const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+      margin: widget.margin ??
+          const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
       decoration: BoxDecoration(
         color: _onDuty
             ? const Color(0xFF064E3B).withValues(alpha: 0.35)
@@ -576,13 +657,13 @@ class _TechnicianShiftCardState extends State<TechnicianShiftCard> {
           onTap: _openLocationDetailsModal,
           borderRadius: BorderRadius.circular(18),
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
             child: Row(
               children: [
-                // Pulse dot or duty indicator
+                // Icon trạng thái GPS
                 Container(
-                  width: 38,
-                  height: 38,
+                  width: 36,
+                  height: 36,
                   decoration: BoxDecoration(
                     color: _onDuty
                         ? const Color(0xFF10B981).withValues(alpha: 0.22)
@@ -598,21 +679,25 @@ class _TechnicianShiftCardState extends State<TechnicianShiftCard> {
                   alignment: Alignment.center,
                   child: _updating
                       ? const SizedBox(
-                          width: 18,
-                          height: 18,
+                          width: 16,
+                          height: 16,
                           child: CircularProgressIndicator(
                             strokeWidth: 2,
                             color: Colors.white,
                           ),
                         )
                       : Icon(
-                          _onDuty ? Icons.gps_fixed_rounded : Icons.gps_not_fixed_rounded,
-                          size: 20,
-                          color: _onDuty ? const Color(0xFF34D399) : Colors.white70,
+                          _onDuty
+                              ? Icons.gps_fixed_rounded
+                              : Icons.location_off_outlined,
+                          size: 19,
+                          color: _onDuty
+                              ? const Color(0xFF34D399)
+                              : Colors.white70,
                         ),
                 ),
-                const SizedBox(width: 8),
-                // Center info: Shift Status & GPS coordinates
+                const SizedBox(width: 10),
+                // Center info: Trạng thái ca trực & Trạng thái GPS
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -620,78 +705,59 @@ class _TechnicianShiftCardState extends State<TechnicianShiftCard> {
                     children: [
                       Row(
                         children: [
-                          Flexible(
-                            flex: 3,
-                            fit: FlexFit.loose,
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
-                              decoration: BoxDecoration(
-                                color: _onDuty
-                                    ? const Color(0xFF10B981).withValues(alpha: 0.25)
-                                    : Colors.white.withValues(alpha: 0.12),
-                                borderRadius: BorderRadius.circular(6),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Container(
-                                    width: 6,
-                                    height: 6,
-                                    decoration: BoxDecoration(
-                                      color: _onDuty
-                                          ? const Color(0xFF34D399)
-                                          : Colors.white60,
-                                      shape: BoxShape.circle,
-                                    ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 6,
+                              vertical: 2,
+                            ),
+                            decoration: BoxDecoration(
+                              color: _onDuty
+                                  ? const Color(0xFF10B981).withValues(alpha: 0.25)
+                                  : Colors.white.withValues(alpha: 0.12),
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Container(
+                                  width: 6,
+                                  height: 6,
+                                  decoration: BoxDecoration(
+                                    color: _onDuty
+                                        ? const Color(0xFF34D399)
+                                        : Colors.white60,
+                                    shape: BoxShape.circle,
                                   ),
-                                  const SizedBox(width: 4),
-                                  Flexible(
-                                    child: Text(
-                                      _onDuty ? 'ĐANG TRONG CA' : 'NGOÀI CA TRỰC',
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: TextStyle(
-                                        fontSize: 10,
-                                        fontWeight: FontWeight.w800,
-                                        color: _onDuty
-                                            ? const Color(0xFFA7F3D0)
-                                            : Colors.white70,
-                                        letterSpacing: 0.2,
-                                      ),
-                                    ),
+                                ),
+                                const SizedBox(width: 5),
+                                Text(
+                                  _onDuty ? 'ĐANG TRỰC' : 'NGOÀI CA',
+                                  style: TextStyle(
+                                    fontSize: 10.5,
+                                    fontWeight: FontWeight.w800,
+                                    color: _onDuty
+                                        ? const Color(0xFFA7F3D0)
+                                        : Colors.white70,
+                                    letterSpacing: 0.3,
                                   ),
-                                ],
-                              ),
+                                ),
+                              ],
                             ),
                           ),
-                          if (_onDuty && _shiftStartedAt != null) ...[
-                            const SizedBox(width: 5),
-                            Flexible(
-                              flex: 2,
-                              fit: FlexFit.loose,
-                              child: Text(
-                                _formatShiftDuration(_shiftStartedAt, compact: true),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w500,
-                                  color: Colors.white.withValues(alpha: 0.7),
-                                ),
-                              ),
-                            ),
-                          ],
                         ],
                       ),
                       const SizedBox(height: 3),
+                      // Hiển thị trạng thái GPS thân thiện thay vì số toạ độ thô
                       Text(
-                        hasLocation
-                            ? '${_latitude!.toStringAsFixed(4)}, ${_longitude!.toStringAsFixed(4)} (${_accuracyM != null ? '±${_accuracyM!.toStringAsFixed(0)}m · ' : ''}${_formatLocationTime(_lastLocatedAt)})'
-                            : (_onDuty ? 'Đang xác định GPS...' : 'Chưa bật định vị GPS'),
+                        _onDuty
+                            ? (hasLocation
+                                ? 'GPS: Hoạt động${_accuracyM != null ? ' (±${_accuracyM!.toStringAsFixed(0)}m)' : ''} · ${_formatLocationTime(_lastLocatedAt)}'
+                                : 'Đang dò tìm tín hiệu GPS...')
+                            : 'GPS đã tắt · Vào ca để kích hoạt vị trí',
                         style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          color: hasLocation ? Colors.white : Colors.white60,
+                          fontSize: 11.5,
+                          fontWeight: FontWeight.w500,
+                          color: _onDuty ? Colors.white : Colors.white60,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -700,28 +766,30 @@ class _TechnicianShiftCardState extends State<TechnicianShiftCard> {
                   ),
                 ),
                 const SizedBox(width: 6),
-                // Right action: Quick Refresh GPS or Toggle Shift
+                // Nút Cập nhật GPS nhanh khi đang trong ca
                 if (_onDuty) ...[
                   IconButton(
-                    icon: const Icon(Icons.my_location_rounded, size: 20),
+                    icon: const Icon(Icons.my_location_rounded, size: 19),
                     tooltip: 'Cập nhật lại GPS',
                     color: const Color(0xFF38BDF8),
                     padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                    constraints:
+                        const BoxConstraints(minWidth: 30, minHeight: 30),
                     visualDensity: VisualDensity.compact,
-                    onPressed: _updating ? null : _syncLocationOnly,
+                    onPressed: _updating ? null : () => _syncLocationOnly(silent: false),
                   ),
                   const SizedBox(width: 4),
                 ],
-                // Toggle Button
+                // Toggle Button (Vào ca / Hết ca)
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
                     backgroundColor: _onDuty
-                        ? const Color(0xFFEF4444).withValues(alpha: 0.85)
+                        ? const Color(0xFFEF4444).withValues(alpha: 0.9)
                         : const Color(0xFF10B981),
                     foregroundColor: Colors.white,
                     elevation: 0,
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 11, vertical: 6),
                     minimumSize: const Size(0, 32),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
@@ -730,7 +798,10 @@ class _TechnicianShiftCardState extends State<TechnicianShiftCard> {
                   onPressed: _updating ? null : () => _toggleDuty(!_onDuty),
                   child: Text(
                     _onDuty ? 'Hết ca' : 'Vào ca',
-                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
+                    style: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                 ),
               ],
