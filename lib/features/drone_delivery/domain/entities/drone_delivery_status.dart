@@ -49,7 +49,8 @@ class DroneDeliveryStatus {
   /// Số ô in trên tủ nhận. Người dùng chỉ thấy số này, không thấy id nội bộ.
   final int? reservedBoxNumber;
 
-  /// Số ô drone ở tủ gửi đang giữ cho kiện này; null sau khi đã nạp lên drone.
+  /// Ô DRONE tạm giữ cho drone đang đỗ ở tủ bay; không phải ô để gửi kiện.
+  /// Thường null với đơn lấy hàng tận nhà.
   final int? sourceBoxNumber;
   final String? description;
   final int? expectedWeightGrams;
@@ -117,7 +118,7 @@ class DroneDeliveryStatus {
   /// trình nhưng không được thao tác thay người gửi.
   final int? senderUserId;
 
-  /// Lấy hàng tận nhà; null với đơn cũ (người gửi tự mang kiện ra tủ).
+  /// Lấy hàng tận nhà; null với đơn cũ (người gửi tự gửi kiện vào ô tại tủ bay).
   final DronePickupInfo? pickup;
   final String? senderName;
   final String? senderPhone;
@@ -366,6 +367,8 @@ class DronePickupInfo {
     this.failureReason,
     this.failureNote,
     this.technicianNote,
+    this.pickupPhotoUrl,
+    this.pickupPhotoCapturedAt,
   });
 
   /// SEARCHING | OFFERED | ACCEPTED | PICKED_UP | FAILED | CANCELED; null khi đơn
@@ -395,6 +398,8 @@ class DronePickupInfo {
   final String? failureReason;
   final String? failureNote;
   final String? technicianNote;
+  final String? pickupPhotoUrl;
+  final DateTime? pickupPhotoCapturedAt;
 
   String get _status => (status ?? '').toUpperCase();
   bool get isSearching => _status == 'SEARCHING';

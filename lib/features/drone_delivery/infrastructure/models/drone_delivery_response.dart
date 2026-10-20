@@ -176,6 +176,10 @@ class DroneDeliveryResponse {
       failureReason: _text(value['failureReason']),
       failureNote: _text(value['failureNote']),
       technicianNote: _text(value['technicianNote']),
+      pickupPhotoUrl: _text(value['pickupPhotoUrl']),
+      pickupPhotoCapturedAt: parseServerDateTime(
+        value['pickupPhotoCapturedAt'],
+      ),
     );
   }
 
