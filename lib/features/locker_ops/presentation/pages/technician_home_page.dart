@@ -7251,7 +7251,9 @@ class _ResolveVerificationSheetState extends State<_ResolveVerificationSheet> {
   Future<void> _submit() async {
     final reportId = _asInt(widget.report['id']);
     if (reportId == null) return;
-    if (!_hasAfterPhoto) {
+    final requirePhoto =
+        BusinessConfigService.instance.current.requireResolutionPhoto;
+    if (requirePhoto && !_hasAfterPhoto) {
       setState(
         () => _error =
             'Vui lòng chụp ít nhất 1 ảnh sau khi sửa xong để nghiệm thu.',
@@ -7561,9 +7563,13 @@ class _ResolveVerificationSheetState extends State<_ResolveVerificationSheet> {
               const SizedBox(height: 10),
               _buildPhotoSection(
                 title: 'Sau khi xong',
-                subtitle: 'Ảnh nghiệm thu — cần ít nhất 1 ảnh',
+                subtitle: BusinessConfigService
+                        .instance.current.requireResolutionPhoto
+                    ? 'Ảnh nghiệm thu — cần ít nhất 1 ảnh'
+                    : 'Ảnh nghiệm thu (tuỳ chọn)',
                 satisfied: _hasAfterPhoto,
-                required: true,
+                required: BusinessConfigService
+                    .instance.current.requireResolutionPhoto,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [

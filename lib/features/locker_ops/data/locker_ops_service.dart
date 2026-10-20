@@ -292,6 +292,23 @@ class LockerOpsService {
     },
   );
 
+  /// Giả lập đã nhận chuyển khoản (chỉ khi admin bật giả lập thanh toán):
+  /// [paymentId] của giao dịch đơn hoặc [referenceId] mã nạp ví; [amount] bỏ
+  /// trống = đủ số tiền.
+  Future<Map<String, dynamic>> simulatePayment({
+    int? paymentId,
+    String? referenceId,
+    num? amount,
+  }) => _map(
+    'POST',
+    '/api/payments/simulate',
+    body: {
+      if (paymentId != null) 'paymentId': paymentId,
+      if (referenceId != null) 'referenceId': referenceId,
+      if (amount != null) 'amount': amount,
+    },
+  );
+
   Future<Map<String, dynamic>> order(int orderId) =>
       _map('GET', '/api/orders/$orderId');
 

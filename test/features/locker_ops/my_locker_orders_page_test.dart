@@ -894,6 +894,53 @@ void main() {
       expect(find.text('Lần 2 · Thanh toán gia hạn thời gian đơn #73'), findsNothing);
     },
   );
+
+  testWidgets('initialOrderId opens order detail directly', (tester) async {
+    final service = _FakeFaultyOrderLockerOpsService();
+    await tester.pumpWidget(
+      MaterialApp(
+        home: MediaQuery(
+          data: const MediaQueryData(size: Size(390, 844)),
+          child: MyLockerOrdersPage(
+            service: service,
+            initialOrderId: 41,
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.widgetWithText(AppBar, '#ORD-41'), findsOneWidget);
+  });
+
+  testWidgets('didUpdateWidget opens order detail directly when new initialOrderId arrives', (tester) async {
+    final service = _FakeFaultyOrderLockerOpsService();
+    await tester.pumpWidget(
+      MaterialApp(
+        home: MediaQuery(
+          data: const MediaQueryData(size: Size(390, 844)),
+          child: MyLockerOrdersPage(service: service),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.widgetWithText(AppBar, '#ORD-41'), findsNothing);
+
+    // Now update widget with initialOrderId: 41 and openToken
+    await tester.pumpWidget(
+      MaterialApp(
+        home: MediaQuery(
+          data: const MediaQueryData(size: Size(390, 844)),
+          child: MyLockerOrdersPage(
+            service: service,
+            initialOrderId: 41,
+            openToken: 'token_1',
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.widgetWithText(AppBar, '#ORD-41'), findsOneWidget);
+  });
 }
 
 class _FakePaymentsOrderLockerOpsService extends LockerOpsService {

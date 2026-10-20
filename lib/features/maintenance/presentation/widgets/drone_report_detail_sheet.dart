@@ -5,6 +5,7 @@ import 'package:smart_laundry_locker/core/utils/app_date_time.dart';
 import 'package:smart_laundry_locker/features/locker_ops/data/drone_technician_errors.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/presentation/widgets/drone_orders_by_ticket.dart';
 import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
+import 'package:smart_laundry_locker/features/locker_ops/presentation/utils/technician_rules.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/ops_widgets.dart';
 
 /// Hồ sơ xử lý sự cố dành riêng cho KTV Drone.
@@ -765,12 +766,22 @@ class _ExtendSlaDialog extends StatefulWidget {
 }
 
 class _ExtendSlaDialogState extends State<_ExtendSlaDialog> {
-  static const _hourOptions = [2, 4, 8, 12, 24];
+  List<int> get _hourOptions {
+    final maxH = BusinessConfigService.instance.current.slaMaxHoursPerExtension;
+    return SlaExtensionLimits(maxHoursPerExtension: maxH).hourOptions();
+  }
 
   final _reason = TextEditingController();
-  int _hours = 4;
+  late int _hours;
   bool _sending = false;
   String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    final options = _hourOptions;
+    _hours = options.contains(4) ? 4 : options.first;
+  }
 
   @override
   void dispose() {
@@ -1030,7 +1041,9 @@ class _DroneResolveSheetState extends State<_DroneResolveSheet> {
   }
 
   Future<void> _submit() async {
-    if (!_hasResolution) {
+    final requirePhoto =
+        BusinessConfigService.instance.current.requireResolutionPhoto;
+    if (requirePhoto && !_hasResolution) {
       setState(
         () => _error =
             'Vui lòng chụp ít nhất 1 ảnh sau khi sửa xong để nghiệm thu.',
@@ -1131,8 +1144,14 @@ class _DroneResolveSheetState extends State<_DroneResolveSheet> {
               ),
               const SizedBox(height: 12),
               _PhotoStageBox(
-                title: 'Ảnh sau khi sửa xong *',
-                subtitle: 'Bắt buộc ít nhất 1 ảnh để nghiệm thu.',
+                title: BusinessConfigService
+                        .instance.current.requireResolutionPhoto
+                    ? 'Ảnh sau khi sửa xong *'
+                    : 'Ảnh sau khi sửa xong',
+                subtitle: BusinessConfigService
+                        .instance.current.requireResolutionPhoto
+                    ? 'Bắt buộc ít nhất 1 ảnh để nghiệm thu.'
+                    : 'Không bắt buộc, dùng để lưu ảnh nghiệm thu.',
                 controller: _resolutionPhotos,
                 enabled: !_submitting,
                 color: const Color(0xFF16A34A),

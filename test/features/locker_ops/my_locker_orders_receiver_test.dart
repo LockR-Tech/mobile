@@ -366,4 +366,37 @@ void main() {
     expect(find.text('Sự cố giao hàng'), findsNothing);
     expect(find.text('Ủy quyền lấy hộ cho'), findsNothing);
   });
+
+  testWidgets('tab Hàng chờ nhận có các badge bộ lọc và phân loại theo ngày', (
+    tester,
+  ) async {
+    final service = _FakeService();
+    await _pump(tester, service);
+
+    await tester.tap(find.text('Hàng chờ nhận'));
+    await tester.pumpAndSettle();
+
+    // Verify filter badges are present
+    expect(find.text('Tất cả'), findsOneWidget);
+    expect(find.text('Chờ lấy'), findsOneWidget);
+
+    // Verify order and date grouping are present
+    expect(find.text('#ORD-90'), findsOneWidget);
+    // Since ORD-90 createdAt is 2026-07-16, it displays formatted date
+    expect(find.textContaining('tháng 7'), findsWidgets);
+
+    // Tap on 'Hoàn thành' filter badge which has 0 items
+    await tester.ensureVisible(find.text('Hoàn thành'));
+    await tester.tap(find.text('Hoàn thành'));
+    await tester.pumpAndSettle();
+
+    // Order should not be visible under completed filter
+    expect(find.text('#ORD-90'), findsNothing);
+
+    // Tap back to 'Tất cả'
+    await tester.ensureVisible(find.text('Tất cả'));
+    await tester.tap(find.text('Tất cả'));
+    await tester.pumpAndSettle();
+    expect(find.text('#ORD-90'), findsOneWidget);
+  });
 }

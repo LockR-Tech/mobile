@@ -55,6 +55,7 @@ class BusinessConfig {
     required this.topupDefaultAmount,
     required this.topupPresets,
     required this.enabledPaymentMethods,
+    this.paymentSimulationEnabled = false,
     required this.reportPhotosPerRequestReporter,
     required this.reportPhotosPerRequestStaff,
     required this.cellDimensionsStandard,
@@ -71,6 +72,9 @@ class BusinessConfig {
     this.redeemMinPoints = 10,
     this.maxVouchersPerOrder = 1,
     required this.nearbyDefaultRadiusKm,
+    this.requireResolutionPhoto = false,
+    this.droneLowBatteryPercent = 20,
+    this.slaMaxHoursPerExtension = 24,
   });
 
   // ---- Scope `order` ----
@@ -180,6 +184,9 @@ class BusinessConfig {
   /// Mã phương thức thanh toán đang bật, viết hoa (`CASH`, `WALLET`, …).
   final List<String> enabledPaymentMethods;
 
+  /// Admin bật nút "Giả lập thanh toán" (chỉ để test) trên màn VietQR.
+  final bool paymentSimulationEnabled;
+
   // ---- Scope `locker` ----
   /// Số ảnh hiện trường tối đa mỗi lần người báo gửi (stage REPORT).
   final int reportPhotosPerRequestReporter;
@@ -190,6 +197,15 @@ class BusinessConfig {
   /// Kích thước ô hiển thị trên app (dài × rộng × cao).
   final String cellDimensionsStandard;
   final String cellDimensionsXl;
+
+  /// Bắt buộc ảnh nghiệm thu hoàn tất phiếu bảo trì (mặc định false).
+  final bool requireResolutionPhoto;
+
+  /// Mức pin tối thiểu để drone cất cánh (%, mặc định 20%).
+  final int droneLowBatteryPercent;
+
+  /// Số giờ tối đa mỗi lần KTV gia hạn SLA (giờ, mặc định 24).
+  final int slaMaxHoursPerExtension;
 
   // ---- Scope `loyalty` ----
   final int tierSilverPoints;
@@ -260,6 +276,9 @@ class BusinessConfig {
     stampsPerReward: 10,
     pointsRewardCost: 1000,
     nearbyDefaultRadiusKm: 10,
+    requireResolutionPhoto: false,
+    droneLowBatteryPercent: 20,
+    slaMaxHoursPerExtension: 24,
   );
 
   /// Giá trị mặc định = các giá trị app dùng trước khi có cấu hình admin.
@@ -460,6 +479,10 @@ class BusinessConfig {
       enabledPaymentMethods: List.unmodifiable(
         _methods(p['app.payment.enabled-methods'], d.enabledPaymentMethods),
       ),
+      paymentSimulationEnabled: _bool(
+        p['app.payment.simulation-enabled'],
+        d.paymentSimulationEnabled,
+      ),
       reportPhotosPerRequestReporter: _int(
         l['app.maintenance.report-photos-per-request-reporter'],
         d.reportPhotosPerRequestReporter,
@@ -475,6 +498,20 @@ class BusinessConfig {
         d.cellDimensionsStandard,
       ),
       cellDimensionsXl: _string(l['app.locker.cell-dimensions-xl'], d.cellDimensionsXl),
+      requireResolutionPhoto: _bool(
+        l['app.maintenance.require-resolution-photo'],
+        d.requireResolutionPhoto,
+      ),
+      droneLowBatteryPercent: _int(
+        l['app.locker.drone-low-battery-percent'],
+        d.droneLowBatteryPercent,
+        min: 0,
+      ),
+      slaMaxHoursPerExtension: _int(
+        l['app.maintenance.sla-max-hours-per-extension'],
+        d.slaMaxHoursPerExtension,
+        min: 1,
+      ),
       tierSilverPoints: _int(y['app.loyalty.tier-silver-points'], d.tierSilverPoints),
       tierGoldPoints: _int(y['app.loyalty.tier-gold-points'], d.tierGoldPoints),
       tierPlatinumPoints: _int(
@@ -583,6 +620,7 @@ class BusinessConfig {
       'app.payment.topup-default-amount': topupDefaultAmount,
       'app.payment.topup-presets': topupPresets,
       'app.payment.enabled-methods': enabledPaymentMethods.join(','),
+      'app.payment.simulation-enabled': paymentSimulationEnabled,
     },
     'locker': {
       'app.maintenance.report-photos-per-request-reporter':
@@ -591,6 +629,9 @@ class BusinessConfig {
           reportPhotosPerRequestStaff,
       'app.locker.cell-dimensions-standard': cellDimensionsStandard,
       'app.locker.cell-dimensions-xl': cellDimensionsXl,
+      'app.maintenance.require-resolution-photo': requireResolutionPhoto,
+      'app.locker.drone-low-battery-percent': droneLowBatteryPercent,
+      'app.maintenance.sla-max-hours-per-extension': slaMaxHoursPerExtension,
     },
     'loyalty': {
       'app.loyalty.tier-silver-points': tierSilverPoints,

@@ -99,6 +99,8 @@ String pointTransactionLabel(String type, {int? orderId}) {
       return 'Dùng điểm thanh toán đơn$order';
     case 'ORDER_REDEEM_REFUND':
       return 'Hoàn điểm đơn huỷ$order';
+    case 'ORDER_EARN_REVERSAL':
+      return 'Thu hồi điểm đơn được hoàn tiền$order';
     case 'REDEEM':
       return 'Đổi điểm';
     case 'ADJUSTMENT':
