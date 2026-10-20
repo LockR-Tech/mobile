@@ -8,7 +8,7 @@ enum DroneDeliveryStage {
   /// KTV drone đã nhận và đang tới nhà người gửi lấy kiện.
   pickupAssigned,
 
-  /// KTV đã cầm kiện, đang mang về tủ gửi để phóng drone.
+  /// KTV đã cầm kiện, đang mang tới drone tại tủ bay để nạp trực tiếp lên drone.
   pickedUp,
   accepted,
   launching,
@@ -130,7 +130,7 @@ enum DroneDeliveryStage {
       case DroneDeliveryStage.pickupAssigned:
         return 'Kỹ thuật viên đang tới lấy hàng';
       case DroneDeliveryStage.pickedUp:
-        return 'Đã lấy hàng, đang mang về tủ';
+        return 'Đã lấy hàng, đang mang tới drone';
       case DroneDeliveryStage.accepted:
         return 'Đang nạp hàng lên drone';
       case DroneDeliveryStage.launching:
@@ -169,7 +169,7 @@ enum DroneDeliveryStage {
       case DroneDeliveryStage.pickupAssigned:
         return 'Kỹ thuật viên đang tới điểm lấy hàng, chuẩn bị kiện và mã lấy hàng';
       case DroneDeliveryStage.pickedUp:
-        return 'Kiện đang được mang về tủ gần bạn nhất để phóng drone';
+        return 'Kiện đang được mang tới drone để nạp trực tiếp; không bỏ vào ô tủ bay';
       case DroneDeliveryStage.accepted:
         return 'Drone đã được gán, kỹ thuật viên đang cân và nạp kiện';
       case DroneDeliveryStage.launching:
