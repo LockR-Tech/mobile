@@ -1,7 +1,13 @@
+import 'dart:io';
+
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:smart_laundry_locker/core/media/media_upload.dart';
+import 'package:smart_laundry_locker/core/media/photo_picker_controller.dart';
+import 'package:smart_laundry_locker/core/media/widgets/photo_picker_field.dart';
 import 'package:smart_laundry_locker/core/utils/app_date_time.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/domain/entities/drone_booking.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/domain/entities/drone_labels.dart';
@@ -97,7 +103,7 @@ Future<(String reason, String? note)?> showDroneReasonDialog(
 }
 
 /// Việc lấy hàng tận nhà của KTV drone: vào/ra ca, lời mời đang chờ trả lời, kiện đang
-/// đi lấy, và kiện đã lấy đang mang về tủ.
+/// đi lấy, và kiện đã lấy đang được mang tới drone để nạp trực tiếp.
 ///
 /// Hệ thống mời KTV đang trong ca, rảnh và gần người gửi nhất — nên vào ca phải kèm vị
 /// trí, và app gửi lại vị trí định kỳ trong lúc đang trong ca.
@@ -122,7 +128,7 @@ class DronePickupQueue extends StatefulWidget {
   final Future<void> Function() onChanged;
   final ValueChanged<int> onOpenDetail;
 
-  /// Kiện đã về tủ gửi: chọn drone rảnh ở tủ đó để tạo nhiệm vụ bay.
+  /// Kiện đã được lấy: KTV mang tới drone rảnh tại tủ bay rồi nạp trực tiếp.
   final ValueChanged<Map<String, dynamic>> onAssignDrone;
   final CurrentPositionReader readPosition;
   final Duration locationInterval;
@@ -135,6 +141,7 @@ class _DronePickupQueueState extends State<DronePickupQueue> {
   bool _onDuty = false;
   bool _busy = false;
   DateTime? _locationAt;
+
   /// Server có luồng lấy hàng tận nhà và đã trả trạng thái ca của KTV này.
   bool _presenceKnown = false;
   bool _switching = false;
@@ -206,7 +213,10 @@ class _DronePickupQueueState extends State<DronePickupQueue> {
     });
     _heartbeat?.cancel();
     if (_onDuty) {
-      _heartbeat = Timer.periodic(widget.locationInterval, (_) => _sendLocation());
+      _heartbeat = Timer.periodic(
+        widget.locationInterval,
+        (_) => _sendLocation(),
+      );
     }
   }
 
@@ -235,7 +245,9 @@ class _DronePickupQueueState extends State<DronePickupQueue> {
       if (onDuty) {
         final (read, problem) = await widget.readPosition();
         if (read == null) {
-          _toast(problem ?? 'Cần vị trí hiện tại để vào ca nhận việc lấy hàng.');
+          _toast(
+            problem ?? 'Cần vị trí hiện tại để vào ca nhận việc lấy hàng.',
+          );
           return;
         }
         position = read;
@@ -287,13 +299,20 @@ class _DronePickupQueueState extends State<DronePickupQueue> {
     if (orderId == null) return;
     final codeController = TextEditingController();
     final noteController = TextEditingController();
+    final photos = PhotoPickerController(
+      maxPhotos: 1,
+      purpose: MediaPurpose.dronePickup,
+      captureLocation: false,
+    );
     var matched = false;
     String? problem;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setLocal) => AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
           title: const Text('Xác nhận đã lấy hàng'),
           content: SingleChildScrollView(
             child: Column(
@@ -339,6 +358,56 @@ class _DronePickupQueueState extends State<DronePickupQueue> {
                     ),
                   ],
                 ),
+                const SizedBox(height: 8),
+                PhotoPickerField(
+                  controller: photos,
+                  showAddTile: false,
+                  helperText: 'Ảnh kiện tại điểm lấy là bắt buộc.',
+                  onPhotoTap: (photo) => showDialog<void>(
+                    context: ctx,
+                    builder: (dialogContext) => Dialog(
+                      child: Stack(
+                        children: [
+                          InteractiveViewer(
+                            child: Image.file(
+                              File(photo.file.path),
+                              fit: BoxFit.contain,
+                            ),
+                          ),
+                          Positioned(
+                            top: 0,
+                            right: 0,
+                            child: IconButton(
+                              onPressed: () => Navigator.pop(dialogContext),
+                              icon: const Icon(Icons.close),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                if (photos.isEmpty)
+                  OutlinedButton.icon(
+                    key: const ValueKey('drone-pickup-photo-camera'),
+                    onPressed: () async {
+                      try {
+                        await photos.pick(ImageSource.camera);
+                      } catch (_) {
+                        setLocal(
+                          () => problem =
+                              'Không mở được máy ảnh. Kiểm tra quyền camera.',
+                        );
+                      }
+                    },
+                    icon: const Icon(Icons.camera_alt_outlined),
+                    label: const Text('Chụp ảnh kiện'),
+                  ),
+                if (photos.isEmpty && problem == null)
+                  const Text(
+                    'Chụp rõ toàn bộ kiện trước khi xác nhận đã lấy.',
+                    style: TextStyle(fontSize: 12, color: Colors.black54),
+                  ),
                 TextField(
                   controller: noteController,
                   decoration: const InputDecoration(
@@ -368,6 +437,12 @@ class _DronePickupQueueState extends State<DronePickupQueue> {
                   );
                   return;
                 }
+                if (photos.isEmpty) {
+                  setLocal(
+                    () => problem = 'Cần chụp ảnh kiện trước khi xác nhận',
+                  );
+                  return;
+                }
                 Navigator.pop(ctx, true);
               },
               child: const Text('Đã lấy hàng'),
@@ -376,15 +451,32 @@ class _DronePickupQueueState extends State<DronePickupQueue> {
         ),
       ),
     );
-    if (confirmed != true) return;
-    await _act(
-      () => widget.service.confirmDronePickup(
-        orderId,
-        pickupCode: codeController.text,
-        note: noteController.text,
-      ),
-      'Đã lấy hàng. Mang kiện về tủ gửi để phóng drone.',
-    );
+    if (confirmed != true) {
+      photos.dispose();
+      return;
+    }
+    try {
+      final uploaded = await photos.uploadAll(
+        caption: 'Ảnh kiện lúc kỹ thuật viên lấy hàng',
+      );
+      if (uploaded.isEmpty) {
+        _toast('Cần chụp ảnh kiện trước khi xác nhận');
+        return;
+      }
+      await _act(
+        () => widget.service.confirmDronePickup(
+          orderId,
+          pickupCode: codeController.text,
+          pickupPhoto: uploaded.single,
+          note: noteController.text,
+        ),
+        'Đã lấy hàng và lưu ảnh kiện. Mang kiện tới drone được phân công và nạp trực tiếp; không bỏ vào ô tủ bay.',
+      );
+    } catch (error) {
+      _toast(LockerOpsService.errorMessage(error));
+    } finally {
+      photos.dispose();
+    }
   }
 
   Future<void> _failPickup(Map<String, dynamic> order) async {
@@ -469,7 +561,10 @@ class _DronePickupQueueState extends State<DronePickupQueue> {
     final accepted = _accepted;
     final carrying = _carrying;
     // Không có gì để hiện (server cũ, chưa có việc) thì không chiếm chỗ trên màn điều phối.
-    if (!_presenceKnown && offered.isEmpty && accepted.isEmpty && carrying.isEmpty) {
+    if (!_presenceKnown &&
+        offered.isEmpty &&
+        accepted.isEmpty &&
+        carrying.isEmpty) {
       return const SizedBox.shrink();
     }
     return Column(
@@ -495,7 +590,7 @@ class _DronePickupQueueState extends State<DronePickupQueue> {
         if (carrying.isNotEmpty) ...[
           const SizedBox(height: 12),
           OpsSectionLabel(
-            'Đã lấy hàng · mang về tủ gửi (${carrying.length})',
+            'Đã lấy hàng · chờ nạp trực tiếp lên drone (${carrying.length})',
             icon: Icons.inventory_2_outlined,
           ),
           for (final order in carrying) _carryingCard(order),
@@ -723,7 +818,7 @@ class _DronePickupQueueState extends State<DronePickupQueue> {
       order: order,
       accent: const Color(0xFF16A34A),
       children: [
-        _line('Mang kiện về: $sourceName'),
+        _line('Mang kiện tới drone tại: $sourceName'),
         if (sourceAddress != null && sourceAddress.isNotEmpty)
           _line(sourceAddress),
         _line('Kiện: ${_parcelSummary(order)}'),
@@ -740,7 +835,7 @@ class _DronePickupQueueState extends State<DronePickupQueue> {
                   address: sourceAddress,
                 ),
                 icon: const Icon(Icons.directions, size: 16),
-                label: const Text('Chỉ đường tới tủ'),
+                label: const Text('Chỉ đường tới drone'),
               ),
             FilledButton.icon(
               key: ValueKey('drone-assign-drone-$orderId'),
