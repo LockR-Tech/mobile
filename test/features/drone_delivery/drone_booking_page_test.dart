@@ -34,15 +34,38 @@ class _FakeOffersService extends LockerOpsService {
   Future<List<Map<String, dynamic>>> activePromotions({int? lockerId}) async {
     activeLockerIds.add(lockerId);
     return [
-      {'id': 1, 'code': 'TOANQUOC', 'name': 'Giảm 5.000đ', 'discountType': 'FIXED_AMOUNT', 'discountValue': 5000},
-      {'id': 2, 'code': 'TUA', 'name': 'Giảm 10.000đ tại tủ A', 'discountType': 'FIXED_AMOUNT', 'discountValue': 10000, 'lockerId': 3, 'lockerName': 'Locker A'},
+      {
+        'id': 1,
+        'code': 'TOANQUOC',
+        'name': 'Giảm 5.000đ',
+        'discountType': 'FIXED_AMOUNT',
+        'discountValue': 5000,
+      },
+      {
+        'id': 2,
+        'code': 'TUA',
+        'name': 'Giảm 10.000đ tại tủ A',
+        'discountType': 'FIXED_AMOUNT',
+        'discountValue': 10000,
+        'lockerId': 3,
+        'lockerName': 'Locker A',
+      },
       // Server cũ trả lẫn mã của tủ khác ⇒ app tự lọc bỏ.
-      {'id': 3, 'code': 'TUKHAC', 'name': 'Tủ khác', 'discountType': 'FIXED_AMOUNT', 'discountValue': 9000, 'lockerId': 9, 'lockerName': 'Locker Z'},
+      {
+        'id': 3,
+        'code': 'TUKHAC',
+        'name': 'Tủ khác',
+        'discountType': 'FIXED_AMOUNT',
+        'discountValue': 9000,
+        'lockerId': 9,
+        'lockerName': 'Locker Z',
+      },
     ];
   }
 
   @override
-  Future<List<Map<String, dynamic>>> myVouchers({int? lockerId}) async => const [];
+  Future<List<Map<String, dynamic>>> myVouchers({int? lockerId}) async =>
+      const [];
 
   @override
   Future<Map<String, dynamic>> validatePromotion(
@@ -54,7 +77,12 @@ class _FakeOffersService extends LockerOpsService {
     return {
       'code': code,
       'valid': true,
-      'promotion': {'code': code, 'discountType': 'FIXED_AMOUNT', 'discountValue': 10000, 'lockerId': 3},
+      'promotion': {
+        'code': code,
+        'discountType': 'FIXED_AMOUNT',
+        'discountValue': 10000,
+        'lockerId': 3,
+      },
     };
   }
 
@@ -114,27 +142,49 @@ void main() {
           preferredBoxId: 9001,
           initialSender: sender,
           destinationLockers: _lockers,
+          loadDroneSlots: (_) async => [
+            {
+              'id': 9001,
+              'boxNumber': 1,
+              'cellType': 'DRONE',
+              'status': 'AVAILABLE',
+            },
+            {
+              'id': 9002,
+              'boxNumber': 2,
+              'cellType': 'DRONE',
+              'status': 'AVAILABLE',
+            },
+            {
+              'id': 9003,
+              'boxNumber': 3,
+              'cellType': 'DRONE',
+              'status': 'AVAILABLE',
+            },
+          ],
           pickLocation: (context, current) async => _pickup,
-          loadQuote: ({
-            required destinationLockerId,
-            required pickupLatitude,
-            required pickupLongitude,
-            required parcelWeightGrams,
-          }) async {
-            quotes.add({
-              'destination': destinationLockerId,
-              'weight': parcelWeightGrams,
-            });
-            if (quoteError != null) throw quoteError;
-            return const DroneQuote(
-              sourceLockerId: 3,
-              sourceLockerName: 'Locker A',
-              sourceLockerAddress: '1 Lê Lợi',
-              pickupDistanceMeters: 110,
-              routeDistanceMeters: 2400,
-              fee: 24000,
-            );
-          },
+          loadQuote:
+              ({
+                required destinationLockerId,
+                required pickupLatitude,
+                required pickupLongitude,
+                required parcelWeightGrams,
+              }) async {
+                quotes.add({
+                  'destination': destinationLockerId,
+                  'weight': parcelWeightGrams,
+                });
+                if (quoteError != null) throw quoteError;
+                return const DroneQuote(
+                  sourceLockerId: 3,
+                  sourceLockerName: 'Locker A',
+                  sourceLockerAddress: '1 Lê Lợi',
+                  pickupDistanceMeters: 110,
+                  routeDistanceMeters: 2400,
+                  fee: 24000,
+                );
+              },
+
           createOrder: (request, key) async {
             created.add(request);
             steps.add('create');
@@ -167,161 +217,182 @@ void main() {
     await type(tester, 'drone-receiver-email', 'nhan@gmail.com');
   }
 
-  testWidgets('bắt buộc đủ điểm lấy hàng, người gửi, người nhận, loại hàng, cam kết', (
-    tester,
-  ) async {
-    await pump(tester);
+  testWidgets(
+    'bắt buộc đủ điểm lấy hàng, người gửi, người nhận, loại hàng, cam kết',
+    (tester) async {
+      await pump(tester);
 
-    await submit(tester);
-    expect(messages.last, 'Chọn điểm lấy hàng');
+      await submit(tester);
+      expect(messages.last, 'Chọn điểm lấy hàng');
 
-    await tester.tap(find.byKey(const ValueKey('drone-pickup-location')));
-    await tester.pumpAndSettle();
-    expect(find.text('12 Nguyễn Huệ, Quận 1'), findsOneWidget);
+      await tester.tap(find.byKey(const ValueKey('drone-pickup-location')));
+      await tester.pumpAndSettle();
+      expect(find.text('12 Nguyễn Huệ, Quận 1'), findsOneWidget);
 
-    // Người gửi điền sẵn từ tài khoản; xoá email thì không qua.
-    await type(tester, 'drone-sender-email', 'khong-phai-email');
-    await submit(tester);
-    expect(messages.last, 'Email người gửi không hợp lệ');
-    await type(tester, 'drone-sender-email', 'gui@gmail.com');
+      // Người gửi điền sẵn từ tài khoản; xoá email thì không qua.
+      await type(tester, 'drone-sender-email', 'khong-phai-email');
+      await submit(tester);
+      expect(messages.last, 'Email người gửi không hợp lệ');
+      await type(tester, 'drone-sender-email', 'gui@gmail.com');
 
-    await submit(tester);
-    expect(messages.last, 'Nhập tên người nhận');
-    await type(tester, 'drone-receiver-name', 'Trần Thị Nhận');
-    await submit(tester);
-    expect(messages.last, 'Số điện thoại người nhận không hợp lệ');
-    await type(tester, 'drone-receiver-phone', '0902000222');
-    // Email người nhận là bắt buộc: thư báo đơn và mã mở ô đi qua email.
-    await submit(tester);
-    expect(messages.last, 'Email người nhận không hợp lệ');
-    await type(tester, 'drone-receiver-email', 'nhan@gmail.com');
+      await submit(tester);
+      expect(messages.last, 'Nhập tên người nhận');
+      await type(tester, 'drone-receiver-name', 'Trần Thị Nhận');
+      await submit(tester);
+      expect(messages.last, 'Số điện thoại người nhận không hợp lệ');
+      await type(tester, 'drone-receiver-phone', '0902000222');
+      // Email người nhận là bắt buộc: thư báo đơn và mã mở ô đi qua email.
+      await submit(tester);
+      expect(messages.last, 'Email người nhận không hợp lệ');
+      await type(tester, 'drone-receiver-email', 'nhan@gmail.com');
 
-    await submit(tester);
-    expect(messages.last, 'Chọn loại hàng');
-    await tester.tap(find.byKey(const ValueKey('drone-category-DOCUMENT')));
-    await tester.pumpAndSettle();
+      await submit(tester);
+      expect(messages.last, 'Chọn loại hàng');
+      await tester.tap(find.byKey(const ValueKey('drone-category-DOCUMENT')));
+      await tester.pumpAndSettle();
 
-    await submit(tester);
-    expect(messages.last, contains('cam kết'));
-    expect(created, isEmpty);
-  });
+      await submit(tester);
+      expect(messages.last, contains('cam kết'));
+      expect(created, isEmpty);
+    },
+  );
 
-  testWidgets('gửi đủ điểm lấy hàng, liên hệ hai đầu và khai báo kiện; trả tiền rồi sang theo dõi', (
-    tester,
-  ) async {
-    await pump(tester);
-    await tester.tap(find.byKey(const ValueKey('drone-pickup-location')));
-    await tester.pumpAndSettle();
-    await fillReceiver(tester);
-    await type(tester, 'drone-pickup-note', 'Gọi trước khi tới');
-    await tester.tap(find.byKey(const ValueKey('drone-weight-2000')));
-    await tester.tap(find.byKey(const ValueKey('drone-category-ELECTRONICS')));
-    await tester.tap(find.byKey(const ValueKey('drone-parcel-fragile')));
-    await type(tester, 'drone-parcel-length', '20');
-    await type(tester, 'drone-parcel-width', '30');
-    await type(tester, 'drone-parcel-height', '25');
-    await type(tester, 'drone-parcel-value', '500000');
-    await tester.tap(find.byKey(const ValueKey('drone-prohibited-declaration')));
-    await tester.pumpAndSettle();
+  testWidgets(
+    'gửi đủ điểm lấy hàng, liên hệ hai đầu và khai báo kiện; trả tiền rồi sang theo dõi',
+    (tester) async {
+      await pump(tester);
+      await tester.tap(find.byKey(const ValueKey('drone-pickup-location')));
+      await tester.pumpAndSettle();
+      await fillReceiver(tester);
+      await type(tester, 'drone-pickup-note', 'Gọi trước khi tới');
+      await tester.tap(find.byKey(const ValueKey('drone-weight-2000')));
+      await tester.tap(
+        find.byKey(const ValueKey('drone-category-ELECTRONICS')),
+      );
+      await tester.tap(find.byKey(const ValueKey('drone-parcel-fragile')));
+      await type(tester, 'drone-parcel-length', '20');
+      await type(tester, 'drone-parcel-width', '30');
+      await type(tester, 'drone-parcel-height', '25');
+      await type(tester, 'drone-parcel-value', '500000');
+      await tester.tap(
+        find.byKey(const ValueKey('drone-prohibited-declaration')),
+      );
+      await tester.pumpAndSettle();
 
-    // Báo trước tủ gửi hệ thống chọn, quãng đường và phí theo khối lượng vừa chọn.
-    expect(find.text('Drone cất cánh tại Locker A'), findsOneWidget);
-    expect(find.textContaining('110 m'), findsOneWidget);
-    expect(find.textContaining('2,4 km'), findsOneWidget);
-    expect(quotes.last, {'destination': 5, 'weight': 2000});
+      // Báo trước tủ gửi hệ thống chọn, quãng đường và phí theo khối lượng vừa chọn.
+      await tester.tap(find.byKey(const ValueKey('drone-destination-box')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Ô số 1').last);
+      await tester.pumpAndSettle();
+      expect(find.text('Tủ bay do hệ thống chọn: Locker A'), findsOneWidget);
+      expect(find.text('Ô nhận drone còn trống: 3'), findsOneWidget);
+      expect(find.textContaining('110 m'), findsOneWidget);
+      expect(find.textContaining('2,4 km'), findsOneWidget);
+      expect(quotes.last, {'destination': 5, 'weight': 2000});
 
-    await submit(tester);
+      await submit(tester);
 
-    expect(created.single.toJson(), {
-      'destinationLockerId': 5,
-      'preferredBoxId': 9001,
-      'pickupAddress': '12 Nguyễn Huệ, Quận 1',
-      'pickupLatitude': 10.7,
-      'pickupLongitude': 106.7,
-      'pickupNote': 'Gọi trước khi tới',
-      'senderName': 'Nguyễn Văn Gửi',
-      'senderPhone': '0901000111',
-      'senderEmail': 'gui@gmail.com',
-      'receiverName': 'Trần Thị Nhận',
-      'receiverPhone': '0902000222',
-      'receiverEmail': 'nhan@gmail.com',
-      'parcelWeightGrams': 2000,
-      'parcelCategory': 'ELECTRONICS',
-      'parcelLengthCm': 20,
-      'parcelWidthCm': 30,
-      'parcelHeightCm': 25,
-      'declaredValue': 500000,
-      'fragile': true,
-      'prohibitedItemsDeclared': true,
-    });
-    expect(steps, ['create', 'pay 77 24000.0', 'booked 77']);
-    expect(messages.last, 'Đã thanh toán. Đội bay sẽ tiếp nhận đơn của bạn.');
-  });
+      expect(created.single.toJson(), {
+        'destinationLockerId': 5,
+        'preferredBoxId': 9001,
+        'pickupAddress': '12 Nguyễn Huệ, Quận 1',
+        'pickupLatitude': 10.7,
+        'pickupLongitude': 106.7,
+        'pickupNote': 'Gọi trước khi tới',
+        'senderName': 'Nguyễn Văn Gửi',
+        'senderPhone': '0901000111',
+        'senderEmail': 'gui@gmail.com',
+        'receiverName': 'Trần Thị Nhận',
+        'receiverPhone': '0902000222',
+        'receiverEmail': 'nhan@gmail.com',
+        'parcelWeightGrams': 2000,
+        'parcelCategory': 'ELECTRONICS',
+        'parcelLengthCm': 20,
+        'parcelWidthCm': 30,
+        'parcelHeightCm': 25,
+        'declaredValue': 500000,
+        'fragile': true,
+        'prohibitedItemsDeclared': true,
+      });
+      expect(steps, ['create', 'pay 77 24000.0', 'booked 77']);
+      expect(messages.last, 'Đã thanh toán. Đội bay sẽ tiếp nhận đơn của bạn.');
+    },
+  );
 
-  testWidgets('kiện quá khổ hoặc khai giá quá trần bị chặn trước khi gọi server', (
-    tester,
-  ) async {
-    await pump(tester);
-    await tester.tap(find.byKey(const ValueKey('drone-pickup-location')));
-    await tester.pumpAndSettle();
-    await fillReceiver(tester);
-    await tester.tap(find.byKey(const ValueKey('drone-category-OTHER')));
-    await tester.tap(find.byKey(const ValueKey('drone-prohibited-declaration')));
+  testWidgets(
+    'kiện quá khổ hoặc khai giá quá trần bị chặn trước khi gọi server',
+    (tester) async {
+      await pump(tester);
+      await tester.tap(find.byKey(const ValueKey('drone-pickup-location')));
+      await tester.pumpAndSettle();
+      await fillReceiver(tester);
+      await tester.tap(find.byKey(const ValueKey('drone-category-OTHER')));
+      await tester.tap(
+        find.byKey(const ValueKey('drone-prohibited-declaration')),
+      );
 
-    await type(tester, 'drone-parcel-length', '40');
-    await submit(tester);
-    expect(messages.last, contains('Nhập đủ dài, rộng, cao'));
+      await type(tester, 'drone-parcel-length', '40');
+      await submit(tester);
+      expect(messages.last, contains('Nhập đủ dài, rộng, cao'));
 
-    await type(tester, 'drone-parcel-width', '10');
-    await type(tester, 'drone-parcel-height', '10');
-    await submit(tester);
-    expect(messages.last, contains('không lọt khoang drone'));
+      await type(tester, 'drone-parcel-width', '10');
+      await type(tester, 'drone-parcel-height', '10');
+      await submit(tester);
+      expect(messages.last, contains('không lọt khoang drone'));
 
-    await type(tester, 'drone-parcel-length', '20');
-    await type(tester, 'drone-parcel-value', '2000001');
-    await submit(tester);
-    expect(messages.last, contains('giá trị tới'));
-    expect(created, isEmpty);
-  });
+      await type(tester, 'drone-parcel-length', '20');
+      await type(tester, 'drone-parcel-value', '2000001');
+      await submit(tester);
+      expect(messages.last, contains('giá trị tới'));
+      expect(created, isEmpty);
+    },
+  );
 
-  testWidgets('điểm lấy hàng ngoài vùng phục vụ: báo lý do và khoá nút tạo đơn', (
-    tester,
-  ) async {
-    await pump(tester, quoteError: StateError('out of range'));
-    await tester.tap(find.byKey(const ValueKey('drone-pickup-location')));
-    await tester.pumpAndSettle();
+  testWidgets(
+    'điểm lấy hàng ngoài vùng phục vụ: báo lý do và khoá nút tạo đơn',
+    (tester) async {
+      await pump(tester, quoteError: StateError('out of range'));
+      await tester.tap(find.byKey(const ValueKey('drone-pickup-location')));
+      await tester.pumpAndSettle();
 
-    expect(find.byKey(const ValueKey('drone-quote-problem')), findsOneWidget);
-    final button = tester.widget<FilledButton>(
-      find.byKey(const ValueKey('drone-submit')),
-    );
-    expect(button.onPressed, isNull);
-  });
+      expect(find.byKey(const ValueKey('drone-quote-problem')), findsOneWidget);
+      final button = tester.widget<FilledButton>(
+        find.byKey(const ValueKey('drone-submit')),
+      );
+      expect(button.onPressed, isNull);
+    },
+  );
 
-  testWidgets('chỉ tủ đang hoạt động có bãi đáp mới là tủ nhận; đổi tủ thì bỏ ô đã chạm', (
-    tester,
-  ) async {
-    await pump(tester, destination: 5);
-    await tester.tap(find.byKey(const ValueKey('drone-destination-locker')));
-    await tester.pumpAndSettle();
-    expect(find.text('Locker C'), findsWidgets);
-    expect(find.text('Locker D'), findsNothing);
-    expect(find.text('Locker E'), findsNothing);
-    await tester.tap(find.text('Locker C').last);
-    await tester.pumpAndSettle();
+  testWidgets(
+    'chỉ tủ đang hoạt động có bãi đáp mới là tủ nhận; đổi tủ thì bỏ ô đã chạm',
+    (tester) async {
+      await pump(tester, destination: 5);
+      await tester.tap(find.byKey(const ValueKey('drone-destination-locker')));
+      await tester.pumpAndSettle();
+      expect(find.textContaining('Locker C'), findsWidgets);
+      expect(find.text('Locker D'), findsNothing);
+      expect(find.text('Locker E'), findsNothing);
+      await tester.tap(find.textContaining('Locker C').last);
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('drone-destination-box')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Ô số 1').last);
+      await tester.pumpAndSettle();
 
-    await tester.tap(find.byKey(const ValueKey('drone-pickup-location')));
-    await tester.pumpAndSettle();
-    await fillReceiver(tester);
-    await tester.tap(find.byKey(const ValueKey('drone-category-FOOD')));
-    await tester.tap(find.byKey(const ValueKey('drone-prohibited-declaration')));
-    await submit(tester);
+      await tester.tap(find.byKey(const ValueKey('drone-pickup-location')));
+      await tester.pumpAndSettle();
+      await fillReceiver(tester);
+      await tester.tap(find.byKey(const ValueKey('drone-category-FOOD')));
+      await tester.tap(
+        find.byKey(const ValueKey('drone-prohibited-declaration')),
+      );
+      await submit(tester);
 
-    final json = created.single.toJson();
-    expect(json['destinationLockerId'], 6);
-    // Ô 9001 thuộc tủ khách mở form từ đó, không phải tủ vừa đổi sang.
-    expect(json.containsKey('preferredBoxId'), isFalse);
-  });
+      final json = created.single.toJson();
+      expect(json['destinationLockerId'], 6);
+      expect(json['preferredBoxId'], 9001);
+    },
+  );
 
   testWidgets(
     'mã giảm giá theo tủ gửi + điểm thưởng: chỉ hiện mã dùng được ở tủ gửi, '
@@ -342,7 +413,9 @@ void main() {
       await tester.pumpAndSettle();
       await fillReceiver(tester);
       await tester.tap(find.byKey(const ValueKey('drone-category-DOCUMENT')));
-      await tester.tap(find.byKey(const ValueKey('drone-prohibited-declaration')));
+      await tester.tap(
+        find.byKey(const ValueKey('drone-prohibited-declaration')),
+      );
       await tester.pumpAndSettle();
 
       // Có báo giá (tủ gửi #3) ⇒ mở mục ưu đãi; điểm hỏi theo phí 24.000đ.
@@ -360,7 +433,11 @@ void main() {
 
       await tester.tap(find.text('TUA'));
       await tester.pumpAndSettle();
-      expect(service.validated.single, (code: 'TUA', lockerId: 3, orderTotal: 24000));
+      expect(service.validated.single, (
+        code: 'TUA',
+        lockerId: 3,
+        orderTotal: 24000,
+      ));
       expect(find.text('Đã áp mã "TUA"'), findsOneWidget);
 
       // Sau voucher còn 14.000đ ⇒ hỏi lại điểm theo số tiền mới (debounce).
@@ -370,7 +447,10 @@ void main() {
       await tester.tap(find.byKey(const ValueKey('loyalty-redeem-switch')));
       await tester.pumpAndSettle();
       expect(find.text('-7.000đ (70 điểm)'), findsOneWidget);
-      expect(find.textContaining('Tạo đơn và thanh toán 7.000đ'), findsOneWidget);
+      expect(
+        find.textContaining('Tạo đơn và thanh toán 7.000đ'),
+        findsOneWidget,
+      );
 
       await submit(tester);
       final json = created.single.toJson();
@@ -395,7 +475,9 @@ void main() {
 
     expect(find.textContaining('đang tạm dừng'), findsOneWidget);
     expect(
-      tester.widget<FilledButton>(find.byKey(const ValueKey('drone-submit'))).onPressed,
+      tester
+          .widget<FilledButton>(find.byKey(const ValueKey('drone-submit')))
+          .onPressed,
       isNull,
     );
   });

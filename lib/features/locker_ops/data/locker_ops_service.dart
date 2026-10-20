@@ -1529,6 +1529,7 @@ class LockerOpsService {
   Future<Map<String, dynamic>> confirmDronePickup(
     int orderId, {
     required String pickupCode,
+    required Map<String, dynamic> pickupPhoto,
     String? note,
   }) => _map(
     'POST',
@@ -1536,6 +1537,7 @@ class LockerOpsService {
     body: {
       'pickupCode': pickupCode.trim(),
       'parcelMatched': true,
+      'pickupPhoto': pickupPhoto,
       if (note != null && note.trim().isNotEmpty) 'note': note.trim(),
     },
   );

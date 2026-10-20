@@ -20,7 +20,7 @@ void main() {
     // Đơn lấy hàng tận nhà: chờ KTV nhận → KTV tới lấy → mang về tủ → nạp → bay.
     expect(find.text('Chờ kỹ thuật viên nhận lấy hàng'), findsOneWidget);
     expect(find.text('Kỹ thuật viên đang tới lấy hàng'), findsOneWidget);
-    expect(find.text('Đã lấy hàng, đang mang về tủ'), findsOneWidget);
+    expect(find.text('Đã lấy hàng, đang mang tới drone'), findsOneWidget);
     expect(find.text('Đang nạp hàng lên drone'), findsOneWidget);
     expect(find.text('Drone đã rời trạm'), findsOneWidget);
     expect(find.text('Drone đang trên đường'), findsOneWidget);

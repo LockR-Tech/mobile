@@ -701,6 +701,80 @@ class _PickupCard extends StatelessWidget {
             if (pickup.technicianNote != null)
               ('Ghi chú lúc lấy hàng', pickup.technicianNote!),
           ]),
+          if (pickup.pickupPhotoUrl case final photoUrl?) ...[
+            const SizedBox(height: 12),
+            const Text(
+              'Ảnh kiện lúc lấy hàng',
+              style: TextStyle(fontWeight: FontWeight.w600),
+            ),
+            const SizedBox(height: 6),
+            InkWell(
+              key: const ValueKey('drone-pickup-photo-thumbnail'),
+              onTap: () => showDialog<void>(
+                context: context,
+                builder: (dialogContext) => Dialog(
+                  backgroundColor: Colors.black,
+                  insetPadding: const EdgeInsets.all(16),
+                  child: Stack(
+                    children: [
+                      InteractiveViewer(
+                        child: Center(
+                          child: Image.network(
+                            photoUrl,
+                            fit: BoxFit.contain,
+                            errorBuilder: (_, __, ___) => const Padding(
+                              padding: EdgeInsets.all(24),
+                              child: Text(
+                                'Không tải được ảnh',
+                                style: TextStyle(color: Colors.white),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      Positioned(
+                        top: 4,
+                        right: 4,
+                        child: IconButton(
+                          onPressed: () => Navigator.pop(dialogContext),
+                          icon: const Icon(Icons.close, color: Colors.white),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              borderRadius: BorderRadius.circular(10),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(10),
+                child: Image.network(
+                  photoUrl,
+                  key: const ValueKey('drone-pickup-photo-image'),
+                  width: 88,
+                  height: 88,
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, __, ___) => Container(
+                    width: 88,
+                    height: 88,
+                    color: const Color(0xFFE2E8F0),
+                    alignment: Alignment.center,
+                    child: const Icon(Icons.broken_image_outlined),
+                  ),
+                ),
+              ),
+            ),
+            if (pickup.pickupPhotoCapturedAt != null)
+              Padding(
+                padding: const EdgeInsets.only(top: 4),
+                child: Text(
+                  'Chụp lúc ${formatDateTimeVn(pickup.pickupPhotoCapturedAt)}',
+                  style: const TextStyle(
+                    fontSize: 11,
+                    color: Color(0xFF64748B),
+                  ),
+                ),
+              ),
+          ],
         ],
       ),
     );
@@ -905,16 +979,16 @@ class _RouteCard extends StatelessWidget {
       child: Column(
         children: [
           _RoutePoint(
-            label: 'Tủ gửi · Locker A (nơi drone cất cánh)',
+            label: 'Tủ bay do hệ thống chọn (KTV nạp kiện trực tiếp lên drone)',
             point: status.sourceLocker,
             fallbackId: status.sourceLockerId,
             color: const Color(0xFF0F766E),
             extras: [
-              if (status.sourceBoxNumber != null)
-                'Bỏ kiện vào ô drone số ${status.sourceBoxNumber}',
+              if (status.pickup == null && status.sourceBoxNumber != null)
+                'Đơn cũ: kiện từng được gửi vào ô số ${status.sourceBoxNumber}',
               'Gửi đi lúc: ${formatDateTimeVn(sentAt, empty: 'Chưa gửi')}',
             ],
-            directionsLabel: 'Chỉ đường tới tủ gửi',
+            directionsLabel: 'Chỉ đường tới drone tại tủ bay',
           ),
           Align(
             alignment: Alignment.centerLeft,
@@ -926,7 +1000,7 @@ class _RouteCard extends StatelessWidget {
             ),
           ),
           _RoutePoint(
-            label: 'Tủ nhận · Locker B (nơi lấy hàng)',
+            label: 'Tủ nhận bạn đã chọn (người nhận lấy hàng)',
             point: status.destinationLocker,
             fallbackId: status.destinationLockerId,
             color: AISLShadcnTheme.navyAccent,
@@ -1114,7 +1188,14 @@ class _OrderCard extends StatelessWidget {
           ('Mã giao dịch', status.paymentTransactionId!),
         if (status.paidAt != null)
           ('Thanh toán lúc', formatDateTimeVn(status.paidAt)),
-        ('Ô nhận tại tủ đích', box == null ? '—' : 'Ô số $box'),
+        (
+          'Tủ nhận',
+          status.destinationLocker?.displayName ??
+              (status.destinationLockerId == null
+                  ? 'Chưa xác định'
+                  : 'Tủ #${status.destinationLockerId}'),
+        ),
+        ('Ô nhận tại tủ', box == null ? 'Chưa gán ô' : 'Ô số $box'),
         ('Khối lượng khai báo', droneWeightLabel(status.expectedWeightGrams)),
         if (status.parcelCategory != null)
           ('Loại hàng', droneParcelCategoryLabel(status.parcelCategory)),

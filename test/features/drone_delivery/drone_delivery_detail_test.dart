@@ -19,7 +19,11 @@ Map<String, dynamic> _raw(Map<String, dynamic> extra) => {
   'totalPrice': 24000,
   'parcelWeightGrams': 1200,
   'parcelReturnPending': false,
-  'sender': {'name': 'Nguyễn Văn Gửi', 'phone': '0901000111', 'email': 'gui@gmail.com'},
+  'sender': {
+    'name': 'Nguyễn Văn Gửi',
+    'phone': '0901000111',
+    'email': 'gui@gmail.com',
+  },
   'receiverName': 'Trần Thị Nhận',
   'receiverPhone': '0902000222',
   'receiverEmail': 'nhan@gmail.com',
@@ -104,39 +108,79 @@ void main() {
     expect(_status({'deliveryStage': 'PICKED_UP'}).canCustomerCancel, isFalse);
   });
 
-  testWidgets('người gửi thấy mã lấy hàng, kỹ thuật viên đang tới và được huỷ đơn', (
+  testWidgets(
+    'người gửi thấy mã lấy hàng, kỹ thuật viên đang tới và được huỷ đơn',
+    (tester) async {
+      await pump(tester, _status());
+
+      expect(find.text('Kỹ Thuật Viên A đang tới lấy hàng'), findsOneWidget);
+      expect(find.byKey(const ValueKey('drone-pickup-code')), findsOneWidget);
+      expect(find.text('482913'), findsOneWidget);
+      expect(find.text('0909999999'), findsOneWidget);
+      expect(find.text('12 Nguyễn Huệ, Quận 1'), findsOneWidget);
+      expect(find.text('Huỷ đơn'), findsWidgets);
+      // Timeline có hai chặng lấy hàng tận nhà.
+      expect(find.text('Kỹ thuật viên đang tới lấy hàng'), findsWidgets);
+      expect(find.text('Đã lấy hàng, đang mang tới drone'), findsOneWidget);
+      expect(find.text('gui@gmail.com'), findsOneWidget);
+      expect(find.text('nhan@gmail.com'), findsOneWidget);
+      // Mã lấy hàng tận nhà là để đọc cho kỹ thuật viên, không chia sẻ cho người nhận.
+      expect(find.text('Chia sẻ mã cho người nhận'), findsNothing);
+    },
+  );
+
+  testWidgets('chi tiết đơn hiển thị rõ tên tủ nhận và số ô đã chọn', (
     tester,
   ) async {
-    await pump(tester, _status());
+    await pump(
+      tester,
+      _status({
+        'destinationLockerId': 8,
+        'destinationLocker': {
+          'lockerId': 8,
+          'name': 'Locker Vinhomes',
+          'code': 'CAB-VGP-01',
+          'address': 'Sảnh S5.02',
+        },
+        'reservedBoxNumber': 2,
+        'reservedBoxId': 99,
+      }),
+    );
 
-    expect(find.text('Kỹ Thuật Viên A đang tới lấy hàng'), findsOneWidget);
-    expect(find.byKey(const ValueKey('drone-pickup-code')), findsOneWidget);
-    expect(find.text('482913'), findsOneWidget);
-    expect(find.text('0909999999'), findsOneWidget);
-    expect(find.text('12 Nguyễn Huệ, Quận 1'), findsOneWidget);
-    expect(find.text('Huỷ đơn'), findsWidgets);
-    // Timeline có hai chặng lấy hàng tận nhà.
-    expect(find.text('Kỹ thuật viên đang tới lấy hàng'), findsWidgets);
-    expect(find.text('Đã lấy hàng, đang mang về tủ'), findsOneWidget);
-    expect(find.text('gui@gmail.com'), findsOneWidget);
-    expect(find.text('nhan@gmail.com'), findsOneWidget);
-    // Mã lấy hàng tận nhà là để đọc cho kỹ thuật viên, không chia sẻ cho người nhận.
-    expect(find.text('Chia sẻ mã cho người nhận'), findsNothing);
+    expect(find.text('Locker Vinhomes (CAB-VGP-01)'), findsWidgets);
+    expect(find.text('Ô số 2'), findsWidgets);
+    expect(
+      find.text('Tủ nhận bạn đã chọn (người nhận lấy hàng)'),
+      findsOneWidget,
+    );
   });
 
-  testWidgets('người nhận chỉ theo dõi: không thấy mã lấy hàng, không huỷ, không thanh toán', (
+  testWidgets(
+    'người nhận chỉ theo dõi: không thấy mã lấy hàng, không huỷ, không thanh toán',
+    (tester) async {
+      // Server không trả mã lấy hàng cho người nhận; kể cả có thì app cũng không hiện.
+      await pump(
+        tester,
+        _status({
+          'paymentStatus': 'UNPAID',
+          'deliveryStage': 'AWAITING_DISPATCH',
+        }),
+        isSender: false,
+      );
+
+      expect(find.byKey(const ValueKey('drone-pickup-code')), findsNothing);
+      expect(find.text('Thanh toán ngay'), findsNothing);
+      expect(find.text('Huỷ đơn'), findsNothing);
+      expect(
+        find.textContaining('sau khi người gửi thanh toán'),
+        findsOneWidget,
+      );
+    },
+  );
+
+  testWidgets('kỹ thuật viên không được thấy mã lấy hàng của người gửi', (
     tester,
   ) async {
-    // Server không trả mã lấy hàng cho người nhận; kể cả có thì app cũng không hiện.
-    await pump(tester, _status({'paymentStatus': 'UNPAID', 'deliveryStage': 'AWAITING_DISPATCH'}), isSender: false);
-
-    expect(find.byKey(const ValueKey('drone-pickup-code')), findsNothing);
-    expect(find.text('Thanh toán ngay'), findsNothing);
-    expect(find.text('Huỷ đơn'), findsNothing);
-    expect(find.textContaining('sau khi người gửi thanh toán'), findsOneWidget);
-  });
-
-  testWidgets('kỹ thuật viên không được thấy mã lấy hàng của người gửi', (tester) async {
     await pump(tester, _status(), forOperator: true);
 
     expect(find.byKey(const ValueKey('drone-pickup-code')), findsNothing);
@@ -144,7 +188,9 @@ void main() {
     expect(find.text('Gọi trước khi tới'), findsOneWidget);
   });
 
-  testWidgets('đơn đang gặp sự cố: lý do, phiếu sự cố và hạn tự hoàn tiền', (tester) async {
+  testWidgets('đơn đang gặp sự cố: lý do, phiếu sự cố và hạn tự hoàn tiền', (
+    tester,
+  ) async {
     await pump(
       tester,
       _status({
@@ -160,57 +206,83 @@ void main() {
 
     final banner = find.byKey(const ValueKey('drone-block-banner'));
     expect(banner, findsOneWidget);
-    expect(find.descendant(of: banner, matching: find.textContaining('Drone gặp sự cố')), findsOneWidget);
-    expect(find.descendant(of: banner, matching: find.textContaining('Phiếu sự cố: #77')), findsOneWidget);
-    expect(find.descendant(of: banner, matching: find.textContaining('bạn được hoàn tiền')), findsOneWidget);
-  });
-
-  testWidgets('giao không hoàn tất: lý do, phiếu, hoàn tiền và kiện được mang trả', (
-    tester,
-  ) async {
-    await pump(
-      tester,
-      _status({
-        'status': 'CANCELED',
-        'deliveryStage': 'FAILED',
-        'paymentStatus': 'REFUND_PENDING',
-        'parcelReturnPending': true,
-        'parcelHeldAt': 'FLIGHT_TEAM',
-        'pickup': {'status': 'PICKED_UP', 'address': '12 Nguyễn Huệ, Quận 1'},
-        'failure': {
-          'reason': 'DRONE_FAULT',
-          'reasonLabel': 'Drone gặp sự cố',
-          'ticketId': 77,
-          'at': '2026-10-12T03:31:00',
-        },
-      }),
+    expect(
+      find.descendant(
+        of: banner,
+        matching: find.textContaining('Drone gặp sự cố'),
+      ),
+      findsOneWidget,
     );
-
-    expect(find.text('Giao không hoàn tất'), findsWidgets);
-    expect(find.textContaining('Lý do: Drone gặp sự cố'), findsOneWidget);
-    expect(find.textContaining('Phiếu sự cố: #77'), findsOneWidget);
-    expect(find.textContaining('Yêu cầu hoàn tiền đã được ghi nhận'), findsOneWidget);
-    expect(find.textContaining('mang trả lại tại 12 Nguyễn Huệ, Quận 1'), findsOneWidget);
-    // Đơn đã đóng: không còn thẻ lấy hàng, mã lấy hàng hay nút huỷ.
-    expect(find.byKey(const ValueKey('drone-pickup-headline')), findsNothing);
-    expect(find.text('Huỷ đơn'), findsNothing);
+    expect(
+      find.descendant(
+        of: banner,
+        matching: find.textContaining('Phiếu sự cố: #77'),
+      ),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(
+        of: banner,
+        matching: find.textContaining('bạn được hoàn tiền'),
+      ),
+      findsOneWidget,
+    );
   });
 
-  testWidgets('đơn cũ khách tự mang kiện ra tủ không có chặng lấy hàng tận nhà', (
-    tester,
-  ) async {
-    final legacy = DroneDeliveryResponse.fromJson({
-      'orderId': 9,
-      'status': 'AWAITING_DISPATCH',
-      'deliveryStage': 'ACCEPTED',
-      'paymentStatus': 'PAID',
-      'parcelReturnPending': false,
-    }).toEntity();
-    await pump(tester, legacy);
+  testWidgets(
+    'giao không hoàn tất: lý do, phiếu, hoàn tiền và kiện được mang trả',
+    (tester) async {
+      await pump(
+        tester,
+        _status({
+          'status': 'CANCELED',
+          'deliveryStage': 'FAILED',
+          'paymentStatus': 'REFUND_PENDING',
+          'parcelReturnPending': true,
+          'parcelHeldAt': 'FLIGHT_TEAM',
+          'pickup': {'status': 'PICKED_UP', 'address': '12 Nguyễn Huệ, Quận 1'},
+          'failure': {
+            'reason': 'DRONE_FAULT',
+            'reasonLabel': 'Drone gặp sự cố',
+            'ticketId': 77,
+            'at': '2026-10-12T03:31:00',
+          },
+        }),
+      );
 
-    expect(legacy.pickup, isNull);
-    expect(find.text('Lấy hàng tận nhà'), findsNothing);
-    expect(find.text('Đã lấy hàng, đang mang về tủ'), findsNothing);
-    expect(find.text('Đang nạp hàng lên drone'), findsWidgets);
-  });
+      expect(find.text('Giao không hoàn tất'), findsWidgets);
+      expect(find.textContaining('Lý do: Drone gặp sự cố'), findsOneWidget);
+      expect(find.textContaining('Phiếu sự cố: #77'), findsOneWidget);
+      expect(
+        find.textContaining('Yêu cầu hoàn tiền đã được ghi nhận'),
+        findsOneWidget,
+      );
+      expect(
+        find.textContaining('mang trả lại tại 12 Nguyễn Huệ, Quận 1'),
+        findsOneWidget,
+      );
+      // Đơn đã đóng: không còn thẻ lấy hàng, mã lấy hàng hay nút huỷ.
+      expect(find.byKey(const ValueKey('drone-pickup-headline')), findsNothing);
+      expect(find.text('Huỷ đơn'), findsNothing);
+    },
+  );
+
+  testWidgets(
+    'đơn cũ khách tự mang kiện ra tủ không có chặng lấy hàng tận nhà',
+    (tester) async {
+      final legacy = DroneDeliveryResponse.fromJson({
+        'orderId': 9,
+        'status': 'AWAITING_DISPATCH',
+        'deliveryStage': 'ACCEPTED',
+        'paymentStatus': 'PAID',
+        'parcelReturnPending': false,
+      }).toEntity();
+      await pump(tester, legacy);
+
+      expect(legacy.pickup, isNull);
+      expect(find.text('Lấy hàng tận nhà'), findsNothing);
+      expect(find.text('Đã lấy hàng, đang mang tới drone'), findsNothing);
+      expect(find.text('Đang nạp hàng lên drone'), findsWidgets);
+    },
+  );
 }

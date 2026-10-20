@@ -29,6 +29,9 @@ typedef DroneQuoteLoader =
       required int parcelWeightGrams,
     });
 
+typedef DroneSlotLoader =
+    Future<List<Map<String, dynamic>>> Function(int lockerId);
+
 typedef PickupLocationPicker =
     Future<PickupLocation?> Function(
       BuildContext context,
@@ -39,9 +42,7 @@ Future<PickupLocation?> _pushLocationPicker(
   BuildContext context,
   PickupLocation? current,
 ) => Navigator.of(context).push<PickupLocation>(
-  MaterialPageRoute(
-    builder: (_) => PickupLocationPickerPage(initial: current),
-  ),
+  MaterialPageRoute(builder: (_) => PickupLocationPickerPage(initial: current)),
 );
 
 /// Đặt giao hàng bằng drone, lấy hàng tận nhà.
@@ -58,6 +59,7 @@ class DroneBookingPage extends StatefulWidget {
     this.initialSender,
     this.destinationLockers,
     this.loadQuote,
+    this.loadDroneSlots,
     this.createOrder,
     this.payOrder,
     this.pickLocation = _pushLocationPicker,
@@ -76,6 +78,7 @@ class DroneBookingPage extends StatefulWidget {
   final DroneContact? initialSender;
   final List<Map<String, dynamic>>? destinationLockers;
   final DroneQuoteLoader? loadQuote;
+  final DroneSlotLoader? loadDroneSlots;
   final DroneOrderCreator? createOrder;
   final DroneOrderPayer? payOrder;
   final PickupLocationPicker pickLocation;
@@ -114,8 +117,11 @@ class _DroneBookingPageState extends State<DroneBookingPage>
 
   PickupLocation? _pickup;
   List<Map<String, dynamic>> _destinations = const [];
+  final Map<int, int?> _availableDroneSlots = {};
+  final Map<int, List<Map<String, dynamic>>> _availableDroneBoxes = {};
   bool _loadingDestinations = true;
   int? _destinationLockerId;
+  int? _destinationBoxId;
   int? _weightGrams;
   String? _category;
   bool _fragile = false;
@@ -182,6 +188,7 @@ class _DroneBookingPageState extends State<DroneBookingPage>
   void initState() {
     super.initState();
     _destinationLockerId = widget.initialDestinationLockerId;
+    _destinationBoxId = widget.preferredBoxId;
     _prefillSender();
     _loadDestinations();
   }
@@ -232,6 +239,47 @@ class _DroneBookingPageState extends State<DroneBookingPage>
               : null;
         }
       });
+      await Future.wait(
+        destinations.map((locker) async {
+          final id = _asInt(locker['id']);
+          if (id == null) return;
+          try {
+            final boxes =
+                await (widget.loadDroneSlots ??
+                    (lockerId) async {
+                      final layout = await LockerOpsService().layout(lockerId);
+                      final cells = layout['cells'];
+                      return cells is List
+                          ? cells
+                                .whereType<Map>()
+                                .where(
+                                  (cell) =>
+                                      '${cell['cellType']}'.toUpperCase() ==
+                                          'DRONE' &&
+                                      '${cell['status']}'.toUpperCase() ==
+                                          'AVAILABLE',
+                                )
+                                .map((cell) => Map<String, dynamic>.from(cell))
+                                .toList(growable: false)
+                          : <Map<String, dynamic>>[];
+                    })(id);
+            if (mounted) {
+              setState(() {
+                _availableDroneBoxes[id] = boxes;
+                _availableDroneSlots[id] = boxes.length;
+              });
+              if (id == _destinationLockerId &&
+                  boxes.every(
+                    (box) => _asInt(box['id']) != _destinationBoxId,
+                  )) {
+                setState(() => _destinationBoxId = null);
+              }
+            }
+          } catch (_) {
+            if (mounted) setState(() => _availableDroneSlots[id] = null);
+          }
+        }),
+      );
       _refreshQuote();
     } catch (_) {
       if (mounted) setState(() => _destinations = const []);
@@ -370,7 +418,12 @@ class _DroneBookingPageState extends State<DroneBookingPage>
       _showMessage('Chọn điểm lấy hàng');
       return null;
     }
-    final sender = _readContact('người gửi', _senderName, _senderPhone, _senderEmail);
+    final sender = _readContact(
+      'người gửi',
+      _senderName,
+      _senderPhone,
+      _senderEmail,
+    );
     if (sender == null) return null;
     final receiver = _readContact(
       'người nhận',
@@ -384,18 +437,44 @@ class _DroneBookingPageState extends State<DroneBookingPage>
       _showMessage('Chọn tủ nhận');
       return null;
     }
+    final availableDroneSlots = _availableDroneSlots[destination];
+    if (availableDroneSlots == null) {
+      _showMessage(
+        'Đang kiểm tra ô drone trống của tủ nhận, vui lòng chờ một chút',
+      );
+      return null;
+    }
+    if (availableDroneSlots == 0) {
+      _showMessage('Tủ nhận này đã hết ô drone trống, hãy chọn tủ khác');
+      return null;
+    }
+    final destinationBox = _destinationBoxId;
+    if (destinationBox == null ||
+        !(_availableDroneBoxes[destination]?.any(
+              (box) => _asInt(box['id']) == destinationBox,
+            ) ??
+            false)) {
+      _showMessage('Chọn ô drone nhận còn trống tại tủ nhận');
+      return null;
+    }
     final category = _category;
     if (category == null) {
       _showMessage('Chọn loại hàng');
       return null;
     }
 
-    final sizeTexts = [_length.text.trim(), _width.text.trim(), _height.text.trim()];
+    final sizeTexts = [
+      _length.text.trim(),
+      _width.text.trim(),
+      _height.text.trim(),
+    ];
     List<int>? size;
     if (sizeTexts.any((text) => text.isNotEmpty)) {
       final parsed = sizeTexts.map(int.tryParse).toList();
       if (parsed.any((value) => value == null || value <= 0)) {
-        _showMessage('Nhập đủ dài, rộng, cao của kiện (cm) hoặc bỏ trống cả ba');
+        _showMessage(
+          'Nhập đủ dài, rộng, cao của kiện (cm) hoặc bỏ trống cả ba',
+        );
         return null;
       }
       size = parsed.cast<int>();
@@ -429,9 +508,7 @@ class _DroneBookingPageState extends State<DroneBookingPage>
     return DroneBookingRequest(
       destinationLockerId: destination,
       // Ô đã chạm chỉ có nghĩa khi tủ nhận vẫn là tủ khách mở form từ đó.
-      preferredBoxId: destination == widget.initialDestinationLockerId
-          ? widget.preferredBoxId
-          : null,
+      preferredBoxId: destinationBox,
       pickup: pickup,
       pickupNote: note.isEmpty ? null : note,
       sender: sender,
@@ -501,9 +578,7 @@ class _DroneBookingPageState extends State<DroneBookingPage>
         orderId: orderId,
         // Server là nguồn đúng (`amountDue`/`totalPrice`); server cũ không trả
         // số tiền thì dùng tạm tính trên màn.
-        total: due > 0
-            ? due
-            : (_netFee > 0 ? _netFee : _fee).toDouble(),
+        total: due > 0 ? due : (_netFee > 0 ? _netFee : _fee).toDouble(),
       );
       return droneOrderPaymentMessage(outcome);
     } catch (error) {
@@ -517,7 +592,8 @@ class _DroneBookingPageState extends State<DroneBookingPage>
   @override
   Widget build(BuildContext context) {
     final suspended = businessConfig.droneFlightsSuspended;
-    final fee = _quote?.fee ?? businessConfig.droneDeliveryFeeFor(_selectedWeight);
+    final fee =
+        _quote?.fee ?? businessConfig.droneDeliveryFeeFor(_selectedWeight);
     return Scaffold(
       backgroundColor: const Color(0xFFF6F8FB),
       appBar: AppBar(title: const Text('Gửi hàng bằng drone')),
@@ -530,7 +606,8 @@ class _DroneBookingPageState extends State<DroneBookingPage>
             background: Color(0xFFEEF2FF),
             text:
                 'Đặt và thanh toán xong, kỹ thuật viên drone gần bạn nhất sẽ tới lấy '
-                'kiện, mang về tủ gần bạn rồi phóng drone tới tủ nhận. Người nhận '
+                'kiện, mang tới drone tại tủ bay để nạp trực tiếp lên drone (không bỏ vào ô tủ), '
+                'rồi drone bay tới ô nhận bạn đã chọn. Người nhận '
                 'lấy hàng bằng mã mở ô gửi qua email.',
           ),
           if (suspended) ...[
@@ -617,8 +694,11 @@ class _DroneBookingPageState extends State<DroneBookingPage>
                 for (final locker in _destinations)
                   DropdownMenuItem<int>(
                     value: _asInt(locker['id']),
+                    enabled:
+                        (_availableDroneSlots[_asInt(locker['id'])] ?? 0) > 0,
                     child: Text(
-                      '${locker['name'] ?? locker['code'] ?? 'Tủ #${locker['id']}'}',
+                      '${locker['name'] ?? locker['code'] ?? 'Tủ #${locker['id']}'} · '
+                      '${_availableDroneSlots[_asInt(locker['id'])] ?? 'đang kiểm tra'} ô drone trống',
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
@@ -626,10 +706,52 @@ class _DroneBookingPageState extends State<DroneBookingPage>
               onChanged: _loadingDestinations
                   ? null
                   : (value) {
-                      setState(() => _destinationLockerId = value);
+                      setState(() {
+                        _destinationLockerId = value;
+                        _destinationBoxId = null;
+                      });
                       _refreshQuote();
                     },
             ),
+            if (_destinationLockerId != null) ...[
+              const SizedBox(height: 10),
+              DropdownButtonFormField<int>(
+                key: const ValueKey('drone-destination-box'),
+                initialValue: _destinationBoxId,
+                isExpanded: true,
+                decoration: const InputDecoration(
+                  labelText: 'Ô drone nhận *',
+                  prefixIcon: Icon(Icons.grid_view_rounded),
+                  border: OutlineInputBorder(),
+                  filled: true,
+                  fillColor: Colors.white,
+                ),
+                hint: Text(
+                  (_availableDroneBoxes[_destinationLockerId] ?? const [])
+                          .isEmpty
+                      ? 'Không còn ô drone nhận trống'
+                      : 'Chọn ô người nhận sẽ lấy hàng',
+                ),
+                items: [
+                  for (final box
+                      in _availableDroneBoxes[_destinationLockerId] ?? const [])
+                    if (_asInt(box['id']) != null)
+                      DropdownMenuItem<int>(
+                        value: _asInt(box['id']),
+                        child: Text('Ô số ${box['boxNumber'] ?? box['id']}'),
+                      ),
+                ],
+                onChanged: (value) => setState(() => _destinationBoxId = value),
+              ),
+            ],
+            if (_destinationLockerId != null) ...[
+              const SizedBox(height: 6),
+              Text(
+                'Ô nhận drone còn trống: ${_availableDroneSlots[_destinationLockerId] ?? 'đang kiểm tra'}',
+                key: const ValueKey('drone-destination-availability'),
+                style: const TextStyle(fontSize: 12, color: Color(0xFF15803D)),
+              ),
+            ],
           ]),
           _section('Kiện hàng', Icons.inventory_2_outlined, [
             Text(
@@ -663,7 +785,10 @@ class _DroneBookingPageState extends State<DroneBookingPage>
               style: const TextStyle(fontSize: 12, color: Colors.black54),
             ),
             const SizedBox(height: 12),
-            const Text('Loại hàng *', style: TextStyle(fontWeight: FontWeight.w700)),
+            const Text(
+              'Loại hàng *',
+              style: TextStyle(fontWeight: FontWeight.w700),
+            ),
             const SizedBox(height: 8),
             Wrap(
               spacing: 8,
@@ -781,7 +906,8 @@ class _DroneBookingPageState extends State<DroneBookingPage>
               Checkbox(
                 key: const ValueKey('drone-prohibited-declaration'),
                 value: _declared,
-                onChanged: (value) => setState(() => _declared = value ?? false),
+                onChanged: (value) =>
+                    setState(() => _declared = value ?? false),
               ),
               Expanded(
                 child: GestureDetector(
@@ -900,34 +1026,38 @@ class _DroneBookingPageState extends State<DroneBookingPage>
     ]);
   }
 
-  Widget _section(String title, IconData icon, List<Widget> children) => Padding(
-    padding: const EdgeInsets.only(top: 14),
-    child: Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
+  Widget _section(String title, IconData icon, List<Widget> children) =>
+      Padding(
+        padding: const EdgeInsets.only(top: 14),
+        child: Container(
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: const Color(0xFFE2E8F0)),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Icon(icon, size: 18, color: opsPrimary),
-              const SizedBox(width: 8),
-              Text(
-                title,
-                style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 15),
+              Row(
+                children: [
+                  Icon(icon, size: 18, color: opsPrimary),
+                  const SizedBox(width: 8),
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w800,
+                      fontSize: 15,
+                    ),
+                  ),
+                ],
               ),
+              const SizedBox(height: 12),
+              ...children,
             ],
           ),
-          const SizedBox(height: 12),
-          ...children,
-        ],
-      ),
-    ),
-  );
+        ),
+      );
 
   Widget _field(
     String key,
@@ -1013,7 +1143,9 @@ class _PickupTile extends StatelessWidget {
         child: Row(
           children: [
             Icon(
-              pickup == null ? Icons.add_location_alt_outlined : Icons.location_on,
+              pickup == null
+                  ? Icons.add_location_alt_outlined
+                  : Icons.location_on,
               color: pickup == null ? const Color(0xFFDC2626) : opsPrimary,
             ),
             const SizedBox(width: 10),
@@ -1105,7 +1237,7 @@ class _QuotePanel extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Drone cất cánh tại ${quote.sourceLockerName}',
+          'Tủ bay do hệ thống chọn: ${quote.sourceLockerName}',
           style: const TextStyle(fontWeight: FontWeight.w700),
         ),
         if (quote.sourceLockerAddress != null)
@@ -1116,8 +1248,8 @@ class _QuotePanel extends StatelessWidget {
         const SizedBox(height: 6),
         Text(
           'Kỹ thuật viên mang kiện ${droneDistanceLabel(quote.pickupDistanceMeters)} '
-          'tới tủ gửi · drone bay ${droneDistanceLabel(quote.routeDistanceMeters)} '
-          'tới tủ nhận',
+          'tới drone ở tủ bay để nạp trực tiếp · drone bay '
+          '${droneDistanceLabel(quote.routeDistanceMeters)} tới ô nhận tại tủ đích',
           style: const TextStyle(fontSize: 12.5),
         ),
         const SizedBox(height: 6),

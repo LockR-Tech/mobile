@@ -49,6 +49,7 @@ class _FakeService extends LockerOpsService {
   Future<Map<String, dynamic>> confirmDronePickup(
     int orderId, {
     required String pickupCode,
+    required Map<String, dynamic> pickupPhoto,
     String? note,
   }) async {
     calls.add('confirm $orderId code=$pickupCode');
@@ -89,8 +90,17 @@ Map<String, dynamic> _order(
   'parcelCategory': 'DOCUMENT',
   'fragile': true,
   'sourceLockerId': 3,
-  'sourceLocker': {'name': 'Locker A', 'address': '1 Lê Lợi', 'latitude': 10.701, 'longitude': 106.7},
-  'sender': {'name': 'Nguyễn Văn Gửi', 'phone': '0901000111', 'email': 'gui@gmail.com'},
+  'sourceLocker': {
+    'name': 'Locker A',
+    'address': '1 Lê Lợi',
+    'latitude': 10.701,
+    'longitude': 106.7,
+  },
+  'sender': {
+    'name': 'Nguyễn Văn Gửi',
+    'phone': '0901000111',
+    'email': 'gui@gmail.com',
+  },
   'pickup': {
     'status': pickupStatus,
     'address': '12 Nguyễn Huệ',
@@ -98,7 +108,10 @@ Map<String, dynamic> _order(
     'longitude': 106.7,
     'note': 'Gọi trước',
     'technicianDistanceMeters': 850,
-    'offerExpiresAt': DateTime.now().toUtc().add(const Duration(minutes: 2)).toIso8601String(),
+    'offerExpiresAt': DateTime.now()
+        .toUtc()
+        .add(const Duration(minutes: 2))
+        .toIso8601String(),
   },
   if (block != null) 'block': block,
 };
@@ -146,7 +159,9 @@ void main() {
     await tester.pump();
   }
 
-  testWidgets('vào ca phải kèm vị trí hiện tại; ra ca thì thôi được mời', (tester) async {
+  testWidgets('vào ca phải kèm vị trí hiện tại; ra ca thì thôi được mời', (
+    tester,
+  ) async {
     await pump(tester, const []);
     expect(find.text('Chưa vào ca lấy hàng'), findsOneWidget);
 
@@ -164,121 +179,168 @@ void main() {
   });
 
   testWidgets('không có GPS thì không vào ca được', (tester) async {
-    await pump(tester, const [], position: (null, 'Dịch vụ vị trí đang tắt. Vui lòng bật GPS.'));
+    await pump(
+      tester,
+      const [],
+      position: (null, 'Dịch vụ vị trí đang tắt. Vui lòng bật GPS.'),
+    );
 
     await tester.tap(find.byKey(const ValueKey('drone-duty-switch')));
     await tester.pump();
     await tester.pump();
 
     expect(service.calls, isEmpty);
-    expect(find.text('Dịch vụ vị trí đang tắt. Vui lòng bật GPS.'), findsOneWidget);
+    expect(
+      find.text('Dịch vụ vị trí đang tắt. Vui lòng bật GPS.'),
+      findsOneWidget,
+    );
     expect(find.text('Chưa vào ca lấy hàng'), findsOneWidget);
   });
 
-  testWidgets('lời mời: thấy địa chỉ, khoảng cách, kiện, hạn trả lời; nhận hoặc từ chối', (
+  testWidgets(
+    'lời mời: thấy địa chỉ, khoảng cách, kiện, hạn trả lời; nhận hoặc từ chối',
+    (tester) async {
+      await pump(tester, [
+        _order(21, 'OFFERED', 'AWAITING_DISPATCH'),
+        _order(22, 'OFFERED', 'AWAITING_DISPATCH'),
+      ]);
+
+      expect(find.text('Lời mời lấy hàng (2)'), findsOneWidget);
+      expect(find.text('Lấy tại: 12 Nguyễn Huệ'), findsNWidgets(2));
+      expect(find.textContaining('Cách bạn 850 m'), findsNWidgets(2));
+      expect(find.textContaining('DỄ VỠ'), findsNWidgets(2));
+      expect(find.textContaining('Trả lời còn 1:'), findsNWidgets(2));
+
+      await tester.tap(find.byKey(const ValueKey('drone-pickup-accept-21')));
+      await tester.pump();
+      await tester.pump();
+      expect(service.calls, ['accept 21']);
+      expect(reloads, 1);
+
+      await tester.tap(find.byKey(const ValueKey('drone-pickup-decline-22')));
+      await tester.pump();
+      await tester.pump();
+      expect(service.calls.last, 'decline 22');
+    },
+  );
+
+  testWidgets(
+    'đang đi lấy hàng: cần đúng 6 số mã lấy hàng và xác nhận kiện đúng khai báo',
+    (tester) async {
+      await pump(tester, [_order(21, 'ACCEPTED', 'PICKUP_ASSIGNED')]);
+
+      expect(find.text('Đang đi lấy hàng (1)'), findsOneWidget);
+      expect(
+        find.text('Người gửi: Nguyễn Văn Gửi · 0901000111'),
+        findsOneWidget,
+      );
+      expect(find.text('Chỉ dẫn: Gọi trước'), findsOneWidget);
+
+      await tester.tap(find.byKey(const ValueKey('drone-pickup-done-21')));
+      await tester.pumpAndSettle();
+      await tester.enterText(
+        find.byKey(const ValueKey('drone-pickup-code-input')),
+        '123',
+      );
+      await tester.tap(find.byKey(const ValueKey('drone-pickup-confirm')));
+      await tester.pumpAndSettle();
+      expect(find.text('Nhập đủ 6 chữ số'), findsOneWidget);
+
+      await tester.enterText(
+        find.byKey(const ValueKey('drone-pickup-code-input')),
+        '123456',
+      );
+      await tester.tap(find.byKey(const ValueKey('drone-pickup-confirm')));
+      await tester.pumpAndSettle();
+      expect(
+        find.textContaining('Cần xác nhận kiện đúng khai báo'),
+        findsOneWidget,
+      );
+      expect(service.calls, isEmpty);
+
+      await tester.tap(find.byKey(const ValueKey('drone-pickup-matched')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('drone-pickup-confirm')));
+      await tester.pumpAndSettle();
+      expect(find.text('Cần chụp ảnh kiện trước khi xác nhận'), findsOneWidget);
+      expect(service.calls, isEmpty);
+    },
+  );
+
+  testWidgets(
+    'không lấy được hàng: chọn lý do, lý do "Khác" bắt buộc ghi chú',
+    (tester) async {
+      await pump(tester, [_order(21, 'ACCEPTED', 'PICKUP_ASSIGNED')]);
+
+      await tester.tap(find.byKey(const ValueKey('drone-pickup-fail-21')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('drone-reason-OTHER')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('drone-reason-confirm')));
+      await tester.pumpAndSettle();
+      expect(find.text('Cần nhập ghi chú cho lý do này'), findsOneWidget);
+      expect(service.calls, isEmpty);
+
+      await tester.tap(
+        find.byKey(const ValueKey('drone-reason-PICKUP_CUSTOMER_ABSENT')),
+      );
+      await tester.pumpAndSettle();
+      await tester.enterText(
+        find.byKey(const ValueKey('drone-reason-note')),
+        'Gọi 3 lần không nghe',
+      );
+      await tester.tap(find.byKey(const ValueKey('drone-reason-confirm')));
+      await tester.pumpAndSettle();
+
+      expect(service.calls, [
+        'pickup-fail 21 PICKUP_CUSTOMER_ABSENT note=Gọi 3 lần không nghe',
+      ]);
+    },
+  );
+
+  testWidgets(
+    'đã lấy hàng: mang về tủ gửi, gán drone, hoặc đóng đơn theo lý do đang chặn',
+    (tester) async {
+      await pump(tester, [
+        _order(
+          21,
+          'PICKED_UP',
+          'PICKED_UP',
+          block: {
+            'reason': 'WEATHER',
+            'reasonLabel': 'Tạm dừng bay do thời tiết',
+            'ticketId': 77,
+          },
+        ),
+        // Đã gán drone rồi (chặng ACCEPTED) thì không còn ở mục "mang về tủ".
+        _order(22, 'PICKED_UP', 'ACCEPTED'),
+      ]);
+
+      expect(
+        find.text('Đã lấy hàng · chờ nạp trực tiếp lên drone (1)'),
+        findsOneWidget,
+      );
+      expect(find.text('Mang kiện tới drone tại: Locker A'), findsOneWidget);
+      expect(
+        find.text('Đang gặp sự cố: Tạm dừng bay do thời tiết · phiếu #77'),
+        findsOneWidget,
+      );
+
+      await tester.tap(find.byKey(const ValueKey('drone-assign-drone-21')));
+      expect(assigned!['orderId'], 21);
+
+      await tester.tap(find.byKey(const ValueKey('drone-delivery-fail-21')));
+      await tester.pumpAndSettle();
+      // Lý do đang chặn đơn được chọn sẵn.
+      await tester.tap(find.byKey(const ValueKey('drone-reason-confirm')));
+      await tester.pumpAndSettle();
+      expect(service.calls, ['fail 21 WEATHER note=null']);
+    },
+  );
+
+  testWidgets('lời mời đã hết hạn ở server: báo lỗi và nạp lại danh sách', (
     tester,
   ) async {
-    await pump(tester, [_order(21, 'OFFERED', 'AWAITING_DISPATCH'), _order(22, 'OFFERED', 'AWAITING_DISPATCH')]);
-
-    expect(find.text('Lời mời lấy hàng (2)'), findsOneWidget);
-    expect(find.text('Lấy tại: 12 Nguyễn Huệ'), findsNWidgets(2));
-    expect(find.textContaining('Cách bạn 850 m'), findsNWidgets(2));
-    expect(find.textContaining('DỄ VỠ'), findsNWidgets(2));
-    expect(find.textContaining('Trả lời còn 1:'), findsNWidgets(2));
-
-    await tester.tap(find.byKey(const ValueKey('drone-pickup-accept-21')));
-    await tester.pump();
-    await tester.pump();
-    expect(service.calls, ['accept 21']);
-    expect(reloads, 1);
-
-    await tester.tap(find.byKey(const ValueKey('drone-pickup-decline-22')));
-    await tester.pump();
-    await tester.pump();
-    expect(service.calls.last, 'decline 22');
-  });
-
-  testWidgets('đang đi lấy hàng: cần đúng 6 số mã lấy hàng và xác nhận kiện đúng khai báo', (
-    tester,
-  ) async {
-    await pump(tester, [_order(21, 'ACCEPTED', 'PICKUP_ASSIGNED')]);
-
-    expect(find.text('Đang đi lấy hàng (1)'), findsOneWidget);
-    expect(find.text('Người gửi: Nguyễn Văn Gửi · 0901000111'), findsOneWidget);
-    expect(find.text('Chỉ dẫn: Gọi trước'), findsOneWidget);
-
-    await tester.tap(find.byKey(const ValueKey('drone-pickup-done-21')));
-    await tester.pumpAndSettle();
-    await tester.enterText(find.byKey(const ValueKey('drone-pickup-code-input')), '123');
-    await tester.tap(find.byKey(const ValueKey('drone-pickup-confirm')));
-    await tester.pumpAndSettle();
-    expect(find.text('Nhập đủ 6 chữ số'), findsOneWidget);
-
-    await tester.enterText(find.byKey(const ValueKey('drone-pickup-code-input')), '123456');
-    await tester.tap(find.byKey(const ValueKey('drone-pickup-confirm')));
-    await tester.pumpAndSettle();
-    expect(find.textContaining('Cần xác nhận kiện đúng khai báo'), findsOneWidget);
-    expect(service.calls, isEmpty);
-
-    await tester.tap(find.byKey(const ValueKey('drone-pickup-matched')));
-    await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const ValueKey('drone-pickup-confirm')));
-    await tester.pumpAndSettle();
-
-    expect(service.calls, ['confirm 21 code=123456']);
-  });
-
-  testWidgets('không lấy được hàng: chọn lý do, lý do "Khác" bắt buộc ghi chú', (tester) async {
-    await pump(tester, [_order(21, 'ACCEPTED', 'PICKUP_ASSIGNED')]);
-
-    await tester.tap(find.byKey(const ValueKey('drone-pickup-fail-21')));
-    await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const ValueKey('drone-reason-OTHER')));
-    await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const ValueKey('drone-reason-confirm')));
-    await tester.pumpAndSettle();
-    expect(find.text('Cần nhập ghi chú cho lý do này'), findsOneWidget);
-    expect(service.calls, isEmpty);
-
-    await tester.tap(find.byKey(const ValueKey('drone-reason-PICKUP_CUSTOMER_ABSENT')));
-    await tester.pumpAndSettle();
-    await tester.enterText(find.byKey(const ValueKey('drone-reason-note')), 'Gọi 3 lần không nghe');
-    await tester.tap(find.byKey(const ValueKey('drone-reason-confirm')));
-    await tester.pumpAndSettle();
-
-    expect(service.calls, ['pickup-fail 21 PICKUP_CUSTOMER_ABSENT note=Gọi 3 lần không nghe']);
-  });
-
-  testWidgets('đã lấy hàng: mang về tủ gửi, gán drone, hoặc đóng đơn theo lý do đang chặn', (
-    tester,
-  ) async {
-    await pump(tester, [
-      _order(
-        21,
-        'PICKED_UP',
-        'PICKED_UP',
-        block: {'reason': 'WEATHER', 'reasonLabel': 'Tạm dừng bay do thời tiết', 'ticketId': 77},
-      ),
-      // Đã gán drone rồi (chặng ACCEPTED) thì không còn ở mục "mang về tủ".
-      _order(22, 'PICKED_UP', 'ACCEPTED'),
-    ]);
-
-    expect(find.text('Đã lấy hàng · mang về tủ gửi (1)'), findsOneWidget);
-    expect(find.text('Mang kiện về: Locker A'), findsOneWidget);
-    expect(find.text('Đang gặp sự cố: Tạm dừng bay do thời tiết · phiếu #77'), findsOneWidget);
-
-    await tester.tap(find.byKey(const ValueKey('drone-assign-drone-21')));
-    expect(assigned!['orderId'], 21);
-
-    await tester.tap(find.byKey(const ValueKey('drone-delivery-fail-21')));
-    await tester.pumpAndSettle();
-    // Lý do đang chặn đơn được chọn sẵn.
-    await tester.tap(find.byKey(const ValueKey('drone-reason-confirm')));
-    await tester.pumpAndSettle();
-    expect(service.calls, ['fail 21 WEATHER note=null']);
-  });
-
-  testWidgets('lời mời đã hết hạn ở server: báo lỗi và nạp lại danh sách', (tester) async {
     service.acceptError = StateError('expired');
     await pump(tester, [_order(21, 'OFFERED', 'AWAITING_DISPATCH')]);
 

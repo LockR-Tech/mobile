@@ -5,6 +5,7 @@ import 'package:dio/dio.dart';
 /// `purpose` khi xin chữ ký upload (docs/01-overview/media-storage.md §3).
 abstract final class MediaPurpose {
   static const reportEvidence = 'REPORT_EVIDENCE';
+  static const dronePickup = 'DRONE_PICKUP';
   static const avatar = 'AVATAR';
   static const storeImage = 'STORE_IMAGE';
   static const promotionImage = 'PROMOTION_IMAGE';

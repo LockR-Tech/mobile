@@ -20,6 +20,7 @@ class PhotoPickerField extends StatelessWidget {
     this.accentColor = _defaultAccent,
     this.addLabel = 'Thêm ảnh',
     this.helperText,
+    this.onPhotoTap,
   });
 
   final PhotoPickerController controller;
@@ -31,6 +32,7 @@ class PhotoPickerField extends StatelessWidget {
 
   /// Dòng mô tả nhỏ phía dưới (vd. "Tối đa 5 ảnh").
   final String? helperText;
+  final ValueChanged<PendingPhoto>? onPhotoTap;
 
   /// Bottom sheet chọn nguồn ảnh rồi thêm vào [controller]; lỗi hiện SnackBar.
   static Future<void> pickWithSourceSheet(
@@ -114,6 +116,9 @@ class PhotoPickerField extends StatelessWidget {
                       index: i,
                       size: thumbSize,
                       color: accentColor,
+                      onTap: onPhotoTap == null
+                          ? null
+                          : () => onPhotoTap!(photos[i]),
                       onRemove: enabled && !controller.isUploading
                           ? () => controller.remove(photos[i])
                           : null,
@@ -200,6 +205,7 @@ class _PendingThumb extends StatelessWidget {
     required this.index,
     required this.size,
     required this.color,
+    this.onTap,
     this.onRemove,
   });
 
@@ -207,6 +213,7 @@ class _PendingThumb extends StatelessWidget {
   final int index;
   final double size;
   final Color color;
+  final VoidCallback? onTap;
   final VoidCallback? onRemove;
 
   @override
@@ -221,97 +228,105 @@ class _PendingThumb extends StatelessWidget {
           );
     image = SizedBox(width: size, height: size, child: image);
 
-    return SizedBox(
-      width: size,
-      height: size,
-      child: Stack(
-        children: [
-          ClipRRect(borderRadius: BorderRadius.circular(10), child: image),
-          if (status == PendingPhotoStatus.uploading)
-            Positioned.fill(
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Colors.black45,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                alignment: Alignment.center,
-                child: SizedBox(
-                  width: 28,
-                  height: 28,
-                  child: CircularProgressIndicator(
-                    value: photo.progress > 0 ? photo.progress : null,
-                    strokeWidth: 3,
-                    color: Colors.white,
-                    backgroundColor: Colors.white24,
-                  ),
-                ),
-              ),
-            ),
-          if (status == PendingPhotoStatus.failed)
-            Positioned.fill(
-              child: Tooltip(
-                message: photo.error ?? 'Tải ảnh thất bại',
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(10),
+      child: SizedBox(
+        width: size,
+        height: size,
+        child: Stack(
+          children: [
+            ClipRRect(borderRadius: BorderRadius.circular(10), child: image),
+            if (status == PendingPhotoStatus.uploading)
+              Positioned.fill(
                 child: Container(
                   decoration: BoxDecoration(
-                    color: const Color(0xFFDC2626).withValues(alpha: 0.35),
+                    color: Colors.black45,
                     borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: const Color(0xFFDC2626)),
                   ),
                   alignment: Alignment.center,
-                  child: const Icon(
-                    Icons.error_outline,
-                    color: Colors.white,
-                    size: 24,
+                  child: SizedBox(
+                    width: 28,
+                    height: 28,
+                    child: CircularProgressIndicator(
+                      value: photo.progress > 0 ? photo.progress : null,
+                      strokeWidth: 3,
+                      color: Colors.white,
+                      backgroundColor: Colors.white24,
+                    ),
                   ),
                 ),
               ),
-            ),
-          if (status == PendingPhotoStatus.uploaded)
-            const Positioned(
-              bottom: 3,
-              right: 3,
-              child: CircleAvatar(
-                radius: 9,
-                backgroundColor: Color(0xFF16A34A),
-                child: Icon(Icons.check, size: 12, color: Colors.white),
-              ),
-            ),
-          Positioned(
-            bottom: 3,
-            left: 3,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
-              decoration: BoxDecoration(
-                color: Colors.black54,
-                borderRadius: BorderRadius.circular(4),
-              ),
-              child: Text(
-                'Ảnh ${index + 1}',
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 9,
-                  fontWeight: FontWeight.w600,
+            if (status == PendingPhotoStatus.failed)
+              Positioned.fill(
+                child: Tooltip(
+                  message: photo.error ?? 'Tải ảnh thất bại',
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFDC2626).withValues(alpha: 0.35),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: const Color(0xFFDC2626)),
+                    ),
+                    alignment: Alignment.center,
+                    child: const Icon(
+                      Icons.error_outline,
+                      color: Colors.white,
+                      size: 24,
+                    ),
+                  ),
                 ),
               ),
-            ),
-          ),
-          if (onRemove != null)
+            if (status == PendingPhotoStatus.uploaded)
+              const Positioned(
+                bottom: 3,
+                right: 3,
+                child: CircleAvatar(
+                  radius: 9,
+                  backgroundColor: Color(0xFF16A34A),
+                  child: Icon(Icons.check, size: 12, color: Colors.white),
+                ),
+              ),
             Positioned(
-              top: 2,
-              right: 2,
-              child: GestureDetector(
-                onTap: onRemove,
-                child: Container(
-                  padding: const EdgeInsets.all(2),
-                  decoration: const BoxDecoration(
-                    color: Colors.black54,
-                    shape: BoxShape.circle,
+              bottom: 3,
+              left: 3,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                decoration: BoxDecoration(
+                  color: Colors.black54,
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: Text(
+                  'Ảnh ${index + 1}',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 9,
+                    fontWeight: FontWeight.w600,
                   ),
-                  child: const Icon(Icons.close, size: 13, color: Colors.white),
                 ),
               ),
             ),
-        ],
+            if (onRemove != null)
+              Positioned(
+                top: 2,
+                right: 2,
+                child: GestureDetector(
+                  onTap: onRemove,
+                  child: Container(
+                    padding: const EdgeInsets.all(2),
+                    decoration: const BoxDecoration(
+                      color: Colors.black54,
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.close,
+                      size: 13,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }
