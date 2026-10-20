@@ -359,14 +359,54 @@ class _DroneRecoveryDetailState extends State<DroneRecoveryDetail> {
               separatorBuilder: (_, __) => const SizedBox(width: 8),
               itemBuilder: (_, index) {
                 final value = evidence[index];
+                final rawUrl =
+                    (value['secureUrl'] ?? value['url'])?.toString().trim();
+                final isValidUrl = rawUrl != null &&
+                    rawUrl.isNotEmpty &&
+                    rawUrl != 'null' &&
+                    (rawUrl.startsWith('http://') ||
+                        rawUrl.startsWith('https://'));
                 return ClipRRect(
                   borderRadius: BorderRadius.circular(10),
-                  child: Image.network(
-                    '${value['secureUrl']}',
-                    width: 120,
-                    height: 100,
-                    fit: BoxFit.cover,
-                  ),
+                  child: isValidUrl
+                      ? Image.network(
+                          rawUrl,
+                          width: 120,
+                          height: 100,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) => Container(
+                            width: 120,
+                            height: 100,
+                            color: const Color(0xFFE2E8F0),
+                            child: const Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.broken_image_outlined,
+                                  color: Color(0xFF94A3B8),
+                                  size: 24,
+                                ),
+                                SizedBox(height: 4),
+                                Text(
+                                  'Lỗi tải ảnh',
+                                  style: TextStyle(
+                                    fontSize: 10,
+                                    color: Color(0xFF64748B),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        )
+                      : Container(
+                          width: 120,
+                          height: 100,
+                          color: const Color(0xFFE2E8F0),
+                          child: const Icon(
+                            Icons.image_not_supported_outlined,
+                            color: Color(0xFF94A3B8),
+                          ),
+                        ),
                 );
               },
             ),
