@@ -705,43 +705,50 @@ class _TechnicianShiftCardState extends State<TechnicianShiftCard> {
                     children: [
                       Row(
                         children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 6,
-                              vertical: 2,
-                            ),
-                            decoration: BoxDecoration(
-                              color: _onDuty
-                                  ? const Color(0xFF10B981).withValues(alpha: 0.25)
-                                  : Colors.white.withValues(alpha: 0.12),
-                              borderRadius: BorderRadius.circular(6),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Container(
-                                  width: 6,
-                                  height: 6,
-                                  decoration: BoxDecoration(
-                                    color: _onDuty
-                                        ? const Color(0xFF34D399)
-                                        : Colors.white60,
-                                    shape: BoxShape.circle,
+                          Flexible(
+                            fit: FlexFit.loose,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 6,
+                                vertical: 2,
+                              ),
+                              decoration: BoxDecoration(
+                                color: _onDuty
+                                    ? const Color(0xFF10B981).withValues(alpha: 0.25)
+                                    : Colors.white.withValues(alpha: 0.12),
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Container(
+                                    width: 6,
+                                    height: 6,
+                                    decoration: BoxDecoration(
+                                      color: _onDuty
+                                          ? const Color(0xFF34D399)
+                                          : Colors.white60,
+                                      shape: BoxShape.circle,
+                                    ),
                                   ),
-                                ),
-                                const SizedBox(width: 5),
-                                Text(
-                                  _onDuty ? 'ĐANG TRỰC' : 'NGOÀI CA',
-                                  style: TextStyle(
-                                    fontSize: 10.5,
-                                    fontWeight: FontWeight.w800,
-                                    color: _onDuty
-                                        ? const Color(0xFFA7F3D0)
-                                        : Colors.white70,
-                                    letterSpacing: 0.3,
+                                  const SizedBox(width: 5),
+                                  Flexible(
+                                    child: Text(
+                                      _onDuty ? 'ĐANG TRONG CA' : 'NGOÀI CA',
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                        fontSize: 10.5,
+                                        fontWeight: FontWeight.w800,
+                                        color: _onDuty
+                                            ? const Color(0xFFA7F3D0)
+                                            : Colors.white70,
+                                        letterSpacing: 0.3,
+                                      ),
+                                    ),
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
                           ),
                         ],
