@@ -921,7 +921,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Đang đi lấy hàng (1)'), findsOneWidget);
-      expect(find.text('Đã lấy hàng · mang về tủ gửi (1)'), findsOneWidget);
+      expect(find.text('Đã lấy hàng · chờ nạp trực tiếp lên drone (1)'), findsOneWidget);
       expect(find.text('Điều phối (5)'), findsOneWidget);
     },
   );

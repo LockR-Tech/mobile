@@ -8219,7 +8219,7 @@ class _BoxIncidentResolutionSheetState
         boxId: _selectedBoxId!,
         action: _action,
         targetBoxId: _action == 'RELOCATE' ? _targetBoxId : null,
-        lockBox: _lockBox,
+        lockBox: _action == 'LOCK_ONLY' ? true : _lockBox,
         reason: fullReason,
         customerOtp: _action == 'HANDOVER' ? _otpCtrl.text.trim() : null,
         sealNumber: _action == 'HUB_ESCROW' ? _sealCtrl.text.trim() : null,
@@ -8845,65 +8845,85 @@ class _BoxIncidentResolutionSheetState
                 ],
 
                 // NÚT CHỌN KHÓA Ô TỦ HAY KHÔNG (Switch)
-                const SizedBox(height: 12),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                  decoration: BoxDecoration(
-                    color: _lockBox ? const Color(0xFFFEF2F2) : const Color(0xFFF0FDF4),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: _lockBox ? const Color(0xFFFECACA) : const Color(0xFFBBF7D0),
-                    ),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(
-                        _lockBox ? Icons.lock_outline : Icons.lock_open_outlined,
-                        color: _lockBox ? const Color(0xFFDC2626) : const Color(0xFF16A34A),
-                        size: 24,
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              _lockBox
-                                  ? 'Khóa ô tủ để bảo trì (Trạng thái: FAULT)'
-                                  : 'Giữ ô tủ hoạt động bình thường (AVAILABLE)',
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 13,
-                                color: _lockBox
-                                    ? const Color(0xFF991B1B)
-                                    : const Color(0xFF166534),
-                              ),
-                            ),
-                            const SizedBox(height: 2),
-                            Text(
-                              _lockBox
-                                  ? 'Ô tủ sẽ bị tạm ngưng và không nhận đơn mới cho đến khi hoàn tất sửa chữa.'
-                                  : 'Không khóa ô tủ. Phù hợp khi khách hàng báo nhầm hoặc sự cố đã được xử lý ngay tại chỗ.',
-                              style: TextStyle(
-                                fontSize: 11.5,
-                                color: _lockBox
-                                    ? const Color(0xFFB91C1C)
-                                    : const Color(0xFF15803D),
-                              ),
-                            ),
-                          ],
+                Builder(
+                  builder: (context) {
+                    final bool isLockOnly = _action == 'LOCK_ONLY';
+                    final bool effectiveLockBox = isLockOnly ? true : _lockBox;
+                    final bool hasGoods = cellHoldsOrder(
+                      cellStatus: _currentCell?['status']?.toString(),
+                      hasActiveOrder: _activeOrder != null,
+                    );
+
+                    return Container(
+                      margin: const EdgeInsets.only(top: 12),
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                      decoration: BoxDecoration(
+                        color: effectiveLockBox ? const Color(0xFFFEF2F2) : const Color(0xFFF0FDF4),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: effectiveLockBox ? const Color(0xFFFECACA) : const Color(0xFFBBF7D0),
                         ),
                       ),
-                      Switch(
-                        value: _lockBox,
-                        onChanged: (val) => setState(() => _lockBox = val),
-                        activeColor: const Color(0xFFDC2626),
-                        activeTrackColor: const Color(0xFFFCA5A5),
-                        inactiveThumbColor: const Color(0xFF16A34A),
-                        inactiveTrackColor: const Color(0xFFBBF7D0),
+                      child: Row(
+                        children: [
+                          Icon(
+                            effectiveLockBox ? Icons.lock_outline : Icons.lock_open_outlined,
+                            color: effectiveLockBox ? const Color(0xFFDC2626) : const Color(0xFF16A34A),
+                            size: 24,
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  effectiveLockBox
+                                      ? 'Khóa ô tủ để bảo trì (Trạng thái: FAULT)'
+                                      : (hasGoods
+                                          ? 'Giữ ô tủ hoạt động (Đang giữ hàng của khách)'
+                                          : 'Giữ ô tủ hoạt động bình thường (AVAILABLE)'),
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 13,
+                                    color: effectiveLockBox
+                                        ? const Color(0xFF991B1B)
+                                        : const Color(0xFF166534),
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  isLockOnly
+                                      ? 'Kịch bản Khóa ô bảo trì (FAULT) luôn khóa ô để bảo dưỡng. Nếu không cần khóa ô, vui lòng chọn kịch bản "Kiểm tra & Xử lý tại chỗ".'
+                                      : (effectiveLockBox
+                                          ? 'Ô tủ sẽ bị tạm ngưng và không nhận đơn mới cho đến khi hoàn tất sửa chữa.'
+                                          : (hasGoods
+                                              ? 'Không khóa ô tủ. Đồ của khách vẫn được giữ an toàn trong ô và không bị trả về ô trống.'
+                                              : 'Không khóa ô tủ. Phù hợp khi khách hàng báo nhầm hoặc sự cố đã được xử lý ngay tại chỗ.')),
+                                  style: TextStyle(
+                                    fontSize: 11.5,
+                                    color: effectiveLockBox
+                                        ? const Color(0xFFB91C1C)
+                                        : const Color(0xFF15803D),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Switch(
+                            value: effectiveLockBox,
+                            onChanged: isLockOnly
+                                ? null
+                                : (val) => setState(() => _lockBox = val),
+                            activeColor: const Color(0xFFDC2626),
+                            activeTrackColor: const Color(0xFFFCA5A5),
+                            inactiveThumbColor: const Color(0xFF16A34A),
+                            inactiveTrackColor: const Color(0xFFBBF7D0),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
+                    );
+                  },
                 ),
               ],
               const SizedBox(height: 14),
