@@ -2,7 +2,6 @@ import 'dart:async';
 import 'package:smart_laundry_locker/core/routing/app_router.dart';
 import 'package:smart_laundry_locker/core/theme/shadcn_theme.dart';
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
@@ -244,7 +243,7 @@ class _QrScannerPageState extends State<QrScannerPage>
               ),
               IconButton(
                 icon: const Icon(LucideIcons.house, color: Colors.white),
-                onPressed: () => context.go(AppRouter.home),
+                onPressed: () => AppRouter.goRoleHome(context),
               ),
             ],
           ),

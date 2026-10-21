@@ -11,7 +11,6 @@ import 'package:smart_laundry_locker/features/auth/presentation/providers/login_
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
-import 'package:go_router/go_router.dart';
 
 /// Đăng nhập bằng khuôn mặt (chỉ khi `FeatureFlags.faceRecognitionEnabled`).
 ///
@@ -91,7 +90,7 @@ class _FaceVerifyPageState extends State<FaceVerifyPage>
     if (_loginProvider.isSuccess) {
       SmartDialog.showToast('Xác thực FaceID thành công');
       await Future<void>.delayed(const Duration(milliseconds: 300));
-      if (mounted) context.go(AppRouter.home);
+      if (mounted) await AppRouter.goRoleHome(context);
       return;
     }
 
