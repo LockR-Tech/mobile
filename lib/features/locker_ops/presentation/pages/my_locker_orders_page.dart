@@ -650,6 +650,37 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
     await _load();
   }
 
+  /// Đơn gửi hàng / thuê tủ: hỏi xác nhận trước khi huỷ như đơn drone. Huỷ ở đây
+  /// không tự hoàn tiền, nên đơn đã trả được nhắc gửi yêu cầu hoàn tiền sau đó.
+  Future<bool> _confirmCancelOrder(Map<String, dynamic> order) async {
+    final code = order['orderCode']?.toString();
+    final isPaid = '${order['paymentStatus']}'.toUpperCase() == 'PAID';
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Huỷ đơn?'),
+        content: Text(
+          'Đơn ${code ?? ''} sẽ bị huỷ, mã mở ô hết hiệu lực và ô đang giữ được nhả.'
+          '${isPaid ? ' Tiền đã thanh toán không tự hoàn — sau khi huỷ, mở lại đơn và chọn "Yêu cầu hoàn tiền".' : ''}',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: const Text('Giữ đơn'),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(
+              backgroundColor: const Color(0xFFDC2626),
+            ),
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: const Text('Huỷ đơn'),
+          ),
+        ],
+      ),
+    );
+    return confirmed == true && mounted;
+  }
+
   Future<void> _extendDialog(int orderId) async {
     // Giới hạn gia hạn do admin cấu hình; làm mới nền để lần sau dùng giá trị
     // mới nhất mà không bắt người dùng chờ mạng.
@@ -1527,6 +1558,7 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
               await _cancelDroneOrder(order, id);
               return;
             }
+            if (!await _confirmCancelOrder(order)) return;
             await _runAction(() => _service.cancelOrder(id), 'Đã hủy đơn');
             final lockerId = order['lockerId'] ?? order['locker']?['id'];
             AppEventBus.instance.emit(LockerLayoutUpdatedEvent(
@@ -4285,20 +4317,23 @@ class _DetailSheet extends StatelessWidget {
         icon: LucideIcons.map,
         onTap: onDirections,
       ),
-      OpsSheetAction(
-        label: 'Yêu cầu hoàn tiền',
-        icon: LucideIcons.rotateCcw,
-        onTap: () {
-          Navigator.pop(context);
-          context.push(
-            AppRouter.refundRequests,
-            extra: {
-              'orderId': id,
-              'order': order,
-            },
-          );
-        },
-      ),
+      // Backend chỉ nhận yêu cầu hoàn cho đơn có khoản đã thu (ORDER_NOT_PAID nếu
+      // chưa trả); đơn đang chờ hoàn / đã hoàn xem ở Hồ sơ › Yêu cầu hoàn tiền.
+      if (paymentStatus == 'PAID')
+        OpsSheetAction(
+          label: 'Yêu cầu hoàn tiền',
+          icon: LucideIcons.rotateCcw,
+          onTap: () {
+            Navigator.pop(context);
+            context.push(
+              AppRouter.refundRequests,
+              extra: {
+                'orderId': id,
+                'order': order,
+              },
+            );
+          },
+        ),
     ];
 
     return Column(
