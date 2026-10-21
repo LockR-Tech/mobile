@@ -122,13 +122,21 @@ class AppRouter {
   /// Bấm vào push notification đưa người dùng tới màn bằng `context.go`, tức
   /// **thay cả stack** — lúc đó `context.pop()` không có gì để pop nên nút quay
   /// lại trông như bị liệt. Dùng hàm này thay cho `context.pop()` trực tiếp:
-  /// còn stack thì pop, hết stack thì về trang chủ.
+  /// còn stack thì pop, hết stack thì về trang chủ **của vai trò đang đăng
+  /// nhập** (KTV tủ/KTV drone về trang KTV, admin về màn báo dùng web) — không
+  /// đưa KTV vào trang chủ khách.
   static void backOrHome(BuildContext context) {
     if (context.canPop()) {
       context.pop();
-    } else {
-      context.go(home);
+      return;
     }
+    goRoleHome(context);
+  }
+
+  /// Về trang chủ theo vai trò đọc từ token (khách ⇒ [home]).
+  static Future<void> goRoleHome(BuildContext context) async {
+    final roles = await TokenService.getCurrentRoles();
+    if (context.mounted) context.go(homeForRoles(roles));
   }
 
   static final router = GoRouter(

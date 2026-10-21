@@ -5,7 +5,6 @@ import 'package:smart_laundry_locker/features/auth/presentation/providers/auth_i
 import 'package:smart_laundry_locker/features/auth/presentation/providers/verify_otp_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 class OtpPage extends StatefulWidget {
@@ -273,7 +272,7 @@ class _OtpPageState extends State<OtpPage> {
                           if (provider.isSuccess) {
                             WidgetsBinding.instance.addPostFrameCallback((_) {
                               if (!mounted) return;
-                              context.go(AppRouter.home);
+                              AppRouter.goRoleHome(context);
                             });
                           }
                           return const SizedBox.shrink();
