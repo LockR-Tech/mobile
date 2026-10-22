@@ -386,14 +386,16 @@ void main() {
   );
 
   testWidgets(
-    'chỉ tủ đang hoạt động có bãi đáp mới là tủ nhận; đổi tủ thì bỏ ô đã chạm',
+    'hiện tất cả tủ; chỉ cho chọn tủ nhận drone còn đủ điều kiện',
     (tester) async {
       await pump(tester, destination: 5);
       await tester.tap(find.byKey(const ValueKey('drone-destination-locker')));
       await tester.pumpAndSettle();
       expect(find.textContaining('Locker C'), findsWidgets);
-      expect(find.text('Locker D'), findsNothing);
-      expect(find.text('Locker E'), findsNothing);
+      expect(find.textContaining('Locker D'), findsOneWidget);
+      expect(find.textContaining('Chưa có bãi đáp drone'), findsOneWidget);
+      expect(find.textContaining('Locker E'), findsOneWidget);
+      expect(find.textContaining('Đang bảo trì'), findsOneWidget);
       await tester.tap(find.textContaining('Locker C').last);
       await tester.pumpAndSettle();
       await tester.tap(find.byKey(const ValueKey('drone-destination-box')));
