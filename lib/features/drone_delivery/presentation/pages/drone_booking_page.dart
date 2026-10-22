@@ -220,13 +220,11 @@ class _DroneBookingPageState extends State<DroneBookingPage>
   Future<void> _loadDestinations() async {
     try {
       final all = widget.destinationLockers ?? await _ops.lockers();
+      // Keep every locker returned by the system visible. Ineligible lockers
+      // are rendered disabled below with the reason, instead of disappearing
+      // from the customer's destination list.
       final destinations = all
-          .where(
-            (locker) =>
-                _asInt(locker['id']) != null &&
-                locker['landingPad'] == true &&
-                '${locker['status']}'.toUpperCase() == 'ACTIVE',
-          )
+          .where((locker) => _asInt(locker['id']) != null)
           .toList(growable: false);
       if (!mounted) return;
       setState(() {
@@ -240,7 +238,7 @@ class _DroneBookingPageState extends State<DroneBookingPage>
         }
       });
       await Future.wait(
-        destinations.map((locker) async {
+        destinations.where(_canReceiveDrone).map((locker) async {
           final id = _asInt(locker['id']);
           if (id == null) return;
           try {
@@ -290,6 +288,22 @@ class _DroneBookingPageState extends State<DroneBookingPage>
 
   static int? _asInt(dynamic value) =>
       value is num ? value.toInt() : int.tryParse('$value');
+
+  static bool _canReceiveDrone(Map<String, dynamic> locker) =>
+      locker['landingPad'] == true &&
+      '${locker['status']}'.toUpperCase() == 'ACTIVE';
+
+  String _destinationUnavailableReason(Map<String, dynamic> locker) {
+    final status = '${locker['status']}'.toUpperCase();
+    if (status != 'ACTIVE') {
+      return status == 'MAINTENANCE' ? 'Đang bảo trì' : 'Chưa hoạt động';
+    }
+    if (locker['landingPad'] != true) return 'Chưa có bãi đáp drone';
+    final slots = _availableDroneSlots[_asInt(locker['id'])];
+    if (slots == null) return 'Đang kiểm tra ô drone';
+    if (slots == 0) return 'Hết ô drone trống';
+    return '$slots ô drone trống';
+  }
 
   @override
   void dispose() {
@@ -695,10 +709,11 @@ class _DroneBookingPageState extends State<DroneBookingPage>
                   DropdownMenuItem<int>(
                     value: _asInt(locker['id']),
                     enabled:
+                        _canReceiveDrone(locker) &&
                         (_availableDroneSlots[_asInt(locker['id'])] ?? 0) > 0,
                     child: Text(
                       '${locker['name'] ?? locker['code'] ?? 'Tủ #${locker['id']}'} · '
-                      '${_availableDroneSlots[_asInt(locker['id'])] ?? 'đang kiểm tra'} ô drone trống',
+                      '${_destinationUnavailableReason(locker)}',
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
