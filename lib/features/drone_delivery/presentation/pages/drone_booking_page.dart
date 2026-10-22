@@ -928,7 +928,11 @@ class _DroneBookingPageState extends State<DroneBookingPage>
           const SizedBox(height: 12),
           FilledButton.icon(
             key: const ValueKey('drone-submit'),
-            onPressed: _submitting || suspended || _quoteProblem != null
+            onPressed:
+                _submitting ||
+                    suspended ||
+                    _quoteProblem != null ||
+                    _quote?.weatherSafe == false
                 ? null
                 : _submit,
             style: FilledButton.styleFrom(
@@ -1258,6 +1262,73 @@ class _QuotePanel extends StatelessWidget {
           style: const TextStyle(
             color: Color(0xFF15803D),
             fontWeight: FontWeight.w800,
+          ),
+        ),
+        const SizedBox(height: 10),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: quote.weatherSafe
+                ? const Color(0xFFECFDF5)
+                : const Color(0xFFFFF1F2),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: quote.weatherSafe
+                  ? const Color(0xFF86EFAC)
+                  : const Color(0xFFFDA4AF),
+            ),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Icon(
+                    quote.weatherSafe
+                        ? Icons.wb_sunny_outlined
+                        : Icons.thunderstorm_outlined,
+                    size: 18,
+                    color: quote.weatherSafe
+                        ? const Color(0xFF15803D)
+                        : const Color(0xFFBE123C),
+                  ),
+                  const SizedBox(width: 7),
+                  Expanded(
+                    child: Text(
+                      quote.weatherSafe
+                          ? 'Thời tiết tuyến bay: Đủ điều kiện'
+                          : quote.weatherStatus == 'UNAVAILABLE'
+                          ? 'Chưa xác nhận được thời tiết'
+                          : 'Thời tiết tuyến bay: Tạm ngưng bay',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w700,
+                        color: quote.weatherSafe
+                            ? const Color(0xFF166534)
+                            : const Color(0xFF9F1239),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 4),
+              Text(
+                '${quote.weatherMessage} • Dự báo 30 phút dọc tuyến; '
+                'gió tối đa ${quote.weatherMaxWindKmh.toStringAsFixed(0)} km/h, '
+                'gió giật ${quote.weatherMaxGustKmh.toStringAsFixed(0)} km/h, '
+                'mưa ${quote.weatherMaxPrecipitationMm.toStringAsFixed(1)} mm.',
+                style: const TextStyle(fontSize: 12),
+              ),
+              if (quote.weatherCheckedAt != null)
+                Text(
+                  'Cập nhật ${MaterialLocalizations.of(context).formatTimeOfDay(TimeOfDay.fromDateTime(quote.weatherCheckedAt!.toLocal()))}',
+                  style: const TextStyle(fontSize: 11, color: Colors.black54),
+                ),
+              const Text(
+                'Nguồn dự báo: Open-Meteo (đã lấy mẫu dọc tuyến và áp ngưỡng bay Lock.R).',
+                style: TextStyle(fontSize: 10, color: Colors.black54),
+              ),
+            ],
           ),
         ),
       ],
