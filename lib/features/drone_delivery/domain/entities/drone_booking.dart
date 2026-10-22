@@ -104,6 +104,13 @@ class DroneQuote {
     required this.pickupDistanceMeters,
     required this.routeDistanceMeters,
     required this.fee,
+    this.weatherSafe = true,
+    this.weatherStatus = 'SAFE',
+    this.weatherMessage = 'Chưa có dữ liệu thời tiết.',
+    this.weatherCheckedAt,
+    this.weatherMaxWindKmh = 0,
+    this.weatherMaxGustKmh = 0,
+    this.weatherMaxPrecipitationMm = 0,
   });
 
   /// Tủ gửi (nơi drone cất cánh) — mã giảm giá theo tủ được kiểm theo tủ này.
@@ -117,6 +124,13 @@ class DroneQuote {
   /// Tủ gửi → tủ nhận.
   final int routeDistanceMeters;
   final double fee;
+  final bool weatherSafe;
+  final String weatherStatus;
+  final String weatherMessage;
+  final DateTime? weatherCheckedAt;
+  final double weatherMaxWindKmh;
+  final double weatherMaxGustKmh;
+  final double weatherMaxPrecipitationMm;
 
   static DroneQuote fromJson(Map<String, dynamic> json) {
     final source = json['sourceLocker'];
@@ -124,7 +138,11 @@ class DroneQuote {
     final name = '${map['name'] ?? map['code'] ?? ''}'.trim();
     final address = '${map['address'] ?? ''}'.trim();
     final rawId = map['lockerId'] ?? map['id'];
-    final sourceId = rawId is num ? rawId.toInt() : int.tryParse('${rawId ?? ''}');
+    final sourceId = rawId is num
+        ? rawId.toInt()
+        : int.tryParse('${rawId ?? ''}');
+    final rawWeather = json['weather'];
+    final weather = rawWeather is Map ? rawWeather : const {};
     return DroneQuote(
       sourceLockerId: sourceId,
       sourceLockerName: name.isEmpty ? 'Tủ #${map['lockerId'] ?? '?'}' : name,
@@ -134,11 +152,22 @@ class DroneQuote {
       fee: json['fee'] is num
           ? (json['fee'] as num).toDouble()
           : double.tryParse('${json['fee']}') ?? 0,
+      weatherSafe: weather['safe'] is bool ? weather['safe'] as bool : false,
+      weatherStatus: '${weather['status'] ?? 'UNAVAILABLE'}',
+      weatherMessage:
+          '${weather['message'] ?? 'Không thể xác nhận thời tiết tuyến bay.'}',
+      weatherCheckedAt: DateTime.tryParse('${weather['checkedAt'] ?? ''}'),
+      weatherMaxWindKmh: _double(weather['maxWindSpeedKmh']),
+      weatherMaxGustKmh: _double(weather['maxWindGustKmh']),
+      weatherMaxPrecipitationMm: _double(weather['maxPrecipitationMm']),
     );
   }
 
   static int _int(dynamic value) =>
       value is num ? value.round() : int.tryParse('$value') ?? 0;
+
+  static double _double(dynamic value) =>
+      value is num ? value.toDouble() : double.tryParse('$value') ?? 0;
 }
 
 /// `850 m`, `2,4 km`.

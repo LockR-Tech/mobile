@@ -126,6 +126,7 @@ void main() {
       email: 'gui@gmail.com',
     ),
     Object? quoteError,
+    bool weatherSafe = true,
     LockerOpsService? service,
     Map<String, dynamic> createResponse = const {
       'orderId': 77,
@@ -175,13 +176,18 @@ void main() {
                   'weight': parcelWeightGrams,
                 });
                 if (quoteError != null) throw quoteError;
-                return const DroneQuote(
+                return DroneQuote(
                   sourceLockerId: 3,
                   sourceLockerName: 'Locker A',
                   sourceLockerAddress: '1 Lê Lợi',
                   pickupDistanceMeters: 110,
                   routeDistanceMeters: 2400,
                   fee: 24000,
+                  weatherSafe: weatherSafe,
+                  weatherStatus: weatherSafe ? 'SAFE' : 'UNSAFE',
+                  weatherMessage: weatherSafe
+                      ? 'Dự báo tuyến bay an toàn trong 30 phút tới.'
+                      : 'Có mưa dông trên tuyến trong 30 phút tới.',
                 );
               },
 
@@ -345,6 +351,22 @@ void main() {
       await submit(tester);
       expect(messages.last, contains('giá trị tới'));
       expect(created, isEmpty);
+    },
+  );
+
+  testWidgets(
+    'mưa dông dọc tuyến trong 30 phút thì hiển thị cảnh báo và khóa đặt đơn',
+    (tester) async {
+      await pump(tester, weatherSafe: false);
+      await tester.tap(find.byKey(const ValueKey('drone-pickup-location')));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Thời tiết tuyến bay: Tạm ngưng bay'), findsOneWidget);
+      expect(find.textContaining('Có mưa dông trên tuyến'), findsOneWidget);
+      final button = tester.widget<FilledButton>(
+        find.byKey(const ValueKey('drone-submit')),
+      );
+      expect(button.onPressed, isNull);
     },
   );
 
