@@ -46,12 +46,16 @@ class _FakePayService extends LockerOpsService {
   int? simulatedPaymentId;
   num? simulatedAmount;
 
+  /// Server từ chối giả lập (vd tài khoản ngoài danh sách được phép).
+  Object? simulateError;
+
   @override
   Future<Map<String, dynamic>> simulatePayment({
     int? paymentId,
     String? referenceId,
     num? amount,
   }) async {
+    if (simulateError != null) throw simulateError!;
     simulatedPaymentId = paymentId;
     simulatedAmount = amount;
     paid = true;
@@ -143,6 +147,45 @@ void main() {
       await closeSheet(tester, service);
       expect(result, OrderPaymentOutcome.paid);
     });
+  });
+
+  testWidgets('server từ chối giả lập ⇒ báo lỗi ngay trên màn thanh toán, không im lặng', (tester) async {
+    useBusinessConfig(BusinessConfig.fromPublicMaps(
+      payment: {'app.payment.simulation-enabled': true},
+    ));
+    await tester.binding.setSurfaceSize(const Size(400, 1200));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    final service = _FakePayService(
+      qrCodeUrl:
+          'https://img.vietqr.io/image/970422-0123456789-compact2.jpg?amount=15000&addInfo=LKR42&accountName=LOCKR',
+    )
+      ..simulateError = const LockerOpsException(
+        'Tài khoản #44 chưa có trong danh sách "Tài khoản được giả lập thanh toán"',
+      );
+    await tester.pumpWidget(_host(service, (_) {}));
+    await tester.tap(find.text('Trả'));
+    await _settleSheet(tester);
+
+    await tester.ensureVisible(find.byKey(const Key('payment-simulate')));
+    await tester.tap(find.byKey(const Key('payment-simulate')));
+    await _settleSheet(tester);
+    await tester.tap(find.byKey(const Key('payment-simulate-confirm')));
+    await _settleSheet(tester);
+
+    expect(find.byKey(const Key('payment-simulate-error')), findsOneWidget);
+    expect(find.textContaining('Tài khoản #44 chưa có trong danh sách'), findsOneWidget);
+    await tester.tap(find.text('Đóng'));
+    await _settleSheet(tester);
+    // Nút bấm lại được sau khi báo lỗi.
+    expect(
+      tester.widget<OutlinedButton>(find.byKey(const Key('payment-simulate'))).onPressed,
+      isNotNull,
+    );
+
+    service.paid = true;
+    await tester.pump(const Duration(seconds: 3));
+    await tester.pump(const Duration(seconds: 2));
+    await tester.pumpAndSettle();
   });
 
   group('checkoutQrUrl', () {

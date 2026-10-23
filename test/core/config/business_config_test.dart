@@ -281,6 +281,40 @@ void main() {
       expect(restored.redeemMaxPercent, 30);
     });
 
+    test('giá thuê theo ngày tính giống OrderRules.rentalPrice ở server', () {
+      final config = BusinessConfig.fromPublicMaps(
+        order: {
+          'app.order.rental-rate-standard': 5000,
+          'app.order.rental-daily-rate-standard': 40000,
+          'app.order.rental-rate-xl': 1000,
+          'app.order.rental-daily-rate-xl': 40000,
+          'app.order.rental-overtime-rate-percent': 150,
+        },
+      );
+      expect(config.rentalPriceFor('STANDARD', 7), 35000);
+      expect(config.rentalPriceFor('STANDARD', 12), 40000);
+      expect(config.rentalPriceFor('STANDARD', 26), 50000);
+      expect(config.rentalPriceFor('STANDARD', 72), 120000);
+      // Giá ngày cao hơn 24 giờ lẻ ⇒ hạ về 24 × giá giờ.
+      expect(config.rentalDailyRateFor('XL'), 24000);
+      expect(config.rentalPriceFor('XL', 50), 50000);
+      expect(config.rentalOvertimeFeePerHourFor('STANDARD'), 7500);
+
+      final hourlyOnly = BusinessConfig.fromPublicMaps(
+        order: {
+          'app.order.rental-rate-standard': 1000,
+          'app.order.rental-daily-rate-standard': 0,
+        },
+      );
+      expect(hourlyOnly.rentalPriceFor('STANDARD', 30), 30000);
+      expect(
+        BusinessConfig.fromPublicMaps(
+          order: hourlyOnly.toPublicMaps()['order'],
+        ).rentalDailyRateStandard,
+        0,
+      );
+    });
+
     test('validateTopupAmount trả lỗi tiếng Việt khi ngoài giới hạn', () {
       String fmt(int v) => '$vđ';
       expect(defaults.validateTopupAmount(100000, fmt), isNull);

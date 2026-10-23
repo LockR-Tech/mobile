@@ -141,8 +141,11 @@ class SepayPaymentController extends ChangeNotifier
   /// giao dịch này, rồi hỏi lại trạng thái đơn ngay. Lỗi (admin đã tắt, tài
   /// khoản không được phép…) ném lên cho nút báo.
   Future<void> simulate(num amount) async {
+    if (_paid) return;
     final id = _paymentId;
-    if (id == null || _paid) return;
+    if (id == null) {
+      throw Exception('Chưa có mã giao dịch để giả lập. Vui lòng thử lại.');
+    }
     try {
       await service.simulatePayment(paymentId: id, amount: amount);
     } catch (e) {

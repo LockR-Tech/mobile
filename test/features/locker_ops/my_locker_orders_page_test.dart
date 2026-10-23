@@ -245,6 +245,30 @@ class _FakeFaultyOrderLockerOpsService extends LockerOpsService {
   }
 }
 
+/// Đơn thuê đã có đồ trong ô, quá giờ, nhưng ô đang chờ KTV xử lý sự cố.
+class _FakeStuckRentalLockerOpsService extends _FakeFaultyOrderLockerOpsService {
+  @override
+  Future<List<Map<String, dynamic>>> myOrders() async => [
+    {
+      'id': 96,
+      'type': 'RENTAL',
+      'status': 'STORING',
+      'paymentStatus': 'PAID',
+      'totalPrice': 4000,
+      'amountDue': 0,
+      'lockerId': 7,
+      'sendBoxId': 7003,
+      'pinCode': '888999',
+      'orderCode': 'ORD-20261016-5TCEI6',
+      'pickupDeadline': '2026-10-16T19:45:01',
+      'boxIncidentOpenedAt': '2026-10-16T15:46:18',
+      'accessBlockReason': 'BOX_INCIDENT_OPEN',
+      'nextAction': 'WAIT_FOR_BOX_INCIDENT',
+      'createdAt': '2026-10-16T09:00:00',
+    },
+  ];
+}
+
 class _FakeRentalCompletionLockerOpsService extends LockerOpsService {
   _FakeRentalCompletionLockerOpsService() : super(dio: createMockDio().dio);
 
@@ -483,6 +507,33 @@ void main() {
         find.text('Hãy hủy đơn này và đặt ô khác (hoặc liên hệ KTV).'),
         findsOneWidget,
       );
+    },
+  );
+
+  testWidgets(
+    'ô đang chờ KTV: không mời thanh toán, báo phí tạm dừng, không khuyên huỷ đơn có đồ',
+    (tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: MediaQuery(
+            data: const MediaQueryData(size: Size(390, 844)),
+            child: MyLockerOrdersPage(
+              service: _FakeStuckRentalLockerOpsService(),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Chờ KTV xử lý'), findsOneWidget);
+      expect(find.text('Thanh toán & lấy đồ'), findsNothing);
+      expect(find.textContaining('Phí quá giờ tạm dừng từ'), findsOneWidget);
+      expect(find.text('Đơn đã quá hạn — có thể phát sinh phí'), findsNothing);
+      expect(
+        find.text('Hãy hủy đơn này và đặt ô khác (hoặc liên hệ KTV).'),
+        findsNothing,
+      );
+      expect(find.textContaining('Đồ của bạn vẫn được giữ an toàn trong ô'), findsOneWidget);
     },
   );
 

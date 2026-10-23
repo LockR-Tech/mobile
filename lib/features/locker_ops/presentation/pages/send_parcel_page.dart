@@ -19,6 +19,7 @@ import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/se
 import 'package:smart_laundry_locker/shared/shared.dart';
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
 import 'package:smart_laundry_locker/core/services/app_event_bus.dart';
+import 'package:smart_laundry_locker/features/profile/domain/constants/profile_constants.dart';
 
 /// SEND flow (gửi hàng C2C qua tủ).
 /// Stage 1: tạo đơn + nhận PIN bỏ hàng. Stage 2: thanh toán → mở ô → bỏ hàng →
@@ -34,11 +35,16 @@ class SendParcelPage extends StatefulWidget {
     this.service,
     this.initialBoxId,
     this.initialBoxNumber,
+    this.initialBoxSize,
   });
 
   /// Ô khách đã chọn trên sơ đồ tủ (gửi kèm `boxId` khi tạo đơn).
   final int? initialBoxId;
   final int? initialBoxNumber;
+
+  /// Cỡ ô đã chọn (`SMALL` / `MEDIUM` / `LARGE`). Đã chọn ô thì server bỏ qua
+  /// `size`, nên màn này chỉ hiện cỡ ô thay vì cho chọn kích thước hàng.
+  final String? initialBoxSize;
 
   final LockerOpsService? service;
 
@@ -102,10 +108,16 @@ class _SendParcelPageState extends State<SendParcelPage>
   int get _netFee =>
       (_feeAfterVoucher - _pointsDiscount).clamp(0, _feeAfterVoucher);
 
+  /// Giới hạn lời nhắn — đủ cho một câu dặn, vừa một dòng email.
+  static const _noteMaxLength = 200;
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    if (_sizes.contains(widget.initialBoxSize)) _size = widget.initialBoxSize!;
+    // Banner kênh nhận mã đổi theo việc có nhập email hay không.
+    _emailCtrl.addListener(_onEmailChanged);
     if (widget.initialLockerId != null) {
       // Đến từ lưới ô — tủ đã xác định, bỏ qua gọi API load danh sách tủ.
       _lockerId = widget.initialLockerId;
@@ -208,6 +220,7 @@ class _SendParcelPageState extends State<SendParcelPage>
     WidgetsBinding.instance.removeObserver(this);
     _phoneCtrl.dispose();
     _nameCtrl.dispose();
+    _emailCtrl.removeListener(_onEmailChanged);
     _emailCtrl.dispose();
     _noteCtrl.dispose();
     super.dispose();
@@ -390,6 +403,24 @@ class _SendParcelPageState extends State<SendParcelPage>
   /// (`@Email` trên `SendOrderRequest`) nên đây chỉ là lớp lọc cho dễ chịu.
   static bool _looksLikeEmail(String value) =>
       RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(value);
+
+  bool _hasValidEmail = false;
+
+  void _onEmailChanged() {
+    final valid = _looksLikeEmail(_emailCtrl.text.trim());
+    if (valid != _hasValidEmail) setState(() => _hasValidEmail = valid);
+  }
+
+  /// Số di động Việt Nam 10 số bắt đầu bằng 0 — SMS và tra tài khoản người
+  /// nhận đều dựa vào số này, gõ thiếu là người nhận không nhận được mã.
+  static String? _validateReceiverPhone(String? value) {
+    final phone = value?.trim() ?? '';
+    if (phone.isEmpty) return 'Nhập số điện thoại người nhận';
+    if (!ProfileConstants.vnPhoneRegex.hasMatch(phone)) {
+      return 'Số điện thoại gồm 10 số, bắt đầu bằng 0';
+    }
+    return null;
+  }
 
   String _sizeLabel(String size) => switch (size) {
         'SMALL' => 'Nhỏ',
@@ -664,24 +695,36 @@ class _SendParcelPageState extends State<SendParcelPage>
             ),
           const SizedBox(height: 20),
           const OpsSectionLabel('Kích thước hàng', icon: LucideIcons.packageSearch),
-          Wrap(
-            spacing: 8,
-            children: _sizes.map((s) {
-              final selected = _size == s;
-              return ChoiceChip(
-                label: Text(_sizeLabel(s)),
-                selected: selected,
-                onSelected: (_) => setState(() => _size = s),
-                selectedColor: opsPrimary,
-                labelStyle: TextStyle(
-                  color: selected ? Colors.white : opsDark,
-                  fontWeight: FontWeight.w600,
-                ),
-                backgroundColor: Colors.white,
-                side: BorderSide(color: selected ? opsPrimary : opsBorder),
-              );
-            }).toList(),
-          ),
+          if (widget.initialBoxId != null)
+            OpsBanner(
+              tone: OpsBannerTone.info,
+              icon: LucideIcons.ruler,
+              text: _sizes.contains(widget.initialBoxSize)
+                  ? '${widget.initialBoxNumber != null ? 'Ô số ${widget.initialBoxNumber}' : 'Ô đã chọn'} cỡ '
+                      '${_sizeLabel(widget.initialBoxSize!).toLowerCase()}. '
+                      'Hãy chắc kiện hàng vừa ô trước khi tạo đơn.'
+                  : 'Bạn đã chọn ô trên sơ đồ tủ. Hãy chắc kiện hàng vừa ô '
+                      'trước khi tạo đơn.',
+            )
+          else
+            Wrap(
+              spacing: 8,
+              children: _sizes.map((s) {
+                final selected = _size == s;
+                return ChoiceChip(
+                  label: Text(_sizeLabel(s)),
+                  selected: selected,
+                  onSelected: (_) => setState(() => _size = s),
+                  selectedColor: opsPrimary,
+                  labelStyle: TextStyle(
+                    color: selected ? Colors.white : opsDark,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  backgroundColor: Colors.white,
+                  side: BorderSide(color: selected ? opsPrimary : opsBorder),
+                );
+              }).toList(),
+            ),
           const SizedBox(height: 20),
           const OpsSectionLabel('Người nhận', icon: LucideIcons.userRound),
           _field(
@@ -689,10 +732,11 @@ class _SendParcelPageState extends State<SendParcelPage>
             hint: 'Số điện thoại người nhận',
             icon: LucideIcons.phone,
             keyboardType: TextInputType.phone,
-            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-            validator: (v) => (v == null || v.trim().length < 9)
-                ? 'Nhập số điện thoại hợp lệ'
-                : null,
+            inputFormatters: [
+              FilteringTextInputFormatter.digitsOnly,
+              LengthLimitingTextInputFormatter(ProfileConstants.vnPhoneLength),
+            ],
+            validator: _validateReceiverPhone,
           ),
           const SizedBox(height: 10),
           _field(
@@ -715,21 +759,29 @@ class _SendParcelPageState extends State<SendParcelPage>
           const SizedBox(height: 8),
           // Nói thẳng người nhận có tự nhận được mã không: nếu không, người gửi
           // phải chủ động chuyển mã, và họ chỉ làm vậy khi biết.
-          const OpsBanner(
+          OpsBanner(
             tone: OpsBannerTone.info,
-            icon: LucideIcons.send,
-            text:
-                'Bỏ hàng xong, bấm "Chia sẻ mã cho người nhận" để gửi mã lấy hàng '
-                'qua Zalo, Messenger hoặc SMS. Người nhận đã có tài khoản Lock.R '
-                'trùng số điện thoại còn thấy đơn và nhận thông báo trong app.',
+            icon: _hasValidEmail ? LucideIcons.mailCheck : LucideIcons.send,
+            text: _hasValidEmail
+                ? 'Ngay khi bạn bỏ hàng vào ô, Lock.R gửi mã lấy hàng, nơi lấy, '
+                    'hạn lấy và lời nhắn của bạn tới email này. Bạn vẫn có thể '
+                    'bấm "Chia sẻ mã cho người nhận" để gửi thêm qua Zalo/SMS.'
+                : 'Bỏ hàng xong, bấm "Chia sẻ mã cho người nhận" để gửi mã lấy hàng '
+                    'qua Zalo, Messenger hoặc SMS. Nhập email người nhận để Lock.R '
+                    'tự gửi mã qua email; người nhận có tài khoản Lock.R trùng số '
+                    'điện thoại còn nhận thông báo trong app.',
           ),
           const SizedBox(height: 20),
-          const OpsSectionLabel('Ghi chú', icon: LucideIcons.stickyNote),
+          const OpsSectionLabel(
+            'Lời nhắn cho người nhận',
+            icon: LucideIcons.messageSquareText,
+          ),
           _field(
             controller: _noteCtrl,
-            hint: 'VD: Hàng dễ vỡ, gọi trước khi lấy...',
+            hint: 'VD: Hàng dễ vỡ, mở nhẹ tay (tùy chọn)',
             icon: LucideIcons.pencil,
             maxLines: 2,
+            maxLength: _noteMaxLength,
           ),
           const SizedBox(height: 12),
           OpsBanner(
@@ -1051,6 +1103,7 @@ class _SendParcelPageState extends State<SendParcelPage>
     List<TextInputFormatter>? inputFormatters,
     String? Function(String?)? validator,
     int maxLines = 1,
+    int? maxLength,
   }) {
     return TextFormField(
       controller: controller,
@@ -1058,6 +1111,7 @@ class _SendParcelPageState extends State<SendParcelPage>
       inputFormatters: inputFormatters,
       validator: validator,
       maxLines: maxLines,
+      maxLength: maxLength,
       decoration: InputDecoration(
         hintText: hint,
         prefixIcon: Icon(icon, size: 18, color: opsMutedText),
