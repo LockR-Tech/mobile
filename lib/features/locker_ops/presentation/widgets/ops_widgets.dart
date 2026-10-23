@@ -130,6 +130,21 @@ double orderAmountDue(Map<String, dynamic> order) {
   return num.tryParse('$total')?.toDouble() ?? 0;
 }
 
+/// Ô của đơn (đang có hàng) bị báo sự cố, chờ KTV xử lý: server dừng phí quá giờ,
+/// không thu tiền và không mở ô bằng mã tới khi xử lý xong.
+bool orderHasOpenBoxIncident(Map<String, dynamic> order) =>
+    order['boxIncidentOpenedAt'] != null ||
+    '${order['accessBlockReason'] ?? ''}'.toUpperCase() == 'BOX_INCIDENT_OPEN';
+
+/// Câu giải thích cho khách khi ô đang chờ KTV.
+String boxIncidentPausedText(Map<String, dynamic> order) {
+  final since = order['boxIncidentOpenedAt'];
+  final sinceText = since == null ? '' : ' từ ${fmtDateTime(since)}';
+  return 'Ô đang chờ kỹ thuật viên xử lý sự cố. Đồ của bạn vẫn được giữ an toàn '
+      'trong ô, phí quá giờ tạm dừng$sinceText — bạn chưa cần thanh toán hay gia '
+      'hạn. Lock.R sẽ báo khi lấy được đồ.';
+}
+
 String _two(int n) => n.toString().padLeft(2, '0');
 
 /// ISO timestamp -> `HH:mm:ss dd/MM/yyyy`.

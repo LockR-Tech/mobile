@@ -72,6 +72,9 @@ class _RentLockerPageState extends State<RentLockerPage>
   /// Người dùng đã tự chọn số giờ — khi cấu hình đổi thì chỉ kéo về trong
   /// giới hạn mới, không ghi đè bằng số giờ mặc định.
   bool _hoursTouched = false;
+
+  /// Đang chọn theo ngày (số giờ luôn là bội của 24) thay vì theo giờ.
+  bool _byDay = false;
   bool _loadingLockers = true;
   bool _loading = false;
   Map<String, dynamic>? _order;
@@ -104,10 +107,15 @@ class _RentLockerPageState extends State<RentLockerPage>
 
   @override
   void onBusinessConfigChanged(BusinessConfig config) {
-    _hours = (_hoursTouched
-            ? config.clampRentalHours(_hours)
-            : config.rentalDefaultHours)
-        .toDouble();
+    if (_byDay && _maxDays(config) < 1) _byDay = false;
+    if (_byDay) {
+      _hours = (_days.clamp(1, _maxDays(config)) * 24).toDouble();
+      return;
+    }
+    _hours = _clampHourMode(
+      config,
+      _hoursTouched ? _hours : config.rentalDefaultHours,
+    ).toDouble();
   }
 
   void _setHours(num hours) {
@@ -115,6 +123,42 @@ class _RentLockerPageState extends State<RentLockerPage>
       _hoursTouched = true;
       _hours = businessConfig.clampRentalHours(hours).toDouble();
     });
+  }
+
+  /// Số ngày thuê tối đa admin cho (theo số giờ thuê tối đa).
+  static int _maxDays(BusinessConfig config) => config.rentalMaxHours ~/ 24;
+
+  /// Giờ tối đa ở chế độ theo giờ: dưới 1 ngày; admin không cho thuê tới
+  /// 24 giờ thì là số giờ tối đa.
+  static int _maxHourModeHours(BusinessConfig config) => _maxDays(config) >= 1
+      ? 23.clamp(config.rentalMinHours, 23)
+      : config.rentalMaxHours;
+
+  static int _clampHourMode(BusinessConfig config, num hours) => config
+      .clampRentalHours(hours)
+      .clamp(config.rentalMinHours, _maxHourModeHours(config));
+
+  int get _days => (_hours.round() / 24).ceil().clamp(1, 1 << 20);
+
+  void _setDays(int days) =>
+      _setHours(days.clamp(1, _maxDays(businessConfig)) * 24);
+
+  void _setMode(bool byDay) {
+    if (byDay == _byDay) return;
+    setState(() {
+      _byDay = byDay;
+      _hoursTouched = true;
+      _hours = byDay
+          ? 24
+          : _clampHourMode(businessConfig, businessConfig.rentalDefaultHours)
+              .toDouble();
+    });
+  }
+
+  /// "2 ngày" hoặc "5 giờ" cho dòng tạm tính.
+  String get _durationLabel {
+    final hours = _hours.round();
+    return _byDay && hours % 24 == 0 ? '${hours ~/ 24} ngày' : '$hours giờ';
   }
 
   // Khách có thể thanh toán qua cổng ngoài hoặc xác nhận bỏ đồ ngay tại kiosk —
@@ -246,7 +290,7 @@ class _RentLockerPageState extends State<RentLockerPage>
   }
 
   /// Tạm tính hiển thị theo giá admin cấu hình — server tự tính tiền thật.
-  int get _price => businessConfig.rentalRateFor(_cellType) * _hours.round();
+  int get _price => businessConfig.rentalPriceFor(_cellType, _hours.round());
 
   /// Tạm tính sau mã giảm giá — số tiền dùng để hỏi được dùng bao nhiêu điểm.
   int get _priceAfterVoucher => (_price - _discount).clamp(0, _price);
@@ -593,14 +637,12 @@ class _RentLockerPageState extends State<RentLockerPage>
       );
     }
     final config = businessConfig;
-    final minHours = config.rentalMinHours;
-    final maxHours = config.rentalMaxHours;
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
         const OpsBanner(
-          text: 'Thuê ô để giữ đồ cá nhân theo giờ. PIN mở ô được dùng nhiều '
-              'lần trong suốt kỳ thuê.',
+          text: 'Thuê ô để giữ đồ cá nhân theo giờ hoặc theo ngày. PIN mở ô '
+              'được dùng nhiều lần trong suốt kỳ thuê.',
           icon: LucideIcons.lockKeyhole,
         ),
         if (widget.locationName != null) ...[
@@ -636,7 +678,7 @@ class _RentLockerPageState extends State<RentLockerPage>
                 icon: LucideIcons.box,
                 title: 'Ô thường',
                 size: config.cellDimensionsFor('STANDARD'),
-                rate: hourlyRateLabel(config.rentalRateFor('STANDARD')),
+                rate: rentalRateLabel(config, 'STANDARD'),
               ),
               const SizedBox(width: 12),
               _cellCard(
@@ -644,56 +686,21 @@ class _RentLockerPageState extends State<RentLockerPage>
                 icon: LucideIcons.luggage,
                 title: 'Ô vali (XL)',
                 size: config.cellDimensionsFor('XL'),
-                rate: hourlyRateLabel(config.rentalRateFor('XL')),
+                rate: rentalRateLabel(config, 'XL'),
               ),
             ],
           ),
         const SizedBox(height: 20),
         const OpsSectionLabel('Thời gian thuê', icon: LucideIcons.timer),
-        Wrap(
-          spacing: 8,
-          children: [
-            for (final h in config.rentalQuickHours) _quickChip(h),
-          ],
-        ),
-        const SizedBox(height: 4),
-        Row(
-          children: [
-            Expanded(
-              // min == max thì không có gì để kéo — chỉ hiện số giờ cố định.
-              child: maxHours > minHours
-                  ? Slider(
-                      value: _hours.clamp(
-                        minHours.toDouble(),
-                        maxHours.toDouble(),
-                      ),
-                      min: minHours.toDouble(),
-                      max: maxHours.toDouble(),
-                      divisions: maxHours - minHours,
-                      activeColor: opsPrimary,
-                      label: '${_hours.round()}h',
-                      onChanged: _setHours,
-                    )
-                  : const SizedBox.shrink(),
-            ),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-              decoration: BoxDecoration(
-                color: opsPrimary.withValues(alpha: 0.10),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Text(
-                '${_hours.round()} giờ',
-                style: const TextStyle(
-                  fontWeight: FontWeight.w800,
-                  color: opsPrimary,
-                ),
-              ),
-            ),
-          ],
-        ),
+        if (_maxDays(config) >= 1) ...[
+          _modeToggle(),
+          const SizedBox(height: 12),
+        ],
+        if (_byDay) _dayPicker(config) else _hourPicker(config),
+        const SizedBox(height: 6),
         Text(
-          'Thuê từ $minHours đến $maxHours giờ. ${overtimePolicyText(config)}',
+          '${rentalDurationPolicyText(config, _cellType)} '
+          '${rentalOvertimePolicyText(config, _cellType)}',
           style: const TextStyle(fontSize: 12, color: opsMutedText, height: 1.4),
         ),
         const SizedBox(height: 16),
@@ -761,7 +768,7 @@ class _RentLockerPageState extends State<RentLockerPage>
                   style: TextStyle(color: Colors.white70, fontSize: 12),
                 ),
                 Text(
-                  '${typeLabel('RENTAL')} · ${_hours.round()} giờ',
+                  '${typeLabel('RENTAL')} · $_durationLabel',
                   style: const TextStyle(color: Colors.white, fontSize: 12),
                 ),
                 if (_discount > 0)
@@ -814,10 +821,141 @@ class _RentLockerPageState extends State<RentLockerPage>
     );
   }
 
-  Widget _quickChip(int h) {
+  Widget _modeToggle() {
+    return SizedBox(
+      width: double.infinity,
+      child: SegmentedButton<bool>(
+        segments: const [
+          ButtonSegment(
+            value: false,
+            label: Text('Theo giờ'),
+            icon: Icon(LucideIcons.clock, size: 16),
+          ),
+          ButtonSegment(
+            value: true,
+            label: Text('Theo ngày'),
+            icon: Icon(LucideIcons.calendarDays, size: 16),
+          ),
+        ],
+        selected: {_byDay},
+        showSelectedIcon: false,
+        onSelectionChanged: (v) => _setMode(v.first),
+        style: SegmentedButton.styleFrom(
+          backgroundColor: Colors.white,
+          foregroundColor: opsDark,
+          selectedBackgroundColor: opsPrimary,
+          selectedForegroundColor: Colors.white,
+          side: const BorderSide(color: opsBorder),
+          textStyle: const TextStyle(fontWeight: FontWeight.w700),
+        ),
+      ),
+    );
+  }
+
+  /// Vài giờ: nút chọn nhanh (dưới 1 ngày) + thanh kéo tới 23 giờ.
+  Widget _hourPicker(BusinessConfig config) {
+    final minHours = config.rentalMinHours;
+    final maxHours = _maxHourModeHours(config);
+    final quick = config.rentalQuickHours
+        .where((h) => h >= minHours && h <= maxHours)
+        .toList();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (quick.isNotEmpty)
+          Wrap(
+            spacing: 8,
+            children: [for (final h in quick) _quickChip(h, '${h}h')],
+          ),
+        const SizedBox(height: 4),
+        Row(
+          children: [
+            Expanded(
+              // min == max thì không có gì để kéo — chỉ hiện số giờ cố định.
+              child: maxHours > minHours
+                  ? Slider(
+                      value: _hours.clamp(
+                        minHours.toDouble(),
+                        maxHours.toDouble(),
+                      ),
+                      min: minHours.toDouble(),
+                      max: maxHours.toDouble(),
+                      divisions: maxHours - minHours,
+                      activeColor: opsPrimary,
+                      label: '${_hours.round()}h',
+                      onChanged: _setHours,
+                    )
+                  : const SizedBox.shrink(),
+            ),
+            _durationBadge('${_hours.round()} giờ'),
+          ],
+        ),
+      ],
+    );
+  }
+
+  /// Theo ngày: nút chọn nhanh + nút −/+ từng ngày. Mỗi ngày = 24 giờ tính
+  /// từ lúc bỏ đồ vào ô.
+  Widget _dayPicker(BusinessConfig config) {
+    final maxDays = _maxDays(config);
+    final quick = const [1, 2, 3, 7].where((d) => d <= maxDays).toList();
+    final days = _days;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Wrap(
+          spacing: 8,
+          children: [for (final d in quick) _quickChip(d * 24, '$d ngày')],
+        ),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            IconButton.outlined(
+              tooltip: 'Bớt 1 ngày',
+              onPressed: days > 1 ? () => _setDays(days - 1) : null,
+              icon: const Icon(LucideIcons.minus, size: 18),
+            ),
+            Expanded(
+              child: Center(
+                child: Text(
+                  '$days ngày · ${days * 24} giờ',
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w800,
+                    fontSize: 15,
+                    color: opsDark,
+                  ),
+                ),
+              ),
+            ),
+            IconButton.outlined(
+              tooltip: 'Thêm 1 ngày',
+              onPressed: days < maxDays ? () => _setDays(days + 1) : null,
+              icon: const Icon(LucideIcons.plus, size: 18),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _durationBadge(String text) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: opsPrimary.withValues(alpha: 0.10),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Text(
+        text,
+        style: const TextStyle(fontWeight: FontWeight.w800, color: opsPrimary),
+      ),
+    );
+  }
+
+  Widget _quickChip(int h, String label) {
     final selected = _hours.round() == h;
     return ChoiceChip(
-      label: Text('${h}h'),
+      label: Text(label),
       selected: selected,
       showCheckmark: false,
       backgroundColor: Colors.white,
@@ -953,7 +1091,7 @@ class _RentLockerPageState extends State<RentLockerPage>
     final icon = isXl ? LucideIcons.luggage : LucideIcons.box;
     final title = isXl ? 'Ô vali (XL)' : 'Ô thường';
     final size = businessConfig.cellDimensionsFor(cellType);
-    final rate = hourlyRateLabel(businessConfig.rentalRateFor(cellType));
+    final rate = rentalRateLabel(businessConfig, cellType);
     
     final available = _availableCounts?[cellType] ?? -1;
     final disabled = available == 0;
@@ -1102,7 +1240,7 @@ class _RentLockerPageState extends State<RentLockerPage>
                   icon: LucideIcons.clock,
                   text: 'Hết hạn thuê: ${fmtDateTime(order['pickupDeadline'])} '
                       '(${fmtRemaining(order['pickupDeadline'])}). '
-                      'Trả ô trễ: ${overtimePolicyText(config)}',
+                      '${rentalOvertimePolicyText(config, _cellType)}',
                 ),
               ],
             ],

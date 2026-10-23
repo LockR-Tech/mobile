@@ -7,7 +7,7 @@ import 'package:smart_laundry_locker/core/config/business_config_service.dart';
 /// `app.payment.simulation-enabled` (Cài đặt → Thanh toán → Giả lập thanh toán).
 /// Bấm ⇒ nhập số tiền (mặc định đủ số), server coi như vừa nhận chuyển khoản
 /// đó; nhập ít hơn để thử trường hợp chuyển thiếu. Không có tiền thật.
-class PaymentSimulationButton extends StatelessWidget {
+class PaymentSimulationButton extends StatefulWidget {
   const PaymentSimulationButton({
     super.key,
     required this.defaultAmount,
@@ -21,6 +21,14 @@ class PaymentSimulationButton extends StatelessWidget {
   final Future<void> Function(num amount) onSimulate;
 
   @override
+  State<PaymentSimulationButton> createState() =>
+      _PaymentSimulationButtonState();
+}
+
+class _PaymentSimulationButtonState extends State<PaymentSimulationButton> {
+  bool _busy = false;
+
+  @override
   Widget build(BuildContext context) {
     return ValueListenableBuilder(
       valueListenable: BusinessConfigService.instance.listenable,
@@ -30,9 +38,17 @@ class PaymentSimulationButton extends StatelessWidget {
           padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
           child: OutlinedButton.icon(
             key: const Key('payment-simulate'),
-            onPressed: () => _simulate(context),
-            icon: const Icon(LucideIcons.flaskConical, size: 18),
-            label: const Text('Giả lập thanh toán (test)'),
+            onPressed: _busy ? null : _simulate,
+            icon: _busy
+                ? const SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const Icon(LucideIcons.flaskConical, size: 18),
+            label: Text(
+              _busy ? 'Đang giả lập…' : 'Giả lập thanh toán (test)',
+            ),
             style: OutlinedButton.styleFrom(
               minimumSize: const Size(double.infinity, 46),
               foregroundColor: const Color(0xFF7C3AED),
@@ -47,21 +63,43 @@ class PaymentSimulationButton extends StatelessWidget {
     );
   }
 
-  Future<void> _simulate(BuildContext context) async {
-    final messenger = ScaffoldMessenger.maybeOf(context);
+  Future<void> _simulate() async {
     final amount = await showDialog<num>(
       context: context,
       useRootNavigator: true,
-      builder: (_) => _SimulationAmountDialog(defaultAmount: defaultAmount),
+      builder: (_) =>
+          _SimulationAmountDialog(defaultAmount: widget.defaultAmount),
     );
-    if (amount == null) return;
+    if (amount == null || !mounted) return;
+    setState(() => _busy = true);
     try {
-      await onSimulate(amount);
+      await widget.onSimulate(amount);
     } catch (e) {
-      messenger?.showSnackBar(
-        SnackBar(content: Text('Không giả lập được: ${_message(e)}')),
-      );
+      // Báo bằng hộp thoại trên cùng: nút thường nằm trong bottom sheet thanh
+      // toán, SnackBar của trang bên dưới bị sheet che ⇒ trước đây bấm xong
+      // tưởng như "không bấm được".
+      if (mounted) await _showError(_message(e));
+    } finally {
+      if (mounted) setState(() => _busy = false);
     }
+  }
+
+  Future<void> _showError(String message) {
+    return showDialog<void>(
+      context: context,
+      useRootNavigator: true,
+      builder: (dialogContext) => AlertDialog(
+        key: const Key('payment-simulate-error'),
+        title: const Text('Không giả lập được'),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: const Text('Đóng'),
+          ),
+        ],
+      ),
+    );
   }
 
   static String _message(Object e) {

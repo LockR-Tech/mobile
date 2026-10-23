@@ -181,6 +181,43 @@ void main() {
     expect(service.current.sendBaseFee, 18000);
   });
 
+  testWidgets('đã chọn ô: hiện cỡ ô thay vì chọn kích thước; SĐT phải đủ 10 số; '
+      'có email thì báo Lock.R tự gửi mã', (tester) async {
+    useBusinessConfig();
+    await tester.binding.setSurfaceSize(const Size(800, 1800));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: SendParcelPage(
+          initialLockerId: 5,
+          initialLockerName: 'Tủ demo',
+          initialBoxId: 901,
+          initialBoxNumber: 4,
+          initialBoxSize: 'SMALL',
+          service: _FakeSendLockerOpsService(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byType(ChoiceChip), findsNothing);
+    expect(find.textContaining('Ô số 4 cỡ nhỏ.'), findsOneWidget);
+
+    await tester.enterText(find.byType(TextFormField).first, '090900000');
+    await tester.tap(find.text('Tạo đơn & lấy PIN bỏ hàng'));
+    await tester.pumpAndSettle();
+    expect(find.text('Số điện thoại gồm 10 số, bắt đầu bằng 0'), findsOneWidget);
+
+    expect(find.textContaining('Lock.R gửi mã lấy hàng'), findsNothing);
+    await tester.enterText(
+      find.widgetWithText(TextFormField, 'Email người nhận (tùy chọn)'),
+      'nhan@example.com',
+    );
+    await tester.pumpAndSettle();
+    expect(find.textContaining('Lock.R gửi mã lấy hàng'), findsOneWidget);
+  });
+
   testWidgets('thanh toán thật rồi mới mở ô và xác nhận bỏ hàng', (tester) async {
     useBusinessConfig();
     await tester.binding.setSurfaceSize(const Size(800, 1800));

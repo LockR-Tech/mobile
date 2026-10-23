@@ -2302,6 +2302,8 @@ class _OrderCard extends StatelessWidget {
         rawStatus != 'CANCELED';
     final sColor = statusColor(status);
     final isDone = rawStatus == 'COMPLETED' || rawStatus == 'CANCELED';
+    // Ô đang chờ KTV: không mời khách trả tiền / lấy đồ (server cũng chặn).
+    final boxIncident = orderHasOpenBoxIncident(order);
 
     return Material(
       color: context.cardBg,
@@ -2505,6 +2507,16 @@ class _OrderCard extends StatelessWidget {
                                   color: Color(0xFFDC2626),
                                   width: 1.4,
                                 );
+                              } else if (boxIncident) {
+                                actionLabel = 'Chờ KTV xử lý';
+                                actionBgColor = const Color(
+                                  0xFFF59E0B,
+                                ).withValues(alpha: 0.12);
+                                actionTextColor = const Color(0xFFB45309);
+                                actionBorderSide = const BorderSide(
+                                  color: Color(0xFFF59E0B),
+                                  width: 1.2,
+                                );
                               } else if (isDone) {
                                 actionLabel = 'Xem lại';
                                 actionBgColor = null;
@@ -2547,7 +2559,8 @@ class _OrderCard extends StatelessWidget {
 
                               return GestureDetector(
                                 onTap: () {
-                                  if ((rawStatus == 'EXPIRED' || overdue) &&
+                                  if (!boxIncident &&
+                                      (rawStatus == 'EXPIRED' || overdue) &&
                                       onPayAndComplete != null) {
                                     onPayAndComplete!();
                                   } else {
@@ -2587,7 +2600,38 @@ class _OrderCard extends StatelessWidget {
             ),
             const SizedBox(height: 14),
             // Overdue or Expired banner
-            if (rawStatus == 'EXPIRED')
+            if (boxIncident)
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
+                color: const Color(0xFFFFFBEB),
+                child: Row(
+                  children: [
+                    const Icon(
+                      LucideIcons.circlePause,
+                      size: 13,
+                      color: Color(0xFFB45309),
+                    ),
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: Text(
+                        order['boxIncidentOpenedAt'] == null
+                            ? 'Phí quá giờ tạm dừng — chờ KTV xử lý ô, chưa cần thanh toán'
+                            : 'Phí quá giờ tạm dừng từ ${fmtDateTime(order['boxIncidentOpenedAt'])} — chưa cần thanh toán',
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFFB45309),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              )
+            else if (rawStatus == 'EXPIRED')
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.symmetric(
@@ -2654,6 +2698,7 @@ class _OrderCard extends StatelessWidget {
                 padding: const EdgeInsets.fromLTRB(16, 0, 16, 14),
                 child: _FaultOrderBanner(
                   report: faultReport!,
+                  itemsInside: rawStatus == 'STORING' || rawStatus == 'RETURNED',
                   boxLabel: _orderBoxLabel(
                     sendBoxNumber: sendBoxNumber,
                     receiveBoxNumber: receiveBoxNumber,
@@ -2732,11 +2777,15 @@ class _FaultOrderBanner extends StatelessWidget {
   const _FaultOrderBanner({
     required this.report,
     required this.boxLabel,
+    this.itemsInside = false,
     this.logs = const [],
     this.onViewReport,
   });
 
   final Map<String, dynamic> report;
+
+  /// Đồ đã nằm trong ô (đơn STORING/RETURNED): không huỷ được đơn, chỉ chờ KTV.
+  final bool itemsInside;
   final String boxLabel;
   final List<Map<String, dynamic>> logs;
   final VoidCallback? onViewReport;
@@ -2796,7 +2845,11 @@ class _FaultOrderBanner extends StatelessWidget {
       fg = const Color(0xFFDC2626);
       icon = LucideIcons.triangleAlert;
       title = '$boxLabel đã được báo sự cố';
-      subtitle = 'Hãy hủy đơn này và đặt ô khác (hoặc liên hệ KTV).';
+      // Đơn đã có đồ trong ô thì không huỷ được (và huỷ cũng không lấy lại được đồ).
+      subtitle = itemsInside
+          ? 'Đồ của bạn vẫn được giữ an toàn trong ô. KTV đang xử lý — phí quá giờ '
+              'tạm dừng, bạn chưa cần thanh toán.'
+          : 'Hãy hủy đơn này và đặt ô khác (hoặc liên hệ KTV).';
     }
 
     void onTapBanner() {
@@ -3982,12 +4035,16 @@ class _DetailSheet extends StatelessWidget {
     final totalNum = totalRaw is num
         ? totalRaw
         : num.tryParse('$totalRaw') ?? 0;
+    // Ô đang chờ KTV: server dừng phí, không thu tiền, không mở ô bằng mã.
+    final boxIncident = orderHasOpenBoxIncident(order);
     final canPay =
+        !boxIncident &&
         paymentStatus != 'PAID' &&
         totalNum > 0 &&
         rawStatus != 'CANCELED' &&
         rawStatus != 'COMPLETED';
-    final canUsePickupActions = !isDroneDelivery || paymentStatus == 'PAID';
+    final canUsePickupActions =
+        !boxIncident && (!isDroneDelivery || paymentStatus == 'PAID');
     final boxLabel = _orderBoxLabel(
       sendBoxNumber: sendBoxNumber,
       receiveBoxNumber: receiveBoxNumber,
@@ -4231,7 +4288,7 @@ class _DetailSheet extends StatelessWidget {
           ),
         ],
       ],
-      if (isRental && rawStatus == 'STORING') ...[
+      if (isRental && rawStatus == 'STORING' && !boxIncident) ...[
         if (needsPayOvertime) ...[
           OpsSheetAction(
             label:
@@ -4343,6 +4400,7 @@ class _DetailSheet extends StatelessWidget {
           _FaultOrderBanner(
             report: faultReport!,
             boxLabel: boxLabel,
+            itemsInside: isPickupPhase,
             logs: faultLogs,
             onViewReport: handleViewReport,
           ),
@@ -4397,7 +4455,16 @@ class _DetailSheet extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 16),
-        if (rawStatus == 'EXPIRED')
+        if (boxIncident)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: OpsBanner(
+              tone: OpsBannerTone.warning,
+              icon: LucideIcons.circlePause,
+              text: boxIncidentPausedText(order),
+            ),
+          )
+        else if (rawStatus == 'EXPIRED')
           Padding(
             padding: const EdgeInsets.only(bottom: 12),
             child: OpsBanner(

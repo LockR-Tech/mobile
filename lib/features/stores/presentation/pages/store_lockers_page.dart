@@ -1158,55 +1158,68 @@ class _LockerCardState extends State<_LockerCard> {
     final isXl = LockerLayoutHelper.isXl(cell);
     final boxId = (cell['id'] as num?)?.toInt();
     final boxNumber = (cell['boxNumber'] as num?)?.toInt();
+
+    // Mở trang đặt chồng lên sheet (không đóng sheet trước) để bấm quay lại thì
+    // về đúng sheet chọn dịch vụ. Quay về: tải lại sơ đồ; ô đã bị giữ/đặt thì
+    // đóng sheet vì nó không còn "trống".
+    Future<void> openOnTopOfSheet(BuildContext sheetCtx, Widget page) async {
+      await Navigator.push<void>(
+        sheetCtx,
+        MaterialPageRoute(builder: (_) => page),
+      );
+      if (!mounted || !_expanded) return;
+      await _loadLayout(force: true);
+      if (!mounted || !sheetCtx.mounted) return;
+      if (!_cellStillAvailable(boxId) &&
+          (ModalRoute.of(sheetCtx)?.isCurrent ?? false)) {
+        Navigator.pop(sheetCtx);
+      }
+    }
+
     showModalBottomSheet<void>(
       context: ctx,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (_) => _BookingSheet(
+      builder: (sheetCtx) => _BookingSheet(
         cell: cell,
         lockerId: _lockerId,
         lockerName: _lockerName,
         storeName: widget.storeName,
-        onRent: () async {
-          Navigator.pop(ctx);
-          await Navigator.push<void>(
-            ctx,
-            MaterialPageRoute(
-              builder: (_) => RentLockerPage(
-                initialLockerId: _lockerId,
-                initialLockerName: _lockerName,
-                locationName: widget.storeName,
-                initialCellType: isXl ? 'XL' : 'STANDARD',
-                initialBoxId: boxId,
-                initialBoxNumber: boxNumber,
-              ),
-            ),
-          );
-          // Quay về: tải lại để thấy ô vừa đặt.
-          if (mounted && _expanded) _loadLayout(force: true);
-        },
+        onRent: () => openOnTopOfSheet(
+          sheetCtx,
+          RentLockerPage(
+            initialLockerId: _lockerId,
+            initialLockerName: _lockerName,
+            locationName: widget.storeName,
+            initialCellType: isXl ? 'XL' : 'STANDARD',
+            initialBoxId: boxId,
+            initialBoxNumber: boxNumber,
+          ),
+        ),
         // Ô vali XL chỉ để thuê giữ đồ, không gửi hàng C2C (CellType.XL).
         onSend: isXl
             ? null
-            : () async {
-                Navigator.pop(ctx);
-                await Navigator.push<void>(
-                  ctx,
-                  MaterialPageRoute(
-                    builder: (_) => SendParcelPage(
-                      initialLockerId: _lockerId,
-                      initialLockerName: _lockerName,
-                      locationName: widget.storeName,
-                      // Giữ đúng ô khách vừa chọn trên sơ đồ.
-                      initialBoxId: boxId,
-                      initialBoxNumber: boxNumber,
-                    ),
+            : () => openOnTopOfSheet(
+                  sheetCtx,
+                  SendParcelPage(
+                    initialLockerId: _lockerId,
+                    initialLockerName: _lockerName,
+                    locationName: widget.storeName,
+                    // Giữ đúng ô khách vừa chọn trên sơ đồ.
+                    initialBoxId: boxId,
+                    initialBoxNumber: boxNumber,
+                    initialBoxSize: cell['size'] as String?,
                   ),
-                );
-                if (mounted && _expanded) _loadLayout(force: true);
-              },
+                ),
       ),
     );
+  }
+
+  /// Ô [boxId] còn trống trên sơ đồ mới nhất? Không tìm thấy ⇒ coi như còn.
+  bool _cellStillAvailable(int? boxId) {
+    final match =
+        _currentCells.where((c) => (c['id'] as num?)?.toInt() == boxId);
+    return match.isEmpty || match.first['status'] == 'AVAILABLE';
   }
 }
 
@@ -2470,7 +2483,7 @@ class _BookingSheet extends StatelessWidget {
                 child: _ServiceButton(
                   lottieAsset: AppLottieAssets.box,
                   label: 'Thuê tủ',
-                  sublabel: 'Tính theo giờ',
+                  sublabel: 'Theo giờ hoặc ngày',
                   gradient: const LinearGradient(
                     colors: [AislBrand.navy, AislBrand.blue],
                     begin: Alignment.topLeft,

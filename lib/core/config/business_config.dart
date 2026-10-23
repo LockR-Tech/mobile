@@ -18,6 +18,9 @@ class BusinessConfig {
     required this.droneDeliveryFee,
     required this.rentalRateStandard,
     required this.rentalRateXl,
+    required this.rentalDailyRateStandard,
+    required this.rentalDailyRateXl,
+    required this.rentalOvertimeRatePercent,
     required this.storageItemFee,
     required this.pickupOvertimeFeePerHour,
     required this.pickupMaxOvertimeFee,
@@ -89,6 +92,15 @@ class BusinessConfig {
 
   /// Giá thuê ô XL mỗi giờ (VND/giờ).
   final int rentalRateXl;
+
+  /// Giá thuê ô STANDARD mỗi 24 giờ (VND/ngày); 0 = chỉ tính theo giờ.
+  final int rentalDailyRateStandard;
+
+  /// Giá thuê ô XL mỗi 24 giờ (VND/ngày); 0 = chỉ tính theo giờ.
+  final int rentalDailyRateXl;
+
+  /// Mỗi giờ ở quá hạn thuê = giá giờ của loại ô × tỉ lệ này (%, ≥ 100).
+  final int rentalOvertimeRatePercent;
 
   /// Đơn giá mỗi món khi lưu trữ (VND).
   final int storageItemFee;
@@ -242,6 +254,9 @@ class BusinessConfig {
     droneDeliveryFee: 15000,
     rentalRateStandard: 5000,
     rentalRateXl: 10000,
+    rentalDailyRateStandard: 40000,
+    rentalDailyRateXl: 80000,
+    rentalOvertimeRatePercent: 100,
     storageItemFee: 5000,
     pickupOvertimeFeePerHour: 500,
     pickupMaxOvertimeFee: 50000,
@@ -347,6 +362,19 @@ class BusinessConfig {
       droneDeliveryFee: _int(o['app.order.drone-delivery-fee'], d.droneDeliveryFee),
       rentalRateStandard: _int(o['app.order.rental-rate-standard'], d.rentalRateStandard),
       rentalRateXl: _int(o['app.order.rental-rate-xl'], d.rentalRateXl),
+      rentalDailyRateStandard: _int(
+        o['app.order.rental-daily-rate-standard'],
+        d.rentalDailyRateStandard,
+      ),
+      rentalDailyRateXl: _int(
+        o['app.order.rental-daily-rate-xl'],
+        d.rentalDailyRateXl,
+      ),
+      rentalOvertimeRatePercent: _int(
+        o['app.order.rental-overtime-rate-percent'],
+        d.rentalOvertimeRatePercent,
+        min: 100,
+      ),
       storageItemFee: _int(o['app.order.storage-item-fee'], d.storageItemFee),
       pickupOvertimeFeePerHour: _int(
         o['app.order.pickup-overtime-fee-per-hour'],
@@ -549,6 +577,34 @@ class BusinessConfig {
   int rentalRateFor(String cellType) =>
       cellType.toUpperCase() == 'XL' ? rentalRateXl : rentalRateStandard;
 
+  /// Giá mỗi 24 giờ thuê, đã kẹp về tối đa 24 × giá giờ (như server).
+  /// 0 = loại ô này chỉ tính theo giờ.
+  int rentalDailyRateFor(String cellType) {
+    final hourly = rentalRateFor(cellType);
+    final daily =
+        cellType.toUpperCase() == 'XL' ? rentalDailyRateXl : rentalDailyRateStandard;
+    return daily <= 0 ? 0 : daily.clamp(0, hourly * 24);
+  }
+
+  /// Phí mỗi giờ ở quá hạn thuê — cùng công thức `rentalOvertimeFee` ở server:
+  /// giá giờ × tỉ lệ quá giờ, không thấp hơn phí quá hạn mỗi giờ.
+  int rentalOvertimeFeePerHourFor(String cellType) {
+    final fee = (rentalRateFor(cellType) * rentalOvertimeRatePercent / 100)
+        .round();
+    return fee < pickupOvertimeFeePerHour ? pickupOvertimeFeePerHour : fee;
+  }
+
+  /// Giá thuê [hours] giờ — cùng công thức `OrderRules.rentalPrice` ở server:
+  /// mỗi 24 giờ trọn một giá ngày, giờ lẻ theo giờ nhưng không vượt giá ngày.
+  int rentalPriceFor(String cellType, int hours) {
+    if (hours <= 0) return 0;
+    final hourly = rentalRateFor(cellType);
+    final daily = rentalDailyRateFor(cellType);
+    if (daily <= 0) return hourly * hours;
+    final rest = (hourly * (hours % 24)).clamp(0, daily);
+    return daily * (hours ~/ 24) + rest;
+  }
+
   /// Kích thước ô hiển thị theo loại ô.
   String cellDimensionsFor(String cellType) =>
       cellType.toUpperCase() == 'XL' ? cellDimensionsXl : cellDimensionsStandard;
@@ -580,6 +636,9 @@ class BusinessConfig {
       'app.order.drone-delivery-fee': droneDeliveryFee,
       'app.order.rental-rate-standard': rentalRateStandard,
       'app.order.rental-rate-xl': rentalRateXl,
+      'app.order.rental-daily-rate-standard': rentalDailyRateStandard,
+      'app.order.rental-daily-rate-xl': rentalDailyRateXl,
+      'app.order.rental-overtime-rate-percent': rentalOvertimeRatePercent,
       'app.order.storage-item-fee': storageItemFee,
       'app.order.pickup-overtime-fee-per-hour': pickupOvertimeFeePerHour,
       'app.order.pickup-max-overtime-fee': pickupMaxOvertimeFee,

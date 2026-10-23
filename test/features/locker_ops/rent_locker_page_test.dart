@@ -205,8 +205,11 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('6.000đ/giờ'), findsOneWidget);
-    expect(find.text('12.000đ/giờ'), findsOneWidget);
+    // Giá ngày mặc định của catalog (40.000đ / 80.000đ).
+    expect(find.text('6.000đ/giờ · 40.000đ/ngày'), findsOneWidget);
+    expect(find.text('12.000đ/giờ · 80.000đ/ngày'), findsOneWidget);
+    // Tối đa 12 giờ ⇒ không có chế độ theo ngày.
+    expect(find.text('Theo ngày'), findsNothing);
     expect(find.text('40 × 40 × 40 cm'), findsOneWidget);
     expect(find.text('60 × 90 × 50 cm'), findsOneWidget);
     // Nút nhanh ngoài [min, max] bị bỏ.
@@ -221,8 +224,9 @@ void main() {
     expect(slider.max, 12);
     expect(
       find.textContaining(
-        'Thuê từ 2 đến 12 giờ. Phí quá giờ 1.000đ/giờ '
-        '(tối đa 30.000đ và 40% giá trị đơn).',
+        'Thuê từ 2 giờ đến 12 giờ. Thuê từ 7 giờ trong một ngày chỉ tính giá '
+        'ngày 40.000đ. Quá giờ thuê tính 6.000đ/giờ cho tới khi lấy đồ hoặc '
+        'gia hạn.',
       ),
       findsOneWidget,
     );
@@ -230,6 +234,61 @@ void main() {
     await tester.tap(find.text('6h'));
     await tester.pumpAndSettle();
     expect(find.text('36.000đ'), findsOneWidget);
+  });
+
+  testWidgets('thuê theo ngày: mỗi ngày tính giá ngày, giờ lẻ không vượt giá ngày', (
+    tester,
+  ) async {
+    useBusinessConfig(
+      BusinessConfig.fromPublicMaps(
+        order: {
+          'app.order.rental-rate-standard': 5000,
+          'app.order.rental-daily-rate-standard': 40000,
+          'app.order.rental-min-hours': 1,
+          'app.order.rental-max-hours': 72,
+          'app.order.rental-default-hours': 4,
+          'app.order.rental-quick-hours': [2, 4, 8, 12, 24],
+        },
+      ),
+    );
+    await tester.binding.setSurfaceSize(const Size(800, 1800));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: RentLockerPage(
+          initialLockerId: 5,
+          initialLockerName: 'Tủ demo',
+          service: _FakeRentLockerOpsService(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    // Theo giờ: nút 24h chuyển sang tab ngày, thanh kéo dừng ở 23 giờ.
+    expect(find.text('24h'), findsNothing);
+    expect(tester.widget<Slider>(find.byType(Slider)).max, 23);
+    await tester.tap(find.text('12h'));
+    await tester.pumpAndSettle();
+    expect(find.text('40.000đ'), findsOneWidget);
+
+    await tester.tap(find.text('Theo ngày'));
+    await tester.pumpAndSettle();
+    expect(find.byType(Slider), findsNothing);
+    expect(find.text('1 ngày · 24 giờ'), findsOneWidget);
+    // Tối đa 72 giờ ⇒ chỉ tới 3 ngày.
+    expect(find.text('7 ngày'), findsNothing);
+
+    await tester.tap(find.text('3 ngày'));
+    await tester.pumpAndSettle();
+    expect(find.text('3 ngày · 72 giờ'), findsOneWidget);
+    expect(find.text('120.000đ'), findsOneWidget);
+    expect(find.textContaining('Thuê tủ · 3 ngày'), findsOneWidget);
+
+    await tester.tap(find.byTooltip('Bớt 1 ngày'));
+    await tester.pumpAndSettle();
+    expect(find.text('2 ngày · 48 giờ'), findsOneWidget);
+    expect(find.text('80.000đ'), findsOneWidget);
   });
 
   testWidgets('pays for real, opens the box, then confirms — never auto-confirms', (

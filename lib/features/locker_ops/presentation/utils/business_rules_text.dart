@@ -7,6 +7,34 @@ import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/op
 /// `5.000đ/giờ`.
 String hourlyRateLabel(int rate) => '${fmtPrice(rate)}/giờ';
 
+/// `5.000đ/giờ · 40.000đ/ngày` — bỏ phần ngày khi loại ô không có giá ngày.
+String rentalRateLabel(BusinessConfig config, String cellType) {
+  final hourly = hourlyRateLabel(config.rentalRateFor(cellType));
+  final daily = config.rentalDailyRateFor(cellType);
+  return daily > 0 ? '$hourly · ${fmtPrice(daily)}/ngày' : hourly;
+}
+
+/// `Thuê từ 1 giờ đến 30 ngày. Thuê từ 8 giờ trong một ngày chỉ tính giá ngày 40.000đ.`
+String rentalDurationPolicyText(BusinessConfig config, String cellType) {
+  String span(int hours) =>
+      hours >= 48 && hours % 24 == 0 ? '${hours ~/ 24} ngày' : '$hours giờ';
+  final range =
+      'Thuê từ ${span(config.rentalMinHours)} đến ${span(config.rentalMaxHours)}.';
+  final hourly = config.rentalRateFor(cellType);
+  final daily = config.rentalDailyRateFor(cellType);
+  if (daily <= 0 || hourly <= 0) return range;
+  final capFrom = (daily / hourly).ceil();
+  if (capFrom >= 24) return '$range Mỗi 24 giờ tính ${fmtPrice(daily)}.';
+  return '$range Thuê từ $capFrom giờ trong một ngày chỉ tính giá ngày '
+      '${fmtPrice(daily)}.';
+}
+
+/// `Quá giờ thuê tính 5.000đ/giờ cho tới khi lấy đồ hoặc gia hạn.`
+String rentalOvertimePolicyText(BusinessConfig config, String cellType) =>
+    'Quá giờ thuê tính '
+    '${hourlyRateLabel(config.rentalOvertimeFeePerHourFor(cellType))} '
+    'cho tới khi lấy đồ hoặc gia hạn.';
+
 /// `Phí quá giờ 500đ/giờ (tối đa 50.000đ và 50% giá trị đơn).`
 String overtimePolicyText(BusinessConfig config) {
   if (config.pickupOvertimeFeePerHour <= 0) {
