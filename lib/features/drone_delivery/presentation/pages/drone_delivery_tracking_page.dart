@@ -17,6 +17,7 @@ import 'package:smart_laundry_locker/features/drone_delivery/presentation/widget
 import 'package:smart_laundry_locker/features/drone_delivery/presentation/widgets/drone_order_cancel.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/presentation/widgets/drone_order_payment.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/presentation/widgets/drone_pickup_sheet.dart';
+import 'package:smart_laundry_locker/features/drone_delivery/presentation/widgets/drone_weather_panel.dart';
 import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
 import 'package:smart_laundry_locker/features/maintenance/presentation/widgets/customer_drone_incident_card.dart';
 
@@ -337,6 +338,12 @@ class _TrackingBody extends StatelessWidget {
             refreshKey: status.status,
             expectIncident: status.stage.isIncident,
           ),
+        // Đơn còn chạy: người gửi / người nhận thấy cùng dự báo mà hệ thống dùng để cho bay.
+        if (!status.stage.isTerminal)
+          if (int.tryParse(orderId) case final parsed?) ...[
+            DroneRouteWeatherCard(orderId: parsed, refreshKey: status.status),
+            const SizedBox(height: 12),
+          ],
         DroneDeliveryDetail(
           status: status,
           viewerIsBooker: viewerIsBooker,

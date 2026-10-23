@@ -1161,6 +1161,22 @@ class LockerOpsService {
   Future<Map<String, dynamic>> droneOrderDetail(int orderId) =>
       _map('GET', '/api/drone-technician/drone-orders/$orderId');
 
+  /// Thời tiết dọc tuyến bay của một đơn — cùng nguồn với kiểm tra lúc đặt
+  /// đơn / phóng drone. KTV dùng đường của đội bay, khách dùng đường của đơn.
+  Future<Map<String, dynamic>> droneRouteWeather(
+    int orderId, {
+    bool asTechnician = false,
+  }) => _map(
+    'GET',
+    asTechnician
+        ? '/api/drone-technician/drone-orders/$orderId/weather'
+        : '/api/orders/$orderId/drone-delivery/weather',
+  );
+
+  /// Thời tiết tại từng tủ có bãi đáp drone (KTV điều phối).
+  Future<List<Map<String, dynamic>>> droneLockerWeather() =>
+      _list('/api/drone-technician/drone-orders/weather/lockers');
+
   /// Metadata camera/telemetry có kiểm soát quyền cho Journey Detail.
   Future<Map<String, dynamic>> droneOrderCamera(int orderId) =>
       _map('GET', '/api/drone-technician/drone-orders/$orderId/camera');
