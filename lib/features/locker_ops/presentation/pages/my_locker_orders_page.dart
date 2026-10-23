@@ -80,8 +80,10 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
 
   /// Phiếu sự cố gắn với đơn theo trường có cấu trúc `orderId` / `orderCode` của
   /// `GET /api/lockers/my-reports` (không dò mã đơn trong ghi chú).
-  Map<int, Map<String, dynamic>> _reportByOrderId = {};
-  Map<String, Map<String, dynamic>> _reportByOrderCode = {};
+  /// Mới nhất trước. Một đơn có thể dính nhiều phiếu: phiếu của ô cũ (KTV đã chuyển hàng
+  /// sang ô khác, phiếu còn mở để sửa ô) và phiếu của ô đang giữ đồ.
+  Map<int, List<Map<String, dynamic>>> _reportsByOrderId = {};
+  Map<String, List<Map<String, dynamic>>> _reportsByOrderCode = {};
   bool _loading = true;
   String _typeFilter = 'ALL';
 
@@ -178,22 +180,24 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
       if (!mounted) return;
 
       final latestReportByBox = <int, Map<String, dynamic>>{};
-      final reportByOrderId = <int, Map<String, dynamic>>{};
-      final reportByOrderCode = <String, Map<String, dynamic>>{};
+      final reportsByOrderId = <int, List<Map<String, dynamic>>>{};
+      final reportsByOrderCode = <String, List<Map<String, dynamic>>>{};
       for (final r in reports) {
         final bId = _asInt(r['boxId']);
         if (bId != null) latestReportByBox[bId] ??= r;
         final oId = _asInt(r['orderId']);
-        if (oId != null) reportByOrderId[oId] ??= r;
+        if (oId != null) (reportsByOrderId[oId] ??= []).add(r);
         final code = r['orderCode']?.toString().trim().toUpperCase();
-        if (code != null && code.isNotEmpty) reportByOrderCode[code] ??= r;
+        if (code != null && code.isNotEmpty) {
+          (reportsByOrderCode[code] ??= []).add(r);
+        }
       }
 
       setState(() {
         _activeReportsByBox = _activeReportsByBoxMap(reports);
         _latestReportByBox = latestReportByBox;
-        _reportByOrderId = reportByOrderId;
-        _reportByOrderCode = reportByOrderCode;
+        _reportsByOrderId = reportsByOrderId;
+        _reportsByOrderCode = reportsByOrderCode;
         _orders = orders;
       });
     } catch (e) {
@@ -499,7 +503,7 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
     }
 
     final reportStatus = (report['status'] as String? ?? 'OPEN').toUpperCase();
-    final isResolved = reportStatus == 'RESOLVED' || reportStatus == 'CLOSED';
+    final isResolved = isReportClosed(reportStatus);
 
     // Nếu sự cố đang mở (OPEN/IN_PROGRESS), đơn hàng đang nằm ở ô đó đều bị ảnh hưởng
     if (!isResolved) return true;
@@ -523,12 +527,14 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
   /// sau đó phiếu đang mở, nếu không có thì lấy phiếu sự cố đã xử lý mới nhất của ô tủ).
   Map<String, dynamic>? _incidentReportForOrder(Map<String, dynamic> order) {
     final orderId = _asInt(order['id']);
-    final byId = orderId == null ? null : _reportByOrderId[orderId];
-    if (byId != null) return byId;
+    final byId = orderId == null ? null : _reportsByOrderId[orderId];
+    if (byId != null && byId.isNotEmpty) return _preferCurrentBoxReport(byId, order);
     final code = order['orderCode']?.toString().trim().toUpperCase();
     if (code != null && code.isNotEmpty) {
-      final byCode = _reportByOrderCode[code];
-      if (byCode != null) return byCode;
+      final byCode = _reportsByOrderCode[code];
+      if (byCode != null && byCode.isNotEmpty) {
+        return _preferCurrentBoxReport(byCode, order);
+      }
     }
 
     final rawStatus = (order['status'] as String? ?? '').toUpperCase();
@@ -1543,10 +1549,28 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
             Navigator.pop(ctx);
             await _extendDialog(id);
           },
+          // Báo lỗi / ủy quyền / đổi PIN làm ngay trên trang chi tiết (hộp thoại mở
+          // chồng lên), trang chi tiết tự tải lại sau đó — không đóng về danh sách.
           onReport: (boxId) async {
-            Navigator.pop(ctx);
             final orderId = _asInt(order['id']);
             if (orderId == null) return;
+            final latest =
+                _orders.where((o) => _asInt(o['id']) == orderId).firstOrNull ??
+                    order;
+            // Đồ đã trong ô và ô đang có phiếu mở ⇒ mở phiếu đó, không báo trùng.
+            // Đơn chưa có đồ vẫn báo qua server: server tự huỷ đơn để khách đặt ô khác.
+            final status = (latest['status'] as String? ?? '').toUpperCase();
+            final itemsInside = status == 'STORING' || status == 'RETURNED';
+            final open = itemsInside ? _incidentReportForOrder(latest) : null;
+            if (open != null &&
+                !_reportOnOtherBox(open, latest) &&
+                !isReportClosed(open['status'] ?? 'OPEN')) {
+              _snack(
+                'Ô này đã có phiếu RPT-${open['id']} đang được KTV xử lý.',
+              );
+              UserReportDetailSheet.show(context, report: open);
+              return;
+            }
             await _reportDialog(
               orderId: orderId,
               boxLabel: _boxLabelFor(order, boxId),
@@ -1588,11 +1612,9 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
             context.go(AppRouter.droneDeliveryTracking, extra: '$id');
           },
           onDelegate: (id) async {
-            Navigator.pop(ctx);
             await _delegateOrder(id);
           },
           onResetPin: () async {
-            Navigator.pop(ctx);
             await _resetPin(order);
           },
           onChanged: _load,
@@ -2302,8 +2324,10 @@ class _OrderCard extends StatelessWidget {
         rawStatus != 'CANCELED';
     final sColor = statusColor(status);
     final isDone = rawStatus == 'COMPLETED' || rawStatus == 'CANCELED';
-    // Ô đang chờ KTV: không mời khách trả tiền / lấy đồ (server cũng chặn).
-    final boxIncident = orderHasOpenBoxIncident(order);
+    // Ô hỏng đã xác nhận: không mời khách trả tiền / lấy đồ (server cũng chặn).
+    // Ô mới chờ KTV kiểm tra: khách vẫn lấy đồ được, chỉ báo phí đang dừng.
+    final boxIncident = orderBoxIncidentBlocksAccess(order);
+    final feePaused = orderHasOpenBoxIncident(order);
 
     return Material(
       color: context.cardBg,
@@ -2600,7 +2624,7 @@ class _OrderCard extends StatelessWidget {
             ),
             const SizedBox(height: 14),
             // Overdue or Expired banner
-            if (boxIncident)
+            if (feePaused)
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.symmetric(
@@ -2699,6 +2723,8 @@ class _OrderCard extends StatelessWidget {
                 child: _FaultOrderBanner(
                   report: faultReport!,
                   itemsInside: rawStatus == 'STORING' || rawStatus == 'RETURNED',
+                  accessBlocked: boxIncident,
+                  movedToCurrentBox: _reportOnOtherBox(faultReport!, order),
                   boxLabel: _orderBoxLabel(
                     sendBoxNumber: sendBoxNumber,
                     receiveBoxNumber: receiveBoxNumber,
@@ -2778,6 +2804,8 @@ class _FaultOrderBanner extends StatelessWidget {
     required this.report,
     required this.boxLabel,
     this.itemsInside = false,
+    this.accessBlocked = true,
+    this.movedToCurrentBox = false,
     this.logs = const [],
     this.onViewReport,
   });
@@ -2786,6 +2814,13 @@ class _FaultOrderBanner extends StatelessWidget {
 
   /// Đồ đã nằm trong ô (đơn STORING/RETURNED): không huỷ được đơn, chỉ chờ KTV.
   final bool itemsInside;
+
+  /// Phiếu báo cho ô cũ, đồ đã được chuyển sang ô hiện tại ([boxLabel]).
+  final bool movedToCurrentBox;
+
+  /// Sự cố đã được xác nhận (ô khoá chờ KTV). False: ô chờ KTV kiểm tra, khách
+  /// vẫn mở ô bằng mã PIN được.
+  final bool accessBlocked;
   final String boxLabel;
   final List<Map<String, dynamic>> logs;
   final VoidCallback? onViewReport;
@@ -2794,15 +2829,18 @@ class _FaultOrderBanner extends StatelessWidget {
   Widget build(BuildContext context) {
     final reason = (report['description'] as String?)?.trim();
     final status = (report['status'] as String? ?? 'OPEN').toUpperCase();
-    final isResolved = status == 'RESOLVED' || status == 'CLOSED';
+    final isResolved = isReportClosed(status);
+    final isRejected = status == 'REJECTED';
     final reportId = report['id'];
 
     // Kiểm tra xem đơn hàng đã được KTV điều chuyển sang ô mới an toàn chưa
-    bool isRelocated = false;
-    String? newBoxNum;
+    bool isRelocated = movedToCurrentBox;
+    String? newBoxNum = movedToCurrentBox
+        ? RegExp(r'\d+').firstMatch(boxLabel)?.group(0)
+        : null;
     String? oldBoxNum = report['boxNumber']?.toString();
 
-    for (final log in logs) {
+    for (final log in movedToCurrentBox ? const <Map<String, dynamic>>[] : logs) {
       final note = (log['note'] ?? '').toString();
       final upper = note.toUpperCase();
       if (upper.contains('ĐIỀU CHUYỂN') || upper.contains('RELOCATE')) {
@@ -2832,6 +2870,14 @@ class _FaultOrderBanner extends StatelessWidget {
       icon = LucideIcons.arrowRightLeft;
       title = 'Đã điều chuyển sang Ô số ${newBoxNum ?? ''} an toàn';
       subtitle = 'KTV đã chuyển đồ từ ô cũ (#${oldBoxNum ?? ''}) sang ô mới do sự cố. Mã PIN mới đã sẵn sàng.';
+    } else if (isRejected) {
+      bg = const Color(0xFFF8FAFC);
+      border = const Color(0xFFCBD5E1);
+      fg = const Color(0xFF334155);
+      icon = LucideIcons.shieldCheck;
+      title = 'KTV đã kiểm tra: $boxLabel không có sự cố';
+      subtitle = 'Ô hoạt động bình thường, bạn lấy đồ bằng mã PIN như thường lệ. '
+          'Xem phản hồi của KTV trong phiếu.';
     } else if (isResolved) {
       bg = const Color(0xFFF0FDF4);
       border = const Color(0xFFBBF7D0);
@@ -2846,10 +2892,13 @@ class _FaultOrderBanner extends StatelessWidget {
       icon = LucideIcons.triangleAlert;
       title = '$boxLabel đã được báo sự cố';
       // Đơn đã có đồ trong ô thì không huỷ được (và huỷ cũng không lấy lại được đồ).
-      subtitle = itemsInside
-          ? 'Đồ của bạn vẫn được giữ an toàn trong ô. KTV đang xử lý — phí quá giờ '
-              'tạm dừng, bạn chưa cần thanh toán.'
-          : 'Hãy hủy đơn này và đặt ô khác (hoặc liên hệ KTV).';
+      subtitle = !itemsInside
+          ? 'Hãy hủy đơn này và đặt ô khác (hoặc liên hệ KTV).'
+          : accessBlocked
+              ? 'Đồ của bạn vẫn được giữ an toàn trong ô. KTV đang xử lý — phí quá giờ '
+                  'tạm dừng, bạn chưa cần thanh toán.'
+              : 'KTV sẽ tới kiểm tra ô. Bạn vẫn mở ô bằng mã PIN để lấy đồ được — '
+                  'phí quá giờ tạm dừng từ lúc báo.';
     }
 
     void onTapBanner() {
@@ -3237,12 +3286,42 @@ Map<int, Map<String, dynamic>> _activeReportsByBoxMap(
   for (final report in reports) {
     final boxId = _asInt(report['boxId']);
     final status = (report['status'] as String? ?? '').toUpperCase();
-    if (boxId == null || status == 'RESOLVED' || active.containsKey(boxId)) {
+    if (boxId == null || isReportClosed(status) || active.containsKey(boxId)) {
       continue;
     }
     active[boxId] = report;
   }
   return active;
+}
+
+/// Ô đang giữ đồ của đơn (lúc chờ lấy: ô nhận, trước đó: ô gửi) — cùng cách
+/// `_activeReportForOrder` chọn ô.
+int? _currentBoxIdOf(Map<String, dynamic> order) {
+  final status = (order['status'] as String? ?? '').toUpperCase();
+  final isPickup = status == 'STORING' || status == 'RETURNED';
+  return isPickup
+      ? _asInt(order['receiveBoxId'] ?? order['sendBoxId'] ?? order['reservedBoxId'])
+      : _asInt(order['sendBoxId'] ?? order['receiveBoxId'] ?? order['reservedBoxId']);
+}
+
+/// Phiếu báo cho một ô mà đơn không còn nằm trong đó: KTV đã chuyển đồ sang ô khác,
+/// phiếu vẫn mở để sửa ô cũ. Không phải sự cố của ô đang giữ đồ.
+bool _reportOnOtherBox(Map<String, dynamic> report, Map<String, dynamic> order) {
+  final reportBox = _asInt(report['boxId']);
+  final current = _currentBoxIdOf(order);
+  return reportBox != null && current != null && reportBox != current;
+}
+
+/// Trong các phiếu gắn với đơn (mới nhất trước), ưu tiên phiếu của ô đang giữ đồ —
+/// phiếu ô cũ sau khi KTV chuyển ô chỉ còn là lịch sử.
+Map<String, dynamic> _preferCurrentBoxReport(
+  List<Map<String, dynamic>> linked,
+  Map<String, dynamic> order,
+) {
+  for (final report in linked) {
+    if (!_reportOnOtherBox(report, order)) return report;
+  }
+  return linked.first;
 }
 
 /// `4`, `4 → 7`, hoặc `Chưa gán ô` — cho dòng "Ô" ở bảng chi tiết.
@@ -3256,7 +3335,10 @@ String _boxRouteLabel(
         ? 'Đã giải phóng ô'
         : 'Chưa gán ô';
   }
-  if (sendBoxNumber != null && receiveBoxNumber != null) {
+  // Đơn thuê không có ô nhận riêng — ô nhận rơi về cùng số ô, không hiện "3 → 3".
+  if (sendBoxNumber != null &&
+      receiveBoxNumber != null &&
+      sendBoxNumber != receiveBoxNumber) {
     return '$sendBoxNumber → $receiveBoxNumber';
   }
   return '${sendBoxNumber ?? receiveBoxNumber}';
@@ -3830,7 +3912,7 @@ class _MyLockerOrderDetailPage extends StatefulWidget {
   final void Function(int orderId) onComplete;
   final void Function(int orderId) onEndRental;
   final void Function(int orderId) onExtend;
-  final void Function(int boxId) onReport;
+  final Future<void> Function(int boxId) onReport;
   final void Function(int orderId) onCancel;
   final VoidCallback onDirections;
   final void Function(int orderId) onPay;
@@ -3838,8 +3920,8 @@ class _MyLockerOrderDetailPage extends StatefulWidget {
   final VoidCallback onOpenLocker;
   final void Function(int orderId) onTrackDrone;
   final void Function(int orderId)? onPayAndComplete;
-  final void Function(int orderId)? onDelegate;
-  final VoidCallback? onResetPin;
+  final Future<void> Function(int orderId)? onDelegate;
+  final Future<void> Function()? onResetPin;
   final Future<void> Function()? onChanged;
 
   @override
@@ -3922,7 +4004,10 @@ class _MyLockerOrderDetailPageState extends State<_MyLockerOrderDetailPage> {
               onComplete: widget.onComplete,
               onEndRental: widget.onEndRental,
               onExtend: widget.onExtend,
-              onReport: widget.onReport,
+              onReport: (boxId) async {
+                await widget.onReport(boxId);
+                if (mounted) await _refresh();
+              },
               onCancel: widget.onCancel,
               onDirections: widget.onDirections,
               onPay: widget.onPay,
@@ -3930,8 +4015,18 @@ class _MyLockerOrderDetailPageState extends State<_MyLockerOrderDetailPage> {
               onPayAndComplete: widget.onPayAndComplete,
               onOpenLocker: widget.onOpenLocker,
               onTrackDrone: widget.onTrackDrone,
-              onDelegate: widget.onDelegate,
-              onResetPin: widget.onResetPin,
+              onDelegate: widget.onDelegate == null
+                  ? null
+                  : (id) async {
+                      await widget.onDelegate!(id);
+                      if (mounted) await _refresh();
+                    },
+              onResetPin: widget.onResetPin == null
+                  ? null
+                  : () async {
+                      await widget.onResetPin!();
+                      if (mounted) await _refresh();
+                    },
               onChanged: _refresh,
             ),
           ),
@@ -4035,8 +4130,10 @@ class _DetailSheet extends StatelessWidget {
     final totalNum = totalRaw is num
         ? totalRaw
         : num.tryParse('$totalRaw') ?? 0;
-    // Ô đang chờ KTV: server dừng phí, không thu tiền, không mở ô bằng mã.
-    final boxIncident = orderHasOpenBoxIncident(order);
+    // Ô hỏng đã xác nhận: server không thu tiền, không mở ô bằng mã. Ô mới chờ
+    // KTV kiểm tra: vẫn lấy đồ được, chỉ chưa gia hạn (phí đang dừng).
+    final boxIncident = orderBoxIncidentBlocksAccess(order);
+    final feePaused = orderHasOpenBoxIncident(order);
     final canPay =
         !boxIncident &&
         paymentStatus != 'PAID' &&
@@ -4311,11 +4408,12 @@ class _DetailSheet extends StatelessWidget {
             onTap: onOpenLocker,
           ),
         ],
-        OpsSheetAction(
-          label: 'Gia hạn thuê',
-          icon: LucideIcons.timer,
-          onTap: () => onExtend(id),
-        ),
+        if (!feePaused)
+          OpsSheetAction(
+            label: 'Gia hạn thuê',
+            icon: LucideIcons.timer,
+            onTap: () => onExtend(id),
+          ),
         OpsSheetAction(
           label: 'Kết thúc thuê & lấy đồ',
           icon: LucideIcons.logOut,
@@ -4401,6 +4499,8 @@ class _DetailSheet extends StatelessWidget {
             report: faultReport!,
             boxLabel: boxLabel,
             itemsInside: isPickupPhase,
+            accessBlocked: boxIncident,
+            movedToCurrentBox: _reportOnOtherBox(faultReport!, order),
             logs: faultLogs,
             onViewReport: handleViewReport,
           ),
@@ -4455,7 +4555,7 @@ class _DetailSheet extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 16),
-        if (boxIncident)
+        if (feePaused)
           Padding(
             padding: const EdgeInsets.only(bottom: 12),
             child: OpsBanner(
@@ -5347,6 +5447,17 @@ class _OrderIncidentResolutionSectionState
 
   static final _tagRegex = RegExp(r'^(\[[^\]]+\])\s*(.*)', dotAll: true);
 
+  /// Tag cho ghi chú order-service viết khi KTV chuyển ô / xử lý xong sự cố (không có
+  /// tag `[...]`); null nếu không phải ghi chú xử lý sự cố.
+  static String? _untaggedIncidentTag(String note) {
+    final lower = note.toLowerCase();
+    if (lower.contains('đã xử lý sự cố ô')) return '[ĐÃ XỬ LÝ SỰ CỐ]';
+    if (lower.startsWith('ktv điều chuyển hàng sang ô')) return '[ĐIỀU CHUYỂN Ô]';
+    if (lower.contains('bàn giao hàng trực tiếp')) return '[BÀN GIAO TRỰC TIẾP]';
+    if (lower.contains('niêm phong')) return '[NIÊM PHONG VỀ HUB]';
+    return null;
+  }
+
   @override
   void initState() {
     super.initState();
@@ -5363,11 +5474,13 @@ class _OrderIncidentResolutionSectionState
     try {
       final events = await svc.orderTimeline(widget.orderId);
       if (!mounted) return;
-      // Lọc chỉ giữ incident notes dựa trên tag
+      // Lọc chỉ giữ incident notes: ghi chú có tag của KTV, hoặc ghi chú order-service
+      // tự viết khi chuyển ô / xử lý xong sự cố (không có tag).
       final incidents = events.where((e) {
         final note = (e['note'] ?? e['description'] ?? '').toString().trim();
         final upperNote = note.toUpperCase();
-        return _incidentTags.any((t) => upperNote.contains(t.toUpperCase()));
+        return _incidentTags.any((t) => upperNote.contains(t.toUpperCase())) ||
+            _untaggedIncidentTag(note) != null;
       }).toList();
 
       // Nếu timeline chưa có incident events nhưng widget.logs có ghi nhận từ KTV
@@ -5444,6 +5557,7 @@ class _OrderIncidentResolutionSectionState
 
   ({Color bg, Color fg, IconData icon}) _tagStyle(String upperTag) {
     if (upperTag.contains('THÀNH CÔNG') ||
+        upperTag.contains('ĐÃ XỬ LÝ') ||
         upperTag.contains('NGHIỆM THU') ||
         upperTag.contains('XỬ LÝ TẠI CHỖ')) {
       return (
@@ -5486,7 +5600,8 @@ class _OrderIncidentResolutionSectionState
 
   @override
   Widget build(BuildContext context) {
-    if (_loading || (_incidentEvents.isEmpty && _resolvedReport == null)) {
+    // Chưa có bước xử lý nào thì không vẽ tiêu đề rỗng (phiếu mới báo, KTV chưa làm gì).
+    if (_loading || _incidentEvents.isEmpty) {
       return const SizedBox.shrink();
     }
 
@@ -5536,8 +5651,9 @@ class _OrderIncidentResolutionSectionState
               final rawNote =
                   (event['note'] ?? event['description'] ?? '').toString().trim();
               final match = _tagRegex.firstMatch(rawNote);
-              final tag = match?.group(1) ?? rawNote;
-              final rest = match?.group(2) ?? '';
+              final untagged = match == null ? _untaggedIncidentTag(rawNote) : null;
+              final tag = match?.group(1) ?? untagged ?? rawNote;
+              final rest = match?.group(2) ?? (untagged != null ? rawNote : '');
               final style = _tagStyle(tag.toUpperCase());
               final ts = _fmtDt(
                 event['changedAt'] ?? event['createdAt'] ?? event['timestamp'],

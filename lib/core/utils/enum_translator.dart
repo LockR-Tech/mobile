@@ -152,6 +152,8 @@ class EnumTranslator {
         return 'Khóa do số dư';
       case 'FAULT':
         return 'Bị lỗi';
+      case 'PENDING_CHECK':
+        return 'Chờ kiểm tra';
       case 'MAINTENANCE':
         return 'Bảo trì';
       case 'INITIALIZING':

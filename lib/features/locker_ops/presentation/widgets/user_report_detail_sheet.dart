@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import 'package:smart_laundry_locker/core/config/business_config_service.dart';
+import 'package:smart_laundry_locker/core/utils/app_date_time.dart';
 import 'package:smart_laundry_locker/core/media/media.dart';
 import 'package:smart_laundry_locker/core/theme/shadcn_theme.dart';
 import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
@@ -172,7 +173,7 @@ class _UserReportDetailSheetState extends State<UserReportDetailSheet> {
     final list = <Map<String, dynamic>>[];
     final ktvId = _report['assignedToUserId'] ?? _report['technicianId'];
     final ktvName = _report['assignedToTechnicianName'] ?? _report['technicianName'];
-    final isResolved = status == 'RESOLVED' || status == 'CLOSED';
+    final isResolved = isReportClosed(status);
 
     Map<String, dynamic> attJson(ReportAttachment a) => {
       'url': a.url,
@@ -263,19 +264,9 @@ class _UserReportDetailSheetState extends State<UserReportDetailSheet> {
     return list;
   }
 
-  DateTime? _parseDate(dynamic value) {
-    if (value == null) return null;
-    if (value is DateTime) return value;
-    final s = value.toString().trim();
-    if (s.isEmpty) return null;
-    // Chuỗi có chỉ định múi giờ rõ ràng (Z hoặc +07:00 / -05:00) thì chuyển sang local
-    if (s.endsWith('Z') || RegExp(r'[+-]\d\d:?\d\d$').hasMatch(s)) {
-      return DateTime.tryParse(s)?.toLocal();
-    }
-    // Chuỗi ISO trần (LocalDateTime từ Spring Boot) vốn đã là giờ địa phương (Việt Nam),
-    // parse trực tiếp để tránh bị cộng lùi/tiến 7 tiếng.
-    return DateTime.tryParse(s);
-  }
+  // locker-service chạy giờ UTC: chuỗi trần là UTC, không phải giờ VN (trước đây
+  // phiếu hiện sớm 7 tiếng so với app KTV).
+  DateTime? _parseDate(dynamic value) => parseServerDateTime(value);
 
   String _fmtSec(dynamic value) {
     if (value == null) return '';
@@ -423,7 +414,7 @@ class _UserReportDetailSheetState extends State<UserReportDetailSheet> {
     final reporterPhone = (r['reporterPhone'] ?? '').toString().trim();
     final lockerAddress = (r['lockerAddress'] ?? '').toString().trim();
     final staffNote = (r['staffNote'] ?? '').toString().trim();
-    final isResolved = status == 'RESOLVED' || status == 'CLOSED';
+    final isResolved = isReportClosed(status);
     final reportPhotoCount = attachments.where((a) => a.stage == ReportStage.report).length;
     final userReportPhotos = attachments
         .where((a) => a.stage == ReportStage.report)
@@ -856,7 +847,9 @@ class _UserReportDetailSheetState extends State<UserReportDetailSheet> {
   }) {
     final isPending = status == 'PENDING' || status == 'OPEN';
     final isInProgress = status == 'IN_PROGRESS';
-    final isResolved = status == 'RESOLVED' || status == 'CLOSED';
+    final isResolved = isReportClosed(status);
+    // KTV kiểm tra thấy không đúng mô tả: phiếu đóng kèm phản hồi cho người báo.
+    final isRejected = status == 'REJECTED';
 
     // Trích xuất các mốc thời gian từ attachments để đảm bảo hiển thị đủ mốc
     final inspectionAtt = attachments.where((a) => a.stage == ReportStage.inspection).firstOrNull;
@@ -922,7 +915,8 @@ class _UserReportDetailSheetState extends State<UserReportDetailSheet> {
 
     final resolutionLogs = logs.where((l) {
       final note = '${l['note'] ?? ''}'.toUpperCase();
-      return note.contains('NGHIỆM THU');
+      return note.contains('NGHIỆM THU') ||
+          (isRejected && note.contains('KHÔNG XÁC NHẬN'));
     }).toList();
 
     if (resolutionLogs.isNotEmpty) {
@@ -961,7 +955,14 @@ class _UserReportDetailSheetState extends State<UserReportDetailSheet> {
     }
 
     String step4Subtitle;
-    if (isResolved) {
+    if (isRejected) {
+      final feedback = resolutionNote
+          .replaceAll(RegExp(r'^\[KHÔNG XÁC NHẬN SỰ CỐ\]\s*', caseSensitive: false), '')
+          .trim();
+      step4Subtitle = effectiveResolvedAt != null
+          ? 'Đóng lúc ${_formatFullDateTime(effectiveResolvedAt)}${feedback.isNotEmpty ? ' · Phản hồi: $feedback' : ''}'
+          : (feedback.isNotEmpty ? 'Phản hồi: $feedback' : 'KTV đã kiểm tra, ô hoạt động bình thường');
+    } else if (isResolved) {
       if (effectiveResolvedAt != null) {
         step4Subtitle = 'Nghiệm thu lúc: ${_formatFullDateTime(effectiveResolvedAt)}${resolutionNote.isNotEmpty ? ' · $resolutionNote' : ''}';
       } else {
@@ -997,7 +998,7 @@ class _UserReportDetailSheetState extends State<UserReportDetailSheet> {
         icon: LucideIcons.wrench,
       ),
       _TimelineStepData(
-        title: 'Nghiệm thu & Đóng phiếu',
+        title: isRejected ? 'KTV không xác nhận sự cố' : 'Nghiệm thu & Đóng phiếu',
         subtitle: step4Subtitle,
         isDone: isResolved,
         isActive: isResolved,
@@ -1162,16 +1163,7 @@ class _UserRepairLogsSection extends StatelessWidget {
   final dynamic technicianName;
   final dynamic technicianId;
 
-  DateTime? _parseDate(dynamic value) {
-    if (value == null) return null;
-    if (value is DateTime) return value;
-    final s = value.toString().trim();
-    if (s.isEmpty) return null;
-    if (s.endsWith('Z') || RegExp(r'[+-]\d\d:?\d\d$').hasMatch(s)) {
-      return DateTime.tryParse(s)?.toLocal();
-    }
-    return DateTime.tryParse(s);
-  }
+  DateTime? _parseDate(dynamic value) => parseServerDateTime(value);
 
   String _fmt(dynamic value) {
     if (value == null) return '';
@@ -1210,7 +1202,10 @@ class _UserRepairLogsSection extends StatelessWidget {
     Color tagBg = const Color(0xFFE2E8F0);
     Color tagFg = const Color(0xFF334155);
 
-    if (upperTag.contains('NGHIỆM THU') || upperTag.contains('THÀNH CÔNG')) {
+    if (upperTag.contains('KHÔNG XÁC NHẬN')) {
+      tagBg = const Color(0xFFF1F5F9);
+      tagFg = const Color(0xFF475569);
+    } else if (upperTag.contains('NGHIỆM THU') || upperTag.contains('THÀNH CÔNG')) {
       tag = '[NGHIỆM THU THÀNH CÔNG]';
       tagBg = const Color(0xFFDCFCE7);
       tagFg = const Color(0xFF15803D);

@@ -117,6 +117,11 @@ class AppRouter {
   static final GlobalKey<NavigatorState> navigatorKey =
       GlobalKey<NavigatorState>();
 
+  /// Navigator riêng của từng tab dưới (Trang chủ, Tủ, Đơn tủ, Hồ sơ) — để bấm lại
+  /// tab đang mở thì đóng các trang đã đẩy chồng (vd. chi tiết đơn) về màn gốc.
+  static final List<GlobalKey<NavigatorState>> shellBranchNavigatorKeys =
+      List.generate(4, (i) => GlobalKey<NavigatorState>(debugLabel: 'tab$i'));
+
   /// Nút quay lại an toàn cho mọi màn.
   ///
   /// Bấm vào push notification đưa người dùng tới màn bằng `context.go`, tức
@@ -214,6 +219,7 @@ class AppRouter {
         },
         branches: [
           StatefulShellBranch(
+            navigatorKey: shellBranchNavigatorKeys[0],
             routes: [
               GoRoute(
                 path: home,
@@ -222,6 +228,7 @@ class AppRouter {
             ],
           ),
           StatefulShellBranch(
+            navigatorKey: shellBranchNavigatorKeys[1],
             routes: [
               GoRoute(
                 path: lockers,
@@ -230,6 +237,7 @@ class AppRouter {
             ],
           ),
           StatefulShellBranch(
+            navigatorKey: shellBranchNavigatorKeys[2],
             routes: [
               GoRoute(
                 // Bottom-nav "Đơn hàng" shows the customer's real locker orders
@@ -260,6 +268,7 @@ class AppRouter {
             ],
           ),
           StatefulShellBranch(
+            navigatorKey: shellBranchNavigatorKeys[3],
             routes: [
               GoRoute(
                 path: profile,

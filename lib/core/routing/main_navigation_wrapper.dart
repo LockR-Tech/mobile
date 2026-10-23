@@ -131,6 +131,19 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper> {
 
   void _onItemTapped(int index) {
     if (widget.navigationShell != null) {
+      final branch = switch (index) {
+        0 => 0,
+        1 => 1,
+        3 => 2,
+        4 => 3,
+        _ => null,
+      };
+      // Bấm lại tab đang mở: đóng các trang đẩy chồng bằng Navigator.push (chi tiết
+      // đơn…) — goBranch(initialLocation) chỉ đặt lại đường dẫn, không gỡ chúng.
+      if (branch != null && branch == widget.navigationShell!.currentIndex) {
+        AppRouter.shellBranchNavigatorKeys[branch].currentState
+            ?.popUntil((route) => route.isFirst);
+      }
       switch (index) {
         case 0:
           widget.navigationShell!.goBranch(
