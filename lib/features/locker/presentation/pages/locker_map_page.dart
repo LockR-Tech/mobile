@@ -38,10 +38,12 @@ class _LockerMapPageState extends ConsumerState<LockerMapPage>
   void initState() {
     super.initState();
     _mapController = MapController();
+    // Không repeat() ở đây: ticker chạy là app vẽ lại 60fps liên tục dù
+    // chưa có marker vị trí. Chỉ chạy khi đã có _currentUserLocation.
     _pulseController = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 2),
-    )..repeat();
+    );
     // Fetch locations nếu chưa có
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final LockerProvider provider = ref.read<LockerProvider>(
@@ -635,6 +637,7 @@ class _LockerMapPageState extends ConsumerState<LockerMapPage>
         _currentUserLocation = userLatLng;
         _currentAddress = null;
       });
+      if (!_pulseController.isAnimating) _pulseController.repeat();
 
       final address = await _getAddressFromLatLng(
         position.latitude,
