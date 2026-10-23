@@ -1091,9 +1091,13 @@ class _LockerCardState extends State<_LockerCard> {
   void _showFaultHint(BuildContext ctx, Map<String, dynamic> cell) {
     final boxLabel = _boxLabel(cell);
     final reason = (cell['faultReason'] as String?)?.trim();
+    final pending =
+        (cell['status'] as String?)?.toUpperCase() == 'PENDING_CHECK';
+    // Ô khách vừa báo: chưa chắc hỏng, KTV sẽ kiểm tra — tạm không nhận đơn mới.
+    final state = pending ? 'đang chờ kỹ thuật viên kiểm tra sự cố' : 'đang hỏng';
     final message = reason == null || reason.isEmpty
-        ? '$boxLabel đang hỏng. Hãy chọn ô khác.'
-        : '$boxLabel đang hỏng: $reason. Hãy chọn ô khác.';
+        ? '$boxLabel $state. Hãy chọn ô khác.'
+        : '$boxLabel $state: $reason. Hãy chọn ô khác.';
 
     ScaffoldMessenger.of(ctx)
       ..hideCurrentSnackBar()
@@ -1297,7 +1301,7 @@ class _CellGrid extends StatelessWidget {
   VoidCallback? _tapFor(Map<String, dynamic> cell) =>
       switch ((cell['status'] as String?)?.toUpperCase()) {
         'AVAILABLE' => () => onCellTap(cell),
-        'FAULT' => () => onFaultTap(cell),
+        'FAULT' || 'PENDING_CHECK' => () => onFaultTap(cell),
         _ => null,
       };
 
@@ -2022,6 +2026,7 @@ class _CellTile extends StatelessWidget {
 
   bool get _isAvailable => _status == 'AVAILABLE';
   bool get _isFault => _status == 'FAULT';
+  bool get _isPendingCheck => _status == 'PENDING_CHECK';
   bool get _isCleaning => _status == 'CLEANING';
 
   bool get _isDoorOpen =>
@@ -2064,6 +2069,11 @@ class _CellTile extends StatelessWidget {
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
         colors: [Color(0xFFFCA5A5), Color(0xFFDC2626)],
+      ),
+      'PENDING_CHECK' => const LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [Color(0xFFFDBA74), Color(0xFFEA580C)],
       ),
       'CLEANING' => const LinearGradient(
         begin: Alignment.topLeft,
@@ -2131,7 +2141,7 @@ class _CellTile extends StatelessWidget {
       child: Stack(
         children: [
           Positioned.fill(child: _buildCellContent()),
-          if (_isFault)
+          if (_isFault || _isPendingCheck)
             Positioned(
               left: 6,
               top: 6,
@@ -2141,10 +2151,12 @@ class _CellTile extends StatelessWidget {
                   color: Colors.white.withValues(alpha: 0.92),
                   borderRadius: BorderRadius.circular(999),
                 ),
-                child: const Text(
-                  'HỎNG',
+                child: Text(
+                  _isFault ? 'HỎNG' : 'CHỜ KIỂM TRA',
                   style: TextStyle(
-                    color: Color(0xFFDC2626),
+                    color: _isFault
+                        ? const Color(0xFFDC2626)
+                        : const Color(0xFFEA580C),
                     fontSize: 8,
                     fontWeight: FontWeight.w800,
                     letterSpacing: 0.8,
@@ -2202,6 +2214,8 @@ class _CellTile extends StatelessWidget {
     final String statusText;
     if (_isFault) {
       statusText = 'Hỏng';
+    } else if (_isPendingCheck) {
+      statusText = 'Chờ kiểm tra';
     } else if (_isCleaning) {
       statusText = 'Vệ sinh';
     } else if (_status == 'OCCUPIED' || _status == 'IN_USE') {

@@ -105,7 +105,7 @@ class _MyReportsPageState extends State<MyReportsPage> {
 
   int get _countOpen => _reports.where((r) {
         final s = (r['status'] as String? ?? 'OPEN').toUpperCase();
-        return s != 'RESOLVED' && s != 'CLOSED' && s != 'IN_PROGRESS';
+        return !isReportClosed(s) && s != 'IN_PROGRESS';
       }).length;
 
   int get _countInProgress => _reports.where((r) {
@@ -114,8 +114,7 @@ class _MyReportsPageState extends State<MyReportsPage> {
       }).length;
 
   int get _countResolved => _reports.where((r) {
-        final s = (r['status'] as String? ?? '').toUpperCase();
-        return s == 'RESOLVED' || s == 'CLOSED';
+        return isReportClosed(r['status']);
       }).length;
 
   int get _countWithPhotos => _reports.where((r) {
@@ -143,7 +142,7 @@ class _MyReportsPageState extends State<MyReportsPage> {
   List<Map<String, dynamic>> get _visibleReports {
     return _reports.where((r) {
       final s = (r['status'] as String? ?? 'OPEN').toUpperCase();
-      final isResolved = s == 'RESOLVED' || s == 'CLOSED';
+      final isResolved = isReportClosed(s);
       final isInProgress = s == 'IN_PROGRESS';
       final isOpen = !isResolved && !isInProgress;
 
@@ -584,18 +583,26 @@ class _ReportCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final status = (report['status'] as String? ?? 'OPEN').toUpperCase();
-    final isResolved = status == 'RESOLVED' || status == 'CLOSED';
+    final isResolved = isReportClosed(status);
     final isInProgress = status == 'IN_PROGRESS';
+    // KTV kiểm tra không đúng mô tả: phiếu đóng, xem phản hồi trong chi tiết.
+    final isRejected = status == 'REJECTED';
 
-    final statusText = isResolved
-        ? 'Đã xong'
-        : (isInProgress ? 'Đang xử lý' : 'Chờ tiếp nhận');
-    final statusColor = isResolved
-        ? const Color(0xFF15803D)
-        : (isInProgress ? const Color(0xFFD97706) : const Color(0xFF0284C7));
-    final statusBg = isResolved
-        ? const Color(0xFFDCFCE7)
-        : (isInProgress ? const Color(0xFFFEF3C7) : const Color(0xFFE0F2FE));
+    final statusText = isRejected
+        ? 'Không xác nhận'
+        : isResolved
+            ? 'Đã xong'
+            : (isInProgress ? 'Đang xử lý' : 'Chờ tiếp nhận');
+    final statusColor = isRejected
+        ? const Color(0xFF475569)
+        : isResolved
+            ? const Color(0xFF15803D)
+            : (isInProgress ? const Color(0xFFD97706) : const Color(0xFF0284C7));
+    final statusBg = isRejected
+        ? const Color(0xFFF1F5F9)
+        : isResolved
+            ? const Color(0xFFDCFCE7)
+            : (isInProgress ? const Color(0xFFFEF3C7) : const Color(0xFFE0F2FE));
 
     final title = report['title']?.toString().trim();
     final description = report['description']?.toString().trim();

@@ -475,7 +475,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
     final myOverdue = _myReports
         .where((r) => r['status'] == 'IN_PROGRESS' && _isReportOverdue(r))
         .length;
-    final myResolved = _myReports.where((r) => r['status'] == 'RESOLVED').length;
+    final myResolved = _myReports.where((r) => isReportClosed(r['status'])).length;
     final myInProgress = _myReports.where((r) => r['status'] == 'IN_PROGRESS').length;
     final myTotal = _myReports.length;
     final rating = ratingSummary(_ratingAverage);
@@ -963,7 +963,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
       }
     }
     for (final r in [..._myReports, ..._reports]) {
-      if (_asInt(r['boxId']) == boxId && r['status'] != 'RESOLVED') {
+      if (_asInt(r['boxId']) == boxId && !isReportClosed(r['status'])) {
         return _asInt(r['id']);
       }
     }
@@ -1004,8 +1004,8 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
       return;
     }
     final status = ticket['status']?.toString();
-    if (status == 'RESOLVED') {
-      _showInfo('Phiếu RPT-$reportId đã được hoàn tất.');
+    if (isReportClosed(status)) {
+      _showInfo('Phiếu RPT-$reportId đã được đóng.');
       await _load();
       return;
     }
@@ -1665,7 +1665,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
     final mineInProgress = _myReports.where((r) => r['status'] == 'IN_PROGRESS').length;
     final mineCount = mineInProgress > 0
         ? mineInProgress
-        : _myReports.where((r) => r['status'] != 'RESOLVED').length;
+        : _myReports.where((r) => !isReportClosed(r['status'])).length;
 
     // Tab định kỳ của KTV Kiosk chỉ đếm và hiển thị các việc của Kiosk
     final kioskSchedules = _schedules.where((s) => !_isDroneSchedule(s)).toList();
@@ -1849,7 +1849,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
     for (final r in [..._myReports, ..._reports]) {
       if (r['category'] == 'LANDING_PAD' &&
           _asInt(r['lockerId']) == lockerId &&
-          r['status'] != 'RESOLVED') {
+          !isReportClosed(r['status'])) {
         return r;
       }
     }
@@ -2670,6 +2670,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
       'RESERVED',
       'OCCUPIED',
       'FAULT',
+      'PENDING_CHECK',
       'OUT_OF_SERVICE',
       'CLEANING',
     ];
@@ -2832,7 +2833,9 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
     final status = cell['status'] as String? ?? 'AVAILABLE';
     final color = statusColor(status);
     final reason = cell['faultReason'] as String?;
-    final openReportId = status == 'FAULT' ? _openReportIdForBox(boxId) : null;
+    final openReportId = status == 'FAULT' || status == 'PENDING_CHECK'
+        ? _openReportIdForBox(boxId)
+        : null;
 
     await showModalBottomSheet<void>(
       context: context,
@@ -2867,6 +2870,24 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
               const Color(0xFF16A34A),
               () => _markFaultFixed(boxId, openReportId: openReportId),
             ));
+            break;
+          case 'PENDING_CHECK':
+            // Khách vừa báo: KTV xác nhận hỏng (khoá ô) hoặc mở phiếu để kiểm tra /
+            // đóng phiếu nếu không đúng mô tả.
+            actions.add(tile(
+              Icons.report_problem,
+              'Xác nhận ô hỏng (khoá ô)',
+              const Color(0xFFDC2626),
+              () => _reportFaultFlow(cell),
+            ));
+            if (openReportId != null) {
+              actions.add(tile(
+                Icons.assignment_outlined,
+                'Xem phiếu RPT-$openReportId để kiểm tra',
+                const Color(0xFF0284C7),
+                () => _openReportById(openReportId),
+              ));
+            }
             break;
           case 'OUT_OF_SERVICE':
           case 'CLEANING':
@@ -3309,7 +3330,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
         : <Map<String, dynamic>>[];
     inProgressReports.sort(_compareReportsAssignedOrClaimedFirst);
     final resolvedReports = statusShown('RESOLVED')
-        ? _reports.where((r) => r['status'] == 'RESOLVED').toList()
+        ? _reports.where((r) => isReportClosed(r['status'])).toList()
         : <Map<String, dynamic>>[];
     resolvedReports.sort(_compareReportsResolvedFirst);
     // "Tủ tôi phụ trách": phiếu OPEN server định tuyến cho mình + ô lỗi của các tủ đó.
@@ -3913,9 +3934,9 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
   }
 
   Widget _buildMine() {
-    final active = _myReports.where((r) => r['status'] != 'RESOLVED').toList();
+    final active = _myReports.where((r) => !isReportClosed(r['status'])).toList();
     active.sort(_compareReportsAssignedOrClaimedFirst);
-    final done = _myReports.where((r) => r['status'] == 'RESOLVED').toList();
+    final done = _myReports.where((r) => isReportClosed(r['status'])).toList();
     done.sort(_compareReportsResolvedFirst);
     return RefreshIndicator(
       onRefresh: _load,
@@ -4655,7 +4676,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
   }
 
   bool _isReportOverdue(Map<String, dynamic> r) {
-    if (r['status'] == 'RESOLVED') return false;
+    if (isReportClosed(r['status'])) return false;
     final effectiveDue = _getEffectiveDueAt(r);
     if (effectiveDue != null) {
       return DateTime.now().isAfter(effectiveDue);
@@ -4799,6 +4820,100 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
     if (released != true || !mounted) return;
     _showInfo('Đã trả phiếu RPT-$reportId về hàng chờ.');
     AppEventBus.instance.emit(ReportUpdatedEvent(reportId: reportId.toString()));
+    await _load();
+  }
+
+  /// KTV tới kiểm tra thấy không đúng như người báo mô tả: đóng phiếu (REJECTED)
+  /// kèm phản hồi gửi người báo; ô trở lại hoạt động, khách lấy đồ được.
+  Future<void> _rejectReportFlow(Map<String, dynamic> r) async {
+    final reportId = _asInt(r['id']);
+    if (reportId == null) return;
+    final feedbackCtrl = TextEditingController();
+    var sending = false;
+    String? error;
+    final rejected = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => ControllerDisposer(
+        controllers: [feedbackCtrl],
+        child: StatefulBuilder(
+          builder: (ctx, setLocal) => AlertDialog(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            title: Text('Không xác nhận sự cố RPT-$reportId'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Dùng khi đã kiểm tra tại tủ và ô hoạt động bình thường. Phiếu được '
+                  'đóng, ô trở lại hoạt động và phản hồi dưới đây được gửi cho người báo.',
+                  style: TextStyle(fontSize: 12.5, color: opsMutedText),
+                ),
+                const SizedBox(height: 10),
+                TextField(
+                  controller: feedbackCtrl,
+                  enabled: !sending,
+                  autofocus: true,
+                  minLines: 2,
+                  maxLines: 4,
+                  maxLength: 1000,
+                  decoration: InputDecoration(
+                    labelText: 'Phản hồi cho người báo (bắt buộc)',
+                    hintText: 'VD: Đã thử đóng/mở ô 3 lần, cửa và khoá hoạt động bình thường.',
+                    errorText: error,
+                  ),
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: sending ? null : () => Navigator.pop(ctx, false),
+                child: const Text('Hủy'),
+              ),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF475569),
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                onPressed: sending
+                    ? null
+                    : () async {
+                        final feedback = feedbackCtrl.text.trim();
+                        if (feedback.isEmpty) {
+                          setLocal(() => error = 'Vui lòng ghi phản hồi cho người báo.');
+                          return;
+                        }
+                        setLocal(() {
+                          sending = true;
+                          error = null;
+                        });
+                        try {
+                          await _service.rejectReport(reportId, feedback: feedback);
+                          if (ctx.mounted) Navigator.pop(ctx, true);
+                        } catch (e) {
+                          if (ctx.mounted) {
+                            setLocal(() {
+                              sending = false;
+                              error = LockerOpsService.errorMessage(e);
+                            });
+                          }
+                        }
+                      },
+                child: Text(sending ? 'Đang gửi...' : 'Đóng phiếu & phản hồi'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+    if (rejected != true || !mounted) return;
+    _showInfo('Đã đóng phiếu RPT-$reportId và gửi phản hồi cho người báo.');
+    AppEventBus.instance.emit(ReportUpdatedEvent(reportId: reportId.toString()));
+    final lockerId = _asInt(r['lockerId']);
+    if (lockerId != null) {
+      AppEventBus.instance.emit(LockerLayoutUpdatedEvent(lockerId: lockerId.toString()));
+    }
     await _load();
   }
 
@@ -5870,6 +5985,29 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                             label: const Text(
                               'Nghiệm thu & Hoàn tất xử lý',
                               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        SizedBox(
+                          width: double.infinity,
+                          height: 40,
+                          child: OutlinedButton.icon(
+                            onPressed: () {
+                              Navigator.pop(ctx);
+                              _rejectReportFlow(r);
+                            },
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: const Color(0xFF475569),
+                              side: const BorderSide(color: Color(0xFFCBD5E1)),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                            ),
+                            icon: const Icon(Icons.block_outlined, size: 16),
+                            label: const Text(
+                              'Không đúng mô tả — đóng phiếu & phản hồi',
+                              style: TextStyle(fontWeight: FontWeight.w700, fontSize: 12.5),
                             ),
                           ),
                         ),
@@ -8064,12 +8202,39 @@ class _BoxIncidentResolutionSheetState
     return null;
   }
 
+  /// Ô trống nhận được đồ của ô đang xử lý: bỏ ô drone (chỉ nhận kiện drone,
+  /// server từ chối) trừ khi chính ô hỏng là ô drone; ô cùng loại lên đầu để
+  /// mặc định là ô thường/XL tương ứng, không phải "Ô #1 (DRONE)".
   List<Map<String, dynamic>> get _availableTargetBoxes {
-    return widget.cells
+    final current = _currentCell;
+    final fromDrone = current != null && LockerLayoutHelper.isDrone(current);
+    final currentType =
+        current == null ? null : LockerLayoutHelper.cellType(current);
+    final targets = widget.cells
         .where((c) =>
             _asInt(c['id']) != _selectedBoxId &&
-            (c['status'] as String? ?? '').toUpperCase() == 'AVAILABLE')
+            (c['status'] as String? ?? '').toUpperCase() == 'AVAILABLE' &&
+            (fromDrone || !LockerLayoutHelper.isDrone(c)))
         .toList();
+    int rank(Map<String, dynamic> c) =>
+        LockerLayoutHelper.cellType(c) == currentType ? 0 : 1;
+    targets.sort((a, b) => rank(a).compareTo(rank(b)));
+    return targets;
+  }
+
+  /// Tên + SĐT người lấy đồ: server trả theo đơn (chủ đơn với đơn thuê); bản
+  /// server cũ chưa trả thì lấy người báo phiếu.
+  String get _activeOrderCustomerLabel {
+    String pick(String key, String reportKey) {
+      final fromOrder = (_activeOrder?[key] ?? '').toString().trim();
+      if (fromOrder.isNotEmpty && fromOrder != 'null') return fromOrder;
+      return (widget.report[reportKey] ?? '').toString().trim();
+    }
+
+    final name = pick('receiverName', 'reporterName');
+    final phone = pick('receiverPhone', 'reporterPhone');
+    final who = name.isNotEmpty ? name : 'Khách';
+    return phone.isNotEmpty ? '$who ($phone)' : who;
   }
 
   Future<void> _checkActiveOrder(int boxId) async {
@@ -8525,7 +8690,7 @@ class _BoxIncidentResolutionSheetState
                         ),
                         const SizedBox(height: 6),
                         Text(
-                          'Đơn hàng: ${_activeOrder!['orderCode']} · Khách: ${_activeOrder!['receiverName'] ?? 'Khách'} (${_activeOrder!['receiverPhone'] ?? ''})',
+                          'Đơn hàng: ${_activeOrder!['orderCode']} · Khách: $_activeOrderCustomerLabel',
                           style: const TextStyle(
                               fontSize: 12,
                               color: Color(0xFF78350F),
@@ -10228,7 +10393,7 @@ class _SlaCountdownBadgeState extends State<_SlaCountdownBadge> {
   @override
   void initState() {
     super.initState();
-    if (widget.status != 'RESOLVED') {
+    if (!isReportClosed(widget.status)) {
       _timer = Timer.periodic(const Duration(seconds: 1), (_) {
         if (mounted) setState(() {});
       });
@@ -10243,7 +10408,7 @@ class _SlaCountdownBadgeState extends State<_SlaCountdownBadge> {
 
   @override
   Widget build(BuildContext context) {
-    if (widget.status == 'RESOLVED') return const SizedBox.shrink();
+    if (isReportClosed(widget.status)) return const SizedBox.shrink();
 
     DateTime? targetTime = widget.dueAt;
     if (targetTime == null &&

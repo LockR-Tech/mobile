@@ -24,6 +24,7 @@ Color statusColor(String? status) => switch (status) {
   'RESERVED' => const Color(0xFF2563EB),
   'OCCUPIED' => const Color(0xFFEA580C),
   'FAULT' => const Color(0xFFDC2626),
+  'PENDING_CHECK' => const Color(0xFFEA580C),
   'OUT_OF_SERVICE' => const Color(0xFF6B7280),
   'CLEANING' => const Color(0xFF0891B2),
   'INITIALIZED' => const Color(0xFF2563EB),
@@ -46,6 +47,7 @@ Color statusColor(String? status) => switch (status) {
   'OPEN' => const Color(0xFFDC2626),
   'IN_PROGRESS' => const Color(0xFFD97706),
   'RESOLVED' => const Color(0xFF16A34A),
+  'REJECTED' => const Color(0xFF64748B),
   _ => const Color(0xFF475569),
 };
 
@@ -54,6 +56,7 @@ String statusLabel(String? status) => switch (status) {
   'RESERVED' => 'Đã giữ chỗ',
   'OCCUPIED' => 'Có đồ',
   'FAULT' => 'Hỏng',
+  'PENDING_CHECK' => 'Chờ KTV kiểm tra',
   'OUT_OF_SERVICE' => 'Ngưng dùng',
   'CLEANING' => 'Đang vệ sinh',
   'INITIALIZED' => 'Chờ bỏ đồ',
@@ -77,8 +80,17 @@ String statusLabel(String? status) => switch (status) {
   'OPEN' => 'Mới',
   'IN_PROGRESS' => 'Đang xử lý',
   'RESOLVED' => 'Đã xong',
+  // Phiếu KTV kiểm tra không đúng như mô tả (đã phản hồi người báo).
+  'REJECTED' => 'Không xác nhận',
   _ => status ?? '',
 };
+
+/// Phiếu sự cố đã đóng: hoàn tất, hoặc KTV kiểm tra không đúng mô tả
+/// (`REJECTED` — đã phản hồi người báo).
+bool isReportClosed(dynamic status) {
+  final s = '${status ?? ''}'.toUpperCase();
+  return s == 'RESOLVED' || s == 'CLOSED' || s == 'REJECTED';
+}
 
 String typeLabel(String? type) => switch (type) {
   'LAUNDRY' => 'Giặt ủi',
@@ -130,16 +142,25 @@ double orderAmountDue(Map<String, dynamic> order) {
   return num.tryParse('$total')?.toDouble() ?? 0;
 }
 
-/// Ô của đơn (đang có hàng) bị báo sự cố, chờ KTV xử lý: server dừng phí quá giờ,
-/// không thu tiền và không mở ô bằng mã tới khi xử lý xong.
+/// Ô của đơn (đang có hàng) bị báo sự cố, chưa xử lý xong: server dừng phí quá giờ
+/// từ lúc báo và chưa cho gia hạn.
 bool orderHasOpenBoxIncident(Map<String, dynamic> order) =>
-    order['boxIncidentOpenedAt'] != null ||
+    order['boxIncidentOpenedAt'] != null || orderBoxIncidentBlocksAccess(order);
+
+/// Sự cố đã được xác nhận (KTV khoá ô / ô hỏng): không thu tiền, không mở ô bằng
+/// mã, không tự kết thúc đơn tới khi KTV xử lý xong. Khách mới báo, ô còn chờ KTV
+/// kiểm tra thì vẫn mở ô và lấy đồ được.
+bool orderBoxIncidentBlocksAccess(Map<String, dynamic> order) =>
     '${order['accessBlockReason'] ?? ''}'.toUpperCase() == 'BOX_INCIDENT_OPEN';
 
-/// Câu giải thích cho khách khi ô đang chờ KTV.
+/// Câu giải thích cho khách khi ô có sự cố đang mở.
 String boxIncidentPausedText(Map<String, dynamic> order) {
   final since = order['boxIncidentOpenedAt'];
   final sinceText = since == null ? '' : ' từ ${fmtDateTime(since)}';
+  if (!orderBoxIncidentBlocksAccess(order)) {
+    return 'Bạn đã báo sự cố ô — kỹ thuật viên sẽ tới kiểm tra. Bạn vẫn có thể mở '
+        'ô bằng mã PIN để lấy đồ; phí quá giờ tạm dừng$sinceText.';
+  }
   return 'Ô đang chờ kỹ thuật viên xử lý sự cố. Đồ của bạn vẫn được giữ an toàn '
       'trong ô, phí quá giờ tạm dừng$sinceText — bạn chưa cần thanh toán hay gia '
       'hạn. Lock.R sẽ báo khi lấy được đồ.';

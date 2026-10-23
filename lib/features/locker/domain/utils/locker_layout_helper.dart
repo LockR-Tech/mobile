@@ -140,6 +140,8 @@ class LockerLayoutHelper {
       'OCCUPIED' || 'IN_USE' => 'Đang dùng',
       'RESERVED' => 'Đã đặt',
       'FAULT' => 'Hỏng',
+      // Khách báo sự cố: tạm ngưng nhận đơn mới, chờ KTV kiểm tra.
+      'PENDING_CHECK' => 'Chờ kiểm tra',
       'CLEANING' => 'Bảo trì',
       _ => st,
     };
@@ -159,6 +161,7 @@ class LockerLayoutHelper {
       'OCCUPIED' || 'IN_USE' => const Color(0xFF64748B),
       'RESERVED' => const Color(0xFFD97706),
       'FAULT' => const Color(0xFFDC2626),
+      'PENDING_CHECK' => const Color(0xFFEA580C),
       'CLEANING' => const Color(0xFF3B82F6),
       _ => const Color(0xFF94A3B8),
     };
@@ -207,6 +210,11 @@ class LockerLayoutHelper {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [Color(0xFFFCA5A5), Color(0xFFDC2626)],
+        ),
+      'PENDING_CHECK' => const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFFFDBA74), Color(0xFFEA580C)],
         ),
       'CLEANING' => const LinearGradient(
           begin: Alignment.topLeft,

@@ -794,6 +794,22 @@ class LockerOpsService {
     body: {'reason': reason.trim()},
   );
 
+  /// KTV kiểm tra thấy không đúng như người báo mô tả: phiếu đóng ở REJECTED,
+  /// [feedback] (bắt buộc — `REJECT_FEEDBACK_REQUIRED`) được gửi cho người báo,
+  /// ô trở lại hoạt động và đơn có đồ trong ô lấy đồ được (bù thời gian chờ).
+  Future<Map<String, dynamic>> rejectReport(
+    int reportId, {
+    required String feedback,
+    List<Map<String, dynamic>>? attachments,
+  }) => _map(
+    'POST',
+    '/api/locker-technician/reports/$reportId/reject',
+    body: {
+      'feedback': feedback.trim(),
+      if (attachments != null && attachments.isNotEmpty) 'attachments': attachments,
+    },
+  );
+
   /// Hoàn tất phiếu. Ảnh [attachments] lưu stage RESOLUTION trước khi đóng.
   /// Không có [note]/[attachments] ⇒ PUT không body (như cũ).
   Future<Map<String, dynamic>> resolveReport(

@@ -269,6 +269,65 @@ class _FakeStuckRentalLockerOpsService extends _FakeFaultyOrderLockerOpsService 
   ];
 }
 
+/// Khách vừa báo ô của đơn: ô chờ KTV kiểm tra — phí dừng nhưng chưa khoá mở ô.
+class _FakePendingCheckRentalLockerOpsService
+    extends _FakeStuckRentalLockerOpsService {
+  @override
+  Future<List<Map<String, dynamic>>> myOrders() async {
+    final orders = await super.myOrders();
+    return [
+      for (final o in orders)
+        {...o}
+          ..remove('accessBlockReason')
+          ..['nextAction'] = 'PICKUP',
+    ];
+  }
+}
+
+/// KTV đã chuyển đồ của đơn thuê từ ô 3 sang ô 4; phiếu ô 3 còn mở để sửa ô.
+class _FakeRelocatedRentalLockerOpsService
+    extends _FakeFaultyOrderLockerOpsService {
+  @override
+  Future<List<Map<String, dynamic>>> myOrders() async => [
+    {
+      'id': 96,
+      'type': 'RENTAL',
+      'status': 'STORING',
+      'paymentStatus': 'PAID',
+      'totalPrice': 4000,
+      'amountDue': 0,
+      'lockerId': 7,
+      'sendBoxId': 7004,
+      'pinCode': '097007',
+      'orderCode': 'ORD-20261023-NK531H',
+      'pickupDeadline': '2026-10-24T01:09:46',
+      'createdAt': '2026-10-23T13:49:35',
+    },
+  ];
+
+  @override
+  Future<Map<String, dynamic>> layout(int lockerId) async => {
+    'cells': [
+      {'id': 7003, 'boxNumber': 3},
+      {'id': 7004, 'boxNumber': 4},
+    ],
+  };
+
+  @override
+  Future<List<Map<String, dynamic>>> myReports() async => [
+    {
+      'id': 34,
+      'boxId': 7003,
+      'boxNumber': 3,
+      'lockerId': 7,
+      'orderId': 96,
+      'orderCode': 'ORD-20261023-NK531H',
+      'status': 'OPEN',
+      'description': 'Ô 3 kẹt cửa',
+    },
+  ];
+}
+
 class _FakeRentalCompletionLockerOpsService extends LockerOpsService {
   _FakeRentalCompletionLockerOpsService() : super(dio: createMockDio().dio);
 
@@ -507,6 +566,50 @@ void main() {
         find.text('Hãy hủy đơn này và đặt ô khác (hoặc liên hệ KTV).'),
         findsOneWidget,
       );
+    },
+  );
+
+  testWidgets(
+    'ô chờ KTV kiểm tra: phí tạm dừng nhưng không chặn khách lấy đồ',
+    (tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: MediaQuery(
+            data: const MediaQueryData(size: Size(390, 844)),
+            child: MyLockerOrdersPage(
+              service: _FakePendingCheckRentalLockerOpsService(),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Chờ KTV xử lý'), findsNothing);
+      expect(find.textContaining('Phí quá giờ tạm dừng từ'), findsOneWidget);
+      expect(
+        find.textContaining('Bạn vẫn mở ô bằng mã PIN để lấy đồ được'),
+        findsOneWidget,
+      );
+    },
+  );
+
+  testWidgets(
+    'phiếu của ô cũ sau khi KTV chuyển đồ sang ô khác không báo sự cố cho ô mới',
+    (tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: MediaQuery(
+            data: const MediaQueryData(size: Size(390, 844)),
+            child: MyLockerOrdersPage(
+              service: _FakeRelocatedRentalLockerOpsService(),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Ô số 4 đã được báo sự cố'), findsNothing);
+      expect(find.text('Đã điều chuyển sang Ô số 4 an toàn'), findsOneWidget);
     },
   );
 
