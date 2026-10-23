@@ -188,6 +188,9 @@ void main() {
                   weatherMessage: weatherSafe
                       ? 'Dự báo tuyến bay an toàn trong 30 phút tới.'
                       : 'Có mưa dông trên tuyến trong 30 phút tới.',
+                  weatherProvider: 'MET_NORWAY',
+                  weatherTemperatureC: 27.6,
+                  weatherCondition: weatherSafe ? 'Có mây' : 'Dông',
                 );
               },
 
@@ -367,6 +370,29 @@ void main() {
         find.byKey(const ValueKey('drone-submit')),
       );
       expect(button.onPressed, isNull);
+      expect(find.textContaining('Đơn chỉ đặt được khi trời đủ điều kiện bay'), findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    'thời tiết 30 phút tới tính từ nơi gửi tới tủ nhận, có nguồn dự báo và nút xem lại',
+    (tester) async {
+      await pump(tester);
+      await tester.tap(find.byKey(const ValueKey('drone-pickup-location')));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Thời tiết tuyến bay: Đủ điều kiện'), findsOneWidget);
+      expect(
+        find.textContaining('từ nơi gửi → Locker A → tủ nhận'),
+        findsOneWidget,
+      );
+      expect(find.textContaining('Có mây · 28°C · gió'), findsOneWidget);
+      expect(find.textContaining('nguồn MET Norway'), findsOneWidget);
+
+      final before = quotes.length;
+      await tester.tap(find.byKey(const ValueKey('drone-quote-weather-refresh')));
+      await tester.pumpAndSettle();
+      expect(quotes.length, before + 1);
     },
   );
 

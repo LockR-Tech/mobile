@@ -111,6 +111,9 @@ class DroneQuote {
     this.weatherMaxWindKmh = 0,
     this.weatherMaxGustKmh = 0,
     this.weatherMaxPrecipitationMm = 0,
+    this.weatherProvider,
+    this.weatherTemperatureC,
+    this.weatherCondition,
   });
 
   /// Tủ gửi (nơi drone cất cánh) — mã giảm giá theo tủ được kiểm theo tủ này.
@@ -131,6 +134,19 @@ class DroneQuote {
   final double weatherMaxWindKmh;
   final double weatherMaxGustKmh;
   final double weatherMaxPrecipitationMm;
+
+  /// OPEN_METEO | MET_NORWAY — nguồn đã trả lời (server tự chuyển nguồn dự phòng).
+  final String? weatherProvider;
+  final double? weatherTemperatureC;
+
+  /// Mô tả ngắn: "Có mây", "Mưa rào"…
+  final String? weatherCondition;
+
+  String? get weatherProviderLabel => switch (weatherProvider) {
+    'OPEN_METEO' => 'Open-Meteo',
+    'MET_NORWAY' => 'MET Norway',
+    _ => null,
+  };
 
   static DroneQuote fromJson(Map<String, dynamic> json) {
     final source = json['sourceLocker'];
@@ -160,6 +176,11 @@ class DroneQuote {
       weatherMaxWindKmh: _double(weather['maxWindSpeedKmh']),
       weatherMaxGustKmh: _double(weather['maxWindGustKmh']),
       weatherMaxPrecipitationMm: _double(weather['maxPrecipitationMm']),
+      weatherProvider: _text(weather['provider']),
+      weatherTemperatureC: weather['temperatureC'] is num
+          ? (weather['temperatureC'] as num).toDouble()
+          : null,
+      weatherCondition: _text(weather['condition']),
     );
   }
 
@@ -168,6 +189,11 @@ class DroneQuote {
 
   static double _double(dynamic value) =>
       value is num ? value.toDouble() : double.tryParse('$value') ?? 0;
+
+  static String? _text(dynamic value) {
+    final text = value?.toString().trim();
+    return text == null || text.isEmpty || text == 'null' ? null : text;
+  }
 }
 
 /// `850 m`, `2,4 km`.

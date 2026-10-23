@@ -897,6 +897,7 @@ class _DroneBookingPageState extends State<DroneBookingPage>
               problem: _quoteProblem,
               ready: _pickup != null && _destinationLockerId != null,
               fee: fee,
+              onRefresh: _quoting ? null : _refreshQuote,
             ),
             const SizedBox(height: 8),
             Text(
@@ -1210,6 +1211,7 @@ class _QuotePanel extends StatelessWidget {
     required this.problem,
     required this.ready,
     required this.fee,
+    this.onRefresh,
   });
 
   final DroneQuote? quote;
@@ -1217,6 +1219,9 @@ class _QuotePanel extends StatelessWidget {
   final String? problem;
   final bool ready;
   final num fee;
+
+  /// Hỏi lại server (lộ trình, phí, thời tiết) — dự báo 30 phút cũ dần theo thời gian.
+  final VoidCallback? onRefresh;
 
   @override
   Widget build(BuildContext context) {
@@ -1280,73 +1285,124 @@ class _QuotePanel extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 10),
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: quote.weatherSafe
-                ? const Color(0xFFECFDF5)
-                : const Color(0xFFFFF1F2),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: quote.weatherSafe
-                  ? const Color(0xFF86EFAC)
-                  : const Color(0xFFFDA4AF),
-            ),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+        _QuoteWeather(quote: quote, onRefresh: onRefresh),
+      ],
+    );
+  }
+}
+
+/// Thời tiết 30 phút tới (thời gian giao dự kiến của một đơn) trên cả hành trình: nơi gửi →
+/// tủ bay → tủ nhận. Mưa, dông, gió mạnh hoặc chưa có dự báo ⇒ không đặt được (server cũng chặn,
+/// và kiểm tra lại lúc phóng drone).
+class _QuoteWeather extends StatelessWidget {
+  const _QuoteWeather({required this.quote, this.onRefresh});
+
+  final DroneQuote quote;
+  final VoidCallback? onRefresh;
+
+  @override
+  Widget build(BuildContext context) {
+    final safe = quote.weatherSafe;
+    final unavailable = quote.weatherStatus == 'UNAVAILABLE';
+    final tone = safe
+        ? const Color(0xFF166534)
+        : unavailable
+        ? const Color(0xFF475569)
+        : const Color(0xFF9F1239);
+    final facts = [
+      if (quote.weatherCondition != null) quote.weatherCondition!,
+      if (quote.weatherTemperatureC != null)
+        '${quote.weatherTemperatureC!.toStringAsFixed(0)}°C',
+      if (!unavailable) ...[
+        'gió ${quote.weatherMaxWindKmh.toStringAsFixed(0)} km/h',
+        'giật ${quote.weatherMaxGustKmh.toStringAsFixed(0)} km/h',
+        'mưa ${quote.weatherMaxPrecipitationMm.toStringAsFixed(1)} mm',
+      ],
+    ];
+    final footer = [
+      if (quote.weatherCheckedAt != null)
+        'Cập nhật ${MaterialLocalizations.of(context).formatTimeOfDay(TimeOfDay.fromDateTime(quote.weatherCheckedAt!.toLocal()))}',
+      if (quote.weatherProviderLabel != null)
+        'nguồn ${quote.weatherProviderLabel}',
+    ];
+    return Container(
+      key: const ValueKey('drone-quote-weather'),
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(12, 8, 4, 12),
+      decoration: BoxDecoration(
+        color: safe
+            ? const Color(0xFFECFDF5)
+            : unavailable
+            ? const Color(0xFFF1F5F9)
+            : const Color(0xFFFFF1F2),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: tone.withValues(alpha: 0.35)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
             children: [
-              Row(
-                children: [
-                  Icon(
-                    quote.weatherSafe
-                        ? Icons.wb_sunny_outlined
-                        : Icons.thunderstorm_outlined,
-                    size: 18,
-                    color: quote.weatherSafe
-                        ? const Color(0xFF15803D)
-                        : const Color(0xFFBE123C),
-                  ),
-                  const SizedBox(width: 7),
-                  Expanded(
-                    child: Text(
-                      quote.weatherSafe
-                          ? 'Thời tiết tuyến bay: Đủ điều kiện'
-                          : quote.weatherStatus == 'UNAVAILABLE'
-                          ? 'Chưa xác nhận được thời tiết'
-                          : 'Thời tiết tuyến bay: Tạm ngưng bay',
-                      style: TextStyle(
-                        fontWeight: FontWeight.w700,
-                        color: quote.weatherSafe
-                            ? const Color(0xFF166534)
-                            : const Color(0xFF9F1239),
-                      ),
-                    ),
-                  ),
-                ],
+              Icon(
+                safe
+                    ? Icons.wb_sunny_outlined
+                    : unavailable
+                    ? Icons.cloud_off_outlined
+                    : Icons.thunderstorm_outlined,
+                size: 18,
+                color: tone,
               ),
-              const SizedBox(height: 4),
-              Text(
-                '${quote.weatherMessage} • Dự báo 30 phút dọc tuyến; '
-                'gió tối đa ${quote.weatherMaxWindKmh.toStringAsFixed(0)} km/h, '
-                'gió giật ${quote.weatherMaxGustKmh.toStringAsFixed(0)} km/h, '
-                'mưa ${quote.weatherMaxPrecipitationMm.toStringAsFixed(1)} mm.',
-                style: const TextStyle(fontSize: 12),
-              ),
-              if (quote.weatherCheckedAt != null)
-                Text(
-                  'Cập nhật ${MaterialLocalizations.of(context).formatTimeOfDay(TimeOfDay.fromDateTime(quote.weatherCheckedAt!.toLocal()))}',
-                  style: const TextStyle(fontSize: 11, color: Colors.black54),
+              const SizedBox(width: 7),
+              Expanded(
+                child: Text(
+                  safe
+                      ? 'Thời tiết tuyến bay: Đủ điều kiện'
+                      : unavailable
+                      ? 'Chưa xác nhận được thời tiết'
+                      : 'Thời tiết tuyến bay: Tạm ngưng bay',
+                  style: TextStyle(fontWeight: FontWeight.w700, color: tone),
                 ),
-              const Text(
-                'Nguồn dự báo: Open-Meteo (đã lấy mẫu dọc tuyến và áp ngưỡng bay Lock.R).',
-                style: TextStyle(fontSize: 10, color: Colors.black54),
+              ),
+              IconButton(
+                key: const ValueKey('drone-quote-weather-refresh'),
+                tooltip: 'Xem lại thời tiết',
+                visualDensity: VisualDensity.compact,
+                onPressed: onRefresh,
+                icon: const Icon(Icons.refresh, size: 20),
               ),
             ],
           ),
-        ),
-      ],
+          Text(
+            'Dự báo 30 phút tới (thời gian giao dự kiến) từ nơi gửi → '
+            '${quote.sourceLockerName} → tủ nhận',
+            style: const TextStyle(fontSize: 12, color: Color(0xFF475569)),
+          ),
+          if (facts.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(top: 4),
+              child: Text(
+                facts.join(' · '),
+                style: const TextStyle(fontSize: 12.5),
+              ),
+            ),
+          if (!safe)
+            Padding(
+              padding: const EdgeInsets.only(top: 4),
+              child: Text(
+                '${quote.weatherMessage} Đơn chỉ đặt được khi trời đủ điều kiện bay.',
+                style: TextStyle(fontSize: 12, color: tone),
+              ),
+            ),
+          if (footer.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(top: 4),
+              child: Text(
+                footer.join(' · '),
+                style: const TextStyle(fontSize: 11, color: Colors.black54),
+              ),
+            ),
+        ],
+      ),
     );
   }
 }
