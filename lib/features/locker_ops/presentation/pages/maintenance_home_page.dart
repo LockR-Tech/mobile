@@ -12,6 +12,7 @@ import 'package:smart_laundry_locker/features/assistant/presentation/widgets/ass
 import 'package:smart_laundry_locker/features/drone_delivery/domain/entities/drone_delivery_stage.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/domain/entities/drone_delivery_status.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/domain/entities/drone_booking.dart';
+import 'package:smart_laundry_locker/features/drone_delivery/presentation/widgets/drone_weather_panel.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/domain/entities/drone_labels.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/presentation/widgets/drone_pickup_queue.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/domain/entities/drone_parcel.dart';
@@ -1722,6 +1723,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
       child: ListView(
         padding: const EdgeInsets.all(12),
         children: [
+          DroneLockerWeatherList(load: _service.droneLockerWeather),
           DronePickupQueue(
             service: _service,
             deliveries: visibleDeliveries,
@@ -5578,6 +5580,16 @@ class _DroneOrderDetailSheetState extends State<_DroneOrderDetailSheet> {
                 await _refresh();
                 await widget.onChanged();
               },
+            ),
+            const SizedBox(height: 14),
+          ],
+          if (!status.stage.isTerminal) ...[
+            DroneRouteWeatherCard(
+              orderId: widget.orderId,
+              asTechnician: true,
+              load: (id) =>
+                  widget.service.droneRouteWeather(id, asTechnician: true),
+              refreshKey: status.status,
             ),
             const SizedBox(height: 14),
           ],

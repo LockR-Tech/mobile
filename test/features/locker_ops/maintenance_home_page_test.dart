@@ -47,6 +47,22 @@ class _FakeMaintenanceService extends LockerOpsService {
   @override
   Future<List<Map<String, dynamic>>> droneIncidents() async => incidents;
 
+  /// Chưa có tủ nào có bãi đáp ⇒ thẻ thời tiết các tủ không chiếm chỗ.
+  List<Map<String, dynamic>> lockerWeather = const [];
+
+  @override
+  Future<List<Map<String, dynamic>>> droneLockerWeather() async =>
+      lockerWeather;
+
+  @override
+  Future<Map<String, dynamic>> droneRouteWeather(
+    int orderId, {
+    bool asTechnician = false,
+  }) async => {
+    'orderId': orderId,
+    'weather': {'safe': true, 'status': 'SAFE', 'message': 'An toàn'},
+  };
+
   @override
   Future<Map<String, dynamic>> droneIncident(int incidentId) async =>
       incidents.firstWhere(
