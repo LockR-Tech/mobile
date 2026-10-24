@@ -69,6 +69,7 @@ const _signInRoutes = <String>{
   AppRouter.security,
   AppRouter.plans,
   AppRouter.faceRegistration,
+  AppRouter.bleTest,
   // Trang theo vai trò
   AppRouter.technicianHome,
   AppRouter.technicianProfile,

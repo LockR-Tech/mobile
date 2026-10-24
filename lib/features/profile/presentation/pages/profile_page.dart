@@ -12,6 +12,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:smart_laundry_locker/core/routing/app_router.dart';
+import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
 import 'package:smart_laundry_locker/core/theme/shadcn_theme.dart';
 import 'package:smart_laundry_locker/core/theme/theme_provider.dart';
 import 'package:smart_laundry_locker/features/assistant/presentation/providers/assistant_availability.dart';
@@ -47,6 +48,9 @@ class _ProfilePageState extends State<ProfilePage>
   bool _isLoading = true;
   bool _isLoggedIn = false;
 
+  /// Admin đã cho tài khoản thử mở ô qua Bluetooth ở ít nhất một tủ (F3-G11).
+  bool _bleTestAllowed = false;
+
   /// Có token nhưng `GET /api/user/profile` lỗi (mạng, 5xx, 404…). Hiện lỗi +
   /// "Thử lại" thay vì coi như chưa đăng nhập rồi đá ra màn đăng nhập. Phiên
   /// hết hạn thật (401 không làm mới được) thì AuthInterceptor tự đăng xuất.
@@ -77,6 +81,7 @@ class _ProfilePageState extends State<ProfilePage>
           _isLoggedIn = false;
           _userData = null;
           _loadError = null;
+          _bleTestAllowed = false;
         });
       }
     }
@@ -133,6 +138,7 @@ class _ProfilePageState extends State<ProfilePage>
     if (isLoggedIn) {
       // Nạp trước trạng thái trợ lý cho mục "Trợ giúp" (không chờ).
       AssistantAvailability.instance.refresh();
+      _loadBleTestAccess();
       await _delegationProvider.fetchMyDelegations();
     }
     if (!mounted) return;
@@ -163,6 +169,17 @@ class _ProfilePageState extends State<ProfilePage>
       }
       _isLoading = false;
     });
+  }
+
+  /// Không chờ, lỗi thì coi như chưa được cấp (ẩn nút).
+  Future<void> _loadBleTestAccess() async {
+    var allowed = false;
+    try {
+      allowed = (await LockerOpsService().bleTestLockers()).isNotEmpty;
+    } catch (_) {}
+    if (mounted && allowed != _bleTestAllowed) {
+      setState(() => _bleTestAllowed = allowed);
+    }
   }
 
   @override
@@ -507,6 +524,12 @@ class _ProfilePageState extends State<ProfilePage>
               title: 'Báo cáo của tôi',
               onTap: () => context.push(AppRouter.myReports),
             ),
+            if (_bleTestAllowed)
+              ProfileMenuItem(
+                icon: LucideIcons.bluetooth,
+                title: 'Thử mở ô qua Bluetooth',
+                onTap: () => context.push(AppRouter.bleTest),
+              ),
           ],
         ),
         const SizedBox(height: 8),

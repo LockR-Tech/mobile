@@ -44,6 +44,7 @@ import 'package:smart_laundry_locker/features/locker_ops/presentation/pages/admi
 import 'package:smart_laundry_locker/features/locker_ops/presentation/pages/maintenance_home_page.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/pages/technician_home_page.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/pages/technician_profile_page.dart';
+import 'package:smart_laundry_locker/features/locker_ops/presentation/pages/ble_test_page.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/pages/send_parcel_page.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/pages/rent_locker_page.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/pages/my_locker_orders_page.dart';
@@ -89,6 +90,7 @@ class AppRouter {
   static const String faceVerify = '/auth/face-verify';
   static const String authorizedOpening = '/authorized-opening';
   static const String faceRegistration = '/profile/face-registration';
+  static const String bleTest = '/profile/ble-test';
   static const String orderDetail = '/orders/detail';
   static const String myDelegations = '/my-delegations';
   static const String myVouchers = '/my-vouchers';
@@ -203,6 +205,11 @@ class AppRouter {
         path: security,
         name: 'security',
         builder: (context, state) => const SecurityPage(),
+      ),
+      GoRoute(
+        path: bleTest,
+        name: 'ble_test',
+        builder: (context, state) => const BleTestPage(),
       ),
       GoRoute(
         path: plans,

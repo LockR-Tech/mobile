@@ -99,6 +99,15 @@ class LockerOpsService {
   Future<Map<String, dynamic>> layout(int lockerId) =>
       _map('GET', '/api/lockers/$lockerId/layout');
 
+  // ---- Thử mở ô qua Bluetooth (F3-G11) ----
+  /// Tủ admin cho tài khoản này thử mở ô qua Bluetooth; rỗng ⇒ ẩn nút ở Hồ sơ.
+  Future<List<Map<String, dynamic>>> bleTestLockers() =>
+      _list('/api/iot/ble-test/lockers');
+
+  /// Mã mở ô [boxNumber] (sống 2 phút, dùng một lần) để ghi cho Pi qua BLE.
+  Future<Map<String, dynamic>> bleOpenToken(int lockerId, int boxNumber) =>
+      _map('POST', '/api/iot/ble-test/lockers/$lockerId/boxes/$boxNumber/token');
+
   // ---- Customer orders ----
   Future<List<Map<String, dynamic>>> myOrders() =>
       _list('/api/orders/my-orders');
@@ -1713,6 +1722,8 @@ class LockerOpsService {
 
   /// Các mã lỗi mà server trả `message` tiếng Anh — hiển thị bản tiếng Việt.
   static const _codeMessages = <String, String>{
+    'BLE_TEST_NOT_GRANTED':
+        'Tài khoản chưa được admin cho thử mở ô qua Bluetooth ở tủ này.',
     'RESOLUTION_PHOTO_REQUIRED':
         'Cần ít nhất 1 ảnh nghiệm thu trước khi hoàn tất phiếu.',
     'LANDING_PAD_ABSENT': 'Tủ này không có bãi đáp drone.',
