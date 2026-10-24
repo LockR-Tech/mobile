@@ -6,6 +6,8 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
 import 'package:smart_laundry_locker/core/services/token_service.dart';
+import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
+import 'package:smart_laundry_locker/features/locker_ops/domain/box_test_open_qr.dart';
 import 'package:smart_laundry_locker/features/qr_login/domain/kiosk_qr_payload.dart';
 import 'package:smart_laundry_locker/features/qr_login/presentation/providers/qr_login_provider.dart';
 import 'package:smart_laundry_locker/shared/widgets/unauthenticated_placeholder.dart';
@@ -15,7 +17,8 @@ import 'package:provider/provider.dart';
 /// Quét mã QR trên màn hình kiosk để đăng nhập tài khoản Lock.R tại tủ
 /// (CONTRACTS §1): QR `lockr://kiosk-login?sid=&code=` ⇒ hỏi xác nhận ⇒ gửi
 /// `confirmCode` lên server. Không dùng được camera thì nhập tay mã phiên + mã
-/// xác nhận.
+/// xác nhận. Quét mã trên tờ "QR mở ô (thử tủ)" của admin web thì mở thử đúng ô
+/// đó, không cần đơn ([BoxTestOpenQr]).
 class QrScannerPage extends StatefulWidget {
   const QrScannerPage({super.key});
 
@@ -83,11 +86,53 @@ class _QrScannerPageState extends State<QrScannerPage>
     if (raw == null || raw.trim().isEmpty) return;
 
     final payload = KioskQrPayload.tryParse(raw);
-    if (payload == null) {
-      _reportInvalidQr(raw);
+    if (payload != null) {
+      unawaited(_confirmAndLogin(payload));
       return;
     }
-    unawaited(_confirmAndLogin(payload));
+    final testOpen = BoxTestOpenQr.tryParse(raw);
+    if (testOpen != null) {
+      unawaited(_testOpenBox(testOpen));
+      return;
+    }
+    _reportInvalidQr(raw);
+  }
+
+  /// Mã trên tờ "QR mở ô (thử tủ)": gửi lệnh mở thử đúng ô đó, không cần đơn. Server chỉ
+  /// cho khi admin bật chế độ thử và tài khoản + tủ nằm trong danh sách cho phép.
+  Future<void> _testOpenBox(BoxTestOpenQr qr) async {
+    if (_isProcessing) return;
+    setState(() => _isProcessing = true);
+    unawaited(_scannerController.stop());
+
+    SmartDialog.showLoading<void>(msg: 'Đang gửi lệnh mở ô...');
+    bool ok;
+    String message;
+    try {
+      final result = await LockerOpsService().testOpenBox(qr.lockerId, qr.boxId);
+      ok = result['accepted'] == true;
+      message = '${result['message'] ?? (ok ? 'Đã gửi lệnh mở ô' : 'Tủ không nhận lệnh mở ô')}';
+    } catch (error) {
+      ok = false;
+      message = LockerOpsService.errorMessage(error);
+    }
+    SmartDialog.dismiss<void>(status: SmartStatus.loading);
+    if (!mounted) return;
+
+    await showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(ok ? 'Đã mở ô (thử tủ)' : 'Chưa mở được ô'),
+        content: Text('Tủ #${qr.lockerId} · ô #${qr.boxId}\n$message'),
+        actions: [
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Đã hiểu'),
+          ),
+        ],
+      ),
+    );
+    if (mounted) _resumeScanning();
   }
 
   void _reportInvalidQr(String raw) {
@@ -101,7 +146,7 @@ class _QrScannerPageState extends State<QrScannerPage>
     _lastInvalidRaw = raw;
     _lastInvalidAt = now;
     SmartDialog.showToast(
-      'Đây không phải mã đăng nhập kiosk Lock.R. Hãy quét mã QR đang hiện trên màn hình tủ.',
+      'Đây không phải mã đăng nhập kiosk hay mã mở ô Lock.R. Hãy quét mã QR đang hiện trên màn hình tủ.',
       displayTime: const Duration(seconds: 3),
     );
   }

@@ -586,6 +586,12 @@ class LockerOpsService {
     body: {'lockerId': lockerId, 'boxId': boxId, 'pinCode': pinCode},
   );
 
+  /// Mở thử một ô bằng QR, không cần đơn (tờ "QR mở ô (thử tủ)" trên admin web). Server chỉ
+  /// cho khi admin bật chế độ thử và tài khoản + tủ nằm trong danh sách; trả
+  /// `{accepted, status, message}`.
+  Future<Map<String, dynamic>> testOpenBox(int lockerId, int boxId) =>
+      _map('POST', '/api/iot/test-open/lockers/$lockerId/boxes/$boxId');
+
   /// Customer feedback on a RESOLVED fault report — the other half of the
   /// claim/resolve notification loop.
   Future<Map<String, dynamic>> rateReport(
