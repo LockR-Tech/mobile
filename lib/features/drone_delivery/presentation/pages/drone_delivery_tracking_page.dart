@@ -56,9 +56,7 @@ class _DroneDeliveryTrackingPageState
 
   @override
   Widget build(BuildContext context) {
-    final asyncStatus = ref.watch(
-      droneDeliveryStatusProvider(widget.orderId),
-    );
+    final asyncStatus = ref.watch(droneDeliveryStatusProvider(widget.orderId));
 
     // Khi drone chuyển sang `approaching` → nhắc người nhận ra nhận (một lần).
     ref.listen<AsyncValue<DroneDeliveryStatus>>(
@@ -85,7 +83,10 @@ class _DroneDeliveryTrackingPageState
         surfaceTintColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(LucideIcons.arrowLeft, color: AISLShadcnTheme.navyPrimary),
+          icon: const Icon(
+            LucideIcons.arrowLeft,
+            color: AISLShadcnTheme.navyPrimary,
+          ),
           onPressed: () {
             if (context.canPop()) {
               context.pop();
@@ -108,9 +109,7 @@ class _DroneDeliveryTrackingPageState
         onRefresh: () async {
           ref.invalidate(droneDeliveryStatusProvider(widget.orderId));
           try {
-            await ref.read(
-              droneDeliveryStatusProvider(widget.orderId).future,
-            );
+            await ref.read(droneDeliveryStatusProvider(widget.orderId).future);
           } catch (_) {
             // Lỗi đã hiện trên màn (đang thử lại); không ném ra khỏi kéo làm mới.
           }
@@ -118,7 +117,8 @@ class _DroneDeliveryTrackingPageState
         // Lỗi một lần poll mà đã có dữ liệu: giữ màn cũ, chỉ báo "đang thử lại".
         child: asyncStatus.when(
           skipError: true,
-          loading: () => const _CenteredScroll(child: CircularProgressIndicator()),
+          loading: () =>
+              const _CenteredScroll(child: CircularProgressIndicator()),
           error: (err, _) => _CenteredScroll(
             child: _ErrorState(
               message: err is DroneStatusLoadException
@@ -131,22 +131,112 @@ class _DroneDeliveryTrackingPageState
           data: (status) {
             final role = droneViewerRole(status, _currentUserId);
             final actions = DroneCustomerActions.of(status, role);
+            final bar = _stickyActions(status, role, actions);
             return _TrackingBody(
               status: status,
               orderId: widget.orderId,
               reconnecting: asyncStatus.hasError,
               viewerIsBooker: role == DroneViewerRole.booker,
               pickup: actions.pickup,
-              onPay: actions.canPay ? () => _pay(status) : null,
-              onCancel: actions.canCancel ? () => _cancel(status) : null,
-              onConfirmDrop:
-                  actions.canConfirmDrop ? () => _confirmDrop(status) : null,
+              // Nút thanh toán / huỷ nằm ở thanh cố định dưới đáy, không lặp lại trong thẻ.
+              onPay: actions.canPay && !bar.pay ? () => _pay(status) : null,
+              onCancel: actions.canCancel && !bar.cancel
+                  ? () => _cancel(status)
+                  : null,
+              onConfirmDrop: actions.canConfirmDrop
+                  ? () => _confirmDrop(status)
+                  : null,
               onDeclineSurcharge: actions.canDeclineSurcharge
                   ? () => _declineSurcharge(status)
                   : null,
               onPickup: () => _pickup(actions.pickup),
             );
           },
+        ),
+      ),
+      bottomNavigationBar: _bottomBar(asyncStatus.value),
+    );
+  }
+
+  /// Thao tác chính của khách luôn ở đáy màn: thanh toán (hoặc trả phí chênh) và huỷ đơn.
+  ({bool pay, bool cancel}) _stickyActions(
+    DroneDeliveryStatus status,
+    DroneViewerRole role,
+    DroneCustomerActions actions,
+  ) {
+    final booker = role == DroneViewerRole.booker;
+    return (
+      pay:
+          booker &&
+          actions.canPay &&
+          (status.needsPaymentBeforeDispatch || status.needsSurchargePayment),
+      cancel: booker && actions.canCancel && status.canCustomerCancel,
+    );
+  }
+
+  Widget? _bottomBar(DroneDeliveryStatus? status) {
+    if (status == null) return null;
+    final role = droneViewerRole(status, _currentUserId);
+    final actions = DroneCustomerActions.of(status, role);
+    final bar = _stickyActions(status, role, actions);
+    if (!bar.pay && !bar.cancel) return null;
+    return DecoratedBox(
+      key: const ValueKey('drone-tracking-actions'),
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        border: Border(top: BorderSide(color: Color(0xFFE2E8F0))),
+        boxShadow: [
+          BoxShadow(
+            color: Color(0x14000000),
+            blurRadius: 12,
+            offset: Offset(0, -2),
+          ),
+        ],
+      ),
+      child: SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
+          child: Row(
+            children: [
+              if (bar.cancel)
+                Expanded(
+                  child: OutlinedButton.icon(
+                    key: const ValueKey('drone-sticky-cancel'),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: const Color(0xFFB91C1C),
+                      side: const BorderSide(color: Color(0xFFFCA5A5)),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                    ),
+                    onPressed: _canceling ? null : () => _cancel(status),
+                    icon: const Icon(Icons.close_rounded, size: 18),
+                    label: const Text('Huỷ đơn'),
+                  ),
+                ),
+              if (bar.cancel && bar.pay) const SizedBox(width: 10),
+              if (bar.pay)
+                Expanded(
+                  flex: 2,
+                  child: FilledButton.icon(
+                    key: const ValueKey('drone-sticky-pay'),
+                    style: FilledButton.styleFrom(
+                      backgroundColor: AISLShadcnTheme.navyPrimary,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                    ),
+                    onPressed: () => _pay(status),
+                    icon: const Icon(
+                      Icons.account_balance_wallet_outlined,
+                      size: 18,
+                    ),
+                    label: Text(
+                      status.needsSurchargePayment
+                          ? 'Trả thêm phí chênh'
+                          : 'Thanh toán ngay',
+                    ),
+                  ),
+                ),
+            ],
+          ),
         ),
       ),
     );
@@ -440,8 +530,9 @@ class _LiveIndicator extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color =
-        reconnecting ? const Color(0xFFD97706) : const Color(0xFF16A34A);
+    final color = reconnecting
+        ? const Color(0xFFD97706)
+        : const Color(0xFF16A34A);
     return Row(
       children: [
         Container(

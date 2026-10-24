@@ -966,41 +966,43 @@ class _DroneBookingPageState extends State<DroneBookingPage>
               ),
             ],
           ),
-          const SizedBox(height: 12),
-          FilledButton.icon(
-            key: const ValueKey('drone-submit'),
-            onPressed:
-                _submitting ||
-                    suspended ||
-                    _quoteProblem != null ||
-                    _quote?.weatherSafe == false
-                ? null
-                : _submit,
-            style: FilledButton.styleFrom(
-              backgroundColor: opsPrimary,
-              padding: const EdgeInsets.symmetric(vertical: 15),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(14),
-              ),
-            ),
-            icon: _submitting
-                ? const SizedBox(
-                    width: 18,
-                    height: 18,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: Colors.white,
-                    ),
-                  )
-                : const Icon(Icons.send_rounded, size: 18),
-            label: Text(
-              _netFee > 0
-                  ? 'Tạo đơn và thanh toán ${fmtPrice(_netFee)}'
-                  : 'Tạo đơn (ưu đãi đã trừ hết phí)',
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+        ],
+      ),
+      // Nút đặt đơn luôn ở đáy màn: không phải kéo hết form mới thấy.
+      bottomNavigationBar: _StickyActionBar(
+        child: FilledButton.icon(
+          key: const ValueKey('drone-submit'),
+          onPressed:
+              _submitting ||
+                  suspended ||
+                  _quoteProblem != null ||
+                  _quote?.weatherSafe == false
+              ? null
+              : _submit,
+          style: FilledButton.styleFrom(
+            backgroundColor: opsPrimary,
+            padding: const EdgeInsets.symmetric(vertical: 15),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(14),
             ),
           ),
-        ],
+          icon: _submitting
+              ? const SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: Colors.white,
+                  ),
+                )
+              : const Icon(Icons.send_rounded, size: 18),
+          label: Text(
+            _netFee > 0
+                ? 'Tạo đơn và thanh toán ${fmtPrice(_netFee)}'
+                : 'Tạo đơn (ưu đãi đã trừ hết phí)',
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+          ),
+        ),
       ),
     );
   }
@@ -1427,6 +1429,41 @@ class _QuoteWeather extends StatelessWidget {
               ),
             ),
         ],
+      ),
+    );
+  }
+}
+
+/// Thanh thao tác cố định ở đáy màn (đặt đơn, thanh toán, huỷ…), nằm trên vùng thanh điều hướng
+/// của máy và đẩy lên khi bàn phím mở.
+class _StickyActionBar extends StatelessWidget {
+  const _StickyActionBar({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(context).bottom),
+      child: DecoratedBox(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          border: Border(top: BorderSide(color: Color(0xFFE2E8F0))),
+          boxShadow: [
+            BoxShadow(
+              color: Color(0x14000000),
+              blurRadius: 12,
+              offset: Offset(0, -2),
+            ),
+          ],
+        ),
+        child: SafeArea(
+          top: false,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
+            child: SizedBox(width: double.infinity, child: child),
+          ),
+        ),
       ),
     );
   }
