@@ -1,6 +1,8 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:smart_laundry_locker/core/config/business_config.dart';
+import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/utils/business_rules_text.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/loyalty_redeem_toggle.dart';
 
@@ -21,6 +23,8 @@ LoyaltyRedeemPreview _preview({
 }, orderTotal: orderTotal);
 
 void main() {
+  group('Dòng điểm ở chi tiết đơn', earnedPointsRowTests);
+
   group('LoyaltyRedeemPreview', () {
     test('dùng được: câu "Dùng N điểm · giảm X"', () {
       final p = _preview();
@@ -134,11 +138,11 @@ void main() {
     final config = BusinessConfig.defaults();
     expect(
       loyaltyEarnRuleText(config),
-      'Tích 1 điểm cho mỗi 1.000đ bạn thanh toán, cộng khi đơn hoàn tất.',
+      'Tích 10% số tiền bạn thanh toán thành điểm (1 điểm = 1đ), cộng khi đơn hoàn tất.',
     );
     expect(
       loyaltyRedeemRuleText(config),
-      '1 điểm = 100đ khi thanh toán, dùng tối đa 50% giá trị đơn (từ 10 điểm).',
+      '1 điểm = 1đ khi thanh toán, dùng tối đa 50% giá trị đơn (từ 1000 điểm).',
     );
     expect(
       loyaltyRedeemRuleText(
@@ -148,5 +152,104 @@ void main() {
       ),
       'Hiện chưa áp dụng dùng điểm để thanh toán.',
     );
+  });
+
+  group('Điểm tích từ đơn', () {
+    test('cộng dòng ORDER_EARN của đúng đơn, trừ phần thu hồi', () {
+      final history = [
+        {'orderId': 7, 'points': 15, 'type': 'ORDER_EARN'},
+        {'orderId': 7, 'points': -5, 'type': 'ORDER_EARN_REVERSAL'},
+        {'orderId': 7, 'points': -20, 'type': 'ORDER_REDEEM'},
+        {'orderId': 8, 'points': 40, 'type': 'ORDER_EARN'},
+      ];
+      final p = OrderEarnedPoints.fromHistory(history, 7);
+      expect(p.recorded, isTrue);
+      expect(p.earned, 15);
+      expect(p.reversed, 5);
+      expect(OrderEarnedPoints.fromHistory(history, 9).recorded, isFalse);
+    });
+
+    test('số điểm làm tròn xuống theo số tiền cho 1 điểm', () {
+      expect(loyaltyPointsFor(15999, 1000), 15);
+      expect(loyaltyPointsFor(999, 1000), 0);
+      expect(loyaltyPointsFor(0, 1000), 0);
+    });
+
+    test(
+      '"+Xđ (Y%)" — giá trị điểm quy ra tiền và % so với số tiền đã trả',
+      () {
+        expect(loyaltyEarnText(10, 10000, 100), '+1.000đ (10%)');
+        expect(loyaltyEarnText(15, 15999, 100), '+1.500đ (9,4%)');
+        expect(loyaltyEarnText(15, 0, 100), '+1.500đ');
+      },
+    );
+  });
+}
+
+class _FakeLoyaltyService extends LockerOpsService {
+  _FakeLoyaltyService(this.history) : super(dio: Dio());
+
+  final List<Map<String, dynamic>> history;
+
+  @override
+  Future<List<Map<String, dynamic>>> loyaltyHistory() async => history;
+}
+
+Future<void> _pumpRow(
+  WidgetTester tester,
+  Map<String, dynamic> order,
+  List<Map<String, dynamic>> history,
+) async {
+  await tester.pumpWidget(
+    MaterialApp(
+      home: Scaffold(
+        body: OrderEarnedPointsRow(
+          order: order,
+          service: _FakeLoyaltyService(history),
+        ),
+      ),
+    ),
+  );
+  await tester.pumpAndSettle();
+}
+
+void earnedPointsRowTests() {
+  // Đơn drone #35 trên stack local: trả 17.000đ; theo tỉ lệ mặc định (tích 10%, 1 điểm = 1đ) được 1.700 điểm.
+  testWidgets('đơn hoàn tất: hiện số điểm thật đã cộng kèm %', (tester) async {
+    await _pumpRow(
+      tester,
+      {
+        'id': 35,
+        'status': 'COMPLETED',
+        'paymentStatus': 'PAID',
+        'paidAmount': 17000,
+      },
+      [
+        {'orderId': 35, 'points': 1700, 'type': 'ORDER_EARN'},
+      ],
+    );
+    expect(find.text('Điểm được cộng'), findsOneWidget);
+    expect(find.text('+1.700đ (10%)'), findsOneWidget);
+  });
+
+  testWidgets('đơn đang chạy: hiện số điểm dự kiến', (tester) async {
+    await _pumpRow(tester, {
+      'id': 36,
+      'status': 'STORING',
+      'paymentStatus': 'PAID',
+      'paidAmount': 13500,
+    }, const []);
+    expect(find.text('Điểm sẽ được cộng'), findsOneWidget);
+    expect(find.text('+1.350đ (10%)'), findsOneWidget);
+  });
+
+  testWidgets('đơn huỷ: không hiện dòng điểm', (tester) async {
+    await _pumpRow(tester, {
+      'id': 37,
+      'status': 'CANCELED',
+      'paymentStatus': 'UNPAID',
+      'totalPrice': 15000,
+    }, const []);
+    expect(find.textContaining('được cộng'), findsNothing);
   });
 }

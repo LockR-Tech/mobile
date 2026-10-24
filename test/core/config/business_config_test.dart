@@ -236,11 +236,11 @@ void main() {
     });
 
     test('dùng điểm và số mã mỗi đơn: mặc định theo hợp đồng, đọc key admin', () {
-      expect(defaults.loyaltyVndPerPoint, 1000);
+      expect(defaults.loyaltyVndPerPoint, 10);
       expect(defaults.redeemEnabled, isTrue);
-      expect(defaults.redeemVndPerPoint, 100);
+      expect(defaults.redeemVndPerPoint, 1);
       expect(defaults.redeemMaxPercent, 50);
-      expect(defaults.redeemMinPoints, 10);
+      expect(defaults.redeemMinPoints, 1000);
       expect(defaults.maxVouchersPerOrder, 1);
 
       final config = BusinessConfig.fromPublicMaps(
@@ -268,9 +268,9 @@ void main() {
           'app.loyalty.redeem-min-points': -5,
         },
       );
-      expect(bad.redeemVndPerPoint, 100);
+      expect(bad.redeemVndPerPoint, 1);
       expect(bad.redeemMaxPercent, 50);
-      expect(bad.redeemMinPoints, 10);
+      expect(bad.redeemMinPoints, 1000);
 
       final restored = BusinessConfig.fromPublicMaps(
         order: config.toPublicMaps()['order'],

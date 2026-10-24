@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
+import 'package:smart_laundry_locker/core/config/business_config_service.dart';
 import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/ops_widgets.dart';
 
@@ -194,7 +195,7 @@ class OrderDiscountRows extends StatelessWidget {
         if (discount > 0)
           OpsInfoRow(
             icon: LucideIcons.badgePercent,
-            label: 'Giảm giá',
+            label: code == null || code.isEmpty ? 'Giảm giá' : 'Voucher',
             value: code == null || code.isEmpty
                 ? '-${fmtPrice(discount)}'
                 : '-${fmtPrice(discount)} ($code)',
@@ -203,7 +204,7 @@ class OrderDiscountRows extends StatelessWidget {
         if (points > 0)
           OpsInfoRow(
             icon: LucideIcons.sparkles,
-            label: 'Điểm thưởng',
+            label: 'Điểm đã dùng',
             value: loyaltyPointsDiscountText(
               points,
               orderPointsDiscount(order),
@@ -217,6 +218,172 @@ class OrderDiscountRows extends StatelessWidget {
           valueColor: opsDark,
         ),
       ],
+    );
+  }
+}
+
+/// Điểm thưởng một đơn được tích, suy từ lịch sử điểm của người dùng.
+class OrderEarnedPoints {
+  const OrderEarnedPoints({
+    required this.recorded,
+    required this.earned,
+    required this.reversed,
+  });
+
+  /// Lịch sử đã có dòng ORDER_EARN của đơn.
+  final bool recorded;
+  final int earned;
+
+  /// Số điểm đã thu hồi khi đơn được hoàn tiền (số dương).
+  final int reversed;
+
+  static OrderEarnedPoints fromHistory(
+    List<Map<String, dynamic>> history,
+    Object? orderId,
+  ) {
+    var recorded = false;
+    var earned = 0;
+    var reversed = 0;
+    for (final tx in history) {
+      if ('${tx['orderId']}' != '$orderId') continue;
+      final points = _orderInt(tx['points']);
+      switch ('${tx['type'] ?? ''}'.toUpperCase()) {
+        case 'ORDER_EARN':
+          recorded = true;
+          earned += points;
+        case 'ORDER_EARN_REVERSAL':
+          reversed += points.abs();
+      }
+    }
+    return OrderEarnedPoints(
+      recorded: recorded,
+      earned: earned,
+      reversed: reversed,
+    );
+  }
+}
+
+/// Số điểm tích cho [amount] đ đã trả: 1 điểm mỗi [vndPerPoint] đ, làm tròn
+/// xuống — cùng công thức `LoyaltyRules.pointsFor` ở loyalty-service.
+int loyaltyPointsFor(num amount, int vndPerPoint) =>
+    amount <= 0 ? 0 : (amount / (vndPerPoint < 1 ? 1 : vndPerPoint)).floor();
+
+/// `+1.000đ (10%)` — giá trị số điểm quy ra tiền (theo giá 1 điểm khi dùng) và
+/// % giá trị đó so với số tiền đã trả. Khách nhìn điểm như tiền tích luỹ nên
+/// không hiện số điểm.
+String loyaltyEarnText(int points, num paid, int redeemVndPerPoint) {
+  if (redeemVndPerPoint <= 0) return '+$points điểm';
+  final value = points * redeemVndPerPoint;
+  if (paid <= 0) return '+${fmtPrice(value)}';
+  final percent = value * 100 / paid;
+  final rounded = (percent * 10).round() / 10;
+  final label = rounded == rounded.roundToDouble()
+      ? rounded.toInt().toString()
+      : rounded.toStringAsFixed(1).replaceAll('.', ',');
+  return '+${fmtPrice(value)} ($label%)';
+}
+
+/// Dòng điểm thưởng tích được ở chi tiết đơn (gửi hàng, thuê ô, drone).
+///
+/// Đơn đã hoàn tất: số điểm thật đã cộng (dòng ORDER_EARN trong lịch sử điểm,
+/// trừ phần đã thu hồi khi hoàn tiền). Đơn chưa xong: số điểm dự kiến theo
+/// số tiền đã/sẽ trả. Đơn huỷ, đã hoàn tiền hoặc 0đ ⇒ ẩn.
+class OrderEarnedPointsRow extends StatefulWidget {
+  const OrderEarnedPointsRow({
+    super.key,
+    required this.order,
+    required this.service,
+  });
+
+  final Map<String, dynamic> order;
+  final LockerOpsService service;
+
+  @override
+  State<OrderEarnedPointsRow> createState() => _OrderEarnedPointsRowState();
+}
+
+class _OrderEarnedPointsRowState extends State<OrderEarnedPointsRow> {
+  OrderEarnedPoints? _points;
+
+  String get _status => '${widget.order['status'] ?? ''}'.toUpperCase();
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  @override
+  void didUpdateWidget(OrderEarnedPointsRow oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final oldStatus = '${oldWidget.order['status'] ?? ''}'.toUpperCase();
+    final oldPayment = '${oldWidget.order['paymentStatus'] ?? ''}';
+    if (oldStatus != _status ||
+        oldPayment != '${widget.order['paymentStatus'] ?? ''}') {
+      _load();
+    }
+  }
+
+  Future<void> _load() async {
+    if (_status != 'COMPLETED') return;
+    try {
+      final history = await widget.service.loyaltyHistory();
+      if (!mounted) return;
+      setState(
+        () => _points = OrderEarnedPoints.fromHistory(
+          history,
+          widget.order['id'],
+        ),
+      );
+    } catch (_) {
+      // Không tải được lịch sử điểm ⇒ ẩn dòng, chi tiết đơn vẫn hiện đủ.
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final order = widget.order;
+    final payment = '${order['paymentStatus'] ?? ''}'.toUpperCase();
+    if (_status == 'CANCELED' || _status == 'CANCELLED') {
+      return const SizedBox.shrink();
+    }
+    final config = BusinessConfigService.instance.current;
+    final paid = _orderInt(order['paidAmount']);
+
+    if (_status != 'COMPLETED') {
+      if (payment == 'REFUND_PENDING' || payment == 'REFUNDED') {
+        return const SizedBox.shrink();
+      }
+      final amount = paid > 0 ? paid : _orderInt(order['totalPrice']);
+      final points = loyaltyPointsFor(amount, config.loyaltyVndPerPoint);
+      if (points <= 0) return const SizedBox.shrink();
+      return OpsInfoRow(
+        icon: LucideIcons.sparkles,
+        label: 'Điểm sẽ được cộng',
+        value: loyaltyEarnText(points, amount, config.redeemVndPerPoint),
+        valueColor: const Color(0xFF15803D),
+      );
+    }
+
+    final earned = _points;
+    if (earned == null) return const SizedBox.shrink();
+    if (!earned.recorded) {
+      if (paid <= 0) return const SizedBox.shrink();
+      return const OpsInfoRow(
+        icon: LucideIcons.sparkles,
+        label: 'Điểm được cộng',
+        value: 'Chưa ghi nhận',
+        valueColor: opsMutedText,
+      );
+    }
+    final text = loyaltyEarnText(earned.earned, paid, config.redeemVndPerPoint);
+    return OpsInfoRow(
+      icon: LucideIcons.sparkles,
+      label: 'Điểm được cộng',
+      value: earned.reversed > 0
+          ? '$text · đã thu hồi ${earned.reversed}'
+          : text,
+      valueColor: const Color(0xFF15803D),
     );
   }
 }
