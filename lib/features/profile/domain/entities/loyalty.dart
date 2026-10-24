@@ -101,6 +101,10 @@ String pointTransactionLabel(String type, {int? orderId}) {
       return 'Hoàn điểm đơn huỷ$order';
     case 'ORDER_EARN_REVERSAL':
       return 'Thu hồi điểm đơn được hoàn tiền$order';
+    case 'VOUCHER_EXCHANGE':
+      return 'Đổi điểm lấy voucher';
+    case 'VOUCHER_EXCHANGE_REFUND':
+      return 'Hoàn điểm đổi voucher';
     case 'REDEEM':
       return 'Đổi điểm';
     case 'ADJUSTMENT':

@@ -304,6 +304,8 @@ class _LoyaltyPageState extends State<LoyaltyPage>
     'ORDER_REDEEM' => LucideIcons.wallet,
     'ORDER_REDEEM_REFUND' => LucideIcons.undo2,
     'ORDER_EARN_REVERSAL' => LucideIcons.rotateCcw,
+    'VOUCHER_EXCHANGE' => LucideIcons.ticketPercent,
+    'VOUCHER_EXCHANGE_REFUND' => LucideIcons.undo2,
     'ADJUSTMENT' => LucideIcons.slidersHorizontal,
     _ => tx.isCredit ? LucideIcons.arrowDownLeft : LucideIcons.arrowUpRight,
   };
