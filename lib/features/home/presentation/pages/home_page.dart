@@ -210,11 +210,9 @@ class _HomePageState extends ConsumerState<HomePage>
           children: [
             _buildTopAppBar(context),
             const SizedBox(height: 12),
-            RepaintBoundary(child: _buildHeroCard(context)),
+            RepaintBoundary(child: _buildDronePoster(context)),
             const SizedBox(height: 20),
             RepaintBoundary(child: _buildQuickActionBadges(context)),
-            const SizedBox(height: 16),
-            RepaintBoundary(child: _buildDroneEntryCard(context)),
             if (_activeOrder != null) ...[
               const SizedBox(height: 20),
               RepaintBoundary(
@@ -419,36 +417,6 @@ class _HomePageState extends ConsumerState<HomePage>
     return 'Bạn';
   }
 
-  String _resolveHeroDisplayName(UserProfile? profile) {
-    if (profile == null) return 'Bạn';
-    final name = profile.fullName.trim();
-    if (name.isNotEmpty && name.toLowerCase() != 'người dùng') {
-      final parts = name
-          .split(RegExp(r'\s+'))
-          .where((w) => w.isNotEmpty)
-          .toList();
-      if (parts.isNotEmpty) {
-        return _capitalizeWords(parts.last);
-      }
-    }
-    final email = profile.email.trim();
-    if (email.isNotEmpty) {
-      final prefix = email.split('@').first;
-      final emailParts = prefix
-          .split(RegExp(r'[._\s-]+'))
-          .where((w) => w.isNotEmpty)
-          .toList();
-      if (emailParts.isNotEmpty) {
-        return _capitalizeWords(emailParts.last);
-      }
-    }
-    final phone = profile.phoneNumber.trim();
-    if (phone.isNotEmpty) {
-      return phone;
-    }
-    return 'Bạn';
-  }
-
   String _capitalizeWords(String input) {
     return input
         .split(RegExp(r'\s+'))
@@ -457,125 +425,31 @@ class _HomePageState extends ConsumerState<HomePage>
         .join(' ');
   }
 
-  Widget _buildHeroCard(BuildContext context) {
-    final profile = context.watch<ProfileProvider>().profile;
-    final displayName = _resolveHeroDisplayName(profile);
-
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 20),
-      decoration: BoxDecoration(
-        color: const Color(0xFF14171F),
-        borderRadius: BorderRadius.circular(26),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.25),
-            blurRadius: 18,
-            offset: const Offset(0, 8),
+  Widget _buildDronePoster(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: Semantics(
+        label: 'Gửi hàng bằng drone',
+        button: true,
+        child: AspectRatio(
+          aspectRatio: 1600 / 1331,
+          child: Material(
+            color: Colors.transparent,
+            borderRadius: BorderRadius.circular(26),
+            clipBehavior: Clip.antiAlias,
+            child: Ink.image(
+              // Giải nén ở bề rộng vừa màn hình cho nhẹ bộ nhớ.
+              image: ResizeImage(
+                const AssetImage('assets/images/poster_drone_delivery.webp'),
+                width: 1200,
+              ),
+              fit: BoxFit.contain,
+              child: InkWell(
+                key: const ValueKey('home-drone-entry'),
+                onTap: () => showDroneLockerPicker(context),
+              ),
+            ),
           ),
-        ],
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(26),
-        child: Stack(
-          children: [
-            // Big 3D Box Illustration (Right Side)
-            Positioned(
-              top: 10,
-              right: 10,
-              child: IgnorePointer(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(
-                          LucideIcons.mapPin,
-                          color: Color(0xFFF59E0B),
-                          size: 15,
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          'Điểm tủ 24/7',
-                          style: TextStyle(
-                            color: Colors.white.withValues(alpha: 0.9),
-                            fontSize: 10.5,
-                            fontStyle: FontStyle.italic,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 2),
-                    const SizedBox(
-                      width: 170,
-                      height: 140,
-                      child: AppLottie(AppLottieAssets.box),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            // Info text Section (Left Side)
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 22, 20, 26),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Text(
-                          'HỆ THỐNG TỦ THÔNG MINH',
-                          style: TextStyle(
-                            color: Color(0xFF94A3B8),
-                            fontSize: 10.5,
-                            fontWeight: FontWeight.w700,
-                            letterSpacing: 1.1,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Flexible(
-                              child: Text(
-                                'Xin chào, $displayName!',
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 22,
-                                  fontWeight: FontWeight.w800,
-                                  letterSpacing: -0.3,
-                                ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                            const SizedBox(width: 6),
-                            const Text('👋', style: TextStyle(fontSize: 20)),
-                          ],
-                        ),
-                        const SizedBox(height: 8),
-                        const Text(
-                          'Gửi đồ, thuê tủ và nhận hàng,\ntất cả trong một ứng dụng.',
-                          style: TextStyle(
-                            color: Color(0xFF94A3B8),
-                            fontSize: 12.5,
-                            height: 1.4,
-                            fontWeight: FontWeight.w400,
-                          ),
-                        ),
-                        const SizedBox(height: 24),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: 110),
-                ],
-              ),
-            ),
-          ],
         ),
       ),
     );
@@ -691,75 +565,6 @@ class _HomePageState extends ConsumerState<HomePage>
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  /// Lối vào "Gửi bằng drone": chọn tủ gửi có bãi đáp rồi chạm ô drone.
-  Widget _buildDroneEntryCard(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Material(
-        color: isDark ? const Color(0xFF1E1B4B) : const Color(0xFFEEF2FF),
-        borderRadius: BorderRadius.circular(18),
-        child: InkWell(
-          key: const ValueKey('home-drone-entry'),
-          borderRadius: BorderRadius.circular(18),
-          onTap: () => showDroneLockerPicker(context),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-            child: Row(
-              children: [
-                SizedBox(
-                  width: 44,
-                  height: 44,
-                  child: AppLottie(
-                    AppLottieAssets.airplaneBox,
-                    fallback: (context) => const Icon(
-                      Icons.flight_takeoff_rounded,
-                      color: Color(0xFF4F46E5),
-                      size: 26,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Gửi hàng bằng drone',
-                        style: TextStyle(
-                          fontSize: 14.5,
-                          fontWeight: FontWeight.w800,
-                          color: isDark
-                              ? Colors.white
-                              : const Color(0xFF312E81),
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        'Chọn tủ có bãi đáp, bỏ kiện vào ô drone — drone bay tới tủ nhận.',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: isDark
-                              ? Colors.white70
-                              : const Color(0xFF4338CA),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const Icon(
-                  LucideIcons.chevronRight,
-                  size: 18,
-                  color: Color(0xFF6366F1),
-                ),
-              ],
-            ),
-          ),
-        ),
       ),
     );
   }
