@@ -10,6 +10,7 @@ import 'package:smart_laundry_locker/shared/widgets/unauthenticated_placeholder.
 import 'package:smart_laundry_locker/shared/shared.dart';
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
 import '../providers/voucher_provider.dart';
+import '../widgets/points_exchange_tab.dart';
 import '../../data/models/voucher_model.dart';
 import 'voucher_detail_page.dart';
 
@@ -27,13 +28,19 @@ class _MyVouchersPageState extends State<MyVouchersPage>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
+    _tabController = TabController(length: 3, vsync: this);
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (TokenService.authState.value) {
-        context.read<VoucherProvider>().loadMyVouchers();
+        _reload();
       }
     });
+  }
+
+  /// Kho voucher + danh sách đổi điểm (kèm số điểm hiện có).
+  Future<void> _reload() {
+    final provider = context.read<VoucherProvider>();
+    return Future.wait([provider.loadMyVouchers(), provider.loadExchange()]);
   }
 
   @override
@@ -54,7 +61,7 @@ class _MyVouchersPageState extends State<MyVouchersPage>
             onBack: () => AppRouter.backOrHome(context),
             trailing: BrandCircleIconButton(
               icon: LucideIcons.refreshCw,
-              onTap: () => context.read<VoucherProvider>().loadMyVouchers(),
+              onTap: _reload,
             ),
           ),
           Container(
@@ -71,6 +78,7 @@ class _MyVouchersPageState extends State<MyVouchersPage>
               ),
               tabs: const [
                 Tab(text: 'Khả dụng'),
+                Tab(text: 'Đổi điểm'),
                 Tab(text: 'Lịch sử'),
               ],
             ),
@@ -83,17 +91,23 @@ class _MyVouchersPageState extends State<MyVouchersPage>
                 if (!TokenService.authState.value) {
                   return UnauthenticatedPlaceholder(
                     message: 'Bạn cần đăng nhập để xem ưu đãi đã lưu',
-                    onAuthSuccess: () => provider.loadMyVouchers(),
+                    onAuthSuccess: _reload,
                   );
                 }
+                // Tab Đổi điểm tự hiện trạng thái tải/lỗi của nó, không bị
+                // che khi kho voucher đang tải hoặc lỗi.
+                final Widget walletState;
                 if (provider.isLoading) {
-                  return const Center(
+                  walletState = const Center(
                     child: AppLoadingIndicator(message: 'Đang tải ưu đãi...'),
                   );
+                } else if (provider.error != null) {
+                  walletState = _buildErrorState(provider);
+                } else {
+                  walletState = const SizedBox.shrink();
                 }
-                if (provider.error != null) {
-                  return _buildErrorState(provider);
-                }
+                final walletReady =
+                    !provider.isLoading && provider.error == null;
 
                 final activeVouchers = provider.vouchers
                     .where((v) => v.status == 'UNUSED')
@@ -105,12 +119,19 @@ class _MyVouchersPageState extends State<MyVouchersPage>
                 return TabBarView(
                   controller: _tabController,
                   children: [
-                    _buildVoucherList(activeVouchers, provider),
-                    _buildVoucherList(
-                      inactiveVouchers,
-                      provider,
-                      isInactive: true,
+                    walletReady
+                        ? _buildVoucherList(activeVouchers, provider)
+                        : walletState,
+                    PointsExchangeTab(
+                      onExchanged: () => _tabController.animateTo(0),
                     ),
+                    walletReady
+                        ? _buildVoucherList(
+                            inactiveVouchers,
+                            provider,
+                            isInactive: true,
+                          )
+                        : walletState,
                   ],
                 );
               },

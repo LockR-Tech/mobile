@@ -27,8 +27,8 @@ void main() {
 
     test('mặc định dùng ngưỡng hiện hành của backend', () {
       expect(
-        nextLoyaltyTierText(450, BusinessConfig.defaults()),
-        'còn 50 điểm lên hạng Bạc',
+        nextLoyaltyTierText(45000, BusinessConfig.defaults()),
+        'còn 5000 điểm lên hạng Bạc',
       );
     });
   });

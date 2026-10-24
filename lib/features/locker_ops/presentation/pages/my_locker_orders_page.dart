@@ -4822,7 +4822,9 @@ class _DetailSheet extends StatelessWidget {
               if (discountAmount > 0)
                 OpsInfoRow(
                   icon: LucideIcons.badgePercent,
-                  label: 'Giảm giá',
+                  label: promotionCode != null && promotionCode.isNotEmpty
+                      ? 'Voucher'
+                      : 'Giảm giá',
                   value: promotionCode != null && promotionCode.isNotEmpty
                       ? '-${fmtPrice(discountAmount)} ($promotionCode)'
                       : '-${fmtPrice(discountAmount)}',
@@ -4831,7 +4833,7 @@ class _DetailSheet extends StatelessWidget {
               if (pointsUsed > 0)
                 OpsInfoRow(
                   icon: LucideIcons.sparkles,
-                  label: 'Điểm thưởng',
+                  label: 'Điểm đã dùng',
                   value: loyaltyPointsDiscountText(pointsUsed, pointsDiscount),
                   valueColor: const Color(0xFF15803D),
                 ),
@@ -4841,6 +4843,8 @@ class _DetailSheet extends StatelessWidget {
                 value: fmtPrice(order['totalPrice']),
                 valueColor: opsDark,
               ),
+              if (service != null)
+                OrderEarnedPointsRow(order: order, service: service!),
               // Gia hạn / phí quá hạn cộng vào tổng nhưng phần cũ đã trả rồi,
               // nên tách rõ đã trả bao nhiêu và còn thiếu bao nhiêu.
               if (rawStatus != 'COMPLETED' &&

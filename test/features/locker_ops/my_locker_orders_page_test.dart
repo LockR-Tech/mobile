@@ -640,7 +640,7 @@ void main() {
     },
   );
 
-  testWidgets('chi tiết đơn hiện dòng mã giảm giá và điểm thưởng đã dùng', (
+  testWidgets('chi tiết đơn hiện voucher, điểm đã dùng và điểm sẽ được cộng', (
     tester,
   ) async {
     await tester.pumpWidget(
@@ -656,11 +656,14 @@ void main() {
     await tester.tap(find.text('Tủ điểm'));
     await tester.pumpAndSettle();
 
-    await tester.ensureVisible(find.text('Điểm thưởng'));
+    await tester.ensureVisible(find.text('Điểm sẽ được cộng'));
     expect(find.text('Giá gốc'), findsOneWidget);
+    expect(find.text('Voucher'), findsOneWidget);
     expect(find.text('-5.000đ (GIAM5K)'), findsOneWidget);
-    expect(find.text('Điểm thưởng'), findsOneWidget);
+    expect(find.text('Điểm đã dùng'), findsOneWidget);
     expect(find.text('-7.500đ (75 điểm)'), findsOneWidget);
+    // Đã trả 7.500đ, tích 10% (1 điểm = 1đ) ⇒ 750 điểm = 750đ.
+    expect(find.text('+750đ (10%)'), findsOneWidget);
   });
 
   testWidgets('reports fault through the order endpoint from order detail', (

@@ -60,13 +60,20 @@ String dronePickupPolicyText(BusinessConfig config) =>
     'Người nhận có ${config.dronePickupHoursLimit} giờ để lấy hàng kể từ lúc '
     'drone thả hàng vào ô. ${overtimePolicyText(config)}';
 
-/// Cách tích điểm: `Tích 1 điểm cho mỗi 1.000đ bạn thanh toán, cộng khi đơn hoàn tất.`
-String loyaltyEarnRuleText(BusinessConfig config) =>
-    'Tích 1 điểm cho mỗi ${fmtPrice(config.loyaltyVndPerPoint)} bạn thanh '
-    'toán, cộng khi đơn hoàn tất.';
+/// Cách tích điểm, quy ra % số tiền theo giá trị 1 điểm khi dùng:
+/// `Tích 10% số tiền bạn thanh toán thành điểm (1 điểm = 1đ), cộng khi đơn hoàn tất.`
+String loyaltyEarnRuleText(BusinessConfig config) {
+  final perPoint = config.loyaltyVndPerPoint < 1 ? 1 : config.loyaltyVndPerPoint;
+  final percent = ((config.redeemVndPerPoint * 100 / perPoint) * 10).round() / 10;
+  final label = percent == percent.roundToDouble()
+      ? percent.toInt().toString()
+      : percent.toStringAsFixed(1).replaceAll('.', ',');
+  return 'Tích $label% số tiền bạn thanh toán thành điểm '
+      '(1 điểm = ${fmtPrice(config.redeemVndPerPoint)}), cộng khi đơn hoàn tất.';
+}
 
 /// Cách dùng điểm khi thanh toán:
-/// `1 điểm = 100đ khi thanh toán, dùng tối đa 50% giá trị đơn (từ 10 điểm).`
+/// `1 điểm = 1đ khi thanh toán, dùng tối đa 50% giá trị đơn (từ 1000 điểm).`
 String loyaltyRedeemRuleText(BusinessConfig config) {
   if (!config.redeemEnabled) {
     return 'Hiện chưa áp dụng dùng điểm để thanh toán.';

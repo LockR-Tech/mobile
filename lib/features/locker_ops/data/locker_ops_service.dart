@@ -245,6 +245,12 @@ class LockerOpsService {
   Future<Map<String, dynamic>> loyaltyPoints() =>
       _map('GET', '/api/loyalty/points');
 
+  /// Lịch sử điểm của chính người dùng, mới → cũ:
+  /// `[{id, userId, orderId, points, type, createdAt}]`. Điểm tích từ đơn hoàn
+  /// tất là `type = ORDER_EARN`, thu hồi khi hoàn tiền là `ORDER_EARN_REVERSAL`.
+  Future<List<Map<String, dynamic>>> loyaltyHistory() =>
+      _list('/api/loyalty/points/history');
+
   /// Tài khoản điểm của chính người dùng (server lấy người dùng từ token):
   /// `{points, tier, tierLabel?…}`.
   Future<Map<String, dynamic>> loyaltySummary() =>
