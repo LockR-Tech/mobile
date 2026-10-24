@@ -10,6 +10,7 @@ import 'package:smart_laundry_locker/features/drone_delivery/domain/entities/dro
 import 'package:smart_laundry_locker/features/drone_delivery/domain/entities/drone_route_geometry.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/presentation/drone_live_map.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/presentation/widgets/drone_marker.dart';
+import 'package:smart_laundry_locker/features/drone_delivery/presentation/widgets/drone_base_tile_layer.dart';
 
 /// Bản đồ tóm tắt hành trình: tủ gửi A, tủ nhận B, đoạn đã bay và vị trí drone
 /// ước theo chặng hiện tại. Không cho kéo/zoom để cuộn trang không bị bản đồ "nuốt";
@@ -78,10 +79,7 @@ class DroneRouteMapCard extends StatelessWidget {
                   ),
                 ),
                 children: [
-                  TileLayer(
-                    urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                    userAgentPackageName: 'com.aisl.app',
-                  ),
+                  droneBaseTileLayer(),
                   PolylineLayer(
                     polylines: [
                       Polyline(
