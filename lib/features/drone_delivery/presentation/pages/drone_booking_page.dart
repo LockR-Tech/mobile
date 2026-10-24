@@ -293,6 +293,27 @@ class _DroneBookingPageState extends State<DroneBookingPage>
       locker['landingPad'] == true &&
       '${locker['status']}'.toUpperCase() == 'ACTIVE';
 
+  Map<String, dynamic>? get _selectedDestination {
+    final id = _destinationLockerId;
+    if (id == null) return null;
+    for (final locker in _destinations) {
+      if (_asInt(locker['id']) == id) return locker;
+    }
+    return null;
+  }
+
+  /// Gợi ý ô nhận: đang tải / tủ không nhận drone (kèm lý do) / hết ô / chọn ô.
+  String _destinationBoxHint() {
+    final locker = _selectedDestination;
+    if (locker != null && !_canReceiveDrone(locker)) {
+      return _destinationUnavailableReason(locker);
+    }
+    final slots = _availableDroneSlots[_destinationLockerId];
+    if (slots == null) return 'Đang kiểm tra ô drone…';
+    if (slots == 0) return 'Không còn ô drone nhận trống';
+    return 'Chọn ô người nhận sẽ lấy hàng';
+  }
+
   String _destinationUnavailableReason(Map<String, dynamic> locker) {
     final status = '${locker['status']}'.toUpperCase();
     if (status != 'ACTIVE') {
@@ -701,8 +722,8 @@ class _DroneBookingPageState extends State<DroneBookingPage>
                 _loadingDestinations
                     ? 'Đang tải tủ nhận...'
                     : _destinations.isEmpty
-                    ? 'Chưa có tủ nào có bãi đáp drone'
-                    : 'Chọn tủ có bãi đáp drone',
+                    ? 'Hệ thống chưa có tủ nào'
+                    : 'Chọn tủ nhận',
               ),
               items: [
                 for (final locker in _destinations)
@@ -741,12 +762,7 @@ class _DroneBookingPageState extends State<DroneBookingPage>
                   filled: true,
                   fillColor: Colors.white,
                 ),
-                hint: Text(
-                  (_availableDroneBoxes[_destinationLockerId] ?? const [])
-                          .isEmpty
-                      ? 'Không còn ô drone nhận trống'
-                      : 'Chọn ô người nhận sẽ lấy hàng',
-                ),
+                hint: Text(_destinationBoxHint()),
                 items: [
                   for (final box
                       in _availableDroneBoxes[_destinationLockerId] ?? const [])
@@ -759,12 +775,21 @@ class _DroneBookingPageState extends State<DroneBookingPage>
                 onChanged: (value) => setState(() => _destinationBoxId = value),
               ),
             ],
-            if (_destinationLockerId != null) ...[
+            if (_selectedDestination case final locker?) ...[
               const SizedBox(height: 6),
               Text(
-                'Ô nhận drone còn trống: ${_availableDroneSlots[_destinationLockerId] ?? 'đang kiểm tra'}',
+                _canReceiveDrone(locker)
+                    ? 'Ô nhận drone còn trống: ${_availableDroneSlots[_destinationLockerId] ?? 'đang kiểm tra…'}'
+                    : 'Tủ này chưa nhận được drone: ${_destinationUnavailableReason(locker).toLowerCase()}',
                 key: const ValueKey('drone-destination-availability'),
-                style: const TextStyle(fontSize: 12, color: Color(0xFF15803D)),
+                style: TextStyle(
+                  fontSize: 12,
+                  color:
+                      _canReceiveDrone(locker) &&
+                          (_availableDroneSlots[_destinationLockerId] ?? 1) > 0
+                      ? const Color(0xFF15803D)
+                      : const Color(0xFFDC2626),
+                ),
               ),
             ],
           ]),
