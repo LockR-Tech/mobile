@@ -15,6 +15,7 @@ import 'package:smart_laundry_locker/features/drone_delivery/presentation/drone_
 import 'package:smart_laundry_locker/features/drone_delivery/presentation/providers/drone_delivery_providers.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/presentation/providers/drone_live_map_providers.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/presentation/widgets/drone_marker.dart';
+import 'package:smart_laundry_locker/features/drone_delivery/presentation/widgets/drone_base_tile_layer.dart';
 
 /// Live map theo dõi drone real-time cho NGƯỜI NHẬN (Phase 2).
 ///
@@ -239,10 +240,7 @@ class _DroneLiveMapPageState extends ConsumerState<DroneLiveMapPage>
               initialZoom: 16,
             ),
             children: [
-              TileLayer(
-                urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                userAgentPackageName: 'com.aisl.app',
-              ),
+              droneBaseTileLayer(),
               if (sourcePoint != null && _destination != null)
                 PolylineLayer(
                   polylines: [

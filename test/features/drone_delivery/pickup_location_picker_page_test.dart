@@ -108,12 +108,22 @@ void main() {
     expect(find.text('Chưa chọn vị trí lấy hàng trên bản đồ.'), findsOneWidget);
     expect(picked, isNull);
 
+    // Gõ tới đâu gợi ý tới đó, không cần nút Tìm.
+    await tester.enterText(find.byKey(const ValueKey('pickup-search')), '45');
+    await tester.pump(const Duration(milliseconds: 500));
+    expect(geocoder.searched, isEmpty);
+    await tester.enterText(
+      find.byKey(const ValueKey('pickup-search')),
+      '45 Lê',
+    );
+    await tester.pump(const Duration(milliseconds: 100));
     await tester.enterText(
       find.byKey(const ValueKey('pickup-search')),
       '45 Lê Lợi',
     );
-    await tester.tap(find.byKey(const ValueKey('pickup-search-button')));
+    await tester.pump(const Duration(milliseconds: 500));
     await tester.pumpAndSettle();
+    // Gõ liên tục chỉ tra một lần với chữ cuối cùng.
     expect(geocoder.searched, ['45 Lê Lợi']);
     expect(
       find.textContaining('10.78000, 106.69000 · chạm để xem ghim'),
