@@ -6,6 +6,7 @@ import 'package:smart_laundry_locker/core/config/business_config_provider.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/domain/entities/drone_booking.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/domain/entities/drone_labels.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/domain/entities/drone_parcel.dart';
+import 'package:smart_laundry_locker/features/drone_delivery/infrastructure/services/locker_availability_socket_service.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/presentation/pages/pickup_location_picker_page.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/presentation/widgets/drone_order_payment.dart';
 import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
@@ -66,6 +67,8 @@ class DroneBookingPage extends StatefulWidget {
     this.onBooked,
     this.showMessage,
     this.service,
+    this.availabilityChanges,
+    this.slotRefreshInterval = const Duration(seconds: 20),
   });
 
   /// Tủ khách đang xem khi bấm "giao drone" — chọn sẵn làm tủ nhận.
@@ -88,6 +91,13 @@ class DroneBookingPage extends StatefulWidget {
   /// Client gọi API (tủ, báo giá, tạo đơn, mã giảm giá, điểm thưởng); null thì
   /// dựng mặc định khi cần.
   final LockerOpsService? service;
+
+  /// Mã tủ vừa đổi số ô trống (realtime). Null: nghe socket thật, trừ khi màn được dựng với
+  /// danh sách tủ có sẵn (test) — khi đó không nghe gì.
+  final Stream<int>? availabilityChanges;
+
+  /// Dự phòng khi socket rớt: tự tải lại ô trống theo chu kỳ này.
+  final Duration slotRefreshInterval;
 
   @override
   State<DroneBookingPage> createState() => _DroneBookingPageState();
@@ -122,6 +132,10 @@ class _DroneBookingPageState extends State<DroneBookingPage>
   bool _loadingDestinations = true;
   int? _destinationLockerId;
   int? _destinationBoxId;
+  StreamSubscription<int>? _availabilitySub;
+  Timer? _slotPoll;
+  Timer? _slotDebounce;
+  final Set<int> _pendingSlotRefresh = {};
   int? _weightGrams;
   String? _category;
   bool _fragile = false;
@@ -191,6 +205,36 @@ class _DroneBookingPageState extends State<DroneBookingPage>
     _destinationBoxId = widget.preferredBoxId;
     _prefillSender();
     _loadDestinations();
+    _watchAvailability();
+  }
+
+  /// Ô trống đổi liên tục (người khác đặt, đơn lấy xong, huỷ…): nghe realtime theo tủ, kèm
+  /// tải lại định kỳ phòng khi socket rớt.
+  void _watchAvailability() {
+    final changes =
+        widget.availabilityChanges ??
+        (widget.destinationLockers == null
+            ? LockerAvailabilitySocketService.instance.watch()
+            : null);
+    _availabilitySub = changes?.listen(_onLockerAvailabilityChanged);
+    _slotPoll = Timer.periodic(
+      widget.slotRefreshInterval,
+      (_) => _refreshDroneSlots(),
+    );
+  }
+
+  /// Gom các báo đổi dồn dập (một đơn đổi nhiều ô) rồi mới tải lại.
+  void _onLockerAvailabilityChanged(int lockerId) {
+    if (!_destinations.any((locker) => _asInt(locker['id']) == lockerId)) {
+      return;
+    }
+    _pendingSlotRefresh.add(lockerId);
+    _slotDebounce?.cancel();
+    _slotDebounce = Timer(const Duration(milliseconds: 300), () {
+      final ids = Set<int>.of(_pendingSlotRefresh);
+      _pendingSlotRefresh.clear();
+      _refreshDroneSlots(only: ids);
+    });
   }
 
   /// Người gửi mặc định là chính tài khoản đang đặt; vẫn sửa được (gửi hộ người khác).
@@ -237,53 +281,82 @@ class _DroneBookingPageState extends State<DroneBookingPage>
               : null;
         }
       });
-      await Future.wait(
-        destinations.where(_canReceiveDrone).map((locker) async {
-          final id = _asInt(locker['id']);
-          if (id == null) return;
-          try {
-            final boxes =
-                await (widget.loadDroneSlots ??
-                    (lockerId) async {
-                      final layout = await LockerOpsService().layout(lockerId);
-                      final cells = layout['cells'];
-                      return cells is List
-                          ? cells
-                                .whereType<Map>()
-                                .where(
-                                  (cell) =>
-                                      '${cell['cellType']}'.toUpperCase() ==
-                                          'DRONE' &&
-                                      '${cell['status']}'.toUpperCase() ==
-                                          'AVAILABLE',
-                                )
-                                .map((cell) => Map<String, dynamic>.from(cell))
-                                .toList(growable: false)
-                          : <Map<String, dynamic>>[];
-                    })(id);
-            if (mounted) {
-              setState(() {
-                _availableDroneBoxes[id] = boxes;
-                _availableDroneSlots[id] = boxes.length;
-              });
-              if (id == _destinationLockerId &&
-                  boxes.every(
-                    (box) => _asInt(box['id']) != _destinationBoxId,
-                  )) {
-                setState(() => _destinationBoxId = null);
-              }
-            }
-          } catch (_) {
-            if (mounted) setState(() => _availableDroneSlots[id] = null);
-          }
-        }),
-      );
+      await _refreshDroneSlots();
       _refreshQuote();
     } catch (_) {
       if (mounted) setState(() => _destinations = const []);
     } finally {
       if (mounted) setState(() => _loadingDestinations = false);
     }
+  }
+
+  /// Tải lại ô DRONE trống của các tủ nhận được drone (hoặc chỉ [only]). Ô đang chọn vừa bị
+  /// người khác giữ thì bỏ chọn và báo ngay, không để tới lúc bấm đặt mới biết.
+  Future<void> _refreshDroneSlots({Set<int>? only}) async {
+    await Future.wait(
+      _destinations.where(_canReceiveDrone).map((locker) async {
+        final id = _asInt(locker['id']);
+        if (id == null || (only != null && !only.contains(id))) return;
+        try {
+          final boxes =
+              await (widget.loadDroneSlots ?? _loadAvailableDroneBoxes)(id);
+          if (!mounted) return;
+          final lostBox =
+              id == _destinationLockerId &&
+                  _destinationBoxId != null &&
+                  boxes.every((box) => _asInt(box['id']) != _destinationBoxId)
+              ? _destinationBoxId
+              : null;
+          // Lần tải đầu (chưa từng thấy ô) chỉ bỏ chọn lặng lẽ; các lần sau mới là "vừa mất".
+          final lostLabel =
+              lostBox == null || !_availableDroneBoxes.containsKey(id)
+              ? null
+              : _boxLabel(id, lostBox);
+          setState(() {
+            _availableDroneBoxes[id] = boxes;
+            _availableDroneSlots[id] = boxes.length;
+            if (lostBox != null) _destinationBoxId = null;
+          });
+          if (lostLabel != null) {
+            _showMessage(
+              '$lostLabel vừa được người khác giữ. Hãy chọn ô drone khác.',
+            );
+          }
+        } catch (_) {
+          if (mounted && !_availableDroneSlots.containsKey(id)) {
+            setState(() => _availableDroneSlots[id] = null);
+          }
+        }
+      }),
+    );
+  }
+
+  /// Ô trước khi tải lại — để báo đúng số ô vừa mất.
+  String _boxLabel(int lockerId, int boxId) {
+    for (final box in _availableDroneBoxes[lockerId] ?? const []) {
+      if (_asInt(box['id']) == boxId) {
+        return 'Ô số ${box['boxNumber'] ?? boxId}';
+      }
+    }
+    return 'Ô bạn chọn';
+  }
+
+  static Future<List<Map<String, dynamic>>> _loadAvailableDroneBoxes(
+    int lockerId,
+  ) async {
+    final layout = await LockerOpsService().layout(lockerId);
+    final cells = layout['cells'];
+    return cells is List
+        ? cells
+              .whereType<Map>()
+              .where(
+                (cell) =>
+                    '${cell['cellType']}'.toUpperCase() == 'DRONE' &&
+                    '${cell['status']}'.toUpperCase() == 'AVAILABLE',
+              )
+              .map((cell) => Map<String, dynamic>.from(cell))
+              .toList(growable: false)
+        : <Map<String, dynamic>>[];
   }
 
   static int? _asInt(dynamic value) =>
@@ -328,6 +401,9 @@ class _DroneBookingPageState extends State<DroneBookingPage>
 
   @override
   void dispose() {
+    _availabilitySub?.cancel();
+    _slotPoll?.cancel();
+    _slotDebounce?.cancel();
     for (final controller in [
       _senderName,
       _senderPhone,
