@@ -28,7 +28,20 @@ Future<(LatLng?, String?)> readDevicePosition() async {
         'Quyền vị trí bị từ chối vĩnh viễn. Hãy bật lại trong cài đặt.',
       );
     }
-    final position = await Geolocator.getCurrentPosition();
+    Position? position;
+    try {
+      position = await Geolocator.getCurrentPosition(
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.high,
+          timeLimit: Duration(seconds: 12),
+        ),
+      );
+    } catch (_) {
+      position = await Geolocator.getLastKnownPosition();
+    }
+    if (position == null) {
+      return (null, 'Không lấy được vị trí hiện tại.');
+    }
     return (LatLng(position.latitude, position.longitude), null);
   } catch (_) {
     return (null, 'Không lấy được vị trí hiện tại.');

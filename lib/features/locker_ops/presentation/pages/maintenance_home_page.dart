@@ -1414,6 +1414,9 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                 service: _service,
                 isDrone: true,
                 margin: EdgeInsets.zero,
+                onPresenceChanged: (_) {
+                  _refreshDeliveries();
+                },
               ),
             ],
           ),

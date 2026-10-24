@@ -137,7 +137,10 @@ class DronePickupQueue extends StatefulWidget {
   State<DronePickupQueue> createState() => _DronePickupQueueState();
 }
 
-class _DronePickupQueueState extends State<DronePickupQueue> {
+class _DronePickupQueueState extends State<DronePickupQueue>
+    with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
   bool _onDuty = false;
   bool _busy = false;
   DateTime? _locationAt;
@@ -557,6 +560,7 @@ class _DronePickupQueueState extends State<DronePickupQueue> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     final offered = _offered;
     final accepted = _accepted;
     final carrying = _carrying;
