@@ -6,6 +6,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/domain/entities/drone_booking.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/infrastructure/services/pickup_geocoder.dart';
+import 'package:smart_laundry_locker/features/drone_delivery/presentation/widgets/drone_base_tile_layer.dart';
 
 /// Lấy vị trí hiện tại của thiết bị; null khi GPS tắt hoặc bị từ chối quyền (kèm lý do).
 typedef CurrentPositionReader = Future<(LatLng?, String?)> Function();
@@ -44,12 +45,15 @@ Future<(LatLng?, String?)> readDevicePosition() async {
     }
     return (LatLng(position.latitude, position.longitude), null);
   } catch (_) {
-    return (null, 'Không lấy được vị trí hiện tại.');
+    return (
+      null,
+      'Không lấy được vị trí hiện tại. Hãy ra chỗ thoáng hoặc gõ địa chỉ để tìm.',
+    );
   }
 }
 
-/// Chọn điểm lấy hàng cho đơn drone: dùng vị trí hiện tại, gõ địa chỉ để tìm, hoặc chạm
-/// lên bản đồ để ghim. Trả về [PickupLocation] qua `Navigator.pop`.
+/// Chọn điểm lấy hàng cho đơn drone: dùng vị trí hiện tại, gõ địa chỉ (gợi ý hiện ngay khi
+/// gõ), hoặc chạm lên bản đồ để ghim. Trả về [PickupLocation] qua `Navigator.pop`.
 class PickupLocationPickerPage extends StatefulWidget {
   const PickupLocationPickerPage({
     super.key,
@@ -87,6 +91,10 @@ class _PickupLocationPickerPageState extends State<PickupLocationPickerPage> {
   List<PickupLocation> _results = const [];
   String? _message;
   int _lookup = 0;
+  int _searchSeq = 0;
+  Timer? _debounce;
+
+  static const _debounceDelay = Duration(milliseconds: 400);
 
   @override
   void initState() {
@@ -105,6 +113,7 @@ class _PickupLocationPickerPageState extends State<PickupLocationPickerPage> {
 
   @override
   void dispose() {
+    _debounce?.cancel();
     _addressController.dispose();
     _searchController.dispose();
     super.dispose();
@@ -134,7 +143,10 @@ class _PickupLocationPickerPageState extends State<PickupLocationPickerPage> {
     String? knownAddress,
   }) async {
     final lookup = ++_lookup;
+    _debounce?.cancel();
+    _searchSeq++;
     setState(() {
+      _searching = false;
       _point = point;
       _results = const [];
       _message = null;
@@ -164,19 +176,37 @@ class _PickupLocationPickerPageState extends State<PickupLocationPickerPage> {
     });
   }
 
+  /// Gõ tới đâu gợi ý tới đó: chờ người dùng ngừng gõ một nhịp rồi mới tra, để không
+  /// gửi một yêu cầu cho mỗi phím.
+  void _onQueryChanged(String value) {
+    _debounce?.cancel();
+    if (value.trim().length < 3) {
+      _searchSeq++;
+      setState(() {
+        _searching = false;
+        _results = const [];
+        _message = null;
+      });
+      return;
+    }
+    _debounce = Timer(_debounceDelay, _search);
+  }
+
   Future<void> _search() async {
+    _debounce?.cancel();
     final query = _searchController.text.trim();
     if (query.length < 3) {
       setState(() => _message = 'Nhập ít nhất 3 ký tự để tìm địa chỉ.');
       return;
     }
-    FocusScope.of(context).unfocus();
+    final seq = ++_searchSeq;
     setState(() {
       _searching = true;
       _message = null;
     });
     final results = await _geocoder.search(query);
-    if (!mounted) return;
+    // Người dùng đã gõ tiếp hoặc đã chọn điểm: bỏ kết quả cũ.
+    if (!mounted || seq != _searchSeq) return;
     setState(() {
       _searching = false;
       _results = results;
@@ -185,6 +215,11 @@ class _PickupLocationPickerPageState extends State<PickupLocationPickerPage> {
             'Không tìm thấy địa chỉ này. Thử gõ rõ hơn hoặc chạm lên bản đồ để ghim.';
       }
     });
+  }
+
+  void _clearQuery() {
+    _searchController.clear();
+    _onQueryChanged('');
   }
 
   void _confirm() {
@@ -219,40 +254,43 @@ class _PickupLocationPickerPageState extends State<PickupLocationPickerPage> {
         children: [
           Padding(
             padding: const EdgeInsets.fromLTRB(12, 10, 12, 6),
-            child: Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    key: const ValueKey('pickup-search'),
-                    controller: _searchController,
-                    textInputAction: TextInputAction.search,
-                    onSubmitted: (_) => _search(),
-                    decoration: const InputDecoration(
-                      hintText: 'Tìm địa chỉ (số nhà, đường, phường…)',
-                      prefixIcon: Icon(Icons.search),
-                      isDense: true,
-                      border: OutlineInputBorder(),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                FilledButton(
-                  key: const ValueKey('pickup-search-button'),
-                  onPressed: _searching ? null : _search,
-                  child: _searching
-                      ? const SizedBox(
+            child: TextField(
+              key: const ValueKey('pickup-search'),
+              controller: _searchController,
+              textInputAction: TextInputAction.search,
+              onChanged: _onQueryChanged,
+              onSubmitted: (_) => _search(),
+              decoration: InputDecoration(
+                hintText: 'Gõ địa chỉ (số nhà, đường, phường…)',
+                prefixIcon: const Icon(Icons.search),
+                suffixIcon: _searching
+                    ? const Padding(
+                        padding: EdgeInsets.all(12),
+                        child: SizedBox(
                           width: 16,
                           height: 16,
                           child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : const Text('Tìm'),
-                ),
-              ],
+                        ),
+                      )
+                    : ValueListenableBuilder<TextEditingValue>(
+                        valueListenable: _searchController,
+                        builder: (context, value, _) => value.text.isEmpty
+                            ? const SizedBox.shrink()
+                            : IconButton(
+                                key: const ValueKey('pickup-search-clear'),
+                                tooltip: 'Xoá',
+                                icon: const Icon(Icons.close),
+                                onPressed: _clearQuery,
+                              ),
+                      ),
+                isDense: true,
+                border: const OutlineInputBorder(),
+              ),
             ),
           ),
           if (_results.isNotEmpty)
             ConstrainedBox(
-              constraints: const BoxConstraints(maxHeight: 180),
+              constraints: const BoxConstraints(maxHeight: 220),
               child: ListView.separated(
                 shrinkWrap: true,
                 itemCount: _results.length,
@@ -271,11 +309,14 @@ class _PickupLocationPickerPageState extends State<PickupLocationPickerPage> {
                       '${result.latitude.toStringAsFixed(5)}, '
                       '${result.longitude.toStringAsFixed(5)} · chạm để xem ghim',
                     ),
-                    onTap: () => _moveTo(
-                      LatLng(result.latitude, result.longitude),
-                      zoom: 17,
-                      knownAddress: result.address,
-                    ),
+                    onTap: () {
+                      FocusScope.of(context).unfocus();
+                      _moveTo(
+                        LatLng(result.latitude, result.longitude),
+                        zoom: 17,
+                        knownAddress: result.address,
+                      );
+                    },
                   );
                 },
               ),
@@ -292,12 +333,7 @@ class _PickupLocationPickerPageState extends State<PickupLocationPickerPage> {
                       onTap: (_, tapped) => _moveTo(tapped),
                     ),
                     children: [
-                      TileLayer(
-                        urlTemplate:
-                            'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                        userAgentPackageName:
-                            'com.example.smart_laundry_locker',
-                      ),
+                      droneBaseTileLayer(),
                       if (point != null)
                         MarkerLayer(
                           markers: [

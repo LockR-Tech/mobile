@@ -293,6 +293,27 @@ class _DroneBookingPageState extends State<DroneBookingPage>
       locker['landingPad'] == true &&
       '${locker['status']}'.toUpperCase() == 'ACTIVE';
 
+  Map<String, dynamic>? get _selectedDestination {
+    final id = _destinationLockerId;
+    if (id == null) return null;
+    for (final locker in _destinations) {
+      if (_asInt(locker['id']) == id) return locker;
+    }
+    return null;
+  }
+
+  /// Gợi ý ô nhận: đang tải / tủ không nhận drone (kèm lý do) / hết ô / chọn ô.
+  String _destinationBoxHint() {
+    final locker = _selectedDestination;
+    if (locker != null && !_canReceiveDrone(locker)) {
+      return _destinationUnavailableReason(locker);
+    }
+    final slots = _availableDroneSlots[_destinationLockerId];
+    if (slots == null) return 'Đang kiểm tra ô drone…';
+    if (slots == 0) return 'Không còn ô drone nhận trống';
+    return 'Chọn ô người nhận sẽ lấy hàng';
+  }
+
   String _destinationUnavailableReason(Map<String, dynamic> locker) {
     final status = '${locker['status']}'.toUpperCase();
     if (status != 'ACTIVE') {
@@ -701,8 +722,8 @@ class _DroneBookingPageState extends State<DroneBookingPage>
                 _loadingDestinations
                     ? 'Đang tải tủ nhận...'
                     : _destinations.isEmpty
-                    ? 'Chưa có tủ nào có bãi đáp drone'
-                    : 'Chọn tủ có bãi đáp drone',
+                    ? 'Hệ thống chưa có tủ nào'
+                    : 'Chọn tủ nhận',
               ),
               items: [
                 for (final locker in _destinations)
@@ -741,12 +762,7 @@ class _DroneBookingPageState extends State<DroneBookingPage>
                   filled: true,
                   fillColor: Colors.white,
                 ),
-                hint: Text(
-                  (_availableDroneBoxes[_destinationLockerId] ?? const [])
-                          .isEmpty
-                      ? 'Không còn ô drone nhận trống'
-                      : 'Chọn ô người nhận sẽ lấy hàng',
-                ),
+                hint: Text(_destinationBoxHint()),
                 items: [
                   for (final box
                       in _availableDroneBoxes[_destinationLockerId] ?? const [])
@@ -759,12 +775,21 @@ class _DroneBookingPageState extends State<DroneBookingPage>
                 onChanged: (value) => setState(() => _destinationBoxId = value),
               ),
             ],
-            if (_destinationLockerId != null) ...[
+            if (_selectedDestination case final locker?) ...[
               const SizedBox(height: 6),
               Text(
-                'Ô nhận drone còn trống: ${_availableDroneSlots[_destinationLockerId] ?? 'đang kiểm tra'}',
+                _canReceiveDrone(locker)
+                    ? 'Ô nhận drone còn trống: ${_availableDroneSlots[_destinationLockerId] ?? 'đang kiểm tra…'}'
+                    : 'Tủ này chưa nhận được drone: ${_destinationUnavailableReason(locker).toLowerCase()}',
                 key: const ValueKey('drone-destination-availability'),
-                style: const TextStyle(fontSize: 12, color: Color(0xFF15803D)),
+                style: TextStyle(
+                  fontSize: 12,
+                  color:
+                      _canReceiveDrone(locker) &&
+                          (_availableDroneSlots[_destinationLockerId] ?? 1) > 0
+                      ? const Color(0xFF15803D)
+                      : const Color(0xFFDC2626),
+                ),
               ),
             ],
           ]),
@@ -941,41 +966,43 @@ class _DroneBookingPageState extends State<DroneBookingPage>
               ),
             ],
           ),
-          const SizedBox(height: 12),
-          FilledButton.icon(
-            key: const ValueKey('drone-submit'),
-            onPressed:
-                _submitting ||
-                    suspended ||
-                    _quoteProblem != null ||
-                    _quote?.weatherSafe == false
-                ? null
-                : _submit,
-            style: FilledButton.styleFrom(
-              backgroundColor: opsPrimary,
-              padding: const EdgeInsets.symmetric(vertical: 15),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(14),
-              ),
-            ),
-            icon: _submitting
-                ? const SizedBox(
-                    width: 18,
-                    height: 18,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: Colors.white,
-                    ),
-                  )
-                : const Icon(Icons.send_rounded, size: 18),
-            label: Text(
-              _netFee > 0
-                  ? 'Tạo đơn và thanh toán ${fmtPrice(_netFee)}'
-                  : 'Tạo đơn (ưu đãi đã trừ hết phí)',
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+        ],
+      ),
+      // Nút đặt đơn luôn ở đáy màn: không phải kéo hết form mới thấy.
+      bottomNavigationBar: _StickyActionBar(
+        child: FilledButton.icon(
+          key: const ValueKey('drone-submit'),
+          onPressed:
+              _submitting ||
+                  suspended ||
+                  _quoteProblem != null ||
+                  _quote?.weatherSafe == false
+              ? null
+              : _submit,
+          style: FilledButton.styleFrom(
+            backgroundColor: opsPrimary,
+            padding: const EdgeInsets.symmetric(vertical: 15),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(14),
             ),
           ),
-        ],
+          icon: _submitting
+              ? const SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: Colors.white,
+                  ),
+                )
+              : const Icon(Icons.send_rounded, size: 18),
+          label: Text(
+            _netFee > 0
+                ? 'Tạo đơn và thanh toán ${fmtPrice(_netFee)}'
+                : 'Tạo đơn (ưu đãi đã trừ hết phí)',
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+          ),
+        ),
       ),
     );
   }
@@ -1402,6 +1429,41 @@ class _QuoteWeather extends StatelessWidget {
               ),
             ),
         ],
+      ),
+    );
+  }
+}
+
+/// Thanh thao tác cố định ở đáy màn (đặt đơn, thanh toán, huỷ…), nằm trên vùng thanh điều hướng
+/// của máy và đẩy lên khi bàn phím mở.
+class _StickyActionBar extends StatelessWidget {
+  const _StickyActionBar({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(context).bottom),
+      child: DecoratedBox(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          border: Border(top: BorderSide(color: Color(0xFFE2E8F0))),
+          boxShadow: [
+            BoxShadow(
+              color: Color(0x14000000),
+              blurRadius: 12,
+              offset: Offset(0, -2),
+            ),
+          ],
+        ),
+        child: SafeArea(
+          top: false,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
+            child: SizedBox(width: double.infinity, child: child),
+          ),
+        ),
       ),
     );
   }

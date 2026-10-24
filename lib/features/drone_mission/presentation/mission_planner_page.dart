@@ -12,6 +12,7 @@ import '../data/mission_repository.dart';
 import '../domain/flight_mission.dart';
 import '../domain/mission_item.dart';
 import 'widgets/waypoint_edit_sheet.dart';
+import 'package:smart_laundry_locker/features/drone_delivery/presentation/widgets/drone_base_tile_layer.dart';
 
 /// Mission Planner — Flight Plan editor (Mảng 1). Draw waypoints on a map, set
 /// altitude/command per point, chain them into a route, then save/export to a
@@ -561,10 +562,7 @@ class _MissionPlannerPageState extends State<MissionPlannerPage> {
               onMapReady: () => _mapReady = true,
             ),
             children: [
-              TileLayer(
-                urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                userAgentPackageName: 'com.aisl.app',
-              ),
+              droneBaseTileLayer(),
               PolylineLayer(
                 polylines: [
                   Polyline(

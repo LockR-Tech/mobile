@@ -14,6 +14,7 @@ import '../domain/drone_telemetry.dart';
 import '../domain/flight_command_policy.dart';
 import 'flight_data_controller.dart';
 import 'widgets/attitude_indicator.dart';
+import 'package:smart_laundry_locker/features/drone_delivery/presentation/widgets/drone_base_tile_layer.dart';
 
 /// Flight Data — live MAVLink telemetry & control (Mảng 2). Connects to a real
 /// ArduPilot/PX4 flight controller (or SITL) over UDP/TCP, shows the drone live
@@ -307,10 +308,7 @@ class _FlightDataPageState extends State<FlightDataPage> {
                   onMapReady: () => _mapReady = true,
                 ),
                 children: [
-                  TileLayer(
-                    urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                    userAgentPackageName: 'com.aisl.app',
-                  ),
+                  droneBaseTileLayer(),
                   if (_controller.trail.length > 1)
                     PolylineLayer(
                       polylines: [
