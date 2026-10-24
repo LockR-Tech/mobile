@@ -80,6 +80,10 @@ void main() {
       expect(requiresSignIn('/top-up'), isTrue);
     });
 
+    test('thử mở ô qua Bluetooth cần đăng nhập (mã mở ô gắn với tài khoản)', () {
+      expect(requiresSignIn('/profile/ble-test'), isTrue);
+    });
+
     test('màn công khai không bị chặn', () {
       expect(requiresSignIn('/'), isFalse);
       expect(requiresSignIn('/onboarding'), isFalse);
