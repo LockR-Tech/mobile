@@ -75,6 +75,12 @@ void main() {
     });
   });
 
+  test('nhãn trạng thái ô không lộ mã thô (màn thử mở ô qua Bluetooth)', () {
+    expect(LockerLayoutHelper.statusLabel({'status': 'OUT_OF_SERVICE'}), 'Ngưng dùng');
+    expect(LockerLayoutHelper.statusLabel({'status': 'FAULT'}), 'Hỏng');
+    expect(LockerLayoutHelper.statusLabel({'cellType': 'DRONE', 'status': 'AVAILABLE'}), 'Nhận Drone');
+  });
+
   test('Store.hasLocation loại toạ độ NaN / ngoài phạm vi', () {
     expect(const Store(id: 1, name: 'A', latitude: 10.7, longitude: 106.6).hasLocation, isTrue);
     expect(const Store(id: 1, name: 'A', latitude: double.nan, longitude: 106.6).hasLocation, isFalse);
