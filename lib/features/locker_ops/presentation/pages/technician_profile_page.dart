@@ -1,9 +1,11 @@
+import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:smart_laundry_locker/core/network/api_client.dart';
+import 'package:smart_laundry_locker/core/services/app_event_bus.dart';
 import 'package:smart_laundry_locker/core/services/token_service.dart';
 import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/utils/technician_rules.dart';
@@ -47,11 +49,27 @@ class _TechnicianProfilePageState extends State<TechnicianProfilePage> {
   String? _jwtUserName;
   String? _jwtUserEmail;
   late bool _isDrone = widget.droneTechnician ?? false;
+  StreamSubscription<AppEvent>? _eventSub;
+  Timer? _statsDebounce;
 
   @override
   void initState() {
     super.initState();
     _loadInitialData();
+    // Phiếu được giao/đóng, khách đánh giá, đơn drone hoàn tất ⇒ chỉ số công
+    // việc đổi; tải ngầm (gom tin dồn dập).
+    _eventSub = AppEventBus.instance.events.listen((event) {
+      if (!mounted || event is! MaintenanceChangedEvent) return;
+      final relevant = _isDrone
+          ? event.isReport || event.isDroneOrder
+          : event.isReport;
+      if (!relevant) return;
+      _statsDebounce?.cancel();
+      _statsDebounce = Timer(
+        const Duration(seconds: 2),
+        () => _loadStats(silent: true),
+      );
+    });
   }
 
   Future<void> _loadInitialData() async {
@@ -82,8 +100,8 @@ class _TechnicianProfilePageState extends State<TechnicianProfilePage> {
   }
 
   /// Chỉ số công việc theo vai trò. Lỗi ⇒ báo lỗi + "Thử lại", không hiện số 0.
-  Future<void> _loadStats() async {
-    if (mounted) {
+  Future<void> _loadStats({bool silent = false}) async {
+    if (mounted && !silent) {
       setState(() {
         _statsLoading = true;
         _statsError = null;
@@ -117,12 +135,16 @@ class _TechnicianProfilePageState extends State<TechnicianProfilePage> {
       if (rating != null) _ratingAverage = rating;
       if (performance != null) _performance = performance;
       _statsLoading = false;
-      _statsError = errors.isEmpty ? null : errors.join(' · ');
+      if (!silent || errors.isEmpty) {
+        _statsError = errors.isEmpty ? null : errors.join(' · ');
+      }
     });
   }
 
   @override
   void dispose() {
+    _statsDebounce?.cancel();
+    _eventSub?.cancel();
     _fullNameController.dispose();
     _phoneController.dispose();
     super.dispose();

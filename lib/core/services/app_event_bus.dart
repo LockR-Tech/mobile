@@ -42,6 +42,59 @@ class LockerLayoutUpdatedEvent extends AppEvent {
   final String? boxId;
 }
 
+/// Điểm/tem thưởng đổi ngoài tay khách: cộng khi đơn hoàn tất, thu hồi khi
+/// hoàn tiền, admin điều chỉnh.
+class LoyaltyUpdatedEvent extends AppEvent {
+  const LoyaltyUpdatedEvent();
+}
+
+/// Yêu cầu hoàn tiền của một đơn đổi trạng thái (admin duyệt/từ chối).
+class RefundUpdatedEvent extends AppEvent {
+  const RefundUpdatedEvent({this.orderId});
+  final String? orderId;
+}
+
+/// Admin sửa dữ liệu công khai (`/topic/public/catalog`): khuyến mãi, cửa
+/// hàng hoặc tủ. [entity] là [promotion], [store] hoặc [locker].
+class CatalogChangedEvent extends AppEvent {
+  const CatalogChangedEvent({required this.entity, this.id});
+  final String entity;
+  final String? id;
+
+  static const promotion = 'PROMOTION';
+  static const store = 'STORE';
+  static const locker = 'LOCKER';
+
+  bool get isPromotion => entity == promotion;
+  bool get isStore => entity == store;
+  bool get isLocker => entity == locker;
+}
+
+/// Việc bảo trì vừa đổi (`/topic/staff/maintenance`, chỉ KTV + ADMIN) — do KTV
+/// khác, admin, khách hay hệ thống đổi. [entity] là một trong các hằng dưới.
+class MaintenanceChangedEvent extends AppEvent {
+  const MaintenanceChangedEvent({required this.entity, this.id, this.lockerId});
+  final String entity;
+  final String? id;
+  final String? lockerId;
+
+  static const report = 'REPORT';
+  static const schedule = 'SCHEDULE';
+  static const locker = 'LOCKER';
+  static const drone = 'DRONE';
+  static const droneOrder = 'DRONE_ORDER';
+  static const droneIncident = 'DRONE_INCIDENT';
+  static const device = 'DEVICE';
+
+  bool get isReport => entity == report;
+  bool get isSchedule => entity == schedule;
+  bool get isLocker => entity == locker;
+  bool get isDrone => entity == drone;
+  bool get isDroneOrder => entity == droneOrder;
+  bool get isDroneIncident => entity == droneIncident;
+  bool get isDevice => entity == device;
+}
+
 // ── Singleton bus ─────────────────────────────────────────────────────────────
 
 /// App-wide synchronous event bus for domain events.

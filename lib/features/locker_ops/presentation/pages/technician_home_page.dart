@@ -24,6 +24,7 @@ import 'package:smart_laundry_locker/core/services/app_event_bus.dart';
 import 'package:smart_laundry_locker/core/network/api_client.dart';
 import 'package:smart_laundry_locker/core/services/firebase_messaging_service.dart';
 import 'package:smart_laundry_locker/features/notifications/presentation/providers/notification_provider.dart';
+import 'package:smart_laundry_locker/features/notifications/infrastructure/services/realtime_notification_service.dart';
 import 'package:smart_laundry_locker/features/locker/domain/utils/locker_layout_helper.dart';
 import 'package:smart_laundry_locker/features/maintenance/presentation/widgets/drone_recovery_queue.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/technician_shift_card.dart';
@@ -122,6 +123,10 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
 
   StreamSubscription<AppEvent>? _busSub;
   Timer? _busDebounceTimer;
+  StreamSubscription<int>? _availabilitySub;
+  Timer? _boxDebounceTimer;
+  final Set<int> _changedLockerIds = {};
+  Timer? _deviceDebounceTimer;
 
   List<Map<String, dynamic>> get _lockerOptions => _lockers
       .where((locker) => _asInt(locker['id']) != null)
@@ -160,13 +165,42 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
     // Debounce sự kiện bus và cập nhật ngầm không giật màn hình
     _busSub = AppEventBus.instance.events.listen((event) {
       if (!mounted) return;
-      if (event is LockerLayoutUpdatedEvent || event is ReportUpdatedEvent) {
-        _busDebounceTimer?.cancel();
-        _busDebounceTimer = Timer(const Duration(milliseconds: 1200), () {
-          if (!mounted) return;
-          _load(silent: true);
-        });
+      if (event is MaintenanceChangedEvent) {
+        // Việc của đội tủ do KTV khác/admin/khách đổi (phiếu, lịch, tủ, thu
+        // hồi kiện drone). Đơn drone/drone thuộc KTV drone; thiết bị chỉ tải
+        // lại mục Thiết bị (tin trạng thái đến theo nhịp heartbeat).
+        if (event.isReport && event.id == '${_openReportSheetId ?? ''}') {
+          _scheduleOpenReportRefresh();
+        }
+        if (event.isDevice) {
+          _scheduleDeviceRefresh();
+        } else if (event.isReport ||
+            event.isSchedule ||
+            event.isLocker ||
+            event.isDroneIncident) {
+          _scheduleSilentLoad();
+        }
+        return;
       }
+      if (event is LockerLayoutUpdatedEvent ||
+          event is ReportUpdatedEvent ||
+          (event is CatalogChangedEvent && event.isLocker)) {
+        _scheduleSilentLoad();
+      }
+    });
+    // Ô đổi trạng thái (khách đặt/trả ô, báo hỏng, kiosk…) ⇒ cập nhật sơ đồ tủ
+    // đang xem và danh sách ô lỗi/bất thường, không tải lại cả trang.
+    _availabilitySub = RealtimeNotificationService.instance.lockerAvailability
+        .listen((lockerId) {
+      if (!mounted) return;
+      _changedLockerIds.add(lockerId);
+      _boxDebounceTimer?.cancel();
+      _boxDebounceTimer = Timer(const Duration(milliseconds: 800), () {
+        if (!mounted) return;
+        final changed = Set<int>.of(_changedLockerIds);
+        _changedLockerIds.clear();
+        _refreshBoxes(changed);
+      });
     });
     _load().then((_) => _openDeepLinkTarget(
           reportId: widget.reportId,
@@ -375,6 +409,52 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
           _loadedOnce = true;
         });
       }
+    }
+  }
+
+  void _scheduleSilentLoad() {
+    _busDebounceTimer?.cancel();
+    _busDebounceTimer = Timer(const Duration(milliseconds: 1200), () {
+      if (!mounted) return;
+      _load(silent: true);
+    });
+  }
+
+  void _scheduleDeviceRefresh() {
+    _deviceDebounceTimer?.cancel();
+    _deviceDebounceTimer = Timer(const Duration(seconds: 2), () async {
+      try {
+        final devices = await _service.techDevices();
+        if (mounted) setState(() => _devices = devices);
+      } catch (_) {
+        // Giữ danh sách đang hiện; lần tải lại sau sẽ báo lỗi nếu còn.
+      }
+    });
+  }
+
+  /// Ô của các tủ [lockerIds] vừa đổi: tải ngầm sơ đồ tủ đang xem (không xoá
+  /// lưới trong lúc tải) cùng danh sách ô lỗi và ô bất thường.
+  Future<void> _refreshBoxes(Set<int> lockerIds) async {
+    final selected = _selectedLockerId;
+    try {
+      final results = await Future.wait([
+        _service.faults(),
+        _service.boxAnomalies(),
+        if (selected != null && lockerIds.contains(selected))
+          _service.layout(selected),
+      ]);
+      if (!mounted) return;
+      final faults = results[0] as List<Map<String, dynamic>>;
+      final anomalies = results[1] as List<Map<String, dynamic>>;
+      setState(() {
+        _faults = faults.where((f) => !_isDroneFault(f)).toList();
+        _anomalies = anomalies.where((a) => !_isDroneAnomaly(a)).toList();
+        if (results.length > 2 && _selectedLockerId == selected) {
+          _layout = results[2] as Map<String, dynamic>;
+        }
+      });
+    } catch (_) {
+      // Tải ngầm lỗi ⇒ giữ dữ liệu cũ; kéo làm mới vẫn báo lỗi như thường.
     }
   }
 
@@ -5539,6 +5619,62 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
   }
 
   /// Modal BottomSheet hiển thị toàn bộ 100% thông tin chi tiết của phiếu sự cố
+  /// Phiếu đang mở ở bảng chi tiết — để làm mới khi người khác đổi phiếu đó.
+  int? _openReportSheetId;
+  BuildContext? _openReportSheetContext;
+  String? _openReportSheetSignature;
+  int _reportSheetToken = 0;
+  Timer? _reportSheetDebounce;
+
+  /// Các trường quyết định thao tác được trên phiếu (trạng thái, người nhận,
+  /// gia hạn, lần cập nhật).
+  static String _reportSignature(Map<String, dynamic> r) => [
+    r['status'],
+    r['assignedToUserId'],
+    r['slaExtendedHours'],
+    r['updatedAt'],
+    r['resolvedAt'],
+  ].join('|');
+
+  void _scheduleOpenReportRefresh() {
+    _reportSheetDebounce?.cancel();
+    _reportSheetDebounce = Timer(
+      const Duration(milliseconds: 800),
+      _refreshOpenReportSheet,
+    );
+  }
+
+  /// Phiếu đang mở vừa bị đổi (KTV khác nhận, admin giao lại, khách thêm
+  /// ảnh/huỷ…) ⇒ mở lại bảng chi tiết bằng dữ liệu mới. Đang mở hộp thoại con
+  /// (xác nhận xử lý, gia hạn…) thì để yên — server vẫn kiểm khi gửi.
+  Future<void> _refreshOpenReportSheet() async {
+    final id = _openReportSheetId;
+    if (id == null || !mounted) return;
+    Map<String, dynamic> fresh;
+    try {
+      fresh = await _service.getMaintenanceReport(id);
+    } catch (_) {
+      return;
+    }
+    final sheetContext = _openReportSheetContext;
+    if (!mounted ||
+        fresh.isEmpty ||
+        _openReportSheetId != id ||
+        sheetContext == null ||
+        !sheetContext.mounted ||
+        _reportSignature(fresh) == _openReportSheetSignature) {
+      return;
+    }
+    if (ModalRoute.of(sheetContext)?.isCurrent != true) return;
+    Navigator.of(sheetContext).pop();
+    _showReportDetailModal(fresh);
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(content: Text('Phiếu RPT-$id vừa được cập nhật.')),
+      );
+  }
+
   void _showReportDetailModal(Map<String, dynamic> r) {
     final status = r['status'] as String? ?? '';
     final assignedToMe = _isAssignedToMe(r);
@@ -5570,6 +5706,9 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
         .where((a) => a.stage == ReportStage.report)
         .toList();
 
+    final sheetToken = ++_reportSheetToken;
+    _openReportSheetId = _asInt(r['id']);
+    _openReportSheetSignature = _reportSignature(r);
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
@@ -5578,6 +5717,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       builder: (ctx) {
+        _openReportSheetContext = ctx;
         return SizedBox(
           height: MediaQuery.of(ctx).size.height * 0.88,
           child: Column(
@@ -6111,7 +6251,12 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
           ),
         );
       },
-    );
+    ).whenComplete(() {
+      if (_reportSheetToken != sheetToken) return;
+      _openReportSheetId = null;
+      _openReportSheetContext = null;
+      _openReportSheetSignature = null;
+    });
   }
 
   /// KTV tới nơi: kiểm tra trạm Kiosk, chọn ô sự cố, xử lý đồ và khóa ô.
@@ -6323,6 +6468,10 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
   void dispose() {
     _busDebounceTimer?.cancel();
     _busSub?.cancel();
+    _boxDebounceTimer?.cancel();
+    _availabilitySub?.cancel();
+    _deviceDebounceTimer?.cancel();
+    _reportSheetDebounce?.cancel();
     _tabs.dispose();
     super.dispose();
   }
@@ -6351,11 +6500,35 @@ class _IotDeviceSheetState extends State<_IotDeviceSheet> {
 
   /// Kết quả lần khởi động lại gần nhất (hiện ngay trong sheet).
   DeviceRestartResult? _restartResult;
+  StreamSubscription<AppEvent>? _eventSub;
+  Timer? _refreshDebounce;
 
   @override
   void initState() {
     super.initState();
     _load();
+    // Thiết bị này đổi trạng thái (heartbeat, mất kết nối, KTV khác thao tác)
+    // ⇒ tải ngầm thông tin + nhật ký.
+    _eventSub = AppEventBus.instance.events.listen((event) {
+      if (!mounted || event is! MaintenanceChangedEvent || !event.isDevice) {
+        return;
+      }
+      final device = _device;
+      final sameDevice =
+          device == null ||
+          event.id == '${device['deviceId']}' ||
+          (event.lockerId != null && event.lockerId == '${device['lockerId']}');
+      if (!sameDevice || _busy) return;
+      _refreshDebounce?.cancel();
+      _refreshDebounce = Timer(const Duration(seconds: 2), _load);
+    });
+  }
+
+  @override
+  void dispose() {
+    _refreshDebounce?.cancel();
+    _eventSub?.cancel();
+    super.dispose();
   }
 
   Future<void> _load() async {
@@ -6758,6 +6931,7 @@ class _ReportLogsSectionState extends State<_ReportLogsSection> {
   String? _loadError;
   bool _sending = false;
   bool _showInput = false;
+  StreamSubscription<AppEvent>? _eventSub;
 
   final _quickChips = const [
     '📸 Kiểm tra hiện trường',
@@ -6772,10 +6946,21 @@ class _ReportLogsSectionState extends State<_ReportLogsSection> {
     super.initState();
     _photos.addListener(_onPhotosChanged);
     _load();
+    // KTV khác/admin ghi nhật ký hay thêm ảnh vào phiếu này ⇒ tải ngầm.
+    _eventSub = AppEventBus.instance.events.listen((event) {
+      if (mounted &&
+          !_sending &&
+          event is MaintenanceChangedEvent &&
+          event.isReport &&
+          event.id == '${widget.reportId}') {
+        _load(silent: true);
+      }
+    });
   }
 
   @override
   void dispose() {
+    _eventSub?.cancel();
     _photos
       ..removeListener(_onPhotosChanged)
       ..dispose();
@@ -6787,8 +6972,8 @@ class _ReportLogsSectionState extends State<_ReportLogsSection> {
     if (mounted) setState(() {});
   }
 
-  Future<void> _load() async {
-    if (mounted && !_loading) setState(() => _loading = true);
+  Future<void> _load({bool silent = false}) async {
+    if (!silent && mounted && !_loading) setState(() => _loading = true);
     try {
       final logs = await widget.service.reportLogs(widget.reportId);
       if (!mounted) return;
@@ -6798,7 +6983,7 @@ class _ReportLogsSectionState extends State<_ReportLogsSection> {
         _loading = false;
       });
     } catch (e) {
-      if (!mounted) return;
+      if (!mounted || silent) return;
       // Lỗi tải ≠ "chưa có nhật ký": giữ dữ liệu cũ (nếu có) và báo lỗi.
       setState(() {
         _loadError = LockerOpsService.errorMessage(e);

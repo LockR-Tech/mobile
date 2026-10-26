@@ -1,7 +1,10 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import 'package:smart_laundry_locker/core/media/media.dart';
+import 'package:smart_laundry_locker/core/services/app_event_bus.dart';
 import 'package:smart_laundry_locker/core/utils/app_date_time.dart';
 import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/ops_widgets.dart';
@@ -29,6 +32,7 @@ class _MyReportsPageState extends State<MyReportsPage> {
   List<Map<String, dynamic>> _reports = [];
   bool _loading = true;
   bool _openedInitial = false;
+  StreamSubscription<AppEvent>? _eventSub;
 
   int _selectedTab = 0;
   String _filter = 'ALL';
@@ -38,6 +42,17 @@ class _MyReportsPageState extends State<MyReportsPage> {
     super.initState();
     _service = widget.service ?? LockerOpsService();
     _load();
+    // KTV nhận/xử lý/từ chối phiếu (thông báo `locker.report.*`) ⇒ cập nhật
+    // tiến trình ngay, không cần kéo làm mới.
+    _eventSub = AppEventBus.instance.events.listen((event) {
+      if (mounted && event is ReportUpdatedEvent) _load(silent: true);
+    });
+  }
+
+  @override
+  void dispose() {
+    _eventSub?.cancel();
+    super.dispose();
   }
 
   void _openInitialReportOnce() {
@@ -56,14 +71,16 @@ class _MyReportsPageState extends State<MyReportsPage> {
     );
   }
 
-  Future<void> _load() async {
-    setState(() => _loading = true);
+  /// [silent]: tải lại ngầm khi có tin realtime — giữ danh sách đang hiện, lỗi
+  /// thì im lặng (lần kéo làm mới sau sẽ báo).
+  Future<void> _load({bool silent = false}) async {
+    if (!silent) setState(() => _loading = true);
     try {
       final reports = await _service.myReports();
       if (!mounted) return;
       setState(() => _reports = reports);
     } catch (e) {
-      if (!mounted) return;
+      if (!mounted || silent) return;
       ScaffoldMessenger.of(context)
         ..hideCurrentSnackBar()
         ..showSnackBar(

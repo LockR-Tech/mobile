@@ -69,8 +69,8 @@ class LockerAvailabilitySocketService {
     );
   }
 
-  /// `{"lockerId": 7, "timestamp": "..."}` → 7; khung lỗi trả null.
-  @visibleForTesting
+  /// `{"lockerId": 7, "timestamp": "..."}` → 7; khung lỗi trả null. Dùng chung
+  /// với `RealtimeNotificationService.lockerAvailability`.
   static int? parseLockerId(String? body) {
     if (body == null || body.isEmpty) return null;
     try {

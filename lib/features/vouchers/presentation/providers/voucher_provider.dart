@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:smart_laundry_locker/core/services/app_event_bus.dart';
 import 'package:smart_laundry_locker/core/utils/user_error_message.dart';
 import '../../data/models/exchangeable_voucher_model.dart';
 import '../../data/models/voucher_model.dart';
@@ -6,6 +9,40 @@ import '../../data/repositories/voucher_repository.dart';
 
 class VoucherProvider extends ChangeNotifier {
   final VoucherRepository _repository = VoucherRepository();
+
+  StreamSubscription<AppEvent>? _eventSub;
+  bool _vouchersLoaded = false;
+  String? _lastStatus;
+  bool _exchangeLoaded = false;
+  bool _disposed = false;
+
+  VoucherProvider() {
+    _eventSub = AppEventBus.instance.events.listen((event) {
+      // Admin sửa/tắt/xoá khuyến mãi ⇒ kho voucher + danh sách đổi điểm đổi.
+      if (event is CatalogChangedEvent && event.isPromotion) {
+        if (_vouchersLoaded && !_isLoading) {
+          loadMyVouchers(status: _lastStatus, silent: true);
+        }
+        if (_exchangeLoaded && !_exchangeLoading) loadExchange(silent: true);
+      }
+      // Số điểm đổi (cộng sau đơn, admin điều chỉnh) ⇒ số điểm ở tab Đổi điểm.
+      if (event is LoyaltyUpdatedEvent && _exchangeLoaded && !_exchangeLoading) {
+        loadExchange(silent: true);
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _disposed = true;
+    _eventSub?.cancel();
+    super.dispose();
+  }
+
+  @override
+  void notifyListeners() {
+    if (!_disposed) super.notifyListeners();
+  }
 
   List<VoucherModel> _vouchers = [];
   bool _isLoading = false;
@@ -32,10 +69,15 @@ class VoucherProvider extends ChangeNotifier {
   /// Voucher đang gửi lệnh đổi (để khoá nút, tránh bấm hai lần).
   int? get exchangingId => _exchangingId;
 
-  Future<void> loadExchange() async {
+  /// [silent]: tải lại ngầm khi có tin realtime — giữ dữ liệu đang hiện, lỗi
+  /// thì giữ nguyên.
+  Future<void> loadExchange({bool silent = false}) async {
+    _exchangeLoaded = true;
     _exchangeLoading = true;
-    _exchangeError = null;
-    notifyListeners();
+    if (!silent) {
+      _exchangeError = null;
+      notifyListeners();
+    }
     try {
       final results = await Future.wait([
         _repository.getExchangeableVouchers(),
@@ -43,7 +85,9 @@ class VoucherProvider extends ChangeNotifier {
       ]);
       _exchangeable = results[0] as List<ExchangeableVoucherModel>;
       _pointsBalance = results[1] as int;
+      _exchangeError = null;
     } catch (e) {
+      if (silent) return;
       _exchangeable = [];
       _exchangeError = userErrorMessage(
         e,
@@ -78,14 +122,20 @@ class VoucherProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> loadMyVouchers({String? status}) async {
+  Future<void> loadMyVouchers({String? status, bool silent = false}) async {
+    _vouchersLoaded = true;
+    _lastStatus = status;
     _isLoading = true;
-    _error = null;
-    notifyListeners();
+    if (!silent) {
+      _error = null;
+      notifyListeners();
+    }
 
     try {
       _vouchers = await _repository.getMyVouchers(status: status);
+      _error = null;
     } catch (e) {
+      if (silent) return;
       _vouchers = [];
       _error = userErrorMessage(
         e,

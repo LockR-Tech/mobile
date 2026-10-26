@@ -1,6 +1,9 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:smart_laundry_locker/core/config/business_config_provider.dart';
+import 'package:smart_laundry_locker/core/services/app_event_bus.dart';
 import 'package:smart_laundry_locker/core/theme/shadcn_theme.dart';
 import 'package:smart_laundry_locker/core/utils/app_date_time.dart';
 import 'package:smart_laundry_locker/core/utils/user_error_message.dart';
@@ -33,19 +36,35 @@ class _LoyaltyPageState extends State<LoyaltyPage>
   bool _loading = true;
   String? _error;
   String? _historyError;
+  StreamSubscription<AppEvent>? _eventSub;
 
   @override
   void initState() {
     super.initState();
     _load();
+    // Điểm cộng khi đơn hoàn tất, thu hồi khi hoàn tiền, admin điều chỉnh ⇒
+    // cập nhật ngay (tải ngầm, giữ số đang hiện).
+    _eventSub = AppEventBus.instance.events.listen((event) {
+      if (mounted && event is LoyaltyUpdatedEvent) _load(silent: true);
+    });
   }
 
-  Future<void> _load() async {
-    setState(() {
-      _loading = true;
-      _error = null;
-      _historyError = null;
-    });
+  @override
+  void dispose() {
+    _eventSub?.cancel();
+    super.dispose();
+  }
+
+  Future<void> _load({bool silent = false}) async {
+    // Chưa có dữ liệu thì không có gì để giữ ⇒ tải như thường.
+    final quiet = silent && _summary != null;
+    if (!quiet) {
+      setState(() {
+        _loading = true;
+        _error = null;
+        _historyError = null;
+      });
+    }
     try {
       final summary = await _dataSource.getSummary();
       List<PointTransaction> history = const [];
@@ -66,7 +85,7 @@ class _LoyaltyPageState extends State<LoyaltyPage>
         _loading = false;
       });
     } catch (e) {
-      if (!mounted) return;
+      if (!mounted || quiet) return;
       setState(() {
         _error = userErrorMessage(
           e,

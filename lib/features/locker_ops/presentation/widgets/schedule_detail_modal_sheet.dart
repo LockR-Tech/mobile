@@ -1,6 +1,8 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:smart_laundry_locker/core/media/media.dart';
+import 'package:smart_laundry_locker/core/services/app_event_bus.dart';
 import 'package:smart_laundry_locker/core/utils/app_date_time.dart';
 import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/complete_inspection_sheet.dart';
@@ -58,14 +60,54 @@ class _ScheduleDetailModalSheetState extends State<ScheduleDetailModalSheet> {
   Map<String, dynamic>? _latestLog;
   List<Map<String, dynamic>> _checklistEvaluations = [];
 
+  /// Bản đang hiện — thay bằng bản mới khi admin/KTV khác sửa lịch này.
+  late Map<String, dynamic> _schedule = widget.schedule;
+  StreamSubscription<AppEvent>? _eventSub;
+  Timer? _refreshDebounce;
+
   @override
   void initState() {
     super.initState();
     _loadInspectionLogs();
+    // Admin sửa/giao lại lịch, KTV khác ghi kết quả kiểm tra ⇒ cập nhật ngay.
+    _eventSub = AppEventBus.instance.events.listen((event) {
+      if (!mounted ||
+          event is! MaintenanceChangedEvent ||
+          !event.isSchedule ||
+          event.id != '${_schedule['id']}') {
+        return;
+      }
+      _refreshDebounce?.cancel();
+      _refreshDebounce = Timer(
+        const Duration(milliseconds: 800),
+        _refreshSchedule,
+      );
+    });
+  }
+
+  @override
+  void dispose() {
+    _refreshDebounce?.cancel();
+    _eventSub?.cancel();
+    super.dispose();
+  }
+
+  Future<void> _refreshSchedule() async {
+    final id = _asInt(_schedule['id']);
+    if (id == null) return;
+    try {
+      final schedules = await widget.service.maintenanceSchedules();
+      final fresh = schedules.where((s) => _asInt(s['id']) == id).firstOrNull;
+      if (!mounted || fresh == null) return;
+      setState(() => _schedule = fresh);
+      await _loadInspectionLogs();
+    } catch (_) {
+      // Giữ bản đang hiện; mở lại lịch sẽ tải mới.
+    }
   }
 
   Future<void> _loadInspectionLogs() async {
-    final id = _asInt(widget.schedule['id']);
+    final id = _asInt(_schedule['id']);
     if (id == null) {
       if (mounted) setState(() => _loadingLogs = false);
       return;
@@ -226,7 +268,7 @@ class _ScheduleDetailModalSheetState extends State<ScheduleDetailModalSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final s = widget.schedule;
+    final s = _schedule;
     final isDrone = s['droneUnitId'] != null;
     final lockerCode = s['lockerCode'];
     final lockerName = s['lockerName'];

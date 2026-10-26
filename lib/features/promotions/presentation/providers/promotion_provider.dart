@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
+import 'package:smart_laundry_locker/core/services/app_event_bus.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:smart_laundry_locker/features/locker/presentation/providers/locker_providers.dart';
 import 'package:smart_laundry_locker/features/promotions/data/models/promotion_model.dart';
@@ -15,22 +18,45 @@ class PromotionProvider extends ChangeNotifier {
   bool get isLoading => _isLoading;
   String? get error => _error;
 
-  PromotionProvider(this._repository);
+  StreamSubscription<AppEvent>? _eventSub;
+  bool _loadedOnce = false;
+  bool _disposed = false;
 
-  Future<void> load() async {
+  PromotionProvider(this._repository) {
+    // Admin tạo/sửa/tắt/xoá khuyến mãi ⇒ trang chủ + trang Ưu đãi cập nhật
+    // ngay (tải ngầm, giữ danh sách đang hiện).
+    _eventSub = AppEventBus.instance.events.listen((event) {
+      if (_loadedOnce && event is CatalogChangedEvent && event.isPromotion) {
+        load(silent: true);
+      }
+    });
+  }
+
+  Future<void> load({bool silent = false}) async {
     if (_isLoading) return;
     _isLoading = true;
-    _error = null;
-    notifyListeners();
+    if (!silent) {
+      _error = null;
+      notifyListeners();
+    }
     try {
       _promotions = await _repository.getActivePromotions();
+      _loadedOnce = true;
+      _error = null;
     } catch (e) {
-      _error = 'Không tải được ưu đãi';
+      if (!silent) _error = 'Không tải được ưu đãi';
       debugPrint('[PROMOTION] load error: $e');
     } finally {
       _isLoading = false;
-      notifyListeners();
+      if (!_disposed) notifyListeners();
     }
+  }
+
+  @override
+  void dispose() {
+    _disposed = true;
+    _eventSub?.cancel();
+    super.dispose();
   }
 }
 

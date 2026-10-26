@@ -1,3 +1,7 @@
+import 'dart:async';
+
+import 'package:smart_laundry_locker/core/services/app_event_bus.dart';
+import 'package:smart_laundry_locker/features/notifications/infrastructure/services/realtime_notification_service.dart';
 import 'package:smart_laundry_locker/features/locker/domain/entities/locker_location.dart';
 import 'package:smart_laundry_locker/features/locker/domain/utils/locker_layout_helper.dart';
 import 'package:smart_laundry_locker/features/locker/presentation/widgets/locker_info_modal.dart';
@@ -32,27 +36,49 @@ class _LockerDetailMapPageState extends State<LockerDetailMapPage> {
   String? _cellsError;
   bool? _layoutOnline;
   String? _layoutStatus;
+  StreamSubscription<int>? _availabilitySub;
+  StreamSubscription<AppEvent>? _eventSub;
 
   @override
   void initState() {
     super.initState();
     _draggableScrollableController = DraggableScrollableController();
     _loadCells();
+    // Số ô trống đổi (người khác đặt/trả ô, KTV khoá ô) hoặc admin đổi trạng
+    // thái tủ ⇒ cập nhật ngay, giữ số đang hiện trong lúc tải.
+    final lockerId = int.tryParse(widget.location.id);
+    _availabilitySub = RealtimeNotificationService.instance.lockerAvailability
+        .listen((changed) {
+      if (mounted && changed == lockerId) _loadCells(silent: true);
+    });
+    _eventSub = AppEventBus.instance.events.listen((event) {
+      if (mounted &&
+          event is CatalogChangedEvent &&
+          event.isLocker &&
+          event.id == widget.location.id) {
+        _loadCells(silent: true);
+      }
+    });
   }
 
   @override
   void dispose() {
+    _availabilitySub?.cancel();
+    _eventSub?.cancel();
     _draggableScrollableController.dispose();
     super.dispose();
   }
 
-  Future<void> _loadCells() async {
+  Future<void> _loadCells({bool silent = false}) async {
     final lockerId = int.tryParse(widget.location.id);
     if (lockerId == null) return;
-    setState(() {
-      _loadingCells = true;
-      _cellsError = null;
-    });
+    final quiet = silent && _cellGroups != null;
+    if (!quiet) {
+      setState(() {
+        _loadingCells = true;
+        _cellsError = null;
+      });
+    }
     try {
       final layout = await _service.layout(lockerId);
       if (!mounted) return;
@@ -66,7 +92,7 @@ class _LockerDetailMapPageState extends State<LockerDetailMapPage> {
         _loadingCells = false;
       });
     } catch (e) {
-      if (!mounted) return;
+      if (!mounted || quiet) return;
       setState(() {
         _cellsError = LockerOpsService.errorMessage(e);
         _loadingCells = false;

@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:smart_laundry_locker/core/services/app_event_bus.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:smart_laundry_locker/core/network/api_client.dart';
@@ -27,18 +30,32 @@ class _FavoritesPageState extends State<FavoritesPage> {
   Set<int> _favoriteIds = <int>{};
   bool _loading = true;
   String? _error;
+  StreamSubscription<AppEvent>? _eventSub;
 
   @override
   void initState() {
     super.initState();
     _load();
+    _eventSub = AppEventBus.instance.events.listen((event) {
+      if (mounted && !_loading && event is CatalogChangedEvent && event.isStore) {
+        _load(silent: true);
+      }
+    });
   }
 
-  Future<void> _load() async {
-    setState(() {
-      _loading = true;
-      _error = null;
-    });
+  @override
+  void dispose() {
+    _eventSub?.cancel();
+    super.dispose();
+  }
+
+  Future<void> _load({bool silent = false}) async {
+    if (!silent) {
+      setState(() {
+        _loading = true;
+        _error = null;
+      });
+    }
     try {
       final ids = await _favService.getFavoriteIds();
       final stores = await _service.getStores();
@@ -49,7 +66,7 @@ class _FavoritesPageState extends State<FavoritesPage> {
         _loading = false;
       });
     } catch (_) {
-      if (!mounted) return;
+      if (!mounted || silent) return;
       setState(() {
         _error = 'Không tải được danh sách yêu thích.';
         _loading = false;
