@@ -10,6 +10,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:smart_laundry_locker/core/media/media_upload.dart';
 import 'package:smart_laundry_locker/core/media/media_upload_service.dart';
+import 'package:smart_laundry_locker/core/services/app_event_bus.dart';
 import 'package:smart_laundry_locker/core/utils/app_date_time.dart';
 import 'package:smart_laundry_locker/core/routing/app_router.dart';
 import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
@@ -67,6 +68,7 @@ class _RefundRequestsPageState extends State<RefundRequestsPage> {
   String? _base64ImageData;
 
   Timer? _pollTimer;
+  StreamSubscription<AppEvent>? _eventSub;
 
   @override
   void initState() {
@@ -75,8 +77,15 @@ class _RefundRequestsPageState extends State<RefundRequestsPage> {
       _selectedTab = 1; // Mở thẳng form tạo yêu cầu
     }
     _loadInitialData();
-    // Tự động kiểm tra cập nhật mỗi 5 giây
-    _pollTimer = Timer.periodic(const Duration(seconds: 5), (_) {
+    // Admin duyệt/từ chối hoàn tiền ⇒ server đẩy tin (REFUND_* gắn đơn) ⇒ tải
+    // lại ngay. Vòng kiểm tra 30 giây chỉ để phòng khi mất kết nối realtime.
+    _eventSub = AppEventBus.instance.events.listen((event) {
+      if (!mounted || _loadingRefunds) return;
+      if (event is RefundUpdatedEvent || event is OrderChangedEvent) {
+        _loadRefunds(silent: true);
+      }
+    });
+    _pollTimer = Timer.periodic(const Duration(seconds: 30), (_) {
       if (mounted && _selectedTab == 0 && !_loadingRefunds) {
         _loadRefunds(silent: true);
       }
@@ -85,6 +94,7 @@ class _RefundRequestsPageState extends State<RefundRequestsPage> {
 
   @override
   void dispose() {
+    _eventSub?.cancel();
     _pollTimer?.cancel();
     _reasonController.dispose();
     _accountNumberController.dispose();

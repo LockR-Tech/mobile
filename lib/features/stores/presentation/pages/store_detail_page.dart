@@ -1,5 +1,8 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:smart_laundry_locker/core/services/app_event_bus.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
@@ -40,12 +43,39 @@ class _StoreDetailPageState extends State<StoreDetailPage> {
   /// Lỗi tải đánh giá (khác "chưa có đánh giá").
   String? _ratingsError;
   bool _favorite = false;
+  StreamSubscription<AppEvent>? _eventSub;
 
   @override
   void initState() {
     super.initState();
     _store = widget.store;
     _load();
+    // Admin sửa thông tin/ảnh/trạng thái cửa hàng này ⇒ cập nhật ngay.
+    _eventSub = AppEventBus.instance.events.listen((event) {
+      final id = _store?.id ?? widget.storeId;
+      if (mounted &&
+          event is CatalogChangedEvent &&
+          event.isStore &&
+          id != null &&
+          event.id == '$id') {
+        _reloadStore(id);
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _eventSub?.cancel();
+    super.dispose();
+  }
+
+  Future<void> _reloadStore(int id) async {
+    try {
+      final store = await _service.getStore(id);
+      if (mounted) setState(() => _store = store);
+    } catch (_) {
+      // Giữ thông tin đang hiện; lần mở lại sẽ tải mới.
+    }
   }
 
   Future<void> _load() async {

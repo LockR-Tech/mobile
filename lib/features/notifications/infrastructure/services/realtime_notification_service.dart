@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:smart_laundry_locker/core/constants/api_constants.dart';
 import 'package:smart_laundry_locker/core/services/token_service.dart';
+import 'package:smart_laundry_locker/features/drone_delivery/infrastructure/services/locker_availability_socket_service.dart';
 import 'package:smart_laundry_locker/features/notifications/domain/entities/notification_model.dart';
 import 'package:stomp_dart_client/stomp_dart_client.dart';
 
@@ -31,6 +32,74 @@ class OrderUpdateMessage {
   }
 }
 
+/// Tin đồng bộ riêng tài khoản qua `/user/queue/events` — ví hoặc điểm thưởng
+/// vừa đổi mà không kèm thông báo (`wallet.updated`, `loyalty.points.changed`).
+class UserSyncMessage {
+  final String? type;
+  final String? referenceType;
+  final String? referenceId;
+
+  const UserSyncMessage({this.type, this.referenceType, this.referenceId});
+
+  factory UserSyncMessage.fromJson(Map<String, dynamic> json) =>
+      UserSyncMessage(
+        type: json['type']?.toString(),
+        referenceType: json['referenceType']?.toString(),
+        referenceId: json['referenceId']?.toString(),
+      );
+}
+
+/// Admin vừa sửa dữ liệu công khai (`/topic/public/catalog`): chỉ có loại
+/// (`PROMOTION`, `STORE`, `LOCKER`) và mã.
+class CatalogChangeMessage {
+  final String entity;
+  final String? id;
+
+  const CatalogChangeMessage({required this.entity, this.id});
+
+  /// Thiếu `entity` ⇒ null (khung lạ, bỏ qua).
+  static CatalogChangeMessage? fromJson(Map<String, dynamic> json) {
+    final entity = json['entity']?.toString().trim().toUpperCase() ?? '';
+    if (entity.isEmpty) return null;
+    return CatalogChangeMessage(entity: entity, id: json['id']?.toString());
+  }
+}
+
+/// Việc bảo trì vừa đổi (`/topic/staff/maintenance`, chỉ KTV + ADMIN): loại
+/// (`REPORT`, `SCHEDULE`, `LOCKER`, `DRONE`, `DRONE_ORDER`, `DRONE_INCIDENT`,
+/// `DEVICE`), mã và mã tủ nếu có.
+class MaintenanceChangeMessage {
+  final String entity;
+  final String? id;
+  final String? lockerId;
+
+  const MaintenanceChangeMessage({
+    required this.entity,
+    this.id,
+    this.lockerId,
+  });
+
+  /// Thiếu `entity` ⇒ null (khung lạ, bỏ qua).
+  static MaintenanceChangeMessage? fromJson(Map<String, dynamic> json) {
+    final entity = json['entity']?.toString().trim().toUpperCase() ?? '';
+    if (entity.isEmpty) return null;
+    return MaintenanceChangeMessage(
+      entity: entity,
+      id: json['id']?.toString(),
+      lockerId: json['lockerId']?.toString(),
+    );
+  }
+}
+
+/// Tài khoản được nghe topic nhân viên. Khách đăng ký sẽ bị server từ chối và
+/// có thể làm rớt cả kết nối realtime ⇒ chỉ đăng ký khi đúng vai trò.
+bool isMaintenanceStaff(List<String> roles) => roles.any((role) {
+  final name = role.toUpperCase().replaceFirst('ROLE_', '');
+  return name == 'ADMIN' ||
+      name == 'LOCKER_TECHNICIAN' ||
+      name == 'DRONE_TECHNICIAN';
+});
+
 class RealtimeNotificationService {
   RealtimeNotificationService._();
   static final RealtimeNotificationService instance =
@@ -46,9 +115,37 @@ class RealtimeNotificationService {
   /// Tin cập nhật đơn (`/user/queue/orders`) — chỉ để làm mới màn hình.
   Stream<OrderUpdateMessage> get orderUpdates => _orderController.stream;
 
+  final _userEventController = StreamController<UserSyncMessage>.broadcast();
+
+  /// Ví/điểm thưởng đổi (`/user/queue/events`) — chỉ để làm mới màn hình.
+  Stream<UserSyncMessage> get userEvents => _userEventController.stream;
+
+  final _catalogController = StreamController<CatalogChangeMessage>.broadcast();
+
+  /// Khuyến mãi/cửa hàng/tủ admin vừa sửa (`/topic/public/catalog`).
+  Stream<CatalogChangeMessage> get catalogChanges => _catalogController.stream;
+
+  final _availabilityController = StreamController<int>.broadcast();
+
+  /// Mã tủ vừa đổi số ô trống (`/topic/public/locker-availability`): người
+  /// khác đặt/trả ô, KTV khoá/mở ô… Đi chung kết nối này để các màn tủ không
+  /// phải mở thêm socket.
+  Stream<int> get lockerAvailability => _availabilityController.stream;
+
+  final _maintenanceController =
+      StreamController<MaintenanceChangeMessage>.broadcast();
+
+  /// Việc bảo trì vừa đổi — chỉ có tin khi tài khoản là KTV/ADMIN.
+  Stream<MaintenanceChangeMessage> get maintenanceChanges =>
+      _maintenanceController.stream;
+
   StompClient? _client;
   StompUnsubscribe? _unsubscribeNotif;
   StompUnsubscribe? _unsubscribeOrders;
+  StompUnsubscribe? _unsubscribeUserEvents;
+  StompUnsubscribe? _unsubscribeCatalog;
+  StompUnsubscribe? _unsubscribeAvailability;
+  StompUnsubscribe? _unsubscribeMaintenance;
   String? _connectedToken;
 
   Future<void> connect() async {
@@ -62,6 +159,7 @@ class RealtimeNotificationService {
 
     disconnect();
     _connectedToken = token;
+    final staff = isMaintenanceStaff(await TokenService.getCurrentRoles());
     final wsUrl = _webSocketUrl(ApiConstants.apiBaseUrl);
 
     _client = StompClient(
@@ -83,6 +181,24 @@ class RealtimeNotificationService {
             destination: '/user/queue/orders',
             callback: _handleOrderFrame,
           );
+          _unsubscribeUserEvents = _client?.subscribe(
+            destination: '/user/queue/events',
+            callback: _handleUserEventFrame,
+          );
+          _unsubscribeCatalog = _client?.subscribe(
+            destination: '/topic/public/catalog',
+            callback: _handleCatalogFrame,
+          );
+          _unsubscribeAvailability = _client?.subscribe(
+            destination: LockerAvailabilitySocketService.destination,
+            callback: _handleAvailabilityFrame,
+          );
+          if (staff) {
+            _unsubscribeMaintenance = _client?.subscribe(
+              destination: '/topic/staff/maintenance',
+              callback: _handleMaintenanceFrame,
+            );
+          }
         },
         onDisconnect: (frame) =>
             debugPrint('Realtime notifications disconnected'),
@@ -98,11 +214,19 @@ class RealtimeNotificationService {
     try {
       _unsubscribeNotif?.call();
       _unsubscribeOrders?.call();
+      _unsubscribeUserEvents?.call();
+      _unsubscribeCatalog?.call();
+      _unsubscribeAvailability?.call();
+      _unsubscribeMaintenance?.call();
     } catch (_) {
       // Best effort; the underlying client may already be down.
     }
     _unsubscribeNotif = null;
     _unsubscribeOrders = null;
+    _unsubscribeUserEvents = null;
+    _unsubscribeCatalog = null;
+    _unsubscribeAvailability = null;
+    _unsubscribeMaintenance = null;
     _client?.deactivate();
     _client = null;
     _connectedToken = null;
@@ -122,6 +246,31 @@ class RealtimeNotificationService {
     final decoded = _decode(frame);
     if (decoded == null) return;
     _orderController.add(OrderUpdateMessage.fromJson(decoded));
+  }
+
+  void _handleUserEventFrame(StompFrame frame) {
+    final decoded = _decode(frame);
+    if (decoded == null) return;
+    _userEventController.add(UserSyncMessage.fromJson(decoded));
+  }
+
+  void _handleCatalogFrame(StompFrame frame) {
+    final decoded = _decode(frame);
+    if (decoded == null) return;
+    final change = CatalogChangeMessage.fromJson(decoded);
+    if (change != null) _catalogController.add(change);
+  }
+
+  void _handleAvailabilityFrame(StompFrame frame) {
+    final lockerId = LockerAvailabilitySocketService.parseLockerId(frame.body);
+    if (lockerId != null) _availabilityController.add(lockerId);
+  }
+
+  void _handleMaintenanceFrame(StompFrame frame) {
+    final decoded = _decode(frame);
+    if (decoded == null) return;
+    final change = MaintenanceChangeMessage.fromJson(decoded);
+    if (change != null) _maintenanceController.add(change);
   }
 
   Map<String, dynamic>? _decode(StompFrame frame) {

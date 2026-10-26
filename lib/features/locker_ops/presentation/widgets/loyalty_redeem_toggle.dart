@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:smart_laundry_locker/core/config/business_config_service.dart';
+import 'package:smart_laundry_locker/core/services/app_event_bus.dart';
 import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/ops_widgets.dart';
 
@@ -304,6 +305,7 @@ class OrderEarnedPointsRow extends StatefulWidget {
 
 class _OrderEarnedPointsRowState extends State<OrderEarnedPointsRow> {
   OrderEarnedPoints? _points;
+  StreamSubscription<AppEvent>? _eventSub;
 
   String get _status => '${widget.order['status'] ?? ''}'.toUpperCase();
 
@@ -311,6 +313,17 @@ class _OrderEarnedPointsRowState extends State<OrderEarnedPointsRow> {
   void initState() {
     super.initState();
     _load();
+    // loyalty-service cộng điểm SAU khi đơn hoàn tất (bất đồng bộ) ⇒ đợi tin
+    // điểm đổi rồi mới thấy "+N điểm".
+    _eventSub = AppEventBus.instance.events.listen((event) {
+      if (mounted && event is LoyaltyUpdatedEvent) _load();
+    });
+  }
+
+  @override
+  void dispose() {
+    _eventSub?.cancel();
+    super.dispose();
   }
 
   @override
@@ -427,10 +440,16 @@ class _LoyaltyRedeemToggleState extends State<LoyaltyRedeemToggle> {
   int _reportedPoints = 0;
   int _reportedDiscount = 0;
 
+  StreamSubscription<AppEvent>? _eventSub;
+
   @override
   void initState() {
     super.initState();
     _load(widget.orderTotal);
+    // Số điểm dùng được đổi (admin điều chỉnh, vừa được cộng) ⇒ hỏi lại server.
+    _eventSub = AppEventBus.instance.events.listen((event) {
+      if (mounted && event is LoyaltyUpdatedEvent) _load(widget.orderTotal);
+    });
   }
 
   @override
@@ -453,6 +472,7 @@ class _LoyaltyRedeemToggleState extends State<LoyaltyRedeemToggle> {
   @override
   void dispose() {
     _debounce?.cancel();
+    _eventSub?.cancel();
     super.dispose();
   }
 

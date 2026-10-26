@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
@@ -5,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import 'package:smart_laundry_locker/core/config/business_config_service.dart';
+import 'package:smart_laundry_locker/core/services/app_event_bus.dart';
 import 'package:smart_laundry_locker/core/utils/app_date_time.dart';
 import 'package:smart_laundry_locker/core/media/media.dart';
 import 'package:smart_laundry_locker/core/theme/shadcn_theme.dart';
@@ -59,11 +61,18 @@ class _UserReportDetailSheetState extends State<UserReportDetailSheet> {
   late Map<String, dynamic> _report;
   List<Map<String, dynamic>> _logs = const [];
   bool _loadingFresh = false;
+  StreamSubscription<AppEvent>? _eventSub;
 
   @override
   void initState() {
     super.initState();
     _report = Map<String, dynamic>.from(widget.report);
+    // KTV nhận/xử lý/từ chối phiếu khi sheet đang mở ⇒ tải lại tiến trình.
+    _eventSub = AppEventBus.instance.events.listen((event) {
+      if (!mounted || _loadingFresh || event is! ReportUpdatedEvent) return;
+      final id = event.reportId;
+      if (id == null || id == '${_report['id']}') _loadFreshData();
+    });
     final initAtts = ReportAttachment.listFrom(_report['attachments']);
     _logs = _synthesizeLogs(
       attachments: initAtts,
@@ -74,6 +83,12 @@ class _UserReportDetailSheetState extends State<UserReportDetailSheet> {
       createdAt: _parseDate(_report['createdAt']),
     );
     _loadFreshData();
+  }
+
+  @override
+  void dispose() {
+    _eventSub?.cancel();
+    super.dispose();
   }
 
   Future<void> _loadFreshData() async {

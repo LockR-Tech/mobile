@@ -1,9 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:smart_laundry_locker/core/routing/app_router.dart';
 import 'package:smart_laundry_locker/core/network/api_client.dart';
+import 'package:smart_laundry_locker/core/services/app_event_bus.dart';
 import 'package:smart_laundry_locker/core/theme/shadcn_theme.dart';
 import 'package:smart_laundry_locker/features/transactions/domain/entities/transaction.dart';
 import 'package:smart_laundry_locker/features/transactions/domain/entities/transaction_extensions.dart';
@@ -26,11 +29,21 @@ class TransactionsPage extends StatefulWidget {
 
 class _TransactionsPageState extends State<TransactionsPage> {
   late final TransactionProvider _provider;
+  StreamSubscription<AppEvent>? _eventSub;
 
   @override
   void initState() {
     super.initState();
     _provider = TransactionInjection.provideTransactionProvider(ApiClient());
+    // Ví đổi do người khác (admin duyệt/từ chối rút tiền, điều chỉnh, hoàn
+    // tiền) hay nạp ví xong ⇒ tải lại lịch sử ngay; số dư + yêu cầu rút do
+    // WalletProvider tự tải lại.
+    _eventSub = AppEventBus.instance.events.listen((event) {
+      if (!mounted) return;
+      if (event is WalletUpdatedEvent || event is PaymentCompletedEvent) {
+        _provider.fetchTransactions(refresh: true, silent: true);
+      }
+    });
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _provider.fetchTransactions(refresh: true).then((_) {
@@ -45,6 +58,7 @@ class _TransactionsPageState extends State<TransactionsPage> {
 
   @override
   void dispose() {
+    _eventSub?.cancel();
     _provider.dispose();
     super.dispose();
   }

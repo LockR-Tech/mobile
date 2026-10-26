@@ -100,6 +100,7 @@ class _SendParcelPageState extends State<SendParcelPage>
   /// danh sách tủ không có sẵn (mở từ lưới ô).
   String? _lockerAddress;
   bool _lockerInfoRequested = false;
+  StreamSubscription<AppEvent>? _eventSub;
 
   /// Phí sau mã giảm giá — số tiền dùng để hỏi được dùng bao nhiêu điểm.
   int get _feeAfterVoucher => (_fee - _discount).clamp(0, _fee);
@@ -128,6 +129,16 @@ class _SendParcelPageState extends State<SendParcelPage>
       }
     } else {
       _loadLockers();
+      // Admin sửa/tắt tủ khi khách đang chọn ⇒ cập nhật danh sách tủ (chưa tạo
+      // đơn mới cập nhật, giữ tủ đang chọn nếu vẫn dùng được).
+      _eventSub = AppEventBus.instance.events.listen((event) {
+        if (mounted &&
+            _order == null &&
+            event is CatalogChangedEvent &&
+            event.isLocker) {
+          _loadLockers();
+        }
+      });
     }
   }
 
@@ -216,6 +227,7 @@ class _SendParcelPageState extends State<SendParcelPage>
 
   @override
   void dispose() {
+    _eventSub?.cancel();
     _disposePayment();
     WidgetsBinding.instance.removeObserver(this);
     _phoneCtrl.dispose();
@@ -286,10 +298,16 @@ class _SendParcelPageState extends State<SendParcelPage>
       setState(() {
         _lockers = lockers.where((l) => l['status'] == 'ACTIVE').toList();
         final preset = widget.initialLockerId;
-        if (preset != null && _lockers.any((l) => l['id'] == preset)) {
+        // Tải lại (admin sửa tủ): giữ tủ khách đang chọn nếu vẫn dùng được.
+        final current = _lockerId;
+        final keepCurrent =
+            current != null && _lockers.any((l) => l['id'] == current);
+        if (keepCurrent) {
+          _lockerId = current;
+        } else if (preset != null && _lockers.any((l) => l['id'] == preset)) {
           _lockerId = preset;
-        } else if (_lockers.isNotEmpty) {
-          _lockerId = _lockers.first['id'] as int?;
+        } else {
+          _lockerId = _lockers.isNotEmpty ? _lockers.first['id'] as int? : null;
         }
         _loadingLockers = false;
       });

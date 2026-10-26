@@ -119,6 +119,10 @@ String? _customerLocation(
           ).toString();
   }
   if (type == 'OPEN_PROMOTION_TAB') return AppRouter.promotions;
+  // Rút tiền được duyệt/từ chối, admin điều chỉnh ví ⇒ lịch sử giao dịch.
+  if (type == 'wallet.updated') return AppRouter.transactions;
+  // Admin điều chỉnh điểm ⇒ hồ sơ (mục Điểm thưởng).
+  if (type == 'loyalty.points.changed') return AppRouter.profile;
   // Người khác ủy quyền cho mình lấy hộ (referenceId = orderId) ⇒ "Đơn ủy quyền".
   if (type == 'ORDER_DELEGATED_TO_YOU') {
     return _withId(AppRouter.myDelegations, 'orderId', orderId ?? referenceId);

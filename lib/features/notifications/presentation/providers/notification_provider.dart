@@ -13,6 +13,9 @@ class NotificationProvider extends ChangeNotifier {
   StreamSubscription? _messageSubscription;
   StreamSubscription? _realtimeSubscription;
   StreamSubscription? _orderUpdateSubscription;
+  StreamSubscription? _userEventSubscription;
+  StreamSubscription? _catalogSubscription;
+  StreamSubscription? _maintenanceSubscription;
 
   NotificationProvider(this._repository) {
     _initMessageListener();
@@ -27,9 +30,10 @@ class NotificationProvider extends ChangeNotifier {
           );
           loadUnreadCount();
           // Propagate FCM data-type to domain event bus so screens auto-refresh
-          _emitDomainEvent(
+          emitDomainEvent(
             message.data['type'] as String?,
             message.data['referenceId']?.toString(),
+            referenceType: message.data['referenceType']?.toString(),
           );
         });
   }
@@ -51,38 +55,93 @@ class NotificationProvider extends ChangeNotifier {
           }
           notifyListeners();
           // Propagate STOMP notification type to domain event bus
-          _emitDomainEvent(
+          emitDomainEvent(
             notification.dataPayload?.actionType,
             notification.dataPayload?.referenceId,
+            referenceType: notification.dataPayload?.referenceType,
           );
         });
     // Tin cập nhật đơn (`/user/queue/orders`) chỉ làm mới màn đơn: không thêm
     // vào danh sách thông báo, không tăng badge (trước đây tạo dòng trống).
+    // Mọi tin ở kênh này đều là đơn vừa đổi, kể cả loại không có chữ ORDER
+    // (REFUND_COMPLETED, FEEDBACK_REPLY…) — trước đây các tin đó bị bỏ qua.
     _orderUpdateSubscription = RealtimeNotificationService.instance.orderUpdates
-        .listen((update) => _emitDomainEvent(update.type, update.orderId));
+        .listen(
+          (update) => emitDomainEvent(
+            update.type,
+            update.orderId,
+            referenceType: 'ORDER',
+          ),
+        );
+    // Ví/điểm thưởng đổi do người khác (admin, hệ thống) mà không kèm thông báo.
+    _userEventSubscription = RealtimeNotificationService.instance.userEvents
+        .listen(
+          (event) => emitDomainEvent(
+            event.type,
+            event.referenceId,
+            referenceType: event.referenceType,
+          ),
+        );
+    _catalogSubscription = RealtimeNotificationService.instance.catalogChanges
+        .listen(
+          (change) => AppEventBus.instance.emit(
+            CatalogChangedEvent(entity: change.entity, id: change.id),
+          ),
+        );
+    // KTV: phiếu/lịch/tủ/drone/đơn drone/thiết bị đổi do người khác.
+    _maintenanceSubscription = RealtimeNotificationService
+        .instance
+        .maintenanceChanges
+        .listen(
+          (change) => AppEventBus.instance.emit(
+            MaintenanceChangedEvent(
+              entity: change.entity,
+              id: change.id,
+              lockerId: change.lockerId,
+            ),
+          ),
+        );
   }
 
-  static void _emitDomainEvent(String? actionType, String? referenceId) {
+  /// Dịch một tin realtime (thông báo, tin đơn, tin đồng bộ, push FCM) thành
+  /// sự kiện miền để các màn đang mở tự tải lại.
+  @visibleForTesting
+  static void emitDomainEvent(
+    String? actionType,
+    String? referenceId, {
+    String? referenceType,
+  }) {
     final bus = AppEventBus.instance;
     final action = (actionType ?? '').toUpperCase();
+    final refType = (referenceType ?? '').toUpperCase();
 
+    // Gắn với đơn theo tên loại (ORDER_*, DELIVERY…) hoặc theo tham chiếu:
+    // hoàn tiền, trả lời phản hồi… có `referenceType = ORDER` dù tên loại
+    // không chứa chữ ORDER.
     if (action.contains('ORDER') ||
         action.contains('DELIVERY') ||
-        action == 'ORDER_STATUS_CHANGED' ||
-        action == 'DRONE_DELIVERY_STATUS_CHANGED' ||
-        action == 'DRONE_ORDER_CREATED' ||
-        action == 'ORDER_CREATED' ||
-        action == 'ORDER_STATUS' ||
-        action == 'ORDER_BOX_RELOCATED' ||
-        action == 'ORDER_RELOCATED' ||
-        action == 'ORDER_ESCROWED' ||
-        action == 'ORDER_RENTAL_EXTENDED' ||
-        action == 'ORDER_CONFIRMED' ||
-        action == 'ORDER_COMPLETED' ||
-        action == 'ORDER_CANCELLED' ||
-        action == 'ORDER_CANCELED') {
+        refType == 'ORDER' ||
+        refType == 'DELIVERY') {
       bus.emit(OrderChangedEvent(orderId: referenceId));
       bus.emit(const LockerLayoutUpdatedEvent());
+    }
+
+    // Admin duyệt/từ chối hoàn tiền, nhắc cập nhật STK nhận hoàn tiền.
+    if (action.contains('REFUND') || refType == 'REFUND') {
+      bus.emit(RefundUpdatedEvent(orderId: referenceId));
+      bus.emit(const WalletUpdatedEvent());
+    }
+
+    // Số dư/giao dịch/yêu cầu rút: `wallet.updated` (rút tiền được duyệt hay
+    // bị từ chối, admin điều chỉnh, hoàn vào ví) và nạp ví (tham chiếu WALLET).
+    if (action.contains('WALLET') ||
+        action.contains('WITHDRAW') ||
+        refType == 'WALLET') {
+      bus.emit(const WalletUpdatedEvent());
+    }
+
+    if (action.contains('LOYALTY') || refType == 'LOYALTY') {
+      bus.emit(const LoyaltyUpdatedEvent());
     }
 
     if (action == 'PAYMENT_COMPLETED') {
@@ -124,6 +183,9 @@ class NotificationProvider extends ChangeNotifier {
     _messageSubscription?.cancel();
     _realtimeSubscription?.cancel();
     _orderUpdateSubscription?.cancel();
+    _userEventSubscription?.cancel();
+    _catalogSubscription?.cancel();
+    _maintenanceSubscription?.cancel();
     RealtimeNotificationService.instance.disconnect();
     super.dispose();
   }

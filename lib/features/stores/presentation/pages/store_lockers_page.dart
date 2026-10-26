@@ -15,6 +15,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:smart_laundry_locker/shared/shared.dart';
 import 'dart:async';
 import 'package:smart_laundry_locker/core/services/app_event_bus.dart';
+import 'package:smart_laundry_locker/features/notifications/infrastructure/services/realtime_notification_service.dart';
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
 
 /// Hiển thị lưới ô tủ locker.
@@ -97,18 +98,36 @@ class _StoreLockerGridPageState extends State<StoreLockerGridPage> {
   List<Map<String, dynamic>> _lockers = const [];
   bool _loading = true;
   String? _error;
+  StreamSubscription<AppEvent>? _eventSub;
 
   @override
   void initState() {
     super.initState();
     _load();
+    // Admin sửa/tắt tủ hoặc sửa cửa hàng ⇒ tải lại danh sách tủ (ngầm).
+    _eventSub = AppEventBus.instance.events.listen((event) {
+      if (mounted &&
+          !_loading &&
+          event is CatalogChangedEvent &&
+          (event.isLocker || event.isStore)) {
+        _load(silent: true);
+      }
+    });
   }
 
-  Future<void> _load() async {
-    setState(() {
-      _loading = true;
-      _error = null;
-    });
+  @override
+  void dispose() {
+    _eventSub?.cancel();
+    super.dispose();
+  }
+
+  Future<void> _load({bool silent = false}) async {
+    if (!silent) {
+      setState(() {
+        _loading = true;
+        _error = null;
+      });
+    }
     try {
       final List<Map<String, dynamic>> lockers;
       final lockerId = widget.lockerId;
@@ -128,7 +147,7 @@ class _StoreLockerGridPageState extends State<StoreLockerGridPage> {
         _loading = false;
       });
     } catch (e) {
-      if (!mounted) return;
+      if (!mounted || silent) return;
       setState(() {
         _error = LockerOpsService.errorMessage(e);
         _loading = false;
@@ -703,6 +722,7 @@ class _LockerCardState extends State<_LockerCard> {
   bool _loadingLayout = false;
   String? _layoutError;
   StreamSubscription<AppEvent>? _busSub;
+  StreamSubscription<int>? _availabilitySub;
 
   int get _lockerId => (widget.locker['id'] as num?)?.toInt() ?? 0;
 
@@ -756,22 +776,38 @@ class _LockerCardState extends State<_LockerCard> {
         }
       }
     });
+    // Người khác đặt/trả ô, KTV khoá/mở ô của tủ này ⇒ cập nhật lưới ngay.
+    _availabilitySub = RealtimeNotificationService.instance.lockerAvailability
+        .listen((lockerId) {
+      if (!mounted || lockerId != _lockerId) return;
+      if (_expanded) {
+        _loadLayout(force: true, silent: true);
+      } else if (_layout != null) {
+        setState(() => _layout = null);
+      }
+    });
   }
 
   @override
   void dispose() {
     _busSub?.cancel();
+    _availabilitySub?.cancel();
     super.dispose();
   }
 
   /// Tải layout tủ. [force] = tải lại dù đã có (mở lại thẻ, quay về từ màn đặt,
   /// có sự kiện đổi layout). Lỗi ⇒ hiện lỗi thật + Thử lại, không vẽ lưới giả.
-  Future<void> _loadLayout({bool force = false}) async {
+  /// [silent] (tin ô trống realtime): giữ lưới đang hiện tới khi có lưới mới,
+  /// lỗi thì giữ lưới cũ.
+  Future<void> _loadLayout({bool force = false, bool silent = false}) async {
     if (_loadingLayout || (_layout != null && !force)) return;
-    setState(() {
-      _loadingLayout = true;
-      _layoutError = null;
-    });
+    final quiet = silent && _layout != null;
+    if (!quiet) {
+      setState(() {
+        _loadingLayout = true;
+        _layoutError = null;
+      });
+    }
     try {
       final layout = await widget.service.layout(_lockerId);
       if (mounted) {
@@ -781,7 +817,7 @@ class _LockerCardState extends State<_LockerCard> {
         });
       }
     } catch (e) {
-      if (mounted) {
+      if (mounted && !quiet) {
         setState(() {
           _layoutError = LockerOpsService.errorMessage(e);
           _loadingLayout = false;

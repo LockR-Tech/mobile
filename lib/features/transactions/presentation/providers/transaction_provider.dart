@@ -210,8 +210,13 @@ class TransactionProvider extends ChangeNotifier {
     );
   }
 
-  Future<void> fetchTransactions({bool refresh = false}) async {
-    if (refresh) {
+  /// [silent] (cùng [refresh]): tải lại ngầm khi có tin realtime — giữ danh
+  /// sách đang hiện tới khi có dữ liệu mới, không nháy vòng tải.
+  Future<void> fetchTransactions({bool refresh = false, bool silent = false}) async {
+    if (refresh && silent) {
+      _currentPage = 1;
+      _hasReachedMax = false;
+    } else if (refresh) {
       _currentPage = 1;
       _hasReachedMax = false;
       _transactions.clear();

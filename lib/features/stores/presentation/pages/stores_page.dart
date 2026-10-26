@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:smart_laundry_locker/core/services/app_event_bus.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
@@ -35,12 +38,21 @@ class _StoresPageState extends State<StoresPage> {
   bool _loading = true;
   bool _nearbyLoading = false;
   String? _error;
+  double? _lastLatitude;
+  double? _lastLongitude;
+  StreamSubscription<AppEvent>? _eventSub;
 
   @override
   void initState() {
     super.initState();
     _load();
     _loadFavorites();
+    // Admin thêm/sửa/tắt cửa hàng ⇒ tải lại ngầm (giữ bộ lọc "gần tôi").
+    _eventSub = AppEventBus.instance.events.listen((event) {
+      if (mounted && !_loading && event is CatalogChangedEvent && event.isStore) {
+        _load(latitude: _lastLatitude, longitude: _lastLongitude, silent: true);
+      }
+    });
   }
 
   Future<void> _loadFavorites() async {
@@ -72,15 +84,24 @@ class _StoresPageState extends State<StoresPage> {
 
   @override
   void dispose() {
+    _eventSub?.cancel();
     _searchCtrl.dispose();
     super.dispose();
   }
 
-  Future<void> _load({double? latitude, double? longitude}) async {
-    setState(() {
-      _loading = true;
-      _error = null;
-    });
+  Future<void> _load({
+    double? latitude,
+    double? longitude,
+    bool silent = false,
+  }) async {
+    _lastLatitude = latitude;
+    _lastLongitude = longitude;
+    if (!silent) {
+      setState(() {
+        _loading = true;
+        _error = null;
+      });
+    }
     try {
       final stores = await _service.getStores(
         latitude: latitude,
@@ -97,7 +118,7 @@ class _StoresPageState extends State<StoresPage> {
       });
       _applyFilter();
     } catch (e) {
-      if (!mounted) return;
+      if (!mounted || silent) return;
       setState(() {
         _error = _messageFor(e);
         _loading = false;

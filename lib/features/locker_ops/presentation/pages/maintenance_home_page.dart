@@ -170,8 +170,39 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
       (_) => _refreshDeliveries(),
     );
     _eventSubscription = AppEventBus.instance.events.listen((event) {
+      if (!mounted) return;
       if (event is OrderChangedEvent) _refreshDeliveries();
       if (event is ReportUpdatedEvent) _load();
+      if (event is MaintenanceChangedEvent) _onMaintenanceChanged(event);
+    });
+  }
+
+  /// Việc của đội bay đổi do KTV khác, admin, khách hay hệ thống: chỉ tải lại
+  /// đúng mục bị ảnh hưởng. Gom các tin dồn dập (chặng giao DEMO đổi mỗi vài
+  /// giây) rồi mới tải.
+  final Set<String> _pendingSections = {};
+  Timer? _sectionDebounce;
+
+  void _onMaintenanceChanged(MaintenanceChangedEvent event) {
+    if (event.isDroneOrder) _pendingSections.add('deliveries');
+    if (event.isDrone) _pendingSections.add('drones');
+    if (event.isReport) _pendingSections.add('reports');
+    if (event.isSchedule) _pendingSections.add('schedules');
+    if (event.isDroneIncident) _pendingSections.add('incidents');
+    if (_pendingSections.isEmpty) return;
+    _sectionDebounce?.cancel();
+    _sectionDebounce = Timer(const Duration(milliseconds: 1200), () {
+      if (!mounted) return;
+      final sections = Set<String>.of(_pendingSections);
+      _pendingSections.clear();
+      if (sections.contains('deliveries')) _refreshDeliveries();
+      if (sections.contains('drones')) _loadDrones();
+      if (sections.contains('reports')) {
+        _loadDroneReports();
+        _loadPerformance();
+      }
+      if (sections.contains('schedules')) _loadSchedules();
+      if (sections.contains('incidents')) _loadIncidents();
     });
   }
 
@@ -194,6 +225,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
   void dispose() {
     _tabs.dispose();
     _deliveryRefreshTimer?.cancel();
+    _sectionDebounce?.cancel();
     _eventSubscription?.cancel();
     _droneReportSearchController.dispose();
     _myWorkSearchController.dispose();
@@ -5236,21 +5268,33 @@ class _DroneLogSheetState extends State<_DroneLogSheet> {
   bool _loading = true;
   bool _sending = false;
   String? _loadError;
+  StreamSubscription<AppEvent>? _eventSub;
 
   @override
   void initState() {
     super.initState();
     _load();
+    // KTV khác ghi nhật ký / admin đổi trạng thái drone này ⇒ tải ngầm.
+    _eventSub = AppEventBus.instance.events.listen((event) {
+      if (mounted &&
+          !_sending &&
+          event is MaintenanceChangedEvent &&
+          event.isDrone &&
+          event.id == '${widget.droneId}') {
+        _load(silent: true);
+      }
+    });
   }
 
   @override
   void dispose() {
+    _eventSub?.cancel();
     _noteCtrl.dispose();
     super.dispose();
   }
 
-  Future<void> _load() async {
-    if (mounted) {
+  Future<void> _load({bool silent = false}) async {
+    if (mounted && !silent) {
       setState(() {
         _loading = true;
         _loadError = null;
@@ -5264,7 +5308,7 @@ class _DroneLogSheetState extends State<_DroneLogSheet> {
         _loading = false;
       });
     } catch (e) {
-      if (!mounted) return;
+      if (!mounted || silent) return;
       setState(() {
         _loading = false;
         _loadError = droneTechnicianErrorMessage(e);
@@ -5514,9 +5558,16 @@ class _DroneOrderDetailSheetState extends State<_DroneOrderDetailSheet> {
   void initState() {
     super.initState();
     _refresh();
-    _timer = Timer.periodic(const Duration(seconds: 3), (_) => _refresh());
+    // Chặng giao/nhiệm vụ/lượt lấy hàng của đơn này đổi ⇒ server đẩy tin
+    // (`DRONE_ORDER`) và sheet tải ngay; vòng 15 giây chỉ phòng mất kết nối.
+    _timer = Timer.periodic(const Duration(seconds: 15), (_) => _refresh());
     _events = AppEventBus.instance.events.listen((event) {
       if (event is OrderChangedEvent) _refresh();
+      if (event is MaintenanceChangedEvent &&
+          event.isDroneOrder &&
+          event.id == '${widget.orderId}') {
+        _refresh();
+      }
     });
   }
 

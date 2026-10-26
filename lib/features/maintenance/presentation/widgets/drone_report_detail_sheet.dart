@@ -1,5 +1,8 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:smart_laundry_locker/core/config/business_config_service.dart';
+import 'package:smart_laundry_locker/core/services/app_event_bus.dart';
 import 'package:smart_laundry_locker/core/media/media.dart';
 import 'package:smart_laundry_locker/core/utils/app_date_time.dart';
 import 'package:smart_laundry_locker/features/locker_ops/data/drone_technician_errors.dart';
@@ -74,6 +77,7 @@ class _DroneReportDetailSheetState extends State<DroneReportDetailSheet> {
   bool _saving = false;
   bool _showLogEditor = false;
   String? _loadError;
+  StreamSubscription<AppEvent>? _eventSub;
 
   int? get _reportId => _asInt(_report['id']);
   String get _status => '${_report['status'] ?? 'OPEN'}';
@@ -108,19 +112,31 @@ class _DroneReportDetailSheetState extends State<DroneReportDetailSheet> {
   void initState() {
     super.initState();
     _load();
+    // KTV khác nhận/trả phiếu, admin giao lại, khách thêm ảnh ⇒ tải ngầm để
+    // nút nhận việc/nghiệm thu đúng với trạng thái mới.
+    _eventSub = AppEventBus.instance.events.listen((event) {
+      if (mounted &&
+          !_saving &&
+          event is MaintenanceChangedEvent &&
+          event.isReport &&
+          event.id == '$_reportId') {
+        _load(silent: true);
+      }
+    });
   }
 
   @override
   void dispose() {
+    _eventSub?.cancel();
     _noteController.dispose();
     _logPhotos.dispose();
     super.dispose();
   }
 
-  Future<void> _load() async {
+  Future<void> _load({bool silent = false}) async {
     final id = _reportId;
     if (id == null) return;
-    if (mounted) {
+    if (mounted && !silent) {
       setState(() {
         _loading = true;
         _loadError = null;
@@ -149,7 +165,7 @@ class _DroneReportDetailSheetState extends State<DroneReportDetailSheet> {
         _loading = false;
       });
     } catch (error) {
-      if (!mounted) return;
+      if (!mounted || silent) return;
       setState(() {
         _attachments = _mergeAttachments(_report, const []);
         _loading = false;

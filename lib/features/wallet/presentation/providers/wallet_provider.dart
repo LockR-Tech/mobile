@@ -17,6 +17,8 @@ class WalletProvider extends ChangeNotifier {
     _eventSub = AppEventBus.instance.events.listen((event) {
       if (event is WalletUpdatedEvent || event is PaymentCompletedEvent) {
         getWalletBalance();
+        // Admin duyệt/từ chối rút tiền: danh sách yêu cầu rút cũng đổi.
+        if (_withdrawalsFetched) fetchWithdrawals();
       }
     });
   }
@@ -29,6 +31,7 @@ class WalletProvider extends ChangeNotifier {
       _withdrawableBalance = 0;
       _withdrawableKnown = false;
       _withdrawals = const [];
+      _withdrawalsFetched = false;
       notifyListeners();
     }
   }
@@ -49,6 +52,7 @@ class WalletProvider extends ChangeNotifier {
   List<WithdrawalRequest> get withdrawals => _withdrawals;
 
   bool _isLoadingWithdrawals = false;
+  bool _withdrawalsFetched = false;
   bool get isLoadingWithdrawals => _isLoadingWithdrawals;
 
   String? _withdrawalsError;
@@ -185,6 +189,7 @@ class WalletProvider extends ChangeNotifier {
   Future<void> fetchWithdrawals() async {
     if (_isLoadingWithdrawals) return;
     _isLoadingWithdrawals = true;
+    _withdrawalsFetched = true;
     _withdrawalsError = null;
     notifyListeners();
     try {

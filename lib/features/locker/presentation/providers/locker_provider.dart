@@ -20,6 +20,9 @@ import 'package:smart_laundry_locker/features/locker/domain/entities/locker_loca
 import 'package:smart_laundry_locker/core/domain/entities/pagination.dart';
 import 'package:smart_laundry_locker/features/locker/infrastructure/models/responses/lockers_response.dart';
 import 'package:smart_laundry_locker/core/errors/failures.dart';
+import 'dart:async';
+
+import 'package:smart_laundry_locker/core/services/app_event_bus.dart';
 import 'package:dartz/dartz.dart';
 import 'package:flutter/foundation.dart';
 
@@ -128,6 +131,10 @@ class LockerProvider extends ChangeNotifier {
   LockerState _state = const LockerState();
   LockerState get state => _state;
 
+  StreamSubscription<AppEvent>? _eventSub;
+  String? _lastLocationSearch;
+  bool _disposed = false;
+
   LockerProvider({
     required GetLocationsUseCase getLocationsUseCase,
     required GetLocationDetailUseCase getLocationDetailUseCase,
@@ -158,11 +165,30 @@ class LockerProvider extends ChangeNotifier {
        _finishRentalUseCase = finishRentalUseCase,
        _getCabinetByIdUseCase = getCabinetByIdUseCase,
        _getLockerByIdUseCase = getLockerByIdUseCase,
-       _getPricingsUseCase = getPricingsUseCase;
+       _getPricingsUseCase = getPricingsUseCase {
+    // Admin thêm/sửa/tắt tủ hoặc sửa cửa hàng ⇒ danh sách tủ (trang chủ, Tủ,
+    // bản đồ) tải lại ngầm, không cần kéo làm mới.
+    _eventSub = AppEventBus.instance.events.listen((event) {
+      if (event is CatalogChangedEvent &&
+          (event.isLocker || event.isStore) &&
+          _state.locations.isNotEmpty &&
+          !_state.isLoading) {
+        _reloadLocationsQuietly();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _disposed = true;
+    _eventSub?.cancel();
+    super.dispose();
+  }
 
   // ==================== LOCATIONS ====================
 
   Future<void> getLocations({String? search, bool refresh = false}) async {
+    _lastLocationSearch = search;
     _state = _state.copyWith(isLoading: true, error: null);
     notifyListeners();
 
@@ -183,6 +209,27 @@ class LockerProvider extends ChangeNotifier {
       },
     );
     notifyListeners();
+  }
+
+  /// Như [getLocations] (cùng từ khoá lần trước) nhưng giữ danh sách đang
+  /// hiện trong lúc tải và bỏ qua lỗi — dùng khi có tin realtime.
+  Future<void> _reloadLocationsQuietly() async {
+    final result = await _getLocationsUseCase(
+      GetLocationsParams(
+        page: 1,
+        limit: 10,
+        search: _lastLocationSearch,
+        isActive: true,
+      ),
+    );
+    if (_disposed) return;
+    result.fold((_) {}, (paginatedResult) {
+      _state = _state.copyWith(
+        locations: paginatedResult.items,
+        locationsPagination: paginatedResult.pagination,
+      );
+      notifyListeners();
+    });
   }
 
   /// Load more locations

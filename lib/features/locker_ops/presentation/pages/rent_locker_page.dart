@@ -15,6 +15,7 @@ import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/or
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/order_payment_sheet.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/sepay_payment.dart';
 import 'package:smart_laundry_locker/features/locker/domain/utils/locker_layout_helper.dart';
+import 'package:smart_laundry_locker/features/notifications/infrastructure/services/realtime_notification_service.dart';
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
 import 'package:smart_laundry_locker/shared/shared.dart';
 import 'package:smart_laundry_locker/core/services/app_event_bus.dart';
@@ -85,6 +86,8 @@ class _RentLockerPageState extends State<RentLockerPage>
   int _pointsToUse = 0;
   int _pointsDiscount = 0;
   Map<String, int>? _availableCounts;
+  StreamSubscription<int>? _availabilitySub;
+  StreamSubscription<AppEvent>? _eventSub;
 
   /// Thanh toán SePay của đơn vừa tạo (mã VietQR hiện ngay trên màn).
   SepayPaymentController? _payment;
@@ -103,6 +106,26 @@ class _RentLockerPageState extends State<RentLockerPage>
     } else {
       _loadLockers();
     }
+    _watchRealtime();
+  }
+
+  /// Người khác thuê/trả ô, KTV khoá/mở ô ⇒ số ô trống của tủ đang chọn đổi;
+  /// admin sửa/tắt tủ ⇒ danh sách tủ đổi. Chỉ cập nhật khi chưa tạo đơn.
+  void _watchRealtime() {
+    _availabilitySub = RealtimeNotificationService.instance.lockerAvailability
+        .listen((lockerId) {
+      if (mounted && _order == null && lockerId == _lockerId) {
+        _loadLayout(lockerId);
+      }
+    });
+    _eventSub = AppEventBus.instance.events.listen((event) {
+      if (!mounted || _order != null) return;
+      if (event is CatalogChangedEvent &&
+          event.isLocker &&
+          widget.initialLockerId == null) {
+        _loadLockers();
+      }
+    });
   }
 
   @override
@@ -172,6 +195,8 @@ class _RentLockerPageState extends State<RentLockerPage>
 
   @override
   void dispose() {
+    _availabilitySub?.cancel();
+    _eventSub?.cancel();
     _disposePayment();
     WidgetsBinding.instance.removeObserver(this);
     _noteCtrl.dispose();
@@ -238,10 +263,16 @@ class _RentLockerPageState extends State<RentLockerPage>
       setState(() {
         _lockers = lockers.where((l) => l['status'] == 'ACTIVE').toList();
         final preset = widget.initialLockerId;
-        if (preset != null && _lockers.any((l) => l['id'] == preset)) {
+        // Tải lại (admin sửa tủ): giữ tủ khách đang chọn nếu vẫn dùng được.
+        final current = _lockerId;
+        final keepCurrent =
+            current != null && _lockers.any((l) => l['id'] == current);
+        if (keepCurrent) {
+          _lockerId = current;
+        } else if (preset != null && _lockers.any((l) => l['id'] == preset)) {
           _lockerId = preset;
-        } else if (_lockers.isNotEmpty) {
-          _lockerId = _lockers.first['id'] as int?;
+        } else {
+          _lockerId = _lockers.isNotEmpty ? _lockers.first['id'] as int? : null;
         }
         _loadingLockers = false;
       });
