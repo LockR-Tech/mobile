@@ -143,6 +143,7 @@ class LockerLayoutHelper {
       // Khách báo sự cố: tạm ngưng nhận đơn mới, chờ KTV kiểm tra.
       'PENDING_CHECK' => 'Chờ kiểm tra',
       'CLEANING' => 'Bảo trì',
+      'OUT_OF_SERVICE' => 'Ngưng dùng',
       _ => st,
     };
   }
