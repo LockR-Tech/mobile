@@ -426,31 +426,47 @@ class _HomePageState extends ConsumerState<HomePage>
   }
 
   Widget _buildDronePoster(BuildContext context) {
+    final screenHeight = MediaQuery.sizeOf(context).height;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Semantics(
-        label: 'Gửi hàng bằng drone',
-        button: true,
-        child: AspectRatio(
-          aspectRatio: 1600 / 1331,
-          child: Material(
-            color: Colors.transparent,
-            borderRadius: BorderRadius.circular(26),
-            clipBehavior: Clip.antiAlias,
-            child: Ink.image(
-              // Giải nén ở bề rộng vừa màn hình cho nhẹ bộ nhớ.
-              image: ResizeImage(
-                const AssetImage('assets/images/poster_drone_delivery.webp'),
-                width: 1200,
-              ),
-              fit: BoxFit.contain,
-              child: InkWell(
-                key: const ValueKey('home-drone-entry'),
-                onTap: () => showDroneLockerPicker(context),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final size = homeDronePosterSize(
+            availableWidth: constraints.maxWidth,
+            screenHeight: screenHeight,
+          );
+          final dpr = MediaQuery.devicePixelRatioOf(context);
+          return Center(
+            child: Semantics(
+              label: 'Gửi hàng bằng drone',
+              button: true,
+              child: SizedBox.fromSize(
+                size: size,
+                child: Material(
+                  color: const Color(0xFF040B17),
+                  borderRadius: BorderRadius.circular(
+                    (size.height * 0.13).clamp(18.0, 26.0),
+                  ),
+                  clipBehavior: Clip.antiAlias,
+                  child: Ink.image(
+                    // Giải nén vừa khung trên màn này cho nhẹ bộ nhớ.
+                    image: ResizeImage(
+                      const AssetImage(
+                        'assets/images/poster_drone_delivery.webp',
+                      ),
+                      height: (size.height * dpr).ceil().clamp(1, 1331),
+                    ),
+                    fit: BoxFit.contain,
+                    child: InkWell(
+                      key: const ValueKey('home-drone-entry'),
+                      onTap: () => showDroneLockerPicker(context),
+                    ),
+                  ),
+                ),
               ),
             ),
-          ),
-        ),
+          );
+        },
       ),
     );
   }
@@ -1915,4 +1931,22 @@ class _PromotionCard extends StatelessWidget {
       child: Icon(LucideIcons.ticket, size: 32, color: Colors.white24),
     ),
   );
+}
+
+/// Tỉ lệ ảnh poster drone ở trang chủ (1600×1331).
+const double _dronePosterAspect = 1600 / 1331;
+
+/// Khung poster theo từng máy: cao ~24% màn hình (150–240), không cao quá mức vừa khít
+/// bề ngang (máy hẹp thì ảnh lấp đầy, không viền). Bề ngang khung tối đa gấp 1,45 bề ngang
+/// ảnh nên mọi máy cùng một dáng banner (~1,75:1): điện thoại rộng hết màn, tablet/xoay ngang
+/// thì khung gọn ở giữa thay vì một dải tối dài. Phần thừa hai bên tô cùng màu nền tối của poster.
+@visibleForTesting
+Size homeDronePosterSize({
+  required double availableWidth,
+  required double screenHeight,
+}) {
+  final cap = (screenHeight * 0.24).clamp(150.0, 240.0);
+  final height = (availableWidth / _dronePosterAspect).clamp(0.0, cap);
+  final width = availableWidth.clamp(0.0, height * _dronePosterAspect * 1.45);
+  return Size(width, height);
 }
