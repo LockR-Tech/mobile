@@ -64,6 +64,7 @@ void main() {
           'app.payment.topup-default-amount': 50000,
           'app.payment.topup-presets': [50000, 100000],
           'app.payment.enabled-methods': 'WALLET, vnpay',
+          'app.payment.withdraw-min-amount': 25000,
         },
         locker: {
           'app.maintenance.report-photos-per-request-reporter': 3,
@@ -103,6 +104,7 @@ void main() {
       expect(config.topupMaxAmount, 2000000);
       expect(config.topupDefaultAmount, 50000);
       expect(config.topupPresets, [50000, 100000]);
+      expect(config.withdrawMinAmount, 25000);
       expect(config.enabledPaymentMethods, ['WALLET', 'VNPAY']);
       expect(config.isPaymentMethodEnabled('cash'), isFalse);
       expect(config.isPaymentMethodEnabled('vnpay'), isTrue);

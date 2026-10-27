@@ -15,6 +15,7 @@ class DroneWeather {
     this.provider,
     this.temperatureC,
     this.condition,
+    this.windowMinutes = 30,
   });
 
   /// SAFE | UNSAFE | UNAVAILABLE.
@@ -27,6 +28,9 @@ class DroneWeather {
   final String? provider;
   final double? temperatureC;
   final String? condition;
+
+  /// Khoảng dự báo được xét (admin chỉnh, mặc định 30 phút).
+  final int windowMinutes;
 
   bool get safe => status == 'SAFE';
   bool get unavailable => status == 'UNAVAILABLE';
@@ -55,6 +59,9 @@ class DroneWeather {
       condition: condition == null || condition.isEmpty || condition == 'null'
           ? null
           : condition,
+      windowMinutes: num0(raw['windowMinutes']) > 0
+          ? num0(raw['windowMinutes']).round()
+          : 30,
     );
   }
 }
@@ -148,7 +155,7 @@ class DroneWeatherSummary extends StatelessWidget {
                   padding: const EdgeInsets.only(top: 4),
                   child: Text(
                     [
-                      'Dự báo 30 phút tới',
+                      'Dự báo ${weather.windowMinutes} phút tới',
                       if (weather.checkedAt != null)
                         'cập nhật ${formatDateTimeVn(weather.checkedAt!.toLocal())}',
                       if (weather.providerLabel != null)
@@ -355,13 +362,21 @@ class _DroneLockerWeatherListState extends State<DroneLockerWeatherList> {
       for (final locker in _lockers)
         (locker, DroneWeather.fromJson(locker['weather'])),
     ];
-    final unsafe = weathers.where((e) => e.$2 != null && !e.$2!.safe).length;
+    // Trạm admin đang tạm dừng bay cũng không bay được, dù trời tốt.
+    final unsafe = weathers
+        .where((e) => (e.$2 != null && !e.$2!.safe) || e.$1['suspension'] is Map)
+        .length;
+    final windowMinutes = weathers
+            .map((e) => e.$2?.windowMinutes)
+            .whereType<int>()
+            .firstOrNull ??
+        30;
     final headline = _loading
         ? 'Đang tải thời tiết các tủ…'
         : _error != null
         ? _error!
         : unsafe == 0
-        ? 'Cả ${weathers.length} tủ đều bay được trong 30 phút tới'
+        ? 'Cả ${weathers.length} tủ đều bay được trong $windowMinutes phút tới'
         : '$unsafe/${weathers.length} tủ đang không bay được hoặc chưa có dự báo';
     // Material (không phải Container có màu) để ListTile vẽ được nền và hiệu ứng chạm.
     return Padding(
@@ -412,10 +427,30 @@ class _DroneLockerWeatherListState extends State<DroneLockerWeatherList> {
                       if (weather != null)
                         Padding(
                           padding: const EdgeInsets.only(top: 8),
-                          child: DroneWeatherSummary(
-                            weather: weather,
-                            title:
-                                '${locker['name'] ?? locker['code'] ?? 'Tủ #${locker['lockerId']}'}',
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              DroneWeatherSummary(
+                                weather: weather,
+                                title:
+                                    '${locker['name'] ?? locker['code'] ?? 'Tủ #${locker['lockerId']}'}',
+                              ),
+                              if (locker['suspension'] case final Map stop)
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 4),
+                                  child: Text(
+                                    'Trạm đang tạm dừng bay: '
+                                    '${stop['reasonLabel'] ?? stop['reason'] ?? ''}'
+                                    '${stop['note'] == null ? '' : ' — ${stop['note']}'}',
+                                    key: ValueKey('drone-station-suspended-${locker['lockerId']}'),
+                                    style: const TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w700,
+                                      color: Color(0xFF92400E),
+                                    ),
+                                  ),
+                                ),
+                            ],
                           ),
                         ),
                   ],

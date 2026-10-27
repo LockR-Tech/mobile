@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:provider/provider.dart';
+import 'package:smart_laundry_locker/core/config/business_config_provider.dart';
 import 'package:smart_laundry_locker/core/routing/app_router.dart';
 import 'package:smart_laundry_locker/core/theme/shadcn_theme.dart';
 import 'package:smart_laundry_locker/core/utils/currency_formatter.dart';
@@ -21,7 +22,12 @@ class WithdrawPage extends StatefulWidget {
   State<WithdrawPage> createState() => _WithdrawPageState();
 }
 
-class _WithdrawPageState extends State<WithdrawPage> {
+class _WithdrawPageState extends State<WithdrawPage> with BusinessConfigStateMixin {
+  /// Mức tối thiểu do admin cấu hình; backend kiểm lại khi gửi yêu cầu.
+  int get _minAmount => businessConfig.withdrawMinAmount;
+  String get _minAmountMessage =>
+      'Số tiền rút tối thiểu là ${NumberFormat.decimalPattern('vi_VN').format(_minAmount)} đ';
+
   final _formKey = GlobalKey<FormState>();
   final _accountNumberController = TextEditingController();
   final _accountHolderController = TextEditingController();
@@ -132,8 +138,8 @@ class _WithdrawPageState extends State<WithdrawPage> {
     final wallet = context.read<WalletProvider>();
     final withdrawable = wallet.withdrawableBalance;
 
-    if (_enteredAmount < 10000) {
-      SmartDialog.showToast('Số tiền rút tối thiểu là 10.000 đ');
+    if (_enteredAmount < _minAmount) {
+      SmartDialog.showToast(_minAmountMessage);
       return;
     }
 
@@ -619,8 +625,8 @@ class _WithdrawPageState extends State<WithdrawPage> {
                                     ),
                                   ),
                                   validator: (v) {
-                                    if (_enteredAmount < 10000) {
-                                      return 'Số tiền rút tối thiểu là 10.000 đ';
+                                    if (_enteredAmount < _minAmount) {
+                                      return _minAmountMessage;
                                     }
                                     if (_enteredAmount > maxWithdrawable) {
                                       return 'Số tiền vượt quá số dư được rút';
@@ -700,7 +706,7 @@ class _WithdrawPageState extends State<WithdrawPage> {
                           height: 52,
                           child: ElevatedButton(
                             onPressed: _isSubmitting ||
-                                    (withdrawableKnown && withdrawable < 10000)
+                                    (withdrawableKnown && withdrawable < _minAmount)
                                 ? null
                                 : _handleSubmit,
                             style: ElevatedButton.styleFrom(

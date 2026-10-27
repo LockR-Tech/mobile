@@ -1476,7 +1476,7 @@ class _QuoteWeather extends StatelessWidget {
             ],
           ),
           Text(
-            'Dự báo 30 phút tới (thời gian giao dự kiến) từ nơi gửi → '
+            'Dự báo ${quote.weatherWindowMinutes} phút tới (thời gian giao dự kiến) từ nơi gửi → '
             '${quote.sourceLockerName} → tủ nhận',
             style: const TextStyle(fontSize: 12, color: Color(0xFF475569)),
           ),

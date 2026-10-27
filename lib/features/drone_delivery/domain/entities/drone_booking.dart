@@ -114,6 +114,7 @@ class DroneQuote {
     this.weatherProvider,
     this.weatherTemperatureC,
     this.weatherCondition,
+    this.weatherWindowMinutes = 30,
   });
 
   /// Tủ gửi (nơi drone cất cánh) — mã giảm giá theo tủ được kiểm theo tủ này.
@@ -129,6 +130,9 @@ class DroneQuote {
   final double fee;
   final bool weatherSafe;
   final String weatherStatus;
+
+  /// Khoảng dự báo server đã xét (admin chỉnh, mặc định 30 phút).
+  final int weatherWindowMinutes;
   final String weatherMessage;
   final DateTime? weatherCheckedAt;
   final double weatherMaxWindKmh;
@@ -181,6 +185,9 @@ class DroneQuote {
           ? (weather['temperatureC'] as num).toDouble()
           : null,
       weatherCondition: _text(weather['condition']),
+      weatherWindowMinutes: _int(weather['windowMinutes']) > 0
+          ? _int(weather['windowMinutes'])
+          : 30,
     );
   }
 
