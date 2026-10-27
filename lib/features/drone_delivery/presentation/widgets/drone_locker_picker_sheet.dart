@@ -1,8 +1,14 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
+import 'package:smart_laundry_locker/core/services/app_event_bus.dart';
 import 'package:smart_laundry_locker/core/theme/shadcn_theme.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/domain/entities/drone_locker_availability.dart';
+import 'package:smart_laundry_locker/features/drone_delivery/domain/entities/drone_route_geometry.dart';
+import 'package:smart_laundry_locker/features/drone_delivery/infrastructure/services/locker_availability_socket_service.dart';
+import 'package:smart_laundry_locker/features/drone_delivery/presentation/pages/pickup_location_picker_page.dart';
 import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
 
 /// Chọn tủ nhận drone. Tủ gửi và đường bay được hệ thống tự chọn sau khi KTV
@@ -48,13 +54,96 @@ class _DroneLockerPickerSheet extends StatefulWidget {
 class _DroneLockerPickerSheetState extends State<_DroneLockerPickerSheet> {
   List<Map<String, dynamic>> _lockers = const [];
   final Map<int, int?> _availableDroneSlots = {};
+  StreamSubscription<int>? _availabilitySub;
+  StreamSubscription<AppEvent>? _eventSub;
+  double? _customerLat;
+  double? _customerLng;
   bool _loading = true;
   String? _error;
 
   @override
   void initState() {
     super.initState();
+    _loadCustomerPosition();
     _load();
+    try {
+      _availabilitySub = LockerAvailabilitySocketService.instance
+          .watch()
+          .listen(_refreshLockerSlot);
+    } catch (_) {}
+    try {
+      _eventSub = AppEventBus.instance.events.listen((event) {
+        if (mounted &&
+            !_loading &&
+            event is CatalogChangedEvent &&
+            event.isLocker) {
+          _load();
+        }
+      });
+    } catch (_) {}
+  }
+
+  @override
+  void dispose() {
+    _availabilitySub?.cancel();
+    _eventSub?.cancel();
+    super.dispose();
+  }
+
+  Future<void> _loadCustomerPosition() async {
+    try {
+      final (pos, _) = await readDevicePosition();
+      if (!mounted || pos == null) return;
+      setState(() {
+        _customerLat = pos.latitude;
+        _customerLng = pos.longitude;
+        _lockers = sortLockersByCustomerDistance(
+          _lockers,
+          customerLatitude: _customerLat,
+          customerLongitude: _customerLng,
+        );
+      });
+    } catch (_) {}
+  }
+
+  Future<void> _refreshLockerSlot(int lockerId) async {
+    try {
+      final layout = await widget.service.layout(lockerId);
+      final cells = layout['cells'];
+      final count = cells is List
+          ? cells
+                .whereType<Map>()
+                .where(
+                  (cell) =>
+                      cell['active'] != false &&
+                      '${cell['cellType']}'.toUpperCase() == 'DRONE' &&
+                      '${cell['status']}'.toUpperCase() == 'AVAILABLE',
+                )
+                .length
+          : 0;
+      if (mounted) {
+        setState(() {
+          _availableDroneSlots[lockerId] = count;
+          for (var i = 0; i < _lockers.length; i++) {
+            if (_asInt(_lockers[i]['id']) == lockerId) {
+              _lockers[i] = {
+                ..._lockers[i],
+                if (layout['status'] != null) 'status': layout['status'],
+                if (layout['landingPad'] != null)
+                  'landingPad': layout['landingPad'],
+                if (layout['landingPadStatus'] != null)
+                  'landingPadStatus': layout['landingPadStatus'],
+                if (layout.containsKey('online')) 'online': layout['online'],
+              };
+            }
+          }
+        });
+      }
+    } catch (_) {
+      if (mounted && !_availableDroneSlots.containsKey(lockerId)) {
+        setState(() => _availableDroneSlots[lockerId] = null);
+      }
+    }
   }
 
   Future<void> _load() async {
@@ -65,34 +154,28 @@ class _DroneLockerPickerSheetState extends State<_DroneLockerPickerSheet> {
     try {
       final all = await widget.service.lockers();
       if (!mounted) return;
+      final lockers = sortLockersByCustomerDistance(
+        all.where((l) => _asInt(l['id']) != null),
+        customerLatitude: _customerLat,
+        customerLongitude: _customerLng,
+      );
       setState(() {
-        // Tủ gửi drone = tủ có bãi đáp (ô drone nằm dưới bãi đáp).
-        _lockers = all
-            .where((l) => l['landingPad'] == true && _asInt(l['id']) != null)
-            .toList(growable: false);
+        // Hiển thị đầy đủ mọi tủ từ hệ thống (đồng bộ với Admin và DroneBookingPage),
+        // sắp xếp theo vị trí tủ gần với khách hàng nhất.
+        _lockers = lockers;
+        for (final locker in lockers) {
+          final id = _asInt(locker['id']);
+          if (id != null && locker['landingPad'] != true) {
+            _availableDroneSlots[id] = 0;
+          }
+        }
         _loading = false;
       });
       await Future.wait(
-        _lockers.map((locker) async {
+        _lockers.where((l) => l['landingPad'] == true).map((locker) async {
           final id = _asInt(locker['id']);
           if (id == null) return;
-          try {
-            final layout = await widget.service.layout(id);
-            final cells = layout['cells'];
-            final count = cells is List
-                ? cells
-                      .whereType<Map>()
-                      .where(
-                        (cell) =>
-                            '${cell['cellType']}'.toUpperCase() == 'DRONE' &&
-                            '${cell['status']}'.toUpperCase() == 'AVAILABLE',
-                      )
-                      .length
-                : 0;
-            if (mounted) setState(() => _availableDroneSlots[id] = count);
-          } catch (_) {
-            if (mounted) setState(() => _availableDroneSlots[id] = null);
-          }
+          await _refreshLockerSlot(id);
         }),
       );
     } catch (e) {
@@ -141,7 +224,7 @@ class _DroneLockerPickerSheetState extends State<_DroneLockerPickerSheet> {
           ),
           const SizedBox(height: 4),
           const Text(
-            'Chọn tủ nhận hàng. Hệ thống tự chọn tủ bay và KTV đến lấy kiện tại nhà.',
+            'Chọn tủ nhận hàng (ưu tiên sắp xếp gần bạn nhất). Hệ thống tự chọn tủ bay và KTV đến lấy kiện tại nhà.',
             style: TextStyle(fontSize: 13, color: Color(0xFF64748B)),
           ),
           const SizedBox(height: 14),
@@ -179,7 +262,7 @@ class _DroneLockerPickerSheetState extends State<_DroneLockerPickerSheet> {
       return const Padding(
         padding: EdgeInsets.symmetric(vertical: 20),
         child: Text(
-          'Chưa có tủ nào có bãi đáp drone.',
+          'Chưa có tủ nào trên hệ thống.',
           textAlign: TextAlign.center,
           style: TextStyle(color: Color(0xFF64748B)),
         ),
@@ -191,16 +274,23 @@ class _DroneLockerPickerSheetState extends State<_DroneLockerPickerSheet> {
       separatorBuilder: (_, __) => const SizedBox(height: 8),
       itemBuilder: (context, i) {
         final locker = _lockers[i];
+        final hasLandingPad = locker['landingPad'] == true;
         final reason = droneDestinationBlockReason(
           status: locker['status'],
           online: locker['online'],
+          landingPad: hasLandingPad,
           landingPadStatus: locker['landingPadStatus'],
         );
         final name = '${locker['name'] ?? locker['code'] ?? 'Tủ'}';
         final address = '${locker['address'] ?? ''}'.trim();
         final lockerId = _asInt(locker['id']);
         final slots = lockerId == null ? null : _availableDroneSlots[lockerId];
-        final canReceive = slots != null && slots > 0;
+        final canReceive = hasLandingPad && slots != null && slots > 0;
+        final distKm = lockerDistanceKmFrom(locker, _customerLat, _customerLng);
+        final subtitleParts = <String>[
+          if (distKm != null) 'Cách bạn ${droneKmLabel(distKm)}',
+          if (address.isNotEmpty) address,
+        ];
         return Material(
           color: Colors.white,
           borderRadius: BorderRadius.circular(14),
@@ -237,9 +327,9 @@ class _DroneLockerPickerSheetState extends State<_DroneLockerPickerSheet> {
                                 : const Color(0xFF94A3B8),
                           ),
                         ),
-                        if (address.isNotEmpty)
+                        if (subtitleParts.isNotEmpty)
                           Text(
-                            address,
+                            subtitleParts.join(' · '),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: const TextStyle(
@@ -247,18 +337,19 @@ class _DroneLockerPickerSheetState extends State<_DroneLockerPickerSheet> {
                               color: Color(0xFF64748B),
                             ),
                           ),
-                        Text(
-                          slots == null
-                              ? 'Đang kiểm tra ô drone nhận'
-                              : 'Còn $slots ô drone nhận trống',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: slots != null && slots > 0
-                                ? const Color(0xFF15803D)
-                                : const Color(0xFFDC2626),
-                            fontWeight: FontWeight.w600,
+                        if (hasLandingPad)
+                          Text(
+                            slots == null
+                                ? 'Đang kiểm tra ô drone nhận'
+                                : 'Còn $slots ô drone nhận trống',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: slots != null && slots > 0
+                                  ? const Color(0xFF15803D)
+                                  : const Color(0xFFDC2626),
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
-                        ),
                         if (reason != null)
                           Text(
                             'Tạm không gửi drone: $reason',
@@ -270,7 +361,7 @@ class _DroneLockerPickerSheetState extends State<_DroneLockerPickerSheet> {
                       ],
                     ),
                   ),
-                  if (reason == null)
+                  if (reason == null && canReceive)
                     const Icon(
                       LucideIcons.chevronRight,
                       size: 18,

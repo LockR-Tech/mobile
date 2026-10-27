@@ -5637,7 +5637,7 @@ class _DroneOrderDetailSheetState extends State<_DroneOrderDetailSheet> {
             ),
             const SizedBox(height: 14),
           ],
-          if (!status.stage.isTerminal) ...[
+          if (status.stage.needsRouteWeather) ...[
             DroneRouteWeatherCard(
               orderId: widget.orderId,
               asTechnician: true,

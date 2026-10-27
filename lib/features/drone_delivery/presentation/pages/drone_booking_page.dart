@@ -3,8 +3,11 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:smart_laundry_locker/core/config/business_config_provider.dart';
+import 'package:smart_laundry_locker/core/services/app_event_bus.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/domain/entities/drone_booking.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/domain/entities/drone_labels.dart';
+import 'package:smart_laundry_locker/features/drone_delivery/domain/entities/drone_locker_availability.dart';
+import 'package:smart_laundry_locker/features/drone_delivery/domain/entities/drone_route_geometry.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/domain/entities/drone_parcel.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/infrastructure/services/locker_availability_socket_service.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/presentation/pages/pickup_location_picker_page.dart';
@@ -126,6 +129,8 @@ class _DroneBookingPageState extends State<DroneBookingPage>
       'drone-${DateTime.now().microsecondsSinceEpoch}';
 
   PickupLocation? _pickup;
+  double? _customerLat;
+  double? _customerLng;
   List<Map<String, dynamic>> _destinations = const [];
   final Map<int, int?> _availableDroneSlots = {};
   final Map<int, List<Map<String, dynamic>>> _availableDroneBoxes = {};
@@ -133,6 +138,7 @@ class _DroneBookingPageState extends State<DroneBookingPage>
   int? _destinationLockerId;
   int? _destinationBoxId;
   StreamSubscription<int>? _availabilitySub;
+  StreamSubscription<AppEvent>? _catalogSub;
   Timer? _slotPoll;
   Timer? _slotDebounce;
   final Set<int> _pendingSlotRefresh = {};
@@ -204,6 +210,7 @@ class _DroneBookingPageState extends State<DroneBookingPage>
     _destinationLockerId = widget.initialDestinationLockerId;
     _destinationBoxId = widget.preferredBoxId;
     _prefillSender();
+    _loadCustomerPosition();
     _loadDestinations();
     _watchAvailability();
   }
@@ -217,6 +224,13 @@ class _DroneBookingPageState extends State<DroneBookingPage>
             ? LockerAvailabilitySocketService.instance.watch()
             : null);
     _availabilitySub = changes?.listen(_onLockerAvailabilityChanged);
+    if (widget.destinationLockers == null) {
+      _catalogSub = AppEventBus.instance.events.listen((event) {
+        if (mounted && event is CatalogChangedEvent && event.isLocker) {
+          _loadDestinations();
+        }
+      });
+    }
     _slotPoll = Timer.periodic(
       widget.slotRefreshInterval,
       (_) => _refreshDroneSlots(),
@@ -261,15 +275,34 @@ class _DroneBookingPageState extends State<DroneBookingPage>
     }
   }
 
+  Future<void> _loadCustomerPosition() async {
+    if (widget.destinationLockers != null) return;
+    try {
+      final (pos, _) = await readDevicePosition();
+      if (!mounted || pos == null) return;
+      setState(() {
+        _customerLat = pos.latitude;
+        _customerLng = pos.longitude;
+        _destinations = sortLockersByCustomerDistance(
+          _destinations,
+          customerLatitude: _pickup?.latitude ?? _customerLat,
+          customerLongitude: _pickup?.longitude ?? _customerLng,
+        );
+      });
+    } catch (_) {}
+  }
+
   Future<void> _loadDestinations() async {
     try {
       final all = widget.destinationLockers ?? await _ops.lockers();
       // Keep every locker returned by the system visible. Ineligible lockers
       // are rendered disabled below with the reason, instead of disappearing
       // from the customer's destination list.
-      final destinations = all
-          .where((locker) => _asInt(locker['id']) != null)
-          .toList(growable: false);
+      final destinations = sortLockersByCustomerDistance(
+        all.where((locker) => _asInt(locker['id']) != null),
+        customerLatitude: _pickup?.latitude ?? _customerLat,
+        customerLongitude: _pickup?.longitude ?? _customerLng,
+      );
       if (!mounted) return;
       setState(() {
         _destinations = destinations;
@@ -293,13 +326,24 @@ class _DroneBookingPageState extends State<DroneBookingPage>
   /// Tải lại ô DRONE trống của các tủ nhận được drone (hoặc chỉ [only]). Ô đang chọn vừa bị
   /// người khác giữ thì bỏ chọn và báo ngay, không để tới lúc bấm đặt mới biết.
   Future<void> _refreshDroneSlots({Set<int>? only}) async {
+    final targetLockers = _destinations.where(
+      (locker) => widget.loadDroneSlots != null
+          ? _canReceiveDrone(locker)
+          : locker['landingPad'] == true,
+    );
     await Future.wait(
-      _destinations.where(_canReceiveDrone).map((locker) async {
+      targetLockers.map((locker) async {
         final id = _asInt(locker['id']);
         if (id == null || (only != null && !only.contains(id))) return;
         try {
-          final boxes =
-              await (widget.loadDroneSlots ?? _loadAvailableDroneBoxes)(id);
+          Map<String, dynamic>? fetchedLayout;
+          final List<Map<String, dynamic>> boxes;
+          if (widget.loadDroneSlots != null) {
+            boxes = await widget.loadDroneSlots!(id);
+          } else {
+            fetchedLayout = await _ops.layout(id);
+            boxes = _extractAvailableDroneBoxes(fetchedLayout);
+          }
           if (!mounted) return;
           final lostBox =
               id == _destinationLockerId &&
@@ -313,6 +357,25 @@ class _DroneBookingPageState extends State<DroneBookingPage>
               ? null
               : _boxLabel(id, lostBox);
           setState(() {
+            if (fetchedLayout != null) {
+              _destinations = [
+                for (final item in _destinations)
+                  if (_asInt(item['id']) == id)
+                    {
+                      ...item,
+                      if (fetchedLayout['status'] != null)
+                        'status': fetchedLayout['status'],
+                      if (fetchedLayout['landingPad'] != null)
+                        'landingPad': fetchedLayout['landingPad'],
+                      if (fetchedLayout['landingPadStatus'] != null)
+                        'landingPadStatus': fetchedLayout['landingPadStatus'],
+                      if (fetchedLayout.containsKey('online'))
+                        'online': fetchedLayout['online'],
+                    }
+                  else
+                    item,
+              ];
+            }
             _availableDroneBoxes[id] = boxes;
             _availableDroneSlots[id] = boxes.length;
             if (lostBox != null) _destinationBoxId = null;
@@ -341,16 +404,16 @@ class _DroneBookingPageState extends State<DroneBookingPage>
     return 'Ô bạn chọn';
   }
 
-  static Future<List<Map<String, dynamic>>> _loadAvailableDroneBoxes(
-    int lockerId,
-  ) async {
-    final layout = await LockerOpsService().layout(lockerId);
+  static List<Map<String, dynamic>> _extractAvailableDroneBoxes(
+    Map<String, dynamic> layout,
+  ) {
     final cells = layout['cells'];
     return cells is List
         ? cells
               .whereType<Map>()
               .where(
                 (cell) =>
+                    cell['active'] != false &&
                     '${cell['cellType']}'.toUpperCase() == 'DRONE' &&
                     '${cell['status']}'.toUpperCase() == 'AVAILABLE',
               )
@@ -362,9 +425,17 @@ class _DroneBookingPageState extends State<DroneBookingPage>
   static int? _asInt(dynamic value) =>
       value is num ? value.toInt() : int.tryParse('$value');
 
-  static bool _canReceiveDrone(Map<String, dynamic> locker) =>
-      locker['landingPad'] == true &&
-      '${locker['status']}'.toUpperCase() == 'ACTIVE';
+  static bool _canReceiveDrone(Map<String, dynamic> locker) {
+    if (locker['online'] == false ||
+        locker['landingPad'] != true ||
+        '${locker['status']}'.toUpperCase() != 'ACTIVE') {
+      return false;
+    }
+    final padStatus = locker['landingPadStatus'];
+    if (padStatus == null) return true;
+    final normalized = '$padStatus'.trim().toUpperCase();
+    return normalized.isEmpty || normalized == 'OK';
+  }
 
   Map<String, dynamic>? get _selectedDestination {
     final id = _destinationLockerId;
@@ -388,20 +459,32 @@ class _DroneBookingPageState extends State<DroneBookingPage>
   }
 
   String _destinationUnavailableReason(Map<String, dynamic> locker) {
+    final distKm = lockerDistanceKmFrom(
+      locker,
+      _pickup?.latitude ?? _customerLat,
+      _pickup?.longitude ?? _customerLng,
+    );
+    final distPrefix = distKm != null ? 'Cách bạn ${droneKmLabel(distKm)} · ' : '';
+    if (locker['online'] == false) return '${distPrefix}Mất kết nối';
     final status = '${locker['status']}'.toUpperCase();
     if (status != 'ACTIVE') {
-      return status == 'MAINTENANCE' ? 'Đang bảo trì' : 'Chưa hoạt động';
+      return '$distPrefix${status == 'MAINTENANCE' ? 'Đang bảo trì' : 'Chưa hoạt động'}';
     }
-    if (locker['landingPad'] != true) return 'Chưa có bãi đáp drone';
+    if (locker['landingPad'] != true) return '${distPrefix}Chưa có bãi đáp drone';
+    final padStatus = '${locker['landingPadStatus'] ?? 'OK'}'.trim().toUpperCase();
+    if (padStatus.isNotEmpty && padStatus != 'OK') {
+      return '$distPrefix${padStatus == 'MAINTENANCE' ? 'Bãi đáp đang bảo trì' : 'Bãi đáp đang lỗi'}';
+    }
     final slots = _availableDroneSlots[_asInt(locker['id'])];
-    if (slots == null) return 'Đang kiểm tra ô drone';
-    if (slots == 0) return 'Hết ô drone trống';
-    return '$slots ô drone trống';
+    if (slots == null) return '${distPrefix}Đang kiểm tra ô drone';
+    if (slots == 0) return '${distPrefix}Hết ô drone trống';
+    return '$distPrefix$slots ô drone trống';
   }
 
   @override
   void dispose() {
     _availabilitySub?.cancel();
+    _catalogSub?.cancel();
     _slotPoll?.cancel();
     _slotDebounce?.cancel();
     for (final controller in [
@@ -426,7 +509,14 @@ class _DroneBookingPageState extends State<DroneBookingPage>
   Future<void> _choosePickup() async {
     final picked = await widget.pickLocation(context, _pickup);
     if (picked == null || !mounted) return;
-    setState(() => _pickup = picked);
+    setState(() {
+      _pickup = picked;
+      _destinations = sortLockersByCustomerDistance(
+        _destinations,
+        customerLatitude: picked.latitude,
+        customerLongitude: picked.longitude,
+      );
+    });
     _refreshQuote();
   }
 

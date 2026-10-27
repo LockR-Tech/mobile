@@ -92,6 +92,10 @@ class _RentLockerPageState extends State<RentLockerPage>
   /// Thanh toán SePay của đơn vừa tạo (mã VietQR hiện ngay trên màn).
   SepayPaymentController? _payment;
 
+  static bool _isBookableLocker(Map<String, dynamic> l) =>
+      l['online'] != false &&
+      '${l['status'] ?? 'ACTIVE'}'.trim().toUpperCase() == 'ACTIVE';
+
   @override
   void initState() {
     super.initState();
@@ -261,18 +265,23 @@ class _RentLockerPageState extends State<RentLockerPage>
       final lockers = await _service.lockers();
       if (!mounted) return;
       setState(() {
-        _lockers = lockers.where((l) => l['status'] == 'ACTIVE').toList();
+        _lockers = lockers.where((l) => l['id'] is num).toList();
         final preset = widget.initialLockerId;
         // Tải lại (admin sửa tủ): giữ tủ khách đang chọn nếu vẫn dùng được.
         final current = _lockerId;
         final keepCurrent =
-            current != null && _lockers.any((l) => l['id'] == current);
+            current != null &&
+            _lockers.any((l) => l['id'] == current && _isBookableLocker(l));
         if (keepCurrent) {
           _lockerId = current;
-        } else if (preset != null && _lockers.any((l) => l['id'] == preset)) {
+        } else if (preset != null &&
+            _lockers.any((l) => l['id'] == preset && _isBookableLocker(l))) {
           _lockerId = preset;
         } else {
-          _lockerId = _lockers.isNotEmpty ? _lockers.first['id'] as int? : null;
+          final firstBookable = _lockers
+              .where(_isBookableLocker)
+              .firstOrNull;
+          _lockerId = firstBookable?['id'] as int?;
         }
         _loadingLockers = false;
       });
@@ -292,7 +301,7 @@ class _RentLockerPageState extends State<RentLockerPage>
       if (cells != null) {
         int std = 0, xl = 0;
         for (final c in cells) {
-          if (c['status'] == 'AVAILABLE') {
+          if (c['status'] == 'AVAILABLE' && c['active'] != false) {
             final type = (c['cellType'] as String?)?.toUpperCase();
             final boxNum = (c['boxNumber'] as num?)?.toInt();
             final map = c is Map<String, dynamic> ? c : Map<String, dynamic>.from(c as Map);
@@ -688,6 +697,7 @@ class _RentLockerPageState extends State<RentLockerPage>
           LockerPickerField(
             lockers: _lockers,
             selectedId: _lockerId,
+            onlyActive: true,
             onSelected: (l) {
               final newId = l['id'] as int?;
               setState(() {

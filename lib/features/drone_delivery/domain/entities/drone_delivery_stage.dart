@@ -123,6 +123,10 @@ enum DroneDeliveryStage {
   /// Kiện gặp sự cố (rơi) giữa chuyến — chưa kết thúc, đang xử lý.
   bool get isIncident => this == DroneDeliveryStage.dropReported;
 
+  /// Chỉ lấy dự báo thời tiết 30 phút khi đơn đang chuẩn bị bay hoặc đang trong chuyến bay.
+  bool get needsRouteWeather =>
+      !isTerminal && !isIncident && this != DroneDeliveryStage.unknown;
+
   String get title {
     switch (this) {
       case DroneDeliveryStage.awaitingDispatch:

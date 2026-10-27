@@ -11,6 +11,7 @@ class LockerPickerField extends StatelessWidget {
     required this.selectedId,
     required this.onSelected,
     this.placeholder,
+    this.onlyActive = false,
     super.key,
   });
 
@@ -22,11 +23,28 @@ class LockerPickerField extends StatelessWidget {
   /// (màn cần khách chọn tủ rõ ràng, vd. báo sự cố).
   final String? placeholder;
 
+  /// Chỉ cho chọn tủ đang hoạt động (`status == 'ACTIVE'` và `online != false`),
+  /// nhưng vẫn hiện đầy đủ mọi tủ kèm lý do tạm khoá để đồng bộ danh sách 20 tủ với Admin.
+  final bool onlyActive;
+
+  static String? _inactiveReason(Map<String, dynamic> locker) {
+    if (locker['online'] == false) return 'Mất kết nối';
+    final status = '${locker['status'] ?? 'ACTIVE'}'.trim().toUpperCase();
+    if (status == 'ACTIVE') return null;
+    return status == 'MAINTENANCE' ? 'Đang bảo trì' : 'Tạm ngưng';
+  }
+
   Map<String, dynamic>? get _selected {
     for (final l in lockers) {
       if (l['id'] == selectedId) return l;
     }
     if (placeholder != null) return null;
+    if (onlyActive) {
+      for (final l in lockers) {
+        if (_inactiveReason(l) == null) return l;
+      }
+      return null;
+    }
     return lockers.isNotEmpty ? lockers.first : null;
   }
 
@@ -113,27 +131,65 @@ class LockerPickerField extends StatelessWidget {
               ),
             ),
             for (final l in lockers)
-              ListTile(
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                leading: CircleAvatar(
-                  backgroundColor: opsPrimary.withValues(alpha: 0.10),
-                  child: const Icon(LucideIcons.warehouse, color: opsPrimary, size: 18),
-                ),
-                title: Text(
-                  '${l['name'] ?? l['code'] ?? 'Tủ'}',
-                  style: const TextStyle(fontWeight: FontWeight.w700),
-                ),
-                subtitle: l['address'] != null
-                    ? Text('${l['address']}', maxLines: 1, overflow: TextOverflow.ellipsis)
-                    : null,
-                trailing: l['id'] == selectedId
-                    ? const Icon(LucideIcons.check, color: opsPrimary)
-                    : null,
-                onTap: () {
-                  onSelected(l);
-                  Navigator.pop(ctx);
+              Builder(
+                builder: (_) {
+                  final reason = onlyActive ? _inactiveReason(l) : null;
+                  final enabled = reason == null;
+                  final address = l['address']?.toString().trim() ?? '';
+                  return ListTile(
+                    enabled: enabled,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    leading: CircleAvatar(
+                      backgroundColor: enabled
+                          ? opsPrimary.withValues(alpha: 0.10)
+                          : const Color(0xFFF1F5F9),
+                      child: Icon(
+                        LucideIcons.warehouse,
+                        color: enabled ? opsPrimary : const Color(0xFF94A3B8),
+                        size: 18,
+                      ),
+                    ),
+                    title: Text(
+                      '${l['name'] ?? l['code'] ?? 'Tủ'}',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w700,
+                        color: enabled ? opsDark : const Color(0xFF94A3B8),
+                      ),
+                    ),
+                    subtitle: (address.isNotEmpty || reason != null)
+                        ? Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              if (address.isNotEmpty)
+                                Text(
+                                  address,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              if (reason != null)
+                                Text(
+                                  'Tạm không khả dụng: $reason',
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    color: Color(0xFFB91C1C),
+                                  ),
+                                ),
+                            ],
+                          )
+                        : null,
+                    trailing: l['id'] == selectedId && enabled
+                        ? const Icon(LucideIcons.check, color: opsPrimary)
+                        : null,
+                    onTap: enabled
+                        ? () {
+                            onSelected(l);
+                            Navigator.pop(ctx);
+                          }
+                        : null,
+                  );
                 },
               ),
           ],

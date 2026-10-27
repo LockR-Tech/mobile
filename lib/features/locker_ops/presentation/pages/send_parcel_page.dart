@@ -112,6 +112,10 @@ class _SendParcelPageState extends State<SendParcelPage>
   /// Giới hạn lời nhắn — đủ cho một câu dặn, vừa một dòng email.
   static const _noteMaxLength = 200;
 
+  static bool _isBookableLocker(Map<String, dynamic> l) =>
+      l['online'] != false &&
+      '${l['status'] ?? 'ACTIVE'}'.trim().toUpperCase() == 'ACTIVE';
+
   @override
   void initState() {
     super.initState();
@@ -296,18 +300,23 @@ class _SendParcelPageState extends State<SendParcelPage>
       final lockers = await _service.lockers();
       if (!mounted) return;
       setState(() {
-        _lockers = lockers.where((l) => l['status'] == 'ACTIVE').toList();
+        _lockers = lockers.where((l) => l['id'] is num).toList();
         final preset = widget.initialLockerId;
         // Tải lại (admin sửa tủ): giữ tủ khách đang chọn nếu vẫn dùng được.
         final current = _lockerId;
         final keepCurrent =
-            current != null && _lockers.any((l) => l['id'] == current);
+            current != null &&
+            _lockers.any((l) => l['id'] == current && _isBookableLocker(l));
         if (keepCurrent) {
           _lockerId = current;
-        } else if (preset != null && _lockers.any((l) => l['id'] == preset)) {
+        } else if (preset != null &&
+            _lockers.any((l) => l['id'] == preset && _isBookableLocker(l))) {
           _lockerId = preset;
         } else {
-          _lockerId = _lockers.isNotEmpty ? _lockers.first['id'] as int? : null;
+          final firstBookable = _lockers
+              .where(_isBookableLocker)
+              .firstOrNull;
+          _lockerId = firstBookable?['id'] as int?;
         }
         _loadingLockers = false;
       });
@@ -709,6 +718,7 @@ class _SendParcelPageState extends State<SendParcelPage>
             LockerPickerField(
               lockers: _lockers,
               selectedId: _lockerId,
+              onlyActive: true,
               onSelected: (l) => setState(() => _lockerId = l['id'] as int?),
             ),
           const SizedBox(height: 20),

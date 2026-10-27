@@ -429,7 +429,7 @@ class _TrackingBody extends StatelessWidget {
             expectIncident: status.stage.isIncident,
           ),
         // Đơn còn chạy: người gửi / người nhận thấy cùng dự báo mà hệ thống dùng để cho bay.
-        if (!status.stage.isTerminal)
+        if (status.stage.needsRouteWeather)
           if (int.tryParse(orderId) case final parsed?) ...[
             DroneRouteWeatherCard(orderId: parsed, refreshKey: status.status),
             const SizedBox(height: 12),

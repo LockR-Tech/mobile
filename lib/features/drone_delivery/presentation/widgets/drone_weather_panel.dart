@@ -240,6 +240,9 @@ class _DroneRouteWeatherCardState extends State<DroneRouteWeatherCard> {
   @override
   Widget build(BuildContext context) {
     final weather = DroneWeather.fromJson(_data?['weather']);
+    if (!_loading && _error == null && weather == null) {
+      return const SizedBox.shrink();
+    }
     final from = _data?['sourceLockerName']?.toString();
     final to = _data?['destinationLockerName']?.toString();
     return Container(
