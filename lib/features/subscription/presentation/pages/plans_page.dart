@@ -697,9 +697,13 @@ class _PlansCarouselState extends State<_PlansCarousel> {
           label,
           style: const TextStyle(fontSize: 14, color: AppColors.grey700),
         ),
-        Text(
-          value,
-          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+        const SizedBox(width: 12),
+        Flexible(
+          child: Text(
+            value,
+            textAlign: TextAlign.right,
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+          ),
         ),
       ],
     );
@@ -799,12 +803,16 @@ class _PlansCarouselState extends State<_PlansCarousel> {
             label,
             style: const TextStyle(fontSize: 12, color: AppColors.grey600),
           ),
-          Text(
-            value,
-            style: const TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-              color: Colors.black87,
+          const SizedBox(width: 12),
+          Flexible(
+            child: Text(
+              value,
+              textAlign: TextAlign.right,
+              style: const TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: Colors.black87,
+              ),
             ),
           ),
         ],

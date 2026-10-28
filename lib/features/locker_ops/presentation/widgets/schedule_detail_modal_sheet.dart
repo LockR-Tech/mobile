@@ -769,12 +769,14 @@ class _ScheduleDetailModalSheetState extends State<ScheduleDetailModalSheet> {
                               color: Color(0xFFEA580C),
                             ),
                             const SizedBox(width: 6),
-                            Text(
-                              'Bộ tiêu chí kiểm định (${checklistItems.length} mục KTV cần thực hiện):',
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 13,
-                                color: opsDark,
+                            Expanded(
+                              child: Text(
+                                'Bộ tiêu chí kiểm định (${checklistItems.length} mục KTV cần thực hiện):',
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 13,
+                                  color: opsDark,
+                                ),
                               ),
                             ),
                           ],
@@ -861,12 +863,14 @@ class _ScheduleDetailModalSheetState extends State<ScheduleDetailModalSheet> {
                                 color: Color(0xFFD97706),
                               ),
                               SizedBox(width: 6),
-                              Text(
-                                'Hướng dẫn nghiệp vụ (Ghi chú SOP từ Quản trị viên):',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 12.5,
-                                  color: Color(0xFF92400E),
+                              Expanded(
+                                child: Text(
+                                  'Hướng dẫn nghiệp vụ (Ghi chú SOP từ Quản trị viên):',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 12.5,
+                                    color: Color(0xFF92400E),
+                                  ),
                                 ),
                               ),
                             ],
@@ -1038,12 +1042,14 @@ class _ScheduleDetailModalSheetState extends State<ScheduleDetailModalSheet> {
                                   color: Color(0xFF0284C7),
                                 ),
                                 const SizedBox(width: 6),
-                                Text(
-                                  'Chi tiết đánh giá từng hạng mục (${itemsToShow.length} mục):',
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 12,
-                                    color: Color(0xFF1E293B),
+                                Expanded(
+                                  child: Text(
+                                    'Chi tiết đánh giá từng hạng mục (${itemsToShow.length} mục):',
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 12,
+                                      color: Color(0xFF1E293B),
+                                    ),
                                   ),
                                 ),
                               ],

@@ -1,3 +1,4 @@
+export 'widgets/adaptive_viewport.dart';
 export 'widgets/custom_bottom_navigation_bar.dart';
 export 'utils/avatar_url_helper.dart';
 export 'utils/profile_image_flow.dart';

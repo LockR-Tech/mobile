@@ -1793,8 +1793,8 @@ class _PromotionCard extends StatelessWidget {
             const SizedBox(width: 14),
             // ── Right: content ───────────────────────────────────────
             Expanded(
-              child: SizedBox(
-                height: 110,
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(minHeight: 110),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,

@@ -794,7 +794,9 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                             const Icon(Icons.phone_outlined, color: opsMutedText, size: 18),
                             const SizedBox(width: 8),
                             const Text('SĐT kỹ thuật: ', style: TextStyle(fontSize: 13, color: opsDark)),
-                            Text(techPhone, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: opsDark)),
+                            Expanded(
+                              child: Text(techPhone, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: opsDark)),
+                            ),
                           ],
                         ),
                       ],
@@ -7129,25 +7131,32 @@ class _ReportLogsSectionState extends State<_ReportLogsSection> {
           children: [
             const Icon(Icons.history_edu_outlined, size: 16, color: opsPrimary),
             const SizedBox(width: 6),
-            const Text(
-              'Nhật ký & Lịch sử xử lý của KTV:',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12.5, color: opsDark),
-            ),
-            if (_logs.isNotEmpty) ...[
-              const SizedBox(width: 6),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
-                decoration: BoxDecoration(
-                  color: opsPrimary.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Text(
-                  '${_logs.length}',
-                  style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: opsPrimary),
-                ),
+            Expanded(
+              child: Row(
+                children: [
+                  const Flexible(
+                    child: Text(
+                      'Nhật ký & Lịch sử xử lý của KTV:',
+                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12.5, color: opsDark),
+                    ),
+                  ),
+                  if (_logs.isNotEmpty) ...[
+                    const SizedBox(width: 6),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                      decoration: BoxDecoration(
+                        color: opsPrimary.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Text(
+                        '${_logs.length}',
+                        style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: opsPrimary),
+                      ),
+                    ),
+                  ],
+                ],
               ),
-            ],
-            const Spacer(),
+            ),
             if (!_loading)
               InkWell(
                 onTap: _load,
@@ -9339,14 +9348,16 @@ class _BoxIncidentResolutionSheetState
                               color: const Color(0xFF0284C7),
                             ),
                             const SizedBox(width: 6),
-                            Text(
-                              isFromInspection
-                                  ? 'Nội dung kiểm tra định kỳ không đạt:'
-                                  : 'Lý do khách hàng phản ánh:',
-                              style: const TextStyle(
-                                fontSize: 11.5,
-                                fontWeight: FontWeight.bold,
-                                color: Color(0xFF334155),
+                            Expanded(
+                              child: Text(
+                                isFromInspection
+                                    ? 'Nội dung kiểm tra định kỳ không đạt:'
+                                    : 'Lý do khách hàng phản ánh:',
+                                style: const TextStyle(
+                                  fontSize: 11.5,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF334155),
+                                ),
                               ),
                             ),
                           ],
@@ -9415,12 +9426,14 @@ class _BoxIncidentResolutionSheetState
                         children: [
                           const Icon(Icons.check_circle, size: 14, color: Color(0xFF16A34A)),
                           const SizedBox(width: 6),
-                          Text(
-                            'Đã có ${_existingInspection.length} ảnh hiện trường / người báo đối chứng:',
-                            style: const TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xFF166534),
+                          Expanded(
+                            child: Text(
+                              'Đã có ${_existingInspection.length} ảnh hiện trường / người báo đối chứng:',
+                              style: const TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF166534),
+                              ),
                             ),
                           ),
                         ],
@@ -9472,12 +9485,14 @@ class _BoxIncidentResolutionSheetState
                         children: [
                           const Icon(Icons.check_circle, size: 14, color: Color(0xFF16A34A)),
                           const SizedBox(width: 6),
-                          Text(
-                            'Đã có ${_existingProgress.length} ảnh trong quá trình sửa:',
-                            style: const TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xFF166534),
+                          Expanded(
+                            child: Text(
+                              'Đã có ${_existingProgress.length} ảnh trong quá trình sửa:',
+                              style: const TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF166534),
+                              ),
                             ),
                           ),
                         ],
@@ -10298,12 +10313,14 @@ class _MyReportPhotosSectionState extends State<_MyReportPhotosSection> {
           children: [
             const Icon(Icons.photo_library_outlined, size: 16, color: opsPrimary),
             const SizedBox(width: 6),
-            Text(
-              'Ảnh bạn đã gắn (${_photos.length}) — chạm ✕ để xoá ảnh tải nhầm',
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 12.5,
-                color: opsDark,
+            Expanded(
+              child: Text(
+                'Ảnh bạn đã gắn (${_photos.length}) — chạm ✕ để xoá ảnh tải nhầm',
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 12.5,
+                  color: opsDark,
+                ),
               ),
             ),
           ],

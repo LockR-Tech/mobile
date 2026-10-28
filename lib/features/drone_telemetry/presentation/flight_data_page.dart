@@ -460,8 +460,10 @@ class _FlightDataPageState extends State<FlightDataPage> {
           children: [
             Center(child: AttitudeIndicator(roll: t.roll, pitch: t.pitch, size: 140)),
             const SizedBox(height: 8),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            // Khung chỉ rộng 168: tên chế độ dài (STABILIZE…) xuống dòng.
+            Wrap(
+              spacing: 6,
+              runSpacing: 4,
               children: [
                 _chip(t.armed ? 'ARMED' : 'DISARMED',
                     t.armed ? const Color(0xFFEF4444) : const Color(0xFF16A34A)),
@@ -750,7 +752,14 @@ class _FlightDataPageState extends State<FlightDataPage> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(label, style: const TextStyle(color: Colors.white54, fontSize: 11)),
-          Text(value, style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w700)),
+          const SizedBox(width: 6),
+          Flexible(
+            child: Text(
+              value,
+              textAlign: TextAlign.right,
+              style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w700),
+            ),
+          ),
         ],
       ),
     );

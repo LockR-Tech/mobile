@@ -35,7 +35,7 @@ class AISLShadcnTheme {
         popoverForeground: Color(0xFF0F172A),
         selection: navyAccent,
       ),
-      textTheme: ShadTextTheme(family: 'Manrope'),
+      textTheme: ShadTextTheme(family: 'Roboto'),
       // Global button theme with rounded corners
       primaryButtonTheme: ShadButtonTheme(
         decoration: ShadDecoration(
@@ -76,7 +76,7 @@ class AISLShadcnTheme {
         // Consistent placeholder text size
         placeholderStyle: const TextStyle(
           fontSize: 16, // Same size as input text
-          fontFamily: 'Manrope',
+          fontFamily: 'Roboto',
         ),
       ),
     );
@@ -108,7 +108,7 @@ class AISLShadcnTheme {
         popoverForeground: Color(0xFFFFFFFF),
         selection: navyAccent,
       ),
-      textTheme: ShadTextTheme(family: 'Manrope'),
+      textTheme: ShadTextTheme(family: 'Roboto'),
       // Global button theme with rounded corners
       primaryButtonTheme: ShadButtonTheme(
         decoration: ShadDecoration(
@@ -149,7 +149,7 @@ class AISLShadcnTheme {
         // Consistent placeholder text size
         placeholderStyle: const TextStyle(
           fontSize: 16, // Same size as input text
-          fontFamily: 'Manrope',
+          fontFamily: 'Roboto',
         ),
       ),
     );

@@ -8,7 +8,7 @@ import 'package:smart_laundry_locker/core/theme/shadcn_theme.dart';
 import 'package:smart_laundry_locker/core/utils/app_date_time.dart';
 
 /// Shared design kit for the locker customer flows (SEND / RENTAL / orders).
-/// Everything here is aligned to [AISLShadcnTheme] (navy + Manrope, 16px radius,
+/// Everything here is aligned to [AISLShadcnTheme] (navy + Roboto, 16px radius,
 /// white cards with #E2E8F0 borders) so the locker screens match the rest of
 /// the app instead of the old standalone blue palette.
 

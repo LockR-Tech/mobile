@@ -500,11 +500,12 @@ class _Row extends StatelessWidget {
           const SizedBox(width: 10),
           Text(label,
               style: const TextStyle(fontSize: 13, color: AislBrand.textMuted)),
-          const Spacer(),
-          if (valueWidget != null)
-            valueWidget!
-          else
-            Flexible(
+          if (valueWidget != null) ...[
+            const Spacer(),
+            valueWidget!,
+          ] else ...[
+            const SizedBox(width: 12),
+            Expanded(
               child: Text(
                 value ?? '',
                 style: TextStyle(
@@ -515,6 +516,7 @@ class _Row extends StatelessWidget {
                 textAlign: TextAlign.right,
               ),
             ),
+          ],
         ],
       ),
     );

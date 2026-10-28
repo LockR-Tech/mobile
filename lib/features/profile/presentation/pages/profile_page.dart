@@ -678,7 +678,7 @@ class _ProfilePageState extends State<ProfilePage>
             child: Text(
               title,
               style: TextStyle(
-                fontFamily: 'Manrope',
+                fontFamily: 'Roboto',
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
                 color: ShadTheme.of(context).colorScheme.mutedForeground,

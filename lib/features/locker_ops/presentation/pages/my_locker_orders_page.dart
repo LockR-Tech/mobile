@@ -3767,12 +3767,14 @@ class _OrderRelocationCard extends StatelessWidget {
               children: [
                 const Icon(LucideIcons.camera, size: 13, color: Color(0xFF15803D)),
                 const SizedBox(width: 5),
-                Text(
-                  'Ảnh KTV chụp quá trình kiểm tra & chuyển ô (${photos.length} ảnh):',
-                  style: const TextStyle(
-                    fontSize: 11.5,
-                    fontWeight: FontWeight.w700,
-                    color: Color(0xFF15803D),
+                Expanded(
+                  child: Text(
+                    'Ảnh KTV chụp quá trình kiểm tra & chuyển ô (${photos.length} ảnh):',
+                    style: const TextStyle(
+                      fontSize: 11.5,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF15803D),
+                    ),
                   ),
                 ),
               ],
@@ -3825,12 +3827,15 @@ class _OrderRelocationCard extends StatelessWidget {
                   children: [
                     Icon(LucideIcons.fileText, size: 14, color: Colors.white),
                     SizedBox(width: 6),
-                    Text(
-                      'Xem toàn bộ biên bản sự cố KTV & nhật ký ➔',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                    Flexible(
+                      child: Text(
+                        'Xem toàn bộ biên bản sự cố KTV & nhật ký ➔',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
                       ),
                     ),
                   ],
@@ -3858,13 +3863,16 @@ class _OrderRelocationCard extends StatelessWidget {
           label,
           style: const TextStyle(fontSize: 11.5, color: Color(0xFF64748B)),
         ),
-        const Spacer(),
-        Text(
-          value,
-          style: TextStyle(
-            fontSize: 11.5,
-            fontWeight: isBold ? FontWeight.w800 : FontWeight.w600,
-            color: valueColor ?? const Color(0xFF1E293B),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            value,
+            textAlign: TextAlign.right,
+            style: TextStyle(
+              fontSize: 11.5,
+              fontWeight: isBold ? FontWeight.w800 : FontWeight.w600,
+              color: valueColor ?? const Color(0xFF1E293B),
+            ),
           ),
         ),
       ],

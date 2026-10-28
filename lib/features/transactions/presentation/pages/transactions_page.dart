@@ -484,24 +484,29 @@ class _SpendingStatsCardState extends State<_SpendingStatsCard> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
-                children: [
-                  Icon(
-                    _showMethodBreakdown ? Icons.account_balance_wallet_outlined : Icons.pie_chart_rounded,
-                    size: 16,
-                    color: const Color(0xFF475569),
-                  ),
-                  const SizedBox(width: 6),
-                  Text(
-                    _showMethodBreakdown ? 'Tổng tiền theo hình thức' : 'Chi tiết theo từng dịch vụ',
-                    style: const TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w700,
-                      color: Color(0xFF334155),
+              Expanded(
+                child: Row(
+                  children: [
+                    Icon(
+                      _showMethodBreakdown ? Icons.account_balance_wallet_outlined : Icons.pie_chart_rounded,
+                      size: 16,
+                      color: const Color(0xFF475569),
                     ),
-                  ),
-                ],
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: Text(
+                        _showMethodBreakdown ? 'Tổng tiền theo hình thức' : 'Chi tiết theo từng dịch vụ',
+                        style: const TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xFF334155),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
+              const SizedBox(width: 8),
               Container(
                 padding: const EdgeInsets.all(2),
                 decoration: BoxDecoration(
@@ -1235,34 +1240,39 @@ class _PaymentMethodFilterBar extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Row(
-                  children: [
-                    Container(
-                      width: 24,
-                      height: 24,
-                      decoration: BoxDecoration(
-                        color: AISLShadcnTheme.navySurface,
-                        borderRadius: BorderRadius.circular(6),
+                Flexible(
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 24,
+                        height: 24,
+                        decoration: BoxDecoration(
+                          color: AISLShadcnTheme.navySurface,
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Icon(
+                          currentFilter['icon'] as IconData,
+                          size: 14,
+                          color: AISLShadcnTheme.navyPrimary,
+                        ),
                       ),
-                      child: Icon(
-                        currentFilter['icon'] as IconData,
-                        size: 14,
-                        color: AISLShadcnTheme.navyPrimary,
+                      const SizedBox(width: 8),
+                      Flexible(
+                        child: Text(
+                          provider.selectedMethod == 'ALL'
+                              ? 'Tất cả (${provider.getMethodCount('ALL')} GD):'
+                              : '${currentFilter['label']} (${provider.getMethodCount(provider.selectedMethod)} GD):',
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: Color(0xFF64748B),
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      provider.selectedMethod == 'ALL'
-                          ? 'Tất cả (${provider.getMethodCount('ALL')} GD):'
-                          : '${currentFilter['label']} (${provider.getMethodCount(provider.selectedMethod)} GD):',
-                      style: const TextStyle(
-                        fontSize: 12,
-                        color: Color(0xFF64748B),
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
+                const SizedBox(width: 8),
                 Builder(
                   builder: (_) {
                     // Hiện riêng tiền vào / tiền ra — cộng gộp hai chiều ra

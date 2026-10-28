@@ -442,12 +442,18 @@ class _TopUpAmountGrid extends StatelessWidget {
                   ),
                 ),
                 alignment: Alignment.center,
-                child: Text(
-                  formatCurrency(amount),
-                  style: const TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ).copyWith(color: isSelected ? Colors.white : Colors.black),
+                padding: const EdgeInsets.symmetric(horizontal: 6),
+                // Số tiền 7 chữ số không xuống dòng: thu nhỏ vừa ô thay vì vỡ.
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    formatCurrency(amount),
+                    maxLines: 1,
+                    style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ).copyWith(color: isSelected ? Colors.white : Colors.black),
+                  ),
                 ),
               ),
             );

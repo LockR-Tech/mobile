@@ -673,13 +673,16 @@ class _SendParcelPageState extends State<SendParcelPage>
             label,
             style: const TextStyle(fontSize: 13, color: opsMutedText),
           ),
-          const Spacer(),
-          Text(
-            value,
-            style: const TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w700,
-              color: Color(0xFF15803D),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              value,
+              textAlign: TextAlign.right,
+              style: const TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
+                color: Color(0xFF15803D),
+              ),
             ),
           ),
         ],

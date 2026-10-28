@@ -81,6 +81,31 @@ flutter:
     - assets/images/
     - assets/markdown/
 
+  # Đóng gói Roboto (Google Fonts, OFL — assets/fonts/OFL.txt) để chữ trên mọi
+  # máy giống máy ảo Pixel: OPPO/Samsung… có font hệ thống riêng, rộng và cao
+  # khác Roboto. Bản tĩnh đủ 9 độ đậm, chỉ giữ ký tự Latin + tiếng Việt.
+  fonts:
+    - family: Roboto
+      fonts:
+        - asset: assets/fonts/Roboto-Thin.ttf
+          weight: 100
+        - asset: assets/fonts/Roboto-ExtraLight.ttf
+          weight: 200
+        - asset: assets/fonts/Roboto-Light.ttf
+          weight: 300
+        - asset: assets/fonts/Roboto-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/Roboto-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/Roboto-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/Roboto-Bold.ttf
+          weight: 700
+        - asset: assets/fonts/Roboto-ExtraBold.ttf
+          weight: 800
+        - asset: assets/fonts/Roboto-Black.ttf
+          weight: 900
+
 flutter_launcher_icons:
   android: true
   ios: true

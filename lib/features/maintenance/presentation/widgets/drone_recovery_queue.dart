@@ -177,12 +177,14 @@ class _RecoveryCard extends StatelessWidget {
                       color: Color(0xFFDC2626),
                     ),
                     SizedBox(width: 5),
-                    Text(
-                      'Nhiệm vụ tìm kiếm khẩn cấp · Drone rơi',
-                      style: TextStyle(
-                        fontSize: 11.5,
-                        fontWeight: FontWeight.w700,
-                        color: Color(0xFFDC2626),
+                    Flexible(
+                      child: Text(
+                        'Nhiệm vụ tìm kiếm khẩn cấp · Drone rơi',
+                        style: TextStyle(
+                          fontSize: 11.5,
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xFFDC2626),
+                        ),
                       ),
                     ),
                   ],

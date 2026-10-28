@@ -530,14 +530,17 @@ class _RatingTile extends StatelessWidget {
         children: [
           Row(
             children: [
-              Text(
-                rating.userName ?? 'Khách hàng',
-                style: const TextStyle(
-                  fontWeight: FontWeight.w700,
-                  fontSize: 13,
+              Expanded(
+                child: Text(
+                  rating.userName ?? 'Khách hàng',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 13,
+                  ),
                 ),
               ),
-              const Spacer(),
               for (var i = 0; i < 5; i++)
                 Icon(
                   i < stars ? Icons.star : Icons.star_border,
