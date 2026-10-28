@@ -48,7 +48,7 @@ class ProfileMenuItem extends StatelessWidget {
           title: Text(
             title,
             style: TextStyle(
-              fontFamily: 'Manrope',
+              fontFamily: 'Roboto',
               fontSize: 16,
               fontWeight: FontWeight.w500,
               color: textColor ?? context.textPrimary,
@@ -58,7 +58,7 @@ class ProfileMenuItem extends StatelessWidget {
               ? Text(
                   subtitle!,
                   style: TextStyle(
-                    fontFamily: 'Manrope',
+                    fontFamily: 'Roboto',
                     fontSize: 14,
                     color: context.textMuted,
                     fontWeight: FontWeight.w500,
@@ -117,7 +117,7 @@ class ProfileMenuSwitchItem extends StatelessWidget {
           title: Text(
             title,
             style: TextStyle(
-              fontFamily: 'Manrope',
+              fontFamily: 'Roboto',
               fontSize: 16,
               fontWeight: FontWeight.w500,
               color: context.textPrimary,
@@ -127,7 +127,7 @@ class ProfileMenuSwitchItem extends StatelessWidget {
               ? Text(
                   subtitle!,
                   style: TextStyle(
-                    fontFamily: 'Manrope',
+                    fontFamily: 'Roboto',
                     fontSize: 14,
                     color: context.textMuted,
                   ),
@@ -194,7 +194,7 @@ class ProfileMenuBadgeItem extends StatelessWidget {
           title: Text(
             title,
             style: TextStyle(
-              fontFamily: 'Manrope',
+              fontFamily: 'Roboto',
               fontSize: 16,
               fontWeight: FontWeight.w500,
               color: context.textPrimary,
@@ -204,7 +204,7 @@ class ProfileMenuBadgeItem extends StatelessWidget {
               ? Text(
                   subtitle!,
                   style: TextStyle(
-                    fontFamily: 'Manrope',
+                    fontFamily: 'Roboto',
                     fontSize: 14,
                     color: context.textMuted,
                   ),
@@ -227,7 +227,7 @@ class ProfileMenuBadgeItem extends StatelessWidget {
                   child: Text(
                     badgeText!,
                     style: TextStyle(
-                      fontFamily: 'Manrope',
+                      fontFamily: 'Roboto',
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
                       color: ShadTheme.of(

@@ -149,7 +149,7 @@ class _BalanceCard extends StatelessWidget {
                   balance == null ? '—' : fmtPointsText(balance!),
                   style: const TextStyle(
                     color: Colors.white,
-                    fontFamily: 'Manrope',
+                    fontFamily: 'Roboto',
                     fontWeight: FontWeight.w800,
                     fontSize: 24,
                   ),
@@ -250,7 +250,7 @@ class _ExchangeCard extends StatelessWidget {
                 Text(
                   exchangeVoucherRewardText(voucher),
                   style: const TextStyle(
-                    fontFamily: 'Manrope',
+                    fontFamily: 'Roboto',
                     fontWeight: FontWeight.w800,
                     fontSize: 16,
                   ),

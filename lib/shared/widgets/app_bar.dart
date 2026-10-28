@@ -154,7 +154,7 @@ class CustomSliverAppBar extends StatelessWidget {
         child: Text(
           title,
           style: TextStyle(
-            fontFamily: 'Manrope',
+            fontFamily: 'Roboto',
             fontSize: titleFontSize,
             fontWeight: titleFontWeight,
             color: foregroundColor ?? AppColors.onSurface,
@@ -234,7 +234,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
           Text(
             title,
             style: TextStyle(
-              fontFamily: 'Manrope',
+              fontFamily: 'Roboto',
               fontSize: 18,
               fontWeight: FontWeight.w700,
               color: foregroundColor ?? Colors.white,
@@ -387,7 +387,7 @@ class FilterAppBar extends StatelessWidget implements PreferredSizeWidget {
       title: Text(
         title,
         style: const TextStyle(
-          fontFamily: 'Manrope',
+          fontFamily: 'Roboto',
           fontSize: 20,
           fontWeight: FontWeight.w600,
           color: AppColors.onSurface,

@@ -295,8 +295,7 @@ class AislApp extends StatelessWidget {
       ],
       child: Builder(
         builder: (context) {
-          final themeMode =
-              context.watch<ThemeProvider>().themeMode;
+          final themeMode = context.watch<ThemeProvider>().themeMode;
           return ShadApp.router(
             title: 'Lockerly',
             routerConfig: AppRouter.router,
@@ -304,39 +303,51 @@ class AislApp extends StatelessWidget {
             darkTheme: AISLShadcnTheme.darkTheme,
             themeMode: themeMode,
             builder: (context, child) {
-              return ScaffoldMessenger(
+              // Toast/loading/dialog của SmartDialog nằm ngoài AdaptiveViewport:
+              // nó tính chỗ tránh bàn phím bằng toạ độ màn hình thật.
+              return AdaptiveViewport.clampTextScale(
+                child: ScaffoldMessenger(
                   key: AppMessengerService.scaffoldMessengerKey,
-                  child: FlutterSmartDialog.init(
-                    toastBuilder: (String msg) => _AislToastWidget(msg: msg),
-                    loadingBuilder: (String msg) => _AislLoadingWidget(msg: msg),
-                    notifyStyle: FlutterSmartNotifyStyle(
-                      successBuilder: (msg) => _AislNotifyWidget(
-                        msg: msg,
-                        icon: LucideIcons.circleCheckBig,
-                        iconColor: const Color(0xFF10B981),
+                  child:
+                      FlutterSmartDialog.init(
+                        toastBuilder: (String msg) =>
+                            _AislToastWidget(msg: msg),
+                        loadingBuilder: (String msg) =>
+                            _AislLoadingWidget(msg: msg),
+                        notifyStyle: FlutterSmartNotifyStyle(
+                          successBuilder: (msg) => _AislNotifyWidget(
+                            msg: msg,
+                            icon: LucideIcons.circleCheckBig,
+                            iconColor: const Color(0xFF10B981),
+                          ),
+                          failureBuilder: (msg) => _AislNotifyWidget(
+                            msg: msg,
+                            icon: LucideIcons.circleX,
+                            iconColor: const Color(0xFFEF4444),
+                          ),
+                          warningBuilder: (msg) => _AislNotifyWidget(
+                            msg: msg,
+                            icon: LucideIcons.triangleAlert,
+                            iconColor: const Color(0xFFF59E0B),
+                          ),
+                          alertBuilder: (msg) => _AislNotifyWidget(
+                            msg: msg,
+                            icon: LucideIcons.info,
+                            iconColor: AISLShadcnTheme.navyPrimary,
+                          ),
+                          errorBuilder: (msg) => _AislNotifyWidget(
+                            msg: msg,
+                            icon: LucideIcons.octagonAlert,
+                            iconColor: const Color(0xFFEF4444),
+                          ),
+                        ),
+                      )(
+                        context,
+                        AdaptiveViewport(
+                          child: child ?? const SizedBox.shrink(),
+                        ),
                       ),
-                      failureBuilder: (msg) => _AislNotifyWidget(
-                        msg: msg,
-                        icon: LucideIcons.circleX,
-                        iconColor: const Color(0xFFEF4444),
-                      ),
-                      warningBuilder: (msg) => _AislNotifyWidget(
-                        msg: msg,
-                        icon: LucideIcons.triangleAlert,
-                        iconColor: const Color(0xFFF59E0B),
-                      ),
-                      alertBuilder: (msg) => _AislNotifyWidget(
-                        msg: msg,
-                        icon: LucideIcons.info,
-                        iconColor: AISLShadcnTheme.navyPrimary,
-                      ),
-                      errorBuilder: (msg) => _AislNotifyWidget(
-                        msg: msg,
-                        icon: LucideIcons.octagonAlert,
-                        iconColor: const Color(0xFFEF4444),
-                      ),
-                    ),
-                )(context, child ?? const SizedBox.shrink()),
+                ),
               );
             },
           );

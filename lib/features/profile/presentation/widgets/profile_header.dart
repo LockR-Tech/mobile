@@ -297,7 +297,7 @@ class ProfileHeader extends StatelessWidget {
         child: Text(
           firstLetter,
           style: const TextStyle(
-            fontFamily: 'Manrope',
+            fontFamily: 'Roboto',
             fontSize: 36,
             fontWeight: FontWeight.w700,
             color: Color(0xFF1E293B),
@@ -317,7 +317,7 @@ class ProfileHeader extends StatelessWidget {
           Text(
             user['fullName']?.toString() ?? 'Người dùng',
             style: TextStyle(
-              fontFamily: 'Manrope',
+              fontFamily: 'Roboto',
               fontSize: 20,
               fontWeight: FontWeight.w800,
               color: context.textPrimary,
@@ -332,7 +332,7 @@ class ProfileHeader extends StatelessWidget {
             Text(
               user['email'].toString(),
               style: TextStyle(
-                fontFamily: 'Manrope',
+                fontFamily: 'Roboto',
                 fontSize: 13.5,
                 fontWeight: FontWeight.w500,
                 color: context.textMuted,
