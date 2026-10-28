@@ -231,10 +231,15 @@ class _DroneBookingPageState extends State<DroneBookingPage>
         }
       });
     }
-    _slotPoll = Timer.periodic(
-      widget.slotRefreshInterval,
-      (_) => _refreshDroneSlots(),
-    );
+    _slotPoll = Timer.periodic(widget.slotRefreshInterval, (_) {
+      // Socket thật đang nối thì báo đổi realtime đã đủ; chỉ tải định kỳ khi socket rớt.
+      if (widget.availabilityChanges == null &&
+          widget.destinationLockers == null &&
+          LockerAvailabilitySocketService.instance.connected) {
+        return;
+      }
+      _refreshDroneSlots();
+    });
   }
 
   /// Gom các báo đổi dồn dập (một đơn đổi nhiều ô) rồi mới tải lại.

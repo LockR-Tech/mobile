@@ -382,8 +382,21 @@ class _StatusBanner extends StatelessWidget {
     final stopped =
         stage == DroneDeliveryStage.canceled ||
         stage == DroneDeliveryStage.failed;
+    // Đơn đóng sau khi drone đã khởi phóng (vd. rơi kiện rồi giao lại / bồi thường):
+    // không phải "dừng trước khi cất cánh", và tiền xử lý theo phương án sự cố.
+    final closedAfterFlight =
+        stage == DroneDeliveryStage.canceled && status.launchingAt != null;
+    // Chưa trả tiền thì hệ thống chưa mời KTV: không ghi "đang tìm kỹ thuật viên".
+    final awaitingPayment =
+        stage == DroneDeliveryStage.awaitingDispatch && !status.isPaid;
     final lines = <String>[
-      stage.body(_etaText(status.etaMinutes)),
+      closedAfterFlight
+          ? 'Chuyến bay không hoàn tất nên đơn này đã đóng. Phương án xử lý '
+                '(giao lại hoặc bồi thường) xem ở phần sự cố của đơn.'
+          : awaitingPayment
+          ? 'Đơn chưa thanh toán. Thanh toán xong hệ thống mới bắt đầu tìm '
+                'kỹ thuật viên drone tới lấy hàng.'
+          : stage.body(_etaText(status.etaMinutes)),
       if (endedAt != null) 'Lúc: ${formatDateTimeVn(endedAt)}',
       if (stopped && reason != null) 'Lý do: $reason',
       if (stopped && status.cancelNote != null) 'Ghi chú: ${status.cancelNote}',
@@ -396,7 +409,10 @@ class _StatusBanner extends StatelessWidget {
             'khoản ngân hàng của người đặt.',
       if (stopped && (status.paymentStatus ?? '').toUpperCase() == 'REFUNDED')
         'Tiền đã được chuyển khoản hoàn cho người đặt.',
-      if (stopped && status.isPaid)
+      if (stopped && status.isPaid && closedAfterFlight)
+        'Khoản đã trả được xử lý theo phương án sự cố: giao lại miễn phí '
+            'hoặc bồi thường chuyển khoản về tài khoản ngân hàng đã liên kết.'
+      else if (stopped && status.isPaid)
         'Chưa ghi nhận được yêu cầu hoàn tiền — vui lòng liên hệ hỗ trợ.',
     ];
     return Container(
@@ -1174,12 +1190,34 @@ class _OrderCard extends StatelessWidget {
         ('Mã đơn', status.orderCode ?? '—'),
         ('Trạng thái đơn', droneOrderStatusLabel(status.orderStatus)),
         ('Thanh toán', dronePaymentStatusLabel(status.paymentStatus)),
+        // Phí gốc, rồi từng khoản giảm, rồi số tiền thực trả — không hiện số sau
+        // khi trừ điểm dưới nhãn "Phí giao drone".
         (
           'Phí giao drone',
-          status.totalPrice == null ? '—' : fmtPrice(status.totalPrice),
+          (status.originalPrice ?? 0) > 0
+              ? fmtPrice(status.originalPrice)
+              : status.totalPrice == null
+              ? '—'
+              : fmtPrice(status.totalPrice),
         ),
         if ((status.weightSurcharge ?? 0) > 0)
           ('Trong đó thu thêm do cân lệch', fmtPrice(status.weightSurcharge)),
+        if ((status.discount ?? 0) > 0)
+          (
+            status.promotionCode == null || status.promotionCode!.isEmpty
+                ? 'Mã giảm giá'
+                : 'Mã giảm giá ${status.promotionCode}',
+            '-${fmtPrice(status.discount)}',
+          ),
+        if ((status.pointsDiscount ?? 0) > 0)
+          (
+            'Dùng ${fmtPrice(status.pointsUsed ?? 0).replaceAll('đ', '')} điểm',
+            '-${fmtPrice(status.pointsDiscount)}',
+          ),
+        if ((status.originalPrice ?? 0) > 0 &&
+            status.totalPrice != null &&
+            status.totalPrice != status.originalPrice)
+          ('Số tiền thanh toán', fmtPrice(status.totalPrice)),
         if (status.paymentMethod != null)
           ('Phương thức', dronePaymentMethodLabel(status.paymentMethod)),
         if (status.paymentReference != null)

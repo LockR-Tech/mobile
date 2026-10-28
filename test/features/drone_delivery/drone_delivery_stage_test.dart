@@ -87,7 +87,7 @@ void main() {
       config.droneWeightSurcharge(
         declaredGrams: 500,
         actualGrams: 1200,
-        currentTotal: 15000,
+        alreadyCharged: 0,
       ),
       9000,
     );
@@ -95,9 +95,18 @@ void main() {
       config.droneWeightSurcharge(
         declaredGrams: 500,
         actualGrams: 550,
-        currentTotal: 15000,
+        alreadyCharged: 0,
       ),
       0,
+    );
+    // Cân lại sau khi đã thu phụ thu một lần: chỉ thu phần còn thiếu, không thu lại từ đầu.
+    expect(
+      config.droneWeightSurcharge(
+        declaredGrams: 500,
+        actualGrams: 1200,
+        alreadyCharged: 3000,
+      ),
+      6000,
     );
     // Server chưa có bảng giá theo khối lượng ⇒ giá đồng nhất, không thu thêm.
     expect(BusinessConfig.fromPublicMaps().droneDeliveryFeeFor(3000), 15000);

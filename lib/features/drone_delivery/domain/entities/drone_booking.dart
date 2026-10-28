@@ -215,6 +215,8 @@ String droneFailureReasonLabel(String? code) =>
     switch ((code ?? '').toUpperCase()) {
       '' => '—',
       'WEATHER' => 'Tạm dừng bay do thời tiết hoặc lệnh điều hành',
+      'WEATHER_UNSAFE' => 'Thời tiết tuyến bay không an toàn',
+      'STATION_SUSPENDED' => 'Trạm bay đang tạm dừng',
       'DRONE_FAULT' => 'Drone gặp sự cố',
       'NO_DRONE_AVAILABLE' => 'Tủ gửi không còn drone sẵn sàng',
       'SOURCE_LOCKER_FAULT' => 'Tủ gửi gặp sự cố',

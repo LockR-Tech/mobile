@@ -2324,6 +2324,9 @@ class _OrderCard extends StatelessWidget {
         rawStatus != 'CANCELED';
     final sColor = statusColor(status);
     final isDone = rawStatus == 'COMPLETED' || rawStatus == 'CANCELED';
+    // Đơn drone giao không thành công cũng đóng (CANCELED) nhưng không tô xanh "xong".
+    final doneTone =
+        isDone && status != 'FAILED' && status != 'DROP_REPORTED';
     // Ô hỏng đã xác nhận: không mời khách trả tiền / lấy đồ (server cũng chặn).
     // Ô mới chờ KTV kiểm tra: khách vẫn lấy đồ được, chỉ báo phí đang dừng.
     final boxIncident = orderBoxIncidentBlocksAccess(order);
@@ -2392,7 +2395,7 @@ class _OrderCard extends StatelessWidget {
                             ),
                             decoration: BoxDecoration(
                               color:
-                                  (isDone
+                                  (doneTone
                                           ? const Color(0xFF16A34A)
                                           : overdue
                                           ? const Color(0xFFDC2626)
@@ -2405,7 +2408,7 @@ class _OrderCard extends StatelessWidget {
                               style: TextStyle(
                                 fontSize: 11.5,
                                 fontWeight: FontWeight.w700,
-                                color: isDone
+                                color: doneTone
                                     ? const Color(0xFF16A34A)
                                     : overdue
                                     ? const Color(0xFFDC2626)

@@ -255,6 +255,7 @@ class _DroneJourneyCameraPanelState extends State<DroneJourneyCameraPanel> {
     final reason = TextEditingController();
     final photos = PhotoPickerController(maxPhotos: 1);
     var sending = false;
+    String? dialogError;
     final reported = await showDialog<bool>(
       context: context,
       barrierDismissible: false,
@@ -297,6 +298,14 @@ class _DroneJourneyCameraPanelState extends State<DroneJourneyCameraPanel> {
                         'Không bắt buộc khi camera mất kết nối; không dùng ảnh giả.',
                   ),
                 ),
+                if (dialogError != null) ...[
+                  const SizedBox(height: 10),
+                  Text(
+                    dialogError!,
+                    key: const ValueKey('drop-report-error'),
+                    style: const TextStyle(color: Color(0xFFB91C1C)),
+                  ),
+                ],
               ],
             ),
           ),
@@ -309,7 +318,13 @@ class _DroneJourneyCameraPanelState extends State<DroneJourneyCameraPanel> {
               onPressed: sending
                   ? null
                   : () async {
-                      if (reason.text.trim().isEmpty) return;
+                      if (reason.text.trim().isEmpty) {
+                        setDialogState(
+                          () => dialogError = 'Nhập mô tả điều bạn quan sát được.',
+                        );
+                        return;
+                      }
+                      setDialogState(() => dialogError = null);
                       setDialogState(() => sending = true);
                       try {
                         if (photos.isNotEmpty) await photos.uploadAll();
@@ -342,13 +357,12 @@ class _DroneJourneyCameraPanelState extends State<DroneJourneyCameraPanel> {
                         _dropIdempotencyKey = null;
                         if (context.mounted) Navigator.pop(context, true);
                       } catch (error) {
+                        // Lỗi hiện ngay trong hộp thoại: SnackBar của trang nằm sau lớp phủ, KTV không thấy.
                         if (context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(droneTechnicianErrorMessage(error)),
-                            ),
-                          );
-                          setDialogState(() => sending = false);
+                          setDialogState(() {
+                            sending = false;
+                            dialogError = droneTechnicianErrorMessage(error);
+                          });
                         }
                       }
                     },

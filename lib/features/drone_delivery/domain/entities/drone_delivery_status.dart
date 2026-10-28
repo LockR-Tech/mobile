@@ -42,6 +42,14 @@ class DroneDeliveryStatus {
 
   /// Phần còn phải trả (tổng hiện tại trừ phần đã trả); null với server cũ.
   final double? amountDue;
+
+  /// Phí gốc trước giảm giá / điểm thưởng (đã gồm phụ thu cân lệch); null với server cũ.
+  /// totalPrice = max(originalPrice − discount − pointsDiscount, 0).
+  final double? originalPrice;
+  final double? discount;
+  final String? promotionCode;
+  final int? pointsUsed;
+  final double? pointsDiscount;
   final int? sourceLockerId;
   final int? destinationLockerId;
   final int? reservedBoxId;
@@ -155,6 +163,11 @@ class DroneDeliveryStatus {
     this.totalPrice,
     this.weightSurcharge,
     this.amountDue,
+    this.originalPrice,
+    this.discount,
+    this.promotionCode,
+    this.pointsUsed,
+    this.pointsDiscount,
     this.sourceLockerId,
     this.destinationLockerId,
     this.reservedBoxId,

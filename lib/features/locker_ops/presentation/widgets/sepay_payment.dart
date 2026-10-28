@@ -137,6 +137,37 @@ class SepayPaymentController extends ChangeNotifier
     }
   }
 
+  /// Khách chuyển thiếu: số đã nhận và số còn phải chuyển (null khi chưa có lần chuyển thiếu nào).
+  num? get receivedAmount => _receivedAmount;
+  num? get remainingAmount => _remainingAmount;
+  num? _receivedAmount;
+  num? _remainingAmount;
+
+  /// Hỏi server đã nhận bao nhiêu: đơn chưa PAID mà đã nhận một phần ⇒ báo số còn thiếu và tạo lại mã VietQR
+  /// đúng số đó (giao dịch cũ đã đóng sau khi nhận tiền nên không giả lập / chuyển tiếp vào đó được nữa).
+  Future<void> _refreshShortfall() async {
+    if (_paid || _disposed) return;
+    ({bool paid, num? paidAmount, num? amountDue}) progress;
+    try {
+      progress = await service.orderPaymentProgress(orderId);
+    } catch (_) {
+      return;
+    }
+    if (_disposed || progress.paid) return;
+    final received = progress.paidAmount;
+    final due = progress.amountDue;
+    if (received == null || due == null || received <= 0 || due <= 0) return;
+    final changed = due != _remainingAmount;
+    _receivedAmount = received;
+    _remainingAmount = due;
+    _notify();
+    if (changed && _transfer?.amount != due) {
+      _transfer = null;
+      _paymentId = null;
+      await _createCheckout();
+    }
+  }
+
   /// Nút "Giả lập thanh toán" (test): server coi như đã nhận [amount] đồng cho
   /// giao dịch này, rồi hỏi lại trạng thái đơn ngay. Lỗi (admin đã tắt, tài
   /// khoản không được phép…) ném lên cho nút báo.
@@ -151,7 +182,7 @@ class SepayPaymentController extends ChangeNotifier
     } catch (e) {
       throw Exception(LockerOpsService.errorMessage(e));
     }
-    await checkNow();
+    if (!await checkNow()) await _refreshShortfall();
   }
 
   /// Khách bấm "Tôi đã chuyển khoản — Kiểm tra ngay". Trả `true` khi đơn PAID.
@@ -190,7 +221,11 @@ class SepayPaymentController extends ChangeNotifier
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed) _checkPaid();
+    if (state == AppLifecycleState.resumed) {
+      _checkPaid().then((paid) {
+        if (!paid) _refreshShortfall();
+      });
+    }
   }
 
   void _notify() {
@@ -223,7 +258,8 @@ class SepayQrSection extends StatelessWidget {
             type: PaymentStatusType.success,
             title: 'Thanh toán thành công!',
             amountText: fmtPrice(transfer?.amount ?? controller.amount),
-            message: 'Hệ thống đã nhận được tiền, đơn hàng đang được cập nhật...',
+            message:
+                'Hệ thống đã nhận được tiền, đơn hàng đang được cập nhật...',
             iconSize: 100,
           );
         }
@@ -232,6 +268,23 @@ class SepayQrSection extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              if (controller.receivedAmount != null &&
+                  controller.remainingAmount != null)
+                Container(
+                  key: const ValueKey('sepay-shortfall'),
+                  margin: const EdgeInsets.only(bottom: 12),
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFF7ED),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: const Color(0xFFFDBA74)),
+                  ),
+                  child: Text(
+                    'Đã nhận ${fmtPrice(controller.receivedAmount!)} — còn thiếu '
+                    '${fmtPrice(controller.remainingAmount!)}. Mã QR bên dưới là số còn thiếu.',
+                    style: const TextStyle(color: Color(0xFF9A3412)),
+                  ),
+                ),
               InlineVietQrCard(transfer: transfer),
               if (controller.paymentId != null)
                 PaymentSimulationButton(
@@ -346,7 +399,10 @@ class InlineVietQrCard extends StatelessWidget {
                             SizedBox(height: 6),
                             Text(
                               'Không tải được mã QR',
-                              style: TextStyle(color: opsMutedText, fontSize: 13),
+                              style: TextStyle(
+                                color: opsMutedText,
+                                fontSize: 13,
+                              ),
                             ),
                           ],
                         ),
@@ -431,7 +487,10 @@ class InlineVietQrCard extends StatelessWidget {
                     label: const Text('Sao chép'),
                     style: TextButton.styleFrom(
                       foregroundColor: const Color(0xFF3B82F6),
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
                       minimumSize: Size.zero,
                       tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                       textStyle: const TextStyle(
@@ -580,7 +639,10 @@ class _InfoLine extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label, style: const TextStyle(color: opsMutedText, fontSize: 13)),
+          Text(
+            label,
+            style: const TextStyle(color: opsMutedText, fontSize: 13),
+          ),
           const SizedBox(width: 8),
           Expanded(
             child: Text(

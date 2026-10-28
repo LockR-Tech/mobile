@@ -234,16 +234,25 @@ class ApiClient {
           'Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.',
         );
       case 403:
+        // 403 kèm mã nghiệp vụ (vd. ADMIN_AUTH_2FA_REQUIRED) có lời giải thích riêng của server.
+        final hasBusinessCode =
+            data is Map<String, dynamic> && data['code'] is String;
         return AuthorizationException(
-          'Bạn không có quyền thực hiện hành động này.',
+          hasBusinessCode && cleanMessage != 'Đã xảy ra lỗi.'
+              ? cleanMessage
+              : 'Bạn không có quyền thực hiện hành động này.',
         );
       case 404:
         return NotFoundException(cleanMessage);
       case 422:
         return ValidationException(cleanMessage);
       case >= 500:
-        final errorMessage =
-            cleanMessage.isNotEmpty && cleanMessage != 'Đã xảy ra lỗi.'
+        // Gateway / proxy trả nguyên câu HTTP tiếng Anh ("Service Unavailable",
+        // "Bad Gateway"…) khi dịch vụ chưa chạy: không hiện thẳng cho người dùng.
+        final rawHttpPhrase = RegExp(r'^[A-Za-z ]+$').hasMatch(cleanMessage);
+        final errorMessage = rawHttpPhrase
+            ? 'Hệ thống đang bận hoặc đang bảo trì. Vui lòng thử lại sau ít phút.'
+            : cleanMessage.isNotEmpty && cleanMessage != 'Đã xảy ra lỗi.'
             ? cleanMessage
             : 'Lỗi server. Vui lòng thử lại sau.';
         return ServerException(errorMessage);

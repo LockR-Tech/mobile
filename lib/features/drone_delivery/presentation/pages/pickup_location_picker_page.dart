@@ -288,10 +288,13 @@ class _PickupLocationPickerPageState extends State<PickupLocationPickerPage> {
               ),
             ),
           ),
+          // Flexible (tối đa 220): mở bàn phím thì danh sách gợi ý co lại theo chỗ
+          // còn trống thay vì đẩy tràn khung địa chỉ ở đáy.
           if (_results.isNotEmpty)
-            ConstrainedBox(
-              constraints: const BoxConstraints(maxHeight: 220),
-              child: ListView.separated(
+            Flexible(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxHeight: 220),
+                child: ListView.separated(
                 shrinkWrap: true,
                 itemCount: _results.length,
                 separatorBuilder: (_, _) => const Divider(height: 1),
@@ -319,6 +322,7 @@ class _PickupLocationPickerPageState extends State<PickupLocationPickerPage> {
                     },
                   );
                 },
+                ),
               ),
             ),
           Expanded(

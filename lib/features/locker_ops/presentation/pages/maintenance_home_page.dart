@@ -74,6 +74,12 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
   List<Map<String, dynamic>> _drones = [];
   // Hàng đợi order-based cho đội bay theo Phase 2.
   List<Map<String, dynamic>> _deliveries = [];
+  // lockerId → lý do trạm đang không bay được (thời tiết / admin tạm dừng), từ
+  // danh sách thời tiết các tủ. Dùng để khoá trước nút Tiếp nhận / Phóng; server
+  // vẫn kiểm tra lại tuyến bay lúc bấm.
+  Map<int, String> _groundedStations = const {};
+  int _loadGeneration = 0;
+  DateTime _stationWeatherAt = DateTime.now();
   // Chỉ chứa phiếu category=DRONE, lấy qua API riêng cho DRONE_TECHNICIAN.
   List<Map<String, dynamic>> _droneReports = [];
   List<Map<String, dynamic>> _myDroneReports = [];
@@ -254,6 +260,12 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
     try {
       final deliveries = await _service.droneOrderQueue();
       if (!mounted) return;
+      // Thời tiết / lệnh dừng trạm đổi chậm: làm mới mỗi phút, không theo từng nhịp poll.
+      if (DateTime.now().difference(_stationWeatherAt) >=
+          const Duration(minutes: 1)) {
+        _stationWeatherAt = DateTime.now();
+        setState(() => _loadGeneration++);
+      }
       // Chỉ cập nhật state khi danh sách đơn thực sự thay đổi để tránh nháy màn hình
       if (!_areDeliveriesEqual(_deliveries, deliveries)) {
         setState(() {
@@ -271,7 +283,13 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
       _loadInFlight ??= _loadAll().whenComplete(() => _loadInFlight = null);
 
   Future<void> _loadAll() async {
-    if (mounted) setState(() => _refreshing = true);
+    if (mounted) {
+      setState(() {
+        _refreshing = true;
+        _loadGeneration++;
+      });
+      _stationWeatherAt = DateTime.now();
+    }
     try {
       _myUserId = await TokenService.getUserId();
       _myUserName = await TokenService.getUserName();
@@ -1342,11 +1360,14 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                       ],
                     ),
                   ),
-                  if (context.canPop())
+                  // Chỉ khi chính trang này được mở chồng lên trang khác. context.canPop()
+                  // tính cả sheet / hộp thoại đang mở (vd. sheet quyền vị trí lúc mở app)
+                  // nên từng hiện "Quay lại" bấm không tác dụng và mất nút Đăng xuất.
+                  if (ModalRoute.of(context)?.impliesAppBarDismissal ?? false)
                     _droneHeaderAction(
                       Icons.arrow_back_rounded,
                       'Quay lại',
-                      () => context.pop(),
+                      () => Navigator.of(context).maybePop(),
                     )
                   else ...[
                     AssistantEntryGate(
@@ -1758,7 +1779,11 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
       child: ListView(
         padding: const EdgeInsets.all(12),
         children: [
-          DroneLockerWeatherList(load: _service.droneLockerWeather),
+          DroneLockerWeatherList(
+            load: _service.droneLockerWeather,
+            onLoaded: _onStationWeather,
+            refreshKey: _loadGeneration,
+          ),
           DronePickupQueue(
             service: _service,
             deliveries: visibleDeliveries,
@@ -3673,6 +3698,33 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                   ],
                 ),
               ],
+              if ((action == _DeliveryAction.accept ||
+                      action == _DeliveryAction.launch) &&
+                  _routeGrounded(order) != null) ...[
+                const SizedBox(height: 8),
+                Row(
+                  key: ValueKey('drone-route-grounded-$orderId'),
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Icon(
+                      Icons.thunderstorm_outlined,
+                      size: 16,
+                      color: Color(0xFFB91C1C),
+                    ),
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: Text(
+                        '${_routeGrounded(order)} — chưa ${action == _DeliveryAction.accept ? 'tiếp nhận' : 'phóng'} được đơn này.',
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFFB91C1C),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
               if (description != null && description.isNotEmpty) ...[
                 const SizedBox(height: 8),
                 Text(
@@ -3871,6 +3923,37 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
     );
   }
 
+  void _onStationWeather(List<Map<String, dynamic>> lockers) {
+    final grounded = <int, String>{};
+    for (final locker in lockers) {
+      final id = _asInt(locker['lockerId']);
+      if (id == null) continue;
+      final weather = DroneWeather.fromJson(locker['weather']);
+      if (locker['suspension'] case final Map stop) {
+        grounded[id] =
+            'đang tạm dừng bay (${stop['reasonLabel'] ?? stop['reason'] ?? 'admin dừng'})';
+      } else if (weather != null && !weather.canFly) {
+        grounded[id] = weather.unavailable
+            ? 'chưa có dự báo thời tiết'
+            : 'thời tiết không cho phép bay';
+      }
+    }
+    if (mounted) setState(() => _groundedStations = grounded);
+  }
+
+  /// Lý do tuyến của đơn đang không bay được, null nếu cả hai trạm đều bay được.
+  String? _routeGrounded(Map<String, dynamic> order) {
+    final source = _asInt(order['sourceLockerId']);
+    final destination = _asInt(order['destinationLockerId']);
+    if (source != null && _groundedStations[source] != null) {
+      return 'Trạm cất cánh ${_groundedStations[source]}';
+    }
+    if (destination != null && _groundedStations[destination] != null) {
+      return 'Tủ nhận ${_groundedStations[destination]}';
+    }
+    return null;
+  }
+
   bool _actionEnabled(
     _DeliveryAction action,
     int? orderId,
@@ -3880,6 +3963,12 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
     if (_orderBusy(orderId)) return false;
     if (action == _DeliveryAction.launching) return false;
     if (action == _DeliveryAction.track) return true;
+    // Trạm cất cánh / tủ nhận đang không bay được: server sẽ từ chối, khoá sẵn.
+    if ((action == _DeliveryAction.accept ||
+            action == _DeliveryAction.launch) &&
+        _routeGrounded(order) != null) {
+      return false;
+    }
     // Quy tắc backend: chưa PAID thì accept bị từ chối (DRONE_ORDER_UNPAID).
     // …và người gửi chưa bỏ kiện vào ô gửi thì cũng bị từ chối (DRONE_PARCEL_NOT_DROPPED).
     if (action == _DeliveryAction.accept) {
@@ -4296,16 +4385,20 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
         _asInt(order['expectedWeightGrams']);
     final totalRaw = order['totalPrice'];
     final currentTotal = totalRaw is num ? totalRaw : num.tryParse('$totalRaw');
+    final chargedRaw = order['weightSurcharge'];
+    final alreadyCharged = chargedRaw is num
+        ? chargedRaw
+        : num.tryParse('${chargedRaw ?? ''}') ?? 0;
     // Phần thu thêm ước tính theo bảng giá; server tính lại khi xác nhận.
     int surchargeFor(String text) {
       final actual = int.tryParse(text.trim());
-      if (actual == null || declaredGrams == null || currentTotal == null) {
+      if (actual == null || declaredGrams == null) {
         return 0;
       }
       return config.droneWeightSurcharge(
         declaredGrams: declaredGrams,
         actualGrams: actual,
-        currentTotal: currentTotal,
+        alreadyCharged: alreadyCharged,
       );
     }
 
@@ -4540,7 +4633,10 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
     final orderId = _asInt(order['orderId']);
     if (orderId == null) return;
     final noteCtrl = TextEditingController();
-    var selectedReason = _cancelReasons.first;
+    // Không chọn sẵn: KTV phải tự chọn lý do (lý do vào lịch sử đơn và báo cáo chặn bay).
+    _DroneCancelReason? selectedReason;
+    String? reasonProblem;
+    String? noteProblem;
 
     final confirmed = await showDialog<bool>(
       context: context,
@@ -4571,21 +4667,34 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                   for (final reason in _cancelReasons)
                     ChoiceChip(
                       label: Text(reason.label),
-                      selected: selectedReason.code == reason.code,
-                      onSelected: (_) =>
-                          setLocal(() => selectedReason = reason),
+                      selected: selectedReason?.code == reason.code,
+                      onSelected: (_) => setLocal(() {
+                        selectedReason = reason;
+                        reasonProblem = null;
+                      }),
                     ),
                 ],
               ),
+              if (reasonProblem != null) ...[
+                const SizedBox(height: 6),
+                Text(
+                  reasonProblem!,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: Color(0xFFB91C1C),
+                  ),
+                ),
+              ],
               const SizedBox(height: 12),
               TextField(
                 controller: noteCtrl,
                 minLines: 2,
                 maxLines: 4,
                 decoration: InputDecoration(
-                  labelText: selectedReason.requiresNote
+                  labelText: selectedReason?.requiresNote == true
                       ? 'Ghi chú (bắt buộc)'
                       : 'Ghi chú (tùy chọn)',
+                  errorText: noteProblem,
                   isDense: true,
                 ),
               ),
@@ -4604,13 +4713,14 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                 ),
               ),
               onPressed: () {
-                if (selectedReason.requiresNote &&
+                // Báo lỗi ngay trong hộp thoại: SnackBar nằm sau lớp phủ, KTV không thấy.
+                if (selectedReason == null) {
+                  setLocal(() => reasonProblem = 'Chọn một lý do');
+                  return;
+                }
+                if (selectedReason!.requiresNote &&
                     noteCtrl.text.trim().isEmpty) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Cần nhập ghi chú khi chọn Khác'),
-                    ),
-                  );
+                  setLocal(() => noteProblem = 'Cần nhập ghi chú khi chọn Khác');
                   return;
                 }
                 Navigator.pop(ctx, true);
@@ -4622,7 +4732,8 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
       ),
     );
 
-    if (confirmed != true) {
+    final reason = selectedReason;
+    if (confirmed != true || reason == null) {
       return;
     }
 
@@ -4636,17 +4747,17 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
               orderId,
               // Sự cố khi drone đã phóng: mã số của hộp chọn → mã lý do của backend.
               reason: const {
-                1: 'WEATHER',
+                1: 'WEATHER_UNSAFE',
                 2: 'FLIGHT_INCIDENT',
                 3: 'LANDING_PAD_FAULT',
                 4: 'OPERATIONAL',
                 5: 'OTHER',
-              }[selectedReason.code],
+              }[reason.code],
               note: note,
             )
           : _service.cancelDroneOrder(
               orderId,
-              reasonCode: selectedReason.code,
+              reasonCode: reason.code,
               note: note,
             ),
       success: inFlight
@@ -5811,12 +5922,19 @@ class _MiniPill extends StatelessWidget {
         children: [
           Icon(icon, size: 13, color: color),
           const SizedBox(width: 4),
-          Text(
-            text,
-            style: TextStyle(
-              fontSize: 11,
-              color: color,
-              fontWeight: FontWeight.w700,
+          // Câu dài trên máy hẹp xuống dòng thay vì tràn phải. Không dùng Flexible:
+          // pill có khi nằm trong Row (bề ngang không giới hạn).
+          ConstrainedBox(
+            constraints: BoxConstraints(
+              maxWidth: MediaQuery.sizeOf(context).width - 96,
+            ),
+            child: Text(
+              text,
+              style: TextStyle(
+                fontSize: 11,
+                color: color,
+                fontWeight: FontWeight.w700,
+              ),
             ),
           ),
         ],

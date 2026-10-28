@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -47,8 +49,48 @@ class TechnicianLocationPermissionSheet extends StatefulWidget {
 }
 
 class _TechnicianLocationPermissionSheetState
-    extends State<TechnicianLocationPermissionSheet> {
+    extends State<TechnicianLocationPermissionSheet>
+    with WidgetsBindingObserver {
   bool _requesting = false;
+  Timer? _grantWatch;
+  bool _closed = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    // Quyền có thể được cấp ngoài sheet (hộp thoại hệ thống do màn khác xin, hoặc
+    // Cài đặt): đã có quyền thì tự đóng, không bắt bấm "Cho phép" lần nữa.
+    _grantWatch = Timer.periodic(
+      const Duration(seconds: 1),
+      (_) => _closeIfGranted(),
+    );
+  }
+
+  @override
+  void dispose() {
+    _grantWatch?.cancel();
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) _closeIfGranted();
+  }
+
+  Future<void> _closeIfGranted() async {
+    if (_requesting || _closed) return;
+    try {
+      final permission = await Geolocator.checkPermission();
+      if (!mounted || _closed) return;
+      if (permission == LocationPermission.whileInUse ||
+          permission == LocationPermission.always) {
+        _closed = true;
+        Navigator.of(context).pop(true);
+      }
+    } catch (_) {}
+  }
 
   Future<void> _handleRequestPermission() async {
     setState(() => _requesting = true);
@@ -77,14 +119,18 @@ class _TechnicianLocationPermissionSheetState
         }
       }
 
-      if (mounted) {
+      if (mounted && !_closed) {
+        _closed = true;
         Navigator.of(context).pop(
           permission == LocationPermission.whileInUse ||
               permission == LocationPermission.always,
         );
       }
     } catch (_) {
-      if (mounted) Navigator.of(context).pop(false);
+      if (mounted && !_closed) {
+        _closed = true;
+        Navigator.of(context).pop(false);
+      }
     } finally {
       if (mounted) setState(() => _requesting = false);
     }

@@ -124,6 +124,32 @@ class LockerBleService {
     }
   }
 
+  /// Lý do chưa quét được tủ, null = sẵn sàng. Xin quyền nếu chưa có; Bluetooth tắt thì
+  /// Android hiện hộp thoại hệ thống xin bật.
+  /// UNSUPPORTED | PERMISSION_BLOCKED (bị chặn hẳn, phải vào Cài đặt) | PERMISSION_DENIED | BLUETOOTH_OFF.
+  Future<String?> readinessProblem() async {
+    try {
+      if (!await FlutterBluePlus.isSupported) return 'UNSUPPORTED';
+    } catch (_) {
+      return 'UNSUPPORTED';
+    }
+    if (!await requestPermissions()) {
+      final blocked = Platform.isAndroid
+          ? await Permission.bluetoothScan.isPermanentlyDenied ||
+                await Permission.bluetoothConnect.isPermanentlyDenied
+          : await Permission.bluetooth.isPermanentlyDenied;
+      return blocked ? 'PERMISSION_BLOCKED' : 'PERMISSION_DENIED';
+    }
+    if (await isBluetoothAvailable()) return null;
+    if (Platform.isAndroid) {
+      try {
+        await FlutterBluePlus.turnOn(timeout: 15);
+        if (await isBluetoothAvailable()) return null;
+      } catch (_) {}
+    }
+    return 'BLUETOOTH_OFF';
+  }
+
   /// Kiểm tra Bluetooth phần cứng có khả dụng và đã bật chưa
   Future<bool> isBluetoothAvailable() async {
     try {

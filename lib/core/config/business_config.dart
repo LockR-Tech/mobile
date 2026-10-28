@@ -749,15 +749,20 @@ class BusinessConfig {
     return choices.isEmpty ? [droneDefaultParcelWeightGrams] : choices;
   }
 
-  /// Phần thu thêm khi đội bay cân được [actualGrams] cho đơn khai [declaredGrams]
-  /// đang có tổng [currentTotal]; 0 khi trong sai số cho phép hoặc không nặng hơn.
+  /// Phần thu thêm khi đội bay cân được [actualGrams] cho đơn khai [declaredGrams] — cùng công thức với
+  /// server: chênh lệch bảng giá giữa hai mức cân, trừ phần đã thu thêm trước đó [alreadyCharged]. Không
+  /// so với tổng khách đã trả: tổng đó đã trừ mã giảm giá/điểm nên sẽ phóng đại phần chênh.
+  /// 0 khi trong sai số cho phép hoặc không nặng hơn.
   int droneWeightSurcharge({
     required int declaredGrams,
     required int actualGrams,
-    required num currentTotal,
+    num alreadyCharged = 0,
   }) {
     if (actualGrams <= declaredGrams + droneWeightToleranceGrams) return 0;
-    final diff = droneDeliveryFeeFor(actualGrams) - currentTotal;
+    final diff =
+        droneDeliveryFeeFor(actualGrams) -
+        droneDeliveryFeeFor(declaredGrams) -
+        alreadyCharged;
     return diff > 0 ? diff.round() : 0;
   }
 

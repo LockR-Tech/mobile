@@ -333,6 +333,19 @@ class LockerOpsService {
     return status['isPaid'] == true;
   }
 
+  /// Đơn đã PAID chưa, đã nhận bao nhiêu và còn thiếu bao nhiêu (server cũ chưa trả hai số này ⇒ null).
+  Future<({bool paid, num? paidAmount, num? amountDue})> orderPaymentProgress(
+    int orderId,
+  ) async {
+    final status = await _map('GET', '/api/orders/$orderId/status');
+    num? number(Object? raw) => raw is num ? raw : num.tryParse('${raw ?? ''}');
+    return (
+      paid: status['isPaid'] == true,
+      paidAmount: number(status['paidAmount']),
+      amountDue: number(status['amountDue']),
+    );
+  }
+
   /// Chờ đơn được ghi nhận đã thanh toán. Server ghi PAID bất đồng bộ (sự kiện
   /// payment → order), nên ngay sau checkout đơn có thể vẫn UNPAID vài giây.
   Future<bool> awaitOrderPaid(

@@ -3,6 +3,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:smart_laundry_locker/core/media/photo_picker_controller.dart';
 import 'package:smart_laundry_locker/core/media/widgets/photo_picker_field.dart';
 import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
+import 'package:smart_laundry_locker/features/drone_delivery/domain/entities/drone_incident_labels.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class DroneRecoveryQueue extends StatelessWidget {
@@ -41,12 +42,19 @@ class DroneRecoveryQueue extends StatelessWidget {
             ),
             child: Row(
               children: [
-                const Icon(Icons.error_outline, size: 18, color: Color(0xFFDC2626)),
+                const Icon(
+                  Icons.error_outline,
+                  size: 18,
+                  color: Color(0xFFDC2626),
+                ),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
                     'Không tải được nhiệm vụ thu hồi: $error',
-                    style: const TextStyle(fontSize: 12.5, color: Color(0xFF991B1B)),
+                    style: const TextStyle(
+                      fontSize: 12.5,
+                      color: Color(0xFF991B1B),
+                    ),
                   ),
                 ),
                 TextButton(onPressed: onRefresh, child: const Text('Thử lại')),
@@ -188,7 +196,7 @@ class _RecoveryCard extends StatelessWidget {
                       style: const TextStyle(fontWeight: FontWeight.w800),
                     ),
                   ),
-                  _Pill(status),
+                  _Pill(droneRecoveryStatusLabel(status)),
                 ],
               ),
               const SizedBox(height: 8),
@@ -321,7 +329,10 @@ class _DroneRecoveryDetailState extends State<DroneRecoveryDetail> {
         Wrap(
           spacing: 8,
           runSpacing: 8,
-          children: [_Pill(status), _Pill('${item['parcelStatus']}')],
+          children: [
+            _Pill(droneRecoveryStatusLabel(status)),
+            _Pill(droneParcelStatusLabel(item['parcelStatus'])),
+          ],
         ),
         const SizedBox(height: 14),
         _Info(title: 'Tình huống', value: '${item['reason']}'),
@@ -329,7 +340,7 @@ class _DroneRecoveryDetailState extends State<DroneRecoveryDetail> {
         _Info(
           title: 'Độ chính xác dữ liệu',
           value:
-              'Nguồn GPS: ${item['gpsSource']} · sai số ${item['gpsAccuracyM'] ?? 'không rõ'} m · telemetry ${item['telemetryStale'] == true ? 'đã cũ' : 'trực tuyến'}',
+              'Nguồn vị trí: ${_gpsSourceLabel(item['gpsSource'])} · sai số ${item['gpsAccuracyM'] == null ? 'không rõ' : '±${item['gpsAccuracyM']} m'} · telemetry ${item['telemetryStale'] == true ? 'đã cũ' : 'trực tuyến'}',
         ),
         if (item['dropLatitude'] != null) ...[
           const SizedBox(height: 10),
@@ -359,9 +370,11 @@ class _DroneRecoveryDetailState extends State<DroneRecoveryDetail> {
               separatorBuilder: (_, __) => const SizedBox(width: 8),
               itemBuilder: (_, index) {
                 final value = evidence[index];
-                final rawUrl =
-                    (value['secureUrl'] ?? value['url'])?.toString().trim();
-                final isValidUrl = rawUrl != null &&
+                final rawUrl = (value['secureUrl'] ?? value['url'])
+                    ?.toString()
+                    .trim();
+                final isValidUrl =
+                    rawUrl != null &&
                     rawUrl.isNotEmpty &&
                     rawUrl != 'null' &&
                     (rawUrl.startsWith('http://') ||
@@ -434,10 +447,15 @@ class _DroneRecoveryDetailState extends State<DroneRecoveryDetail> {
             onPressed: _busy ? null : _handover,
             child: const Text('Xác nhận bàn giao kiện về Hub / kho'),
           ),
-        if (['SUBMITTED', 'CLOSED'].contains(status))
+        if (status == 'SUBMITTED')
           const _Info(
             title: 'Kết quả đã gửi',
             value: 'Admin sẽ xác minh bằng chứng và quyết định bước tiếp theo.',
+          ),
+        if (status == 'CLOSED')
+          const _Info(
+            title: 'Đã hoàn tất thu hồi',
+            value: 'Admin đã xác minh và kiện đã về Hub / kho. Bạn không cần làm gì thêm.',
           ),
       ],
     );
@@ -486,7 +504,9 @@ class _DroneRecoveryDetailState extends State<DroneRecoveryDetail> {
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            style: TextButton.styleFrom(foregroundColor: const Color(0xFFDC2626)),
+            style: TextButton.styleFrom(
+              foregroundColor: const Color(0xFFDC2626),
+            ),
             child: const Text('Vẫn gửi không kèm GPS'),
           ),
         ],
@@ -496,6 +516,28 @@ class _DroneRecoveryDetailState extends State<DroneRecoveryDetail> {
   }
 
   Future<void> _handover() async {
+    // Bàn giao là mốc trách nhiệm (kiện rời tay KTV) và không hoàn tác được ⇒ hỏi lại trước khi gửi.
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Bàn giao kiện về Hub / kho?'),
+        content: const Text(
+          'Chỉ xác nhận khi kiện đã nằm ở Hub / kho và đã có người nhận bàn giao. '
+          'Sau bước này kiện thuộc trách nhiệm của Hub.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: const Text('Chưa'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: const Text('Đã bàn giao'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
     setState(() => _busy = true);
     try {
       await widget.service.confirmDroneRecoveryHubHandover(widget.incidentId);
@@ -514,6 +556,7 @@ class _DroneRecoveryDetailState extends State<DroneRecoveryDetail> {
     var outcome = 'FOUND';
     var condition = 'INTACT';
     var sending = false;
+    String? formError;
     Position? confirmedPosition;
     bool checkingGps = false;
     double? distanceMeters;
@@ -533,392 +576,468 @@ class _DroneRecoveryDetailState extends State<DroneRecoveryDetail> {
       context: context,
       isScrollControlled: true,
       showDragHandle: true,
-      builder: (sheetContext) => StatefulBuilder(
-        builder: (context, setLocal) => Padding(
-          padding: EdgeInsets.fromLTRB(
-            16,
-            0,
-            16,
-            MediaQuery.viewInsetsOf(context).bottom + 24,
-          ),
-          child: SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                const Text(
-                  'Báo cáo hiện trường & Kết quả thu hồi',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
-                ),
-                const SizedBox(height: 6),
-                const Text(
-                  'KTV kiosk phải bấm xác nhận tọa độ thực tế tại điểm tìm kiếm, nhập ghi chú tình trạng và chụp ảnh bằng chứng.',
-                  style: TextStyle(fontSize: 12, color: Color(0xFF64748B)),
-                ),
-                const SizedBox(height: 14),
+      // Ảnh và ghi chú chỉ được huỷ khi sheet đã gỡ hẳn khỏi cây (sau animation đóng): huỷ ngay khi
+      // `showModalBottomSheet` trả về làm ô nhập còn đang vẽ dùng controller đã huỷ ⇒ crash màn đỏ.
+      builder: (sheetContext) => _DisposeOnUnmount(
+        onDispose: () {
+          photos.dispose();
+          note.dispose();
+        },
+        child: StatefulBuilder(
+          builder: (context, setLocal) => Padding(
+            padding: EdgeInsets.fromLTRB(
+              16,
+              0,
+              16,
+              MediaQuery.viewInsetsOf(context).bottom + 24,
+            ),
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const Text(
+                    'Báo cáo hiện trường & Kết quả thu hồi',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+                  ),
+                  const SizedBox(height: 6),
+                  const Text(
+                    'KTV kiosk phải bấm xác nhận tọa độ thực tế tại điểm tìm kiếm, nhập ghi chú tình trạng và chụp ảnh bằng chứng.',
+                    style: TextStyle(fontSize: 12, color: Color(0xFF64748B)),
+                  ),
+                  const SizedBox(height: 14),
 
-                // ---- Phần 1: Bấm xác nhận tọa độ hiện trường ----
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: confirmedPosition != null
-                        ? const Color(0xFFF0FDF4)
-                        : const Color(0xFFF8FAFC),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
+                  // ---- Phần 1: Bấm xác nhận tọa độ hiện trường ----
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
                       color: confirmedPosition != null
-                          ? const Color(0xFFBBF7D0)
-                          : const Color(0xFFE2E8F0),
-                    ),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Icon(
-                            confirmedPosition != null
-                                ? Icons.check_circle_outline
-                                : Icons.my_location,
-                            size: 18,
-                            color: confirmedPosition != null
-                                ? const Color(0xFF16A34A)
-                                : const Color(0xFF0284C7),
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              confirmedPosition != null
-                                  ? 'Đã xác nhận tọa độ hiện trường'
-                                  : 'Xác nhận tọa độ GPS tại hiện trường',
-                              style: TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w700,
-                                color: confirmedPosition != null
-                                    ? const Color(0xFF15803D)
-                                    : const Color(0xFF0F172A),
-                              ),
-                            ),
-                          ),
-                        ],
+                          ? const Color(0xFFF0FDF4)
+                          : const Color(0xFFF8FAFC),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: confirmedPosition != null
+                            ? const Color(0xFFBBF7D0)
+                            : const Color(0xFFE2E8F0),
                       ),
-                      const SizedBox(height: 6),
-                      if (confirmedPosition == null) ...[
-                        const Text(
-                          'Bấm nút bên dưới để lấy toạ độ GPS chính xác nơi bạn đang đứng đối chiếu với điểm drone rơi.',
-                          style: TextStyle(fontSize: 11.5, color: Color(0xFF64748B)),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(
+                              confirmedPosition != null
+                                  ? Icons.check_circle_outline
+                                  : Icons.my_location,
+                              size: 18,
+                              color: confirmedPosition != null
+                                  ? const Color(0xFF16A34A)
+                                  : const Color(0xFF0284C7),
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                confirmedPosition != null
+                                    ? 'Đã xác nhận tọa độ hiện trường'
+                                    : 'Xác nhận tọa độ GPS tại hiện trường',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w700,
+                                  color: confirmedPosition != null
+                                      ? const Color(0xFF15803D)
+                                      : const Color(0xFF0F172A),
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
-                        const SizedBox(height: 10),
-                        SizedBox(
-                          width: double.infinity,
-                          child: OutlinedButton.icon(
-                            onPressed: checkingGps
-                                ? null
-                                : () async {
-                                    setLocal(() => checkingGps = true);
-                                    try {
-                                      final pos = await _currentPosition();
-                                      if (pos != null) {
-                                        double? dist;
-                                        if (dropLat != null && dropLng != null) {
-                                          dist = Geolocator.distanceBetween(
-                                            pos.latitude,
-                                            pos.longitude,
-                                            dropLat,
-                                            dropLng,
+                        const SizedBox(height: 6),
+                        if (confirmedPosition == null) ...[
+                          const Text(
+                            'Bấm nút bên dưới để lấy toạ độ GPS chính xác nơi bạn đang đứng đối chiếu với điểm drone rơi.',
+                            style: TextStyle(
+                              fontSize: 11.5,
+                              color: Color(0xFF64748B),
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          SizedBox(
+                            width: double.infinity,
+                            child: OutlinedButton.icon(
+                              onPressed: checkingGps
+                                  ? null
+                                  : () async {
+                                      setLocal(() => checkingGps = true);
+                                      try {
+                                        final pos = await _currentPosition();
+                                        if (pos != null) {
+                                          double? dist;
+                                          if (dropLat != null &&
+                                              dropLng != null) {
+                                            dist = Geolocator.distanceBetween(
+                                              pos.latitude,
+                                              pos.longitude,
+                                              dropLat,
+                                              dropLng,
+                                            );
+                                          }
+                                          setLocal(() {
+                                            confirmedPosition = pos;
+                                            distanceMeters = dist;
+                                          });
+                                        } else {
+                                          _message(
+                                            'Không lấy được toạ độ GPS. Vui lòng bật định vị và cấp quyền vị trí.',
                                           );
                                         }
-                                        setLocal(() {
-                                          confirmedPosition = pos;
-                                          distanceMeters = dist;
-                                        });
-                                      } else {
-                                        _message(
-                                          'Không lấy được toạ độ GPS. Vui lòng bật định vị và cấp quyền vị trí.',
-                                        );
+                                      } finally {
+                                        if (sheetContext.mounted) {
+                                          setLocal(() => checkingGps = false);
+                                        }
                                       }
-                                    } finally {
-                                      if (sheetContext.mounted) {
-                                        setLocal(() => checkingGps = false);
-                                      }
-                                    }
-                                  },
-                            icon: checkingGps
-                                ? const SizedBox(
-                                    width: 14,
-                                    height: 14,
-                                    child: CircularProgressIndicator(strokeWidth: 2),
-                                  )
-                                : const Icon(Icons.gps_fixed, size: 16),
-                            label: Text(
-                              checkingGps
-                                  ? 'Đang đọc tín hiệu GPS...'
-                                  : 'Bấm xác nhận tọa độ hiện trường',
+                                    },
+                              icon: checkingGps
+                                  ? const SizedBox(
+                                      width: 14,
+                                      height: 14,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                      ),
+                                    )
+                                  : const Icon(Icons.gps_fixed, size: 16),
+                              label: Text(
+                                checkingGps
+                                    ? 'Đang đọc tín hiệu GPS...'
+                                    : 'Bấm xác nhận tọa độ hiện trường',
+                              ),
                             ),
                           ),
-                        ),
-                      ] else ...[
-                        Text(
-                          'Tọa độ: ${confirmedPosition!.latitude.toStringAsFixed(6)}, ${confirmedPosition!.longitude.toStringAsFixed(6)} (Sai số: ±${confirmedPosition!.accuracy.toStringAsFixed(1)} m)',
-                          style: const TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                            color: Color(0xFF1E293B),
-                          ),
-                        ),
-                        if (distanceMeters != null) ...[
-                          const SizedBox(height: 5),
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                            decoration: BoxDecoration(
-                              color: distanceMeters! <= 100
-                                  ? const Color(0xFFDCFCE7)
-                                  : const Color(0xFFFEF3C7),
-                              borderRadius: BorderRadius.circular(6),
+                        ] else ...[
+                          Text(
+                            'Tọa độ: ${confirmedPosition!.latitude.toStringAsFixed(6)}, ${confirmedPosition!.longitude.toStringAsFixed(6)} (Sai số: ±${confirmedPosition!.accuracy.toStringAsFixed(1)} m)',
+                            style: const TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              color: Color(0xFF1E293B),
                             ),
-                            child: Text(
-                              distanceMeters! <= 100
-                                  ? '✓ Trong phạm vi hiện trường (~${distanceMeters!.round()} m từ điểm rơi)'
-                                  : '⚠️ Cách điểm rơi ~${distanceMeters!.round()} m (Tiến lại gần hơn nếu có thể)',
-                              style: TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.w600,
+                          ),
+                          if (distanceMeters != null) ...[
+                            const SizedBox(height: 5),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 3,
+                              ),
+                              decoration: BoxDecoration(
                                 color: distanceMeters! <= 100
-                                    ? const Color(0xFF166534)
-                                    : const Color(0xFF92400E),
+                                    ? const Color(0xFFDCFCE7)
+                                    : const Color(0xFFFEF3C7),
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: Text(
+                                distanceMeters! <= 100
+                                    ? '✓ Trong phạm vi hiện trường (~${distanceMeters!.round()} m từ điểm rơi)'
+                                    : '⚠️ Cách điểm rơi ~${distanceMeters!.round()} m (Tiến lại gần hơn nếu có thể)',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w600,
+                                  color: distanceMeters! <= 100
+                                      ? const Color(0xFF166534)
+                                      : const Color(0xFF92400E),
+                                ),
+                              ),
+                            ),
+                          ],
+                          const SizedBox(height: 6),
+                          Align(
+                            alignment: Alignment.centerRight,
+                            child: TextButton.icon(
+                              style: TextButton.styleFrom(
+                                visualDensity: VisualDensity.compact,
+                                padding: EdgeInsets.zero,
+                              ),
+                              onPressed: checkingGps
+                                  ? null
+                                  : () async {
+                                      setLocal(() => checkingGps = true);
+                                      try {
+                                        final pos = await _currentPosition();
+                                        if (pos != null) {
+                                          double? dist;
+                                          if (dropLat != null &&
+                                              dropLng != null) {
+                                            dist = Geolocator.distanceBetween(
+                                              pos.latitude,
+                                              pos.longitude,
+                                              dropLat,
+                                              dropLng,
+                                            );
+                                          }
+                                          setLocal(() {
+                                            confirmedPosition = pos;
+                                            distanceMeters = dist;
+                                          });
+                                        }
+                                      } finally {
+                                        if (sheetContext.mounted) {
+                                          setLocal(() => checkingGps = false);
+                                        }
+                                      }
+                                    },
+                              icon: const Icon(Icons.refresh, size: 14),
+                              label: const Text(
+                                'Cập nhật lại GPS',
+                                style: TextStyle(fontSize: 12),
                               ),
                             ),
                           ),
                         ],
-                        const SizedBox(height: 6),
-                        Align(
-                          alignment: Alignment.centerRight,
-                          child: TextButton.icon(
-                            style: TextButton.styleFrom(
-                              visualDensity: VisualDensity.compact,
-                              padding: EdgeInsets.zero,
-                            ),
-                            onPressed: checkingGps
-                                ? null
-                                : () async {
-                                    setLocal(() => checkingGps = true);
-                                    try {
-                                      final pos = await _currentPosition();
-                                      if (pos != null) {
-                                        double? dist;
-                                        if (dropLat != null && dropLng != null) {
-                                          dist = Geolocator.distanceBetween(
-                                            pos.latitude,
-                                            pos.longitude,
-                                            dropLat,
-                                            dropLng,
-                                          );
-                                        }
-                                        setLocal(() {
-                                          confirmedPosition = pos;
-                                          distanceMeters = dist;
-                                        });
-                                      }
-                                    } finally {
-                                      if (sheetContext.mounted) {
-                                        setLocal(() => checkingGps = false);
-                                      }
-                                    }
-                                  },
-                            icon: const Icon(Icons.refresh, size: 14),
-                            label: const Text('Cập nhật lại GPS', style: TextStyle(fontSize: 12)),
-                          ),
-                        ),
                       ],
-                    ],
+                    ),
                   ),
-                ),
-                const SizedBox(height: 14),
+                  const SizedBox(height: 14),
 
-                // ---- Phần 2: Kết quả & Tình trạng kiện ----
-                DropdownButtonFormField<String>(
-                  initialValue: outcome,
-                  decoration: const InputDecoration(
-                    labelText: 'Kết quả tìm kiếm',
-                    border: OutlineInputBorder(),
-                  ),
-                  items: const [
-                    DropdownMenuItem(
-                      value: 'FOUND',
-                      child: Text('Đã tìm thấy kiện hàng'),
-                    ),
-                    DropdownMenuItem(
-                      value: 'NOT_FOUND',
-                      child: Text('Không tìm thấy kiện hàng'),
-                    ),
-                    DropdownMenuItem(
-                      value: 'UNSAFE',
-                      child: Text('Khu vực không an toàn để tìm'),
-                    ),
-                  ],
-                  onChanged: (value) =>
-                      setLocal(() => outcome = value ?? outcome),
-                ),
-                if (outcome == 'FOUND') ...[
-                  const SizedBox(height: 10),
+                  // ---- Phần 2: Kết quả & Tình trạng kiện ----
                   DropdownButtonFormField<String>(
-                    initialValue: condition,
+                    initialValue: outcome,
                     decoration: const InputDecoration(
-                      labelText: 'Tình trạng kiện',
+                      labelText: 'Kết quả tìm kiếm',
                       border: OutlineInputBorder(),
                     ),
                     items: const [
                       DropdownMenuItem(
-                        value: 'INTACT',
-                        child: Text('Nguyên vẹn'),
+                        value: 'FOUND',
+                        child: Text('Đã tìm thấy kiện hàng'),
                       ),
                       DropdownMenuItem(
-                        value: 'MINOR_DAMAGE',
-                        child: Text('Hư hại nhẹ'),
+                        value: 'NOT_FOUND',
+                        child: Text('Không tìm thấy kiện hàng'),
                       ),
                       DropdownMenuItem(
-                        value: 'MAJOR_DAMAGE',
-                        child: Text('Hư hại nặng'),
-                      ),
-                      DropdownMenuItem(
-                        value: 'UNUSABLE',
-                        child: Text('Không thể sử dụng'),
-                      ),
-                      DropdownMenuItem(
-                        value: 'UNKNOWN',
-                        child: Text('Chưa xác định'),
+                        value: 'UNSAFE',
+                        child: Text('Khu vực không an toàn để tìm'),
                       ),
                     ],
                     onChanged: (value) =>
-                        setLocal(() => condition = value ?? condition),
+                        setLocal(() => outcome = value ?? outcome),
                   ),
-                ],
-                const SizedBox(height: 12),
+                  if (outcome == 'FOUND') ...[
+                    const SizedBox(height: 10),
+                    DropdownButtonFormField<String>(
+                      initialValue: condition,
+                      decoration: const InputDecoration(
+                        labelText: 'Tình trạng kiện',
+                        border: OutlineInputBorder(),
+                      ),
+                      items: const [
+                        DropdownMenuItem(
+                          value: 'INTACT',
+                          child: Text('Nguyên vẹn'),
+                        ),
+                        DropdownMenuItem(
+                          value: 'MINOR_DAMAGE',
+                          child: Text('Hư hại nhẹ'),
+                        ),
+                        DropdownMenuItem(
+                          value: 'MAJOR_DAMAGE',
+                          child: Text('Hư hại nặng'),
+                        ),
+                        DropdownMenuItem(
+                          value: 'UNUSABLE',
+                          child: Text('Không thể sử dụng'),
+                        ),
+                        DropdownMenuItem(
+                          value: 'UNKNOWN',
+                          child: Text('Chưa xác định'),
+                        ),
+                      ],
+                      onChanged: (value) =>
+                          setLocal(() => condition = value ?? condition),
+                    ),
+                  ],
+                  const SizedBox(height: 12),
 
-                // ---- Phần 3: Ghi chú hiện trường ----
-                TextField(
-                  controller: note,
-                  maxLines: 3,
-                  decoration: const InputDecoration(
-                    labelText: 'Ghi chú hiện trường (Bắt buộc nhập mô tả)',
-                    hintText: 'Mô tả vị trí phát hiện, hiện trạng drone, tình trạng kiện, nơi lưu trữ tạm...',
-                    border: OutlineInputBorder(),
+                  // ---- Phần 3: Ghi chú hiện trường ----
+                  TextField(
+                    controller: note,
+                    maxLines: 3,
+                    decoration: const InputDecoration(
+                      labelText: 'Ghi chú hiện trường (Bắt buộc nhập mô tả)',
+                      hintText:
+                          'Mô tả vị trí phát hiện, hiện trạng drone, tình trạng kiện, nơi lưu trữ tạm...',
+                      border: OutlineInputBorder(),
+                    ),
                   ),
-                ),
-                const SizedBox(height: 6),
-                Wrap(
-                  spacing: 6,
-                  runSpacing: 6,
-                  children: [
-                    for (final tag in quickNoteTags)
-                      InkWell(
-                        onTap: () {
-                          setLocal(() {
-                            final current = note.text.trim();
-                            note.text = current.isEmpty ? tag : '$current. $tag';
-                          });
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFF1F5F9),
-                            borderRadius: BorderRadius.circular(6),
-                            border: Border.all(color: const Color(0xFFCBD5E1)),
-                          ),
-                          child: Text(
-                            '+ $tag',
-                            style: const TextStyle(fontSize: 11, color: Color(0xFF334155)),
+                  const SizedBox(height: 6),
+                  Wrap(
+                    spacing: 6,
+                    runSpacing: 6,
+                    children: [
+                      for (final tag in quickNoteTags)
+                        InkWell(
+                          onTap: () {
+                            setLocal(() {
+                              final current = note.text.trim();
+                              note.text = current.isEmpty
+                                  ? tag
+                                  : '$current. $tag';
+                            });
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFF1F5F9),
+                              borderRadius: BorderRadius.circular(6),
+                              border: Border.all(
+                                color: const Color(0xFFCBD5E1),
+                              ),
+                            ),
+                            child: Text(
+                              '+ $tag',
+                              style: const TextStyle(
+                                fontSize: 11,
+                                color: Color(0xFF334155),
+                              ),
+                            ),
                           ),
                         ),
-                      ),
-                  ],
-                ),
-                const SizedBox(height: 14),
-
-                // ---- Phần 4: Hình ảnh hiện trường ----
-                AnimatedBuilder(
-                  animation: photos,
-                  builder: (_, __) => PhotoPickerField(
-                    controller: photos,
-                    enabled: !sending,
-                    helperText: 'Bắt buộc ít nhất 1 ảnh thật hiện trường kèm toạ độ.',
+                    ],
                   ),
-                ),
-                const SizedBox(height: 16),
-                FilledButton(
-                  onPressed: sending
-                      ? null
-                      : () async {
-                          if (photos.isEmpty) {
-                            _message(
-                              'Vui lòng chụp ít nhất 1 ảnh hiện trường.',
-                            );
-                            return;
-                          }
-                          if (note.text.trim().isEmpty) {
-                            _message('Vui lòng nhập ghi chú hiện trường.');
-                            return;
-                          }
-                          setLocal(() => sending = true);
-                          try {
-                            var position = confirmedPosition;
-                            if (position == null) {
-                              position = await _currentPosition();
+                  const SizedBox(height: 14),
+
+                  // ---- Phần 4: Hình ảnh hiện trường ----
+                  AnimatedBuilder(
+                    animation: photos,
+                    builder: (_, __) => PhotoPickerField(
+                      controller: photos,
+                      enabled: !sending,
+                      cameraOnly: true,
+                      helperText:
+                          'Bắt buộc ít nhất 1 ảnh chụp trực tiếp tại hiện trường (kèm toạ độ).',
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  if (formError != null)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: Text(
+                        formError!,
+                        key: const ValueKey('recovery-form-error'),
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.error,
+                        ),
+                      ),
+                    ),
+                  FilledButton(
+                    onPressed: sending
+                        ? null
+                        : () async {
+                            if (photos.isEmpty) {
+                              setLocal(
+                                () => formError =
+                                    'Vui lòng chụp ít nhất 1 ảnh hiện trường.',
+                              );
+                              return;
+                            }
+                            if (note.text.trim().isEmpty) {
+                              setLocal(
+                                () => formError =
+                                    'Vui lòng nhập ghi chú hiện trường.',
+                              );
+                              return;
+                            }
+                            setLocal(() {
+                              formError = null;
+                              sending = true;
+                            });
+                            try {
+                              var position = confirmedPosition;
                               if (position == null) {
-                                final proceed = await _confirmWithoutGps();
-                                if (!proceed) {
-                                  if (sheetContext.mounted) {
-                                    setLocal(() => sending = false);
+                                position = await _currentPosition();
+                                if (position == null) {
+                                  final proceed = await _confirmWithoutGps();
+                                  if (!proceed) {
+                                    if (sheetContext.mounted) {
+                                      setLocal(() => sending = false);
+                                    }
+                                    return;
                                   }
-                                  return;
                                 }
                               }
+                              final uploaded = await photos.uploadAll(
+                                caption: 'Bằng chứng thu hồi kiện',
+                              );
+                              final evidence = buildRecoveryEvidence(
+                                uploaded,
+                                photos.photos,
+                                latitude: position?.latitude,
+                                longitude: position?.longitude,
+                                gpsAccuracyM: position?.accuracy,
+                              );
+                              await widget.service.submitDroneRecovery(
+                                widget.incidentId,
+                                outcome: outcome,
+                                parcelCondition: outcome == 'FOUND'
+                                    ? condition
+                                    : 'UNKNOWN',
+                                note: note.text,
+                                latitude: position?.latitude,
+                                longitude: position?.longitude,
+                                gpsAccuracyM: position?.accuracy,
+                                evidence: evidence,
+                              );
+                              if (sheetContext.mounted) {
+                                Navigator.pop(sheetContext);
+                              }
+                              await _load();
+                            } catch (error) {
+                              if (sheetContext.mounted) {
+                                setLocal(() {
+                                  formError = LockerOpsService.errorMessage(
+                                    error,
+                                  );
+                                  sending = false;
+                                });
+                              }
                             }
-                            final uploaded = await photos.uploadAll(
-                              caption: 'Bằng chứng thu hồi kiện',
-                            );
-                            final evidence = buildRecoveryEvidence(
-                              uploaded,
-                              photos.photos,
-                              latitude: position?.latitude,
-                              longitude: position?.longitude,
-                              gpsAccuracyM: position?.accuracy,
-                            );
-                            await widget.service.submitDroneRecovery(
-                              widget.incidentId,
-                              outcome: outcome,
-                              parcelCondition: outcome == 'FOUND'
-                                  ? condition
-                                  : 'UNKNOWN',
-                              note: note.text,
-                              latitude: position?.latitude,
-                              longitude: position?.longitude,
-                              gpsAccuracyM: position?.accuracy,
-                              evidence: evidence,
-                            );
-                            if (sheetContext.mounted) {
-                              Navigator.pop(sheetContext);
-                            }
-                            await _load();
-                          } catch (error) {
-                            _message(LockerOpsService.errorMessage(error));
-                            if (sheetContext.mounted) {
-                              setLocal(() => sending = false);
-                            }
-                          }
-                        },
-                  child: sending
-                      ? const CircularProgressIndicator()
-                      : const Text('Gửi Admin xác minh'),
-                ),
-              ],
+                          },
+                    child: sending
+                        ? const CircularProgressIndicator()
+                        : const Text('Gửi Admin xác minh'),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
       ),
     );
-    photos.dispose();
-    note.dispose();
   }
+}
+
+/// Gọi [onDispose] khi phần tử bị gỡ khỏi cây — lúc đó mọi widget con (ô nhập, lưới ảnh) đã được gỡ trước.
+class _DisposeOnUnmount extends StatefulWidget {
+  const _DisposeOnUnmount({required this.onDispose, required this.child});
+
+  final VoidCallback onDispose;
+  final Widget child;
+
+  @override
+  State<_DisposeOnUnmount> createState() => _DisposeOnUnmountState();
+}
+
+class _DisposeOnUnmountState extends State<_DisposeOnUnmount> {
+  @override
+  void dispose() {
+    widget.onDispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => widget.child;
 }
 
 /// Dựng `evidence[]` gửi kèm kết quả thu hồi: `capturedAt` = lúc chụp từng
@@ -955,7 +1074,9 @@ List<Map<String, dynamic>> buildRecoveryEvidence(
           if (value[key] != null) key: value[key],
       },
       'caption': value['caption'],
-      'capturedAt': (photo?.capturedAt ?? DateTime.now()).toUtc().toIso8601String(),
+      'capturedAt': (photo?.capturedAt ?? DateTime.now())
+          .toUtc()
+          .toIso8601String(),
       if (lat != null && lng != null) ...{
         'latitude': lat,
         'longitude': lng,
@@ -1003,7 +1124,7 @@ class _Pill extends StatelessWidget {
       borderRadius: BorderRadius.circular(99),
     ),
     child: Text(
-      value.replaceAll('_', ' '),
+      value,
       style: const TextStyle(
         fontSize: 10,
         fontWeight: FontWeight.w700,
@@ -1012,3 +1133,12 @@ class _Pill extends StatelessWidget {
     ),
   );
 }
+
+/// Toạ độ điểm rơi lấy từ đâu: GPS drone thật hay ước theo tuyến bay.
+String _gpsSourceLabel(Object? source) => switch ('${source ?? ''}'.toUpperCase()) {
+  'TELEMETRY' || 'DRONE_GPS' || 'GPS' => 'GPS drone',
+  'FLIGHT_PATH' => 'ước theo tuyến bay',
+  'UNAVAILABLE' => 'chưa có',
+  '' => 'không rõ',
+  final other => other.toLowerCase(),
+};

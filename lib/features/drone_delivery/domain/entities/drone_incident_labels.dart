@@ -57,6 +57,12 @@ const _eventTypes = <String, String>{
   'CUSTOMER_ACCEPT': 'Bạn đồng ý phương án',
   'CUSTOMER_REQUEST_REVIEW': 'Bạn yêu cầu xem xét lại',
   'RETURN_FLIGHT_UPDATED': 'Cập nhật chuyến bay về trạm',
+  'REDELIVERY_REQUESTED': 'Đã tạo đơn giao lại',
+  'REDELIVERY_INTEGRATION_UNAVAILABLE': 'Chưa tạo được đơn giao lại — nhân viên sẽ liên hệ',
+  'REDELIVERY_COMPLETED': 'Đã giao lại thành công',
+  'COMPENSATION_SUBMITTED': 'Đã gửi yêu cầu chi bồi thường',
+  'COMPENSATION_PAID': 'Đã chi bồi thường',
+  'COMPENSATION_PAYMENT_FAILED': 'Chi bồi thường chưa thành công',
 };
 
 const _resolutionTypes = <String, String>{
@@ -94,6 +100,7 @@ String droneIncidentEventLabel(Object? code) {
   if (key.startsWith('RECOVERY_')) return 'Cập nhật thu hồi kiện';
   if (key.startsWith('COMPENSATION_')) return 'Cập nhật bồi thường';
   if (key.startsWith('RETURN_')) return 'Cập nhật chuyến bay về trạm';
+  if (key.startsWith('REDELIVERY_')) return 'Cập nhật giao lại';
   return _humanize(key);
 }
 

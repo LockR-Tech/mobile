@@ -16,6 +16,7 @@ class DroneWeather {
     this.temperatureC,
     this.condition,
     this.windowMinutes = 30,
+    this.flyable,
   });
 
   /// SAFE | UNSAFE | UNAVAILABLE.
@@ -32,7 +33,12 @@ class DroneWeather {
   /// Khoảng dự báo được xét (admin chỉnh, mặc định 30 phút).
   final int windowMinutes;
 
+  /// Server cho bay hay không (`safe` của server). Admin có thể cho bay khi chưa có
+  /// dự báo: lúc đó status UNAVAILABLE nhưng vẫn bay được.
+  final bool? flyable;
+
   bool get safe => status == 'SAFE';
+  bool get canFly => flyable ?? safe;
   bool get unavailable => status == 'UNAVAILABLE';
 
   String? get providerLabel => switch (provider) {
@@ -62,6 +68,7 @@ class DroneWeather {
       windowMinutes: num0(raw['windowMinutes']) > 0
           ? num0(raw['windowMinutes']).round()
           : 30,
+      flyable: raw['safe'] is bool ? raw['safe'] as bool : null,
     );
   }
 }
@@ -313,9 +320,20 @@ class _DroneRouteWeatherCardState extends State<DroneRouteWeatherCard> {
 
 /// Thời tiết tại các tủ có bãi đáp drone — KTV xem trước khi nhận / phóng đơn.
 class DroneLockerWeatherList extends StatefulWidget {
-  const DroneLockerWeatherList({super.key, this.load});
+  const DroneLockerWeatherList({
+    super.key,
+    this.load,
+    this.onLoaded,
+    this.refreshKey,
+  });
 
   final DroneLockerWeatherLoader? load;
+
+  /// Báo danh sách vừa tải cho màn cha (khoá trước nút Tiếp nhận / Phóng).
+  final ValueChanged<List<Map<String, dynamic>>>? onLoaded;
+
+  /// Đổi giá trị ⇒ tải lại lặng lẽ (vd. mỗi lần màn điều phối làm mới).
+  final Object? refreshKey;
 
   @override
   State<DroneLockerWeatherList> createState() => _DroneLockerWeatherListState();
@@ -333,21 +351,33 @@ class _DroneLockerWeatherListState extends State<DroneLockerWeatherList> {
     _fetch();
   }
 
-  Future<void> _fetch() async {
-    setState(() {
-      _loading = true;
-      _error = null;
-    });
+  @override
+  void didUpdateWidget(covariant DroneLockerWeatherList oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.refreshKey != widget.refreshKey) _fetch(silent: true);
+  }
+
+  Future<void> _fetch({bool silent = false}) async {
+    if (!silent) {
+      setState(() {
+        _loading = true;
+        _error = null;
+      });
+    }
     try {
       final lockers =
           await (widget.load ?? LockerOpsService().droneLockerWeather)();
       if (!mounted) return;
       setState(() {
         _lockers = lockers;
+        _error = null;
         _loading = false;
       });
+      widget.onLoaded?.call(lockers);
     } catch (error) {
       if (!mounted) return;
+      // Làm mới ngầm mà lỗi: giữ dữ liệu cũ, không đè bằng thông báo lỗi.
+      if (silent && _lockers.isNotEmpty) return;
       setState(() {
         _error = LockerOpsService.errorMessage(error);
         _loading = false;
@@ -361,14 +391,16 @@ class _DroneLockerWeatherListState extends State<DroneLockerWeatherList> {
     if (!_loading && _error == null && _lockers.isEmpty) {
       return const SizedBox.shrink();
     }
-    final weathers = [
+    // Trạm admin đang tạm dừng bay cũng không bay được, dù trời tốt.
+    bool grounded((Map<String, dynamic>, DroneWeather?) e) =>
+        (e.$2 != null && !e.$2!.canFly) || e.$1['suspension'] is Map;
+    // Trạm không bay được lên đầu để KTV thấy ngay khi mở danh sách.
+    final all = [
       for (final locker in _lockers)
         (locker, DroneWeather.fromJson(locker['weather'])),
     ];
-    // Trạm admin đang tạm dừng bay cũng không bay được, dù trời tốt.
-    final unsafe = weathers
-        .where((e) => (e.$2 != null && !e.$2!.safe) || e.$1['suspension'] is Map)
-        .length;
+    final weathers = [...all.where(grounded), ...all.where((e) => !grounded(e))];
+    final unsafe = weathers.where(grounded).length;
     final windowMinutes = weathers
             .map((e) => e.$2?.windowMinutes)
             .whereType<int>()

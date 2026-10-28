@@ -1818,6 +1818,15 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
   }
 
   // ---- Tab 1: inspect lockers (browse cabinet, see cell status, report/clear) ----
+  /// Nhiệm vụ thu hồi còn việc phải làm (chưa gửi Admin / chưa đóng).
+  int get _pendingRecoveryCount => _droneRecoveries
+      .where(
+        (item) => !['SUBMITTED', 'CLOSED', 'CANCELED'].contains(
+          '${item['status'] ?? ''}'.toUpperCase(),
+        ),
+      )
+      .length;
+
   Widget _buildInspect() {
     final cells =
         (_layout?['cells'] as List?)?.cast<Map<String, dynamic>>() ?? [];
@@ -1829,6 +1838,21 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
         padding: const EdgeInsets.all(16),
         children: [
           _sectionErrorBanner(const [_Section.lockers, _Section.myLockers]),
+          // Tab "Thu hồi kiện" nằm cuối thanh tab, dễ khuất: có việc thì báo ngay tab đầu.
+          if (_pendingRecoveryCount > 0) ...[
+            InkWell(
+              key: const ValueKey('technician-recovery-banner'),
+              borderRadius: BorderRadius.circular(14),
+              onTap: () => _tabs.animateTo(5),
+              child: OpsBanner(
+                tone: OpsBannerTone.warning,
+                icon: Icons.inventory_2_outlined,
+                title: 'Có $_pendingRecoveryCount nhiệm vụ thu hồi kiện rơi',
+                text: 'Chạm để mở tab "Thu hồi kiện".',
+              ),
+            ),
+            const SizedBox(height: 12),
+          ],
           const OpsSectionLabel('Chọn tủ để kiểm tra', icon: Icons.warehouse_outlined),
           if (lockerOptions.isEmpty)
             OpsEmptyState(

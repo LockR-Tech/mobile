@@ -21,6 +21,7 @@ class PhotoPickerField extends StatelessWidget {
     this.addLabel = 'Thêm ảnh',
     this.helperText,
     this.onPhotoTap,
+    this.cameraOnly = false,
   });
 
   final PhotoPickerController controller;
@@ -33,6 +34,9 @@ class PhotoPickerField extends StatelessWidget {
   /// Dòng mô tả nhỏ phía dưới (vd. "Tối đa 5 ảnh").
   final String? helperText;
   final ValueChanged<PendingPhoto>? onPhotoTap;
+
+  /// Chỉ cho chụp mới bằng máy ảnh (ảnh bằng chứng hiện trường) — không cho chọn ảnh có sẵn trong thư viện.
+  final bool cameraOnly;
 
   /// Bottom sheet chọn nguồn ảnh rồi thêm vào [controller]; lỗi hiện SnackBar.
   static Future<void> pickWithSourceSheet(
@@ -85,6 +89,23 @@ class PhotoPickerField extends StatelessWidget {
     }
   }
 
+  static Future<void> _pickFromCamera(
+    BuildContext context,
+    PhotoPickerController controller,
+  ) async {
+    if (!controller.canAddMore) {
+      _snack(context, 'Tối đa ${controller.maxPhotos} ảnh');
+      return;
+    }
+    try {
+      await controller.pick(ImageSource.camera);
+    } catch (_) {
+      if (context.mounted) {
+        _snack(context, 'Không mở được máy ảnh. Hãy cấp quyền camera trong cài đặt.');
+      }
+    }
+  }
+
   static void _snack(BuildContext context, String message) {
     ScaffoldMessenger.maybeOf(
       context,
@@ -128,11 +149,13 @@ class PhotoPickerField extends StatelessWidget {
                       size: thumbSize,
                       color: accentColor,
                       label: addLabel,
-                      onTap: () => pickWithSourceSheet(
-                        context,
-                        controller,
-                        accentColor: accentColor,
-                      ),
+                      onTap: () => cameraOnly
+                          ? _pickFromCamera(context, controller)
+                          : pickWithSourceSheet(
+                              context,
+                              controller,
+                              accentColor: accentColor,
+                            ),
                     ),
                 ],
               ),

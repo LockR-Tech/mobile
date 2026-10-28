@@ -28,10 +28,17 @@ Future<(String reason, String? note)?> showDroneReasonDialog(
   String? initialReason,
 }) {
   final noteController = TextEditingController();
-  var selected = reasons.firstWhere(
-    (reason) => reason.$1 == initialReason,
-    orElse: () => reasons.first,
-  );
+  // Chặn do thời tiết tuyến / trạm dừng bay ⇒ lý do "thời tiết" của danh sách.
+  final initial = switch (initialReason) {
+    'WEATHER_UNSAFE' || 'WEATHER_UNAVAILABLE' || 'STATION_SUSPENDED' => 'WEATHER',
+    _ => initialReason,
+  };
+  // Chỉ chọn sẵn lý do đang chặn đơn; không thì để KTV tự chọn, tránh bấm nhầm
+  // xác nhận với lý do đầu danh sách.
+  (String, String, bool)? selected = reasons
+      .where((reason) => reason.$1 == initial)
+      .firstOrNull;
+  String? reasonProblem;
   String? problem;
   return showDialog<(String, String?)>(
     context: context,
@@ -54,11 +61,24 @@ Future<(String reason, String? note)?> showDroneReasonDialog(
                     ChoiceChip(
                       key: ValueKey('drone-reason-${reason.$1}'),
                       label: Text(reason.$2),
-                      selected: selected.$1 == reason.$1,
-                      onSelected: (_) => setLocal(() => selected = reason),
+                      selected: selected?.$1 == reason.$1,
+                      onSelected: (_) => setLocal(() {
+                        selected = reason;
+                        reasonProblem = null;
+                      }),
                     ),
                 ],
               ),
+              if (reasonProblem != null) ...[
+                const SizedBox(height: 6),
+                Text(
+                  reasonProblem!,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: Color(0xFFB91C1C),
+                  ),
+                ),
+              ],
               const SizedBox(height: 12),
               TextField(
                 key: const ValueKey('drone-reason-note'),
@@ -66,7 +86,7 @@ Future<(String reason, String? note)?> showDroneReasonDialog(
                 minLines: 2,
                 maxLines: 4,
                 decoration: InputDecoration(
-                  labelText: selected.$3
+                  labelText: selected?.$3 == true
                       ? 'Ghi chú (bắt buộc)'
                       : 'Ghi chú (tùy chọn)',
                   errorText: problem,
@@ -88,11 +108,16 @@ Future<(String reason, String? note)?> showDroneReasonDialog(
             ),
             onPressed: () {
               final note = noteController.text.trim();
-              if (selected.$3 && note.isEmpty) {
+              final reason = selected;
+              if (reason == null) {
+                setLocal(() => reasonProblem = 'Chọn một lý do');
+                return;
+              }
+              if (reason.$3 && note.isEmpty) {
                 setLocal(() => problem = 'Cần nhập ghi chú cho lý do này');
                 return;
               }
-              Navigator.pop(ctx, (selected.$1, note.isEmpty ? null : note));
+              Navigator.pop(ctx, (reason.$1, note.isEmpty ? null : note));
             },
             child: Text(confirmLabel),
           ),
@@ -308,7 +333,14 @@ class _DronePickupQueueState extends State<DronePickupQueue>
       captureLocation: false,
     );
     var matched = false;
-    String? problem;
+    // Lỗi gắn vào đúng chỗ phải sửa; gửi server ngay trong hộp thoại để nhập sai mã
+    // không làm mất ảnh / dấu kiểm đã có.
+    String? codeProblem;
+    String? matchProblem;
+    String? photoProblem;
+    String? submitProblem;
+    var submitting = false;
+    Map<String, dynamic>? uploadedPhoto;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => StatefulBuilder(
@@ -335,7 +367,7 @@ class _DronePickupQueueState extends State<DronePickupQueue>
                   maxLength: 6,
                   decoration: InputDecoration(
                     labelText: 'Mã lấy hàng (6 số)',
-                    errorText: problem,
+                    errorText: codeProblem,
                     isDense: true,
                     border: const OutlineInputBorder(),
                   ),
@@ -346,8 +378,12 @@ class _DronePickupQueueState extends State<DronePickupQueue>
                     Checkbox(
                       key: const ValueKey('drone-pickup-matched'),
                       value: matched,
-                      onChanged: (value) =>
-                          setLocal(() => matched = value ?? false),
+                      onChanged: submitting
+                          ? null
+                          : (value) => setLocal(() {
+                              matched = value ?? false;
+                              matchProblem = null;
+                            }),
                     ),
                     const Expanded(
                       child: Padding(
@@ -361,6 +397,7 @@ class _DronePickupQueueState extends State<DronePickupQueue>
                     ),
                   ],
                 ),
+                if (matchProblem != null) _DialogError(matchProblem!),
                 const SizedBox(height: 8),
                 PhotoPickerField(
                   controller: photos,
@@ -396,9 +433,10 @@ class _DronePickupQueueState extends State<DronePickupQueue>
                     onPressed: () async {
                       try {
                         await photos.pick(ImageSource.camera);
+                        setLocal(() => photoProblem = null);
                       } catch (_) {
                         setLocal(
-                          () => problem =
+                          () => photoProblem =
                               'Không mở được máy ảnh. Kiểm tra quyền camera.',
                         );
                       }
@@ -406,7 +444,9 @@ class _DronePickupQueueState extends State<DronePickupQueue>
                     icon: const Icon(Icons.camera_alt_outlined),
                     label: const Text('Chụp ảnh kiện'),
                   ),
-                if (photos.isEmpty && problem == null)
+                if (photoProblem != null)
+                  _DialogError(photoProblem!)
+                else if (photos.isEmpty)
                   const Text(
                     'Chụp rõ toàn bộ kiện trước khi xác nhận đã lấy.',
                     style: TextStyle(fontSize: 12, color: Colors.black54),
@@ -418,68 +458,103 @@ class _DronePickupQueueState extends State<DronePickupQueue>
                     isDense: true,
                   ),
                 ),
+                if (submitProblem != null) ...[
+                  const SizedBox(height: 8),
+                  _DialogError(submitProblem!),
+                ],
               ],
             ),
           ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.pop(ctx, false),
+              onPressed: submitting ? null : () => Navigator.pop(ctx, false),
               child: const Text('Chưa'),
             ),
             FilledButton(
               key: const ValueKey('drone-pickup-confirm'),
-              onPressed: () {
-                if (!RegExp(r'^\d{6}$').hasMatch(codeController.text.trim())) {
-                  setLocal(() => problem = 'Nhập đủ 6 chữ số');
-                  return;
-                }
-                if (!matched) {
-                  setLocal(
-                    () => problem =
-                        'Cần xác nhận kiện đúng khai báo, hoặc báo không lấy được',
-                  );
-                  return;
-                }
-                if (photos.isEmpty) {
-                  setLocal(
-                    () => problem = 'Cần chụp ảnh kiện trước khi xác nhận',
-                  );
-                  return;
-                }
-                Navigator.pop(ctx, true);
-              },
-              child: const Text('Đã lấy hàng'),
+              onPressed: submitting
+                  ? null
+                  : () async {
+                      final code = codeController.text.trim();
+                      setLocal(() {
+                        codeProblem = RegExp(r'^\d{6}$').hasMatch(code)
+                            ? null
+                            : 'Nhập đủ 6 chữ số';
+                        matchProblem = matched
+                            ? null
+                            : 'Cần xác nhận kiện đúng khai báo, hoặc báo không lấy được';
+                        photoProblem = photos.isEmpty
+                            ? 'Cần chụp ảnh kiện trước khi xác nhận'
+                            : null;
+                        submitProblem = null;
+                      });
+                      if (codeProblem != null ||
+                          matchProblem != null ||
+                          photoProblem != null) {
+                        return;
+                      }
+                      setLocal(() => submitting = true);
+                      try {
+                        // Ảnh đã tải lên ở lần thử trước thì dùng lại, không tải lại.
+                        uploadedPhoto ??= (await photos.uploadAll(
+                          caption: 'Ảnh kiện lúc kỹ thuật viên lấy hàng',
+                        )).firstOrNull;
+                        if (uploadedPhoto == null) {
+                          setLocal(
+                            () => photoProblem =
+                                'Chưa tải được ảnh kiện lên. Thử lại.',
+                          );
+                          return;
+                        }
+                        await widget.service.confirmDronePickup(
+                          orderId,
+                          pickupCode: code,
+                          pickupPhoto: uploadedPhoto!,
+                          note: noteController.text,
+                        );
+                        if (ctx.mounted) Navigator.pop(ctx, true);
+                      } catch (error) {
+                        final message = LockerOpsService.errorMessage(error);
+                        final errorCode = LockerOpsService.errorCode(error);
+                        setLocal(() {
+                          if (errorCode == 'DRONE_PICKUP_CODE_INVALID') {
+                            codeProblem = message;
+                          } else if (errorCode ==
+                              'DRONE_PICKUP_PARCEL_NOT_VERIFIED') {
+                            matchProblem = message;
+                          } else {
+                            submitProblem = message;
+                          }
+                        });
+                      } finally {
+                        if (ctx.mounted) setLocal(() => submitting = false);
+                      }
+                    },
+              child: submitting
+                  ? const SizedBox.square(
+                      dimension: 18,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
+                    )
+                  : const Text('Đã lấy hàng'),
             ),
           ],
         ),
       ),
     );
-    if (confirmed != true) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
       photos.dispose();
-      return;
-    }
-    try {
-      final uploaded = await photos.uploadAll(
-        caption: 'Ảnh kiện lúc kỹ thuật viên lấy hàng',
-      );
-      if (uploaded.isEmpty) {
-        _toast('Cần chụp ảnh kiện trước khi xác nhận');
-        return;
-      }
-      await _act(
-        () => widget.service.confirmDronePickup(
-          orderId,
-          pickupCode: codeController.text,
-          pickupPhoto: uploaded.single,
-          note: noteController.text,
-        ),
-        'Đã lấy hàng và lưu ảnh kiện. Mang kiện tới drone được phân công và nạp trực tiếp; không bỏ vào ô tủ bay.',
-      );
-    } catch (error) {
-      _toast(LockerOpsService.errorMessage(error));
-    } finally {
-      photos.dispose();
-    }
+      codeController.dispose();
+      noteController.dispose();
+    });
+    if (confirmed != true) return;
+    // Server đã nhận trong hộp thoại; chỉ còn báo và tải lại.
+    await _act(
+      () async => null,
+      'Đã lấy hàng và lưu ảnh kiện. Mang kiện tới drone được phân công và nạp trực tiếp; không bỏ vào ô tủ bay.',
+    );
   }
 
   Future<void> _failPickup(Map<String, dynamic> order) async {
@@ -605,7 +680,14 @@ class _DronePickupQueueState extends State<DronePickupQueue>
   }
 
   Widget _dutyCard() {
-    final subtitle = !_onDuty
+    // Lời mời đang chờ cũng làm server tính KTV là "bận": báo đúng là có lời mời,
+    // không ghi "đang bận" ngay trên lời mời đó. Chưa vào ca mà có lời mời = điều
+    // phối viên giao thẳng.
+    final offers = _offered.length;
+    final subtitle = offers > 0
+        ? 'Có $offers lời mời đang chờ bạn trả lời'
+              '${_onDuty ? '' : ' (điều phối viên giao trực tiếp)'}.'
+        : !_onDuty
         ? 'Bật để nhận lời mời lấy hàng tận nhà gần bạn.'
         : _busy
         ? 'Đang trong ca · đang bận một việc nên chưa được mời thêm.'
@@ -860,4 +942,20 @@ class _DronePickupQueueState extends State<DronePickupQueue>
       ],
     );
   }
+}
+
+/// Dòng lỗi đỏ ngay dưới phần cần sửa trong hộp thoại.
+class _DialogError extends StatelessWidget {
+  const _DialogError(this.text);
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.only(top: 4),
+    child: Text(
+      text,
+      style: const TextStyle(fontSize: 12, color: Color(0xFFB91C1C)),
+    ),
+  );
 }

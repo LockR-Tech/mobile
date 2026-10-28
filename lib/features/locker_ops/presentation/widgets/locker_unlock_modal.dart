@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
+import 'package:permission_handler/permission_handler.dart' show openAppSettings;
 import 'package:smart_laundry_locker/core/services/locker_ble_service.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/locker_qr_scanner_dialog.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/ops_widgets.dart';
@@ -99,6 +100,8 @@ class _LockerUnlockModalState extends State<LockerUnlockModal> with SingleTicker
   bool _isBleScanning = false;
   LockerBleDetectionResult? _bleResult;
   String? _bleError;
+  // Quyền Bluetooth bị chặn hẳn: chỉ mở lại được trong Cài đặt của máy.
+  bool _blePermissionBlocked = false;
 
   // PIN copy feedback
   bool _copiedPin = false;
@@ -120,7 +123,28 @@ class _LockerUnlockModalState extends State<LockerUnlockModal> with SingleTicker
     setState(() {
       _isBleScanning = true;
       _bleError = null;
+      _blePermissionBlocked = false;
     });
+
+    final problem = await LockerBleService.instance.readinessProblem();
+    if (!mounted) return;
+    if (problem != null) {
+      setState(() {
+        _isBleScanning = false;
+        _bleResult = null;
+        _blePermissionBlocked = problem == 'PERMISSION_BLOCKED';
+        _bleError = switch (problem) {
+          'PERMISSION_BLOCKED' =>
+            'Quyền Bluetooth (Thiết bị lân cận) đang bị chặn. Mở Cài đặt để cho phép rồi quét lại.',
+          'PERMISSION_DENIED' =>
+            'App cần quyền Bluetooth để dò tủ. Bấm Quét lại và chọn Cho phép.',
+          'BLUETOOTH_OFF' =>
+            'Bluetooth của điện thoại đang tắt. Bật Bluetooth rồi bấm Quét lại.',
+          _ => 'Thiết bị này không hỗ trợ Bluetooth. Dùng Quét mã QR hoặc mã PIN.',
+        };
+      });
+      return;
+    }
 
     final res = await LockerBleService.instance.scanForLocker(
       expectedLockerCode: widget.lockerCode,
@@ -602,6 +626,20 @@ class _LockerUnlockModalState extends State<LockerUnlockModal> with SingleTicker
                   onPressed: _startBleScan,
                 ),
               ),
+              if (_blePermissionBlocked) ...[
+                const SizedBox(width: 10),
+                Expanded(
+                  child: FilledButton.icon(
+                    style: FilledButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                    icon: const Icon(LucideIcons.settings, size: 16),
+                    label: const Text('Mở Cài đặt', style: TextStyle(fontSize: 13)),
+                    onPressed: openAppSettings,
+                  ),
+                ),
+              ],
               // Nút mô phỏng chỉ có ở bản debug (thử khi chưa gắn phần cứng).
               if (kDebugMode) ...[
                 const SizedBox(width: 10),

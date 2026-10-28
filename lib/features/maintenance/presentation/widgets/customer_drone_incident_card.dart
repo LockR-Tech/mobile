@@ -234,7 +234,7 @@ class _CustomerDroneIncidentCardState extends State<CustomerDroneIncidentCard> {
               ),
               if ('${latest['policyVersion'] ?? ''}'.trim().isNotEmpty)
                 Text(
-                  'Chính sách áp dụng khi đặt đơn: ${latest['policyVersion']}',
+                  'Áp dụng chính sách sự cố tại thời điểm bạn đặt đơn',
                   style: const TextStyle(fontSize: 11, color: Color(0xFF64748B)),
                 ),
               if (showBankWarning) ...[
@@ -341,45 +341,49 @@ class _CustomerDroneIncidentCardState extends State<CustomerDroneIncidentCard> {
   Future<void> _respond(String decision) async {
     final note = TextEditingController();
     final accept = decision == 'ACCEPT';
+    String? noteError;
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(
-          accept ? 'Đồng ý phương án?' : 'Yêu cầu Lock.R xem xét lại?',
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          title: Text(
+            accept ? 'Đồng ý phương án?' : 'Yêu cầu Lock.R xem xét lại?',
+          ),
+          content: TextField(
+            controller: note,
+            maxLines: 3,
+            decoration: InputDecoration(
+              labelText: accept
+                  ? 'Ghi chú (không bắt buộc)'
+                  : 'Lý do cần xem xét *',
+              errorText: noteError,
+              border: const OutlineInputBorder(),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Hủy'),
+            ),
+            FilledButton(
+              onPressed: () {
+                // Lý do bắt buộc khi xin xem xét: báo ngay trong hộp, không đóng hộp rồi mới báo.
+                if (!accept && note.text.trim().isEmpty) {
+                  setDialogState(
+                    () => noteError = 'Vui lòng nhập lý do cần xem xét.',
+                  );
+                  return;
+                }
+                Navigator.pop(context, true);
+              },
+              child: const Text('Xác nhận'),
+            ),
+          ],
         ),
-        content: TextField(
-          controller: note,
-          maxLines: 3,
-          decoration: InputDecoration(
-            labelText: accept
-                ? 'Ghi chú (không bắt buộc)'
-                : 'Lý do cần xem xét *',
-            border: const OutlineInputBorder(),
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Hủy'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('Xác nhận'),
-          ),
-        ],
       ),
     );
     if (confirmed != true) {
-      note.dispose();
-      return;
-    }
-    if (!accept && note.text.trim().isEmpty) {
-      note.dispose();
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Vui lòng nhập lý do cần xem xét.')),
-        );
-      }
+      WidgetsBinding.instance.addPostFrameCallback((_) => note.dispose());
       return;
     }
     final incidentId = _asInt(_incident?['id']);
@@ -420,11 +424,7 @@ class _CustomerDroneIncidentCardState extends State<CustomerDroneIncidentCard> {
 
   static String _proposalText(Map proposal) {
     final amount = (proposal['compensationAmount'] as num?)?.toDouble() ?? 0;
-    final money = NumberFormat.currency(
-      locale: 'vi_VN',
-      symbol: '₫',
-      decimalDigits: 0,
-    ).format(amount);
+    final money = '${NumberFormat.decimalPattern('vi_VN').format(amount)}đ';
     final parts = <String>[
       droneResolutionTypeLabel(proposal['resolutionType']),
       if (amount > 0) 'Bồi thường $money',

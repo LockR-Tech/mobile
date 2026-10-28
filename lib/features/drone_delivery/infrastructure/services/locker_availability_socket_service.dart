@@ -23,6 +23,9 @@ class LockerAvailabilitySocketService {
   StompUnsubscribe? _subscription;
   StreamController<int>? _controller;
 
+  /// Socket đang nối (nhận được báo đổi realtime) — màn dùng để bỏ qua tải định kỳ.
+  bool get connected => _client?.connected == true;
+
   /// Stream mã tủ vừa đổi số ô trống. Huỷ lắng nghe cuối cùng thì đóng socket.
   Stream<int> watch() {
     final controller = _controller ??= StreamController<int>.broadcast(
