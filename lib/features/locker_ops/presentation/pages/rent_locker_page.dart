@@ -1164,9 +1164,11 @@ class _RentLockerPageState extends State<RentLockerPage>
                 const SizedBox(height: 2),
                 Row(
                   children: [
-                    Text(
-                      rate,
-                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: disabled ? opsMutedText : opsDark),
+                    Flexible(
+                      child: Text(
+                        rate,
+                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: disabled ? opsMutedText : opsDark),
+                      ),
                     ),
                     if (available >= 0) ...[
                       const SizedBox(width: 8),

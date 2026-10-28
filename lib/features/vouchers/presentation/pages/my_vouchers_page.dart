@@ -72,7 +72,7 @@ class _MyVouchersPageState extends State<MyVouchersPage>
               labelColor: AislBrand.navy,
               unselectedLabelColor: Colors.grey.shade500,
               labelStyle: const TextStyle(
-                fontFamily: 'Manrope',
+                fontFamily: 'Roboto',
                 fontWeight: FontWeight.bold,
                 fontSize: 15,
               ),
@@ -193,7 +193,7 @@ class _MyVouchersPageState extends State<MyVouchersPage>
                   Text(
                     'Bạn chưa có ưu đãi nào',
                     style: TextStyle(
-                      fontFamily: 'Manrope',
+                      fontFamily: 'Roboto',
                       fontSize: 16,
                       color: Colors.grey.shade600,
                       fontWeight: FontWeight.w500,
@@ -254,7 +254,8 @@ class _MyVouchersPageState extends State<MyVouchersPage>
     }
 
     return Container(
-      height: 118,
+      // Cao theo cỡ chữ hệ thống: chữ to hơn 1× thì 4 dòng nội dung vẫn vừa.
+      height: MediaQuery.textScalerOf(context).scale(118),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
@@ -300,7 +301,7 @@ class _MyVouchersPageState extends State<MyVouchersPage>
                       fontSize: 11,
                       fontWeight: FontWeight.bold,
                       color: color,
-                      fontFamily: 'Manrope',
+                      fontFamily: 'Roboto',
                     ),
                   ),
                 ],
@@ -320,7 +321,7 @@ class _MyVouchersPageState extends State<MyVouchersPage>
                         fontWeight: FontWeight.w800,
                         fontSize: 17,
                         color: isInactive ? Colors.grey : Colors.black87,
-                        fontFamily: 'Manrope',
+                        fontFamily: 'Roboto',
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -331,7 +332,7 @@ class _MyVouchersPageState extends State<MyVouchersPage>
                       style: TextStyle(
                         fontSize: 13,
                         color: Colors.grey.shade600,
-                        fontFamily: 'Manrope',
+                        fontFamily: 'Roboto',
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -357,7 +358,7 @@ class _MyVouchersPageState extends State<MyVouchersPage>
                           style: TextStyle(
                             fontSize: 12,
                             color: Colors.grey.shade500,
-                            fontFamily: 'Manrope',
+                            fontFamily: 'Roboto',
                           ),
                         ),
                       ],

@@ -189,19 +189,26 @@ class _TicketCard extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: 6),
-                    Text(
-                      isGift
-                          ? 'Quà tặng'
-                          : isPercent
-                              ? 'Giảm ${voucher.rewardValue.toInt()}%'
-                              : 'Giảm ${fmt.format(voucher.rewardValue)}',
-                      style: TextStyle(
-                        fontSize: 26,
-                        fontWeight: FontWeight.w900,
-                        color: voucher.status == 'UNUSED'
-                            ? AislBrand.navy
-                            : Colors.grey.shade400,
-                        height: 1.1,
+                    // Khung cao cố định: số tiền 7 chữ số thu nhỏ cho vừa một
+                    // dòng thay vì xuống dòng và tràn đáy.
+                    FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        isGift
+                            ? 'Quà tặng'
+                            : isPercent
+                                ? 'Giảm ${voucher.rewardValue.toInt()}%'
+                                : 'Giảm ${fmt.format(voucher.rewardValue)}',
+                        maxLines: 1,
+                        style: TextStyle(
+                          fontSize: 26,
+                          fontWeight: FontWeight.w900,
+                          color: voucher.status == 'UNUSED'
+                              ? AislBrand.navy
+                              : Colors.grey.shade400,
+                          height: 1.1,
+                        ),
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -210,11 +217,15 @@ class _TicketCard extends StatelessWidget {
                         children: [
                           Icon(LucideIcons.clock, size: 12, color: Colors.grey.shade400),
                           const SizedBox(width: 4),
-                          Text(
-                            'HSD: ${DateFormat('dd/MM/yyyy').format(voucher.expiresAt!)}',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.grey.shade500,
+                          Flexible(
+                            child: Text(
+                              'HSD: ${DateFormat('dd/MM/yyyy').format(voucher.expiresAt!)}',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey.shade500,
+                              ),
                             ),
                           ),
                         ],
@@ -540,11 +551,12 @@ class _InfoRow extends StatelessWidget {
               color: AislBrand.textMuted,
             ),
           ),
-          const Spacer(),
-          if (valueWidget != null)
-            valueWidget!
-          else
-            Flexible(
+          if (valueWidget != null) ...[
+            const Spacer(),
+            valueWidget!,
+          ] else ...[
+            const SizedBox(width: 12),
+            Expanded(
               child: Text(
                 value ?? '',
                 style: TextStyle(
@@ -556,6 +568,7 @@ class _InfoRow extends StatelessWidget {
                 maxLines: 2,
               ),
             ),
+          ],
         ],
       ),
     );

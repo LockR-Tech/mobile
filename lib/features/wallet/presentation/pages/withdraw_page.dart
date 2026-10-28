@@ -351,12 +351,16 @@ class _WithdrawPageState extends State<WithdrawPage> with BusinessConfigStateMix
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(label, style: TextStyle(color: Colors.grey.shade600, fontSize: 13)),
-          Text(
-            value,
-            style: TextStyle(
-              fontSize: 13,
-              fontWeight: isHighlight ? FontWeight.bold : FontWeight.w600,
-              color: isHighlight ? AISLShadcnTheme.navyPrimary : Colors.black87,
+          const SizedBox(width: 12),
+          Flexible(
+            child: Text(
+              value,
+              textAlign: TextAlign.right,
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: isHighlight ? FontWeight.bold : FontWeight.w600,
+                color: isHighlight ? AISLShadcnTheme.navyPrimary : Colors.black87,
+              ),
             ),
           ),
         ],

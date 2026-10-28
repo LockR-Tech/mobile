@@ -915,12 +915,16 @@ class _RefundRequestsPageState extends State<RefundRequestsPage> {
                         ),
                       ],
                     ),
-                    Text(
-                      orderCode,
-                      style: const TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xFF0F172A),
+                    const SizedBox(width: 12),
+                    Flexible(
+                      child: Text(
+                        orderCode,
+                        textAlign: TextAlign.right,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF0F172A),
+                        ),
                       ),
                     ),
                   ],
@@ -1680,12 +1684,16 @@ class _RefundRequestsPageState extends State<RefundRequestsPage> {
                             children: [
                               Row(
                                 children: [
-                                  Text(
-                                    'Đơn: ${_selectedOrder!['orderCode'] ?? '#${_selectedOrder!['id']}'}',
-                                    style: const TextStyle(
-                                      fontSize: 13.5,
-                                      fontWeight: FontWeight.w800,
-                                      color: Color(0xFF0F172A),
+                                  Flexible(
+                                    child: Text(
+                                      'Đơn: ${_selectedOrder!['orderCode'] ?? '#${_selectedOrder!['id']}'}',
+                                      style: const TextStyle(
+                                        fontSize: 13.5,
+                                        fontWeight: FontWeight.w800,
+                                        color: Color(0xFF0F172A),
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
                                     ),
                                   ),
                                   const SizedBox(width: 6),

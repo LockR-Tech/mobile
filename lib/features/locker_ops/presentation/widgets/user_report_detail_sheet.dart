@@ -1467,12 +1467,14 @@ class _UserRepairLogsSection extends StatelessWidget {
                               children: [
                                 const Icon(LucideIcons.camera, size: 12.5, color: Color(0xFF6366F1)),
                                 const SizedBox(width: 4),
-                                Text(
-                                  'Ảnh trong quá trình sửa (${logPhotos.length} ảnh):',
-                                  style: const TextStyle(
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.w600,
-                                    color: opsMutedText,
+                                Expanded(
+                                  child: Text(
+                                    'Ảnh trong quá trình sửa (${logPhotos.length} ảnh):',
+                                    style: const TextStyle(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w600,
+                                      color: opsMutedText,
+                                    ),
                                   ),
                                 ),
                               ],
@@ -1502,19 +1504,24 @@ class _UserRepairLogsSection extends StatelessWidget {
                                     color: opsMutedText,
                                   ),
                                 ),
-                                const Spacer(),
-                                Text(
-                                  technicianName != null && '$technicianName'.trim().isNotEmpty
-                                      ? '$technicianName'
-                                      : (log['actorName'] != null && '${log['actorName']}'.trim().isNotEmpty
-                                          ? '${log['actorName']}'
-                                          : (log['actorUserId'] != null
-                                              ? 'KTV #${log['actorUserId']}'
-                                              : 'ky thuat vien Kiosk')),
-                                  style: const TextStyle(
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.w600,
-                                    color: opsDark,
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(
+                                    technicianName != null && '$technicianName'.trim().isNotEmpty
+                                        ? '$technicianName'
+                                        : (log['actorName'] != null && '${log['actorName']}'.trim().isNotEmpty
+                                            ? '${log['actorName']}'
+                                            : (log['actorUserId'] != null
+                                                ? 'KTV #${log['actorUserId']}'
+                                                : 'Kỹ thuật viên kiosk')),
+                                    textAlign: TextAlign.right,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w600,
+                                      color: opsDark,
+                                    ),
                                   ),
                                 ),
                               ],
@@ -1664,12 +1671,14 @@ class _ReportRatingSectionState extends State<_ReportRatingSection> {
             children: [
               const Icon(LucideIcons.star, size: 18, color: Color(0xFFD97706)),
               const SizedBox(width: 8),
-              Text(
-                hasRated ? 'Đánh giá của bạn về KTV' : 'Đánh giá chất lượng phục vụ của KTV',
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 13,
-                  color: Color(0xFF92400E),
+              Expanded(
+                child: Text(
+                  hasRated ? 'Đánh giá của bạn về KTV' : 'Đánh giá chất lượng phục vụ của KTV',
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 13,
+                    color: Color(0xFF92400E),
+                  ),
                 ),
               ),
             ],
