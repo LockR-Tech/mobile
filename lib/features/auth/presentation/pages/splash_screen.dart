@@ -9,8 +9,7 @@ import 'package:smart_laundry_locker/core/services/token_service.dart';
 import 'package:smart_laundry_locker/shared/shared.dart';
 import 'package:smart_laundry_locker/shared/widgets/app_lottie.dart';
 
-const String _kFastDeliveryLottie =
-    'assets/animations/fast_shopping_delivery.json';
+const String _kStartupLottie = AppLottieAssets.khoiDongApp;
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -52,8 +51,8 @@ class _SplashScreenState extends State<SplashScreen>
   }
 
   Future<void> _checkAuthAndNavigate() async {
-    // Chỉ chờ hết hiệu ứng logo (~0,9 s) — trước đây chờ cứng 5 s mỗi lần mở app.
-    await Future<void>.delayed(const Duration(milliseconds: 900));
+    // Chờ hiệu ứng khởi động khoiDongApp.json hiển thị mượt (~2,4 s) trước khi điều hướng.
+    await Future<void>.delayed(const Duration(milliseconds: 2400));
     if (!mounted) return;
 
     final hasToken = await TokenService.hasToken();
@@ -227,16 +226,34 @@ class _SplashScreenState extends State<SplashScreen>
 
                           const SizedBox(height: 20),
 
-                          // ── 2. LOTTIE ANIMATION PHÓNG TO Ở DƯỚI LOGO ────────────
-                          Container(
-                            width: 320,
-                            height: 320,
-                            alignment: Alignment.center,
-                            child: const AppLottie(
-                              _kFastDeliveryLottie,
-                              animate: true,
-                              repeat: true,
-                              fit: BoxFit.contain,
+                          // ── 2. LOTTIE ANIMATION KHỞI ĐỘNG APP Ở DƯỚI LOGO ────────
+                          ConstrainedBox(
+                            constraints: const BoxConstraints(maxWidth: 360),
+                            child: Container(
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(20),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: const Color(
+                                      0xFF0F172A,
+                                    ).withValues(alpha: 0.10),
+                                    blurRadius: 24,
+                                    offset: const Offset(0, 8),
+                                  ),
+                                ],
+                              ),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(20),
+                                child: const AspectRatio(
+                                  aspectRatio: 16 / 9,
+                                  child: AppLottie(
+                                    _kStartupLottie,
+                                    animate: true,
+                                    repeat: true,
+                                    fit: BoxFit.cover,
+                                  ),
+                                ),
+                              ),
                             ),
                           ),
 

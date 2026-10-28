@@ -55,6 +55,9 @@ abstract final class AppLottieAssets {
 
   /// Minh hoạ mua sắm & giao vận nhanh ("10- Fast Shopping Delivery").
   static const String fastDelivery = '$_dir/fast_shopping_delivery.json';
+
+  /// Animation khởi động ứng dụng & màn hình đăng nhập (`khoiDongApp.json`).
+  static const String khoiDongApp = '$_dir/khoiDongApp.json';
 }
 
 /// Hiển thị một file Lottie trong `assets/animations/`.
