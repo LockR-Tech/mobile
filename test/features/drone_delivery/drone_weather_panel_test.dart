@@ -111,4 +111,45 @@ void main() {
     expect(find.text('Tủ B'), findsOneWidget);
     expect(find.text('Chưa có dự báo'), findsOneWidget);
   });
+
+  testWidgets('trạm admin đang dừng bay: tính là không bay được và hiện lý do', (
+    tester,
+  ) async {
+    await pump(
+      tester,
+      DroneLockerWeatherList(
+        load: () async => [
+          {
+            'lockerId': 1,
+            'name': 'Tủ A',
+            'weather': {..._weather('SAFE'), 'windowMinutes': 45},
+          },
+          {
+            'lockerId': 2,
+            'name': 'Tủ B',
+            'weather': {..._weather('SAFE'), 'windowMinutes': 45},
+            'suspension': {
+              'lockerId': 2,
+              'reason': 'WEATHER',
+              'reasonLabel': 'Thời tiết tại trạm',
+              'note': 'Mưa giông cục bộ',
+            },
+          },
+        ],
+      ),
+    );
+
+    expect(
+      find.text('1/2 tủ đang không bay được hoặc chưa có dự báo'),
+      findsOneWidget,
+    );
+    await tester.tap(find.text('Thời tiết tại các tủ drone'));
+    await tester.pumpAndSettle();
+    expect(
+      find.text('Trạm đang tạm dừng bay: Thời tiết tại trạm — Mưa giông cục bộ'),
+      findsOneWidget,
+    );
+    expect(find.byKey(const ValueKey('drone-station-suspended-1')), findsNothing);
+    expect(find.textContaining('Dự báo 45 phút tới'), findsNWidgets(2));
+  });
 }

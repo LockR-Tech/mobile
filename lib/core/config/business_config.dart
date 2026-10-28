@@ -57,6 +57,7 @@ class BusinessConfig {
     required this.topupMaxAmount,
     required this.topupDefaultAmount,
     required this.topupPresets,
+    this.withdrawMinAmount = 10000,
     required this.enabledPaymentMethods,
     this.paymentSimulationEnabled = false,
     required this.reportPhotosPerRequestReporter,
@@ -192,6 +193,9 @@ class BusinessConfig {
   final int topupMaxAmount;
   final int topupDefaultAmount;
   final List<int> topupPresets;
+
+  /// Số tiền rút ví về ngân hàng tối thiểu (`app.payment.withdraw-min-amount`).
+  final int withdrawMinAmount;
 
   /// Mã phương thức thanh toán đang bật, viết hoa (`CASH`, `WALLET`, …).
   final List<String> enabledPaymentMethods;
@@ -504,6 +508,11 @@ class BusinessConfig {
       topupMaxAmount: topupMax,
       topupDefaultAmount: topupDefault,
       topupPresets: List.unmodifiable(presets),
+      withdrawMinAmount: _int(
+        p['app.payment.withdraw-min-amount'],
+        d.withdrawMinAmount,
+        min: 1,
+      ),
       enabledPaymentMethods: List.unmodifiable(
         _methods(p['app.payment.enabled-methods'], d.enabledPaymentMethods),
       ),
@@ -678,6 +687,7 @@ class BusinessConfig {
       'app.payment.topup-max-amount': topupMaxAmount,
       'app.payment.topup-default-amount': topupDefaultAmount,
       'app.payment.topup-presets': topupPresets,
+      'app.payment.withdraw-min-amount': withdrawMinAmount,
       'app.payment.enabled-methods': enabledPaymentMethods.join(','),
       'app.payment.simulation-enabled': paymentSimulationEnabled,
     },
