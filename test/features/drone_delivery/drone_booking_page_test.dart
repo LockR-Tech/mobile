@@ -15,11 +15,48 @@ const _pickup = PickupLocation(
 );
 
 const _lockers = [
-  {'id': 5, 'name': 'Locker B', 'landingPad': true, 'status': 'ACTIVE'},
-  {'id': 6, 'name': 'Locker C', 'landingPad': true, 'status': 'ACTIVE'},
+  {
+    'id': 5,
+    'name': 'Locker B',
+    'landingPad': true,
+    'status': 'ACTIVE',
+    'latitude': 10.8,
+    'longitude': 106.7,
+  },
+  {
+    'id': 6,
+    'name': 'Locker C',
+    'landingPad': true,
+    'status': 'ACTIVE',
+    'latitude': 10.8,
+    'longitude': 106.7,
+  },
   // Không có bãi đáp / đang bảo trì: không chọn được làm tủ nhận.
-  {'id': 7, 'name': 'Locker D', 'landingPad': false, 'status': 'ACTIVE'},
-  {'id': 8, 'name': 'Locker E', 'landingPad': true, 'status': 'MAINTENANCE'},
+  {
+    'id': 7,
+    'name': 'Locker D',
+    'landingPad': false,
+    'status': 'ACTIVE',
+    'latitude': 10.8,
+    'longitude': 106.7,
+  },
+  {
+    'id': 8,
+    'name': 'Locker E',
+    'landingPad': true,
+    'status': 'MAINTENANCE',
+    'latitude': 10.8,
+    'longitude': 106.7,
+  },
+  // Có bãi đáp, còn ô drone nhưng chưa nhập toạ độ: drone không biết bay tới đâu.
+  {
+    'id': 9,
+    'name': 'Locker F',
+    'landingPad': true,
+    'status': 'ACTIVE',
+    'latitude': null,
+    'longitude': null,
+  },
 ];
 
 /// Mã giảm giá + điểm thưởng cho đơn drone (tủ gửi = tủ #3).
@@ -370,7 +407,10 @@ void main() {
         find.byKey(const ValueKey('drone-submit')),
       );
       expect(button.onPressed, isNull);
-      expect(find.textContaining('Đơn chỉ đặt được khi trời đủ điều kiện bay'), findsOneWidget);
+      expect(
+        find.textContaining('Đơn chỉ đặt được khi trời đủ điều kiện bay'),
+        findsOneWidget,
+      );
     },
   );
 
@@ -390,7 +430,9 @@ void main() {
       expect(find.textContaining('nguồn MET Norway'), findsOneWidget);
 
       final before = quotes.length;
-      await tester.tap(find.byKey(const ValueKey('drone-quote-weather-refresh')));
+      await tester.tap(
+        find.byKey(const ValueKey('drone-quote-weather-refresh')),
+      );
       await tester.pumpAndSettle();
       expect(quotes.length, before + 1);
     },
@@ -411,38 +453,38 @@ void main() {
     },
   );
 
-  testWidgets(
-    'hiện tất cả tủ; chỉ cho chọn tủ nhận drone còn đủ điều kiện',
-    (tester) async {
-      await pump(tester, destination: 5);
-      await tester.tap(find.byKey(const ValueKey('drone-destination-locker')));
-      await tester.pumpAndSettle();
-      expect(find.textContaining('Locker C'), findsWidgets);
-      expect(find.textContaining('Locker D'), findsOneWidget);
-      expect(find.textContaining('Chưa có bãi đáp drone'), findsOneWidget);
-      expect(find.textContaining('Locker E'), findsOneWidget);
-      expect(find.textContaining('Đang bảo trì'), findsOneWidget);
-      await tester.tap(find.textContaining('Locker C').last);
-      await tester.pumpAndSettle();
-      await tester.tap(find.byKey(const ValueKey('drone-destination-box')));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('Ô số 1').last);
-      await tester.pumpAndSettle();
+  testWidgets('hiện tất cả tủ; chỉ cho chọn tủ nhận drone còn đủ điều kiện', (
+    tester,
+  ) async {
+    await pump(tester, destination: 5);
+    await tester.tap(find.byKey(const ValueKey('drone-destination-locker')));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('Locker C'), findsWidgets);
+    expect(find.textContaining('Locker D'), findsOneWidget);
+    expect(find.textContaining('Chưa có bãi đáp drone'), findsOneWidget);
+    expect(find.textContaining('Locker E'), findsOneWidget);
+    expect(find.textContaining('Đang bảo trì'), findsOneWidget);
+    expect(find.textContaining('Locker F · Chưa có toạ độ tủ'), findsOneWidget);
+    await tester.tap(find.textContaining('Locker C').last);
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('drone-destination-box')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Ô số 1').last);
+    await tester.pumpAndSettle();
 
-      await tester.tap(find.byKey(const ValueKey('drone-pickup-location')));
-      await tester.pumpAndSettle();
-      await fillReceiver(tester);
-      await tester.tap(find.byKey(const ValueKey('drone-category-FOOD')));
-      await tester.tap(
-        find.byKey(const ValueKey('drone-prohibited-declaration')),
-      );
-      await submit(tester);
+    await tester.tap(find.byKey(const ValueKey('drone-pickup-location')));
+    await tester.pumpAndSettle();
+    await fillReceiver(tester);
+    await tester.tap(find.byKey(const ValueKey('drone-category-FOOD')));
+    await tester.tap(
+      find.byKey(const ValueKey('drone-prohibited-declaration')),
+    );
+    await submit(tester);
 
-      final json = created.single.toJson();
-      expect(json['destinationLockerId'], 6);
-      expect(json['preferredBoxId'], 9001);
-    },
-  );
+    final json = created.single.toJson();
+    expect(json['destinationLockerId'], 6);
+    expect(json['preferredBoxId'], 9001);
+  });
 
   testWidgets(
     'mã giảm giá theo tủ gửi + điểm thưởng: chỉ hiện mã dùng được ở tủ gửi, '

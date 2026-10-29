@@ -433,7 +433,8 @@ class _DroneBookingPageState extends State<DroneBookingPage>
   static bool _canReceiveDrone(Map<String, dynamic> locker) {
     if (locker['online'] == false ||
         locker['landingPad'] != true ||
-        '${locker['status']}'.toUpperCase() != 'ACTIVE') {
+        '${locker['status']}'.toUpperCase() != 'ACTIVE' ||
+        !_hasCoordinates(locker)) {
       return false;
     }
     final padStatus = locker['landingPadStatus'];
@@ -441,6 +442,10 @@ class _DroneBookingPageState extends State<DroneBookingPage>
     final normalized = '$padStatus'.trim().toUpperCase();
     return normalized.isEmpty || normalized == 'OK';
   }
+
+  /// Drone bay tới toạ độ tủ: tủ chưa nhập vị trí thì server từ chối báo giá, khoá luôn ở đây.
+  static bool _hasCoordinates(Map<String, dynamic> locker) =>
+      locker['latitude'] is num && locker['longitude'] is num;
 
   Map<String, dynamic>? get _selectedDestination {
     final id = _destinationLockerId;
@@ -480,6 +485,7 @@ class _DroneBookingPageState extends State<DroneBookingPage>
     if (padStatus.isNotEmpty && padStatus != 'OK') {
       return '$distPrefix${padStatus == 'MAINTENANCE' ? 'Bãi đáp đang bảo trì' : 'Bãi đáp đang lỗi'}';
     }
+    if (!_hasCoordinates(locker)) return 'Chưa có toạ độ tủ';
     final slots = _availableDroneSlots[_asInt(locker['id'])];
     if (slots == null) return '${distPrefix}Đang kiểm tra ô drone';
     if (slots == 0) return '${distPrefix}Hết ô drone trống';

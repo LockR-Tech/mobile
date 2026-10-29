@@ -1753,6 +1753,8 @@ class LockerOpsService {
     'DRONE_ROUTE_INVALID': 'Tủ gửi và tủ nhận phải khác nhau.',
     'DRONE_ROUTE_TOO_FAR':
         'Tủ nhận nằm ngoài tầm bay của drone từ khu vực lấy hàng này.',
+    'DRONE_ROUTE_TOO_SHORT':
+        'Tủ nhận ở ngay cạnh tủ gửi drone nên không cần giao bằng drone — hãy gửi thẳng vào tủ nhận.',
     'DRONE_PICKUP_OUT_OF_RANGE':
         'Vị trí ghim nằm ngoài bán kính lấy hàng của tủ gửi drone. Khoảng cách này tính từ nhà bạn đến tủ gửi, khác quãng đường bay giữa hai tủ. Hãy kiểm tra ghim trên bản đồ rồi chọn lại vị trí.',
     'DRONE_NO_SOURCE_LOCKER':
