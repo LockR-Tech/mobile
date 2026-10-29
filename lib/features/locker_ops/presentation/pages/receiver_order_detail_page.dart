@@ -211,7 +211,7 @@ class _ReceiverOrderDetailPageState extends State<ReceiverOrderDetailPage> {
               ),
             if (d.droneTrackingAvailable)
               OpsSheetAction(
-                label: 'Theo dõi drone',
+                label: finished ? 'Xem lại hành trình drone' : 'Theo dõi drone',
                 icon: LucideIcons.navigation,
                 onTap: _trackDrone,
               ),
