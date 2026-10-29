@@ -8,8 +8,22 @@ import 'package:smart_laundry_locker/features/drone_delivery/infrastructure/serv
 import 'package:smart_laundry_locker/features/drone_delivery/presentation/pages/drone_booking_page.dart';
 
 const _lockers = [
-  {'id': 5, 'name': 'Locker B', 'landingPad': true, 'status': 'ACTIVE'},
-  {'id': 6, 'name': 'Locker C', 'landingPad': true, 'status': 'ACTIVE'},
+  {
+    'id': 5,
+    'name': 'Locker B',
+    'landingPad': true,
+    'status': 'ACTIVE',
+    'latitude': 10.8,
+    'longitude': 106.7,
+  },
+  {
+    'id': 6,
+    'name': 'Locker C',
+    'landingPad': true,
+    'status': 'ACTIVE',
+    'latitude': 10.8,
+    'longitude': 106.7,
+  },
 ];
 
 Map<String, dynamic> _box(int id, int number) => {
