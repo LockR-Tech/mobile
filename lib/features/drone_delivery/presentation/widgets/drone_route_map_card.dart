@@ -2,20 +2,24 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:smart_laundry_locker/core/theme/shadcn_theme.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/domain/entities/drone_delivery_stage.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/domain/entities/drone_delivery_status.dart';
+import 'package:smart_laundry_locker/features/drone_delivery/domain/entities/drone_position_snapshot.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/domain/entities/drone_route_geometry.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/presentation/drone_live_map.dart';
+import 'package:smart_laundry_locker/features/drone_delivery/presentation/providers/drone_live_map_providers.dart';
+import 'package:smart_laundry_locker/features/drone_delivery/presentation/widgets/drone_coordinates_line.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/presentation/widgets/drone_marker.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/presentation/widgets/drone_base_tile_layer.dart';
 
 /// Bản đồ tóm tắt hành trình: tủ gửi A, tủ nhận B, đoạn đã bay và vị trí drone
 /// ước theo chặng hiện tại. Không cho kéo/zoom để cuộn trang không bị bản đồ "nuốt";
 /// theo dõi vị trí thật từng giây ở màn live map.
-class DroneRouteMapCard extends StatelessWidget {
+class DroneRouteMapCard extends ConsumerWidget {
   const DroneRouteMapCard({
     super.key,
     required this.status,
@@ -31,7 +35,7 @@ class DroneRouteMapCard extends StatelessWidget {
   static const Color _plannedColor = Color(0xFF94A3B8);
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final source = status.sourceLocker;
     final destination = status.destinationLocker;
     if (source == null ||
@@ -50,15 +54,23 @@ class DroneRouteMapCard extends StatelessWidget {
     final b = LatLng(destination.latitude!, destination.longitude!);
     final stage = status.stage;
     final progress = _progress(stage);
+    // Drone bay tới đâu bắn toạ độ về tới đó (STOMP); thẻ nghe trực tiếp trong lúc bay.
+    final live = droneListensLivePosition(status)
+        ? ref.watch(dronePositionStreamProvider(status.orderId!)).value
+        : null;
+    final position = droneReportedPosition(status, live, a, b);
     final drone = progress == null
         ? null
-        : LatLng(
-            a.latitude + (b.latitude - a.latitude) * progress,
-            a.longitude + (b.longitude - a.longitude) * progress,
-          );
+        : position?.point ??
+              LatLng(
+                a.latitude + (b.latitude - a.latitude) * progress,
+                a.longitude + (b.longitude - a.longitude) * progress,
+              );
     final totalKm = droneDistanceKm(a.latitude, a.longitude, b.latitude, b.longitude);
-    final position = dronePositionOnRoute(stage, a, b);
-    final remainingKm = progress == null ? null : totalKm * (1 - progress);
+    final remainingKm = drone == null
+        ? null
+        : droneDistanceKm(drone.latitude, drone.longitude, b.latitude, b.longitude);
+    final reportedLive = position != null && !position.estimated;
 
     return _Frame(
       child: Column(
@@ -146,18 +158,20 @@ class DroneRouteMapCard extends StatelessWidget {
           ),
           if (position != null) ...[
             const SizedBox(height: 8),
-            _DroneCoordinates(
-              position: position,
-              note: droneIsSimulated(status)
-                  ? '${position.note} · mô phỏng'
-                  : position.note,
+            DroneCoordinatesLine(
+              key: const ValueKey('drone-route-coordinates'),
+              latitude: position.point.latitude,
+              longitude: position.point.longitude,
+              note: position.note,
             ),
           ],
           if (drone != null) ...[
             const SizedBox(height: 6),
             // KTV: số đo bay thật xem ở khung camera; khách: chỉ nhắc mở bản đồ trực tiếp khi màn có nút đó.
             Text(
-              forOperator
+              reportedLive
+                  ? 'Toạ độ cập nhật mỗi khi drone gửi vị trí về. Bấm vào toạ độ để mở Google Maps.'
+                  : forOperator
                   ? 'Vị trí drone ước theo chặng bay hiện tại. Số đo bay thật (GPS, pin, chế độ bay) xem ở khung camera phía trên.'
                   : (droneLiveMapAvailable(status)
                       ? 'Vị trí drone ước theo chặng bay hiện tại. Mở "Theo dõi trên bản đồ" để xem vị trí ${droneIsSimulated(status) ? 'mô phỏng' : 'trực tiếp'}.'
@@ -193,6 +207,52 @@ class DroneRouteMapCard extends StatelessWidget {
   }
 }
 
+/// Toạ độ drone đưa lên thẻ, theo thứ tự tin cậy: bản tin drone vừa bắn về (STOMP) → toạ độ API chi tiết
+/// trả (cùng nguồn với bản tin) → ước theo chặng khi chưa có số nào. `estimated` = chỉ là ước lượng.
+@visibleForTesting
+({LatLng point, String note, bool estimated})? droneReportedPosition(
+  DroneDeliveryStatus status,
+  DronePositionSnapshot? live,
+  LatLng source,
+  LatLng destination,
+) {
+  final simulated = droneIsSimulated(status);
+  if (live != null) {
+    final t = live.timestamp.toLocal();
+    String two(int v) => v.toString().padLeft(2, '0');
+    return (
+      point: LatLng(live.lat, live.lng),
+      note:
+          'Drone gửi về lúc ${two(t.hour)}:${two(t.minute)}:${two(t.second)}${simulated ? ' · mô phỏng' : ''}',
+      estimated: false,
+    );
+  }
+  final lat = status.currentLatitude;
+  final lng = status.currentLongitude;
+  if (lat != null && lng != null) {
+    final atLocker = const {
+      DroneDeliveryStage.readyForPickup,
+      DroneDeliveryStage.completed,
+    }.contains(status.stage);
+    return (
+      point: LatLng(lat, lng),
+      note: atLocker
+          ? 'Tại tủ nhận'
+          : simulated
+          ? 'Mô phỏng theo chặng bay'
+          : 'Theo telemetry của drone',
+      estimated: false,
+    );
+  }
+  final guess = dronePositionOnRoute(status.stage, source, destination);
+  if (guess == null) return null;
+  return (
+    point: guess.point,
+    note: simulated ? '${guess.note} · mô phỏng' : guess.note,
+    estimated: true,
+  );
+}
+
 /// Vị trí drone hiển thị dưới dạng toạ độ: ước theo chặng khi đang bay, tủ gửi khi chưa cất cánh,
 /// tủ nhận khi đã tới. Chặng lỗi / huỷ / báo rơi kiện thì không đoán vị trí.
 @visibleForTesting
@@ -224,50 +284,6 @@ class DroneRouteMapCard extends StatelessWidget {
     ),
     _ => null,
   };
-}
-
-class _DroneCoordinates extends StatelessWidget {
-  const _DroneCoordinates({required this.position, required this.note});
-
-  final ({LatLng point, String note}) position;
-  final String note;
-
-  @override
-  Widget build(BuildContext context) => Container(
-    key: const ValueKey('drone-route-coordinates'),
-    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-    decoration: BoxDecoration(
-      color: const Color(0xFFF1F5F9),
-      borderRadius: BorderRadius.circular(12),
-    ),
-    child: Row(
-      children: [
-        const Icon(LucideIcons.locateFixed, size: 18, color: Color(0xFF334155)),
-        const SizedBox(width: 10),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Vĩ độ ${position.point.latitude.toStringAsFixed(6)} · '
-                'Kinh độ ${position.point.longitude.toStringAsFixed(6)}',
-                style: const TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w700,
-                  fontFeatures: [FontFeature.tabularFigures()],
-                ),
-              ),
-              const SizedBox(height: 2),
-              Text(
-                'Vị trí drone · $note',
-                style: const TextStyle(fontSize: 11.5, color: Color(0xFF64748B)),
-              ),
-            ],
-          ),
-        ),
-      ],
-    ),
-  );
 }
 
 class _Frame extends StatelessWidget {
