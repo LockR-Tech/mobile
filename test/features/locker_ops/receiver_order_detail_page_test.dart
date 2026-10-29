@@ -74,7 +74,8 @@ class _FakeService extends LockerOpsService {
     bool delegated = false,
   }) async {
     lastDelegated = delegated;
-    final next = responses[calls < responses.length ? calls : responses.length - 1];
+    final next =
+        responses[calls < responses.length ? calls : responses.length - 1];
     calls++;
     if (next is Map<String, dynamic>) return next;
     throw next;
@@ -284,10 +285,16 @@ void main() {
         'deliveryBlockReasonLabel': 'Drone gặp sự cố',
         'deliveryBlockedAt': '2026-10-12T01:35:00',
         'journey': [
-          {'fromStage': 'AWAITING_DISPATCH', 'toStage': 'EN_ROUTE',
-            'occurredAt': '2026-10-12T01:30:00'},
-          {'fromStage': null, 'toStage': 'AWAITING_DISPATCH',
-            'occurredAt': '2026-10-12T01:00:00'},
+          {
+            'fromStage': 'AWAITING_DISPATCH',
+            'toStage': 'EN_ROUTE',
+            'occurredAt': '2026-10-12T01:30:00',
+          },
+          {
+            'fromStage': null,
+            'toStage': 'AWAITING_DISPATCH',
+            'occurredAt': '2026-10-12T01:00:00',
+          },
         ],
       },
     ]);
@@ -304,12 +311,41 @@ void main() {
     expect(find.text('30 × 20 × 10 cm'), findsOneWidget);
     expect(find.text('Tài liệu'), findsOneWidget);
     expect(find.text('250.000đ'), findsOneWidget);
-    expect(find.text('Giao bằng drone'), findsOneWidget); // loại đơn ở đầu trang
+    expect(
+      find.text('Giao bằng drone'),
+      findsOneWidget,
+    ); // loại đơn ở đầu trang
     expect(find.text('Hành trình drone'), findsOneWidget);
     expect(find.text('Khoảng 6 phút'), findsOneWidget);
     expect(find.text('Chờ kỹ thuật viên nhận lấy hàng'), findsOneWidget);
     expect(find.text('Drone gặp sự cố'), findsOneWidget);
     expect(find.byType(AccessCredentials), findsNothing);
-    expect(find.textContaining('Mã lấy hàng sẽ hiện khi drone'), findsOneWidget);
+    expect(
+      find.textContaining('Mã lấy hàng sẽ hiện khi drone'),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('đơn drone đã lấy xong vẫn có nút xem lại hành trình drone', (
+    tester,
+  ) async {
+    const droneItem = {
+      'id': 92,
+      'orderCode': 'ORD-92',
+      'type': 'DRONE_DELIVERY',
+      'status': 'COMPLETED',
+      'deliveryStage': 'READY_FOR_PICKUP',
+      'senderName': 'Chị Gửi',
+      'lockerId': 7,
+      'lockerName': 'Tủ thư viện',
+      'readyForPickup': false,
+    };
+    final service = _FakeService([
+      {...droneItem, 'viewerRole': 'RECEIVER', 'droneTrackingAvailable': true},
+    ]);
+    await _pump(tester, service, listItem: droneItem);
+
+    expect(find.text('Xem lại hành trình drone'), findsOneWidget);
+    expect(find.text('Theo dõi drone'), findsNothing);
   });
 }
