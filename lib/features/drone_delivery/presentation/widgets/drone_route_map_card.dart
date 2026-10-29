@@ -57,6 +57,7 @@ class DroneRouteMapCard extends StatelessWidget {
             a.longitude + (b.longitude - a.longitude) * progress,
           );
     final totalKm = droneDistanceKm(a.latitude, a.longitude, b.latitude, b.longitude);
+    final position = dronePositionOnRoute(stage, a, b);
     final remainingKm = progress == null ? null : totalKm * (1 - progress);
 
     return _Frame(
@@ -143,6 +144,15 @@ class DroneRouteMapCard extends StatelessWidget {
               _Stat(icon: stage.icon, text: stage.title, color: stage.color),
             ],
           ),
+          if (position != null) ...[
+            const SizedBox(height: 8),
+            _DroneCoordinates(
+              position: position,
+              note: droneIsSimulated(status)
+                  ? '${position.note} · mô phỏng'
+                  : position.note,
+            ),
+          ],
           if (drone != null) ...[
             const SizedBox(height: 6),
             // KTV: số đo bay thật xem ở khung camera; khách: chỉ nhắc mở bản đồ trực tiếp khi màn có nút đó.
@@ -181,6 +191,83 @@ class DroneRouteMapCard extends StatelessWidget {
         math.sin(lat1) * math.cos(lat2) * math.cos(dLng);
     return (math.atan2(y, x) * 180 / math.pi + 360) % 360;
   }
+}
+
+/// Vị trí drone hiển thị dưới dạng toạ độ: ước theo chặng khi đang bay, tủ gửi khi chưa cất cánh,
+/// tủ nhận khi đã tới. Chặng lỗi / huỷ / báo rơi kiện thì không đoán vị trí.
+@visibleForTesting
+({LatLng point, String note})? dronePositionOnRoute(
+  DroneDeliveryStage stage,
+  LatLng source,
+  LatLng destination,
+) {
+  final progress = droneStageProgress(stage);
+  if (progress != null && progress < 1.0) {
+    return (
+      point: LatLng(
+        source.latitude + (destination.latitude - source.latitude) * progress,
+        source.longitude + (destination.longitude - source.longitude) * progress,
+      ),
+      note: 'Ước theo chặng bay',
+    );
+  }
+  return switch (stage) {
+    DroneDeliveryStage.arrived ||
+    DroneDeliveryStage.readyForPickup ||
+    DroneDeliveryStage.completed => (point: destination, note: 'Tại tủ nhận'),
+    DroneDeliveryStage.awaitingDispatch ||
+    DroneDeliveryStage.pickupAssigned ||
+    DroneDeliveryStage.pickedUp ||
+    DroneDeliveryStage.accepted => (
+      point: source,
+      note: 'Tại tủ gửi, chưa cất cánh',
+    ),
+    _ => null,
+  };
+}
+
+class _DroneCoordinates extends StatelessWidget {
+  const _DroneCoordinates({required this.position, required this.note});
+
+  final ({LatLng point, String note}) position;
+  final String note;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    key: const ValueKey('drone-route-coordinates'),
+    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+    decoration: BoxDecoration(
+      color: const Color(0xFFF1F5F9),
+      borderRadius: BorderRadius.circular(12),
+    ),
+    child: Row(
+      children: [
+        const Icon(LucideIcons.locateFixed, size: 18, color: Color(0xFF334155)),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Vĩ độ ${position.point.latitude.toStringAsFixed(6)} · '
+                'Kinh độ ${position.point.longitude.toStringAsFixed(6)}',
+                style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  fontFeatures: [FontFeature.tabularFigures()],
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                'Vị trí drone · $note',
+                style: const TextStyle(fontSize: 11.5, color: Color(0xFF64748B)),
+              ),
+            ],
+          ),
+        ),
+      ],
+    ),
+  );
 }
 
 class _Frame extends StatelessWidget {
