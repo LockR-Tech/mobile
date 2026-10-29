@@ -285,4 +285,63 @@ void main() {
       expect(find.text('Đang nạp hàng lên drone'), findsWidgets);
     },
   );
+
+  // Test tay 2026-10-29: thẻ đầu trang ghi sai ở 3 trường hợp.
+  testWidgets('đơn đóng sau khi drone đã bay không ghi "dừng trước khi cất cánh"', (
+    tester,
+  ) async {
+    await pump(
+      tester,
+      _status({
+        'status': 'CANCELED',
+        'deliveryStage': 'CANCELED',
+        'launchingAt': '2026-10-29T03:40:00',
+      }),
+    );
+
+    expect(find.text('Đơn drone đã đóng'), findsOneWidget);
+    expect(find.text('Đơn đã dừng trước khi drone cất cánh'), findsNothing);
+  });
+
+  testWidgets('đơn chưa thanh toán không ghi "đang tìm kỹ thuật viên"', (
+    tester,
+  ) async {
+    await pump(
+      tester,
+      _status({
+        'deliveryStage': 'AWAITING_DISPATCH',
+        'paymentStatus': 'UNPAID',
+        'pickup': null,
+      }),
+    );
+
+    expect(find.text('Chờ thanh toán'), findsOneWidget);
+    expect(
+      find.textContaining('Hệ thống đang tìm kỹ thuật viên'),
+      findsNothing,
+    );
+  });
+
+  testWidgets('đã nạp xong (READY_TO_LAUNCH) thì đầu trang là "Sẵn sàng phóng"', (
+    tester,
+  ) async {
+    await pump(
+      tester,
+      _status({'deliveryStage': 'ACCEPTED', 'missionStatus': 'READY_TO_LAUNCH'}),
+    );
+
+    expect(find.text('Sẵn sàng phóng'), findsWidgets);
+  });
+
+  testWidgets('khách không có nút chỉ đường tới tủ bay; KTV thì có', (
+    tester,
+  ) async {
+    await pump(tester, _status());
+    expect(find.text('Chỉ đường tới drone tại tủ bay'), findsNothing);
+    expect(find.text('Chỉ đường tới tủ nhận'), findsOneWidget);
+
+    await pump(tester, _status(), forOperator: true);
+    expect(find.text('Chỉ đường tới drone tại tủ bay'), findsOneWidget);
+    expect(find.text('Tủ nhận khách đã chọn (người nhận lấy hàng)'), findsOneWidget);
+  });
 }

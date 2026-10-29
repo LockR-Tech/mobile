@@ -169,7 +169,8 @@ enum DroneDeliveryStage {
   String body(String? eta) {
     switch (this) {
       case DroneDeliveryStage.awaitingDispatch:
-        return 'Hệ thống đang tìm kỹ thuật viên drone rảnh gần bạn nhất';
+        // Đúng cả khi đơn chưa trả tiền (hệ thống chỉ mời KTV sau khi thanh toán).
+        return 'Sau khi thanh toán, hệ thống tìm kỹ thuật viên drone rảnh gần bạn nhất';
       case DroneDeliveryStage.pickupAssigned:
         return 'Kỹ thuật viên đang tới điểm lấy hàng, chuẩn bị kiện và mã lấy hàng';
       case DroneDeliveryStage.pickedUp:
@@ -197,8 +198,8 @@ enum DroneDeliveryStage {
       case DroneDeliveryStage.failed:
         return 'Đơn giao không hoàn tất';
       case DroneDeliveryStage.dropReported:
-        return 'Đội bay đã báo kiện rơi trong chuyến bay và đang thu hồi. '
-            'Lock.R sẽ gửi phương án xử lý cho bạn.';
+        return 'Đội bay đã báo kiện rơi trong chuyến bay. Tiến trình thu hồi và '
+            'phương án xử lý xem ở thẻ sự cố của đơn.';
       case DroneDeliveryStage.canceled:
         return 'Đơn đã dừng trước khi drone cất cánh';
       case DroneDeliveryStage.completed:

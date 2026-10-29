@@ -471,7 +471,7 @@ class _DropIncidentSnapshot extends StatelessWidget {
         hasLocation
             ? '${lat.toStringAsFixed(5)}, ${lng.toStringAsFixed(5)}'
                   '${simulatedLocation ? ' · Mô phỏng FPT HCM' : ''}'
-            : 'Chưa có vị trí GPS tin cậy',
+            : 'Ước theo tuyến bay (chưa có GPS tin cậy)',
         warning: !hasLocation,
       ),
       if (observedAt != null)
@@ -523,7 +523,8 @@ class _DropIncidentSnapshot extends StatelessWidget {
           if (!hasLocation) ...[
             const SizedBox(height: 7),
             const Text(
-              'Hệ thống không tự tạo toạ độ khi telemetry không trực tuyến.',
+              'Telemetry không trực tuyến: phiếu lưu vị trí ước theo tuyến bay, KTV thu '
+              'hồi xác nhận toạ độ thật tại hiện trường.',
               style: TextStyle(fontSize: 11, color: Color(0xFF9A3412)),
             ),
           ],

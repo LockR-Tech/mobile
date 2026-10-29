@@ -20,6 +20,7 @@ import 'package:smart_laundry_locker/features/drone_delivery/infrastructure/mode
 import 'package:smart_laundry_locker/features/drone_delivery/presentation/widgets/drone_delivery_detail.dart';
 import 'package:smart_laundry_locker/features/locker_ops/data/drone_technician_errors.dart';
 import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
+import 'package:smart_laundry_locker/features/locker_ops/presentation/utils/technician_session.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/ops_widgets.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/complete_inspection_sheet.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/schedule_detail_modal_sheet.dart';
@@ -692,7 +693,9 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
     } catch (_) {}
     setState(() => _loggingOut = true);
     _deliveryRefreshTimer?.cancel();
-    // Gỡ token push + thu hồi refresh token ở server rồi mới xoá token trên máy.
+    // Tắt ca (hộp xác nhận nói "kết thúc ca trực"), gỡ token push + thu hồi refresh token ở server rồi
+    // mới xoá token trên máy.
+    await endTechnicianShiftQuietly(service: _service, drone: true);
     await SessionService.logout();
     profile?.reset();
     if (mounted) context.go(AppRouter.onboarding);
@@ -4224,7 +4227,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
             children: [
               Text(
                 '${order['orderCode'] ?? 'Đơn #$orderId'} · '
-                '${DroneDeliveryStage.fromRaw(order['deliveryStage']?.toString()) == DroneDeliveryStage.failed ? 'chuyến bay thất bại' : 'đã huỷ'}',
+                '${DroneDeliveryStage.fromRaw(order['deliveryStage']?.toString()) == DroneDeliveryStage.failed ? (order['launchingAt'] != null ? 'chuyến bay thất bại' : 'giao không hoàn tất') : 'đã huỷ'}',
                 style: const TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 14,
@@ -4294,8 +4297,8 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
-              'Chỉ xác nhận khi kiện đã về tay người gửi. Ô gửi còn giữ cho đơn '
-              'này sẽ được nhả.',
+              'Chỉ xác nhận khi kiện đã về tay người gửi. Đơn cũ còn giữ ô ở tủ '
+              'gửi thì ô đó được nhả.',
               style: TextStyle(fontSize: 13),
             ),
             const SizedBox(height: 12),
@@ -4652,14 +4655,16 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              if (inFlight) ...[
-                const Text(
-                  'Đơn sẽ đóng lại và khách được hoàn tiền; drone chuyển sang '
-                  'trạng thái lỗi cho tới khi bạn kiểm tra xong. Không hoàn tác được.',
-                  style: TextStyle(fontSize: 13, color: Colors.black87),
-                ),
-                const SizedBox(height: 12),
-              ],
+              Text(
+                inFlight
+                    ? 'Đơn sẽ đóng lại và khách được hoàn tiền; drone chuyển sang '
+                          'trạng thái lỗi cho tới khi bạn kiểm tra xong. Không hoàn tác được.'
+                    : 'Đơn sẽ đóng lại, người gửi được hoàn tiền và bạn mang kiện trả '
+                          'lại người gửi. Chọn "Drone lỗi" thì drone chuyển sang trạng thái '
+                          'lỗi, không nhận đơn mới cho tới khi kiểm tra xong.',
+                style: const TextStyle(fontSize: 13, color: Colors.black87),
+              ),
+              const SizedBox(height: 12),
               Wrap(
                 spacing: 8,
                 runSpacing: 8,
@@ -4748,7 +4753,8 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
               // Sự cố khi drone đã phóng: mã số của hộp chọn → mã lý do của backend.
               reason: const {
                 1: 'WEATHER_UNSAFE',
-                2: 'FLIGHT_INCIDENT',
+                // KTV chọn "Drone lỗi" ⇒ lưu đúng là drone lỗi, không gộp vào "sự cố trong lúc bay".
+                2: 'DRONE_FAULT',
                 3: 'LANDING_PAD_FAULT',
                 4: 'OPERATIONAL',
                 5: 'OTHER',

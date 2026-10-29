@@ -385,13 +385,23 @@ class _DronePickupQueueState extends State<DronePickupQueue>
                               matchProblem = null;
                             }),
                     ),
-                    const Expanded(
-                      child: Padding(
-                        padding: EdgeInsets.only(top: 12),
-                        child: Text(
-                          'Kiện đúng khai báo (loại hàng, kích thước, khối lượng) và '
-                          'không có hàng cấm bay.',
-                          style: TextStyle(fontSize: 12.5),
+                    Expanded(
+                      // Bấm vào chữ cũng tick được (ô vuông nhỏ, dễ bấm trượt).
+                      child: GestureDetector(
+                        behavior: HitTestBehavior.opaque,
+                        onTap: submitting
+                            ? null
+                            : () => setLocal(() {
+                                matched = !matched;
+                                matchProblem = null;
+                              }),
+                        child: const Padding(
+                          padding: EdgeInsets.only(top: 12),
+                          child: Text(
+                            'Kiện đúng khai báo (loại hàng, kích thước, khối lượng) và '
+                            'không có hàng cấm bay.',
+                            style: TextStyle(fontSize: 12.5),
+                          ),
                         ),
                       ),
                     ),
@@ -506,16 +516,43 @@ class _DronePickupQueueState extends State<DronePickupQueue>
                           );
                           return;
                         }
-                        await widget.service.confirmDronePickup(
+                        Future<void> submit() => widget.service.confirmDronePickup(
                           orderId,
                           pickupCode: code,
                           pickupPhoto: uploadedPhoto!,
                           note: noteController.text,
                         );
+                        try {
+                          await submit();
+                        } catch (error) {
+                          // Vị trí ca trực đã cũ: lấy GPS ngay rồi thử lại một lần, giữ nguyên mã, ảnh
+                          // và dấu kiểm. Trước đây KTV phải đóng hộp, bấm "Cập nhật lại GPS" rồi nhập
+                          // lại từ đầu (test 2026-10-29).
+                          if (LockerOpsService.errorCode(error) !=
+                              'DRONE_PICKUP_LOCATION_STALE') {
+                            rethrow;
+                          }
+                          final (position, problem) = await widget.readPosition();
+                          if (position == null) {
+                            throw problem ??
+                                'Chưa lấy được vị trí GPS hiện tại. Bật định vị rồi thử lại.';
+                          }
+                          _applyPresence(
+                            await widget.service.updateDroneTechnicianPresence(
+                              latitude: position.latitude,
+                              longitude: position.longitude,
+                            ),
+                          );
+                          await submit();
+                        }
                         if (ctx.mounted) Navigator.pop(ctx, true);
                       } catch (error) {
-                        final message = LockerOpsService.errorMessage(error);
-                        final errorCode = LockerOpsService.errorCode(error);
+                        final message = error is String
+                            ? error
+                            : LockerOpsService.errorMessage(error);
+                        final errorCode = error is String
+                            ? null
+                            : LockerOpsService.errorCode(error);
                         setLocal(() {
                           if (errorCode == 'DRONE_PICKUP_CODE_INVALID') {
                             codeProblem = message;

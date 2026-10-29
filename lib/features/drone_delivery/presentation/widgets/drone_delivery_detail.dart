@@ -194,7 +194,7 @@ class DroneDeliveryDetail extends StatelessWidget {
         const SizedBox(height: 16),
         DroneRouteMapCard(status: status, forOperator: forOperator),
         const SizedBox(height: 16),
-        _RouteCard(status: status),
+        _RouteCard(status: status, forOperator: forOperator),
         const SizedBox(height: 16),
         _Card(
           title: 'Tiến trình giao hàng',
@@ -230,6 +230,34 @@ class DroneDeliveryDetail extends StatelessWidget {
 
 String? _etaText(int? minutes) => minutes == null ? null : '$minutes phút';
 
+/// Tiêu đề + mô tả của thẻ đầu trang. Câu mặc định theo chặng sai ở vài trường hợp (test 2026-10-29):
+/// đơn đóng sau khi drone đã bay (rơi kiện) bị ghi "dừng trước khi drone cất cánh", đơn chưa trả tiền
+/// ghi "đang tìm kỹ thuật viên", đơn đã nạp xong vẫn ghi "đang nạp hàng".
+({String title, String body}) _headerText(DroneDeliveryStatus status) {
+  final stage = status.stage;
+  if (stage == DroneDeliveryStage.canceled && status.launchingAt != null) {
+    return (
+      title: 'Đơn drone đã đóng',
+      body: 'Chuyến bay không hoàn tất nên đơn này đã đóng; phương án xử lý '
+          'xem ở phần sự cố của đơn.',
+    );
+  }
+  if (stage == DroneDeliveryStage.awaitingDispatch && !status.isPaid) {
+    return (
+      title: 'Chờ thanh toán',
+      body: 'Thanh toán xong hệ thống mới tìm kỹ thuật viên drone tới lấy hàng',
+    );
+  }
+  if (stage == DroneDeliveryStage.accepted &&
+      (status.missionStatus ?? '').toUpperCase() == 'READY_TO_LAUNCH') {
+    return (
+      title: 'Sẵn sàng phóng',
+      body: 'Kiện đã được nạp và niêm phong trên drone, chờ đội bay phóng',
+    );
+  }
+  return (title: stage.title, body: stage.body(_etaText(status.etaMinutes)));
+}
+
 class _HeaderCard extends StatelessWidget {
   const _HeaderCard({required this.status});
 
@@ -239,6 +267,7 @@ class _HeaderCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final stage = status.stage;
     final changedAt = status.stageChangedAt;
+    final text = _headerText(status);
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -269,7 +298,7 @@ class _HeaderCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      stage.title,
+                      text.title,
                       style: const TextStyle(
                         color: Colors.white,
                         fontSize: 18,
@@ -278,7 +307,7 @@ class _HeaderCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      stage.body(_etaText(status.etaMinutes)),
+                      text.body,
                       style: TextStyle(
                         color: Colors.white.withValues(alpha: 0.85),
                         fontSize: 13,
@@ -979,9 +1008,13 @@ class _CancelCard extends StatelessWidget {
 }
 
 class _RouteCard extends StatelessWidget {
-  const _RouteCard({required this.status});
+  const _RouteCard({required this.status, this.forOperator = false});
 
   final DroneDeliveryStatus status;
+
+  /// KTV/đội bay xem: được chỉ đường tới drone ở tủ bay; khách không đi tới tủ bay (KTV lấy kiện tận
+  /// nhà) nên không hiện nút đó, và nhãn tủ nhận nói theo người đọc.
+  final bool forOperator;
 
   @override
   Widget build(BuildContext context) {
@@ -1004,7 +1037,7 @@ class _RouteCard extends StatelessWidget {
                 'Đơn cũ: kiện từng được gửi vào ô số ${status.sourceBoxNumber}',
               'Gửi đi lúc: ${formatDateTimeVn(sentAt, empty: 'Chưa gửi')}',
             ],
-            directionsLabel: 'Chỉ đường tới drone tại tủ bay',
+            directionsLabel: forOperator ? 'Chỉ đường tới drone tại tủ bay' : null,
           ),
           Align(
             alignment: Alignment.centerLeft,
@@ -1016,7 +1049,9 @@ class _RouteCard extends StatelessWidget {
             ),
           ),
           _RoutePoint(
-            label: 'Tủ nhận bạn đã chọn (người nhận lấy hàng)',
+            label: forOperator
+                ? 'Tủ nhận khách đã chọn (người nhận lấy hàng)'
+                : 'Tủ nhận bạn đã chọn (người nhận lấy hàng)',
             point: status.destinationLocker,
             fallbackId: status.destinationLockerId,
             color: AISLShadcnTheme.navyAccent,
@@ -1052,7 +1087,9 @@ class _RoutePoint extends StatelessWidget {
   final DroneLockerPoint? point;
   final int? fallbackId;
   final Color color;
-  final String directionsLabel;
+
+  /// null ⇒ không có nút chỉ đường.
+  final String? directionsLabel;
   final List<String> extras;
   final bool primary;
 
@@ -1107,7 +1144,7 @@ class _RoutePoint extends StatelessWidget {
             ),
             onPressed: () => _openDirections(context),
             icon: const Icon(LucideIcons.navigation, size: 18),
-            label: Text(directionsLabel),
+            label: Text(directionsLabel ?? ''),
           )
         : OutlinedButton.icon(
             style: OutlinedButton.styleFrom(
@@ -1116,7 +1153,7 @@ class _RoutePoint extends StatelessWidget {
             ),
             onPressed: () => _openDirections(context),
             icon: const Icon(LucideIcons.navigation, size: 18),
-            label: Text(directionsLabel),
+            label: Text(directionsLabel ?? ''),
           );
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1168,8 +1205,10 @@ class _RoutePoint extends StatelessWidget {
             ),
           ],
         ),
-        const SizedBox(height: 10),
-        SizedBox(width: double.infinity, child: button),
+        if (directionsLabel != null) ...[
+          const SizedBox(height: 10),
+          SizedBox(width: double.infinity, child: button),
+        ],
       ],
     );
   }
@@ -1254,8 +1293,12 @@ class _OrderCard extends StatelessWidget {
         if (status.declaredValue != null)
           ('Giá trị khai báo', fmtPrice(status.declaredValue)),
         if (status.fragile == true) ('Lưu ý', 'Hàng dễ vỡ'),
+        // Lấy hàng tận nhà: mốc này là lúc KTV nhận kiện, không có bước bỏ vào ô gửi.
         if (status.parcelDroppedAt != null)
-          ('Bỏ kiện vào ô gửi lúc', formatDateTimeVn(status.parcelDroppedAt)),
+          (
+            status.pickup == null ? 'Bỏ kiện vào ô gửi lúc' : 'KTV nhận kiện lúc',
+            formatDateTimeVn(status.parcelDroppedAt),
+          ),
         if (status.routeDistanceMeters != null)
           (
             'Quãng đường bay',

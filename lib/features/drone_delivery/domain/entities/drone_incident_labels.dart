@@ -63,13 +63,22 @@ const _eventTypes = <String, String>{
   'COMPENSATION_SUBMITTED': 'Đã gửi yêu cầu chi bồi thường',
   'COMPENSATION_PAID': 'Đã chi bồi thường',
   'COMPENSATION_PAYMENT_FAILED': 'Chi bồi thường chưa thành công',
+  'INCIDENT_RESOLVED': 'Đã hoàn tất xử lý sự cố',
 };
 
 const _resolutionTypes = <String, String>{
   'FREE_REDELIVERY': 'Giao lại miễn phí',
   'REDELIVERY_PARTIAL_COMPENSATION': 'Giao lại kèm bồi thường một phần',
   'COMPENSATION_ONLY': 'Bồi thường',
-  'MANUAL_RESOLUTION': 'Nhân viên liên hệ xử lý riêng',
+  'MANUAL_RESOLUTION': 'Thỏa thuận riêng',
+};
+
+/// Tình trạng kiện KTV ghi khi thu hồi (`DroneIncidentStates.CONDITIONS`).
+const _parcelCondition = <String, String>{
+  'INTACT': 'còn nguyên vẹn',
+  'MINOR_DAMAGE': 'hư hại nhẹ',
+  'MAJOR_DAMAGE': 'hư hại nặng',
+  'UNUSABLE': 'không thể sử dụng',
 };
 
 const _proposalStatus = <String, String>{
@@ -85,6 +94,13 @@ String droneIncidentStatusLabel(Object? code) => _label(_incidentStatus, code);
 String droneRecoveryStatusLabel(Object? code) => _label(_recoveryStatus, code);
 
 String droneParcelStatusLabel(Object? code) => _label(_parcelStatus, code);
+
+/// "Đã về kho Lock.R · hư hại nhẹ" — khách cần biết kiện có hỏng không trước khi chọn phương án.
+String droneParcelStateLabel(Object? status, Object? condition) {
+  final base = droneParcelStatusLabel(status);
+  final extra = _parcelCondition['${condition ?? ''}'.toUpperCase()];
+  return extra == null ? base : '$base · $extra';
+}
 
 String droneResolutionTypeLabel(Object? code) =>
     _label(_resolutionTypes, code);

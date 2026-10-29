@@ -1786,7 +1786,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                 Tab(text: 'Việc của tôi ($mineCount)'),
                 Tab(text: 'Định kỳ (${kioskSchedules.length})'),
                 Tab(text: 'Thiết bị IoT (${_devices.length})'),
-                Tab(text: 'Thu hồi kiện (${_droneRecoveries.length})'),
+                Tab(text: 'Thu hồi kiện ($_pendingRecoveryCount)'),
               ],
             ),
           ),
@@ -1821,13 +1821,20 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
 
   // ---- Tab 1: inspect lockers (browse cabinet, see cell status, report/clear) ----
   /// Nhiệm vụ thu hồi còn việc phải làm (chưa gửi Admin / chưa đóng).
-  int get _pendingRecoveryCount => _droneRecoveries
-      .where(
-        (item) => !['SUBMITTED', 'CLOSED', 'CANCELED'].contains(
-          '${item['status'] ?? ''}'.toUpperCase(),
-        ),
-      )
-      .length;
+  /// Đếm theo trạng thái NHIỆM VỤ THU HỒI (`recoveryStatus`), không theo trạng thái sự cố: nhiệm vụ đã
+  /// đóng nằm trong sự cố chưa xong vẫn bị đếm (test 2026-10-29). Đã xác minh mà kiện tìm thấy thì còn
+  /// bước bàn giao về Hub; không tìm thấy thì không còn việc.
+  int get _pendingRecoveryCount => _droneRecoveries.where((item) {
+    final status = '${item['recoveryStatus'] ?? item['status'] ?? ''}'
+        .toUpperCase();
+    if (['SUBMITTED', 'CLOSED', 'CANCELED', 'CANCELLED'].contains(status)) {
+      return false;
+    }
+    if (status == 'VERIFIED') {
+      return '${item['recoveryOutcome'] ?? ''}'.toUpperCase() == 'FOUND';
+    }
+    return true;
+  }).length;
 
   Widget _buildInspect() {
     final cells =

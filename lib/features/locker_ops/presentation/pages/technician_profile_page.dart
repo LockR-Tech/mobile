@@ -403,7 +403,7 @@ class _TechnicianProfilePageState extends State<TechnicianProfilePage> {
       ),
     );
     if (confirmed == true && mounted) {
-      await logoutTechnician(context);
+      await logoutTechnician(context, drone: _isDrone);
     }
   }
 

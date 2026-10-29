@@ -26,7 +26,7 @@ Future<String?> confirmAndCancelDroneOrder(
     builder: (dialogContext) => AlertDialog(
       title: const Text('Huỷ đơn giao drone?'),
       content: Text(
-        'Đơn ${orderCode ?? ''} sẽ bị huỷ và ô drone ở hai tủ được nhả. '
+        'Đơn ${orderCode ?? ''} sẽ bị huỷ và ô nhận đã giữ cho đơn được nhả. '
         '${droneCancelRefundNote(isPaid: isPaid, totalPrice: totalPrice)}',
       ),
       actions: [

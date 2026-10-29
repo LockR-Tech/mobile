@@ -1536,6 +1536,29 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
           },
           onComplete: (id) async {
             Navigator.pop(ctx);
+            // Hoàn tất là không đảo ngược và nhả ô: hỏi lại để tránh bấm nhầm khi chưa lấy đồ
+            // (test 2026-10-29 bấm một lần là đóng đơn).
+            final ok = await showDialog<bool>(
+              context: context,
+              builder: (dialogCtx) => AlertDialog(
+                title: const Text('Xác nhận đã lấy đồ?'),
+                content: const Text(
+                  'Đơn sẽ hoàn tất và ô tủ được giải phóng. Chỉ xác nhận khi bạn '
+                  'đã lấy đồ ra khỏi ô.',
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.of(dialogCtx).pop(false),
+                    child: const Text('Chưa'),
+                  ),
+                  FilledButton(
+                    onPressed: () => Navigator.of(dialogCtx).pop(true),
+                    child: const Text('Đã lấy đồ'),
+                  ),
+                ],
+              ),
+            );
+            if (ok != true || !mounted) return;
             await _runAction(
               () => _service.completePickup(id),
               'Đã nhận đồ — đơn hoàn tất',
@@ -4336,15 +4359,18 @@ class _DetailSheet extends StatelessWidget {
             primary: false,
             onTap: onOpenLocker,
           ),
-        OpsSheetAction(
-          label: 'Đặt lại đơn',
-          icon: LucideIcons.repeat,
-          primary: false,
-          onTap: () => onReorder(id),
-        ),
+        if (!isDroneDelivery)
+          OpsSheetAction(
+            label: 'Đặt lại đơn',
+            icon: LucideIcons.repeat,
+            primary: false,
+            onTap: () => onReorder(id),
+          ),
       ],
+      // Đặt lại chỉ áp cho đơn gửi hàng / thuê ô (server từ chối đơn drone) ⇒ không hiện nút cho đơn drone.
       if ((rawStatus == 'COMPLETED' || rawStatus == 'CANCELED') &&
-          rawStatus != 'EXPIRED')
+          rawStatus != 'EXPIRED' &&
+          !isDroneDelivery)
         OpsSheetAction(
           label: 'Đặt lại đơn',
           icon: LucideIcons.repeat,

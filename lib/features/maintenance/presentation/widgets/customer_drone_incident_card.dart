@@ -189,7 +189,10 @@ class _CustomerDroneIncidentCardState extends State<CustomerDroneIncidentCard> {
             ),
             _Line(
               'Tình trạng kiện',
-              droneParcelStatusLabel(incident['parcelStatus']),
+              droneParcelStateLabel(
+                incident['parcelStatus'],
+                incident['parcelCondition'],
+              ),
             ),
             if (reason.isNotEmpty) ...[
               const SizedBox(height: 8),
@@ -223,6 +226,13 @@ class _CustomerDroneIncidentCardState extends State<CustomerDroneIncidentCard> {
               ),
               const SizedBox(height: 5),
               Text(_proposalText(latest), style: const TextStyle(fontSize: 13)),
+              if ('${latest['resolutionNote'] ?? ''}'.trim().isNotEmpty) ...[
+                const SizedBox(height: 4),
+                Text(
+                  'Nội dung: ${'${latest['resolutionNote']}'.trim()}',
+                  style: const TextStyle(fontSize: 13),
+                ),
+              ],
               const SizedBox(height: 2),
               Text(
                 droneProposalStatusLabel(latest['status']),
@@ -428,7 +438,10 @@ class _CustomerDroneIncidentCardState extends State<CustomerDroneIncidentCard> {
     final parts = <String>[
       droneResolutionTypeLabel(proposal['resolutionType']),
       if (amount > 0) 'Bồi thường $money',
-      if (proposal['redeliveryOffered'] == true) 'giao lại miễn phí',
+      // "Giao lại miễn phí" đã là tên loại phương án ⇒ không lặp lại.
+      if (proposal['redeliveryOffered'] == true &&
+          proposal['resolutionType'] != 'FREE_REDELIVERY')
+        'giao lại miễn phí',
       if (proposal['refundShippingFee'] == true) 'hoàn phí giao',
     ];
     return parts.join(' · ');
