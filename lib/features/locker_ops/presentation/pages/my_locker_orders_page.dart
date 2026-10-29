@@ -4293,13 +4293,14 @@ class _DetailSheet extends StatelessWidget {
         boxId != null;
 
     final actions = <Widget>[
-      if (isDroneDelivery &&
-          rawStatus != 'COMPLETED' &&
-          rawStatus != 'CANCELED')
+      // Đơn drone luôn mở được màn hành trình: đang giao thì theo dõi, đã xong/huỷ thì xem lại chuyến bay.
+      if (isDroneDelivery)
         OpsSheetAction(
-          label: 'Theo dõi giao drone',
+          label: droneFlightFinished(rawStatus)
+              ? 'Xem lại hành trình drone'
+              : 'Theo dõi giao drone',
           icon: LucideIcons.navigation,
-          primary: true,
+          primary: !droneFlightFinished(rawStatus),
           onTap: () => onTrackDrone(id),
         ),
       if (canPay &&
@@ -5915,3 +5916,10 @@ class _OrderIncidentResolutionSectionState
     );
   }
 }
+
+/// Đơn drone đã kết thúc (hàng đã lấy, huỷ hoặc hết hạn): nút hành trình chuyển sang "xem lại".
+@visibleForTesting
+bool droneFlightFinished(String rawStatus) =>
+    const {'COMPLETED', 'CANCELED', 'EXPIRED', 'DELIVERY_INCOMPLETE'}.contains(
+      rawStatus.toUpperCase(),
+    );
