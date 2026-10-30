@@ -56,6 +56,8 @@ const _eventTypes = <String, String>{
   'RETURN_FLIGHT_CONFIRMED': 'Drone đã về trạm',
   'RECOVERY_SUBMITTED': 'Báo kết quả thu hồi',
   'RECOVERY_VERIFIED': 'Xác minh kết quả thu hồi',
+  'RECOVERY_STATION_DISPATCHED': 'Kiện được điều phối về trạm bay để giao lại',
+  'RECOVERY_STATION_UNAVAILABLE': 'Đang điều phối trạm nhận kiện',
   'PARCEL_RETURNED_TO_HUB': 'Kiện đã về kho Lock.R',
   'RESOLUTION_PROPOSED': 'Lock.R đề xuất phương án',
   'CUSTOMER_ACCEPT': 'Bạn đồng ý phương án',
