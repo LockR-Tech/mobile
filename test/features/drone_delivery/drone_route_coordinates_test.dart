@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/domain/entities/drone_delivery_stage.dart';
+import 'package:smart_laundry_locker/features/drone_delivery/domain/entities/drone_position_snapshot.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/infrastructure/models/drone_delivery_response.dart';
+import 'package:smart_laundry_locker/features/drone_delivery/presentation/providers/drone_live_map_providers.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/presentation/widgets/drone_route_map_card.dart';
 
 const _a = LatLng(10.8411, 106.8097);
@@ -38,43 +41,85 @@ void main() {
     }
   });
 
-  testWidgets('thẻ hành trình hiện vĩ độ, kinh độ của drone', (tester) async {
-    final status = DroneDeliveryResponse.fromJson({
-      'orderId': 21,
-      'orderCode': 'ORD-21',
-      'status': 'AWAITING_DISPATCH',
-      'deliveryStage': 'EN_ROUTE',
-      'fulfillmentMode': 'DEMO',
-      'sourceLocker': {
-        'lockerId': 1,
-        'name': 'Tủ demo',
-        'latitude': 10.8411,
-        'longitude': 106.8097,
-      },
-      'destinationLocker': {
-        'lockerId': 7,
-        'name': 'TU01',
-        'latitude': 10.8511,
-        'longitude': 106.8197,
-      },
-    }).toEntity();
+  Map<String, dynamic> enRouteDemo({double? lat, double? lng}) => {
+    'orderId': 21,
+    'orderCode': 'ORD-21',
+    'status': 'AWAITING_DISPATCH',
+    'deliveryStage': 'EN_ROUTE',
+    'fulfillmentMode': 'DEMO',
+    'currentLatitude': lat,
+    'currentLongitude': lng,
+    'sourceLocker': {
+      'lockerId': 1,
+      'name': 'Tủ demo',
+      'latitude': 10.8411,
+      'longitude': 106.8097,
+    },
+    'destinationLocker': {
+      'lockerId': 7,
+      'name': 'TU01',
+      'latitude': 10.8511,
+      'longitude': 106.8197,
+    },
+  };
 
+  Future<void> pumpCard(
+    WidgetTester tester,
+    Map<String, dynamic> json, {
+    Stream<DronePositionSnapshot>? live,
+  }) async {
+    final status = DroneDeliveryResponse.fromJson(json).toEntity();
     await tester.pumpWidget(
-      MaterialApp(
-        home: Scaffold(
-          body: SingleChildScrollView(child: DroneRouteMapCard(status: status)),
+      ProviderScope(
+        overrides: [
+          dronePositionStreamProvider.overrideWith(
+            (ref, orderId) => live ?? const Stream<DronePositionSnapshot>.empty(),
+          ),
+        ],
+        child: MaterialApp(
+          home: Scaffold(
+            body: SingleChildScrollView(child: DroneRouteMapCard(status: status)),
+          ),
         ),
       ),
     );
+    await tester.pump();
+  }
 
-    expect(
-      find.byKey(const ValueKey('drone-route-coordinates')),
-      findsOneWidget,
+  testWidgets('chưa có số nào: thẻ ghi toạ độ ước theo chặng, gộp một dòng', (tester) async {
+    await pumpCard(tester, enRouteDemo());
+
+    expect(find.byKey(const ValueKey('drone-route-coordinates')), findsOneWidget);
+    expect(find.text('10.846350, 106.814950'), findsOneWidget);
+    expect(find.text('Vị trí drone · Ước theo chặng bay · mô phỏng'), findsOneWidget);
+  });
+
+  testWidgets('API chi tiết có toạ độ: thẻ dùng đúng số đó', (tester) async {
+    await pumpCard(tester, enRouteDemo(lat: 10.8452, lng: 106.8131));
+
+    expect(find.text('10.845200, 106.813100'), findsOneWidget);
+    expect(find.text('Vị trí drone · Mô phỏng theo chặng bay'), findsOneWidget);
+  });
+
+  testWidgets('drone bắn toạ độ về: thẻ đổi theo bản tin mới nhất', (tester) async {
+    final at = DateTime(2026, 10, 30, 9, 15, 42);
+    await pumpCard(
+      tester,
+      enRouteDemo(lat: 10.8452, lng: 106.8131),
+      live: Stream.value(
+        DronePositionSnapshot(
+          orderId: '21',
+          status: 'en_route',
+          lat: 10.8477,
+          lng: 106.8163,
+          headingDeg: 45,
+          timestamp: at,
+        ),
+      ),
     );
-    expect(find.text('Vĩ độ 10.846350 · Kinh độ 106.814950'), findsOneWidget);
-    expect(
-      find.text('Vị trí drone · Ước theo chặng bay · mô phỏng'),
-      findsOneWidget,
-    );
+    await tester.pump();
+
+    expect(find.text('10.847700, 106.816300'), findsOneWidget);
+    expect(find.text('Vị trí drone · Drone gửi về lúc 09:15:42 · mô phỏng'), findsOneWidget);
   });
 }

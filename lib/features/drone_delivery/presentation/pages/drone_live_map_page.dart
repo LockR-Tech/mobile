@@ -14,6 +14,7 @@ import 'package:smart_laundry_locker/features/drone_delivery/domain/entities/dro
 import 'package:smart_laundry_locker/features/drone_delivery/presentation/drone_live_map.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/presentation/providers/drone_delivery_providers.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/presentation/providers/drone_live_map_providers.dart';
+import 'package:smart_laundry_locker/features/drone_delivery/presentation/widgets/drone_coordinates_line.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/presentation/widgets/drone_marker.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/presentation/widgets/drone_base_tile_layer.dart';
 
@@ -607,26 +608,12 @@ class _BottomStatusCard extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 10),
-            Row(
-              children: [
-                const Icon(
-                  LucideIcons.mapPin,
-                  size: 14,
-                  color: Color(0xFF64748B),
-                ),
-                const SizedBox(width: 6),
-                Expanded(
-                  child: Text(
-                    '${simulated ? 'Vị trí mô phỏng' : 'Vĩ độ, kinh độ'}: '
-                    '${droneCoordinateLabel(snapshot.lat, snapshot.lng)}',
-                    style: const TextStyle(
-                      fontSize: 12,
-                      color: Color(0xFF475569),
-                      fontFeatures: [FontFeature.tabularFigures()],
-                    ),
-                  ),
-                ),
-              ],
+            DroneCoordinatesLine(
+              latitude: snapshot.lat,
+              longitude: snapshot.lng,
+              note: simulated
+                  ? 'mô phỏng · cập nhật trực tiếp'
+                  : 'cập nhật trực tiếp',
             ),
           ],
         ),

@@ -11,6 +11,7 @@ import 'package:smart_laundry_locker/features/drone_delivery/domain/entities/dro
 import 'package:smart_laundry_locker/features/drone_delivery/domain/entities/drone_parcel.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/presentation/widgets/drone_delivery_timeline.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/presentation/widgets/drone_order_cancel.dart';
+import 'package:smart_laundry_locker/features/drone_delivery/domain/entities/drone_route_geometry.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/presentation/widgets/drone_route_map_card.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/utils/locker_maps.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/ops_widgets.dart';
@@ -1387,13 +1388,16 @@ class _MissionCard extends StatelessWidget {
         ),
         ('Drone', status.droneCode ?? 'Chưa phân công'),
         ('Trạng thái nhiệm vụ', droneMissionStatusLabel(status.missionStatus)),
+        // Một chuỗi "vĩ độ, kinh độ" để copy dán thẳng vào Google Maps; thẻ hành trình phía trên
+        // có bản bấm mở bản đồ và cập nhật trực tiếp.
         (
-          'Vĩ độ hiện tại',
-          status.currentLatitude?.toStringAsFixed(6) ?? 'Chưa có dữ liệu',
-        ),
-        (
-          'Kinh độ hiện tại',
-          status.currentLongitude?.toStringAsFixed(6) ?? 'Chưa có dữ liệu',
+          'Vị trí drone hiện tại',
+          status.currentLatitude != null && status.currentLongitude != null
+              ? droneCoordinateLabel(
+                  status.currentLatitude!,
+                  status.currentLongitude!,
+                )
+              : 'Chưa có dữ liệu',
         ),
         ('Khối lượng thực tế', droneWeightLabel(status.payloadWeightGrams)),
         ('Mã niêm phong', status.sealCode ?? 'Chưa niêm phong'),

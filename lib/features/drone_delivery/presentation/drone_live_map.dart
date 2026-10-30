@@ -16,3 +16,17 @@ bool droneLiveMapAvailable(DroneDeliveryStatus status) =>
     (status.stage == DroneDeliveryStage.departed ||
         status.stage == DroneDeliveryStage.enRoute ||
         status.stage == DroneDeliveryStage.approaching);
+
+/// Có nghe vị trí trực tiếp (STOMP) cho thẻ hành trình không: có nguồn vị trí và drone đang ở một
+/// chặng bay — từ lúc cất cánh tới lúc chạm tủ nhận. Hết chặng bay thì API chi tiết đã có toạ độ cuối.
+bool droneListensLivePosition(DroneDeliveryStatus status) =>
+    FeatureFlags.droneLiveMapEnabled &&
+    status.orderId != null &&
+    (status.liveTracking ?? droneIsSimulated(status)) &&
+    const {
+      DroneDeliveryStage.launching,
+      DroneDeliveryStage.departed,
+      DroneDeliveryStage.enRoute,
+      DroneDeliveryStage.approaching,
+      DroneDeliveryStage.arrived,
+    }.contains(status.stage);
