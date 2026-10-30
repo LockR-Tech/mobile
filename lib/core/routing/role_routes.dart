@@ -240,7 +240,7 @@ String? technicianRouteForNotification(
   }
 
   // Thu hồi kiện hàng rơi từ drone giao cho KTV tủ
-  if (normalized == 'drone.parcel.recovery.assigned' ||
+  if (normalized.startsWith('drone.parcel.recovery.') ||
       refType == 'DRONE_PARCEL_INCIDENT' ||
       refType == 'RECOVERY') {
     return technicianHomeLocation(tab: 'recovery');

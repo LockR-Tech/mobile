@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:latlong2/latlong.dart';
+import 'package:smart_laundry_locker/core/presentation/pages/directions_map_page.dart';
 import 'package:smart_laundry_locker/core/media/photo_picker_controller.dart';
 import 'package:smart_laundry_locker/core/media/widgets/photo_picker_field.dart';
 import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
@@ -450,6 +452,16 @@ class _DroneRecoveryDetailState extends State<DroneRecoveryDetail> {
             ),
           ),
         ],
+        // Trạm bay hệ thống điều phối kiện về lúc admin xác minh: KTV mang kiện tới đây, đơn giao lại bay từ đây.
+        if (_stationName(item) != null) ...[
+          const SizedBox(height: 14),
+          _RecoveryStationCard(
+            incident: item,
+            onDirections: _hasStationCoordinates(item)
+                ? () => _openStationDirections(item)
+                : null,
+          ),
+        ],
         const SizedBox(height: 18),
         if (status == 'ASSIGNED')
           FilledButton(
@@ -470,7 +482,11 @@ class _DroneRecoveryDetailState extends State<DroneRecoveryDetail> {
         if (status == 'VERIFIED' && item['recoveryOutcome'] == 'FOUND')
           FilledButton(
             onPressed: _busy ? null : _handover,
-            child: const Text('Xác nhận bàn giao kiện về Hub / kho'),
+            child: Text(
+              _stationName(item) == null
+                  ? 'Xác nhận bàn giao kiện về Hub / kho'
+                  : 'Xác nhận đã giao kiện tại trạm ${_stationName(item)}',
+            ),
           ),
         if (status == 'SUBMITTED')
           const _Info(
@@ -478,9 +494,11 @@ class _DroneRecoveryDetailState extends State<DroneRecoveryDetail> {
             value: 'Admin sẽ xác minh bằng chứng và quyết định bước tiếp theo.',
           ),
         if (status == 'CLOSED')
-          const _Info(
+          _Info(
             title: 'Đã hoàn tất thu hồi',
-            value: 'Admin đã xác minh và kiện đã về Hub / kho. Bạn không cần làm gì thêm.',
+            value: _stationName(item) == null
+                ? 'Admin đã xác minh và kiện đã về Hub / kho. Bạn không cần làm gì thêm.'
+                : 'Kiện đã giao tại trạm ${_stationName(item)}. Bạn không cần làm gì thêm.',
           ),
       ],
     );
@@ -540,15 +558,48 @@ class _DroneRecoveryDetailState extends State<DroneRecoveryDetail> {
     return ok == true;
   }
 
+  static String? _stationName(Map<String, dynamic> item) {
+    final name = '${item['recoveryStationName'] ?? ''}'.trim();
+    return name.isEmpty || name == 'null' ? null : name;
+  }
+
+  static bool _hasStationCoordinates(Map<String, dynamic> item) =>
+      item['recoveryStationLatitude'] is num &&
+      item['recoveryStationLongitude'] is num;
+
+  void _openStationDirections(Map<String, dynamic> item) {
+    final address = '${item['recoveryStationAddress'] ?? ''}'.trim();
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => DirectionsMapPage(
+          destination: LatLng(
+            (item['recoveryStationLatitude'] as num).toDouble(),
+            (item['recoveryStationLongitude'] as num).toDouble(),
+          ),
+          title: 'Trạm ${_stationName(item) ?? ''}',
+          subtitle: address.isEmpty || address == 'null' ? null : address,
+        ),
+      ),
+    );
+  }
+
   Future<void> _handover() async {
     // Bàn giao là mốc trách nhiệm (kiện rời tay KTV) và không hoàn tác được ⇒ hỏi lại trước khi gửi.
+    final station = _item == null ? null : _stationName(_item!);
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: const Text('Bàn giao kiện về Hub / kho?'),
-        content: const Text(
-          'Chỉ xác nhận khi kiện đã nằm ở Hub / kho và đã có người nhận bàn giao. '
-          'Sau bước này kiện thuộc trách nhiệm của Hub.',
+        title: Text(
+          station == null
+              ? 'Bàn giao kiện về Hub / kho?'
+              : 'Đã giao kiện tại trạm $station?',
+        ),
+        content: Text(
+          station == null
+              ? 'Chỉ xác nhận khi kiện đã nằm ở Hub / kho và đã có người nhận bàn giao. '
+                    'Sau bước này kiện thuộc trách nhiệm của Hub.'
+              : 'Chỉ xác nhận khi kiện đã nằm ở trạm $station và đã có người nhận bàn giao. '
+                    'Sau bước này kiện chờ drone bay giao lại cho khách.',
         ),
         actions: [
           TextButton(
@@ -567,7 +618,11 @@ class _DroneRecoveryDetailState extends State<DroneRecoveryDetail> {
     try {
       await widget.service.confirmDroneRecoveryHubHandover(widget.incidentId);
       await _load();
-      _message('Đã xác nhận kiện về Hub / kho.');
+      _message(
+        station == null
+            ? 'Đã xác nhận kiện về Hub / kho.'
+            : 'Đã xác nhận giao kiện tại trạm $station.',
+      );
     } catch (error) {
       _message(LockerOpsService.errorMessage(error));
     } finally {
@@ -1110,6 +1165,72 @@ List<Map<String, dynamic>> buildRecoveryEvidence(
     });
   }
   return result;
+}
+
+/// Trạm bay nhận kiện: tên, địa chỉ, khoảng cách từ nơi tìm thấy, trạm còn drone hay đang chờ drone.
+class _RecoveryStationCard extends StatelessWidget {
+  const _RecoveryStationCard({required this.incident, this.onDirections});
+  final Map<String, dynamic> incident;
+  final VoidCallback? onDirections;
+
+  @override
+  Widget build(BuildContext context) {
+    final name = '${incident['recoveryStationName'] ?? ''}'.trim();
+    final address = '${incident['recoveryStationAddress'] ?? ''}'.trim();
+    final distance = incident['recoveryStationDistanceM'];
+    final noDrone = incident['recoveryStationDroneAvailable'] == false;
+    final tone = noDrone ? const Color(0xFFB45309) : const Color(0xFF4338CA);
+    return Container(
+      key: const ValueKey('drone-recovery-station'),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: tone.withValues(alpha: 0.06),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: tone.withValues(alpha: 0.35)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.place_outlined, color: tone),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  'Mang kiện tới trạm $name',
+                  style: TextStyle(fontWeight: FontWeight.w800, color: tone),
+                ),
+              ),
+            ],
+          ),
+          if (address.isNotEmpty && address != 'null') ...[
+            const SizedBox(height: 6),
+            Text(address, style: const TextStyle(color: Color(0xFF0F172A))),
+          ],
+          const SizedBox(height: 4),
+          Text(
+            [
+              if (distance is num)
+                'Cách nơi tìm thấy ~${(distance / 1000).toStringAsFixed(1)} km',
+              noDrone
+                  ? 'Trạm đang hết drone — kiện chờ drone tại trạm'
+                  : 'Trạm còn drone sẵn sàng giao lại',
+            ].join(' · '),
+            style: const TextStyle(fontSize: 12, color: Color(0xFF64748B)),
+          ),
+          if (onDirections != null) ...[
+            const SizedBox(height: 10),
+            OutlinedButton.icon(
+              key: const ValueKey('drone-recovery-station-directions'),
+              onPressed: onDirections,
+              icon: const Icon(Icons.directions_outlined),
+              label: const Text('Chỉ đường tới trạm'),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
 }
 
 class _Info extends StatelessWidget {

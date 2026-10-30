@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:smart_laundry_locker/core/services/token_service.dart';
 import 'package:smart_laundry_locker/core/utils/app_date_time.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/domain/entities/drone_incident_labels.dart';
 import 'package:smart_laundry_locker/features/locker_ops/data/drone_technician_errors.dart';
@@ -243,10 +244,14 @@ class _DroneParcelIncidentSheetState extends State<DroneParcelIncidentSheet> {
   late Map<String, dynamic> _incident = widget.incident;
   bool _loading = true;
   String? _error;
+  int? _myUserId;
 
   @override
   void initState() {
     super.initState();
+    TokenService.getUserId().then((id) {
+      if (mounted) setState(() => _myUserId = int.tryParse(id ?? ''));
+    });
     _load();
   }
 
@@ -353,7 +358,17 @@ class _DroneParcelIncidentSheetState extends State<DroneParcelIncidentSheet> {
                 : 'Không có toạ độ',
           ),
           _row('Camera', '${incident['cameraStatus'] ?? '—'}'),
+          if ('${incident['recoveryStationName'] ?? ''}'.trim().isNotEmpty &&
+              '${incident['recoveryStationName']}' != 'null')
+            _row(
+              'Trạm nhận kiện',
+              '${incident['recoveryStationName']}'
+                  '${incident['recoveryStationDroneAvailable'] == false ? ' (đang chờ drone)' : ''}',
+            ),
+          // Chỉ KTV được giao thu hồi mới thao tác được nhiệm vụ (server trả 403 cho người khác).
           if (incident['id'] != null &&
+              _myUserId != null &&
+              '${incident['recoveryAssignedToUserId']}' == '$_myUserId' &&
               ['ASSIGNED', 'ACCEPTED', 'SEARCHING', 'PARCEL_FOUND', 'VERIFIED']
                   .contains('${incident['recoveryStatus']}'.toUpperCase())) ...[
             const SizedBox(height: 12),

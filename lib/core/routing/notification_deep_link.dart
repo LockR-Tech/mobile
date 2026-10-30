@@ -30,6 +30,7 @@ const customerDroneDeliveryTypes = <String>{
   'drone_delayed',
   'drone_failed',
   'DRONE_PARCEL_DROP_REPORTED',
+  'DRONE_PARCEL_RECOVERY_VERIFIED',
   'DRONE_INCIDENT_RESOLUTION_PROPOSED',
 };
 
@@ -91,6 +92,10 @@ String? _droneTechnicianLocation(
       return maintenanceHomeLocation(tab: 'incidents', reportId: referenceId);
     case 'locker.schedule.due':
       return maintenanceHomeLocation(tab: 'schedules', scheduleId: referenceId);
+    // KTV drone được giao thu hồi kiện rơi / được báo trạm cần mang kiện tới ⇒ tab Sự cố.
+    case 'DRONE_PARCEL_RECOVERY_ASSIGNED':
+    case 'DRONE_PARCEL_RECOVERY_STATION':
+      return maintenanceHomeLocation(tab: 'incidents');
   }
   if (droneDispatchTypes.contains(type) ||
       customerDroneDeliveryTypes.contains(type) ||

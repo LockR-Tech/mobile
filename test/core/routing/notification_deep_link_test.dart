@@ -91,6 +91,20 @@ void main() {
         );
       }
     });
+
+    // KTV drone cũng được giao thu hồi kiện rơi / được báo trạm cần mang kiện tới.
+    test('thu hồi kiện rơi và trạm nhận kiện mở tab Sự cố', () {
+      for (final type in const [
+        'DRONE_PARCEL_RECOVERY_ASSIGNED',
+        'DRONE_PARCEL_RECOVERY_STATION',
+      ]) {
+        expect(
+          link(type, role, referenceId: '7', referenceType: 'DRONE_INCIDENT'),
+          '/maintenance-home?tab=incidents',
+          reason: type,
+        );
+      }
+    });
   });
 
   group('KTV tủ', () {
@@ -161,6 +175,15 @@ void main() {
         ),
         '/technician-home?tab=recovery',
       );
+      expect(
+        link(
+          'DRONE_PARCEL_RECOVERY_STATION',
+          role,
+          referenceId: '77',
+          referenceType: 'DRONE_INCIDENT',
+        ),
+        '/technician-home?tab=recovery',
+      );
     });
 
     test('đánh giá của khách và báo lỗi ô mở đúng tab', () {
@@ -227,6 +250,16 @@ void main() {
       expect(
         link('DRONE_PARCEL_DROP_REPORTED', role, orderId: '23'),
         '/drone-delivery?orderId=23',
+      );
+      // Thông báo sự cố cho khách tham chiếu ĐƠN (referenceType DRONE_ORDER).
+      expect(
+        link(
+          'DRONE_PARCEL_RECOVERY_VERIFIED',
+          role,
+          referenceId: '24',
+          referenceType: 'DRONE_ORDER',
+        ),
+        '/drone-delivery?orderId=24',
       );
       expect(link('DRONE_DELIVERY_STATUS_CHANGED', role), isNull);
     });
