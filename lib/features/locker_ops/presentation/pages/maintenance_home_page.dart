@@ -3877,8 +3877,12 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
               const SizedBox(height: 8),
               Text(
                 [
-                  'Chặng: ${_stageTitle(order['deliveryStage'], stage)}',
-                  if (missionStatus != null && missionStatus.isNotEmpty)
+                  'Chặng: ${_stageTitle(order['deliveryStage'], stage, missionStatus)}',
+                  // Đã nạp xong thì chặng nói luôn "Sẵn sàng phóng"; không ghép thêm
+                  // nhãn nhiệm vụ trùng / mâu thuẫn (test 2026-10-29).
+                  if (missionStatus != null &&
+                      missionStatus.isNotEmpty &&
+                      missionStatus.toUpperCase() != 'READY_TO_LAUNCH')
                     'Nhiệm vụ: ${droneMissionStatusLabel(missionStatus)}',
                 ].join(' · '),
                 style: const TextStyle(fontSize: 12, color: Colors.black54),
@@ -4019,10 +4023,21 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
 
   /// Tiêu đề chặng cho thẻ đơn; DROP_REPORTED (đã báo rơi kiện) chưa có trong
   /// [DroneDeliveryStage] nên đặt nhãn riêng.
-  String _stageTitle(dynamic raw, DroneDeliveryStage stage) =>
-      '${raw ?? ''}'.toUpperCase() == _dropReportedStage
-      ? 'Đã báo rơi kiện'
-      : stage.title;
+  /// Chặng ACCEPTED kéo dài từ lúc gán drone tới lúc phóng; nhiệm vụ READY_TO_LAUNCH nghĩa là
+  /// đã nạp xong — tiêu đề "Đang nạp hàng lên drone" khi đó là sai.
+  String _stageTitle(
+    dynamic raw,
+    DroneDeliveryStage stage, [
+    String? missionStatus,
+  ]) {
+    if ('${raw ?? ''}'.toUpperCase() == _dropReportedStage) {
+      return 'Đã báo rơi kiện';
+    }
+    if ((missionStatus ?? '').toUpperCase() == 'READY_TO_LAUNCH') {
+      return 'Sẵn sàng phóng';
+    }
+    return stage.title;
+  }
 
   /// Đơn đã gán drone (chưa phóng) đang gặp sự cố: KTV phụ trách đổi drone khác ở tủ gửi
   /// hoặc xác nhận giao không hoàn tất.

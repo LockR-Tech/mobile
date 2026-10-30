@@ -18,6 +18,7 @@ String droneMissionStatusLabel(String? status) =>
       'DEPOSITED' => 'Đã gửi hàng vào ô',
       'CANCELED' => 'Đã huỷ',
       'FAILED' => 'Chuyến bay thất bại',
+      'DROP_REPORTED' => 'Dừng do sự cố rơi kiện',
       _ => status!,
     };
 

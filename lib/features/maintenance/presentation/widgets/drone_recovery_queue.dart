@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:smart_laundry_locker/core/media/photo_picker_controller.dart';
@@ -258,11 +260,24 @@ class _DroneRecoveryDetailState extends State<DroneRecoveryDetail> {
   Map<String, dynamic>? _item;
   String? _error;
   bool _busy = false;
+  Timer? _poll;
 
   @override
   void initState() {
     super.initState();
     _load();
+    // Đã gửi kết quả thì bước kế tiếp do admin làm (xác minh): hỏi lại mỗi 10 giây để nút
+    // "Bàn giao về Hub" tự hiện — trước đây phải đóng sheet mở lại (test 2026-10-29).
+    _poll = Timer.periodic(const Duration(seconds: 10), (_) {
+      final status = '${_item?['recoveryStatus'] ?? ''}'.toUpperCase();
+      if (!_busy && status == 'SUBMITTED') _load();
+    });
+  }
+
+  @override
+  void dispose() {
+    _poll?.cancel();
+    super.dispose();
   }
 
   Future<void> _load() async {
@@ -318,9 +333,15 @@ class _DroneRecoveryDetailState extends State<DroneRecoveryDetail> {
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 0, 16, 30),
       children: [
+        // Màu chữ đặt rõ: sheet nằm trong theme tối của app KTV nên chữ mặc định là trắng trên nền
+        // trắng (test 2026-10-29).
         Text(
           '${item['incidentCode']}',
-          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
+          style: const TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.w800,
+            color: Color(0xFF0F172A),
+          ),
         ),
         const SizedBox(height: 4),
         Text(
@@ -333,7 +354,9 @@ class _DroneRecoveryDetailState extends State<DroneRecoveryDetail> {
           runSpacing: 8,
           children: [
             _Pill(droneRecoveryStatusLabel(status)),
-            _Pill(droneParcelStatusLabel(item['parcelStatus'])),
+            _Pill(
+              droneParcelStateLabel(item['parcelStatus'], item['parcelCondition']),
+            ),
           ],
         ),
         const SizedBox(height: 14),
@@ -1109,7 +1132,7 @@ class _Info extends StatelessWidget {
           style: const TextStyle(fontSize: 12, color: Color(0xFF64748B)),
         ),
         const SizedBox(height: 4),
-        Text(value),
+        Text(value, style: const TextStyle(color: Color(0xFF0F172A))),
       ],
     ),
   );

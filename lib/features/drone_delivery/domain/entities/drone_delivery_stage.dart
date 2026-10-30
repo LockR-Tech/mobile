@@ -198,7 +198,7 @@ enum DroneDeliveryStage {
       case DroneDeliveryStage.failed:
         return 'Đơn giao không hoàn tất';
       case DroneDeliveryStage.dropReported:
-        return 'Đội bay đã báo kiện rơi trong chuyến bay. Tiến trình thu hồi và '
+        return 'Kiện được báo rơi khỏi drone trong chuyến bay. Tiến trình thu hồi và '
             'phương án xử lý xem ở thẻ sự cố của đơn.';
       case DroneDeliveryStage.canceled:
         return 'Đơn đã dừng trước khi drone cất cánh';

@@ -14,10 +14,19 @@ import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/or
 /// Tự tải khi mở và cho bấm thử lại khi lỗi — người dùng mở bảng chi tiết là để
 /// xem đơn, không nên vì một lần mạng chập mà mất luôn phần còn lại của bảng.
 class OrderStatusTimeline extends StatefulWidget {
-  const OrderStatusTimeline({super.key, required this.orderId, this.service});
+  const OrderStatusTimeline({
+    super.key,
+    required this.orderId,
+    this.service,
+    this.refreshToken,
+  });
 
   final int orderId;
   final LockerOpsService? service;
+
+  /// Đổi giá trị (vd. bản đơn vừa tải lại) ⇒ tải lại lịch sử. Trước đây nút
+  /// "Tải lại" của bảng chi tiết không làm mới khối này (test 2026-10-29).
+  final Object? refreshToken;
 
   @override
   State<OrderStatusTimeline> createState() => _OrderStatusTimelineState();
@@ -34,6 +43,15 @@ class _OrderStatusTimelineState extends State<OrderStatusTimeline> {
   void initState() {
     super.initState();
     _load();
+  }
+
+  @override
+  void didUpdateWidget(covariant OrderStatusTimeline oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.orderId != widget.orderId ||
+        !identical(oldWidget.refreshToken, widget.refreshToken)) {
+      _load();
+    }
   }
 
   Future<void> _load() async {

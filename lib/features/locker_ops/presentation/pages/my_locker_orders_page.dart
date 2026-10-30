@@ -4478,7 +4478,10 @@ class _DetailSheet extends StatelessWidget {
           icon: LucideIcons.keyRound,
           onTap: onResetPin!,
         ),
+      // Đơn drone giữ sẵn ô nhận từ lúc đặt; chỉ báo ô lỗi được khi kiện đã nằm trong ô
+      // (STORING) — trước đó khách chưa dùng ô nào.
       if (boxId != null &&
+          (!isDroneDelivery || rawStatus == 'STORING') &&
           rawStatus != 'COMPLETED' &&
           rawStatus != 'CANCELED' &&
           rawStatus != 'EXPIRED')
@@ -5036,6 +5039,38 @@ class _DetailSheet extends StatelessWidget {
             PickupCodeShareActions(share: receiverShare),
           ],
         ],
+        // Đơn drone lấy hàng tận nhà: mã người gửi đọc cho KTV khi KTV tới (server chỉ trả khi KTV
+        // chưa cầm kiện). Trước đây chỉ có ở màn theo dõi (test 2026-10-29).
+        if (isDroneDelivery && text('dronePickupCode') != null) ...[
+          const SizedBox(height: 14),
+          Container(
+            key: const ValueKey('order-drone-pickup-code'),
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 14),
+            decoration: BoxDecoration(
+              color: const Color(0xFFEEF2FF),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Column(
+              children: [
+                const Text(
+                  'Mã lấy hàng — đọc cho kỹ thuật viên khi tới lấy',
+                  style: TextStyle(fontSize: 12.5, color: Color(0xFF3730A3)),
+                ),
+                const SizedBox(height: 4),
+                SelectableText(
+                  text('dronePickupCode')!,
+                  style: const TextStyle(
+                    fontSize: 26,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 6,
+                    color: Color(0xFF312E81),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
         const SizedBox(height: 16),
         ...actions,
         const SizedBox(height: 20),
@@ -5048,7 +5083,7 @@ class _DetailSheet extends StatelessWidget {
               ? null
               : OrderMilestoneTimeline(milestones: milestones),
         ),
-        OrderStatusTimeline(orderId: id, service: service),
+        OrderStatusTimeline(orderId: id, service: service, refreshToken: order),
         const SizedBox(height: 12),
         _OrderIncidentResolutionSection(
           orderId: id,

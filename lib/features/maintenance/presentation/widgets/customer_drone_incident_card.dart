@@ -140,7 +140,16 @@ class _CustomerDroneIncidentCardState extends State<CustomerDroneIncidentCard> {
     final latest = _latestProposal(proposals);
     final timeline =
         (incident['timeline'] as List?)?.whereType<Map>().toList() ?? const [];
-    final reason = '${incident['reason'] ?? ''}'.trim();
+    // Không hiện `reason`: đó là lời báo nội bộ của đội bay / admin (test 2026-10-29 khách đọc được
+    // "Admin quan sat thay kien roi … (test E2E …)"). Khách cần ghi chú hiện trường và ảnh thu hồi để
+    // chọn phương án.
+    final fieldNote = '${incident['recoveryNote'] ?? ''}'.trim();
+    final recoveryPhotos = ((incident['evidence'] as List?) ?? const [])
+        .whereType<Map>()
+        .where((e) => '${e['stage']}'.toUpperCase() == 'RECOVERY')
+        .map((e) => '${e['secureUrl'] ?? e['url'] ?? ''}')
+        .where((url) => url.startsWith('http'))
+        .toList();
     final awaitingResponse =
         latest != null &&
         '${latest['status']}'.toUpperCase() == 'AWAITING_CUSTOMER_ACCEPTANCE';
@@ -194,11 +203,35 @@ class _CustomerDroneIncidentCardState extends State<CustomerDroneIncidentCard> {
                 incident['parcelCondition'],
               ),
             ),
-            if (reason.isNotEmpty) ...[
+            if (fieldNote.isNotEmpty)
+              _Line('Ghi chú hiện trường', fieldNote),
+            if (recoveryPhotos.isNotEmpty) ...[
               const SizedBox(height: 8),
-              Text(
-                reason,
-                style: const TextStyle(fontSize: 13, color: Color(0xFF7C2D12)),
+              const Text(
+                'Ảnh kiện khi thu hồi',
+                style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+              ),
+              const SizedBox(height: 6),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  for (final url in recoveryPhotos)
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: Image.network(
+                        url,
+                        width: 96,
+                        height: 72,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, _, _) => const SizedBox(
+                          width: 96,
+                          height: 72,
+                          child: Icon(Icons.broken_image_outlined),
+                        ),
+                      ),
+                    ),
+                ],
               ),
             ],
             if (timeline.isNotEmpty) ...[

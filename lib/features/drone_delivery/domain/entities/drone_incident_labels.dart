@@ -15,7 +15,7 @@ const _incidentStatus = <String, String>{
   'DISPUTED': 'Đang xem xét lại theo yêu cầu',
   'RESOLVED': 'Đã xử lý xong',
   'CLOSED': 'Đã đóng',
-  'MANUAL_INTERVENTION_REQUIRED': 'Cần nhân viên xử lý trực tiếp',
+  'MANUAL_INTERVENTION_REQUIRED': 'Nhân viên đang xử lý trực tiếp',
 };
 
 const _recoveryStatus = <String, String>{
@@ -29,7 +29,7 @@ const _recoveryStatus = <String, String>{
   'RECOVERED': 'Đã thu hồi kiện',
   'SUBMITTED': 'Đã báo kết quả thu hồi',
   'VERIFIED': 'Đã xác minh kết quả',
-  'CLOSED': 'Đã đóng',
+  'CLOSED': 'Đã bàn giao kiện về kho',
   'CANCELLED': 'Đã huỷ',
 };
 
@@ -48,8 +48,12 @@ const _parcelStatus = <String, String>{
 };
 
 const _eventTypes = <String, String>{
-  'INCIDENT_REPORTED': 'Đội bay báo kiện rơi',
+  // Người báo có thể là đội bay hoặc quản trị viên.
+  'INCIDENT_REPORTED': 'Ghi nhận kiện rơi khỏi drone',
   'RECOVERY_ASSIGNED': 'Phân công người thu hồi kiện',
+  'RECOVERY_ACCEPT': 'Nhân viên nhận việc thu hồi',
+  'RECOVERY_START_SEARCHING': 'Nhân viên bắt đầu tìm kiện',
+  'RETURN_FLIGHT_CONFIRMED': 'Drone đã về trạm',
   'RECOVERY_SUBMITTED': 'Báo kết quả thu hồi',
   'RECOVERY_VERIFIED': 'Xác minh kết quả thu hồi',
   'PARCEL_RETURNED_TO_HUB': 'Kiện đã về kho Lock.R',
@@ -99,7 +103,12 @@ String droneParcelStatusLabel(Object? code) => _label(_parcelStatus, code);
 String droneParcelStateLabel(Object? status, Object? condition) {
   final base = droneParcelStatusLabel(status);
   final extra = _parcelCondition['${condition ?? ''}'.toUpperCase()];
-  return extra == null ? base : '$base · $extra';
+  if (extra == null) return base;
+  // Kiện hỏng: nói đúng mức KTV ghi ("Hư hại nhẹ"), không gộp thành "Bị hư hỏng".
+  if ('${status ?? ''}'.toUpperCase() == 'DAMAGED') {
+    return extra[0].toUpperCase() + extra.substring(1);
+  }
+  return '$base · $extra';
 }
 
 String droneResolutionTypeLabel(Object? code) =>

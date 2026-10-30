@@ -354,6 +354,12 @@ class _DronePickupQueueState extends State<DronePickupQueue>
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // Lỗi máy chủ (vd. DRONE_PICKUP_TOO_FAR) đặt trên cùng: trước đây nằm dưới ô
+                // ghi chú, bị bàn phím che nên bấm "Đã lấy hàng" như không phản ứng (test 2026-10-29).
+                if (submitProblem != null) ...[
+                  _DialogError(submitProblem!),
+                  const SizedBox(height: 8),
+                ],
                 Text(
                   'Kiện khai báo: ${_parcelSummary(order)}.\n'
                   'Nhờ người gửi đọc mã lấy hàng trong đơn của họ.',
@@ -468,10 +474,6 @@ class _DronePickupQueueState extends State<DronePickupQueue>
                     isDense: true,
                   ),
                 ),
-                if (submitProblem != null) ...[
-                  const SizedBox(height: 8),
-                  _DialogError(submitProblem!),
-                ],
               ],
             ),
           ),
@@ -563,6 +565,8 @@ class _DronePickupQueueState extends State<DronePickupQueue>
                             submitProblem = message;
                           }
                         });
+                        // Hạ bàn phím để thấy lỗi.
+                        if (ctx.mounted) FocusScope.of(ctx).unfocus();
                       } finally {
                         if (ctx.mounted) setLocal(() => submitting = false);
                       }

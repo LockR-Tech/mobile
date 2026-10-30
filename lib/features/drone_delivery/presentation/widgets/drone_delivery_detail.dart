@@ -248,6 +248,14 @@ String? _etaText(int? minutes) => minutes == null ? null : '$minutes phút';
       body: 'Thanh toán xong hệ thống mới tìm kỹ thuật viên drone tới lấy hàng',
     );
   }
+  // Không lấy hàng tận nhà (đơn giao lại sau sự cố, đơn gửi tại tủ): kiện đã nằm ở kho / trạm, không
+  // còn "tìm kỹ thuật viên gần bạn" (test 2026-10-29, đơn giao lại #144).
+  if (stage == DroneDeliveryStage.awaitingDispatch && status.pickup == null) {
+    return (
+      title: 'Chờ đội bay tiếp nhận',
+      body: 'Kiện đã sẵn sàng tại trạm Lock.R, chờ kỹ thuật viên drone nạp hàng và phóng',
+    );
+  }
   if (stage == DroneDeliveryStage.accepted &&
       (status.missionStatus ?? '').toUpperCase() == 'READY_TO_LAUNCH') {
     return (
@@ -1227,7 +1235,15 @@ class _OrderCard extends StatelessWidget {
       icon: LucideIcons.package,
       child: _Rows([
         ('Mã đơn', status.orderCode ?? '—'),
-        ('Trạng thái đơn', droneOrderStatusLabel(status.orderStatus)),
+        (
+          'Trạng thái đơn',
+          // Kiện đã rơi: đơn vẫn AWAITING_DISPATCH tới khi khách chọn phương án,
+          // không được ghi "Đang giao bằng drone".
+          status.stage == DroneDeliveryStage.dropReported &&
+                  (status.orderStatus ?? '').toUpperCase() == 'AWAITING_DISPATCH'
+              ? 'Tạm dừng do sự cố rơi kiện'
+              : droneOrderStatusLabel(status.orderStatus),
+        ),
         ('Thanh toán', dronePaymentStatusLabel(status.paymentStatus)),
         // Phí gốc, rồi từng khoản giảm, rồi số tiền thực trả — không hiện số sau
         // khi trừ điểm dưới nhãn "Phí giao drone".

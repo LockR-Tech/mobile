@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:smart_laundry_locker/core/utils/app_date_time.dart';
+import 'package:smart_laundry_locker/features/drone_delivery/domain/entities/drone_incident_labels.dart';
 import 'package:smart_laundry_locker/features/locker_ops/data/drone_technician_errors.dart';
 import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
 import 'package:smart_laundry_locker/features/maintenance/presentation/widgets/drone_recovery_queue.dart';
@@ -330,7 +331,15 @@ class _DroneParcelIncidentSheetState extends State<DroneParcelIncidentSheet> {
           const SizedBox(height: 14),
           _row('Trạng thái', droneIncidentStatusLabel(incident['status'])),
           _row('Quay về', droneReturnFlightLabel(incident['returnFlightStatus'])),
-          _row('Kiện hàng', _label(_parcelStatusLabels, incident['parcelStatus'])),
+          _row(
+            'Kiện hàng',
+            incident['parcelCondition'] != null
+                ? droneParcelStateLabel(
+                    incident['parcelStatus'],
+                    incident['parcelCondition'],
+                  )
+                : _label(_parcelStatusLabels, incident['parcelStatus']),
+          ),
           _row(
             'Thu hồi kiện',
             _label(_recoveryStatusLabels, incident['recoveryStatus']),

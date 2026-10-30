@@ -251,16 +251,52 @@ class _DroneJourneyCameraPanelState extends State<DroneJourneyCameraPanel> {
 
   static num? _num(dynamic value) => value is num ? value : null;
 
+  /// Chặng còn báo rơi kiện được (khớp `REPORTABLE_MISSION_STATES` / chặng đang bay của order-service).
+  static const _reportableStages = {
+    'LAUNCHING',
+    'DEPARTED',
+    'EN_ROUTE',
+    'APPROACHING',
+    'ARRIVED',
+  };
+
   Future<void> _showReportDialog(Map<String, dynamic>? camera) async {
     final reason = TextEditingController();
     final photos = PhotoPickerController(maxPhotos: 1);
     var sending = false;
     String? dialogError;
+    // Admin (hoặc người khác) có thể báo rơi kiện trong lúc hộp thoại đang mở: trước đây hộp vẫn
+    // hiện "Đang bay tới tủ nhận" và nút Xác nhận với dữ liệu cũ (test 2026-10-29). Hỏi lại chặng
+    // mỗi 5 giây; đơn đã DROP_REPORTED / không còn bay ⇒ đóng hộp và báo.
+    BuildContext? openDialog;
+    var closedElsewhere = false;
+    void closeBecauseHandledElsewhere() {
+      final ctx = openDialog;
+      if (closedElsewhere || ctx == null || !ctx.mounted || sending) return;
+      closedElsewhere = true;
+      Navigator.of(ctx).pop(false);
+    }
+
+    final watch = Timer.periodic(const Duration(seconds: 5), (_) async {
+      try {
+        final latest = await widget.service.droneOrderCamera(widget.orderId);
+        final stage = '${latest['journeyStatus'] ?? ''}'.toUpperCase();
+        if (stage.isNotEmpty &&
+            stage != 'NULL' &&
+            !_reportableStages.contains(stage)) {
+          closeBecauseHandledElsewhere();
+        }
+      } catch (_) {
+        // Mạng chập: giữ hộp thoại, lần sau hỏi lại.
+      }
+    });
     final reported = await showDialog<bool>(
       context: context,
       barrierDismissible: false,
       builder: (dialogContext) => StatefulBuilder(
-        builder: (context, setDialogState) => AlertDialog(
+        builder: (context, setDialogState) {
+          openDialog = dialogContext;
+          return AlertDialog(
           title: const Text('Xác nhận báo rơi kiện'),
           content: SingleChildScrollView(
             child: Column(
@@ -357,6 +393,14 @@ class _DroneJourneyCameraPanelState extends State<DroneJourneyCameraPanel> {
                         _dropIdempotencyKey = null;
                         if (context.mounted) Navigator.pop(context, true);
                       } catch (error) {
+                        final code = LockerOpsService.errorCode(error);
+                        // Đã có người báo trước / chuyến bay đã dừng: hộp này không còn ý nghĩa.
+                        if (code == 'DRONE_DROP_INCIDENT_EXISTS' ||
+                            code == 'DRONE_DROP_NOT_REPORTABLE') {
+                          sending = false;
+                          closeBecauseHandledElsewhere();
+                          return;
+                        }
                         // Lỗi hiện ngay trong hộp thoại: SnackBar của trang nằm sau lớp phủ, KTV không thấy.
                         if (context.mounted) {
                           setDialogState(() {
@@ -374,9 +418,11 @@ class _DroneJourneyCameraPanelState extends State<DroneJourneyCameraPanel> {
                   : const Text('Xác nhận'),
             ),
           ],
-        ),
+        );
+        },
       ),
     );
+    watch.cancel();
     // `showDialog` hoàn tất Future trước khi route dialog tháo xong khỏi cây.
     // PhotoPickerField vẫn đang lắng nghe `photos` ở frame animation cuối; dispose
     // ngay tại đây sẽ làm Flutter báo `_dependents.isEmpty`.
@@ -384,6 +430,18 @@ class _DroneJourneyCameraPanelState extends State<DroneJourneyCameraPanel> {
       reason.dispose();
       photos.dispose();
     });
+    if (closedElsewhere && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Chuyến bay này đã được báo rơi kiện (hoặc đã dừng) từ nơi khác. '
+            'Theo dõi ở mục "Sự cố rơi kiện" trong tab Điều phối.',
+          ),
+        ),
+      );
+      await widget.onIncidentReported();
+      return;
+    }
     if (reported == true && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(

@@ -108,7 +108,9 @@ class DroneBookingPage extends StatefulWidget {
 
 class _DroneBookingPageState extends State<DroneBookingPage>
     with BusinessConfigStateMixin {
-  static final _phonePattern = RegExp(r'^\+?[0-9]{9,15}$');
+  // Số Việt Nam: 0 hoặc +84/84 rồi 9 chữ số (chữ số đầu khác 0) — khớp
+  // CreateDroneDeliveryOrderRequest.PHONE ở order-service.
+  static final _phonePattern = RegExp(r'^(?:0|\+?84)[1-9][0-9]{8}$');
   static final _emailPattern = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$');
 
   final _senderName = TextEditingController();
