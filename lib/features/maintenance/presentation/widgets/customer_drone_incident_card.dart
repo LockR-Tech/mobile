@@ -1,7 +1,10 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:smart_laundry_locker/core/routing/app_router.dart';
+import 'package:smart_laundry_locker/core/services/token_service.dart';
 import 'package:smart_laundry_locker/core/utils/app_date_time.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/domain/entities/drone_incident_labels.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/presentation/drone_error_messages.dart';
@@ -41,11 +44,44 @@ class _CustomerDroneIncidentCardState extends State<CustomerDroneIncidentCard> {
   bool _responding = false;
   bool _hasBankAccount = true;
   String? _error;
+  int? _myUserId;
+  Timer? _poll;
+
+  /// Chặng đơn đứng yên ở DROP_REPORTED suốt lúc xử lý sự cố nên [refreshKey] không đổi khi KTV báo kết quả,
+  /// admin gửi phương án… ⇒ tự tải lại định kỳ khi sự cố còn mở.
+  static const _pollInterval = Duration(seconds: 10);
 
   @override
   void initState() {
     super.initState();
+    TokenService.getUserId().then((id) {
+      if (mounted) setState(() => _myUserId = int.tryParse(id ?? ''));
+    });
     _load();
+  }
+
+  @override
+  void dispose() {
+    _poll?.cancel();
+    super.dispose();
+  }
+
+  bool _incidentOpen(Map<String, dynamic>? incident) {
+    if (incident == null) return widget.expectIncident;
+    final status = '${incident['status'] ?? ''}'.toUpperCase();
+    return status != 'RESOLVED' && status != 'CLOSED';
+  }
+
+  void _schedulePoll() {
+    final open = _incidentOpen(_incident);
+    if (!open) {
+      _poll?.cancel();
+      _poll = null;
+      return;
+    }
+    _poll ??= Timer.periodic(_pollInterval, (_) {
+      if (mounted && !_responding) _load(quiet: true);
+    });
   }
 
   @override
@@ -89,7 +125,10 @@ class _CustomerDroneIncidentCardState extends State<CustomerDroneIncidentCard> {
         setState(() => _error = droneCustomerErrorMessage(error));
       }
     } finally {
-      if (mounted) setState(() => _loading = false);
+      if (mounted) {
+        setState(() => _loading = false);
+        _schedulePoll();
+      }
     }
   }
 
@@ -150,9 +189,17 @@ class _CustomerDroneIncidentCardState extends State<CustomerDroneIncidentCard> {
         .map((e) => '${e['secureUrl'] ?? e['url'] ?? ''}')
         .where((url) => url.startsWith('http'))
         .toList();
+    // Chỉ người gửi (chủ đơn) quyết định phương án — tiền bồi thường về tài khoản người gửi; server cũng chặn.
+    final isSender =
+        _myUserId != null && _asInt(incident['customerUserId']) == _myUserId;
     final awaitingResponse =
+        isSender &&
         latest != null &&
         '${latest['status']}'.toUpperCase() == 'AWAITING_CUSTOMER_ACCEPTANCE';
+    final awaitingSender = !isSender &&
+        latest != null &&
+        '${latest['status']}'.toUpperCase() == 'AWAITING_CUSTOMER_ACCEPTANCE';
+    final open = _incidentOpen(incident);
     // Chỉ cho "Yêu cầu xem xét" khi chính sách của đơn cho phép.
     final disputeAllowed = incident['disputeAllowed'] == true;
     final hasCompensation = latest != null &&
@@ -162,7 +209,7 @@ class _CustomerDroneIncidentCardState extends State<CustomerDroneIncidentCard> {
     final compensationActive = hasCompensation ||
         ['AWAITING_APPROVAL', 'PAYMENT_PENDING', 'PENDING', 'ACCEPTED']
             .contains('${incident['compensationStatus']}'.toUpperCase());
-    final showBankWarning = compensationActive && !_hasBankAccount;
+    final showBankWarning = isSender && compensationActive && !_hasBankAccount;
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
       elevation: 0,
@@ -176,14 +223,26 @@ class _CustomerDroneIncidentCardState extends State<CustomerDroneIncidentCard> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const Row(
+            Row(
               children: [
-                Icon(Icons.warning_amber_rounded, color: Color(0xFFEA580C)),
-                SizedBox(width: 8),
+                Icon(
+                  open
+                      ? Icons.warning_amber_rounded
+                      : Icons.check_circle_outline,
+                  color: open
+                      ? const Color(0xFFEA580C)
+                      : const Color(0xFF16A34A),
+                ),
+                const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    'Sự cố rơi kiện đang được xử lý',
-                    style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
+                    open
+                        ? 'Sự cố rơi kiện đang được xử lý'
+                        : 'Sự cố rơi kiện đã xử lý xong',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w800,
+                      fontSize: 16,
+                    ),
                   ),
                 ),
               ],
@@ -346,6 +405,13 @@ class _CustomerDroneIncidentCardState extends State<CustomerDroneIncidentCard> {
                       ),
                     ],
                   ),
+                ),
+              ],
+              if (awaitingSender) ...[
+                const SizedBox(height: 10),
+                const Text(
+                  'Người gửi đơn sẽ đồng ý hoặc yêu cầu xem xét phương án này.',
+                  style: TextStyle(fontSize: 12, color: Color(0xFF64748B)),
                 ),
               ],
               if (awaitingResponse) ...[
