@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:smart_laundry_locker/core/config/business_config_service.dart';
 import 'package:smart_laundry_locker/core/network/dio_client.dart';
 import 'package:smart_laundry_locker/core/routing/app_router.dart';
+import 'package:smart_laundry_locker/core/routing/app_back_navigation.dart';
 import 'package:smart_laundry_locker/core/services/app_messenger_service.dart';
 import 'package:smart_laundry_locker/core/services/app_restart_service.dart';
 import 'package:smart_laundry_locker/core/services/token_service.dart';
@@ -263,6 +264,9 @@ void main() async {
   // last-known rồi làm mới nền, KHÔNG chặn khởi động (lỗi ⇒ giá trị mặc định).
   unawaited(BusinessConfigService.instance.init());
 
+  // Nút quay lại của điện thoại đi theo lịch sử trang (tab trước, trang trước), không thoát app.
+  AppBackNavigation.instance.attach(AppRouter.router);
+
   runApp(const ProviderScope(child: RestartableApp(child: AislApp())));
 }
 
@@ -299,6 +303,7 @@ class AislApp extends StatelessWidget {
           return ShadApp.router(
             title: 'Lockerly',
             routerConfig: AppRouter.router,
+            onNavigationNotification: AppBackNavigation.onNavigationNotification,
             theme: AISLShadcnTheme.lightTheme,
             darkTheme: AISLShadcnTheme.darkTheme,
             themeMode: themeMode,
