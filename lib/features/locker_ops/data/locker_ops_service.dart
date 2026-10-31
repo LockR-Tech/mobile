@@ -123,8 +123,8 @@ class LockerOpsService {
     required String receiverPhone,
     String? receiverName,
 
-    /// Tuỳ chọn. Có email thì server gửi được mã mở tủ cho người nhận CHƯA có
-    /// tài khoản Lock.R, không phải chờ người gửi chuyển tay.
+    /// Bắt buộc với server mới (`RECEIVER_EMAIL_REQUIRED`): Lock.R báo người
+    /// nhận qua email lúc tạo đơn và gửi mã mở tủ khi hàng vào ô.
     String? receiverEmail,
     String? note,
     String? promotionCode,
@@ -433,9 +433,9 @@ class LockerOpsService {
         : '/api/orders/incoming/$orderId',
   );
 
-  /// Người gửi đơn gửi hàng thêm / đổi email người nhận ([email] null = giữ email đang có) và, khi hàng đã
-  /// vào tủ, gửi lại mã mở tủ tới email đó. Trả `{maskedEmail, includesPickupCode, sentAt}`;
-  /// `includesPickupCode == false` = hàng chưa vào tủ, chỉ lưu email.
+  /// Người gửi đơn gửi hàng thêm / đổi email người nhận ([email] null = giữ email đang có) rồi gửi lại thư
+  /// cho người nhận: hàng đã vào tủ ⇒ kèm mã mở tủ; đã thanh toán, chưa bỏ hàng ⇒ thư báo có đơn (không mã);
+  /// chưa thanh toán ⇒ chỉ lưu email (`sentAt` null). Trả `{maskedEmail, includesPickupCode, sentAt}`.
   Future<Map<String, dynamic>> sendReceiverEmail(int orderId, {String? email}) => _map(
     'POST',
     '/api/orders/$orderId/receiver-email',

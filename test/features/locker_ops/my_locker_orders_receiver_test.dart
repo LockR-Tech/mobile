@@ -303,6 +303,16 @@ void main() {
     expect(find.text('Đã đổi mã PIN mới: 111222'), findsOneWidget);
   });
 
+  testWidgets('đơn đã ủy quyền lấy hộ ⇒ không có nút gửi lại cho người nhận', (
+    tester,
+  ) async {
+    await _pump(tester, _RichSenderService());
+
+    await tester.tap(find.text('Tủ kiểm thử'));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('send-receiver-email-action')), findsNothing);
+  });
+
   testWidgets('chạm đơn trong Hàng chờ nhận mở màn chi tiết đầy đủ', (
     tester,
   ) async {

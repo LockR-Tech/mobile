@@ -1492,17 +1492,19 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
     }
   }
 
-  /// "Gửi mã cho người nhận qua email" của đơn gửi hàng: hiện email đang có (sửa được), hàng đã vào tủ thì
-  /// gửi lại mã mở tủ, chưa vào tủ thì chỉ lưu email để lúc bỏ hàng Lock.R tự gửi.
+  /// "Gửi lại thông tin cho người nhận" của đơn gửi hàng: hiện email đang có (sửa được) rồi gửi lại thư —
+  /// hàng đã vào tủ ⇒ kèm mã mở tủ; đã thanh toán, chưa bỏ hàng ⇒ thư báo có đơn; chưa thanh toán ⇒ chỉ lưu
+  /// email (Lock.R báo người nhận khi đơn được thanh toán).
   Future<void> _receiverEmail(Map<String, dynamic> order) async {
     final orderId = _asInt(order['id']);
     if (orderId == null) return;
-    final status = (order['status'] as String? ?? '').toUpperCase();
-    final ready = status == 'STORING' || status == 'RETURNED';
     final current = (order['receiverEmail'] as String? ?? '').trim();
     final email = await showDialog<String>(
       context: context,
-      builder: (_) => _ReceiverEmailDialog(initial: current, ready: ready),
+      builder: (_) => _ReceiverEmailDialog(
+        initial: current,
+        mode: _receiverEmailMode(order),
+      ),
     );
     if (email == null || !mounted) return;
     try {
@@ -1512,9 +1514,11 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
       );
       final masked = res['maskedEmail']?.toString() ?? email;
       _snack(
-        res['includesPickupCode'] == true
+        res['sentAt'] == null
+            ? 'Đã lưu email người nhận $masked. Lock.R báo người nhận khi đơn được thanh toán.'
+            : res['includesPickupCode'] == true
             ? 'Đã gửi mã mở tủ tới $masked.'
-            : 'Đã lưu email người nhận $masked. Lock.R gửi mã khi bạn bỏ hàng vào ô.',
+            : 'Đã gửi lại thông tin đơn tới $masked.',
       );
       await _load();
     } catch (e) {
@@ -4538,9 +4542,9 @@ class _DetailSheet extends StatelessWidget {
           key: const ValueKey('send-receiver-email-action'),
           label: (order['receiverEmail'] ?? '').toString().trim().isEmpty
               ? 'Thêm email người nhận'
-              : (rawStatus == 'INITIALIZED'
+              : (_receiverEmailMode(order) == _ReceiverEmailMode.saveOnly
                     ? 'Đổi email người nhận'
-                    : 'Gửi lại mã cho người nhận qua email'),
+                    : 'Gửi lại thông tin cho người nhận'),
           icon: LucideIcons.mailCheck,
           onTap: onReceiverEmail!,
         ),
@@ -6051,14 +6055,33 @@ bool droneFlightFinished(String rawStatus) =>
       rawStatus.toUpperCase(),
     );
 
+/// Thư server gửi khi người gửi bấm nút email người nhận (khớp `OrderService.sendReceiverEmail`).
+enum _ReceiverEmailMode {
+  /// Hàng đã vào tủ ⇒ thư kèm mã mở tủ.
+  withCode,
+
+  /// Đã thanh toán, chưa bỏ hàng ⇒ thư báo có đơn sắp tới (không mã).
+  orderInfo,
+
+  /// Chưa thanh toán ⇒ người nhận chưa được báo, chỉ lưu email.
+  saveOnly,
+}
+
+_ReceiverEmailMode _receiverEmailMode(Map<String, dynamic> order) {
+  final status = (order['status'] as String? ?? '').toUpperCase();
+  if (status == 'STORING' || status == 'RETURNED') return _ReceiverEmailMode.withCode;
+  final total = order['totalPrice'];
+  final totalNum = total is num ? total : num.tryParse('$total') ?? 0;
+  final paid = (order['paymentStatus'] as String? ?? '').toUpperCase() == 'PAID';
+  return paid || totalNum <= 0 ? _ReceiverEmailMode.orderInfo : _ReceiverEmailMode.saveOnly;
+}
+
 /// Hộp nhập email người nhận của đơn gửi hàng. Trả email đã cắt khoảng trắng, hoặc null khi huỷ.
 class _ReceiverEmailDialog extends StatefulWidget {
-  const _ReceiverEmailDialog({required this.initial, required this.ready});
+  const _ReceiverEmailDialog({required this.initial, required this.mode});
 
   final String initial;
-
-  /// Hàng đã vào tủ ⇒ bấm là gửi mã ngay; chưa ⇒ chỉ lưu email.
-  final bool ready;
+  final _ReceiverEmailMode mode;
 
   @override
   State<_ReceiverEmailDialog> createState() => _ReceiverEmailDialogState();
@@ -6085,7 +6108,11 @@ class _ReceiverEmailDialogState extends State<_ReceiverEmailDialog> {
   Widget build(BuildContext context) {
     return AlertDialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-      title: Text(widget.ready ? 'Gửi mã cho người nhận' : 'Email người nhận'),
+      title: Text(
+        widget.mode == _ReceiverEmailMode.saveOnly
+            ? 'Email người nhận'
+            : 'Gửi lại thông tin cho người nhận',
+      ),
       content: Form(
         key: _formKey,
         child: Column(
@@ -6093,10 +6120,17 @@ class _ReceiverEmailDialogState extends State<_ReceiverEmailDialog> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text(
-              widget.ready
-                  ? 'Lock.R gửi mã mở tủ, nơi lấy và hạn lấy hàng tới email này. Sửa email nếu người nhận '
-                        'chưa nhận được thư.'
-                  : 'Hàng chưa vào tủ. Lock.R sẽ gửi mã mở tủ tới email này ngay khi bạn bỏ hàng vào ô.',
+              switch (widget.mode) {
+                _ReceiverEmailMode.withCode =>
+                  'Lock.R gửi lại mã mở tủ, nơi lấy và hạn lấy hàng tới email này. Sửa email nếu người nhận '
+                      'chưa nhận được thư.',
+                _ReceiverEmailMode.orderInfo =>
+                  'Hàng chưa vào tủ: Lock.R gửi lại thư báo có đơn sắp tới (chưa kèm mã). Mã mở tủ được '
+                      'gửi khi bạn bỏ hàng vào ô.',
+                _ReceiverEmailMode.saveOnly =>
+                  'Đơn chưa thanh toán. Lock.R báo người nhận qua email này khi đơn được thanh toán, và gửi '
+                      'mã mở tủ khi bạn bỏ hàng vào ô.',
+              },
               style: const TextStyle(fontSize: 14, height: 1.4),
             ),
             const SizedBox(height: 14),
@@ -6127,7 +6161,7 @@ class _ReceiverEmailDialogState extends State<_ReceiverEmailDialog> {
         FilledButton(
           key: const ValueKey('receiver-email-submit'),
           onPressed: _submit,
-          child: Text(widget.ready ? 'Gửi mã' : 'Lưu email'),
+          child: Text(widget.mode == _ReceiverEmailMode.saveOnly ? 'Lưu email' : 'Gửi email'),
         ),
       ],
     );

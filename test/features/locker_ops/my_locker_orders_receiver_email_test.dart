@@ -7,9 +7,12 @@ import '../../helpers/test_helpers.dart';
 
 /// Đơn gửi hàng đã vào tủ, có email người nhận: người gửi gửi lại mã qua email.
 class _FakeSendEmailService extends LockerOpsService {
-  _FakeSendEmailService({this.email = 'nhan@example.com'}) : super(dio: createMockDio().dio);
+  _FakeSendEmailService({this.email = 'nhan@example.com', this.status = 'STORING', this.paymentStatus = 'PAID'})
+      : super(dio: createMockDio().dio);
 
   final String? email;
+  final String status;
+  final String paymentStatus;
   int emailCalls = 0;
   String? sentEmail;
 
@@ -18,8 +21,8 @@ class _FakeSendEmailService extends LockerOpsService {
     {
       'id': 61,
       'type': 'SEND',
-      'status': 'STORING',
-      'paymentStatus': 'PAID',
+      'status': status,
+      'paymentStatus': paymentStatus,
       'totalPrice': 2500,
       'lockerId': 6,
       'sendBoxId': 6001,
@@ -49,7 +52,13 @@ class _FakeSendEmailService extends LockerOpsService {
   Future<Map<String, dynamic>> sendReceiverEmail(int orderId, {String? email}) async {
     emailCalls++;
     sentEmail = email;
-    return {'maskedEmail': 'nh***@example.com', 'includesPickupCode': true};
+    final stored = status == 'STORING';
+    final unpaid = paymentStatus != 'PAID';
+    return {
+      'maskedEmail': 'nh***@example.com',
+      'includesPickupCode': stored,
+      'sentAt': unpaid && !stored ? null : '2026-10-31T21:30:00',
+    };
   }
 }
 
@@ -61,7 +70,7 @@ void main() {
     useBusinessConfig();
   });
 
-  testWidgets('đơn gửi hàng đã vào tủ: "Gửi lại mã cho người nhận qua email" giữ email cũ và báo đã gửi', (
+  testWidgets('đơn gửi hàng đã vào tủ: "Gửi lại thông tin cho người nhận" giữ email cũ và báo đã gửi mã', (
     tester,
   ) async {
     final service = _FakeSendEmailService();
@@ -79,11 +88,12 @@ void main() {
 
     final action = find.byKey(const ValueKey('send-receiver-email-action'));
     await tester.ensureVisible(action);
-    expect(find.text('Gửi lại mã cho người nhận qua email'), findsOneWidget);
+    expect(find.text('Gửi lại thông tin cho người nhận'), findsOneWidget);
     await tester.tap(action);
     await tester.pumpAndSettle();
 
-    expect(find.widgetWithText(AlertDialog, 'Gửi mã cho người nhận'), findsOneWidget);
+    expect(find.widgetWithText(AlertDialog, 'Gửi lại thông tin cho người nhận'), findsOneWidget);
+    expect(find.textContaining('gửi lại mã mở tủ'), findsOneWidget);
     await tester.tap(find.byKey(const ValueKey('receiver-email-submit')));
     await tester.pumpAndSettle();
 
@@ -122,5 +132,54 @@ void main() {
     await tester.pumpAndSettle();
     expect(service.emailCalls, 1);
     expect(service.sentEmail, 'moi@example.com');
+  });
+
+  Future<void> openDetail(WidgetTester tester, _FakeSendEmailService service) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: MediaQuery(
+          data: const MediaQueryData(size: Size(390, 844)),
+          child: MyLockerOrdersPage(service: service),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Tủ gửi'));
+    await tester.pumpAndSettle();
+  }
+
+  testWidgets('đã thanh toán, chưa bỏ hàng: gửi lại thư báo có đơn (không mã)', (tester) async {
+    final service = _FakeSendEmailService(status: 'INITIALIZED');
+    await openDetail(tester, service);
+
+    final action = find.byKey(const ValueKey('send-receiver-email-action'));
+    await tester.ensureVisible(action);
+    expect(find.text('Gửi lại thông tin cho người nhận'), findsOneWidget);
+    await tester.tap(action);
+    await tester.pumpAndSettle();
+    expect(find.textContaining('chưa kèm mã'), findsOneWidget);
+
+    await tester.tap(find.byKey(const ValueKey('receiver-email-submit')));
+    await tester.pumpAndSettle();
+    expect(service.emailCalls, 1);
+    expect(find.text('Đã gửi lại thông tin đơn tới nh***@example.com.'), findsOneWidget);
+  });
+
+  testWidgets('chưa thanh toán: chỉ đổi email, người nhận được báo khi đơn được thanh toán', (tester) async {
+    final service = _FakeSendEmailService(status: 'INITIALIZED', paymentStatus: 'UNPAID');
+    await openDetail(tester, service);
+
+    final action = find.byKey(const ValueKey('send-receiver-email-action'));
+    await tester.ensureVisible(action);
+    expect(find.text('Đổi email người nhận'), findsOneWidget);
+    expect(find.text('Gửi lại thông tin cho người nhận'), findsNothing);
+    await tester.tap(action);
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('receiver-email-submit')));
+    await tester.pumpAndSettle();
+    expect(
+      find.text('Đã lưu email người nhận nh***@example.com. Lock.R báo người nhận khi đơn được thanh toán.'),
+      findsOneWidget,
+    );
   });
 }
