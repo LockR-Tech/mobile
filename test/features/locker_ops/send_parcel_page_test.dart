@@ -239,7 +239,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Email không hợp lệ'), findsOneWidget);
     expect(service.sentReceiverEmail, isNull);
-    expect(find.textContaining('Lock.R gửi email cho người nhận ngay khi bạn tạo đơn'),
+    expect(find.textContaining('Lock.R gửi email cho người nhận ngay khi đơn được thanh toán'),
         findsOneWidget);
   });
 

@@ -1517,7 +1517,9 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
       final masked = res['maskedEmail']?.toString();
       final target = masked == null || masked.isEmpty ? 'người nhận' : masked;
       _snack(
-        res['includesPickupCode'] == true
+        res['sentAt'] == null
+            ? 'Đã lưu email $target — Lock.R gửi thư khi đơn được thanh toán.'
+            : res['includesPickupCode'] == true
             ? 'Đã gửi lại mã mở tủ tới $target.'
             : 'Đã gửi lại thông tin đơn tới $target.',
       );
@@ -4537,11 +4539,14 @@ class _DetailSheet extends StatelessWidget {
           onTap: onResetPin!,
         ),
       // Gửi lại email cho người nhận: chưa bỏ hàng ⇒ thư báo có đơn, đã vào tủ ⇒
-      // thư kèm mã. Đơn đã ủy quyền thì mã thuộc người lấy hộ (server từ chối).
+      // thư kèm mã. Đơn chưa trả tiền chưa báo người nhận (thư đầu đi lúc thanh
+      // toán) ⇒ chưa có gì để gửi lại. Đơn đã ủy quyền thì mã thuộc người lấy hộ.
       if (onResendReceiverEmail != null &&
           type == 'SEND' &&
           text('delegatePhone') == null &&
-          const {'INITIALIZED', 'STORING', 'RETURNED'}.contains(rawStatus))
+          (const {'STORING', 'RETURNED'}.contains(rawStatus) ||
+              (rawStatus == 'INITIALIZED' &&
+                  (paymentStatus == 'PAID' || totalNum <= 0))))
         OpsSheetAction(
           label: 'Gửi lại thông tin cho người nhận',
           icon: LucideIcons.mailCheck,

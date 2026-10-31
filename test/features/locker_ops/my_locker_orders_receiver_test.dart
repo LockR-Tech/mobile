@@ -132,7 +132,28 @@ class _FakeService extends LockerOpsService {
   }) async {
     resendEmailCalls++;
     resentEmail = email;
-    return {'maskedEmail': 'mo***@example.com', 'includesPickupCode': true};
+    return {
+      'maskedEmail': 'mo***@example.com',
+      'includesPickupCode': true,
+      'sentAt': '2026-10-31T21:30:00',
+    };
+  }
+}
+
+/// Đơn gửi vừa tạo, chưa trả tiền: người nhận chưa được báo.
+class _UnpaidSendService extends _FakeService {
+  @override
+  Future<List<Map<String, dynamic>>> myOrders() async {
+    final base = (await super.myOrders()).single;
+    return [
+      {
+        ...base,
+        'status': 'INITIALIZED',
+        'paymentStatus': 'UNPAID',
+        'sendBoxId': 7003,
+        'receiverEmail': 'binh@example.com',
+      },
+    ];
   }
 }
 
@@ -343,6 +364,16 @@ void main() {
     expect(service.resendEmailCalls, 1);
     expect(service.resentEmail, 'moi@example.com');
     expect(find.text('Đã gửi lại mã mở tủ tới mo***@example.com.'), findsOneWidget);
+  });
+
+  testWidgets('đơn gửi chưa thanh toán ⇒ chưa có nút gửi lại cho người nhận', (
+    tester,
+  ) async {
+    await _pump(tester, _UnpaidSendService());
+
+    await tester.tap(find.text('Tủ kiểm thử'));
+    await tester.pumpAndSettle();
+    expect(find.text('Gửi lại thông tin cho người nhận'), findsNothing);
   });
 
   testWidgets('đơn đã ủy quyền lấy hộ ⇒ không có nút gửi lại cho người nhận', (

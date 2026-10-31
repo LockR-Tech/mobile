@@ -894,10 +894,10 @@ class _SendParcelPageState extends State<SendParcelPage>
           const OpsBanner(
             tone: OpsBannerTone.info,
             icon: LucideIcons.mailCheck,
-            text: 'Lock.R gửi email cho người nhận ngay khi bạn tạo đơn (báo có '
-                'hàng sắp tới) và gửi mã lấy hàng khi bạn bỏ hàng vào ô. Gửi lại '
-                'được trong chi tiết đơn; bấm "Chia sẻ mã cho người nhận" để gửi '
-                'thêm qua Zalo/SMS.',
+            text: 'Lock.R gửi email cho người nhận ngay khi đơn được thanh toán '
+                '(báo có hàng sắp tới) và gửi mã lấy hàng khi bạn bỏ hàng vào ô. '
+                'Gửi lại được trong chi tiết đơn; bấm "Chia sẻ mã cho người nhận" '
+                'để gửi thêm qua Zalo/SMS.',
           ),
           const SizedBox(height: 20),
           const OpsSectionLabel(
