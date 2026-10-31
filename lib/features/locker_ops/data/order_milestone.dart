@@ -4,7 +4,14 @@ import 'package:smart_laundry_locker/core/utils/app_date_time.dart';
 /// trong `OrderResponse` (Đơn của tôi) và `timeline` trong chi tiết đơn phía
 /// người nhận. Nhãn tiếng Việt do server dựng, app hiện thẳng.
 class OrderMilestone {
-  const OrderMilestone({required this.label, this.code, this.occurredAt});
+  const OrderMilestone({
+    required this.label,
+    this.code,
+    this.occurredAt,
+    this.latitude,
+    this.longitude,
+    this.locationSource,
+  });
 
   /// CREATED, PAID, DROP_OPENED, PARCEL_DROPPED, STORED, DELEGATED, BLOCKED,
   /// FAILED, EXPIRED, PARCEL_RETURNED, CANCELED, COMPLETED — hoặc chặng drone
@@ -12,6 +19,11 @@ class OrderMilestone {
   final String? code;
   final String label;
   final DateTime? occurredAt;
+
+  /// Kiện ở đâu lúc đạt mốc — chỉ có ở hành trình drone (xem `DroneJourneyStep`).
+  final double? latitude;
+  final double? longitude;
+  final String? locationSource;
 
   static OrderMilestone? tryParse(dynamic raw) {
     if (raw is! Map) return null;

@@ -240,6 +240,9 @@ class DroneDeliveryResponse {
         actorName: _text(map['actorName']),
         note: map['note']?.toString(),
         occurredAt: parseServerDateTime(map['occurredAt']),
+        latitude: _asDouble(map['latitude']),
+        longitude: _asDouble(map['longitude']),
+        locationSource: _text(map['locationSource']),
       );
     }).toList();
     events.sort((a, b) {

@@ -4,6 +4,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'package:smart_laundry_locker/features/drone_delivery/domain/entities/drone_parcel.dart';
+import 'package:smart_laundry_locker/features/drone_delivery/presentation/widgets/drone_coordinates_line.dart';
 import 'package:smart_laundry_locker/features/locker_ops/data/order_milestone.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/ops_widgets.dart';
 
@@ -269,6 +270,7 @@ class OrderTimelineTile extends StatelessWidget {
     required this.isLatest,
     this.subtitle,
     this.note,
+    this.footer,
   });
 
   final String title;
@@ -278,6 +280,9 @@ class OrderTimelineTile extends StatelessWidget {
   final bool isLatest;
   final String? subtitle;
   final String? note;
+
+  /// Dòng phụ dưới cùng (vd toạ độ kiện lúc ghi mốc).
+  final Widget? footer;
 
   @override
   Widget build(BuildContext context) {
@@ -360,6 +365,7 @@ class OrderTimelineTile extends StatelessWidget {
                         ),
                       ),
                     ),
+                  if (footer != null) footer!,
                 ],
               ),
             ),
@@ -396,6 +402,14 @@ class OrderMilestoneTimeline extends StatelessWidget {
             color: colorOf(milestones[i].code),
             isLast: i == milestones.length - 1,
             isLatest: i == milestones.length - 1,
+            footer:
+                milestones[i].latitude != null && milestones[i].longitude != null
+                ? JourneyLocationLine(
+                    latitude: milestones[i].latitude!,
+                    longitude: milestones[i].longitude!,
+                    source: milestones[i].locationSource,
+                  )
+                : null,
           ),
       ],
     );

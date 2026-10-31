@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
+import 'package:smart_laundry_locker/features/drone_delivery/presentation/widgets/drone_coordinates_line.dart';
 import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/ops_widgets.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/order_detail_widgets.dart';
@@ -205,6 +206,19 @@ class _TimelineTile extends StatelessWidget {
           ? 'Từ ${statusLabel(oldStatus)}'
           : null,
       note: event['note']?.toString(),
+      footer: _location(event),
+    );
+  }
+
+  /// Đơn drone: kiện ở đâu lúc ghi mốc (mốc cũ không có toạ độ).
+  static Widget? _location(Map<String, dynamic> event) {
+    final lat = event['latitude'];
+    final lng = event['longitude'];
+    if (lat is! num || lng is! num) return null;
+    return JourneyLocationLine(
+      latitude: lat.toDouble(),
+      longitude: lng.toDouble(),
+      source: event['locationSource']?.toString(),
     );
   }
 }

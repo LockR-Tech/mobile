@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:smart_laundry_locker/core/utils/app_date_time.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/domain/entities/drone_delivery_stage.dart';
+import 'package:smart_laundry_locker/features/drone_delivery/domain/entities/drone_delivery_status.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/domain/entities/drone_labels.dart';
+import 'package:smart_laundry_locker/features/drone_delivery/presentation/widgets/drone_coordinates_line.dart';
 
 /// Một mốc phụ hiện dưới một chặng của timeline (vd "Thanh toán" dưới chặng chờ
 /// tiếp nhận, "Người nhận lấy hàng" dưới chặng hàng vào ô).
@@ -32,6 +34,9 @@ class DroneDeliveryTimeline extends StatelessWidget {
   /// Mốc "bây giờ" để tính đã ở chặng hiện tại bao lâu; null ⇒ `DateTime.now()`.
   final DateTime? now;
 
+  /// Mốc nhật ký LẦN ĐẦU đạt mỗi chặng có toạ độ — hiện "kiện ở đâu" ngay dưới giờ đạt.
+  final Map<DroneDeliveryStage, DroneJourneyEvent> stageLocations;
+
   /// Các chặng hiện trên timeline. Đơn cũ (người gửi tự mang kiện ra tủ) không có hai
   /// chặng lấy hàng tận nhà — xem [DroneDeliveryStage.timelineFor].
   final List<DroneDeliveryStage> steps;
@@ -43,6 +48,7 @@ class DroneDeliveryTimeline extends StatelessWidget {
     this.stepDetails = const {},
     this.now,
     this.steps = DroneDeliveryStage.timeline,
+    this.stageLocations = const {},
   });
 
   int _order(DroneDeliveryStage step) => steps.indexOf(step);
@@ -122,6 +128,7 @@ class DroneDeliveryTimeline extends StatelessWidget {
               ? (now ?? DateTime.now()).difference(reachedAt)
               : null,
           details: stepDetails[step] ?? const [],
+          location: reachedAt == null ? null : stageLocations[step],
           // Màu cảnh báo chỉ áp cho mốc active khi delayed/failed.
           overrideColor:
               (i == active &&
@@ -155,6 +162,7 @@ class _TimelineRow extends StatelessWidget {
   final Duration? sincePrevious;
   final Duration? inStageFor;
   final List<DroneTimelineDetail> details;
+  final DroneJourneyEvent? location;
   final Color? overrideColor;
 
   const _TimelineRow({
@@ -166,6 +174,7 @@ class _TimelineRow extends StatelessWidget {
     this.sincePrevious,
     this.inStageFor,
     this.details = const [],
+    this.location,
     this.overrideColor,
   });
 
@@ -258,6 +267,15 @@ class _TimelineRow extends StatelessWidget {
                           fontWeight: FontWeight.w800,
                           color: _timeBlue,
                         ),
+                      ),
+                    ),
+                  if (location != null && location!.hasLocation)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 2),
+                      child: JourneyLocationLine(
+                        latitude: location!.latitude!,
+                        longitude: location!.longitude!,
+                        source: location!.locationSource,
                       ),
                     ),
                   Text(
