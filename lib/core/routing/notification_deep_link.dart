@@ -124,7 +124,7 @@ String? _customerLocation(
           ).toString();
   }
   if (type == 'OPEN_PROMOTION_TAB') return AppRouter.promotions;
-  // Rút tiền được duyệt/từ chối, admin điều chỉnh ví ⇒ lịch sử giao dịch.
+  // Ví đã gỡ khỏi app; tin cũ về rút tiền / điều chỉnh ví vẫn mở lịch sử giao dịch.
   if (type == 'wallet.updated') return AppRouter.transactions;
   // Admin điều chỉnh điểm ⇒ hồ sơ (mục Điểm thưởng).
   if (type == 'loyalty.points.changed') return AppRouter.profile;

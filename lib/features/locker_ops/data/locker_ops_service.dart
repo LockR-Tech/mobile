@@ -272,13 +272,6 @@ class LockerOpsService {
   Future<List<Map<String, dynamic>>> refundsByOrder(int orderId) =>
       _list('/api/payments/order/$orderId/refunds');
 
-  /// Số dư ví hiện tại của khách (VND).
-  Future<num> walletBalance() async {
-    final data = await _map('GET', '/api/wallet');
-    final raw = data['balance'];
-    return raw is num ? raw : num.tryParse('$raw') ?? 0;
-  }
-
   /// Tạo giao dịch thanh toán đơn. App khách chỉ gửi `SEPAY` (xem
   /// `SepayPaymentController`); VNPAY/MOMO bị backend trả 400
   /// `PAYMENT_METHOD_UNSUPPORTED`. SEPAY trả `qrCodeUrl` VietQR và
@@ -308,18 +301,15 @@ class LockerOpsService {
   );
 
   /// Giả lập đã nhận chuyển khoản (chỉ khi admin bật giả lập thanh toán):
-  /// [paymentId] của giao dịch đơn hoặc [referenceId] mã nạp ví; [amount] bỏ
-  /// trống = đủ số tiền.
+  /// [paymentId] của giao dịch đơn; [amount] bỏ trống = đủ số tiền.
   Future<Map<String, dynamic>> simulatePayment({
     int? paymentId,
-    String? referenceId,
     num? amount,
   }) => _map(
     'POST',
     '/api/payments/simulate',
     body: {
       if (paymentId != null) 'paymentId': paymentId,
-      if (referenceId != null) 'referenceId': referenceId,
       if (amount != null) 'amount': amount,
     },
   );

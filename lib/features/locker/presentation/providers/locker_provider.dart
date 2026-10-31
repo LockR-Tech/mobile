@@ -12,8 +12,6 @@ import 'package:smart_laundry_locker/features/locker/application/use_cases/rent_
 import 'package:smart_laundry_locker/features/locker/application/use_cases/get_rented_locker_detail_use_case.dart';
 import 'package:smart_laundry_locker/features/locker/application/use_cases/open_locker_temporarily_use_case.dart';
 import 'package:smart_laundry_locker/features/locker/application/use_cases/finish_rental_use_case.dart';
-import 'package:smart_laundry_locker/features/subscription/application/use_cases/get_pricings_use_case.dart';
-import 'package:smart_laundry_locker/features/subscription/domain/entities/plan_entity.dart';
 import 'package:smart_laundry_locker/features/locker/domain/entities/cabinet.dart';
 import 'package:smart_laundry_locker/features/locker/domain/entities/locker.dart';
 import 'package:smart_laundry_locker/features/locker/domain/entities/locker_location.dart';
@@ -39,7 +37,6 @@ class LockerState {
   final List<Locker> availableLockers;
   final List<Locker> leastUsedLockers;
   final Map<String, int> lockerCounts;
-  final List<PricingEntity> pricings;
   final List<LockerSizeCount> lockerSizeItems;
   final Pagination? locationsPagination;
   final Pagination? cabinetsPagination;
@@ -57,7 +54,6 @@ class LockerState {
     this.availableLockers = const [],
     this.leastUsedLockers = const [],
     this.lockerCounts = const {},
-    this.pricings = const [],
     this.lockerSizeItems = const [],
     this.locationsPagination,
     this.cabinetsPagination,
@@ -76,7 +72,6 @@ class LockerState {
     List<Locker>? availableLockers,
     List<Locker>? leastUsedLockers,
     Map<String, int>? lockerCounts,
-    List<PricingEntity>? pricings,
     List<LockerSizeCount>? lockerSizeItems,
     Pagination? locationsPagination,
     Pagination? cabinetsPagination,
@@ -94,7 +89,6 @@ class LockerState {
       availableLockers: availableLockers ?? this.availableLockers,
       leastUsedLockers: leastUsedLockers ?? this.leastUsedLockers,
       lockerCounts: lockerCounts ?? this.lockerCounts,
-      pricings: pricings ?? this.pricings,
       lockerSizeItems: lockerSizeItems ?? this.lockerSizeItems,
       locationsPagination: locationsPagination ?? this.locationsPagination,
       cabinetsPagination: cabinetsPagination ?? this.cabinetsPagination,
@@ -126,7 +120,6 @@ class LockerProvider extends ChangeNotifier {
   final FinishRentalUseCase _finishRentalUseCase;
   final GetCabinetByIdUseCase _getCabinetByIdUseCase;
   final GetLockerByIdUseCase _getLockerByIdUseCase;
-  final GetPricingsUseCase _getPricingsUseCase;
 
   LockerState _state = const LockerState();
   LockerState get state => _state;
@@ -150,7 +143,6 @@ class LockerProvider extends ChangeNotifier {
     required FinishRentalUseCase finishRentalUseCase,
     required GetCabinetByIdUseCase getCabinetByIdUseCase,
     required GetLockerByIdUseCase getLockerByIdUseCase,
-    required GetPricingsUseCase getPricingsUseCase,
   }) : _getLocationsUseCase = getLocationsUseCase,
        _getLocationDetailUseCase = getLocationDetailUseCase,
        _getLocationCabinetsUseCase = getLocationCabinetsUseCase,
@@ -164,8 +156,7 @@ class LockerProvider extends ChangeNotifier {
        _openLockerTemporarilyUseCase = openLockerTemporarilyUseCase,
        _finishRentalUseCase = finishRentalUseCase,
        _getCabinetByIdUseCase = getCabinetByIdUseCase,
-       _getLockerByIdUseCase = getLockerByIdUseCase,
-       _getPricingsUseCase = getPricingsUseCase {
+       _getLockerByIdUseCase = getLockerByIdUseCase {
     // Admin thêm/sửa/tắt tủ hoặc sửa cửa hàng ⇒ danh sách tủ (trang chủ, Tủ,
     // bản đồ) tải lại ngầm, không cần kéo làm mới.
     _eventSub = AppEventBus.instance.events.listen((event) {
@@ -522,25 +513,6 @@ class LockerProvider extends ChangeNotifier {
     }, (_) {});
     notifyListeners();
     return result;
-  }
-
-  // ==================== PRICINGS ====================
-
-  Future<void> getPricings({String? orderType}) async {
-    _state = _state.copyWith(isLoading: true, error: null);
-    notifyListeners();
-
-    final result = await _getPricingsUseCase(orderType: orderType);
-
-    result.fold(
-      (failure) {
-        _state = _state.copyWith(isLoading: false, error: failure.message);
-      },
-      (pricings) {
-        _state = _state.copyWith(isLoading: false, pricings: pricings);
-      },
-    );
-    notifyListeners();
   }
 
   // ==================== SELECTION ====================

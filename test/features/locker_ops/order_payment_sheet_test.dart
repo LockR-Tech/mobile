@@ -16,8 +16,6 @@ class _FakePayService extends LockerOpsService {
   String? lastMethod;
   bool paid = false;
 
-  @override
-  Future<num> walletBalance() async => 999999;
 
   @override
   Future<Map<String, dynamic>> checkout(

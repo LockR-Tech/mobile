@@ -9,24 +9,15 @@
 class FeatureFlags {
   const FeatureFlags._();
 
-  /// Ví / số dư người dùng.
-  /// Backend đã có wallet service (`GET /api/wallet`, cộng tiền sau nạp SePay).
-  static const bool walletEnabled = true;
-
   /// Nút "Facebook" ở màn đăng nhập/đăng ký.
   /// Chủ sản phẩm không dùng đăng nhập Facebook ⇒ ẩn. Code (`loginWithFacebook`,
   /// `FirebaseAuthService.signInWithFacebook`, cấu hình native) vẫn giữ — đổi cờ
   /// về `true` để bật lại.
   static const bool facebookLoginEnabled = false;
 
-  /// Nạp tiền + lịch sử giao dịch (phụ thuộc ví).
-  /// Backend: nạp qua `POST /api/payments/topup/create` → cộng ví; lịch sử ví
-  /// qua `GET /api/wallet/transactions`.
+  /// Lịch sử giao dịch (mục "Giao dịch" ở Hồ sơ): `GET /api/wallet/transactions`
+  /// trả các khoản thanh toán SePay của đơn (và giao dịch ví cũ, ví đã gỡ khỏi app).
   static const bool transactionsEnabled = true;
-
-  /// Gói dịch vụ / subscription.
-  /// Backend chưa có → `/plans/customer`, `/pricings`, `/subscriptions/*` 404.
-  static const bool subscriptionEnabled = false;
 
   /// Kho voucher cá nhân ("Ưu đãi của tôi").
   /// Backend: `GET /api/promotions/vouchers/my` (mã đã lưu), lưu mã qua

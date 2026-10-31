@@ -4,7 +4,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:smart_laundry_locker/core/theme/shadcn_theme.dart';
 import 'package:smart_laundry_locker/features/payment/data/payment_service.dart';
 import 'package:smart_laundry_locker/features/payment/data/user_bank_account.dart';
-import 'package:smart_laundry_locker/features/wallet/data/vietnamese_banks.dart';
+import 'package:smart_laundry_locker/features/payment/data/vietnamese_banks.dart';
 
 class RefundBankAccountPage extends StatefulWidget {
   const RefundBankAccountPage({super.key});

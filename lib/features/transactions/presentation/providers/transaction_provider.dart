@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:smart_laundry_locker/features/transactions/application/use_cases/initiate_top_up_use_case.dart';
 import 'package:smart_laundry_locker/features/transactions/application/use_cases/get_transactions_use_case.dart';
 import 'package:smart_laundry_locker/features/transactions/application/use_cases/get_spending_stats_use_case.dart';
 import 'package:smart_laundry_locker/features/transactions/application/use_cases/get_total_by_method_use_case.dart';
 import 'package:smart_laundry_locker/features/transactions/domain/entities/transaction.dart';
-import 'package:smart_laundry_locker/features/transactions/domain/entities/top_up_result.dart';
 import 'package:smart_laundry_locker/features/transactions/domain/entities/spending_stats.dart';
 import 'package:smart_laundry_locker/features/transactions/domain/entities/transaction_method_total.dart';
 import 'package:smart_laundry_locker/features/transactions/domain/entities/transaction_extensions.dart';
@@ -12,13 +10,11 @@ import 'package:flutter/foundation.dart';
 
 class TransactionProvider extends ChangeNotifier {
   final GetTransactionsUseCase getTransactionsUseCase;
-  final InitiateTopUpUseCase initiateTopUpUseCase;
   final GetSpendingStatsUseCase getSpendingStatsUseCase;
   final GetTotalByMethodUseCase getTotalByMethodUseCase;
 
   TransactionProvider({
     required this.getTransactionsUseCase,
-    required this.initiateTopUpUseCase,
     required this.getSpendingStatsUseCase,
     required this.getTotalByMethodUseCase,
   });
@@ -31,12 +27,6 @@ class TransactionProvider extends ChangeNotifier {
 
   String? _error;
   String? get error => _error;
-
-  bool _isCreatingTopUpUrl = false;
-  bool get isCreatingTopUpUrl => _isCreatingTopUpUrl;
-
-  String? _topUpError;
-  String? get topUpError => _topUpError;
 
   List<Transaction> _transactions = [];
   List<Transaction> get transactions => _transactions;
@@ -259,48 +249,5 @@ class TransactionProvider extends ChangeNotifier {
     fetchSpendingStats(period: _selectedPeriod);
     fetchTotalByMethod(period: _selectedPeriod);
     notifyListeners();
-  }
-
-  /// Lịch sử ví mới nhất; ném lỗi khi tải thất bại (để vòng xác nhận nạp ví
-  /// thử lại thay vì coi như "chưa có giao dịch").
-  Future<List<Transaction>> fetchWalletTransactionsOnce() async {
-    final result = await getTransactionsUseCase(page: 1, limit: 50);
-    return result.fold(
-      (failure) => throw Exception(failure.message),
-      (data) => data.transactions,
-    );
-  }
-
-  Future<TopUpResult?> initiateTopUp(int amount, {String method = 'SEPAY'}) async {
-    if (_isCreatingTopUpUrl) return null;
-    debugPrint('[TOPUP][provider] initiateTopUp(amount=$amount, method=$method)');
-    if (amount <= 0) {
-      _topUpError = 'Số tiền không hợp lệ.';
-      notifyListeners();
-      return null;
-    }
-    _isCreatingTopUpUrl = true;
-    _topUpError = null;
-    notifyListeners();
-
-    final result = await initiateTopUpUseCase(amount: amount, method: method);
-
-    TopUpResult? entity;
-    result.fold(
-      (failure) {
-        debugPrint('[TOPUP][provider] failure=${failure.message}');
-        _topUpError = failure.message;
-      },
-      (data) {
-        debugPrint(
-          '[TOPUP][provider] success url="${data.paymentUrl}" ref="${data.txnRef}"',
-        );
-        entity = data;
-      },
-    );
-
-    _isCreatingTopUpUrl = false;
-    notifyListeners();
-    return entity;
   }
 }

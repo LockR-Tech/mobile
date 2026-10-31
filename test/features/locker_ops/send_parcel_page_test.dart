@@ -86,8 +86,6 @@ class _FakeSendLockerOpsService extends LockerOpsService {
     return Map.of(_order);
   }
 
-  @override
-  Future<num> walletBalance() async => 50000;
 
   @override
   Future<Map<String, dynamic>> checkout(

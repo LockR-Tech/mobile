@@ -53,11 +53,6 @@ class BusinessConfig {
     this.droneUnpaidCancelMinutes = 30,
     this.droneDispatchTimeoutMinutes = 120,
     this.droneSurchargeTimeoutMinutes = 60,
-    required this.topupMinAmount,
-    required this.topupMaxAmount,
-    required this.topupDefaultAmount,
-    required this.topupPresets,
-    this.withdrawMinAmount = 10000,
     required this.enabledPaymentMethods,
     this.paymentSimulationEnabled = false,
     required this.reportPhotosPerRequestReporter,
@@ -189,14 +184,6 @@ class BusinessConfig {
   ];
 
   // ---- Scope `payment` ----
-  final int topupMinAmount;
-  final int topupMaxAmount;
-  final int topupDefaultAmount;
-  final List<int> topupPresets;
-
-  /// Số tiền rút ví về ngân hàng tối thiểu (`app.payment.withdraw-min-amount`).
-  final int withdrawMinAmount;
-
   /// Mã phương thức thanh toán đang bật, viết hoa (`CASH`, `WALLET`, …).
   final List<String> enabledPaymentMethods;
 
@@ -279,12 +266,8 @@ class BusinessConfig {
     overtimeGracePeriodMinutes: 15,
     rentalAutoReleaseEnabled: false,
     droneDefaultParcelWeightGrams: 1200,
-    topupMinAmount: 10000,
-    topupMaxAmount: 50000000,
-    topupDefaultAmount: 100000,
-    topupPresets: [20000, 50000, 100000, 200000, 500000, 1000000],
     // MoMo/VNPay đã bỏ (app không hiện dù admin còn bật — PaymentMethods).
-    enabledPaymentMethods: ['CASH', 'WALLET', 'SEPAY'],
+    enabledPaymentMethods: ['CASH', 'SEPAY'],
     reportPhotosPerRequestReporter: 5,
     reportPhotosPerRequestStaff: 10,
     cellDimensionsStandard: '45 × 30 × 50 cm',
@@ -343,23 +326,6 @@ class BusinessConfig {
       d.extendDefaultHours,
       min: 1,
     ).clamp(1, extendMax);
-
-    // Nạp ví: min ≤ mặc định ≤ max, mốc nạp nhanh nằm trong [min, max].
-    var topupMin = _int(p['app.payment.topup-min-amount'], d.topupMinAmount, min: 1);
-    var topupMax = _int(p['app.payment.topup-max-amount'], d.topupMaxAmount, min: 1);
-    if (topupMin > topupMax) {
-      topupMin = d.topupMinAmount;
-      topupMax = d.topupMaxAmount;
-    }
-    final topupDefault = _int(
-      p['app.payment.topup-default-amount'],
-      d.topupDefaultAmount,
-      min: 1,
-    ).clamp(topupMin, topupMax);
-    var presets = _intList(p['app.payment.topup-presets'], d.topupPresets)
-        .where((a) => a >= topupMin && a <= topupMax)
-        .toList(growable: false);
-    if (presets.isEmpty) presets = [topupDefault];
 
     return BusinessConfig(
       sendBaseFee: _int(o['app.order.send-base-fee'], d.sendBaseFee),
@@ -504,15 +470,6 @@ class BusinessConfig {
         o['app.order.drone-surcharge-timeout-minutes'],
         d.droneSurchargeTimeoutMinutes,
       ),
-      topupMinAmount: topupMin,
-      topupMaxAmount: topupMax,
-      topupDefaultAmount: topupDefault,
-      topupPresets: List.unmodifiable(presets),
-      withdrawMinAmount: _int(
-        p['app.payment.withdraw-min-amount'],
-        d.withdrawMinAmount,
-        min: 1,
-      ),
       enabledPaymentMethods: List.unmodifiable(
         _methods(p['app.payment.enabled-methods'], d.enabledPaymentMethods),
       ),
@@ -629,15 +586,6 @@ class BusinessConfig {
   String get overdueReleaseHoursLabel =>
       overdueReleaseHours > 0 ? '(>${overdueReleaseHours}h)' : '';
 
-  /// Kiểm tra số tiền nạp. Trả `null` nếu hợp lệ, ngược lại là thông báo lỗi.
-  String? validateTopupAmount(int amount, String Function(int) formatMoney) {
-    if (amount < topupMinAmount || amount > topupMaxAmount) {
-      return 'Số tiền nạp phải từ ${formatMoney(topupMinAmount)} '
-          'đến ${formatMoney(topupMaxAmount)}';
-    }
-    return null;
-  }
-
   /// Dữ liệu dạng `/public` của từng scope — dùng để lưu last-known value.
   Map<String, Map<String, dynamic>> toPublicMaps() => {
     'order': {
@@ -683,11 +631,6 @@ class BusinessConfig {
       'app.order.max-vouchers-per-order': maxVouchersPerOrder,
     },
     'payment': {
-      'app.payment.topup-min-amount': topupMinAmount,
-      'app.payment.topup-max-amount': topupMaxAmount,
-      'app.payment.topup-default-amount': topupDefaultAmount,
-      'app.payment.topup-presets': topupPresets,
-      'app.payment.withdraw-min-amount': withdrawMinAmount,
       'app.payment.enabled-methods': enabledPaymentMethods.join(','),
       'app.payment.simulation-enabled': paymentSimulationEnabled,
     },

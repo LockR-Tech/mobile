@@ -14,7 +14,7 @@ Future<List<AppEvent>> _eventsOf(void Function() emit) async {
 }
 
 void main() {
-  test('hoàn tiền gắn đơn (REFUND_COMPLETED, ORDER) làm mới đơn, hoàn tiền và ví', () async {
+  test('hoàn tiền gắn đơn (REFUND_COMPLETED, ORDER) làm mới đơn và hoàn tiền', () async {
     final events = await _eventsOf(
       () => NotificationProvider.emitDomainEvent(
         'REFUND_COMPLETED',
@@ -26,7 +26,6 @@ void main() {
     final order = events.whereType<OrderChangedEvent>().single;
     expect(order.orderId, '42');
     expect(events.whereType<RefundUpdatedEvent>().single.orderId, '42');
-    expect(events.whereType<WalletUpdatedEvent>(), isNotEmpty);
   });
 
   test('trả lời phản hồi chỉ có referenceType ORDER vẫn làm mới đơn', () async {
@@ -41,7 +40,7 @@ void main() {
     expect(events.whereType<OrderChangedEvent>().single.orderId, '7');
   });
 
-  test('wallet.updated (rút tiền được duyệt, admin điều chỉnh) làm mới ví', () async {
+  test('wallet.updated (ví đã gỡ khỏi app) không làm mới đơn', () async {
     final events = await _eventsOf(
       () => NotificationProvider.emitDomainEvent(
         'wallet.updated',
@@ -50,7 +49,6 @@ void main() {
       ),
     );
 
-    expect(events.whereType<WalletUpdatedEvent>(), isNotEmpty);
     expect(events.whereType<OrderChangedEvent>(), isEmpty);
   });
 

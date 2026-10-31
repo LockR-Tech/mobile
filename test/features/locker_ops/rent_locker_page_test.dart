@@ -48,8 +48,6 @@ class _FakeRentLockerOpsService extends LockerOpsService {
   @override
   Future<bool> orderStatus(int orderId) async => paid;
 
-  @override
-  Future<num> walletBalance() async => 50000;
 
   @override
   Future<bool> awaitOrderPaid(

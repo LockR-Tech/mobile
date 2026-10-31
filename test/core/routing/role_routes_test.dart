@@ -77,7 +77,7 @@ void main() {
 
     test('giữ các màn cần đăng nhập sẵn có', () {
       expect(requiresSignIn('/transactions'), isTrue);
-      expect(requiresSignIn('/top-up'), isTrue);
+      expect(requiresSignIn('/profile/refund-requests'), isTrue);
     });
 
     test('thử mở ô qua Bluetooth cần đăng nhập (mã mở ô gắn với tài khoản)', () {

@@ -17,7 +17,7 @@ import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/ops_widgets.dart';
 import 'package:smart_laundry_locker/features/payment/data/payment_service.dart';
 import 'package:smart_laundry_locker/features/payment/data/user_bank_account.dart';
-import 'package:smart_laundry_locker/features/wallet/data/vietnamese_banks.dart';
+import 'package:smart_laundry_locker/features/payment/data/vietnamese_banks.dart';
 import 'package:smart_laundry_locker/shared/widgets/app_cached_image.dart';
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
 
