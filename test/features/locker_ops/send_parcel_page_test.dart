@@ -208,14 +208,16 @@ void main() {
     await tester.tap(find.text('Tạo đơn & lấy PIN bỏ hàng'));
     await tester.pumpAndSettle();
     expect(find.text('Số điện thoại gồm 10 số, bắt đầu bằng 0'), findsOneWidget);
+    // Email người nhận bắt buộc.
+    expect(find.text('Nhập email người nhận để Lock.R gửi mã mở tủ'), findsOneWidget);
 
-    expect(find.textContaining('Lock.R gửi mã lấy hàng'), findsNothing);
+    expect(find.textContaining('Ngay khi bạn bỏ hàng vào ô'), findsNothing);
     await tester.enterText(
-      find.widgetWithText(TextFormField, 'Email người nhận (tùy chọn)'),
+      find.byKey(const ValueKey('send-receiver-email')),
       'nhan@example.com',
     );
     await tester.pumpAndSettle();
-    expect(find.textContaining('Lock.R gửi mã lấy hàng'), findsOneWidget);
+    expect(find.textContaining('Ngay khi bạn bỏ hàng vào ô'), findsOneWidget);
   });
 
   testWidgets('thanh toán thật rồi mới mở ô và xác nhận bỏ hàng', (tester) async {
@@ -236,6 +238,7 @@ void main() {
     await tester.pumpAndSettle();
 
     await tester.enterText(find.byType(TextFormField).first, '0909000000');
+    await tester.enterText(find.byKey(const ValueKey('send-receiver-email')), 'nhan@example.com');
     await tester.tap(find.text('Tạo đơn & lấy PIN bỏ hàng'));
     // Mã VietQR có vòng chờ chạy liên tục ⇒ chỉ pump theo khung.
     await tester.pump();
@@ -342,6 +345,7 @@ void main() {
       expect(find.text('7.500đ'), findsOneWidget);
 
       await tester.enterText(find.byType(TextFormField).first, '0909000000');
+      await tester.enterText(find.byKey(const ValueKey('send-receiver-email')), 'nhan@example.com');
       await tester.tap(find.text('Tạo đơn & lấy PIN bỏ hàng'));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 600));
@@ -386,6 +390,7 @@ void main() {
     );
 
     await tester.enterText(find.byType(TextFormField).first, '0909000000');
+    await tester.enterText(find.byKey(const ValueKey('send-receiver-email')), 'nhan@example.com');
     await tester.tap(find.text('Tạo đơn & lấy PIN bỏ hàng'));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 600));

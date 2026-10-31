@@ -120,6 +120,60 @@ class _ReceiverOrderDetailPageState extends State<ReceiverOrderDetailPage> {
     if (opened && mounted) await _load();
   }
 
+  bool _sendingEmail = false;
+
+  /// "Gửi lại qua email": thông tin đơn (và mã mở tủ khi hàng đã vào tủ) tới email tài khoản của mình.
+  Future<void> _resendEmail() async {
+    if (_sendingEmail) return;
+    setState(() => _sendingEmail = true);
+    final messenger = ScaffoldMessenger.maybeOf(context);
+    try {
+      final result = await _service.resendReceiverEmail(
+        _detail.order.id,
+        delegated: _detail.loaded ? _detail.isDelegateView : widget.delegatedView,
+      );
+      final masked = result['maskedEmail']?.toString();
+      final withCode = result['includesPickupCode'] == true;
+      messenger
+        ?..hideCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(
+            content: Text(
+              'Đã gửi thông tin đơn${withCode ? ' kèm mã mở tủ' : ''} tới ${masked ?? 'email của bạn'}.',
+            ),
+          ),
+        );
+    } catch (e) {
+      if (!mounted) return;
+      if (LockerOpsService.errorCode(e) == 'RECEIVER_EMAIL_MISSING') {
+        await _askAddEmail();
+      } else {
+        messenger
+          ?..hideCurrentSnackBar()
+          ..showSnackBar(SnackBar(content: Text(LockerOpsService.errorMessage(e))));
+      }
+    } finally {
+      if (mounted) setState(() => _sendingEmail = false);
+    }
+  }
+
+  Future<void> _askAddEmail() async {
+    final add = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Chưa có email'),
+        content: const Text(
+          'Tài khoản của bạn chưa có email để nhận thông tin đơn. Bổ sung email trong Hồ sơ rồi gửi lại.',
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: const Text('Để sau')),
+          FilledButton(onPressed: () => Navigator.of(ctx).pop(true), child: const Text('Bổ sung email')),
+        ],
+      ),
+    );
+    if (add == true && mounted) await context.push(AppRouter.editProfile);
+  }
+
   void _trackDrone() {
     final router = GoRouter.maybeOf(context);
     if (router == null) return;
@@ -214,6 +268,13 @@ class _ReceiverOrderDetailPageState extends State<ReceiverOrderDetailPage> {
                 label: finished ? 'Xem lại hành trình drone' : 'Theo dõi drone',
                 icon: LucideIcons.navigation,
                 onTap: _trackDrone,
+              ),
+            if (!finished)
+              OpsSheetAction(
+                key: const ValueKey('receiver-resend-email'),
+                label: _sendingEmail ? 'Đang gửi email…' : 'Gửi lại thông tin qua email',
+                icon: LucideIcons.mail,
+                onTap: _resendEmail,
               ),
           ],
         ),
