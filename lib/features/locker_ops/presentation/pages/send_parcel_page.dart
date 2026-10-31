@@ -16,6 +16,8 @@ import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/op
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/order_extras.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/pickup_code_share_actions.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/sepay_payment.dart';
+import 'package:smart_laundry_locker/features/locker/domain/utils/locker_layout_helper.dart';
+import 'package:smart_laundry_locker/features/notifications/infrastructure/services/realtime_notification_service.dart';
 import 'package:smart_laundry_locker/shared/shared.dart';
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
 import 'package:smart_laundry_locker/core/services/app_event_bus.dart';
@@ -101,6 +103,14 @@ class _SendParcelPageState extends State<SendParcelPage>
   String? _lockerAddress;
   bool _lockerInfoRequested = false;
   StreamSubscription<AppEvent>? _eventSub;
+  StreamSubscription<int>? _availabilitySub;
+
+  /// Số ô thường còn trống theo cỡ (`SMALL`/`MEDIUM`/`LARGE`) của tủ đang chọn —
+  /// giống "Còn N ô trống" ở Thuê tủ. `null` khi chưa tải được sơ đồ.
+  Map<String, int>? _availableBySize;
+
+  /// Ô khách chọn trên sơ đồ vừa bị người khác đặt mất.
+  bool _selectedBoxTaken = false;
 
   /// Phí sau mã giảm giá — số tiền dùng để hỏi được dùng bao nhiêu điểm.
   int get _feeAfterVoucher => (_fee - _discount).clamp(0, _fee);
@@ -120,9 +130,15 @@ class _SendParcelPageState extends State<SendParcelPage>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    if (_sizes.contains(widget.initialBoxSize)) _size = widget.initialBoxSize!;
-    // Banner kênh nhận mã đổi theo việc có nhập email hay không.
-    _emailCtrl.addListener(_onEmailChanged);
+    final presetSize = _normalizeSize(widget.initialBoxSize);
+    if (presetSize != null) _size = presetSize;
+    // Người khác đặt/trả ô, KTV khoá/mở ô ⇒ số ô trống đổi. Chỉ cập nhật khi chưa tạo đơn.
+    _availabilitySub = RealtimeNotificationService.instance.lockerAvailability
+        .listen((lockerId) {
+      if (mounted && _order == null && lockerId == _lockerId) {
+        _loadLayout(lockerId);
+      }
+    });
     if (widget.initialLockerId != null) {
       // Đến từ lưới ô — tủ đã xác định, bỏ qua gọi API load danh sách tủ.
       _lockerId = widget.initialLockerId;
@@ -131,6 +147,7 @@ class _SendParcelPageState extends State<SendParcelPage>
       if (_lockerName == null || _lockerName!.trim().isEmpty) {
         _loadLockerName(widget.initialLockerId!);
       }
+      _loadLayout(_lockerId!);
     } else {
       _loadLockers();
       // Admin sửa/tắt tủ khi khách đang chọn ⇒ cập nhật danh sách tủ (chưa tạo
@@ -232,11 +249,11 @@ class _SendParcelPageState extends State<SendParcelPage>
   @override
   void dispose() {
     _eventSub?.cancel();
+    _availabilitySub?.cancel();
     _disposePayment();
     WidgetsBinding.instance.removeObserver(this);
     _phoneCtrl.dispose();
     _nameCtrl.dispose();
-    _emailCtrl.removeListener(_onEmailChanged);
     _emailCtrl.dispose();
     _noteCtrl.dispose();
     super.dispose();
@@ -320,12 +337,63 @@ class _SendParcelPageState extends State<SendParcelPage>
         }
         _loadingLockers = false;
       });
+      if (_lockerId != null) _loadLayout(_lockerId!);
     } catch (e) {
       if (!mounted) return;
       setState(() => _loadingLockers = false);
       _snack(LockerOpsService.errorMessage(e));
     }
   }
+
+  static String? _normalizeSize(Object? raw) =>
+      switch ('${raw ?? ''}'.trim().toUpperCase()) {
+        'SMALL' || 'S' => 'SMALL',
+        'MEDIUM' || 'M' => 'MEDIUM',
+        'LARGE' || 'L' => 'LARGE',
+        _ => null,
+      };
+
+  /// Đếm ô thường còn trống theo cỡ. Gửi hàng chỉ dùng ô thường (server chọn ô
+  /// `STANDARD`) nên bỏ ô vali XL và ô drone.
+  Future<void> _loadLayout(int id) async {
+    try {
+      final res = await _service.layout(id);
+      if (!mounted || id != _lockerId) return;
+      final cells = res['cells'];
+      if (cells is! List) return;
+      final counts = {for (final s in _sizes) s: 0};
+      var boxTaken = widget.initialBoxId != null;
+      for (final raw in cells.whereType<Map>()) {
+        final cell = Map<String, dynamic>.from(raw);
+        final available =
+            cell['status'] == 'AVAILABLE' && cell['active'] != false;
+        if ((cell['id'] as num?)?.toInt() == widget.initialBoxId &&
+            available) {
+          boxTaken = false;
+        }
+        if (!available || LockerLayoutHelper.cellType(cell) != 'STANDARD') {
+          continue;
+        }
+        final size = _normalizeSize(cell['size']);
+        if (size != null) counts[size] = counts[size]! + 1;
+      }
+      setState(() {
+        _availableBySize = counts;
+        _selectedBoxTaken = boxTaken;
+        // Cỡ đang chọn đã hết ⇒ tự chuyển sang cỡ còn ô (như Thuê tủ).
+        if (widget.initialBoxId == null && counts[_size] == 0) {
+          _size = _sizes.firstWhere((s) => counts[s]! > 0, orElse: () => _size);
+        }
+      });
+    } catch (_) {
+      // Không tải được sơ đồ thì không hiện số ô trống; server vẫn kiểm khi tạo đơn.
+    }
+  }
+
+  /// Hết ô để tạo đơn: ô đã chọn bị đặt mất, hoặc cỡ đang chọn không còn ô.
+  bool get _noCellAvailable => widget.initialBoxId != null
+      ? _selectedBoxTaken
+      : _availableBySize?[_size] == 0;
 
   Future<void> _create() async {
     if (!(_formKey.currentState?.validate() ?? false) || _lockerId == null) {
@@ -431,11 +499,12 @@ class _SendParcelPageState extends State<SendParcelPage>
   static bool _looksLikeEmail(String value) =>
       RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(value);
 
-  bool _hasValidEmail = false;
-
-  void _onEmailChanged() {
-    final valid = _looksLikeEmail(_emailCtrl.text.trim());
-    if (valid != _hasValidEmail) setState(() => _hasValidEmail = valid);
+  /// Bắt buộc (server trả `RECEIVER_EMAIL_REQUIRED` nếu thiếu): Lock.R báo người
+  /// nhận qua email lúc tạo đơn và gửi mã lấy hàng khi bỏ hàng vào ô.
+  static String? _validateReceiverEmail(String? value) {
+    final email = value?.trim() ?? '';
+    if (email.isEmpty) return 'Nhập email người nhận';
+    return _looksLikeEmail(email) ? null : 'Email không hợp lệ';
   }
 
   /// Số di động Việt Nam 10 số bắt đầu bằng 0 — SMS và tra tài khoản người
@@ -453,6 +522,13 @@ class _SendParcelPageState extends State<SendParcelPage>
         'SMALL' => 'Nhỏ',
         'LARGE' => 'Lớn',
         _ => 'Vừa',
+      };
+
+  /// `Ô vừa (M)` — cùng cách gọi với sơ đồ tủ và bảng chọn ô.
+  String _sizeTitle(String size) => switch (size) {
+        'SMALL' => 'Ô nhỏ (S)',
+        'LARGE' => 'Ô lớn (L)',
+        _ => 'Ô vừa (M)',
       };
 
   Future<void> _handleBack() async {
@@ -588,51 +664,13 @@ class _SendParcelPageState extends State<SendParcelPage>
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            if (_discount > 0)
-              _adjustmentLine(
-                icon: LucideIcons.badgePercent,
-                label: 'Mã giảm giá',
-                value: '-${fmtPrice(_discount)}',
-              ),
-            if (_pointsDiscount > 0)
-              _adjustmentLine(
-                icon: LucideIcons.sparkles,
-                label: 'Điểm thưởng',
-                value: loyaltyPointsDiscountText(_pointsToUse, _pointsDiscount),
-              ),
-            Row(
-              children: [
-                const Icon(LucideIcons.receiptText, size: 16, color: opsMutedText),
-                const SizedBox(width: 6),
-                const Text('Phí gửi', style: TextStyle(color: opsMutedText)),
-                const Spacer(),
-                if (_netFee != _fee) ...[
-                  Text(
-                    fmtPrice(_fee),
-                    style: const TextStyle(
-                      fontSize: 13,
-                      color: opsMutedText,
-                      decoration: TextDecoration.lineThrough,
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                ],
-                Text(
-                  fmtPrice(_netFee),
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w800,
-                    fontSize: 16,
-                    color: opsDark,
-                  ),
-                ),
-              ],
-            ),
+            _priceCard(),
             const SizedBox(height: 16),
             OpsPrimaryButton(
               label: 'Tạo đơn & lấy PIN bỏ hàng',
               icon: LucideIcons.arrowRight,
               loading: _loading,
-              onPressed: _create,
+              onPressed: _noCellAvailable ? null : _create,
             ),
           ],
         ),
@@ -657,31 +695,105 @@ class _SendParcelPageState extends State<SendParcelPage>
     return null;
   }
 
+  /// Hoá đơn tạm — cùng kiểu thẻ "Tạm tính" của Thuê tủ.
+  Widget _priceCard() {
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [opsDark, AISLShadcnTheme.navySecondary],
+        ),
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              const Icon(LucideIcons.wallet, color: Colors.white70, size: 22),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Tạm tính',
+                      style: TextStyle(color: Colors.white70, fontSize: 12),
+                    ),
+                    Text(
+                      widget.initialBoxId != null &&
+                              _normalizeSize(widget.initialBoxSize) == null
+                          ? typeLabel('SEND')
+                          : '${typeLabel('SEND')} · ${_sizeTitle(_size)}',
+                      style: const TextStyle(color: Colors.white, fontSize: 12),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  if (_netFee != _fee)
+                    Text(
+                      fmtPrice(_fee),
+                      style: const TextStyle(
+                        color: Colors.white60,
+                        fontSize: 13,
+                        decoration: TextDecoration.lineThrough,
+                      ),
+                    ),
+                  Text(
+                    fmtPrice(_netFee),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w800,
+                      fontSize: 22,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          if (_discount > 0)
+            _adjustmentLine(
+              label: 'Mã giảm giá',
+              value: '-${fmtPrice(_discount)}',
+              color: const Color(0xFF86EFAC),
+            ),
+          if (_pointsDiscount > 0)
+            _adjustmentLine(
+              label: 'Điểm thưởng',
+              value: loyaltyPointsDiscountText(_pointsToUse, _pointsDiscount),
+              color: const Color(0xFFFDE68A),
+            ),
+        ],
+      ),
+    );
+  }
+
   /// Một dòng giảm trừ trong hoá đơn tạm (mã giảm giá / điểm thưởng).
   Widget _adjustmentLine({
-    required IconData icon,
     required String label,
     required String value,
+    required Color color,
   }) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 6),
+      padding: const EdgeInsets.only(top: 6, left: 34),
       child: Row(
         children: [
-          Icon(icon, size: 15, color: const Color(0xFF15803D)),
-          const SizedBox(width: 6),
           Text(
             label,
-            style: const TextStyle(fontSize: 13, color: opsMutedText),
+            style: const TextStyle(fontSize: 12, color: Colors.white70),
           ),
           const SizedBox(width: 8),
           Expanded(
             child: Text(
               value,
               textAlign: TextAlign.right,
-              style: const TextStyle(
-                fontSize: 13,
+              style: TextStyle(
+                fontSize: 12,
                 fontWeight: FontWeight.w700,
-                color: Color(0xFF15803D),
+                color: color,
               ),
             ),
           ),
@@ -722,40 +834,34 @@ class _SendParcelPageState extends State<SendParcelPage>
               lockers: _lockers,
               selectedId: _lockerId,
               onlyActive: true,
-              onSelected: (l) => setState(() => _lockerId = l['id'] as int?),
+              onSelected: (l) {
+                final newId = l['id'] as int?;
+                setState(() {
+                  _lockerId = newId;
+                  _availableBySize = null;
+                });
+                if (newId != null) _loadLayout(newId);
+              },
             ),
           const SizedBox(height: 20),
-          const OpsSectionLabel('Kích thước hàng', icon: LucideIcons.packageSearch),
+          const OpsSectionLabel('Loại ô', icon: LucideIcons.boxes),
           if (widget.initialBoxId != null)
-            OpsBanner(
-              tone: OpsBannerTone.info,
-              icon: LucideIcons.ruler,
-              text: _sizes.contains(widget.initialBoxSize)
-                  ? '${widget.initialBoxNumber != null ? 'Ô số ${widget.initialBoxNumber}' : 'Ô đã chọn'} cỡ '
-                      '${_sizeLabel(widget.initialBoxSize!).toLowerCase()}. '
-                      'Hãy chắc kiện hàng vừa ô trước khi tạo đơn.'
-                  : 'Bạn đã chọn ô trên sơ đồ tủ. Hãy chắc kiện hàng vừa ô '
-                      'trước khi tạo đơn.',
-            )
+            _lockedCellCard()
           else
-            Wrap(
-              spacing: 8,
-              children: _sizes.map((s) {
-                final selected = _size == s;
-                return ChoiceChip(
-                  label: Text(_sizeLabel(s)),
-                  selected: selected,
-                  onSelected: (_) => setState(() => _size = s),
-                  selectedColor: opsPrimary,
-                  labelStyle: TextStyle(
-                    color: selected ? Colors.white : opsDark,
-                    fontWeight: FontWeight.w600,
-                  ),
-                  backgroundColor: Colors.white,
-                  side: BorderSide(color: selected ? opsPrimary : opsBorder),
-                );
-              }).toList(),
+            Row(
+              children: [
+                for (final s in _sizes) ...[
+                  if (s != _sizes.first) const SizedBox(width: 10),
+                  _sizeCard(s),
+                ],
+              ],
             ),
+          const SizedBox(height: 6),
+          const Text(
+            'Gửi hàng dùng ô thường; ô vali (XL) chỉ để thuê giữ đồ. Hãy chắc '
+            'kiện hàng vừa ô trước khi tạo đơn.',
+            style: TextStyle(fontSize: 12, color: opsMutedText, height: 1.4),
+          ),
           const SizedBox(height: 20),
           const OpsSectionLabel('Người nhận', icon: LucideIcons.userRound),
           _field(
@@ -778,29 +884,20 @@ class _SendParcelPageState extends State<SendParcelPage>
           const SizedBox(height: 10),
           _field(
             controller: _emailCtrl,
-            hint: 'Email người nhận (tùy chọn)',
+            hint: 'Email người nhận',
             icon: LucideIcons.mail,
             keyboardType: TextInputType.emailAddress,
-            validator: (v) {
-              final email = v?.trim() ?? '';
-              if (email.isEmpty) return null;
-              return _looksLikeEmail(email) ? null : 'Email không hợp lệ';
-            },
+            validator: _validateReceiverEmail,
           ),
           const SizedBox(height: 8),
-          // Nói thẳng người nhận có tự nhận được mã không: nếu không, người gửi
-          // phải chủ động chuyển mã, và họ chỉ làm vậy khi biết.
-          OpsBanner(
+          // Nói rõ người nhận được báo lúc nào để người gửi khỏi nhắn trùng.
+          const OpsBanner(
             tone: OpsBannerTone.info,
-            icon: _hasValidEmail ? LucideIcons.mailCheck : LucideIcons.send,
-            text: _hasValidEmail
-                ? 'Ngay khi bạn bỏ hàng vào ô, Lock.R gửi mã lấy hàng, nơi lấy, '
-                    'hạn lấy và lời nhắn của bạn tới email này. Bạn vẫn có thể '
-                    'bấm "Chia sẻ mã cho người nhận" để gửi thêm qua Zalo/SMS.'
-                : 'Bỏ hàng xong, bấm "Chia sẻ mã cho người nhận" để gửi mã lấy hàng '
-                    'qua Zalo, Messenger hoặc SMS. Nhập email người nhận để Lock.R '
-                    'tự gửi mã qua email; người nhận có tài khoản Lock.R trùng số '
-                    'điện thoại còn nhận thông báo trong app.',
+            icon: LucideIcons.mailCheck,
+            text: 'Lock.R gửi email cho người nhận ngay khi bạn tạo đơn (báo có '
+                'hàng sắp tới) và gửi mã lấy hàng khi bạn bỏ hàng vào ô. Gửi lại '
+                'được trong chi tiết đơn; bấm "Chia sẻ mã cho người nhận" để gửi '
+                'thêm qua Zalo/SMS.',
           ),
           const SizedBox(height: 20),
           const OpsSectionLabel(
@@ -890,15 +987,175 @@ class _SendParcelPageState extends State<SendParcelPage>
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
-                if (widget.initialBoxNumber != null)
-                  Text(
-                    'Ô số ${widget.initialBoxNumber}',
-                    style: const TextStyle(fontSize: 12, color: opsMutedText),
-                  ),
               ],
             ),
           ),
           const Icon(LucideIcons.lockKeyhole, size: 18, color: opsMutedText),
+        ],
+      ),
+    );
+  }
+
+  /// Nhãn còn/hết ô dưới thẻ loại ô — giống Thuê tủ. `null` khi chưa biết.
+  Widget? _availabilityText(int? available) {
+    if (available == null) return null;
+    return available == 0
+        ? const Text(
+            'Hết ô',
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.bold,
+              color: Colors.redAccent,
+            ),
+          )
+        : Text(
+            'Còn $available ô trống',
+            style: const TextStyle(fontSize: 11, color: Colors.green),
+          );
+  }
+
+  /// Một cỡ ô (nhỏ / vừa / lớn) khi khách chưa chọn ô cụ thể trên sơ đồ.
+  Widget _sizeCard(String size) {
+    final selected = _size == size;
+    final available = _availableBySize?[size];
+    final disabled = available == 0;
+    final color = disabled
+        ? Colors.grey.shade400
+        : (selected ? opsPrimary : opsDark);
+    return Expanded(
+      child: GestureDetector(
+        onTap: disabled ? null : () => setState(() => _size = size),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 160),
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: selected
+                ? opsPrimary.withValues(alpha: 0.06)
+                : (disabled ? Colors.grey.shade100 : Colors.white),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: selected
+                  ? opsPrimary
+                  : (disabled ? Colors.grey.shade300 : opsBorder),
+              width: selected ? 1.8 : 1,
+            ),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Icon(
+                    LucideIcons.box,
+                    size: switch (size) {
+                      'SMALL' => 16.0,
+                      'LARGE' => 24.0,
+                      _ => 20.0,
+                    },
+                    color: disabled
+                        ? Colors.grey.shade400
+                        : (selected ? opsPrimary : opsMutedText),
+                  ),
+                  const Spacer(),
+                  if (selected)
+                    const Icon(
+                      LucideIcons.circleCheck,
+                      color: opsPrimary,
+                      size: 16,
+                    ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Ô ${_sizeLabel(size).toLowerCase()}',
+                style: TextStyle(fontWeight: FontWeight.w800, color: color),
+              ),
+              const SizedBox(height: 4),
+              _availabilityText(available) ??
+                  Text(
+                    _sizeTitle(size).split(' ').last,
+                    style: const TextStyle(fontSize: 11, color: opsMutedText),
+                  ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Ô đã chọn trên sơ đồ tủ (khoá, không đổi được) — như thẻ loại ô của Thuê tủ.
+  Widget _lockedCellCard() {
+    // Sơ đồ không ghi cỡ ô ⇒ không đoán cỡ, cũng không đếm ô cùng cỡ.
+    final knownSize = _normalizeSize(widget.initialBoxSize) != null;
+    final available = knownSize ? (_availableBySize?[_size]) : null;
+    final title = [
+      if (widget.initialBoxNumber != null) 'Ô số ${widget.initialBoxNumber}',
+      knownSize ? _sizeTitle(_size) : 'Ô đã chọn',
+    ].join(' · ');
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: _selectedBoxTaken
+            ? Colors.grey.shade100
+            : opsPrimary.withValues(alpha: 0.06),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: _selectedBoxTaken ? opsBorder : opsPrimary,
+          width: 1.8,
+        ),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            LucideIcons.box,
+            color: _selectedBoxTaken ? opsMutedText : opsPrimary,
+            size: 22,
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontWeight: FontWeight.w800,
+                    color: _selectedBoxTaken ? opsMutedText : opsDark,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Row(
+                  children: [
+                    Flexible(
+                      child: Text(
+                        '${fmtPrice(_fee)}/lượt gửi',
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                          color: opsDark,
+                        ),
+                      ),
+                    ),
+                    if (_selectedBoxTaken) ...[
+                      const SizedBox(width: 8),
+                      const Text(
+                        'Ô vừa được đặt — chọn ô khác',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.redAccent,
+                        ),
+                      ),
+                    ] else if (available != null) ...[
+                      const SizedBox(width: 8),
+                      _availabilityText(available)!,
+                    ],
+                  ],
+                ),
+              ],
+            ),
+          ),
+          const Icon(LucideIcons.lockKeyhole, size: 16, color: opsMutedText),
         ],
       ),
     );

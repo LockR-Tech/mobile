@@ -1492,6 +1492,45 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
     }
   }
 
+  /// "Gửi lại thông tin cho người nhận" (đơn gửi hàng): gửi lại email cho người
+  /// nhận, sửa được email trước khi gửi. Chưa bỏ hàng ⇒ thư báo có đơn; đã vào
+  /// tủ ⇒ thư kèm mã mở tủ hiện tại.
+  Future<void> _resendReceiverEmail(Map<String, dynamic> order) async {
+    final orderId = _asInt(order['id']);
+    if (orderId == null) return;
+    final stored = order['receiverEmail']?.toString().trim() ?? '';
+    final status = (order['status'] as String? ?? '').toUpperCase();
+    final withCode = status == 'STORING' || status == 'RETURNED';
+    final email = await showDialog<String>(
+      context: context,
+      builder: (ctx) => _ResendReceiverEmailDialog(
+        initialEmail: stored,
+        withCode: withCode,
+      ),
+    );
+    if (email == null || !mounted) return;
+    try {
+      final res = await _service.sendReceiverEmail(
+        orderId,
+        email: email.toLowerCase() == stored.toLowerCase() ? null : email,
+      );
+      final masked = res['maskedEmail']?.toString();
+      final target = masked == null || masked.isEmpty ? 'người nhận' : masked;
+      _snack(
+        res['includesPickupCode'] == true
+            ? 'Đã gửi lại mã mở tủ tới $target.'
+            : 'Đã gửi lại thông tin đơn tới $target.',
+      );
+      await _load();
+    } catch (e) {
+      _snack(
+        LockerOpsService.isEndpointUnavailable(e)
+            ? 'Máy chủ chưa hỗ trợ gửi lại email cho người nhận.'
+            : LockerOpsService.errorMessage(e),
+      );
+    }
+  }
+
   Future<void> _openDetail(Map<String, dynamic> order) async {
     await Navigator.of(context).push<void>(
       MaterialPageRoute<void>(
@@ -1639,6 +1678,13 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
           },
           onResetPin: () async {
             await _resetPin(order);
+          },
+          onResendReceiverEmail: () async {
+            final latest = _orders
+                    .where((o) => _asInt(o['id']) == _asInt(order['id']))
+                    .firstOrNull ??
+                order;
+            await _resendReceiverEmail(latest);
           },
           onChanged: _load,
         ),
@@ -3929,6 +3975,7 @@ class _MyLockerOrderDetailPage extends StatefulWidget {
     this.onPayAndComplete,
     this.onDelegate,
     this.onResetPin,
+    this.onResendReceiverEmail,
     this.onChanged,
   });
 
@@ -3956,6 +4003,7 @@ class _MyLockerOrderDetailPage extends StatefulWidget {
   final void Function(int orderId)? onPayAndComplete;
   final Future<void> Function(int orderId)? onDelegate;
   final Future<void> Function()? onResetPin;
+  final Future<void> Function()? onResendReceiverEmail;
   final Future<void> Function()? onChanged;
 
   @override
@@ -4061,6 +4109,12 @@ class _MyLockerOrderDetailPageState extends State<_MyLockerOrderDetailPage> {
                       await widget.onResetPin!();
                       if (mounted) await _refresh();
                     },
+              onResendReceiverEmail: widget.onResendReceiverEmail == null
+                  ? null
+                  : () async {
+                      await widget.onResendReceiverEmail!();
+                      if (mounted) await _refresh();
+                    },
               onChanged: _refresh,
             ),
           ),
@@ -4096,6 +4150,7 @@ class _DetailSheet extends StatelessWidget {
     this.onPayAndComplete,
     this.onDelegate,
     this.onResetPin,
+    this.onResendReceiverEmail,
     this.onChanged,
   });
 
@@ -4131,6 +4186,9 @@ class _DetailSheet extends StatelessWidget {
 
   /// "Đổi mã PIN".
   final VoidCallback? onResetPin;
+
+  /// "Gửi lại thông tin cho người nhận" (đơn gửi hàng chưa kết thúc).
+  final VoidCallback? onResendReceiverEmail;
 
   /// Tải lại danh sách sau thao tác trong các mục con (hoàn tiền…).
   final Future<void> Function()? onChanged;
@@ -4477,6 +4535,17 @@ class _DetailSheet extends StatelessWidget {
           label: 'Đổi mã PIN',
           icon: LucideIcons.keyRound,
           onTap: onResetPin!,
+        ),
+      // Gửi lại email cho người nhận: chưa bỏ hàng ⇒ thư báo có đơn, đã vào tủ ⇒
+      // thư kèm mã. Đơn đã ủy quyền thì mã thuộc người lấy hộ (server từ chối).
+      if (onResendReceiverEmail != null &&
+          type == 'SEND' &&
+          text('delegatePhone') == null &&
+          const {'INITIALIZED', 'STORING', 'RETURNED'}.contains(rawStatus))
+        OpsSheetAction(
+          label: 'Gửi lại thông tin cho người nhận',
+          icon: LucideIcons.mailCheck,
+          onTap: onResendReceiverEmail!,
         ),
       // Đơn drone giữ sẵn ô nhận từ lúc đặt; chỉ báo ô lỗi được khi kiện đã nằm trong ô
       // (STORING) — trước đó khách chưa dùng ô nào.
@@ -5984,3 +6053,88 @@ bool droneFlightFinished(String rawStatus) =>
     const {'COMPLETED', 'CANCELED', 'EXPIRED', 'DELIVERY_INCOMPLETE'}.contains(
       rawStatus.toUpperCase(),
     );
+
+/// Hộp thoại "Gửi lại thông tin cho người nhận": nói rõ thư gồm gì và cho sửa
+/// email (gõ nhầm lúc tạo đơn) trước khi gửi. Trả email đã cắt khoảng trắng.
+class _ResendReceiverEmailDialog extends StatefulWidget {
+  const _ResendReceiverEmailDialog({
+    required this.initialEmail,
+    required this.withCode,
+  });
+
+  final String initialEmail;
+
+  /// Hàng đã vào tủ ⇒ thư kèm mã mở tủ.
+  final bool withCode;
+
+  @override
+  State<_ResendReceiverEmailDialog> createState() =>
+      _ResendReceiverEmailDialogState();
+}
+
+class _ResendReceiverEmailDialogState
+    extends State<_ResendReceiverEmailDialog> {
+  final _formKey = GlobalKey<FormState>();
+  late final _emailCtrl = TextEditingController(text: widget.initialEmail);
+
+  @override
+  void dispose() {
+    _emailCtrl.dispose();
+    super.dispose();
+  }
+
+  void _submit() {
+    if (!(_formKey.currentState?.validate() ?? false)) return;
+    Navigator.pop(context, _emailCtrl.text.trim());
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+      title: const Text('Gửi lại thông tin cho người nhận'),
+      content: Form(
+        key: _formKey,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              widget.withCode
+                  ? 'Lock.R gửi lại mã mở tủ hiện tại, nơi lấy và hạn lấy hàng '
+                        'tới email người nhận.'
+                  : 'Hàng chưa vào tủ: Lock.R gửi lại thư báo có đơn sắp tới '
+                        '(chưa kèm mã). Mã mở tủ được gửi khi bạn bỏ hàng vào ô.',
+              style: const TextStyle(fontSize: 14, height: 1.4),
+            ),
+            const SizedBox(height: 14),
+            TextFormField(
+              key: const ValueKey('resend-receiver-email-field'),
+              controller: _emailCtrl,
+              keyboardType: TextInputType.emailAddress,
+              decoration: const InputDecoration(
+                labelText: 'Email người nhận',
+                prefixIcon: Icon(LucideIcons.mail, size: 18),
+              ),
+              validator: (v) {
+                final email = v?.trim() ?? '';
+                if (email.isEmpty) return 'Nhập email người nhận';
+                return RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(email)
+                    ? null
+                    : 'Email không hợp lệ';
+              },
+              onFieldSubmitted: (_) => _submit(),
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Hủy'),
+        ),
+        FilledButton(onPressed: _submit, child: const Text('Gửi email')),
+      ],
+    );
+  }
+}

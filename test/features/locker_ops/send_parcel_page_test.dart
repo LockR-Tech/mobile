@@ -4,6 +4,7 @@ import 'package:smart_laundry_locker/core/config/business_config.dart';
 import 'package:smart_laundry_locker/core/network/dio_client.dart';
 import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/pages/send_parcel_page.dart';
+import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/ops_widgets.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/pickup_code_share_actions.dart';
 
 import '../../helpers/test_helpers.dart';
@@ -25,6 +26,21 @@ class _FakeSendLockerOpsService extends LockerOpsService {
 
   /// Ghi đè đơn server trả khi tạo (vd. đơn được giảm hết, PAID ngay).
   Map<String, dynamic>? createdOverride;
+
+  /// Email người nhận app gửi khi tạo đơn.
+  String? sentReceiverEmail;
+
+  /// Ô trên sơ đồ tủ: ô thường S/M/L, ô vali XL (không dùng cho gửi hàng).
+  List<Map<String, dynamic>> cells = [
+    {'id': 901, 'boxNumber': 4, 'size': 'SMALL', 'cellType': 'STANDARD', 'status': 'AVAILABLE'},
+    {'id': 902, 'boxNumber': 5, 'size': 'MEDIUM', 'cellType': 'STANDARD', 'status': 'AVAILABLE'},
+    {'id': 903, 'boxNumber': 6, 'size': 'MEDIUM', 'cellType': 'STANDARD', 'status': 'OCCUPIED'},
+    {'id': 904, 'boxNumber': 7, 'size': 'LARGE', 'cellType': 'STANDARD', 'status': 'OCCUPIED'},
+    {'id': 905, 'boxNumber': 8, 'size': 'LARGE', 'cellType': 'XL', 'status': 'AVAILABLE'},
+  ];
+
+  @override
+  Future<Map<String, dynamic>> layout(int lockerId) async => {'cells': cells};
 
   @override
   Future<Map<String, dynamic>> loyaltyRedeemPreview(int orderTotal) async {
@@ -61,6 +77,7 @@ class _FakeSendLockerOpsService extends LockerOpsService {
     int? pointsToUse,
   }) async {
     sentPointsToUse = pointsToUse;
+    sentReceiverEmail = receiverEmail;
     final created = createdOverride;
     if (created != null) {
       _order.addAll(created);
@@ -181,11 +198,12 @@ void main() {
     expect(service.current.sendBaseFee, 18000);
   });
 
-  testWidgets('đã chọn ô: hiện cỡ ô thay vì chọn kích thước; SĐT phải đủ 10 số; '
-      'có email thì báo Lock.R tự gửi mã', (tester) async {
+  testWidgets('đã chọn ô: thẻ loại ô khoá như Thuê tủ; SĐT đủ 10 số; '
+      'email người nhận bắt buộc', (tester) async {
     useBusinessConfig();
     await tester.binding.setSurfaceSize(const Size(800, 1800));
     addTearDown(() => tester.binding.setSurfaceSize(null));
+    final service = _FakeSendLockerOpsService();
 
     await tester.pumpWidget(
       MaterialApp(
@@ -195,27 +213,87 @@ void main() {
           initialBoxId: 901,
           initialBoxNumber: 4,
           initialBoxSize: 'SMALL',
-          service: _FakeSendLockerOpsService(),
+          service: service,
         ),
       ),
     );
     await tester.pumpAndSettle();
 
-    expect(find.byType(ChoiceChip), findsNothing);
-    expect(find.textContaining('Ô số 4 cỡ nhỏ.'), findsOneWidget);
+    expect(find.text('Loại ô'), findsOneWidget);
+    expect(find.text('Ô số 4 · Ô nhỏ (S)'), findsOneWidget);
+    expect(find.text('Còn 1 ô trống'), findsOneWidget);
+    expect(find.text('Tạm tính'), findsOneWidget);
 
     await tester.enterText(find.byType(TextFormField).first, '090900000');
     await tester.tap(find.text('Tạo đơn & lấy PIN bỏ hàng'));
     await tester.pumpAndSettle();
     expect(find.text('Số điện thoại gồm 10 số, bắt đầu bằng 0'), findsOneWidget);
+    expect(find.text('Nhập email người nhận'), findsOneWidget);
 
-    expect(find.textContaining('Lock.R gửi mã lấy hàng'), findsNothing);
+    await tester.enterText(find.byType(TextFormField).first, '0909000000');
     await tester.enterText(
-      find.widgetWithText(TextFormField, 'Email người nhận (tùy chọn)'),
-      'nhan@example.com',
+      find.widgetWithText(TextFormField, 'Email người nhận'),
+      'nhan@',
+    );
+    await tester.tap(find.text('Tạo đơn & lấy PIN bỏ hàng'));
+    await tester.pumpAndSettle();
+    expect(find.text('Email không hợp lệ'), findsOneWidget);
+    expect(service.sentReceiverEmail, isNull);
+    expect(find.textContaining('Lock.R gửi email cho người nhận ngay khi bạn tạo đơn'),
+        findsOneWidget);
+  });
+
+  testWidgets('chưa chọn ô: thẻ cỡ ô có số ô trống, cỡ hết ô bị khoá và tự '
+      'chuyển sang cỡ còn ô; ô đã chọn bị đặt mất thì không tạo đơn được',
+      (tester) async {
+    useBusinessConfig();
+    await tester.binding.setSurfaceSize(const Size(800, 1800));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    final service = _FakeSendLockerOpsService()
+      ..cells = [
+        {'id': 901, 'size': 'SMALL', 'cellType': 'STANDARD', 'status': 'AVAILABLE'},
+        {'id': 902, 'size': 'MEDIUM', 'cellType': 'STANDARD', 'status': 'OCCUPIED'},
+        {'id': 905, 'size': 'LARGE', 'cellType': 'XL', 'status': 'AVAILABLE'},
+      ];
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: SendParcelPage(
+          initialLockerId: 5,
+          initialLockerName: 'Tủ demo',
+          service: service,
+        ),
+      ),
     );
     await tester.pumpAndSettle();
-    expect(find.textContaining('Lock.R gửi mã lấy hàng'), findsOneWidget);
+
+    // Ô vali XL không tính cho gửi hàng; cỡ vừa (mặc định) hết ⇒ chuyển sang nhỏ.
+    expect(find.text('Còn 1 ô trống'), findsOneWidget);
+    expect(find.text('Hết ô'), findsNWidgets(2));
+    expect(find.text('Gửi hàng · Ô nhỏ (S)'), findsOneWidget);
+
+    await tester.pumpWidget(const SizedBox());
+    service.cells = [
+      {'id': 901, 'size': 'SMALL', 'cellType': 'STANDARD', 'status': 'OCCUPIED'},
+    ];
+    await tester.pumpWidget(
+      MaterialApp(
+        home: SendParcelPage(
+          initialLockerId: 5,
+          initialLockerName: 'Tủ demo',
+          initialBoxId: 901,
+          initialBoxNumber: 4,
+          initialBoxSize: 'SMALL',
+          service: service,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('Ô vừa được đặt — chọn ô khác'), findsOneWidget);
+    final button = tester.widget<OpsPrimaryButton>(
+      find.widgetWithText(OpsPrimaryButton, 'Tạo đơn & lấy PIN bỏ hàng'),
+    );
+    expect(button.onPressed, isNull);
   });
 
   testWidgets('thanh toán thật rồi mới mở ô và xác nhận bỏ hàng', (tester) async {
@@ -236,6 +314,10 @@ void main() {
     await tester.pumpAndSettle();
 
     await tester.enterText(find.byType(TextFormField).first, '0909000000');
+    await tester.enterText(
+      find.widgetWithText(TextFormField, 'Email người nhận'),
+      'nhan@example.com',
+    );
     await tester.tap(find.text('Tạo đơn & lấy PIN bỏ hàng'));
     // Mã VietQR có vòng chờ chạy liên tục ⇒ chỉ pump theo khung.
     await tester.pump();
@@ -243,6 +325,7 @@ void main() {
 
     // Tạo đơn xong hiện ngay mã VietQR SePay (một checkout); chưa trả tiền thì
     // không mở được ô; không có bảng chọn / ví.
+    expect(service.sentReceiverEmail, 'nhan@example.com');
     expect(service.checkoutCalls, 1);
     expect(service.lastCheckoutMethod, 'SEPAY');
     expect(find.text('Quét mã VietQR để thanh toán'), findsOneWidget);
@@ -342,6 +425,10 @@ void main() {
       expect(find.text('7.500đ'), findsOneWidget);
 
       await tester.enterText(find.byType(TextFormField).first, '0909000000');
+      await tester.enterText(
+        find.widgetWithText(TextFormField, 'Email người nhận'),
+        'nhan@example.com',
+      );
       await tester.tap(find.text('Tạo đơn & lấy PIN bỏ hàng'));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 600));
@@ -386,6 +473,10 @@ void main() {
     );
 
     await tester.enterText(find.byType(TextFormField).first, '0909000000');
+    await tester.enterText(
+      find.widgetWithText(TextFormField, 'Email người nhận'),
+      'nhan@example.com',
+    );
     await tester.tap(find.text('Tạo đơn & lấy PIN bỏ hàng'));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 600));

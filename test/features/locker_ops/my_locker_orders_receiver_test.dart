@@ -121,6 +121,19 @@ class _FakeService extends LockerOpsService {
     resetPinCalls++;
     return {'id': orderId, 'pinCode': '111222'};
   }
+
+  int resendEmailCalls = 0;
+  String? resentEmail;
+
+  @override
+  Future<Map<String, dynamic>> sendReceiverEmail(
+    int orderId, {
+    String? email,
+  }) async {
+    resendEmailCalls++;
+    resentEmail = email;
+    return {'maskedEmail': 'mo***@example.com', 'includesPickupCode': true};
+  }
 }
 
 /// Đơn của tôi có đủ phần chi tiết mới của OrderResponse.
@@ -301,6 +314,45 @@ void main() {
     await tester.pumpAndSettle();
     expect(service.resetPinCalls, 1);
     expect(find.text('Đã đổi mã PIN mới: 111222'), findsOneWidget);
+  });
+
+  testWidgets('gửi lại thông tin cho người nhận: sửa được email rồi gọi '
+      'POST /receiver-email', (tester) async {
+    final service = _FakeService();
+    await _pump(tester, service);
+
+    await tester.tap(find.text('Tủ kiểm thử'));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.text('Gửi lại thông tin cho người nhận'));
+    await tester.tap(find.text('Gửi lại thông tin cho người nhận'));
+    await tester.pumpAndSettle();
+
+    // Hàng đã vào tủ ⇒ thư kèm mã; đơn chưa có email ⇒ phải nhập.
+    expect(find.textContaining('gửi lại mã mở tủ hiện tại'), findsOneWidget);
+    await tester.tap(find.text('Gửi email'));
+    await tester.pumpAndSettle();
+    expect(find.text('Nhập email người nhận'), findsOneWidget);
+    expect(service.resendEmailCalls, 0);
+
+    await tester.enterText(
+      find.byKey(const ValueKey('resend-receiver-email-field')),
+      'moi@example.com',
+    );
+    await tester.tap(find.text('Gửi email'));
+    await tester.pumpAndSettle();
+    expect(service.resendEmailCalls, 1);
+    expect(service.resentEmail, 'moi@example.com');
+    expect(find.text('Đã gửi lại mã mở tủ tới mo***@example.com.'), findsOneWidget);
+  });
+
+  testWidgets('đơn đã ủy quyền lấy hộ ⇒ không có nút gửi lại cho người nhận', (
+    tester,
+  ) async {
+    await _pump(tester, _RichSenderService());
+
+    await tester.tap(find.text('Tủ kiểm thử'));
+    await tester.pumpAndSettle();
+    expect(find.text('Gửi lại thông tin cho người nhận'), findsNothing);
   });
 
   testWidgets('chạm đơn trong Hàng chờ nhận mở màn chi tiết đầy đủ', (

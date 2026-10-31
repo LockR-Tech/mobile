@@ -123,8 +123,8 @@ class LockerOpsService {
     required String receiverPhone,
     String? receiverName,
 
-    /// Tuỳ chọn. Có email thì server gửi được mã mở tủ cho người nhận CHƯA có
-    /// tài khoản Lock.R, không phải chờ người gửi chuyển tay.
+    /// Bắt buộc với server mới (`RECEIVER_EMAIL_REQUIRED`): Lock.R báo người
+    /// nhận qua email lúc tạo đơn và gửi mã mở tủ khi hàng vào ô.
     String? receiverEmail,
     String? note,
     String? promotionCode,
@@ -445,6 +445,19 @@ class LockerOpsService {
   /// Cấp PIN mới cho đơn của mình; PIN cũ hết hiệu lực.
   Future<Map<String, dynamic>> resetPin(int orderId) =>
       _map('POST', '/api/orders/$orderId/reset-pin');
+
+  /// Người gửi đơn gửi hàng gửi lại thư cho người nhận: chưa bỏ hàng ⇒ thư báo
+  /// có đơn sắp tới; đã vào tủ ⇒ thư kèm mã mở tủ + hạn lấy. [email] có giá trị
+  /// thì đổi email người nhận trước khi gửi. Trả `{maskedEmail,
+  /// includesPickupCode, sentAt}`; gửi lại trong 60 giây ⇒ `RECEIVER_EMAIL_TOO_SOON`.
+  Future<Map<String, dynamic>> sendReceiverEmail(int orderId, {String? email}) =>
+      _map(
+        'POST',
+        '/api/orders/$orderId/receiver-email',
+        body: {
+          if (email != null && email.trim().isNotEmpty) 'email': email.trim(),
+        },
+      );
 
   // ---- Đánh giá / khiếu nại đơn ----
   /// Đánh giá đơn đã hoàn tất (1–5 sao). Gửi lại thì server ghi đè.
