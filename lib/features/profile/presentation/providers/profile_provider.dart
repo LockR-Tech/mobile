@@ -175,6 +175,22 @@ class ProfileProvider extends ChangeNotifier {
     );
   }
 
+  /// Bấm "Đồng ý" Điều khoản dịch vụ: `POST /api/user/terms {version}`. Trả `null` khi lưu được, ngược lại là
+  /// câu báo lỗi để hiện trên hộp thoại.
+  Future<String?> acceptTerms(String version) async {
+    try {
+      await _apiClient.post<dynamic>('/api/user/terms', data: {'version': version});
+      final current = _profile;
+      if (current != null) {
+        _profile = current.copyWith(termsAccepted: true);
+        notifyListeners();
+      }
+      return null;
+    } catch (_) {
+      return 'Chưa lưu được. Kiểm tra mạng rồi thử lại.';
+    }
+  }
+
   void clearError() {
     _error = null;
     notifyListeners();
