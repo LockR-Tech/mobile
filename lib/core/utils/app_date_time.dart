@@ -38,6 +38,14 @@ DateTime parseServerDateTimeOr(dynamic value, [DateTime? fallback]) =>
 
 String _two(int n) => n.toString().padLeft(2, '0');
 
+/// `14:30 ngày 01/11/2026` — hạn chót viết trong câu thông báo.
+String formatDeadlineVn(DateTime? value, {String empty = '—'}) {
+  if (value == null) return empty;
+  final d = value.toLocal();
+  return '${_two(d.hour)}:${_two(d.minute)} ngày '
+      '${_two(d.day)}/${_two(d.month)}/${d.year}';
+}
+
 /// `HH:mm:ss dd/MM/yyyy` — định dạng chuẩn của dự án.
 String formatDateTimeVn(DateTime? value, {String empty = '—'}) {
   if (value == null) return empty;

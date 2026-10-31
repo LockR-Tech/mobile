@@ -1,4 +1,5 @@
 import 'package:smart_laundry_locker/core/config/business_config.dart';
+import 'package:smart_laundry_locker/core/utils/app_date_time.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/ops_widgets.dart';
 
 /// Chuỗi hiển thị dựng từ [BusinessConfig] (giá trị admin cấu hình).
@@ -55,10 +56,17 @@ String sendPickupPolicyText(BusinessConfig config) =>
     'Người nhận có ${config.sendPickupHoursLimit} giờ để lấy hàng kể từ lúc '
     'bạn bỏ hàng vào ô. ${overtimePolicyText(config)}';
 
-/// Hạn lấy hàng của đơn giao bằng drone + chính sách phí quá giờ.
+/// Hạn lấy hàng của đơn giao bằng drone + chính sách phí quá giờ. Hạn được tính
+/// lúc drone thả hàng nên trước đó chưa có giờ cụ thể, xem [droneStoredUntilText].
 String dronePickupPolicyText(BusinessConfig config) =>
-    'Người nhận có ${config.dronePickupHoursLimit} giờ để lấy hàng kể từ lúc '
-    'drone thả hàng vào ô. ${overtimePolicyText(config)}';
+    'Đơn hàng được lưu trữ ${config.dronePickupHoursLimit} giờ kể từ lúc '
+    'drone thả hàng vào ô. Giờ và ngày hết hạn sẽ được báo ngay khi hàng vào ô. '
+    '${overtimePolicyText(config)}';
+
+/// `Đơn hàng được lưu trữ 24 giờ, vui lòng lấy trước 14:30 ngày 01/11/2026.`
+String droneStoredUntilText(int hours, DateTime deadline) =>
+    'Đơn hàng được lưu trữ $hours giờ, vui lòng lấy trước '
+    '${formatDeadlineVn(deadline)}.';
 
 /// Cách tích điểm, quy ra % số tiền theo giá trị 1 điểm khi dùng:
 /// `Tích 10% số tiền bạn thanh toán thành điểm (1 điểm = 1đ), cộng khi đơn hoàn tất.`
