@@ -228,13 +228,10 @@ void main() {
     await tester.tap(find.text('Tạo đơn & lấy PIN bỏ hàng'));
     await tester.pumpAndSettle();
     expect(find.text('Số điện thoại gồm 10 số, bắt đầu bằng 0'), findsOneWidget);
-    expect(find.text('Nhập email người nhận'), findsOneWidget);
+    expect(find.text('Nhập email người nhận để Lock.R gửi mã mở tủ'), findsOneWidget);
 
     await tester.enterText(find.byType(TextFormField).first, '0909000000');
-    await tester.enterText(
-      find.widgetWithText(TextFormField, 'Email người nhận'),
-      'nhan@',
-    );
+    await tester.enterText(find.byKey(const ValueKey('send-receiver-email')), 'nhan@');
     await tester.tap(find.text('Tạo đơn & lấy PIN bỏ hàng'));
     await tester.pumpAndSettle();
     expect(find.text('Email không hợp lệ'), findsOneWidget);
@@ -314,10 +311,7 @@ void main() {
     await tester.pumpAndSettle();
 
     await tester.enterText(find.byType(TextFormField).first, '0909000000');
-    await tester.enterText(
-      find.widgetWithText(TextFormField, 'Email người nhận'),
-      'nhan@example.com',
-    );
+    await tester.enterText(find.byKey(const ValueKey('send-receiver-email')), 'nhan@example.com');
     await tester.tap(find.text('Tạo đơn & lấy PIN bỏ hàng'));
     // Mã VietQR có vòng chờ chạy liên tục ⇒ chỉ pump theo khung.
     await tester.pump();
@@ -425,10 +419,7 @@ void main() {
       expect(find.text('7.500đ'), findsOneWidget);
 
       await tester.enterText(find.byType(TextFormField).first, '0909000000');
-      await tester.enterText(
-        find.widgetWithText(TextFormField, 'Email người nhận'),
-        'nhan@example.com',
-      );
+      await tester.enterText(find.byKey(const ValueKey('send-receiver-email')), 'nhan@example.com');
       await tester.tap(find.text('Tạo đơn & lấy PIN bỏ hàng'));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 600));
@@ -473,10 +464,7 @@ void main() {
     );
 
     await tester.enterText(find.byType(TextFormField).first, '0909000000');
-    await tester.enterText(
-      find.widgetWithText(TextFormField, 'Email người nhận'),
-      'nhan@example.com',
-    );
+    await tester.enterText(find.byKey(const ValueKey('send-receiver-email')), 'nhan@example.com');
     await tester.tap(find.text('Tạo đơn & lấy PIN bỏ hàng'));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 600));

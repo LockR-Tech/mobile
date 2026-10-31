@@ -1492,42 +1492,39 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
     }
   }
 
-  /// "Gửi lại thông tin cho người nhận" (đơn gửi hàng): gửi lại email cho người
-  /// nhận, sửa được email trước khi gửi. Chưa bỏ hàng ⇒ thư báo có đơn; đã vào
-  /// tủ ⇒ thư kèm mã mở tủ hiện tại.
-  Future<void> _resendReceiverEmail(Map<String, dynamic> order) async {
+  /// "Gửi lại thông tin cho người nhận" của đơn gửi hàng: hiện email đang có (sửa được) rồi gửi lại thư —
+  /// hàng đã vào tủ ⇒ kèm mã mở tủ; đã thanh toán, chưa bỏ hàng ⇒ thư báo có đơn; chưa thanh toán ⇒ chỉ lưu
+  /// email (Lock.R báo người nhận khi đơn được thanh toán).
+  Future<void> _receiverEmail(Map<String, dynamic> order) async {
     final orderId = _asInt(order['id']);
     if (orderId == null) return;
-    final stored = order['receiverEmail']?.toString().trim() ?? '';
-    final status = (order['status'] as String? ?? '').toUpperCase();
-    final withCode = status == 'STORING' || status == 'RETURNED';
+    final current = (order['receiverEmail'] as String? ?? '').trim();
     final email = await showDialog<String>(
       context: context,
-      builder: (ctx) => _ResendReceiverEmailDialog(
-        initialEmail: stored,
-        withCode: withCode,
+      builder: (_) => _ReceiverEmailDialog(
+        initial: current,
+        mode: _receiverEmailMode(order),
       ),
     );
     if (email == null || !mounted) return;
     try {
       final res = await _service.sendReceiverEmail(
         orderId,
-        email: email.toLowerCase() == stored.toLowerCase() ? null : email,
+        email: email == current ? null : email,
       );
-      final masked = res['maskedEmail']?.toString();
-      final target = masked == null || masked.isEmpty ? 'người nhận' : masked;
+      final masked = res['maskedEmail']?.toString() ?? email;
       _snack(
         res['sentAt'] == null
-            ? 'Đã lưu email $target — Lock.R gửi thư khi đơn được thanh toán.'
+            ? 'Đã lưu email người nhận $masked. Lock.R báo người nhận khi đơn được thanh toán.'
             : res['includesPickupCode'] == true
-            ? 'Đã gửi lại mã mở tủ tới $target.'
-            : 'Đã gửi lại thông tin đơn tới $target.',
+            ? 'Đã gửi mã mở tủ tới $masked.'
+            : 'Đã gửi lại thông tin đơn tới $masked.',
       );
       await _load();
     } catch (e) {
       _snack(
         LockerOpsService.isEndpointUnavailable(e)
-            ? 'Máy chủ chưa hỗ trợ gửi lại email cho người nhận.'
+            ? 'Máy chủ chưa hỗ trợ gửi mã qua email.'
             : LockerOpsService.errorMessage(e),
       );
     }
@@ -1681,12 +1678,8 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
           onResetPin: () async {
             await _resetPin(order);
           },
-          onResendReceiverEmail: () async {
-            final latest = _orders
-                    .where((o) => _asInt(o['id']) == _asInt(order['id']))
-                    .firstOrNull ??
-                order;
-            await _resendReceiverEmail(latest);
+          onReceiverEmail: () async {
+            await _receiverEmail(order);
           },
           onChanged: _load,
         ),
@@ -3977,7 +3970,7 @@ class _MyLockerOrderDetailPage extends StatefulWidget {
     this.onPayAndComplete,
     this.onDelegate,
     this.onResetPin,
-    this.onResendReceiverEmail,
+    this.onReceiverEmail,
     this.onChanged,
   });
 
@@ -4005,7 +3998,7 @@ class _MyLockerOrderDetailPage extends StatefulWidget {
   final void Function(int orderId)? onPayAndComplete;
   final Future<void> Function(int orderId)? onDelegate;
   final Future<void> Function()? onResetPin;
-  final Future<void> Function()? onResendReceiverEmail;
+  final Future<void> Function()? onReceiverEmail;
   final Future<void> Function()? onChanged;
 
   @override
@@ -4111,10 +4104,10 @@ class _MyLockerOrderDetailPageState extends State<_MyLockerOrderDetailPage> {
                       await widget.onResetPin!();
                       if (mounted) await _refresh();
                     },
-              onResendReceiverEmail: widget.onResendReceiverEmail == null
+              onReceiverEmail: widget.onReceiverEmail == null
                   ? null
                   : () async {
-                      await widget.onResendReceiverEmail!();
+                      await widget.onReceiverEmail!();
                       if (mounted) await _refresh();
                     },
               onChanged: _refresh,
@@ -4152,7 +4145,7 @@ class _DetailSheet extends StatelessWidget {
     this.onPayAndComplete,
     this.onDelegate,
     this.onResetPin,
-    this.onResendReceiverEmail,
+    this.onReceiverEmail,
     this.onChanged,
   });
 
@@ -4189,8 +4182,8 @@ class _DetailSheet extends StatelessWidget {
   /// "Đổi mã PIN".
   final VoidCallback? onResetPin;
 
-  /// "Gửi lại thông tin cho người nhận" (đơn gửi hàng chưa kết thúc).
-  final VoidCallback? onResendReceiverEmail;
+  /// "Gửi mã cho người nhận qua email" / thêm, đổi email người nhận (đơn gửi hàng).
+  final VoidCallback? onReceiverEmail;
 
   /// Tải lại danh sách sau thao tác trong các mục con (hoàn tiền…).
   final Future<void> Function()? onChanged;
@@ -4538,19 +4531,22 @@ class _DetailSheet extends StatelessWidget {
           icon: LucideIcons.keyRound,
           onTap: onResetPin!,
         ),
-      // Gửi lại email cho người nhận: chưa bỏ hàng ⇒ thư báo có đơn, đã vào tủ ⇒
-      // thư kèm mã. Đơn chưa trả tiền chưa báo người nhận (thư đầu đi lúc thanh
-      // toán) ⇒ chưa có gì để gửi lại. Đơn đã ủy quyền thì mã thuộc người lấy hộ.
-      if (onResendReceiverEmail != null &&
+      // Đơn gửi hàng: gửi lại mã cho người nhận qua email (hoặc thêm / đổi email khi chưa bỏ hàng).
+      if (onReceiverEmail != null &&
           type == 'SEND' &&
-          text('delegatePhone') == null &&
-          (const {'STORING', 'RETURNED'}.contains(rawStatus) ||
-              (rawStatus == 'INITIALIZED' &&
-                  (paymentStatus == 'PAID' || totalNum <= 0))))
+          (order['delegatedAt'] == null && (order['delegatePhone'] ?? '').toString().isEmpty) &&
+          (rawStatus == 'INITIALIZED' ||
+              rawStatus == 'STORING' ||
+              rawStatus == 'RETURNED'))
         OpsSheetAction(
-          label: 'Gửi lại thông tin cho người nhận',
+          key: const ValueKey('send-receiver-email-action'),
+          label: (order['receiverEmail'] ?? '').toString().trim().isEmpty
+              ? 'Thêm email người nhận'
+              : (_receiverEmailMode(order) == _ReceiverEmailMode.saveOnly
+                    ? 'Đổi email người nhận'
+                    : 'Gửi lại thông tin cho người nhận'),
           icon: LucideIcons.mailCheck,
-          onTap: onResendReceiverEmail!,
+          onTap: onReceiverEmail!,
         ),
       // Đơn drone giữ sẵn ô nhận từ lúc đặt; chỉ báo ô lỗi được khi kiện đã nằm trong ô
       // (STORING) — trước đó khách chưa dùng ô nào.
@@ -6059,74 +6055,101 @@ bool droneFlightFinished(String rawStatus) =>
       rawStatus.toUpperCase(),
     );
 
-/// Hộp thoại "Gửi lại thông tin cho người nhận": nói rõ thư gồm gì và cho sửa
-/// email (gõ nhầm lúc tạo đơn) trước khi gửi. Trả email đã cắt khoảng trắng.
-class _ResendReceiverEmailDialog extends StatefulWidget {
-  const _ResendReceiverEmailDialog({
-    required this.initialEmail,
-    required this.withCode,
-  });
-
-  final String initialEmail;
-
+/// Thư server gửi khi người gửi bấm nút email người nhận (khớp `OrderService.sendReceiverEmail`).
+enum _ReceiverEmailMode {
   /// Hàng đã vào tủ ⇒ thư kèm mã mở tủ.
-  final bool withCode;
+  withCode,
 
-  @override
-  State<_ResendReceiverEmailDialog> createState() =>
-      _ResendReceiverEmailDialogState();
+  /// Đã thanh toán, chưa bỏ hàng ⇒ thư báo có đơn sắp tới (không mã).
+  orderInfo,
+
+  /// Chưa thanh toán ⇒ người nhận chưa được báo, chỉ lưu email.
+  saveOnly,
 }
 
-class _ResendReceiverEmailDialogState
-    extends State<_ResendReceiverEmailDialog> {
+_ReceiverEmailMode _receiverEmailMode(Map<String, dynamic> order) {
+  final status = (order['status'] as String? ?? '').toUpperCase();
+  if (status == 'STORING' || status == 'RETURNED') return _ReceiverEmailMode.withCode;
+  final total = order['totalPrice'];
+  final totalNum = total is num ? total : num.tryParse('$total') ?? 0;
+  final paid = (order['paymentStatus'] as String? ?? '').toUpperCase() == 'PAID';
+  return paid || totalNum <= 0 ? _ReceiverEmailMode.orderInfo : _ReceiverEmailMode.saveOnly;
+}
+
+/// Hộp nhập email người nhận của đơn gửi hàng. Trả email đã cắt khoảng trắng, hoặc null khi huỷ.
+class _ReceiverEmailDialog extends StatefulWidget {
+  const _ReceiverEmailDialog({required this.initial, required this.mode});
+
+  final String initial;
+  final _ReceiverEmailMode mode;
+
+  @override
+  State<_ReceiverEmailDialog> createState() => _ReceiverEmailDialogState();
+}
+
+class _ReceiverEmailDialogState extends State<_ReceiverEmailDialog> {
+  static final RegExp _emailPattern = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]{2,}$');
+
+  late final TextEditingController _controller = TextEditingController(text: widget.initial);
   final _formKey = GlobalKey<FormState>();
-  late final _emailCtrl = TextEditingController(text: widget.initialEmail);
 
   @override
   void dispose() {
-    _emailCtrl.dispose();
+    _controller.dispose();
     super.dispose();
   }
 
   void _submit() {
     if (!(_formKey.currentState?.validate() ?? false)) return;
-    Navigator.pop(context, _emailCtrl.text.trim());
+    Navigator.of(context).pop(_controller.text.trim());
   }
 
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-      title: const Text('Gửi lại thông tin cho người nhận'),
+      title: Text(
+        widget.mode == _ReceiverEmailMode.saveOnly
+            ? 'Email người nhận'
+            : 'Gửi lại thông tin cho người nhận',
+      ),
       content: Form(
         key: _formKey,
         child: Column(
           mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text(
-              widget.withCode
-                  ? 'Lock.R gửi lại mã mở tủ hiện tại, nơi lấy và hạn lấy hàng '
-                        'tới email người nhận.'
-                  : 'Hàng chưa vào tủ: Lock.R gửi lại thư báo có đơn sắp tới '
-                        '(chưa kèm mã). Mã mở tủ được gửi khi bạn bỏ hàng vào ô.',
+              switch (widget.mode) {
+                _ReceiverEmailMode.withCode =>
+                  'Lock.R gửi lại mã mở tủ, nơi lấy và hạn lấy hàng tới email này. Sửa email nếu người nhận '
+                      'chưa nhận được thư.',
+                _ReceiverEmailMode.orderInfo =>
+                  'Hàng chưa vào tủ: Lock.R gửi lại thư báo có đơn sắp tới (chưa kèm mã). Mã mở tủ được '
+                      'gửi khi bạn bỏ hàng vào ô.',
+                _ReceiverEmailMode.saveOnly =>
+                  'Đơn chưa thanh toán. Lock.R báo người nhận qua email này khi đơn được thanh toán, và gửi '
+                      'mã mở tủ khi bạn bỏ hàng vào ô.',
+              },
               style: const TextStyle(fontSize: 14, height: 1.4),
             ),
             const SizedBox(height: 14),
             TextFormField(
-              key: const ValueKey('resend-receiver-email-field'),
-              controller: _emailCtrl,
+              key: const ValueKey('receiver-email-input'),
+              controller: _controller,
+              autofocus: widget.initial.isEmpty,
               keyboardType: TextInputType.emailAddress,
+              autofillHints: const [AutofillHints.email],
+              textInputAction: TextInputAction.done,
               decoration: const InputDecoration(
                 labelText: 'Email người nhận',
-                prefixIcon: Icon(LucideIcons.mail, size: 18),
+                hintText: 'name@example.com',
+                border: OutlineInputBorder(),
               ),
-              validator: (v) {
-                final email = v?.trim() ?? '';
+              validator: (value) {
+                final email = value?.trim() ?? '';
                 if (email.isEmpty) return 'Nhập email người nhận';
-                return RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(email)
-                    ? null
-                    : 'Email không hợp lệ';
+                return _emailPattern.hasMatch(email) ? null : 'Email không hợp lệ';
               },
               onFieldSubmitted: (_) => _submit(),
             ),
@@ -6134,11 +6157,12 @@ class _ResendReceiverEmailDialogState
         ),
       ),
       actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: const Text('Hủy'),
+        TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Hủy')),
+        FilledButton(
+          key: const ValueKey('receiver-email-submit'),
+          onPressed: _submit,
+          child: Text(widget.mode == _ReceiverEmailMode.saveOnly ? 'Lưu email' : 'Gửi email'),
         ),
-        FilledButton(onPressed: _submit, child: const Text('Gửi email')),
       ],
     );
   }

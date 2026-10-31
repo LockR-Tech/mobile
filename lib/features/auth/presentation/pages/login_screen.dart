@@ -14,7 +14,7 @@ import 'package:smart_laundry_locker/core/services/token_service.dart';
 import 'package:smart_laundry_locker/features/auth/presentation/providers/auth_injection.dart';
 import 'package:smart_laundry_locker/features/auth/presentation/providers/login_provider.dart';
 import 'package:smart_laundry_locker/features/auth/presentation/providers/register_provider.dart';
-import 'package:smart_laundry_locker/features/auth/presentation/widgets/complete_profile_dialog.dart';
+import 'package:smart_laundry_locker/features/profile/presentation/post_login_prompts.dart';
 import 'package:smart_laundry_locker/features/auth/presentation/widgets/phone_otp_dialog.dart';
 import 'package:smart_laundry_locker/features/auth/presentation/widgets/social_login_options.dart';
 import 'package:smart_laundry_locker/features/profile/presentation/providers/profile_provider.dart';
@@ -172,22 +172,22 @@ class _LoginScreenState extends State<LoginScreen>
 
   Future<void> _navigateAfterLogin() async {
     if (!mounted) return;
-    // Đăng nhập SĐT lần đầu: tài khoản chỉ có tên "User" ⇒ sau khi vào trang
-    // chủ hỏi "Hoàn tất đăng ký" (tự tải hồ sơ, không tải hai lần).
-    final viaPhone = _loginProvider.lastLoginViaPhone;
+    // Lời nhắc sau đăng nhập (điều khoản, hoàn tất đăng ký, bổ sung thông tin)
+    // tự tải hồ sơ của khách; KTV vẫn tải hồ sơ ở đây cho trang KTV.
     final profileProvider = context.read<ProfileProvider>();
     try {
-      if (!viaPhone) profileProvider.loadProfile();
+      final roles = await TokenService.getCurrentRoles();
+      if (primaryRole(roles) != AppRole.customer) profileProvider.loadProfile();
       unawaited(
         FirebaseMessagingService.instance.updateBackendDeviceToken(ApiClient()),
       );
-      final roles = await TokenService.getCurrentRoles();
       if (!mounted) return;
       context.go(homeForRoles(roles));
     } catch (_) {
       if (mounted) context.go(homeForRoles(const []));
     }
-    if (viaPhone) unawaited(CompleteProfileDialog.maybeShow(profileProvider));
+    // Điều khoản dịch vụ (lần đầu) → "Hoàn tất đăng ký" (tên mặc định) → nhắc bổ sung email/SĐT.
+    unawaited(PostLoginPrompts.run(profileProvider));
   }
 
   void _handleLogin() {

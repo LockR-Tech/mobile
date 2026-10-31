@@ -80,6 +80,23 @@ class _FakeService extends LockerOpsService {
     if (next is Map<String, dynamic>) return next;
     throw next;
   }
+
+  /// Kết quả "Gửi lại qua email": Map ⇒ trả về, Object khác ⇒ ném lỗi.
+  Object emailResult = const {'maskedEmail': 'bi***@example.com', 'includesPickupCode': true};
+  int emailCalls = 0;
+  bool? emailDelegated;
+
+  @override
+  Future<Map<String, dynamic>> resendReceiverEmail(
+    int orderId, {
+    bool delegated = false,
+  }) async {
+    emailCalls++;
+    emailDelegated = delegated;
+    final result = emailResult;
+    if (result is Map<String, dynamic>) return result;
+    throw result;
+  }
 }
 
 DioException _http(int status, {String? code}) {
@@ -347,5 +364,40 @@ void main() {
 
     expect(find.text('Xem lại hành trình drone'), findsOneWidget);
     expect(find.text('Theo dõi drone'), findsNothing);
+  });
+
+  testWidgets('"Gửi lại thông tin qua email" gọi API và báo email đã che', (tester) async {
+    final service = _FakeService([_fullDetail()]);
+    await _pump(tester, service);
+
+    await tester.tap(find.byKey(const ValueKey('receiver-resend-email')));
+    await tester.pumpAndSettle();
+
+    expect(service.emailCalls, 1);
+    expect(service.emailDelegated, isFalse);
+    expect(find.text('Đã gửi thông tin đơn kèm mã mở tủ tới bi***@example.com.'), findsOneWidget);
+  });
+
+  testWidgets('tài khoản chưa có email ⇒ hỏi bổ sung email', (tester) async {
+    final service = _FakeService([_fullDetail()])
+      ..emailResult = _http(400, code: 'RECEIVER_EMAIL_MISSING');
+    await _pump(tester, service);
+
+    await tester.tap(find.byKey(const ValueKey('receiver-resend-email')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Chưa có email'), findsOneWidget);
+    expect(find.text('Bổ sung email'), findsOneWidget);
+    await tester.tap(find.text('Để sau'));
+    await tester.pumpAndSettle();
+  });
+
+  testWidgets('đơn đã xong thì không còn nút gửi lại email', (tester) async {
+    final service = _FakeService([
+      _fullDetail(overrides: {'status': 'COMPLETED', 'readyForPickup': false, 'pickupPin': null}),
+    ]);
+    await _pump(tester, service);
+
+    expect(find.byKey(const ValueKey('receiver-resend-email')), findsNothing);
   });
 }

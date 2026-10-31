@@ -408,8 +408,7 @@ class _SendParcelPageState extends State<SendParcelPage>
         boxId: widget.initialBoxId,
         receiverName:
             _nameCtrl.text.trim().isEmpty ? null : _nameCtrl.text.trim(),
-        receiverEmail:
-            _emailCtrl.text.trim().isEmpty ? null : _emailCtrl.text.trim(),
+        receiverEmail: _emailCtrl.text.trim(),
         note: _noteCtrl.text.trim().isEmpty ? null : _noteCtrl.text.trim(),
         promotionCode: _promoCode,
         size: _size,
@@ -499,11 +498,11 @@ class _SendParcelPageState extends State<SendParcelPage>
   static bool _looksLikeEmail(String value) =>
       RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(value);
 
-  /// Bắt buộc (server trả `RECEIVER_EMAIL_REQUIRED` nếu thiếu): Lock.R báo người
-  /// nhận qua email lúc tạo đơn và gửi mã lấy hàng khi bỏ hàng vào ô.
+  /// Email người nhận bắt buộc và đúng dạng (server kiểm lại, lỗi `RECEIVER_EMAIL_REQUIRED`):
+  /// Lock.R báo người nhận lúc đơn được thanh toán và gửi mã khi bỏ hàng vào ô.
   static String? _validateReceiverEmail(String? value) {
     final email = value?.trim() ?? '';
-    if (email.isEmpty) return 'Nhập email người nhận';
+    if (email.isEmpty) return 'Nhập email người nhận để Lock.R gửi mã mở tủ';
     return _looksLikeEmail(email) ? null : 'Email không hợp lệ';
   }
 
@@ -883,10 +882,12 @@ class _SendParcelPageState extends State<SendParcelPage>
           ),
           const SizedBox(height: 10),
           _field(
+            key: const ValueKey('send-receiver-email'),
             controller: _emailCtrl,
             hint: 'Email người nhận',
             icon: LucideIcons.mail,
             keyboardType: TextInputType.emailAddress,
+            // Bắt buộc: Lock.R báo người nhận qua email này, và người gửi gửi lại được từ chi tiết đơn.
             validator: _validateReceiverEmail,
           ),
           const SizedBox(height: 8),
@@ -1384,6 +1385,7 @@ class _SendParcelPageState extends State<SendParcelPage>
   }
 
   Widget _field({
+    Key? key,
     required TextEditingController controller,
     required String hint,
     required IconData icon,
@@ -1394,6 +1396,7 @@ class _SendParcelPageState extends State<SendParcelPage>
     int? maxLength,
   }) {
     return TextFormField(
+      key: key,
       controller: controller,
       keyboardType: keyboardType,
       inputFormatters: inputFormatters,

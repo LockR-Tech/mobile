@@ -433,6 +433,28 @@ class LockerOpsService {
         : '/api/orders/incoming/$orderId',
   );
 
+  /// Người gửi đơn gửi hàng thêm / đổi email người nhận ([email] null = giữ email đang có) rồi gửi lại thư
+  /// cho người nhận: hàng đã vào tủ ⇒ kèm mã mở tủ; đã thanh toán, chưa bỏ hàng ⇒ thư báo có đơn (không mã);
+  /// chưa thanh toán ⇒ chỉ lưu email (`sentAt` null). Trả `{maskedEmail, includesPickupCode, sentAt}`.
+  Future<Map<String, dynamic>> sendReceiverEmail(int orderId, {String? email}) => _map(
+    'POST',
+    '/api/orders/$orderId/receiver-email',
+    body: {if (email != null && email.trim().isNotEmpty) 'email': email.trim()},
+  );
+
+  /// Gửi lại thông tin đơn nhận (kèm mã mở tủ khi hàng đã vào tủ) tới email tài khoản của mình.
+  /// Trả `{maskedEmail, includesPickupCode, sentAt}`. Lỗi: `RECEIVER_EMAIL_MISSING` (tài khoản chưa có
+  /// email), `RECEIVER_EMAIL_TOO_SOON` (bấm lại trong 1 phút), `RECEIVER_EMAIL_FAILED`.
+  Future<Map<String, dynamic>> resendReceiverEmail(
+    int orderId, {
+    bool delegated = false,
+  }) => _map(
+    'POST',
+    delegated
+        ? '/api/orders/delegated-to-me/$orderId/email'
+        : '/api/orders/incoming/$orderId/email',
+  );
+
   /// Mở ô chỉ bằng mã (PIN/QR/mã ủy quyền) — server tự tra ô theo mã.
   /// Trả `{accepted, message, boxId…}`; `accepted == false` là chưa mở.
   Future<Map<String, dynamic>> unlockWithCode(int lockerId, String code) =>
@@ -445,19 +467,6 @@ class LockerOpsService {
   /// Cấp PIN mới cho đơn của mình; PIN cũ hết hiệu lực.
   Future<Map<String, dynamic>> resetPin(int orderId) =>
       _map('POST', '/api/orders/$orderId/reset-pin');
-
-  /// Người gửi đơn gửi hàng gửi lại thư cho người nhận: chưa bỏ hàng ⇒ thư báo
-  /// có đơn sắp tới; đã vào tủ ⇒ thư kèm mã mở tủ + hạn lấy. [email] có giá trị
-  /// thì đổi email người nhận trước khi gửi. Trả `{maskedEmail,
-  /// includesPickupCode, sentAt}`; gửi lại trong 60 giây ⇒ `RECEIVER_EMAIL_TOO_SOON`.
-  Future<Map<String, dynamic>> sendReceiverEmail(int orderId, {String? email}) =>
-      _map(
-        'POST',
-        '/api/orders/$orderId/receiver-email',
-        body: {
-          if (email != null && email.trim().isNotEmpty) 'email': email.trim(),
-        },
-      );
 
   // ---- Đánh giá / khiếu nại đơn ----
   /// Đánh giá đơn đã hoàn tất (1–5 sao). Gửi lại thì server ghi đè.
