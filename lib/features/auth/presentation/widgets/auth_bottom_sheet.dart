@@ -10,7 +10,7 @@ import 'package:smart_laundry_locker/core/services/token_service.dart';
 import 'package:smart_laundry_locker/features/auth/presentation/providers/auth_injection.dart';
 import 'package:smart_laundry_locker/features/auth/presentation/providers/login_provider.dart';
 import 'package:smart_laundry_locker/features/auth/presentation/providers/register_provider.dart';
-import 'package:smart_laundry_locker/features/auth/presentation/widgets/complete_profile_dialog.dart';
+import 'package:smart_laundry_locker/features/profile/presentation/post_login_prompts.dart';
 import 'package:smart_laundry_locker/features/auth/presentation/widgets/phone_otp_dialog.dart';
 import 'package:smart_laundry_locker/features/auth/presentation/widgets/social_login_options.dart';
 import 'package:smart_laundry_locker/features/profile/presentation/providers/profile_provider.dart';
@@ -91,9 +91,8 @@ class _AuthBottomSheetState extends State<AuthBottomSheet> {
 
   Future<void> _navigateAfterLogin() async {
     if (!mounted) return;
-    // Đăng nhập SĐT lần đầu: tài khoản chỉ có tên "User" ⇒ hỏi "Hoàn tất đăng
-    // ký" sau khi vào trang chủ. Lấy provider trước khi đóng sheet.
-    final viaPhone = _loginProvider.lastLoginViaPhone;
+    // Lời nhắc sau đăng nhập (điều khoản, hoàn tất đăng ký, bổ sung thông tin)
+    // chạy sau khi vào trang chủ. Lấy provider trước khi đóng sheet.
     final profileProvider = context.read<ProfileProvider>();
     // Đóng bottom sheet trước
     Navigator.of(context, rootNavigator: true).pop(true);
@@ -108,7 +107,8 @@ class _AuthBottomSheetState extends State<AuthBottomSheet> {
     } catch (_) {
       // fallback: không navigate, ProfilePage sẽ tự reload
     }
-    if (viaPhone) unawaited(CompleteProfileDialog.maybeShow(profileProvider));
+    // Điều khoản dịch vụ (lần đầu) → "Hoàn tất đăng ký" (tên mặc định) → nhắc bổ sung email/SĐT.
+    unawaited(PostLoginPrompts.run(profileProvider));
   }
 
   void _onRegisterStateChanged() {

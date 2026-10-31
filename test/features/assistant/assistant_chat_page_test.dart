@@ -8,6 +8,7 @@ import 'package:smart_laundry_locker/features/assistant/data/assistant_service.d
 import 'package:smart_laundry_locker/features/assistant/data/models/assistant_models.dart';
 import 'package:smart_laundry_locker/features/assistant/presentation/pages/assistant_chat_page.dart';
 import 'package:smart_laundry_locker/features/assistant/presentation/pages/assistant_history_page.dart';
+import 'package:smart_laundry_locker/features/assistant/presentation/widgets/assistant_message_bubble.dart';
 
 import '../../helpers/test_helpers.dart';
 import 'assistant_fakes.dart';
@@ -139,7 +140,7 @@ void main() {
     expect(_text('Phí tính theo giờ.'), findsOneWidget);
   });
 
-  testWidgets('đang chờ: hiện "Đang tìm trong tài liệu…" và khoá ô nhập', (
+  testWidgets('đang chờ: hiện ba chấm nhấp nhô và khoá ô nhập', (
     tester,
   ) async {
     final service = FakeAssistantService();
@@ -150,14 +151,30 @@ void main() {
     await _ask(tester, 'Hết giờ thuê ô thì làm sao?');
     await tester.pump();
 
-    expect(find.text('Đang tìm trong tài liệu…'), findsOneWidget);
+    final dots = find.byKey(const ValueKey('assistant-typing-dots'));
+    expect(dots, findsOneWidget);
+    expect(
+      find.bySemanticsLabel(AssistantTypingIndicator.semanticsLabel),
+      findsOneWidget,
+    );
+    // Chấm đang chuyển động: hai khung hình cách nhau 200 ms vẽ khác nhau.
+    double firstDotY() => tester
+        .widget<Transform>(
+          find.descendant(of: dots, matching: find.byType(Transform)).first,
+        )
+        .transform
+        .getTranslation()
+        .y;
+    final before = firstDotY();
+    await tester.pump(const Duration(milliseconds: 200));
+    expect(firstDotY(), isNot(before));
     expect(tester.widget<TextField>(_input).enabled, isFalse);
     expect(tester.widget<IconButton>(_sendButton).onPressed, isNull);
 
     pending.complete(fakeAnswer(answer: 'Bạn có thể gia hạn thêm giờ.'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Đang tìm trong tài liệu…'), findsNothing);
+    expect(dots, findsNothing);
     expect(_text('Bạn có thể gia hạn thêm giờ.'), findsOneWidget);
     expect(tester.widget<TextField>(_input).enabled, isTrue);
   });

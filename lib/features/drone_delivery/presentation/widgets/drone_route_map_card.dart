@@ -17,8 +17,9 @@ import 'package:smart_laundry_locker/features/drone_delivery/presentation/widget
 import 'package:smart_laundry_locker/features/drone_delivery/presentation/widgets/drone_base_tile_layer.dart';
 
 /// Bản đồ tóm tắt hành trình: tủ gửi A, tủ nhận B, đoạn đã bay và vị trí drone
-/// ước theo chặng hiện tại. Không cho kéo/zoom để cuộn trang không bị bản đồ "nuốt";
-/// theo dõi vị trí thật từng giây ở màn live map.
+/// ước theo chặng hiện tại. Trong thẻ chỉ phóng to/thu nhỏ bằng hai ngón, chạm đúp
+/// hoặc nút +/− (kéo một ngón vẫn để cuộn trang); nút ⤢ mở bản đồ toàn màn hình
+/// kéo/zoom tự do. Theo dõi vị trí thật từng giây ở màn live map.
 class DroneRouteMapCard extends ConsumerWidget {
   const DroneRouteMapCard({
     super.key,
@@ -31,17 +32,10 @@ class DroneRouteMapCard extends ConsumerWidget {
   /// Màn KTV drone (chi tiết nhiệm vụ) không có nút mở bản đồ trực tiếp.
   final bool forOperator;
 
-  static const Color _sourceColor = Color(0xFF0F766E);
-  static const Color _plannedColor = Color(0xFF94A3B8);
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final source = status.sourceLocker;
-    final destination = status.destinationLocker;
-    if (source == null ||
-        destination == null ||
-        !source.hasCoordinates ||
-        !destination.hasCoordinates) {
+    final view = _routeView(ref, status);
+    if (view == null) {
       return const _Frame(
         child: Text(
           'Tủ gửi hoặc tủ nhận chưa có toạ độ nên chưa vẽ được bản đồ hành trình.',
@@ -49,23 +43,11 @@ class DroneRouteMapCard extends ConsumerWidget {
         ),
       );
     }
-
-    final a = LatLng(source.latitude!, source.longitude!);
-    final b = LatLng(destination.latitude!, destination.longitude!);
+    final a = view.a;
+    final b = view.b;
     final stage = status.stage;
-    final progress = _progress(stage);
-    // Drone bay tới đâu bắn toạ độ về tới đó (STOMP); thẻ nghe trực tiếp trong lúc bay.
-    final live = droneListensLivePosition(status)
-        ? ref.watch(dronePositionStreamProvider(status.orderId!)).value
-        : null;
-    final position = droneReportedPosition(status, live, a, b);
-    final drone = progress == null
-        ? null
-        : position?.point ??
-              LatLng(
-                a.latitude + (b.latitude - a.latitude) * progress,
-                a.longitude + (b.longitude - a.longitude) * progress,
-              );
+    final position = view.position;
+    final drone = view.drone;
     final totalKm = droneDistanceKm(a.latitude, a.longitude, b.latitude, b.longitude);
     final remainingKm = drone == null
         ? null
@@ -80,66 +62,23 @@ class DroneRouteMapCard extends ConsumerWidget {
             borderRadius: BorderRadius.circular(14),
             child: SizedBox(
               height: 220,
-              child: FlutterMap(
-                options: MapOptions(
-                  initialCameraFit: CameraFit.bounds(
-                    bounds: LatLngBounds(a, b),
-                    padding: const EdgeInsets.all(48),
-                    maxZoom: 17,
-                  ),
-                  interactionOptions: const InteractionOptions(
-                    flags: InteractiveFlag.none,
+              child: DroneRouteMap(
+                view: view,
+                fullScreen: false,
+                onExpand: () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => DroneRouteMapPage(status: status),
                   ),
                 ),
-                children: [
-                  droneBaseTileLayer(),
-                  PolylineLayer(
-                    polylines: [
-                      Polyline(
-                        points: [a, b],
-                        color: _plannedColor,
-                        strokeWidth: 3,
-                        pattern: StrokePattern.dashed(segments: const [10, 6]),
-                      ),
-                      if (drone != null || _arrived(stage))
-                        Polyline(
-                          points: [a, drone ?? b],
-                          color: AISLShadcnTheme.navyAccent,
-                          strokeWidth: 4,
-                        ),
-                    ],
-                  ),
-                  MarkerLayer(
-                    markers: [
-                      Marker(
-                        point: a,
-                        width: 34,
-                        height: 34,
-                        child: const _PointMarker(label: 'A', color: _sourceColor),
-                      ),
-                      Marker(
-                        point: b,
-                        width: 34,
-                        height: 34,
-                        child: const _PointMarker(
-                          label: 'B',
-                          color: AISLShadcnTheme.navyPrimary,
-                        ),
-                      ),
-                      if (drone != null)
-                        Marker(
-                          point: drone,
-                          width: 40,
-                          height: 40,
-                          child: DroneMarker(headingDeg: _bearing(a, b)),
-                        ),
-                    ],
-                  ),
-                ],
               ),
             ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 6),
+          const Text(
+            'Chụm/mở hai ngón hoặc bấm +/− để phóng to; bấm ⤢ để xem toàn màn hình.',
+            style: TextStyle(fontSize: 11.5, color: Color(0xFF64748B)),
+          ),
+          const SizedBox(height: 10),
           Wrap(
             spacing: 8,
             runSpacing: 8,
@@ -205,6 +144,287 @@ class DroneRouteMapCard extends ConsumerWidget {
         math.sin(lat1) * math.cos(lat2) * math.cos(dLng);
     return (math.atan2(y, x) * 180 / math.pi + 360) % 360;
   }
+}
+
+/// Những gì vẽ lên bản đồ hành trình — tính một lần, dùng chung cho thẻ và màn toàn màn hình.
+class DroneRouteView {
+  const DroneRouteView({
+    required this.a,
+    required this.b,
+    required this.drone,
+    required this.flown,
+    required this.position,
+  });
+
+  /// Tủ gửi (A) và tủ nhận (B).
+  final LatLng a;
+  final LatLng b;
+
+  /// Vị trí drone trên bản đồ; null khi chưa cất cánh / đã tới / chặng lỗi.
+  final LatLng? drone;
+
+  /// Có vẽ đoạn đã bay (A → drone, hoặc cả A → B khi đã tới) không.
+  final bool flown;
+
+  /// Toạ độ đưa lên dòng chữ dưới bản đồ (xem [droneReportedPosition]).
+  final ({LatLng point, String note, bool estimated})? position;
+
+  double get headingDeg => DroneRouteMapCard._bearing(a, b);
+
+  /// Khung bao A, B và drone — dùng cho lần mở đầu và nút "về toàn tuyến".
+  CameraFit get fit => CameraFit.bounds(
+    bounds: LatLngBounds.fromPoints([a, b, if (drone != null) drone!]),
+    padding: const EdgeInsets.all(48),
+    maxZoom: 17,
+  );
+}
+
+/// Null khi tủ gửi hoặc tủ nhận chưa có toạ độ.
+DroneRouteView? _routeView(WidgetRef ref, DroneDeliveryStatus status) {
+  final source = status.sourceLocker;
+  final destination = status.destinationLocker;
+  if (source == null ||
+      destination == null ||
+      !source.hasCoordinates ||
+      !destination.hasCoordinates) {
+    return null;
+  }
+  final a = LatLng(source.latitude!, source.longitude!);
+  final b = LatLng(destination.latitude!, destination.longitude!);
+  final progress = DroneRouteMapCard._progress(status.stage);
+  // Drone bay tới đâu bắn toạ độ về tới đó (STOMP); thẻ nghe trực tiếp trong lúc bay.
+  final live = droneListensLivePosition(status)
+      ? ref.watch(dronePositionStreamProvider(status.orderId!)).value
+      : null;
+  final position = droneReportedPosition(status, live, a, b);
+  final drone = progress == null
+      ? null
+      : position?.point ??
+            LatLng(
+              a.latitude + (b.latitude - a.latitude) * progress,
+              a.longitude + (b.longitude - a.longitude) * progress,
+            );
+  return DroneRouteView(
+    a: a,
+    b: b,
+    drone: drone,
+    flown: drone != null || DroneRouteMapCard._arrived(status.stage),
+    position: position,
+  );
+}
+
+/// Bản đồ A → B có nút phóng to / thu nhỏ / về toàn tuyến. Giữ nguyên mức zoom người dùng đã chọn
+/// khi drone đổi vị trí (chỉ lần mở đầu mới tự canh khung).
+class DroneRouteMap extends StatefulWidget {
+  const DroneRouteMap({
+    super.key,
+    required this.view,
+    required this.fullScreen,
+    this.onExpand,
+  });
+
+  final DroneRouteView view;
+
+  /// Toàn màn hình: kéo/zoom tự do. Trong thẻ: chỉ hai ngón / chạm đúp để trang vẫn cuộn được.
+  final bool fullScreen;
+
+  /// Nút ⤢ mở toàn màn hình (chỉ có trong thẻ).
+  final VoidCallback? onExpand;
+
+  static const double minZoom = 3;
+  static const double maxZoom = 19;
+
+  @override
+  State<DroneRouteMap> createState() => _DroneRouteMapState();
+}
+
+class _DroneRouteMapState extends State<DroneRouteMap> {
+  static const Color _sourceColor = Color(0xFF0F766E);
+  static const Color _plannedColor = Color(0xFF94A3B8);
+
+  final MapController _controller = MapController();
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _zoomBy(double delta) {
+    final camera = _controller.camera;
+    _controller.move(
+      camera.center,
+      (camera.zoom + delta).clamp(DroneRouteMap.minZoom, DroneRouteMap.maxZoom),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final view = widget.view;
+    final drone = view.drone;
+    return Stack(
+      children: [
+        FlutterMap(
+          mapController: _controller,
+          options: MapOptions(
+            initialCameraFit: view.fit,
+            minZoom: DroneRouteMap.minZoom,
+            maxZoom: DroneRouteMap.maxZoom,
+            interactionOptions: InteractionOptions(
+              flags: widget.fullScreen
+                  ? InteractiveFlag.all & ~InteractiveFlag.rotate
+                  : InteractiveFlag.pinchZoom |
+                        InteractiveFlag.pinchMove |
+                        InteractiveFlag.doubleTapZoom,
+            ),
+          ),
+          children: [
+            droneBaseTileLayer(),
+            PolylineLayer(
+              polylines: [
+                Polyline(
+                  points: [view.a, view.b],
+                  color: _plannedColor,
+                  strokeWidth: 3,
+                  pattern: StrokePattern.dashed(segments: const [10, 6]),
+                ),
+                if (view.flown)
+                  Polyline(
+                    points: [view.a, drone ?? view.b],
+                    color: AISLShadcnTheme.navyAccent,
+                    strokeWidth: 4,
+                  ),
+              ],
+            ),
+            MarkerLayer(
+              markers: [
+                Marker(
+                  point: view.a,
+                  width: 34,
+                  height: 34,
+                  child: const _PointMarker(label: 'A', color: _sourceColor),
+                ),
+                Marker(
+                  point: view.b,
+                  width: 34,
+                  height: 34,
+                  child: const _PointMarker(
+                    label: 'B',
+                    color: AISLShadcnTheme.navyPrimary,
+                  ),
+                ),
+                if (drone != null)
+                  Marker(
+                    point: drone,
+                    width: 40,
+                    height: 40,
+                    child: DroneMarker(headingDeg: view.headingDeg),
+                  ),
+              ],
+            ),
+          ],
+        ),
+        Positioned(
+          right: 8,
+          top: 8,
+          child: Column(
+            children: [
+              _MapButton(
+                key: const ValueKey('drone-route-zoom-in'),
+                icon: LucideIcons.plus,
+                tooltip: 'Phóng to',
+                onPressed: () => _zoomBy(1),
+              ),
+              const SizedBox(height: 6),
+              _MapButton(
+                key: const ValueKey('drone-route-zoom-out'),
+                icon: LucideIcons.minus,
+                tooltip: 'Thu nhỏ',
+                onPressed: () => _zoomBy(-1),
+              ),
+              const SizedBox(height: 6),
+              _MapButton(
+                key: const ValueKey('drone-route-fit'),
+                icon: LucideIcons.route,
+                tooltip: 'Xem cả tuyến',
+                onPressed: () => _controller.fitCamera(view.fit),
+              ),
+              if (widget.onExpand != null) ...[
+                const SizedBox(height: 6),
+                _MapButton(
+                  key: const ValueKey('drone-route-expand'),
+                  icon: LucideIcons.maximize2,
+                  tooltip: 'Toàn màn hình',
+                  onPressed: widget.onExpand!,
+                ),
+              ],
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// Bản đồ hành trình toàn màn hình: kéo, chụm hai ngón, chạm đúp tự do. Vị trí drone vẫn cập nhật trực tiếp.
+class DroneRouteMapPage extends ConsumerWidget {
+  const DroneRouteMapPage({super.key, required this.status});
+
+  final DroneDeliveryStatus status;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final view = _routeView(ref, status);
+    return Scaffold(
+      appBar: AppBar(title: const Text('Bản đồ hành trình')),
+      body: view == null
+          ? const Center(
+              child: Padding(
+                padding: EdgeInsets.all(24),
+                child: Text(
+                  'Tủ gửi hoặc tủ nhận chưa có toạ độ nên chưa vẽ được bản đồ hành trình.',
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            )
+          : SafeArea(
+              top: false,
+              child: DroneRouteMap(view: view, fullScreen: true),
+            ),
+    );
+  }
+}
+
+class _MapButton extends StatelessWidget {
+  const _MapButton({
+    super.key,
+    required this.icon,
+    required this.tooltip,
+    required this.onPressed,
+  });
+
+  final IconData icon;
+  final String tooltip;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) => Tooltip(
+    message: tooltip,
+    child: Material(
+      color: Colors.white,
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onPressed,
+        child: SizedBox(
+          width: 36,
+          height: 36,
+          child: Icon(icon, size: 18, color: AISLShadcnTheme.navyPrimary),
+        ),
+      ),
+    ),
+  );
 }
 
 /// Toạ độ drone đưa lên thẻ, theo thứ tự tin cậy: bản tin drone vừa bắn về (STOMP) → toạ độ API chi tiết
