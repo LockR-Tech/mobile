@@ -63,7 +63,6 @@ void main() {
       'app.order.rental-quick-hours': [1, 3, 6],
     });
     _replyOk(adapter, 'payment', {
-      'app.payment.topup-presets': [30000, 90000],
       'app.payment.enabled-methods': 'WALLET,VNPAY',
     });
     _replyOk(adapter, 'locker', {
@@ -79,7 +78,6 @@ void main() {
 
     expect(config.sendBaseFee, 20000);
     expect(config.rentalQuickHours, [1, 3, 6]);
-    expect(config.topupPresets, [30000, 90000]);
     expect(config.enabledPaymentMethods, ['WALLET', 'VNPAY']);
     expect(config.cellDimensionsXl, '50 × 90 × 50 cm');
     expect(config.tierGoldPoints, 3000);
@@ -115,7 +113,8 @@ void main() {
     final config = await service.refresh();
 
     expect(config.rentalRateXl, 15000);
-    expect(config.topupPresets, BusinessConfig.defaults().topupPresets);
+    expect(config.enabledPaymentMethods,
+        BusinessConfig.defaults().enabledPaymentMethods);
     expect(config.cellDimensionsStandard,
         BusinessConfig.defaults().cellDimensionsStandard);
     expect(service.isFresh, isTrue);

@@ -1232,27 +1232,6 @@ class _HomePageState extends ConsumerState<HomePage>
                     ),
                     _buildUtilityItem(
                       ctx,
-                      icon: LucideIcons.wallet,
-                      lottieAsset: AppLottieAssets.napVi,
-                      label: 'Nạp ví',
-                      color: const Color(0xFF10B981),
-                      onTap: () {
-                        Navigator.pop(ctx);
-                        context.push(AppRouter.topUp);
-                      },
-                    ),
-                    _buildUtilityItem(
-                      ctx,
-                      icon: LucideIcons.arrowUpRight,
-                      label: 'Rút tiền',
-                      color: const Color(0xFFF97316),
-                      onTap: () {
-                        Navigator.pop(ctx);
-                        context.push(AppRouter.withdraw);
-                      },
-                    ),
-                    _buildUtilityItem(
-                      ctx,
                       icon: LucideIcons.store,
                       lottieAsset: AppLottieAssets.cuaHang,
                       label: 'Điểm gửi',

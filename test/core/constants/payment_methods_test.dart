@@ -7,12 +7,8 @@ import '../../helpers/test_helpers.dart';
 
 void main() {
   group('PaymentMethods (chỉ SePay; MoMo/VNPay đã bỏ)', () {
-    test('thanh toán đơn và nạp ví đều chỉ qua SEPAY', () {
+    test('thanh toán đơn chỉ qua SEPAY', () {
       expect(PaymentMethods.orderPayment, 'SEPAY');
-      expect(PaymentMethods.topUp, ['SEPAY']);
-      expect(PaymentMethods.topUp, isNot(contains('MOMO')));
-      expect(PaymentMethods.topUp, isNot(contains('VNPAY')));
-      expect(PaymentMethods.topUp, isNot(contains('WALLET')));
     });
 
     test('admin còn bật MOMO/VNPAY/WALLET/CASH vẫn bị lọc bỏ', () {
@@ -23,10 +19,11 @@ void main() {
       expect(PaymentMethods.enabledAmong(['VNPAY', 'MOMO', 'WALLET']), isEmpty);
     });
 
-    test('cấu hình mặc định không còn MOMO/VNPAY', () {
+    test('cấu hình mặc định không còn MOMO/VNPAY/WALLET', () {
       final defaults = BusinessConfig.fromPublicMaps().enabledPaymentMethods;
       expect(defaults, isNot(contains('MOMO')));
       expect(defaults, isNot(contains('VNPAY')));
+      expect(defaults, isNot(contains('WALLET')));
     });
   });
 

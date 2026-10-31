@@ -17,13 +17,8 @@ void main() {
       expect(defaults.extendDefaultHours, 2);
       expect(defaults.extendMaxHours, 24);
       expect(defaults.droneDefaultParcelWeightGrams, 1200);
-      expect(defaults.topupDefaultAmount, 100000);
-      expect(
-        defaults.topupPresets,
-        [20000, 50000, 100000, 200000, 500000, 1000000],
-      );
-      // MoMo/VNPay đã bỏ khỏi mặc định.
-      expect(defaults.enabledPaymentMethods, ['CASH', 'WALLET', 'SEPAY']);
+      // MoMo/VNPay và ví đã bỏ khỏi mặc định.
+      expect(defaults.enabledPaymentMethods, ['CASH', 'SEPAY']);
       expect(defaults.reportPhotosPerRequestReporter, 5);
       expect(defaults.reportPhotosPerRequestStaff, 10);
       expect(defaults.cellDimensionsStandard, '45 × 30 × 50 cm');
@@ -59,12 +54,7 @@ void main() {
           'app.order.drone-default-parcel-weight-grams': 900,
         },
         payment: {
-          'app.payment.topup-min-amount': 20000,
-          'app.payment.topup-max-amount': 2000000,
-          'app.payment.topup-default-amount': 50000,
-          'app.payment.topup-presets': [50000, 100000],
           'app.payment.enabled-methods': 'WALLET, vnpay',
-          'app.payment.withdraw-min-amount': 25000,
         },
         locker: {
           'app.maintenance.report-photos-per-request-reporter': 3,
@@ -100,11 +90,6 @@ void main() {
       expect(config.extendMaxHours, 12);
       expect(config.requirePaymentBeforeDrop, isFalse);
       expect(config.droneDefaultParcelWeightGrams, 900);
-      expect(config.topupMinAmount, 20000);
-      expect(config.topupMaxAmount, 2000000);
-      expect(config.topupDefaultAmount, 50000);
-      expect(config.topupPresets, [50000, 100000]);
-      expect(config.withdrawMinAmount, 25000);
       expect(config.enabledPaymentMethods, ['WALLET', 'VNPAY']);
       expect(config.isPaymentMethodEnabled('cash'), isFalse);
       expect(config.isPaymentMethodEnabled('vnpay'), isTrue);
@@ -123,11 +108,11 @@ void main() {
     test('dữ liệu một phần: key thiếu dùng mặc định', () {
       final config = BusinessConfig.fromPublicMaps(
         order: {'app.order.send-base-fee': 20000},
-        payment: {'app.payment.topup-presets': '30000,60000'},
+        payment: {'app.payment.simulation-enabled': true},
       );
 
       expect(config.sendBaseFee, 20000);
-      expect(config.topupPresets, [30000, 60000]);
+      expect(config.paymentSimulationEnabled, isTrue);
       expect(config.droneDeliveryFee, defaults.droneDeliveryFee);
       expect(config.rentalRateXl, defaults.rentalRateXl);
       expect(config.rentalQuickHours, defaults.rentalQuickHours);
@@ -149,9 +134,7 @@ void main() {
           'app.order.drone-default-parcel-weight-grams': null,
         },
         payment: {
-          'app.payment.topup-presets': [true, 'nope'],
           'app.payment.enabled-methods': '',
-          'app.payment.topup-default-amount': false,
         },
         locker: {
           'app.maintenance.report-photos-per-request-reporter': '0',
@@ -180,21 +163,15 @@ void main() {
       expect(config.nearbyDefaultRadiusKm, 5.0);
     });
 
-    test('giữ ràng buộc min ≤ mặc định ≤ max cho giờ thuê và nạp ví', () {
+    test('giữ ràng buộc min ≤ mặc định ≤ max cho giờ thuê', () {
       final swapped = BusinessConfig.fromPublicMaps(
         order: {
           'app.order.rental-min-hours': 10,
           'app.order.rental-max-hours': 5,
         },
-        payment: {
-          'app.payment.topup-min-amount': 900000,
-          'app.payment.topup-max-amount': 100000,
-        },
       );
       expect(swapped.rentalMinHours, defaults.rentalMinHours);
       expect(swapped.rentalMaxHours, defaults.rentalMaxHours);
-      expect(swapped.topupMinAmount, defaults.topupMinAmount);
-      expect(swapped.topupMaxAmount, defaults.topupMaxAmount);
 
       final clamped = BusinessConfig.fromPublicMaps(
         order: {
@@ -205,20 +182,11 @@ void main() {
           'app.order.extend-max-hours': 6,
           'app.order.extend-default-hours': 12,
         },
-        payment: {
-          'app.payment.topup-min-amount': 50000,
-          'app.payment.topup-max-amount': 500000,
-          'app.payment.topup-default-amount': 10000,
-          'app.payment.topup-presets': [20000, 1000000],
-        },
       );
       expect(clamped.rentalDefaultHours, 10);
       expect(clamped.rentalQuickHours, [4, 8]);
       expect(clamped.clampRentalHours(72), 10);
       expect(clamped.extendDefaultHours, 6);
-      expect(clamped.topupDefaultAmount, 50000);
-      // Không mốc nào hợp lệ ⇒ còn lại đúng số tiền mặc định.
-      expect(clamped.topupPresets, [50000]);
     });
 
     test('toPublicMaps → fromPublicMaps giữ nguyên giá trị', () {
@@ -315,16 +283,6 @@ void main() {
         ).rentalDailyRateStandard,
         0,
       );
-    });
-
-    test('validateTopupAmount trả lỗi tiếng Việt khi ngoài giới hạn', () {
-      String fmt(int v) => '$vđ';
-      expect(defaults.validateTopupAmount(100000, fmt), isNull);
-      expect(
-        defaults.validateTopupAmount(1000, fmt),
-        'Số tiền nạp phải từ 10000đ đến 50000000đ',
-      );
-      expect(defaults.validateTopupAmount(60000000, fmt), isNotNull);
     });
   });
 }

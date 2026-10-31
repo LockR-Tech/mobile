@@ -21,7 +21,6 @@ import 'package:provider/provider.dart';
 import 'package:smart_laundry_locker/features/notifications/presentation/providers/notification_injection.dart';
 import 'package:smart_laundry_locker/features/profile/presentation/providers/profile_injection.dart';
 import 'package:smart_laundry_locker/core/network/api_client.dart';
-import 'package:smart_laundry_locker/features/wallet/presentation/providers/wallet_provider.dart';
 import 'package:smart_laundry_locker/features/qr_login/presentation/providers/qr_login_provider.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:smart_laundry_locker/features/home/presentation/providers/home_provider.dart';
@@ -281,10 +280,6 @@ class AislApp extends StatelessWidget {
           create: (_) =>
               NotificationInjection.provideNotificationProvider(ApiClient())
                 ..loadUnreadCount(),
-        ),
-        ChangeNotifierProvider(
-          create: (_) =>
-              WalletProvider(apiClient: ApiClient())..getWalletBalance(),
         ),
         ChangeNotifierProvider(create: (_) => QrLoginProvider()),
         ChangeNotifierProvider(

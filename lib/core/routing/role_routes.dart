@@ -41,8 +41,6 @@ const _droneToolsPrefix = '/drone';
 const _signInRoutes = <String>{
   // Ví, giao dịch, hoàn tiền
   AppRouter.transactions,
-  AppRouter.topUp,
-  AppRouter.withdraw,
   AppRouter.refundBankAccount,
   AppRouter.refundRequests,
   // Trợ lý hỏi đáp gọi API cần JWT
@@ -67,7 +65,6 @@ const _signInRoutes = <String>{
   AppRouter.profileDetail,
   AppRouter.editProfile,
   AppRouter.security,
-  AppRouter.plans,
   AppRouter.faceRegistration,
   AppRouter.bleTest,
   // Trang theo vai trò

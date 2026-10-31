@@ -1,6 +1,5 @@
 import 'package:smart_laundry_locker/core/network/api_client.dart';
 import 'package:smart_laundry_locker/features/locker/application/use_cases/get_available_lockers_use_case.dart';
-import 'package:smart_laundry_locker/injection_container.dart';
 import 'package:smart_laundry_locker/features/locker/application/use_cases/get_cabinet_lockers_use_case.dart';
 import 'package:smart_laundry_locker/features/locker/application/use_cases/get_location_cabinets_use_case.dart';
 import 'package:smart_laundry_locker/features/locker/application/use_cases/get_location_detail_use_case.dart';
@@ -21,7 +20,6 @@ import 'package:smart_laundry_locker/features/locker/infrastructure/data_sources
 import 'package:smart_laundry_locker/features/locker/infrastructure/data_sources/locker_remote_data_source_impl.dart';
 import 'package:smart_laundry_locker/features/locker/infrastructure/repositories/locker_repository_impl.dart';
 import 'package:smart_laundry_locker/features/locker/presentation/bloc/locker_rent_bloc.dart';
-import 'package:smart_laundry_locker/features/subscription/application/use_cases/get_pricings_use_case.dart';
 import 'locker_provider.dart';
 
 /// Dependency Injection cho Locker Feature
@@ -86,7 +84,6 @@ class LockerInjection {
       finishRental: FinishRentalUseCase(repository),
       getCabinetById: GetCabinetByIdUseCase(repository),
       getLockerById: GetLockerByIdUseCase(repository),
-      getPricings: InjectionContainer.provideGetPricingsUseCase(apiClient),
     );
   }
 
@@ -110,7 +107,6 @@ class LockerInjection {
       finishRentalUseCase: useCases.finishRental,
       getCabinetByIdUseCase: useCases.getCabinetById,
       getLockerByIdUseCase: useCases.getLockerById,
-      getPricingsUseCase: useCases.getPricings,
     );
   }
 
@@ -140,7 +136,6 @@ class LockerUseCases {
   final FinishRentalUseCase finishRental;
   final GetCabinetByIdUseCase getCabinetById;
   final GetLockerByIdUseCase getLockerById;
-  final GetPricingsUseCase getPricings;
 
   const LockerUseCases({
     required this.getLocations,
@@ -157,6 +152,5 @@ class LockerUseCases {
     required this.finishRental,
     required this.getCabinetById,
     required this.getLockerById,
-    required this.getPricings,
   });
 }

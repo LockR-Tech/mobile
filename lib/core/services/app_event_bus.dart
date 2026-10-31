@@ -12,7 +12,7 @@ class OrderChangedEvent extends AppEvent {
   final String? orderId;
 }
 
-/// A payment succeeded — wallet balance is now stale.
+/// A payment succeeded — order and payment history are now stale.
 class PaymentCompletedEvent extends AppEvent {
   const PaymentCompletedEvent({this.orderId});
   final String? orderId;
@@ -22,11 +22,6 @@ class PaymentCompletedEvent extends AppEvent {
 class PaymentFailedEvent extends AppEvent {
   const PaymentFailedEvent({this.orderId});
   final String? orderId;
-}
-
-/// Wallet balance changed (top-up, payment, refund).
-class WalletUpdatedEvent extends AppEvent {
-  const WalletUpdatedEvent();
 }
 
 /// A maintenance report status changed.

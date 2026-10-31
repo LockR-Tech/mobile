@@ -3,8 +3,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-import 'package:go_router/go_router.dart';
-import 'package:smart_laundry_locker/core/routing/app_router.dart';
 import 'package:smart_laundry_locker/core/network/api_client.dart';
 import 'package:smart_laundry_locker/core/services/app_event_bus.dart';
 import 'package:smart_laundry_locker/core/theme/shadcn_theme.dart';
@@ -13,10 +11,6 @@ import 'package:smart_laundry_locker/features/transactions/domain/entities/trans
 import 'package:smart_laundry_locker/features/transactions/domain/entities/spending_stats.dart';
 import 'package:smart_laundry_locker/features/transactions/presentation/providers/transaction_injection.dart';
 import 'package:smart_laundry_locker/features/transactions/presentation/providers/transaction_provider.dart';
-import 'package:smart_laundry_locker/features/wallet/domain/withdrawal_request.dart';
-import 'package:smart_laundry_locker/features/wallet/presentation/pages/withdrawal_requests_page.dart';
-import 'package:smart_laundry_locker/features/wallet/presentation/providers/wallet_provider.dart';
-import 'package:smart_laundry_locker/core/utils/currency_formatter.dart';
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
 import 'package:smart_laundry_locker/shared/shared.dart';
 
@@ -35,24 +29,16 @@ class _TransactionsPageState extends State<TransactionsPage> {
   void initState() {
     super.initState();
     _provider = TransactionInjection.provideTransactionProvider(ApiClient());
-    // Ví đổi do người khác (admin duyệt/từ chối rút tiền, điều chỉnh, hoàn
-    // tiền) hay nạp ví xong ⇒ tải lại lịch sử ngay; số dư + yêu cầu rút do
-    // WalletProvider tự tải lại.
+    // Vừa thanh toán xong một đơn ⇒ tải lại lịch sử ngay.
     _eventSub = AppEventBus.instance.events.listen((event) {
       if (!mounted) return;
-      if (event is WalletUpdatedEvent || event is PaymentCompletedEvent) {
+      if (event is PaymentCompletedEvent) {
         _provider.fetchTransactions(refresh: true, silent: true);
       }
     });
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _provider.fetchTransactions(refresh: true).then((_) {
-        if (!mounted) return;
-        final wallet = context.read<WalletProvider>();
-        wallet.getWalletBalance();
-        // Trạng thái thật của các giao dịch rút (chờ duyệt / đã chuyển / từ chối).
-        wallet.fetchWithdrawals();
-      });
+      _provider.fetchTransactions(refresh: true);
     });
   }
 
@@ -69,31 +55,21 @@ class _TransactionsPageState extends State<TransactionsPage> {
       value: _provider,
       child: Scaffold(
         backgroundColor: const Color(0xFFF8FAFC),
-        body: Consumer2<TransactionProvider, WalletProvider>(
-          builder: (context, provider, walletProvider, child) {
+        body: Consumer<TransactionProvider>(
+          builder: (context, provider, child) {
             return Column(
               children: [
                 BrandHeroHeader(
                   title: 'Lịch sử giao dịch',
-                  subtitle: 'Biến động số dư & chi tiết giao dịch ví',
+                  subtitle: 'Các khoản thanh toán & chi tiêu của bạn',
                   trailing: BrandCircleIconButton(
                     icon: Icons.refresh,
-                    onTap: () async {
-                      await provider.fetchTransactions(refresh: true);
-                      await walletProvider.getWalletBalance();
-                      await walletProvider.fetchWithdrawals();
-                    },
+                    onTap: () => provider.fetchTransactions(refresh: true),
                   ),
                 ),
                 Expanded(
                   child: RefreshIndicator(
-                    onRefresh: () async {
-                      await provider.fetchTransactions(refresh: true);
-                      if (!context.mounted) return;
-                      final wallet = context.read<WalletProvider>();
-                      await wallet.getWalletBalance();
-                      await wallet.fetchWithdrawals();
-                    },
+                    onRefresh: () => provider.fetchTransactions(refresh: true),
                     child: CustomScrollView(
                       physics: const AlwaysScrollableScrollPhysics(
                         parent: BouncingScrollPhysics(),
@@ -104,52 +80,12 @@ class _TransactionsPageState extends State<TransactionsPage> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               const SizedBox(height: 12),
-                              // Card 1: Số dư ví
-                              _WalletBalanceCard(
-                                balance: walletProvider.balance,
-                                onTopUp: () async {
-                                  final ok = await context.push<bool>(
-                                    AppRouter.topUp,
-                                  );
-                                  if (!mounted) return;
-                                  if (ok == true) {
-                                    await _provider.fetchTransactions(refresh: true);
-                                    await walletProvider.getWalletBalance();
-                                  }
-                                },
-                                onWithdraw: () async {
-                                  final ok = await context.push<bool>(
-                                    AppRouter.withdraw,
-                                  );
-                                  if (!mounted) return;
-                                  if (ok == true) {
-                                    await _provider.fetchTransactions(refresh: true);
-                                    await walletProvider.getWalletBalance();
-                                  }
-                                },
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.fromLTRB(16, 4, 16, 0),
-                                child: Align(
-                                  alignment: Alignment.centerRight,
-                                  child: TextButton.icon(
-                                    onPressed: () => Navigator.of(context).push<void>(
-                                      MaterialPageRoute(
-                                        builder: (_) => const WithdrawalRequestsPage(),
-                                      ),
-                                    ),
-                                    icon: const Icon(Icons.history_rounded, size: 18),
-                                    label: const Text('Yêu cầu rút tiền'),
-                                  ),
-                                ),
-                              ),
-
-                              // Card 2: Thống kê chi tiêu & phân bổ dịch vụ theo kỳ (Ngày, Tháng, Năm, Tất cả)
+                              // Thống kê chi tiêu & phân bổ dịch vụ theo kỳ (Ngày, Tháng, Năm, Tất cả)
                               _SpendingStatsCard(provider: provider),
 
                               const SizedBox(height: 16),
 
-                              // Card 3: Bộ lọc hình thức giao dịch (Ví, SePay, Rút tiền; VNPay/MoMo nếu có giao dịch cũ)
+                              // Bộ lọc hình thức giao dịch (SePay; ví, rút tiền, VNPay/MoMo chỉ khi có giao dịch cũ)
                               _PaymentMethodFilterBar(provider: provider),
 
                               const SizedBox(height: 8),
@@ -171,134 +107,6 @@ class _TransactionsPageState extends State<TransactionsPage> {
   }
 }
 
-/// Card Số dư ví (Giữ phong cách hiện có và tối ưu độ hoàn thiện)
-class _WalletBalanceCard extends StatelessWidget {
-  final double balance;
-  final VoidCallback onTopUp;
-  final VoidCallback onWithdraw;
-
-  const _WalletBalanceCard({
-    required this.balance,
-    required this.onTopUp,
-    required this.onWithdraw,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 14,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              color: AISLShadcnTheme.navySurface,
-              borderRadius: BorderRadius.circular(14),
-            ),
-            child: const Icon(
-              Icons.account_balance_wallet_rounded,
-              color: AISLShadcnTheme.navyPrimary,
-              size: 24,
-            ),
-          ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Số dư ví',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey.shade600,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  CurrencyFormatter.formatVnd(balance),
-                  style: const TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.w800,
-                    color: Color(0xFF0F172A),
-                    letterSpacing: -0.5,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              FilledButton(
-                onPressed: onTopUp,
-                style: FilledButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 7,
-                  ),
-                  minimumSize: const Size(82, 34),
-                  backgroundColor: AISLShadcnTheme.navyPrimary,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
-                child: const Text(
-                  'Nạp tiền',
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 6),
-              OutlinedButton(
-                onPressed: onWithdraw,
-                style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 7,
-                  ),
-                  minimumSize: const Size(82, 34),
-                  foregroundColor: AISLShadcnTheme.navyPrimary,
-                  side: const BorderSide(
-                    color: AISLShadcnTheme.navyPrimary,
-                    width: 1.2,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
-                child: const Text(
-                  'Rút tiền',
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// Card Thống kê chi tiêu & phân bổ theo từng dịch vụ / hình thức theo kỳ (Hôm nay, Tháng này, Năm nay, Tất cả)
 class _SpendingStatsCard extends StatefulWidget {
   final TransactionProvider provider;
 
@@ -796,22 +604,25 @@ class _ServiceBreakdownList extends StatelessWidget {
           'color': const Color(0xFF0D9488),
           'icon': Icons.local_laundry_service_rounded,
         },
-      {
-        'key': 'TOPUP',
-        'title': 'Nạp tiền ví',
-        'amount': topupAmt,
-        'count': topupCount,
-        'color': const Color(0xFF16A34A),
-        'icon': Icons.add_circle_outline_rounded,
-      },
-      {
-        'key': 'WITHDRAW',
-        'title': 'Rút tiền về STK',
-        'amount': withdrawAmt,
-        'count': withdrawCount,
-        'color': const Color(0xFFEA580C),
-        'icon': Icons.outbox_rounded,
-      },
+      // Ví đã gỡ khỏi app: nạp / rút ví chỉ hiện khi còn giao dịch cũ.
+      if (topupAmt > 0 || topupCount > 0)
+        {
+          'key': 'TOPUP',
+          'title': 'Nạp tiền ví',
+          'amount': topupAmt,
+          'count': topupCount,
+          'color': const Color(0xFF16A34A),
+          'icon': Icons.add_circle_outline_rounded,
+        },
+      if (withdrawAmt > 0 || withdrawCount > 0)
+        {
+          'key': 'WITHDRAW',
+          'title': 'Rút tiền về STK',
+          'amount': withdrawAmt,
+          'count': withdrawCount,
+          'color': const Color(0xFFEA580C),
+          'icon': Icons.outbox_rounded,
+        },
       if (orderAmt > 0 || orderCount > 0)
         {
           'key': 'ORDER',
@@ -931,7 +742,7 @@ class _ServiceBreakdownList extends StatelessWidget {
   }
 }
 
-/// Danh sách tổng tiền và giao dịch cho từng hình thức thanh toán (Ví, SePay, Rút tiền; VNPay/MoMo chỉ khi có giao dịch cũ)
+/// Danh sách tổng tiền và giao dịch cho từng hình thức thanh toán (SePay; ví, rút tiền, VNPay/MoMo chỉ khi có giao dịch cũ)
 class _MethodBreakdownList extends StatelessWidget {
   final TransactionProvider provider;
   final List<Transaction> periodTransactions;
@@ -958,14 +769,16 @@ class _MethodBreakdownList extends StatelessWidget {
     final totalVolume = walletAmt + sepayAmt + vnpayAmt + momoAmt + withdrawAmt;
 
     final methods = <Map<String, dynamic>>[
-      {
-        'key': 'WALLET',
-        'title': 'Ví Lock.R',
-        'amount': walletAmt,
-        'count': walletCnt,
-        'color': const Color(0xFF1E293B),
-        'icon': Icons.account_balance_wallet_rounded,
-      },
+      // Ví đã gỡ khỏi app: chỉ hiện khi còn giao dịch cũ trả bằng ví.
+      if (walletAmt > 0 || walletCnt > 0)
+        {
+          'key': 'WALLET',
+          'title': 'Ví Lock.R',
+          'amount': walletAmt,
+          'count': walletCnt,
+          'color': const Color(0xFF1E293B),
+          'icon': Icons.account_balance_wallet_rounded,
+        },
       {
         'key': 'SEPAY',
         'title': 'Cổng SePay QR',
@@ -993,14 +806,15 @@ class _MethodBreakdownList extends StatelessWidget {
           'color': const Color(0xFFC026D3),
           'icon': Icons.account_balance_wallet_outlined,
         },
-      {
-        'key': 'WITHDRAW',
-        'title': 'Rút tiền về STK',
-        'amount': withdrawAmt,
-        'count': withdrawCnt,
-        'color': const Color(0xFFEA580C),
-        'icon': Icons.outbox_rounded,
-      },
+      if (withdrawAmt > 0 || withdrawCnt > 0)
+        {
+          'key': 'WITHDRAW',
+          'title': 'Rút tiền về STK',
+          'amount': withdrawAmt,
+          'count': withdrawCnt,
+          'color': const Color(0xFFEA580C),
+          'icon': Icons.outbox_rounded,
+        },
     ];
 
     return Column(
@@ -1084,7 +898,7 @@ class _MethodBreakdownList extends StatelessWidget {
   }
 }
 
-/// Thanh bộ lọc hình thức giao dịch (Ví Lock.R, SePay QR, Rút tiền; VNPay/MoMo chỉ khi có giao dịch cũ)
+/// Thanh bộ lọc hình thức giao dịch (SePay QR; ví, rút tiền, VNPay/MoMo chỉ khi có giao dịch cũ)
 class _PaymentMethodFilterBar extends StatelessWidget {
   final TransactionProvider provider;
 
@@ -1092,18 +906,20 @@ class _PaymentMethodFilterBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // VNPay/MoMo đã ngừng hỗ trợ: chỉ còn bộ lọc khi lịch sử có giao dịch cũ.
+    // Ví, rút tiền, VNPay/MoMo đã ngừng: chỉ còn bộ lọc khi lịch sử có giao dịch cũ.
     bool hasHistory(String key) =>
         provider.selectedMethod == key || provider.getMethodCount(key) > 0;
     final filters = [
       {'key': 'ALL', 'label': 'Tất cả hình thức', 'icon': Icons.tune_rounded},
-      {'key': 'WALLET', 'label': 'Ví Lock.R', 'icon': Icons.account_balance_wallet_rounded},
+      if (hasHistory('WALLET'))
+        {'key': 'WALLET', 'label': 'Ví Lock.R', 'icon': Icons.account_balance_wallet_rounded},
       {'key': 'SEPAY', 'label': 'Cổng SePay', 'icon': Icons.qr_code_2_rounded},
       if (hasHistory('VNPAY'))
         {'key': 'VNPAY', 'label': 'Cổng VNPay', 'icon': Icons.credit_card_rounded},
       if (hasHistory('MOMO'))
         {'key': 'MOMO', 'label': 'Ví MoMo', 'icon': Icons.account_balance_wallet_outlined},
-      {'key': 'WITHDRAW', 'label': 'Rút tiền', 'icon': Icons.outbox_rounded},
+      if (hasHistory('WITHDRAW'))
+        {'key': 'WITHDRAW', 'label': 'Rút tiền', 'icon': Icons.outbox_rounded},
     ];
 
     final currentFilter = filters.firstWhere(
@@ -1483,21 +1299,12 @@ class _MBStyleTransactionItem extends StatelessWidget {
     final serviceLabel = transaction.detectedServiceLabel;
     final serviceColor = transaction.detectedServiceColor;
 
-    // Giao dịch rút: trạng thái lấy từ yêu cầu rút (mô tả backend ghi cứng
-    // "[Chờ duyệt]" lúc tạo, sau khi duyệt vẫn giữ nguyên).
+    // Giao dịch rút ví cũ: app không còn ví nên không tra trạng thái yêu cầu rút.
     final isWithdrawal =
         transaction.detectedService == 'WITHDRAW' && !isIncome;
-    final withdrawal = isWithdrawal
-        ? context.watch<WalletProvider>().withdrawalFor(transaction.referenceId)
-        : null;
-    final statusText = isWithdrawal
-        ? (withdrawal?.statusLabel ?? 'Xem trạng thái ở "Yêu cầu rút tiền"')
-        : 'Thành công';
-    final statusColor = isWithdrawal
-        ? (withdrawal != null
-              ? withdrawalStatusColor(withdrawal.status)
-              : const Color(0xFF64748B))
-        : const Color(0xFF16A34A);
+    final statusText = isWithdrawal ? 'Yêu cầu rút tiền' : 'Thành công';
+    final statusColor =
+        isWithdrawal ? const Color(0xFF64748B) : const Color(0xFF16A34A);
 
     final title = transaction.displayTitle;
     final showBalance = transaction.affectsWalletBalance;
@@ -1506,7 +1313,6 @@ class _MBStyleTransactionItem extends StatelessWidget {
     final content = [
       'GD: $amountSign$amountFmt | $infoPart',
       if (description.isNotEmpty) 'ND: $description',
-      if (isWithdrawal) 'Trạng thái: $statusText',
     ].join('\n');
 
     return InkWell(
@@ -1565,16 +1371,6 @@ class _MBStyleTransactionItem extends StatelessWidget {
                       ),
                     ),
                   ),
-                  if (withdrawal?.rejectionReason != null) ...[
-                    const SizedBox(height: 8),
-                    Text(
-                      'Lý do từ chối: ${withdrawal!.rejectionReason}',
-                      style: const TextStyle(
-                        fontSize: 13,
-                        color: Color(0xFF991B1B),
-                      ),
-                    ),
-                  ],
                   if (description.isNotEmpty) ...[
                     const SizedBox(height: 10),
                     Text(
@@ -1630,20 +1426,6 @@ class _MBStyleTransactionItem extends StatelessWidget {
                       ],
                     ),
                   ),
-                  if (isWithdrawal) ...[
-                    const SizedBox(height: 10),
-                    TextButton(
-                      onPressed: () {
-                        Navigator.pop(ctx);
-                        Navigator.of(context).push<void>(
-                          MaterialPageRoute(
-                            builder: (_) => const WithdrawalRequestsPage(),
-                          ),
-                        );
-                      },
-                      child: const Text('Xem các yêu cầu rút tiền'),
-                    ),
-                  ],
                   const SizedBox(height: 8),
                   FilledButton(
                     onPressed: () => Navigator.pop(ctx),

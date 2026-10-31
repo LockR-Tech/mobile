@@ -376,13 +376,6 @@ class _ProfilePageState extends State<ProfilePage>
               title: 'Bảo mật',
               onTap: _handleSecurity,
             ),
-            // Tạm ẩn: backend chưa có subscription service (/plans, /subscriptions 404).
-            if (FeatureFlags.subscriptionEnabled)
-              ProfileMenuItem(
-                icon: LucideIcons.badgePercent,
-                title: 'Gói dịch vụ',
-                onTap: _handlePlans,
-              ),
             // Kho voucher: `GET /api/promotions/vouchers/my` (mã đã lưu từ
             // trang "Ưu đãi").
             if (FeatureFlags.vouchersEnabled)
@@ -493,7 +486,7 @@ class _ProfilePageState extends State<ProfilePage>
               title: 'Hoàn tiền',
               onTap: () => context.push(AppRouter.refundRequests),
             ),
-            // Tạm ẩn: backend chưa có lịch sử giao dịch/ví (/payments/transactions 404).
+            // Lịch sử thanh toán (`GET /api/wallet/transactions` gồm cả khoản SePay của đơn).
             if (FeatureFlags.transactionsEnabled)
               ProfileMenuItem(
                 leadingWidget: const SizedBox(
@@ -708,11 +701,6 @@ class _ProfilePageState extends State<ProfilePage>
     context.push(AppRouter.security);
   }
 
-  void _handlePlans() {
-    if (!mounted) return;
-    context.push(AppRouter.plans);
-  }
-
   void _handleMyVouchers() {
     if (!mounted) return;
     context.push(AppRouter.myVouchers);
@@ -783,8 +771,8 @@ class _ProfilePageState extends State<ProfilePage>
             ),
             _helpRow(
               LucideIcons.wallet,
-              'Nạp ví / thanh toán',
-              'Mọi đơn thanh toán bằng chuyển khoản SePay (VietQR): quét mã hoặc bấm "Thanh toán bằng app ngân hàng" để mở app ngân hàng điền sẵn. Nạp ví cũng qua SePay ở mục Giao dịch.',
+              'Thanh toán',
+              'Mọi đơn thanh toán bằng chuyển khoản SePay (VietQR): quét mã hoặc bấm "Thanh toán bằng app ngân hàng" để mở app ngân hàng điền sẵn. Xem lại các khoản đã trả ở mục Giao dịch.',
             ),
           ],
         ),

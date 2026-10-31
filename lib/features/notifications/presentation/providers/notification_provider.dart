@@ -129,15 +129,6 @@ class NotificationProvider extends ChangeNotifier {
     // Admin duyệt/từ chối hoàn tiền, nhắc cập nhật STK nhận hoàn tiền.
     if (action.contains('REFUND') || refType == 'REFUND') {
       bus.emit(RefundUpdatedEvent(orderId: referenceId));
-      bus.emit(const WalletUpdatedEvent());
-    }
-
-    // Số dư/giao dịch/yêu cầu rút: `wallet.updated` (rút tiền được duyệt hay
-    // bị từ chối, admin điều chỉnh, hoàn vào ví) và nạp ví (tham chiếu WALLET).
-    if (action.contains('WALLET') ||
-        action.contains('WITHDRAW') ||
-        refType == 'WALLET') {
-      bus.emit(const WalletUpdatedEvent());
     }
 
     if (action.contains('LOYALTY') || refType == 'LOYALTY') {
@@ -146,7 +137,6 @@ class NotificationProvider extends ChangeNotifier {
 
     if (action == 'PAYMENT_COMPLETED') {
       bus.emit(PaymentCompletedEvent(orderId: referenceId));
-      bus.emit(const WalletUpdatedEvent());
       bus.emit(OrderChangedEvent(orderId: referenceId));
     } else if (action == 'PAYMENT_FAILED') {
       bus.emit(PaymentFailedEvent(orderId: referenceId));

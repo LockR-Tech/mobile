@@ -38,7 +38,7 @@ abstract final class AppLottieAssets {
   /// Icon nút "Báo cáo".
   static const String baoCao = '$_dir/baocao.json';
 
-  /// Icon nút "Nạp ví".
+  /// Icon mục "Giao dịch" ở Hồ sơ (trước là nút "Nạp ví").
   static const String napVi = '$_dir/napvi.json';
 
   /// Minh hoạ "Đã thanh toán" (thành công).
