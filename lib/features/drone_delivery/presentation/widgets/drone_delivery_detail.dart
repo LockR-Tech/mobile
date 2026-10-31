@@ -9,6 +9,7 @@ import 'package:smart_laundry_locker/features/drone_delivery/domain/entities/dro
 import 'package:smart_laundry_locker/features/drone_delivery/domain/entities/drone_delivery_status.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/domain/entities/drone_labels.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/domain/entities/drone_parcel.dart';
+import 'package:smart_laundry_locker/features/drone_delivery/presentation/widgets/drone_coordinates_line.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/presentation/widgets/drone_delivery_timeline.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/presentation/widgets/drone_order_cancel.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/domain/entities/drone_route_geometry.dart';
@@ -40,6 +41,19 @@ Map<DroneDeliveryStage, DateTime> droneStageTimes(DroneDeliveryStatus status) {
     times.putIfAbsent(DroneDeliveryStage.awaitingDispatch, () => createdAt);
   }
   return times;
+}
+
+/// Mốc nhật ký LẦN ĐẦU đạt mỗi chặng, chỉ những mốc có toạ độ — để timeline hiện kiện ở đâu lúc đó.
+Map<DroneDeliveryStage, DroneJourneyEvent> droneStageLocations(
+  DroneDeliveryStatus status,
+) {
+  final firstEvents = <DroneDeliveryStage, DroneJourneyEvent>{};
+  for (final event in status.journeyEvents.reversed) {
+    if (event.occurredAt == null || event.isPickupCodeSent) continue;
+    firstEvents.putIfAbsent(DroneDeliveryStage.fromRaw(event.toStage), () => event);
+  }
+  firstEvents.removeWhere((_, event) => !event.hasLocation);
+  return firstEvents;
 }
 
 /// Mốc phụ gắn vào từng chặng của timeline — trước đây nằm trong thẻ "Mốc thời
@@ -204,6 +218,7 @@ class DroneDeliveryDetail extends StatelessWidget {
             stage: stage,
             stageTimes: droneStageTimes(status),
             stepDetails: droneStepDetails(status),
+            stageLocations: droneStageLocations(status),
             steps: DroneDeliveryStage.timelineFor(
               homePickup: status.pickup != null,
             ),
@@ -1531,6 +1546,12 @@ class _JourneyRow extends StatelessWidget {
                   ),
                 ),
               ),
+              if (event.hasLocation)
+                JourneyLocationLine(
+                  latitude: event.latitude!,
+                  longitude: event.longitude!,
+                  source: event.locationSource,
+                ),
             ],
           ),
         ),

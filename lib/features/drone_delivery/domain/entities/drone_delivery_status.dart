@@ -344,6 +344,9 @@ class DroneJourneyEvent {
     this.actorName,
     this.note,
     this.occurredAt,
+    this.latitude,
+    this.longitude,
+    this.locationSource,
   });
 
   final int? id;
@@ -353,6 +356,16 @@ class DroneJourneyEvent {
   final String? actorName;
   final String? note;
   final DateTime? occurredAt;
+
+  /// Vị trí của kiện lúc ghi mốc — backend ghi một lần, khách/KTV/admin thấy cùng số.
+  /// Null ở mốc cũ hoặc khi không có số đo (drone thật mất tín hiệu).
+  final double? latitude;
+  final double? longitude;
+
+  /// PICKUP_ADDRESS | TECHNICIAN | SOURCE_LOCKER | DRONE | DRONE_SIMULATED | DESTINATION_LOCKER
+  final String? locationSource;
+
+  bool get hasLocation => latitude != null && longitude != null;
 
   /// Backend ghi việc gửi mã nhận hàng thành dòng READY_FOR_PICKUP → READY_FOR_PICKUP.
   bool get isPickupCodeSent =>

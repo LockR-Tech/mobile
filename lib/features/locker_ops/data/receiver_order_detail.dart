@@ -3,13 +3,24 @@ import 'package:smart_laundry_locker/features/locker_ops/data/order_milestone.da
 import 'package:smart_laundry_locker/features/locker_ops/data/receiver_order.dart';
 
 /// Một lần đổi chặng của đơn drone (`journey` trong chi tiết đơn phía người
-/// nhận) — server chỉ trả chặng và thời điểm, không có người thao tác.
+/// nhận) — server chỉ trả chặng, thời điểm và vị trí kiện (khi kiện ở trạm, trên drone hoặc
+/// ở tủ), không có người thao tác.
 class DroneJourneyStep {
-  const DroneJourneyStep({this.fromStage, required this.toStage, this.at});
+  const DroneJourneyStep({
+    this.fromStage,
+    required this.toStage,
+    this.at,
+    this.latitude,
+    this.longitude,
+    this.locationSource,
+  });
 
   final String? fromStage;
   final String toStage;
   final DateTime? at;
+  final double? latitude;
+  final double? longitude;
+  final String? locationSource;
 }
 
 /// Chi tiết một đơn phía người nhận / người lấy hộ —
@@ -120,6 +131,9 @@ class ReceiverOrderDetail {
               fromStage: _text(e['fromStage'])?.toUpperCase(),
               toStage: _text(e['toStage'])!.toUpperCase(),
               at: parseServerDateTime(e['occurredAt']),
+              latitude: (e['latitude'] as num?)?.toDouble(),
+              longitude: (e['longitude'] as num?)?.toDouble(),
+              locationSource: _text(e['locationSource']),
             ),
     ];
     // Server trả mới nhất trước; màn hình đọc từ trên xuống theo thời gian.

@@ -344,4 +344,42 @@ void main() {
     expect(find.text('Chỉ đường tới drone tại tủ bay'), findsOneWidget);
     expect(find.text('Tủ nhận khách đã chọn (người nhận lấy hàng)'), findsOneWidget);
   });
+
+  testWidgets('mỗi mốc hành trình có toạ độ kiện lúc đó — khách và KTV thấy như nhau', (tester) async {
+    final status = _status({
+      'deliveryStage': 'PICKED_UP',
+      'journeyEvents': [
+        {
+          'id': 1,
+          'toStage': 'AWAITING_DISPATCH',
+          'occurredAt': '2026-10-31T02:00:00',
+          'latitude': 10.7,
+          'longitude': 106.7,
+          'locationSource': 'PICKUP_ADDRESS',
+        },
+        {
+          'id': 2,
+          'fromStage': 'PICKUP_ASSIGNED',
+          'toStage': 'PICKED_UP',
+          'occurredAt': '2026-10-31T02:20:00',
+          'latitude': 10.700123,
+          'longitude': 106.700456,
+          'locationSource': 'TECHNICIAN',
+        },
+        // Mốc cũ: không có toạ độ thì không hiện dòng vị trí.
+        {'id': 3, 'fromStage': 'AWAITING_DISPATCH', 'toStage': 'PICKUP_ASSIGNED', 'occurredAt': '2026-10-31T02:05:00'},
+      ],
+    });
+    expect(status.journeyEvents.first.locationSource, 'TECHNICIAN');
+    expect(status.journeyEvents.first.hasLocation, isTrue);
+
+    for (final operator in [false, true]) {
+      await pump(tester, status, forOperator: operator);
+      // Nhật ký (2 mốc có toạ độ) + timeline chặng (Chờ KTV nhận, Đã lấy hàng).
+      expect(find.byKey(const ValueKey('journey-location')), findsNWidgets(4));
+      expect(find.textContaining('10.700123, 106.700456'), findsNWidgets(2));
+      expect(find.textContaining('Vị trí kỹ thuật viên lúc đó'), findsNWidgets(2));
+      expect(find.textContaining('Điểm lấy hàng người gửi ghim'), findsNWidgets(2));
+    }
+  });
 }
