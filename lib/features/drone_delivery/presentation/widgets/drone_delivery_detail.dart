@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
+import 'package:smart_laundry_locker/core/config/business_config.dart';
+import 'package:smart_laundry_locker/core/config/business_config_service.dart';
 import 'package:smart_laundry_locker/core/routing/app_router.dart';
 import 'package:smart_laundry_locker/core/theme/shadcn_theme.dart';
 import 'package:smart_laundry_locker/core/utils/app_date_time.dart';
@@ -14,6 +16,7 @@ import 'package:smart_laundry_locker/features/drone_delivery/presentation/widget
 import 'package:smart_laundry_locker/features/drone_delivery/presentation/widgets/drone_order_cancel.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/domain/entities/drone_route_geometry.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/presentation/widgets/drone_route_map_card.dart';
+import 'package:smart_laundry_locker/features/locker_ops/presentation/utils/business_rules_text.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/utils/locker_maps.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/ops_widgets.dart';
 
@@ -206,6 +209,10 @@ class DroneDeliveryDetail extends StatelessWidget {
           _ParcelReturnBanner(status: status, forOperator: forOperator),
         ],
         ...beforeRoute,
+        if (!stage.isTerminal && !stage.isIncident) ...[
+          const SizedBox(height: 16),
+          _StorageDeadlineCard(status: status, forOperator: forOperator),
+        ],
         const SizedBox(height: 16),
         DroneRouteMapCard(status: status, forOperator: forOperator),
         const SizedBox(height: 16),
@@ -405,6 +412,78 @@ class _InfoChip extends StatelessWidget {
                 color: Colors.white,
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Thời hạn lưu trữ, cùng một nội dung cho người gửi, người nhận và điều phối viên.
+/// Trước khi hàng vào ô chỉ báo số giờ vì hạn tính từ lúc drone thả hàng.
+class _StorageDeadlineCard extends StatelessWidget {
+  const _StorageDeadlineCard({required this.status, required this.forOperator});
+
+  final DroneDeliveryStatus status;
+  final bool forOperator;
+
+  /// Số giờ thật của đơn này: admin đổi cấu hình sau khi hàng vào ô không làm đổi hạn đã chốt.
+  int _storedHours(DateTime deadline, BusinessConfig config) {
+    final depositedAt = status.depositedAt;
+    return depositedAt == null
+        ? config.dronePickupHoursLimit
+        : (deadline.difference(depositedAt).inMinutes / 60).round();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final config = BusinessConfigService.instance.current;
+    final deadline = status.pickupDeadline;
+    final overdue = deadline != null && DateTime.now().isAfter(deadline);
+    final color = overdue
+        ? const Color(0xFFB91C1C)
+        : deadline != null
+        ? const Color(0xFFB45309)
+        : const Color(0xFF4F46E5);
+    final String message;
+    if (deadline == null) {
+      message = dronePickupPolicyText(config);
+    } else if (overdue) {
+      message =
+          'Đơn hàng đã quá hạn lấy lúc ${formatDeadlineVn(deadline)}. '
+          '${overtimePolicyText(config)}';
+    } else if (forOperator) {
+      message =
+          'Hạn người nhận lấy hàng: ${formatDeadlineVn(deadline)} '
+          '(lưu trữ ${_storedHours(deadline, config)} giờ).';
+    } else {
+      message =
+          '${droneStoredUntilText(_storedHours(deadline, config), deadline)} '
+          '${overtimePolicyText(config)}';
+    }
+    return Container(
+      key: const ValueKey('drone-storage-deadline'),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: color.withValues(alpha: 0.35)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(LucideIcons.clock, color: color, size: 20),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              message,
+              style: TextStyle(
+                color: color,
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                height: 1.4,
               ),
             ),
           ),

@@ -206,7 +206,7 @@ class _DronePickupSheetState extends State<_DronePickupSheet> {
         if (info.lockerAddress != null) _Row('Địa chỉ', info.lockerAddress!),
         if (info.boxNumber != null) _Row('Ô nhận', 'Ô số ${info.boxNumber}'),
         if (info.pickupDeadline != null)
-          _Row('Hạn lấy hàng', formatDateTimeVn(info.pickupDeadline)),
+          _Row('Lấy trước', formatDeadlineVn(info.pickupDeadline)),
         if (info.senderName != null) _Row('Người gửi', info.senderName!),
         if (info.hasCoordinates) ...[
           const SizedBox(height: 12),
