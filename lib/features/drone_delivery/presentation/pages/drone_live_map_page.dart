@@ -239,6 +239,17 @@ class _DroneLiveMapPageState extends ConsumerState<DroneLiveMapPage>
             options: MapOptions(
               initialCenter: _to ?? _defaultCenter,
               initialZoom: 16,
+              // Người dùng kéo bản đồ ra xa drone ⇒ thôi bám drone, nếu không mỗi bản tin vị trí lại
+              // kéo camera về. Chụm hai ngón để phóng to quanh drone vẫn bám. Bấm nút định vị để bám lại.
+              onPositionChanged: (camera, hasGesture) {
+                final drone = _latest;
+                if (!hasGesture || !_followDrone || drone == null || !mounted) return;
+                final onScreen = camera.latLngToScreenOffset(LatLng(drone.lat, drone.lng));
+                final centre = camera.nonRotatedSize.center(Offset.zero);
+                if ((onScreen - centre).distance > 80) {
+                  setState(() => _followDrone = false);
+                }
+              },
             ),
             children: [
               droneBaseTileLayer(),

@@ -1,4 +1,9 @@
+import 'dart:async';
+
+import 'package:provider/provider.dart';
 import 'package:smart_laundry_locker/core/routing/app_router.dart';
+import 'package:smart_laundry_locker/features/profile/presentation/post_login_prompts.dart';
+import 'package:smart_laundry_locker/features/profile/presentation/providers/profile_provider.dart';
 import 'package:smart_laundry_locker/core/services/app_initial_tab_service.dart';
 
 import 'package:smart_laundry_locker/shared/icons/custom_icon.dart'
@@ -61,7 +66,15 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _checkInitialAuth();
       _applyPendingInitialTab();
+      _runPostLoginPrompts();
     });
+  }
+
+  /// Mở app khi đã đăng nhập sẵn: vẫn hỏi Điều khoản dịch vụ nếu chưa đồng ý và nhắc bổ sung thông tin
+  /// theo hạn (cùng luồng với lúc vừa đăng nhập; mỗi tài khoản một lần mỗi lần mở app).
+  Future<void> _runPostLoginPrompts() async {
+    if (!await TokenService.hasToken() || !mounted) return;
+    unawaited(PostLoginPrompts.run(context.read<ProfileProvider>()));
   }
 
   Future<void> _checkInitialAuth() async {

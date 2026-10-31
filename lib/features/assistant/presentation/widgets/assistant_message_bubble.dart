@@ -151,43 +151,90 @@ class AssistantAnswerBubble extends StatelessWidget {
   }
 }
 
-/// "Đang tìm trong tài liệu…" khi chờ câu trả lời.
-class AssistantTypingIndicator extends StatelessWidget {
+/// Ba chấm nhấp nhô lần lượt trong bong bóng trợ lý khi chờ câu trả lời (giống
+/// "đang soạn tin" của ứng dụng chat). Đọc màn hình vẫn nghe "Trợ lý đang trả lời".
+class AssistantTypingIndicator extends StatefulWidget {
   const AssistantTypingIndicator({super.key});
+
+  static const semanticsLabel = 'Trợ lý đang trả lời';
+
+  @override
+  State<AssistantTypingIndicator> createState() =>
+      _AssistantTypingIndicatorState();
+}
+
+class _AssistantTypingIndicatorState extends State<AssistantTypingIndicator>
+    with SingleTickerProviderStateMixin {
+  static const _period = Duration(milliseconds: 1200);
+  static const _dotSize = 8.0;
+  static const _lift = 6.0;
+
+  late final AnimationController _controller = AnimationController(
+    vsync: this,
+    duration: _period,
+  )..repeat();
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  /// Mỗi chấm nảy trong 40 % chu kỳ, chấm sau trễ 15 % so với chấm trước.
+  double _offset(int index) {
+    final t = (_controller.value - index * 0.15) % 1.0;
+    if (t > 0.4) return 0;
+    return -_lift * Curves.easeInOut.transform(1 - (t / 0.2 - 1).abs());
+  }
 
   @override
   Widget build(BuildContext context) {
+    final reduceMotion = MediaQuery.maybeDisableAnimationsOf(context) ?? false;
     return _AssistantRow(
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
-        decoration: BoxDecoration(
-          color: context.cardBg,
-          border: Border.all(color: context.borderColor),
-          borderRadius: BorderRadius.circular(18),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const SizedBox(
-              width: 14,
-              height: 14,
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                color: AislBrand.blue,
+      child: Semantics(
+        label: AssistantTypingIndicator.semanticsLabel,
+        liveRegion: true,
+        child: Container(
+          key: const ValueKey('assistant-typing-dots'),
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
+          decoration: BoxDecoration(
+            color: context.cardBg,
+            border: Border.all(color: context.borderColor),
+            borderRadius: const BorderRadius.only(
+              topLeft: Radius.circular(4),
+              topRight: Radius.circular(18),
+              bottomLeft: Radius.circular(18),
+              bottomRight: Radius.circular(18),
+            ),
+          ),
+          child: ExcludeSemantics(
+            child: AnimatedBuilder(
+              animation: _controller,
+              builder: (context, _) => Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  for (var i = 0; i < 3; i++) ...[
+                    if (i > 0) const SizedBox(width: 5),
+                    Transform.translate(
+                      offset: Offset(0, reduceMotion ? 0 : _offset(i)),
+                      child: Container(
+                        width: _dotSize,
+                        height: _dotSize,
+                        decoration: BoxDecoration(
+                          color: AislBrand.blue.withValues(
+                            alpha: reduceMotion
+                                ? 0.6
+                                : 0.45 + 0.55 * (-_offset(i) / _lift),
+                          ),
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
               ),
             ),
-            const SizedBox(width: 10),
-            Flexible(
-              child: Text(
-                'Đang tìm trong tài liệu…',
-                style: TextStyle(
-                  fontSize: 13,
-                  fontStyle: FontStyle.italic,
-                  color: context.textMuted,
-                ),
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );

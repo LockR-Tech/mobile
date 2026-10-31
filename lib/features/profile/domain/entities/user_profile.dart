@@ -18,6 +18,10 @@ class UserProfile {
   /// như đã có mật khẩu (cùng mặc định với backend khi không đọc được).
   final bool hasPassword;
 
+  /// `false` = chưa bấm "Đồng ý" Điều khoản dịch vụ (`termsAccepted` của `GET /api/user/profile`) ⇒ app hỏi
+  /// trước khi dùng tiếp. Backend chưa có field này ⇒ coi như đã đồng ý để không chặn nhầm.
+  final bool termsAccepted;
+
   const UserProfile({
     required this.id,
     required this.fullName,
@@ -30,7 +34,23 @@ class UserProfile {
     required this.isVerified,
     required this.isActive,
     this.hasPassword = true,
+    this.termsAccepted = true,
   });
+
+  UserProfile copyWith({bool? termsAccepted}) => UserProfile(
+    id: id,
+    fullName: fullName,
+    firstName: firstName,
+    lastName: lastName,
+    email: email,
+    phoneNumber: phoneNumber,
+    status: status,
+    avatarUrl: avatarUrl,
+    isVerified: isVerified,
+    isActive: isActive,
+    hasPassword: hasPassword,
+    termsAccepted: termsAccepted ?? this.termsAccepted,
+  );
 
   bool get canEdit => status != UserStatus.BLOCKED;
 

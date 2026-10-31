@@ -433,6 +433,28 @@ class LockerOpsService {
         : '/api/orders/incoming/$orderId',
   );
 
+  /// Người gửi đơn gửi hàng thêm / đổi email người nhận ([email] null = giữ email đang có) và, khi hàng đã
+  /// vào tủ, gửi lại mã mở tủ tới email đó. Trả `{maskedEmail, includesPickupCode, sentAt}`;
+  /// `includesPickupCode == false` = hàng chưa vào tủ, chỉ lưu email.
+  Future<Map<String, dynamic>> sendReceiverEmail(int orderId, {String? email}) => _map(
+    'POST',
+    '/api/orders/$orderId/receiver-email',
+    body: {if (email != null && email.trim().isNotEmpty) 'email': email.trim()},
+  );
+
+  /// Gửi lại thông tin đơn nhận (kèm mã mở tủ khi hàng đã vào tủ) tới email tài khoản của mình.
+  /// Trả `{maskedEmail, includesPickupCode, sentAt}`. Lỗi: `RECEIVER_EMAIL_MISSING` (tài khoản chưa có
+  /// email), `RECEIVER_EMAIL_TOO_SOON` (bấm lại trong 1 phút), `RECEIVER_EMAIL_FAILED`.
+  Future<Map<String, dynamic>> resendReceiverEmail(
+    int orderId, {
+    bool delegated = false,
+  }) => _map(
+    'POST',
+    delegated
+        ? '/api/orders/delegated-to-me/$orderId/email'
+        : '/api/orders/incoming/$orderId/email',
+  );
+
   /// Mở ô chỉ bằng mã (PIN/QR/mã ủy quyền) — server tự tra ô theo mã.
   /// Trả `{accepted, message, boxId…}`; `accepted == false` là chưa mở.
   Future<Map<String, dynamic>> unlockWithCode(int lockerId, String code) =>

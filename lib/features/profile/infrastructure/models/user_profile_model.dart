@@ -16,6 +16,7 @@ class UserProfileModel {
   final bool? isVerified;
   final bool? isActive;
   final bool? hasPassword;
+  final bool? termsAccepted;
 
   const UserProfileModel({
     this.id,
@@ -29,6 +30,7 @@ class UserProfileModel {
     this.isVerified,
     this.isActive,
     this.hasPassword,
+    this.termsAccepted,
   });
 
   factory UserProfileModel.fromJson(Map<String, dynamic> json) {
@@ -67,6 +69,7 @@ class UserProfileModel {
       isVerified: isVerified ?? false,
       isActive: isActive ?? (status?.toUpperCase() != 'INACTIVE' && status?.toUpperCase() != 'BLOCKED'),
       hasPassword: hasPassword ?? true,
+      termsAccepted: termsAccepted ?? true,
     );
   }
 
