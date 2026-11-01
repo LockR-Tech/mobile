@@ -15,6 +15,7 @@ import 'package:smart_laundry_locker/features/drone_delivery/presentation/provid
 import 'package:smart_laundry_locker/features/drone_delivery/presentation/widgets/drone_coordinates_line.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/presentation/widgets/drone_marker.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/presentation/widgets/drone_base_tile_layer.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 /// Bản đồ tóm tắt hành trình: tủ gửi A, tủ nhận B, đoạn đã bay và vị trí drone
 /// ước theo chặng hiện tại. Trong thẻ chỉ phóng to/thu nhỏ bằng hai ngón, chạm đúp
@@ -36,9 +37,9 @@ class DroneRouteMapCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final view = _routeView(ref, status);
     if (view == null) {
-      return const _Frame(
+      return _Frame(
         child: Text(
-          'Tủ gửi hoặc tủ nhận chưa có toạ độ nên chưa vẽ được bản đồ hành trình.',
+          context.l10n.rmNoCoordinates,
           style: TextStyle(fontSize: 13, color: Color(0xFF64748B)),
         ),
       );
@@ -74,8 +75,8 @@ class DroneRouteMapCard extends ConsumerWidget {
             ),
           ),
           const SizedBox(height: 6),
-          const Text(
-            'Chụm/mở hai ngón hoặc bấm +/− để phóng to; bấm ⤢ để xem toàn màn hình.',
+          Text(
+            context.l10n.rmZoomHint,
             style: TextStyle(fontSize: 11.5, color: Color(0xFF64748B)),
           ),
           const SizedBox(height: 10),
@@ -85,12 +86,12 @@ class DroneRouteMapCard extends ConsumerWidget {
             children: [
               _Stat(
                 icon: LucideIcons.route,
-                text: 'Quãng đường ${droneKmLabel(totalKm)}',
+                text: context.l10n.rmTotal(droneKmLabel(totalKm)),
               ),
               if (remainingKm != null)
                 _Stat(
                   icon: LucideIcons.navigation,
-                  text: 'Còn khoảng ${droneKmLabel(remainingKm)}',
+                  text: context.l10n.rmRemaining(droneKmLabel(remainingKm)),
                 ),
               _Stat(icon: stage.icon, text: stage.title, color: stage.color),
             ],
@@ -109,12 +110,14 @@ class DroneRouteMapCard extends ConsumerWidget {
             // KTV: số đo bay thật xem ở khung camera; khách: chỉ nhắc mở bản đồ trực tiếp khi màn có nút đó.
             Text(
               reportedLive
-                  ? 'Toạ độ cập nhật mỗi khi drone gửi vị trí về. Bấm vào toạ độ để mở Google Maps.'
+                  ? context.l10n.rmLiveCoords
                   : forOperator
-                  ? 'Vị trí drone ước theo chặng bay hiện tại. Số đo bay thật (GPS, pin, chế độ bay) xem ở khung camera phía trên.'
+                  ? context.l10n.rmEstimatedCamera
                   : (droneLiveMapAvailable(status)
-                      ? 'Vị trí drone ước theo chặng bay hiện tại. Mở "Theo dõi trên bản đồ" để xem vị trí ${droneIsSimulated(status) ? 'mô phỏng' : 'trực tiếp'}.'
-                      : 'Vị trí drone ước theo chặng bay hiện tại.'),
+                      ? context.l10n.rmEstimatedOpenMap(
+                droneIsSimulated(status) ? context.l10n.rmSimulated : context.l10n.rmLive,
+              )
+                      : context.l10n.rmEstimated),
               style: const TextStyle(fontSize: 11.5, color: Color(0xFF64748B)),
             ),
           ],
@@ -332,21 +335,21 @@ class _DroneRouteMapState extends State<DroneRouteMap> {
               _MapButton(
                 key: const ValueKey('drone-route-zoom-in'),
                 icon: LucideIcons.plus,
-                tooltip: 'Phóng to',
+                tooltip: context.l10n.rmZoomIn,
                 onPressed: () => _zoomBy(1),
               ),
               const SizedBox(height: 6),
               _MapButton(
                 key: const ValueKey('drone-route-zoom-out'),
                 icon: LucideIcons.minus,
-                tooltip: 'Thu nhỏ',
+                tooltip: context.l10n.rmZoomOut,
                 onPressed: () => _zoomBy(-1),
               ),
               const SizedBox(height: 6),
               _MapButton(
                 key: const ValueKey('drone-route-fit'),
                 icon: LucideIcons.route,
-                tooltip: 'Xem cả tuyến',
+                tooltip: context.l10n.rmFitRoute,
                 onPressed: () => _controller.fitCamera(view.fit),
               ),
               if (widget.onExpand != null) ...[
@@ -354,7 +357,7 @@ class _DroneRouteMapState extends State<DroneRouteMap> {
                 _MapButton(
                   key: const ValueKey('drone-route-expand'),
                   icon: LucideIcons.maximize2,
-                  tooltip: 'Toàn màn hình',
+                  tooltip: context.l10n.rmFullscreen,
                   onPressed: widget.onExpand!,
                 ),
               ],
@@ -376,13 +379,13 @@ class DroneRouteMapPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final view = _routeView(ref, status);
     return Scaffold(
-      appBar: AppBar(title: const Text('Bản đồ hành trình')),
+      appBar: AppBar(title: Text(context.l10n.rmRouteMap)),
       body: view == null
-          ? const Center(
+          ? Center(
               child: Padding(
                 padding: EdgeInsets.all(24),
                 child: Text(
-                  'Tủ gửi hoặc tủ nhận chưa có toạ độ nên chưa vẽ được bản đồ hành trình.',
+                  context.l10n.rmNoCoordinates,
                   textAlign: TextAlign.center,
                 ),
               ),
@@ -443,7 +446,10 @@ class _MapButton extends StatelessWidget {
     return (
       point: LatLng(live.lat, live.lng),
       note:
-          'Drone gửi về lúc ${two(t.hour)}:${two(t.minute)}:${two(t.second)}${simulated ? ' · mô phỏng' : ''}',
+          L10n.current.rmDroneSentAt(
+          '${two(t.hour)}:${two(t.minute)}:${two(t.second)}',
+          simulated ? L10n.current.rmSimSuffix : '',
+        ),
       estimated: false,
     );
   }
@@ -457,10 +463,10 @@ class _MapButton extends StatelessWidget {
     return (
       point: LatLng(lat, lng),
       note: atLocker
-          ? 'Tại tủ nhận'
+          ? L10n.current.rmAtReceiver
           : simulated
-          ? 'Mô phỏng theo chặng bay'
-          : 'Theo telemetry của drone',
+          ? L10n.current.rmSimByStage
+          : L10n.current.rmTelemetry,
       estimated: false,
     );
   }
@@ -468,7 +474,7 @@ class _MapButton extends StatelessWidget {
   if (guess == null) return null;
   return (
     point: guess.point,
-    note: simulated ? '${guess.note} · mô phỏng' : guess.note,
+    note: simulated ? '${guess.note}${L10n.current.rmSimSuffix}' : guess.note,
     estimated: true,
   );
 }
@@ -488,19 +494,19 @@ class _MapButton extends StatelessWidget {
         source.latitude + (destination.latitude - source.latitude) * progress,
         source.longitude + (destination.longitude - source.longitude) * progress,
       ),
-      note: 'Ước theo chặng bay',
+      note: L10n.current.rmEstimatedByStage,
     );
   }
   return switch (stage) {
     DroneDeliveryStage.arrived ||
     DroneDeliveryStage.readyForPickup ||
-    DroneDeliveryStage.completed => (point: destination, note: 'Tại tủ nhận'),
+    DroneDeliveryStage.completed => (point: destination, note: L10n.current.rmAtReceiver),
     DroneDeliveryStage.awaitingDispatch ||
     DroneDeliveryStage.pickupAssigned ||
     DroneDeliveryStage.pickedUp ||
     DroneDeliveryStage.accepted => (
       point: source,
-      note: 'Tại tủ gửi, chưa cất cánh',
+      note: L10n.current.rmAtSourceNotLaunched,
     ),
     _ => null,
   };
@@ -522,12 +528,12 @@ class _Frame extends StatelessWidget {
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        const Row(
+        Row(
           children: [
             Icon(LucideIcons.map, size: 18, color: AISLShadcnTheme.navyPrimary),
             SizedBox(width: 8),
             Text(
-              'Bản đồ hành trình',
+              context.l10n.rmRouteMap,
               style: TextStyle(fontWeight: FontWeight.w800),
             ),
           ],

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
 import 'package:smart_laundry_locker/core/theme/shadcn_theme.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 /// Sheet nhắc người nhận chuẩn bị ra nhận khi drone sắp đến (mốc `approaching`).
 /// Mirror bố cục `finding_courier_sheet.dart` nhưng tối giản cho Phase 1.
@@ -60,8 +61,8 @@ class DroneApproachingSheet extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 20),
-          const Text(
-            'Drone sắp đến nơi',
+          Text(
+            context.l10n.asTitle,
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.w800,
@@ -70,8 +71,8 @@ class DroneApproachingSheet extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            'Vui lòng chuẩn bị ra nhận hàng.'
-            '${droneCode != null && droneCode!.isNotEmpty ? '\nMã drone: $droneCode' : ''}',
+            '${context.l10n.asPrepare}'
+                  '${droneCode != null && droneCode!.isNotEmpty ? context.l10n.asDroneCode(droneCode!) : ''}',
             textAlign: TextAlign.center,
             style: TextStyle(color: Colors.grey[600], fontSize: 15, height: 1.4),
           ),
@@ -93,7 +94,7 @@ class DroneApproachingSheet extends StatelessWidget {
                   ),
                   const SizedBox(width: 8),
                   Text(
-                    'Dự kiến: $etaText',
+                    context.l10n.asEta('$etaText'),
                     style: const TextStyle(
                       fontWeight: FontWeight.w600,
                       color: AISLShadcnTheme.navySecondary,
@@ -108,7 +109,7 @@ class DroneApproachingSheet extends StatelessWidget {
             width: double.infinity,
             child: ShadButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Đã hiểu'),
+              child: Text(context.l10n.commonGotIt),
             ),
           ),
           const SizedBox(height: 8),

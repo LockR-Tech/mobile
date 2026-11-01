@@ -4927,4 +4927,1898 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get qrCantScan => 'Can\'t scan? Enter the locker code';
+
+  @override
+  String secondsValue(Object seconds) {
+    return '${seconds}s';
+  }
+
+  @override
+  String durDays(int days) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: '$days days',
+      one: '1 day',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String durDaysHoursLong(Object days, Object hours) {
+    return '${days}d ${hours}h';
+  }
+
+  @override
+  String durHours(int hours) {
+    String _temp0 = intl.Intl.pluralLogic(
+      hours,
+      locale: localeName,
+      other: '$hours hours',
+      one: '1 hour',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String durHoursMinutesLong(Object hours, Object minutes) {
+    return '${hours}h ${minutes}m';
+  }
+
+  @override
+  String durMinutesSeconds(Object minutes, Object seconds) {
+    return '${minutes}m ${seconds}s';
+  }
+
+  @override
+  String get incStReported => 'Reported';
+
+  @override
+  String get incStEvidencePending => 'Collecting evidence';
+
+  @override
+  String get incStInvestigating => 'Investigating';
+
+  @override
+  String get incStRecoveryInProgress => 'Recovering the parcel';
+
+  @override
+  String get incStAwaitingAdmin => 'Awaiting admin review';
+
+  @override
+  String get incStResolutionProposed => 'Resolution proposed';
+
+  @override
+  String get incStAwaitingCustomer => 'Awaiting your response';
+
+  @override
+  String get incStResolutionInProgress => 'Resolution in progress';
+
+  @override
+  String get incStDisputed => 'Under review at your request';
+
+  @override
+  String get incStResolved => 'Resolved';
+
+  @override
+  String get incStClosed => 'Closed';
+
+  @override
+  String get incStManual => 'Staff handling it directly';
+
+  @override
+  String get recStOpen => 'Newly opened';
+
+  @override
+  String get recStAwaitingAssignment => 'Awaiting recovery assignment';
+
+  @override
+  String get recStAssigned => 'Assigned';
+
+  @override
+  String get recStAccepted => 'Accepted by staff';
+
+  @override
+  String get recStSearching => 'Searching for the parcel';
+
+  @override
+  String get recStFound => 'Parcel found';
+
+  @override
+  String get recStNotFound => 'Parcel not found yet';
+
+  @override
+  String get recStRecovered => 'Parcel recovered';
+
+  @override
+  String get recStSubmitted => 'Recovery result reported';
+
+  @override
+  String get recStVerified => 'Result verified';
+
+  @override
+  String get recStClosed => 'Parcel handed over to the warehouse';
+
+  @override
+  String get recStCancelled => 'Cancelled';
+
+  @override
+  String get parStInTransit => 'In transit';
+
+  @override
+  String get parStDropReported => 'Drop reported';
+
+  @override
+  String get parStRecoveryPending => 'Awaiting recovery';
+
+  @override
+  String get parStFound => 'Found';
+
+  @override
+  String get parStRecovered => 'Recovered';
+
+  @override
+  String get parStDamaged => 'Damaged';
+
+  @override
+  String get parStLost => 'Lost';
+
+  @override
+  String get parStReturnedToHub => 'Back at the Lock.R warehouse';
+
+  @override
+  String get parStRedeliveryPending => 'Awaiting redelivery';
+
+  @override
+  String get parStRedelivered => 'Redelivered';
+
+  @override
+  String get parStCompensated => 'Compensated';
+
+  @override
+  String get incEvReported => 'Parcel drop from drone recorded';
+
+  @override
+  String get incEvRecoveryAssigned => 'Recovery staff assigned';
+
+  @override
+  String get incEvRecoveryAccept => 'Staff accepted the recovery';
+
+  @override
+  String get incEvRecoverySearching => 'Staff started searching';
+
+  @override
+  String get incEvReturnFlightConfirmed => 'Drone returned to station';
+
+  @override
+  String get incEvRecoverySubmitted => 'Recovery result reported';
+
+  @override
+  String get incEvRecoveryVerified => 'Recovery result verified';
+
+  @override
+  String get incEvStationDispatched =>
+      'Parcel routed to a flight station for redelivery';
+
+  @override
+  String get incEvStationUnavailable =>
+      'Arranging a station to receive the parcel';
+
+  @override
+  String get incEvReturnedToHub => 'Parcel arrived at the Lock.R warehouse';
+
+  @override
+  String get incEvResolutionProposed => 'Lock.R proposed a resolution';
+
+  @override
+  String get incEvCustomerAccept => 'You accepted the resolution';
+
+  @override
+  String get incEvCustomerReview => 'You requested a review';
+
+  @override
+  String get incEvReturnFlightUpdated => 'Return flight update';
+
+  @override
+  String get incEvRedeliveryRequested => 'Redelivery order created';
+
+  @override
+  String get incEvRedeliveryUnavailable =>
+      'Couldn\'t create a redelivery order — staff will contact you';
+
+  @override
+  String get incEvRedeliveryCompleted => 'Redelivered successfully';
+
+  @override
+  String get incEvCompensationSubmitted => 'Compensation payout requested';
+
+  @override
+  String get incEvCompensationPaid => 'Compensation paid';
+
+  @override
+  String get incEvCompensationFailed => 'Compensation payout failed';
+
+  @override
+  String get incEvResolved => 'Incident resolved';
+
+  @override
+  String get resFreeRedelivery => 'Free redelivery';
+
+  @override
+  String get resRedeliveryPartial => 'Redelivery with partial compensation';
+
+  @override
+  String get resCompensationOnly => 'Compensation';
+
+  @override
+  String get resManual => 'Separate agreement';
+
+  @override
+  String get condIntact => 'intact';
+
+  @override
+  String get condMinor => 'minor damage';
+
+  @override
+  String get condMajor => 'major damage';
+
+  @override
+  String get condUnusable => 'unusable';
+
+  @override
+  String get propAwaiting => 'Awaiting your response';
+
+  @override
+  String get propAccepted => 'You accepted';
+
+  @override
+  String get propDisputed => 'Review requested';
+
+  @override
+  String get propSuperseded => 'Replaced by a new proposal';
+
+  @override
+  String get incEvRecoveryUpdate => 'Recovery update';
+
+  @override
+  String get incEvCompensationUpdate => 'Compensation update';
+
+  @override
+  String get incEvRedeliveryUpdate => 'Redelivery update';
+
+  @override
+  String get msNotInit => 'Not started';
+
+  @override
+  String get msAwaitingLoading => 'Awaiting loading';
+
+  @override
+  String get msReadyToLaunch => 'Ready to launch';
+
+  @override
+  String get msLaunching => 'Launching';
+
+  @override
+  String get msDeparted => 'Departed';
+
+  @override
+  String get msEnRoute => 'In flight';
+
+  @override
+  String get msApproaching => 'Approaching the receiving locker';
+
+  @override
+  String get msArrived => 'Arrived at the receiving locker';
+
+  @override
+  String get msDeposited => 'Parcel deposited';
+
+  @override
+  String get msFailed => 'Flight failed';
+
+  @override
+  String get msDropReported => 'Stopped due to a parcel drop';
+
+  @override
+  String get dosAwaitingDispatch => 'Drone delivery in progress';
+
+  @override
+  String get dosStoring => 'In the receiving locker';
+
+  @override
+  String get dosExpired => 'Pickup overdue';
+
+  @override
+  String get cancelWeather => 'Bad weather';
+
+  @override
+  String get cancelDroneFault => 'Drone fault';
+
+  @override
+  String get cancelPadNotReady => 'Landing pad not ready';
+
+  @override
+  String get cancelOperational => 'Operational reason';
+
+  @override
+  String get cancelOther => 'Other reason';
+
+  @override
+  String cancelReasonCode(Object code) {
+    return 'Reason #$code';
+  }
+
+  @override
+  String get modeDemo => 'Simulation (DEMO)';
+
+  @override
+  String get modeStandard => 'Real drone';
+
+  @override
+  String get stgTitleAwaitingTech =>
+      'Waiting for a technician to accept the pickup';
+
+  @override
+  String get stgTitleTechOnWay => 'Technician on the way to collect';
+
+  @override
+  String get stgTitlePickedUp => 'Collected, heading to the drone';
+
+  @override
+  String get stgTitleLoading => 'Loading onto the drone';
+
+  @override
+  String get stgTitleLaunching => 'Drone launching';
+
+  @override
+  String get stgTitleDeparted => 'Drone departed';
+
+  @override
+  String get stgTitleEnRoute => 'Drone on the way';
+
+  @override
+  String get stgTitleApproaching => 'Drone approaching';
+
+  @override
+  String get stgTitleArrived => 'Drone arrived at the locker';
+
+  @override
+  String get stgTitleReady => 'Ready for pickup';
+
+  @override
+  String get stgTitleDelayed => 'Order delayed';
+
+  @override
+  String get stgTitleFailed => 'Delivery not completed';
+
+  @override
+  String get stgTitleDrop => 'Parcel dropped';
+
+  @override
+  String get stgTitleCancelled => 'Drone order cancelled';
+
+  @override
+  String get stgTitleReceived => 'Received';
+
+  @override
+  String get stgTitleExpired => 'Pickup overdue';
+
+  @override
+  String get stgTitleUpdate => 'Order update';
+
+  @override
+  String get stgDescAwaitingTech =>
+      'After payment, the system finds the nearest available drone technician';
+
+  @override
+  String get stgDescTechOnWay =>
+      'The technician is heading to the pickup point; have the parcel and pickup code ready';
+
+  @override
+  String get stgDescPickedUp =>
+      'The parcel is being taken to the drone for direct loading, not into a locker compartment';
+
+  @override
+  String get stgDescLoading =>
+      'A drone is assigned; the technician is weighing and loading the parcel';
+
+  @override
+  String get stgDescLaunching =>
+      'The flight team is running the launch procedure';
+
+  @override
+  String get stgDescDeparted =>
+      'The drone has taken off from the source station';
+
+  @override
+  String get stgDescEnRoute => 'The drone is flying to the receiving locker';
+
+  @override
+  String stgDescEnRouteEta(Object eta) {
+    return 'The drone is expected to arrive in $eta';
+  }
+
+  @override
+  String get stgDescApproaching =>
+      'The drone is approaching your receiving locker';
+
+  @override
+  String get stgDescArrived =>
+      'The drone has arrived and is depositing the parcel';
+
+  @override
+  String get stgDescReady =>
+      'The parcel is in the receiving locker; use the order\'s PIN/QR to open the compartment';
+
+  @override
+  String get stgDescDelayed => 'The order is running behind schedule';
+
+  @override
+  String stgDescDelayedEta(Object eta) {
+    return 'The order is delayed, now expected in $eta';
+  }
+
+  @override
+  String get stgDescFailed => 'The delivery wasn\'t completed';
+
+  @override
+  String get stgDescDrop =>
+      'The parcel was reported dropped from the drone during flight. See the recovery progress and resolution in the order\'s incident card.';
+
+  @override
+  String get stgDescCancelled => 'The order stopped before the drone took off';
+
+  @override
+  String get stgDescReceived =>
+      'The recipient has taken the parcel from the locker';
+
+  @override
+  String get stgDescExpired =>
+      'The pickup deadline has passed, please contact support';
+
+  @override
+  String get stgDescUpdate => 'Your order has a new update';
+
+  @override
+  String get droneNoWeatherData => 'No weather data yet.';
+
+  @override
+  String get failWeather =>
+      'Flights paused due to weather or an operations order';
+
+  @override
+  String get failWeatherUnsafe => 'Unsafe weather on the flight route';
+
+  @override
+  String get failStationSuspended => 'The flight station is suspended';
+
+  @override
+  String get failDroneFault => 'Drone fault';
+
+  @override
+  String get failNoDrone => 'No drone available at the sending locker';
+
+  @override
+  String get failSourceLocker => 'Sending locker fault';
+
+  @override
+  String get failDestinationLocker => 'Receiving locker fault';
+
+  @override
+  String get failLandingPad => 'Drone landing pad not ready';
+
+  @override
+  String get failNoTechnician => 'No technician accepted the pickup';
+
+  @override
+  String get failLaunchOverdue => 'Drone launch overdue after pickup';
+
+  @override
+  String get failCustomerAbsent =>
+      'Couldn\'t meet the sender at the pickup point';
+
+  @override
+  String get failParcelRejected => 'The parcel didn\'t match its declaration';
+
+  @override
+  String get failAddressNotFound => 'Pickup address not found';
+
+  @override
+  String get failFlightIncident => 'In-flight incident';
+
+  @override
+  String get failShortCustomerAbsent => 'Sender not met';
+
+  @override
+  String get failShortParcelRejected => 'Parcel didn\'t match';
+
+  @override
+  String get failShortAddressNotFound => 'Address not found';
+
+  @override
+  String get failShortNoDrone => 'No drone available';
+
+  @override
+  String get failShortSourceLocker => 'Sending locker fault';
+
+  @override
+  String get failShortDestinationLocker => 'Receiving locker fault';
+
+  @override
+  String get failShortFlightIncident => 'In-flight incident';
+
+  @override
+  String get catDocument => 'Documents';
+
+  @override
+  String get catFood => 'Food';
+
+  @override
+  String get catClothing => 'Clothing';
+
+  @override
+  String get catElectronics => 'Electronics';
+
+  @override
+  String get catCosmetics => 'Cosmetics';
+
+  @override
+  String get heldSourceBox => 'Still in the sending compartment';
+
+  @override
+  String get heldFlightTeam => 'Held by the flight team';
+
+  @override
+  String get blockDisconnected => 'disconnected';
+
+  @override
+  String get blockMaintenance => 'under maintenance';
+
+  @override
+  String get blockSuspended => 'suspended';
+
+  @override
+  String get blockNoPad => 'no drone landing pad';
+
+  @override
+  String get blockPadMaintenance => 'landing pad under maintenance';
+
+  @override
+  String get blockPadFault => 'landing pad fault';
+
+  @override
+  String get droneErrOwnerOnly =>
+      'Only the person who placed the order can do this.';
+
+  @override
+  String get droneErrNotYourIncident =>
+      'This incident doesn\'t belong to your order.';
+
+  @override
+  String get droneErrNoReview =>
+      'The order\'s policy doesn\'t allow requesting a review of the resolution.';
+
+  @override
+  String get droneErrAlreadyResponded =>
+      'This proposal has already been answered. Please reload.';
+
+  @override
+  String get droneErrNoProposal =>
+      'There\'s no proposal waiting for your response.';
+
+  @override
+  String get droneErrInvalidChoice => 'Invalid choice.';
+
+  @override
+  String get droneErrRecipientLookup =>
+      'Couldn\'t look up the recipient. Please try again later.';
+
+  @override
+  String get droneNoPermission =>
+      'You don\'t have permission to view this drone order. Only the sender and recipient can track it.';
+
+  @override
+  String get droneStatusLoadFailedRetrying =>
+      'Couldn\'t load the delivery status. Retrying...';
+
+  @override
+  String get dronePickupCodeNotSupported =>
+      'The server doesn\'t support looking up the pickup code in the app yet. Use the PIN sent by notification, email or SMS.';
+
+  @override
+  String get droneTrackingDisabled =>
+      'Drone delivery tracking is temporarily disabled.';
+
+  @override
+  String get droneStatusLoadFailed => 'Couldn\'t load the delivery status.';
+
+  @override
+  String get ddTlPayment => 'Payment';
+
+  @override
+  String get ddTlParcelDropped => 'Parcel placed in sending compartment';
+
+  @override
+  String get ddTlHomePickup => 'Pickup at the sender\'s home';
+
+  @override
+  String get ddTlLoaded => 'Loaded onto the drone';
+
+  @override
+  String get ddTlReady => 'Ready to launch';
+
+  @override
+  String get ddTlCodeSent => 'Code sent to the recipient';
+
+  @override
+  String get ddTlPickupDeadline => 'Pickup deadline';
+
+  @override
+  String get ddTlReceived => 'Recipient picked up';
+
+  @override
+  String get ddProgress => 'Delivery progress';
+
+  @override
+  String get ddClosedTitle => 'Drone order closed';
+
+  @override
+  String get ddClosedBody =>
+      'The flight wasn\'t completed, so this order is closed; see the resolution in the order\'s incident section.';
+
+  @override
+  String get ddAwaitingPaymentTitle => 'Awaiting payment';
+
+  @override
+  String get ddAwaitingPaymentBody =>
+      'Once paid, the system will find a drone technician to collect the parcel';
+
+  @override
+  String get ddAwaitingTeamTitle => 'Awaiting the flight team';
+
+  @override
+  String get ddAwaitingTeamBody =>
+      'The parcel is ready at the Lock.R station, waiting for a drone technician to load and launch it';
+
+  @override
+  String get ddReadyBody =>
+      'The parcel is loaded and sealed on the drone, waiting for the flight team to launch';
+
+  @override
+  String ddAboutMinutesLeft(Object minutes) {
+    return 'About $minutes min left';
+  }
+
+  @override
+  String ddSince(Object time) {
+    return 'Since $time';
+  }
+
+  @override
+  String ddOverdueAt(Object deadline, Object policy) {
+    return 'The pickup deadline passed at $deadline. $policy';
+  }
+
+  @override
+  String ddPickupDeadline(Object deadline, Object hours) {
+    return 'Recipient pickup deadline: $deadline (stored for $hours hours).';
+  }
+
+  @override
+  String get ddFlightIncompleteClosed =>
+      'The flight wasn\'t completed, so this order is closed. See the resolution (redelivery or compensation) in the order\'s incident section.';
+
+  @override
+  String get ddUnpaidSearch =>
+      'The order is unpaid. Once paid, the system will start looking for a drone technician to collect it.';
+
+  @override
+  String ddAt(Object time) {
+    return 'At: $time';
+  }
+
+  @override
+  String ddReason(Object reason) {
+    return 'Reason: $reason';
+  }
+
+  @override
+  String ddNoteValue(Object note) {
+    return 'Note: $note';
+  }
+
+  @override
+  String ddTicket(Object id) {
+    return 'Incident ticket: #$id';
+  }
+
+  @override
+  String get ddParcelWithSender =>
+      'The parcel hasn\'t been collected and is still with the sender.';
+
+  @override
+  String get ddRefundRecorded =>
+      'The refund request has been recorded. An admin will transfer it to the orderer\'s bank account.';
+
+  @override
+  String get ddRefundDone => 'The refund has been transferred to the orderer.';
+
+  @override
+  String get ddRefundByIncident =>
+      'The amount paid is handled under the incident resolution: free redelivery or compensation transferred to the linked bank account.';
+
+  @override
+  String get ddRefundNotRecorded =>
+      'No refund request was recorded — please contact support.';
+
+  @override
+  String ddWeightOver(Object actual, Object expected) {
+    return 'The parcel actually weighs $actual, more than the declared $expected.';
+  }
+
+  @override
+  String ddSurchargeOperator(Object amount) {
+    return 'Waiting for the customer to pay an extra $amount before launching.';
+  }
+
+  @override
+  String ddSurchargeReceiver(Object amount) {
+    return 'Waiting for the sender to pay an extra $amount for the drone to take off.';
+  }
+
+  @override
+  String ddSurchargeSender(Object amount) {
+    return 'You need to pay an extra $amount for the drone to take off. If you don\'t agree, you can cancel: what you paid will be refunded and the flight team will return the parcel.';
+  }
+
+  @override
+  String get ddUnpaidOperator =>
+      'The customer hasn\'t paid. It can only be accepted once paid.';
+
+  @override
+  String get ddUnpaidReceiver =>
+      'The sender hasn\'t paid yet. The flight team will accept it once the sender pays.';
+
+  @override
+  String get ddUnpaidSender =>
+      'The order is unpaid. The flight team will only accept it after you pay.';
+
+  @override
+  String get ddPaySurcharge => 'Pay the difference';
+
+  @override
+  String get ddPayNow => 'Pay now';
+
+  @override
+  String get ddDeclineSurcharge => 'Decline · cancel and get a refund';
+
+  @override
+  String ddIncidentLabel(Object label) {
+    return 'The order has an incident: $label';
+  }
+
+  @override
+  String ddFromTime(Object time) {
+    return 'Since: $time';
+  }
+
+  @override
+  String ddAutoCloseOperator(Object time) {
+    return 'If not fixed before $time, the order automatically ends as \"delivery not completed\" and the customer is refunded.';
+  }
+
+  @override
+  String ddAutoCloseCustomer(Object time) {
+    return 'If it isn\'t fixed before $time, the order will end and you\'ll be refunded.';
+  }
+
+  @override
+  String get ddChangePlan =>
+      'Change the plan or confirm the delivery as not completed.';
+
+  @override
+  String get ddTeamHandling => 'The flight team is handling it.';
+
+  @override
+  String ddPickedUp(Object at) {
+    return 'Collected$at';
+  }
+
+  @override
+  String ddPickedUpAt(Object time) {
+    return ' at $time';
+  }
+
+  @override
+  String get ddTechnician => 'Technician';
+
+  @override
+  String get ddYouHeadingToPickup => 'You\'re on your way to collect';
+
+  @override
+  String ddTechHeadingToPickup(Object who) {
+    return '$who is on the way to collect';
+  }
+
+  @override
+  String get ddYouAreInvited => 'You\'ve been invited to collect';
+
+  @override
+  String get ddSearchingTech => 'Looking for the nearest drone technician';
+
+  @override
+  String get ddAwaitingDispatchPickup => 'Awaiting pickup dispatch';
+
+  @override
+  String get ddTechAfterPayment =>
+      'A technician will collect the parcel after the order is paid';
+
+  @override
+  String get ddHomePickup => 'Home pickup';
+
+  @override
+  String get ddPickupCode => 'Pickup code';
+
+  @override
+  String get ddPickupCodeHint =>
+      'Read this code to the technician when handing over the parcel. Don\'t share it with anyone else.';
+
+  @override
+  String get ddPickupPoint => 'Pickup point';
+
+  @override
+  String get ddDirections => 'Instructions';
+
+  @override
+  String get ddTechPhone => 'Technician phone';
+
+  @override
+  String get ddDistanceAtAccept => 'Distance when accepted';
+
+  @override
+  String get ddPickupToSource => 'Pickup point → sending locker';
+
+  @override
+  String get ddPickupNote => 'Pickup note';
+
+  @override
+  String get ddPickupPhoto => 'Parcel photo at pickup';
+
+  @override
+  String ddPhotoTakenAt(Object time) {
+    return 'Taken at $time';
+  }
+
+  @override
+  String get ddDroneBoxAtSource =>
+      'the drone compartment at the sending locker';
+
+  @override
+  String ddDroneBoxNumberAtSource(Object box) {
+    return 'drone compartment $box at the sending locker';
+  }
+
+  @override
+  String ddSenderNotDroppedOperator(Object where) {
+    return 'The sender hasn\'t confirmed placing the parcel in $where. It can only be accepted once the parcel is inside.';
+  }
+
+  @override
+  String ddWaitingSenderDrop(Object where) {
+    return 'Waiting for the sender to place the parcel in $where.';
+  }
+
+  @override
+  String ddDropThenConfirm(Object where) {
+    return 'Place the parcel in $where and confirm below. The flight team only accepts the order after you confirm.';
+  }
+
+  @override
+  String get ddIDropped => 'I\'ve placed the parcel';
+
+  @override
+  String ddParcelReturnedAt(Object time) {
+    return 'The parcel was returned to the sender at $time.';
+  }
+
+  @override
+  String get ddParcelInBoxOperator =>
+      'The parcel is still in the sending compartment. Take it out, return it to the sender, then confirm.';
+
+  @override
+  String get ddParcelWithTeamOperator =>
+      'The flight team is holding the parcel. Return it to the sender, then confirm.';
+
+  @override
+  String get ddParcelInBoxCustomer =>
+      'Your parcel is still in the sending compartment. The flight team will contact you to return it.';
+
+  @override
+  String ddParcelHeldByTech(Object where) {
+    return 'The technician is holding the parcel and will bring it back$where.';
+  }
+
+  @override
+  String get ddToSender => ' to the sender';
+
+  @override
+  String ddAtAddress(Object address) {
+    return ' at $address';
+  }
+
+  @override
+  String get ddCancelOrder => 'Cancel order';
+
+  @override
+  String get ddCancelAllowed =>
+      'You can cancel the order until the flight team accepts it.';
+
+  @override
+  String get ddRoute => 'Delivery route';
+
+  @override
+  String get ddSystemPickedStation =>
+      'Flight locker chosen by the system (the technician loads the parcel directly onto the drone)';
+
+  @override
+  String ddLegacyBox(Object box) {
+    return 'Older order: the parcel was placed in compartment $box';
+  }
+
+  @override
+  String ddSentAt(Object time) {
+    return 'Sent at: $time';
+  }
+
+  @override
+  String get ddNotSentYet => 'Not sent yet';
+
+  @override
+  String get ddDirectionsToDrone =>
+      'Directions to the drone at the flight locker';
+
+  @override
+  String get ddReceiverLockerOperator =>
+      'Receiving locker chosen by the customer (recipient picks up)';
+
+  @override
+  String get ddReceiverLockerCustomer =>
+      'Receiving locker you chose (recipient picks up)';
+
+  @override
+  String ddReceiveBox(Object box) {
+    return 'Receiving compartment $box';
+  }
+
+  @override
+  String ddDepositedAt(Object time) {
+    return 'In the locker at: $time';
+  }
+
+  @override
+  String get ddNotArrived => 'Not yet';
+
+  @override
+  String ddCodeSentAt(Object time) {
+    return 'Code sent to the recipient at: $time';
+  }
+
+  @override
+  String ddReceivedAt(Object time) {
+    return 'Recipient picked up at: $time';
+  }
+
+  @override
+  String get ddNotReceived => 'Not picked up';
+
+  @override
+  String get ddDirectionsToReceiver => 'Directions to the receiving locker';
+
+  @override
+  String get ddLockerNoAddress =>
+      'This locker has no address or coordinates for directions.';
+
+  @override
+  String get ddCantOpenMaps => 'Couldn\'t open a maps app on this device.';
+
+  @override
+  String get ddOrderInfo => 'Order information';
+
+  @override
+  String get ddOrderCode => 'Order code';
+
+  @override
+  String get ddOrderStatus => 'Order status';
+
+  @override
+  String get ddPausedDrop => 'Paused due to a parcel drop';
+
+  @override
+  String get ddDroneFee => 'Drone delivery fee';
+
+  @override
+  String get ddWeightSurcharge => 'Of which weight surcharge';
+
+  @override
+  String ddDiscountCodeValue(Object code) {
+    return 'Discount code $code';
+  }
+
+  @override
+  String ddUsePoints(Object points) {
+    return 'Used $points points';
+  }
+
+  @override
+  String get ddAmountPaid => 'Amount paid';
+
+  @override
+  String get ddMethod => 'Method';
+
+  @override
+  String get ddPaymentRef => 'Payment reference';
+
+  @override
+  String get ddBoxAtLocker => 'Receiving compartment';
+
+  @override
+  String get ddDeclaredWeight => 'Declared weight';
+
+  @override
+  String get ddParcelSize => 'Parcel dimensions';
+
+  @override
+  String get ddCaution => 'Caution';
+
+  @override
+  String get ddDroppedAtLabel => 'Placed in sending compartment at';
+
+  @override
+  String get ddTechReceivedAt => 'Technician collected at';
+
+  @override
+  String get ddParcelDescription => 'Parcel description';
+
+  @override
+  String get ddNoDescription => 'No description';
+
+  @override
+  String get ddFlightMode => 'Flight mode';
+
+  @override
+  String get ddPeople => 'People involved';
+
+  @override
+  String get ddDroneTech => 'Drone technician';
+
+  @override
+  String get ddNoTechYet => 'Not accepted yet';
+
+  @override
+  String get ddTechAccepted => 'Accepted';
+
+  @override
+  String get ddLoader => 'Loaded by';
+
+  @override
+  String get ddNotLoaded => 'Not loaded';
+
+  @override
+  String get ddLoaded => 'Loaded';
+
+  @override
+  String get ddNotChecked => 'Not checked';
+
+  @override
+  String get ddPass => 'Passed';
+
+  @override
+  String get ddFail => 'Failed';
+
+  @override
+  String get ddMissionRecord => 'Flight mission & loading record';
+
+  @override
+  String get ddMissionCode => 'Mission ID';
+
+  @override
+  String get ddNotAssigned => 'Not assigned';
+
+  @override
+  String get ddMissionStatus => 'Mission status';
+
+  @override
+  String get ddDronePosition => 'Current drone position';
+
+  @override
+  String get ddNoData => 'No data yet';
+
+  @override
+  String get ddActualWeight => 'Actual weight';
+
+  @override
+  String get ddSealCode => 'Seal code';
+
+  @override
+  String get ddNotSealed => 'Not sealed';
+
+  @override
+  String get ddParcelMatched => 'Correct parcel, correct order';
+
+  @override
+  String get ddPayloadSecured => 'Parcel secured';
+
+  @override
+  String get ddCompartmentLocked => 'Cargo bay locked';
+
+  @override
+  String get ddLoadingNote => 'Loading note';
+
+  @override
+  String get ddEvLoaded => 'Loaded onto the drone';
+
+  @override
+  String get ddEvCodeSent => 'Pickup code sent to the recipient';
+
+  @override
+  String get ddEvCreated => 'Drone order created';
+
+  @override
+  String get ddJourneyLog => 'Journey log · newest first';
+
+  @override
+  String get ddNoJourney => 'No journey events yet.';
+
+  @override
+  String get ddSystem => 'System';
+
+  @override
+  String get ddLockrStaff => 'Lock.R staff';
+
+  @override
+  String get ddNewest => 'Latest';
+
+  @override
+  String dbBoxTaken(Object box) {
+    return '$box was just taken by someone else. Please choose another drone compartment.';
+  }
+
+  @override
+  String get dbYourBox => 'The compartment you chose';
+
+  @override
+  String get dbCheckingBoxes => 'Checking drone compartments…';
+
+  @override
+  String get dbNoFreeBoxes => 'No free drone compartments';
+
+  @override
+  String get dbChooseBox =>
+      'Choose the compartment the recipient will pick up from';
+
+  @override
+  String dbDistancePrefix(Object distance) {
+    return '$distance away · ';
+  }
+
+  @override
+  String get dbNoPad => 'No drone landing pad';
+
+  @override
+  String get dbNoCoordinates => 'Locker has no coordinates';
+
+  @override
+  String get dbCheckingBoxesShort => 'Checking drone compartments';
+
+  @override
+  String get dbOutOfBoxes => 'No free drone compartments';
+
+  @override
+  String dbFreeBoxes(Object count) {
+    return '$count free drone compartments';
+  }
+
+  @override
+  String dbEnterName(Object who) {
+    return 'Enter the $who\'s name';
+  }
+
+  @override
+  String dbInvalidPhone(Object who) {
+    return 'The $who\'s phone number is invalid';
+  }
+
+  @override
+  String dbInvalidEmail(Object who) {
+    return 'The $who\'s email is invalid';
+  }
+
+  @override
+  String get dbChoosePickup => 'Choose the pickup point';
+
+  @override
+  String get dbWhoSender => 'sender';
+
+  @override
+  String get dbWhoReceiver => 'recipient';
+
+  @override
+  String get dbChooseReceiverLocker => 'Choose the receiving locker';
+
+  @override
+  String get dbCheckingReceiverBoxes =>
+      'Checking free drone compartments at the receiving locker, please wait a moment';
+
+  @override
+  String get dbReceiverFull =>
+      'This receiving locker has no free drone compartments, please choose another';
+
+  @override
+  String get dbChooseReceiverBox =>
+      'Choose a free drone compartment at the receiving locker';
+
+  @override
+  String get dbChooseCategory => 'Choose the parcel type';
+
+  @override
+  String get dbSizeAllOrNone =>
+      'Enter the parcel\'s length, width and height (cm), or leave all three empty';
+
+  @override
+  String dbTooLarge(Object l, Object w, Object h) {
+    return 'The parcel doesn\'t fit the drone bay (max $l × $w × $h cm)';
+  }
+
+  @override
+  String dbMaxValue(Object amount) {
+    return 'Drones only carry parcels worth up to $amount';
+  }
+
+  @override
+  String get dbConfirmNoProhibited =>
+      'You must confirm the parcel contains no items prohibited from flight';
+
+  @override
+  String get dbPaidByVoucher =>
+      'The order was covered by your offer. The flight team will accept your order.';
+
+  @override
+  String dbCreatedNotPaid(Object error) {
+    return 'The drone order was created but payment failed: $error';
+  }
+
+  @override
+  String get dbTitle => 'Send by drone';
+
+  @override
+  String get dbIntro =>
+      'After you book and pay, the nearest drone technician collects your parcel and takes it to the drone at the flight locker to load it directly (not into a compartment). The drone then flies to the receiving compartment you chose. The recipient picks up with an opening code sent by email.';
+
+  @override
+  String get dbSuspended =>
+      'Drone delivery is temporarily suspended (weather or an operational incident). Please try again later.';
+
+  @override
+  String get dbPickupAt => 'Pick up at';
+
+  @override
+  String get dbTechInstructions => 'Instructions for the technician (optional)';
+
+  @override
+  String get dbTechInstructionsHint => 'Floor, gate, when you\'re home…';
+
+  @override
+  String get dbSenderName => 'Sender\'s full name *';
+
+  @override
+  String get dbSenderPhone => 'Sender\'s phone number *';
+
+  @override
+  String get dbSenderEmail => 'Sender\'s email *';
+
+  @override
+  String get dbReceiverName => 'Recipient\'s full name *';
+
+  @override
+  String get dbReceiverPhone => 'Recipient\'s phone number *';
+
+  @override
+  String get dbReceiverEmail => 'Recipient\'s email *';
+
+  @override
+  String get dbEmailInfo =>
+      'When the drone launches, both sender and recipient get an email. When the parcel reaches the locker, the opening code is emailed to the recipient.';
+
+  @override
+  String get dbReceiverLockerField => 'Receiving locker *';
+
+  @override
+  String get dbLoadingLockers => 'Loading receiving lockers...';
+
+  @override
+  String get dbNoLockersInSystem => 'No lockers in the system yet';
+
+  @override
+  String get dbReceiverBoxField => 'Receiving drone compartment *';
+
+  @override
+  String dbFreeReceiverBoxes(Object count) {
+    return 'Free drone compartments: $count';
+  }
+
+  @override
+  String get dbChecking => 'checking…';
+
+  @override
+  String dbLockerCantReceive(Object reason) {
+    return 'This locker can\'t receive drones: $reason';
+  }
+
+  @override
+  String dbWeightField(Object max) {
+    return 'Weight * (max $max per order)';
+  }
+
+  @override
+  String dbWeightHint(Object tolerance) {
+    return 'Choose a level equal to or above the real weight. The technician re-weighs it when loading: if it\'s more than $tolerance g over, you pay the difference before the drone flies; lighter parcels aren\'t refunded.';
+  }
+
+  @override
+  String get dbCategoryField => 'Parcel type *';
+
+  @override
+  String get dbDescriptionField => 'Item description (optional)';
+
+  @override
+  String get dbLength => 'Length';
+
+  @override
+  String get dbWidth => 'Width';
+
+  @override
+  String dbSizeHint(Object size) {
+    return 'Dimensions are optional. The drone bay fits up to $size cm.';
+  }
+
+  @override
+  String get dbDeclaredValueField => 'Declared value (optional)';
+
+  @override
+  String dbDeclaredValueHint(Object amount) {
+    return 'Used for compensation if the parcel is damaged or lost. Up to $amount.';
+  }
+
+  @override
+  String get dbRouteAndFee => 'Route and fee';
+
+  @override
+  String dbAutoCancel(Object minutes) {
+    return 'Unpaid orders are cancelled automatically after $minutes minutes.';
+  }
+
+  @override
+  String get dbNoProhibitedCheckbox =>
+      'I confirm the parcel contains no items prohibited from flight: loose batteries, liquids, flammable or explosive materials, or items banned by law. *';
+
+  @override
+  String dbCreateAndPay(Object amount) {
+    return 'Create order and pay $amount';
+  }
+
+  @override
+  String get dbCreateFree => 'Create order (fee fully covered by offer)';
+
+  @override
+  String dbLockerCodeOnly(Object locker) {
+    return 'Locker-specific codes only work when the drone takes off from $locker.';
+  }
+
+  @override
+  String get dbChoosePickupHint =>
+      'Choose the pickup point * — use your current location or type/pin it on the map';
+
+  @override
+  String dbLatLngTap(Object lat, Object lng) {
+    return 'Latitude $lat · longitude $lng · tap to change';
+  }
+
+  @override
+  String get dbQuoteHint =>
+      'Choose the pickup point and receiving locker to see the sending locker, distance and fee.';
+
+  @override
+  String get dbCalculatingRoute => 'Calculating route…';
+
+  @override
+  String dbSystemStation(Object locker) {
+    return 'Flight locker chosen by the system: $locker';
+  }
+
+  @override
+  String dbRouteSummary(Object pickup, Object route) {
+    return 'The technician carries the parcel $pickup to the drone at the flight locker for direct loading · the drone flies $route to the receiving compartment';
+  }
+
+  @override
+  String dbFeeValue(Object amount) {
+    return 'Drone delivery fee: $amount';
+  }
+
+  @override
+  String dbWind(Object speed) {
+    return 'wind $speed km/h';
+  }
+
+  @override
+  String dbGust(Object speed) {
+    return 'gusts $speed km/h';
+  }
+
+  @override
+  String dbRain(Object mm) {
+    return 'rain $mm mm';
+  }
+
+  @override
+  String dbUpdatedAt(Object time) {
+    return 'Updated $time';
+  }
+
+  @override
+  String dbSource(Object source) {
+    return 'source $source';
+  }
+
+  @override
+  String get dbWeatherOk => 'Route weather: Suitable';
+
+  @override
+  String get dbWeatherUnknown => 'Weather not confirmed';
+
+  @override
+  String get dbWeatherSuspended => 'Route weather: Flights paused';
+
+  @override
+  String get dbWeatherRefresh => 'Refresh weather';
+
+  @override
+  String dbWeatherWindow(Object minutes, Object locker) {
+    return 'Forecast for the next $minutes minutes (expected delivery time) from pickup → $locker → receiving locker';
+  }
+
+  @override
+  String dbWeatherOnlyWhenSafe(Object message) {
+    return '$message Orders can only be placed when the weather is suitable for flying.';
+  }
+
+  @override
+  String get dtTitle => 'Drone delivery tracking';
+
+  @override
+  String get dtCheckConnection => 'Please check your connection and try again.';
+
+  @override
+  String get dtConfirmDroppedTitle => 'Confirm parcel placed';
+
+  @override
+  String dtConfirmDroppedBody(Object where) {
+    return 'Have you placed the parcel in $where and closed the door? The flight team will load it after you confirm.';
+  }
+
+  @override
+  String get dtDropped => 'Placed';
+
+  @override
+  String get dtDroppedDone =>
+      'Recorded. The flight team will accept your order.';
+
+  @override
+  String get dtCancelSurchargeTitle =>
+      'Cancel because you decline the surcharge';
+
+  @override
+  String dtCancelSurchargeBody(Object code) {
+    return 'Order $code will be cancelled. A refund request is recorded for what you paid and the flight team will contact you to return the parcel. This can\'t be undone.';
+  }
+
+  @override
+  String get dtCancelledReturn =>
+      'Order cancelled. The flight team will return the parcel to you.';
+
+  @override
+  String get dtMapSimulated => 'Track on map (simulated)';
+
+  @override
+  String get dtMap => 'Track on map';
+
+  @override
+  String get dtInLockerShare =>
+      'The parcel is in the receiving locker. Open \"View order details\" to share the opening code with the recipient.';
+
+  @override
+  String get dtInLockerPickup =>
+      'The parcel is in the receiving locker. Open the PIN to pick it up at the locker.';
+
+  @override
+  String get dtViewDetail => 'View order details';
+
+  @override
+  String get dtPickup => 'Pick up';
+
+  @override
+  String get dtOffline =>
+      'Disconnected · retrying; the information below is from the last update';
+
+  @override
+  String get dtLive => 'Live · status refreshes automatically on changes';
+
+  @override
+  String get dtLoadFailed => 'Couldn\'t load the delivery status';
+
+  @override
+  String get rmNoCoordinates =>
+      'The sending or receiving locker has no coordinates, so the route map can\'t be drawn.';
+
+  @override
+  String get rmZoomHint => 'Pinch or tap +/− to zoom; tap ⤢ for full screen.';
+
+  @override
+  String rmTotal(Object distance) {
+    return 'Distance $distance';
+  }
+
+  @override
+  String rmRemaining(Object distance) {
+    return 'About $distance left';
+  }
+
+  @override
+  String get rmLiveCoords =>
+      'Coordinates update whenever the drone reports its position. Tap the coordinates to open Google Maps.';
+
+  @override
+  String get rmEstimatedCamera =>
+      'The drone position is estimated from the current flight stage. See real flight data (GPS, battery, mode) in the camera panel above.';
+
+  @override
+  String rmEstimatedOpenMap(Object mode) {
+    return 'The drone position is estimated from the current flight stage. Open \"Track on map\" to see the $mode position.';
+  }
+
+  @override
+  String get rmSimulated => 'simulated';
+
+  @override
+  String get rmLive => 'live';
+
+  @override
+  String get rmEstimated =>
+      'The drone position is estimated from the current flight stage.';
+
+  @override
+  String get rmZoomIn => 'Zoom in';
+
+  @override
+  String get rmZoomOut => 'Zoom out';
+
+  @override
+  String get rmFitRoute => 'Fit route';
+
+  @override
+  String get rmFullscreen => 'Full screen';
+
+  @override
+  String get rmRouteMap => 'Route map';
+
+  @override
+  String rmDroneSentAt(Object time, Object suffix) {
+    return 'Drone reported at $time$suffix';
+  }
+
+  @override
+  String get rmSimSuffix => ' · simulated';
+
+  @override
+  String get rmAtReceiver => 'At the receiving locker';
+
+  @override
+  String get rmSimByStage => 'Simulated by flight stage';
+
+  @override
+  String get rmTelemetry => 'From drone telemetry';
+
+  @override
+  String get rmEstimatedByStage => 'Estimated by flight stage';
+
+  @override
+  String get rmAtSourceNotLaunched => 'At the sending locker, not launched yet';
+
+  @override
+  String get plServiceOff => 'Location services are off. Please turn on GPS.';
+
+  @override
+  String get plDenied => 'Location permission was denied.';
+
+  @override
+  String get plDeniedForever =>
+      'Location permission was permanently denied. Turn it back on in settings.';
+
+  @override
+  String get plNoLocation => 'Couldn\'t get your current location.';
+
+  @override
+  String get plNoLocationHint =>
+      'Couldn\'t get your current location. Move to an open area or type an address to search.';
+
+  @override
+  String get plNoAddressForPoint =>
+      'Couldn\'t find the address for this point. Please enter it below.';
+
+  @override
+  String get plMin3Chars =>
+      'Enter at least 3 characters to search for an address.';
+
+  @override
+  String get plNotFound =>
+      'Address not found. Try typing more precisely or tap the map to drop a pin.';
+
+  @override
+  String get plNoPoint => 'No pickup location chosen on the map.';
+
+  @override
+  String get plEnterAddress =>
+      'Enter the pickup address (house number, street, ward…).';
+
+  @override
+  String get plTitle => 'Choose pickup point';
+
+  @override
+  String get plSearchHint => 'Type an address (house number, street, ward…)';
+
+  @override
+  String get plClear => 'Clear';
+
+  @override
+  String plTapToSeePin(Object lng) {
+    return '$lng · tap to see the pin';
+  }
+
+  @override
+  String get plCurrentLocation => 'Current location';
+
+  @override
+  String get plAddressField => 'Pickup address';
+
+  @override
+  String get plTapMapToPin => 'Tap the map to pin the pickup point';
+
+  @override
+  String plPinInfo(Object lat, Object lng) {
+    return 'Latitude $lat · longitude $lng · the pin is used to check the service area; make sure it matches the address before confirming';
+  }
+
+  @override
+  String get plPickupHere => 'Pick up here';
+
+  @override
+  String get psLoadFailed =>
+      'Couldn\'t load the pickup code. Please try again.';
+
+  @override
+  String get psReceivingLocker => 'Receiving locker';
+
+  @override
+  String get psNotInQueue =>
+      'This order isn\'t in your incoming list. It may have been picked up, or the pickup code was sent to another phone number.';
+
+  @override
+  String psDelegated(Object name) {
+    return 'You delegated pickup of this order to $name, so the pickup code has moved to them.';
+  }
+
+  @override
+  String get psSomeoneElse => 'someone else';
+
+  @override
+  String get psNotReady =>
+      'The pickup code isn\'t ready yet. It will be available once the parcel is in the receiving compartment.';
+
+  @override
+  String get psPin => 'Compartment PIN';
+
+  @override
+  String get psEnterAtKiosk =>
+      'Enter this code on the kiosk screen at the locker to open the compartment.';
+
+  @override
+  String get psReceiveBox => 'Receiving compartment';
+
+  @override
+  String get psPickupBefore => 'Pick up before';
+
+  @override
+  String ocPaidRefund(Object amount) {
+    return 'The order is paid: $amount will be refunded by bank transfer after admin approval. Please check your refund bank account in Profile.';
+  }
+
+  @override
+  String get ocDroneFee => 'the drone delivery fee';
+
+  @override
+  String get ocUnpaidNoFee => 'The order is unpaid, so there\'s no fee.';
+
+  @override
+  String get ocTitle => 'Cancel the drone delivery?';
+
+  @override
+  String ocBody(Object code, Object refund) {
+    return 'Order $code will be cancelled and the held receiving compartment released. $refund';
+  }
+
+  @override
+  String get ocRefundPending =>
+      'Order cancelled. The refund request has been recorded and an admin will transfer it to you.';
+
+  @override
+  String get ocRefunded =>
+      'Order cancelled. The refund has been transferred to you.';
+
+  @override
+  String get ocPaidNoRefund =>
+      'Order cancelled. No refund request was recorded, please contact support.';
+
+  @override
+  String get ocCancelled => 'Order cancelled.';
+
+  @override
+  String get ocAlreadyAccepted =>
+      'The flight team has accepted it, so the order can no longer be cancelled in the app.';
+
+  @override
+  String get ocOwnerOnly =>
+      'Only the person who placed the order can cancel it.';
+
+  @override
+  String get lmTitleSimulated => 'Drone tracking · simulated';
+
+  @override
+  String lmSignalLost(Object time) {
+    return 'Signal lost · position at $time';
+  }
+
+  @override
+  String get lmConnecting => 'Connecting to the drone...';
+
+  @override
+  String get lmNoPosition => 'No drone position yet. Retrying...';
+
+  @override
+  String get lmOnTheWay => 'On the way to the receiving locker';
+
+  @override
+  String get lmAlmostThere => 'Almost there';
+
+  @override
+  String get lmEta => 'Expected arrival';
+
+  @override
+  String get lmSpeed => 'Speed';
+
+  @override
+  String get lmLiveSimulated => 'simulated · live updates';
+
+  @override
+  String get lmLiveUpdates => 'live updates';
+
+  @override
+  String get clCantOpenMaps => 'Couldn\'t open Google Maps.';
+
+  @override
+  String clCopied(Object coords) {
+    return 'Copied coordinates $coords';
+  }
+
+  @override
+  String clDronePosition(Object note) {
+    return 'Drone position · $note';
+  }
+
+  @override
+  String get clCopyCoords => 'Copy coordinates';
+
+  @override
+  String get clPickupPin => 'Pickup point pinned by the sender';
+
+  @override
+  String get clTechnician => 'Technician\'s position at the time';
+
+  @override
+  String get clSourceLocker => 'At the station/sending locker';
+
+  @override
+  String get clDroneGps => 'Drone position (GPS)';
+
+  @override
+  String get clDroneSim => 'Drone position (simulated)';
+
+  @override
+  String get clDestination => 'At the receiving locker';
+
+  @override
+  String get clAtEvent => 'Position when recorded';
+
+  @override
+  String get lpIntro =>
+      'Choose the receiving locker (sorted by distance). The system picks the flight locker and a technician collects the parcel from your home.';
+
+  @override
+  String lpLoadFailed(Object error) {
+    return 'Couldn\'t load lockers: $error';
+  }
+
+  @override
+  String get lpNoLockers => 'No lockers in the system yet.';
+
+  @override
+  String lpDistance(Object distance) {
+    return '$distance away';
+  }
+
+  @override
+  String get lpChecking => 'Checking drone compartments';
+
+  @override
+  String lpFreeSlots(Object count) {
+    return '$count free drone compartments';
+  }
+
+  @override
+  String lpUnavailable(Object reason) {
+    return 'Drone delivery unavailable: $reason';
+  }
+
+  @override
+  String get asTitle => 'The drone is almost there';
+
+  @override
+  String get asPrepare => 'Please get ready to collect your parcel.';
+
+  @override
+  String asDroneCode(Object code) {
+    return '\nDrone code: $code';
+  }
+
+  @override
+  String asEta(Object eta) {
+    return 'Expected: $eta';
+  }
+
+  @override
+  String get opPaid => 'Paid. The flight team will accept your order.';
+
+  @override
+  String get opPending =>
+      'Waiting for payment confirmation; the status will update automatically.';
+
+  @override
+  String get opFailed =>
+      'Payment didn\'t go through. The order is kept and you can pay again.';
+
+  @override
+  String get opUnpaid =>
+      'The drone order is unpaid. Pay so the flight team can accept it.';
+
+  @override
+  String tlMovedAfter(Object duration) {
+    return 'Moved after $duration';
+  }
+
+  @override
+  String tlInStageFor(Object duration) {
+    return 'In this stage for $duration';
+  }
+
+  @override
+  String get tlNotYet => 'Not yet';
 }

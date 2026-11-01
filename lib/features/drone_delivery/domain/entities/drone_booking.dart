@@ -3,6 +3,7 @@
 library;
 
 import 'package:smart_laundry_locker/features/drone_delivery/domain/entities/drone_parcel.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 /// Điểm KTV drone tới lấy kiện: vị trí hiện tại của người gửi hoặc điểm họ ghim/tìm
 /// trên bản đồ, kèm địa chỉ đọc được.
@@ -106,7 +107,7 @@ class DroneQuote {
     required this.fee,
     this.weatherSafe = true,
     this.weatherStatus = 'SAFE',
-    this.weatherMessage = 'Chưa có dữ liệu thời tiết.',
+    String? weatherMessage,
     this.weatherCheckedAt,
     this.weatherMaxWindKmh = 0,
     this.weatherMaxGustKmh = 0,
@@ -115,7 +116,7 @@ class DroneQuote {
     this.weatherTemperatureC,
     this.weatherCondition,
     this.weatherWindowMinutes = 30,
-  });
+  }) : _weatherMessage = weatherMessage;
 
   /// Tủ gửi (nơi drone cất cánh) — mã giảm giá theo tủ được kiểm theo tủ này.
   final int? sourceLockerId;
@@ -133,7 +134,8 @@ class DroneQuote {
 
   /// Khoảng dự báo server đã xét (admin chỉnh, mặc định 30 phút).
   final int weatherWindowMinutes;
-  final String weatherMessage;
+  final String? _weatherMessage;
+  String get weatherMessage => _weatherMessage ?? L10n.current.droneNoWeatherData;
   final DateTime? weatherCheckedAt;
   final double weatherMaxWindKmh;
   final double weatherMaxGustKmh;
@@ -165,7 +167,7 @@ class DroneQuote {
     final weather = rawWeather is Map ? rawWeather : const {};
     return DroneQuote(
       sourceLockerId: sourceId,
-      sourceLockerName: name.isEmpty ? 'Tủ #${map['lockerId'] ?? '?'}' : name,
+      sourceLockerName: name.isEmpty ? L10n.current.lockerHash(map['lockerId'] ?? '?') : name,
       sourceLockerAddress: address.isEmpty ? null : address,
       pickupDistanceMeters: _int(json['pickupDistanceMeters']),
       routeDistanceMeters: _int(json['routeDistanceMeters']),
@@ -214,42 +216,42 @@ String droneDistanceLabel(int? meters) {
 String droneFailureReasonLabel(String? code) =>
     switch ((code ?? '').toUpperCase()) {
       '' => '—',
-      'WEATHER' => 'Tạm dừng bay do thời tiết hoặc lệnh điều hành',
-      'WEATHER_UNSAFE' => 'Thời tiết tuyến bay không an toàn',
-      'STATION_SUSPENDED' => 'Trạm bay đang tạm dừng',
-      'DRONE_FAULT' => 'Drone gặp sự cố',
-      'NO_DRONE_AVAILABLE' => 'Tủ gửi không còn drone sẵn sàng',
-      'SOURCE_LOCKER_FAULT' => 'Tủ gửi gặp sự cố',
-      'DESTINATION_LOCKER_FAULT' => 'Tủ nhận gặp sự cố',
-      'LANDING_PAD_FAULT' => 'Bãi đáp drone không sẵn sàng',
-      'NO_TECHNICIAN_AVAILABLE' => 'Không có kỹ thuật viên nhận lấy hàng',
-      'LAUNCH_OVERDUE' => 'Quá hạn phóng drone sau khi lấy hàng',
-      'PICKUP_CUSTOMER_ABSENT' => 'Không gặp được người gửi tại điểm lấy hàng',
-      'PICKUP_PARCEL_REJECTED' => 'Kiện hàng không đúng khai báo',
-      'PICKUP_ADDRESS_NOT_FOUND' => 'Không tìm thấy địa chỉ lấy hàng',
-      'FLIGHT_INCIDENT' => 'Sự cố trong lúc bay',
-      'OPERATIONAL' => 'Lý do vận hành',
-      'OTHER' => 'Lý do khác',
+      'WEATHER' => L10n.current.failWeather,
+      'WEATHER_UNSAFE' => L10n.current.failWeatherUnsafe,
+      'STATION_SUSPENDED' => L10n.current.failStationSuspended,
+      'DRONE_FAULT' => L10n.current.failDroneFault,
+      'NO_DRONE_AVAILABLE' => L10n.current.failNoDrone,
+      'SOURCE_LOCKER_FAULT' => L10n.current.failSourceLocker,
+      'DESTINATION_LOCKER_FAULT' => L10n.current.failDestinationLocker,
+      'LANDING_PAD_FAULT' => L10n.current.failLandingPad,
+      'NO_TECHNICIAN_AVAILABLE' => L10n.current.failNoTechnician,
+      'LAUNCH_OVERDUE' => L10n.current.failLaunchOverdue,
+      'PICKUP_CUSTOMER_ABSENT' => L10n.current.failCustomerAbsent,
+      'PICKUP_PARCEL_REJECTED' => L10n.current.failParcelRejected,
+      'PICKUP_ADDRESS_NOT_FOUND' => L10n.current.failAddressNotFound,
+      'FLIGHT_INCIDENT' => L10n.current.failFlightIncident,
+      'OPERATIONAL' => L10n.current.cancelOperational,
+      'OTHER' => L10n.current.cancelOther,
       _ => code!,
     };
 
 /// Lý do KTV chọn khi tới nơi mà không lấy được kiện (mã, nhãn, có bắt buộc ghi chú).
-const dronePickupFailureReasons = <(String, String, bool)>[
-  ('PICKUP_CUSTOMER_ABSENT', 'Không gặp được người gửi', false),
-  ('PICKUP_PARCEL_REJECTED', 'Kiện không đúng khai báo', false),
-  ('PICKUP_ADDRESS_NOT_FOUND', 'Không tìm thấy địa chỉ', false),
-  ('OTHER', 'Khác', true),
+List<(String, String, bool)> get dronePickupFailureReasons => [
+  ('PICKUP_CUSTOMER_ABSENT', L10n.current.failShortCustomerAbsent, false),
+  ('PICKUP_PARCEL_REJECTED', L10n.current.failShortParcelRejected, false),
+  ('PICKUP_ADDRESS_NOT_FOUND', L10n.current.failShortAddressNotFound, false),
+  ('OTHER', L10n.current.enumOther, true),
 ];
 
 /// Lý do điều phối viên chọn khi xác nhận đơn giao không hoàn tất.
-const droneDeliveryFailureReasons = <(String, String, bool)>[
-  ('WEATHER', 'Thời tiết xấu', false),
-  ('DRONE_FAULT', 'Drone lỗi', false),
-  ('NO_DRONE_AVAILABLE', 'Không còn drone', false),
-  ('LANDING_PAD_FAULT', 'Bãi đáp không sẵn sàng', false),
-  ('SOURCE_LOCKER_FAULT', 'Tủ gửi lỗi', false),
-  ('DESTINATION_LOCKER_FAULT', 'Tủ nhận lỗi', false),
-  ('FLIGHT_INCIDENT', 'Sự cố lúc bay', false),
-  ('OPERATIONAL', 'Lý do vận hành', false),
-  ('OTHER', 'Khác', true),
+List<(String, String, bool)> get droneDeliveryFailureReasons => [
+  ('WEATHER', L10n.current.cancelWeather, false),
+  ('DRONE_FAULT', L10n.current.cancelDroneFault, false),
+  ('NO_DRONE_AVAILABLE', L10n.current.failShortNoDrone, false),
+  ('LANDING_PAD_FAULT', L10n.current.cancelPadNotReady, false),
+  ('SOURCE_LOCKER_FAULT', L10n.current.failShortSourceLocker, false),
+  ('DESTINATION_LOCKER_FAULT', L10n.current.failShortDestinationLocker, false),
+  ('FLIGHT_INCIDENT', L10n.current.failShortFlightIncident, false),
+  ('OPERATIONAL', L10n.current.cancelOperational, false),
+  ('OTHER', L10n.current.enumOther, true),
 ];

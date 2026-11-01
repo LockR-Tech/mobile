@@ -1,4 +1,5 @@
 import 'package:smart_laundry_locker/features/drone_delivery/domain/entities/drone_route_geometry.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 String? droneDestinationBlockReason({
   Object? status,
@@ -6,22 +7,22 @@ String? droneDestinationBlockReason({
   Object? landingPad,
   Object? landingPadStatus,
 }) {
-  if (online == false) return 'mất kết nối';
+  if (online == false) return L10n.current.blockDisconnected;
 
   final lockerStatus = '${status ?? 'ACTIVE'}'.trim().toUpperCase();
   if (lockerStatus != 'ACTIVE') {
-    return lockerStatus == 'MAINTENANCE' ? 'đang bảo trì' : 'tạm ngưng';
+    return lockerStatus == 'MAINTENANCE' ? L10n.current.blockMaintenance : L10n.current.blockSuspended;
   }
 
-  if (landingPad == false) return 'chưa có bãi đáp drone';
+  if (landingPad == false) return L10n.current.blockNoPad;
 
   final padStatus = landingPadStatus == null
       ? 'OK'
       : '$landingPadStatus'.trim().toUpperCase();
   if (padStatus.isEmpty || padStatus == 'OK') return null;
   return padStatus == 'MAINTENANCE'
-      ? 'bãi đáp đang bảo trì'
-      : 'bãi đáp đang lỗi';
+      ? L10n.current.blockPadMaintenance
+      : L10n.current.blockPadFault;
 }
 
 double? _asDouble(Object? value) =>

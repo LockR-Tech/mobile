@@ -10,6 +10,7 @@ import 'package:smart_laundry_locker/features/drone_delivery/domain/entities/dro
 import 'package:smart_laundry_locker/features/drone_delivery/infrastructure/services/locker_availability_socket_service.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/presentation/pages/pickup_location_picker_page.dart';
 import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 /// Chọn tủ nhận drone. Tủ gửi và đường bay được hệ thống tự chọn sau khi KTV
 /// lấy kiện tại nhà; khách chỉ cần chọn nơi người nhận sẽ lấy hàng.
@@ -218,13 +219,13 @@ class _DroneLockerPickerSheetState extends State<_DroneLockerPickerSheet> {
             ),
           ),
           const SizedBox(height: 16),
-          const Text(
-            'Gửi hàng bằng drone',
+          Text(
+            context.l10n.dbTitle,
             style: TextStyle(fontSize: 19, fontWeight: FontWeight.w800),
           ),
           const SizedBox(height: 4),
-          const Text(
-            'Chọn tủ nhận hàng (ưu tiên sắp xếp gần bạn nhất). Hệ thống tự chọn tủ bay và KTV đến lấy kiện tại nhà.',
+          Text(
+            context.l10n.lpIntro,
             style: TextStyle(fontSize: 13, color: Color(0xFF64748B)),
           ),
           const SizedBox(height: 14),
@@ -246,23 +247,23 @@ class _DroneLockerPickerSheetState extends State<_DroneLockerPickerSheet> {
         mainAxisSize: MainAxisSize.min,
         children: [
           Text(
-            'Không tải được danh sách tủ: $_error',
+            context.l10n.lpLoadFailed('$_error'),
             textAlign: TextAlign.center,
             style: const TextStyle(color: Color(0xFFDC2626)),
           ),
           TextButton.icon(
             onPressed: _load,
             icon: const Icon(LucideIcons.refreshCw, size: 16),
-            label: const Text('Thử lại'),
+            label: Text(context.l10n.commonRetry),
           ),
         ],
       );
     }
     if (_lockers.isEmpty) {
-      return const Padding(
+      return Padding(
         padding: EdgeInsets.symmetric(vertical: 20),
         child: Text(
-          'Chưa có tủ nào trên hệ thống.',
+          context.l10n.lpNoLockers,
           textAlign: TextAlign.center,
           style: TextStyle(color: Color(0xFF64748B)),
         ),
@@ -288,7 +289,7 @@ class _DroneLockerPickerSheetState extends State<_DroneLockerPickerSheet> {
         final canReceive = hasLandingPad && slots != null && slots > 0;
         final distKm = lockerDistanceKmFrom(locker, _customerLat, _customerLng);
         final subtitleParts = <String>[
-          if (distKm != null) 'Cách bạn ${droneKmLabel(distKm)}',
+          if (distKm != null) context.l10n.lpDistance(droneKmLabel(distKm)),
           if (address.isNotEmpty) address,
         ];
         return Material(
@@ -340,8 +341,8 @@ class _DroneLockerPickerSheetState extends State<_DroneLockerPickerSheet> {
                         if (hasLandingPad)
                           Text(
                             slots == null
-                                ? 'Đang kiểm tra ô drone nhận'
-                                : 'Còn $slots ô drone nhận trống',
+                                ? context.l10n.lpChecking
+                          : context.l10n.lpFreeSlots(slots),
                             style: TextStyle(
                               fontSize: 12,
                               color: slots != null && slots > 0
@@ -352,7 +353,7 @@ class _DroneLockerPickerSheetState extends State<_DroneLockerPickerSheet> {
                           ),
                         if (reason != null)
                           Text(
-                            'Tạm không gửi drone: $reason',
+                            context.l10n.lpUnavailable(reason),
                             style: const TextStyle(
                               fontSize: 12,
                               color: Color(0xFFB91C1C),

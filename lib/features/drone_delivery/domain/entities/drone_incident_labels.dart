@@ -3,96 +3,98 @@
 /// hiện nguyên `UPPER_SNAKE`.
 library;
 
-const _incidentStatus = <String, String>{
-  'REPORTED': 'Đã ghi nhận',
-  'EVIDENCE_PENDING': 'Đang thu thập bằng chứng',
-  'INVESTIGATING': 'Đang điều tra',
-  'RECOVERY_IN_PROGRESS': 'Đang thu hồi kiện',
-  'AWAITING_ADMIN_REVIEW': 'Chờ quản trị viên xem xét',
-  'RESOLUTION_PROPOSED': 'Đã có phương án xử lý',
-  'AWAITING_CUSTOMER_RESPONSE': 'Chờ bạn phản hồi phương án',
-  'RESOLUTION_IN_PROGRESS': 'Đang thực hiện phương án',
-  'DISPUTED': 'Đang xem xét lại theo yêu cầu',
-  'RESOLVED': 'Đã xử lý xong',
-  'CLOSED': 'Đã đóng',
-  'MANUAL_INTERVENTION_REQUIRED': 'Nhân viên đang xử lý trực tiếp',
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
+
+Map<String, String> get _incidentStatus => <String, String>{
+  'REPORTED': L10n.current.incStReported,
+  'EVIDENCE_PENDING': L10n.current.incStEvidencePending,
+  'INVESTIGATING': L10n.current.incStInvestigating,
+  'RECOVERY_IN_PROGRESS': L10n.current.incStRecoveryInProgress,
+  'AWAITING_ADMIN_REVIEW': L10n.current.incStAwaitingAdmin,
+  'RESOLUTION_PROPOSED': L10n.current.incStResolutionProposed,
+  'AWAITING_CUSTOMER_RESPONSE': L10n.current.incStAwaitingCustomer,
+  'RESOLUTION_IN_PROGRESS': L10n.current.incStResolutionInProgress,
+  'DISPUTED': L10n.current.incStDisputed,
+  'RESOLVED': L10n.current.incStResolved,
+  'CLOSED': L10n.current.incStClosed,
+  'MANUAL_INTERVENTION_REQUIRED': L10n.current.incStManual,
 };
 
-const _recoveryStatus = <String, String>{
-  'OPEN': 'Mới mở',
-  'AWAITING_ASSIGNMENT': 'Chờ phân công người thu hồi',
-  'ASSIGNED': 'Đã phân công',
-  'ACCEPTED': 'Nhân viên đã nhận việc',
-  'SEARCHING': 'Đang tìm kiện',
-  'PARCEL_FOUND': 'Đã tìm thấy kiện',
-  'PARCEL_NOT_FOUND': 'Chưa tìm thấy kiện',
-  'RECOVERED': 'Đã thu hồi kiện',
-  'SUBMITTED': 'Đã báo kết quả thu hồi',
-  'VERIFIED': 'Đã xác minh kết quả',
-  'CLOSED': 'Đã bàn giao kiện về kho',
-  'CANCELLED': 'Đã huỷ',
+Map<String, String> get _recoveryStatus => <String, String>{
+  'OPEN': L10n.current.recStOpen,
+  'AWAITING_ASSIGNMENT': L10n.current.recStAwaitingAssignment,
+  'ASSIGNED': L10n.current.recStAssigned,
+  'ACCEPTED': L10n.current.recStAccepted,
+  'SEARCHING': L10n.current.recStSearching,
+  'PARCEL_FOUND': L10n.current.recStFound,
+  'PARCEL_NOT_FOUND': L10n.current.recStNotFound,
+  'RECOVERED': L10n.current.recStRecovered,
+  'SUBMITTED': L10n.current.recStSubmitted,
+  'VERIFIED': L10n.current.recStVerified,
+  'CLOSED': L10n.current.recStClosed,
+  'CANCELLED': L10n.current.recStCancelled,
 };
 
-const _parcelStatus = <String, String>{
-  'IN_TRANSIT': 'Đang vận chuyển',
-  'DROP_REPORTED': 'Đã báo rơi',
-  'RECOVERY_PENDING': 'Chờ thu hồi',
-  'FOUND': 'Đã tìm thấy',
-  'RECOVERED': 'Đã thu hồi',
-  'DAMAGED': 'Bị hư hỏng',
-  'LOST': 'Thất lạc',
-  'RETURNED_TO_HUB': 'Đã về kho Lock.R',
-  'REDELIVERY_PENDING': 'Chờ giao lại',
-  'REDELIVERED': 'Đã giao lại',
-  'COMPENSATED': 'Đã bồi thường',
+Map<String, String> get _parcelStatus => <String, String>{
+  'IN_TRANSIT': L10n.current.parStInTransit,
+  'DROP_REPORTED': L10n.current.parStDropReported,
+  'RECOVERY_PENDING': L10n.current.parStRecoveryPending,
+  'FOUND': L10n.current.parStFound,
+  'RECOVERED': L10n.current.parStRecovered,
+  'DAMAGED': L10n.current.parStDamaged,
+  'LOST': L10n.current.parStLost,
+  'RETURNED_TO_HUB': L10n.current.parStReturnedToHub,
+  'REDELIVERY_PENDING': L10n.current.parStRedeliveryPending,
+  'REDELIVERED': L10n.current.parStRedelivered,
+  'COMPENSATED': L10n.current.parStCompensated,
 };
 
-const _eventTypes = <String, String>{
+Map<String, String> get _eventTypes => <String, String>{
   // Người báo có thể là đội bay hoặc quản trị viên.
-  'INCIDENT_REPORTED': 'Ghi nhận kiện rơi khỏi drone',
-  'RECOVERY_ASSIGNED': 'Phân công người thu hồi kiện',
-  'RECOVERY_ACCEPT': 'Nhân viên nhận việc thu hồi',
-  'RECOVERY_START_SEARCHING': 'Nhân viên bắt đầu tìm kiện',
-  'RETURN_FLIGHT_CONFIRMED': 'Drone đã về trạm',
-  'RECOVERY_SUBMITTED': 'Báo kết quả thu hồi',
-  'RECOVERY_VERIFIED': 'Xác minh kết quả thu hồi',
-  'RECOVERY_STATION_DISPATCHED': 'Kiện được điều phối về trạm bay để giao lại',
-  'RECOVERY_STATION_UNAVAILABLE': 'Đang điều phối trạm nhận kiện',
-  'PARCEL_RETURNED_TO_HUB': 'Kiện đã về kho Lock.R',
-  'RESOLUTION_PROPOSED': 'Lock.R đề xuất phương án',
-  'CUSTOMER_ACCEPT': 'Bạn đồng ý phương án',
-  'CUSTOMER_REQUEST_REVIEW': 'Bạn yêu cầu xem xét lại',
-  'RETURN_FLIGHT_UPDATED': 'Cập nhật chuyến bay về trạm',
-  'REDELIVERY_REQUESTED': 'Đã tạo đơn giao lại',
-  'REDELIVERY_INTEGRATION_UNAVAILABLE': 'Chưa tạo được đơn giao lại — nhân viên sẽ liên hệ',
-  'REDELIVERY_COMPLETED': 'Đã giao lại thành công',
-  'COMPENSATION_SUBMITTED': 'Đã gửi yêu cầu chi bồi thường',
-  'COMPENSATION_PAID': 'Đã chi bồi thường',
-  'COMPENSATION_PAYMENT_FAILED': 'Chi bồi thường chưa thành công',
-  'INCIDENT_RESOLVED': 'Đã hoàn tất xử lý sự cố',
+  'INCIDENT_REPORTED': L10n.current.incEvReported,
+  'RECOVERY_ASSIGNED': L10n.current.incEvRecoveryAssigned,
+  'RECOVERY_ACCEPT': L10n.current.incEvRecoveryAccept,
+  'RECOVERY_START_SEARCHING': L10n.current.incEvRecoverySearching,
+  'RETURN_FLIGHT_CONFIRMED': L10n.current.incEvReturnFlightConfirmed,
+  'RECOVERY_SUBMITTED': L10n.current.incEvRecoverySubmitted,
+  'RECOVERY_VERIFIED': L10n.current.incEvRecoveryVerified,
+  'RECOVERY_STATION_DISPATCHED': L10n.current.incEvStationDispatched,
+  'RECOVERY_STATION_UNAVAILABLE': L10n.current.incEvStationUnavailable,
+  'PARCEL_RETURNED_TO_HUB': L10n.current.incEvReturnedToHub,
+  'RESOLUTION_PROPOSED': L10n.current.incEvResolutionProposed,
+  'CUSTOMER_ACCEPT': L10n.current.incEvCustomerAccept,
+  'CUSTOMER_REQUEST_REVIEW': L10n.current.incEvCustomerReview,
+  'RETURN_FLIGHT_UPDATED': L10n.current.incEvReturnFlightUpdated,
+  'REDELIVERY_REQUESTED': L10n.current.incEvRedeliveryRequested,
+  'REDELIVERY_INTEGRATION_UNAVAILABLE': L10n.current.incEvRedeliveryUnavailable,
+  'REDELIVERY_COMPLETED': L10n.current.incEvRedeliveryCompleted,
+  'COMPENSATION_SUBMITTED': L10n.current.incEvCompensationSubmitted,
+  'COMPENSATION_PAID': L10n.current.incEvCompensationPaid,
+  'COMPENSATION_PAYMENT_FAILED': L10n.current.incEvCompensationFailed,
+  'INCIDENT_RESOLVED': L10n.current.incEvResolved,
 };
 
-const _resolutionTypes = <String, String>{
-  'FREE_REDELIVERY': 'Giao lại miễn phí',
-  'REDELIVERY_PARTIAL_COMPENSATION': 'Giao lại kèm bồi thường một phần',
-  'COMPENSATION_ONLY': 'Bồi thường',
-  'MANUAL_RESOLUTION': 'Thỏa thuận riêng',
+Map<String, String> get _resolutionTypes => <String, String>{
+  'FREE_REDELIVERY': L10n.current.resFreeRedelivery,
+  'REDELIVERY_PARTIAL_COMPENSATION': L10n.current.resRedeliveryPartial,
+  'COMPENSATION_ONLY': L10n.current.resCompensationOnly,
+  'MANUAL_RESOLUTION': L10n.current.resManual,
 };
 
 /// Tình trạng kiện KTV ghi khi thu hồi (`DroneIncidentStates.CONDITIONS`).
-const _parcelCondition = <String, String>{
-  'INTACT': 'còn nguyên vẹn',
-  'MINOR_DAMAGE': 'hư hại nhẹ',
-  'MAJOR_DAMAGE': 'hư hại nặng',
-  'UNUSABLE': 'không thể sử dụng',
+Map<String, String> get _parcelCondition => <String, String>{
+  'INTACT': L10n.current.condIntact,
+  'MINOR_DAMAGE': L10n.current.condMinor,
+  'MAJOR_DAMAGE': L10n.current.condMajor,
+  'UNUSABLE': L10n.current.condUnusable,
 };
 
-const _proposalStatus = <String, String>{
-  'AWAITING_CUSTOMER_ACCEPTANCE': 'Chờ bạn phản hồi',
-  'ACCEPTED': 'Bạn đã đồng ý',
-  'DISPUTED': 'Đã yêu cầu xem xét lại',
-  'SUPERSEDED': 'Đã thay bằng phương án mới',
-  'CANCELLED': 'Đã huỷ',
+Map<String, String> get _proposalStatus => <String, String>{
+  'AWAITING_CUSTOMER_ACCEPTANCE': L10n.current.propAwaiting,
+  'ACCEPTED': L10n.current.propAccepted,
+  'DISPUTED': L10n.current.propDisputed,
+  'SUPERSEDED': L10n.current.propSuperseded,
+  'CANCELLED': L10n.current.recStCancelled,
 };
 
 String droneIncidentStatusLabel(Object? code) => _label(_incidentStatus, code);
@@ -124,10 +126,10 @@ String droneIncidentEventLabel(Object? code) {
   final key = '${code ?? ''}'.trim().toUpperCase();
   final known = _eventTypes[key];
   if (known != null) return known;
-  if (key.startsWith('RECOVERY_')) return 'Cập nhật thu hồi kiện';
-  if (key.startsWith('COMPENSATION_')) return 'Cập nhật bồi thường';
-  if (key.startsWith('RETURN_')) return 'Cập nhật chuyến bay về trạm';
-  if (key.startsWith('REDELIVERY_')) return 'Cập nhật giao lại';
+  if (key.startsWith('RECOVERY_')) return L10n.current.incEvRecoveryUpdate;
+  if (key.startsWith('COMPENSATION_')) return L10n.current.incEvCompensationUpdate;
+  if (key.startsWith('RETURN_')) return L10n.current.incEvReturnFlightUpdated;
+  if (key.startsWith('REDELIVERY_')) return L10n.current.incEvRedeliveryUpdate;
   return _humanize(key);
 }
 

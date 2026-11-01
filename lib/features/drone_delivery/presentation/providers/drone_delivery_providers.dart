@@ -4,6 +4,7 @@ import 'package:smart_laundry_locker/features/drone_delivery/application/use_cas
 import 'package:smart_laundry_locker/features/drone_delivery/domain/entities/drone_delivery_status.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/infrastructure/repositories/drone_delivery_repository_impl.dart';
 import 'package:smart_laundry_locker/features/notifications/infrastructure/services/realtime_notification_service.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 /// DI Riverpod cho luồng theo dõi giao drone (mirror `logistics_send_providers`).
 final getDroneDeliveryStatusUseCaseProvider =
@@ -71,7 +72,7 @@ final droneDeliveryStatusProvider = StreamProvider.autoDispose
           failures++;
           yield* Stream<DroneDeliveryStatus>.error(
             DroneStatusLoadException(
-              errorMessage ?? 'Không tải được trạng thái giao hàng.',
+              errorMessage ?? L10n.current.droneStatusLoadFailed,
             ),
           );
         }

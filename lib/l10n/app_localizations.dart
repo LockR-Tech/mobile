@@ -8461,6 +8461,3198 @@ abstract class AppLocalizations {
   /// In vi, this message translates to:
   /// **'Không quét được? Nhập mã tủ'**
   String get qrCantScan;
+
+  /// No description provided for @secondsValue.
+  ///
+  /// In vi, this message translates to:
+  /// **'{seconds} giây'**
+  String secondsValue(Object seconds);
+
+  /// No description provided for @durDays.
+  ///
+  /// In vi, this message translates to:
+  /// **'{days} ngày'**
+  String durDays(int days);
+
+  /// No description provided for @durDaysHoursLong.
+  ///
+  /// In vi, this message translates to:
+  /// **'{days} ngày {hours} giờ'**
+  String durDaysHoursLong(Object days, Object hours);
+
+  /// No description provided for @durHours.
+  ///
+  /// In vi, this message translates to:
+  /// **'{hours} giờ'**
+  String durHours(int hours);
+
+  /// No description provided for @durHoursMinutesLong.
+  ///
+  /// In vi, this message translates to:
+  /// **'{hours} giờ {minutes} phút'**
+  String durHoursMinutesLong(Object hours, Object minutes);
+
+  /// No description provided for @durMinutesSeconds.
+  ///
+  /// In vi, this message translates to:
+  /// **'{minutes} phút {seconds} giây'**
+  String durMinutesSeconds(Object minutes, Object seconds);
+
+  /// No description provided for @incStReported.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã ghi nhận'**
+  String get incStReported;
+
+  /// No description provided for @incStEvidencePending.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang thu thập bằng chứng'**
+  String get incStEvidencePending;
+
+  /// No description provided for @incStInvestigating.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang điều tra'**
+  String get incStInvestigating;
+
+  /// No description provided for @incStRecoveryInProgress.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang thu hồi kiện'**
+  String get incStRecoveryInProgress;
+
+  /// No description provided for @incStAwaitingAdmin.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chờ quản trị viên xem xét'**
+  String get incStAwaitingAdmin;
+
+  /// No description provided for @incStResolutionProposed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã có phương án xử lý'**
+  String get incStResolutionProposed;
+
+  /// No description provided for @incStAwaitingCustomer.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chờ bạn phản hồi phương án'**
+  String get incStAwaitingCustomer;
+
+  /// No description provided for @incStResolutionInProgress.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang thực hiện phương án'**
+  String get incStResolutionInProgress;
+
+  /// No description provided for @incStDisputed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang xem xét lại theo yêu cầu'**
+  String get incStDisputed;
+
+  /// No description provided for @incStResolved.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã xử lý xong'**
+  String get incStResolved;
+
+  /// No description provided for @incStClosed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã đóng'**
+  String get incStClosed;
+
+  /// No description provided for @incStManual.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhân viên đang xử lý trực tiếp'**
+  String get incStManual;
+
+  /// No description provided for @recStOpen.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mới mở'**
+  String get recStOpen;
+
+  /// No description provided for @recStAwaitingAssignment.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chờ phân công người thu hồi'**
+  String get recStAwaitingAssignment;
+
+  /// No description provided for @recStAssigned.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã phân công'**
+  String get recStAssigned;
+
+  /// No description provided for @recStAccepted.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhân viên đã nhận việc'**
+  String get recStAccepted;
+
+  /// No description provided for @recStSearching.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang tìm kiện'**
+  String get recStSearching;
+
+  /// No description provided for @recStFound.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã tìm thấy kiện'**
+  String get recStFound;
+
+  /// No description provided for @recStNotFound.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa tìm thấy kiện'**
+  String get recStNotFound;
+
+  /// No description provided for @recStRecovered.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã thu hồi kiện'**
+  String get recStRecovered;
+
+  /// No description provided for @recStSubmitted.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã báo kết quả thu hồi'**
+  String get recStSubmitted;
+
+  /// No description provided for @recStVerified.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã xác minh kết quả'**
+  String get recStVerified;
+
+  /// No description provided for @recStClosed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã bàn giao kiện về kho'**
+  String get recStClosed;
+
+  /// No description provided for @recStCancelled.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã huỷ'**
+  String get recStCancelled;
+
+  /// No description provided for @parStInTransit.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang vận chuyển'**
+  String get parStInTransit;
+
+  /// No description provided for @parStDropReported.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã báo rơi'**
+  String get parStDropReported;
+
+  /// No description provided for @parStRecoveryPending.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chờ thu hồi'**
+  String get parStRecoveryPending;
+
+  /// No description provided for @parStFound.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã tìm thấy'**
+  String get parStFound;
+
+  /// No description provided for @parStRecovered.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã thu hồi'**
+  String get parStRecovered;
+
+  /// No description provided for @parStDamaged.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bị hư hỏng'**
+  String get parStDamaged;
+
+  /// No description provided for @parStLost.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thất lạc'**
+  String get parStLost;
+
+  /// No description provided for @parStReturnedToHub.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã về kho Lock.R'**
+  String get parStReturnedToHub;
+
+  /// No description provided for @parStRedeliveryPending.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chờ giao lại'**
+  String get parStRedeliveryPending;
+
+  /// No description provided for @parStRedelivered.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã giao lại'**
+  String get parStRedelivered;
+
+  /// No description provided for @parStCompensated.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã bồi thường'**
+  String get parStCompensated;
+
+  /// No description provided for @incEvReported.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ghi nhận kiện rơi khỏi drone'**
+  String get incEvReported;
+
+  /// No description provided for @incEvRecoveryAssigned.
+  ///
+  /// In vi, this message translates to:
+  /// **'Phân công người thu hồi kiện'**
+  String get incEvRecoveryAssigned;
+
+  /// No description provided for @incEvRecoveryAccept.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhân viên nhận việc thu hồi'**
+  String get incEvRecoveryAccept;
+
+  /// No description provided for @incEvRecoverySearching.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhân viên bắt đầu tìm kiện'**
+  String get incEvRecoverySearching;
+
+  /// No description provided for @incEvReturnFlightConfirmed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Drone đã về trạm'**
+  String get incEvReturnFlightConfirmed;
+
+  /// No description provided for @incEvRecoverySubmitted.
+  ///
+  /// In vi, this message translates to:
+  /// **'Báo kết quả thu hồi'**
+  String get incEvRecoverySubmitted;
+
+  /// No description provided for @incEvRecoveryVerified.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xác minh kết quả thu hồi'**
+  String get incEvRecoveryVerified;
+
+  /// No description provided for @incEvStationDispatched.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kiện được điều phối về trạm bay để giao lại'**
+  String get incEvStationDispatched;
+
+  /// No description provided for @incEvStationUnavailable.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang điều phối trạm nhận kiện'**
+  String get incEvStationUnavailable;
+
+  /// No description provided for @incEvReturnedToHub.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kiện đã về kho Lock.R'**
+  String get incEvReturnedToHub;
+
+  /// No description provided for @incEvResolutionProposed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lock.R đề xuất phương án'**
+  String get incEvResolutionProposed;
+
+  /// No description provided for @incEvCustomerAccept.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bạn đồng ý phương án'**
+  String get incEvCustomerAccept;
+
+  /// No description provided for @incEvCustomerReview.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bạn yêu cầu xem xét lại'**
+  String get incEvCustomerReview;
+
+  /// No description provided for @incEvReturnFlightUpdated.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cập nhật chuyến bay về trạm'**
+  String get incEvReturnFlightUpdated;
+
+  /// No description provided for @incEvRedeliveryRequested.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã tạo đơn giao lại'**
+  String get incEvRedeliveryRequested;
+
+  /// No description provided for @incEvRedeliveryUnavailable.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa tạo được đơn giao lại — nhân viên sẽ liên hệ'**
+  String get incEvRedeliveryUnavailable;
+
+  /// No description provided for @incEvRedeliveryCompleted.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã giao lại thành công'**
+  String get incEvRedeliveryCompleted;
+
+  /// No description provided for @incEvCompensationSubmitted.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã gửi yêu cầu chi bồi thường'**
+  String get incEvCompensationSubmitted;
+
+  /// No description provided for @incEvCompensationPaid.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã chi bồi thường'**
+  String get incEvCompensationPaid;
+
+  /// No description provided for @incEvCompensationFailed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chi bồi thường chưa thành công'**
+  String get incEvCompensationFailed;
+
+  /// No description provided for @incEvResolved.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã hoàn tất xử lý sự cố'**
+  String get incEvResolved;
+
+  /// No description provided for @resFreeRedelivery.
+  ///
+  /// In vi, this message translates to:
+  /// **'Giao lại miễn phí'**
+  String get resFreeRedelivery;
+
+  /// No description provided for @resRedeliveryPartial.
+  ///
+  /// In vi, this message translates to:
+  /// **'Giao lại kèm bồi thường một phần'**
+  String get resRedeliveryPartial;
+
+  /// No description provided for @resCompensationOnly.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bồi thường'**
+  String get resCompensationOnly;
+
+  /// No description provided for @resManual.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thỏa thuận riêng'**
+  String get resManual;
+
+  /// No description provided for @condIntact.
+  ///
+  /// In vi, this message translates to:
+  /// **'còn nguyên vẹn'**
+  String get condIntact;
+
+  /// No description provided for @condMinor.
+  ///
+  /// In vi, this message translates to:
+  /// **'hư hại nhẹ'**
+  String get condMinor;
+
+  /// No description provided for @condMajor.
+  ///
+  /// In vi, this message translates to:
+  /// **'hư hại nặng'**
+  String get condMajor;
+
+  /// No description provided for @condUnusable.
+  ///
+  /// In vi, this message translates to:
+  /// **'không thể sử dụng'**
+  String get condUnusable;
+
+  /// No description provided for @propAwaiting.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chờ bạn phản hồi'**
+  String get propAwaiting;
+
+  /// No description provided for @propAccepted.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bạn đã đồng ý'**
+  String get propAccepted;
+
+  /// No description provided for @propDisputed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã yêu cầu xem xét lại'**
+  String get propDisputed;
+
+  /// No description provided for @propSuperseded.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã thay bằng phương án mới'**
+  String get propSuperseded;
+
+  /// No description provided for @incEvRecoveryUpdate.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cập nhật thu hồi kiện'**
+  String get incEvRecoveryUpdate;
+
+  /// No description provided for @incEvCompensationUpdate.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cập nhật bồi thường'**
+  String get incEvCompensationUpdate;
+
+  /// No description provided for @incEvRedeliveryUpdate.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cập nhật giao lại'**
+  String get incEvRedeliveryUpdate;
+
+  /// No description provided for @msNotInit.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa khởi tạo'**
+  String get msNotInit;
+
+  /// No description provided for @msAwaitingLoading.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chờ nạp hàng'**
+  String get msAwaitingLoading;
+
+  /// No description provided for @msReadyToLaunch.
+  ///
+  /// In vi, this message translates to:
+  /// **'Sẵn sàng phóng'**
+  String get msReadyToLaunch;
+
+  /// No description provided for @msLaunching.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang khởi phóng'**
+  String get msLaunching;
+
+  /// No description provided for @msDeparted.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã rời trạm'**
+  String get msDeparted;
+
+  /// No description provided for @msEnRoute.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang bay'**
+  String get msEnRoute;
+
+  /// No description provided for @msApproaching.
+  ///
+  /// In vi, this message translates to:
+  /// **'Sắp tới tủ nhận'**
+  String get msApproaching;
+
+  /// No description provided for @msArrived.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã tới tủ nhận'**
+  String get msArrived;
+
+  /// No description provided for @msDeposited.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã gửi hàng vào ô'**
+  String get msDeposited;
+
+  /// No description provided for @msFailed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chuyến bay thất bại'**
+  String get msFailed;
+
+  /// No description provided for @msDropReported.
+  ///
+  /// In vi, this message translates to:
+  /// **'Dừng do sự cố rơi kiện'**
+  String get msDropReported;
+
+  /// No description provided for @dosAwaitingDispatch.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang giao bằng drone'**
+  String get dosAwaitingDispatch;
+
+  /// No description provided for @dosStoring.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hàng đang trong tủ nhận'**
+  String get dosStoring;
+
+  /// No description provided for @dosExpired.
+  ///
+  /// In vi, this message translates to:
+  /// **'Quá hạn nhận'**
+  String get dosExpired;
+
+  /// No description provided for @cancelWeather.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thời tiết xấu'**
+  String get cancelWeather;
+
+  /// No description provided for @cancelDroneFault.
+  ///
+  /// In vi, this message translates to:
+  /// **'Drone lỗi'**
+  String get cancelDroneFault;
+
+  /// No description provided for @cancelPadNotReady.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bãi đáp không sẵn sàng'**
+  String get cancelPadNotReady;
+
+  /// No description provided for @cancelOperational.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lý do vận hành'**
+  String get cancelOperational;
+
+  /// No description provided for @cancelOther.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lý do khác'**
+  String get cancelOther;
+
+  /// No description provided for @cancelReasonCode.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lý do #{code}'**
+  String cancelReasonCode(Object code);
+
+  /// No description provided for @modeDemo.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mô phỏng (DEMO)'**
+  String get modeDemo;
+
+  /// No description provided for @modeStandard.
+  ///
+  /// In vi, this message translates to:
+  /// **'Drone thật'**
+  String get modeStandard;
+
+  /// No description provided for @stgTitleAwaitingTech.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chờ kỹ thuật viên nhận lấy hàng'**
+  String get stgTitleAwaitingTech;
+
+  /// No description provided for @stgTitleTechOnWay.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kỹ thuật viên đang tới lấy hàng'**
+  String get stgTitleTechOnWay;
+
+  /// No description provided for @stgTitlePickedUp.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã lấy hàng, đang mang tới drone'**
+  String get stgTitlePickedUp;
+
+  /// No description provided for @stgTitleLoading.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang nạp hàng lên drone'**
+  String get stgTitleLoading;
+
+  /// No description provided for @stgTitleLaunching.
+  ///
+  /// In vi, this message translates to:
+  /// **'Drone đang khởi phóng'**
+  String get stgTitleLaunching;
+
+  /// No description provided for @stgTitleDeparted.
+  ///
+  /// In vi, this message translates to:
+  /// **'Drone đã rời trạm'**
+  String get stgTitleDeparted;
+
+  /// No description provided for @stgTitleEnRoute.
+  ///
+  /// In vi, this message translates to:
+  /// **'Drone đang trên đường'**
+  String get stgTitleEnRoute;
+
+  /// No description provided for @stgTitleApproaching.
+  ///
+  /// In vi, this message translates to:
+  /// **'Drone sắp đến'**
+  String get stgTitleApproaching;
+
+  /// No description provided for @stgTitleArrived.
+  ///
+  /// In vi, this message translates to:
+  /// **'Drone đã đến tủ'**
+  String get stgTitleArrived;
+
+  /// No description provided for @stgTitleReady.
+  ///
+  /// In vi, this message translates to:
+  /// **'Sẵn sàng nhận hàng'**
+  String get stgTitleReady;
+
+  /// No description provided for @stgTitleDelayed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đơn hàng bị chậm'**
+  String get stgTitleDelayed;
+
+  /// No description provided for @stgTitleFailed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Giao không hoàn tất'**
+  String get stgTitleFailed;
+
+  /// No description provided for @stgTitleDrop.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kiện hàng gặp sự cố rơi'**
+  String get stgTitleDrop;
+
+  /// No description provided for @stgTitleCancelled.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đơn drone đã huỷ'**
+  String get stgTitleCancelled;
+
+  /// No description provided for @stgTitleReceived.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã nhận hàng'**
+  String get stgTitleReceived;
+
+  /// No description provided for @stgTitleExpired.
+  ///
+  /// In vi, this message translates to:
+  /// **'Quá hạn nhận hàng'**
+  String get stgTitleExpired;
+
+  /// No description provided for @stgTitleUpdate.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cập nhật đơn hàng'**
+  String get stgTitleUpdate;
+
+  /// No description provided for @stgDescAwaitingTech.
+  ///
+  /// In vi, this message translates to:
+  /// **'Sau khi thanh toán, hệ thống tìm kỹ thuật viên drone rảnh gần bạn nhất'**
+  String get stgDescAwaitingTech;
+
+  /// No description provided for @stgDescTechOnWay.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kỹ thuật viên đang tới điểm lấy hàng, chuẩn bị kiện và mã lấy hàng'**
+  String get stgDescTechOnWay;
+
+  /// No description provided for @stgDescPickedUp.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kiện đang được mang tới drone để nạp trực tiếp; không bỏ vào ô tủ bay'**
+  String get stgDescPickedUp;
+
+  /// No description provided for @stgDescLoading.
+  ///
+  /// In vi, this message translates to:
+  /// **'Drone đã được gán, kỹ thuật viên đang cân và nạp kiện'**
+  String get stgDescLoading;
+
+  /// No description provided for @stgDescLaunching.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đội bay đang thực hiện quy trình khởi phóng'**
+  String get stgDescLaunching;
+
+  /// No description provided for @stgDescDeparted.
+  ///
+  /// In vi, this message translates to:
+  /// **'Drone đã cất cánh khỏi trạm nguồn'**
+  String get stgDescDeparted;
+
+  /// No description provided for @stgDescEnRoute.
+  ///
+  /// In vi, this message translates to:
+  /// **'Drone đang bay tới tủ nhận'**
+  String get stgDescEnRoute;
+
+  /// No description provided for @stgDescEnRouteEta.
+  ///
+  /// In vi, this message translates to:
+  /// **'Drone dự kiến đến trong {eta}'**
+  String stgDescEnRouteEta(Object eta);
+
+  /// No description provided for @stgDescApproaching.
+  ///
+  /// In vi, this message translates to:
+  /// **'Drone đang tiếp cận tủ nhận của bạn'**
+  String get stgDescApproaching;
+
+  /// No description provided for @stgDescArrived.
+  ///
+  /// In vi, this message translates to:
+  /// **'Drone đã đến và đang gửi kiện hàng vào tủ'**
+  String get stgDescArrived;
+
+  /// No description provided for @stgDescReady.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kiện hàng đã nằm trong tủ nhận, dùng mã PIN/QR của đơn để mở ô'**
+  String get stgDescReady;
+
+  /// No description provided for @stgDescDelayed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đơn đang bị chậm so với dự kiến'**
+  String get stgDescDelayed;
+
+  /// No description provided for @stgDescDelayedEta.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đơn đang bị chậm, dự kiến tới {eta}'**
+  String stgDescDelayedEta(Object eta);
+
+  /// No description provided for @stgDescFailed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đơn giao không hoàn tất'**
+  String get stgDescFailed;
+
+  /// No description provided for @stgDescDrop.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kiện được báo rơi khỏi drone trong chuyến bay. Tiến trình thu hồi và phương án xử lý xem ở thẻ sự cố của đơn.'**
+  String get stgDescDrop;
+
+  /// No description provided for @stgDescCancelled.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đơn đã dừng trước khi drone cất cánh'**
+  String get stgDescCancelled;
+
+  /// No description provided for @stgDescReceived.
+  ///
+  /// In vi, this message translates to:
+  /// **'Người nhận đã lấy kiện hàng khỏi tủ'**
+  String get stgDescReceived;
+
+  /// No description provided for @stgDescExpired.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã quá hạn nhận hàng, vui lòng liên hệ hỗ trợ'**
+  String get stgDescExpired;
+
+  /// No description provided for @stgDescUpdate.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đơn hàng của bạn có cập nhật mới'**
+  String get stgDescUpdate;
+
+  /// No description provided for @droneNoWeatherData.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa có dữ liệu thời tiết.'**
+  String get droneNoWeatherData;
+
+  /// No description provided for @failWeather.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tạm dừng bay do thời tiết hoặc lệnh điều hành'**
+  String get failWeather;
+
+  /// No description provided for @failWeatherUnsafe.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thời tiết tuyến bay không an toàn'**
+  String get failWeatherUnsafe;
+
+  /// No description provided for @failStationSuspended.
+  ///
+  /// In vi, this message translates to:
+  /// **'Trạm bay đang tạm dừng'**
+  String get failStationSuspended;
+
+  /// No description provided for @failDroneFault.
+  ///
+  /// In vi, this message translates to:
+  /// **'Drone gặp sự cố'**
+  String get failDroneFault;
+
+  /// No description provided for @failNoDrone.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tủ gửi không còn drone sẵn sàng'**
+  String get failNoDrone;
+
+  /// No description provided for @failSourceLocker.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tủ gửi gặp sự cố'**
+  String get failSourceLocker;
+
+  /// No description provided for @failDestinationLocker.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tủ nhận gặp sự cố'**
+  String get failDestinationLocker;
+
+  /// No description provided for @failLandingPad.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bãi đáp drone không sẵn sàng'**
+  String get failLandingPad;
+
+  /// No description provided for @failNoTechnician.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không có kỹ thuật viên nhận lấy hàng'**
+  String get failNoTechnician;
+
+  /// No description provided for @failLaunchOverdue.
+  ///
+  /// In vi, this message translates to:
+  /// **'Quá hạn phóng drone sau khi lấy hàng'**
+  String get failLaunchOverdue;
+
+  /// No description provided for @failCustomerAbsent.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không gặp được người gửi tại điểm lấy hàng'**
+  String get failCustomerAbsent;
+
+  /// No description provided for @failParcelRejected.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kiện hàng không đúng khai báo'**
+  String get failParcelRejected;
+
+  /// No description provided for @failAddressNotFound.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không tìm thấy địa chỉ lấy hàng'**
+  String get failAddressNotFound;
+
+  /// No description provided for @failFlightIncident.
+  ///
+  /// In vi, this message translates to:
+  /// **'Sự cố trong lúc bay'**
+  String get failFlightIncident;
+
+  /// No description provided for @failShortCustomerAbsent.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không gặp được người gửi'**
+  String get failShortCustomerAbsent;
+
+  /// No description provided for @failShortParcelRejected.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kiện không đúng khai báo'**
+  String get failShortParcelRejected;
+
+  /// No description provided for @failShortAddressNotFound.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không tìm thấy địa chỉ'**
+  String get failShortAddressNotFound;
+
+  /// No description provided for @failShortNoDrone.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không còn drone'**
+  String get failShortNoDrone;
+
+  /// No description provided for @failShortSourceLocker.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tủ gửi lỗi'**
+  String get failShortSourceLocker;
+
+  /// No description provided for @failShortDestinationLocker.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tủ nhận lỗi'**
+  String get failShortDestinationLocker;
+
+  /// No description provided for @failShortFlightIncident.
+  ///
+  /// In vi, this message translates to:
+  /// **'Sự cố lúc bay'**
+  String get failShortFlightIncident;
+
+  /// No description provided for @catDocument.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tài liệu'**
+  String get catDocument;
+
+  /// No description provided for @catFood.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đồ ăn'**
+  String get catFood;
+
+  /// No description provided for @catClothing.
+  ///
+  /// In vi, this message translates to:
+  /// **'Quần áo'**
+  String get catClothing;
+
+  /// No description provided for @catElectronics.
+  ///
+  /// In vi, this message translates to:
+  /// **'Điện tử'**
+  String get catElectronics;
+
+  /// No description provided for @catCosmetics.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mỹ phẩm'**
+  String get catCosmetics;
+
+  /// No description provided for @heldSourceBox.
+  ///
+  /// In vi, this message translates to:
+  /// **'Còn trong ô gửi'**
+  String get heldSourceBox;
+
+  /// No description provided for @heldFlightTeam.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đội bay đang giữ'**
+  String get heldFlightTeam;
+
+  /// No description provided for @blockDisconnected.
+  ///
+  /// In vi, this message translates to:
+  /// **'mất kết nối'**
+  String get blockDisconnected;
+
+  /// No description provided for @blockMaintenance.
+  ///
+  /// In vi, this message translates to:
+  /// **'đang bảo trì'**
+  String get blockMaintenance;
+
+  /// No description provided for @blockSuspended.
+  ///
+  /// In vi, this message translates to:
+  /// **'tạm ngưng'**
+  String get blockSuspended;
+
+  /// No description provided for @blockNoPad.
+  ///
+  /// In vi, this message translates to:
+  /// **'chưa có bãi đáp drone'**
+  String get blockNoPad;
+
+  /// No description provided for @blockPadMaintenance.
+  ///
+  /// In vi, this message translates to:
+  /// **'bãi đáp đang bảo trì'**
+  String get blockPadMaintenance;
+
+  /// No description provided for @blockPadFault.
+  ///
+  /// In vi, this message translates to:
+  /// **'bãi đáp đang lỗi'**
+  String get blockPadFault;
+
+  /// No description provided for @droneErrOwnerOnly.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chỉ người đặt đơn mới thực hiện được thao tác này.'**
+  String get droneErrOwnerOnly;
+
+  /// No description provided for @droneErrNotYourIncident.
+  ///
+  /// In vi, this message translates to:
+  /// **'Sự cố này không thuộc đơn của bạn.'**
+  String get droneErrNotYourIncident;
+
+  /// No description provided for @droneErrNoReview.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chính sách của đơn không cho yêu cầu xem xét lại phương án.'**
+  String get droneErrNoReview;
+
+  /// No description provided for @droneErrAlreadyResponded.
+  ///
+  /// In vi, this message translates to:
+  /// **'Phương án này đã được phản hồi. Vui lòng tải lại.'**
+  String get droneErrAlreadyResponded;
+
+  /// No description provided for @droneErrNoProposal.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa có phương án nào chờ bạn phản hồi.'**
+  String get droneErrNoProposal;
+
+  /// No description provided for @droneErrInvalidChoice.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lựa chọn không hợp lệ.'**
+  String get droneErrInvalidChoice;
+
+  /// No description provided for @droneErrRecipientLookup.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa tra được thông tin người nhận. Vui lòng thử lại sau.'**
+  String get droneErrRecipientLookup;
+
+  /// No description provided for @droneNoPermission.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bạn không có quyền xem đơn drone này. Chỉ người đặt và người nhận theo dõi được đơn.'**
+  String get droneNoPermission;
+
+  /// No description provided for @droneStatusLoadFailedRetrying.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không tải được trạng thái giao hàng. Đang thử lại...'**
+  String get droneStatusLoadFailedRetrying;
+
+  /// No description provided for @dronePickupCodeNotSupported.
+  ///
+  /// In vi, this message translates to:
+  /// **'Máy chủ chưa hỗ trợ tra mã nhận hàng trong ứng dụng. Hãy dùng mã PIN đã gửi qua thông báo, email hoặc SMS.'**
+  String get dronePickupCodeNotSupported;
+
+  /// No description provided for @droneTrackingDisabled.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tính năng theo dõi giao drone đang tạm tắt.'**
+  String get droneTrackingDisabled;
+
+  /// No description provided for @droneStatusLoadFailed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không tải được trạng thái giao hàng.'**
+  String get droneStatusLoadFailed;
+
+  /// No description provided for @ddTlPayment.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thanh toán'**
+  String get ddTlPayment;
+
+  /// No description provided for @ddTlParcelDropped.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bỏ kiện vào ô gửi'**
+  String get ddTlParcelDropped;
+
+  /// No description provided for @ddTlHomePickup.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lấy hàng tại nhà người gửi'**
+  String get ddTlHomePickup;
+
+  /// No description provided for @ddTlLoaded.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nạp hàng lên drone'**
+  String get ddTlLoaded;
+
+  /// No description provided for @ddTlReady.
+  ///
+  /// In vi, this message translates to:
+  /// **'Sẵn sàng phóng'**
+  String get ddTlReady;
+
+  /// No description provided for @ddTlCodeSent.
+  ///
+  /// In vi, this message translates to:
+  /// **'Gửi mã cho người nhận'**
+  String get ddTlCodeSent;
+
+  /// No description provided for @ddTlPickupDeadline.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hạn nhận hàng'**
+  String get ddTlPickupDeadline;
+
+  /// No description provided for @ddTlReceived.
+  ///
+  /// In vi, this message translates to:
+  /// **'Người nhận lấy hàng'**
+  String get ddTlReceived;
+
+  /// No description provided for @ddProgress.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tiến trình giao hàng'**
+  String get ddProgress;
+
+  /// No description provided for @ddClosedTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đơn drone đã đóng'**
+  String get ddClosedTitle;
+
+  /// No description provided for @ddClosedBody.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chuyến bay không hoàn tất nên đơn này đã đóng; phương án xử lý xem ở phần sự cố của đơn.'**
+  String get ddClosedBody;
+
+  /// No description provided for @ddAwaitingPaymentTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chờ thanh toán'**
+  String get ddAwaitingPaymentTitle;
+
+  /// No description provided for @ddAwaitingPaymentBody.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thanh toán xong hệ thống mới tìm kỹ thuật viên drone tới lấy hàng'**
+  String get ddAwaitingPaymentBody;
+
+  /// No description provided for @ddAwaitingTeamTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chờ đội bay tiếp nhận'**
+  String get ddAwaitingTeamTitle;
+
+  /// No description provided for @ddAwaitingTeamBody.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kiện đã sẵn sàng tại trạm Lock.R, chờ kỹ thuật viên drone nạp hàng và phóng'**
+  String get ddAwaitingTeamBody;
+
+  /// No description provided for @ddReadyBody.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kiện đã được nạp và niêm phong trên drone, chờ đội bay phóng'**
+  String get ddReadyBody;
+
+  /// No description provided for @ddAboutMinutesLeft.
+  ///
+  /// In vi, this message translates to:
+  /// **'Còn khoảng {minutes} phút'**
+  String ddAboutMinutesLeft(Object minutes);
+
+  /// No description provided for @ddSince.
+  ///
+  /// In vi, this message translates to:
+  /// **'Từ {time}'**
+  String ddSince(Object time);
+
+  /// No description provided for @ddOverdueAt.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đơn hàng đã quá hạn lấy lúc {deadline}. {policy}'**
+  String ddOverdueAt(Object deadline, Object policy);
+
+  /// No description provided for @ddPickupDeadline.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hạn người nhận lấy hàng: {deadline} (lưu trữ {hours} giờ).'**
+  String ddPickupDeadline(Object deadline, Object hours);
+
+  /// No description provided for @ddFlightIncompleteClosed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chuyến bay không hoàn tất nên đơn này đã đóng. Phương án xử lý (giao lại hoặc bồi thường) xem ở phần sự cố của đơn.'**
+  String get ddFlightIncompleteClosed;
+
+  /// No description provided for @ddUnpaidSearch.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đơn chưa thanh toán. Thanh toán xong hệ thống mới bắt đầu tìm kỹ thuật viên drone tới lấy hàng.'**
+  String get ddUnpaidSearch;
+
+  /// No description provided for @ddAt.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lúc: {time}'**
+  String ddAt(Object time);
+
+  /// No description provided for @ddReason.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lý do: {reason}'**
+  String ddReason(Object reason);
+
+  /// No description provided for @ddNoteValue.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ghi chú: {note}'**
+  String ddNoteValue(Object note);
+
+  /// No description provided for @ddTicket.
+  ///
+  /// In vi, this message translates to:
+  /// **'Phiếu sự cố: #{id}'**
+  String ddTicket(Object id);
+
+  /// No description provided for @ddParcelWithSender.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kiện hàng chưa được lấy, vẫn ở chỗ người gửi.'**
+  String get ddParcelWithSender;
+
+  /// No description provided for @ddRefundRecorded.
+  ///
+  /// In vi, this message translates to:
+  /// **'Yêu cầu hoàn tiền đã được ghi nhận. Admin sẽ chuyển khoản về tài khoản ngân hàng của người đặt.'**
+  String get ddRefundRecorded;
+
+  /// No description provided for @ddRefundDone.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tiền đã được chuyển khoản hoàn cho người đặt.'**
+  String get ddRefundDone;
+
+  /// No description provided for @ddRefundByIncident.
+  ///
+  /// In vi, this message translates to:
+  /// **'Khoản đã trả được xử lý theo phương án sự cố: giao lại miễn phí hoặc bồi thường chuyển khoản về tài khoản ngân hàng đã liên kết.'**
+  String get ddRefundByIncident;
+
+  /// No description provided for @ddRefundNotRecorded.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa ghi nhận được yêu cầu hoàn tiền — vui lòng liên hệ hỗ trợ.'**
+  String get ddRefundNotRecorded;
+
+  /// No description provided for @ddWeightOver.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kiện cân thực tế {actual}, nặng hơn mức {expected} đã khai báo.'**
+  String ddWeightOver(Object actual, Object expected);
+
+  /// No description provided for @ddSurchargeOperator.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chờ khách trả thêm {amount} rồi mới phóng được.'**
+  String ddSurchargeOperator(Object amount);
+
+  /// No description provided for @ddSurchargeReceiver.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang chờ người gửi trả thêm {amount} để drone cất cánh.'**
+  String ddSurchargeReceiver(Object amount);
+
+  /// No description provided for @ddSurchargeSender.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bạn cần trả thêm {amount} để drone cất cánh. Không đồng ý thì bạn có thể huỷ đơn: phần đã trả được hoàn và đội bay trả lại kiện.'**
+  String ddSurchargeSender(Object amount);
+
+  /// No description provided for @ddUnpaidOperator.
+  ///
+  /// In vi, this message translates to:
+  /// **'Khách chưa thanh toán. Chỉ tiếp nhận được sau khi đơn đã thanh toán.'**
+  String get ddUnpaidOperator;
+
+  /// No description provided for @ddUnpaidReceiver.
+  ///
+  /// In vi, this message translates to:
+  /// **'Người gửi chưa thanh toán đơn. Đội bay tiếp nhận sau khi người gửi thanh toán.'**
+  String get ddUnpaidReceiver;
+
+  /// No description provided for @ddUnpaidSender.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đơn chưa thanh toán. Đội bay chỉ tiếp nhận sau khi bạn thanh toán.'**
+  String get ddUnpaidSender;
+
+  /// No description provided for @ddPaySurcharge.
+  ///
+  /// In vi, this message translates to:
+  /// **'Trả thêm phí chênh'**
+  String get ddPaySurcharge;
+
+  /// No description provided for @ddPayNow.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thanh toán ngay'**
+  String get ddPayNow;
+
+  /// No description provided for @ddDeclineSurcharge.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không đồng ý · huỷ đơn và nhận hoàn tiền'**
+  String get ddDeclineSurcharge;
+
+  /// No description provided for @ddIncidentLabel.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đơn đang gặp sự cố: {label}'**
+  String ddIncidentLabel(Object label);
+
+  /// No description provided for @ddFromTime.
+  ///
+  /// In vi, this message translates to:
+  /// **'Từ lúc: {time}'**
+  String ddFromTime(Object time);
+
+  /// No description provided for @ddAutoCloseOperator.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa khắc phục trước {time} thì đơn tự kết thúc \"giao không hoàn tất\" và hoàn tiền cho khách.'**
+  String ddAutoCloseOperator(Object time);
+
+  /// No description provided for @ddAutoCloseCustomer.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nếu chưa khắc phục được trước {time}, đơn sẽ kết thúc và bạn được hoàn tiền.'**
+  String ddAutoCloseCustomer(Object time);
+
+  /// No description provided for @ddChangePlan.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đổi phương án hoặc xác nhận giao không hoàn tất.'**
+  String get ddChangePlan;
+
+  /// No description provided for @ddTeamHandling.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đội bay đang xử lý.'**
+  String get ddTeamHandling;
+
+  /// No description provided for @ddPickedUp.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã lấy hàng{at}'**
+  String ddPickedUp(Object at);
+
+  /// No description provided for @ddPickedUpAt.
+  ///
+  /// In vi, this message translates to:
+  /// **' lúc {time}'**
+  String ddPickedUpAt(Object time);
+
+  /// No description provided for @ddTechnician.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kỹ thuật viên'**
+  String get ddTechnician;
+
+  /// No description provided for @ddYouHeadingToPickup.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bạn đang tới lấy hàng'**
+  String get ddYouHeadingToPickup;
+
+  /// No description provided for @ddTechHeadingToPickup.
+  ///
+  /// In vi, this message translates to:
+  /// **'{who} đang tới lấy hàng'**
+  String ddTechHeadingToPickup(Object who);
+
+  /// No description provided for @ddYouAreInvited.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bạn được mời lấy hàng'**
+  String get ddYouAreInvited;
+
+  /// No description provided for @ddSearchingTech.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang tìm kỹ thuật viên drone gần bạn nhất'**
+  String get ddSearchingTech;
+
+  /// No description provided for @ddAwaitingDispatchPickup.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chờ điều phối lấy hàng'**
+  String get ddAwaitingDispatchPickup;
+
+  /// No description provided for @ddTechAfterPayment.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kỹ thuật viên sẽ tới lấy hàng sau khi đơn được thanh toán'**
+  String get ddTechAfterPayment;
+
+  /// No description provided for @ddHomePickup.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lấy hàng tận nhà'**
+  String get ddHomePickup;
+
+  /// No description provided for @ddPickupCode.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mã lấy hàng'**
+  String get ddPickupCode;
+
+  /// No description provided for @ddPickupCodeHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đọc mã này cho kỹ thuật viên khi giao kiện. Không gửi mã cho người khác.'**
+  String get ddPickupCodeHint;
+
+  /// No description provided for @ddPickupPoint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Điểm lấy hàng'**
+  String get ddPickupPoint;
+
+  /// No description provided for @ddDirections.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chỉ dẫn'**
+  String get ddDirections;
+
+  /// No description provided for @ddTechPhone.
+  ///
+  /// In vi, this message translates to:
+  /// **'SĐT kỹ thuật viên'**
+  String get ddTechPhone;
+
+  /// No description provided for @ddDistanceAtAccept.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cách điểm lấy lúc nhận việc'**
+  String get ddDistanceAtAccept;
+
+  /// No description provided for @ddPickupToSource.
+  ///
+  /// In vi, this message translates to:
+  /// **'Điểm lấy hàng → tủ gửi'**
+  String get ddPickupToSource;
+
+  /// No description provided for @ddPickupNote.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ghi chú lúc lấy hàng'**
+  String get ddPickupNote;
+
+  /// No description provided for @ddPickupPhoto.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ảnh kiện lúc lấy hàng'**
+  String get ddPickupPhoto;
+
+  /// No description provided for @ddPhotoTakenAt.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chụp lúc {time}'**
+  String ddPhotoTakenAt(Object time);
+
+  /// No description provided for @ddDroneBoxAtSource.
+  ///
+  /// In vi, this message translates to:
+  /// **'ô drone ở tủ gửi'**
+  String get ddDroneBoxAtSource;
+
+  /// No description provided for @ddDroneBoxNumberAtSource.
+  ///
+  /// In vi, this message translates to:
+  /// **'ô drone số {box} ở tủ gửi'**
+  String ddDroneBoxNumberAtSource(Object box);
+
+  /// No description provided for @ddSenderNotDroppedOperator.
+  ///
+  /// In vi, this message translates to:
+  /// **'Người gửi chưa xác nhận bỏ kiện vào {where}. Chỉ tiếp nhận được sau khi kiện đã nằm trong ô.'**
+  String ddSenderNotDroppedOperator(Object where);
+
+  /// No description provided for @ddWaitingSenderDrop.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang chờ người gửi bỏ kiện vào {where}.'**
+  String ddWaitingSenderDrop(Object where);
+
+  /// No description provided for @ddDropThenConfirm.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bỏ kiện vào {where} rồi xác nhận bên dưới. Đội bay chỉ tiếp nhận đơn sau khi bạn xác nhận.'**
+  String ddDropThenConfirm(Object where);
+
+  /// No description provided for @ddIDropped.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tôi đã bỏ kiện vào ô'**
+  String get ddIDropped;
+
+  /// No description provided for @ddParcelReturnedAt.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kiện đã được trả lại cho người gửi lúc {time}.'**
+  String ddParcelReturnedAt(Object time);
+
+  /// No description provided for @ddParcelInBoxOperator.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kiện còn trong ô gửi. Lấy kiện ra, trả cho người gửi rồi xác nhận đã trả.'**
+  String get ddParcelInBoxOperator;
+
+  /// No description provided for @ddParcelWithTeamOperator.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kiện đang do đội bay giữ. Trả cho người gửi rồi xác nhận đã trả.'**
+  String get ddParcelWithTeamOperator;
+
+  /// No description provided for @ddParcelInBoxCustomer.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kiện của bạn còn trong ô gửi. Đội bay sẽ liên hệ để trả lại kiện.'**
+  String get ddParcelInBoxCustomer;
+
+  /// No description provided for @ddParcelHeldByTech.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kiện đang do kỹ thuật viên giữ và sẽ được mang trả lại{where}.'**
+  String ddParcelHeldByTech(Object where);
+
+  /// No description provided for @ddToSender.
+  ///
+  /// In vi, this message translates to:
+  /// **' cho người gửi'**
+  String get ddToSender;
+
+  /// No description provided for @ddAtAddress.
+  ///
+  /// In vi, this message translates to:
+  /// **' tại {address}'**
+  String ddAtAddress(Object address);
+
+  /// No description provided for @ddCancelOrder.
+  ///
+  /// In vi, this message translates to:
+  /// **'Huỷ đơn'**
+  String get ddCancelOrder;
+
+  /// No description provided for @ddCancelAllowed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bạn huỷ được đơn khi đội bay chưa tiếp nhận.'**
+  String get ddCancelAllowed;
+
+  /// No description provided for @ddRoute.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lộ trình giao hàng'**
+  String get ddRoute;
+
+  /// No description provided for @ddSystemPickedStation.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tủ bay do hệ thống chọn (KTV nạp kiện trực tiếp lên drone)'**
+  String get ddSystemPickedStation;
+
+  /// No description provided for @ddLegacyBox.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đơn cũ: kiện từng được gửi vào ô số {box}'**
+  String ddLegacyBox(Object box);
+
+  /// No description provided for @ddSentAt.
+  ///
+  /// In vi, this message translates to:
+  /// **'Gửi đi lúc: {time}'**
+  String ddSentAt(Object time);
+
+  /// No description provided for @ddNotSentYet.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa gửi'**
+  String get ddNotSentYet;
+
+  /// No description provided for @ddDirectionsToDrone.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chỉ đường tới drone tại tủ bay'**
+  String get ddDirectionsToDrone;
+
+  /// No description provided for @ddReceiverLockerOperator.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tủ nhận khách đã chọn (người nhận lấy hàng)'**
+  String get ddReceiverLockerOperator;
+
+  /// No description provided for @ddReceiverLockerCustomer.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tủ nhận bạn đã chọn (người nhận lấy hàng)'**
+  String get ddReceiverLockerCustomer;
+
+  /// No description provided for @ddReceiveBox.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ô nhận số {box}'**
+  String ddReceiveBox(Object box);
+
+  /// No description provided for @ddDepositedAt.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hàng vào tủ lúc: {time}'**
+  String ddDepositedAt(Object time);
+
+  /// No description provided for @ddNotArrived.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa tới'**
+  String get ddNotArrived;
+
+  /// No description provided for @ddCodeSentAt.
+  ///
+  /// In vi, this message translates to:
+  /// **'Gửi mã cho người nhận lúc: {time}'**
+  String ddCodeSentAt(Object time);
+
+  /// No description provided for @ddReceivedAt.
+  ///
+  /// In vi, this message translates to:
+  /// **'Người nhận lấy hàng lúc: {time}'**
+  String ddReceivedAt(Object time);
+
+  /// No description provided for @ddNotReceived.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa nhận'**
+  String get ddNotReceived;
+
+  /// No description provided for @ddDirectionsToReceiver.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chỉ đường tới tủ nhận'**
+  String get ddDirectionsToReceiver;
+
+  /// No description provided for @ddLockerNoAddress.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tủ này chưa có địa chỉ hoặc toạ độ để chỉ đường.'**
+  String get ddLockerNoAddress;
+
+  /// No description provided for @ddCantOpenMaps.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không mở được ứng dụng bản đồ trên thiết bị.'**
+  String get ddCantOpenMaps;
+
+  /// No description provided for @ddOrderInfo.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thông tin đơn hàng'**
+  String get ddOrderInfo;
+
+  /// No description provided for @ddOrderCode.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mã đơn'**
+  String get ddOrderCode;
+
+  /// No description provided for @ddOrderStatus.
+  ///
+  /// In vi, this message translates to:
+  /// **'Trạng thái đơn'**
+  String get ddOrderStatus;
+
+  /// No description provided for @ddPausedDrop.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tạm dừng do sự cố rơi kiện'**
+  String get ddPausedDrop;
+
+  /// No description provided for @ddDroneFee.
+  ///
+  /// In vi, this message translates to:
+  /// **'Phí giao drone'**
+  String get ddDroneFee;
+
+  /// No description provided for @ddWeightSurcharge.
+  ///
+  /// In vi, this message translates to:
+  /// **'Trong đó thu thêm do cân lệch'**
+  String get ddWeightSurcharge;
+
+  /// No description provided for @ddDiscountCodeValue.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mã giảm giá {code}'**
+  String ddDiscountCodeValue(Object code);
+
+  /// No description provided for @ddUsePoints.
+  ///
+  /// In vi, this message translates to:
+  /// **'Dùng {points} điểm'**
+  String ddUsePoints(Object points);
+
+  /// No description provided for @ddAmountPaid.
+  ///
+  /// In vi, this message translates to:
+  /// **'Số tiền thanh toán'**
+  String get ddAmountPaid;
+
+  /// No description provided for @ddMethod.
+  ///
+  /// In vi, this message translates to:
+  /// **'Phương thức'**
+  String get ddMethod;
+
+  /// No description provided for @ddPaymentRef.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mã thanh toán'**
+  String get ddPaymentRef;
+
+  /// No description provided for @ddBoxAtLocker.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ô nhận tại tủ'**
+  String get ddBoxAtLocker;
+
+  /// No description provided for @ddDeclaredWeight.
+  ///
+  /// In vi, this message translates to:
+  /// **'Khối lượng khai báo'**
+  String get ddDeclaredWeight;
+
+  /// No description provided for @ddParcelSize.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kích thước kiện'**
+  String get ddParcelSize;
+
+  /// No description provided for @ddCaution.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lưu ý'**
+  String get ddCaution;
+
+  /// No description provided for @ddDroppedAtLabel.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bỏ kiện vào ô gửi lúc'**
+  String get ddDroppedAtLabel;
+
+  /// No description provided for @ddTechReceivedAt.
+  ///
+  /// In vi, this message translates to:
+  /// **'KTV nhận kiện lúc'**
+  String get ddTechReceivedAt;
+
+  /// No description provided for @ddParcelDescription.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mô tả kiện hàng'**
+  String get ddParcelDescription;
+
+  /// No description provided for @ddNoDescription.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không có mô tả'**
+  String get ddNoDescription;
+
+  /// No description provided for @ddFlightMode.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hình thức bay'**
+  String get ddFlightMode;
+
+  /// No description provided for @ddPeople.
+  ///
+  /// In vi, this message translates to:
+  /// **'Người liên quan'**
+  String get ddPeople;
+
+  /// No description provided for @ddDroneTech.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kỹ thuật viên drone'**
+  String get ddDroneTech;
+
+  /// No description provided for @ddNoTechYet.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa có người nhận việc'**
+  String get ddNoTechYet;
+
+  /// No description provided for @ddTechAccepted.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã nhận việc'**
+  String get ddTechAccepted;
+
+  /// No description provided for @ddLoader.
+  ///
+  /// In vi, this message translates to:
+  /// **'Người nạp hàng'**
+  String get ddLoader;
+
+  /// No description provided for @ddNotLoaded.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa nạp hàng'**
+  String get ddNotLoaded;
+
+  /// No description provided for @ddLoaded.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã nạp'**
+  String get ddLoaded;
+
+  /// No description provided for @ddNotChecked.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa kiểm'**
+  String get ddNotChecked;
+
+  /// No description provided for @ddPass.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đạt'**
+  String get ddPass;
+
+  /// No description provided for @ddFail.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không đạt'**
+  String get ddFail;
+
+  /// No description provided for @ddMissionRecord.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhiệm vụ bay & hồ sơ nạp hàng'**
+  String get ddMissionRecord;
+
+  /// No description provided for @ddMissionCode.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mã nhiệm vụ'**
+  String get ddMissionCode;
+
+  /// No description provided for @ddNotAssigned.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa phân công'**
+  String get ddNotAssigned;
+
+  /// No description provided for @ddMissionStatus.
+  ///
+  /// In vi, this message translates to:
+  /// **'Trạng thái nhiệm vụ'**
+  String get ddMissionStatus;
+
+  /// No description provided for @ddDronePosition.
+  ///
+  /// In vi, this message translates to:
+  /// **'Vị trí drone hiện tại'**
+  String get ddDronePosition;
+
+  /// No description provided for @ddNoData.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa có dữ liệu'**
+  String get ddNoData;
+
+  /// No description provided for @ddActualWeight.
+  ///
+  /// In vi, this message translates to:
+  /// **'Khối lượng thực tế'**
+  String get ddActualWeight;
+
+  /// No description provided for @ddSealCode.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mã niêm phong'**
+  String get ddSealCode;
+
+  /// No description provided for @ddNotSealed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa niêm phong'**
+  String get ddNotSealed;
+
+  /// No description provided for @ddParcelMatched.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đúng kiện, đúng đơn'**
+  String get ddParcelMatched;
+
+  /// No description provided for @ddPayloadSecured.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kiện đã cố định'**
+  String get ddPayloadSecured;
+
+  /// No description provided for @ddCompartmentLocked.
+  ///
+  /// In vi, this message translates to:
+  /// **'Khoang hàng đã khoá'**
+  String get ddCompartmentLocked;
+
+  /// No description provided for @ddLoadingNote.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ghi chú nạp hàng'**
+  String get ddLoadingNote;
+
+  /// No description provided for @ddEvLoaded.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã nạp hàng lên drone'**
+  String get ddEvLoaded;
+
+  /// No description provided for @ddEvCodeSent.
+  ///
+  /// In vi, this message translates to:
+  /// **'Gửi mã nhận hàng cho người nhận'**
+  String get ddEvCodeSent;
+
+  /// No description provided for @ddEvCreated.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đơn drone được tạo'**
+  String get ddEvCreated;
+
+  /// No description provided for @ddJourneyLog.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhật ký hành trình · mới nhất trước'**
+  String get ddJourneyLog;
+
+  /// No description provided for @ddNoJourney.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa có mốc hành trình nào.'**
+  String get ddNoJourney;
+
+  /// No description provided for @ddSystem.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hệ thống'**
+  String get ddSystem;
+
+  /// No description provided for @ddLockrStaff.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhân viên Lock.R'**
+  String get ddLockrStaff;
+
+  /// No description provided for @ddNewest.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mới nhất'**
+  String get ddNewest;
+
+  /// No description provided for @dbBoxTaken.
+  ///
+  /// In vi, this message translates to:
+  /// **'{box} vừa được người khác giữ. Hãy chọn ô drone khác.'**
+  String dbBoxTaken(Object box);
+
+  /// No description provided for @dbYourBox.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ô bạn chọn'**
+  String get dbYourBox;
+
+  /// No description provided for @dbCheckingBoxes.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang kiểm tra ô drone…'**
+  String get dbCheckingBoxes;
+
+  /// No description provided for @dbNoFreeBoxes.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không còn ô drone nhận trống'**
+  String get dbNoFreeBoxes;
+
+  /// No description provided for @dbChooseBox.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chọn ô người nhận sẽ lấy hàng'**
+  String get dbChooseBox;
+
+  /// No description provided for @dbDistancePrefix.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cách bạn {distance} · '**
+  String dbDistancePrefix(Object distance);
+
+  /// No description provided for @dbNoPad.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa có bãi đáp drone'**
+  String get dbNoPad;
+
+  /// No description provided for @dbNoCoordinates.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa có toạ độ tủ'**
+  String get dbNoCoordinates;
+
+  /// No description provided for @dbCheckingBoxesShort.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang kiểm tra ô drone'**
+  String get dbCheckingBoxesShort;
+
+  /// No description provided for @dbOutOfBoxes.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hết ô drone trống'**
+  String get dbOutOfBoxes;
+
+  /// No description provided for @dbFreeBoxes.
+  ///
+  /// In vi, this message translates to:
+  /// **'{count} ô drone trống'**
+  String dbFreeBoxes(Object count);
+
+  /// No description provided for @dbEnterName.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhập tên {who}'**
+  String dbEnterName(Object who);
+
+  /// No description provided for @dbInvalidPhone.
+  ///
+  /// In vi, this message translates to:
+  /// **'Số điện thoại {who} không hợp lệ'**
+  String dbInvalidPhone(Object who);
+
+  /// No description provided for @dbInvalidEmail.
+  ///
+  /// In vi, this message translates to:
+  /// **'Email {who} không hợp lệ'**
+  String dbInvalidEmail(Object who);
+
+  /// No description provided for @dbChoosePickup.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chọn điểm lấy hàng'**
+  String get dbChoosePickup;
+
+  /// No description provided for @dbWhoSender.
+  ///
+  /// In vi, this message translates to:
+  /// **'người gửi'**
+  String get dbWhoSender;
+
+  /// No description provided for @dbWhoReceiver.
+  ///
+  /// In vi, this message translates to:
+  /// **'người nhận'**
+  String get dbWhoReceiver;
+
+  /// No description provided for @dbChooseReceiverLocker.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chọn tủ nhận'**
+  String get dbChooseReceiverLocker;
+
+  /// No description provided for @dbCheckingReceiverBoxes.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang kiểm tra ô drone trống của tủ nhận, vui lòng chờ một chút'**
+  String get dbCheckingReceiverBoxes;
+
+  /// No description provided for @dbReceiverFull.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tủ nhận này đã hết ô drone trống, hãy chọn tủ khác'**
+  String get dbReceiverFull;
+
+  /// No description provided for @dbChooseReceiverBox.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chọn ô drone nhận còn trống tại tủ nhận'**
+  String get dbChooseReceiverBox;
+
+  /// No description provided for @dbChooseCategory.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chọn loại hàng'**
+  String get dbChooseCategory;
+
+  /// No description provided for @dbSizeAllOrNone.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhập đủ dài, rộng, cao của kiện (cm) hoặc bỏ trống cả ba'**
+  String get dbSizeAllOrNone;
+
+  /// No description provided for @dbTooLarge.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kiện không lọt khoang drone (tối đa {l} × {w} × {h} cm)'**
+  String dbTooLarge(Object l, Object w, Object h);
+
+  /// No description provided for @dbMaxValue.
+  ///
+  /// In vi, this message translates to:
+  /// **'Drone chỉ nhận kiện có giá trị tới {amount}'**
+  String dbMaxValue(Object amount);
+
+  /// No description provided for @dbConfirmNoProhibited.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bạn cần cam kết kiện không chứa hàng cấm bay'**
+  String get dbConfirmNoProhibited;
+
+  /// No description provided for @dbPaidByVoucher.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đơn đã được thanh toán bằng ưu đãi. Đội bay sẽ tiếp nhận đơn của bạn.'**
+  String get dbPaidByVoucher;
+
+  /// No description provided for @dbCreatedNotPaid.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã tạo đơn drone nhưng chưa thanh toán được: {error}'**
+  String dbCreatedNotPaid(Object error);
+
+  /// No description provided for @dbTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Gửi hàng bằng drone'**
+  String get dbTitle;
+
+  /// No description provided for @dbIntro.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đặt và thanh toán xong, kỹ thuật viên drone gần bạn nhất sẽ tới lấy kiện, mang tới drone tại tủ bay để nạp trực tiếp lên drone (không bỏ vào ô tủ), rồi drone bay tới ô nhận bạn đã chọn. Người nhận lấy hàng bằng mã mở ô gửi qua email.'**
+  String get dbIntro;
+
+  /// No description provided for @dbSuspended.
+  ///
+  /// In vi, this message translates to:
+  /// **'Dịch vụ giao drone đang tạm dừng (thời tiết hoặc sự cố vận hành). Vui lòng thử lại sau.'**
+  String get dbSuspended;
+
+  /// No description provided for @dbPickupAt.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lấy hàng tại'**
+  String get dbPickupAt;
+
+  /// No description provided for @dbTechInstructions.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chỉ dẫn cho kỹ thuật viên (tuỳ chọn)'**
+  String get dbTechInstructions;
+
+  /// No description provided for @dbTechInstructionsHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tầng, cổng, giờ có nhà…'**
+  String get dbTechInstructionsHint;
+
+  /// No description provided for @dbSenderName.
+  ///
+  /// In vi, this message translates to:
+  /// **'Họ tên người gửi *'**
+  String get dbSenderName;
+
+  /// No description provided for @dbSenderPhone.
+  ///
+  /// In vi, this message translates to:
+  /// **'Số điện thoại người gửi *'**
+  String get dbSenderPhone;
+
+  /// No description provided for @dbSenderEmail.
+  ///
+  /// In vi, this message translates to:
+  /// **'Email người gửi *'**
+  String get dbSenderEmail;
+
+  /// No description provided for @dbReceiverName.
+  ///
+  /// In vi, this message translates to:
+  /// **'Họ tên người nhận *'**
+  String get dbReceiverName;
+
+  /// No description provided for @dbReceiverPhone.
+  ///
+  /// In vi, this message translates to:
+  /// **'Số điện thoại người nhận *'**
+  String get dbReceiverPhone;
+
+  /// No description provided for @dbReceiverEmail.
+  ///
+  /// In vi, this message translates to:
+  /// **'Email người nhận *'**
+  String get dbReceiverEmail;
+
+  /// No description provided for @dbEmailInfo.
+  ///
+  /// In vi, this message translates to:
+  /// **'Khi drone được phóng, người gửi và người nhận đều nhận email báo đơn. Khi hàng vào tủ, mã mở ô được gửi tới email người nhận.'**
+  String get dbEmailInfo;
+
+  /// No description provided for @dbReceiverLockerField.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tủ nhận *'**
+  String get dbReceiverLockerField;
+
+  /// No description provided for @dbLoadingLockers.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang tải tủ nhận...'**
+  String get dbLoadingLockers;
+
+  /// No description provided for @dbNoLockersInSystem.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hệ thống chưa có tủ nào'**
+  String get dbNoLockersInSystem;
+
+  /// No description provided for @dbReceiverBoxField.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ô drone nhận *'**
+  String get dbReceiverBoxField;
+
+  /// No description provided for @dbFreeReceiverBoxes.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ô nhận drone còn trống: {count}'**
+  String dbFreeReceiverBoxes(Object count);
+
+  /// No description provided for @dbChecking.
+  ///
+  /// In vi, this message translates to:
+  /// **'đang kiểm tra…'**
+  String get dbChecking;
+
+  /// No description provided for @dbLockerCantReceive.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tủ này chưa nhận được drone: {reason}'**
+  String dbLockerCantReceive(Object reason);
+
+  /// No description provided for @dbWeightField.
+  ///
+  /// In vi, this message translates to:
+  /// **'Khối lượng * (tối đa {max} một đơn)'**
+  String dbWeightField(Object max);
+
+  /// No description provided for @dbWeightHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chọn mức bằng hoặc lớn hơn khối lượng thật. Kỹ thuật viên cân lại khi nạp hàng: nặng hơn mức đã chọn quá {tolerance} g thì bạn trả thêm phần phí chênh trước khi drone bay; nhẹ hơn không hoàn lại.'**
+  String dbWeightHint(Object tolerance);
+
+  /// No description provided for @dbCategoryField.
+  ///
+  /// In vi, this message translates to:
+  /// **'Loại hàng *'**
+  String get dbCategoryField;
+
+  /// No description provided for @dbDescriptionField.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mô tả hàng hoá (tuỳ chọn)'**
+  String get dbDescriptionField;
+
+  /// No description provided for @dbLength.
+  ///
+  /// In vi, this message translates to:
+  /// **'Dài'**
+  String get dbLength;
+
+  /// No description provided for @dbWidth.
+  ///
+  /// In vi, this message translates to:
+  /// **'Rộng'**
+  String get dbWidth;
+
+  /// No description provided for @dbSizeHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kích thước tuỳ chọn. Khoang drone tối đa {size} cm.'**
+  String dbSizeHint(Object size);
+
+  /// No description provided for @dbDeclaredValueField.
+  ///
+  /// In vi, this message translates to:
+  /// **'Giá trị khai báo (tuỳ chọn)'**
+  String get dbDeclaredValueField;
+
+  /// No description provided for @dbDeclaredValueHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Căn cứ bồi thường nếu kiện hư hỏng, thất lạc. Tối đa {amount}.'**
+  String dbDeclaredValueHint(Object amount);
+
+  /// No description provided for @dbRouteAndFee.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lộ trình và phí'**
+  String get dbRouteAndFee;
+
+  /// No description provided for @dbAutoCancel.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đơn chưa thanh toán sau {minutes} phút sẽ tự huỷ.'**
+  String dbAutoCancel(Object minutes);
+
+  /// No description provided for @dbNoProhibitedCheckbox.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tôi cam kết kiện không chứa hàng cấm bay: pin rời, chất lỏng, chất dễ cháy nổ, hàng cấm theo pháp luật. *'**
+  String get dbNoProhibitedCheckbox;
+
+  /// No description provided for @dbCreateAndPay.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tạo đơn và thanh toán {amount}'**
+  String dbCreateAndPay(Object amount);
+
+  /// No description provided for @dbCreateFree.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tạo đơn (ưu đãi đã trừ hết phí)'**
+  String get dbCreateFree;
+
+  /// No description provided for @dbLockerCodeOnly.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mã riêng của tủ chỉ dùng được khi drone cất cánh tại {locker}.'**
+  String dbLockerCodeOnly(Object locker);
+
+  /// No description provided for @dbChoosePickupHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chọn điểm lấy hàng * — dùng vị trí hiện tại hoặc tự nhập/ghim trên bản đồ'**
+  String get dbChoosePickupHint;
+
+  /// No description provided for @dbLatLngTap.
+  ///
+  /// In vi, this message translates to:
+  /// **'Vĩ độ {lat} · kinh độ {lng} · chạm để đổi'**
+  String dbLatLngTap(Object lat, Object lng);
+
+  /// No description provided for @dbQuoteHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chọn điểm lấy hàng và tủ nhận để xem tủ gửi, quãng đường và phí.'**
+  String get dbQuoteHint;
+
+  /// No description provided for @dbCalculatingRoute.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang tính lộ trình…'**
+  String get dbCalculatingRoute;
+
+  /// No description provided for @dbSystemStation.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tủ bay do hệ thống chọn: {locker}'**
+  String dbSystemStation(Object locker);
+
+  /// No description provided for @dbRouteSummary.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kỹ thuật viên mang kiện {pickup} tới drone ở tủ bay để nạp trực tiếp · drone bay {route} tới ô nhận tại tủ đích'**
+  String dbRouteSummary(Object pickup, Object route);
+
+  /// No description provided for @dbFeeValue.
+  ///
+  /// In vi, this message translates to:
+  /// **'Phí giao drone: {amount}'**
+  String dbFeeValue(Object amount);
+
+  /// No description provided for @dbWind.
+  ///
+  /// In vi, this message translates to:
+  /// **'gió {speed} km/h'**
+  String dbWind(Object speed);
+
+  /// No description provided for @dbGust.
+  ///
+  /// In vi, this message translates to:
+  /// **'giật {speed} km/h'**
+  String dbGust(Object speed);
+
+  /// No description provided for @dbRain.
+  ///
+  /// In vi, this message translates to:
+  /// **'mưa {mm} mm'**
+  String dbRain(Object mm);
+
+  /// No description provided for @dbUpdatedAt.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cập nhật {time}'**
+  String dbUpdatedAt(Object time);
+
+  /// No description provided for @dbSource.
+  ///
+  /// In vi, this message translates to:
+  /// **'nguồn {source}'**
+  String dbSource(Object source);
+
+  /// No description provided for @dbWeatherOk.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thời tiết tuyến bay: Đủ điều kiện'**
+  String get dbWeatherOk;
+
+  /// No description provided for @dbWeatherUnknown.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa xác nhận được thời tiết'**
+  String get dbWeatherUnknown;
+
+  /// No description provided for @dbWeatherSuspended.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thời tiết tuyến bay: Tạm ngưng bay'**
+  String get dbWeatherSuspended;
+
+  /// No description provided for @dbWeatherRefresh.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xem lại thời tiết'**
+  String get dbWeatherRefresh;
+
+  /// No description provided for @dbWeatherWindow.
+  ///
+  /// In vi, this message translates to:
+  /// **'Dự báo {minutes} phút tới (thời gian giao dự kiến) từ nơi gửi → {locker} → tủ nhận'**
+  String dbWeatherWindow(Object minutes, Object locker);
+
+  /// No description provided for @dbWeatherOnlyWhenSafe.
+  ///
+  /// In vi, this message translates to:
+  /// **'{message} Đơn chỉ đặt được khi trời đủ điều kiện bay.'**
+  String dbWeatherOnlyWhenSafe(Object message);
+
+  /// No description provided for @dtTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Theo dõi giao drone'**
+  String get dtTitle;
+
+  /// No description provided for @dtCheckConnection.
+  ///
+  /// In vi, this message translates to:
+  /// **'Vui lòng kiểm tra kết nối và thử lại.'**
+  String get dtCheckConnection;
+
+  /// No description provided for @dtConfirmDroppedTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xác nhận đã bỏ kiện'**
+  String get dtConfirmDroppedTitle;
+
+  /// No description provided for @dtConfirmDroppedBody.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bạn đã bỏ kiện vào {where} và đóng cửa ô? Đội bay sẽ tới nạp hàng sau khi bạn xác nhận.'**
+  String dtConfirmDroppedBody(Object where);
+
+  /// No description provided for @dtDropped.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã bỏ kiện'**
+  String get dtDropped;
+
+  /// No description provided for @dtDroppedDone.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã ghi nhận. Đội bay sẽ tiếp nhận đơn của bạn.'**
+  String get dtDroppedDone;
+
+  /// No description provided for @dtCancelSurchargeTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Huỷ đơn vì không đồng ý phụ thu'**
+  String get dtCancelSurchargeTitle;
+
+  /// No description provided for @dtCancelSurchargeBody.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đơn {code} sẽ bị huỷ. Phần bạn đã trả được ghi yêu cầu hoàn tiền và đội bay sẽ liên hệ để trả lại kiện. Không hoàn tác được.'**
+  String dtCancelSurchargeBody(Object code);
+
+  /// No description provided for @dtCancelledReturn.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã huỷ đơn. Đội bay sẽ trả lại kiện cho bạn.'**
+  String get dtCancelledReturn;
+
+  /// No description provided for @dtMapSimulated.
+  ///
+  /// In vi, this message translates to:
+  /// **'Theo dõi trên bản đồ (mô phỏng)'**
+  String get dtMapSimulated;
+
+  /// No description provided for @dtMap.
+  ///
+  /// In vi, this message translates to:
+  /// **'Theo dõi trên bản đồ'**
+  String get dtMap;
+
+  /// No description provided for @dtInLockerShare.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kiện đã vào tủ nhận. Vào \"Xem chi tiết đơn\" để chia sẻ mã mở ô cho người nhận.'**
+  String get dtInLockerShare;
+
+  /// No description provided for @dtInLockerPickup.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kiện đã vào tủ nhận. Mở mã PIN để lấy hàng tại tủ.'**
+  String get dtInLockerPickup;
+
+  /// No description provided for @dtViewDetail.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xem chi tiết đơn'**
+  String get dtViewDetail;
+
+  /// No description provided for @dtPickup.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhận hàng'**
+  String get dtPickup;
+
+  /// No description provided for @dtOffline.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mất kết nối · đang thử lại, thông tin bên dưới là lần cập nhật gần nhất'**
+  String get dtOffline;
+
+  /// No description provided for @dtLive.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang cập nhật trực tiếp · trạng thái tự làm mới khi có thay đổi'**
+  String get dtLive;
+
+  /// No description provided for @dtLoadFailed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không tải được trạng thái giao hàng'**
+  String get dtLoadFailed;
+
+  /// No description provided for @rmNoCoordinates.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tủ gửi hoặc tủ nhận chưa có toạ độ nên chưa vẽ được bản đồ hành trình.'**
+  String get rmNoCoordinates;
+
+  /// No description provided for @rmZoomHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chụm/mở hai ngón hoặc bấm +/− để phóng to; bấm ⤢ để xem toàn màn hình.'**
+  String get rmZoomHint;
+
+  /// No description provided for @rmTotal.
+  ///
+  /// In vi, this message translates to:
+  /// **'Quãng đường {distance}'**
+  String rmTotal(Object distance);
+
+  /// No description provided for @rmRemaining.
+  ///
+  /// In vi, this message translates to:
+  /// **'Còn khoảng {distance}'**
+  String rmRemaining(Object distance);
+
+  /// No description provided for @rmLiveCoords.
+  ///
+  /// In vi, this message translates to:
+  /// **'Toạ độ cập nhật mỗi khi drone gửi vị trí về. Bấm vào toạ độ để mở Google Maps.'**
+  String get rmLiveCoords;
+
+  /// No description provided for @rmEstimatedCamera.
+  ///
+  /// In vi, this message translates to:
+  /// **'Vị trí drone ước theo chặng bay hiện tại. Số đo bay thật (GPS, pin, chế độ bay) xem ở khung camera phía trên.'**
+  String get rmEstimatedCamera;
+
+  /// No description provided for @rmEstimatedOpenMap.
+  ///
+  /// In vi, this message translates to:
+  /// **'Vị trí drone ước theo chặng bay hiện tại. Mở \"Theo dõi trên bản đồ\" để xem vị trí {mode}.'**
+  String rmEstimatedOpenMap(Object mode);
+
+  /// No description provided for @rmSimulated.
+  ///
+  /// In vi, this message translates to:
+  /// **'mô phỏng'**
+  String get rmSimulated;
+
+  /// No description provided for @rmLive.
+  ///
+  /// In vi, this message translates to:
+  /// **'trực tiếp'**
+  String get rmLive;
+
+  /// No description provided for @rmEstimated.
+  ///
+  /// In vi, this message translates to:
+  /// **'Vị trí drone ước theo chặng bay hiện tại.'**
+  String get rmEstimated;
+
+  /// No description provided for @rmZoomIn.
+  ///
+  /// In vi, this message translates to:
+  /// **'Phóng to'**
+  String get rmZoomIn;
+
+  /// No description provided for @rmZoomOut.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thu nhỏ'**
+  String get rmZoomOut;
+
+  /// No description provided for @rmFitRoute.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xem cả tuyến'**
+  String get rmFitRoute;
+
+  /// No description provided for @rmFullscreen.
+  ///
+  /// In vi, this message translates to:
+  /// **'Toàn màn hình'**
+  String get rmFullscreen;
+
+  /// No description provided for @rmRouteMap.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bản đồ hành trình'**
+  String get rmRouteMap;
+
+  /// No description provided for @rmDroneSentAt.
+  ///
+  /// In vi, this message translates to:
+  /// **'Drone gửi về lúc {time}{suffix}'**
+  String rmDroneSentAt(Object time, Object suffix);
+
+  /// No description provided for @rmSimSuffix.
+  ///
+  /// In vi, this message translates to:
+  /// **' · mô phỏng'**
+  String get rmSimSuffix;
+
+  /// No description provided for @rmAtReceiver.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tại tủ nhận'**
+  String get rmAtReceiver;
+
+  /// No description provided for @rmSimByStage.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mô phỏng theo chặng bay'**
+  String get rmSimByStage;
+
+  /// No description provided for @rmTelemetry.
+  ///
+  /// In vi, this message translates to:
+  /// **'Theo telemetry của drone'**
+  String get rmTelemetry;
+
+  /// No description provided for @rmEstimatedByStage.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ước theo chặng bay'**
+  String get rmEstimatedByStage;
+
+  /// No description provided for @rmAtSourceNotLaunched.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tại tủ gửi, chưa cất cánh'**
+  String get rmAtSourceNotLaunched;
+
+  /// No description provided for @plServiceOff.
+  ///
+  /// In vi, this message translates to:
+  /// **'Dịch vụ vị trí đang tắt. Vui lòng bật GPS.'**
+  String get plServiceOff;
+
+  /// No description provided for @plDenied.
+  ///
+  /// In vi, this message translates to:
+  /// **'Quyền truy cập vị trí bị từ chối.'**
+  String get plDenied;
+
+  /// No description provided for @plDeniedForever.
+  ///
+  /// In vi, this message translates to:
+  /// **'Quyền vị trí bị từ chối vĩnh viễn. Hãy bật lại trong cài đặt.'**
+  String get plDeniedForever;
+
+  /// No description provided for @plNoLocation.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không lấy được vị trí hiện tại.'**
+  String get plNoLocation;
+
+  /// No description provided for @plNoLocationHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không lấy được vị trí hiện tại. Hãy ra chỗ thoáng hoặc gõ địa chỉ để tìm.'**
+  String get plNoLocationHint;
+
+  /// No description provided for @plNoAddressForPoint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa tra được địa chỉ của điểm này. Hãy tự nhập địa chỉ bên dưới.'**
+  String get plNoAddressForPoint;
+
+  /// No description provided for @plMin3Chars.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhập ít nhất 3 ký tự để tìm địa chỉ.'**
+  String get plMin3Chars;
+
+  /// No description provided for @plNotFound.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không tìm thấy địa chỉ này. Thử gõ rõ hơn hoặc chạm lên bản đồ để ghim.'**
+  String get plNotFound;
+
+  /// No description provided for @plNoPoint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa chọn vị trí lấy hàng trên bản đồ.'**
+  String get plNoPoint;
+
+  /// No description provided for @plEnterAddress.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhập địa chỉ lấy hàng (số nhà, đường, phường…).'**
+  String get plEnterAddress;
+
+  /// No description provided for @plTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chọn điểm lấy hàng'**
+  String get plTitle;
+
+  /// No description provided for @plSearchHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Gõ địa chỉ (số nhà, đường, phường…)'**
+  String get plSearchHint;
+
+  /// No description provided for @plClear.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xoá'**
+  String get plClear;
+
+  /// No description provided for @plTapToSeePin.
+  ///
+  /// In vi, this message translates to:
+  /// **'{lng} · chạm để xem ghim'**
+  String plTapToSeePin(Object lng);
+
+  /// No description provided for @plCurrentLocation.
+  ///
+  /// In vi, this message translates to:
+  /// **'Vị trí hiện tại'**
+  String get plCurrentLocation;
+
+  /// No description provided for @plAddressField.
+  ///
+  /// In vi, this message translates to:
+  /// **'Địa chỉ lấy hàng'**
+  String get plAddressField;
+
+  /// No description provided for @plTapMapToPin.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chạm lên bản đồ để ghim điểm lấy hàng'**
+  String get plTapMapToPin;
+
+  /// No description provided for @plPinInfo.
+  ///
+  /// In vi, this message translates to:
+  /// **'Vĩ độ {lat} · kinh độ {lng} · vị trí ghim dùng để tính vùng phục vụ; kiểm tra ghim có đúng địa chỉ trước khi xác nhận'**
+  String plPinInfo(Object lat, Object lng);
+
+  /// No description provided for @plPickupHere.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lấy hàng tại đây'**
+  String get plPickupHere;
+
+  /// No description provided for @psLoadFailed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không tải được mã nhận hàng. Vui lòng thử lại.'**
+  String get psLoadFailed;
+
+  /// No description provided for @psReceivingLocker.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tủ nhận hàng'**
+  String get psReceivingLocker;
+
+  /// No description provided for @psNotInQueue.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không thấy đơn này trong hàng chờ nhận của bạn. Có thể đơn đã được lấy, hoặc mã nhận hàng được gửi cho số điện thoại khác.'**
+  String get psNotInQueue;
+
+  /// No description provided for @psDelegated.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bạn đã ủy quyền cho {name} lấy hộ đơn này nên mã nhận hàng đã chuyển cho người được ủy quyền.'**
+  String psDelegated(Object name);
+
+  /// No description provided for @psSomeoneElse.
+  ///
+  /// In vi, this message translates to:
+  /// **'người khác'**
+  String get psSomeoneElse;
+
+  /// No description provided for @psNotReady.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mã nhận hàng chưa sẵn sàng. Mã sẽ có khi kiện đã vào ô tủ nhận.'**
+  String get psNotReady;
+
+  /// No description provided for @psPin.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mã PIN mở ô'**
+  String get psPin;
+
+  /// No description provided for @psEnterAtKiosk.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhập mã này trên màn hình kiosk tại tủ để mở ô.'**
+  String get psEnterAtKiosk;
+
+  /// No description provided for @psReceiveBox.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ô nhận'**
+  String get psReceiveBox;
+
+  /// No description provided for @psPickupBefore.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lấy trước'**
+  String get psPickupBefore;
+
+  /// No description provided for @ocPaidRefund.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đơn đã thanh toán: {amount} sẽ được hoàn bằng chuyển khoản sau khi admin duyệt. Hãy kiểm tra tài khoản ngân hàng nhận tiền trong Hồ sơ.'**
+  String ocPaidRefund(Object amount);
+
+  /// No description provided for @ocDroneFee.
+  ///
+  /// In vi, this message translates to:
+  /// **'phí giao drone'**
+  String get ocDroneFee;
+
+  /// No description provided for @ocUnpaidNoFee.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đơn chưa thanh toán nên không phát sinh phí.'**
+  String get ocUnpaidNoFee;
+
+  /// No description provided for @ocTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Huỷ đơn giao drone?'**
+  String get ocTitle;
+
+  /// No description provided for @ocBody.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đơn {code} sẽ bị huỷ và ô nhận đã giữ cho đơn được nhả. {refund}'**
+  String ocBody(Object code, Object refund);
+
+  /// No description provided for @ocRefundPending.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã huỷ đơn. Yêu cầu hoàn tiền đã được ghi nhận, admin sẽ chuyển khoản cho bạn.'**
+  String get ocRefundPending;
+
+  /// No description provided for @ocRefunded.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã huỷ đơn. Tiền đã được chuyển khoản hoàn cho bạn.'**
+  String get ocRefunded;
+
+  /// No description provided for @ocPaidNoRefund.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã huỷ đơn. Chưa ghi nhận được yêu cầu hoàn tiền, vui lòng liên hệ hỗ trợ.'**
+  String get ocPaidNoRefund;
+
+  /// No description provided for @ocCancelled.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã huỷ đơn.'**
+  String get ocCancelled;
+
+  /// No description provided for @ocAlreadyAccepted.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đội bay đã tiếp nhận nên đơn không còn huỷ được trong ứng dụng.'**
+  String get ocAlreadyAccepted;
+
+  /// No description provided for @ocOwnerOnly.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chỉ người đặt đơn mới huỷ được đơn này.'**
+  String get ocOwnerOnly;
+
+  /// No description provided for @lmTitleSimulated.
+  ///
+  /// In vi, this message translates to:
+  /// **'Theo dõi drone · mô phỏng'**
+  String get lmTitleSimulated;
+
+  /// No description provided for @lmSignalLost.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mất tín hiệu · vị trí lúc {time}'**
+  String lmSignalLost(Object time);
+
+  /// No description provided for @lmConnecting.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang kết nối tới drone...'**
+  String get lmConnecting;
+
+  /// No description provided for @lmNoPosition.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa nhận được vị trí drone. Đang thử lại...'**
+  String get lmNoPosition;
+
+  /// No description provided for @lmOnTheWay.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang trên đường tới tủ nhận'**
+  String get lmOnTheWay;
+
+  /// No description provided for @lmAlmostThere.
+  ///
+  /// In vi, this message translates to:
+  /// **'Sắp tới nơi'**
+  String get lmAlmostThere;
+
+  /// No description provided for @lmEta.
+  ///
+  /// In vi, this message translates to:
+  /// **'Dự kiến đến'**
+  String get lmEta;
+
+  /// No description provided for @lmSpeed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tốc độ'**
+  String get lmSpeed;
+
+  /// No description provided for @lmLiveSimulated.
+  ///
+  /// In vi, this message translates to:
+  /// **'mô phỏng · cập nhật trực tiếp'**
+  String get lmLiveSimulated;
+
+  /// No description provided for @lmLiveUpdates.
+  ///
+  /// In vi, this message translates to:
+  /// **'cập nhật trực tiếp'**
+  String get lmLiveUpdates;
+
+  /// No description provided for @clCantOpenMaps.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không mở được Google Maps.'**
+  String get clCantOpenMaps;
+
+  /// No description provided for @clCopied.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã copy toạ độ {coords}'**
+  String clCopied(Object coords);
+
+  /// No description provided for @clDronePosition.
+  ///
+  /// In vi, this message translates to:
+  /// **'Vị trí drone · {note}'**
+  String clDronePosition(Object note);
+
+  /// No description provided for @clCopyCoords.
+  ///
+  /// In vi, this message translates to:
+  /// **'Copy toạ độ'**
+  String get clCopyCoords;
+
+  /// No description provided for @clPickupPin.
+  ///
+  /// In vi, this message translates to:
+  /// **'Điểm lấy hàng người gửi ghim'**
+  String get clPickupPin;
+
+  /// No description provided for @clTechnician.
+  ///
+  /// In vi, this message translates to:
+  /// **'Vị trí kỹ thuật viên lúc đó'**
+  String get clTechnician;
+
+  /// No description provided for @clSourceLocker.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tại trạm/tủ gửi'**
+  String get clSourceLocker;
+
+  /// No description provided for @clDroneGps.
+  ///
+  /// In vi, this message translates to:
+  /// **'Vị trí drone (GPS)'**
+  String get clDroneGps;
+
+  /// No description provided for @clDroneSim.
+  ///
+  /// In vi, this message translates to:
+  /// **'Vị trí drone (mô phỏng)'**
+  String get clDroneSim;
+
+  /// No description provided for @clDestination.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tại tủ nhận'**
+  String get clDestination;
+
+  /// No description provided for @clAtEvent.
+  ///
+  /// In vi, this message translates to:
+  /// **'Vị trí lúc ghi mốc'**
+  String get clAtEvent;
+
+  /// No description provided for @lpIntro.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chọn tủ nhận hàng (ưu tiên sắp xếp gần bạn nhất). Hệ thống tự chọn tủ bay và KTV đến lấy kiện tại nhà.'**
+  String get lpIntro;
+
+  /// No description provided for @lpLoadFailed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không tải được danh sách tủ: {error}'**
+  String lpLoadFailed(Object error);
+
+  /// No description provided for @lpNoLockers.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa có tủ nào trên hệ thống.'**
+  String get lpNoLockers;
+
+  /// No description provided for @lpDistance.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cách bạn {distance}'**
+  String lpDistance(Object distance);
+
+  /// No description provided for @lpChecking.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang kiểm tra ô drone nhận'**
+  String get lpChecking;
+
+  /// No description provided for @lpFreeSlots.
+  ///
+  /// In vi, this message translates to:
+  /// **'Còn {count} ô drone nhận trống'**
+  String lpFreeSlots(Object count);
+
+  /// No description provided for @lpUnavailable.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tạm không gửi drone: {reason}'**
+  String lpUnavailable(Object reason);
+
+  /// No description provided for @asTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Drone sắp đến nơi'**
+  String get asTitle;
+
+  /// No description provided for @asPrepare.
+  ///
+  /// In vi, this message translates to:
+  /// **'Vui lòng chuẩn bị ra nhận hàng.'**
+  String get asPrepare;
+
+  /// No description provided for @asDroneCode.
+  ///
+  /// In vi, this message translates to:
+  /// **'\nMã drone: {code}'**
+  String asDroneCode(Object code);
+
+  /// No description provided for @asEta.
+  ///
+  /// In vi, this message translates to:
+  /// **'Dự kiến: {eta}'**
+  String asEta(Object eta);
+
+  /// No description provided for @opPaid.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã thanh toán. Đội bay sẽ tiếp nhận đơn của bạn.'**
+  String get opPaid;
+
+  /// No description provided for @opPending.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang chờ xác nhận thanh toán, trạng thái sẽ tự cập nhật.'**
+  String get opPending;
+
+  /// No description provided for @opFailed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thanh toán chưa thành công. Đơn vẫn được giữ, bạn có thể thanh toán lại.'**
+  String get opFailed;
+
+  /// No description provided for @opUnpaid.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đơn drone chưa thanh toán. Thanh toán để đội bay tiếp nhận.'**
+  String get opUnpaid;
+
+  /// No description provided for @tlMovedAfter.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chuyển sau {duration}'**
+  String tlMovedAfter(Object duration);
+
+  /// No description provided for @tlInStageFor.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã ở chặng này {duration}'**
+  String tlInStageFor(Object duration);
+
+  /// No description provided for @tlNotYet.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa diễn ra'**
+  String get tlNotYet;
 }
 
 class _AppLocalizationsDelegate

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 /// Business stages exposed by the order-based drone delivery read model.
 enum DroneDeliveryStage {
@@ -130,39 +131,39 @@ enum DroneDeliveryStage {
   String get title {
     switch (this) {
       case DroneDeliveryStage.awaitingDispatch:
-        return 'Chờ kỹ thuật viên nhận lấy hàng';
+        return L10n.current.stgTitleAwaitingTech;
       case DroneDeliveryStage.pickupAssigned:
-        return 'Kỹ thuật viên đang tới lấy hàng';
+        return L10n.current.stgTitleTechOnWay;
       case DroneDeliveryStage.pickedUp:
-        return 'Đã lấy hàng, đang mang tới drone';
+        return L10n.current.stgTitlePickedUp;
       case DroneDeliveryStage.accepted:
-        return 'Đang nạp hàng lên drone';
+        return L10n.current.stgTitleLoading;
       case DroneDeliveryStage.launching:
-        return 'Drone đang khởi phóng';
+        return L10n.current.stgTitleLaunching;
       case DroneDeliveryStage.departed:
-        return 'Drone đã rời trạm';
+        return L10n.current.stgTitleDeparted;
       case DroneDeliveryStage.enRoute:
-        return 'Drone đang trên đường';
+        return L10n.current.stgTitleEnRoute;
       case DroneDeliveryStage.approaching:
-        return 'Drone sắp đến';
+        return L10n.current.stgTitleApproaching;
       case DroneDeliveryStage.arrived:
-        return 'Drone đã đến tủ';
+        return L10n.current.stgTitleArrived;
       case DroneDeliveryStage.readyForPickup:
-        return 'Sẵn sàng nhận hàng';
+        return L10n.current.stgTitleReady;
       case DroneDeliveryStage.delayed:
-        return 'Đơn hàng bị chậm';
+        return L10n.current.stgTitleDelayed;
       case DroneDeliveryStage.failed:
-        return 'Giao không hoàn tất';
+        return L10n.current.stgTitleFailed;
       case DroneDeliveryStage.dropReported:
-        return 'Kiện hàng gặp sự cố rơi';
+        return L10n.current.stgTitleDrop;
       case DroneDeliveryStage.canceled:
-        return 'Đơn drone đã huỷ';
+        return L10n.current.stgTitleCancelled;
       case DroneDeliveryStage.completed:
-        return 'Đã nhận hàng';
+        return L10n.current.stgTitleReceived;
       case DroneDeliveryStage.expired:
-        return 'Quá hạn nhận hàng';
+        return L10n.current.stgTitleExpired;
       case DroneDeliveryStage.unknown:
-        return 'Cập nhật đơn hàng';
+        return L10n.current.stgTitleUpdate;
     }
   }
 
@@ -170,44 +171,43 @@ enum DroneDeliveryStage {
     switch (this) {
       case DroneDeliveryStage.awaitingDispatch:
         // Đúng cả khi đơn chưa trả tiền (hệ thống chỉ mời KTV sau khi thanh toán).
-        return 'Sau khi thanh toán, hệ thống tìm kỹ thuật viên drone rảnh gần bạn nhất';
+        return L10n.current.stgDescAwaitingTech;
       case DroneDeliveryStage.pickupAssigned:
-        return 'Kỹ thuật viên đang tới điểm lấy hàng, chuẩn bị kiện và mã lấy hàng';
+        return L10n.current.stgDescTechOnWay;
       case DroneDeliveryStage.pickedUp:
-        return 'Kiện đang được mang tới drone để nạp trực tiếp; không bỏ vào ô tủ bay';
+        return L10n.current.stgDescPickedUp;
       case DroneDeliveryStage.accepted:
-        return 'Drone đã được gán, kỹ thuật viên đang cân và nạp kiện';
+        return L10n.current.stgDescLoading;
       case DroneDeliveryStage.launching:
-        return 'Đội bay đang thực hiện quy trình khởi phóng';
+        return L10n.current.stgDescLaunching;
       case DroneDeliveryStage.departed:
-        return 'Drone đã cất cánh khỏi trạm nguồn';
+        return L10n.current.stgDescDeparted;
       case DroneDeliveryStage.enRoute:
         return eta == null
-            ? 'Drone đang bay tới tủ nhận'
-            : 'Drone dự kiến đến trong $eta';
+            ? L10n.current.stgDescEnRoute
+            : L10n.current.stgDescEnRouteEta(eta);
       case DroneDeliveryStage.approaching:
-        return 'Drone đang tiếp cận tủ nhận của bạn';
+        return L10n.current.stgDescApproaching;
       case DroneDeliveryStage.arrived:
-        return 'Drone đã đến và đang gửi kiện hàng vào tủ';
+        return L10n.current.stgDescArrived;
       case DroneDeliveryStage.readyForPickup:
-        return 'Kiện hàng đã nằm trong tủ nhận, dùng mã PIN/QR của đơn để mở ô';
+        return L10n.current.stgDescReady;
       case DroneDeliveryStage.delayed:
         return eta == null
-            ? 'Đơn đang bị chậm so với dự kiến'
-            : 'Đơn đang bị chậm, dự kiến tới $eta';
+            ? L10n.current.stgDescDelayed
+            : L10n.current.stgDescDelayedEta(eta);
       case DroneDeliveryStage.failed:
-        return 'Đơn giao không hoàn tất';
+        return L10n.current.stgDescFailed;
       case DroneDeliveryStage.dropReported:
-        return 'Kiện được báo rơi khỏi drone trong chuyến bay. Tiến trình thu hồi và '
-            'phương án xử lý xem ở thẻ sự cố của đơn.';
+        return L10n.current.stgDescDrop;
       case DroneDeliveryStage.canceled:
-        return 'Đơn đã dừng trước khi drone cất cánh';
+        return L10n.current.stgDescCancelled;
       case DroneDeliveryStage.completed:
-        return 'Người nhận đã lấy kiện hàng khỏi tủ';
+        return L10n.current.stgDescReceived;
       case DroneDeliveryStage.expired:
-        return 'Đã quá hạn nhận hàng, vui lòng liên hệ hỗ trợ';
+        return L10n.current.stgDescExpired;
       case DroneDeliveryStage.unknown:
-        return 'Đơn hàng của bạn có cập nhật mới';
+        return L10n.current.stgDescUpdate;
     }
   }
 

@@ -17,6 +17,7 @@ import 'package:smart_laundry_locker/features/drone_delivery/presentation/provid
 import 'package:smart_laundry_locker/features/drone_delivery/presentation/widgets/drone_coordinates_line.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/presentation/widgets/drone_marker.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/presentation/widgets/drone_base_tile_layer.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 /// Live map theo dõi drone real-time cho NGƯỜI NHẬN (Phase 2).
 ///
@@ -390,7 +391,7 @@ class _TopBar extends StatelessWidget {
               ],
             ),
             child: Text(
-              simulated ? 'Theo dõi drone · mô phỏng' : 'Theo dõi drone',
+              simulated ? context.l10n.lmTitleSimulated : context.l10n.recvTrackDrone,
               style: const TextStyle(
                 fontWeight: FontWeight.w700,
                 color: AISLShadcnTheme.navyPrimary,
@@ -428,7 +429,7 @@ class _SignalLostBanner extends StatelessWidget {
             const SizedBox(width: 10),
             Expanded(
               child: Text(
-                'Mất tín hiệu · vị trí lúc $hh:$mm',
+                context.l10n.lmSignalLost('$hh:$mm'),
                 style: const TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.w600,
@@ -461,8 +462,8 @@ class _ConnectingOverlay extends StatelessWidget {
                   color: AISLShadcnTheme.navyPrimary,
                 ),
                 const SizedBox(height: 16),
-                const Text(
-                  'Đang kết nối tới drone...',
+                Text(
+                  context.l10n.lmConnecting,
                   style: TextStyle(
                     color: AISLShadcnTheme.navyPrimary,
                     fontWeight: FontWeight.w600,
@@ -475,10 +476,10 @@ class _ConnectingOverlay extends StatelessWidget {
                   size: 48,
                 ),
                 const SizedBox(height: 12),
-                const Padding(
+                Padding(
                   padding: EdgeInsets.symmetric(horizontal: 40),
                   child: Text(
-                    'Chưa nhận được vị trí drone. Đang thử lại...',
+                    context.l10n.lmNoPosition,
                     textAlign: TextAlign.center,
                     style: TextStyle(color: Colors.black54),
                   ),
@@ -529,10 +530,10 @@ class _BottomStatusCard extends StatelessWidget {
 
   String get _subtitle {
     final at = arrivalAt;
-    if (at == null) return 'Đang trên đường tới tủ nhận';
+    if (at == null) return L10n.current.lmOnTheWay;
     final left = at.difference(DateTime.now());
-    if (left.inSeconds <= 0) return 'Sắp tới nơi';
-    return 'Còn ${droneDurationLabel(left)}';
+    if (left.inSeconds <= 0) return L10n.current.lmAlmostThere;
+    return L10n.current.timeRemaining(droneDurationLabel(left));
   }
 
   @override
@@ -599,7 +600,7 @@ class _BottomStatusCard extends StatelessWidget {
             Row(
               children: [
                 _Metric(
-                  label: 'Dự kiến đến',
+                  label: context.l10n.lmEta,
                   value: at == null
                       ? '—'
                       : '${at.hour.toString().padLeft(2, '0')}:'
@@ -607,11 +608,11 @@ class _BottomStatusCard extends StatelessWidget {
                             '${at.second.toString().padLeft(2, '0')}',
                 ),
                 _Metric(
-                  label: 'Còn lại',
+                  label: context.l10n.recvTimeLeft,
                   value: remainingKm == null ? '—' : droneKmLabel(remainingKm!),
                 ),
                 _Metric(
-                  label: 'Tốc độ',
+                  label: context.l10n.lmSpeed,
                   value: speed == null
                       ? '—'
                       : '${(speed * 3.6).toStringAsFixed(1).replaceAll('.', ',')} km/h',
@@ -623,8 +624,8 @@ class _BottomStatusCard extends StatelessWidget {
               latitude: snapshot.lat,
               longitude: snapshot.lng,
               note: simulated
-                  ? 'mô phỏng · cập nhật trực tiếp'
-                  : 'cập nhật trực tiếp',
+                  ? context.l10n.lmLiveSimulated
+                  : context.l10n.lmLiveUpdates,
             ),
           ],
         ),

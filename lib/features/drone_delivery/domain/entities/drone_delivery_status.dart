@@ -1,4 +1,5 @@
 import 'package:smart_laundry_locker/features/drone_delivery/domain/entities/drone_delivery_stage.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 /// Trạng thái một chuyến giao hàng bằng drone — read model chung cho khách,
 /// điều phối viên và admin (`DroneDeliveryOrderResponse` của order-service).
@@ -326,7 +327,7 @@ class DroneLockerPoint {
     if (n.isNotEmpty && c.isNotEmpty) return '$n ($c)';
     if (n.isNotEmpty) return n;
     if (c.isNotEmpty) return c;
-    return 'Tủ #$id';
+    return L10n.current.lockerHash(id);
   }
 
   bool get hasCoordinates => latitude != null && longitude != null;

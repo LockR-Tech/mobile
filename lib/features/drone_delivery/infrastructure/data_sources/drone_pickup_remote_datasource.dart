@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:smart_laundry_locker/core/network/dio_client.dart';
 import 'package:smart_laundry_locker/core/utils/app_date_time.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/presentation/drone_error_messages.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 /// Thông tin nhận hàng của một đơn mà tài khoản hiện tại là NGƯỜI NHẬN
 /// (`ReceiverOrderResponse` của `GET /api/orders/incoming`).
@@ -112,9 +113,8 @@ class DronePickupRemoteDataSource {
       final data = error.response?.data;
       final hasCode = data is Map && data['code'] != null;
       if (error.response?.statusCode == 404 && !hasCode) {
-        throw const DronePickupException(
-          'Máy chủ chưa hỗ trợ tra mã nhận hàng trong ứng dụng. Hãy dùng mã '
-          'PIN đã gửi qua thông báo, email hoặc SMS.',
+        throw DronePickupException(
+          L10n.current.dronePickupCodeNotSupported,
         );
       }
       throw DronePickupException(droneCustomerErrorMessage(error));

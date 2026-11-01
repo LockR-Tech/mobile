@@ -3,22 +3,23 @@
 library;
 
 import 'dart:math';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 /// `DroneMission.status` — trạng thái vận hành phía đội bay.
 String droneMissionStatusLabel(String? status) =>
     switch ((status ?? '').toUpperCase()) {
-      '' => 'Chưa khởi tạo',
-      'AWAITING_LOADING' => 'Chờ nạp hàng',
-      'READY_TO_LAUNCH' => 'Sẵn sàng phóng',
-      'LAUNCHING' => 'Đang khởi phóng',
-      'DEPARTED' => 'Đã rời trạm',
-      'EN_ROUTE' => 'Đang bay',
-      'APPROACHING' => 'Sắp tới tủ nhận',
-      'ARRIVED' => 'Đã tới tủ nhận',
-      'DEPOSITED' => 'Đã gửi hàng vào ô',
-      'CANCELED' => 'Đã huỷ',
-      'FAILED' => 'Chuyến bay thất bại',
-      'DROP_REPORTED' => 'Dừng do sự cố rơi kiện',
+      '' => L10n.current.msNotInit,
+      'AWAITING_LOADING' => L10n.current.msAwaitingLoading,
+      'READY_TO_LAUNCH' => L10n.current.msReadyToLaunch,
+      'LAUNCHING' => L10n.current.msLaunching,
+      'DEPARTED' => L10n.current.msDeparted,
+      'EN_ROUTE' => L10n.current.msEnRoute,
+      'APPROACHING' => L10n.current.msApproaching,
+      'ARRIVED' => L10n.current.msArrived,
+      'DEPOSITED' => L10n.current.msDeposited,
+      'CANCELED' => L10n.current.recStCancelled,
+      'FAILED' => L10n.current.msFailed,
+      'DROP_REPORTED' => L10n.current.msDropReported,
       _ => status!,
     };
 
@@ -26,21 +27,21 @@ String droneMissionStatusLabel(String? status) =>
 String droneOrderStatusLabel(String? status) =>
     switch ((status ?? '').toUpperCase()) {
       '' => '—',
-      'AWAITING_DISPATCH' => 'Đang giao bằng drone',
-      'STORING' => 'Hàng đang trong tủ nhận',
-      'COMPLETED' => 'Hoàn tất',
-      'CANCELED' => 'Đã huỷ',
-      'EXPIRED' => 'Quá hạn nhận',
+      'AWAITING_DISPATCH' => L10n.current.dosAwaitingDispatch,
+      'STORING' => L10n.current.dosStoring,
+      'COMPLETED' => L10n.current.commonDone,
+      'CANCELED' => L10n.current.recStCancelled,
+      'EXPIRED' => L10n.current.dosExpired,
       _ => status!,
     };
 
 String dronePaymentStatusLabel(String? status) =>
     switch ((status ?? '').toUpperCase()) {
       '' => '—',
-      'PAID' => 'Đã thanh toán',
-      'UNPAID' => 'Chưa thanh toán',
-      'REFUND_PENDING' => 'Chờ hoàn tiền',
-      'REFUNDED' => 'Đã hoàn tiền',
+      'PAID' => L10n.current.enumPaid,
+      'UNPAID' => L10n.current.enumUnpaid,
+      'REFUND_PENDING' => L10n.current.enumAwaitingRefund,
+      'REFUNDED' => L10n.current.enumRefunded,
       _ => status!,
     };
 
@@ -48,11 +49,11 @@ String dronePaymentStatusLabel(String? status) =>
 String dronePaymentMethodLabel(String? method) =>
     switch ((method ?? '').toUpperCase()) {
       '' => '—',
-      'WALLET' => 'Ví Lock.R',
-      'CASH' => 'Tiền mặt',
+      'WALLET' => L10n.current.payMethodWallet,
+      'CASH' => L10n.current.payMethodCash,
       'VNPAY' => 'VNPay',
       'MOMO' => 'MoMo',
-      'SEPAY' => 'Chuyển khoản (SePay)',
+      'SEPAY' => L10n.current.payMethodSepay,
       _ => method!,
     };
 
@@ -61,36 +62,40 @@ String droneDurationLabel(Duration duration) {
   final d = duration.isNegative ? Duration.zero : duration;
   if (d.inDays > 0) {
     final hours = d.inHours % 24;
-    return hours == 0 ? '${d.inDays} ngày' : '${d.inDays} ngày $hours giờ';
+    return hours == 0
+        ? L10n.current.durDays(d.inDays)
+        : L10n.current.durDaysHoursLong(d.inDays, hours);
   }
   if (d.inHours > 0) {
     final minutes = d.inMinutes % 60;
-    return minutes == 0 ? '${d.inHours} giờ' : '${d.inHours} giờ $minutes phút';
+    return minutes == 0
+        ? L10n.current.durHours(d.inHours)
+        : L10n.current.durHoursMinutesLong(d.inHours, minutes);
   }
   if (d.inMinutes > 0) {
     final seconds = d.inSeconds % 60;
     return seconds == 0
-        ? '${d.inMinutes} phút'
-        : '${d.inMinutes} phút $seconds giây';
+        ? L10n.current.minutesShort(d.inMinutes)
+        : L10n.current.durMinutesSeconds(d.inMinutes, seconds);
   }
-  return '${d.inSeconds} giây';
+  return L10n.current.secondsValue(d.inSeconds);
 }
 
 /// Lý do đội bay huỷ nhiệm vụ hoặc báo chuyến bay thất bại — khớp `DroneOrderMaintenanceService.cancelReasonLabel`.
 String? droneCancelReasonLabel(int? code) => switch (code) {
   null => null,
-  1 => 'Thời tiết xấu',
-  2 => 'Drone lỗi',
-  3 => 'Bãi đáp không sẵn sàng',
-  4 => 'Lý do vận hành',
-  5 => 'Lý do khác',
-  _ => 'Lý do #$code',
+  1 => L10n.current.cancelWeather,
+  2 => L10n.current.cancelDroneFault,
+  3 => L10n.current.cancelPadNotReady,
+  4 => L10n.current.cancelOperational,
+  5 => L10n.current.cancelOther,
+  _ => L10n.current.cancelReasonCode(code),
 };
 
 String droneFulfillmentModeLabel(String? mode) =>
     switch ((mode ?? '').toUpperCase()) {
-      'DEMO' => 'Mô phỏng (DEMO)',
-      'STANDARD' => 'Drone thật',
+      'DEMO' => L10n.current.modeDemo,
+      'STANDARD' => L10n.current.modeStandard,
       _ => mode ?? '—',
     };
 

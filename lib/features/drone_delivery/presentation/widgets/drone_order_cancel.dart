@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/ops_widgets.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 /// Câu nói rõ tiền đi đâu khi khách huỷ đơn ở chặng chờ đội bay tiếp nhận.
 String droneCancelRefundNote({required bool isPaid, num? totalPrice}) => isPaid
-    ? 'Đơn đã thanh toán: '
-          '${totalPrice == null ? 'phí giao drone' : fmtPrice(totalPrice)} '
-          'sẽ được hoàn bằng chuyển khoản sau khi admin duyệt. Hãy kiểm tra '
-          'tài khoản ngân hàng nhận tiền trong Hồ sơ.'
-    : 'Đơn chưa thanh toán nên không phát sinh phí.';
+    ? L10n.current.ocPaidRefund(
+        totalPrice == null ? L10n.current.ocDroneFee : fmtPrice(totalPrice),
+      )
+    : L10n.current.ocUnpaidNoFee;
 
 /// Người đặt huỷ đơn drone khi đội bay chưa tiếp nhận: hỏi xác nhận, gọi huỷ (server
 /// nhả ô ở hai tủ và ghi yêu cầu hoàn tiền nếu đơn đã thanh toán) rồi trả câu báo kết quả.
@@ -24,22 +24,24 @@ Future<String?> confirmAndCancelDroneOrder(
   final confirmed = await showDialog<bool>(
     context: context,
     builder: (dialogContext) => AlertDialog(
-      title: const Text('Huỷ đơn giao drone?'),
+      title: Text(context.l10n.ocTitle),
       content: Text(
-        'Đơn ${orderCode ?? ''} sẽ bị huỷ và ô nhận đã giữ cho đơn được nhả. '
-        '${droneCancelRefundNote(isPaid: isPaid, totalPrice: totalPrice)}',
+        context.l10n.ocBody(
+          orderCode ?? '',
+          droneCancelRefundNote(isPaid: isPaid, totalPrice: totalPrice),
+        ),
       ),
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(dialogContext, false),
-          child: const Text('Giữ đơn'),
+          child: Text(context.l10n.ordKeepOrder),
         ),
         FilledButton(
           style: FilledButton.styleFrom(
             backgroundColor: const Color(0xFFDC2626),
           ),
           onPressed: () => Navigator.pop(dialogContext, true),
-          child: const Text('Huỷ đơn'),
+          child: Text(context.l10n.ddCancelOrder),
         ),
       ],
     ),
@@ -52,17 +54,17 @@ Future<String?> confirmAndCancelDroneOrder(
     );
     return switch ('${canceled['paymentStatus']}'.toUpperCase()) {
       'REFUND_PENDING' =>
-        'Đã huỷ đơn. Yêu cầu hoàn tiền đã được ghi nhận, admin sẽ chuyển khoản cho bạn.',
-      'REFUNDED' => 'Đã huỷ đơn. Tiền đã được chuyển khoản hoàn cho bạn.',
+        L10n.current.ocRefundPending,
+      'REFUNDED' => L10n.current.ocRefunded,
       'PAID' =>
-        'Đã huỷ đơn. Chưa ghi nhận được yêu cầu hoàn tiền, vui lòng liên hệ hỗ trợ.',
-      _ => 'Đã huỷ đơn.',
+        L10n.current.ocPaidNoRefund,
+      _ => L10n.current.ocCancelled,
     };
   } catch (error) {
     return switch (LockerOpsService.errorCode(error)) {
       'DRONE_ORDER_STATUS_INVALID' || 'ORDER_STATUS_INVALID' =>
-        'Đội bay đã tiếp nhận nên đơn không còn huỷ được trong ứng dụng.',
-      'ORDER_FORBIDDEN' => 'Chỉ người đặt đơn mới huỷ được đơn này.',
+        L10n.current.ocAlreadyAccepted,
+      'ORDER_FORBIDDEN' => L10n.current.ocOwnerOnly,
       _ => LockerOpsService.errorMessage(error),
     };
   }

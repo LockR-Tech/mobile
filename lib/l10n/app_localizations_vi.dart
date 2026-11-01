@@ -4854,4 +4854,1864 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get qrCantScan => 'Không quét được? Nhập mã tủ';
+
+  @override
+  String secondsValue(Object seconds) {
+    return '$seconds giây';
+  }
+
+  @override
+  String durDays(int days) {
+    return '$days ngày';
+  }
+
+  @override
+  String durDaysHoursLong(Object days, Object hours) {
+    return '$days ngày $hours giờ';
+  }
+
+  @override
+  String durHours(int hours) {
+    return '$hours giờ';
+  }
+
+  @override
+  String durHoursMinutesLong(Object hours, Object minutes) {
+    return '$hours giờ $minutes phút';
+  }
+
+  @override
+  String durMinutesSeconds(Object minutes, Object seconds) {
+    return '$minutes phút $seconds giây';
+  }
+
+  @override
+  String get incStReported => 'Đã ghi nhận';
+
+  @override
+  String get incStEvidencePending => 'Đang thu thập bằng chứng';
+
+  @override
+  String get incStInvestigating => 'Đang điều tra';
+
+  @override
+  String get incStRecoveryInProgress => 'Đang thu hồi kiện';
+
+  @override
+  String get incStAwaitingAdmin => 'Chờ quản trị viên xem xét';
+
+  @override
+  String get incStResolutionProposed => 'Đã có phương án xử lý';
+
+  @override
+  String get incStAwaitingCustomer => 'Chờ bạn phản hồi phương án';
+
+  @override
+  String get incStResolutionInProgress => 'Đang thực hiện phương án';
+
+  @override
+  String get incStDisputed => 'Đang xem xét lại theo yêu cầu';
+
+  @override
+  String get incStResolved => 'Đã xử lý xong';
+
+  @override
+  String get incStClosed => 'Đã đóng';
+
+  @override
+  String get incStManual => 'Nhân viên đang xử lý trực tiếp';
+
+  @override
+  String get recStOpen => 'Mới mở';
+
+  @override
+  String get recStAwaitingAssignment => 'Chờ phân công người thu hồi';
+
+  @override
+  String get recStAssigned => 'Đã phân công';
+
+  @override
+  String get recStAccepted => 'Nhân viên đã nhận việc';
+
+  @override
+  String get recStSearching => 'Đang tìm kiện';
+
+  @override
+  String get recStFound => 'Đã tìm thấy kiện';
+
+  @override
+  String get recStNotFound => 'Chưa tìm thấy kiện';
+
+  @override
+  String get recStRecovered => 'Đã thu hồi kiện';
+
+  @override
+  String get recStSubmitted => 'Đã báo kết quả thu hồi';
+
+  @override
+  String get recStVerified => 'Đã xác minh kết quả';
+
+  @override
+  String get recStClosed => 'Đã bàn giao kiện về kho';
+
+  @override
+  String get recStCancelled => 'Đã huỷ';
+
+  @override
+  String get parStInTransit => 'Đang vận chuyển';
+
+  @override
+  String get parStDropReported => 'Đã báo rơi';
+
+  @override
+  String get parStRecoveryPending => 'Chờ thu hồi';
+
+  @override
+  String get parStFound => 'Đã tìm thấy';
+
+  @override
+  String get parStRecovered => 'Đã thu hồi';
+
+  @override
+  String get parStDamaged => 'Bị hư hỏng';
+
+  @override
+  String get parStLost => 'Thất lạc';
+
+  @override
+  String get parStReturnedToHub => 'Đã về kho Lock.R';
+
+  @override
+  String get parStRedeliveryPending => 'Chờ giao lại';
+
+  @override
+  String get parStRedelivered => 'Đã giao lại';
+
+  @override
+  String get parStCompensated => 'Đã bồi thường';
+
+  @override
+  String get incEvReported => 'Ghi nhận kiện rơi khỏi drone';
+
+  @override
+  String get incEvRecoveryAssigned => 'Phân công người thu hồi kiện';
+
+  @override
+  String get incEvRecoveryAccept => 'Nhân viên nhận việc thu hồi';
+
+  @override
+  String get incEvRecoverySearching => 'Nhân viên bắt đầu tìm kiện';
+
+  @override
+  String get incEvReturnFlightConfirmed => 'Drone đã về trạm';
+
+  @override
+  String get incEvRecoverySubmitted => 'Báo kết quả thu hồi';
+
+  @override
+  String get incEvRecoveryVerified => 'Xác minh kết quả thu hồi';
+
+  @override
+  String get incEvStationDispatched =>
+      'Kiện được điều phối về trạm bay để giao lại';
+
+  @override
+  String get incEvStationUnavailable => 'Đang điều phối trạm nhận kiện';
+
+  @override
+  String get incEvReturnedToHub => 'Kiện đã về kho Lock.R';
+
+  @override
+  String get incEvResolutionProposed => 'Lock.R đề xuất phương án';
+
+  @override
+  String get incEvCustomerAccept => 'Bạn đồng ý phương án';
+
+  @override
+  String get incEvCustomerReview => 'Bạn yêu cầu xem xét lại';
+
+  @override
+  String get incEvReturnFlightUpdated => 'Cập nhật chuyến bay về trạm';
+
+  @override
+  String get incEvRedeliveryRequested => 'Đã tạo đơn giao lại';
+
+  @override
+  String get incEvRedeliveryUnavailable =>
+      'Chưa tạo được đơn giao lại — nhân viên sẽ liên hệ';
+
+  @override
+  String get incEvRedeliveryCompleted => 'Đã giao lại thành công';
+
+  @override
+  String get incEvCompensationSubmitted => 'Đã gửi yêu cầu chi bồi thường';
+
+  @override
+  String get incEvCompensationPaid => 'Đã chi bồi thường';
+
+  @override
+  String get incEvCompensationFailed => 'Chi bồi thường chưa thành công';
+
+  @override
+  String get incEvResolved => 'Đã hoàn tất xử lý sự cố';
+
+  @override
+  String get resFreeRedelivery => 'Giao lại miễn phí';
+
+  @override
+  String get resRedeliveryPartial => 'Giao lại kèm bồi thường một phần';
+
+  @override
+  String get resCompensationOnly => 'Bồi thường';
+
+  @override
+  String get resManual => 'Thỏa thuận riêng';
+
+  @override
+  String get condIntact => 'còn nguyên vẹn';
+
+  @override
+  String get condMinor => 'hư hại nhẹ';
+
+  @override
+  String get condMajor => 'hư hại nặng';
+
+  @override
+  String get condUnusable => 'không thể sử dụng';
+
+  @override
+  String get propAwaiting => 'Chờ bạn phản hồi';
+
+  @override
+  String get propAccepted => 'Bạn đã đồng ý';
+
+  @override
+  String get propDisputed => 'Đã yêu cầu xem xét lại';
+
+  @override
+  String get propSuperseded => 'Đã thay bằng phương án mới';
+
+  @override
+  String get incEvRecoveryUpdate => 'Cập nhật thu hồi kiện';
+
+  @override
+  String get incEvCompensationUpdate => 'Cập nhật bồi thường';
+
+  @override
+  String get incEvRedeliveryUpdate => 'Cập nhật giao lại';
+
+  @override
+  String get msNotInit => 'Chưa khởi tạo';
+
+  @override
+  String get msAwaitingLoading => 'Chờ nạp hàng';
+
+  @override
+  String get msReadyToLaunch => 'Sẵn sàng phóng';
+
+  @override
+  String get msLaunching => 'Đang khởi phóng';
+
+  @override
+  String get msDeparted => 'Đã rời trạm';
+
+  @override
+  String get msEnRoute => 'Đang bay';
+
+  @override
+  String get msApproaching => 'Sắp tới tủ nhận';
+
+  @override
+  String get msArrived => 'Đã tới tủ nhận';
+
+  @override
+  String get msDeposited => 'Đã gửi hàng vào ô';
+
+  @override
+  String get msFailed => 'Chuyến bay thất bại';
+
+  @override
+  String get msDropReported => 'Dừng do sự cố rơi kiện';
+
+  @override
+  String get dosAwaitingDispatch => 'Đang giao bằng drone';
+
+  @override
+  String get dosStoring => 'Hàng đang trong tủ nhận';
+
+  @override
+  String get dosExpired => 'Quá hạn nhận';
+
+  @override
+  String get cancelWeather => 'Thời tiết xấu';
+
+  @override
+  String get cancelDroneFault => 'Drone lỗi';
+
+  @override
+  String get cancelPadNotReady => 'Bãi đáp không sẵn sàng';
+
+  @override
+  String get cancelOperational => 'Lý do vận hành';
+
+  @override
+  String get cancelOther => 'Lý do khác';
+
+  @override
+  String cancelReasonCode(Object code) {
+    return 'Lý do #$code';
+  }
+
+  @override
+  String get modeDemo => 'Mô phỏng (DEMO)';
+
+  @override
+  String get modeStandard => 'Drone thật';
+
+  @override
+  String get stgTitleAwaitingTech => 'Chờ kỹ thuật viên nhận lấy hàng';
+
+  @override
+  String get stgTitleTechOnWay => 'Kỹ thuật viên đang tới lấy hàng';
+
+  @override
+  String get stgTitlePickedUp => 'Đã lấy hàng, đang mang tới drone';
+
+  @override
+  String get stgTitleLoading => 'Đang nạp hàng lên drone';
+
+  @override
+  String get stgTitleLaunching => 'Drone đang khởi phóng';
+
+  @override
+  String get stgTitleDeparted => 'Drone đã rời trạm';
+
+  @override
+  String get stgTitleEnRoute => 'Drone đang trên đường';
+
+  @override
+  String get stgTitleApproaching => 'Drone sắp đến';
+
+  @override
+  String get stgTitleArrived => 'Drone đã đến tủ';
+
+  @override
+  String get stgTitleReady => 'Sẵn sàng nhận hàng';
+
+  @override
+  String get stgTitleDelayed => 'Đơn hàng bị chậm';
+
+  @override
+  String get stgTitleFailed => 'Giao không hoàn tất';
+
+  @override
+  String get stgTitleDrop => 'Kiện hàng gặp sự cố rơi';
+
+  @override
+  String get stgTitleCancelled => 'Đơn drone đã huỷ';
+
+  @override
+  String get stgTitleReceived => 'Đã nhận hàng';
+
+  @override
+  String get stgTitleExpired => 'Quá hạn nhận hàng';
+
+  @override
+  String get stgTitleUpdate => 'Cập nhật đơn hàng';
+
+  @override
+  String get stgDescAwaitingTech =>
+      'Sau khi thanh toán, hệ thống tìm kỹ thuật viên drone rảnh gần bạn nhất';
+
+  @override
+  String get stgDescTechOnWay =>
+      'Kỹ thuật viên đang tới điểm lấy hàng, chuẩn bị kiện và mã lấy hàng';
+
+  @override
+  String get stgDescPickedUp =>
+      'Kiện đang được mang tới drone để nạp trực tiếp; không bỏ vào ô tủ bay';
+
+  @override
+  String get stgDescLoading =>
+      'Drone đã được gán, kỹ thuật viên đang cân và nạp kiện';
+
+  @override
+  String get stgDescLaunching => 'Đội bay đang thực hiện quy trình khởi phóng';
+
+  @override
+  String get stgDescDeparted => 'Drone đã cất cánh khỏi trạm nguồn';
+
+  @override
+  String get stgDescEnRoute => 'Drone đang bay tới tủ nhận';
+
+  @override
+  String stgDescEnRouteEta(Object eta) {
+    return 'Drone dự kiến đến trong $eta';
+  }
+
+  @override
+  String get stgDescApproaching => 'Drone đang tiếp cận tủ nhận của bạn';
+
+  @override
+  String get stgDescArrived => 'Drone đã đến và đang gửi kiện hàng vào tủ';
+
+  @override
+  String get stgDescReady =>
+      'Kiện hàng đã nằm trong tủ nhận, dùng mã PIN/QR của đơn để mở ô';
+
+  @override
+  String get stgDescDelayed => 'Đơn đang bị chậm so với dự kiến';
+
+  @override
+  String stgDescDelayedEta(Object eta) {
+    return 'Đơn đang bị chậm, dự kiến tới $eta';
+  }
+
+  @override
+  String get stgDescFailed => 'Đơn giao không hoàn tất';
+
+  @override
+  String get stgDescDrop =>
+      'Kiện được báo rơi khỏi drone trong chuyến bay. Tiến trình thu hồi và phương án xử lý xem ở thẻ sự cố của đơn.';
+
+  @override
+  String get stgDescCancelled => 'Đơn đã dừng trước khi drone cất cánh';
+
+  @override
+  String get stgDescReceived => 'Người nhận đã lấy kiện hàng khỏi tủ';
+
+  @override
+  String get stgDescExpired => 'Đã quá hạn nhận hàng, vui lòng liên hệ hỗ trợ';
+
+  @override
+  String get stgDescUpdate => 'Đơn hàng của bạn có cập nhật mới';
+
+  @override
+  String get droneNoWeatherData => 'Chưa có dữ liệu thời tiết.';
+
+  @override
+  String get failWeather => 'Tạm dừng bay do thời tiết hoặc lệnh điều hành';
+
+  @override
+  String get failWeatherUnsafe => 'Thời tiết tuyến bay không an toàn';
+
+  @override
+  String get failStationSuspended => 'Trạm bay đang tạm dừng';
+
+  @override
+  String get failDroneFault => 'Drone gặp sự cố';
+
+  @override
+  String get failNoDrone => 'Tủ gửi không còn drone sẵn sàng';
+
+  @override
+  String get failSourceLocker => 'Tủ gửi gặp sự cố';
+
+  @override
+  String get failDestinationLocker => 'Tủ nhận gặp sự cố';
+
+  @override
+  String get failLandingPad => 'Bãi đáp drone không sẵn sàng';
+
+  @override
+  String get failNoTechnician => 'Không có kỹ thuật viên nhận lấy hàng';
+
+  @override
+  String get failLaunchOverdue => 'Quá hạn phóng drone sau khi lấy hàng';
+
+  @override
+  String get failCustomerAbsent => 'Không gặp được người gửi tại điểm lấy hàng';
+
+  @override
+  String get failParcelRejected => 'Kiện hàng không đúng khai báo';
+
+  @override
+  String get failAddressNotFound => 'Không tìm thấy địa chỉ lấy hàng';
+
+  @override
+  String get failFlightIncident => 'Sự cố trong lúc bay';
+
+  @override
+  String get failShortCustomerAbsent => 'Không gặp được người gửi';
+
+  @override
+  String get failShortParcelRejected => 'Kiện không đúng khai báo';
+
+  @override
+  String get failShortAddressNotFound => 'Không tìm thấy địa chỉ';
+
+  @override
+  String get failShortNoDrone => 'Không còn drone';
+
+  @override
+  String get failShortSourceLocker => 'Tủ gửi lỗi';
+
+  @override
+  String get failShortDestinationLocker => 'Tủ nhận lỗi';
+
+  @override
+  String get failShortFlightIncident => 'Sự cố lúc bay';
+
+  @override
+  String get catDocument => 'Tài liệu';
+
+  @override
+  String get catFood => 'Đồ ăn';
+
+  @override
+  String get catClothing => 'Quần áo';
+
+  @override
+  String get catElectronics => 'Điện tử';
+
+  @override
+  String get catCosmetics => 'Mỹ phẩm';
+
+  @override
+  String get heldSourceBox => 'Còn trong ô gửi';
+
+  @override
+  String get heldFlightTeam => 'Đội bay đang giữ';
+
+  @override
+  String get blockDisconnected => 'mất kết nối';
+
+  @override
+  String get blockMaintenance => 'đang bảo trì';
+
+  @override
+  String get blockSuspended => 'tạm ngưng';
+
+  @override
+  String get blockNoPad => 'chưa có bãi đáp drone';
+
+  @override
+  String get blockPadMaintenance => 'bãi đáp đang bảo trì';
+
+  @override
+  String get blockPadFault => 'bãi đáp đang lỗi';
+
+  @override
+  String get droneErrOwnerOnly =>
+      'Chỉ người đặt đơn mới thực hiện được thao tác này.';
+
+  @override
+  String get droneErrNotYourIncident => 'Sự cố này không thuộc đơn của bạn.';
+
+  @override
+  String get droneErrNoReview =>
+      'Chính sách của đơn không cho yêu cầu xem xét lại phương án.';
+
+  @override
+  String get droneErrAlreadyResponded =>
+      'Phương án này đã được phản hồi. Vui lòng tải lại.';
+
+  @override
+  String get droneErrNoProposal => 'Chưa có phương án nào chờ bạn phản hồi.';
+
+  @override
+  String get droneErrInvalidChoice => 'Lựa chọn không hợp lệ.';
+
+  @override
+  String get droneErrRecipientLookup =>
+      'Chưa tra được thông tin người nhận. Vui lòng thử lại sau.';
+
+  @override
+  String get droneNoPermission =>
+      'Bạn không có quyền xem đơn drone này. Chỉ người đặt và người nhận theo dõi được đơn.';
+
+  @override
+  String get droneStatusLoadFailedRetrying =>
+      'Không tải được trạng thái giao hàng. Đang thử lại...';
+
+  @override
+  String get dronePickupCodeNotSupported =>
+      'Máy chủ chưa hỗ trợ tra mã nhận hàng trong ứng dụng. Hãy dùng mã PIN đã gửi qua thông báo, email hoặc SMS.';
+
+  @override
+  String get droneTrackingDisabled =>
+      'Tính năng theo dõi giao drone đang tạm tắt.';
+
+  @override
+  String get droneStatusLoadFailed => 'Không tải được trạng thái giao hàng.';
+
+  @override
+  String get ddTlPayment => 'Thanh toán';
+
+  @override
+  String get ddTlParcelDropped => 'Bỏ kiện vào ô gửi';
+
+  @override
+  String get ddTlHomePickup => 'Lấy hàng tại nhà người gửi';
+
+  @override
+  String get ddTlLoaded => 'Nạp hàng lên drone';
+
+  @override
+  String get ddTlReady => 'Sẵn sàng phóng';
+
+  @override
+  String get ddTlCodeSent => 'Gửi mã cho người nhận';
+
+  @override
+  String get ddTlPickupDeadline => 'Hạn nhận hàng';
+
+  @override
+  String get ddTlReceived => 'Người nhận lấy hàng';
+
+  @override
+  String get ddProgress => 'Tiến trình giao hàng';
+
+  @override
+  String get ddClosedTitle => 'Đơn drone đã đóng';
+
+  @override
+  String get ddClosedBody =>
+      'Chuyến bay không hoàn tất nên đơn này đã đóng; phương án xử lý xem ở phần sự cố của đơn.';
+
+  @override
+  String get ddAwaitingPaymentTitle => 'Chờ thanh toán';
+
+  @override
+  String get ddAwaitingPaymentBody =>
+      'Thanh toán xong hệ thống mới tìm kỹ thuật viên drone tới lấy hàng';
+
+  @override
+  String get ddAwaitingTeamTitle => 'Chờ đội bay tiếp nhận';
+
+  @override
+  String get ddAwaitingTeamBody =>
+      'Kiện đã sẵn sàng tại trạm Lock.R, chờ kỹ thuật viên drone nạp hàng và phóng';
+
+  @override
+  String get ddReadyBody =>
+      'Kiện đã được nạp và niêm phong trên drone, chờ đội bay phóng';
+
+  @override
+  String ddAboutMinutesLeft(Object minutes) {
+    return 'Còn khoảng $minutes phút';
+  }
+
+  @override
+  String ddSince(Object time) {
+    return 'Từ $time';
+  }
+
+  @override
+  String ddOverdueAt(Object deadline, Object policy) {
+    return 'Đơn hàng đã quá hạn lấy lúc $deadline. $policy';
+  }
+
+  @override
+  String ddPickupDeadline(Object deadline, Object hours) {
+    return 'Hạn người nhận lấy hàng: $deadline (lưu trữ $hours giờ).';
+  }
+
+  @override
+  String get ddFlightIncompleteClosed =>
+      'Chuyến bay không hoàn tất nên đơn này đã đóng. Phương án xử lý (giao lại hoặc bồi thường) xem ở phần sự cố của đơn.';
+
+  @override
+  String get ddUnpaidSearch =>
+      'Đơn chưa thanh toán. Thanh toán xong hệ thống mới bắt đầu tìm kỹ thuật viên drone tới lấy hàng.';
+
+  @override
+  String ddAt(Object time) {
+    return 'Lúc: $time';
+  }
+
+  @override
+  String ddReason(Object reason) {
+    return 'Lý do: $reason';
+  }
+
+  @override
+  String ddNoteValue(Object note) {
+    return 'Ghi chú: $note';
+  }
+
+  @override
+  String ddTicket(Object id) {
+    return 'Phiếu sự cố: #$id';
+  }
+
+  @override
+  String get ddParcelWithSender =>
+      'Kiện hàng chưa được lấy, vẫn ở chỗ người gửi.';
+
+  @override
+  String get ddRefundRecorded =>
+      'Yêu cầu hoàn tiền đã được ghi nhận. Admin sẽ chuyển khoản về tài khoản ngân hàng của người đặt.';
+
+  @override
+  String get ddRefundDone => 'Tiền đã được chuyển khoản hoàn cho người đặt.';
+
+  @override
+  String get ddRefundByIncident =>
+      'Khoản đã trả được xử lý theo phương án sự cố: giao lại miễn phí hoặc bồi thường chuyển khoản về tài khoản ngân hàng đã liên kết.';
+
+  @override
+  String get ddRefundNotRecorded =>
+      'Chưa ghi nhận được yêu cầu hoàn tiền — vui lòng liên hệ hỗ trợ.';
+
+  @override
+  String ddWeightOver(Object actual, Object expected) {
+    return 'Kiện cân thực tế $actual, nặng hơn mức $expected đã khai báo.';
+  }
+
+  @override
+  String ddSurchargeOperator(Object amount) {
+    return 'Chờ khách trả thêm $amount rồi mới phóng được.';
+  }
+
+  @override
+  String ddSurchargeReceiver(Object amount) {
+    return 'Đang chờ người gửi trả thêm $amount để drone cất cánh.';
+  }
+
+  @override
+  String ddSurchargeSender(Object amount) {
+    return 'Bạn cần trả thêm $amount để drone cất cánh. Không đồng ý thì bạn có thể huỷ đơn: phần đã trả được hoàn và đội bay trả lại kiện.';
+  }
+
+  @override
+  String get ddUnpaidOperator =>
+      'Khách chưa thanh toán. Chỉ tiếp nhận được sau khi đơn đã thanh toán.';
+
+  @override
+  String get ddUnpaidReceiver =>
+      'Người gửi chưa thanh toán đơn. Đội bay tiếp nhận sau khi người gửi thanh toán.';
+
+  @override
+  String get ddUnpaidSender =>
+      'Đơn chưa thanh toán. Đội bay chỉ tiếp nhận sau khi bạn thanh toán.';
+
+  @override
+  String get ddPaySurcharge => 'Trả thêm phí chênh';
+
+  @override
+  String get ddPayNow => 'Thanh toán ngay';
+
+  @override
+  String get ddDeclineSurcharge => 'Không đồng ý · huỷ đơn và nhận hoàn tiền';
+
+  @override
+  String ddIncidentLabel(Object label) {
+    return 'Đơn đang gặp sự cố: $label';
+  }
+
+  @override
+  String ddFromTime(Object time) {
+    return 'Từ lúc: $time';
+  }
+
+  @override
+  String ddAutoCloseOperator(Object time) {
+    return 'Chưa khắc phục trước $time thì đơn tự kết thúc \"giao không hoàn tất\" và hoàn tiền cho khách.';
+  }
+
+  @override
+  String ddAutoCloseCustomer(Object time) {
+    return 'Nếu chưa khắc phục được trước $time, đơn sẽ kết thúc và bạn được hoàn tiền.';
+  }
+
+  @override
+  String get ddChangePlan => 'Đổi phương án hoặc xác nhận giao không hoàn tất.';
+
+  @override
+  String get ddTeamHandling => 'Đội bay đang xử lý.';
+
+  @override
+  String ddPickedUp(Object at) {
+    return 'Đã lấy hàng$at';
+  }
+
+  @override
+  String ddPickedUpAt(Object time) {
+    return ' lúc $time';
+  }
+
+  @override
+  String get ddTechnician => 'Kỹ thuật viên';
+
+  @override
+  String get ddYouHeadingToPickup => 'Bạn đang tới lấy hàng';
+
+  @override
+  String ddTechHeadingToPickup(Object who) {
+    return '$who đang tới lấy hàng';
+  }
+
+  @override
+  String get ddYouAreInvited => 'Bạn được mời lấy hàng';
+
+  @override
+  String get ddSearchingTech => 'Đang tìm kỹ thuật viên drone gần bạn nhất';
+
+  @override
+  String get ddAwaitingDispatchPickup => 'Chờ điều phối lấy hàng';
+
+  @override
+  String get ddTechAfterPayment =>
+      'Kỹ thuật viên sẽ tới lấy hàng sau khi đơn được thanh toán';
+
+  @override
+  String get ddHomePickup => 'Lấy hàng tận nhà';
+
+  @override
+  String get ddPickupCode => 'Mã lấy hàng';
+
+  @override
+  String get ddPickupCodeHint =>
+      'Đọc mã này cho kỹ thuật viên khi giao kiện. Không gửi mã cho người khác.';
+
+  @override
+  String get ddPickupPoint => 'Điểm lấy hàng';
+
+  @override
+  String get ddDirections => 'Chỉ dẫn';
+
+  @override
+  String get ddTechPhone => 'SĐT kỹ thuật viên';
+
+  @override
+  String get ddDistanceAtAccept => 'Cách điểm lấy lúc nhận việc';
+
+  @override
+  String get ddPickupToSource => 'Điểm lấy hàng → tủ gửi';
+
+  @override
+  String get ddPickupNote => 'Ghi chú lúc lấy hàng';
+
+  @override
+  String get ddPickupPhoto => 'Ảnh kiện lúc lấy hàng';
+
+  @override
+  String ddPhotoTakenAt(Object time) {
+    return 'Chụp lúc $time';
+  }
+
+  @override
+  String get ddDroneBoxAtSource => 'ô drone ở tủ gửi';
+
+  @override
+  String ddDroneBoxNumberAtSource(Object box) {
+    return 'ô drone số $box ở tủ gửi';
+  }
+
+  @override
+  String ddSenderNotDroppedOperator(Object where) {
+    return 'Người gửi chưa xác nhận bỏ kiện vào $where. Chỉ tiếp nhận được sau khi kiện đã nằm trong ô.';
+  }
+
+  @override
+  String ddWaitingSenderDrop(Object where) {
+    return 'Đang chờ người gửi bỏ kiện vào $where.';
+  }
+
+  @override
+  String ddDropThenConfirm(Object where) {
+    return 'Bỏ kiện vào $where rồi xác nhận bên dưới. Đội bay chỉ tiếp nhận đơn sau khi bạn xác nhận.';
+  }
+
+  @override
+  String get ddIDropped => 'Tôi đã bỏ kiện vào ô';
+
+  @override
+  String ddParcelReturnedAt(Object time) {
+    return 'Kiện đã được trả lại cho người gửi lúc $time.';
+  }
+
+  @override
+  String get ddParcelInBoxOperator =>
+      'Kiện còn trong ô gửi. Lấy kiện ra, trả cho người gửi rồi xác nhận đã trả.';
+
+  @override
+  String get ddParcelWithTeamOperator =>
+      'Kiện đang do đội bay giữ. Trả cho người gửi rồi xác nhận đã trả.';
+
+  @override
+  String get ddParcelInBoxCustomer =>
+      'Kiện của bạn còn trong ô gửi. Đội bay sẽ liên hệ để trả lại kiện.';
+
+  @override
+  String ddParcelHeldByTech(Object where) {
+    return 'Kiện đang do kỹ thuật viên giữ và sẽ được mang trả lại$where.';
+  }
+
+  @override
+  String get ddToSender => ' cho người gửi';
+
+  @override
+  String ddAtAddress(Object address) {
+    return ' tại $address';
+  }
+
+  @override
+  String get ddCancelOrder => 'Huỷ đơn';
+
+  @override
+  String get ddCancelAllowed => 'Bạn huỷ được đơn khi đội bay chưa tiếp nhận.';
+
+  @override
+  String get ddRoute => 'Lộ trình giao hàng';
+
+  @override
+  String get ddSystemPickedStation =>
+      'Tủ bay do hệ thống chọn (KTV nạp kiện trực tiếp lên drone)';
+
+  @override
+  String ddLegacyBox(Object box) {
+    return 'Đơn cũ: kiện từng được gửi vào ô số $box';
+  }
+
+  @override
+  String ddSentAt(Object time) {
+    return 'Gửi đi lúc: $time';
+  }
+
+  @override
+  String get ddNotSentYet => 'Chưa gửi';
+
+  @override
+  String get ddDirectionsToDrone => 'Chỉ đường tới drone tại tủ bay';
+
+  @override
+  String get ddReceiverLockerOperator =>
+      'Tủ nhận khách đã chọn (người nhận lấy hàng)';
+
+  @override
+  String get ddReceiverLockerCustomer =>
+      'Tủ nhận bạn đã chọn (người nhận lấy hàng)';
+
+  @override
+  String ddReceiveBox(Object box) {
+    return 'Ô nhận số $box';
+  }
+
+  @override
+  String ddDepositedAt(Object time) {
+    return 'Hàng vào tủ lúc: $time';
+  }
+
+  @override
+  String get ddNotArrived => 'Chưa tới';
+
+  @override
+  String ddCodeSentAt(Object time) {
+    return 'Gửi mã cho người nhận lúc: $time';
+  }
+
+  @override
+  String ddReceivedAt(Object time) {
+    return 'Người nhận lấy hàng lúc: $time';
+  }
+
+  @override
+  String get ddNotReceived => 'Chưa nhận';
+
+  @override
+  String get ddDirectionsToReceiver => 'Chỉ đường tới tủ nhận';
+
+  @override
+  String get ddLockerNoAddress =>
+      'Tủ này chưa có địa chỉ hoặc toạ độ để chỉ đường.';
+
+  @override
+  String get ddCantOpenMaps => 'Không mở được ứng dụng bản đồ trên thiết bị.';
+
+  @override
+  String get ddOrderInfo => 'Thông tin đơn hàng';
+
+  @override
+  String get ddOrderCode => 'Mã đơn';
+
+  @override
+  String get ddOrderStatus => 'Trạng thái đơn';
+
+  @override
+  String get ddPausedDrop => 'Tạm dừng do sự cố rơi kiện';
+
+  @override
+  String get ddDroneFee => 'Phí giao drone';
+
+  @override
+  String get ddWeightSurcharge => 'Trong đó thu thêm do cân lệch';
+
+  @override
+  String ddDiscountCodeValue(Object code) {
+    return 'Mã giảm giá $code';
+  }
+
+  @override
+  String ddUsePoints(Object points) {
+    return 'Dùng $points điểm';
+  }
+
+  @override
+  String get ddAmountPaid => 'Số tiền thanh toán';
+
+  @override
+  String get ddMethod => 'Phương thức';
+
+  @override
+  String get ddPaymentRef => 'Mã thanh toán';
+
+  @override
+  String get ddBoxAtLocker => 'Ô nhận tại tủ';
+
+  @override
+  String get ddDeclaredWeight => 'Khối lượng khai báo';
+
+  @override
+  String get ddParcelSize => 'Kích thước kiện';
+
+  @override
+  String get ddCaution => 'Lưu ý';
+
+  @override
+  String get ddDroppedAtLabel => 'Bỏ kiện vào ô gửi lúc';
+
+  @override
+  String get ddTechReceivedAt => 'KTV nhận kiện lúc';
+
+  @override
+  String get ddParcelDescription => 'Mô tả kiện hàng';
+
+  @override
+  String get ddNoDescription => 'Không có mô tả';
+
+  @override
+  String get ddFlightMode => 'Hình thức bay';
+
+  @override
+  String get ddPeople => 'Người liên quan';
+
+  @override
+  String get ddDroneTech => 'Kỹ thuật viên drone';
+
+  @override
+  String get ddNoTechYet => 'Chưa có người nhận việc';
+
+  @override
+  String get ddTechAccepted => 'Đã nhận việc';
+
+  @override
+  String get ddLoader => 'Người nạp hàng';
+
+  @override
+  String get ddNotLoaded => 'Chưa nạp hàng';
+
+  @override
+  String get ddLoaded => 'Đã nạp';
+
+  @override
+  String get ddNotChecked => 'Chưa kiểm';
+
+  @override
+  String get ddPass => 'Đạt';
+
+  @override
+  String get ddFail => 'Không đạt';
+
+  @override
+  String get ddMissionRecord => 'Nhiệm vụ bay & hồ sơ nạp hàng';
+
+  @override
+  String get ddMissionCode => 'Mã nhiệm vụ';
+
+  @override
+  String get ddNotAssigned => 'Chưa phân công';
+
+  @override
+  String get ddMissionStatus => 'Trạng thái nhiệm vụ';
+
+  @override
+  String get ddDronePosition => 'Vị trí drone hiện tại';
+
+  @override
+  String get ddNoData => 'Chưa có dữ liệu';
+
+  @override
+  String get ddActualWeight => 'Khối lượng thực tế';
+
+  @override
+  String get ddSealCode => 'Mã niêm phong';
+
+  @override
+  String get ddNotSealed => 'Chưa niêm phong';
+
+  @override
+  String get ddParcelMatched => 'Đúng kiện, đúng đơn';
+
+  @override
+  String get ddPayloadSecured => 'Kiện đã cố định';
+
+  @override
+  String get ddCompartmentLocked => 'Khoang hàng đã khoá';
+
+  @override
+  String get ddLoadingNote => 'Ghi chú nạp hàng';
+
+  @override
+  String get ddEvLoaded => 'Đã nạp hàng lên drone';
+
+  @override
+  String get ddEvCodeSent => 'Gửi mã nhận hàng cho người nhận';
+
+  @override
+  String get ddEvCreated => 'Đơn drone được tạo';
+
+  @override
+  String get ddJourneyLog => 'Nhật ký hành trình · mới nhất trước';
+
+  @override
+  String get ddNoJourney => 'Chưa có mốc hành trình nào.';
+
+  @override
+  String get ddSystem => 'Hệ thống';
+
+  @override
+  String get ddLockrStaff => 'Nhân viên Lock.R';
+
+  @override
+  String get ddNewest => 'Mới nhất';
+
+  @override
+  String dbBoxTaken(Object box) {
+    return '$box vừa được người khác giữ. Hãy chọn ô drone khác.';
+  }
+
+  @override
+  String get dbYourBox => 'Ô bạn chọn';
+
+  @override
+  String get dbCheckingBoxes => 'Đang kiểm tra ô drone…';
+
+  @override
+  String get dbNoFreeBoxes => 'Không còn ô drone nhận trống';
+
+  @override
+  String get dbChooseBox => 'Chọn ô người nhận sẽ lấy hàng';
+
+  @override
+  String dbDistancePrefix(Object distance) {
+    return 'Cách bạn $distance · ';
+  }
+
+  @override
+  String get dbNoPad => 'Chưa có bãi đáp drone';
+
+  @override
+  String get dbNoCoordinates => 'Chưa có toạ độ tủ';
+
+  @override
+  String get dbCheckingBoxesShort => 'Đang kiểm tra ô drone';
+
+  @override
+  String get dbOutOfBoxes => 'Hết ô drone trống';
+
+  @override
+  String dbFreeBoxes(Object count) {
+    return '$count ô drone trống';
+  }
+
+  @override
+  String dbEnterName(Object who) {
+    return 'Nhập tên $who';
+  }
+
+  @override
+  String dbInvalidPhone(Object who) {
+    return 'Số điện thoại $who không hợp lệ';
+  }
+
+  @override
+  String dbInvalidEmail(Object who) {
+    return 'Email $who không hợp lệ';
+  }
+
+  @override
+  String get dbChoosePickup => 'Chọn điểm lấy hàng';
+
+  @override
+  String get dbWhoSender => 'người gửi';
+
+  @override
+  String get dbWhoReceiver => 'người nhận';
+
+  @override
+  String get dbChooseReceiverLocker => 'Chọn tủ nhận';
+
+  @override
+  String get dbCheckingReceiverBoxes =>
+      'Đang kiểm tra ô drone trống của tủ nhận, vui lòng chờ một chút';
+
+  @override
+  String get dbReceiverFull =>
+      'Tủ nhận này đã hết ô drone trống, hãy chọn tủ khác';
+
+  @override
+  String get dbChooseReceiverBox => 'Chọn ô drone nhận còn trống tại tủ nhận';
+
+  @override
+  String get dbChooseCategory => 'Chọn loại hàng';
+
+  @override
+  String get dbSizeAllOrNone =>
+      'Nhập đủ dài, rộng, cao của kiện (cm) hoặc bỏ trống cả ba';
+
+  @override
+  String dbTooLarge(Object l, Object w, Object h) {
+    return 'Kiện không lọt khoang drone (tối đa $l × $w × $h cm)';
+  }
+
+  @override
+  String dbMaxValue(Object amount) {
+    return 'Drone chỉ nhận kiện có giá trị tới $amount';
+  }
+
+  @override
+  String get dbConfirmNoProhibited =>
+      'Bạn cần cam kết kiện không chứa hàng cấm bay';
+
+  @override
+  String get dbPaidByVoucher =>
+      'Đơn đã được thanh toán bằng ưu đãi. Đội bay sẽ tiếp nhận đơn của bạn.';
+
+  @override
+  String dbCreatedNotPaid(Object error) {
+    return 'Đã tạo đơn drone nhưng chưa thanh toán được: $error';
+  }
+
+  @override
+  String get dbTitle => 'Gửi hàng bằng drone';
+
+  @override
+  String get dbIntro =>
+      'Đặt và thanh toán xong, kỹ thuật viên drone gần bạn nhất sẽ tới lấy kiện, mang tới drone tại tủ bay để nạp trực tiếp lên drone (không bỏ vào ô tủ), rồi drone bay tới ô nhận bạn đã chọn. Người nhận lấy hàng bằng mã mở ô gửi qua email.';
+
+  @override
+  String get dbSuspended =>
+      'Dịch vụ giao drone đang tạm dừng (thời tiết hoặc sự cố vận hành). Vui lòng thử lại sau.';
+
+  @override
+  String get dbPickupAt => 'Lấy hàng tại';
+
+  @override
+  String get dbTechInstructions => 'Chỉ dẫn cho kỹ thuật viên (tuỳ chọn)';
+
+  @override
+  String get dbTechInstructionsHint => 'Tầng, cổng, giờ có nhà…';
+
+  @override
+  String get dbSenderName => 'Họ tên người gửi *';
+
+  @override
+  String get dbSenderPhone => 'Số điện thoại người gửi *';
+
+  @override
+  String get dbSenderEmail => 'Email người gửi *';
+
+  @override
+  String get dbReceiverName => 'Họ tên người nhận *';
+
+  @override
+  String get dbReceiverPhone => 'Số điện thoại người nhận *';
+
+  @override
+  String get dbReceiverEmail => 'Email người nhận *';
+
+  @override
+  String get dbEmailInfo =>
+      'Khi drone được phóng, người gửi và người nhận đều nhận email báo đơn. Khi hàng vào tủ, mã mở ô được gửi tới email người nhận.';
+
+  @override
+  String get dbReceiverLockerField => 'Tủ nhận *';
+
+  @override
+  String get dbLoadingLockers => 'Đang tải tủ nhận...';
+
+  @override
+  String get dbNoLockersInSystem => 'Hệ thống chưa có tủ nào';
+
+  @override
+  String get dbReceiverBoxField => 'Ô drone nhận *';
+
+  @override
+  String dbFreeReceiverBoxes(Object count) {
+    return 'Ô nhận drone còn trống: $count';
+  }
+
+  @override
+  String get dbChecking => 'đang kiểm tra…';
+
+  @override
+  String dbLockerCantReceive(Object reason) {
+    return 'Tủ này chưa nhận được drone: $reason';
+  }
+
+  @override
+  String dbWeightField(Object max) {
+    return 'Khối lượng * (tối đa $max một đơn)';
+  }
+
+  @override
+  String dbWeightHint(Object tolerance) {
+    return 'Chọn mức bằng hoặc lớn hơn khối lượng thật. Kỹ thuật viên cân lại khi nạp hàng: nặng hơn mức đã chọn quá $tolerance g thì bạn trả thêm phần phí chênh trước khi drone bay; nhẹ hơn không hoàn lại.';
+  }
+
+  @override
+  String get dbCategoryField => 'Loại hàng *';
+
+  @override
+  String get dbDescriptionField => 'Mô tả hàng hoá (tuỳ chọn)';
+
+  @override
+  String get dbLength => 'Dài';
+
+  @override
+  String get dbWidth => 'Rộng';
+
+  @override
+  String dbSizeHint(Object size) {
+    return 'Kích thước tuỳ chọn. Khoang drone tối đa $size cm.';
+  }
+
+  @override
+  String get dbDeclaredValueField => 'Giá trị khai báo (tuỳ chọn)';
+
+  @override
+  String dbDeclaredValueHint(Object amount) {
+    return 'Căn cứ bồi thường nếu kiện hư hỏng, thất lạc. Tối đa $amount.';
+  }
+
+  @override
+  String get dbRouteAndFee => 'Lộ trình và phí';
+
+  @override
+  String dbAutoCancel(Object minutes) {
+    return 'Đơn chưa thanh toán sau $minutes phút sẽ tự huỷ.';
+  }
+
+  @override
+  String get dbNoProhibitedCheckbox =>
+      'Tôi cam kết kiện không chứa hàng cấm bay: pin rời, chất lỏng, chất dễ cháy nổ, hàng cấm theo pháp luật. *';
+
+  @override
+  String dbCreateAndPay(Object amount) {
+    return 'Tạo đơn và thanh toán $amount';
+  }
+
+  @override
+  String get dbCreateFree => 'Tạo đơn (ưu đãi đã trừ hết phí)';
+
+  @override
+  String dbLockerCodeOnly(Object locker) {
+    return 'Mã riêng của tủ chỉ dùng được khi drone cất cánh tại $locker.';
+  }
+
+  @override
+  String get dbChoosePickupHint =>
+      'Chọn điểm lấy hàng * — dùng vị trí hiện tại hoặc tự nhập/ghim trên bản đồ';
+
+  @override
+  String dbLatLngTap(Object lat, Object lng) {
+    return 'Vĩ độ $lat · kinh độ $lng · chạm để đổi';
+  }
+
+  @override
+  String get dbQuoteHint =>
+      'Chọn điểm lấy hàng và tủ nhận để xem tủ gửi, quãng đường và phí.';
+
+  @override
+  String get dbCalculatingRoute => 'Đang tính lộ trình…';
+
+  @override
+  String dbSystemStation(Object locker) {
+    return 'Tủ bay do hệ thống chọn: $locker';
+  }
+
+  @override
+  String dbRouteSummary(Object pickup, Object route) {
+    return 'Kỹ thuật viên mang kiện $pickup tới drone ở tủ bay để nạp trực tiếp · drone bay $route tới ô nhận tại tủ đích';
+  }
+
+  @override
+  String dbFeeValue(Object amount) {
+    return 'Phí giao drone: $amount';
+  }
+
+  @override
+  String dbWind(Object speed) {
+    return 'gió $speed km/h';
+  }
+
+  @override
+  String dbGust(Object speed) {
+    return 'giật $speed km/h';
+  }
+
+  @override
+  String dbRain(Object mm) {
+    return 'mưa $mm mm';
+  }
+
+  @override
+  String dbUpdatedAt(Object time) {
+    return 'Cập nhật $time';
+  }
+
+  @override
+  String dbSource(Object source) {
+    return 'nguồn $source';
+  }
+
+  @override
+  String get dbWeatherOk => 'Thời tiết tuyến bay: Đủ điều kiện';
+
+  @override
+  String get dbWeatherUnknown => 'Chưa xác nhận được thời tiết';
+
+  @override
+  String get dbWeatherSuspended => 'Thời tiết tuyến bay: Tạm ngưng bay';
+
+  @override
+  String get dbWeatherRefresh => 'Xem lại thời tiết';
+
+  @override
+  String dbWeatherWindow(Object minutes, Object locker) {
+    return 'Dự báo $minutes phút tới (thời gian giao dự kiến) từ nơi gửi → $locker → tủ nhận';
+  }
+
+  @override
+  String dbWeatherOnlyWhenSafe(Object message) {
+    return '$message Đơn chỉ đặt được khi trời đủ điều kiện bay.';
+  }
+
+  @override
+  String get dtTitle => 'Theo dõi giao drone';
+
+  @override
+  String get dtCheckConnection => 'Vui lòng kiểm tra kết nối và thử lại.';
+
+  @override
+  String get dtConfirmDroppedTitle => 'Xác nhận đã bỏ kiện';
+
+  @override
+  String dtConfirmDroppedBody(Object where) {
+    return 'Bạn đã bỏ kiện vào $where và đóng cửa ô? Đội bay sẽ tới nạp hàng sau khi bạn xác nhận.';
+  }
+
+  @override
+  String get dtDropped => 'Đã bỏ kiện';
+
+  @override
+  String get dtDroppedDone => 'Đã ghi nhận. Đội bay sẽ tiếp nhận đơn của bạn.';
+
+  @override
+  String get dtCancelSurchargeTitle => 'Huỷ đơn vì không đồng ý phụ thu';
+
+  @override
+  String dtCancelSurchargeBody(Object code) {
+    return 'Đơn $code sẽ bị huỷ. Phần bạn đã trả được ghi yêu cầu hoàn tiền và đội bay sẽ liên hệ để trả lại kiện. Không hoàn tác được.';
+  }
+
+  @override
+  String get dtCancelledReturn =>
+      'Đã huỷ đơn. Đội bay sẽ trả lại kiện cho bạn.';
+
+  @override
+  String get dtMapSimulated => 'Theo dõi trên bản đồ (mô phỏng)';
+
+  @override
+  String get dtMap => 'Theo dõi trên bản đồ';
+
+  @override
+  String get dtInLockerShare =>
+      'Kiện đã vào tủ nhận. Vào \"Xem chi tiết đơn\" để chia sẻ mã mở ô cho người nhận.';
+
+  @override
+  String get dtInLockerPickup =>
+      'Kiện đã vào tủ nhận. Mở mã PIN để lấy hàng tại tủ.';
+
+  @override
+  String get dtViewDetail => 'Xem chi tiết đơn';
+
+  @override
+  String get dtPickup => 'Nhận hàng';
+
+  @override
+  String get dtOffline =>
+      'Mất kết nối · đang thử lại, thông tin bên dưới là lần cập nhật gần nhất';
+
+  @override
+  String get dtLive =>
+      'Đang cập nhật trực tiếp · trạng thái tự làm mới khi có thay đổi';
+
+  @override
+  String get dtLoadFailed => 'Không tải được trạng thái giao hàng';
+
+  @override
+  String get rmNoCoordinates =>
+      'Tủ gửi hoặc tủ nhận chưa có toạ độ nên chưa vẽ được bản đồ hành trình.';
+
+  @override
+  String get rmZoomHint =>
+      'Chụm/mở hai ngón hoặc bấm +/− để phóng to; bấm ⤢ để xem toàn màn hình.';
+
+  @override
+  String rmTotal(Object distance) {
+    return 'Quãng đường $distance';
+  }
+
+  @override
+  String rmRemaining(Object distance) {
+    return 'Còn khoảng $distance';
+  }
+
+  @override
+  String get rmLiveCoords =>
+      'Toạ độ cập nhật mỗi khi drone gửi vị trí về. Bấm vào toạ độ để mở Google Maps.';
+
+  @override
+  String get rmEstimatedCamera =>
+      'Vị trí drone ước theo chặng bay hiện tại. Số đo bay thật (GPS, pin, chế độ bay) xem ở khung camera phía trên.';
+
+  @override
+  String rmEstimatedOpenMap(Object mode) {
+    return 'Vị trí drone ước theo chặng bay hiện tại. Mở \"Theo dõi trên bản đồ\" để xem vị trí $mode.';
+  }
+
+  @override
+  String get rmSimulated => 'mô phỏng';
+
+  @override
+  String get rmLive => 'trực tiếp';
+
+  @override
+  String get rmEstimated => 'Vị trí drone ước theo chặng bay hiện tại.';
+
+  @override
+  String get rmZoomIn => 'Phóng to';
+
+  @override
+  String get rmZoomOut => 'Thu nhỏ';
+
+  @override
+  String get rmFitRoute => 'Xem cả tuyến';
+
+  @override
+  String get rmFullscreen => 'Toàn màn hình';
+
+  @override
+  String get rmRouteMap => 'Bản đồ hành trình';
+
+  @override
+  String rmDroneSentAt(Object time, Object suffix) {
+    return 'Drone gửi về lúc $time$suffix';
+  }
+
+  @override
+  String get rmSimSuffix => ' · mô phỏng';
+
+  @override
+  String get rmAtReceiver => 'Tại tủ nhận';
+
+  @override
+  String get rmSimByStage => 'Mô phỏng theo chặng bay';
+
+  @override
+  String get rmTelemetry => 'Theo telemetry của drone';
+
+  @override
+  String get rmEstimatedByStage => 'Ước theo chặng bay';
+
+  @override
+  String get rmAtSourceNotLaunched => 'Tại tủ gửi, chưa cất cánh';
+
+  @override
+  String get plServiceOff => 'Dịch vụ vị trí đang tắt. Vui lòng bật GPS.';
+
+  @override
+  String get plDenied => 'Quyền truy cập vị trí bị từ chối.';
+
+  @override
+  String get plDeniedForever =>
+      'Quyền vị trí bị từ chối vĩnh viễn. Hãy bật lại trong cài đặt.';
+
+  @override
+  String get plNoLocation => 'Không lấy được vị trí hiện tại.';
+
+  @override
+  String get plNoLocationHint =>
+      'Không lấy được vị trí hiện tại. Hãy ra chỗ thoáng hoặc gõ địa chỉ để tìm.';
+
+  @override
+  String get plNoAddressForPoint =>
+      'Chưa tra được địa chỉ của điểm này. Hãy tự nhập địa chỉ bên dưới.';
+
+  @override
+  String get plMin3Chars => 'Nhập ít nhất 3 ký tự để tìm địa chỉ.';
+
+  @override
+  String get plNotFound =>
+      'Không tìm thấy địa chỉ này. Thử gõ rõ hơn hoặc chạm lên bản đồ để ghim.';
+
+  @override
+  String get plNoPoint => 'Chưa chọn vị trí lấy hàng trên bản đồ.';
+
+  @override
+  String get plEnterAddress =>
+      'Nhập địa chỉ lấy hàng (số nhà, đường, phường…).';
+
+  @override
+  String get plTitle => 'Chọn điểm lấy hàng';
+
+  @override
+  String get plSearchHint => 'Gõ địa chỉ (số nhà, đường, phường…)';
+
+  @override
+  String get plClear => 'Xoá';
+
+  @override
+  String plTapToSeePin(Object lng) {
+    return '$lng · chạm để xem ghim';
+  }
+
+  @override
+  String get plCurrentLocation => 'Vị trí hiện tại';
+
+  @override
+  String get plAddressField => 'Địa chỉ lấy hàng';
+
+  @override
+  String get plTapMapToPin => 'Chạm lên bản đồ để ghim điểm lấy hàng';
+
+  @override
+  String plPinInfo(Object lat, Object lng) {
+    return 'Vĩ độ $lat · kinh độ $lng · vị trí ghim dùng để tính vùng phục vụ; kiểm tra ghim có đúng địa chỉ trước khi xác nhận';
+  }
+
+  @override
+  String get plPickupHere => 'Lấy hàng tại đây';
+
+  @override
+  String get psLoadFailed => 'Không tải được mã nhận hàng. Vui lòng thử lại.';
+
+  @override
+  String get psReceivingLocker => 'Tủ nhận hàng';
+
+  @override
+  String get psNotInQueue =>
+      'Không thấy đơn này trong hàng chờ nhận của bạn. Có thể đơn đã được lấy, hoặc mã nhận hàng được gửi cho số điện thoại khác.';
+
+  @override
+  String psDelegated(Object name) {
+    return 'Bạn đã ủy quyền cho $name lấy hộ đơn này nên mã nhận hàng đã chuyển cho người được ủy quyền.';
+  }
+
+  @override
+  String get psSomeoneElse => 'người khác';
+
+  @override
+  String get psNotReady =>
+      'Mã nhận hàng chưa sẵn sàng. Mã sẽ có khi kiện đã vào ô tủ nhận.';
+
+  @override
+  String get psPin => 'Mã PIN mở ô';
+
+  @override
+  String get psEnterAtKiosk =>
+      'Nhập mã này trên màn hình kiosk tại tủ để mở ô.';
+
+  @override
+  String get psReceiveBox => 'Ô nhận';
+
+  @override
+  String get psPickupBefore => 'Lấy trước';
+
+  @override
+  String ocPaidRefund(Object amount) {
+    return 'Đơn đã thanh toán: $amount sẽ được hoàn bằng chuyển khoản sau khi admin duyệt. Hãy kiểm tra tài khoản ngân hàng nhận tiền trong Hồ sơ.';
+  }
+
+  @override
+  String get ocDroneFee => 'phí giao drone';
+
+  @override
+  String get ocUnpaidNoFee => 'Đơn chưa thanh toán nên không phát sinh phí.';
+
+  @override
+  String get ocTitle => 'Huỷ đơn giao drone?';
+
+  @override
+  String ocBody(Object code, Object refund) {
+    return 'Đơn $code sẽ bị huỷ và ô nhận đã giữ cho đơn được nhả. $refund';
+  }
+
+  @override
+  String get ocRefundPending =>
+      'Đã huỷ đơn. Yêu cầu hoàn tiền đã được ghi nhận, admin sẽ chuyển khoản cho bạn.';
+
+  @override
+  String get ocRefunded =>
+      'Đã huỷ đơn. Tiền đã được chuyển khoản hoàn cho bạn.';
+
+  @override
+  String get ocPaidNoRefund =>
+      'Đã huỷ đơn. Chưa ghi nhận được yêu cầu hoàn tiền, vui lòng liên hệ hỗ trợ.';
+
+  @override
+  String get ocCancelled => 'Đã huỷ đơn.';
+
+  @override
+  String get ocAlreadyAccepted =>
+      'Đội bay đã tiếp nhận nên đơn không còn huỷ được trong ứng dụng.';
+
+  @override
+  String get ocOwnerOnly => 'Chỉ người đặt đơn mới huỷ được đơn này.';
+
+  @override
+  String get lmTitleSimulated => 'Theo dõi drone · mô phỏng';
+
+  @override
+  String lmSignalLost(Object time) {
+    return 'Mất tín hiệu · vị trí lúc $time';
+  }
+
+  @override
+  String get lmConnecting => 'Đang kết nối tới drone...';
+
+  @override
+  String get lmNoPosition => 'Chưa nhận được vị trí drone. Đang thử lại...';
+
+  @override
+  String get lmOnTheWay => 'Đang trên đường tới tủ nhận';
+
+  @override
+  String get lmAlmostThere => 'Sắp tới nơi';
+
+  @override
+  String get lmEta => 'Dự kiến đến';
+
+  @override
+  String get lmSpeed => 'Tốc độ';
+
+  @override
+  String get lmLiveSimulated => 'mô phỏng · cập nhật trực tiếp';
+
+  @override
+  String get lmLiveUpdates => 'cập nhật trực tiếp';
+
+  @override
+  String get clCantOpenMaps => 'Không mở được Google Maps.';
+
+  @override
+  String clCopied(Object coords) {
+    return 'Đã copy toạ độ $coords';
+  }
+
+  @override
+  String clDronePosition(Object note) {
+    return 'Vị trí drone · $note';
+  }
+
+  @override
+  String get clCopyCoords => 'Copy toạ độ';
+
+  @override
+  String get clPickupPin => 'Điểm lấy hàng người gửi ghim';
+
+  @override
+  String get clTechnician => 'Vị trí kỹ thuật viên lúc đó';
+
+  @override
+  String get clSourceLocker => 'Tại trạm/tủ gửi';
+
+  @override
+  String get clDroneGps => 'Vị trí drone (GPS)';
+
+  @override
+  String get clDroneSim => 'Vị trí drone (mô phỏng)';
+
+  @override
+  String get clDestination => 'Tại tủ nhận';
+
+  @override
+  String get clAtEvent => 'Vị trí lúc ghi mốc';
+
+  @override
+  String get lpIntro =>
+      'Chọn tủ nhận hàng (ưu tiên sắp xếp gần bạn nhất). Hệ thống tự chọn tủ bay và KTV đến lấy kiện tại nhà.';
+
+  @override
+  String lpLoadFailed(Object error) {
+    return 'Không tải được danh sách tủ: $error';
+  }
+
+  @override
+  String get lpNoLockers => 'Chưa có tủ nào trên hệ thống.';
+
+  @override
+  String lpDistance(Object distance) {
+    return 'Cách bạn $distance';
+  }
+
+  @override
+  String get lpChecking => 'Đang kiểm tra ô drone nhận';
+
+  @override
+  String lpFreeSlots(Object count) {
+    return 'Còn $count ô drone nhận trống';
+  }
+
+  @override
+  String lpUnavailable(Object reason) {
+    return 'Tạm không gửi drone: $reason';
+  }
+
+  @override
+  String get asTitle => 'Drone sắp đến nơi';
+
+  @override
+  String get asPrepare => 'Vui lòng chuẩn bị ra nhận hàng.';
+
+  @override
+  String asDroneCode(Object code) {
+    return '\nMã drone: $code';
+  }
+
+  @override
+  String asEta(Object eta) {
+    return 'Dự kiến: $eta';
+  }
+
+  @override
+  String get opPaid => 'Đã thanh toán. Đội bay sẽ tiếp nhận đơn của bạn.';
+
+  @override
+  String get opPending =>
+      'Đang chờ xác nhận thanh toán, trạng thái sẽ tự cập nhật.';
+
+  @override
+  String get opFailed =>
+      'Thanh toán chưa thành công. Đơn vẫn được giữ, bạn có thể thanh toán lại.';
+
+  @override
+  String get opUnpaid =>
+      'Đơn drone chưa thanh toán. Thanh toán để đội bay tiếp nhận.';
+
+  @override
+  String tlMovedAfter(Object duration) {
+    return 'Chuyển sau $duration';
+  }
+
+  @override
+  String tlInStageFor(Object duration) {
+    return 'Đã ở chặng này $duration';
+  }
+
+  @override
+  String get tlNotYet => 'Chưa diễn ra';
 }

@@ -2442,5 +2442,1030 @@
     }
   },
   "qrPointCamera": "Hướng camera về phía tem mã QR dán trên mặt tủ để xác thực bạn đang đứng tại tủ.",
-  "qrCantScan": "Không quét được? Nhập mã tủ"
+  "qrCantScan": "Không quét được? Nhập mã tủ",
+  "secondsValue": "{seconds} giây",
+  "@secondsValue": {
+    "placeholders": {
+      "seconds": {}
+    }
+  },
+  "durDays": "{days} ngày",
+  "@durDays": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "durDaysHoursLong": "{days} ngày {hours} giờ",
+  "@durDaysHoursLong": {
+    "placeholders": {
+      "days": {},
+      "hours": {}
+    }
+  },
+  "durHours": "{hours} giờ",
+  "@durHours": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      }
+    }
+  },
+  "durHoursMinutesLong": "{hours} giờ {minutes} phút",
+  "@durHoursMinutesLong": {
+    "placeholders": {
+      "hours": {},
+      "minutes": {}
+    }
+  },
+  "durMinutesSeconds": "{minutes} phút {seconds} giây",
+  "@durMinutesSeconds": {
+    "placeholders": {
+      "minutes": {},
+      "seconds": {}
+    }
+  },
+  "incStReported": "Đã ghi nhận",
+  "incStEvidencePending": "Đang thu thập bằng chứng",
+  "incStInvestigating": "Đang điều tra",
+  "incStRecoveryInProgress": "Đang thu hồi kiện",
+  "incStAwaitingAdmin": "Chờ quản trị viên xem xét",
+  "incStResolutionProposed": "Đã có phương án xử lý",
+  "incStAwaitingCustomer": "Chờ bạn phản hồi phương án",
+  "incStResolutionInProgress": "Đang thực hiện phương án",
+  "incStDisputed": "Đang xem xét lại theo yêu cầu",
+  "incStResolved": "Đã xử lý xong",
+  "incStClosed": "Đã đóng",
+  "incStManual": "Nhân viên đang xử lý trực tiếp",
+  "recStOpen": "Mới mở",
+  "recStAwaitingAssignment": "Chờ phân công người thu hồi",
+  "recStAssigned": "Đã phân công",
+  "recStAccepted": "Nhân viên đã nhận việc",
+  "recStSearching": "Đang tìm kiện",
+  "recStFound": "Đã tìm thấy kiện",
+  "recStNotFound": "Chưa tìm thấy kiện",
+  "recStRecovered": "Đã thu hồi kiện",
+  "recStSubmitted": "Đã báo kết quả thu hồi",
+  "recStVerified": "Đã xác minh kết quả",
+  "recStClosed": "Đã bàn giao kiện về kho",
+  "recStCancelled": "Đã huỷ",
+  "parStInTransit": "Đang vận chuyển",
+  "parStDropReported": "Đã báo rơi",
+  "parStRecoveryPending": "Chờ thu hồi",
+  "parStFound": "Đã tìm thấy",
+  "parStRecovered": "Đã thu hồi",
+  "parStDamaged": "Bị hư hỏng",
+  "parStLost": "Thất lạc",
+  "parStReturnedToHub": "Đã về kho Lock.R",
+  "parStRedeliveryPending": "Chờ giao lại",
+  "parStRedelivered": "Đã giao lại",
+  "parStCompensated": "Đã bồi thường",
+  "incEvReported": "Ghi nhận kiện rơi khỏi drone",
+  "incEvRecoveryAssigned": "Phân công người thu hồi kiện",
+  "incEvRecoveryAccept": "Nhân viên nhận việc thu hồi",
+  "incEvRecoverySearching": "Nhân viên bắt đầu tìm kiện",
+  "incEvReturnFlightConfirmed": "Drone đã về trạm",
+  "incEvRecoverySubmitted": "Báo kết quả thu hồi",
+  "incEvRecoveryVerified": "Xác minh kết quả thu hồi",
+  "incEvStationDispatched": "Kiện được điều phối về trạm bay để giao lại",
+  "incEvStationUnavailable": "Đang điều phối trạm nhận kiện",
+  "incEvReturnedToHub": "Kiện đã về kho Lock.R",
+  "incEvResolutionProposed": "Lock.R đề xuất phương án",
+  "incEvCustomerAccept": "Bạn đồng ý phương án",
+  "incEvCustomerReview": "Bạn yêu cầu xem xét lại",
+  "incEvReturnFlightUpdated": "Cập nhật chuyến bay về trạm",
+  "incEvRedeliveryRequested": "Đã tạo đơn giao lại",
+  "incEvRedeliveryUnavailable": "Chưa tạo được đơn giao lại — nhân viên sẽ liên hệ",
+  "incEvRedeliveryCompleted": "Đã giao lại thành công",
+  "incEvCompensationSubmitted": "Đã gửi yêu cầu chi bồi thường",
+  "incEvCompensationPaid": "Đã chi bồi thường",
+  "incEvCompensationFailed": "Chi bồi thường chưa thành công",
+  "incEvResolved": "Đã hoàn tất xử lý sự cố",
+  "resFreeRedelivery": "Giao lại miễn phí",
+  "resRedeliveryPartial": "Giao lại kèm bồi thường một phần",
+  "resCompensationOnly": "Bồi thường",
+  "resManual": "Thỏa thuận riêng",
+  "condIntact": "còn nguyên vẹn",
+  "condMinor": "hư hại nhẹ",
+  "condMajor": "hư hại nặng",
+  "condUnusable": "không thể sử dụng",
+  "propAwaiting": "Chờ bạn phản hồi",
+  "propAccepted": "Bạn đã đồng ý",
+  "propDisputed": "Đã yêu cầu xem xét lại",
+  "propSuperseded": "Đã thay bằng phương án mới",
+  "incEvRecoveryUpdate": "Cập nhật thu hồi kiện",
+  "incEvCompensationUpdate": "Cập nhật bồi thường",
+  "incEvRedeliveryUpdate": "Cập nhật giao lại",
+  "msNotInit": "Chưa khởi tạo",
+  "msAwaitingLoading": "Chờ nạp hàng",
+  "msReadyToLaunch": "Sẵn sàng phóng",
+  "msLaunching": "Đang khởi phóng",
+  "msDeparted": "Đã rời trạm",
+  "msEnRoute": "Đang bay",
+  "msApproaching": "Sắp tới tủ nhận",
+  "msArrived": "Đã tới tủ nhận",
+  "msDeposited": "Đã gửi hàng vào ô",
+  "msFailed": "Chuyến bay thất bại",
+  "msDropReported": "Dừng do sự cố rơi kiện",
+  "dosAwaitingDispatch": "Đang giao bằng drone",
+  "dosStoring": "Hàng đang trong tủ nhận",
+  "dosExpired": "Quá hạn nhận",
+  "cancelWeather": "Thời tiết xấu",
+  "cancelDroneFault": "Drone lỗi",
+  "cancelPadNotReady": "Bãi đáp không sẵn sàng",
+  "cancelOperational": "Lý do vận hành",
+  "cancelOther": "Lý do khác",
+  "cancelReasonCode": "Lý do #{code}",
+  "@cancelReasonCode": {
+    "placeholders": {
+      "code": {}
+    }
+  },
+  "modeDemo": "Mô phỏng (DEMO)",
+  "modeStandard": "Drone thật",
+  "stgTitleAwaitingTech": "Chờ kỹ thuật viên nhận lấy hàng",
+  "stgTitleTechOnWay": "Kỹ thuật viên đang tới lấy hàng",
+  "stgTitlePickedUp": "Đã lấy hàng, đang mang tới drone",
+  "stgTitleLoading": "Đang nạp hàng lên drone",
+  "stgTitleLaunching": "Drone đang khởi phóng",
+  "stgTitleDeparted": "Drone đã rời trạm",
+  "stgTitleEnRoute": "Drone đang trên đường",
+  "stgTitleApproaching": "Drone sắp đến",
+  "stgTitleArrived": "Drone đã đến tủ",
+  "stgTitleReady": "Sẵn sàng nhận hàng",
+  "stgTitleDelayed": "Đơn hàng bị chậm",
+  "stgTitleFailed": "Giao không hoàn tất",
+  "stgTitleDrop": "Kiện hàng gặp sự cố rơi",
+  "stgTitleCancelled": "Đơn drone đã huỷ",
+  "stgTitleReceived": "Đã nhận hàng",
+  "stgTitleExpired": "Quá hạn nhận hàng",
+  "stgTitleUpdate": "Cập nhật đơn hàng",
+  "stgDescAwaitingTech": "Sau khi thanh toán, hệ thống tìm kỹ thuật viên drone rảnh gần bạn nhất",
+  "stgDescTechOnWay": "Kỹ thuật viên đang tới điểm lấy hàng, chuẩn bị kiện và mã lấy hàng",
+  "stgDescPickedUp": "Kiện đang được mang tới drone để nạp trực tiếp; không bỏ vào ô tủ bay",
+  "stgDescLoading": "Drone đã được gán, kỹ thuật viên đang cân và nạp kiện",
+  "stgDescLaunching": "Đội bay đang thực hiện quy trình khởi phóng",
+  "stgDescDeparted": "Drone đã cất cánh khỏi trạm nguồn",
+  "stgDescEnRoute": "Drone đang bay tới tủ nhận",
+  "stgDescEnRouteEta": "Drone dự kiến đến trong {eta}",
+  "@stgDescEnRouteEta": {
+    "placeholders": {
+      "eta": {}
+    }
+  },
+  "stgDescApproaching": "Drone đang tiếp cận tủ nhận của bạn",
+  "stgDescArrived": "Drone đã đến và đang gửi kiện hàng vào tủ",
+  "stgDescReady": "Kiện hàng đã nằm trong tủ nhận, dùng mã PIN/QR của đơn để mở ô",
+  "stgDescDelayed": "Đơn đang bị chậm so với dự kiến",
+  "stgDescDelayedEta": "Đơn đang bị chậm, dự kiến tới {eta}",
+  "@stgDescDelayedEta": {
+    "placeholders": {
+      "eta": {}
+    }
+  },
+  "stgDescFailed": "Đơn giao không hoàn tất",
+  "stgDescDrop": "Kiện được báo rơi khỏi drone trong chuyến bay. Tiến trình thu hồi và phương án xử lý xem ở thẻ sự cố của đơn.",
+  "stgDescCancelled": "Đơn đã dừng trước khi drone cất cánh",
+  "stgDescReceived": "Người nhận đã lấy kiện hàng khỏi tủ",
+  "stgDescExpired": "Đã quá hạn nhận hàng, vui lòng liên hệ hỗ trợ",
+  "stgDescUpdate": "Đơn hàng của bạn có cập nhật mới",
+  "droneNoWeatherData": "Chưa có dữ liệu thời tiết.",
+  "failWeather": "Tạm dừng bay do thời tiết hoặc lệnh điều hành",
+  "failWeatherUnsafe": "Thời tiết tuyến bay không an toàn",
+  "failStationSuspended": "Trạm bay đang tạm dừng",
+  "failDroneFault": "Drone gặp sự cố",
+  "failNoDrone": "Tủ gửi không còn drone sẵn sàng",
+  "failSourceLocker": "Tủ gửi gặp sự cố",
+  "failDestinationLocker": "Tủ nhận gặp sự cố",
+  "failLandingPad": "Bãi đáp drone không sẵn sàng",
+  "failNoTechnician": "Không có kỹ thuật viên nhận lấy hàng",
+  "failLaunchOverdue": "Quá hạn phóng drone sau khi lấy hàng",
+  "failCustomerAbsent": "Không gặp được người gửi tại điểm lấy hàng",
+  "failParcelRejected": "Kiện hàng không đúng khai báo",
+  "failAddressNotFound": "Không tìm thấy địa chỉ lấy hàng",
+  "failFlightIncident": "Sự cố trong lúc bay",
+  "failShortCustomerAbsent": "Không gặp được người gửi",
+  "failShortParcelRejected": "Kiện không đúng khai báo",
+  "failShortAddressNotFound": "Không tìm thấy địa chỉ",
+  "failShortNoDrone": "Không còn drone",
+  "failShortSourceLocker": "Tủ gửi lỗi",
+  "failShortDestinationLocker": "Tủ nhận lỗi",
+  "failShortFlightIncident": "Sự cố lúc bay",
+  "catDocument": "Tài liệu",
+  "catFood": "Đồ ăn",
+  "catClothing": "Quần áo",
+  "catElectronics": "Điện tử",
+  "catCosmetics": "Mỹ phẩm",
+  "heldSourceBox": "Còn trong ô gửi",
+  "heldFlightTeam": "Đội bay đang giữ",
+  "blockDisconnected": "mất kết nối",
+  "blockMaintenance": "đang bảo trì",
+  "blockSuspended": "tạm ngưng",
+  "blockNoPad": "chưa có bãi đáp drone",
+  "blockPadMaintenance": "bãi đáp đang bảo trì",
+  "blockPadFault": "bãi đáp đang lỗi",
+  "droneErrOwnerOnly": "Chỉ người đặt đơn mới thực hiện được thao tác này.",
+  "droneErrNotYourIncident": "Sự cố này không thuộc đơn của bạn.",
+  "droneErrNoReview": "Chính sách của đơn không cho yêu cầu xem xét lại phương án.",
+  "droneErrAlreadyResponded": "Phương án này đã được phản hồi. Vui lòng tải lại.",
+  "droneErrNoProposal": "Chưa có phương án nào chờ bạn phản hồi.",
+  "droneErrInvalidChoice": "Lựa chọn không hợp lệ.",
+  "droneErrRecipientLookup": "Chưa tra được thông tin người nhận. Vui lòng thử lại sau.",
+  "droneNoPermission": "Bạn không có quyền xem đơn drone này. Chỉ người đặt và người nhận theo dõi được đơn.",
+  "droneStatusLoadFailedRetrying": "Không tải được trạng thái giao hàng. Đang thử lại...",
+  "dronePickupCodeNotSupported": "Máy chủ chưa hỗ trợ tra mã nhận hàng trong ứng dụng. Hãy dùng mã PIN đã gửi qua thông báo, email hoặc SMS.",
+  "droneTrackingDisabled": "Tính năng theo dõi giao drone đang tạm tắt.",
+  "droneStatusLoadFailed": "Không tải được trạng thái giao hàng.",
+  "ddTlPayment": "Thanh toán",
+  "ddTlParcelDropped": "Bỏ kiện vào ô gửi",
+  "ddTlHomePickup": "Lấy hàng tại nhà người gửi",
+  "ddTlLoaded": "Nạp hàng lên drone",
+  "ddTlReady": "Sẵn sàng phóng",
+  "ddTlCodeSent": "Gửi mã cho người nhận",
+  "ddTlPickupDeadline": "Hạn nhận hàng",
+  "ddTlReceived": "Người nhận lấy hàng",
+  "ddProgress": "Tiến trình giao hàng",
+  "ddClosedTitle": "Đơn drone đã đóng",
+  "ddClosedBody": "Chuyến bay không hoàn tất nên đơn này đã đóng; phương án xử lý xem ở phần sự cố của đơn.",
+  "ddAwaitingPaymentTitle": "Chờ thanh toán",
+  "ddAwaitingPaymentBody": "Thanh toán xong hệ thống mới tìm kỹ thuật viên drone tới lấy hàng",
+  "ddAwaitingTeamTitle": "Chờ đội bay tiếp nhận",
+  "ddAwaitingTeamBody": "Kiện đã sẵn sàng tại trạm Lock.R, chờ kỹ thuật viên drone nạp hàng và phóng",
+  "ddReadyBody": "Kiện đã được nạp và niêm phong trên drone, chờ đội bay phóng",
+  "ddAboutMinutesLeft": "Còn khoảng {minutes} phút",
+  "@ddAboutMinutesLeft": {
+    "placeholders": {
+      "minutes": {}
+    }
+  },
+  "ddSince": "Từ {time}",
+  "@ddSince": {
+    "placeholders": {
+      "time": {}
+    }
+  },
+  "ddOverdueAt": "Đơn hàng đã quá hạn lấy lúc {deadline}. {policy}",
+  "@ddOverdueAt": {
+    "placeholders": {
+      "deadline": {},
+      "policy": {}
+    }
+  },
+  "ddPickupDeadline": "Hạn người nhận lấy hàng: {deadline} (lưu trữ {hours} giờ).",
+  "@ddPickupDeadline": {
+    "placeholders": {
+      "deadline": {},
+      "hours": {}
+    }
+  },
+  "ddFlightIncompleteClosed": "Chuyến bay không hoàn tất nên đơn này đã đóng. Phương án xử lý (giao lại hoặc bồi thường) xem ở phần sự cố của đơn.",
+  "ddUnpaidSearch": "Đơn chưa thanh toán. Thanh toán xong hệ thống mới bắt đầu tìm kỹ thuật viên drone tới lấy hàng.",
+  "ddAt": "Lúc: {time}",
+  "@ddAt": {
+    "placeholders": {
+      "time": {}
+    }
+  },
+  "ddReason": "Lý do: {reason}",
+  "@ddReason": {
+    "placeholders": {
+      "reason": {}
+    }
+  },
+  "ddNoteValue": "Ghi chú: {note}",
+  "@ddNoteValue": {
+    "placeholders": {
+      "note": {}
+    }
+  },
+  "ddTicket": "Phiếu sự cố: #{id}",
+  "@ddTicket": {
+    "placeholders": {
+      "id": {}
+    }
+  },
+  "ddParcelWithSender": "Kiện hàng chưa được lấy, vẫn ở chỗ người gửi.",
+  "ddRefundRecorded": "Yêu cầu hoàn tiền đã được ghi nhận. Admin sẽ chuyển khoản về tài khoản ngân hàng của người đặt.",
+  "ddRefundDone": "Tiền đã được chuyển khoản hoàn cho người đặt.",
+  "ddRefundByIncident": "Khoản đã trả được xử lý theo phương án sự cố: giao lại miễn phí hoặc bồi thường chuyển khoản về tài khoản ngân hàng đã liên kết.",
+  "ddRefundNotRecorded": "Chưa ghi nhận được yêu cầu hoàn tiền — vui lòng liên hệ hỗ trợ.",
+  "ddWeightOver": "Kiện cân thực tế {actual}, nặng hơn mức {expected} đã khai báo.",
+  "@ddWeightOver": {
+    "placeholders": {
+      "actual": {},
+      "expected": {}
+    }
+  },
+  "ddSurchargeOperator": "Chờ khách trả thêm {amount} rồi mới phóng được.",
+  "@ddSurchargeOperator": {
+    "placeholders": {
+      "amount": {}
+    }
+  },
+  "ddSurchargeReceiver": "Đang chờ người gửi trả thêm {amount} để drone cất cánh.",
+  "@ddSurchargeReceiver": {
+    "placeholders": {
+      "amount": {}
+    }
+  },
+  "ddSurchargeSender": "Bạn cần trả thêm {amount} để drone cất cánh. Không đồng ý thì bạn có thể huỷ đơn: phần đã trả được hoàn và đội bay trả lại kiện.",
+  "@ddSurchargeSender": {
+    "placeholders": {
+      "amount": {}
+    }
+  },
+  "ddUnpaidOperator": "Khách chưa thanh toán. Chỉ tiếp nhận được sau khi đơn đã thanh toán.",
+  "ddUnpaidReceiver": "Người gửi chưa thanh toán đơn. Đội bay tiếp nhận sau khi người gửi thanh toán.",
+  "ddUnpaidSender": "Đơn chưa thanh toán. Đội bay chỉ tiếp nhận sau khi bạn thanh toán.",
+  "ddPaySurcharge": "Trả thêm phí chênh",
+  "ddPayNow": "Thanh toán ngay",
+  "ddDeclineSurcharge": "Không đồng ý · huỷ đơn và nhận hoàn tiền",
+  "ddIncidentLabel": "Đơn đang gặp sự cố: {label}",
+  "@ddIncidentLabel": {
+    "placeholders": {
+      "label": {}
+    }
+  },
+  "ddFromTime": "Từ lúc: {time}",
+  "@ddFromTime": {
+    "placeholders": {
+      "time": {}
+    }
+  },
+  "ddAutoCloseOperator": "Chưa khắc phục trước {time} thì đơn tự kết thúc \"giao không hoàn tất\" và hoàn tiền cho khách.",
+  "@ddAutoCloseOperator": {
+    "placeholders": {
+      "time": {}
+    }
+  },
+  "ddAutoCloseCustomer": "Nếu chưa khắc phục được trước {time}, đơn sẽ kết thúc và bạn được hoàn tiền.",
+  "@ddAutoCloseCustomer": {
+    "placeholders": {
+      "time": {}
+    }
+  },
+  "ddChangePlan": "Đổi phương án hoặc xác nhận giao không hoàn tất.",
+  "ddTeamHandling": "Đội bay đang xử lý.",
+  "ddPickedUp": "Đã lấy hàng{at}",
+  "@ddPickedUp": {
+    "placeholders": {
+      "at": {}
+    }
+  },
+  "ddPickedUpAt": " lúc {time}",
+  "@ddPickedUpAt": {
+    "placeholders": {
+      "time": {}
+    }
+  },
+  "ddTechnician": "Kỹ thuật viên",
+  "ddYouHeadingToPickup": "Bạn đang tới lấy hàng",
+  "ddTechHeadingToPickup": "{who} đang tới lấy hàng",
+  "@ddTechHeadingToPickup": {
+    "placeholders": {
+      "who": {}
+    }
+  },
+  "ddYouAreInvited": "Bạn được mời lấy hàng",
+  "ddSearchingTech": "Đang tìm kỹ thuật viên drone gần bạn nhất",
+  "ddAwaitingDispatchPickup": "Chờ điều phối lấy hàng",
+  "ddTechAfterPayment": "Kỹ thuật viên sẽ tới lấy hàng sau khi đơn được thanh toán",
+  "ddHomePickup": "Lấy hàng tận nhà",
+  "ddPickupCode": "Mã lấy hàng",
+  "ddPickupCodeHint": "Đọc mã này cho kỹ thuật viên khi giao kiện. Không gửi mã cho người khác.",
+  "ddPickupPoint": "Điểm lấy hàng",
+  "ddDirections": "Chỉ dẫn",
+  "ddTechPhone": "SĐT kỹ thuật viên",
+  "ddDistanceAtAccept": "Cách điểm lấy lúc nhận việc",
+  "ddPickupToSource": "Điểm lấy hàng → tủ gửi",
+  "ddPickupNote": "Ghi chú lúc lấy hàng",
+  "ddPickupPhoto": "Ảnh kiện lúc lấy hàng",
+  "ddPhotoTakenAt": "Chụp lúc {time}",
+  "@ddPhotoTakenAt": {
+    "placeholders": {
+      "time": {}
+    }
+  },
+  "ddDroneBoxAtSource": "ô drone ở tủ gửi",
+  "ddDroneBoxNumberAtSource": "ô drone số {box} ở tủ gửi",
+  "@ddDroneBoxNumberAtSource": {
+    "placeholders": {
+      "box": {}
+    }
+  },
+  "ddSenderNotDroppedOperator": "Người gửi chưa xác nhận bỏ kiện vào {where}. Chỉ tiếp nhận được sau khi kiện đã nằm trong ô.",
+  "@ddSenderNotDroppedOperator": {
+    "placeholders": {
+      "where": {}
+    }
+  },
+  "ddWaitingSenderDrop": "Đang chờ người gửi bỏ kiện vào {where}.",
+  "@ddWaitingSenderDrop": {
+    "placeholders": {
+      "where": {}
+    }
+  },
+  "ddDropThenConfirm": "Bỏ kiện vào {where} rồi xác nhận bên dưới. Đội bay chỉ tiếp nhận đơn sau khi bạn xác nhận.",
+  "@ddDropThenConfirm": {
+    "placeholders": {
+      "where": {}
+    }
+  },
+  "ddIDropped": "Tôi đã bỏ kiện vào ô",
+  "ddParcelReturnedAt": "Kiện đã được trả lại cho người gửi lúc {time}.",
+  "@ddParcelReturnedAt": {
+    "placeholders": {
+      "time": {}
+    }
+  },
+  "ddParcelInBoxOperator": "Kiện còn trong ô gửi. Lấy kiện ra, trả cho người gửi rồi xác nhận đã trả.",
+  "ddParcelWithTeamOperator": "Kiện đang do đội bay giữ. Trả cho người gửi rồi xác nhận đã trả.",
+  "ddParcelInBoxCustomer": "Kiện của bạn còn trong ô gửi. Đội bay sẽ liên hệ để trả lại kiện.",
+  "ddParcelHeldByTech": "Kiện đang do kỹ thuật viên giữ và sẽ được mang trả lại{where}.",
+  "@ddParcelHeldByTech": {
+    "placeholders": {
+      "where": {}
+    }
+  },
+  "ddToSender": " cho người gửi",
+  "ddAtAddress": " tại {address}",
+  "@ddAtAddress": {
+    "placeholders": {
+      "address": {}
+    }
+  },
+  "ddCancelOrder": "Huỷ đơn",
+  "ddCancelAllowed": "Bạn huỷ được đơn khi đội bay chưa tiếp nhận.",
+  "ddRoute": "Lộ trình giao hàng",
+  "ddSystemPickedStation": "Tủ bay do hệ thống chọn (KTV nạp kiện trực tiếp lên drone)",
+  "ddLegacyBox": "Đơn cũ: kiện từng được gửi vào ô số {box}",
+  "@ddLegacyBox": {
+    "placeholders": {
+      "box": {}
+    }
+  },
+  "ddSentAt": "Gửi đi lúc: {time}",
+  "@ddSentAt": {
+    "placeholders": {
+      "time": {}
+    }
+  },
+  "ddNotSentYet": "Chưa gửi",
+  "ddDirectionsToDrone": "Chỉ đường tới drone tại tủ bay",
+  "ddReceiverLockerOperator": "Tủ nhận khách đã chọn (người nhận lấy hàng)",
+  "ddReceiverLockerCustomer": "Tủ nhận bạn đã chọn (người nhận lấy hàng)",
+  "ddReceiveBox": "Ô nhận số {box}",
+  "@ddReceiveBox": {
+    "placeholders": {
+      "box": {}
+    }
+  },
+  "ddDepositedAt": "Hàng vào tủ lúc: {time}",
+  "@ddDepositedAt": {
+    "placeholders": {
+      "time": {}
+    }
+  },
+  "ddNotArrived": "Chưa tới",
+  "ddCodeSentAt": "Gửi mã cho người nhận lúc: {time}",
+  "@ddCodeSentAt": {
+    "placeholders": {
+      "time": {}
+    }
+  },
+  "ddReceivedAt": "Người nhận lấy hàng lúc: {time}",
+  "@ddReceivedAt": {
+    "placeholders": {
+      "time": {}
+    }
+  },
+  "ddNotReceived": "Chưa nhận",
+  "ddDirectionsToReceiver": "Chỉ đường tới tủ nhận",
+  "ddLockerNoAddress": "Tủ này chưa có địa chỉ hoặc toạ độ để chỉ đường.",
+  "ddCantOpenMaps": "Không mở được ứng dụng bản đồ trên thiết bị.",
+  "ddOrderInfo": "Thông tin đơn hàng",
+  "ddOrderCode": "Mã đơn",
+  "ddOrderStatus": "Trạng thái đơn",
+  "ddPausedDrop": "Tạm dừng do sự cố rơi kiện",
+  "ddDroneFee": "Phí giao drone",
+  "ddWeightSurcharge": "Trong đó thu thêm do cân lệch",
+  "ddDiscountCodeValue": "Mã giảm giá {code}",
+  "@ddDiscountCodeValue": {
+    "placeholders": {
+      "code": {}
+    }
+  },
+  "ddUsePoints": "Dùng {points} điểm",
+  "@ddUsePoints": {
+    "placeholders": {
+      "points": {}
+    }
+  },
+  "ddAmountPaid": "Số tiền thanh toán",
+  "ddMethod": "Phương thức",
+  "ddPaymentRef": "Mã thanh toán",
+  "ddBoxAtLocker": "Ô nhận tại tủ",
+  "ddDeclaredWeight": "Khối lượng khai báo",
+  "ddParcelSize": "Kích thước kiện",
+  "ddCaution": "Lưu ý",
+  "ddDroppedAtLabel": "Bỏ kiện vào ô gửi lúc",
+  "ddTechReceivedAt": "KTV nhận kiện lúc",
+  "ddParcelDescription": "Mô tả kiện hàng",
+  "ddNoDescription": "Không có mô tả",
+  "ddFlightMode": "Hình thức bay",
+  "ddPeople": "Người liên quan",
+  "ddDroneTech": "Kỹ thuật viên drone",
+  "ddNoTechYet": "Chưa có người nhận việc",
+  "ddTechAccepted": "Đã nhận việc",
+  "ddLoader": "Người nạp hàng",
+  "ddNotLoaded": "Chưa nạp hàng",
+  "ddLoaded": "Đã nạp",
+  "ddNotChecked": "Chưa kiểm",
+  "ddPass": "Đạt",
+  "ddFail": "Không đạt",
+  "ddMissionRecord": "Nhiệm vụ bay & hồ sơ nạp hàng",
+  "ddMissionCode": "Mã nhiệm vụ",
+  "ddNotAssigned": "Chưa phân công",
+  "ddMissionStatus": "Trạng thái nhiệm vụ",
+  "ddDronePosition": "Vị trí drone hiện tại",
+  "ddNoData": "Chưa có dữ liệu",
+  "ddActualWeight": "Khối lượng thực tế",
+  "ddSealCode": "Mã niêm phong",
+  "ddNotSealed": "Chưa niêm phong",
+  "ddParcelMatched": "Đúng kiện, đúng đơn",
+  "ddPayloadSecured": "Kiện đã cố định",
+  "ddCompartmentLocked": "Khoang hàng đã khoá",
+  "ddLoadingNote": "Ghi chú nạp hàng",
+  "ddEvLoaded": "Đã nạp hàng lên drone",
+  "ddEvCodeSent": "Gửi mã nhận hàng cho người nhận",
+  "ddEvCreated": "Đơn drone được tạo",
+  "ddJourneyLog": "Nhật ký hành trình · mới nhất trước",
+  "ddNoJourney": "Chưa có mốc hành trình nào.",
+  "ddSystem": "Hệ thống",
+  "ddLockrStaff": "Nhân viên Lock.R",
+  "ddNewest": "Mới nhất",
+  "dbBoxTaken": "{box} vừa được người khác giữ. Hãy chọn ô drone khác.",
+  "@dbBoxTaken": {
+    "placeholders": {
+      "box": {}
+    }
+  },
+  "dbYourBox": "Ô bạn chọn",
+  "dbCheckingBoxes": "Đang kiểm tra ô drone…",
+  "dbNoFreeBoxes": "Không còn ô drone nhận trống",
+  "dbChooseBox": "Chọn ô người nhận sẽ lấy hàng",
+  "dbDistancePrefix": "Cách bạn {distance} · ",
+  "@dbDistancePrefix": {
+    "placeholders": {
+      "distance": {}
+    }
+  },
+  "dbNoPad": "Chưa có bãi đáp drone",
+  "dbNoCoordinates": "Chưa có toạ độ tủ",
+  "dbCheckingBoxesShort": "Đang kiểm tra ô drone",
+  "dbOutOfBoxes": "Hết ô drone trống",
+  "dbFreeBoxes": "{count} ô drone trống",
+  "@dbFreeBoxes": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "dbEnterName": "Nhập tên {who}",
+  "@dbEnterName": {
+    "placeholders": {
+      "who": {}
+    }
+  },
+  "dbInvalidPhone": "Số điện thoại {who} không hợp lệ",
+  "@dbInvalidPhone": {
+    "placeholders": {
+      "who": {}
+    }
+  },
+  "dbInvalidEmail": "Email {who} không hợp lệ",
+  "@dbInvalidEmail": {
+    "placeholders": {
+      "who": {}
+    }
+  },
+  "dbChoosePickup": "Chọn điểm lấy hàng",
+  "dbWhoSender": "người gửi",
+  "dbWhoReceiver": "người nhận",
+  "dbChooseReceiverLocker": "Chọn tủ nhận",
+  "dbCheckingReceiverBoxes": "Đang kiểm tra ô drone trống của tủ nhận, vui lòng chờ một chút",
+  "dbReceiverFull": "Tủ nhận này đã hết ô drone trống, hãy chọn tủ khác",
+  "dbChooseReceiverBox": "Chọn ô drone nhận còn trống tại tủ nhận",
+  "dbChooseCategory": "Chọn loại hàng",
+  "dbSizeAllOrNone": "Nhập đủ dài, rộng, cao của kiện (cm) hoặc bỏ trống cả ba",
+  "dbTooLarge": "Kiện không lọt khoang drone (tối đa {l} × {w} × {h} cm)",
+  "@dbTooLarge": {
+    "placeholders": {
+      "l": {},
+      "w": {},
+      "h": {}
+    }
+  },
+  "dbMaxValue": "Drone chỉ nhận kiện có giá trị tới {amount}",
+  "@dbMaxValue": {
+    "placeholders": {
+      "amount": {}
+    }
+  },
+  "dbConfirmNoProhibited": "Bạn cần cam kết kiện không chứa hàng cấm bay",
+  "dbPaidByVoucher": "Đơn đã được thanh toán bằng ưu đãi. Đội bay sẽ tiếp nhận đơn của bạn.",
+  "dbCreatedNotPaid": "Đã tạo đơn drone nhưng chưa thanh toán được: {error}",
+  "@dbCreatedNotPaid": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "dbTitle": "Gửi hàng bằng drone",
+  "dbIntro": "Đặt và thanh toán xong, kỹ thuật viên drone gần bạn nhất sẽ tới lấy kiện, mang tới drone tại tủ bay để nạp trực tiếp lên drone (không bỏ vào ô tủ), rồi drone bay tới ô nhận bạn đã chọn. Người nhận lấy hàng bằng mã mở ô gửi qua email.",
+  "dbSuspended": "Dịch vụ giao drone đang tạm dừng (thời tiết hoặc sự cố vận hành). Vui lòng thử lại sau.",
+  "dbPickupAt": "Lấy hàng tại",
+  "dbTechInstructions": "Chỉ dẫn cho kỹ thuật viên (tuỳ chọn)",
+  "dbTechInstructionsHint": "Tầng, cổng, giờ có nhà…",
+  "dbSenderName": "Họ tên người gửi *",
+  "dbSenderPhone": "Số điện thoại người gửi *",
+  "dbSenderEmail": "Email người gửi *",
+  "dbReceiverName": "Họ tên người nhận *",
+  "dbReceiverPhone": "Số điện thoại người nhận *",
+  "dbReceiverEmail": "Email người nhận *",
+  "dbEmailInfo": "Khi drone được phóng, người gửi và người nhận đều nhận email báo đơn. Khi hàng vào tủ, mã mở ô được gửi tới email người nhận.",
+  "dbReceiverLockerField": "Tủ nhận *",
+  "dbLoadingLockers": "Đang tải tủ nhận...",
+  "dbNoLockersInSystem": "Hệ thống chưa có tủ nào",
+  "dbReceiverBoxField": "Ô drone nhận *",
+  "dbFreeReceiverBoxes": "Ô nhận drone còn trống: {count}",
+  "@dbFreeReceiverBoxes": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "dbChecking": "đang kiểm tra…",
+  "dbLockerCantReceive": "Tủ này chưa nhận được drone: {reason}",
+  "@dbLockerCantReceive": {
+    "placeholders": {
+      "reason": {}
+    }
+  },
+  "dbWeightField": "Khối lượng * (tối đa {max} một đơn)",
+  "@dbWeightField": {
+    "placeholders": {
+      "max": {}
+    }
+  },
+  "dbWeightHint": "Chọn mức bằng hoặc lớn hơn khối lượng thật. Kỹ thuật viên cân lại khi nạp hàng: nặng hơn mức đã chọn quá {tolerance} g thì bạn trả thêm phần phí chênh trước khi drone bay; nhẹ hơn không hoàn lại.",
+  "@dbWeightHint": {
+    "placeholders": {
+      "tolerance": {}
+    }
+  },
+  "dbCategoryField": "Loại hàng *",
+  "dbDescriptionField": "Mô tả hàng hoá (tuỳ chọn)",
+  "dbLength": "Dài",
+  "dbWidth": "Rộng",
+  "dbSizeHint": "Kích thước tuỳ chọn. Khoang drone tối đa {size} cm.",
+  "@dbSizeHint": {
+    "placeholders": {
+      "size": {}
+    }
+  },
+  "dbDeclaredValueField": "Giá trị khai báo (tuỳ chọn)",
+  "dbDeclaredValueHint": "Căn cứ bồi thường nếu kiện hư hỏng, thất lạc. Tối đa {amount}.",
+  "@dbDeclaredValueHint": {
+    "placeholders": {
+      "amount": {}
+    }
+  },
+  "dbRouteAndFee": "Lộ trình và phí",
+  "dbAutoCancel": "Đơn chưa thanh toán sau {minutes} phút sẽ tự huỷ.",
+  "@dbAutoCancel": {
+    "placeholders": {
+      "minutes": {}
+    }
+  },
+  "dbNoProhibitedCheckbox": "Tôi cam kết kiện không chứa hàng cấm bay: pin rời, chất lỏng, chất dễ cháy nổ, hàng cấm theo pháp luật. *",
+  "dbCreateAndPay": "Tạo đơn và thanh toán {amount}",
+  "@dbCreateAndPay": {
+    "placeholders": {
+      "amount": {}
+    }
+  },
+  "dbCreateFree": "Tạo đơn (ưu đãi đã trừ hết phí)",
+  "dbLockerCodeOnly": "Mã riêng của tủ chỉ dùng được khi drone cất cánh tại {locker}.",
+  "@dbLockerCodeOnly": {
+    "placeholders": {
+      "locker": {}
+    }
+  },
+  "dbChoosePickupHint": "Chọn điểm lấy hàng * — dùng vị trí hiện tại hoặc tự nhập/ghim trên bản đồ",
+  "dbLatLngTap": "Vĩ độ {lat} · kinh độ {lng} · chạm để đổi",
+  "@dbLatLngTap": {
+    "placeholders": {
+      "lat": {},
+      "lng": {}
+    }
+  },
+  "dbQuoteHint": "Chọn điểm lấy hàng và tủ nhận để xem tủ gửi, quãng đường và phí.",
+  "dbCalculatingRoute": "Đang tính lộ trình…",
+  "dbSystemStation": "Tủ bay do hệ thống chọn: {locker}",
+  "@dbSystemStation": {
+    "placeholders": {
+      "locker": {}
+    }
+  },
+  "dbRouteSummary": "Kỹ thuật viên mang kiện {pickup} tới drone ở tủ bay để nạp trực tiếp · drone bay {route} tới ô nhận tại tủ đích",
+  "@dbRouteSummary": {
+    "placeholders": {
+      "pickup": {},
+      "route": {}
+    }
+  },
+  "dbFeeValue": "Phí giao drone: {amount}",
+  "@dbFeeValue": {
+    "placeholders": {
+      "amount": {}
+    }
+  },
+  "dbWind": "gió {speed} km/h",
+  "@dbWind": {
+    "placeholders": {
+      "speed": {}
+    }
+  },
+  "dbGust": "giật {speed} km/h",
+  "@dbGust": {
+    "placeholders": {
+      "speed": {}
+    }
+  },
+  "dbRain": "mưa {mm} mm",
+  "@dbRain": {
+    "placeholders": {
+      "mm": {}
+    }
+  },
+  "dbUpdatedAt": "Cập nhật {time}",
+  "@dbUpdatedAt": {
+    "placeholders": {
+      "time": {}
+    }
+  },
+  "dbSource": "nguồn {source}",
+  "@dbSource": {
+    "placeholders": {
+      "source": {}
+    }
+  },
+  "dbWeatherOk": "Thời tiết tuyến bay: Đủ điều kiện",
+  "dbWeatherUnknown": "Chưa xác nhận được thời tiết",
+  "dbWeatherSuspended": "Thời tiết tuyến bay: Tạm ngưng bay",
+  "dbWeatherRefresh": "Xem lại thời tiết",
+  "dbWeatherWindow": "Dự báo {minutes} phút tới (thời gian giao dự kiến) từ nơi gửi → {locker} → tủ nhận",
+  "@dbWeatherWindow": {
+    "placeholders": {
+      "minutes": {},
+      "locker": {}
+    }
+  },
+  "dbWeatherOnlyWhenSafe": "{message} Đơn chỉ đặt được khi trời đủ điều kiện bay.",
+  "@dbWeatherOnlyWhenSafe": {
+    "placeholders": {
+      "message": {}
+    }
+  },
+  "dtTitle": "Theo dõi giao drone",
+  "dtCheckConnection": "Vui lòng kiểm tra kết nối và thử lại.",
+  "dtConfirmDroppedTitle": "Xác nhận đã bỏ kiện",
+  "dtConfirmDroppedBody": "Bạn đã bỏ kiện vào {where} và đóng cửa ô? Đội bay sẽ tới nạp hàng sau khi bạn xác nhận.",
+  "@dtConfirmDroppedBody": {
+    "placeholders": {
+      "where": {}
+    }
+  },
+  "dtDropped": "Đã bỏ kiện",
+  "dtDroppedDone": "Đã ghi nhận. Đội bay sẽ tiếp nhận đơn của bạn.",
+  "dtCancelSurchargeTitle": "Huỷ đơn vì không đồng ý phụ thu",
+  "dtCancelSurchargeBody": "Đơn {code} sẽ bị huỷ. Phần bạn đã trả được ghi yêu cầu hoàn tiền và đội bay sẽ liên hệ để trả lại kiện. Không hoàn tác được.",
+  "@dtCancelSurchargeBody": {
+    "placeholders": {
+      "code": {}
+    }
+  },
+  "dtCancelledReturn": "Đã huỷ đơn. Đội bay sẽ trả lại kiện cho bạn.",
+  "dtMapSimulated": "Theo dõi trên bản đồ (mô phỏng)",
+  "dtMap": "Theo dõi trên bản đồ",
+  "dtInLockerShare": "Kiện đã vào tủ nhận. Vào \"Xem chi tiết đơn\" để chia sẻ mã mở ô cho người nhận.",
+  "dtInLockerPickup": "Kiện đã vào tủ nhận. Mở mã PIN để lấy hàng tại tủ.",
+  "dtViewDetail": "Xem chi tiết đơn",
+  "dtPickup": "Nhận hàng",
+  "dtOffline": "Mất kết nối · đang thử lại, thông tin bên dưới là lần cập nhật gần nhất",
+  "dtLive": "Đang cập nhật trực tiếp · trạng thái tự làm mới khi có thay đổi",
+  "dtLoadFailed": "Không tải được trạng thái giao hàng",
+  "rmNoCoordinates": "Tủ gửi hoặc tủ nhận chưa có toạ độ nên chưa vẽ được bản đồ hành trình.",
+  "rmZoomHint": "Chụm/mở hai ngón hoặc bấm +/− để phóng to; bấm ⤢ để xem toàn màn hình.",
+  "rmTotal": "Quãng đường {distance}",
+  "@rmTotal": {
+    "placeholders": {
+      "distance": {}
+    }
+  },
+  "rmRemaining": "Còn khoảng {distance}",
+  "@rmRemaining": {
+    "placeholders": {
+      "distance": {}
+    }
+  },
+  "rmLiveCoords": "Toạ độ cập nhật mỗi khi drone gửi vị trí về. Bấm vào toạ độ để mở Google Maps.",
+  "rmEstimatedCamera": "Vị trí drone ước theo chặng bay hiện tại. Số đo bay thật (GPS, pin, chế độ bay) xem ở khung camera phía trên.",
+  "rmEstimatedOpenMap": "Vị trí drone ước theo chặng bay hiện tại. Mở \"Theo dõi trên bản đồ\" để xem vị trí {mode}.",
+  "@rmEstimatedOpenMap": {
+    "placeholders": {
+      "mode": {}
+    }
+  },
+  "rmSimulated": "mô phỏng",
+  "rmLive": "trực tiếp",
+  "rmEstimated": "Vị trí drone ước theo chặng bay hiện tại.",
+  "rmZoomIn": "Phóng to",
+  "rmZoomOut": "Thu nhỏ",
+  "rmFitRoute": "Xem cả tuyến",
+  "rmFullscreen": "Toàn màn hình",
+  "rmRouteMap": "Bản đồ hành trình",
+  "rmDroneSentAt": "Drone gửi về lúc {time}{suffix}",
+  "@rmDroneSentAt": {
+    "placeholders": {
+      "time": {},
+      "suffix": {}
+    }
+  },
+  "rmSimSuffix": " · mô phỏng",
+  "rmAtReceiver": "Tại tủ nhận",
+  "rmSimByStage": "Mô phỏng theo chặng bay",
+  "rmTelemetry": "Theo telemetry của drone",
+  "rmEstimatedByStage": "Ước theo chặng bay",
+  "rmAtSourceNotLaunched": "Tại tủ gửi, chưa cất cánh",
+  "plServiceOff": "Dịch vụ vị trí đang tắt. Vui lòng bật GPS.",
+  "plDenied": "Quyền truy cập vị trí bị từ chối.",
+  "plDeniedForever": "Quyền vị trí bị từ chối vĩnh viễn. Hãy bật lại trong cài đặt.",
+  "plNoLocation": "Không lấy được vị trí hiện tại.",
+  "plNoLocationHint": "Không lấy được vị trí hiện tại. Hãy ra chỗ thoáng hoặc gõ địa chỉ để tìm.",
+  "plNoAddressForPoint": "Chưa tra được địa chỉ của điểm này. Hãy tự nhập địa chỉ bên dưới.",
+  "plMin3Chars": "Nhập ít nhất 3 ký tự để tìm địa chỉ.",
+  "plNotFound": "Không tìm thấy địa chỉ này. Thử gõ rõ hơn hoặc chạm lên bản đồ để ghim.",
+  "plNoPoint": "Chưa chọn vị trí lấy hàng trên bản đồ.",
+  "plEnterAddress": "Nhập địa chỉ lấy hàng (số nhà, đường, phường…).",
+  "plTitle": "Chọn điểm lấy hàng",
+  "plSearchHint": "Gõ địa chỉ (số nhà, đường, phường…)",
+  "plClear": "Xoá",
+  "plTapToSeePin": "{lng} · chạm để xem ghim",
+  "@plTapToSeePin": {
+    "placeholders": {
+      "lng": {}
+    }
+  },
+  "plCurrentLocation": "Vị trí hiện tại",
+  "plAddressField": "Địa chỉ lấy hàng",
+  "plTapMapToPin": "Chạm lên bản đồ để ghim điểm lấy hàng",
+  "plPinInfo": "Vĩ độ {lat} · kinh độ {lng} · vị trí ghim dùng để tính vùng phục vụ; kiểm tra ghim có đúng địa chỉ trước khi xác nhận",
+  "@plPinInfo": {
+    "placeholders": {
+      "lat": {},
+      "lng": {}
+    }
+  },
+  "plPickupHere": "Lấy hàng tại đây",
+  "psLoadFailed": "Không tải được mã nhận hàng. Vui lòng thử lại.",
+  "psReceivingLocker": "Tủ nhận hàng",
+  "psNotInQueue": "Không thấy đơn này trong hàng chờ nhận của bạn. Có thể đơn đã được lấy, hoặc mã nhận hàng được gửi cho số điện thoại khác.",
+  "psDelegated": "Bạn đã ủy quyền cho {name} lấy hộ đơn này nên mã nhận hàng đã chuyển cho người được ủy quyền.",
+  "@psDelegated": {
+    "placeholders": {
+      "name": {}
+    }
+  },
+  "psSomeoneElse": "người khác",
+  "psNotReady": "Mã nhận hàng chưa sẵn sàng. Mã sẽ có khi kiện đã vào ô tủ nhận.",
+  "psPin": "Mã PIN mở ô",
+  "psEnterAtKiosk": "Nhập mã này trên màn hình kiosk tại tủ để mở ô.",
+  "psReceiveBox": "Ô nhận",
+  "psPickupBefore": "Lấy trước",
+  "ocPaidRefund": "Đơn đã thanh toán: {amount} sẽ được hoàn bằng chuyển khoản sau khi admin duyệt. Hãy kiểm tra tài khoản ngân hàng nhận tiền trong Hồ sơ.",
+  "@ocPaidRefund": {
+    "placeholders": {
+      "amount": {}
+    }
+  },
+  "ocDroneFee": "phí giao drone",
+  "ocUnpaidNoFee": "Đơn chưa thanh toán nên không phát sinh phí.",
+  "ocTitle": "Huỷ đơn giao drone?",
+  "ocBody": "Đơn {code} sẽ bị huỷ và ô nhận đã giữ cho đơn được nhả. {refund}",
+  "@ocBody": {
+    "placeholders": {
+      "code": {},
+      "refund": {}
+    }
+  },
+  "ocRefundPending": "Đã huỷ đơn. Yêu cầu hoàn tiền đã được ghi nhận, admin sẽ chuyển khoản cho bạn.",
+  "ocRefunded": "Đã huỷ đơn. Tiền đã được chuyển khoản hoàn cho bạn.",
+  "ocPaidNoRefund": "Đã huỷ đơn. Chưa ghi nhận được yêu cầu hoàn tiền, vui lòng liên hệ hỗ trợ.",
+  "ocCancelled": "Đã huỷ đơn.",
+  "ocAlreadyAccepted": "Đội bay đã tiếp nhận nên đơn không còn huỷ được trong ứng dụng.",
+  "ocOwnerOnly": "Chỉ người đặt đơn mới huỷ được đơn này.",
+  "lmTitleSimulated": "Theo dõi drone · mô phỏng",
+  "lmSignalLost": "Mất tín hiệu · vị trí lúc {time}",
+  "@lmSignalLost": {
+    "placeholders": {
+      "time": {}
+    }
+  },
+  "lmConnecting": "Đang kết nối tới drone...",
+  "lmNoPosition": "Chưa nhận được vị trí drone. Đang thử lại...",
+  "lmOnTheWay": "Đang trên đường tới tủ nhận",
+  "lmAlmostThere": "Sắp tới nơi",
+  "lmEta": "Dự kiến đến",
+  "lmSpeed": "Tốc độ",
+  "lmLiveSimulated": "mô phỏng · cập nhật trực tiếp",
+  "lmLiveUpdates": "cập nhật trực tiếp",
+  "clCantOpenMaps": "Không mở được Google Maps.",
+  "clCopied": "Đã copy toạ độ {coords}",
+  "@clCopied": {
+    "placeholders": {
+      "coords": {}
+    }
+  },
+  "clDronePosition": "Vị trí drone · {note}",
+  "@clDronePosition": {
+    "placeholders": {
+      "note": {}
+    }
+  },
+  "clCopyCoords": "Copy toạ độ",
+  "clPickupPin": "Điểm lấy hàng người gửi ghim",
+  "clTechnician": "Vị trí kỹ thuật viên lúc đó",
+  "clSourceLocker": "Tại trạm/tủ gửi",
+  "clDroneGps": "Vị trí drone (GPS)",
+  "clDroneSim": "Vị trí drone (mô phỏng)",
+  "clDestination": "Tại tủ nhận",
+  "clAtEvent": "Vị trí lúc ghi mốc",
+  "lpIntro": "Chọn tủ nhận hàng (ưu tiên sắp xếp gần bạn nhất). Hệ thống tự chọn tủ bay và KTV đến lấy kiện tại nhà.",
+  "lpLoadFailed": "Không tải được danh sách tủ: {error}",
+  "@lpLoadFailed": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "lpNoLockers": "Chưa có tủ nào trên hệ thống.",
+  "lpDistance": "Cách bạn {distance}",
+  "@lpDistance": {
+    "placeholders": {
+      "distance": {}
+    }
+  },
+  "lpChecking": "Đang kiểm tra ô drone nhận",
+  "lpFreeSlots": "Còn {count} ô drone nhận trống",
+  "@lpFreeSlots": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "lpUnavailable": "Tạm không gửi drone: {reason}",
+  "@lpUnavailable": {
+    "placeholders": {
+      "reason": {}
+    }
+  },
+  "asTitle": "Drone sắp đến nơi",
+  "asPrepare": "Vui lòng chuẩn bị ra nhận hàng.",
+  "asDroneCode": "\nMã drone: {code}",
+  "@asDroneCode": {
+    "placeholders": {
+      "code": {}
+    }
+  },
+  "asEta": "Dự kiến: {eta}",
+  "@asEta": {
+    "placeholders": {
+      "eta": {}
+    }
+  },
+  "opPaid": "Đã thanh toán. Đội bay sẽ tiếp nhận đơn của bạn.",
+  "opPending": "Đang chờ xác nhận thanh toán, trạng thái sẽ tự cập nhật.",
+  "opFailed": "Thanh toán chưa thành công. Đơn vẫn được giữ, bạn có thể thanh toán lại.",
+  "opUnpaid": "Đơn drone chưa thanh toán. Thanh toán để đội bay tiếp nhận.",
+  "tlMovedAfter": "Chuyển sau {duration}",
+  "@tlMovedAfter": {
+    "placeholders": {
+      "duration": {}
+    }
+  },
+  "tlInStageFor": "Đã ở chặng này {duration}",
+  "@tlInStageFor": {
+    "placeholders": {
+      "duration": {}
+    }
+  },
+  "tlNotYet": "Chưa diễn ra"
 }

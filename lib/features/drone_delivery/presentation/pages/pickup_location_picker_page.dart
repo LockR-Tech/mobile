@@ -7,6 +7,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/domain/entities/drone_booking.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/infrastructure/services/pickup_geocoder.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/presentation/widgets/drone_base_tile_layer.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 /// Lấy vị trí hiện tại của thiết bị; null khi GPS tắt hoặc bị từ chối quyền (kèm lý do).
 typedef CurrentPositionReader = Future<(LatLng?, String?)> Function();
@@ -14,19 +15,19 @@ typedef CurrentPositionReader = Future<(LatLng?, String?)> Function();
 Future<(LatLng?, String?)> readDevicePosition() async {
   try {
     if (!await Geolocator.isLocationServiceEnabled()) {
-      return (null, 'Dịch vụ vị trí đang tắt. Vui lòng bật GPS.');
+      return (null, L10n.current.plServiceOff);
     }
     var permission = await Geolocator.checkPermission();
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
     }
     if (permission == LocationPermission.denied) {
-      return (null, 'Quyền truy cập vị trí bị từ chối.');
+      return (null, L10n.current.plDenied);
     }
     if (permission == LocationPermission.deniedForever) {
       return (
         null,
-        'Quyền vị trí bị từ chối vĩnh viễn. Hãy bật lại trong cài đặt.',
+        L10n.current.plDeniedForever,
       );
     }
     Position? position;
@@ -41,13 +42,13 @@ Future<(LatLng?, String?)> readDevicePosition() async {
       position = await Geolocator.getLastKnownPosition();
     }
     if (position == null) {
-      return (null, 'Không lấy được vị trí hiện tại.');
+      return (null, L10n.current.plNoLocation);
     }
     return (LatLng(position.latitude, position.longitude), null);
   } catch (_) {
     return (
       null,
-      'Không lấy được vị trí hiện tại. Hãy ra chỗ thoáng hoặc gõ địa chỉ để tìm.',
+      L10n.current.plNoLocationHint,
     );
   }
 }
@@ -171,7 +172,7 @@ class _PickupLocationPickerPageState extends State<PickupLocationPickerPage> {
         _addressController.text = address;
       } else if (_addressController.text.trim().isEmpty) {
         _message =
-            'Chưa tra được địa chỉ của điểm này. Hãy tự nhập địa chỉ bên dưới.';
+            context.l10n.plNoAddressForPoint;
       }
     });
   }
@@ -196,7 +197,7 @@ class _PickupLocationPickerPageState extends State<PickupLocationPickerPage> {
     _debounce?.cancel();
     final query = _searchController.text.trim();
     if (query.length < 3) {
-      setState(() => _message = 'Nhập ít nhất 3 ký tự để tìm địa chỉ.');
+      setState(() => _message = context.l10n.plMin3Chars);
       return;
     }
     final seq = ++_searchSeq;
@@ -212,7 +213,7 @@ class _PickupLocationPickerPageState extends State<PickupLocationPickerPage> {
       _results = results;
       if (results.isEmpty) {
         _message =
-            'Không tìm thấy địa chỉ này. Thử gõ rõ hơn hoặc chạm lên bản đồ để ghim.';
+            context.l10n.plNotFound;
       }
     });
   }
@@ -226,12 +227,12 @@ class _PickupLocationPickerPageState extends State<PickupLocationPickerPage> {
     final point = _point;
     final address = _addressController.text.trim();
     if (point == null) {
-      setState(() => _message = 'Chưa chọn vị trí lấy hàng trên bản đồ.');
+      setState(() => _message = context.l10n.plNoPoint);
       return;
     }
     if (address.length < 5) {
       setState(
-        () => _message = 'Nhập địa chỉ lấy hàng (số nhà, đường, phường…).',
+        () => _message = context.l10n.plEnterAddress,
       );
       return;
     }
@@ -249,7 +250,7 @@ class _PickupLocationPickerPageState extends State<PickupLocationPickerPage> {
   Widget build(BuildContext context) {
     final point = _point;
     return Scaffold(
-      appBar: AppBar(title: const Text('Chọn điểm lấy hàng')),
+      appBar: AppBar(title: Text(context.l10n.plTitle)),
       body: Column(
         children: [
           Padding(
@@ -261,7 +262,7 @@ class _PickupLocationPickerPageState extends State<PickupLocationPickerPage> {
               onChanged: _onQueryChanged,
               onSubmitted: (_) => _search(),
               decoration: InputDecoration(
-                hintText: 'Gõ địa chỉ (số nhà, đường, phường…)',
+                hintText: context.l10n.plSearchHint,
                 prefixIcon: const Icon(Icons.search),
                 suffixIcon: _searching
                     ? const Padding(
@@ -278,7 +279,7 @@ class _PickupLocationPickerPageState extends State<PickupLocationPickerPage> {
                             ? const SizedBox.shrink()
                             : IconButton(
                                 key: const ValueKey('pickup-search-clear'),
-                                tooltip: 'Xoá',
+                                tooltip: context.l10n.plClear,
                                 icon: const Icon(Icons.close),
                                 onPressed: _clearQuery,
                               ),
@@ -310,7 +311,7 @@ class _PickupLocationPickerPageState extends State<PickupLocationPickerPage> {
                     ),
                     subtitle: Text(
                       '${result.latitude.toStringAsFixed(5)}, '
-                      '${result.longitude.toStringAsFixed(5)} · chạm để xem ghim',
+                      '${context.l10n.plTapToSeePin(result.longitude.toStringAsFixed(5))}',
                     ),
                     onTap: () {
                       FocusScope.of(context).unfocus();
@@ -372,7 +373,7 @@ class _PickupLocationPickerPageState extends State<PickupLocationPickerPage> {
                             child: CircularProgressIndicator(strokeWidth: 2),
                           )
                         : const Icon(Icons.my_location),
-                    label: const Text('Vị trí hiện tại'),
+                    label: Text(context.l10n.plCurrentLocation),
                   ),
                 ),
               ],
@@ -394,13 +395,13 @@ class _PickupLocationPickerPageState extends State<PickupLocationPickerPage> {
                       minLines: 1,
                       maxLines: 3,
                       decoration: InputDecoration(
-                        labelText: 'Địa chỉ lấy hàng',
+                        labelText: context.l10n.plAddressField,
                         helperText: point == null
-                            ? 'Chạm lên bản đồ để ghim điểm lấy hàng'
-                            : 'Vĩ độ ${point.latitude.toStringAsFixed(5)} · '
-                                  'kinh độ ${point.longitude.toStringAsFixed(5)}'
-                                  ' · vị trí ghim dùng để tính vùng phục vụ; kiểm tra ghim '
-                                  'có đúng địa chỉ trước khi xác nhận',
+                            ? context.l10n.plTapMapToPin
+                  : context.l10n.plPinInfo(
+                      point.latitude.toStringAsFixed(5),
+                      point.longitude.toStringAsFixed(5),
+                    ),
                         suffixIcon: _resolving
                             ? const Padding(
                                 padding: EdgeInsets.all(12),
@@ -432,7 +433,7 @@ class _PickupLocationPickerPageState extends State<PickupLocationPickerPage> {
                       key: const ValueKey('pickup-confirm'),
                       onPressed: _confirm,
                       icon: const Icon(Icons.check),
-                      label: const Text('Lấy hàng tại đây'),
+                      label: Text(context.l10n.plPickupHere),
                     ),
                   ],
                 ),
