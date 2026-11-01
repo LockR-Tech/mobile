@@ -7,6 +7,7 @@ import 'package:smart_laundry_locker/core/network/api_client.dart';
 import 'package:smart_laundry_locker/features/auth/presentation/providers/auth_injection.dart';
 import 'package:smart_laundry_locker/features/auth/presentation/providers/forgot_password_provider.dart';
 
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 // Palette đồng bộ với LoginScreen để hai màn auth nhìn như một sản phẩm.
 const Color _kNavyDark = Color(0xFF001F2D);
 const Color _kNavy = Color(0xFF003D5B);
@@ -57,7 +58,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
     if (!mounted) return;
     if (_provider.resetDone) {
       SmartDialog.showToast(
-        'Đặt lại mật khẩu thành công. Vui lòng đăng nhập bằng mật khẩu mới.',
+        context.l10n.authResetPasswordSuccess,
       );
       context.pop();
       return;
@@ -68,7 +69,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
   void _sendOtp() {
     final email = _emailController.text.trim();
     if (email.isEmpty || !email.contains('@')) {
-      setState(() => _localError = 'Vui lòng nhập email hợp lệ.');
+      setState(() => _localError = context.l10n.authEnterValidEmail);
       return;
     }
     setState(() => _localError = null);
@@ -80,15 +81,15 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
     final password = _passwordController.text.trim();
     final confirm = _confirmController.text.trim();
     if (otp.length != 6) {
-      setState(() => _localError = 'Mã OTP gồm 6 chữ số.');
+      setState(() => _localError = context.l10n.authOtpMustBe6Digits);
       return;
     }
     if (password.length < 6) {
-      setState(() => _localError = 'Mật khẩu mới phải có ít nhất 6 ký tự.');
+      setState(() => _localError = context.l10n.authNewPasswordMin6);
       return;
     }
     if (password != confirm) {
-      setState(() => _localError = 'Mật khẩu nhập lại không khớp.');
+      setState(() => _localError = context.l10n.authPasswordsDontMatch);
       return;
     }
     setState(() => _localError = null);
@@ -112,8 +113,8 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
           icon: const Icon(Icons.arrow_back, color: _kInk),
           onPressed: () => context.pop(),
         ),
-        title: const Text(
-          'Quên mật khẩu',
+        title: Text(
+          context.l10n.authForgotPasswordTitle,
           style: TextStyle(
             color: _kInk,
             fontSize: 17,
@@ -149,7 +150,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
               ),
               const SizedBox(height: 20),
               Text(
-                otpStep ? 'Nhập mã OTP & mật khẩu mới' : 'Đặt lại mật khẩu',
+                otpStep ? context.l10n.authEnterOtpAndNewPassword : context.l10n.authResetPassword,
                 textAlign: TextAlign.center,
                 style: const TextStyle(
                   fontSize: 20,
@@ -160,8 +161,8 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
               const SizedBox(height: 8),
               Text(
                 otpStep
-                    ? 'Mã OTP gồm 6 chữ số đã được gửi tới\n${_emailController.text.trim()} (hết hạn sau 5 phút).'
-                    : 'Nhập email đã đăng ký tài khoản.\nChúng tôi sẽ gửi mã OTP để đặt lại mật khẩu.',
+                    ? context.l10n.authResetOtpSentTo(_emailController.text.trim())
+: context.l10n.authResetEnterEmail,
                 textAlign: TextAlign.center,
                 style: const TextStyle(fontSize: 13.5, color: _kMuted, height: 1.5),
               ),
@@ -210,7 +211,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                           ),
                         )
                       : Text(
-                          otpStep ? 'Đặt lại mật khẩu' : 'Gửi mã OTP',
+                          otpStep ? context.l10n.authResetPassword : context.l10n.authSendOtp,
                           style: const TextStyle(
                             fontSize: 15.5,
                             fontWeight: FontWeight.w700,
@@ -221,8 +222,8 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
               if (otpStep)
                 TextButton(
                   onPressed: _provider.isLoading ? null : _sendOtp,
-                  child: const Text(
-                    'Gửi lại mã OTP',
+                  child: Text(
+                    context.l10n.authResendOtp,
                     style: TextStyle(
                       color: _kBlue,
                       fontSize: 13.5,
@@ -253,7 +254,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
 
   List<Widget> _buildResetStep() {
     return [
-      _fieldLabel('Mã OTP'),
+      _fieldLabel(context.l10n.authOtpCode),
       const SizedBox(height: 8),
       TextField(
         controller: _otpController,
@@ -271,7 +272,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
         ).copyWith(counterText: ''),
       ),
       const SizedBox(height: 16),
-      _fieldLabel('Mật khẩu mới'),
+      _fieldLabel(context.l10n.authNewPassword),
       const SizedBox(height: 8),
       TextField(
         controller: _passwordController,
@@ -289,7 +290,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
         ),
       ),
       const SizedBox(height: 16),
-      _fieldLabel('Nhập lại mật khẩu mới'),
+      _fieldLabel(context.l10n.authConfirmNewPassword),
       const SizedBox(height: 8),
       TextField(
         controller: _confirmController,

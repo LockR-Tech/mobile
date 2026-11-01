@@ -6,10 +6,11 @@
 /// Hàm thuần — không phụ thuộc plugin Firebase — để test được.
 library;
 
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
+
 /// Câu báo khi dự án Firebase chưa bật đăng nhập bằng SĐT (chưa bật provider
 /// Phone hoặc chưa liên kết thanh toán Blaze).
-const String phoneLoginDisabledMessage =
-    'Đăng nhập bằng SĐT chưa được bật. Vui lòng dùng email để đăng nhập.';
+String get phoneLoginDisabledMessage => L10n.current.authPhoneLoginDisabled;
 
 /// Đưa mã lỗi về dạng `kebab-case` không tiền tố: `auth/too-many-requests`,
 /// `ERROR_TOO_MANY_REQUESTS` → `too-many-requests`.
@@ -25,27 +26,26 @@ String normalizeFirebaseAuthCode(String? code) {
 String phoneAuthErrorMessage(
   String? code, {
   String? message,
-  String fallback = 'Không gửi được mã OTP. Vui lòng thử lại.',
+  String? fallback,
 }) {
   final c = normalizeFirebaseAuthCode(code);
   switch (c) {
     case 'invalid-phone-number':
     case 'missing-phone-number':
-      return 'Số điện thoại không hợp lệ. Vui lòng kiểm tra lại (VD: 0912345678).';
+      return L10n.current.authInvalidPhone;
     case 'too-many-requests':
-      return 'Bạn đã yêu cầu mã quá nhiều lần. Vui lòng thử lại sau ít phút.';
+      return L10n.current.authTooManyRequests;
     case 'quota-exceeded':
-      return 'Hệ thống đã hết lượt gửi SMS trong hôm nay. '
-          'Vui lòng thử lại sau hoặc đăng nhập bằng email.';
+      return L10n.current.authSmsQuotaExceeded;
     case 'invalid-verification-code':
-      return 'Mã OTP không đúng. Vui lòng kiểm tra lại.';
+      return L10n.current.authOtpWrong;
     case 'missing-verification-code':
-      return 'Vui lòng nhập mã OTP.';
+      return L10n.current.authEnterOtpCode;
     case 'session-expired':
     case 'code-expired':
     case 'invalid-verification-id':
     case 'missing-verification-id':
-      return 'Mã OTP đã hết hạn. Vui lòng bấm "Gửi lại mã".';
+      return L10n.current.authOtpExpired;
     case 'billing-not-enabled':
     case 'operation-not-allowed':
       return phoneLoginDisabledMessage;
@@ -54,20 +54,18 @@ String phoneAuthErrorMessage(
     case 'invalid-app-credential':
     case 'missing-app-credential':
     case 'app-not-verified':
-      return 'Ứng dụng chưa được xác minh để gửi mã OTP. '
-          'Vui lòng cập nhật ứng dụng hoặc dùng email để đăng nhập.';
+      return L10n.current.authAppNotVerified;
     case 'captcha-check-failed':
-      return 'Xác minh reCAPTCHA không thành công. Vui lòng thử lại.';
+      return L10n.current.authRecaptchaFailed;
     case 'unauthorized-domain':
-      return 'Trang web này chưa được phép đăng nhập bằng SĐT. '
-          'Vui lòng dùng email để đăng nhập.';
+      return L10n.current.authSitePhoneNotAllowed;
     case 'network-request-failed':
-      return 'Không có kết nối mạng. Vui lòng kiểm tra Internet rồi thử lại.';
+      return L10n.current.authNoNetwork;
     case 'user-disabled':
-      return 'Tài khoản này đã bị khoá. Vui lòng liên hệ hỗ trợ.';
+      return L10n.current.authAccountDisabled;
     case 'web-context-cancelled':
     case 'web-context-already-presented':
-      return 'Đã huỷ xác minh. Vui lòng thử lại.';
+      return L10n.current.authVerificationCancelled;
   }
 
   // Mã chung chung: đoán theo message gốc của Firebase.
@@ -83,7 +81,7 @@ String phoneAuthErrorMessage(
     return phoneAuthErrorMessage('too-many-requests');
   }
   if (m.contains('NETWORK')) return phoneAuthErrorMessage('network-request-failed');
-  return fallback;
+  return fallback ?? L10n.current.authOtpSendFailed;
 }
 
 /// `true` khi lỗi Google/OAuth chỉ là người dùng tự đóng cửa sổ đăng nhập.
@@ -102,22 +100,19 @@ bool isFirebaseAuthCancellation(String? code) {
 String googleAuthErrorMessage(String? code) {
   switch (normalizeFirebaseAuthCode(code)) {
     case 'popup-blocked':
-      return 'Trình duyệt đã chặn cửa sổ đăng nhập Google. '
-          'Hãy cho phép cửa sổ bật lên rồi thử lại.';
+      return L10n.current.authGooglePopupBlocked;
     case 'operation-not-allowed':
-      return 'Đăng nhập bằng Google chưa được bật. Vui lòng dùng email để đăng nhập.';
+      return L10n.current.authGoogleLoginDisabled;
     case 'unauthorized-domain':
-      return 'Trang web này chưa được phép đăng nhập bằng Google. '
-          'Vui lòng dùng email để đăng nhập.';
+      return L10n.current.authSiteGoogleNotAllowed;
     case 'account-exists-with-different-credential':
-      return 'Email Google này đã gắn với cách đăng nhập khác. '
-          'Vui lòng đăng nhập bằng cách bạn đã dùng trước đó.';
+      return L10n.current.authGoogleEmailOtherProvider;
     case 'network-request-failed':
-      return 'Không có kết nối mạng. Vui lòng kiểm tra Internet rồi thử lại.';
+      return L10n.current.authNoNetwork;
     case 'user-disabled':
-      return 'Tài khoản này đã bị khoá. Vui lòng liên hệ hỗ trợ.';
+      return L10n.current.authAccountDisabled;
   }
-  return 'Đăng nhập Google thất bại';
+  return L10n.current.authGoogleLoginFailed;
 }
 
 /// Lỗi `POST /api/auth/firebase` (backend xác minh Firebase ID token).
@@ -130,10 +125,10 @@ String firebaseLoginBackendMessage(String raw) {
   final upper = m.toUpperCase();
   if (upper.contains('AUTH_FIREBASE_INVALID') ||
       upper.contains('INVALID FIREBASE ID TOKEN')) {
-    return 'Không xác thực được phiên đăng nhập. Vui lòng thử lại.';
+    return L10n.current.authSessionVerifyFailed;
   }
   if (m.isEmpty || m == 'Đã xảy ra lỗi.') {
-    return 'Đăng nhập thất bại. Vui lòng thử lại.';
+    return L10n.current.authLoginFailedRetry;
   }
   return m;
 }

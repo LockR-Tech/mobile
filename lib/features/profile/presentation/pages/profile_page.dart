@@ -15,6 +15,8 @@ import 'package:smart_laundry_locker/core/routing/app_router.dart';
 import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
 import 'package:smart_laundry_locker/core/theme/shadcn_theme.dart';
 import 'package:smart_laundry_locker/core/theme/theme_provider.dart';
+import 'package:smart_laundry_locker/core/l10n/locale_provider.dart';
+import 'package:smart_laundry_locker/core/services/app_restart_service.dart';
 import 'package:smart_laundry_locker/features/assistant/presentation/providers/assistant_availability.dart';
 import 'package:smart_laundry_locker/features/profile/presentation/mixins/profile_image_actions_mixin.dart';
 import 'package:smart_laundry_locker/features/profile/presentation/pages/location_permission_page.dart';
@@ -28,6 +30,7 @@ import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
 
@@ -121,7 +124,7 @@ class _ProfilePageState extends State<ProfilePage>
       if (!mounted) return;
       setState(() {
         _loadError = stillHasToken
-            ? (_profileProvider.error ?? 'Không tải được hồ sơ.')
+            ? (_profileProvider.error ?? context.l10n.profileLoadFailedDot)
             : null;
         _isLoggedIn = stillHasToken && _isLoggedIn;
         _isLoading = false;
@@ -130,7 +133,9 @@ class _ProfilePageState extends State<ProfilePage>
     }
     if (forceRefresh && _profileProvider.error != null) {
       // Đã có hồ sơ cũ nhưng làm mới lỗi: vẫn hiện dữ liệu cũ, báo lỗi.
-      _showProfileSnackBar('Không làm mới được hồ sơ: ${_profileProvider.error}');
+      _showProfileSnackBar(
+        context.l10n.profileRefreshFailed('${_profileProvider.error}'),
+      );
     }
 
     final isLoggedIn = _profileProvider.profile != null;
@@ -191,15 +196,17 @@ class _ProfilePageState extends State<ProfilePage>
     if (_isLoading) {
       return Scaffold(
         backgroundColor: context.pageBg,
-        body: const Column(
+        body: Column(
           children: [
             BrandHeroHeader(
-              title: 'Hồ sơ',
-              subtitle: 'Quản lý tài khoản của bạn',
+              title: context.l10n.profileTitle,
+              subtitle: context.l10n.profileSubtitle,
             ),
             Expanded(
               child: Center(
-                child: AppLoadingIndicator(message: 'Đang tải hồ sơ...'),
+                child: AppLoadingIndicator(
+                  message: context.l10n.profileLoading,
+                ),
               ),
             ),
           ],
@@ -212,9 +219,9 @@ class _ProfilePageState extends State<ProfilePage>
         backgroundColor: context.pageBg,
         body: Column(
           children: [
-            const BrandHeroHeader(
-              title: 'Hồ sơ',
-              subtitle: 'Quản lý tài khoản của bạn',
+            BrandHeroHeader(
+              title: context.l10n.profileTitle,
+              subtitle: context.l10n.profileSubtitle,
             ),
             Expanded(child: _buildLoadErrorState(_loadError!)),
           ],
@@ -240,8 +247,8 @@ class _ProfilePageState extends State<ProfilePage>
         child: Column(
           children: [
             BrandHeroHeader(
-              title: 'Hồ sơ',
-              subtitle: 'Quản lý tài khoản của bạn',
+              title: context.l10n.profileTitle,
+              subtitle: context.l10n.profileSubtitle,
               trailing: BrandCircleIconButton(
                 icon: LucideIcons.pencil,
                 onTap: _handleEditProfile,
@@ -298,9 +305,9 @@ class _ProfilePageState extends State<ProfilePage>
           children: [
             Icon(LucideIcons.cloudOff, size: 56, color: context.textMuted),
             const SizedBox(height: 16),
-            const Text(
-              'Không tải được hồ sơ',
-              style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700),
+            Text(
+              context.l10n.profileLoadFailed,
+              style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700),
             ),
             const SizedBox(height: 8),
             Text(
@@ -315,13 +322,13 @@ class _ProfilePageState extends State<ProfilePage>
                 backgroundColor: AISLShadcnTheme.navyPrimary,
               ),
               icon: const Icon(LucideIcons.refreshCw, size: 16),
-              label: const Text('Thử lại'),
+              label: Text(context.l10n.commonRetry),
             ),
             const SizedBox(height: 8),
             TextButton(
               onPressed: _handleLogout,
               child: Text(
-                'Đăng xuất',
+                context.l10n.commonLogout,
                 style: TextStyle(
                   color: ShadTheme.of(context).colorScheme.destructive,
                 ),
@@ -334,26 +341,27 @@ class _ProfilePageState extends State<ProfilePage>
   }
 
   Widget _buildMenuSection() {
+    final l10n = context.l10n;
     return Column(
       children: [
         // Account section
         _buildMenuGroup(
-          title: 'Tài khoản',
+          title: l10n.profileSectionAccount,
           items: [
             ProfileMenuItem(
               icon: LucideIcons.user,
-              title: 'Thông tin cá nhân',
+              title: l10n.profilePersonalInfo,
               onTap: _handleEditProfile,
             ),
             ProfileMenuItem(
               icon: LucideIcons.landmark,
-              title: 'Tài khoản nhận hoàn tiền',
+              title: l10n.profileRefundAccount,
               onTap: () => context.push(AppRouter.refundBankAccount),
             ),
             ProfileMenuItem(
               icon: LucideIcons.sparkles,
-              title: 'Điểm thưởng',
-              subtitle: 'Điểm tích lũy, hạng thành viên và lịch sử',
+              title: l10n.profileLoyalty,
+              subtitle: l10n.profileLoyaltySubtitle,
               onTap: _handleLoyalty,
             ),
             // Tạm ẩn: backend chưa có AI service (/api/auth/ai/* trả 500).
@@ -365,15 +373,15 @@ class _ProfilePageState extends State<ProfilePage>
                   return ProfileMenuItem(
                     icon: Icons.face_retouching_natural_outlined,
                     title: isRegistered
-                        ? 'Đăng ký lại khuôn mặt'
-                        : 'Đăng ký khuôn mặt',
+                        ? l10n.profileFaceReRegister
+                        : l10n.profileFaceRegister,
                     onTap: _handleFaceRegistration,
                   );
                 },
               ),
             ProfileMenuItem(
               icon: LucideIcons.shield,
-              title: 'Bảo mật',
+              title: l10n.profileSecurity,
               onTap: _handleSecurity,
             ),
             // Kho voucher: `GET /api/promotions/vouchers/my` (mã đã lưu từ
@@ -381,14 +389,14 @@ class _ProfilePageState extends State<ProfilePage>
             if (FeatureFlags.vouchersEnabled)
               ProfileMenuItem(
                 icon: LucideIcons.ticket,
-                title: 'Ưu đãi & Quà tặng',
+                title: l10n.profileVouchers,
                 onTap: _handleMyVouchers,
               ),
             Consumer<NotificationProvider>(
               builder: (context, provider, child) {
                 return ProfileMenuItem(
                   icon: LucideIcons.bell,
-                  title: 'Thông báo',
+                  title: l10n.commonNotifications,
                   onTap: () {
                     context.push(AppRouter.notifications);
                   },
@@ -434,7 +442,7 @@ class _ProfilePageState extends State<ProfilePage>
         const SizedBox(height: 8),
         // Properties section
         _buildMenuGroup(
-          title: 'Quản lý',
+          title: l10n.profileSectionManage,
           items: [
             Consumer<DelegationProvider>(
               builder: (context, provider, child) {
@@ -444,7 +452,7 @@ class _ProfilePageState extends State<ProfilePage>
 
                 return ProfileMenuItem(
                   icon: LucideIcons.packageOpen,
-                  title: 'Đơn ủy quyền',
+                  title: l10n.profileDelegations,
                   onTap: () => context.push(AppRouter.myDelegations),
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,
@@ -483,7 +491,7 @@ class _ProfilePageState extends State<ProfilePage>
             ),
             ProfileMenuItem(
               icon: LucideIcons.rotateCcw,
-              title: 'Hoàn tiền',
+              title: l10n.profileRefunds,
               onTap: () => context.push(AppRouter.refundRequests),
             ),
             // Lịch sử thanh toán (`GET /api/wallet/transactions` gồm cả khoản SePay của đơn).
@@ -497,7 +505,7 @@ class _ProfilePageState extends State<ProfilePage>
                     fit: BoxFit.contain,
                   ),
                 ),
-                title: 'Giao dịch',
+                title: l10n.commonTransactions,
                 onTap: () => context.push(AppRouter.transactions),
                 trailing: const Icon(
                   LucideIcons.chevronRight,
@@ -514,13 +522,13 @@ class _ProfilePageState extends State<ProfilePage>
                   fit: BoxFit.contain,
                 ),
               ),
-              title: 'Báo cáo của tôi',
+              title: l10n.profileMyReports,
               onTap: () => context.push(AppRouter.myReports),
             ),
             if (_bleTestAllowed)
               ProfileMenuItem(
                 icon: LucideIcons.bluetooth,
-                title: 'Thử mở ô qua Bluetooth',
+                title: l10n.profileBleTest,
                 onTap: () => context.push(AppRouter.bleTest),
               ),
           ],
@@ -530,14 +538,24 @@ class _ProfilePageState extends State<ProfilePage>
         const SizedBox(height: 8),
         // Settings section
         _buildMenuGroup(
-          title: 'Cài đặt',
+          title: l10n.profileSectionSettings,
           items: [
-            // "Ngôn ngữ" tạm ẩn: app chưa có bản dịch nào ngoài tiếng Việt
-            // (chưa có l10n/arb), hiện mục này chỉ dẫn tới thông báo "đang phát
-            // triển". Làm riêng khi có bản dịch.
+            ProfileMenuItem(
+              icon: LucideIcons.languages,
+              title: l10n.profileLanguage,
+              subtitle: LocaleProvider.instance.isEnglish
+                  ? l10n.languageEnglish
+                  : l10n.languageVietnamese,
+              onTap: _handleLanguage,
+              trailing: Icon(
+                LucideIcons.chevronRight,
+                size: 16,
+                color: ShadTheme.of(context).colorScheme.mutedForeground,
+              ),
+            ),
             ProfileMenuItem(
               icon: LucideIcons.palette,
-              title: 'Giao diện',
+              title: l10n.profileTheme,
               onTap: _handleTheme,
               trailing: Icon(
                 LucideIcons.chevronRight,
@@ -547,8 +565,8 @@ class _ProfilePageState extends State<ProfilePage>
             ),
             ProfileMenuItem(
               icon: LucideIcons.mapPin,
-              title: 'Vị trí',
-              subtitle: 'Quyền truy cập vị trí để tìm tủ gần bạn',
+              title: l10n.profileLocation,
+              subtitle: l10n.profileLocationSubtitle,
               onTap: _handleLocation,
             ),
           ],
@@ -558,7 +576,7 @@ class _ProfilePageState extends State<ProfilePage>
         const SizedBox(height: 8),
         // Support section
         _buildMenuGroup(
-          title: 'Hỗ trợ',
+          title: l10n.profileSectionSupport,
           items: [
             ProfileMenuItem(
               leadingWidget: Container(
@@ -574,8 +592,8 @@ class _ProfilePageState extends State<ProfilePage>
                   fit: BoxFit.contain,
                 ),
               ),
-              title: 'Trợ lý AI Lock.R',
-              subtitle: 'Hỏi đáp & hỗ trợ thông minh 24/7',
+              title: l10n.profileAssistant,
+              subtitle: l10n.profileAssistantSubtitle,
               trailing: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -619,23 +637,23 @@ class _ProfilePageState extends State<ProfilePage>
             ),
             ProfileMenuItem(
               icon: LucideIcons.helpCircle,
-              title: 'Trợ giúp nhanh',
-              subtitle: 'Hướng dẫn sử dụng & câu hỏi thường gặp',
+              title: l10n.profileQuickHelp,
+              subtitle: l10n.profileQuickHelpSubtitle,
               onTap: _showQuickHelp,
             ),
             ProfileMenuItem(
               icon: LucideIcons.messageCircle,
-              title: 'Liên hệ',
+              title: l10n.profileContact,
               onTap: _handleContact,
             ),
             ProfileMenuItem(
               icon: LucideIcons.fileText,
-              title: 'Điều khoản',
+              title: l10n.profileTerms,
               onTap: _handleTerms,
             ),
             ProfileMenuItem(
               icon: LucideIcons.shieldCheck,
-              title: 'Chính sách bảo mật',
+              title: l10n.commonPrivacyPolicy,
               onTap: _handlePrivacy,
             ),
           ],
@@ -648,7 +666,7 @@ class _ProfilePageState extends State<ProfilePage>
           items: [
             ProfileMenuItem(
               icon: LucideIcons.doorOpen,
-              title: 'Đăng xuất',
+              title: l10n.commonLogout,
               onTap: _handleLogout,
               textColor: ShadTheme.of(context).colorScheme.destructive,
               iconColor: ShadTheme.of(context).colorScheme.destructive,
@@ -727,6 +745,23 @@ class _ProfilePageState extends State<ProfilePage>
     });
   }
 
+  /// Đổi ngôn ngữ rồi dựng lại app để mọi màn (kể cả nhãn dựng ngoài widget)
+  /// đọc lại bản dịch mới.
+  Future<void> _handleLanguage() async {
+    final selected = await showModalBottomSheet<Locale>(
+      context: context,
+      useRootNavigator: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => _LanguagePickerSheet(current: LocaleProvider.instance.locale),
+    );
+    if (selected == null || !mounted) return;
+    if (selected.languageCode == LocaleProvider.instance.locale.languageCode) {
+      return;
+    }
+    await LocaleProvider.instance.setLocale(selected);
+    if (mounted) RestartableApp.restartApp(context);
+  }
+
   void _handleLocation() {
     if (!mounted) return;
     Navigator.of(context).push<void>(
@@ -735,6 +770,7 @@ class _ProfilePageState extends State<ProfilePage>
   }
 
   void _showQuickHelp() {
+    final l10n = context.l10n;
     showModalBottomSheet<void>(
       context: context,
       useRootNavigator: true,
@@ -749,30 +785,30 @@ class _ProfilePageState extends State<ProfilePage>
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Trợ giúp nhanh',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+            Text(
+              l10n.profileQuickHelp,
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
             ),
             const SizedBox(height: 14),
             _helpRow(
               LucideIcons.packagePlus,
-              'Gửi hàng',
-              'Chọn cửa hàng → chạm ô trống → Gửi hàng → thanh toán → dùng PIN/nút "Mở tủ" để bỏ hàng.',
+              l10n.profileHelpSendTitle,
+              l10n.profileHelpSendBody,
             ),
             _helpRow(
               LucideIcons.lockKeyhole,
-              'Thuê tủ giữ đồ',
-              'Chọn ô trống → Thuê tủ → chọn số giờ → thanh toán → PIN dùng nhiều lần tới hết hạn.',
+              l10n.profileHelpRentTitle,
+              l10n.profileHelpRentBody,
             ),
             _helpRow(
               LucideIcons.doorOpen,
-              'Không mở được ô?',
-              'Vào Đơn tủ → mở đơn → "Báo ô lỗi". Đội bảo trì sẽ xử lý và bạn nhận được thông báo.',
+              l10n.profileHelpCantOpenTitle,
+              l10n.profileHelpCantOpenBody,
             ),
             _helpRow(
               LucideIcons.wallet,
-              'Thanh toán',
-              'Mọi đơn thanh toán bằng chuyển khoản SePay (VietQR): quét mã hoặc bấm "Thanh toán bằng app ngân hàng" để mở app ngân hàng điền sẵn. Xem lại các khoản đã trả ở mục Giao dịch.',
+              l10n.commonPayment,
+              l10n.profileHelpPaymentBody,
             ),
           ],
         ),
@@ -817,6 +853,7 @@ class _ProfilePageState extends State<ProfilePage>
   }
 
   void _handleContact() {
+    final l10n = context.l10n;
     showModalBottomSheet<void>(
       context: context,
       useRootNavigator: true,
@@ -831,9 +868,9 @@ class _ProfilePageState extends State<ProfilePage>
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const Text(
-              'Liên hệ hỗ trợ',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+            Text(
+              l10n.profileContactTitle,
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
             ),
             const SizedBox(height: 14),
             ListTile(
@@ -842,7 +879,7 @@ class _ProfilePageState extends State<ProfilePage>
                 LucideIcons.mail,
                 color: AISLShadcnTheme.navyPrimary,
               ),
-              title: const Text('Email hỗ trợ'),
+              title: Text(l10n.profileContactEmail),
               subtitle: const Text('huynqbse180211@fpt.edu.vn'),
               onTap: () => launchUrl(
                 Uri.parse(
@@ -856,21 +893,21 @@ class _ProfilePageState extends State<ProfilePage>
                 LucideIcons.globe,
                 color: AISLShadcnTheme.navyPrimary,
               ),
-              title: const Text('Website'),
+              title: Text(l10n.commonWebsite),
               subtitle: const Text('locker-drone.tech'),
               onTap: () => launchUrl(
                 Uri.parse('https://locker-drone.tech'),
                 mode: LaunchMode.externalApplication,
               ),
             ),
-            const ListTile(
+            ListTile(
               contentPadding: EdgeInsets.zero,
-              leading: Icon(
+              leading: const Icon(
                 LucideIcons.clock,
                 color: AISLShadcnTheme.navyPrimary,
               ),
-              title: Text('Giờ hỗ trợ'),
-              subtitle: Text('08:00 – 22:00 hằng ngày'),
+              title: Text(l10n.profileContactHours),
+              subtitle: Text(l10n.profileContactHoursValue),
             ),
           ],
         ),
@@ -883,7 +920,7 @@ class _ProfilePageState extends State<ProfilePage>
     context.push(
       AppRouter.policy,
       extra: {
-        'title': 'Điều khoản sử dụng',
+        'title': context.l10n.commonTermsOfUse,
         'assetPath': 'assets/markdown/terms_of_service.md',
       },
     );
@@ -894,7 +931,7 @@ class _ProfilePageState extends State<ProfilePage>
     context.push(
       AppRouter.policy,
       extra: {
-        'title': 'Chính sách bảo mật',
+        'title': context.l10n.commonPrivacyPolicy,
         'assetPath': 'assets/markdown/privacy_policy.md',
       },
     );
@@ -933,15 +970,16 @@ class _ProfilePageState extends State<ProfilePage>
   }
 
   void _handleLogout() {
+    final l10n = context.l10n;
     showCupertinoDialog<void>(
       context: context,
       builder: (dialogContext) => CupertinoAlertDialog(
-        title: const Text('Đăng xuất'),
-        content: const Text('Bạn có chắc chắn muốn đăng xuất khỏi tài khoản?'),
+        title: Text(l10n.commonLogout),
+        content: Text(l10n.commonLogoutConfirm),
         actions: [
           CupertinoDialogAction(
             onPressed: () => Navigator.of(dialogContext).pop(),
-            child: const Text('Hủy'),
+            child: Text(l10n.commonCancel),
           ),
           CupertinoDialogAction(
             isDestructiveAction: true,
@@ -949,7 +987,7 @@ class _ProfilePageState extends State<ProfilePage>
               Navigator.of(dialogContext).pop();
               // Gỡ thiết bị khỏi push + thu hồi refresh token ở server rồi mới
               // xoá token trên máy (dùng chung mọi vai trò).
-              SmartDialog.showLoading(msg: 'Đang đăng xuất...');
+              SmartDialog.showLoading(msg: l10n.commonLoggingOut);
               await SessionService.logout();
               SmartDialog.dismiss();
               _profileProvider.reset();
@@ -959,9 +997,9 @@ class _ProfilePageState extends State<ProfilePage>
                 _isLoggedIn = false;
                 _loadError = null;
               });
-              _showProfileSnackBar('Đã đăng xuất');
+              _showProfileSnackBar(l10n.commonLoggedOut);
             },
-            child: const Text('Đăng xuất'),
+            child: Text(l10n.commonLogout),
           ),
         ],
       ),
@@ -1004,7 +1042,7 @@ class _ThemePickerSheet extends StatelessWidget {
             ),
           ),
           Text(
-            'Giao diện',
+            context.l10n.profileTheme,
             style: TextStyle(
               fontSize: 17,
               fontWeight: FontWeight.w800,
@@ -1013,14 +1051,14 @@ class _ThemePickerSheet extends StatelessWidget {
           ),
           const SizedBox(height: 6),
           Text(
-            'Chọn chủ đề hiển thị cho ứng dụng',
+            context.l10n.profileThemeSheetSubtitle,
             style: TextStyle(fontSize: 13, color: mutedColor),
           ),
           const SizedBox(height: 20),
           _ThemeOption(
             icon: LucideIcons.sun,
-            label: 'Sáng',
-            description: 'Giao diện nền trắng',
+            label: context.l10n.profileThemeLight,
+            description: context.l10n.profileThemeLightDescription,
             selected: current == ThemeMode.light,
             onTap: () {
               context.read<ThemeProvider>().setThemeMode(ThemeMode.light);
@@ -1030,8 +1068,8 @@ class _ThemePickerSheet extends StatelessWidget {
           const SizedBox(height: 10),
           _ThemeOption(
             icon: LucideIcons.moon,
-            label: 'Tối',
-            description: 'Giao diện nền tối',
+            label: context.l10n.profileThemeDark,
+            description: context.l10n.profileThemeDarkDescription,
             selected: current == ThemeMode.dark,
             onTap: () {
               context.read<ThemeProvider>().setThemeMode(ThemeMode.dark);
@@ -1041,13 +1079,81 @@ class _ThemePickerSheet extends StatelessWidget {
           const SizedBox(height: 10),
           _ThemeOption(
             icon: LucideIcons.monitorSmartphone,
-            label: 'Theo hệ thống',
-            description: 'Tự động theo cài đặt thiết bị',
+            label: context.l10n.profileThemeSystem,
+            description: context.l10n.profileThemeSystemDescription,
             selected: current == ThemeMode.system,
             onTap: () {
               context.read<ThemeProvider>().setThemeMode(ThemeMode.system);
               Navigator.pop(context);
             },
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ── Language picker bottom sheet ───────────────────────────────────────────────
+
+class _LanguagePickerSheet extends StatelessWidget {
+  final Locale current;
+  const _LanguagePickerSheet({required this.current});
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final bg = isDark ? const Color(0xFF0A2342) : Colors.white;
+    final textColor = isDark ? Colors.white : const Color(0xFF0F172A);
+    final mutedColor = isDark
+        ? const Color(0xFF94A3B8)
+        : const Color(0xFF64748B);
+
+    return Container(
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 40,
+            height: 4,
+            margin: const EdgeInsets.only(bottom: 20),
+            decoration: BoxDecoration(
+              color: mutedColor.withValues(alpha: 0.3),
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          Text(
+            context.l10n.profileLanguage,
+            style: TextStyle(
+              fontSize: 17,
+              fontWeight: FontWeight.w800,
+              color: textColor,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            context.l10n.profileLanguageSheetSubtitle,
+            style: TextStyle(fontSize: 13, color: mutedColor),
+          ),
+          const SizedBox(height: 20),
+          _ThemeOption(
+            icon: LucideIcons.languages,
+            label: context.l10n.languageVietnamese,
+            description: context.l10n.profileLanguageViDescription,
+            selected: current.languageCode == L10n.vi.languageCode,
+            onTap: () => Navigator.pop(context, L10n.vi),
+          ),
+          const SizedBox(height: 10),
+          _ThemeOption(
+            icon: LucideIcons.globe,
+            label: context.l10n.languageEnglish,
+            description: context.l10n.profileLanguageEnDescription,
+            selected: current.languageCode == L10n.en.languageCode,
+            onTap: () => Navigator.pop(context, L10n.en),
           ),
         ],
       ),

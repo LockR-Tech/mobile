@@ -20,6 +20,7 @@ import 'package:provider/provider.dart';
 
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 class AuthBottomSheet extends StatefulWidget {
   final bool initialIsLogin;
 
@@ -62,8 +63,8 @@ class _AuthBottomSheetState extends State<AuthBottomSheet> {
   late final TapGestureRecognizer _termsRecognizer = TapGestureRecognizer()
     ..onTap = () => context.push(
       AppRouter.policy,
-      extra: const {
-        'title': 'Điều khoản sử dụng',
+      extra: {
+        'title': context.l10n.commonTermsOfUse,
         'assetPath': 'assets/markdown/terms_of_service.md',
       },
     );
@@ -117,7 +118,7 @@ class _AuthBottomSheetState extends State<AuthBottomSheet> {
         _registerProvider.signedIn &&
         !_hasNavigated) {
       _hasNavigated = true;
-      SmartDialog.showToast('Đăng ký thành công!');
+      SmartDialog.showToast(context.l10n.authRegisterSuccess);
       _registerProvider.reset();
       _navigateAfterLogin();
       return;
@@ -128,7 +129,7 @@ class _AuthBottomSheetState extends State<AuthBottomSheet> {
       // move the user to the Login tab with their email prefilled.
       if (mounted) {
         final email = _registerEmailController.text.trim();
-        SmartDialog.showToast('Đăng ký thành công! Vui lòng đăng nhập.');
+        SmartDialog.showToast(context.l10n.authRegisterSuccessPleaseLogin);
         setState(() {
           _isLoginTab = true;
           _loginEmailController.text = email;
@@ -165,7 +166,7 @@ class _AuthBottomSheetState extends State<AuthBottomSheet> {
   void _handleRegister() {
     if (!_registerFormKey.currentState!.validate()) return;
     if (!_agreeToTerms) {
-      SmartDialog.showToast('Vui lòng đồng ý với Điều khoản sử dụng');
+      SmartDialog.showToast(context.l10n.authPleaseAcceptTerms);
       return;
     }
     _registerProvider.register(
@@ -307,7 +308,7 @@ class _AuthBottomSheetState extends State<AuthBottomSheet> {
                       : null,
                 ),
                 child: Text(
-                  'Đăng ký',
+                  context.l10n.authRegister,
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 16,
@@ -341,7 +342,7 @@ class _AuthBottomSheetState extends State<AuthBottomSheet> {
                       : null,
                 ),
                 child: Text(
-                  'Đăng nhập',
+                  context.l10n.authLogin,
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 16,
@@ -374,22 +375,22 @@ class _AuthBottomSheetState extends State<AuthBottomSheet> {
             keyboardType: TextInputType.emailAddress,
             validator: (value) {
               if (value == null || value.trim().isEmpty)
-                return 'Vui lòng nhập email';
+                return context.l10n.authEnterEmail;
               return null;
             },
           ),
           const SizedBox(height: 16),
           _buildTextField(
             controller: _loginPasswordController,
-            label: 'Mật khẩu',
-            hintText: 'Nhập mật khẩu',
+            label: context.l10n.commonPassword,
+            hintText: context.l10n.authPasswordHint,
             isPassword: true,
             obscureText: _obscureLoginPassword,
             onTogglePassword: () =>
                 setState(() => _obscureLoginPassword = !_obscureLoginPassword),
             validator: (value) {
               if (value == null || value.trim().isEmpty)
-                return 'Vui lòng nhập mật khẩu';
+                return context.l10n.authEnterPassword;
               return null;
             },
           ),
@@ -398,8 +399,8 @@ class _AuthBottomSheetState extends State<AuthBottomSheet> {
             alignment: Alignment.centerRight,
             child: TextButton(
               onPressed: () => context.push(AppRouter.forgotPassword),
-              child: const Text(
-                'Quên mật khẩu?',
+              child: Text(
+                context.l10n.authForgotPasswordQuestion,
                 style: const TextStyle(
                   fontSize: 14,
                   color: AppColors.success,
@@ -453,8 +454,8 @@ class _AuthBottomSheetState extends State<AuthBottomSheet> {
           borderRadius: BorderRadius.circular(12),
           border: Border.all(color: Colors.black),
         ),
-        child: const Text(
-          'Đăng nhập khuôn mặt',
+        child: Text(
+          context.l10n.authFaceLogin,
           textAlign: TextAlign.center,
           style: TextStyle(
             fontSize: 15,
@@ -474,13 +475,13 @@ class _AuthBottomSheetState extends State<AuthBottomSheet> {
         children: [
           _buildTextField(
             controller: _registerFullNameController,
-            label: 'Họ và tên',
-            hintText: 'Nguyễn Văn A',
+            label: context.l10n.commonFullName,
+            hintText: context.l10n.commonFullNameHint,
             keyboardType: TextInputType.name,
             textCapitalization: TextCapitalization.words,
             validator: (value) {
               if (value == null || value.trim().isEmpty)
-                return 'Vui lòng nhập họ và tên';
+                return context.l10n.authEnterFullName;
               return null;
             },
           ),
@@ -492,27 +493,27 @@ class _AuthBottomSheetState extends State<AuthBottomSheet> {
             keyboardType: TextInputType.emailAddress,
             validator: (value) {
               if (value == null || value.trim().isEmpty)
-                return 'Vui lòng nhập email';
+                return context.l10n.authEnterEmail;
               return null;
             },
           ),
           const SizedBox(height: 16),
           _buildTextField(
             controller: _registerPhoneController,
-            label: 'Số điện thoại',
+            label: context.l10n.commonPhoneNumber,
             hintText: '0901234567',
             keyboardType: TextInputType.phone,
             validator: (value) {
               if (value == null || value.trim().isEmpty)
-                return 'Vui lòng nhập số điện thoại';
+                return context.l10n.authEnterPhone;
               return null;
             },
           ),
           const SizedBox(height: 16),
           _buildTextField(
             controller: _registerPasswordController,
-            label: 'Mật khẩu',
-            hintText: 'Nhập mật khẩu',
+            label: context.l10n.commonPassword,
+            hintText: context.l10n.authPasswordHint,
             isPassword: true,
             obscureText: _obscureRegisterPassword,
             onTogglePassword: () => setState(
@@ -520,8 +521,8 @@ class _AuthBottomSheetState extends State<AuthBottomSheet> {
             ),
             validator: (value) {
               if (value == null || value.trim().isEmpty)
-                return 'Vui lòng nhập mật khẩu';
-              if (value.length < 6) return 'Mật khẩu phải có ít nhất 6 ký tự';
+                return context.l10n.authEnterPassword;
+              if (value.length < 6) return context.l10n.authPasswordMin6;
               return null;
             },
           ),
@@ -656,13 +657,13 @@ class _AuthBottomSheetState extends State<AuthBottomSheet> {
                 ),
                 children: [
                   TextSpan(
-                    text: 'Tôi đồng ý với ',
+                    text: context.l10n.authAgreePrefix,
                     style: TextStyle(
                       color: Colors.black.withValues(alpha: 0.7),
                     ),
                   ),
                   TextSpan(
-                    text: 'Điều khoản sử dụng',
+                    text: context.l10n.commonTermsOfUse,
                     style: const TextStyle(
                       fontWeight: FontWeight.w600,
                       color: AppColors.success,
@@ -690,8 +691,8 @@ class _AuthBottomSheetState extends State<AuthBottomSheet> {
             style: _buttonStyle(),
             child: provider.isLoading
                 ? _buildLoadingState()
-                : const Text(
-                    'Đăng nhập',
+                : Text(
+                    context.l10n.authLogin,
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                   ),
           ),
@@ -712,8 +713,8 @@ class _AuthBottomSheetState extends State<AuthBottomSheet> {
             style: _buttonStyle(),
             child: provider.isLoading
                 ? _buildLoadingState()
-                : const Text(
-                    'Tạo tài khoản',
+                : Text(
+                    context.l10n.authCreateAccount,
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                   ),
           ),
@@ -767,7 +768,7 @@ class _AuthBottomSheetState extends State<AuthBottomSheet> {
       if (options.phone)
         _buildSocialButton(
           icon: Icons.phone_android,
-          label: 'SĐT',
+          label: context.l10n.commonPhoneShort,
           onTap: () => _showPhoneOtpDialog(),
         ),
     ];
@@ -779,7 +780,7 @@ class _AuthBottomSheetState extends State<AuthBottomSheet> {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Text(
-                'Hoặc tiếp tục với',
+                context.l10n.authOrContinueWith,
                 style: TextStyle(
                   fontSize: 14,
                   color: Colors.black.withOpacity(0.5),

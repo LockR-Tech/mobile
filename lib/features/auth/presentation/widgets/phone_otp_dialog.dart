@@ -6,6 +6,7 @@ import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:smart_laundry_locker/core/utils/phone_utils.dart';
 import 'package:smart_laundry_locker/features/auth/presentation/providers/login_provider.dart';
 
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 /// Hộp thoại đăng nhập / đăng ký bằng số điện thoại (Firebase Phone Auth),
 /// dùng chung cho màn đăng nhập và bottom sheet đăng nhập.
 ///
@@ -131,7 +132,7 @@ class _PhoneOtpDialogState extends State<PhoneOtpDialog> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text(
-              codeSent ? 'Nhập mã OTP' : 'Đăng nhập bằng số điện thoại',
+              codeSent ? context.l10n.authEnterOtp : context.l10n.authPhoneLogin,
               textAlign: TextAlign.center,
               style: const TextStyle(
                 fontSize: 18,
@@ -142,10 +143,12 @@ class _PhoneOtpDialogState extends State<PhoneOtpDialog> {
             const SizedBox(height: 8),
             Text(
               codeSent
-                  ? 'Mã 6 số đã được gửi qua SMS tới '
-                        '${sentTo == null ? 'số của bạn' : displayPhone(sentTo)}.'
-                  : 'Chưa có tài khoản? Hệ thống tự tạo tài khoản khi bạn '
-                        'xác nhận mã.',
+                  ? context.l10n.authSmsSentTo(
+                      sentTo == null
+                          ? context.l10n.authYourNumber
+                          : displayPhone(sentTo),
+                    )
+                  : context.l10n.authPhoneAutoCreateAccount,
               textAlign: TextAlign.center,
               style: const TextStyle(fontSize: 13, color: Color(0xFF64748B)),
             ),
@@ -164,16 +167,16 @@ class _PhoneOtpDialogState extends State<PhoneOtpDialog> {
                 onSubmitted: (_) {
                   if (!loading) _submit();
                 },
-                decoration: const InputDecoration(
-                  labelText: 'Số điện thoại',
+                decoration: InputDecoration(
+                  labelText: context.l10n.commonPhoneNumber,
                   hintText: '0912345678',
                   border: OutlineInputBorder(),
                 ),
               ),
-              const Padding(
+              Padding(
                 padding: EdgeInsets.only(top: 6),
                 child: Text(
-                  'Nhập số nội địa (0xxx) hoặc quốc tế (+84xxx) đều được.',
+                  context.l10n.authPhoneFormatHint,
                   style: TextStyle(fontSize: 12, color: Color(0xFF64748B)),
                 ),
               ),
@@ -197,8 +200,8 @@ class _PhoneOtpDialogState extends State<PhoneOtpDialog> {
                   // Đủ 6 số (gõ tay hoặc tự điền từ SMS) ⇒ xác nhận luôn.
                   if (value.length == 6 && !provider.isLoading) _submit();
                 },
-                decoration: const InputDecoration(
-                  labelText: 'Mã OTP (6 số)',
+                decoration: InputDecoration(
+                  labelText: context.l10n.authOtp6Digits,
                   hintText: '------',
                   border: OutlineInputBorder(),
                 ),
@@ -225,7 +228,7 @@ class _PhoneOtpDialogState extends State<PhoneOtpDialog> {
                           color: Colors.white,
                         ),
                       )
-                    : Text(codeSent ? 'Xác nhận' : 'Gửi mã OTP'),
+                    : Text(codeSent ? context.l10n.commonConfirm : context.l10n.authSendOtp),
               ),
             ),
             if (codeSent)
@@ -235,7 +238,7 @@ class _PhoneOtpDialogState extends State<PhoneOtpDialog> {
                   TextButton(
                     onPressed: loading ? null : _changeNumber,
                     child: Text(
-                      'Đổi số điện thoại',
+                      context.l10n.authChangePhone,
                       style: TextStyle(color: widget.accentColor),
                     ),
                   ),
@@ -243,8 +246,8 @@ class _PhoneOtpDialogState extends State<PhoneOtpDialog> {
                     onPressed: loading || secondsLeft > 0 ? null : _resend,
                     child: Text(
                       secondsLeft > 0
-                          ? 'Gửi lại mã (${secondsLeft}s)'
-                          : 'Gửi lại mã',
+                          ? context.l10n.authResendCodeIn(secondsLeft)
+                          : context.l10n.authResendCode,
                       style: TextStyle(
                         color: loading || secondsLeft > 0
                             ? const Color(0xFF94A3B8)

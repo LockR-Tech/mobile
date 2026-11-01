@@ -3,6 +3,7 @@ import 'package:smart_laundry_locker/features/auth/domain/entities/register_enti
 import 'package:flutter/foundation.dart';
 import 'package:smart_laundry_locker/core/services/token_service.dart';
 
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 class RegisterProvider extends ChangeNotifier {
   final RegisterUseCase _registerUseCase;
 
@@ -68,7 +69,7 @@ class RegisterProvider extends ChangeNotifier {
             _signedIn = true;
           }
         } else {
-          _error = entity.message ?? 'Đăng ký thất bại. Vui lòng thử lại.';
+          _error = entity.message ?? L10n.current.authRegisterFailedRetry;
           _isSuccess = false;
         }
         _registerResult = entity;

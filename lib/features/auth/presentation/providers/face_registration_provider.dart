@@ -2,6 +2,7 @@ import 'dart:typed_data';
 import 'package:smart_laundry_locker/features/auth/application/use_cases/register_face_use_case.dart';
 import 'package:flutter/foundation.dart';
 
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 class FaceRegistrationProvider extends ChangeNotifier {
   final RegisterFaceUseCase _registerFaceUseCase;
 
@@ -37,7 +38,7 @@ class FaceRegistrationProvider extends ChangeNotifier {
 
   Future<void> registerFace({required String userId}) async {
     if (_samples.isEmpty) {
-      _error = 'Vui lòng lấy mẫu khuôn mặt trước';
+      _error = L10n.current.authCaptureFaceFirst;
       notifyListeners();
       return;
     }
