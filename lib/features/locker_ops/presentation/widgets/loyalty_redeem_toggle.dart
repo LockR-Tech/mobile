@@ -6,6 +6,7 @@ import 'package:smart_laundry_locker/core/config/business_config_service.dart';
 import 'package:smart_laundry_locker/core/services/app_event_bus.dart';
 import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/ops_widgets.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 /// Kết quả `GET /api/loyalty/redeem-preview?orderTotal=` — server tính theo
 /// cấu hình admin (`app.loyalty.redeem-*`):
@@ -92,29 +93,29 @@ class LoyaltyRedeemPreview {
 
   /// Vì sao chưa dùng được điểm cho đơn này; `null` khi dùng được.
   String? get unavailableReason {
-    if (!enabled) return 'Hiện chưa áp dụng dùng điểm để thanh toán';
-    if (orderTotal <= 0) return 'Đơn đã được giảm hết, không cần dùng điểm';
+    if (!enabled) return L10n.current.loyaltyRedeemDisabled;
+    if (orderTotal <= 0) return L10n.current.loyaltyFullyDiscounted;
     if (balance <= 0) {
-      return 'Bạn chưa có điểm — điểm được cộng khi đơn hoàn tất';
+      return L10n.current.loyaltyNoPoints;
     }
     if (balance < minPoints) {
-      return 'Bạn có $balance điểm, cần tối thiểu $minPoints điểm mỗi lần dùng';
+      return L10n.current.loyaltyBelowMin(balance, minPoints);
     }
     if (!usable) {
-      return 'Đơn chưa đủ giá trị để dùng tối thiểu $minPoints điểm';
+      return L10n.current.loyaltyOrderTooSmall(minPoints);
     }
     return null;
   }
 
   /// `Dùng 120 điểm · giảm 12.000đ`.
   String get offerText =>
-      'Dùng $maxPoints điểm · giảm ${fmtPrice(maxDiscount)}';
+      L10n.current.loyaltyOffer(maxPoints, fmtPrice(maxDiscount));
 
   /// `Bạn có 350 điểm · 1 điểm = 100đ, tối đa 50% giá trị đơn`.
   String get ruleText => [
-    'Bạn có $balance điểm',
+    L10n.current.loyaltyYouHave(balance),
     if (enabled && vndPerPoint > 0)
-      '1 điểm = ${fmtPrice(vndPerPoint)}, tối đa $maxPercent% giá trị đơn',
+      L10n.current.loyaltyRule(fmtPrice(vndPerPoint), maxPercent),
   ].join(' · ');
 
   static int _int(dynamic raw) {
@@ -125,7 +126,7 @@ class LoyaltyRedeemPreview {
 
 /// `-12.000đ (120 điểm)` — dòng "Điểm thưởng" ở hoá đơn tạm và chi tiết đơn.
 String loyaltyPointsDiscountText(int points, num discount) =>
-    '-${fmtPrice(discount)} ($points điểm)';
+    L10n.current.loyaltyPointsDiscount(fmtPrice(discount), points);
 
 int _orderInt(dynamic raw) {
   if (raw is num) return raw.round();
@@ -149,7 +150,7 @@ String? loyaltyRedeemSkippedNotice(
 ) {
   if (requestedPoints <= 0 || !order.containsKey('pointsUsed')) return null;
   if (orderPointsUsed(order) > 0) return null;
-  return 'Chưa dùng được điểm thưởng lúc này — đơn được tính đủ giá.';
+  return L10n.current.loyaltyCantUseNow;
 }
 
 /// Đơn được giảm hết (voucher + điểm) ⇒ server coi như đã thanh toán ngay,
@@ -190,13 +191,13 @@ class OrderDiscountRows extends StatelessWidget {
         if (original > 0)
           OpsInfoRow(
             icon: LucideIcons.tag,
-            label: 'Giá gốc',
+            label: context.l10n.ordBasePrice,
             value: fmtPrice(original),
           ),
         if (discount > 0)
           OpsInfoRow(
             icon: LucideIcons.badgePercent,
-            label: code == null || code.isEmpty ? 'Giảm giá' : 'Voucher',
+            label: code == null || code.isEmpty ? context.l10n.commonDiscount : context.l10n.commonVoucher,
             value: code == null || code.isEmpty
                 ? '-${fmtPrice(discount)}'
                 : '-${fmtPrice(discount)} ($code)',
@@ -205,7 +206,7 @@ class OrderDiscountRows extends StatelessWidget {
         if (points > 0)
           OpsInfoRow(
             icon: LucideIcons.sparkles,
-            label: 'Điểm đã dùng',
+            label: context.l10n.ordPointsUsed,
             value: loyaltyPointsDiscountText(
               points,
               orderPointsDiscount(order),
@@ -214,7 +215,7 @@ class OrderDiscountRows extends StatelessWidget {
           ),
         OpsInfoRow(
           icon: LucideIcons.wallet,
-          label: 'Tổng tiền',
+          label: context.l10n.ordTotal,
           value: fmtPrice(order['totalPrice']),
           valueColor: opsDark,
         ),
@@ -273,7 +274,7 @@ int loyaltyPointsFor(num amount, int vndPerPoint) =>
 /// % giá trị đó so với số tiền đã trả. Khách nhìn điểm như tiền tích luỹ nên
 /// không hiện số điểm.
 String loyaltyEarnText(int points, num paid, int redeemVndPerPoint) {
-  if (redeemVndPerPoint <= 0) return '+$points điểm';
+  if (redeemVndPerPoint <= 0) return L10n.current.loyaltyPlusPoints(points);
   final value = points * redeemVndPerPoint;
   if (paid <= 0) return '+${fmtPrice(value)}';
   final percent = value * 100 / paid;
@@ -372,7 +373,7 @@ class _OrderEarnedPointsRowState extends State<OrderEarnedPointsRow> {
       if (points <= 0) return const SizedBox.shrink();
       return OpsInfoRow(
         icon: LucideIcons.sparkles,
-        label: 'Điểm sẽ được cộng',
+        label: context.l10n.loyaltyWillEarn,
         value: loyaltyEarnText(points, amount, config.redeemVndPerPoint),
         valueColor: const Color(0xFF15803D),
       );
@@ -382,19 +383,19 @@ class _OrderEarnedPointsRowState extends State<OrderEarnedPointsRow> {
     if (earned == null) return const SizedBox.shrink();
     if (!earned.recorded) {
       if (paid <= 0) return const SizedBox.shrink();
-      return const OpsInfoRow(
+      return OpsInfoRow(
         icon: LucideIcons.sparkles,
-        label: 'Điểm được cộng',
-        value: 'Chưa ghi nhận',
+        label: context.l10n.loyaltyEarned,
+        value: context.l10n.loyaltyNotRecorded,
         valueColor: opsMutedText,
       );
     }
     final text = loyaltyEarnText(earned.earned, paid, config.redeemVndPerPoint);
     return OpsInfoRow(
       icon: LucideIcons.sparkles,
-      label: 'Điểm được cộng',
+      label: context.l10n.loyaltyEarned,
       value: earned.reversed > 0
-          ? '$text · đã thu hồi ${earned.reversed}'
+          ? context.l10n.loyaltyReversed(text, earned.reversed)
           : text,
       valueColor: const Color(0xFF15803D),
     );
@@ -522,8 +523,8 @@ class _LoyaltyRedeemToggleState extends State<LoyaltyRedeemToggle> {
       // đoán số điểm — chỉ ghi chú tĩnh, không vòng quay.
       return Text(
         _loading
-            ? 'Đang kiểm tra điểm thưởng...'
-            : 'Chưa tải được điểm thưởng — đơn được tính đủ giá.',
+            ? context.l10n.loyaltyChecking
+            : context.l10n.loyaltyLoadFailed,
         style: const TextStyle(fontSize: 12.5, color: opsMutedText),
       );
     }
@@ -556,8 +557,8 @@ class _LoyaltyRedeemToggleState extends State<LoyaltyRedeemToggle> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Dùng điểm thưởng',
+                Text(
+                  context.l10n.loyaltyUsePoints,
                   style: TextStyle(
                     color: opsDark,
                     fontWeight: FontWeight.w700,

@@ -14,6 +14,7 @@ import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/op
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/order_detail_widgets.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/receiver_order_card.dart';
 import 'package:smart_laundry_locker/shared/widgets/app_lottie.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 /// Chi tiết một đơn phía người nhận ("Hàng chờ nhận") hoặc người lấy hộ ("Đơn
 /// ủy quyền"): mã lấy hàng, người gửi, người nhận/ủy quyền, tủ & ô, kiện hàng,
@@ -84,7 +85,7 @@ class _ReceiverOrderDetailPageState extends State<ReceiverOrderDetailPage> {
       if (!mounted) return;
       setState(() {
         if (parsed == null) {
-          _error = 'Không đọc được chi tiết đơn. Vui lòng thử lại.';
+          _error = context.l10n.recvLoadFailed;
         } else {
           _detail = parsed;
         }
@@ -101,12 +102,10 @@ class _ReceiverOrderDetailPageState extends State<ReceiverOrderDetailPage> {
     if (e is DioException &&
         e.response?.statusCode == 404 &&
         LockerOpsService.errorCode(e) == 'NOT_FOUND') {
-      return 'Đơn không còn trong danh sách của bạn (có thể đã được ủy quyền '
-          'cho người khác). Đang hiện thông tin đã lưu.';
+      return L10n.current.recvNotInList;
     }
     if (LockerOpsService.isEndpointUnavailable(e)) {
-      return 'Máy chủ chưa hỗ trợ xem chi tiết đầy đủ — đang hiện thông tin '
-          'tóm tắt.';
+      return L10n.current.recvSummaryOnly;
     }
     return LockerOpsService.errorMessage(e);
   }
@@ -139,7 +138,10 @@ class _ReceiverOrderDetailPageState extends State<ReceiverOrderDetailPage> {
         ..showSnackBar(
           SnackBar(
             content: Text(
-              'Đã gửi thông tin đơn${withCode ? ' kèm mã mở tủ' : ''} tới ${masked ?? 'email của bạn'}.',
+              L10n.current.recvEmailSent(
+                withCode ? L10n.current.recvWithCode : '',
+                masked ?? L10n.current.recvYourEmail,
+              ),
             ),
           ),
         );
@@ -161,13 +163,13 @@ class _ReceiverOrderDetailPageState extends State<ReceiverOrderDetailPage> {
     final add = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Chưa có email'),
-        content: const Text(
-          'Tài khoản của bạn chưa có email để nhận thông tin đơn. Bổ sung email trong Hồ sơ rồi gửi lại.',
+        title: Text(context.l10n.recvNoEmail),
+        content: Text(
+          context.l10n.recvNoEmailBody,
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: const Text('Để sau')),
-          FilledButton(onPressed: () => Navigator.of(ctx).pop(true), child: const Text('Bổ sung email')),
+          TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: Text(context.l10n.commonLater)),
+          FilledButton(onPressed: () => Navigator.of(ctx).pop(true), child: Text(context.l10n.recvAddEmail)),
         ],
       ),
     );
@@ -194,14 +196,14 @@ class _ReceiverOrderDetailPageState extends State<ReceiverOrderDetailPage> {
         surfaceTintColor: Colors.white,
         elevation: 0,
         title: Text(
-          delegate ? 'Chi tiết đơn lấy hộ' : 'Chi tiết đơn nhận',
+          delegate ? context.l10n.recvDelegateDetail : context.l10n.recvDetail,
           style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 17),
         ),
         actions: [
           IconButton(
             onPressed: _loading ? null : _load,
             icon: const Icon(LucideIcons.refreshCw, size: 18),
-            tooltip: 'Tải lại',
+            tooltip: context.l10n.commonReload,
           ),
         ],
         bottom: _loading
@@ -238,12 +240,12 @@ class _ReceiverOrderDetailPageState extends State<ReceiverOrderDetailPage> {
     final hasLocation =
         (o.lockerLatitude != null && o.lockerLongitude != null) ||
         (o.lockerAddress ?? '').isNotEmpty;
-    final ownerTitle = delegate ? 'Người ủy quyền' : 'Người gửi';
+    final ownerTitle = delegate ? context.l10n.recvDelegator : context.l10n.recvSender;
 
     return [
       // 2. Mã lấy hàng + thao tác của thẻ.
       OrderDetailSection(
-        title: 'Mã lấy hàng',
+        title: context.l10n.recvPickupCode,
         icon: LucideIcons.keyRound,
         footer: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -252,27 +254,27 @@ class _ReceiverOrderDetailPageState extends State<ReceiverOrderDetailPage> {
             const SizedBox(height: 12),
             if (o.canUnlockWithCode)
               OpsSheetAction(
-                label: 'Mở ${o.boxLabel} lấy hàng',
+                label: context.l10n.recvOpenBoxPickup(o.boxLabel),
                 icon: LucideIcons.doorOpen,
                 primary: true,
                 onTap: _unlock,
               ),
             if (hasLocation && !finished)
               OpsSheetAction(
-                label: 'Chỉ đường tới tủ',
+                label: context.l10n.ordDirectionsToLocker,
                 icon: LucideIcons.map,
                 onTap: () => openReceiverOrderDirections(context, o),
               ),
             if (d.droneTrackingAvailable)
               OpsSheetAction(
-                label: finished ? 'Xem lại hành trình drone' : 'Theo dõi drone',
+                label: finished ? context.l10n.ordReviewDroneJourney : context.l10n.recvTrackDrone,
                 icon: LucideIcons.navigation,
                 onTap: _trackDrone,
               ),
             if (!finished)
               OpsSheetAction(
                 key: const ValueKey('receiver-resend-email'),
-                label: _sendingEmail ? 'Đang gửi email…' : 'Gửi lại thông tin qua email',
+                label: _sendingEmail ? context.l10n.recvSendingEmail : context.l10n.recvResendEmail,
                 icon: LucideIcons.mail,
                 onTap: _resendEmail,
               ),
@@ -288,20 +290,20 @@ class _ReceiverOrderDetailPageState extends State<ReceiverOrderDetailPage> {
           if ((o.senderName ?? '').isNotEmpty)
             OpsInfoRow(
               icon: LucideIcons.user,
-              label: 'Họ tên',
+              label: context.l10n.commonFullNameShort,
               value: o.senderName!,
             ),
           if (d.senderPhone != null)
             OrderContactRow(
               icon: LucideIcons.phone,
-              label: 'SĐT người gửi',
+              label: context.l10n.recvSenderPhone,
               value: d.senderPhone!,
               phone: true,
             ),
           if (d.senderEmail != null)
             OrderContactRow(
               icon: LucideIcons.mail,
-              label: 'Email người gửi',
+              label: context.l10n.recvSenderEmail,
               value: d.senderEmail!,
             ),
         ],
@@ -309,65 +311,65 @@ class _ReceiverOrderDetailPageState extends State<ReceiverOrderDetailPage> {
 
       // 4. Người nhận & ủy quyền.
       OrderDetailSection(
-        title: 'Người nhận',
+        title: context.l10n.ordRecipient,
         icon: LucideIcons.userCheck,
         rows: [
           if ((o.receiverName ?? '').isNotEmpty)
             OpsInfoRow(
               icon: LucideIcons.userCheck,
-              label: 'Tên người nhận',
+              label: context.l10n.recvRecipientName,
               value: o.receiverName!,
             ),
           if ((o.receiverPhone ?? '').isNotEmpty)
             OrderContactRow(
               icon: LucideIcons.phone,
-              label: 'SĐT người nhận',
+              label: context.l10n.recvRecipientPhone,
               value: o.receiverPhone!,
               phone: true,
             ),
           if (d.receiverEmail != null)
             OrderContactRow(
               icon: LucideIcons.mail,
-              label: 'Email người nhận',
+              label: context.l10n.ordRecipientEmail,
               value: d.receiverEmail!,
             ),
           if (d.deliveryAddress != null)
             OpsInfoRow(
               icon: LucideIcons.truck,
-              label: 'Địa chỉ giao',
+              label: context.l10n.ordDeliveryAddress,
               value: d.deliveryAddress!,
             ),
           if (delegate) ...[
             OpsInfoRow(
               icon: LucideIcons.userPlus,
-              label: 'Người lấy hộ',
+              label: context.l10n.recvDelegatePerson,
               value: (o.delegateName ?? '').isNotEmpty
-                  ? '${o.delegateName} (bạn)'
-                  : 'Bạn',
+                  ? context.l10n.recvYouSuffix('${o.delegateName}')
+                  : context.l10n.recvYou,
             ),
             if (d.delegatePhone != null)
               OpsInfoRow(
                 icon: LucideIcons.smartphone,
-                label: 'SĐT lấy hộ',
+                label: context.l10n.recvDelegatePhone,
                 value: d.delegatePhone!,
               ),
             if ((o.delegateNote ?? '').isNotEmpty)
               OpsInfoRow(
                 icon: LucideIcons.stickyNote,
-                label: 'Lời nhắn',
+                label: context.l10n.commonMessage,
                 value: o.delegateNote!,
               ),
           ] else if (o.delegated)
-            const OpsInfoRow(
+            OpsInfoRow(
               icon: LucideIcons.userPlus,
-              label: 'Ủy quyền',
-              value: 'Chủ đơn đã ủy quyền người khác lấy hộ',
+              label: context.l10n.recvDelegation,
+              value: context.l10n.recvOwnerDelegated,
               valueColor: Color(0xFF7C3AED),
             ),
           if (o.delegatedAt != null)
             OpsInfoRow(
               icon: LucideIcons.clock,
-              label: 'Ủy quyền lúc',
+              label: context.l10n.ordDelegatedAt,
               value: fmtDateTime(o.delegatedAt),
             ),
         ],
@@ -375,63 +377,63 @@ class _ReceiverOrderDetailPageState extends State<ReceiverOrderDetailPage> {
 
       // 5. Tủ & ô.
       OrderDetailSection(
-        title: 'Tủ & ô',
+        title: context.l10n.recvLockerAndBox,
         icon: LucideIcons.warehouse,
         rows: [
           OpsInfoRow(
             icon: LucideIcons.warehouse,
-            label: d.isDrone ? 'Tủ nhận' : 'Tủ',
-            value: o.lockerName ?? 'Tủ Lock.R',
+            label: d.isDrone ? context.l10n.recvReceivingLocker : context.l10n.commonLocker,
+            value: o.lockerName ?? context.l10n.ordLockrLocker,
           ),
           if ((o.lockerCode ?? '').isNotEmpty)
             OpsInfoRow(
               icon: LucideIcons.hash,
-              label: 'Mã tủ',
+              label: context.l10n.recvLockerCode,
               value: o.lockerCode!,
             ),
           if ((o.lockerAddress ?? '').isNotEmpty)
             OpsInfoRow(
               icon: LucideIcons.mapPin,
-              label: 'Địa điểm',
+              label: context.l10n.ordPlace,
               value: o.lockerAddress!,
             ),
           if (o.boxNumber != null)
             OpsInfoRow(
               icon: LucideIcons.grid3x3,
-              label: 'Ô',
-              value: 'Ô số ${o.boxNumber}',
+              label: context.l10n.commonBox,
+              value: context.l10n.boxNumberLabel('${o.boxNumber}'),
             ),
           if (d.boxSize != null)
             OpsInfoRow(
               icon: LucideIcons.box,
-              label: 'Kích cỡ ô',
+              label: context.l10n.recvBoxSize,
               value: boxSizeLabel(d.boxSize),
             ),
           if (d.boxType != null)
             OpsInfoRow(
               icon: LucideIcons.layoutGrid,
-              label: 'Loại ô',
+              label: context.l10n.commonBoxType,
               value: boxTypeLabel(d.boxType),
             ),
           if (d.sourceLockerName != null || d.sourceLockerCode != null)
             OpsInfoRow(
               icon: LucideIcons.planeTakeoff,
-              label: 'Gửi từ tủ',
+              label: context.l10n.ordFromLocker,
               value: [
-                d.sourceLockerName ?? 'Tủ Lock.R',
+                d.sourceLockerName ?? context.l10n.ordLockrLocker,
                 if (d.sourceLockerCode != null) '(${d.sourceLockerCode})',
               ].join(' '),
             ),
           if (d.sourceLockerAddress != null)
             OpsInfoRow(
               icon: LucideIcons.mapPinned,
-              label: 'Địa chỉ tủ gửi',
+              label: context.l10n.recvSourceAddress,
               value: d.sourceLockerAddress!,
             ),
           if (d.routeDistanceMeters != null)
             OpsInfoRow(
               icon: LucideIcons.route,
-              label: 'Quãng đường bay',
+              label: context.l10n.ordFlightDistance,
               value: fmtDistanceMeters(d.routeDistanceMeters!),
             ),
         ],
@@ -439,14 +441,14 @@ class _ReceiverOrderDetailPageState extends State<ReceiverOrderDetailPage> {
 
       // 6. Kiện hàng.
       OrderDetailSection(
-        title: 'Kiện hàng',
+        title: context.l10n.ordParcel,
         icon: LucideIcons.package,
         rows: [
           ...orderParcelRows(d.parcel),
           if (d.customerNote != null)
             OpsInfoRow(
               icon: LucideIcons.stickyNote,
-              label: 'Ghi chú người gửi',
+              label: context.l10n.recvSenderNote,
               value: d.customerNote!,
             ),
         ],
@@ -454,13 +456,13 @@ class _ReceiverOrderDetailPageState extends State<ReceiverOrderDetailPage> {
 
       // 7. Thời gian.
       OrderDetailSection(
-        title: 'Thời gian',
+        title: context.l10n.commonTime,
         icon: LucideIcons.clock,
         rows: [
           if (o.pickupDeadline != null)
             OpsInfoRow(
               icon: LucideIcons.clock,
-              label: 'Hạn lấy',
+              label: context.l10n.recvPickupDeadline,
               value: fmtDateTime(o.pickupDeadline),
               valueColor: o.overdue && !finished
                   ? const Color(0xFFDC2626)
@@ -469,10 +471,8 @@ class _ReceiverOrderDetailPageState extends State<ReceiverOrderDetailPage> {
           if (o.pickupDeadline != null && !finished)
             OpsInfoRow(
               icon: LucideIcons.hourglass,
-              label: o.overdue ? 'Đã quá hạn' : 'Còn lại',
-              value: fmtRemaining(o.pickupDeadline)
-                  .replaceFirst('Còn ', '')
-                  .replaceFirst('Quá hạn ', ''),
+              label: o.overdue ? context.l10n.ordOverdue : context.l10n.recvTimeLeft,
+              value: fmtDeadlineDistance(o.pickupDeadline),
               valueColor: o.overdue
                   ? const Color(0xFFDC2626)
                   : const Color(0xFF15803D),
@@ -480,50 +480,50 @@ class _ReceiverOrderDetailPageState extends State<ReceiverOrderDetailPage> {
           if (d.intendedReceiveAt != null)
             OpsInfoRow(
               icon: LucideIcons.calendarClock,
-              label: 'Dự kiến lấy',
+              label: context.l10n.recvExpectedPickup,
               value: fmtDateTime(d.intendedReceiveAt),
             ),
           if (d.rentalDurationHours != null)
             OpsInfoRow(
               icon: LucideIcons.timer,
-              label: 'Thời gian thuê',
-              value: '${d.rentalDurationHours} giờ',
+              label: context.l10n.ordRentalDuration,
+              value: context.l10n.hoursValue(d.rentalDurationHours!),
             ),
           if (o.createdAt != null)
             OpsInfoRow(
               icon: LucideIcons.calendar,
-              label: 'Tạo đơn lúc',
+              label: context.l10n.recvCreatedAt,
               value: fmtDateTime(o.createdAt),
             ),
           if (o.paymentStatus != null)
             OpsInfoRow(
               icon: LucideIcons.wallet,
-              label: 'Thanh toán',
+              label: context.l10n.commonPayment,
               value: _paymentLabel(o.paymentStatus!),
             ),
           if (d.paidAt != null)
             OpsInfoRow(
               icon: LucideIcons.receiptText,
-              label: 'Thanh toán lúc',
+              label: context.l10n.ordPaidAt,
               value: fmtDateTime(d.paidAt),
             ),
           if (o.completedAt != null)
             OpsInfoRow(
               icon: LucideIcons.circleCheck,
-              label: 'Hoàn tất lúc',
+              label: context.l10n.recvCompletedAt,
               value: fmtDateTime(o.completedAt),
               valueColor: const Color(0xFF15803D),
             ),
           if (d.updatedAt != null)
             OpsInfoRow(
               icon: LucideIcons.refreshCw,
-              label: 'Cập nhật lần cuối',
+              label: context.l10n.recvUpdatedAt,
               value: fmtDateTime(d.updatedAt),
             ),
         ],
       ),
       OrderDetailSection(
-        title: 'Dòng thời gian',
+        title: context.l10n.recvTimeline,
         icon: LucideIcons.history,
         footer: d.timeline.isEmpty
             ? null
@@ -533,22 +533,22 @@ class _ReceiverOrderDetailPageState extends State<ReceiverOrderDetailPage> {
       // 8. Drone.
       if (d.isDrone)
         OrderDetailSection(
-          title: 'Hành trình drone',
+          title: context.l10n.recvDroneJourney,
           icon: LucideIcons.plane,
           rows: [
             if ((o.deliveryStage ?? '').isNotEmpty)
               OpsInfoRow(
                 icon: DroneDeliveryStage.fromRaw(o.deliveryStage).icon,
-                label: 'Chặng hiện tại',
+                label: context.l10n.recvCurrentStage,
                 value: DroneDeliveryStage.fromRaw(o.deliveryStage).title,
               ),
             if (d.etaMinutes != null)
               OpsInfoRow(
                 icon: LucideIcons.timer,
-                label: 'Dự kiến tới tủ',
+                label: context.l10n.recvEta,
                 value: d.etaMinutes == 0
-                    ? 'Đã tới'
-                    : 'Khoảng ${d.etaMinutes} phút',
+                    ? context.l10n.recvArrived
+                    : context.l10n.recvAboutMinutes('${d.etaMinutes}'),
               ),
           ],
           footer: d.journey.isEmpty
@@ -571,39 +571,39 @@ class _ReceiverOrderDetailPageState extends State<ReceiverOrderDetailPage> {
 
       // 9. Sự cố / giao không hoàn tất.
       OrderDetailSection(
-        title: 'Sự cố',
+        title: context.l10n.recvIncident,
         icon: LucideIcons.triangleAlert,
         rows: [
           if (d.deliveryBlockReasonLabel != null)
             OpsInfoRow(
               icon: LucideIcons.circlePause,
-              label: 'Đang tạm dừng',
+              label: context.l10n.ordPaused,
               value: d.deliveryBlockReasonLabel!,
               valueColor: const Color(0xFFEA580C),
             ),
           if (d.deliveryBlockedAt != null)
             OpsInfoRow(
               icon: LucideIcons.clock,
-              label: 'Tạm dừng lúc',
+              label: context.l10n.ordPausedAt,
               value: fmtDateTime(d.deliveryBlockedAt),
             ),
           if (d.failureReasonLabel != null)
             OpsInfoRow(
               icon: LucideIcons.circleX,
-              label: 'Giao không hoàn tất',
+              label: context.l10n.ordDeliveryIncomplete,
               value: d.failureReasonLabel!,
               valueColor: const Color(0xFFDC2626),
             ),
           if (d.failedAt != null)
             OpsInfoRow(
               icon: LucideIcons.clock,
-              label: 'Ghi nhận lúc',
+              label: context.l10n.ordRecordedAt,
               value: fmtDateTime(d.failedAt),
             ),
           if (d.parcelReturnedAt != null)
             OpsInfoRow(
               icon: LucideIcons.undo2,
-              label: 'Đã trả kiện cho người gửi',
+              label: context.l10n.recvParcelReturnedToSender,
               value: fmtDateTime(d.parcelReturnedAt),
             ),
         ],
@@ -614,12 +614,11 @@ class _ReceiverOrderDetailPageState extends State<ReceiverOrderDetailPage> {
   Widget _pickupCodeBlock(bool delegate) {
     final o = _detail.order;
     if (!delegate && o.delegated && !o.isFinished) {
-      return const OpsBanner(
+      return OpsBanner(
         tone: OpsBannerTone.info,
         icon: LucideIcons.userCheck,
         text:
-            'Chủ đơn đã ủy quyền người khác lấy hộ nên mã lấy hàng không còn '
-            'hiện ở đây.',
+            context.l10n.recvCodeMovedToDelegate,
       );
     }
     if (o.isActive && (o.pickupPin ?? '').isNotEmpty) {
@@ -629,14 +628,14 @@ class _ReceiverOrderDetailPageState extends State<ReceiverOrderDetailPage> {
             pin: o.pickupPin,
             qrToken: o.qrToken,
             showQr: (o.qrToken ?? '').isNotEmpty,
-            caption: 'Nhập PIN hoặc quét QR tại tủ, hoặc mở ô ngay trên app',
+            caption: context.l10n.recvCredCaption,
           ),
           if (o.overdue) ...[
             const SizedBox(height: 10),
-            const OpsBanner(
+            OpsBanner(
               tone: OpsBannerTone.danger,
               icon: LucideIcons.triangleAlert,
-              text: 'Đơn đã quá hạn lấy — có thể phát sinh phí quá giờ.',
+              text: context.l10n.recvOverdueMayCharge,
             ),
           ],
         ],
@@ -647,21 +646,18 @@ class _ReceiverOrderDetailPageState extends State<ReceiverOrderDetailPage> {
         tone: OpsBannerTone.success,
         icon: LucideIcons.circleCheck,
         text: o.completedAt == null
-            ? 'Đơn đã hoàn tất — hàng đã được lấy.'
-            : 'Đơn đã hoàn tất — hàng đã được lấy lúc '
-                  '${fmtDateTime(o.completedAt)}.',
+            ? context.l10n.recvCompleted
+            : context.l10n.recvCompletedAtTime(fmtDateTime(o.completedAt)),
       ),
-      'CANCELED' || 'CANCELLED' => const OpsBanner(
+      'CANCELED' || 'CANCELLED' => OpsBanner(
         tone: OpsBannerTone.warning,
         icon: LucideIcons.circleX,
-        text: 'Đơn đã hủy nên không còn mã lấy hàng.',
+        text: L10n.current.recvCancelled,
       ),
-      'EXPIRED' => const OpsBanner(
+      'EXPIRED' => OpsBanner(
         tone: OpsBannerTone.danger,
         icon: LucideIcons.triangleAlert,
-        text:
-            'Đơn đã quá hạn lấy, ô đã được thu hồi. Vui lòng liên hệ người gửi '
-            'hoặc hỗ trợ Lock.R.',
+        text: L10n.current.recvExpired,
       ),
       _ => OpsBanner(
         tone: OpsBannerTone.info,
@@ -675,21 +671,19 @@ class _ReceiverOrderDetailPageState extends State<ReceiverOrderDetailPage> {
     final o = _detail.order;
     if (_detail.isDrone) {
       final stage = DroneDeliveryStage.fromRaw(o.deliveryStage);
-      return '${stage.title}. Mã lấy hàng sẽ hiện khi drone đã đặt kiện vào '
-          'ô tủ nhận.';
+      return context.l10n.recvDroneNotReady(stage.title);
     }
     if (o.status == 'INITIALIZED') {
-      return 'Người gửi chưa bỏ hàng vào ô. Mã lấy hàng sẽ hiện khi hàng đã '
-          'nằm trong ô.';
+      return context.l10n.recvSenderNotDropped;
     }
-    return 'Hàng chưa sẵn sàng. Mã lấy hàng sẽ hiện khi hàng đã nằm trong ô.';
+    return context.l10n.recvNotReady;
   }
 
   static String _paymentLabel(String status) => switch (status) {
-    'PAID' => 'Người gửi đã thanh toán',
-    'REFUND_PENDING' => 'Đang hoàn tiền cho người gửi',
-    'REFUNDED' => 'Đã hoàn tiền cho người gửi',
-    _ => 'Người gửi chưa thanh toán',
+    'PAID' => L10n.current.recvSenderPaid,
+    'REFUND_PENDING' => L10n.current.recvRefundingSender,
+    'REFUNDED' => L10n.current.recvSenderRefunded,
+    _ => L10n.current.recvSenderUnpaid,
   };
 }
 
@@ -742,7 +736,7 @@ class _Header extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    typeLabel(o.type).isEmpty ? 'Đơn hàng' : typeLabel(o.type),
+                    typeLabel(o.type).isEmpty ? context.l10n.commonOrder : typeLabel(o.type),
                     style: const TextStyle(
                       fontWeight: FontWeight.w800,
                       fontSize: 16,
@@ -757,7 +751,7 @@ class _Header extends StatelessWidget {
                       ScaffoldMessenger.maybeOf(context)
                         ?..hideCurrentSnackBar()
                         ..showSnackBar(
-                          const SnackBar(content: Text('Đã sao chép mã đơn')),
+                          SnackBar(content: Text(context.l10n.recvOrderCodeCopied)),
                         );
                     },
                     child: Row(
@@ -774,11 +768,11 @@ class _Header extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(width: 4),
-                        const Icon(
+                        Icon(
                           LucideIcons.copy,
                           size: 13,
                           color: opsMutedText,
-                          semanticLabel: 'Sao chép mã đơn',
+                          semanticLabel: context.l10n.recvCopyOrderCode,
                         ),
                       ],
                     ),
@@ -793,8 +787,8 @@ class _Header extends StatelessWidget {
         const SizedBox(height: 10),
         Text(
           delegate
-              ? 'Bạn được ủy quyền lấy hộ đơn này.'
-              : 'Bạn là người nhận của đơn này.',
+              ? context.l10n.recvYouAreDelegate
+              : context.l10n.recvYouAreRecipient,
           style: const TextStyle(fontSize: 12.5, color: opsMutedText),
         ),
         if (o.overdue && !finished) ...[
@@ -803,9 +797,7 @@ class _Header extends StatelessWidget {
             tone: OpsBannerTone.danger,
             icon: LucideIcons.clockAlert,
             text:
-                'Đơn đã quá hạn lấy '
-                '${fmtOverdueDuration(o.pickupDeadline)}'
-                ' — lấy hàng sớm để tránh phí quá giờ.',
+                context.l10n.recvOverdueBy(fmtOverdueDuration(o.pickupDeadline)),
           ),
         ],
       ],
@@ -834,7 +826,7 @@ class _ErrorBanner extends StatelessWidget {
           child: TextButton.icon(
             onPressed: onRetry,
             icon: const Icon(LucideIcons.refreshCw, size: 15),
-            label: const Text('Thử lại'),
+            label: Text(context.l10n.commonRetry),
           ),
         ),
       ],

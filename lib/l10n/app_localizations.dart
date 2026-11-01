@@ -4081,6 +4081,4386 @@ abstract class AppLocalizations {
   /// In vi, this message translates to:
   /// **'Đơn từ {amount}'**
   String voucherOrderFrom(Object amount);
+
+  /// No description provided for @commonDetails.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chi tiết'**
+  String get commonDetails;
+
+  /// No description provided for @commonNotYet.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa'**
+  String get commonNotYet;
+
+  /// No description provided for @commonNote.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ghi chú'**
+  String get commonNote;
+
+  /// No description provided for @commonReload.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tải lại'**
+  String get commonReload;
+
+  /// No description provided for @commonService.
+  ///
+  /// In vi, this message translates to:
+  /// **'Dịch vụ'**
+  String get commonService;
+
+  /// No description provided for @commonDiscount.
+  ///
+  /// In vi, this message translates to:
+  /// **'Giảm giá'**
+  String get commonDiscount;
+
+  /// No description provided for @commonVoucher.
+  ///
+  /// In vi, this message translates to:
+  /// **'Voucher'**
+  String get commonVoucher;
+
+  /// No description provided for @commonAmount.
+  ///
+  /// In vi, this message translates to:
+  /// **'Số tiền'**
+  String get commonAmount;
+
+  /// No description provided for @commonLocker.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tủ'**
+  String get commonLocker;
+
+  /// No description provided for @commonBox.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ô'**
+  String get commonBox;
+
+  /// No description provided for @commonToday.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hôm nay'**
+  String get commonToday;
+
+  /// No description provided for @commonYesterday.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hôm qua'**
+  String get commonYesterday;
+
+  /// No description provided for @commonUnknownDate.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không rõ ngày'**
+  String get commonUnknownDate;
+
+  /// No description provided for @dateDayMonthYear.
+  ///
+  /// In vi, this message translates to:
+  /// **'{day} tháng {month}, {year}'**
+  String dateDayMonthYear(Object day, Object month, Object year);
+
+  /// No description provided for @hoursValue.
+  ///
+  /// In vi, this message translates to:
+  /// **'{hours} giờ'**
+  String hoursValue(int hours);
+
+  /// No description provided for @pricePerHour.
+  ///
+  /// In vi, this message translates to:
+  /// **'{price}/giờ'**
+  String pricePerHour(Object price);
+
+  /// No description provided for @photosMore.
+  ///
+  /// In vi, this message translates to:
+  /// **'+{count} ảnh'**
+  String photosMore(Object count);
+
+  /// No description provided for @boxThisLower.
+  ///
+  /// In vi, this message translates to:
+  /// **'ô này'**
+  String get boxThisLower;
+
+  /// No description provided for @boxNumberLower.
+  ///
+  /// In vi, this message translates to:
+  /// **'ô số {number}'**
+  String boxNumberLower(Object number);
+
+  /// No description provided for @boxThis.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ô này'**
+  String get boxThis;
+
+  /// No description provided for @ordIncomingNotSupported.
+  ///
+  /// In vi, this message translates to:
+  /// **'Máy chủ chưa hỗ trợ mục Hàng chờ nhận. Vui lòng thử lại sau.'**
+  String get ordIncomingNotSupported;
+
+  /// No description provided for @ordNotFoundInList.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không tìm thấy đơn trong danh sách của bạn.'**
+  String get ordNotFoundInList;
+
+  /// No description provided for @ordEmptyRecent.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không có đơn hàng nào trong 7 ngày gần đây.'**
+  String get ordEmptyRecent;
+
+  /// No description provided for @ordEmptyActive.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hiện không có đơn hàng nào đang trong quá trình sử dụng.'**
+  String get ordEmptyActive;
+
+  /// No description provided for @ordEmptyCompleted.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa có đơn hàng nào đã hoàn tất.'**
+  String get ordEmptyCompleted;
+
+  /// No description provided for @ordEmptyRental.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa có đơn thuê tủ nào.'**
+  String get ordEmptyRental;
+
+  /// No description provided for @ordEmptySend.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa có đơn gửi hàng nào.'**
+  String get ordEmptySend;
+
+  /// No description provided for @ordEmptyCanceled.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không có đơn nào đã hủy.'**
+  String get ordEmptyCanceled;
+
+  /// No description provided for @ordEmptyHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tạo đơn Gửi hàng hoặc Thuê tủ từ màn hình chính.'**
+  String get ordEmptyHint;
+
+  /// No description provided for @ordCancelQuestion.
+  ///
+  /// In vi, this message translates to:
+  /// **'Huỷ đơn?'**
+  String get ordCancelQuestion;
+
+  /// No description provided for @ordCancelBody.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đơn {code} sẽ bị huỷ, mã mở ô hết hiệu lực và ô đang giữ được nhả.'**
+  String ordCancelBody(Object code);
+
+  /// No description provided for @ordCancelPaidNote.
+  ///
+  /// In vi, this message translates to:
+  /// **' Tiền đã thanh toán không tự hoàn — sau khi huỷ, mở lại đơn và chọn \"Yêu cầu hoàn tiền\".'**
+  String get ordCancelPaidNote;
+
+  /// No description provided for @ordKeepOrder.
+  ///
+  /// In vi, this message translates to:
+  /// **'Giữ đơn'**
+  String get ordKeepOrder;
+
+  /// No description provided for @ordCancelOrderAlt.
+  ///
+  /// In vi, this message translates to:
+  /// **'Huỷ đơn'**
+  String get ordCancelOrderAlt;
+
+  /// No description provided for @ordExtendRental.
+  ///
+  /// In vi, this message translates to:
+  /// **'Gia hạn thuê'**
+  String get ordExtendRental;
+
+  /// No description provided for @ordAddHours.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thêm {hours} giờ'**
+  String ordAddHours(int hours);
+
+  /// No description provided for @ordMaxHoursPerExtension.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tối đa {hours} giờ mỗi lần gia hạn'**
+  String ordMaxHoursPerExtension(Object hours);
+
+  /// No description provided for @ordExtend.
+  ///
+  /// In vi, this message translates to:
+  /// **'Gia hạn'**
+  String get ordExtend;
+
+  /// No description provided for @ordExtended.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã gia hạn {hours} giờ'**
+  String ordExtended(int hours);
+
+  /// No description provided for @ordReportFaultyBox.
+  ///
+  /// In vi, this message translates to:
+  /// **'Báo ô lỗi'**
+  String get ordReportFaultyBox;
+
+  /// No description provided for @ordDescribeIssueHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mô tả sự cố (ô không mở, kẹt cửa...)'**
+  String get ordDescribeIssueHint;
+
+  /// No description provided for @ordOnsitePhotosOptional.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ảnh hiện trường (không bắt buộc, tối đa {max})'**
+  String ordOnsitePhotosOptional(Object max);
+
+  /// No description provided for @ordPhotosHelp.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ảnh giúp đội bảo trì xử lý nhanh hơn.'**
+  String get ordPhotosHelp;
+
+  /// No description provided for @ordDescribeOrAttach.
+  ///
+  /// In vi, this message translates to:
+  /// **'Vui lòng mô tả sự cố hoặc đính kèm ảnh.'**
+  String get ordDescribeOrAttach;
+
+  /// No description provided for @ordUploadingPhotos.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang tải ảnh...'**
+  String get ordUploadingPhotos;
+
+  /// No description provided for @ordSendReport.
+  ///
+  /// In vi, this message translates to:
+  /// **'Gửi báo lỗi'**
+  String get ordSendReport;
+
+  /// No description provided for @ordBoxFaultDefault.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ô tủ gặp sự cố (xem ảnh đính kèm)'**
+  String get ordBoxFaultDefault;
+
+  /// No description provided for @ordReportSentFor.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã gửi báo lỗi cho {box} — đội bảo trì sẽ xử lý'**
+  String ordReportSentFor(Object box);
+
+  /// No description provided for @ordPickupAtKiosk.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lấy đồ tại kiosk'**
+  String get ordPickupAtKiosk;
+
+  /// No description provided for @ordPickupAtKioskBody.
+  ///
+  /// In vi, this message translates to:
+  /// **'Dùng mã này tại kiosk để mở ô, lấy đồ ra, rồi đóng cửa tủ lại trước khi xác nhận kết thúc thuê. Bạn cũng có thể bấm mở trực tiếp trên app nếu đang ở gần tủ.'**
+  String get ordPickupAtKioskBody;
+
+  /// No description provided for @ordOpenBoxOnPhone.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mở {box} trên điện thoại (GPS/QR)'**
+  String ordOpenBoxOnPhone(Object box);
+
+  /// No description provided for @ordPickedUpAndClosed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã lấy đồ và đóng tủ'**
+  String get ordPickedUpAndClosed;
+
+  /// No description provided for @ordRentalEnded.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã kết thúc kỳ thuê'**
+  String get ordRentalEnded;
+
+  /// No description provided for @ordNoLockerInfo.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đơn chưa có thông tin tủ.'**
+  String get ordNoLockerInfo;
+
+  /// No description provided for @ordLockerNoLocation.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tủ chưa có vị trí để chỉ đường.'**
+  String get ordLockerNoLocation;
+
+  /// No description provided for @ordCantOpenMapsApp.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không mở được ứng dụng bản đồ trên máy này.'**
+  String get ordCantOpenMapsApp;
+
+  /// No description provided for @ordExtensionPaymentFor.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thanh toán gia hạn thời gian đơn #{id}'**
+  String ordExtensionPaymentFor(Object id);
+
+  /// No description provided for @ordPaidSuccessfully.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đơn hàng của bạn đã được thanh toán thành công.'**
+  String get ordPaidSuccessfully;
+
+  /// No description provided for @ordPaymentNotCompleted.
+  ///
+  /// In vi, this message translates to:
+  /// **'Giao dịch chưa hoàn tất hoặc đã bị hủy. Vui lòng thử lại.'**
+  String get ordPaymentNotCompleted;
+
+  /// No description provided for @ordAwaitingPaymentPull.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang chờ xác nhận thanh toán — kéo xuống để làm mới sau ít phút.'**
+  String get ordAwaitingPaymentPull;
+
+  /// No description provided for @ordAwaitingPaymentConfirmPickup.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang chờ xác nhận thanh toán — bấm lại \"Xác nhận lấy đồ\" sau khi đơn hiện Đã thanh toán.'**
+  String get ordAwaitingPaymentConfirmPickup;
+
+  /// No description provided for @ordConfirmPickup.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xác nhận lấy đồ'**
+  String get ordConfirmPickup;
+
+  /// No description provided for @ordConfirmPickupBody.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bạn xác nhận đã nhận lại đầy đủ đồ đạc của đơn hàng này? Thao tác này sẽ đóng và hoàn tất đơn hàng.'**
+  String get ordConfirmPickupBody;
+
+  /// No description provided for @ordPickedUpComplete.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã lấy đồ — Hoàn tất'**
+  String get ordPickedUpComplete;
+
+  /// No description provided for @ordCompletedTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hoàn tất đơn hàng!'**
+  String get ordCompletedTitle;
+
+  /// No description provided for @ordPaidAndPickedUp.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bạn đã thanh toán và lấy đồ thành công. Đơn hàng đã hoàn tất.'**
+  String get ordPaidAndPickedUp;
+
+  /// No description provided for @ordReceivedComplete.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã nhận đồ — đơn hoàn tất'**
+  String get ordReceivedComplete;
+
+  /// No description provided for @ordPaidNotCompletedTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã thanh toán — chưa hoàn tất đơn'**
+  String get ordPaidNotCompletedTitle;
+
+  /// No description provided for @ordPaidNotCompletedBody.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hệ thống đã ghi nhận thanh toán nhưng chưa hoàn tất được đơn: {reason}\nBạn có thể thử lại \"Xác nhận lấy đồ\" hoặc gửi khiếu nại trong chi tiết đơn.'**
+  String ordPaidNotCompletedBody(Object reason);
+
+  /// No description provided for @ordNoOvertimeFeeDue.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đơn hàng không có phí quá giờ cần thanh toán'**
+  String get ordNoOvertimeFeeDue;
+
+  /// No description provided for @ordLockrLocker.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tủ Lock.R'**
+  String get ordLockrLocker;
+
+  /// No description provided for @ordOverdue.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã quá hạn'**
+  String get ordOverdue;
+
+  /// No description provided for @ordOverdueFee.
+  ///
+  /// In vi, this message translates to:
+  /// **'Phí quá hạn'**
+  String get ordOverdueFee;
+
+  /// No description provided for @ordAwaitingPaymentOpenBox.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang chờ xác nhận thanh toán — mở ô sau khi đơn hiện Đã thanh toán.'**
+  String get ordAwaitingPaymentOpenBox;
+
+  /// No description provided for @ordOvertimePaidOpening.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã thanh toán phí quá giờ — chuẩn bị mở ô'**
+  String get ordOvertimePaidOpening;
+
+  /// No description provided for @ordSendingOpenCommand.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang gửi lệnh mở {box} tới tủ...'**
+  String ordSendingOpenCommand(Object box);
+
+  /// No description provided for @ordBoxOpened.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tủ đã mở {box} — mời bạn thao tác rồi đóng cửa.'**
+  String ordBoxOpened(Object box);
+
+  /// No description provided for @ordBoxOpenFailed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không mở được {box}{detail}'**
+  String ordBoxOpenFailed(Object box, Object detail);
+
+  /// No description provided for @ordNoBoxPinInfo.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đơn chưa có thông tin ô/PIN để mở tủ.'**
+  String get ordNoBoxPinInfo;
+
+  /// No description provided for @ordOverdueRentalNotice.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đơn thuê đã quá hạn. Đã ghi nhận xử lý phí quá giờ — mời bạn mở ô lấy đồ và đóng tủ để hoàn tất.'**
+  String get ordOverdueRentalNotice;
+
+  /// No description provided for @ordDelegatedTo.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã ủy quyền lấy hộ{to}. Mã PIN cũ đã hết hiệu lực.'**
+  String ordDelegatedTo(Object to);
+
+  /// No description provided for @ordDelegatedToPhone.
+  ///
+  /// In vi, this message translates to:
+  /// **' cho {phone}'**
+  String ordDelegatedToPhone(Object phone);
+
+  /// No description provided for @ordChangePinQuestion.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đổi mã PIN?'**
+  String get ordChangePinQuestion;
+
+  /// No description provided for @ordChangePinReceiver.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mã PIN hiện tại sẽ hết hiệu lực. Người nhận cần mã mới để lấy hàng — hãy gửi lại mã mới cho họ.'**
+  String get ordChangePinReceiver;
+
+  /// No description provided for @ordChangePinNow.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mã PIN hiện tại sẽ hết hiệu lực ngay và được thay bằng mã mới.'**
+  String get ordChangePinNow;
+
+  /// No description provided for @ordChangeCode.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đổi mã'**
+  String get ordChangeCode;
+
+  /// No description provided for @ordPinChangedSeeDetail.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã đổi mã PIN — xem mã mới trong chi tiết đơn.'**
+  String get ordPinChangedSeeDetail;
+
+  /// No description provided for @ordPinChangedNew.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã đổi mã PIN mới: {pin}'**
+  String ordPinChangedNew(Object pin);
+
+  /// No description provided for @ordPinChangeNotSupported.
+  ///
+  /// In vi, this message translates to:
+  /// **'Máy chủ chưa hỗ trợ đổi mã PIN.'**
+  String get ordPinChangeNotSupported;
+
+  /// No description provided for @ordReceiverEmailSaved.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã lưu email người nhận {email}. Lock.R báo người nhận khi đơn được thanh toán.'**
+  String ordReceiverEmailSaved(Object email);
+
+  /// No description provided for @ordPickupCodeSentTo.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã gửi mã mở tủ tới {email}.'**
+  String ordPickupCodeSentTo(Object email);
+
+  /// No description provided for @ordOrderInfoResentTo.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã gửi lại thông tin đơn tới {email}.'**
+  String ordOrderInfoResentTo(Object email);
+
+  /// No description provided for @ordEmailCodeNotSupported.
+  ///
+  /// In vi, this message translates to:
+  /// **'Máy chủ chưa hỗ trợ gửi mã qua email.'**
+  String get ordEmailCodeNotSupported;
+
+  /// No description provided for @ordNewOrderCreated.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã tạo đơn mới — xem trong danh sách'**
+  String get ordNewOrderCreated;
+
+  /// No description provided for @ordDropoffConfirmed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã xác nhận bỏ đồ'**
+  String get ordDropoffConfirmed;
+
+  /// No description provided for @ordConfirmPickedUpQuestion.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xác nhận đã lấy đồ?'**
+  String get ordConfirmPickedUpQuestion;
+
+  /// No description provided for @ordConfirmPickedUpBody.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đơn sẽ hoàn tất và ô tủ được giải phóng. Chỉ xác nhận khi bạn đã lấy đồ ra khỏi ô.'**
+  String get ordConfirmPickedUpBody;
+
+  /// No description provided for @ordPickedUp.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã lấy đồ'**
+  String get ordPickedUp;
+
+  /// No description provided for @ordBoxHasTicket.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ô này đã có phiếu RPT-{id} đang được KTV xử lý.'**
+  String ordBoxHasTicket(Object id);
+
+  /// No description provided for @ordCancelled.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã hủy đơn'**
+  String get ordCancelled;
+
+  /// No description provided for @ordMyOrdersSubtitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Quản lý các đơn hàng của bạn'**
+  String get ordMyOrdersSubtitle;
+
+  /// No description provided for @ordTabRecent.
+  ///
+  /// In vi, this message translates to:
+  /// **'Gần đây'**
+  String get ordTabRecent;
+
+  /// No description provided for @ordTabInUse.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang dùng'**
+  String get ordTabInUse;
+
+  /// No description provided for @ordTabCompleted.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hoàn thành'**
+  String get ordTabCompleted;
+
+  /// No description provided for @ordTabCancelled.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã hủy'**
+  String get ordTabCancelled;
+
+  /// No description provided for @ordTabAwaitingPickup.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chờ lấy'**
+  String get ordTabAwaitingPickup;
+
+  /// No description provided for @ordListLoading.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang tải danh sách đơn...'**
+  String get ordListLoading;
+
+  /// No description provided for @ordNoOrdersYet.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa có đơn nào'**
+  String get ordNoOrdersYet;
+
+  /// No description provided for @ordNoMatchingOrders.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không có đơn phù hợp'**
+  String get ordNoMatchingOrders;
+
+  /// No description provided for @ordIncomingLoading.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang tải hàng chờ nhận...'**
+  String get ordIncomingLoading;
+
+  /// No description provided for @ordNoIncoming.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa có hàng chờ nhận'**
+  String get ordNoIncoming;
+
+  /// No description provided for @ordNoIncomingHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Khi có người gửi hàng tới số điện thoại của bạn, đơn sẽ hiện ở đây.'**
+  String get ordNoIncomingHint;
+
+  /// No description provided for @ordNoIncomingMatch.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không tìm thấy đơn hàng chờ nhận nào theo bộ lọc đã chọn.'**
+  String get ordNoIncomingMatch;
+
+  /// No description provided for @ordMyOrders.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đơn của tôi'**
+  String get ordMyOrders;
+
+  /// No description provided for @ordIncoming.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hàng chờ nhận'**
+  String get ordIncoming;
+
+  /// No description provided for @ordPickupDeadlineValue.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hạn lấy: {time}'**
+  String ordPickupDeadlineValue(Object time);
+
+  /// No description provided for @ordLockerNameUnknown.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa tra được tên tủ'**
+  String get ordLockerNameUnknown;
+
+  /// No description provided for @ordPayAndPickup.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thanh toán & lấy đồ'**
+  String get ordPayAndPickup;
+
+  /// No description provided for @ordAwaitingTechnician.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chờ KTV xử lý'**
+  String get ordAwaitingTechnician;
+
+  /// No description provided for @ordReview.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xem lại'**
+  String get ordReview;
+
+  /// No description provided for @ordDropIntoLocker.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bỏ đồ vào tủ'**
+  String get ordDropIntoLocker;
+
+  /// No description provided for @ordPickupNow.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lấy đồ ngay'**
+  String get ordPickupNow;
+
+  /// No description provided for @ordOvertimePausedNoTime.
+  ///
+  /// In vi, this message translates to:
+  /// **'Phí quá giờ tạm dừng — chờ KTV xử lý ô, chưa cần thanh toán'**
+  String get ordOvertimePausedNoTime;
+
+  /// No description provided for @ordOvertimePausedSince.
+  ///
+  /// In vi, this message translates to:
+  /// **'Phí quá giờ tạm dừng từ {time} — chưa cần thanh toán'**
+  String ordOvertimePausedSince(Object time);
+
+  /// No description provided for @ordStorageExpiredTapPay.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đơn đã hết hạn lưu tủ {hours} — Bấm để thanh toán & lấy đồ'**
+  String ordStorageExpiredTapPay(Object hours);
+
+  /// No description provided for @ordOverdueMayCharge.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đơn đã quá hạn — có thể phát sinh phí'**
+  String get ordOverdueMayCharge;
+
+  /// No description provided for @ordRelocatedTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã điều chuyển sang Ô số {box} an toàn'**
+  String ordRelocatedTitle(Object box);
+
+  /// No description provided for @ordRelocatedSubtitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'KTV đã chuyển đồ từ ô cũ (#{oldBox}) sang ô mới do sự cố. Mã PIN mới đã sẵn sàng.'**
+  String ordRelocatedSubtitle(Object oldBox);
+
+  /// No description provided for @ordCheckedNoIssueTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'KTV đã kiểm tra: {box} không có sự cố'**
+  String ordCheckedNoIssueTitle(Object box);
+
+  /// No description provided for @ordCheckedNoIssueSubtitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ô hoạt động bình thường, bạn lấy đồ bằng mã PIN như thường lệ. Xem phản hồi của KTV trong phiếu.'**
+  String get ordCheckedNoIssueSubtitle;
+
+  /// No description provided for @ordResolvedTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'{box} đã được KTV kiểm tra & xử lý xong'**
+  String ordResolvedTitle(Object box);
+
+  /// No description provided for @ordResolvedSubtitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tài sản trong ô được bảo vệ an toàn.'**
+  String get ordResolvedSubtitle;
+
+  /// No description provided for @ordReportedTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'{box} đã được báo sự cố'**
+  String ordReportedTitle(Object box);
+
+  /// No description provided for @ordReportedCancelHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hãy hủy đơn này và đặt ô khác (hoặc liên hệ KTV).'**
+  String get ordReportedCancelHint;
+
+  /// No description provided for @ordReportedBlocked.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đồ của bạn vẫn được giữ an toàn trong ô. KTV đang xử lý — phí quá giờ tạm dừng, bạn chưa cần thanh toán.'**
+  String get ordReportedBlocked;
+
+  /// No description provided for @ordReportedCanOpen.
+  ///
+  /// In vi, this message translates to:
+  /// **'KTV sẽ tới kiểm tra ô. Bạn vẫn mở ô bằng mã PIN để lấy đồ được — phí quá giờ tạm dừng từ lúc báo.'**
+  String get ordReportedCanOpen;
+
+  /// No description provided for @ordReasonValue.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lý do: {reason}'**
+  String ordReasonValue(Object reason);
+
+  /// No description provided for @ordViewRelocation.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xem chi tiết điều chuyển & ảnh KTV'**
+  String get ordViewRelocation;
+
+  /// No description provided for @ordViewRecord.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xem biên bản & ảnh minh chứng'**
+  String get ordViewRecord;
+
+  /// No description provided for @ordPayOvertimeFee.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thanh toán phí quá giờ'**
+  String get ordPayOvertimeFee;
+
+  /// No description provided for @ordOriginalDeadline.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hạn trả ban đầu'**
+  String get ordOriginalDeadline;
+
+  /// No description provided for @ordOverdueDuration.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thời gian quá hạn'**
+  String get ordOverdueDuration;
+
+  /// No description provided for @ordOvertimeRate.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đơn giá quá giờ'**
+  String get ordOvertimeRate;
+
+  /// No description provided for @ordCapRule.
+  ///
+  /// In vi, this message translates to:
+  /// **'Quy định mức trần'**
+  String get ordCapRule;
+
+  /// No description provided for @ordCapMax.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tối đa {amount}'**
+  String ordCapMax(Object amount);
+
+  /// No description provided for @ordCapPercent.
+  ///
+  /// In vi, this message translates to:
+  /// **'{percent}% đơn'**
+  String ordCapPercent(Object percent);
+
+  /// No description provided for @ordOvertimeFee.
+  ///
+  /// In vi, this message translates to:
+  /// **'Phí quá giờ'**
+  String get ordOvertimeFee;
+
+  /// No description provided for @ordAmountDue.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cần thanh toán:'**
+  String get ordAmountDue;
+
+  /// No description provided for @ordPayAmount.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thanh toán {amount}'**
+  String ordPayAmount(Object amount);
+
+  /// No description provided for @ordOpenBoxPickup.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mở ô lấy đồ'**
+  String get ordOpenBoxPickup;
+
+  /// No description provided for @ordBoxReleased.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã giải phóng ô'**
+  String get ordBoxReleased;
+
+  /// No description provided for @ordBoxNotAssigned.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa gán ô'**
+  String get ordBoxNotAssigned;
+
+  /// No description provided for @ordPinCancelledSecurity.
+  ///
+  /// In vi, this message translates to:
+  /// **'•••••• (Đã hủy để bảo mật)'**
+  String get ordPinCancelledSecurity;
+
+  /// No description provided for @ordTechInCharge.
+  ///
+  /// In vi, this message translates to:
+  /// **'KTV phụ trách'**
+  String get ordTechInCharge;
+
+  /// No description provided for @ordRelocationRecordUpper.
+  ///
+  /// In vi, this message translates to:
+  /// **'HỒ SƠ ĐIỀU CHUYỂN Ô AN TOÀN'**
+  String get ordRelocationRecordUpper;
+
+  /// No description provided for @ordRelocationRecordSubtitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hàng đã được chuyển sang ô mới do ô cũ gặp sự cố kỹ thuật'**
+  String get ordRelocationRecordSubtitle;
+
+  /// No description provided for @ordOriginalBoxUpper.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ô BAN ĐẦU'**
+  String get ordOriginalBoxUpper;
+
+  /// No description provided for @ordBoxNumberHash.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ô số #{number}'**
+  String ordBoxNumberHash(Object number);
+
+  /// No description provided for @ordTechnicalIssue.
+  ///
+  /// In vi, this message translates to:
+  /// **'Gặp sự cố kỹ thuật'**
+  String get ordTechnicalIssue;
+
+  /// No description provided for @ordNewBoxUpper.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ô TIẾP NHẬN MỚI'**
+  String get ordNewBoxUpper;
+
+  /// No description provided for @ordHoldingSafely.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang chứa hàng an toàn'**
+  String get ordHoldingSafely;
+
+  /// No description provided for @ordOldBoxCheckedAt.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thời gian mở ô cũ kiểm tra'**
+  String get ordOldBoxCheckedAt;
+
+  /// No description provided for @ordMovedAt.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thời gian chuyển qua ô mới'**
+  String get ordMovedAt;
+
+  /// No description provided for @ordOriginalBoxPin.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mã PIN ô ban đầu'**
+  String get ordOriginalBoxPin;
+
+  /// No description provided for @ordPinDisabled.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã vô hiệu hoá (Mã cũ hết hạn)'**
+  String get ordPinDisabled;
+
+  /// No description provided for @ordNewBoxPin.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mã PIN mở ô mới (#{box})'**
+  String ordNewBoxPin(Object box);
+
+  /// No description provided for @ordPinActive.
+  ///
+  /// In vi, this message translates to:
+  /// **'{pin} (Đang kích hoạt)'**
+  String ordPinActive(Object pin);
+
+  /// No description provided for @ordTechPhotos.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ảnh KTV chụp quá trình kiểm tra & chuyển ô ({count} ảnh):'**
+  String ordTechPhotos(Object count);
+
+  /// No description provided for @ordViewFullRecord.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xem toàn bộ biên bản sự cố KTV & nhật ký ➔'**
+  String get ordViewFullRecord;
+
+  /// No description provided for @ordOrderDetailHash.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chi tiết đơn #{id}'**
+  String ordOrderDetailHash(Object id);
+
+  /// No description provided for @ordServiceHash.
+  ///
+  /// In vi, this message translates to:
+  /// **'Dịch vụ #{id}'**
+  String ordServiceHash(Object id);
+
+  /// No description provided for @ordReviewDroneJourney.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xem lại hành trình drone'**
+  String get ordReviewDroneJourney;
+
+  /// No description provided for @ordTrackDrone.
+  ///
+  /// In vi, this message translates to:
+  /// **'Theo dõi giao drone'**
+  String get ordTrackDrone;
+
+  /// No description provided for @ordPayAndCompletePickup.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thanh toán ({amount}) & Lấy đồ hoàn tất'**
+  String ordPayAndCompletePickup(Object amount);
+
+  /// No description provided for @ordIPickedUpCompleteOrder.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tôi đã lấy đồ — Hoàn tất đơn'**
+  String get ordIPickedUpCompleteOrder;
+
+  /// No description provided for @ordOpenBoxToPickup.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mở {box} để lấy đồ'**
+  String ordOpenBoxToPickup(Object box);
+
+  /// No description provided for @ordReorder.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đặt lại đơn'**
+  String get ordReorder;
+
+  /// No description provided for @ordOpenBoxToDrop.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mở {box} để bỏ đồ'**
+  String ordOpenBoxToDrop(Object box);
+
+  /// No description provided for @ordIDroppedOff.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tôi đã bỏ đồ vào ô'**
+  String get ordIDroppedOff;
+
+  /// No description provided for @ordPayOvertimeAndOpen.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thanh toán phí quá giờ ({amount}) & Mở ô'**
+  String ordPayOvertimeAndOpen(Object amount);
+
+  /// No description provided for @ordIPickedUpComplete.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tôi đã lấy đồ — hoàn tất'**
+  String get ordIPickedUpComplete;
+
+  /// No description provided for @ordOpenBoxToReturn.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mở {box} để trả tủ & lấy đồ'**
+  String ordOpenBoxToReturn(Object box);
+
+  /// No description provided for @ordEndRentalPickup.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kết thúc thuê & lấy đồ'**
+  String get ordEndRentalPickup;
+
+  /// No description provided for @ordDelegatePickup.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ủy quyền lấy hộ'**
+  String get ordDelegatePickup;
+
+  /// No description provided for @ordChangePin.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đổi mã PIN'**
+  String get ordChangePin;
+
+  /// No description provided for @ordAddReceiverEmail.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thêm email người nhận'**
+  String get ordAddReceiverEmail;
+
+  /// No description provided for @ordChangeReceiverEmail.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đổi email người nhận'**
+  String get ordChangeReceiverEmail;
+
+  /// No description provided for @ordResendToReceiver.
+  ///
+  /// In vi, this message translates to:
+  /// **'Gửi lại thông tin cho người nhận'**
+  String get ordResendToReceiver;
+
+  /// No description provided for @ordCancelOrder.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hủy đơn'**
+  String get ordCancelOrder;
+
+  /// No description provided for @ordDirectionsToLocker.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chỉ đường tới tủ'**
+  String get ordDirectionsToLocker;
+
+  /// No description provided for @ordRequestRefund.
+  ///
+  /// In vi, this message translates to:
+  /// **'Yêu cầu hoàn tiền'**
+  String get ordRequestRefund;
+
+  /// No description provided for @ordStorageExpiredPay.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đơn đã quá hạn lưu tủ {hours}. Ô tủ đã được giải phóng và đồ đã chuyển về bảo quản an toàn. Quý khách vui lòng thanh toán phí còn lại và bấm \"Thanh toán & lấy đồ\" để hoàn tất.'**
+  String ordStorageExpiredPay(Object hours);
+
+  /// No description provided for @ordStorageExpiredCheck.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đơn đã quá hạn lưu tủ {hours}. Ô tủ đã được giải phóng và đồ đã chuyển về bảo quản an toàn. Quý khách vui lòng kiểm tra nhận đồ và bấm \"Tôi đã lấy đồ — Hoàn tất đơn\" để hoàn tất.'**
+  String ordStorageExpiredCheck(Object hours);
+
+  /// No description provided for @ordOverduePaidOpen.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đơn quá hạn đã thanh toán phí quá giờ. Mời bạn mở ô để lấy đồ và hoàn tất trả tủ.'**
+  String get ordOverduePaidOpen;
+
+  /// No description provided for @ordOverdueNeedPay.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đơn đã quá hạn lấy — cần thanh toán phí quá giờ để mở tủ. {policy}'**
+  String ordOverdueNeedPay(Object policy);
+
+  /// No description provided for @ordUnpaidHold.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đơn hàng chưa thanh toán. Vui lòng thanh toán trong vòng {minutes} phút để giữ chỗ tủ, hoặc bấm \"Hủy đơn\" bên dưới để giải phóng ô tủ ngay.'**
+  String ordUnpaidHold(Object minutes);
+
+  /// No description provided for @ordPlace.
+  ///
+  /// In vi, this message translates to:
+  /// **'Địa điểm'**
+  String get ordPlace;
+
+  /// No description provided for @ordNewBox.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ô mới tiếp nhận'**
+  String get ordNewBox;
+
+  /// No description provided for @ordNewBoxValue.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ô số {box} (Đang an toàn)'**
+  String ordNewBoxValue(Object box);
+
+  /// No description provided for @ordOriginalBox.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ô ban đầu'**
+  String get ordOriginalBox;
+
+  /// No description provided for @ordOriginalBoxValue.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ô số {box} (Gặp sự cố)'**
+  String ordOriginalBoxValue(Object box);
+
+  /// No description provided for @ordOldBoxOpenedAt.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thời gian mở ô cũ'**
+  String get ordOldBoxOpenedAt;
+
+  /// No description provided for @ordBoxMovedAt.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thời gian chuyển ô'**
+  String get ordBoxMovedAt;
+
+  /// No description provided for @ordOriginalPin.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mã PIN ban đầu'**
+  String get ordOriginalPin;
+
+  /// No description provided for @ordOrderDate.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ngày đặt'**
+  String get ordOrderDate;
+
+  /// No description provided for @ordRentalDuration.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thời gian thuê'**
+  String get ordRentalDuration;
+
+  /// No description provided for @ordOriginalDeadlineShort.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hạn ban đầu'**
+  String get ordOriginalDeadlineShort;
+
+  /// No description provided for @ordCapRuleShort.
+  ///
+  /// In vi, this message translates to:
+  /// **'Quy định trần'**
+  String get ordCapRuleShort;
+
+  /// No description provided for @ordOvertimeFeeEstimate.
+  ///
+  /// In vi, this message translates to:
+  /// **'Phí quá giờ tạm tính'**
+  String get ordOvertimeFeeEstimate;
+
+  /// No description provided for @ordPenaltyStatus.
+  ///
+  /// In vi, this message translates to:
+  /// **'Trạng thái phạt'**
+  String get ordPenaltyStatus;
+
+  /// No description provided for @ordDueToOpen.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cần nộp để mở ô'**
+  String get ordDueToOpen;
+
+  /// No description provided for @ordRecipient.
+  ///
+  /// In vi, this message translates to:
+  /// **'Người nhận'**
+  String get ordRecipient;
+
+  /// No description provided for @ordRecipientEmail.
+  ///
+  /// In vi, this message translates to:
+  /// **'Email người nhận'**
+  String get ordRecipientEmail;
+
+  /// No description provided for @ordDelegatedToLabel.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ủy quyền lấy hộ cho'**
+  String get ordDelegatedToLabel;
+
+  /// No description provided for @ordDelegatee.
+  ///
+  /// In vi, this message translates to:
+  /// **'Người được ủy quyền'**
+  String get ordDelegatee;
+
+  /// No description provided for @ordDelegationMessage.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lời nhắn ủy quyền'**
+  String get ordDelegationMessage;
+
+  /// No description provided for @ordDelegatedAt.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ủy quyền lúc'**
+  String get ordDelegatedAt;
+
+  /// No description provided for @ordExpectedPickup.
+  ///
+  /// In vi, this message translates to:
+  /// **'Dự kiến người nhận lấy'**
+  String get ordExpectedPickup;
+
+  /// No description provided for @ordDeliveryAddress.
+  ///
+  /// In vi, this message translates to:
+  /// **'Địa chỉ giao'**
+  String get ordDeliveryAddress;
+
+  /// No description provided for @ordFromLocker.
+  ///
+  /// In vi, this message translates to:
+  /// **'Gửi từ tủ'**
+  String get ordFromLocker;
+
+  /// No description provided for @ordFlightDistance.
+  ///
+  /// In vi, this message translates to:
+  /// **'Quãng đường bay'**
+  String get ordFlightDistance;
+
+  /// No description provided for @ordBasePrice.
+  ///
+  /// In vi, this message translates to:
+  /// **'Giá gốc'**
+  String get ordBasePrice;
+
+  /// No description provided for @ordExtraFees.
+  ///
+  /// In vi, this message translates to:
+  /// **'Phí phát sinh'**
+  String get ordExtraFees;
+
+  /// No description provided for @ordPointsUsed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Điểm đã dùng'**
+  String get ordPointsUsed;
+
+  /// No description provided for @ordTotal.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tổng tiền'**
+  String get ordTotal;
+
+  /// No description provided for @ordRemaining.
+  ///
+  /// In vi, this message translates to:
+  /// **'Còn phải trả'**
+  String get ordRemaining;
+
+  /// No description provided for @ordPaidAt.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thanh toán lúc'**
+  String get ordPaidAt;
+
+  /// No description provided for @ordParcel.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kiện hàng'**
+  String get ordParcel;
+
+  /// No description provided for @ordDeliveryIncident.
+  ///
+  /// In vi, this message translates to:
+  /// **'Sự cố giao hàng'**
+  String get ordDeliveryIncident;
+
+  /// No description provided for @ordPaused.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang tạm dừng'**
+  String get ordPaused;
+
+  /// No description provided for @ordPausedAt.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tạm dừng lúc'**
+  String get ordPausedAt;
+
+  /// No description provided for @ordDeliveryIncomplete.
+  ///
+  /// In vi, this message translates to:
+  /// **'Giao không hoàn tất'**
+  String get ordDeliveryIncomplete;
+
+  /// No description provided for @ordRecordedAt.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ghi nhận lúc'**
+  String get ordRecordedAt;
+
+  /// No description provided for @ordParcelReturned.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã trả kiện cho bạn'**
+  String get ordParcelReturned;
+
+  /// No description provided for @ordNewBoxPinUpper.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mã PIN mở Ô MỚI (#{box}):'**
+  String ordNewBoxPinUpper(Object box);
+
+  /// No description provided for @ordOldPinDisabledNote.
+  ///
+  /// In vi, this message translates to:
+  /// **'🔒 Mã PIN ô cũ đã bị vô hiệu hoá. Chỉ sử dụng mã trên để mở ô mới an toàn.'**
+  String get ordOldPinDisabledNote;
+
+  /// No description provided for @ordPickupCodeForTech.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mã lấy hàng — đọc cho kỹ thuật viên khi tới lấy'**
+  String get ordPickupCodeForTech;
+
+  /// No description provided for @ordTimeline.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mốc thời gian'**
+  String get ordTimeline;
+
+  /// No description provided for @payMethodWallet.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ví Lock.R'**
+  String get payMethodWallet;
+
+  /// No description provided for @payMethodSepay.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chuyển khoản (SePay)'**
+  String get payMethodSepay;
+
+  /// No description provided for @payMethodCash.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tiền mặt'**
+  String get payMethodCash;
+
+  /// No description provided for @ordPaymentMethod.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hình thức thanh toán'**
+  String get ordPaymentMethod;
+
+  /// No description provided for @ordTransactionId.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mã giao dịch'**
+  String get ordTransactionId;
+
+  /// No description provided for @ordPaymentTime.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thời gian thanh toán'**
+  String get ordPaymentTime;
+
+  /// No description provided for @ordTransferred.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã chuyển tiền'**
+  String get ordTransferred;
+
+  /// No description provided for @ordRejected.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bị từ chối'**
+  String get ordRejected;
+
+  /// No description provided for @ordAwaitingTransfer.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chờ chuyển khoản'**
+  String get ordAwaitingTransfer;
+
+  /// No description provided for @ordRefundHash.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hoàn tiền #{id}'**
+  String ordRefundHash(Object id);
+
+  /// No description provided for @ordRefundAmount.
+  ///
+  /// In vi, this message translates to:
+  /// **'Số tiền hoàn'**
+  String get ordRefundAmount;
+
+  /// No description provided for @ordReceivingAccount.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tài khoản nhận'**
+  String get ordReceivingAccount;
+
+  /// No description provided for @ordCompletedAt.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thời gian hoàn tất'**
+  String get ordCompletedAt;
+
+  /// No description provided for @ordRequestedAt.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thời gian yêu cầu'**
+  String get ordRequestedAt;
+
+  /// No description provided for @ordSeeRefunds.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xem chi tiết ở mục Hoàn tiền'**
+  String get ordSeeRefunds;
+
+  /// No description provided for @ordExtensionPayment.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thanh toán gia hạn thời gian'**
+  String get ordExtensionPayment;
+
+  /// No description provided for @ordAttemptN.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lần {n}'**
+  String ordAttemptN(Object n);
+
+  /// No description provided for @ordInterventionRecord.
+  ///
+  /// In vi, this message translates to:
+  /// **'Biên bản can thiệp & bảo vệ tài sản:'**
+  String get ordInterventionRecord;
+
+  /// No description provided for @ordBoxIncidentTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Sự cố ô tủ - Đơn hàng #{code}'**
+  String ordBoxIncidentTitle(Object code);
+
+  /// No description provided for @ordViewTechEvidence.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xem chi tiết & ảnh minh chứng KTV'**
+  String get ordViewTechEvidence;
+
+  /// No description provided for @ordInfoRelocated.
+  ///
+  /// In vi, this message translates to:
+  /// **'ℹ️ Hàng của bạn đã được chuyển sang ô mới. Vui lòng kiểm tra mã mở ô mới trong app.'**
+  String get ordInfoRelocated;
+
+  /// No description provided for @ordInfoSealedHub.
+  ///
+  /// In vi, this message translates to:
+  /// **'ℹ️ Hàng được niêm phong an toàn và đưa về Hub. Nhân viên sẽ liên hệ bạn để thu xếp lại.'**
+  String get ordInfoSealedHub;
+
+  /// No description provided for @ordInfoHandedOver.
+  ///
+  /// In vi, this message translates to:
+  /// **'ℹ️ Hàng đã được bàn giao trực tiếp. Nếu có thắc mắc vui lòng liên hệ bộ phận CSKH.'**
+  String get ordInfoHandedOver;
+
+  /// No description provided for @ordEmailWithCode.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lock.R gửi lại mã mở tủ, nơi lấy và hạn lấy hàng tới email này. Sửa email nếu người nhận chưa nhận được thư.'**
+  String get ordEmailWithCode;
+
+  /// No description provided for @ordEmailOrderInfo.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hàng chưa vào tủ: Lock.R gửi lại thư báo có đơn sắp tới (chưa kèm mã). Mã mở tủ được gửi khi bạn bỏ hàng vào ô.'**
+  String get ordEmailOrderInfo;
+
+  /// No description provided for @ordEmailSaveOnly.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đơn chưa thanh toán. Lock.R báo người nhận qua email này khi đơn được thanh toán, và gửi mã mở tủ khi bạn bỏ hàng vào ô.'**
+  String get ordEmailSaveOnly;
+
+  /// No description provided for @ordEnterRecipientEmail.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhập email người nhận'**
+  String get ordEnterRecipientEmail;
+
+  /// No description provided for @ordSaveEmail.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lưu email'**
+  String get ordSaveEmail;
+
+  /// No description provided for @ordSendEmail.
+  ///
+  /// In vi, this message translates to:
+  /// **'Gửi email'**
+  String get ordSendEmail;
+
+  /// No description provided for @commonCopy.
+  ///
+  /// In vi, this message translates to:
+  /// **'Sao chép'**
+  String get commonCopy;
+
+  /// No description provided for @commonCopyTapHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chạm để sao chép'**
+  String get commonCopyTapHint;
+
+  /// No description provided for @commonRemove.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bỏ'**
+  String get commonRemove;
+
+  /// No description provided for @commonFullNameShort.
+  ///
+  /// In vi, this message translates to:
+  /// **'Họ tên'**
+  String get commonFullNameShort;
+
+  /// No description provided for @commonSubtotal.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tạm tính'**
+  String get commonSubtotal;
+
+  /// No description provided for @commonDiscountCode.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mã giảm giá'**
+  String get commonDiscountCode;
+
+  /// No description provided for @commonRewardPoints.
+  ///
+  /// In vi, this message translates to:
+  /// **'Điểm thưởng'**
+  String get commonRewardPoints;
+
+  /// No description provided for @commonChooseLocker.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chọn tủ'**
+  String get commonChooseLocker;
+
+  /// No description provided for @commonBoxType.
+  ///
+  /// In vi, this message translates to:
+  /// **'Loại ô'**
+  String get commonBoxType;
+
+  /// No description provided for @commonSelectedLocker.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tủ đã chọn'**
+  String get commonSelectedLocker;
+
+  /// No description provided for @commonNoFreeBoxes.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hết ô'**
+  String get commonNoFreeBoxes;
+
+  /// No description provided for @commonFreeBoxes.
+  ///
+  /// In vi, this message translates to:
+  /// **'Còn {count} ô trống'**
+  String commonFreeBoxes(Object count);
+
+  /// No description provided for @commonStayToPay.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ở lại thanh toán'**
+  String get commonStayToPay;
+
+  /// No description provided for @commonCancelAndExit.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hủy đơn & Thoát'**
+  String get commonCancelAndExit;
+
+  /// No description provided for @commonPaymentEyebrow.
+  ///
+  /// In vi, this message translates to:
+  /// **'LOCK.R • THANH TOÁN'**
+  String get commonPaymentEyebrow;
+
+  /// No description provided for @commonOrderCode.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đơn {code}'**
+  String commonOrderCode(Object code);
+
+  /// No description provided for @commonScanQrPayHold.
+  ///
+  /// In vi, this message translates to:
+  /// **'Quét mã QR trên và chuyển khoản trong {minutes} phút để giữ ô — mã bỏ hàng sẽ tự hiện sau khi thanh toán.'**
+  String commonScanQrPayHold(Object minutes);
+
+  /// No description provided for @commonScanQrPayHoldRent.
+  ///
+  /// In vi, this message translates to:
+  /// **'Quét mã QR trên và chuyển khoản trong {minutes} phút để giữ ô — mã mở ô sẽ tự hiện sau khi thanh toán.'**
+  String commonScanQrPayHoldRent(Object minutes);
+
+  /// No description provided for @commonPaySuccessPinReady.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thanh toán thành công! Mã PIN mở ô tủ đã sẵn sàng.'**
+  String get commonPaySuccessPinReady;
+
+  /// No description provided for @daysValue.
+  ///
+  /// In vi, this message translates to:
+  /// **'{days} ngày'**
+  String daysValue(int days);
+
+  /// No description provided for @pricePerDay.
+  ///
+  /// In vi, this message translates to:
+  /// **'{price}/ngày'**
+  String pricePerDay(Object price);
+
+  /// No description provided for @sizeSmallShort.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhỏ'**
+  String get sizeSmallShort;
+
+  /// No description provided for @sizeMediumShort.
+  ///
+  /// In vi, this message translates to:
+  /// **'Vừa'**
+  String get sizeMediumShort;
+
+  /// No description provided for @sizeLargeShort.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lớn'**
+  String get sizeLargeShort;
+
+  /// No description provided for @boxOfOrder.
+  ///
+  /// In vi, this message translates to:
+  /// **'ô của đơn'**
+  String get boxOfOrder;
+
+  /// No description provided for @sendBoxOpened.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ô đã mở — đặt hàng vào, đóng cửa rồi bấm xác nhận.'**
+  String get sendBoxOpened;
+
+  /// No description provided for @sendBoxOpenFailed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không mở được ô'**
+  String get sendBoxOpenFailed;
+
+  /// No description provided for @sendDroppedShare.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã bỏ hàng. Gửi mã lấy hàng cho người nhận bằng nút Chia sẻ bên dưới.'**
+  String get sendDroppedShare;
+
+  /// No description provided for @sendEnterRecipientEmail.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhập email người nhận để Lock.R gửi mã mở tủ'**
+  String get sendEnterRecipientEmail;
+
+  /// No description provided for @sendEnterRecipientPhone.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhập số điện thoại người nhận'**
+  String get sendEnterRecipientPhone;
+
+  /// No description provided for @sendPhone10Digits.
+  ///
+  /// In vi, this message translates to:
+  /// **'Số điện thoại gồm 10 số, bắt đầu bằng 0'**
+  String get sendPhone10Digits;
+
+  /// No description provided for @sendCancelCreateQuestion.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hủy tạo đơn hàng?'**
+  String get sendCancelCreateQuestion;
+
+  /// No description provided for @sendCancelCreateBody.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đơn hàng chưa được thanh toán. Nếu bạn thoát bây giờ hoặc không hoàn tất thanh toán trong vòng {minutes} phút, đơn hàng sẽ bị hủy và ô tủ sẽ được giải phóng.'**
+  String sendCancelCreateBody(Object minutes);
+
+  /// No description provided for @sendCancelledReleased.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã hủy đơn hàng và giải phóng ô tủ.'**
+  String get sendCancelledReleased;
+
+  /// No description provided for @sendTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Gửi hàng qua tủ'**
+  String get sendTitle;
+
+  /// No description provided for @sendSubtitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Gửi đồ nhanh chóng & tiện lợi'**
+  String get sendSubtitle;
+
+  /// No description provided for @sendCreateAndGetPin.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tạo đơn & lấy PIN bỏ hàng'**
+  String get sendCreateAndGetPin;
+
+  /// No description provided for @sendLoadingLockers.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang tải danh sách tủ...'**
+  String get sendLoadingLockers;
+
+  /// No description provided for @sendIntro.
+  ///
+  /// In vi, this message translates to:
+  /// **'Gửi hàng cho người khác qua tủ: bạn bỏ hàng vào ô bằng PIN, hệ thống sinh PIN mới gửi người nhận để họ tới lấy.'**
+  String get sendIntro;
+
+  /// No description provided for @sendStandardOnly.
+  ///
+  /// In vi, this message translates to:
+  /// **'Gửi hàng dùng ô thường; ô vali (XL) chỉ để thuê giữ đồ. Hãy chắc kiện hàng vừa ô trước khi tạo đơn.'**
+  String get sendStandardOnly;
+
+  /// No description provided for @sendRecipientPhoneHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Số điện thoại người nhận'**
+  String get sendRecipientPhoneHint;
+
+  /// No description provided for @sendRecipientNameHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tên người nhận (tùy chọn)'**
+  String get sendRecipientNameHint;
+
+  /// No description provided for @sendRecipientEmailHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Email người nhận'**
+  String get sendRecipientEmailHint;
+
+  /// No description provided for @sendEmailInfo.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lock.R gửi email cho người nhận ngay khi đơn được thanh toán (báo có hàng sắp tới) và gửi mã lấy hàng khi bạn bỏ hàng vào ô. Gửi lại được trong chi tiết đơn; bấm \"Chia sẻ mã cho người nhận\" để gửi thêm qua Zalo/SMS.'**
+  String get sendEmailInfo;
+
+  /// No description provided for @sendRecipientMessage.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lời nhắn cho người nhận'**
+  String get sendRecipientMessage;
+
+  /// No description provided for @sendMessageHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'VD: Hàng dễ vỡ, mở nhẹ tay (tùy chọn)'**
+  String get sendMessageHint;
+
+  /// No description provided for @sendBoxSize.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ô {size}'**
+  String sendBoxSize(Object size);
+
+  /// No description provided for @sendSelectedBox.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ô đã chọn'**
+  String get sendSelectedBox;
+
+  /// No description provided for @sendFeePerParcel.
+  ///
+  /// In vi, this message translates to:
+  /// **'{price}/lượt gửi'**
+  String sendFeePerParcel(Object price);
+
+  /// No description provided for @sendBoxTaken.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ô vừa được đặt — chọn ô khác'**
+  String get sendBoxTaken;
+
+  /// No description provided for @sendStep1Title.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bước 1 — Bỏ hàng vào ô'**
+  String get sendStep1Title;
+
+  /// No description provided for @sendStep1Body.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đến tủ, nhập PIN bên dưới để mở {box}, đặt hàng vào rồi đóng cửa.'**
+  String sendStep1Body(Object box);
+
+  /// No description provided for @sendStep2Title.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bước 2 — Đã bỏ hàng xong'**
+  String get sendStep2Title;
+
+  /// No description provided for @sendPinSentToRecipient.
+  ///
+  /// In vi, this message translates to:
+  /// **'PIN nhận hàng đã được gửi tới tài khoản người nhận.'**
+  String get sendPinSentToRecipient;
+
+  /// No description provided for @sendSharePinWithRecipient.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hãy chuyển mã PIN nhận hàng bên dưới cho người nhận.'**
+  String get sendSharePinWithRecipient;
+
+  /// No description provided for @sendRecipientEntersPin.
+  ///
+  /// In vi, this message translates to:
+  /// **'Người nhận nhập PIN tại tủ để lấy hàng'**
+  String get sendRecipientEntersPin;
+
+  /// No description provided for @sendEnterPinToDrop.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhập PIN tại tủ để mở ô và bỏ hàng'**
+  String get sendEnterPinToDrop;
+
+  /// No description provided for @sendLockrAccount.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tài khoản Lock.R'**
+  String get sendLockrAccount;
+
+  /// No description provided for @sendHasAccount.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã có — PIN gửi thẳng vào app'**
+  String get sendHasAccount;
+
+  /// No description provided for @sendNoAccount.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa có — bạn cần chuyển PIN cho người nhận'**
+  String get sendNoAccount;
+
+  /// No description provided for @sendPickupBefore.
+  ///
+  /// In vi, this message translates to:
+  /// **'Người nhận cần lấy hàng trước {deadline} ({remaining}). {policy}'**
+  String sendPickupBefore(Object deadline, Object remaining, Object policy);
+
+  /// No description provided for @sendDropInstructions.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mở ô bằng nút bên dưới hoặc nhập PIN tại tủ, đặt hàng vào, đóng cửa rồi xác nhận. Xác nhận ngay trên màn hình tủ cũng được.'**
+  String get sendDropInstructions;
+
+  /// No description provided for @sendOpenToDrop.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mở ô để bỏ hàng'**
+  String get sendOpenToDrop;
+
+  /// No description provided for @sendIDropped.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tôi đã bỏ hàng vào ô'**
+  String get sendIDropped;
+
+  /// No description provided for @sendStepDrop.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bỏ hàng'**
+  String get sendStepDrop;
+
+  /// No description provided for @sendStepRecipientPicks.
+  ///
+  /// In vi, this message translates to:
+  /// **'Người nhận lấy'**
+  String get sendStepRecipientPicks;
+
+  /// No description provided for @rentPaymentWaiting.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang chờ xác nhận thanh toán, vui lòng đợi giây lát'**
+  String get rentPaymentWaiting;
+
+  /// No description provided for @rentOpenedStart.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ô đã mở thành công — bắt đầu kỳ thuê!'**
+  String get rentOpenedStart;
+
+  /// No description provided for @rentOpenSimulated.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không mở được ô thật (giả lập: đã xác nhận bỏ đồ & bắt đầu kỳ thuê)'**
+  String get rentOpenSimulated;
+
+  /// No description provided for @rentCancelQuestion.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hủy tạo đơn thuê tủ?'**
+  String get rentCancelQuestion;
+
+  /// No description provided for @rentCancelBody.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đơn thuê tủ chưa được thanh toán. Nếu bạn thoát bây giờ hoặc không hoàn tất thanh toán trong vòng {minutes} phút, đơn sẽ bị hủy và ô tủ sẽ được giải phóng.'**
+  String rentCancelBody(Object minutes);
+
+  /// No description provided for @rentCancelledReleased.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã hủy đơn thuê tủ và giải phóng ô tủ.'**
+  String get rentCancelledReleased;
+
+  /// No description provided for @rentTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thuê tủ giữ đồ'**
+  String get rentTitle;
+
+  /// No description provided for @rentSubtitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chọn điểm tủ & thời gian sử dụng'**
+  String get rentSubtitle;
+
+  /// No description provided for @rentNow.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thuê ngay'**
+  String get rentNow;
+
+  /// No description provided for @rentLoadingInfo.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang tải thông tin điểm tủ...'**
+  String get rentLoadingInfo;
+
+  /// No description provided for @rentIntro.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thuê ô để giữ đồ cá nhân theo giờ hoặc theo ngày. PIN mở ô được dùng nhiều lần trong suốt kỳ thuê.'**
+  String get rentIntro;
+
+  /// No description provided for @rentDuration.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thời gian thuê'**
+  String get rentDuration;
+
+  /// No description provided for @rentOptionalHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tùy chọn...'**
+  String get rentOptionalHint;
+
+  /// No description provided for @rentDiscountValue.
+  ///
+  /// In vi, this message translates to:
+  /// **'Giảm: -{amount}'**
+  String rentDiscountValue(Object amount);
+
+  /// No description provided for @rentPointsValue.
+  ///
+  /// In vi, this message translates to:
+  /// **'Điểm thưởng: {value}'**
+  String rentPointsValue(Object value);
+
+  /// No description provided for @rentByHour.
+  ///
+  /// In vi, this message translates to:
+  /// **'Theo giờ'**
+  String get rentByHour;
+
+  /// No description provided for @rentByDay.
+  ///
+  /// In vi, this message translates to:
+  /// **'Theo ngày'**
+  String get rentByDay;
+
+  /// No description provided for @rentMinusDay.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bớt 1 ngày'**
+  String get rentMinusDay;
+
+  /// No description provided for @rentDaysHours.
+  ///
+  /// In vi, this message translates to:
+  /// **'{days} ngày · {hours} giờ'**
+  String rentDaysHours(Object days, Object hours);
+
+  /// No description provided for @rentPlusDay.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thêm 1 ngày'**
+  String get rentPlusDay;
+
+  /// No description provided for @rentRunning.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kỳ thuê đang chạy'**
+  String get rentRunning;
+
+  /// No description provided for @rentPinUntil.
+  ///
+  /// In vi, this message translates to:
+  /// **'PIN mở ô nhiều lần tới {time}.'**
+  String rentPinUntil(Object time);
+
+  /// No description provided for @rentPinMultiUse.
+  ///
+  /// In vi, this message translates to:
+  /// **'PIN dùng nhiều lần trong kỳ thuê'**
+  String get rentPinMultiUse;
+
+  /// No description provided for @rentExpiresAt.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hết hạn thuê: {deadline} ({remaining}). {policy}'**
+  String rentExpiresAt(Object deadline, Object remaining, Object policy);
+
+  /// No description provided for @rentHeldDropOff.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã giữ ô — bỏ đồ vào'**
+  String get rentHeldDropOff;
+
+  /// No description provided for @rentEnterPinToOpen.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhập PIN để mở {box} hoặc mở bằng nút bên dưới để bắt đầu kỳ thuê.'**
+  String rentEnterPinToOpen(Object box);
+
+  /// No description provided for @rentOpenToDrop.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mở ô để bỏ đồ'**
+  String get rentOpenToDrop;
+
+  /// No description provided for @rentExtensionUnpaid.
+  ///
+  /// In vi, this message translates to:
+  /// **'Còn phí gia hạn chưa thanh toán — cần trả trước khi kết thúc thuê.'**
+  String get rentExtensionUnpaid;
+
+  /// No description provided for @rentDoneSeeOrders.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xong — xem trong Đơn của tôi'**
+  String get rentDoneSeeOrders;
+
+  /// No description provided for @cellAvailable.
+  ///
+  /// In vi, this message translates to:
+  /// **'Trống'**
+  String get cellAvailable;
+
+  /// No description provided for @cellReservedHeld.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã giữ chỗ'**
+  String get cellReservedHeld;
+
+  /// No description provided for @cellOccupied.
+  ///
+  /// In vi, this message translates to:
+  /// **'Có đồ'**
+  String get cellOccupied;
+
+  /// No description provided for @cellAwaitingTechCheck.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chờ KTV kiểm tra'**
+  String get cellAwaitingTechCheck;
+
+  /// No description provided for @cellCleaning.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang vệ sinh'**
+  String get cellCleaning;
+
+  /// No description provided for @stAwaitingDropoff.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chờ bỏ đồ'**
+  String get stAwaitingDropoff;
+
+  /// No description provided for @stAwaitingDispatch.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chờ điều phối'**
+  String get stAwaitingDispatch;
+
+  /// No description provided for @stAccepted.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã tiếp nhận'**
+  String get stAccepted;
+
+  /// No description provided for @stLaunching.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang khởi phóng'**
+  String get stLaunching;
+
+  /// No description provided for @stDropReported.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã báo rơi kiện'**
+  String get stDropReported;
+
+  /// No description provided for @stPickupAssigned.
+  ///
+  /// In vi, this message translates to:
+  /// **'KTV đang tới lấy hàng'**
+  String get stPickupAssigned;
+
+  /// No description provided for @stPickedUpByTech.
+  ///
+  /// In vi, this message translates to:
+  /// **'KTV đã lấy hàng'**
+  String get stPickedUpByTech;
+
+  /// No description provided for @stFailed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Giao không thành công'**
+  String get stFailed;
+
+  /// No description provided for @stDeparted.
+  ///
+  /// In vi, this message translates to:
+  /// **'Drone đã rời trạm'**
+  String get stDeparted;
+
+  /// No description provided for @stEnRoute.
+  ///
+  /// In vi, this message translates to:
+  /// **'Drone đang bay'**
+  String get stEnRoute;
+
+  /// No description provided for @stApproaching.
+  ///
+  /// In vi, this message translates to:
+  /// **'Drone sắp đến'**
+  String get stApproaching;
+
+  /// No description provided for @stArrived.
+  ///
+  /// In vi, this message translates to:
+  /// **'Drone đã đến tủ'**
+  String get stArrived;
+
+  /// No description provided for @stReadyForPickup.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chờ nhận hàng'**
+  String get stReadyForPickup;
+
+  /// No description provided for @stStoring.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang trong tủ'**
+  String get stStoring;
+
+  /// No description provided for @stCollected.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã thu gom'**
+  String get stCollected;
+
+  /// No description provided for @stProcessing.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang xử lý'**
+  String get stProcessing;
+
+  /// No description provided for @stReadyToReturn.
+  ///
+  /// In vi, this message translates to:
+  /// **'Sẵn sàng trả'**
+  String get stReadyToReturn;
+
+  /// No description provided for @stNew.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mới'**
+  String get stNew;
+
+  /// No description provided for @stDone.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã xong'**
+  String get stDone;
+
+  /// No description provided for @stNotConfirmed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không xác nhận'**
+  String get stNotConfirmed;
+
+  /// No description provided for @typeLaundry.
+  ///
+  /// In vi, this message translates to:
+  /// **'Giặt ủi'**
+  String get typeLaundry;
+
+  /// No description provided for @typeStorage.
+  ///
+  /// In vi, this message translates to:
+  /// **'Gửi đồ'**
+  String get typeStorage;
+
+  /// No description provided for @typeParcel.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhận hàng'**
+  String get typeParcel;
+
+  /// No description provided for @incidentSince.
+  ///
+  /// In vi, this message translates to:
+  /// **' từ {time}'**
+  String incidentSince(Object time);
+
+  /// No description provided for @incidentReportedCanOpen.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bạn đã báo sự cố ô — kỹ thuật viên sẽ tới kiểm tra. Bạn vẫn có thể mở ô bằng mã PIN để lấy đồ; phí quá giờ tạm dừng{since}.'**
+  String incidentReportedCanOpen(Object since);
+
+  /// No description provided for @incidentBlocked.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ô đang chờ kỹ thuật viên xử lý sự cố. Đồ của bạn vẫn được giữ an toàn trong ô, phí quá giờ tạm dừng{since} — bạn chưa cần thanh toán hay gia hạn. Lock.R sẽ báo khi lấy được đồ.'**
+  String incidentBlocked(Object since);
+
+  /// No description provided for @durDaysHours.
+  ///
+  /// In vi, this message translates to:
+  /// **'{days} ngày {hours} giờ'**
+  String durDaysHours(Object days, Object hours);
+
+  /// No description provided for @durHoursMinutes.
+  ///
+  /// In vi, this message translates to:
+  /// **'{hours} giờ {minutes} phút'**
+  String durHoursMinutes(Object hours, Object minutes);
+
+  /// No description provided for @durUnderMinute.
+  ///
+  /// In vi, this message translates to:
+  /// **'dưới 1 phút'**
+  String get durUnderMinute;
+
+  /// No description provided for @timeRemaining.
+  ///
+  /// In vi, this message translates to:
+  /// **'Còn {time}'**
+  String timeRemaining(Object time);
+
+  /// No description provided for @timeOverdueBy.
+  ///
+  /// In vi, this message translates to:
+  /// **'Quá hạn {time}'**
+  String timeOverdueBy(Object time);
+
+  /// No description provided for @credEnterPinAtLocker.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhập PIN tại màn hình tủ để mở ô'**
+  String get credEnterPinAtLocker;
+
+  /// No description provided for @credPinCopied.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã sao chép mã PIN'**
+  String get credPinCopied;
+
+  /// No description provided for @credAt.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tại: {name}'**
+  String credAt(Object name);
+
+  /// No description provided for @unlockBlePermissionBlocked.
+  ///
+  /// In vi, this message translates to:
+  /// **'Quyền Bluetooth (Thiết bị lân cận) đang bị chặn. Mở Cài đặt để cho phép rồi quét lại.'**
+  String get unlockBlePermissionBlocked;
+
+  /// No description provided for @unlockBlePermissionDenied.
+  ///
+  /// In vi, this message translates to:
+  /// **'App cần quyền Bluetooth để dò tủ. Bấm Quét lại và chọn Cho phép.'**
+  String get unlockBlePermissionDenied;
+
+  /// No description provided for @unlockBleOff.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bluetooth của điện thoại đang tắt. Bật Bluetooth rồi bấm Quét lại.'**
+  String get unlockBleOff;
+
+  /// No description provided for @unlockBleUnsupported.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thiết bị này không hỗ trợ Bluetooth. Dùng Quét mã QR hoặc mã PIN.'**
+  String get unlockBleUnsupported;
+
+  /// No description provided for @unlockNoSignal.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa phát hiện sóng Bluetooth của tủ gần đây.'**
+  String get unlockNoSignal;
+
+  /// No description provided for @unlockOpenBox.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mở {box}'**
+  String unlockOpenBox(Object box);
+
+  /// No description provided for @unlockOverdueRental.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đơn thuê đã quá hạn. Đã ghi nhận xử lý phí quá giờ — mời bạn lấy đồ và đóng tủ để hoàn tất trả tủ.'**
+  String get unlockOverdueRental;
+
+  /// No description provided for @unlockEndsRental.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mở ô sẽ kết thúc kỳ thuê và giải phóng ô tủ. Vui lòng lấy hết đồ.'**
+  String get unlockEndsRental;
+
+  /// No description provided for @unlockScanQr.
+  ///
+  /// In vi, this message translates to:
+  /// **'Quét QR'**
+  String get unlockScanQr;
+
+  /// No description provided for @unlockPin.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mã PIN'**
+  String get unlockPin;
+
+  /// No description provided for @unlockScanning.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang quét sóng Bluetooth của tủ...'**
+  String get unlockScanning;
+
+  /// No description provided for @unlockStandClose.
+  ///
+  /// In vi, this message translates to:
+  /// **'Vui lòng đứng cách tủ {locker} dưới 2m'**
+  String unlockStandClose(Object locker);
+
+  /// No description provided for @unlockConnected.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã kết nối Bluetooth tủ'**
+  String get unlockConnected;
+
+  /// No description provided for @unlockSimulateRpi.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mô phỏng RPi'**
+  String get unlockSimulateRpi;
+
+  /// No description provided for @unlockDistanceSignal.
+  ///
+  /// In vi, this message translates to:
+  /// **'Khoảng cách: {distance} • Tín hiệu {rssi} dBm'**
+  String unlockDistanceSignal(Object distance, Object rssi);
+
+  /// No description provided for @unlockOpenAndReturn.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mở {box} & Trả tủ'**
+  String unlockOpenAndReturn(Object box);
+
+  /// No description provided for @unlockOpenNow.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mở {box} ngay (1-chạm)'**
+  String unlockOpenNow(Object box);
+
+  /// No description provided for @unlockNotFound.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không tìm thấy sóng Bluetooth của tủ'**
+  String get unlockNotFound;
+
+  /// No description provided for @unlockEnsureBluetooth.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đảm bảo điện thoại đã bật Bluetooth hoặc dùng Quét mã QR thay thế.'**
+  String get unlockEnsureBluetooth;
+
+  /// No description provided for @unlockScanAgain.
+  ///
+  /// In vi, this message translates to:
+  /// **'Quét lại'**
+  String get unlockScanAgain;
+
+  /// No description provided for @unlockRescan.
+  ///
+  /// In vi, this message translates to:
+  /// **'Dò sóng lại'**
+  String get unlockRescan;
+
+  /// No description provided for @unlockQrTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xác thực qua tem QR trên tủ'**
+  String get unlockQrTitle;
+
+  /// No description provided for @unlockQrBody.
+  ///
+  /// In vi, this message translates to:
+  /// **'Dùng camera điện thoại quét mã QR dán trên thân tủ {locker} để mở {box}.'**
+  String unlockQrBody(Object locker, Object box);
+
+  /// No description provided for @unlockStartCamera.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bật Camera quét tem QR'**
+  String get unlockStartCamera;
+
+  /// No description provided for @unlockKioskPinUpper.
+  ///
+  /// In vi, this message translates to:
+  /// **'MÃ PIN MỞ TRÊN MÀN HÌNH KIOSK'**
+  String get unlockKioskPinUpper;
+
+  /// No description provided for @unlockCodeCopied.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã sao chép mã'**
+  String get unlockCodeCopied;
+
+  /// No description provided for @unlockCopyPin.
+  ///
+  /// In vi, this message translates to:
+  /// **'Sao chép mã PIN'**
+  String get unlockCopyPin;
+
+  /// No description provided for @unlockKioskGuide.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hướng dẫn mở tại màn hình Kiosk:'**
+  String get unlockKioskGuide;
+
+  /// No description provided for @unlockKioskStep1.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đến trước màn hình cảm ứng của {locker}.'**
+  String unlockKioskStep1(Object locker);
+
+  /// No description provided for @unlockKioskStep2.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chọn nút \"Mở tủ\" hoặc \"Nhận đồ\".'**
+  String get unlockKioskStep2;
+
+  /// No description provided for @unlockKioskStep3.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhập mã PIN {pin} để cửa {box} bung chốt.'**
+  String unlockKioskStep3(Object pin, Object box);
+
+  /// No description provided for @extrasNotEligible.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đơn chưa đủ điều kiện áp mã này'**
+  String get extrasNotEligible;
+
+  /// No description provided for @extrasCodeInvalid.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mã không hợp lệ hoặc đã hết hạn'**
+  String get extrasCodeInvalid;
+
+  /// No description provided for @extrasCodeApplied.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã áp mã \"{code}\"'**
+  String extrasCodeApplied(Object code);
+
+  /// No description provided for @extrasChooseCode.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chọn mã giảm giá'**
+  String get extrasChooseCode;
+
+  /// No description provided for @extrasNoCodes.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa có mã giảm giá nào.'**
+  String get extrasNoCodes;
+
+  /// No description provided for @extrasNoCodesHere.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa có mã giảm giá dùng được ở tủ này.'**
+  String get extrasNoCodesHere;
+
+  /// No description provided for @tierBronze.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đồng'**
+  String get tierBronze;
+
+  /// No description provided for @tierSilver.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bạc'**
+  String get tierSilver;
+
+  /// No description provided for @tierGold.
+  ///
+  /// In vi, this message translates to:
+  /// **'Vàng'**
+  String get tierGold;
+
+  /// No description provided for @tierPlatinum.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bạch kim'**
+  String get tierPlatinum;
+
+  /// No description provided for @tierNextPoints.
+  ///
+  /// In vi, this message translates to:
+  /// **'còn {points} điểm lên hạng {tier}'**
+  String tierNextPoints(Object points, Object tier);
+
+  /// No description provided for @tierYouHavePoints.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bạn đang có {points} điểm'**
+  String tierYouHavePoints(Object points);
+
+  /// No description provided for @tierRank.
+  ///
+  /// In vi, this message translates to:
+  /// **'hạng {tier}'**
+  String tierRank(Object tier);
+
+  /// No description provided for @tierHighest.
+  ///
+  /// In vi, this message translates to:
+  /// **'hạng cao nhất'**
+  String get tierHighest;
+
+  /// No description provided for @payStatusPaid.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã thanh toán'**
+  String get payStatusPaid;
+
+  /// No description provided for @payStatusPending.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chờ thanh toán'**
+  String get payStatusPending;
+
+  /// No description provided for @payStatusFailed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thanh toán lỗi'**
+  String get payStatusFailed;
+
+  /// No description provided for @payStatusNone.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa có thanh toán'**
+  String get payStatusNone;
+
+  /// No description provided for @rulesRentRange.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thuê từ {min} đến {max}.'**
+  String rulesRentRange(Object min, Object max);
+
+  /// No description provided for @rulesEvery24h.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mỗi 24 giờ tính {price}.'**
+  String rulesEvery24h(Object price);
+
+  /// No description provided for @rulesDailyCapFrom.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thuê từ {hours} giờ trong một ngày chỉ tính giá ngày {price}.'**
+  String rulesDailyCapFrom(Object hours, Object price);
+
+  /// No description provided for @rulesRentalOvertime.
+  ///
+  /// In vi, this message translates to:
+  /// **'Quá giờ thuê tính {rate} cho tới khi lấy đồ hoặc gia hạn.'**
+  String rulesRentalOvertime(Object rate);
+
+  /// No description provided for @rulesNoOvertimeFee.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không tính phí quá giờ.'**
+  String get rulesNoOvertimeFee;
+
+  /// No description provided for @rulesPercentOfOrder.
+  ///
+  /// In vi, this message translates to:
+  /// **'{percent}% giá trị đơn'**
+  String rulesPercentOfOrder(Object percent);
+
+  /// No description provided for @rulesCapSuffix.
+  ///
+  /// In vi, this message translates to:
+  /// **' (tối đa {caps})'**
+  String rulesCapSuffix(Object caps);
+
+  /// No description provided for @rulesAnd.
+  ///
+  /// In vi, this message translates to:
+  /// **' và '**
+  String get rulesAnd;
+
+  /// No description provided for @rulesOvertimeFee.
+  ///
+  /// In vi, this message translates to:
+  /// **'Phí quá giờ {rate}{cap}.'**
+  String rulesOvertimeFee(Object rate, Object cap);
+
+  /// No description provided for @rulesSendPickup.
+  ///
+  /// In vi, this message translates to:
+  /// **'Người nhận có {hours} giờ để lấy hàng kể từ lúc bạn bỏ hàng vào ô. {policy}'**
+  String rulesSendPickup(Object hours, Object policy);
+
+  /// No description provided for @rulesDronePickup.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đơn hàng được lưu trữ {hours} giờ kể từ lúc drone thả hàng vào ô. Giờ và ngày hết hạn sẽ được báo ngay khi hàng vào ô. {policy}'**
+  String rulesDronePickup(Object hours, Object policy);
+
+  /// No description provided for @rulesDroneStoredUntil.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đơn hàng được lưu trữ {hours} giờ, vui lòng lấy trước {deadline}.'**
+  String rulesDroneStoredUntil(Object hours, Object deadline);
+
+  /// No description provided for @rulesLoyaltyEarn.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tích {percent}% số tiền bạn thanh toán thành điểm (1 điểm = {value}), cộng khi đơn hoàn tất.'**
+  String rulesLoyaltyEarn(Object percent, Object value);
+
+  /// No description provided for @rulesRedeemDisabled.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hiện chưa áp dụng dùng điểm để thanh toán.'**
+  String get rulesRedeemDisabled;
+
+  /// No description provided for @rulesRedeemMin.
+  ///
+  /// In vi, this message translates to:
+  /// **' (từ {points} điểm)'**
+  String rulesRedeemMin(Object points);
+
+  /// No description provided for @rulesRedeem.
+  ///
+  /// In vi, this message translates to:
+  /// **'1 điểm = {value} khi thanh toán, dùng tối đa {percent}% giá trị đơn{min}.'**
+  String rulesRedeem(Object value, Object percent, Object min);
+
+  /// No description provided for @loyaltyRedeemDisabled.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hiện chưa áp dụng dùng điểm để thanh toán'**
+  String get loyaltyRedeemDisabled;
+
+  /// No description provided for @loyaltyFullyDiscounted.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đơn đã được giảm hết, không cần dùng điểm'**
+  String get loyaltyFullyDiscounted;
+
+  /// No description provided for @loyaltyNoPoints.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bạn chưa có điểm — điểm được cộng khi đơn hoàn tất'**
+  String get loyaltyNoPoints;
+
+  /// No description provided for @loyaltyBelowMin.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bạn có {balance} điểm, cần tối thiểu {min} điểm mỗi lần dùng'**
+  String loyaltyBelowMin(Object balance, Object min);
+
+  /// No description provided for @loyaltyOrderTooSmall.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đơn chưa đủ giá trị để dùng tối thiểu {min} điểm'**
+  String loyaltyOrderTooSmall(Object min);
+
+  /// No description provided for @loyaltyOffer.
+  ///
+  /// In vi, this message translates to:
+  /// **'Dùng {points} điểm · giảm {amount}'**
+  String loyaltyOffer(Object points, Object amount);
+
+  /// No description provided for @loyaltyYouHave.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bạn có {balance} điểm'**
+  String loyaltyYouHave(Object balance);
+
+  /// No description provided for @loyaltyRule.
+  ///
+  /// In vi, this message translates to:
+  /// **'1 điểm = {value}, tối đa {percent}% giá trị đơn'**
+  String loyaltyRule(Object value, Object percent);
+
+  /// No description provided for @loyaltyPointsDiscount.
+  ///
+  /// In vi, this message translates to:
+  /// **'-{amount} ({points} điểm)'**
+  String loyaltyPointsDiscount(Object amount, Object points);
+
+  /// No description provided for @loyaltyCantUseNow.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa dùng được điểm thưởng lúc này — đơn được tính đủ giá.'**
+  String get loyaltyCantUseNow;
+
+  /// No description provided for @loyaltyPlusPoints.
+  ///
+  /// In vi, this message translates to:
+  /// **'+{points} điểm'**
+  String loyaltyPlusPoints(Object points);
+
+  /// No description provided for @loyaltyWillEarn.
+  ///
+  /// In vi, this message translates to:
+  /// **'Điểm sẽ được cộng'**
+  String get loyaltyWillEarn;
+
+  /// No description provided for @loyaltyEarned.
+  ///
+  /// In vi, this message translates to:
+  /// **'Điểm được cộng'**
+  String get loyaltyEarned;
+
+  /// No description provided for @loyaltyNotRecorded.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa ghi nhận'**
+  String get loyaltyNotRecorded;
+
+  /// No description provided for @loyaltyReversed.
+  ///
+  /// In vi, this message translates to:
+  /// **'{text} · đã thu hồi {points}'**
+  String loyaltyReversed(Object text, Object points);
+
+  /// No description provided for @loyaltyChecking.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang kiểm tra điểm thưởng...'**
+  String get loyaltyChecking;
+
+  /// No description provided for @loyaltyLoadFailed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa tải được điểm thưởng — đơn được tính đủ giá.'**
+  String get loyaltyLoadFailed;
+
+  /// No description provided for @loyaltyUsePoints.
+  ///
+  /// In vi, this message translates to:
+  /// **'Dùng điểm thưởng'**
+  String get loyaltyUsePoints;
+
+  /// No description provided for @sepayCreateFailed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không tạo được giao dịch thanh toán. Vui lòng thử lại.'**
+  String get sepayCreateFailed;
+
+  /// No description provided for @sepayNoQr.
+  ///
+  /// In vi, this message translates to:
+  /// **'Máy chủ chưa trả mã VietQR cho giao dịch này. Vui lòng thử lại sau.'**
+  String get sepayNoQr;
+
+  /// No description provided for @sepayNoTxForSim.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa có mã giao dịch để giả lập. Vui lòng thử lại.'**
+  String get sepayNoTxForSim;
+
+  /// No description provided for @sepayReceivedUpdating.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hệ thống đã nhận được tiền, đơn hàng đang được cập nhật...'**
+  String get sepayReceivedUpdating;
+
+  /// No description provided for @sepayPartial.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã nhận {received} — còn thiếu {remaining}. Mã QR bên dưới là số còn thiếu.'**
+  String sepayPartial(Object received, Object remaining);
+
+  /// No description provided for @sepayScanToPay.
+  ///
+  /// In vi, this message translates to:
+  /// **'Quét mã VietQR để thanh toán'**
+  String get sepayScanToPay;
+
+  /// No description provided for @sepayQrLoadFailed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không tải được mã QR'**
+  String get sepayQrLoadFailed;
+
+  /// No description provided for @sepayAccountNumber.
+  ///
+  /// In vi, this message translates to:
+  /// **'Số tài khoản:'**
+  String get sepayAccountNumber;
+
+  /// No description provided for @sepayAmountToTransfer.
+  ///
+  /// In vi, this message translates to:
+  /// **'Số tiền cần chuyển:'**
+  String get sepayAmountToTransfer;
+
+  /// No description provided for @sepayTransferContent.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nội dung chuyển khoản:'**
+  String get sepayTransferContent;
+
+  /// No description provided for @sepayContentCopied.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã sao chép nội dung chuyển khoản'**
+  String get sepayContentCopied;
+
+  /// No description provided for @sepayWaiting.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang chờ xác nhận thanh toán…'**
+  String get sepayWaiting;
+
+  /// No description provided for @sepayAutoUpdate.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tự động cập nhật ngay sau khi nhận được tiền.'**
+  String get sepayAutoUpdate;
+
+  /// No description provided for @sepayPayWithBankApp.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thanh toán bằng app ngân hàng'**
+  String get sepayPayWithBankApp;
+
+  /// No description provided for @sepayTransferExact.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chuyển khoản đúng số tài khoản, số tiền và nội dung bên dưới.'**
+  String get sepayTransferExact;
+
+  /// No description provided for @sepayCreatingQr.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang tạo mã thanh toán…'**
+  String get sepayCreatingQr;
+
+  /// No description provided for @apiErrBleTestNotGranted.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tài khoản chưa được admin cho thử mở ô qua Bluetooth ở tủ này.'**
+  String get apiErrBleTestNotGranted;
+
+  /// No description provided for @apiErrResolutionPhotoRequired.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cần ít nhất 1 ảnh nghiệm thu trước khi hoàn tất phiếu.'**
+  String get apiErrResolutionPhotoRequired;
+
+  /// No description provided for @apiErrLandingPadAbsent.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tủ này không có bãi đáp drone.'**
+  String get apiErrLandingPadAbsent;
+
+  /// No description provided for @apiErrLandingPadStatusInvalid.
+  ///
+  /// In vi, this message translates to:
+  /// **'Trạng thái bãi đáp không hợp lệ.'**
+  String get apiErrLandingPadStatusInvalid;
+
+  /// No description provided for @apiErrReportNotClaimable.
+  ///
+  /// In vi, this message translates to:
+  /// **'Phiếu không còn ở trạng thái chờ nhận.'**
+  String get apiErrReportNotClaimable;
+
+  /// No description provided for @apiErrDroneRouteRequired.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cần chọn cả tủ gửi và tủ nhận.'**
+  String get apiErrDroneRouteRequired;
+
+  /// No description provided for @apiErrDroneRouteInvalid.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tủ gửi và tủ nhận phải khác nhau.'**
+  String get apiErrDroneRouteInvalid;
+
+  /// No description provided for @apiErrDroneRouteTooFar.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tủ nhận nằm ngoài tầm bay của drone từ khu vực lấy hàng này.'**
+  String get apiErrDroneRouteTooFar;
+
+  /// No description provided for @apiErrDroneRouteTooShort.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tủ nhận ở quá gần điểm lấy hàng nên không cần giao bằng drone — hãy gửi thẳng vào tủ nhận.'**
+  String get apiErrDroneRouteTooShort;
+
+  /// No description provided for @apiErrDronePickupOutOfRange.
+  ///
+  /// In vi, this message translates to:
+  /// **'Vị trí ghim nằm ngoài bán kính lấy hàng của tủ gửi drone. Khoảng cách này tính từ nhà bạn đến tủ gửi, khác quãng đường bay giữa hai tủ. Hãy kiểm tra ghim trên bản đồ rồi chọn lại vị trí.'**
+  String get apiErrDronePickupOutOfRange;
+
+  /// No description provided for @apiErrDroneNoSourceLocker.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hiện chưa có tủ nào gần bạn sẵn sàng phóng drone. Vui lòng thử lại sau.'**
+  String get apiErrDroneNoSourceLocker;
+
+  /// No description provided for @apiErrDroneLockerLocationMissing.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tủ nhận chưa có toạ độ nên chưa giao drone tới được.'**
+  String get apiErrDroneLockerLocationMissing;
+
+  /// No description provided for @apiErrDronePickupAddressRequired.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cần nhập địa chỉ lấy hàng.'**
+  String get apiErrDronePickupAddressRequired;
+
+  /// No description provided for @apiErrDronePickupLocationRequired.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cần chọn vị trí lấy hàng trên bản đồ.'**
+  String get apiErrDronePickupLocationRequired;
+
+  /// No description provided for @apiErrDroneSenderNameRequired.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cần nhập tên người gửi.'**
+  String get apiErrDroneSenderNameRequired;
+
+  /// No description provided for @apiErrDroneSenderPhoneInvalid.
+  ///
+  /// In vi, this message translates to:
+  /// **'Số điện thoại người gửi không hợp lệ.'**
+  String get apiErrDroneSenderPhoneInvalid;
+
+  /// No description provided for @apiErrDroneSenderEmailInvalid.
+  ///
+  /// In vi, this message translates to:
+  /// **'Email người gửi không hợp lệ.'**
+  String get apiErrDroneSenderEmailInvalid;
+
+  /// No description provided for @apiErrDroneReceiverNameRequired.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cần nhập tên người nhận.'**
+  String get apiErrDroneReceiverNameRequired;
+
+  /// No description provided for @apiErrDroneReceiverEmailInvalid.
+  ///
+  /// In vi, this message translates to:
+  /// **'Email người nhận không hợp lệ.'**
+  String get apiErrDroneReceiverEmailInvalid;
+
+  /// No description provided for @apiErrDroneParcelCategoryRequired.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cần chọn loại hàng.'**
+  String get apiErrDroneParcelCategoryRequired;
+
+  /// No description provided for @apiErrDronePickupNotOffered.
+  ///
+  /// In vi, this message translates to:
+  /// **'Việc lấy hàng này không còn được mời cho bạn.'**
+  String get apiErrDronePickupNotOffered;
+
+  /// No description provided for @apiErrDronePickupOfferExpired.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lời mời lấy hàng đã hết hạn.'**
+  String get apiErrDronePickupOfferExpired;
+
+  /// No description provided for @apiErrDronePickupNotAssignedToUser.
+  ///
+  /// In vi, this message translates to:
+  /// **'Việc lấy hàng này không thuộc về bạn.'**
+  String get apiErrDronePickupNotAssignedToUser;
+
+  /// No description provided for @apiErrDronePickupNotFound.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đơn chưa có việc lấy hàng (có thể chưa thanh toán).'**
+  String get apiErrDronePickupNotFound;
+
+  /// No description provided for @apiErrDronePickupCodeInvalid.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mã lấy hàng không đúng. Nhờ người gửi đọc lại mã trong đơn.'**
+  String get apiErrDronePickupCodeInvalid;
+
+  /// No description provided for @apiErrDronePickupParcelNotVerified.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cần xác nhận kiện đúng khai báo, hoặc báo không lấy được hàng.'**
+  String get apiErrDronePickupParcelNotVerified;
+
+  /// No description provided for @apiErrDroneParcelNotPickedUp.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kiện chưa được lấy từ người gửi.'**
+  String get apiErrDroneParcelNotPickedUp;
+
+  /// No description provided for @apiErrDroneOrderBlocked.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đơn đang tạm dừng vì sự cố, chưa đi lấy hàng lúc này.'**
+  String get apiErrDroneOrderBlocked;
+
+  /// No description provided for @apiErrDroneTechnicianLocationRequired.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cần bật định vị để vào ca nhận việc lấy hàng.'**
+  String get apiErrDroneTechnicianLocationRequired;
+
+  /// No description provided for @apiErrDroneTechnicianHasActivePickup.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bạn còn việc lấy hàng đã nhận. Hoàn tất hoặc báo không lấy được trước khi ra ca.'**
+  String get apiErrDroneTechnicianHasActivePickup;
+
+  /// No description provided for @apiErrDroneTechnicianOffDuty.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kỹ thuật viên này chưa vào ca.'**
+  String get apiErrDroneTechnicianOffDuty;
+
+  /// No description provided for @apiErrDroneTechnicianBusy.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kỹ thuật viên này đang bận việc khác.'**
+  String get apiErrDroneTechnicianBusy;
+
+  /// No description provided for @apiErrDroneFailureReasonInvalid.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lý do không hợp lệ cho thao tác này.'**
+  String get apiErrDroneFailureReasonInvalid;
+
+  /// No description provided for @apiErrDroneUnchanged.
+  ///
+  /// In vi, this message translates to:
+  /// **'Drone này đang được gán cho nhiệm vụ rồi.'**
+  String get apiErrDroneUnchanged;
+
+  /// No description provided for @apiErrDroneFlightsSuspended.
+  ///
+  /// In vi, this message translates to:
+  /// **'Dịch vụ giao drone đang tạm dừng (thời tiết hoặc sự cố vận hành).'**
+  String get apiErrDroneFlightsSuspended;
+
+  /// No description provided for @apiErrDroneOutsideFlightHours.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ngoài khung giờ được phép phóng drone.'**
+  String get apiErrDroneOutsideFlightHours;
+
+  /// No description provided for @apiErrDroneOpenOrderLimit.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bạn đang có quá nhiều đơn drone chưa hoàn tất. Hoàn tất hoặc huỷ bớt rồi đặt tiếp.'**
+  String get apiErrDroneOpenOrderLimit;
+
+  /// No description provided for @apiErrDroneProhibitedItemsNotDeclared.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bạn cần cam kết kiện không chứa hàng cấm bay.'**
+  String get apiErrDroneProhibitedItemsNotDeclared;
+
+  /// No description provided for @apiErrDroneParcelSizeInvalid.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhập đủ dài, rộng, cao của kiện hoặc bỏ trống cả ba.'**
+  String get apiErrDroneParcelSizeInvalid;
+
+  /// No description provided for @apiErrDroneParcelTooLarge.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kiện không lọt khoang hàng của drone.'**
+  String get apiErrDroneParcelTooLarge;
+
+  /// No description provided for @apiErrDroneParcelCategoryInvalid.
+  ///
+  /// In vi, this message translates to:
+  /// **'Loại hàng không hợp lệ.'**
+  String get apiErrDroneParcelCategoryInvalid;
+
+  /// No description provided for @apiErrDroneDeclaredValueTooHigh.
+  ///
+  /// In vi, this message translates to:
+  /// **'Giá trị khai báo vượt mức drone được phép chở.'**
+  String get apiErrDroneDeclaredValueTooHigh;
+
+  /// No description provided for @apiErrDroneParcelNotDropped.
+  ///
+  /// In vi, this message translates to:
+  /// **'Người gửi chưa xác nhận bỏ kiện vào ô gửi nên chưa thể tiếp nhận.'**
+  String get apiErrDroneParcelNotDropped;
+
+  /// No description provided for @apiErrDroneParcelReturnNotPending.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đơn này không có kiện nào chờ trả.'**
+  String get apiErrDroneParcelReturnNotPending;
+
+  /// No description provided for @apiErrDroneBatteryUnknown.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa biết mức pin của drone, hãy cập nhật pin trước khi bay.'**
+  String get apiErrDroneBatteryUnknown;
+
+  /// No description provided for @apiErrDroneSurchargeNotOwed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đơn không còn nợ phụ thu cân lệch.'**
+  String get apiErrDroneSurchargeNotOwed;
+
+  /// No description provided for @apiErrDroneSourceNotFound.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không tìm thấy tủ gửi.'**
+  String get apiErrDroneSourceNotFound;
+
+  /// No description provided for @apiErrDroneDestinationNotFound.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không tìm thấy tủ nhận.'**
+  String get apiErrDroneDestinationNotFound;
+
+  /// No description provided for @apiErrDroneLockerInactive.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tủ gửi hoặc tủ nhận đang ngừng hoạt động.'**
+  String get apiErrDroneLockerInactive;
+
+  /// No description provided for @apiErrDroneSourceCellUnavailable.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ô drone ở tủ gửi đang có đơn khác. Vui lòng chờ đội bay nạp hàng hoặc chọn tủ khác.'**
+  String get apiErrDroneSourceCellUnavailable;
+
+  /// No description provided for @apiErrDroneSourceCellMismatch.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ô drone đã chọn không thuộc tủ gửi này.'**
+  String get apiErrDroneSourceCellMismatch;
+
+  /// No description provided for @apiErrDroneCellRequired.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chỉ đặt giao drone được ở ô drone.'**
+  String get apiErrDroneCellRequired;
+
+  /// No description provided for @apiErrBoxNotAvailable.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ô tủ không còn trống. Vui lòng chọn ô hoặc tủ khác.'**
+  String get apiErrBoxNotAvailable;
+
+  /// No description provided for @apiErrDroneDemoNotAllowed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tài khoản chưa được dùng chế độ mô phỏng drone.'**
+  String get apiErrDroneDemoNotAllowed;
+
+  /// No description provided for @apiErrDroneOrderUnpaid.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đơn chưa thanh toán nên chưa thể tiếp nhận.'**
+  String get apiErrDroneOrderUnpaid;
+
+  /// No description provided for @apiErrDroneOrderStatusInvalid.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đơn không còn ở bước cho phép thao tác này.'**
+  String get apiErrDroneOrderStatusInvalid;
+
+  /// No description provided for @apiErrDroneMissionAlreadyExists.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đơn đã có điều phối viên khác tiếp nhận.'**
+  String get apiErrDroneMissionAlreadyExists;
+
+  /// No description provided for @apiErrDroneMissionStatusInvalid.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhiệm vụ không còn ở bước cho phép thao tác này.'**
+  String get apiErrDroneMissionStatusInvalid;
+
+  /// No description provided for @apiErrDroneMissionNotAssignedToUser.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chỉ điều phối viên đã tiếp nhận mới thao tác được nhiệm vụ này.'**
+  String get apiErrDroneMissionNotAssignedToUser;
+
+  /// No description provided for @apiErrDroneWrongSourceLocker.
+  ///
+  /// In vi, this message translates to:
+  /// **'Drone được chọn không đỗ tại tủ gửi của đơn.'**
+  String get apiErrDroneWrongSourceLocker;
+
+  /// No description provided for @apiErrDroneInactive.
+  ///
+  /// In vi, this message translates to:
+  /// **'Drone đã ngừng hoạt động.'**
+  String get apiErrDroneInactive;
+
+  /// No description provided for @apiErrDroneNotIdle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Drone không còn sẵn sàng, hãy chọn drone khác.'**
+  String get apiErrDroneNotIdle;
+
+  /// No description provided for @apiErrDroneBatteryTooLow.
+  ///
+  /// In vi, this message translates to:
+  /// **'Pin drone quá thấp để bay, cần sạc trước.'**
+  String get apiErrDroneBatteryTooLow;
+
+  /// No description provided for @apiErrDroneStatusConflict.
+  ///
+  /// In vi, this message translates to:
+  /// **'Trạng thái drone vừa thay đổi, hãy tải lại và thử lại.'**
+  String get apiErrDroneStatusConflict;
+
+  /// No description provided for @apiErrDroneReservationLost.
+  ///
+  /// In vi, this message translates to:
+  /// **'Drone không còn được giữ cho nhiệm vụ này (có thể đã báo lỗi).'**
+  String get apiErrDroneReservationLost;
+
+  /// No description provided for @apiErrDronePayloadTooHeavy.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kiện hàng vượt tải trọng cho phép của drone.'**
+  String get apiErrDronePayloadTooHeavy;
+
+  /// No description provided for @apiErrDroneLoadingNotConfirmed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cần xác nhận nạp hàng trước khi phóng.'**
+  String get apiErrDroneLoadingNotConfirmed;
+
+  /// No description provided for @apiErrDroneSurchargeUnpaid.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kiện nặng hơn khai báo. Chờ khách trả thêm phần phí chênh rồi mới phóng được.'**
+  String get apiErrDroneSurchargeUnpaid;
+
+  /// No description provided for @apiErrDroneParcelWeightInvalid.
+  ///
+  /// In vi, this message translates to:
+  /// **'Khối lượng kiện hàng không hợp lệ.'**
+  String get apiErrDroneParcelWeightInvalid;
+
+  /// No description provided for @apiErrDroneAlreadyInFlight.
+  ///
+  /// In vi, this message translates to:
+  /// **'Drone đã cất cánh, không thể huỷ nhiệm vụ.'**
+  String get apiErrDroneAlreadyInFlight;
+
+  /// No description provided for @apiErrDroneCancelNoteRequired.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cần nhập ghi chú khi chọn lý do Khác.'**
+  String get apiErrDroneCancelNoteRequired;
+
+  /// No description provided for @apiErrDroneStageAutomated.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đơn mô phỏng tự chuyển chặng, không cần xác nhận tay.'**
+  String get apiErrDroneStageAutomated;
+
+  /// No description provided for @apiErrDroneReceiverPhoneInvalid.
+  ///
+  /// In vi, this message translates to:
+  /// **'Số điện thoại người nhận không hợp lệ.'**
+  String get apiErrDroneReceiverPhoneInvalid;
+
+  /// No description provided for @apiErrLockerInactive.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tủ đang ngừng hoạt động.'**
+  String get apiErrLockerInactive;
+
+  /// No description provided for @apiErrLandingPadUnavailable.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bãi đáp drone chưa sẵn sàng.'**
+  String get apiErrLandingPadUnavailable;
+
+  /// No description provided for @apiErrDroneOwnershipRequired.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bạn cần nhận phụ trách drone này trước.'**
+  String get apiErrDroneOwnershipRequired;
+
+  /// No description provided for @apiErrDroneAlreadyAssigned.
+  ///
+  /// In vi, this message translates to:
+  /// **'Drone đã có kỹ thuật viên khác phụ trách.'**
+  String get apiErrDroneAlreadyAssigned;
+
+  /// No description provided for @apiErrDroneActiveMission.
+  ///
+  /// In vi, this message translates to:
+  /// **'Drone đang có nhiệm vụ, chỉ được báo lỗi (FAULT).'**
+  String get apiErrDroneActiveMission;
+
+  /// No description provided for @apiErrDroneFaultReasonRequired.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cần nhập lý do khi báo drone lỗi.'**
+  String get apiErrDroneFaultReasonRequired;
+
+  /// No description provided for @apiErrDronePaymentRequiredBeforePickup.
+  ///
+  /// In vi, this message translates to:
+  /// **'Vui lòng thanh toán đơn drone trước khi mở tủ nhận hàng.'**
+  String get apiErrDronePaymentRequiredBeforePickup;
+
+  /// No description provided for @apiErrOrderStatusInvalid.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đơn không còn ở trạng thái cho phép thao tác này.'**
+  String get apiErrOrderStatusInvalid;
+
+  /// No description provided for @apiErrNotSupportedUpdate.
+  ///
+  /// In vi, this message translates to:
+  /// **'Máy chủ chưa hỗ trợ chức năng này. Vui lòng cập nhật hệ thống rồi thử lại.'**
+  String get apiErrNotSupportedUpdate;
+
+  /// No description provided for @apiErrForbidden.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bạn không có quyền thực hiện thao tác này'**
+  String get apiErrForbidden;
+
+  /// No description provided for @apiErrConnection.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lỗi kết nối máy chủ'**
+  String get apiErrConnection;
+
+  /// No description provided for @apiErrGeneric.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã xảy ra lỗi'**
+  String get apiErrGeneric;
+
+  /// No description provided for @commonSending.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang gửi...'**
+  String get commonSending;
+
+  /// No description provided for @commonDescription.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mô tả'**
+  String get commonDescription;
+
+  /// No description provided for @commonYes.
+  ///
+  /// In vi, this message translates to:
+  /// **'Có'**
+  String get commonYes;
+
+  /// No description provided for @commonNo.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không'**
+  String get commonNo;
+
+  /// No description provided for @commonOrder.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đơn hàng'**
+  String get commonOrder;
+
+  /// No description provided for @commonTime.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thời gian'**
+  String get commonTime;
+
+  /// No description provided for @commonMessage.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lời nhắn'**
+  String get commonMessage;
+
+  /// No description provided for @recvLoadFailed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không đọc được chi tiết đơn. Vui lòng thử lại.'**
+  String get recvLoadFailed;
+
+  /// No description provided for @recvNotInList.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đơn không còn trong danh sách của bạn (có thể đã được ủy quyền cho người khác). Đang hiện thông tin đã lưu.'**
+  String get recvNotInList;
+
+  /// No description provided for @recvSummaryOnly.
+  ///
+  /// In vi, this message translates to:
+  /// **'Máy chủ chưa hỗ trợ xem chi tiết đầy đủ — đang hiện thông tin tóm tắt.'**
+  String get recvSummaryOnly;
+
+  /// No description provided for @recvEmailSent.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã gửi thông tin đơn{withCode} tới {email}.'**
+  String recvEmailSent(Object withCode, Object email);
+
+  /// No description provided for @recvWithCode.
+  ///
+  /// In vi, this message translates to:
+  /// **' kèm mã mở tủ'**
+  String get recvWithCode;
+
+  /// No description provided for @recvYourEmail.
+  ///
+  /// In vi, this message translates to:
+  /// **'email của bạn'**
+  String get recvYourEmail;
+
+  /// No description provided for @recvNoEmail.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa có email'**
+  String get recvNoEmail;
+
+  /// No description provided for @recvNoEmailBody.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tài khoản của bạn chưa có email để nhận thông tin đơn. Bổ sung email trong Hồ sơ rồi gửi lại.'**
+  String get recvNoEmailBody;
+
+  /// No description provided for @recvAddEmail.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bổ sung email'**
+  String get recvAddEmail;
+
+  /// No description provided for @recvDelegateDetail.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chi tiết đơn lấy hộ'**
+  String get recvDelegateDetail;
+
+  /// No description provided for @recvDetail.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chi tiết đơn nhận'**
+  String get recvDetail;
+
+  /// No description provided for @recvDelegator.
+  ///
+  /// In vi, this message translates to:
+  /// **'Người ủy quyền'**
+  String get recvDelegator;
+
+  /// No description provided for @recvSender.
+  ///
+  /// In vi, this message translates to:
+  /// **'Người gửi'**
+  String get recvSender;
+
+  /// No description provided for @recvPickupCode.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mã lấy hàng'**
+  String get recvPickupCode;
+
+  /// No description provided for @recvOpenBoxPickup.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mở {box} lấy hàng'**
+  String recvOpenBoxPickup(Object box);
+
+  /// No description provided for @recvTrackDrone.
+  ///
+  /// In vi, this message translates to:
+  /// **'Theo dõi drone'**
+  String get recvTrackDrone;
+
+  /// No description provided for @recvSendingEmail.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang gửi email…'**
+  String get recvSendingEmail;
+
+  /// No description provided for @recvResendEmail.
+  ///
+  /// In vi, this message translates to:
+  /// **'Gửi lại thông tin qua email'**
+  String get recvResendEmail;
+
+  /// No description provided for @recvSenderPhone.
+  ///
+  /// In vi, this message translates to:
+  /// **'SĐT người gửi'**
+  String get recvSenderPhone;
+
+  /// No description provided for @recvSenderEmail.
+  ///
+  /// In vi, this message translates to:
+  /// **'Email người gửi'**
+  String get recvSenderEmail;
+
+  /// No description provided for @recvRecipientName.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tên người nhận'**
+  String get recvRecipientName;
+
+  /// No description provided for @recvRecipientPhone.
+  ///
+  /// In vi, this message translates to:
+  /// **'SĐT người nhận'**
+  String get recvRecipientPhone;
+
+  /// No description provided for @recvDelegatePerson.
+  ///
+  /// In vi, this message translates to:
+  /// **'Người lấy hộ'**
+  String get recvDelegatePerson;
+
+  /// No description provided for @recvYouSuffix.
+  ///
+  /// In vi, this message translates to:
+  /// **'{name} (bạn)'**
+  String recvYouSuffix(Object name);
+
+  /// No description provided for @recvYou.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bạn'**
+  String get recvYou;
+
+  /// No description provided for @recvDelegatePhone.
+  ///
+  /// In vi, this message translates to:
+  /// **'SĐT lấy hộ'**
+  String get recvDelegatePhone;
+
+  /// No description provided for @recvDelegation.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ủy quyền'**
+  String get recvDelegation;
+
+  /// No description provided for @recvOwnerDelegated.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chủ đơn đã ủy quyền người khác lấy hộ'**
+  String get recvOwnerDelegated;
+
+  /// No description provided for @recvLockerAndBox.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tủ & ô'**
+  String get recvLockerAndBox;
+
+  /// No description provided for @recvReceivingLocker.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tủ nhận'**
+  String get recvReceivingLocker;
+
+  /// No description provided for @recvLockerCode.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mã tủ'**
+  String get recvLockerCode;
+
+  /// No description provided for @recvBoxSize.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kích cỡ ô'**
+  String get recvBoxSize;
+
+  /// No description provided for @recvSourceAddress.
+  ///
+  /// In vi, this message translates to:
+  /// **'Địa chỉ tủ gửi'**
+  String get recvSourceAddress;
+
+  /// No description provided for @recvSenderNote.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ghi chú người gửi'**
+  String get recvSenderNote;
+
+  /// No description provided for @recvPickupDeadline.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hạn lấy'**
+  String get recvPickupDeadline;
+
+  /// No description provided for @recvTimeLeft.
+  ///
+  /// In vi, this message translates to:
+  /// **'Còn lại'**
+  String get recvTimeLeft;
+
+  /// No description provided for @recvExpectedPickup.
+  ///
+  /// In vi, this message translates to:
+  /// **'Dự kiến lấy'**
+  String get recvExpectedPickup;
+
+  /// No description provided for @recvCreatedAt.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tạo đơn lúc'**
+  String get recvCreatedAt;
+
+  /// No description provided for @recvCompletedAt.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hoàn tất lúc'**
+  String get recvCompletedAt;
+
+  /// No description provided for @recvUpdatedAt.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cập nhật lần cuối'**
+  String get recvUpdatedAt;
+
+  /// No description provided for @recvTimeline.
+  ///
+  /// In vi, this message translates to:
+  /// **'Dòng thời gian'**
+  String get recvTimeline;
+
+  /// No description provided for @recvDroneJourney.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hành trình drone'**
+  String get recvDroneJourney;
+
+  /// No description provided for @recvCurrentStage.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chặng hiện tại'**
+  String get recvCurrentStage;
+
+  /// No description provided for @recvEta.
+  ///
+  /// In vi, this message translates to:
+  /// **'Dự kiến tới tủ'**
+  String get recvEta;
+
+  /// No description provided for @recvArrived.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã tới'**
+  String get recvArrived;
+
+  /// No description provided for @recvAboutMinutes.
+  ///
+  /// In vi, this message translates to:
+  /// **'Khoảng {minutes} phút'**
+  String recvAboutMinutes(Object minutes);
+
+  /// No description provided for @recvIncident.
+  ///
+  /// In vi, this message translates to:
+  /// **'Sự cố'**
+  String get recvIncident;
+
+  /// No description provided for @recvParcelReturnedToSender.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã trả kiện cho người gửi'**
+  String get recvParcelReturnedToSender;
+
+  /// No description provided for @recvCodeMovedToDelegate.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chủ đơn đã ủy quyền người khác lấy hộ nên mã lấy hàng không còn hiện ở đây.'**
+  String get recvCodeMovedToDelegate;
+
+  /// No description provided for @recvCredCaption.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhập PIN hoặc quét QR tại tủ, hoặc mở ô ngay trên app'**
+  String get recvCredCaption;
+
+  /// No description provided for @recvOverdueMayCharge.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đơn đã quá hạn lấy — có thể phát sinh phí quá giờ.'**
+  String get recvOverdueMayCharge;
+
+  /// No description provided for @recvCompleted.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đơn đã hoàn tất — hàng đã được lấy.'**
+  String get recvCompleted;
+
+  /// No description provided for @recvCompletedAtTime.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đơn đã hoàn tất — hàng đã được lấy lúc {time}.'**
+  String recvCompletedAtTime(Object time);
+
+  /// No description provided for @recvCancelled.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đơn đã hủy nên không còn mã lấy hàng.'**
+  String get recvCancelled;
+
+  /// No description provided for @recvExpired.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đơn đã quá hạn lấy, ô đã được thu hồi. Vui lòng liên hệ người gửi hoặc hỗ trợ Lock.R.'**
+  String get recvExpired;
+
+  /// No description provided for @recvDroneNotReady.
+  ///
+  /// In vi, this message translates to:
+  /// **'{stage}. Mã lấy hàng sẽ hiện khi drone đã đặt kiện vào ô tủ nhận.'**
+  String recvDroneNotReady(Object stage);
+
+  /// No description provided for @recvSenderNotDropped.
+  ///
+  /// In vi, this message translates to:
+  /// **'Người gửi chưa bỏ hàng vào ô. Mã lấy hàng sẽ hiện khi hàng đã nằm trong ô.'**
+  String get recvSenderNotDropped;
+
+  /// No description provided for @recvNotReady.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hàng chưa sẵn sàng. Mã lấy hàng sẽ hiện khi hàng đã nằm trong ô.'**
+  String get recvNotReady;
+
+  /// No description provided for @recvSenderPaid.
+  ///
+  /// In vi, this message translates to:
+  /// **'Người gửi đã thanh toán'**
+  String get recvSenderPaid;
+
+  /// No description provided for @recvRefundingSender.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang hoàn tiền cho người gửi'**
+  String get recvRefundingSender;
+
+  /// No description provided for @recvSenderRefunded.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã hoàn tiền cho người gửi'**
+  String get recvSenderRefunded;
+
+  /// No description provided for @recvSenderUnpaid.
+  ///
+  /// In vi, this message translates to:
+  /// **'Người gửi chưa thanh toán'**
+  String get recvSenderUnpaid;
+
+  /// No description provided for @recvOrderCodeCopied.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã sao chép mã đơn'**
+  String get recvOrderCodeCopied;
+
+  /// No description provided for @recvCopyOrderCode.
+  ///
+  /// In vi, this message translates to:
+  /// **'Sao chép mã đơn'**
+  String get recvCopyOrderCode;
+
+  /// No description provided for @recvYouAreDelegate.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bạn được ủy quyền lấy hộ đơn này.'**
+  String get recvYouAreDelegate;
+
+  /// No description provided for @recvYouAreRecipient.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bạn là người nhận của đơn này.'**
+  String get recvYouAreRecipient;
+
+  /// No description provided for @recvOverdueBy.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đơn đã quá hạn lấy {duration} — lấy hàng sớm để tránh phí quá giờ.'**
+  String recvOverdueBy(Object duration);
+
+  /// No description provided for @recvNoCodeYet.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đơn chưa có mã lấy hàng — hàng có thể chưa được bỏ vào ô.'**
+  String get recvNoCodeYet;
+
+  /// No description provided for @recvBoxOpenedPickup.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tủ đã mở {box} — lấy hàng rồi đóng cửa tủ lại.'**
+  String recvBoxOpenedPickup(Object box);
+
+  /// No description provided for @recvOpenByCodeNotSupported.
+  ///
+  /// In vi, this message translates to:
+  /// **'Máy chủ chưa hỗ trợ mở ô bằng mã. Hãy nhập mã tại màn hình tủ.'**
+  String get recvOpenByCodeNotSupported;
+
+  /// No description provided for @recvLockerWithCode.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tủ {code}'**
+  String recvLockerWithCode(Object code);
+
+  /// No description provided for @recvDelegatorColon.
+  ///
+  /// In vi, this message translates to:
+  /// **'Người ủy quyền:'**
+  String get recvDelegatorColon;
+
+  /// No description provided for @recvSenderColon.
+  ///
+  /// In vi, this message translates to:
+  /// **'Người gửi:'**
+  String get recvSenderColon;
+
+  /// No description provided for @recvDelegatedPickup.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lấy hộ'**
+  String get recvDelegatedPickup;
+
+  /// No description provided for @recvIncomingParcel.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hàng nhận'**
+  String get recvIncomingParcel;
+
+  /// No description provided for @recvStorageBox.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ô lưu đồ'**
+  String get recvStorageBox;
+
+  /// No description provided for @recvCodeMovedShort.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chủ đơn đã ủy quyền người khác lấy hộ nên mã lấy hàng không còn hiện ở đây.'**
+  String get recvCodeMovedShort;
+
+  /// No description provided for @recvCredCaptionShort.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhập PIN tại tủ hoặc mở ô ngay trên app'**
+  String get recvCredCaptionShort;
+
+  /// No description provided for @recvReceived.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã nhận hàng'**
+  String get recvReceived;
+
+  /// No description provided for @recvDelegated.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã ủy quyền lấy hộ'**
+  String get recvDelegated;
+
+  /// No description provided for @recvOverdueHurry.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đơn đã quá hạn lấy — hãy lấy hàng sớm để tránh phát sinh thêm phí.'**
+  String get recvOverdueHurry;
+
+  /// No description provided for @recvCodeTransferred.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chủ đơn đã ủy quyền người khác lấy hộ — mã lấy hàng đã chuyển sang người lấy hộ.'**
+  String get recvCodeTransferred;
+
+  /// No description provided for @detailCantCall.
+  ///
+  /// In vi, this message translates to:
+  /// **'Máy này không gọi điện được.'**
+  String get detailCantCall;
+
+  /// No description provided for @detailCopiedLabel.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã sao chép {label}'**
+  String detailCopiedLabel(Object label);
+
+  /// No description provided for @detailCallLabel.
+  ///
+  /// In vi, this message translates to:
+  /// **'Gọi {label}'**
+  String detailCallLabel(Object label);
+
+  /// No description provided for @detailCopyLabel.
+  ///
+  /// In vi, this message translates to:
+  /// **'Sao chép {label}'**
+  String detailCopyLabel(Object label);
+
+  /// No description provided for @parcelCategory.
+  ///
+  /// In vi, this message translates to:
+  /// **'Loại hàng'**
+  String get parcelCategory;
+
+  /// No description provided for @parcelWeight.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cân nặng'**
+  String get parcelWeight;
+
+  /// No description provided for @parcelSize.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kích thước'**
+  String get parcelSize;
+
+  /// No description provided for @parcelFragile.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hàng dễ vỡ'**
+  String get parcelFragile;
+
+  /// No description provided for @parcelFragileYes.
+  ///
+  /// In vi, this message translates to:
+  /// **'Có — nhẹ tay'**
+  String get parcelFragileYes;
+
+  /// No description provided for @parcelDeclaredValue.
+  ///
+  /// In vi, this message translates to:
+  /// **'Giá trị khai báo'**
+  String get parcelDeclaredValue;
+
+  /// No description provided for @parcelNoProhibited.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cam kết không hàng cấm'**
+  String get parcelNoProhibited;
+
+  /// No description provided for @delegateTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ủy quyền lấy hộ'**
+  String get delegateTitle;
+
+  /// No description provided for @delegateBody.
+  ///
+  /// In vi, this message translates to:
+  /// **'Người được ủy quyền thấy đơn và mã mở ô trong mục \"Đơn ủy quyền\" của app (theo số điện thoại). Mã PIN hiện tại sẽ được đổi mới.'**
+  String get delegateBody;
+
+  /// No description provided for @delegatePhone.
+  ///
+  /// In vi, this message translates to:
+  /// **'Số điện thoại người lấy hộ'**
+  String get delegatePhone;
+
+  /// No description provided for @delegateName.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tên người lấy hộ (không bắt buộc)'**
+  String get delegateName;
+
+  /// No description provided for @delegateMessage.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lời nhắn (không bắt buộc)'**
+  String get delegateMessage;
+
+  /// No description provided for @delegateInvalidPhone.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhập số điện thoại hợp lệ (9–11 số).'**
+  String get delegateInvalidPhone;
+
+  /// No description provided for @delegateNotSupported.
+  ///
+  /// In vi, this message translates to:
+  /// **'Máy chủ chưa hỗ trợ ủy quyền lấy hộ.'**
+  String get delegateNotSupported;
+
+  /// No description provided for @delegateAction.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ủy quyền'**
+  String get delegateAction;
+
+  /// No description provided for @shareCopiedMessage.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã sao chép tin nhắn, dán vào Zalo, Messenger hoặc SMS để gửi cho người nhận.'**
+  String get shareCopiedMessage;
+
+  /// No description provided for @shareCantOpenSheet.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không mở được bảng chia sẻ'**
+  String get shareCantOpenSheet;
+
+  /// No description provided for @shareCantOpenSms.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không mở được ứng dụng tin nhắn'**
+  String get shareCantOpenSms;
+
+  /// No description provided for @shareTheRecipient.
+  ///
+  /// In vi, this message translates to:
+  /// **'người nhận'**
+  String get shareTheRecipient;
+
+  /// No description provided for @shareTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Gửi mã cho người nhận'**
+  String get shareTitle;
+
+  /// No description provided for @shareBody.
+  ///
+  /// In vi, this message translates to:
+  /// **'Người nhận nhập mã tại màn hình tủ để mở ô. Gửi tin nhắn soạn sẵn cho {who} qua Zalo, Messenger hoặc SMS.'**
+  String shareBody(Object who);
+
+  /// No description provided for @shareButton.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chia sẻ mã cho người nhận'**
+  String get shareButton;
+
+  /// No description provided for @shareSms.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhắn SMS'**
+  String get shareSms;
+
+  /// No description provided for @shareCopyMessage.
+  ///
+  /// In vi, this message translates to:
+  /// **'Sao chép tin nhắn'**
+  String get shareCopyMessage;
+
+  /// No description provided for @shareMsgLocker.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bạn có kiện hàng gửi tới tủ {where}.'**
+  String shareMsgLocker(Object where);
+
+  /// No description provided for @shareMsgDrone.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bạn có kiện hàng giao bằng drone đang chờ tại tủ {where}.'**
+  String shareMsgDrone(Object where);
+
+  /// No description provided for @shareMsgBox.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ô số {number}.'**
+  String shareMsgBox(Object number);
+
+  /// No description provided for @shareMsgCode.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mã lấy hàng: {code}.'**
+  String shareMsgCode(Object code);
+
+  /// No description provided for @shareMsgDeadline.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hạn lấy: {deadline}.'**
+  String shareMsgDeadline(Object deadline);
+
+  /// No description provided for @shareMsgHowTo.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhập mã tại màn hình tủ (kiosk) để mở ô.'**
+  String get shareMsgHowTo;
+
+  /// No description provided for @timelineTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lịch sử trạng thái'**
+  String get timelineTitle;
+
+  /// No description provided for @timelineLoadFailed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không tải được lịch sử trạng thái.'**
+  String get timelineLoadFailed;
+
+  /// No description provided for @timelineEmpty.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa có chuyển trạng thái nào.'**
+  String get timelineEmpty;
+
+  /// No description provided for @timelineFrom.
+  ///
+  /// In vi, this message translates to:
+  /// **'Từ {status}'**
+  String timelineFrom(Object status);
+
+  /// No description provided for @pickerNoLockers.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa có tủ khả dụng'**
+  String get pickerNoLockers;
+
+  /// No description provided for @pickerTapToChange.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chạm để chọn tủ khác'**
+  String get pickerTapToChange;
+
+  /// No description provided for @pickerUnavailable.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tạm không khả dụng: {reason}'**
+  String pickerUnavailable(Object reason);
+
+  /// No description provided for @payTransferAmount.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thanh toán chuyển khoản · {amount}'**
+  String payTransferAmount(Object amount);
+
+  /// No description provided for @payScanAnyBank.
+  ///
+  /// In vi, this message translates to:
+  /// **'Quét mã bằng app ngân hàng bất kỳ hoặc mở thẳng app ngân hàng.'**
+  String get payScanAnyBank;
+
+  /// No description provided for @svcRentSubtitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thuê ô theo giờ, PIN dùng nhiều lần'**
+  String get svcRentSubtitle;
+
+  /// No description provided for @svcSendSubtitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bỏ hàng vào ô, gửi PIN cho người nhận'**
+  String get svcSendSubtitle;
+
+  /// No description provided for @qrEnterLockerCode.
+  ///
+  /// In vi, this message translates to:
+  /// **'Vui lòng nhập mã tủ.'**
+  String get qrEnterLockerCode;
+
+  /// No description provided for @qrThisLocker.
+  ///
+  /// In vi, this message translates to:
+  /// **'tủ này'**
+  String get qrThisLocker;
+
+  /// No description provided for @qrLockerCodeMismatch.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mã tủ không khớp với {locker}.'**
+  String qrLockerCodeMismatch(Object locker);
+
+  /// No description provided for @qrEnterLockerCodeTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhập mã tủ'**
+  String get qrEnterLockerCodeTitle;
+
+  /// No description provided for @qrLockerCodeHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mã in trên thân tủ'**
+  String get qrLockerCodeHint;
+
+  /// No description provided for @qrCodeMismatch.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mã QR không khớp với {locker}.\nVui lòng quét đúng mã QR dán trên thân tủ.'**
+  String qrCodeMismatch(Object locker);
+
+  /// No description provided for @qrLockerBoxGeneric.
+  ///
+  /// In vi, this message translates to:
+  /// **'ô tủ'**
+  String get qrLockerBoxGeneric;
+
+  /// No description provided for @qrScanToOpen.
+  ///
+  /// In vi, this message translates to:
+  /// **'Quét mở {box}'**
+  String qrScanToOpen(Object box);
+
+  /// No description provided for @qrLockerCodeValue.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mã tủ: {code}'**
+  String qrLockerCodeValue(Object code);
+
+  /// No description provided for @qrPointCamera.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hướng camera về phía tem mã QR dán trên mặt tủ để xác thực bạn đang đứng tại tủ.'**
+  String get qrPointCamera;
+
+  /// No description provided for @qrCantScan.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không quét được? Nhập mã tủ'**
+  String get qrCantScan;
 }
 
 class _AppLocalizationsDelegate

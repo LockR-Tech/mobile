@@ -6,6 +6,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:smart_laundry_locker/core/theme/shadcn_theme.dart';
 import 'package:smart_laundry_locker/core/utils/app_date_time.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 /// Shared design kit for the locker customer flows (SEND / RENTAL / orders).
 /// Everything here is aligned to [AISLShadcnTheme] (navy + Roboto, 16px radius,
@@ -55,39 +56,39 @@ Color statusColor(String? status) => switch (status) {
 };
 
 String statusLabel(String? status) => switch (status) {
-  'AVAILABLE' => 'Trống',
-  'RESERVED' => 'Đã giữ chỗ',
-  'OCCUPIED' => 'Có đồ',
-  'FAULT' => 'Hỏng',
-  'PENDING_CHECK' => 'Chờ KTV kiểm tra',
-  'OUT_OF_SERVICE' => 'Ngưng dùng',
-  'CLEANING' => 'Đang vệ sinh',
-  'INITIALIZED' => 'Chờ bỏ đồ',
-  'AWAITING_DISPATCH' => 'Chờ điều phối',
-  'ACCEPTED' => 'Đã tiếp nhận',
-  'LAUNCHING' => 'Đang khởi phóng',
-  'DROP_REPORTED' => 'Đã báo rơi kiện',
-  'PICKUP_ASSIGNED' => 'KTV đang tới lấy hàng',
-  'PICKED_UP' => 'KTV đã lấy hàng',
-  'FAILED' => 'Giao không thành công',
-  'DEPARTED' => 'Drone đã rời trạm',
-  'EN_ROUTE' => 'Drone đang bay',
-  'APPROACHING' => 'Drone sắp đến',
-  'ARRIVED' => 'Drone đã đến tủ',
-  'READY_FOR_PICKUP' => 'Chờ nhận hàng',
-  'STORING' => 'Đang trong tủ',
-  'COLLECTED' => 'Đã thu gom',
-  'PROCESSING' => 'Đang xử lý',
-  'READY' => 'Sẵn sàng trả',
-  'RETURNED' => 'Chờ lấy',
-  'COMPLETED' => 'Hoàn tất',
-  'CANCELED' => 'Đã hủy',
-  'EXPIRED' => 'Quá hạn',
-  'OPEN' => 'Mới',
-  'IN_PROGRESS' => 'Đang xử lý',
-  'RESOLVED' => 'Đã xong',
+  'AVAILABLE' => L10n.current.cellAvailable,
+  'RESERVED' => L10n.current.cellReservedHeld,
+  'OCCUPIED' => L10n.current.cellOccupied,
+  'FAULT' => L10n.current.commonBroken,
+  'PENDING_CHECK' => L10n.current.cellAwaitingTechCheck,
+  'OUT_OF_SERVICE' => L10n.current.cellOutOfService,
+  'CLEANING' => L10n.current.cellCleaning,
+  'INITIALIZED' => L10n.current.stAwaitingDropoff,
+  'AWAITING_DISPATCH' => L10n.current.stAwaitingDispatch,
+  'ACCEPTED' => L10n.current.stAccepted,
+  'LAUNCHING' => L10n.current.stLaunching,
+  'DROP_REPORTED' => L10n.current.stDropReported,
+  'PICKUP_ASSIGNED' => L10n.current.stPickupAssigned,
+  'PICKED_UP' => L10n.current.stPickedUpByTech,
+  'FAILED' => L10n.current.stFailed,
+  'DEPARTED' => L10n.current.stDeparted,
+  'EN_ROUTE' => L10n.current.stEnRoute,
+  'APPROACHING' => L10n.current.stApproaching,
+  'ARRIVED' => L10n.current.stArrived,
+  'READY_FOR_PICKUP' => L10n.current.stReadyForPickup,
+  'STORING' => L10n.current.stStoring,
+  'COLLECTED' => L10n.current.stCollected,
+  'PROCESSING' => L10n.current.stProcessing,
+  'READY' => L10n.current.stReadyToReturn,
+  'RETURNED' => L10n.current.ordTabAwaitingPickup,
+  'COMPLETED' => L10n.current.commonDone,
+  'CANCELED' => L10n.current.enumCancelled,
+  'EXPIRED' => L10n.current.enumOverdue,
+  'OPEN' => L10n.current.stNew,
+  'IN_PROGRESS' => L10n.current.stProcessing,
+  'RESOLVED' => L10n.current.stDone,
   // Phiếu KTV kiểm tra không đúng như mô tả (đã phản hồi người báo).
-  'REJECTED' => 'Không xác nhận',
+  'REJECTED' => L10n.current.stNotConfirmed,
   _ => status ?? '',
 };
 
@@ -99,12 +100,12 @@ bool isReportClosed(dynamic status) {
 }
 
 String typeLabel(String? type) => switch (type) {
-  'LAUNDRY' => 'Giặt ủi',
-  'SEND' => 'Gửi hàng',
-  'RENTAL' => 'Thuê tủ',
-  'STORAGE' => 'Gửi đồ',
-  'PARCEL' => 'Nhận hàng',
-  'DRONE_DELIVERY' => 'Giao bằng drone',
+  'LAUNDRY' => L10n.current.typeLaundry,
+  'SEND' => L10n.current.lockerSendParcel,
+  'RENTAL' => L10n.current.homeRentLocker,
+  'STORAGE' => L10n.current.typeStorage,
+  'PARCEL' => L10n.current.typeParcel,
+  'DRONE_DELIVERY' => L10n.current.homeDroneDelivery,
   _ => type ?? '',
 };
 
@@ -162,14 +163,12 @@ bool orderBoxIncidentBlocksAccess(Map<String, dynamic> order) =>
 /// Câu giải thích cho khách khi ô có sự cố đang mở.
 String boxIncidentPausedText(Map<String, dynamic> order) {
   final since = order['boxIncidentOpenedAt'];
-  final sinceText = since == null ? '' : ' từ ${fmtDateTime(since)}';
+  final sinceText =
+      since == null ? '' : L10n.current.incidentSince(fmtDateTime(since));
   if (!orderBoxIncidentBlocksAccess(order)) {
-    return 'Bạn đã báo sự cố ô — kỹ thuật viên sẽ tới kiểm tra. Bạn vẫn có thể mở '
-        'ô bằng mã PIN để lấy đồ; phí quá giờ tạm dừng$sinceText.';
+    return L10n.current.incidentReportedCanOpen(sinceText);
   }
-  return 'Ô đang chờ kỹ thuật viên xử lý sự cố. Đồ của bạn vẫn được giữ an toàn '
-      'trong ô, phí quá giờ tạm dừng$sinceText — bạn chưa cần thanh toán hay gia '
-      'hạn. Lock.R sẽ báo khi lấy được đồ.';
+  return L10n.current.incidentBlocked(sinceText);
 }
 
 String _two(int n) => n.toString().padLeft(2, '0');
@@ -187,10 +186,12 @@ bool isOverdue(dynamic deadline) {
 }
 
 String _humanDuration(Duration d) {
-  if (d.inDays > 0) return '${d.inDays} ngày ${d.inHours % 24} giờ';
-  if (d.inHours > 0) return '${d.inHours} giờ ${d.inMinutes % 60} phút';
-  if (d.inMinutes > 0) return '${d.inMinutes} phút';
-  return 'dưới 1 phút';
+  if (d.inDays > 0) return L10n.current.durDaysHours(d.inDays, d.inHours % 24);
+  if (d.inHours > 0) {
+    return L10n.current.durHoursMinutes(d.inHours, d.inMinutes % 60);
+  }
+  if (d.inMinutes > 0) return L10n.current.minutesShort(d.inMinutes);
+  return L10n.current.durUnderMinute;
 }
 
 /// `Còn 5 giờ 12 phút` / `Quá hạn 2 giờ`.
@@ -199,8 +200,8 @@ String fmtRemaining(dynamic deadline) {
   if (d == null) return '';
   final now = DateTime.now();
   return d.isAfter(now)
-      ? 'Còn ${_humanDuration(d.difference(now))}'
-      : 'Quá hạn ${_humanDuration(now.difference(d))}';
+      ? L10n.current.timeRemaining(_humanDuration(d.difference(now)))
+      : L10n.current.timeOverdueBy(_humanDuration(now.difference(d)));
 }
 
 DateTime? parseDate(dynamic value) => _parseDate(value);
@@ -647,13 +648,22 @@ class OpsEmptyState extends StatelessWidget {
   }
 }
 
+/// `5 giờ 12 phút` — khoảng cách tới hạn (chưa tới hoặc đã quá), không kèm
+/// "Còn"/"Quá hạn" — dùng khi nhãn bên cạnh đã nói rõ.
+String fmtDeadlineDistance(dynamic deadline) {
+  final d = _parseDate(deadline);
+  if (d == null) return '';
+  final now = DateTime.now();
+  return _humanDuration(d.isAfter(now) ? d.difference(now) : now.difference(d));
+}
+
 /// PIN + QR access block shown once an order has an active credential.
 /// PIN is rendered as tappable digit tiles (copy-to-clipboard); QR is framed.
 class AccessCredentials extends StatelessWidget {
   const AccessCredentials({
     required this.pin,
     this.qrToken,
-    this.caption = 'Nhập PIN tại màn hình tủ để mở ô',
+    this.caption,
     this.showSuccessAnimation = true,
     this.showQr = false,
     this.animationSize = 210,
@@ -661,7 +671,7 @@ class AccessCredentials extends StatelessWidget {
   });
   final String? pin;
   final String? qrToken;
-  final String caption;
+  final String? caption;
   final bool showSuccessAnimation;
   final bool showQr;
   final double animationSize;
@@ -736,7 +746,7 @@ class AccessCredentials extends StatelessWidget {
             ScaffoldMessenger.of(context)
               ..hideCurrentSnackBar()
               ..showSnackBar(
-                const SnackBar(content: Text('Đã sao chép mã PIN')),
+                SnackBar(content: Text(context.l10n.credPinCopied)),
               );
           },
           child: Column(
@@ -770,13 +780,13 @@ class AccessCredentials extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 5),
-              const Row(
+              Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Icon(LucideIcons.copy, size: 11, color: opsMutedText),
                   SizedBox(width: 4),
                   Text(
-                    'Chạm để sao chép',
+                    context.l10n.commonCopyTapHint,
                     style: TextStyle(fontSize: 10.5, color: opsMutedText),
                   ),
                 ],
@@ -786,7 +796,7 @@ class AccessCredentials extends StatelessWidget {
         ),
         const SizedBox(height: 6),
         Text(
-          caption,
+          caption ?? context.l10n.credEnterPinAtLocker,
           textAlign: TextAlign.center,
           style: const TextStyle(
             fontSize: 11.5,
@@ -822,7 +832,7 @@ class LocationHint extends StatelessWidget {
           const SizedBox(width: 8),
           Expanded(
             child: Text(
-              'Tại: $name',
+              context.l10n.credAt(name),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: const TextStyle(

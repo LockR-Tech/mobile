@@ -2247,4 +2247,2684 @@ class AppLocalizationsEn extends AppLocalizations {
   String voucherOrderFrom(Object amount) {
     return 'Orders from $amount';
   }
+
+  @override
+  String get commonDetails => 'Details';
+
+  @override
+  String get commonNotYet => 'Not yet';
+
+  @override
+  String get commonNote => 'Note';
+
+  @override
+  String get commonReload => 'Reload';
+
+  @override
+  String get commonService => 'Service';
+
+  @override
+  String get commonDiscount => 'Discount';
+
+  @override
+  String get commonVoucher => 'Voucher';
+
+  @override
+  String get commonAmount => 'Amount';
+
+  @override
+  String get commonLocker => 'Locker';
+
+  @override
+  String get commonBox => 'Compartment';
+
+  @override
+  String get commonToday => 'Today';
+
+  @override
+  String get commonYesterday => 'Yesterday';
+
+  @override
+  String get commonUnknownDate => 'Unknown date';
+
+  @override
+  String dateDayMonthYear(Object day, Object month, Object year) {
+    return '$day/$month/$year';
+  }
+
+  @override
+  String hoursValue(int hours) {
+    String _temp0 = intl.Intl.pluralLogic(
+      hours,
+      locale: localeName,
+      other: '$hours hours',
+      one: '1 hour',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String pricePerHour(Object price) {
+    return '$price/hour';
+  }
+
+  @override
+  String photosMore(Object count) {
+    return '+$count photos';
+  }
+
+  @override
+  String get boxThisLower => 'this compartment';
+
+  @override
+  String boxNumberLower(Object number) {
+    return 'compartment $number';
+  }
+
+  @override
+  String get boxThis => 'This compartment';
+
+  @override
+  String get ordIncomingNotSupported =>
+      'The server doesn\'t support Incoming parcels yet. Please try again later.';
+
+  @override
+  String get ordNotFoundInList => 'The order wasn\'t found in your list.';
+
+  @override
+  String get ordEmptyRecent => 'No orders in the last 7 days.';
+
+  @override
+  String get ordEmptyActive => 'No orders are currently in use.';
+
+  @override
+  String get ordEmptyCompleted => 'No completed orders yet.';
+
+  @override
+  String get ordEmptyRental => 'No locker rentals yet.';
+
+  @override
+  String get ordEmptySend => 'No parcel orders yet.';
+
+  @override
+  String get ordEmptyCanceled => 'No cancelled orders.';
+
+  @override
+  String get ordEmptyHint =>
+      'Create a Send parcel or Rent locker order from the home screen.';
+
+  @override
+  String get ordCancelQuestion => 'Cancel order?';
+
+  @override
+  String ordCancelBody(Object code) {
+    return 'Order $code will be cancelled, the opening code will stop working and the held compartment will be released.';
+  }
+
+  @override
+  String get ordCancelPaidNote =>
+      ' Paid amounts aren\'t refunded automatically — after cancelling, open the order again and choose \"Request a refund\".';
+
+  @override
+  String get ordKeepOrder => 'Keep order';
+
+  @override
+  String get ordCancelOrderAlt => 'Cancel order';
+
+  @override
+  String get ordExtendRental => 'Extend rental';
+
+  @override
+  String ordAddHours(int hours) {
+    String _temp0 = intl.Intl.pluralLogic(
+      hours,
+      locale: localeName,
+      other: 'Add $hours hours',
+      one: 'Add 1 hour',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String ordMaxHoursPerExtension(Object hours) {
+    return 'Up to $hours hours per extension';
+  }
+
+  @override
+  String get ordExtend => 'Extend';
+
+  @override
+  String ordExtended(int hours) {
+    String _temp0 = intl.Intl.pluralLogic(
+      hours,
+      locale: localeName,
+      other: 'Extended by $hours hours',
+      one: 'Extended by 1 hour',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get ordReportFaultyBox => 'Report faulty compartment';
+
+  @override
+  String get ordDescribeIssueHint =>
+      'Describe the issue (won\'t open, door stuck...)';
+
+  @override
+  String ordOnsitePhotosOptional(Object max) {
+    return 'On-site photos (optional, up to $max)';
+  }
+
+  @override
+  String get ordPhotosHelp =>
+      'Photos help the maintenance team resolve it faster.';
+
+  @override
+  String get ordDescribeOrAttach =>
+      'Please describe the issue or attach a photo.';
+
+  @override
+  String get ordUploadingPhotos => 'Uploading photos...';
+
+  @override
+  String get ordSendReport => 'Send report';
+
+  @override
+  String get ordBoxFaultDefault =>
+      'The compartment has a problem (see attached photos)';
+
+  @override
+  String ordReportSentFor(Object box) {
+    return 'Report sent for $box — the maintenance team will handle it';
+  }
+
+  @override
+  String get ordPickupAtKiosk => 'Pick up at the kiosk';
+
+  @override
+  String get ordPickupAtKioskBody =>
+      'Use this code at the kiosk to open the compartment, take your items out, then close the door before confirming the end of the rental. You can also open it directly in the app if you\'re near the locker.';
+
+  @override
+  String ordOpenBoxOnPhone(Object box) {
+    return 'Open $box on your phone (GPS/QR)';
+  }
+
+  @override
+  String get ordPickedUpAndClosed => 'Items taken and locker closed';
+
+  @override
+  String get ordRentalEnded => 'Rental ended';
+
+  @override
+  String get ordNoLockerInfo => 'The order has no locker information.';
+
+  @override
+  String get ordLockerNoLocation =>
+      'The locker has no location for directions.';
+
+  @override
+  String get ordCantOpenMapsApp => 'Couldn\'t open a maps app on this device.';
+
+  @override
+  String ordExtensionPaymentFor(Object id) {
+    return 'Rental extension payment for order #$id';
+  }
+
+  @override
+  String get ordPaidSuccessfully => 'Your order has been paid successfully.';
+
+  @override
+  String get ordPaymentNotCompleted =>
+      'The transaction wasn\'t completed or was cancelled. Please try again.';
+
+  @override
+  String get ordAwaitingPaymentPull =>
+      'Waiting for payment confirmation — pull down to refresh in a few minutes.';
+
+  @override
+  String get ordAwaitingPaymentConfirmPickup =>
+      'Waiting for payment confirmation — tap \"Confirm pickup\" again once the order shows Paid.';
+
+  @override
+  String get ordConfirmPickup => 'Confirm pickup';
+
+  @override
+  String get ordConfirmPickupBody =>
+      'Do you confirm you\'ve received all items from this order? This will close and complete the order.';
+
+  @override
+  String get ordPickedUpComplete => 'Picked up — Complete';
+
+  @override
+  String get ordCompletedTitle => 'Order completed!';
+
+  @override
+  String get ordPaidAndPickedUp =>
+      'You\'ve paid and picked up your items. The order is complete.';
+
+  @override
+  String get ordReceivedComplete => 'Items received — order complete';
+
+  @override
+  String get ordPaidNotCompletedTitle => 'Paid — order not completed';
+
+  @override
+  String ordPaidNotCompletedBody(Object reason) {
+    return 'The payment was recorded but the order couldn\'t be completed: $reason\nYou can try \"Confirm pickup\" again or file a complaint in the order details.';
+  }
+
+  @override
+  String get ordNoOvertimeFeeDue => 'This order has no overtime fee to pay';
+
+  @override
+  String get ordLockrLocker => 'Lock.R locker';
+
+  @override
+  String get ordOverdue => 'Overdue';
+
+  @override
+  String get ordOverdueFee => 'Overdue fee';
+
+  @override
+  String get ordAwaitingPaymentOpenBox =>
+      'Waiting for payment confirmation — open the compartment once the order shows Paid.';
+
+  @override
+  String get ordOvertimePaidOpening =>
+      'Overtime fee paid — preparing to open the compartment';
+
+  @override
+  String ordSendingOpenCommand(Object box) {
+    return 'Sending the command to open $box...';
+  }
+
+  @override
+  String ordBoxOpened(Object box) {
+    return '$box is open — please use it and close the door.';
+  }
+
+  @override
+  String ordBoxOpenFailed(Object box, Object detail) {
+    return 'Couldn\'t open $box$detail';
+  }
+
+  @override
+  String get ordNoBoxPinInfo =>
+      'The order has no compartment/PIN information to open the locker.';
+
+  @override
+  String get ordOverdueRentalNotice =>
+      'The rental is overdue. The overtime fee has been recorded — please open the compartment, take your items and close the locker to finish.';
+
+  @override
+  String ordDelegatedTo(Object to) {
+    return 'Pickup delegated$to. The old PIN no longer works.';
+  }
+
+  @override
+  String ordDelegatedToPhone(Object phone) {
+    return ' to $phone';
+  }
+
+  @override
+  String get ordChangePinQuestion => 'Change PIN?';
+
+  @override
+  String get ordChangePinReceiver =>
+      'The current PIN will stop working. The recipient needs the new code to pick up — please send it to them again.';
+
+  @override
+  String get ordChangePinNow =>
+      'The current PIN will stop working immediately and be replaced with a new one.';
+
+  @override
+  String get ordChangeCode => 'Change code';
+
+  @override
+  String get ordPinChangedSeeDetail =>
+      'PIN changed — see the new code in the order details.';
+
+  @override
+  String ordPinChangedNew(Object pin) {
+    return 'New PIN: $pin';
+  }
+
+  @override
+  String get ordPinChangeNotSupported =>
+      'The server doesn\'t support changing the PIN yet.';
+
+  @override
+  String ordReceiverEmailSaved(Object email) {
+    return 'Saved recipient email $email. Lock.R will notify the recipient once the order is paid.';
+  }
+
+  @override
+  String ordPickupCodeSentTo(Object email) {
+    return 'Sent the locker code to $email.';
+  }
+
+  @override
+  String ordOrderInfoResentTo(Object email) {
+    return 'Resent the order details to $email.';
+  }
+
+  @override
+  String get ordEmailCodeNotSupported =>
+      'The server doesn\'t support sending codes by email yet.';
+
+  @override
+  String get ordNewOrderCreated => 'New order created — see it in the list';
+
+  @override
+  String get ordDropoffConfirmed => 'Drop-off confirmed';
+
+  @override
+  String get ordConfirmPickedUpQuestion =>
+      'Confirm you\'ve picked up your items?';
+
+  @override
+  String get ordConfirmPickedUpBody =>
+      'The order will be completed and the compartment released. Only confirm once you\'ve taken your items out.';
+
+  @override
+  String get ordPickedUp => 'Picked up';
+
+  @override
+  String ordBoxHasTicket(Object id) {
+    return 'This compartment already has ticket RPT-$id being handled by a technician.';
+  }
+
+  @override
+  String get ordCancelled => 'Order cancelled';
+
+  @override
+  String get ordMyOrdersSubtitle => 'Manage your orders';
+
+  @override
+  String get ordTabRecent => 'Recent';
+
+  @override
+  String get ordTabInUse => 'In use';
+
+  @override
+  String get ordTabCompleted => 'Completed';
+
+  @override
+  String get ordTabCancelled => 'Cancelled';
+
+  @override
+  String get ordTabAwaitingPickup => 'To pick up';
+
+  @override
+  String get ordListLoading => 'Loading orders...';
+
+  @override
+  String get ordNoOrdersYet => 'No orders yet';
+
+  @override
+  String get ordNoMatchingOrders => 'No matching orders';
+
+  @override
+  String get ordIncomingLoading => 'Loading incoming parcels...';
+
+  @override
+  String get ordNoIncoming => 'No incoming parcels';
+
+  @override
+  String get ordNoIncomingHint =>
+      'When someone sends a parcel to your phone number, it will appear here.';
+
+  @override
+  String get ordNoIncomingMatch =>
+      'No incoming parcels match the selected filter.';
+
+  @override
+  String get ordMyOrders => 'My orders';
+
+  @override
+  String get ordIncoming => 'Incoming';
+
+  @override
+  String ordPickupDeadlineValue(Object time) {
+    return 'Pick up by: $time';
+  }
+
+  @override
+  String get ordLockerNameUnknown => 'Locker name unavailable';
+
+  @override
+  String get ordPayAndPickup => 'Pay & pick up';
+
+  @override
+  String get ordAwaitingTechnician => 'Awaiting technician';
+
+  @override
+  String get ordReview => 'Review';
+
+  @override
+  String get ordDropIntoLocker => 'Drop off in locker';
+
+  @override
+  String get ordPickupNow => 'Pick up now';
+
+  @override
+  String get ordOvertimePausedNoTime =>
+      'Overtime fee paused — waiting for a technician, no payment needed yet';
+
+  @override
+  String ordOvertimePausedSince(Object time) {
+    return 'Overtime fee paused since $time — no payment needed yet';
+  }
+
+  @override
+  String ordStorageExpiredTapPay(Object hours) {
+    return 'Storage period expired $hours — Tap to pay & pick up';
+  }
+
+  @override
+  String get ordOverdueMayCharge => 'Order overdue — fees may apply';
+
+  @override
+  String ordRelocatedTitle(Object box) {
+    return 'Safely moved to compartment $box';
+  }
+
+  @override
+  String ordRelocatedSubtitle(Object oldBox) {
+    return 'A technician moved your items from the old compartment (#$oldBox) to a new one due to an issue. The new PIN is ready.';
+  }
+
+  @override
+  String ordCheckedNoIssueTitle(Object box) {
+    return 'Technician checked: $box has no issue';
+  }
+
+  @override
+  String get ordCheckedNoIssueSubtitle =>
+      'The compartment works normally; pick up with your PIN as usual. See the technician\'s response in the ticket.';
+
+  @override
+  String ordResolvedTitle(Object box) {
+    return '$box has been checked & fixed by a technician';
+  }
+
+  @override
+  String get ordResolvedSubtitle =>
+      'Your belongings in the compartment are kept safe.';
+
+  @override
+  String ordReportedTitle(Object box) {
+    return '$box has been reported';
+  }
+
+  @override
+  String get ordReportedCancelHint =>
+      'Please cancel this order and book another compartment (or contact a technician).';
+
+  @override
+  String get ordReportedBlocked =>
+      'Your items are still safe in the compartment. A technician is on it — the overtime fee is paused, no payment needed yet.';
+
+  @override
+  String get ordReportedCanOpen =>
+      'A technician will check the compartment. You can still open it with your PIN — the overtime fee is paused from the time of the report.';
+
+  @override
+  String ordReasonValue(Object reason) {
+    return 'Reason: $reason';
+  }
+
+  @override
+  String get ordViewRelocation => 'View relocation details & technician photos';
+
+  @override
+  String get ordViewRecord => 'View record & evidence photos';
+
+  @override
+  String get ordPayOvertimeFee => 'Pay overtime fee';
+
+  @override
+  String get ordOriginalDeadline => 'Original return deadline';
+
+  @override
+  String get ordOverdueDuration => 'Time overdue';
+
+  @override
+  String get ordOvertimeRate => 'Overtime rate';
+
+  @override
+  String get ordCapRule => 'Fee cap rule';
+
+  @override
+  String ordCapMax(Object amount) {
+    return 'Max $amount';
+  }
+
+  @override
+  String ordCapPercent(Object percent) {
+    return '$percent% of order';
+  }
+
+  @override
+  String get ordOvertimeFee => 'Overtime fee';
+
+  @override
+  String get ordAmountDue => 'Amount due:';
+
+  @override
+  String ordPayAmount(Object amount) {
+    return 'Pay $amount';
+  }
+
+  @override
+  String get ordOpenBoxPickup => 'Open compartment to pick up';
+
+  @override
+  String get ordBoxReleased => 'Compartment released';
+
+  @override
+  String get ordBoxNotAssigned => 'No compartment assigned';
+
+  @override
+  String get ordPinCancelledSecurity => '•••••• (Cancelled for security)';
+
+  @override
+  String get ordTechInCharge => 'Assigned technician';
+
+  @override
+  String get ordRelocationRecordUpper => 'SAFE COMPARTMENT RELOCATION RECORD';
+
+  @override
+  String get ordRelocationRecordSubtitle =>
+      'Your items were moved to a new compartment because the old one had a technical issue';
+
+  @override
+  String get ordOriginalBoxUpper => 'ORIGINAL COMPARTMENT';
+
+  @override
+  String ordBoxNumberHash(Object number) {
+    return 'Compartment #$number';
+  }
+
+  @override
+  String get ordTechnicalIssue => 'Technical issue';
+
+  @override
+  String get ordNewBoxUpper => 'NEW COMPARTMENT';
+
+  @override
+  String get ordHoldingSafely => 'Holding items safely';
+
+  @override
+  String get ordOldBoxCheckedAt => 'Old compartment checked at';
+
+  @override
+  String get ordMovedAt => 'Moved to new compartment at';
+
+  @override
+  String get ordOriginalBoxPin => 'Original compartment PIN';
+
+  @override
+  String get ordPinDisabled => 'Disabled (old code expired)';
+
+  @override
+  String ordNewBoxPin(Object box) {
+    return 'New compartment PIN (#$box)';
+  }
+
+  @override
+  String ordPinActive(Object pin) {
+    return '$pin (Active)';
+  }
+
+  @override
+  String ordTechPhotos(Object count) {
+    return 'Technician photos of the check & relocation ($count photos):';
+  }
+
+  @override
+  String get ordViewFullRecord =>
+      'View the full technician incident record & log ➔';
+
+  @override
+  String ordOrderDetailHash(Object id) {
+    return 'Order details #$id';
+  }
+
+  @override
+  String ordServiceHash(Object id) {
+    return 'Service #$id';
+  }
+
+  @override
+  String get ordReviewDroneJourney => 'Review drone journey';
+
+  @override
+  String get ordTrackDrone => 'Track drone delivery';
+
+  @override
+  String ordPayAndCompletePickup(Object amount) {
+    return 'Pay ($amount) & complete pickup';
+  }
+
+  @override
+  String get ordIPickedUpCompleteOrder => 'I\'ve picked up — Complete order';
+
+  @override
+  String ordOpenBoxToPickup(Object box) {
+    return 'Open $box to pick up';
+  }
+
+  @override
+  String get ordReorder => 'Reorder';
+
+  @override
+  String ordOpenBoxToDrop(Object box) {
+    return 'Open $box to drop off';
+  }
+
+  @override
+  String get ordIDroppedOff => 'I\'ve dropped off the items';
+
+  @override
+  String ordPayOvertimeAndOpen(Object amount) {
+    return 'Pay overtime fee ($amount) & open';
+  }
+
+  @override
+  String get ordIPickedUpComplete => 'I\'ve picked up — complete';
+
+  @override
+  String ordOpenBoxToReturn(Object box) {
+    return 'Open $box to return the locker & pick up';
+  }
+
+  @override
+  String get ordEndRentalPickup => 'End rental & pick up';
+
+  @override
+  String get ordDelegatePickup => 'Delegate pickup';
+
+  @override
+  String get ordChangePin => 'Change PIN';
+
+  @override
+  String get ordAddReceiverEmail => 'Add recipient email';
+
+  @override
+  String get ordChangeReceiverEmail => 'Change recipient email';
+
+  @override
+  String get ordResendToReceiver => 'Resend details to recipient';
+
+  @override
+  String get ordCancelOrder => 'Cancel order';
+
+  @override
+  String get ordDirectionsToLocker => 'Directions to locker';
+
+  @override
+  String get ordRequestRefund => 'Request a refund';
+
+  @override
+  String ordStorageExpiredPay(Object hours) {
+    return 'The storage period has expired $hours. The compartment was released and your items were moved to safe storage. Please pay the remaining fee and tap \"Pay & pick up\" to finish.';
+  }
+
+  @override
+  String ordStorageExpiredCheck(Object hours) {
+    return 'The storage period has expired $hours. The compartment was released and your items were moved to safe storage. Please check and collect your items, then tap \"I\'ve picked up — Complete order\" to finish.';
+  }
+
+  @override
+  String get ordOverduePaidOpen =>
+      'The overtime fee for this overdue order is paid. Please open the compartment, take your items and return the locker.';
+
+  @override
+  String ordOverdueNeedPay(Object policy) {
+    return 'The pickup is overdue — pay the overtime fee to open the locker. $policy';
+  }
+
+  @override
+  String ordUnpaidHold(Object minutes) {
+    return 'This order is unpaid. Please pay within $minutes minutes to hold the locker, or tap \"Cancel order\" below to release the compartment now.';
+  }
+
+  @override
+  String get ordPlace => 'Place';
+
+  @override
+  String get ordNewBox => 'New compartment';
+
+  @override
+  String ordNewBoxValue(Object box) {
+    return 'Compartment $box (Safe)';
+  }
+
+  @override
+  String get ordOriginalBox => 'Original compartment';
+
+  @override
+  String ordOriginalBoxValue(Object box) {
+    return 'Compartment $box (Had an issue)';
+  }
+
+  @override
+  String get ordOldBoxOpenedAt => 'Old compartment opened at';
+
+  @override
+  String get ordBoxMovedAt => 'Compartment moved at';
+
+  @override
+  String get ordOriginalPin => 'Original PIN';
+
+  @override
+  String get ordOrderDate => 'Order date';
+
+  @override
+  String get ordRentalDuration => 'Rental duration';
+
+  @override
+  String get ordOriginalDeadlineShort => 'Original deadline';
+
+  @override
+  String get ordCapRuleShort => 'Fee cap';
+
+  @override
+  String get ordOvertimeFeeEstimate => 'Estimated overtime fee';
+
+  @override
+  String get ordPenaltyStatus => 'Penalty status';
+
+  @override
+  String get ordDueToOpen => 'Due to open';
+
+  @override
+  String get ordRecipient => 'Recipient';
+
+  @override
+  String get ordRecipientEmail => 'Recipient email';
+
+  @override
+  String get ordDelegatedToLabel => 'Pickup delegated to';
+
+  @override
+  String get ordDelegatee => 'Delegate';
+
+  @override
+  String get ordDelegationMessage => 'Delegation message';
+
+  @override
+  String get ordDelegatedAt => 'Delegated at';
+
+  @override
+  String get ordExpectedPickup => 'Expected pickup';
+
+  @override
+  String get ordDeliveryAddress => 'Delivery address';
+
+  @override
+  String get ordFromLocker => 'Sent from locker';
+
+  @override
+  String get ordFlightDistance => 'Flight distance';
+
+  @override
+  String get ordBasePrice => 'Base price';
+
+  @override
+  String get ordExtraFees => 'Extra fees';
+
+  @override
+  String get ordPointsUsed => 'Points used';
+
+  @override
+  String get ordTotal => 'Total';
+
+  @override
+  String get ordRemaining => 'Remaining';
+
+  @override
+  String get ordPaidAt => 'Paid at';
+
+  @override
+  String get ordParcel => 'Parcel';
+
+  @override
+  String get ordDeliveryIncident => 'Delivery incident';
+
+  @override
+  String get ordPaused => 'Paused';
+
+  @override
+  String get ordPausedAt => 'Paused at';
+
+  @override
+  String get ordDeliveryIncomplete => 'Delivery not completed';
+
+  @override
+  String get ordRecordedAt => 'Recorded at';
+
+  @override
+  String get ordParcelReturned => 'Parcel returned to you';
+
+  @override
+  String ordNewBoxPinUpper(Object box) {
+    return 'PIN for the NEW compartment (#$box):';
+  }
+
+  @override
+  String get ordOldPinDisabledNote =>
+      '🔒 The old compartment PIN has been disabled. Only use the code above to open the new compartment.';
+
+  @override
+  String get ordPickupCodeForTech =>
+      'Pickup code — read it to the technician when they arrive';
+
+  @override
+  String get ordTimeline => 'Timeline';
+
+  @override
+  String get payMethodWallet => 'Lock.R wallet';
+
+  @override
+  String get payMethodSepay => 'Bank transfer (SePay)';
+
+  @override
+  String get payMethodCash => 'Cash';
+
+  @override
+  String get ordPaymentMethod => 'Payment method';
+
+  @override
+  String get ordTransactionId => 'Transaction ID';
+
+  @override
+  String get ordPaymentTime => 'Payment time';
+
+  @override
+  String get ordTransferred => 'Transferred';
+
+  @override
+  String get ordRejected => 'Rejected';
+
+  @override
+  String get ordAwaitingTransfer => 'Awaiting transfer';
+
+  @override
+  String ordRefundHash(Object id) {
+    return 'Refund #$id';
+  }
+
+  @override
+  String get ordRefundAmount => 'Refund amount';
+
+  @override
+  String get ordReceivingAccount => 'Receiving account';
+
+  @override
+  String get ordCompletedAt => 'Completed at';
+
+  @override
+  String get ordRequestedAt => 'Requested at';
+
+  @override
+  String get ordSeeRefunds => 'See details under Refunds';
+
+  @override
+  String get ordExtensionPayment => 'Rental extension payment';
+
+  @override
+  String ordAttemptN(Object n) {
+    return 'Attempt $n';
+  }
+
+  @override
+  String get ordInterventionRecord => 'Intervention & asset protection record:';
+
+  @override
+  String ordBoxIncidentTitle(Object code) {
+    return 'Compartment incident - Order #$code';
+  }
+
+  @override
+  String get ordViewTechEvidence => 'View details & technician evidence photos';
+
+  @override
+  String get ordInfoRelocated =>
+      'ℹ️ Your items have been moved to a new compartment. Please check the new opening code in the app.';
+
+  @override
+  String get ordInfoSealedHub =>
+      'ℹ️ Your items were sealed safely and taken to the Hub. Staff will contact you to rearrange.';
+
+  @override
+  String get ordInfoHandedOver =>
+      'ℹ️ Your items were handed over in person. If you have questions, please contact customer support.';
+
+  @override
+  String get ordEmailWithCode =>
+      'Lock.R will resend the locker code, pickup place and deadline to this email. Edit the email if the recipient didn\'t get the message.';
+
+  @override
+  String get ordEmailOrderInfo =>
+      'The parcel isn\'t in the locker yet: Lock.R will resend the upcoming-order email (without a code). The locker code is sent once you drop the parcel off.';
+
+  @override
+  String get ordEmailSaveOnly =>
+      'The order is unpaid. Lock.R will notify the recipient at this email once it\'s paid, and send the locker code when you drop the parcel off.';
+
+  @override
+  String get ordEnterRecipientEmail => 'Enter the recipient\'s email';
+
+  @override
+  String get ordSaveEmail => 'Save email';
+
+  @override
+  String get ordSendEmail => 'Send email';
+
+  @override
+  String get commonCopy => 'Copy';
+
+  @override
+  String get commonCopyTapHint => 'Tap to copy';
+
+  @override
+  String get commonRemove => 'Remove';
+
+  @override
+  String get commonFullNameShort => 'Full name';
+
+  @override
+  String get commonSubtotal => 'Subtotal';
+
+  @override
+  String get commonDiscountCode => 'Discount code';
+
+  @override
+  String get commonRewardPoints => 'Reward points';
+
+  @override
+  String get commonChooseLocker => 'Choose locker';
+
+  @override
+  String get commonBoxType => 'Compartment type';
+
+  @override
+  String get commonSelectedLocker => 'Selected locker';
+
+  @override
+  String get commonNoFreeBoxes => 'Full';
+
+  @override
+  String commonFreeBoxes(Object count) {
+    return '$count free';
+  }
+
+  @override
+  String get commonStayToPay => 'Stay and pay';
+
+  @override
+  String get commonCancelAndExit => 'Cancel order & exit';
+
+  @override
+  String get commonPaymentEyebrow => 'LOCK.R • PAYMENT';
+
+  @override
+  String commonOrderCode(Object code) {
+    return 'Order $code';
+  }
+
+  @override
+  String commonScanQrPayHold(Object minutes) {
+    return 'Scan the QR code above and transfer within $minutes minutes to hold the compartment — the drop-off code will appear automatically after payment.';
+  }
+
+  @override
+  String commonScanQrPayHoldRent(Object minutes) {
+    return 'Scan the QR code above and transfer within $minutes minutes to hold the compartment — the opening code will appear automatically after payment.';
+  }
+
+  @override
+  String get commonPaySuccessPinReady =>
+      'Payment successful! Your compartment PIN is ready.';
+
+  @override
+  String daysValue(int days) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: '$days days',
+      one: '1 day',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String pricePerDay(Object price) {
+    return '$price/day';
+  }
+
+  @override
+  String get sizeSmallShort => 'Small';
+
+  @override
+  String get sizeMediumShort => 'Medium';
+
+  @override
+  String get sizeLargeShort => 'Large';
+
+  @override
+  String get boxOfOrder => 'the order\'s compartment';
+
+  @override
+  String get sendBoxOpened =>
+      'The compartment is open — put the parcel in, close the door and tap confirm.';
+
+  @override
+  String get sendBoxOpenFailed => 'Couldn\'t open the compartment';
+
+  @override
+  String get sendDroppedShare =>
+      'Parcel dropped off. Send the pickup code to the recipient with the Share button below.';
+
+  @override
+  String get sendEnterRecipientEmail =>
+      'Enter the recipient\'s email so Lock.R can send the locker code';
+
+  @override
+  String get sendEnterRecipientPhone => 'Enter the recipient\'s phone number';
+
+  @override
+  String get sendPhone10Digits =>
+      'The phone number has 10 digits and starts with 0';
+
+  @override
+  String get sendCancelCreateQuestion => 'Cancel this order?';
+
+  @override
+  String sendCancelCreateBody(Object minutes) {
+    return 'The order isn\'t paid yet. If you leave now or don\'t pay within $minutes minutes, the order will be cancelled and the compartment released.';
+  }
+
+  @override
+  String get sendCancelledReleased =>
+      'Order cancelled and compartment released.';
+
+  @override
+  String get sendTitle => 'Send via locker';
+
+  @override
+  String get sendSubtitle => 'Send items quickly & easily';
+
+  @override
+  String get sendCreateAndGetPin => 'Create order & get drop-off PIN';
+
+  @override
+  String get sendLoadingLockers => 'Loading lockers...';
+
+  @override
+  String get sendIntro =>
+      'Send a parcel to someone via a locker: you drop it off with a PIN, and the system generates a new PIN for the recipient to pick it up.';
+
+  @override
+  String get sendStandardOnly =>
+      'Parcels use standard compartments; suitcase (XL) compartments are for storage rental only. Make sure your parcel fits before creating the order.';
+
+  @override
+  String get sendRecipientPhoneHint => 'Recipient\'s phone number';
+
+  @override
+  String get sendRecipientNameHint => 'Recipient\'s name (optional)';
+
+  @override
+  String get sendRecipientEmailHint => 'Recipient\'s email';
+
+  @override
+  String get sendEmailInfo =>
+      'Lock.R emails the recipient as soon as the order is paid (an upcoming-parcel notice) and sends the pickup code when you drop the parcel off. You can resend it from the order details; tap \"Share code with recipient\" to also send it via Zalo/SMS.';
+
+  @override
+  String get sendRecipientMessage => 'Message for the recipient';
+
+  @override
+  String get sendMessageHint => 'E.g. Fragile, handle with care (optional)';
+
+  @override
+  String sendBoxSize(Object size) {
+    return '$size compartment';
+  }
+
+  @override
+  String get sendSelectedBox => 'Selected compartment';
+
+  @override
+  String sendFeePerParcel(Object price) {
+    return '$price/parcel';
+  }
+
+  @override
+  String get sendBoxTaken =>
+      'This compartment was just booked — choose another';
+
+  @override
+  String get sendStep1Title => 'Step 1 — Drop off the parcel';
+
+  @override
+  String sendStep1Body(Object box) {
+    return 'Go to the locker, enter the PIN below to open $box, put the parcel in and close the door.';
+  }
+
+  @override
+  String get sendStep2Title => 'Step 2 — Parcel dropped off';
+
+  @override
+  String get sendPinSentToRecipient =>
+      'The pickup PIN has been sent to the recipient\'s account.';
+
+  @override
+  String get sendSharePinWithRecipient =>
+      'Please send the pickup PIN below to the recipient.';
+
+  @override
+  String get sendRecipientEntersPin =>
+      'The recipient enters the PIN at the locker to pick up';
+
+  @override
+  String get sendEnterPinToDrop =>
+      'Enter the PIN at the locker to open the compartment and drop off';
+
+  @override
+  String get sendLockrAccount => 'Lock.R account';
+
+  @override
+  String get sendHasAccount => 'Yes — the PIN goes straight to the app';
+
+  @override
+  String get sendNoAccount => 'No — you need to send the PIN to the recipient';
+
+  @override
+  String sendPickupBefore(Object deadline, Object remaining, Object policy) {
+    return 'The recipient must pick up before $deadline ($remaining). $policy';
+  }
+
+  @override
+  String get sendDropInstructions =>
+      'Open the compartment with the button below or enter the PIN at the locker, put the parcel in, close the door and confirm. You can also confirm on the locker screen.';
+
+  @override
+  String get sendOpenToDrop => 'Open compartment to drop off';
+
+  @override
+  String get sendIDropped => 'I\'ve dropped off the parcel';
+
+  @override
+  String get sendStepDrop => 'Drop off';
+
+  @override
+  String get sendStepRecipientPicks => 'Recipient picks up';
+
+  @override
+  String get rentPaymentWaiting =>
+      'Waiting for payment confirmation, please wait a moment';
+
+  @override
+  String get rentOpenedStart => 'Compartment opened — your rental has started!';
+
+  @override
+  String get rentOpenSimulated =>
+      'Couldn\'t open the real compartment (simulated: drop-off confirmed & rental started)';
+
+  @override
+  String get rentCancelQuestion => 'Cancel this rental?';
+
+  @override
+  String rentCancelBody(Object minutes) {
+    return 'The rental isn\'t paid yet. If you leave now or don\'t pay within $minutes minutes, the order will be cancelled and the compartment released.';
+  }
+
+  @override
+  String get rentCancelledReleased =>
+      'Rental cancelled and compartment released.';
+
+  @override
+  String get rentTitle => 'Rent a storage locker';
+
+  @override
+  String get rentSubtitle => 'Choose a locker & rental time';
+
+  @override
+  String get rentNow => 'Rent now';
+
+  @override
+  String get rentLoadingInfo => 'Loading locker information...';
+
+  @override
+  String get rentIntro =>
+      'Rent a compartment to store your things by the hour or day. The PIN can be used as many times as you need during the rental.';
+
+  @override
+  String get rentDuration => 'Rental duration';
+
+  @override
+  String get rentOptionalHint => 'Optional...';
+
+  @override
+  String rentDiscountValue(Object amount) {
+    return 'Discount: -$amount';
+  }
+
+  @override
+  String rentPointsValue(Object value) {
+    return 'Reward points: $value';
+  }
+
+  @override
+  String get rentByHour => 'By hour';
+
+  @override
+  String get rentByDay => 'By day';
+
+  @override
+  String get rentMinusDay => '1 day less';
+
+  @override
+  String rentDaysHours(Object days, Object hours) {
+    return '$days days · $hours hours';
+  }
+
+  @override
+  String get rentPlusDay => '1 more day';
+
+  @override
+  String get rentRunning => 'Rental in progress';
+
+  @override
+  String rentPinUntil(Object time) {
+    return 'The PIN opens the compartment as many times as needed until $time.';
+  }
+
+  @override
+  String get rentPinMultiUse => 'The PIN can be reused during the rental';
+
+  @override
+  String rentExpiresAt(Object deadline, Object remaining, Object policy) {
+    return 'Rental ends: $deadline ($remaining). $policy';
+  }
+
+  @override
+  String get rentHeldDropOff => 'Compartment held — drop off your items';
+
+  @override
+  String rentEnterPinToOpen(Object box) {
+    return 'Enter the PIN to open $box or use the button below to start the rental.';
+  }
+
+  @override
+  String get rentOpenToDrop => 'Open compartment to drop off';
+
+  @override
+  String get rentExtensionUnpaid =>
+      'There\'s an unpaid extension fee — pay it before ending the rental.';
+
+  @override
+  String get rentDoneSeeOrders => 'Done — see it in My orders';
+
+  @override
+  String get cellAvailable => 'Free';
+
+  @override
+  String get cellReservedHeld => 'Held';
+
+  @override
+  String get cellOccupied => 'Occupied';
+
+  @override
+  String get cellAwaitingTechCheck => 'Awaiting technician check';
+
+  @override
+  String get cellCleaning => 'Cleaning';
+
+  @override
+  String get stAwaitingDropoff => 'Awaiting drop-off';
+
+  @override
+  String get stAwaitingDispatch => 'Awaiting dispatch';
+
+  @override
+  String get stAccepted => 'Accepted';
+
+  @override
+  String get stLaunching => 'Launching';
+
+  @override
+  String get stDropReported => 'Drop reported';
+
+  @override
+  String get stPickupAssigned => 'Technician on the way to collect';
+
+  @override
+  String get stPickedUpByTech => 'Collected by technician';
+
+  @override
+  String get stFailed => 'Delivery failed';
+
+  @override
+  String get stDeparted => 'Drone departed';
+
+  @override
+  String get stEnRoute => 'Drone in flight';
+
+  @override
+  String get stApproaching => 'Drone approaching';
+
+  @override
+  String get stArrived => 'Drone arrived';
+
+  @override
+  String get stReadyForPickup => 'Ready for pickup';
+
+  @override
+  String get stStoring => 'In locker';
+
+  @override
+  String get stCollected => 'Collected';
+
+  @override
+  String get stProcessing => 'Processing';
+
+  @override
+  String get stReadyToReturn => 'Ready to return';
+
+  @override
+  String get stNew => 'New';
+
+  @override
+  String get stDone => 'Done';
+
+  @override
+  String get stNotConfirmed => 'Not confirmed';
+
+  @override
+  String get typeLaundry => 'Laundry';
+
+  @override
+  String get typeStorage => 'Storage';
+
+  @override
+  String get typeParcel => 'Parcel pickup';
+
+  @override
+  String incidentSince(Object time) {
+    return ' since $time';
+  }
+
+  @override
+  String incidentReportedCanOpen(Object since) {
+    return 'You reported a compartment issue — a technician will come to check it. You can still open the compartment with your PIN to take your items; the overtime fee is paused$since.';
+  }
+
+  @override
+  String incidentBlocked(Object since) {
+    return 'The compartment is waiting for a technician. Your items are still safe inside and the overtime fee is paused$since — no payment or extension needed. Lock.R will let you know when you can pick up.';
+  }
+
+  @override
+  String durDaysHours(Object days, Object hours) {
+    return '${days}d ${hours}h';
+  }
+
+  @override
+  String durHoursMinutes(Object hours, Object minutes) {
+    return '${hours}h ${minutes}m';
+  }
+
+  @override
+  String get durUnderMinute => 'under 1 minute';
+
+  @override
+  String timeRemaining(Object time) {
+    return '$time left';
+  }
+
+  @override
+  String timeOverdueBy(Object time) {
+    return 'Overdue by $time';
+  }
+
+  @override
+  String get credEnterPinAtLocker =>
+      'Enter the PIN on the locker screen to open the compartment';
+
+  @override
+  String get credPinCopied => 'PIN copied';
+
+  @override
+  String credAt(Object name) {
+    return 'At: $name';
+  }
+
+  @override
+  String get unlockBlePermissionBlocked =>
+      'Bluetooth (Nearby devices) permission is blocked. Open Settings to allow it, then scan again.';
+
+  @override
+  String get unlockBlePermissionDenied =>
+      'The app needs Bluetooth permission to find the locker. Tap Scan again and choose Allow.';
+
+  @override
+  String get unlockBleOff =>
+      'Your phone\'s Bluetooth is off. Turn it on and tap Scan again.';
+
+  @override
+  String get unlockBleUnsupported =>
+      'This device doesn\'t support Bluetooth. Use QR scan or the PIN.';
+
+  @override
+  String get unlockNoSignal => 'No locker Bluetooth signal detected nearby.';
+
+  @override
+  String unlockOpenBox(Object box) {
+    return 'Open $box';
+  }
+
+  @override
+  String get unlockOverdueRental =>
+      'The rental is overdue. The overtime fee has been recorded — please take your items and close the locker to finish returning it.';
+
+  @override
+  String get unlockEndsRental =>
+      'Opening the compartment will end the rental and release it. Please take all your items.';
+
+  @override
+  String get unlockScanQr => 'Scan QR';
+
+  @override
+  String get unlockPin => 'PIN';
+
+  @override
+  String get unlockScanning => 'Scanning for the locker\'s Bluetooth signal...';
+
+  @override
+  String unlockStandClose(Object locker) {
+    return 'Please stand within 2 m of locker $locker';
+  }
+
+  @override
+  String get unlockConnected => 'Connected to the locker via Bluetooth';
+
+  @override
+  String get unlockSimulateRpi => 'Simulate RPi';
+
+  @override
+  String unlockDistanceSignal(Object distance, Object rssi) {
+    return 'Distance: $distance • Signal $rssi dBm';
+  }
+
+  @override
+  String unlockOpenAndReturn(Object box) {
+    return 'Open $box & return locker';
+  }
+
+  @override
+  String unlockOpenNow(Object box) {
+    return 'Open $box now (one tap)';
+  }
+
+  @override
+  String get unlockNotFound => 'Locker Bluetooth signal not found';
+
+  @override
+  String get unlockEnsureBluetooth =>
+      'Make sure Bluetooth is on, or use QR scan instead.';
+
+  @override
+  String get unlockScanAgain => 'Scan again';
+
+  @override
+  String get unlockRescan => 'Search again';
+
+  @override
+  String get unlockQrTitle => 'Verify with the QR sticker on the locker';
+
+  @override
+  String unlockQrBody(Object locker, Object box) {
+    return 'Use your phone camera to scan the QR code on locker $locker to open $box.';
+  }
+
+  @override
+  String get unlockStartCamera => 'Turn on camera to scan QR sticker';
+
+  @override
+  String get unlockKioskPinUpper => 'PIN TO ENTER ON THE KIOSK SCREEN';
+
+  @override
+  String get unlockCodeCopied => 'Code copied';
+
+  @override
+  String get unlockCopyPin => 'Copy PIN';
+
+  @override
+  String get unlockKioskGuide => 'How to open at the kiosk screen:';
+
+  @override
+  String unlockKioskStep1(Object locker) {
+    return 'Go to the touchscreen of $locker.';
+  }
+
+  @override
+  String get unlockKioskStep2 => 'Tap \"Open locker\" or \"Pick up\".';
+
+  @override
+  String unlockKioskStep3(Object pin, Object box) {
+    return 'Enter PIN $pin to unlatch $box.';
+  }
+
+  @override
+  String get extrasNotEligible => 'This order isn\'t eligible for this code';
+
+  @override
+  String get extrasCodeInvalid => 'Invalid or expired code';
+
+  @override
+  String extrasCodeApplied(Object code) {
+    return 'Applied code \"$code\"';
+  }
+
+  @override
+  String get extrasChooseCode => 'Choose a discount code';
+
+  @override
+  String get extrasNoCodes => 'No discount codes yet.';
+
+  @override
+  String get extrasNoCodesHere =>
+      'No discount codes available for this locker.';
+
+  @override
+  String get tierBronze => 'Bronze';
+
+  @override
+  String get tierSilver => 'Silver';
+
+  @override
+  String get tierGold => 'Gold';
+
+  @override
+  String get tierPlatinum => 'Platinum';
+
+  @override
+  String tierNextPoints(Object points, Object tier) {
+    return '$points points to $tier';
+  }
+
+  @override
+  String tierYouHavePoints(Object points) {
+    return 'You have $points points';
+  }
+
+  @override
+  String tierRank(Object tier) {
+    return '$tier tier';
+  }
+
+  @override
+  String get tierHighest => 'top tier';
+
+  @override
+  String get payStatusPaid => 'Paid';
+
+  @override
+  String get payStatusPending => 'Awaiting payment';
+
+  @override
+  String get payStatusFailed => 'Payment error';
+
+  @override
+  String get payStatusNone => 'No payment yet';
+
+  @override
+  String rulesRentRange(Object min, Object max) {
+    return 'Rent from $min to $max.';
+  }
+
+  @override
+  String rulesEvery24h(Object price) {
+    return 'Each 24 hours costs $price.';
+  }
+
+  @override
+  String rulesDailyCapFrom(Object hours, Object price) {
+    return 'Renting $hours hours or more in a day is charged the daily rate of $price.';
+  }
+
+  @override
+  String rulesRentalOvertime(Object rate) {
+    return 'Overtime is charged at $rate until you pick up or extend.';
+  }
+
+  @override
+  String get rulesNoOvertimeFee => 'No overtime fee.';
+
+  @override
+  String rulesPercentOfOrder(Object percent) {
+    return '$percent% of the order value';
+  }
+
+  @override
+  String rulesCapSuffix(Object caps) {
+    return ' (up to $caps)';
+  }
+
+  @override
+  String get rulesAnd => ' and ';
+
+  @override
+  String rulesOvertimeFee(Object rate, Object cap) {
+    return 'Overtime fee $rate$cap.';
+  }
+
+  @override
+  String rulesSendPickup(Object hours, Object policy) {
+    return 'The recipient has $hours hours to pick up after you drop off the parcel. $policy';
+  }
+
+  @override
+  String rulesDronePickup(Object hours, Object policy) {
+    return 'The order is stored for $hours hours after the drone drops it into the compartment. The exact deadline is announced as soon as it arrives. $policy';
+  }
+
+  @override
+  String rulesDroneStoredUntil(Object hours, Object deadline) {
+    return 'The order is stored for $hours hours; please pick it up before $deadline.';
+  }
+
+  @override
+  String rulesLoyaltyEarn(Object percent, Object value) {
+    return 'Earn $percent% of what you pay as points (1 point = $value), added when the order is completed.';
+  }
+
+  @override
+  String get rulesRedeemDisabled => 'Paying with points isn\'t available yet.';
+
+  @override
+  String rulesRedeemMin(Object points) {
+    return ' (from $points points)';
+  }
+
+  @override
+  String rulesRedeem(Object value, Object percent, Object min) {
+    return '1 point = $value at checkout, up to $percent% of the order value$min.';
+  }
+
+  @override
+  String get loyaltyRedeemDisabled => 'Paying with points isn\'t available yet';
+
+  @override
+  String get loyaltyFullyDiscounted =>
+      'The order is fully discounted, no points needed';
+
+  @override
+  String get loyaltyNoPoints =>
+      'You have no points yet — points are added when an order is completed';
+
+  @override
+  String loyaltyBelowMin(Object balance, Object min) {
+    return 'You have $balance points; at least $min points are needed per use';
+  }
+
+  @override
+  String loyaltyOrderTooSmall(Object min) {
+    return 'The order value is too low to use the minimum $min points';
+  }
+
+  @override
+  String loyaltyOffer(Object points, Object amount) {
+    return 'Use $points points · $amount off';
+  }
+
+  @override
+  String loyaltyYouHave(Object balance) {
+    return 'You have $balance points';
+  }
+
+  @override
+  String loyaltyRule(Object value, Object percent) {
+    return '1 point = $value, up to $percent% of the order value';
+  }
+
+  @override
+  String loyaltyPointsDiscount(Object amount, Object points) {
+    return '-$amount ($points points)';
+  }
+
+  @override
+  String get loyaltyCantUseNow =>
+      'Reward points can\'t be used right now — the order is charged in full.';
+
+  @override
+  String loyaltyPlusPoints(Object points) {
+    return '+$points points';
+  }
+
+  @override
+  String get loyaltyWillEarn => 'Points to be earned';
+
+  @override
+  String get loyaltyEarned => 'Points earned';
+
+  @override
+  String get loyaltyNotRecorded => 'Not recorded yet';
+
+  @override
+  String loyaltyReversed(Object text, Object points) {
+    return '$text · $points reversed';
+  }
+
+  @override
+  String get loyaltyChecking => 'Checking reward points...';
+
+  @override
+  String get loyaltyLoadFailed =>
+      'Couldn\'t load reward points — the order is charged in full.';
+
+  @override
+  String get loyaltyUsePoints => 'Use reward points';
+
+  @override
+  String get sepayCreateFailed =>
+      'Couldn\'t create the payment. Please try again.';
+
+  @override
+  String get sepayNoQr =>
+      'The server didn\'t return a VietQR code for this payment. Please try again later.';
+
+  @override
+  String get sepayNoTxForSim =>
+      'No transaction ID to simulate yet. Please try again.';
+
+  @override
+  String get sepayReceivedUpdating =>
+      'Payment received, updating your order...';
+
+  @override
+  String sepayPartial(Object received, Object remaining) {
+    return 'Received $received — $remaining still due. The QR code below is for the remaining amount.';
+  }
+
+  @override
+  String get sepayScanToPay => 'Scan the VietQR code to pay';
+
+  @override
+  String get sepayQrLoadFailed => 'Couldn\'t load the QR code';
+
+  @override
+  String get sepayAccountNumber => 'Account number:';
+
+  @override
+  String get sepayAmountToTransfer => 'Amount to transfer:';
+
+  @override
+  String get sepayTransferContent => 'Transfer description:';
+
+  @override
+  String get sepayContentCopied => 'Transfer description copied';
+
+  @override
+  String get sepayWaiting => 'Waiting for payment confirmation…';
+
+  @override
+  String get sepayAutoUpdate =>
+      'Updates automatically once the payment arrives.';
+
+  @override
+  String get sepayPayWithBankApp => 'Pay with banking app';
+
+  @override
+  String get sepayTransferExact =>
+      'Transfer to the exact account number, amount and description below.';
+
+  @override
+  String get sepayCreatingQr => 'Creating payment code…';
+
+  @override
+  String get apiErrBleTestNotGranted =>
+      'Your account hasn\'t been allowed by an admin to test Bluetooth opening at this locker.';
+
+  @override
+  String get apiErrResolutionPhotoRequired =>
+      'At least 1 acceptance photo is needed before resolving the ticket.';
+
+  @override
+  String get apiErrLandingPadAbsent => 'This locker has no drone landing pad.';
+
+  @override
+  String get apiErrLandingPadStatusInvalid => 'Invalid landing pad status.';
+
+  @override
+  String get apiErrReportNotClaimable =>
+      'The ticket is no longer waiting to be claimed.';
+
+  @override
+  String get apiErrDroneRouteRequired =>
+      'Please choose both the sending and receiving lockers.';
+
+  @override
+  String get apiErrDroneRouteInvalid =>
+      'The sending and receiving lockers must be different.';
+
+  @override
+  String get apiErrDroneRouteTooFar =>
+      'The receiving locker is beyond the drone\'s range from this pickup area.';
+
+  @override
+  String get apiErrDroneRouteTooShort =>
+      'The receiving locker is too close to the pickup point for drone delivery — please drop the parcel directly at the receiving locker.';
+
+  @override
+  String get apiErrDronePickupOutOfRange =>
+      'The pinned location is outside the pickup radius of the drone sending locker. This distance is measured from your home to the sending locker, not the flight distance between the two lockers. Check the pin on the map and choose the location again.';
+
+  @override
+  String get apiErrDroneNoSourceLocker =>
+      'No locker near you is ready to launch a drone right now. Please try again later.';
+
+  @override
+  String get apiErrDroneLockerLocationMissing =>
+      'The receiving locker has no coordinates yet, so drones can\'t deliver there.';
+
+  @override
+  String get apiErrDronePickupAddressRequired =>
+      'Please enter the pickup address.';
+
+  @override
+  String get apiErrDronePickupLocationRequired =>
+      'Please choose the pickup location on the map.';
+
+  @override
+  String get apiErrDroneSenderNameRequired =>
+      'Please enter the sender\'s name.';
+
+  @override
+  String get apiErrDroneSenderPhoneInvalid =>
+      'The sender\'s phone number is invalid.';
+
+  @override
+  String get apiErrDroneSenderEmailInvalid => 'The sender\'s email is invalid.';
+
+  @override
+  String get apiErrDroneReceiverNameRequired =>
+      'Please enter the recipient\'s name.';
+
+  @override
+  String get apiErrDroneReceiverEmailInvalid =>
+      'The recipient\'s email is invalid.';
+
+  @override
+  String get apiErrDroneParcelCategoryRequired =>
+      'Please choose the parcel type.';
+
+  @override
+  String get apiErrDronePickupNotOffered =>
+      'This pickup is no longer offered to you.';
+
+  @override
+  String get apiErrDronePickupOfferExpired => 'The pickup offer has expired.';
+
+  @override
+  String get apiErrDronePickupNotAssignedToUser =>
+      'This pickup isn\'t assigned to you.';
+
+  @override
+  String get apiErrDronePickupNotFound =>
+      'The order has no pickup job yet (it may not be paid).';
+
+  @override
+  String get apiErrDronePickupCodeInvalid =>
+      'Incorrect pickup code. Ask the sender to read the code in the order again.';
+
+  @override
+  String get apiErrDronePickupParcelNotVerified =>
+      'Confirm the parcel matches its declaration, or report that it couldn\'t be collected.';
+
+  @override
+  String get apiErrDroneParcelNotPickedUp =>
+      'The parcel hasn\'t been collected from the sender yet.';
+
+  @override
+  String get apiErrDroneOrderBlocked =>
+      'The order is paused due to an incident; pickup is on hold for now.';
+
+  @override
+  String get apiErrDroneTechnicianLocationRequired =>
+      'Turn on location to start a shift for pickup jobs.';
+
+  @override
+  String get apiErrDroneTechnicianHasActivePickup =>
+      'You still have an accepted pickup. Complete it or report it as not collected before ending your shift.';
+
+  @override
+  String get apiErrDroneTechnicianOffDuty => 'This technician isn\'t on shift.';
+
+  @override
+  String get apiErrDroneTechnicianBusy =>
+      'This technician is busy with another job.';
+
+  @override
+  String get apiErrDroneFailureReasonInvalid =>
+      'Invalid reason for this action.';
+
+  @override
+  String get apiErrDroneUnchanged =>
+      'This drone is already assigned to the mission.';
+
+  @override
+  String get apiErrDroneFlightsSuspended =>
+      'Drone delivery is temporarily suspended (weather or an operational incident).';
+
+  @override
+  String get apiErrDroneOutsideFlightHours =>
+      'Outside the allowed drone flight hours.';
+
+  @override
+  String get apiErrDroneOpenOrderLimit =>
+      'You have too many unfinished drone orders. Complete or cancel some before placing another.';
+
+  @override
+  String get apiErrDroneProhibitedItemsNotDeclared =>
+      'You must confirm the parcel contains no items prohibited from flight.';
+
+  @override
+  String get apiErrDroneParcelSizeInvalid =>
+      'Enter the parcel\'s length, width and height, or leave all three empty.';
+
+  @override
+  String get apiErrDroneParcelTooLarge =>
+      'The parcel doesn\'t fit the drone\'s cargo bay.';
+
+  @override
+  String get apiErrDroneParcelCategoryInvalid => 'Invalid parcel type.';
+
+  @override
+  String get apiErrDroneDeclaredValueTooHigh =>
+      'The declared value exceeds what a drone is allowed to carry.';
+
+  @override
+  String get apiErrDroneParcelNotDropped =>
+      'The sender hasn\'t confirmed dropping the parcel into the sending compartment, so it can\'t be accepted yet.';
+
+  @override
+  String get apiErrDroneParcelReturnNotPending =>
+      'This order has no parcel waiting to be returned.';
+
+  @override
+  String get apiErrDroneBatteryUnknown =>
+      'The drone\'s battery level is unknown; update it before flying.';
+
+  @override
+  String get apiErrDroneSurchargeNotOwed =>
+      'The order no longer owes a weight surcharge.';
+
+  @override
+  String get apiErrDroneSourceNotFound => 'Sending locker not found.';
+
+  @override
+  String get apiErrDroneDestinationNotFound => 'Receiving locker not found.';
+
+  @override
+  String get apiErrDroneLockerInactive =>
+      'The sending or receiving locker is out of service.';
+
+  @override
+  String get apiErrDroneSourceCellUnavailable =>
+      'The drone compartment at the sending locker has another order. Please wait for the flight team to load it or choose another locker.';
+
+  @override
+  String get apiErrDroneSourceCellMismatch =>
+      'The selected drone compartment doesn\'t belong to this sending locker.';
+
+  @override
+  String get apiErrDroneCellRequired =>
+      'Drone delivery can only be booked from a drone compartment.';
+
+  @override
+  String get apiErrBoxNotAvailable =>
+      'The compartment is no longer free. Please choose another compartment or locker.';
+
+  @override
+  String get apiErrDroneDemoNotAllowed =>
+      'Your account isn\'t allowed to use drone simulation mode.';
+
+  @override
+  String get apiErrDroneOrderUnpaid =>
+      'The order is unpaid, so it can\'t be accepted yet.';
+
+  @override
+  String get apiErrDroneOrderStatusInvalid =>
+      'The order is no longer at a step that allows this action.';
+
+  @override
+  String get apiErrDroneMissionAlreadyExists =>
+      'Another dispatcher has already accepted this order.';
+
+  @override
+  String get apiErrDroneMissionStatusInvalid =>
+      'The mission is no longer at a step that allows this action.';
+
+  @override
+  String get apiErrDroneMissionNotAssignedToUser =>
+      'Only the dispatcher who accepted this mission can act on it.';
+
+  @override
+  String get apiErrDroneWrongSourceLocker =>
+      'The selected drone isn\'t parked at the order\'s sending locker.';
+
+  @override
+  String get apiErrDroneInactive => 'The drone is out of service.';
+
+  @override
+  String get apiErrDroneNotIdle =>
+      'The drone is no longer available; choose another one.';
+
+  @override
+  String get apiErrDroneBatteryTooLow =>
+      'The drone\'s battery is too low to fly; charge it first.';
+
+  @override
+  String get apiErrDroneStatusConflict =>
+      'The drone\'s status just changed; reload and try again.';
+
+  @override
+  String get apiErrDroneReservationLost =>
+      'The drone is no longer reserved for this mission (it may have reported a fault).';
+
+  @override
+  String get apiErrDronePayloadTooHeavy =>
+      'The parcel exceeds the drone\'s payload limit.';
+
+  @override
+  String get apiErrDroneLoadingNotConfirmed =>
+      'Confirm loading before launching.';
+
+  @override
+  String get apiErrDroneSurchargeUnpaid =>
+      'The parcel is heavier than declared. Wait for the customer to pay the difference before launching.';
+
+  @override
+  String get apiErrDroneParcelWeightInvalid => 'Invalid parcel weight.';
+
+  @override
+  String get apiErrDroneAlreadyInFlight =>
+      'The drone has already taken off; the mission can\'t be cancelled.';
+
+  @override
+  String get apiErrDroneCancelNoteRequired =>
+      'Please add a note when choosing the Other reason.';
+
+  @override
+  String get apiErrDroneStageAutomated =>
+      'Simulated orders advance automatically; no manual confirmation needed.';
+
+  @override
+  String get apiErrDroneReceiverPhoneInvalid =>
+      'The recipient\'s phone number is invalid.';
+
+  @override
+  String get apiErrLockerInactive => 'The locker is out of service.';
+
+  @override
+  String get apiErrLandingPadUnavailable =>
+      'The drone landing pad isn\'t ready.';
+
+  @override
+  String get apiErrDroneOwnershipRequired =>
+      'You need to take charge of this drone first.';
+
+  @override
+  String get apiErrDroneAlreadyAssigned =>
+      'Another technician is already in charge of this drone.';
+
+  @override
+  String get apiErrDroneActiveMission =>
+      'The drone has an active mission; you can only report a fault (FAULT).';
+
+  @override
+  String get apiErrDroneFaultReasonRequired =>
+      'Please enter a reason when reporting a drone fault.';
+
+  @override
+  String get apiErrDronePaymentRequiredBeforePickup =>
+      'Please pay for the drone order before opening the locker to pick up.';
+
+  @override
+  String get apiErrOrderStatusInvalid =>
+      'The order is no longer in a state that allows this action.';
+
+  @override
+  String get apiErrNotSupportedUpdate =>
+      'The server doesn\'t support this feature yet. Please update the system and try again.';
+
+  @override
+  String get apiErrForbidden => 'You don\'t have permission to do this';
+
+  @override
+  String get apiErrConnection => 'Server connection error';
+
+  @override
+  String get apiErrGeneric => 'Something went wrong';
+
+  @override
+  String get commonSending => 'Sending...';
+
+  @override
+  String get commonDescription => 'Description';
+
+  @override
+  String get commonYes => 'Yes';
+
+  @override
+  String get commonNo => 'No';
+
+  @override
+  String get commonOrder => 'Order';
+
+  @override
+  String get commonTime => 'Time';
+
+  @override
+  String get commonMessage => 'Message';
+
+  @override
+  String get recvLoadFailed =>
+      'Couldn\'t read the order details. Please try again.';
+
+  @override
+  String get recvNotInList =>
+      'The order is no longer in your list (it may have been delegated to someone else). Showing saved information.';
+
+  @override
+  String get recvSummaryOnly =>
+      'The server doesn\'t support full details yet — showing a summary.';
+
+  @override
+  String recvEmailSent(Object withCode, Object email) {
+    return 'Sent the order details$withCode to $email.';
+  }
+
+  @override
+  String get recvWithCode => ' with the locker code';
+
+  @override
+  String get recvYourEmail => 'your email';
+
+  @override
+  String get recvNoEmail => 'No email yet';
+
+  @override
+  String get recvNoEmailBody =>
+      'Your account has no email to receive order details. Add an email in Profile and send again.';
+
+  @override
+  String get recvAddEmail => 'Add email';
+
+  @override
+  String get recvDelegateDetail => 'Delegated pickup details';
+
+  @override
+  String get recvDetail => 'Incoming order details';
+
+  @override
+  String get recvDelegator => 'Delegated by';
+
+  @override
+  String get recvSender => 'Sender';
+
+  @override
+  String get recvPickupCode => 'Pickup code';
+
+  @override
+  String recvOpenBoxPickup(Object box) {
+    return 'Open $box to pick up';
+  }
+
+  @override
+  String get recvTrackDrone => 'Track drone';
+
+  @override
+  String get recvSendingEmail => 'Sending email…';
+
+  @override
+  String get recvResendEmail => 'Resend details by email';
+
+  @override
+  String get recvSenderPhone => 'Sender phone';
+
+  @override
+  String get recvSenderEmail => 'Sender email';
+
+  @override
+  String get recvRecipientName => 'Recipient name';
+
+  @override
+  String get recvRecipientPhone => 'Recipient phone';
+
+  @override
+  String get recvDelegatePerson => 'Pickup delegate';
+
+  @override
+  String recvYouSuffix(Object name) {
+    return '$name (you)';
+  }
+
+  @override
+  String get recvYou => 'You';
+
+  @override
+  String get recvDelegatePhone => 'Delegate phone';
+
+  @override
+  String get recvDelegation => 'Delegation';
+
+  @override
+  String get recvOwnerDelegated =>
+      'The order owner delegated pickup to someone else';
+
+  @override
+  String get recvLockerAndBox => 'Locker & compartment';
+
+  @override
+  String get recvReceivingLocker => 'Receiving locker';
+
+  @override
+  String get recvLockerCode => 'Locker code';
+
+  @override
+  String get recvBoxSize => 'Compartment size';
+
+  @override
+  String get recvSourceAddress => 'Sending locker address';
+
+  @override
+  String get recvSenderNote => 'Sender\'s note';
+
+  @override
+  String get recvPickupDeadline => 'Pickup deadline';
+
+  @override
+  String get recvTimeLeft => 'Time left';
+
+  @override
+  String get recvExpectedPickup => 'Expected pickup';
+
+  @override
+  String get recvCreatedAt => 'Created at';
+
+  @override
+  String get recvCompletedAt => 'Completed at';
+
+  @override
+  String get recvUpdatedAt => 'Last updated';
+
+  @override
+  String get recvTimeline => 'Timeline';
+
+  @override
+  String get recvDroneJourney => 'Drone journey';
+
+  @override
+  String get recvCurrentStage => 'Current stage';
+
+  @override
+  String get recvEta => 'Expected arrival';
+
+  @override
+  String get recvArrived => 'Arrived';
+
+  @override
+  String recvAboutMinutes(Object minutes) {
+    return 'About $minutes min';
+  }
+
+  @override
+  String get recvIncident => 'Incident';
+
+  @override
+  String get recvParcelReturnedToSender => 'Parcel returned to sender';
+
+  @override
+  String get recvCodeMovedToDelegate =>
+      'The order owner delegated pickup to someone else, so the pickup code is no longer shown here.';
+
+  @override
+  String get recvCredCaption =>
+      'Enter the PIN or scan the QR at the locker, or open the compartment right in the app';
+
+  @override
+  String get recvOverdueMayCharge =>
+      'The pickup is overdue — overtime fees may apply.';
+
+  @override
+  String get recvCompleted =>
+      'The order is complete — the parcel has been picked up.';
+
+  @override
+  String recvCompletedAtTime(Object time) {
+    return 'The order is complete — the parcel was picked up at $time.';
+  }
+
+  @override
+  String get recvCancelled =>
+      'The order was cancelled, so there\'s no pickup code.';
+
+  @override
+  String get recvExpired =>
+      'The pickup deadline passed and the compartment was reclaimed. Please contact the sender or Lock.R support.';
+
+  @override
+  String recvDroneNotReady(Object stage) {
+    return '$stage. The pickup code will appear once the drone has placed the parcel in the receiving compartment.';
+  }
+
+  @override
+  String get recvSenderNotDropped =>
+      'The sender hasn\'t dropped off the parcel yet. The pickup code will appear once it\'s in the compartment.';
+
+  @override
+  String get recvNotReady =>
+      'The parcel isn\'t ready yet. The pickup code will appear once it\'s in the compartment.';
+
+  @override
+  String get recvSenderPaid => 'Paid by the sender';
+
+  @override
+  String get recvRefundingSender => 'Refunding the sender';
+
+  @override
+  String get recvSenderRefunded => 'Refunded to the sender';
+
+  @override
+  String get recvSenderUnpaid => 'Not paid by the sender';
+
+  @override
+  String get recvOrderCodeCopied => 'Order code copied';
+
+  @override
+  String get recvCopyOrderCode => 'Copy order code';
+
+  @override
+  String get recvYouAreDelegate =>
+      'You\'ve been delegated to pick up this order.';
+
+  @override
+  String get recvYouAreRecipient => 'You\'re the recipient of this order.';
+
+  @override
+  String recvOverdueBy(Object duration) {
+    return 'The pickup is $duration overdue — pick it up soon to avoid overtime fees.';
+  }
+
+  @override
+  String get recvNoCodeYet =>
+      'The order has no pickup code yet — the parcel may not be in the compartment.';
+
+  @override
+  String recvBoxOpenedPickup(Object box) {
+    return '$box is open — take your parcel and close the door.';
+  }
+
+  @override
+  String get recvOpenByCodeNotSupported =>
+      'The server doesn\'t support opening by code yet. Please enter the code on the locker screen.';
+
+  @override
+  String recvLockerWithCode(Object code) {
+    return 'Locker $code';
+  }
+
+  @override
+  String get recvDelegatorColon => 'Delegated by:';
+
+  @override
+  String get recvSenderColon => 'Sender:';
+
+  @override
+  String get recvDelegatedPickup => 'Delegated';
+
+  @override
+  String get recvIncomingParcel => 'Incoming';
+
+  @override
+  String get recvStorageBox => 'Storage compartment';
+
+  @override
+  String get recvCodeMovedShort =>
+      'The order owner delegated pickup to someone else, so the pickup code is no longer shown here.';
+
+  @override
+  String get recvCredCaptionShort =>
+      'Enter the PIN at the locker or open the compartment in the app';
+
+  @override
+  String get recvReceived => 'Received';
+
+  @override
+  String get recvDelegated => 'Pickup delegated';
+
+  @override
+  String get recvOverdueHurry =>
+      'The pickup is overdue — pick it up soon to avoid extra fees.';
+
+  @override
+  String get recvCodeTransferred =>
+      'The order owner delegated pickup — the pickup code has moved to the delegate.';
+
+  @override
+  String get detailCantCall => 'This device can\'t make calls.';
+
+  @override
+  String detailCopiedLabel(Object label) {
+    return 'Copied $label';
+  }
+
+  @override
+  String detailCallLabel(Object label) {
+    return 'Call $label';
+  }
+
+  @override
+  String detailCopyLabel(Object label) {
+    return 'Copy $label';
+  }
+
+  @override
+  String get parcelCategory => 'Parcel type';
+
+  @override
+  String get parcelWeight => 'Weight';
+
+  @override
+  String get parcelSize => 'Dimensions';
+
+  @override
+  String get parcelFragile => 'Fragile';
+
+  @override
+  String get parcelFragileYes => 'Yes — handle with care';
+
+  @override
+  String get parcelDeclaredValue => 'Declared value';
+
+  @override
+  String get parcelNoProhibited => 'No prohibited items declared';
+
+  @override
+  String get delegateTitle => 'Delegate pickup';
+
+  @override
+  String get delegateBody =>
+      'The delegate will see the order and the opening code under \"Delegated orders\" in the app (matched by phone number). The current PIN will be replaced.';
+
+  @override
+  String get delegatePhone => 'Delegate\'s phone number';
+
+  @override
+  String get delegateName => 'Delegate\'s name (optional)';
+
+  @override
+  String get delegateMessage => 'Message (optional)';
+
+  @override
+  String get delegateInvalidPhone =>
+      'Enter a valid phone number (9–11 digits).';
+
+  @override
+  String get delegateNotSupported =>
+      'The server doesn\'t support pickup delegation yet.';
+
+  @override
+  String get delegateAction => 'Delegate';
+
+  @override
+  String get shareCopiedMessage =>
+      'Message copied — paste it into Zalo, Messenger or SMS to send to the recipient.';
+
+  @override
+  String get shareCantOpenSheet => 'Couldn\'t open the share sheet';
+
+  @override
+  String get shareCantOpenSms => 'Couldn\'t open the messaging app';
+
+  @override
+  String get shareTheRecipient => 'the recipient';
+
+  @override
+  String get shareTitle => 'Send the code to the recipient';
+
+  @override
+  String shareBody(Object who) {
+    return 'The recipient enters the code on the locker screen to open the compartment. Send a ready-made message to $who via Zalo, Messenger or SMS.';
+  }
+
+  @override
+  String get shareButton => 'Share code with recipient';
+
+  @override
+  String get shareSms => 'Send SMS';
+
+  @override
+  String get shareCopyMessage => 'Copy message';
+
+  @override
+  String shareMsgLocker(Object where) {
+    return 'You have a parcel waiting at locker $where.';
+  }
+
+  @override
+  String shareMsgDrone(Object where) {
+    return 'You have a drone-delivered parcel waiting at locker $where.';
+  }
+
+  @override
+  String shareMsgBox(Object number) {
+    return 'Compartment $number.';
+  }
+
+  @override
+  String shareMsgCode(Object code) {
+    return 'Pickup code: $code.';
+  }
+
+  @override
+  String shareMsgDeadline(Object deadline) {
+    return 'Pick up by: $deadline.';
+  }
+
+  @override
+  String get shareMsgHowTo =>
+      'Enter the code on the locker screen (kiosk) to open the compartment.';
+
+  @override
+  String get timelineTitle => 'Status history';
+
+  @override
+  String get timelineLoadFailed => 'Couldn\'t load the status history.';
+
+  @override
+  String get timelineEmpty => 'No status changes yet.';
+
+  @override
+  String timelineFrom(Object status) {
+    return 'From $status';
+  }
+
+  @override
+  String get pickerNoLockers => 'No lockers available';
+
+  @override
+  String get pickerTapToChange => 'Tap to choose another locker';
+
+  @override
+  String pickerUnavailable(Object reason) {
+    return 'Temporarily unavailable: $reason';
+  }
+
+  @override
+  String payTransferAmount(Object amount) {
+    return 'Bank transfer · $amount';
+  }
+
+  @override
+  String get payScanAnyBank =>
+      'Scan the code with any banking app or open your banking app directly.';
+
+  @override
+  String get svcRentSubtitle => 'Rent by the hour, reusable PIN';
+
+  @override
+  String get svcSendSubtitle =>
+      'Drop off the parcel, send the PIN to the recipient';
+
+  @override
+  String get qrEnterLockerCode => 'Please enter the locker code.';
+
+  @override
+  String get qrThisLocker => 'this locker';
+
+  @override
+  String qrLockerCodeMismatch(Object locker) {
+    return 'The locker code doesn\'t match $locker.';
+  }
+
+  @override
+  String get qrEnterLockerCodeTitle => 'Enter locker code';
+
+  @override
+  String get qrLockerCodeHint => 'Code printed on the locker';
+
+  @override
+  String qrCodeMismatch(Object locker) {
+    return 'The QR code doesn\'t match $locker.\nPlease scan the QR code on the locker.';
+  }
+
+  @override
+  String get qrLockerBoxGeneric => 'compartment';
+
+  @override
+  String qrScanToOpen(Object box) {
+    return 'Scan to open $box';
+  }
+
+  @override
+  String qrLockerCodeValue(Object code) {
+    return 'Locker code: $code';
+  }
+
+  @override
+  String get qrPointCamera =>
+      'Point the camera at the QR sticker on the locker to verify you\'re standing there.';
+
+  @override
+  String get qrCantScan => 'Can\'t scan? Enter the locker code';
 }

@@ -19,6 +19,7 @@ import 'package:smart_laundry_locker/features/notifications/infrastructure/servi
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
 import 'package:smart_laundry_locker/shared/shared.dart';
 import 'package:smart_laundry_locker/core/services/app_event_bus.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 /// RENTAL flow: chọn tủ + loại ô + thời lượng, trả tiền theo giờ, PIN dùng
 /// nhiều lần tới hết hạn thuê (khớp `order-service` createRental/extend/end).
@@ -185,7 +186,9 @@ class _RentLockerPageState extends State<RentLockerPage>
   /// "2 ngày" hoặc "5 giờ" cho dòng tạm tính.
   String get _durationLabel {
     final hours = _hours.round();
-    return _byDay && hours % 24 == 0 ? '${hours ~/ 24} ngày' : '$hours giờ';
+    return _byDay && hours % 24 == 0
+        ? context.l10n.daysValue(hours ~/ 24)
+        : context.l10n.hoursValue(hours);
   }
 
   // Khách có thể thanh toán qua cổng ngoài hoặc xác nhận bỏ đồ ngay tại kiosk —
@@ -257,7 +260,7 @@ class _RentLockerPageState extends State<RentLockerPage>
     scheduleMicrotask(payment.dispose);
     setState(() => _order = {...?_order, 'paymentStatus': 'PAID'});
     _refreshOrder();
-    _snack('Thanh toán thành công! Mã PIN mở ô tủ đã sẵn sàng.');
+    _snack(context.l10n.commonPaySuccessPinReady);
   }
 
   Future<void> _loadLockers() async {
@@ -401,7 +404,7 @@ class _RentLockerPageState extends State<RentLockerPage>
           rawPaid is num ? rawPaid.toDouble() : (double.tryParse('$rawPaid') ?? 0.0);
       final isRentalExtension = paidAmount > 0;
       final description = isRentalExtension
-          ? 'Thanh toán gia hạn thời gian đơn #$id'
+          ? context.l10n.ordExtensionPaymentFor(id)
           : null;
       final outcome = await payOrderAndAwaitPaid(
         context,
@@ -415,18 +418,18 @@ class _RentLockerPageState extends State<RentLockerPage>
       if (outcome == OrderPaymentOutcome.paid) {
         // Ở lại màn này: đơn đã PAID thì hiện mã mở ô để khách bỏ đồ tiếp.
         await _refreshOrder();
-        _snack('Thanh toán thành công! Mã PIN mở ô tủ đã sẵn sàng.');
+        _snack(L10n.current.commonPaySuccessPinReady);
       } else if (outcome == OrderPaymentOutcome.failed) {
         showPaymentResultDialog<void>(
           context,
           type: PaymentStatusType.failure,
-          title: 'Thanh toán thất bại',
-          message: 'Giao dịch chưa hoàn tất hoặc đã bị hủy. Vui lòng thử lại.',
+          title: context.l10n.paymentFailed,
+          message: context.l10n.ordPaymentNotCompleted,
         );
       } else {
         // pending — webhook chưa về: quay lại app / mở lại màn sẽ tự cập nhật.
         await _refreshOrder();
-        _snack('Đang chờ xác nhận thanh toán, vui lòng đợi giây lát');
+        _snack(L10n.current.rentPaymentWaiting);
       }
     } catch (e) {
       _snack(LockerOpsService.errorMessage(e));
@@ -457,7 +460,7 @@ class _RentLockerPageState extends State<RentLockerPage>
     if (orderId == null) return;
 
     if (lockerId == null || boxId == null || pin == null || pin.isEmpty) {
-      _snack('Đơn chưa có thông tin ô/PIN để mở tủ.');
+      _snack(context.l10n.ordNoBoxPinInfo);
       return;
     }
     setState(() => _loading = true);
@@ -483,9 +486,9 @@ class _RentLockerPageState extends State<RentLockerPage>
       _syncPayment();
 
       if (unlockedSuccessfully) {
-        _snack('Ô đã mở thành công — bắt đầu kỳ thuê!');
+        _snack(context.l10n.rentOpenedStart);
       } else {
-        _snack('Không mở được ô thật (giả lập: đã xác nhận bỏ đồ & bắt đầu kỳ thuê)');
+        _snack(context.l10n.rentOpenSimulated);
       }
 
       await Future<void>.delayed(const Duration(milliseconds: 600));
@@ -521,31 +524,31 @@ class _RentLockerPageState extends State<RentLockerPage>
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-        title: const Row(
+        title: Row(
           children: [
             Icon(LucideIcons.triangleAlert, color: Color(0xFFEA580C)),
             SizedBox(width: 8),
             Text(
-              'Hủy tạo đơn thuê tủ?',
+              context.l10n.rentCancelQuestion,
               style: TextStyle(fontWeight: FontWeight.w700, fontSize: 17),
             ),
           ],
         ),
         content: Text(
-          'Đơn thuê tủ chưa được thanh toán. Nếu bạn thoát bây giờ hoặc không hoàn tất thanh toán trong vòng ${businessConfig.autoCancelUnpaidMinutes} phút, đơn sẽ bị hủy và ô tủ sẽ được giải phóng.',
+          context.l10n.rentCancelBody(businessConfig.autoCancelUnpaidMinutes),
           style: const TextStyle(fontSize: 14, color: opsDark, height: 1.4),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Ở lại thanh toán'),
+            child: Text(context.l10n.commonStayToPay),
           ),
           FilledButton(
             style: FilledButton.styleFrom(
               backgroundColor: const Color(0xFFDC2626),
             ),
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Hủy đơn & Thoát'),
+            child: Text(context.l10n.commonCancelAndExit),
           ),
         ],
       ),
@@ -557,7 +560,7 @@ class _RentLockerPageState extends State<RentLockerPage>
     if (orderId != null) {
       try {
         await _service.cancelOrder(orderId);
-        _snack('Đã hủy đơn thuê tủ và giải phóng ô tủ.');
+        _snack(L10n.current.rentCancelledReleased);
         AppEventBus.instance.emit(LockerLayoutUpdatedEvent(
           lockerId: _lockerId?.toString(),
         ));
@@ -582,7 +585,7 @@ class _RentLockerPageState extends State<RentLockerPage>
   /// ra tủ không tìm thấy ô nào, nên thiếu số ô thì nói chung chung.
   String _resultBoxLabel(Map<String, dynamic> order) {
     final boxNumber = widget.initialBoxNumber ?? order['sendBoxNumber'];
-    return boxNumber == null ? 'ô của đơn' : 'ô số $boxNumber';
+    return boxNumber == null ? context.l10n.boxOfOrder : context.l10n.boxNumberLower(boxNumber);
   }
 
   @override
@@ -598,11 +601,11 @@ class _RentLockerPageState extends State<RentLockerPage>
         body: Column(
           children: [
             BrandHeroHeader(
-              eyebrow: _order == null ? null : 'LOCK.R • THANH TOÁN',
+              eyebrow: _order == null ? null : context.l10n.commonPaymentEyebrow,
               title: _order == null
-                  ? 'Thuê tủ giữ đồ'
-                  : 'Đơn ${_order!['orderCode'] ?? '#${_order!['id']}'}',
-              subtitle: _order == null ? 'Chọn điểm tủ & thời gian sử dụng' : null,
+                  ? context.l10n.rentTitle
+                  : context.l10n.commonOrderCode(_order!['orderCode'] ?? '#${_order!['id']}'),
+              subtitle: _order == null ? context.l10n.rentSubtitle : null,
               trailing: _order == null
                   ? null
                   : StatusChip(_order!['status'] as String?),
@@ -643,7 +646,7 @@ class _RentLockerPageState extends State<RentLockerPage>
             _priceCard(),
             const SizedBox(height: 16),
             OpsPrimaryButton(
-              label: 'Thuê ngay',
+              label: context.l10n.rentNow,
               icon: LucideIcons.lockKeyhole,
               loading: _loading,
               onPressed: (_availableCounts?[_cellType] == 0) ? null : _create,
@@ -671,18 +674,17 @@ class _RentLockerPageState extends State<RentLockerPage>
 
   Widget _buildForm() {
     if (_loadingLockers) {
-      return const AppLoadingIndicator(
+      return AppLoadingIndicator(
         fullScreen: true,
-        message: 'Đang tải thông tin điểm tủ...',
+        message: context.l10n.rentLoadingInfo,
       );
     }
     final config = businessConfig;
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        const OpsBanner(
-          text: 'Thuê ô để giữ đồ cá nhân theo giờ hoặc theo ngày. PIN mở ô '
-              'được dùng nhiều lần trong suốt kỳ thuê.',
+        OpsBanner(
+          text: context.l10n.rentIntro,
           icon: LucideIcons.lockKeyhole,
         ),
         if (widget.locationName != null) ...[
@@ -690,7 +692,7 @@ class _RentLockerPageState extends State<RentLockerPage>
           LocationHint(name: widget.locationName!),
         ],
         const SizedBox(height: 20),
-        const OpsSectionLabel('Chọn tủ', icon: LucideIcons.warehouse),
+        OpsSectionLabel(context.l10n.commonChooseLocker, icon: LucideIcons.warehouse),
         if (widget.initialLockerId != null)
           _lockedLockerCard()
         else
@@ -708,7 +710,7 @@ class _RentLockerPageState extends State<RentLockerPage>
             },
           ),
         const SizedBox(height: 20),
-        const OpsSectionLabel('Loại ô', icon: LucideIcons.boxes),
+        OpsSectionLabel(context.l10n.commonBoxType, icon: LucideIcons.boxes),
         if (widget.initialCellType != null)
           _lockedCellTypeCard(_cellType)
         else
@@ -717,7 +719,7 @@ class _RentLockerPageState extends State<RentLockerPage>
               _cellCard(
                 value: 'STANDARD',
                 icon: LucideIcons.box,
-                title: 'Ô thường',
+                title: context.l10n.groupStandard,
                 size: config.cellDimensionsFor('STANDARD'),
                 rate: rentalRateLabel(config, 'STANDARD'),
               ),
@@ -725,14 +727,14 @@ class _RentLockerPageState extends State<RentLockerPage>
               _cellCard(
                 value: 'XL',
                 icon: LucideIcons.luggage,
-                title: 'Ô vali (XL)',
+                title: context.l10n.groupXl,
                 size: config.cellDimensionsFor('XL'),
                 rate: rentalRateLabel(config, 'XL'),
               ),
             ],
           ),
         const SizedBox(height: 20),
-        const OpsSectionLabel('Thời gian thuê', icon: LucideIcons.timer),
+        OpsSectionLabel(context.l10n.rentDuration, icon: LucideIcons.timer),
         if (_maxDays(config) >= 1) ...[
           _modeToggle(),
           const SizedBox(height: 12),
@@ -745,12 +747,12 @@ class _RentLockerPageState extends State<RentLockerPage>
           style: const TextStyle(fontSize: 12, color: opsMutedText, height: 1.4),
         ),
         const SizedBox(height: 16),
-        const OpsSectionLabel('Ghi chú', icon: LucideIcons.stickyNote),
+        OpsSectionLabel(context.l10n.commonNote, icon: LucideIcons.stickyNote),
         TextField(
           controller: _noteCtrl,
           maxLines: 2,
           decoration: InputDecoration(
-            hintText: 'Tùy chọn...',
+            hintText: context.l10n.rentOptionalHint,
             prefixIcon: const Icon(LucideIcons.pencil, size: 18, color: opsMutedText),
             filled: true,
             fillColor: Colors.white,
@@ -762,7 +764,7 @@ class _RentLockerPageState extends State<RentLockerPage>
         // Admin đặt 0 mã mỗi đơn ⇒ tắt nhập mã.
         if (config.maxVouchersPerOrder > 0) ...[
           const SizedBox(height: 16),
-          const OpsSectionLabel('Mã giảm giá', icon: LucideIcons.ticket),
+          OpsSectionLabel(context.l10n.commonDiscountCode, icon: LucideIcons.ticket),
           PromoCodeField(
             orderTotal: _price,
             lockerId: _lockerId,
@@ -774,7 +776,7 @@ class _RentLockerPageState extends State<RentLockerPage>
           ),
         ],
         const SizedBox(height: 16),
-        const OpsSectionLabel('Điểm thưởng', icon: LucideIcons.sparkles),
+        OpsSectionLabel(context.l10n.commonRewardPoints, icon: LucideIcons.sparkles),
         LoyaltyRedeemToggle(
           orderTotal: _priceAfterVoucher,
           service: _service,
@@ -804,8 +806,8 @@ class _RentLockerPageState extends State<RentLockerPage>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Tạm tính',
+                Text(
+                  context.l10n.commonSubtotal,
                   style: TextStyle(color: Colors.white70, fontSize: 12),
                 ),
                 Text(
@@ -814,7 +816,7 @@ class _RentLockerPageState extends State<RentLockerPage>
                 ),
                 if (_discount > 0)
                   Text(
-                    'Giảm: -${fmtPrice(_discount)}',
+                    context.l10n.rentDiscountValue(fmtPrice(_discount)),
                     style: const TextStyle(
                       color: Color(0xFF86EFAC),
                       fontSize: 12,
@@ -823,8 +825,9 @@ class _RentLockerPageState extends State<RentLockerPage>
                   ),
                 if (_pointsDiscount > 0)
                   Text(
-                    'Điểm thưởng: '
-                    '${loyaltyPointsDiscountText(_pointsToUse, _pointsDiscount)}',
+                    context.l10n.rentPointsValue(
+                      loyaltyPointsDiscountText(_pointsToUse, _pointsDiscount),
+                    ),
                     style: const TextStyle(
                       color: Color(0xFFFDE68A),
                       fontSize: 12,
@@ -866,15 +869,15 @@ class _RentLockerPageState extends State<RentLockerPage>
     return SizedBox(
       width: double.infinity,
       child: SegmentedButton<bool>(
-        segments: const [
+        segments: [
           ButtonSegment(
             value: false,
-            label: Text('Theo giờ'),
+            label: Text(context.l10n.rentByHour),
             icon: Icon(LucideIcons.clock, size: 16),
           ),
           ButtonSegment(
             value: true,
-            label: Text('Theo ngày'),
+            label: Text(context.l10n.rentByDay),
             icon: Icon(LucideIcons.calendarDays, size: 16),
           ),
         ],
@@ -928,7 +931,7 @@ class _RentLockerPageState extends State<RentLockerPage>
                     )
                   : const SizedBox.shrink(),
             ),
-            _durationBadge('${_hours.round()} giờ'),
+            _durationBadge(context.l10n.hoursValue(_hours.round())),
           ],
         ),
       ],
@@ -946,20 +949,20 @@ class _RentLockerPageState extends State<RentLockerPage>
       children: [
         Wrap(
           spacing: 8,
-          children: [for (final d in quick) _quickChip(d * 24, '$d ngày')],
+          children: [for (final d in quick) _quickChip(d * 24, context.l10n.daysValue(d))],
         ),
         const SizedBox(height: 8),
         Row(
           children: [
             IconButton.outlined(
-              tooltip: 'Bớt 1 ngày',
+              tooltip: context.l10n.rentMinusDay,
               onPressed: days > 1 ? () => _setDays(days - 1) : null,
               icon: const Icon(LucideIcons.minus, size: 18),
             ),
             Expanded(
               child: Center(
                 child: Text(
-                  '$days ngày · ${days * 24} giờ',
+                  context.l10n.rentDaysHours(days, days * 24),
                   style: const TextStyle(
                     fontWeight: FontWeight.w800,
                     fontSize: 15,
@@ -969,7 +972,7 @@ class _RentLockerPageState extends State<RentLockerPage>
               ),
             ),
             IconButton.outlined(
-              tooltip: 'Thêm 1 ngày',
+              tooltip: context.l10n.rentPlusDay,
               onPressed: days < maxDays ? () => _setDays(days + 1) : null,
               icon: const Icon(LucideIcons.plus, size: 18),
             ),
@@ -1067,9 +1070,9 @@ class _RentLockerPageState extends State<RentLockerPage>
               ),
               const SizedBox(height: 6),
               if (available == 0)
-                const Text('Hết ô', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.redAccent))
+                Text(context.l10n.commonNoFreeBoxes, style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.redAccent))
               else if (available > 0)
-                Text('Còn $available ô trống', style: const TextStyle(fontSize: 11, color: Colors.green)),
+                Text(context.l10n.commonFreeBoxes(available), style: const TextStyle(fontSize: 11, color: Colors.green)),
             ],
           ),
         ),
@@ -1102,7 +1105,7 @@ class _RentLockerPageState extends State<RentLockerPage>
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  widget.initialLockerName ?? widget.locationName ?? 'Tủ đã chọn',
+                  widget.initialLockerName ?? widget.locationName ?? context.l10n.commonSelectedLocker,
                   style: const TextStyle(
                     fontWeight: FontWeight.w800,
                     fontSize: 14.5,
@@ -1130,7 +1133,7 @@ class _RentLockerPageState extends State<RentLockerPage>
   Widget _lockedCellTypeCard(String cellType) {
     final isXl = cellType == 'XL';
     final icon = isXl ? LucideIcons.luggage : LucideIcons.box;
-    final title = isXl ? 'Ô vali (XL)' : 'Ô thường';
+    final title = isXl ? context.l10n.groupXl : context.l10n.groupStandard;
     final size = businessConfig.cellDimensionsFor(cellType);
     final rate = rentalRateLabel(businessConfig, cellType);
     
@@ -1173,9 +1176,9 @@ class _RentLockerPageState extends State<RentLockerPage>
                     if (available >= 0) ...[
                       const SizedBox(width: 8),
                       if (available == 0)
-                        const Text('Hết ô', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.redAccent))
+                        Text(context.l10n.commonNoFreeBoxes, style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.redAccent))
                       else
-                        Text('Còn $available ô trống', style: const TextStyle(fontSize: 11, color: Colors.green)),
+                        Text(context.l10n.commonFreeBoxes(available), style: const TextStyle(fontSize: 11, color: Colors.green)),
                     ],
                   ],
                 ),
@@ -1215,13 +1218,13 @@ class _RentLockerPageState extends State<RentLockerPage>
             tone: OpsBannerTone.info,
             icon: LucideIcons.badgeAlert,
             text:
-                'Quét mã QR trên và chuyển khoản trong ${config.autoCancelUnpaidMinutes} phút để giữ ô — mã mở ô sẽ tự hiện sau khi thanh toán.',
+                context.l10n.commonScanQrPayHoldRent(config.autoCancelUnpaidMinutes),
           ),
         ],
       );
     }
 
-    final payLabel = 'Thanh toán ${fmtPrice(orderAmountDue(order))}';
+    final payLabel = context.l10n.ordPayAmount(fmtPrice(orderAmountDue(order)));
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
@@ -1233,7 +1236,7 @@ class _RentLockerPageState extends State<RentLockerPage>
                 children: [
                   Expanded(
                     child: Text(
-                      'Đơn ${order['orderCode'] ?? '#${order['id']}'}',
+                      context.l10n.commonOrderCode(order['orderCode'] ?? '#${order['id']}'),
                       style: const TextStyle(
                         fontWeight: FontWeight.w800,
                         color: opsDark,
@@ -1265,25 +1268,27 @@ class _RentLockerPageState extends State<RentLockerPage>
               if (started) ...[
                 _ResultHeadline(
                   icon: LucideIcons.lockKeyhole,
-                  title: 'Kỳ thuê đang chạy',
+                  title: context.l10n.rentRunning,
                   subtitle:
-                      'PIN mở ô nhiều lần tới ${fmtDateTime(order['pickupDeadline'])}.',
+                      context.l10n.rentPinUntil(fmtDateTime(order['pickupDeadline'])),
                 ),
                 const SizedBox(height: 16),
               ],
               AccessCredentials(
                 pin: order['pinCode'] as String?,
                 qrToken: order['qrToken'] as String?,
-                caption: 'PIN dùng nhiều lần trong kỳ thuê',
+                caption: context.l10n.rentPinMultiUse,
               ),
               if (order['pickupDeadline'] != null) ...[
                 const SizedBox(height: 16),
                 OpsBanner(
                   tone: OpsBannerTone.info,
                   icon: LucideIcons.clock,
-                  text: 'Hết hạn thuê: ${fmtDateTime(order['pickupDeadline'])} '
-                      '(${fmtRemaining(order['pickupDeadline'])}). '
-                      '${rentalOvertimePolicyText(config, _cellType)}',
+                  text: context.l10n.rentExpiresAt(
+                    fmtDateTime(order['pickupDeadline']),
+                    fmtRemaining(order['pickupDeadline']),
+                    rentalOvertimePolicyText(config, _cellType),
+                  ),
                 ),
               ],
             ],
@@ -1298,12 +1303,12 @@ class _RentLockerPageState extends State<RentLockerPage>
           OpsBanner(
             tone: OpsBannerTone.info,
             icon: LucideIcons.packageOpen,
-            title: 'Đã giữ ô — bỏ đồ vào',
-            text: 'Nhập PIN để mở ${_resultBoxLabel(order)} hoặc mở bằng nút bên dưới để bắt đầu kỳ thuê.',
+            title: context.l10n.rentHeldDropOff,
+            text: context.l10n.rentEnterPinToOpen(_resultBoxLabel(order)),
           ),
           const SizedBox(height: 12),
           OpsPrimaryButton(
-            label: 'Mở ô để bỏ đồ',
+            label: context.l10n.rentOpenToDrop,
             icon: LucideIcons.lockKeyholeOpen,
             color: opsPrimary,
             loading: _loading,
@@ -1311,11 +1316,11 @@ class _RentLockerPageState extends State<RentLockerPage>
           ),
         ] else ...[
           if (unpaid) ...[
-            const OpsBanner(
+            OpsBanner(
               tone: OpsBannerTone.warning,
               icon: LucideIcons.badgeAlert,
               text:
-                  'Còn phí gia hạn chưa thanh toán — cần trả trước khi kết thúc thuê.',
+                  context.l10n.rentExtensionUnpaid,
             ),
             const SizedBox(height: 12),
             OpsPrimaryButton(
@@ -1327,7 +1332,7 @@ class _RentLockerPageState extends State<RentLockerPage>
             const SizedBox(height: 12),
           ],
           OpsPrimaryButton(
-            label: 'Xong — xem trong Đơn của tôi',
+            label: context.l10n.rentDoneSeeOrders,
             icon: LucideIcons.house,
             onPressed: _navigateToOrders,
           ),

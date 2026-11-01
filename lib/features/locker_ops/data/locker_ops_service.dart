@@ -4,6 +4,7 @@ import 'package:smart_laundry_locker/core/media/media_upload.dart';
 import 'package:smart_laundry_locker/core/network/dio_client.dart';
 import 'package:smart_laundry_locker/features/locker_ops/data/device_restart_result.dart';
 import 'package:smart_laundry_locker/features/locker_ops/data/force_open_result.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 export 'package:smart_laundry_locker/features/locker_ops/data/device_restart_result.dart';
 export 'package:smart_laundry_locker/features/locker_ops/data/force_open_result.dart';
@@ -1616,117 +1617,117 @@ class LockerOpsService {
   /// Các mã lỗi mà server trả `message` tiếng Anh — hiển thị bản tiếng Việt.
   static Map<String, String> get _codeMessages => <String, String>{
     'BLE_TEST_NOT_GRANTED':
-        'Tài khoản chưa được admin cho thử mở ô qua Bluetooth ở tủ này.',
+        L10n.current.apiErrBleTestNotGranted,
     'RESOLUTION_PHOTO_REQUIRED':
-        'Cần ít nhất 1 ảnh nghiệm thu trước khi hoàn tất phiếu.',
-    'LANDING_PAD_ABSENT': 'Tủ này không có bãi đáp drone.',
-    'LANDING_PAD_STATUS_INVALID': 'Trạng thái bãi đáp không hợp lệ.',
-    'REPORT_NOT_CLAIMABLE': 'Phiếu không còn ở trạng thái chờ nhận.',
+        L10n.current.apiErrResolutionPhotoRequired,
+    'LANDING_PAD_ABSENT': L10n.current.apiErrLandingPadAbsent,
+    'LANDING_PAD_STATUS_INVALID': L10n.current.apiErrLandingPadStatusInvalid,
+    'REPORT_NOT_CLAIMABLE': L10n.current.apiErrReportNotClaimable,
     // ── Luồng giao drone (order-service / locker-service) ──
-    'DRONE_ROUTE_REQUIRED': 'Cần chọn cả tủ gửi và tủ nhận.',
-    'DRONE_ROUTE_INVALID': 'Tủ gửi và tủ nhận phải khác nhau.',
+    'DRONE_ROUTE_REQUIRED': L10n.current.apiErrDroneRouteRequired,
+    'DRONE_ROUTE_INVALID': L10n.current.apiErrDroneRouteInvalid,
     'DRONE_ROUTE_TOO_FAR':
-        'Tủ nhận nằm ngoài tầm bay của drone từ khu vực lấy hàng này.',
+        L10n.current.apiErrDroneRouteTooFar,
     'DRONE_ROUTE_TOO_SHORT':
-        'Tủ nhận ở quá gần điểm lấy hàng nên không cần giao bằng drone — hãy gửi thẳng vào tủ nhận.',
+        L10n.current.apiErrDroneRouteTooShort,
     'DRONE_PICKUP_OUT_OF_RANGE':
-        'Vị trí ghim nằm ngoài bán kính lấy hàng của tủ gửi drone. Khoảng cách này tính từ nhà bạn đến tủ gửi, khác quãng đường bay giữa hai tủ. Hãy kiểm tra ghim trên bản đồ rồi chọn lại vị trí.',
+        L10n.current.apiErrDronePickupOutOfRange,
     'DRONE_NO_SOURCE_LOCKER':
-        'Hiện chưa có tủ nào gần bạn sẵn sàng phóng drone. Vui lòng thử lại sau.',
+        L10n.current.apiErrDroneNoSourceLocker,
     'DRONE_LOCKER_LOCATION_MISSING':
-        'Tủ nhận chưa có toạ độ nên chưa giao drone tới được.',
-    'DRONE_PICKUP_ADDRESS_REQUIRED': 'Cần nhập địa chỉ lấy hàng.',
-    'DRONE_PICKUP_LOCATION_REQUIRED': 'Cần chọn vị trí lấy hàng trên bản đồ.',
-    'DRONE_SENDER_NAME_REQUIRED': 'Cần nhập tên người gửi.',
-    'DRONE_SENDER_PHONE_INVALID': 'Số điện thoại người gửi không hợp lệ.',
-    'DRONE_SENDER_EMAIL_INVALID': 'Email người gửi không hợp lệ.',
-    'DRONE_RECEIVER_NAME_REQUIRED': 'Cần nhập tên người nhận.',
-    'DRONE_RECEIVER_EMAIL_INVALID': 'Email người nhận không hợp lệ.',
-    'DRONE_PARCEL_CATEGORY_REQUIRED': 'Cần chọn loại hàng.',
-    'DRONE_PICKUP_NOT_OFFERED': 'Việc lấy hàng này không còn được mời cho bạn.',
-    'DRONE_PICKUP_OFFER_EXPIRED': 'Lời mời lấy hàng đã hết hạn.',
+        L10n.current.apiErrDroneLockerLocationMissing,
+    'DRONE_PICKUP_ADDRESS_REQUIRED': L10n.current.apiErrDronePickupAddressRequired,
+    'DRONE_PICKUP_LOCATION_REQUIRED': L10n.current.apiErrDronePickupLocationRequired,
+    'DRONE_SENDER_NAME_REQUIRED': L10n.current.apiErrDroneSenderNameRequired,
+    'DRONE_SENDER_PHONE_INVALID': L10n.current.apiErrDroneSenderPhoneInvalid,
+    'DRONE_SENDER_EMAIL_INVALID': L10n.current.apiErrDroneSenderEmailInvalid,
+    'DRONE_RECEIVER_NAME_REQUIRED': L10n.current.apiErrDroneReceiverNameRequired,
+    'DRONE_RECEIVER_EMAIL_INVALID': L10n.current.apiErrDroneReceiverEmailInvalid,
+    'DRONE_PARCEL_CATEGORY_REQUIRED': L10n.current.apiErrDroneParcelCategoryRequired,
+    'DRONE_PICKUP_NOT_OFFERED': L10n.current.apiErrDronePickupNotOffered,
+    'DRONE_PICKUP_OFFER_EXPIRED': L10n.current.apiErrDronePickupOfferExpired,
     'DRONE_PICKUP_NOT_ASSIGNED_TO_USER':
-        'Việc lấy hàng này không thuộc về bạn.',
+        L10n.current.apiErrDronePickupNotAssignedToUser,
     'DRONE_PICKUP_NOT_FOUND':
-        'Đơn chưa có việc lấy hàng (có thể chưa thanh toán).',
+        L10n.current.apiErrDronePickupNotFound,
     'DRONE_PICKUP_CODE_INVALID':
-        'Mã lấy hàng không đúng. Nhờ người gửi đọc lại mã trong đơn.',
+        L10n.current.apiErrDronePickupCodeInvalid,
     'DRONE_PICKUP_PARCEL_NOT_VERIFIED':
-        'Cần xác nhận kiện đúng khai báo, hoặc báo không lấy được hàng.',
-    'DRONE_PARCEL_NOT_PICKED_UP': 'Kiện chưa được lấy từ người gửi.',
+        L10n.current.apiErrDronePickupParcelNotVerified,
+    'DRONE_PARCEL_NOT_PICKED_UP': L10n.current.apiErrDroneParcelNotPickedUp,
     'DRONE_ORDER_BLOCKED':
-        'Đơn đang tạm dừng vì sự cố, chưa đi lấy hàng lúc này.',
+        L10n.current.apiErrDroneOrderBlocked,
     'DRONE_TECHNICIAN_LOCATION_REQUIRED':
-        'Cần bật định vị để vào ca nhận việc lấy hàng.',
+        L10n.current.apiErrDroneTechnicianLocationRequired,
     'DRONE_TECHNICIAN_HAS_ACTIVE_PICKUP':
-        'Bạn còn việc lấy hàng đã nhận. Hoàn tất hoặc báo không lấy được trước khi ra ca.',
-    'DRONE_TECHNICIAN_OFF_DUTY': 'Kỹ thuật viên này chưa vào ca.',
-    'DRONE_TECHNICIAN_BUSY': 'Kỹ thuật viên này đang bận việc khác.',
-    'DRONE_FAILURE_REASON_INVALID': 'Lý do không hợp lệ cho thao tác này.',
-    'DRONE_UNCHANGED': 'Drone này đang được gán cho nhiệm vụ rồi.',
+        L10n.current.apiErrDroneTechnicianHasActivePickup,
+    'DRONE_TECHNICIAN_OFF_DUTY': L10n.current.apiErrDroneTechnicianOffDuty,
+    'DRONE_TECHNICIAN_BUSY': L10n.current.apiErrDroneTechnicianBusy,
+    'DRONE_FAILURE_REASON_INVALID': L10n.current.apiErrDroneFailureReasonInvalid,
+    'DRONE_UNCHANGED': L10n.current.apiErrDroneUnchanged,
     'DRONE_FLIGHTS_SUSPENDED':
-        'Dịch vụ giao drone đang tạm dừng (thời tiết hoặc sự cố vận hành).',
-    'DRONE_OUTSIDE_FLIGHT_HOURS': 'Ngoài khung giờ được phép phóng drone.',
+        L10n.current.apiErrDroneFlightsSuspended,
+    'DRONE_OUTSIDE_FLIGHT_HOURS': L10n.current.apiErrDroneOutsideFlightHours,
     'DRONE_OPEN_ORDER_LIMIT':
-        'Bạn đang có quá nhiều đơn drone chưa hoàn tất. Hoàn tất hoặc huỷ bớt rồi đặt tiếp.',
+        L10n.current.apiErrDroneOpenOrderLimit,
     'DRONE_PROHIBITED_ITEMS_NOT_DECLARED':
-        'Bạn cần cam kết kiện không chứa hàng cấm bay.',
+        L10n.current.apiErrDroneProhibitedItemsNotDeclared,
     'DRONE_PARCEL_SIZE_INVALID':
-        'Nhập đủ dài, rộng, cao của kiện hoặc bỏ trống cả ba.',
-    'DRONE_PARCEL_TOO_LARGE': 'Kiện không lọt khoang hàng của drone.',
-    'DRONE_PARCEL_CATEGORY_INVALID': 'Loại hàng không hợp lệ.',
+        L10n.current.apiErrDroneParcelSizeInvalid,
+    'DRONE_PARCEL_TOO_LARGE': L10n.current.apiErrDroneParcelTooLarge,
+    'DRONE_PARCEL_CATEGORY_INVALID': L10n.current.apiErrDroneParcelCategoryInvalid,
     'DRONE_DECLARED_VALUE_TOO_HIGH':
-        'Giá trị khai báo vượt mức drone được phép chở.',
+        L10n.current.apiErrDroneDeclaredValueTooHigh,
     'DRONE_PARCEL_NOT_DROPPED':
-        'Người gửi chưa xác nhận bỏ kiện vào ô gửi nên chưa thể tiếp nhận.',
-    'DRONE_PARCEL_RETURN_NOT_PENDING': 'Đơn này không có kiện nào chờ trả.',
+        L10n.current.apiErrDroneParcelNotDropped,
+    'DRONE_PARCEL_RETURN_NOT_PENDING': L10n.current.apiErrDroneParcelReturnNotPending,
     'DRONE_BATTERY_UNKNOWN':
-        'Chưa biết mức pin của drone, hãy cập nhật pin trước khi bay.',
-    'DRONE_SURCHARGE_NOT_OWED': 'Đơn không còn nợ phụ thu cân lệch.',
-    'DRONE_SOURCE_NOT_FOUND': 'Không tìm thấy tủ gửi.',
-    'DRONE_DESTINATION_NOT_FOUND': 'Không tìm thấy tủ nhận.',
-    'DRONE_LOCKER_INACTIVE': 'Tủ gửi hoặc tủ nhận đang ngừng hoạt động.',
+        L10n.current.apiErrDroneBatteryUnknown,
+    'DRONE_SURCHARGE_NOT_OWED': L10n.current.apiErrDroneSurchargeNotOwed,
+    'DRONE_SOURCE_NOT_FOUND': L10n.current.apiErrDroneSourceNotFound,
+    'DRONE_DESTINATION_NOT_FOUND': L10n.current.apiErrDroneDestinationNotFound,
+    'DRONE_LOCKER_INACTIVE': L10n.current.apiErrDroneLockerInactive,
     'DRONE_SOURCE_CELL_UNAVAILABLE':
-        'Ô drone ở tủ gửi đang có đơn khác. Vui lòng chờ đội bay nạp hàng hoặc chọn tủ khác.',
-    'DRONE_SOURCE_CELL_MISMATCH': 'Ô drone đã chọn không thuộc tủ gửi này.',
-    'DRONE_CELL_REQUIRED': 'Chỉ đặt giao drone được ở ô drone.',
-    'BOX_NOT_AVAILABLE': 'Ô tủ không còn trống. Vui lòng chọn ô hoặc tủ khác.',
-    'DRONE_DEMO_NOT_ALLOWED': 'Tài khoản chưa được dùng chế độ mô phỏng drone.',
-    'DRONE_ORDER_UNPAID': 'Đơn chưa thanh toán nên chưa thể tiếp nhận.',
-    'DRONE_ORDER_STATUS_INVALID': 'Đơn không còn ở bước cho phép thao tác này.',
-    'DRONE_MISSION_ALREADY_EXISTS': 'Đơn đã có điều phối viên khác tiếp nhận.',
+        L10n.current.apiErrDroneSourceCellUnavailable,
+    'DRONE_SOURCE_CELL_MISMATCH': L10n.current.apiErrDroneSourceCellMismatch,
+    'DRONE_CELL_REQUIRED': L10n.current.apiErrDroneCellRequired,
+    'BOX_NOT_AVAILABLE': L10n.current.apiErrBoxNotAvailable,
+    'DRONE_DEMO_NOT_ALLOWED': L10n.current.apiErrDroneDemoNotAllowed,
+    'DRONE_ORDER_UNPAID': L10n.current.apiErrDroneOrderUnpaid,
+    'DRONE_ORDER_STATUS_INVALID': L10n.current.apiErrDroneOrderStatusInvalid,
+    'DRONE_MISSION_ALREADY_EXISTS': L10n.current.apiErrDroneMissionAlreadyExists,
     'DRONE_MISSION_STATUS_INVALID':
-        'Nhiệm vụ không còn ở bước cho phép thao tác này.',
+        L10n.current.apiErrDroneMissionStatusInvalid,
     'DRONE_MISSION_NOT_ASSIGNED_TO_USER':
-        'Chỉ điều phối viên đã tiếp nhận mới thao tác được nhiệm vụ này.',
-    'DRONE_WRONG_SOURCE_LOCKER': 'Drone được chọn không đỗ tại tủ gửi của đơn.',
-    'DRONE_INACTIVE': 'Drone đã ngừng hoạt động.',
-    'DRONE_NOT_IDLE': 'Drone không còn sẵn sàng, hãy chọn drone khác.',
-    'DRONE_BATTERY_TOO_LOW': 'Pin drone quá thấp để bay, cần sạc trước.',
+        L10n.current.apiErrDroneMissionNotAssignedToUser,
+    'DRONE_WRONG_SOURCE_LOCKER': L10n.current.apiErrDroneWrongSourceLocker,
+    'DRONE_INACTIVE': L10n.current.apiErrDroneInactive,
+    'DRONE_NOT_IDLE': L10n.current.apiErrDroneNotIdle,
+    'DRONE_BATTERY_TOO_LOW': L10n.current.apiErrDroneBatteryTooLow,
     'DRONE_STATUS_CONFLICT':
-        'Trạng thái drone vừa thay đổi, hãy tải lại và thử lại.',
+        L10n.current.apiErrDroneStatusConflict,
     'DRONE_RESERVATION_LOST':
-        'Drone không còn được giữ cho nhiệm vụ này (có thể đã báo lỗi).',
-    'DRONE_PAYLOAD_TOO_HEAVY': 'Kiện hàng vượt tải trọng cho phép của drone.',
-    'DRONE_LOADING_NOT_CONFIRMED': 'Cần xác nhận nạp hàng trước khi phóng.',
+        L10n.current.apiErrDroneReservationLost,
+    'DRONE_PAYLOAD_TOO_HEAVY': L10n.current.apiErrDronePayloadTooHeavy,
+    'DRONE_LOADING_NOT_CONFIRMED': L10n.current.apiErrDroneLoadingNotConfirmed,
     'DRONE_SURCHARGE_UNPAID':
-        'Kiện nặng hơn khai báo. Chờ khách trả thêm phần phí chênh rồi mới phóng được.',
-    'DRONE_PARCEL_WEIGHT_INVALID': 'Khối lượng kiện hàng không hợp lệ.',
-    'DRONE_ALREADY_IN_FLIGHT': 'Drone đã cất cánh, không thể huỷ nhiệm vụ.',
-    'DRONE_CANCEL_NOTE_REQUIRED': 'Cần nhập ghi chú khi chọn lý do Khác.',
+        L10n.current.apiErrDroneSurchargeUnpaid,
+    'DRONE_PARCEL_WEIGHT_INVALID': L10n.current.apiErrDroneParcelWeightInvalid,
+    'DRONE_ALREADY_IN_FLIGHT': L10n.current.apiErrDroneAlreadyInFlight,
+    'DRONE_CANCEL_NOTE_REQUIRED': L10n.current.apiErrDroneCancelNoteRequired,
     'DRONE_STAGE_AUTOMATED':
-        'Đơn mô phỏng tự chuyển chặng, không cần xác nhận tay.',
-    'DRONE_RECEIVER_PHONE_INVALID': 'Số điện thoại người nhận không hợp lệ.',
-    'LOCKER_INACTIVE': 'Tủ đang ngừng hoạt động.',
-    'LANDING_PAD_UNAVAILABLE': 'Bãi đáp drone chưa sẵn sàng.',
-    'DRONE_OWNERSHIP_REQUIRED': 'Bạn cần nhận phụ trách drone này trước.',
-    'DRONE_ALREADY_ASSIGNED': 'Drone đã có kỹ thuật viên khác phụ trách.',
-    'DRONE_ACTIVE_MISSION': 'Drone đang có nhiệm vụ, chỉ được báo lỗi (FAULT).',
-    'DRONE_FAULT_REASON_REQUIRED': 'Cần nhập lý do khi báo drone lỗi.',
+        L10n.current.apiErrDroneStageAutomated,
+    'DRONE_RECEIVER_PHONE_INVALID': L10n.current.apiErrDroneReceiverPhoneInvalid,
+    'LOCKER_INACTIVE': L10n.current.apiErrLockerInactive,
+    'LANDING_PAD_UNAVAILABLE': L10n.current.apiErrLandingPadUnavailable,
+    'DRONE_OWNERSHIP_REQUIRED': L10n.current.apiErrDroneOwnershipRequired,
+    'DRONE_ALREADY_ASSIGNED': L10n.current.apiErrDroneAlreadyAssigned,
+    'DRONE_ACTIVE_MISSION': L10n.current.apiErrDroneActiveMission,
+    'DRONE_FAULT_REASON_REQUIRED': L10n.current.apiErrDroneFaultReasonRequired,
     'DRONE_PAYMENT_REQUIRED_BEFORE_PICKUP':
-        'Vui lòng thanh toán đơn drone trước khi mở tủ nhận hàng.',
+        L10n.current.apiErrDronePaymentRequiredBeforePickup,
     // ── Đơn của khách (order-service) ──
-    'ORDER_STATUS_INVALID': 'Đơn không còn ở trạng thái cho phép thao tác này.',
+    'ORDER_STATUS_INVALID': L10n.current.apiErrOrderStatusInvalid,
     // ── Thanh toán: MoMo/VNPay đã bỏ ──
     PaymentMethods.unsupportedErrorCode: PaymentMethods.unsupportedMessage,
   };
@@ -1809,16 +1810,16 @@ class LockerOpsService {
       if (codeMessage != null) return codeMessage;
       // 404 không kèm mã nghiệp vụ = máy chủ chưa có API này (bản cũ).
       if (code == null && error.response?.statusCode == 404) {
-        return 'Máy chủ chưa hỗ trợ chức năng này. Vui lòng cập nhật hệ thống rồi thử lại.';
+        return L10n.current.apiErrNotSupportedUpdate;
       }
       if (serverMessage.isNotEmpty) return serverMessage;
       final fallback = _technicianCodeFallbacks[code];
       if (fallback != null) return fallback;
       if (error.response?.statusCode == 403) {
-        return 'Bạn không có quyền thực hiện thao tác này';
+        return L10n.current.apiErrForbidden;
       }
-      return 'Lỗi kết nối máy chủ';
+      return L10n.current.apiErrConnection;
     }
-    return 'Đã xảy ra lỗi';
+    return L10n.current.apiErrGeneric;
   }
 }

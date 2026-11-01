@@ -2229,4 +2229,2629 @@ class AppLocalizationsVi extends AppLocalizations {
   String voucherOrderFrom(Object amount) {
     return 'Đơn từ $amount';
   }
+
+  @override
+  String get commonDetails => 'Chi tiết';
+
+  @override
+  String get commonNotYet => 'Chưa';
+
+  @override
+  String get commonNote => 'Ghi chú';
+
+  @override
+  String get commonReload => 'Tải lại';
+
+  @override
+  String get commonService => 'Dịch vụ';
+
+  @override
+  String get commonDiscount => 'Giảm giá';
+
+  @override
+  String get commonVoucher => 'Voucher';
+
+  @override
+  String get commonAmount => 'Số tiền';
+
+  @override
+  String get commonLocker => 'Tủ';
+
+  @override
+  String get commonBox => 'Ô';
+
+  @override
+  String get commonToday => 'Hôm nay';
+
+  @override
+  String get commonYesterday => 'Hôm qua';
+
+  @override
+  String get commonUnknownDate => 'Không rõ ngày';
+
+  @override
+  String dateDayMonthYear(Object day, Object month, Object year) {
+    return '$day tháng $month, $year';
+  }
+
+  @override
+  String hoursValue(int hours) {
+    return '$hours giờ';
+  }
+
+  @override
+  String pricePerHour(Object price) {
+    return '$price/giờ';
+  }
+
+  @override
+  String photosMore(Object count) {
+    return '+$count ảnh';
+  }
+
+  @override
+  String get boxThisLower => 'ô này';
+
+  @override
+  String boxNumberLower(Object number) {
+    return 'ô số $number';
+  }
+
+  @override
+  String get boxThis => 'Ô này';
+
+  @override
+  String get ordIncomingNotSupported =>
+      'Máy chủ chưa hỗ trợ mục Hàng chờ nhận. Vui lòng thử lại sau.';
+
+  @override
+  String get ordNotFoundInList => 'Không tìm thấy đơn trong danh sách của bạn.';
+
+  @override
+  String get ordEmptyRecent => 'Không có đơn hàng nào trong 7 ngày gần đây.';
+
+  @override
+  String get ordEmptyActive =>
+      'Hiện không có đơn hàng nào đang trong quá trình sử dụng.';
+
+  @override
+  String get ordEmptyCompleted => 'Chưa có đơn hàng nào đã hoàn tất.';
+
+  @override
+  String get ordEmptyRental => 'Chưa có đơn thuê tủ nào.';
+
+  @override
+  String get ordEmptySend => 'Chưa có đơn gửi hàng nào.';
+
+  @override
+  String get ordEmptyCanceled => 'Không có đơn nào đã hủy.';
+
+  @override
+  String get ordEmptyHint => 'Tạo đơn Gửi hàng hoặc Thuê tủ từ màn hình chính.';
+
+  @override
+  String get ordCancelQuestion => 'Huỷ đơn?';
+
+  @override
+  String ordCancelBody(Object code) {
+    return 'Đơn $code sẽ bị huỷ, mã mở ô hết hiệu lực và ô đang giữ được nhả.';
+  }
+
+  @override
+  String get ordCancelPaidNote =>
+      ' Tiền đã thanh toán không tự hoàn — sau khi huỷ, mở lại đơn và chọn \"Yêu cầu hoàn tiền\".';
+
+  @override
+  String get ordKeepOrder => 'Giữ đơn';
+
+  @override
+  String get ordCancelOrderAlt => 'Huỷ đơn';
+
+  @override
+  String get ordExtendRental => 'Gia hạn thuê';
+
+  @override
+  String ordAddHours(int hours) {
+    return 'Thêm $hours giờ';
+  }
+
+  @override
+  String ordMaxHoursPerExtension(Object hours) {
+    return 'Tối đa $hours giờ mỗi lần gia hạn';
+  }
+
+  @override
+  String get ordExtend => 'Gia hạn';
+
+  @override
+  String ordExtended(int hours) {
+    return 'Đã gia hạn $hours giờ';
+  }
+
+  @override
+  String get ordReportFaultyBox => 'Báo ô lỗi';
+
+  @override
+  String get ordDescribeIssueHint => 'Mô tả sự cố (ô không mở, kẹt cửa...)';
+
+  @override
+  String ordOnsitePhotosOptional(Object max) {
+    return 'Ảnh hiện trường (không bắt buộc, tối đa $max)';
+  }
+
+  @override
+  String get ordPhotosHelp => 'Ảnh giúp đội bảo trì xử lý nhanh hơn.';
+
+  @override
+  String get ordDescribeOrAttach => 'Vui lòng mô tả sự cố hoặc đính kèm ảnh.';
+
+  @override
+  String get ordUploadingPhotos => 'Đang tải ảnh...';
+
+  @override
+  String get ordSendReport => 'Gửi báo lỗi';
+
+  @override
+  String get ordBoxFaultDefault => 'Ô tủ gặp sự cố (xem ảnh đính kèm)';
+
+  @override
+  String ordReportSentFor(Object box) {
+    return 'Đã gửi báo lỗi cho $box — đội bảo trì sẽ xử lý';
+  }
+
+  @override
+  String get ordPickupAtKiosk => 'Lấy đồ tại kiosk';
+
+  @override
+  String get ordPickupAtKioskBody =>
+      'Dùng mã này tại kiosk để mở ô, lấy đồ ra, rồi đóng cửa tủ lại trước khi xác nhận kết thúc thuê. Bạn cũng có thể bấm mở trực tiếp trên app nếu đang ở gần tủ.';
+
+  @override
+  String ordOpenBoxOnPhone(Object box) {
+    return 'Mở $box trên điện thoại (GPS/QR)';
+  }
+
+  @override
+  String get ordPickedUpAndClosed => 'Đã lấy đồ và đóng tủ';
+
+  @override
+  String get ordRentalEnded => 'Đã kết thúc kỳ thuê';
+
+  @override
+  String get ordNoLockerInfo => 'Đơn chưa có thông tin tủ.';
+
+  @override
+  String get ordLockerNoLocation => 'Tủ chưa có vị trí để chỉ đường.';
+
+  @override
+  String get ordCantOpenMapsApp =>
+      'Không mở được ứng dụng bản đồ trên máy này.';
+
+  @override
+  String ordExtensionPaymentFor(Object id) {
+    return 'Thanh toán gia hạn thời gian đơn #$id';
+  }
+
+  @override
+  String get ordPaidSuccessfully =>
+      'Đơn hàng của bạn đã được thanh toán thành công.';
+
+  @override
+  String get ordPaymentNotCompleted =>
+      'Giao dịch chưa hoàn tất hoặc đã bị hủy. Vui lòng thử lại.';
+
+  @override
+  String get ordAwaitingPaymentPull =>
+      'Đang chờ xác nhận thanh toán — kéo xuống để làm mới sau ít phút.';
+
+  @override
+  String get ordAwaitingPaymentConfirmPickup =>
+      'Đang chờ xác nhận thanh toán — bấm lại \"Xác nhận lấy đồ\" sau khi đơn hiện Đã thanh toán.';
+
+  @override
+  String get ordConfirmPickup => 'Xác nhận lấy đồ';
+
+  @override
+  String get ordConfirmPickupBody =>
+      'Bạn xác nhận đã nhận lại đầy đủ đồ đạc của đơn hàng này? Thao tác này sẽ đóng và hoàn tất đơn hàng.';
+
+  @override
+  String get ordPickedUpComplete => 'Đã lấy đồ — Hoàn tất';
+
+  @override
+  String get ordCompletedTitle => 'Hoàn tất đơn hàng!';
+
+  @override
+  String get ordPaidAndPickedUp =>
+      'Bạn đã thanh toán và lấy đồ thành công. Đơn hàng đã hoàn tất.';
+
+  @override
+  String get ordReceivedComplete => 'Đã nhận đồ — đơn hoàn tất';
+
+  @override
+  String get ordPaidNotCompletedTitle => 'Đã thanh toán — chưa hoàn tất đơn';
+
+  @override
+  String ordPaidNotCompletedBody(Object reason) {
+    return 'Hệ thống đã ghi nhận thanh toán nhưng chưa hoàn tất được đơn: $reason\nBạn có thể thử lại \"Xác nhận lấy đồ\" hoặc gửi khiếu nại trong chi tiết đơn.';
+  }
+
+  @override
+  String get ordNoOvertimeFeeDue =>
+      'Đơn hàng không có phí quá giờ cần thanh toán';
+
+  @override
+  String get ordLockrLocker => 'Tủ Lock.R';
+
+  @override
+  String get ordOverdue => 'Đã quá hạn';
+
+  @override
+  String get ordOverdueFee => 'Phí quá hạn';
+
+  @override
+  String get ordAwaitingPaymentOpenBox =>
+      'Đang chờ xác nhận thanh toán — mở ô sau khi đơn hiện Đã thanh toán.';
+
+  @override
+  String get ordOvertimePaidOpening =>
+      'Đã thanh toán phí quá giờ — chuẩn bị mở ô';
+
+  @override
+  String ordSendingOpenCommand(Object box) {
+    return 'Đang gửi lệnh mở $box tới tủ...';
+  }
+
+  @override
+  String ordBoxOpened(Object box) {
+    return 'Tủ đã mở $box — mời bạn thao tác rồi đóng cửa.';
+  }
+
+  @override
+  String ordBoxOpenFailed(Object box, Object detail) {
+    return 'Không mở được $box$detail';
+  }
+
+  @override
+  String get ordNoBoxPinInfo => 'Đơn chưa có thông tin ô/PIN để mở tủ.';
+
+  @override
+  String get ordOverdueRentalNotice =>
+      'Đơn thuê đã quá hạn. Đã ghi nhận xử lý phí quá giờ — mời bạn mở ô lấy đồ và đóng tủ để hoàn tất.';
+
+  @override
+  String ordDelegatedTo(Object to) {
+    return 'Đã ủy quyền lấy hộ$to. Mã PIN cũ đã hết hiệu lực.';
+  }
+
+  @override
+  String ordDelegatedToPhone(Object phone) {
+    return ' cho $phone';
+  }
+
+  @override
+  String get ordChangePinQuestion => 'Đổi mã PIN?';
+
+  @override
+  String get ordChangePinReceiver =>
+      'Mã PIN hiện tại sẽ hết hiệu lực. Người nhận cần mã mới để lấy hàng — hãy gửi lại mã mới cho họ.';
+
+  @override
+  String get ordChangePinNow =>
+      'Mã PIN hiện tại sẽ hết hiệu lực ngay và được thay bằng mã mới.';
+
+  @override
+  String get ordChangeCode => 'Đổi mã';
+
+  @override
+  String get ordPinChangedSeeDetail =>
+      'Đã đổi mã PIN — xem mã mới trong chi tiết đơn.';
+
+  @override
+  String ordPinChangedNew(Object pin) {
+    return 'Đã đổi mã PIN mới: $pin';
+  }
+
+  @override
+  String get ordPinChangeNotSupported => 'Máy chủ chưa hỗ trợ đổi mã PIN.';
+
+  @override
+  String ordReceiverEmailSaved(Object email) {
+    return 'Đã lưu email người nhận $email. Lock.R báo người nhận khi đơn được thanh toán.';
+  }
+
+  @override
+  String ordPickupCodeSentTo(Object email) {
+    return 'Đã gửi mã mở tủ tới $email.';
+  }
+
+  @override
+  String ordOrderInfoResentTo(Object email) {
+    return 'Đã gửi lại thông tin đơn tới $email.';
+  }
+
+  @override
+  String get ordEmailCodeNotSupported =>
+      'Máy chủ chưa hỗ trợ gửi mã qua email.';
+
+  @override
+  String get ordNewOrderCreated => 'Đã tạo đơn mới — xem trong danh sách';
+
+  @override
+  String get ordDropoffConfirmed => 'Đã xác nhận bỏ đồ';
+
+  @override
+  String get ordConfirmPickedUpQuestion => 'Xác nhận đã lấy đồ?';
+
+  @override
+  String get ordConfirmPickedUpBody =>
+      'Đơn sẽ hoàn tất và ô tủ được giải phóng. Chỉ xác nhận khi bạn đã lấy đồ ra khỏi ô.';
+
+  @override
+  String get ordPickedUp => 'Đã lấy đồ';
+
+  @override
+  String ordBoxHasTicket(Object id) {
+    return 'Ô này đã có phiếu RPT-$id đang được KTV xử lý.';
+  }
+
+  @override
+  String get ordCancelled => 'Đã hủy đơn';
+
+  @override
+  String get ordMyOrdersSubtitle => 'Quản lý các đơn hàng của bạn';
+
+  @override
+  String get ordTabRecent => 'Gần đây';
+
+  @override
+  String get ordTabInUse => 'Đang dùng';
+
+  @override
+  String get ordTabCompleted => 'Hoàn thành';
+
+  @override
+  String get ordTabCancelled => 'Đã hủy';
+
+  @override
+  String get ordTabAwaitingPickup => 'Chờ lấy';
+
+  @override
+  String get ordListLoading => 'Đang tải danh sách đơn...';
+
+  @override
+  String get ordNoOrdersYet => 'Chưa có đơn nào';
+
+  @override
+  String get ordNoMatchingOrders => 'Không có đơn phù hợp';
+
+  @override
+  String get ordIncomingLoading => 'Đang tải hàng chờ nhận...';
+
+  @override
+  String get ordNoIncoming => 'Chưa có hàng chờ nhận';
+
+  @override
+  String get ordNoIncomingHint =>
+      'Khi có người gửi hàng tới số điện thoại của bạn, đơn sẽ hiện ở đây.';
+
+  @override
+  String get ordNoIncomingMatch =>
+      'Không tìm thấy đơn hàng chờ nhận nào theo bộ lọc đã chọn.';
+
+  @override
+  String get ordMyOrders => 'Đơn của tôi';
+
+  @override
+  String get ordIncoming => 'Hàng chờ nhận';
+
+  @override
+  String ordPickupDeadlineValue(Object time) {
+    return 'Hạn lấy: $time';
+  }
+
+  @override
+  String get ordLockerNameUnknown => 'Chưa tra được tên tủ';
+
+  @override
+  String get ordPayAndPickup => 'Thanh toán & lấy đồ';
+
+  @override
+  String get ordAwaitingTechnician => 'Chờ KTV xử lý';
+
+  @override
+  String get ordReview => 'Xem lại';
+
+  @override
+  String get ordDropIntoLocker => 'Bỏ đồ vào tủ';
+
+  @override
+  String get ordPickupNow => 'Lấy đồ ngay';
+
+  @override
+  String get ordOvertimePausedNoTime =>
+      'Phí quá giờ tạm dừng — chờ KTV xử lý ô, chưa cần thanh toán';
+
+  @override
+  String ordOvertimePausedSince(Object time) {
+    return 'Phí quá giờ tạm dừng từ $time — chưa cần thanh toán';
+  }
+
+  @override
+  String ordStorageExpiredTapPay(Object hours) {
+    return 'Đơn đã hết hạn lưu tủ $hours — Bấm để thanh toán & lấy đồ';
+  }
+
+  @override
+  String get ordOverdueMayCharge => 'Đơn đã quá hạn — có thể phát sinh phí';
+
+  @override
+  String ordRelocatedTitle(Object box) {
+    return 'Đã điều chuyển sang Ô số $box an toàn';
+  }
+
+  @override
+  String ordRelocatedSubtitle(Object oldBox) {
+    return 'KTV đã chuyển đồ từ ô cũ (#$oldBox) sang ô mới do sự cố. Mã PIN mới đã sẵn sàng.';
+  }
+
+  @override
+  String ordCheckedNoIssueTitle(Object box) {
+    return 'KTV đã kiểm tra: $box không có sự cố';
+  }
+
+  @override
+  String get ordCheckedNoIssueSubtitle =>
+      'Ô hoạt động bình thường, bạn lấy đồ bằng mã PIN như thường lệ. Xem phản hồi của KTV trong phiếu.';
+
+  @override
+  String ordResolvedTitle(Object box) {
+    return '$box đã được KTV kiểm tra & xử lý xong';
+  }
+
+  @override
+  String get ordResolvedSubtitle => 'Tài sản trong ô được bảo vệ an toàn.';
+
+  @override
+  String ordReportedTitle(Object box) {
+    return '$box đã được báo sự cố';
+  }
+
+  @override
+  String get ordReportedCancelHint =>
+      'Hãy hủy đơn này và đặt ô khác (hoặc liên hệ KTV).';
+
+  @override
+  String get ordReportedBlocked =>
+      'Đồ của bạn vẫn được giữ an toàn trong ô. KTV đang xử lý — phí quá giờ tạm dừng, bạn chưa cần thanh toán.';
+
+  @override
+  String get ordReportedCanOpen =>
+      'KTV sẽ tới kiểm tra ô. Bạn vẫn mở ô bằng mã PIN để lấy đồ được — phí quá giờ tạm dừng từ lúc báo.';
+
+  @override
+  String ordReasonValue(Object reason) {
+    return 'Lý do: $reason';
+  }
+
+  @override
+  String get ordViewRelocation => 'Xem chi tiết điều chuyển & ảnh KTV';
+
+  @override
+  String get ordViewRecord => 'Xem biên bản & ảnh minh chứng';
+
+  @override
+  String get ordPayOvertimeFee => 'Thanh toán phí quá giờ';
+
+  @override
+  String get ordOriginalDeadline => 'Hạn trả ban đầu';
+
+  @override
+  String get ordOverdueDuration => 'Thời gian quá hạn';
+
+  @override
+  String get ordOvertimeRate => 'Đơn giá quá giờ';
+
+  @override
+  String get ordCapRule => 'Quy định mức trần';
+
+  @override
+  String ordCapMax(Object amount) {
+    return 'Tối đa $amount';
+  }
+
+  @override
+  String ordCapPercent(Object percent) {
+    return '$percent% đơn';
+  }
+
+  @override
+  String get ordOvertimeFee => 'Phí quá giờ';
+
+  @override
+  String get ordAmountDue => 'Cần thanh toán:';
+
+  @override
+  String ordPayAmount(Object amount) {
+    return 'Thanh toán $amount';
+  }
+
+  @override
+  String get ordOpenBoxPickup => 'Mở ô lấy đồ';
+
+  @override
+  String get ordBoxReleased => 'Đã giải phóng ô';
+
+  @override
+  String get ordBoxNotAssigned => 'Chưa gán ô';
+
+  @override
+  String get ordPinCancelledSecurity => '•••••• (Đã hủy để bảo mật)';
+
+  @override
+  String get ordTechInCharge => 'KTV phụ trách';
+
+  @override
+  String get ordRelocationRecordUpper => 'HỒ SƠ ĐIỀU CHUYỂN Ô AN TOÀN';
+
+  @override
+  String get ordRelocationRecordSubtitle =>
+      'Hàng đã được chuyển sang ô mới do ô cũ gặp sự cố kỹ thuật';
+
+  @override
+  String get ordOriginalBoxUpper => 'Ô BAN ĐẦU';
+
+  @override
+  String ordBoxNumberHash(Object number) {
+    return 'Ô số #$number';
+  }
+
+  @override
+  String get ordTechnicalIssue => 'Gặp sự cố kỹ thuật';
+
+  @override
+  String get ordNewBoxUpper => 'Ô TIẾP NHẬN MỚI';
+
+  @override
+  String get ordHoldingSafely => 'Đang chứa hàng an toàn';
+
+  @override
+  String get ordOldBoxCheckedAt => 'Thời gian mở ô cũ kiểm tra';
+
+  @override
+  String get ordMovedAt => 'Thời gian chuyển qua ô mới';
+
+  @override
+  String get ordOriginalBoxPin => 'Mã PIN ô ban đầu';
+
+  @override
+  String get ordPinDisabled => 'Đã vô hiệu hoá (Mã cũ hết hạn)';
+
+  @override
+  String ordNewBoxPin(Object box) {
+    return 'Mã PIN mở ô mới (#$box)';
+  }
+
+  @override
+  String ordPinActive(Object pin) {
+    return '$pin (Đang kích hoạt)';
+  }
+
+  @override
+  String ordTechPhotos(Object count) {
+    return 'Ảnh KTV chụp quá trình kiểm tra & chuyển ô ($count ảnh):';
+  }
+
+  @override
+  String get ordViewFullRecord => 'Xem toàn bộ biên bản sự cố KTV & nhật ký ➔';
+
+  @override
+  String ordOrderDetailHash(Object id) {
+    return 'Chi tiết đơn #$id';
+  }
+
+  @override
+  String ordServiceHash(Object id) {
+    return 'Dịch vụ #$id';
+  }
+
+  @override
+  String get ordReviewDroneJourney => 'Xem lại hành trình drone';
+
+  @override
+  String get ordTrackDrone => 'Theo dõi giao drone';
+
+  @override
+  String ordPayAndCompletePickup(Object amount) {
+    return 'Thanh toán ($amount) & Lấy đồ hoàn tất';
+  }
+
+  @override
+  String get ordIPickedUpCompleteOrder => 'Tôi đã lấy đồ — Hoàn tất đơn';
+
+  @override
+  String ordOpenBoxToPickup(Object box) {
+    return 'Mở $box để lấy đồ';
+  }
+
+  @override
+  String get ordReorder => 'Đặt lại đơn';
+
+  @override
+  String ordOpenBoxToDrop(Object box) {
+    return 'Mở $box để bỏ đồ';
+  }
+
+  @override
+  String get ordIDroppedOff => 'Tôi đã bỏ đồ vào ô';
+
+  @override
+  String ordPayOvertimeAndOpen(Object amount) {
+    return 'Thanh toán phí quá giờ ($amount) & Mở ô';
+  }
+
+  @override
+  String get ordIPickedUpComplete => 'Tôi đã lấy đồ — hoàn tất';
+
+  @override
+  String ordOpenBoxToReturn(Object box) {
+    return 'Mở $box để trả tủ & lấy đồ';
+  }
+
+  @override
+  String get ordEndRentalPickup => 'Kết thúc thuê & lấy đồ';
+
+  @override
+  String get ordDelegatePickup => 'Ủy quyền lấy hộ';
+
+  @override
+  String get ordChangePin => 'Đổi mã PIN';
+
+  @override
+  String get ordAddReceiverEmail => 'Thêm email người nhận';
+
+  @override
+  String get ordChangeReceiverEmail => 'Đổi email người nhận';
+
+  @override
+  String get ordResendToReceiver => 'Gửi lại thông tin cho người nhận';
+
+  @override
+  String get ordCancelOrder => 'Hủy đơn';
+
+  @override
+  String get ordDirectionsToLocker => 'Chỉ đường tới tủ';
+
+  @override
+  String get ordRequestRefund => 'Yêu cầu hoàn tiền';
+
+  @override
+  String ordStorageExpiredPay(Object hours) {
+    return 'Đơn đã quá hạn lưu tủ $hours. Ô tủ đã được giải phóng và đồ đã chuyển về bảo quản an toàn. Quý khách vui lòng thanh toán phí còn lại và bấm \"Thanh toán & lấy đồ\" để hoàn tất.';
+  }
+
+  @override
+  String ordStorageExpiredCheck(Object hours) {
+    return 'Đơn đã quá hạn lưu tủ $hours. Ô tủ đã được giải phóng và đồ đã chuyển về bảo quản an toàn. Quý khách vui lòng kiểm tra nhận đồ và bấm \"Tôi đã lấy đồ — Hoàn tất đơn\" để hoàn tất.';
+  }
+
+  @override
+  String get ordOverduePaidOpen =>
+      'Đơn quá hạn đã thanh toán phí quá giờ. Mời bạn mở ô để lấy đồ và hoàn tất trả tủ.';
+
+  @override
+  String ordOverdueNeedPay(Object policy) {
+    return 'Đơn đã quá hạn lấy — cần thanh toán phí quá giờ để mở tủ. $policy';
+  }
+
+  @override
+  String ordUnpaidHold(Object minutes) {
+    return 'Đơn hàng chưa thanh toán. Vui lòng thanh toán trong vòng $minutes phút để giữ chỗ tủ, hoặc bấm \"Hủy đơn\" bên dưới để giải phóng ô tủ ngay.';
+  }
+
+  @override
+  String get ordPlace => 'Địa điểm';
+
+  @override
+  String get ordNewBox => 'Ô mới tiếp nhận';
+
+  @override
+  String ordNewBoxValue(Object box) {
+    return 'Ô số $box (Đang an toàn)';
+  }
+
+  @override
+  String get ordOriginalBox => 'Ô ban đầu';
+
+  @override
+  String ordOriginalBoxValue(Object box) {
+    return 'Ô số $box (Gặp sự cố)';
+  }
+
+  @override
+  String get ordOldBoxOpenedAt => 'Thời gian mở ô cũ';
+
+  @override
+  String get ordBoxMovedAt => 'Thời gian chuyển ô';
+
+  @override
+  String get ordOriginalPin => 'Mã PIN ban đầu';
+
+  @override
+  String get ordOrderDate => 'Ngày đặt';
+
+  @override
+  String get ordRentalDuration => 'Thời gian thuê';
+
+  @override
+  String get ordOriginalDeadlineShort => 'Hạn ban đầu';
+
+  @override
+  String get ordCapRuleShort => 'Quy định trần';
+
+  @override
+  String get ordOvertimeFeeEstimate => 'Phí quá giờ tạm tính';
+
+  @override
+  String get ordPenaltyStatus => 'Trạng thái phạt';
+
+  @override
+  String get ordDueToOpen => 'Cần nộp để mở ô';
+
+  @override
+  String get ordRecipient => 'Người nhận';
+
+  @override
+  String get ordRecipientEmail => 'Email người nhận';
+
+  @override
+  String get ordDelegatedToLabel => 'Ủy quyền lấy hộ cho';
+
+  @override
+  String get ordDelegatee => 'Người được ủy quyền';
+
+  @override
+  String get ordDelegationMessage => 'Lời nhắn ủy quyền';
+
+  @override
+  String get ordDelegatedAt => 'Ủy quyền lúc';
+
+  @override
+  String get ordExpectedPickup => 'Dự kiến người nhận lấy';
+
+  @override
+  String get ordDeliveryAddress => 'Địa chỉ giao';
+
+  @override
+  String get ordFromLocker => 'Gửi từ tủ';
+
+  @override
+  String get ordFlightDistance => 'Quãng đường bay';
+
+  @override
+  String get ordBasePrice => 'Giá gốc';
+
+  @override
+  String get ordExtraFees => 'Phí phát sinh';
+
+  @override
+  String get ordPointsUsed => 'Điểm đã dùng';
+
+  @override
+  String get ordTotal => 'Tổng tiền';
+
+  @override
+  String get ordRemaining => 'Còn phải trả';
+
+  @override
+  String get ordPaidAt => 'Thanh toán lúc';
+
+  @override
+  String get ordParcel => 'Kiện hàng';
+
+  @override
+  String get ordDeliveryIncident => 'Sự cố giao hàng';
+
+  @override
+  String get ordPaused => 'Đang tạm dừng';
+
+  @override
+  String get ordPausedAt => 'Tạm dừng lúc';
+
+  @override
+  String get ordDeliveryIncomplete => 'Giao không hoàn tất';
+
+  @override
+  String get ordRecordedAt => 'Ghi nhận lúc';
+
+  @override
+  String get ordParcelReturned => 'Đã trả kiện cho bạn';
+
+  @override
+  String ordNewBoxPinUpper(Object box) {
+    return 'Mã PIN mở Ô MỚI (#$box):';
+  }
+
+  @override
+  String get ordOldPinDisabledNote =>
+      '🔒 Mã PIN ô cũ đã bị vô hiệu hoá. Chỉ sử dụng mã trên để mở ô mới an toàn.';
+
+  @override
+  String get ordPickupCodeForTech =>
+      'Mã lấy hàng — đọc cho kỹ thuật viên khi tới lấy';
+
+  @override
+  String get ordTimeline => 'Mốc thời gian';
+
+  @override
+  String get payMethodWallet => 'Ví Lock.R';
+
+  @override
+  String get payMethodSepay => 'Chuyển khoản (SePay)';
+
+  @override
+  String get payMethodCash => 'Tiền mặt';
+
+  @override
+  String get ordPaymentMethod => 'Hình thức thanh toán';
+
+  @override
+  String get ordTransactionId => 'Mã giao dịch';
+
+  @override
+  String get ordPaymentTime => 'Thời gian thanh toán';
+
+  @override
+  String get ordTransferred => 'Đã chuyển tiền';
+
+  @override
+  String get ordRejected => 'Bị từ chối';
+
+  @override
+  String get ordAwaitingTransfer => 'Chờ chuyển khoản';
+
+  @override
+  String ordRefundHash(Object id) {
+    return 'Hoàn tiền #$id';
+  }
+
+  @override
+  String get ordRefundAmount => 'Số tiền hoàn';
+
+  @override
+  String get ordReceivingAccount => 'Tài khoản nhận';
+
+  @override
+  String get ordCompletedAt => 'Thời gian hoàn tất';
+
+  @override
+  String get ordRequestedAt => 'Thời gian yêu cầu';
+
+  @override
+  String get ordSeeRefunds => 'Xem chi tiết ở mục Hoàn tiền';
+
+  @override
+  String get ordExtensionPayment => 'Thanh toán gia hạn thời gian';
+
+  @override
+  String ordAttemptN(Object n) {
+    return 'Lần $n';
+  }
+
+  @override
+  String get ordInterventionRecord => 'Biên bản can thiệp & bảo vệ tài sản:';
+
+  @override
+  String ordBoxIncidentTitle(Object code) {
+    return 'Sự cố ô tủ - Đơn hàng #$code';
+  }
+
+  @override
+  String get ordViewTechEvidence => 'Xem chi tiết & ảnh minh chứng KTV';
+
+  @override
+  String get ordInfoRelocated =>
+      'ℹ️ Hàng của bạn đã được chuyển sang ô mới. Vui lòng kiểm tra mã mở ô mới trong app.';
+
+  @override
+  String get ordInfoSealedHub =>
+      'ℹ️ Hàng được niêm phong an toàn và đưa về Hub. Nhân viên sẽ liên hệ bạn để thu xếp lại.';
+
+  @override
+  String get ordInfoHandedOver =>
+      'ℹ️ Hàng đã được bàn giao trực tiếp. Nếu có thắc mắc vui lòng liên hệ bộ phận CSKH.';
+
+  @override
+  String get ordEmailWithCode =>
+      'Lock.R gửi lại mã mở tủ, nơi lấy và hạn lấy hàng tới email này. Sửa email nếu người nhận chưa nhận được thư.';
+
+  @override
+  String get ordEmailOrderInfo =>
+      'Hàng chưa vào tủ: Lock.R gửi lại thư báo có đơn sắp tới (chưa kèm mã). Mã mở tủ được gửi khi bạn bỏ hàng vào ô.';
+
+  @override
+  String get ordEmailSaveOnly =>
+      'Đơn chưa thanh toán. Lock.R báo người nhận qua email này khi đơn được thanh toán, và gửi mã mở tủ khi bạn bỏ hàng vào ô.';
+
+  @override
+  String get ordEnterRecipientEmail => 'Nhập email người nhận';
+
+  @override
+  String get ordSaveEmail => 'Lưu email';
+
+  @override
+  String get ordSendEmail => 'Gửi email';
+
+  @override
+  String get commonCopy => 'Sao chép';
+
+  @override
+  String get commonCopyTapHint => 'Chạm để sao chép';
+
+  @override
+  String get commonRemove => 'Bỏ';
+
+  @override
+  String get commonFullNameShort => 'Họ tên';
+
+  @override
+  String get commonSubtotal => 'Tạm tính';
+
+  @override
+  String get commonDiscountCode => 'Mã giảm giá';
+
+  @override
+  String get commonRewardPoints => 'Điểm thưởng';
+
+  @override
+  String get commonChooseLocker => 'Chọn tủ';
+
+  @override
+  String get commonBoxType => 'Loại ô';
+
+  @override
+  String get commonSelectedLocker => 'Tủ đã chọn';
+
+  @override
+  String get commonNoFreeBoxes => 'Hết ô';
+
+  @override
+  String commonFreeBoxes(Object count) {
+    return 'Còn $count ô trống';
+  }
+
+  @override
+  String get commonStayToPay => 'Ở lại thanh toán';
+
+  @override
+  String get commonCancelAndExit => 'Hủy đơn & Thoát';
+
+  @override
+  String get commonPaymentEyebrow => 'LOCK.R • THANH TOÁN';
+
+  @override
+  String commonOrderCode(Object code) {
+    return 'Đơn $code';
+  }
+
+  @override
+  String commonScanQrPayHold(Object minutes) {
+    return 'Quét mã QR trên và chuyển khoản trong $minutes phút để giữ ô — mã bỏ hàng sẽ tự hiện sau khi thanh toán.';
+  }
+
+  @override
+  String commonScanQrPayHoldRent(Object minutes) {
+    return 'Quét mã QR trên và chuyển khoản trong $minutes phút để giữ ô — mã mở ô sẽ tự hiện sau khi thanh toán.';
+  }
+
+  @override
+  String get commonPaySuccessPinReady =>
+      'Thanh toán thành công! Mã PIN mở ô tủ đã sẵn sàng.';
+
+  @override
+  String daysValue(int days) {
+    return '$days ngày';
+  }
+
+  @override
+  String pricePerDay(Object price) {
+    return '$price/ngày';
+  }
+
+  @override
+  String get sizeSmallShort => 'Nhỏ';
+
+  @override
+  String get sizeMediumShort => 'Vừa';
+
+  @override
+  String get sizeLargeShort => 'Lớn';
+
+  @override
+  String get boxOfOrder => 'ô của đơn';
+
+  @override
+  String get sendBoxOpened =>
+      'Ô đã mở — đặt hàng vào, đóng cửa rồi bấm xác nhận.';
+
+  @override
+  String get sendBoxOpenFailed => 'Không mở được ô';
+
+  @override
+  String get sendDroppedShare =>
+      'Đã bỏ hàng. Gửi mã lấy hàng cho người nhận bằng nút Chia sẻ bên dưới.';
+
+  @override
+  String get sendEnterRecipientEmail =>
+      'Nhập email người nhận để Lock.R gửi mã mở tủ';
+
+  @override
+  String get sendEnterRecipientPhone => 'Nhập số điện thoại người nhận';
+
+  @override
+  String get sendPhone10Digits => 'Số điện thoại gồm 10 số, bắt đầu bằng 0';
+
+  @override
+  String get sendCancelCreateQuestion => 'Hủy tạo đơn hàng?';
+
+  @override
+  String sendCancelCreateBody(Object minutes) {
+    return 'Đơn hàng chưa được thanh toán. Nếu bạn thoát bây giờ hoặc không hoàn tất thanh toán trong vòng $minutes phút, đơn hàng sẽ bị hủy và ô tủ sẽ được giải phóng.';
+  }
+
+  @override
+  String get sendCancelledReleased => 'Đã hủy đơn hàng và giải phóng ô tủ.';
+
+  @override
+  String get sendTitle => 'Gửi hàng qua tủ';
+
+  @override
+  String get sendSubtitle => 'Gửi đồ nhanh chóng & tiện lợi';
+
+  @override
+  String get sendCreateAndGetPin => 'Tạo đơn & lấy PIN bỏ hàng';
+
+  @override
+  String get sendLoadingLockers => 'Đang tải danh sách tủ...';
+
+  @override
+  String get sendIntro =>
+      'Gửi hàng cho người khác qua tủ: bạn bỏ hàng vào ô bằng PIN, hệ thống sinh PIN mới gửi người nhận để họ tới lấy.';
+
+  @override
+  String get sendStandardOnly =>
+      'Gửi hàng dùng ô thường; ô vali (XL) chỉ để thuê giữ đồ. Hãy chắc kiện hàng vừa ô trước khi tạo đơn.';
+
+  @override
+  String get sendRecipientPhoneHint => 'Số điện thoại người nhận';
+
+  @override
+  String get sendRecipientNameHint => 'Tên người nhận (tùy chọn)';
+
+  @override
+  String get sendRecipientEmailHint => 'Email người nhận';
+
+  @override
+  String get sendEmailInfo =>
+      'Lock.R gửi email cho người nhận ngay khi đơn được thanh toán (báo có hàng sắp tới) và gửi mã lấy hàng khi bạn bỏ hàng vào ô. Gửi lại được trong chi tiết đơn; bấm \"Chia sẻ mã cho người nhận\" để gửi thêm qua Zalo/SMS.';
+
+  @override
+  String get sendRecipientMessage => 'Lời nhắn cho người nhận';
+
+  @override
+  String get sendMessageHint => 'VD: Hàng dễ vỡ, mở nhẹ tay (tùy chọn)';
+
+  @override
+  String sendBoxSize(Object size) {
+    return 'Ô $size';
+  }
+
+  @override
+  String get sendSelectedBox => 'Ô đã chọn';
+
+  @override
+  String sendFeePerParcel(Object price) {
+    return '$price/lượt gửi';
+  }
+
+  @override
+  String get sendBoxTaken => 'Ô vừa được đặt — chọn ô khác';
+
+  @override
+  String get sendStep1Title => 'Bước 1 — Bỏ hàng vào ô';
+
+  @override
+  String sendStep1Body(Object box) {
+    return 'Đến tủ, nhập PIN bên dưới để mở $box, đặt hàng vào rồi đóng cửa.';
+  }
+
+  @override
+  String get sendStep2Title => 'Bước 2 — Đã bỏ hàng xong';
+
+  @override
+  String get sendPinSentToRecipient =>
+      'PIN nhận hàng đã được gửi tới tài khoản người nhận.';
+
+  @override
+  String get sendSharePinWithRecipient =>
+      'Hãy chuyển mã PIN nhận hàng bên dưới cho người nhận.';
+
+  @override
+  String get sendRecipientEntersPin => 'Người nhận nhập PIN tại tủ để lấy hàng';
+
+  @override
+  String get sendEnterPinToDrop => 'Nhập PIN tại tủ để mở ô và bỏ hàng';
+
+  @override
+  String get sendLockrAccount => 'Tài khoản Lock.R';
+
+  @override
+  String get sendHasAccount => 'Đã có — PIN gửi thẳng vào app';
+
+  @override
+  String get sendNoAccount => 'Chưa có — bạn cần chuyển PIN cho người nhận';
+
+  @override
+  String sendPickupBefore(Object deadline, Object remaining, Object policy) {
+    return 'Người nhận cần lấy hàng trước $deadline ($remaining). $policy';
+  }
+
+  @override
+  String get sendDropInstructions =>
+      'Mở ô bằng nút bên dưới hoặc nhập PIN tại tủ, đặt hàng vào, đóng cửa rồi xác nhận. Xác nhận ngay trên màn hình tủ cũng được.';
+
+  @override
+  String get sendOpenToDrop => 'Mở ô để bỏ hàng';
+
+  @override
+  String get sendIDropped => 'Tôi đã bỏ hàng vào ô';
+
+  @override
+  String get sendStepDrop => 'Bỏ hàng';
+
+  @override
+  String get sendStepRecipientPicks => 'Người nhận lấy';
+
+  @override
+  String get rentPaymentWaiting =>
+      'Đang chờ xác nhận thanh toán, vui lòng đợi giây lát';
+
+  @override
+  String get rentOpenedStart => 'Ô đã mở thành công — bắt đầu kỳ thuê!';
+
+  @override
+  String get rentOpenSimulated =>
+      'Không mở được ô thật (giả lập: đã xác nhận bỏ đồ & bắt đầu kỳ thuê)';
+
+  @override
+  String get rentCancelQuestion => 'Hủy tạo đơn thuê tủ?';
+
+  @override
+  String rentCancelBody(Object minutes) {
+    return 'Đơn thuê tủ chưa được thanh toán. Nếu bạn thoát bây giờ hoặc không hoàn tất thanh toán trong vòng $minutes phút, đơn sẽ bị hủy và ô tủ sẽ được giải phóng.';
+  }
+
+  @override
+  String get rentCancelledReleased => 'Đã hủy đơn thuê tủ và giải phóng ô tủ.';
+
+  @override
+  String get rentTitle => 'Thuê tủ giữ đồ';
+
+  @override
+  String get rentSubtitle => 'Chọn điểm tủ & thời gian sử dụng';
+
+  @override
+  String get rentNow => 'Thuê ngay';
+
+  @override
+  String get rentLoadingInfo => 'Đang tải thông tin điểm tủ...';
+
+  @override
+  String get rentIntro =>
+      'Thuê ô để giữ đồ cá nhân theo giờ hoặc theo ngày. PIN mở ô được dùng nhiều lần trong suốt kỳ thuê.';
+
+  @override
+  String get rentDuration => 'Thời gian thuê';
+
+  @override
+  String get rentOptionalHint => 'Tùy chọn...';
+
+  @override
+  String rentDiscountValue(Object amount) {
+    return 'Giảm: -$amount';
+  }
+
+  @override
+  String rentPointsValue(Object value) {
+    return 'Điểm thưởng: $value';
+  }
+
+  @override
+  String get rentByHour => 'Theo giờ';
+
+  @override
+  String get rentByDay => 'Theo ngày';
+
+  @override
+  String get rentMinusDay => 'Bớt 1 ngày';
+
+  @override
+  String rentDaysHours(Object days, Object hours) {
+    return '$days ngày · $hours giờ';
+  }
+
+  @override
+  String get rentPlusDay => 'Thêm 1 ngày';
+
+  @override
+  String get rentRunning => 'Kỳ thuê đang chạy';
+
+  @override
+  String rentPinUntil(Object time) {
+    return 'PIN mở ô nhiều lần tới $time.';
+  }
+
+  @override
+  String get rentPinMultiUse => 'PIN dùng nhiều lần trong kỳ thuê';
+
+  @override
+  String rentExpiresAt(Object deadline, Object remaining, Object policy) {
+    return 'Hết hạn thuê: $deadline ($remaining). $policy';
+  }
+
+  @override
+  String get rentHeldDropOff => 'Đã giữ ô — bỏ đồ vào';
+
+  @override
+  String rentEnterPinToOpen(Object box) {
+    return 'Nhập PIN để mở $box hoặc mở bằng nút bên dưới để bắt đầu kỳ thuê.';
+  }
+
+  @override
+  String get rentOpenToDrop => 'Mở ô để bỏ đồ';
+
+  @override
+  String get rentExtensionUnpaid =>
+      'Còn phí gia hạn chưa thanh toán — cần trả trước khi kết thúc thuê.';
+
+  @override
+  String get rentDoneSeeOrders => 'Xong — xem trong Đơn của tôi';
+
+  @override
+  String get cellAvailable => 'Trống';
+
+  @override
+  String get cellReservedHeld => 'Đã giữ chỗ';
+
+  @override
+  String get cellOccupied => 'Có đồ';
+
+  @override
+  String get cellAwaitingTechCheck => 'Chờ KTV kiểm tra';
+
+  @override
+  String get cellCleaning => 'Đang vệ sinh';
+
+  @override
+  String get stAwaitingDropoff => 'Chờ bỏ đồ';
+
+  @override
+  String get stAwaitingDispatch => 'Chờ điều phối';
+
+  @override
+  String get stAccepted => 'Đã tiếp nhận';
+
+  @override
+  String get stLaunching => 'Đang khởi phóng';
+
+  @override
+  String get stDropReported => 'Đã báo rơi kiện';
+
+  @override
+  String get stPickupAssigned => 'KTV đang tới lấy hàng';
+
+  @override
+  String get stPickedUpByTech => 'KTV đã lấy hàng';
+
+  @override
+  String get stFailed => 'Giao không thành công';
+
+  @override
+  String get stDeparted => 'Drone đã rời trạm';
+
+  @override
+  String get stEnRoute => 'Drone đang bay';
+
+  @override
+  String get stApproaching => 'Drone sắp đến';
+
+  @override
+  String get stArrived => 'Drone đã đến tủ';
+
+  @override
+  String get stReadyForPickup => 'Chờ nhận hàng';
+
+  @override
+  String get stStoring => 'Đang trong tủ';
+
+  @override
+  String get stCollected => 'Đã thu gom';
+
+  @override
+  String get stProcessing => 'Đang xử lý';
+
+  @override
+  String get stReadyToReturn => 'Sẵn sàng trả';
+
+  @override
+  String get stNew => 'Mới';
+
+  @override
+  String get stDone => 'Đã xong';
+
+  @override
+  String get stNotConfirmed => 'Không xác nhận';
+
+  @override
+  String get typeLaundry => 'Giặt ủi';
+
+  @override
+  String get typeStorage => 'Gửi đồ';
+
+  @override
+  String get typeParcel => 'Nhận hàng';
+
+  @override
+  String incidentSince(Object time) {
+    return ' từ $time';
+  }
+
+  @override
+  String incidentReportedCanOpen(Object since) {
+    return 'Bạn đã báo sự cố ô — kỹ thuật viên sẽ tới kiểm tra. Bạn vẫn có thể mở ô bằng mã PIN để lấy đồ; phí quá giờ tạm dừng$since.';
+  }
+
+  @override
+  String incidentBlocked(Object since) {
+    return 'Ô đang chờ kỹ thuật viên xử lý sự cố. Đồ của bạn vẫn được giữ an toàn trong ô, phí quá giờ tạm dừng$since — bạn chưa cần thanh toán hay gia hạn. Lock.R sẽ báo khi lấy được đồ.';
+  }
+
+  @override
+  String durDaysHours(Object days, Object hours) {
+    return '$days ngày $hours giờ';
+  }
+
+  @override
+  String durHoursMinutes(Object hours, Object minutes) {
+    return '$hours giờ $minutes phút';
+  }
+
+  @override
+  String get durUnderMinute => 'dưới 1 phút';
+
+  @override
+  String timeRemaining(Object time) {
+    return 'Còn $time';
+  }
+
+  @override
+  String timeOverdueBy(Object time) {
+    return 'Quá hạn $time';
+  }
+
+  @override
+  String get credEnterPinAtLocker => 'Nhập PIN tại màn hình tủ để mở ô';
+
+  @override
+  String get credPinCopied => 'Đã sao chép mã PIN';
+
+  @override
+  String credAt(Object name) {
+    return 'Tại: $name';
+  }
+
+  @override
+  String get unlockBlePermissionBlocked =>
+      'Quyền Bluetooth (Thiết bị lân cận) đang bị chặn. Mở Cài đặt để cho phép rồi quét lại.';
+
+  @override
+  String get unlockBlePermissionDenied =>
+      'App cần quyền Bluetooth để dò tủ. Bấm Quét lại và chọn Cho phép.';
+
+  @override
+  String get unlockBleOff =>
+      'Bluetooth của điện thoại đang tắt. Bật Bluetooth rồi bấm Quét lại.';
+
+  @override
+  String get unlockBleUnsupported =>
+      'Thiết bị này không hỗ trợ Bluetooth. Dùng Quét mã QR hoặc mã PIN.';
+
+  @override
+  String get unlockNoSignal => 'Chưa phát hiện sóng Bluetooth của tủ gần đây.';
+
+  @override
+  String unlockOpenBox(Object box) {
+    return 'Mở $box';
+  }
+
+  @override
+  String get unlockOverdueRental =>
+      'Đơn thuê đã quá hạn. Đã ghi nhận xử lý phí quá giờ — mời bạn lấy đồ và đóng tủ để hoàn tất trả tủ.';
+
+  @override
+  String get unlockEndsRental =>
+      'Mở ô sẽ kết thúc kỳ thuê và giải phóng ô tủ. Vui lòng lấy hết đồ.';
+
+  @override
+  String get unlockScanQr => 'Quét QR';
+
+  @override
+  String get unlockPin => 'Mã PIN';
+
+  @override
+  String get unlockScanning => 'Đang quét sóng Bluetooth của tủ...';
+
+  @override
+  String unlockStandClose(Object locker) {
+    return 'Vui lòng đứng cách tủ $locker dưới 2m';
+  }
+
+  @override
+  String get unlockConnected => 'Đã kết nối Bluetooth tủ';
+
+  @override
+  String get unlockSimulateRpi => 'Mô phỏng RPi';
+
+  @override
+  String unlockDistanceSignal(Object distance, Object rssi) {
+    return 'Khoảng cách: $distance • Tín hiệu $rssi dBm';
+  }
+
+  @override
+  String unlockOpenAndReturn(Object box) {
+    return 'Mở $box & Trả tủ';
+  }
+
+  @override
+  String unlockOpenNow(Object box) {
+    return 'Mở $box ngay (1-chạm)';
+  }
+
+  @override
+  String get unlockNotFound => 'Không tìm thấy sóng Bluetooth của tủ';
+
+  @override
+  String get unlockEnsureBluetooth =>
+      'Đảm bảo điện thoại đã bật Bluetooth hoặc dùng Quét mã QR thay thế.';
+
+  @override
+  String get unlockScanAgain => 'Quét lại';
+
+  @override
+  String get unlockRescan => 'Dò sóng lại';
+
+  @override
+  String get unlockQrTitle => 'Xác thực qua tem QR trên tủ';
+
+  @override
+  String unlockQrBody(Object locker, Object box) {
+    return 'Dùng camera điện thoại quét mã QR dán trên thân tủ $locker để mở $box.';
+  }
+
+  @override
+  String get unlockStartCamera => 'Bật Camera quét tem QR';
+
+  @override
+  String get unlockKioskPinUpper => 'MÃ PIN MỞ TRÊN MÀN HÌNH KIOSK';
+
+  @override
+  String get unlockCodeCopied => 'Đã sao chép mã';
+
+  @override
+  String get unlockCopyPin => 'Sao chép mã PIN';
+
+  @override
+  String get unlockKioskGuide => 'Hướng dẫn mở tại màn hình Kiosk:';
+
+  @override
+  String unlockKioskStep1(Object locker) {
+    return 'Đến trước màn hình cảm ứng của $locker.';
+  }
+
+  @override
+  String get unlockKioskStep2 => 'Chọn nút \"Mở tủ\" hoặc \"Nhận đồ\".';
+
+  @override
+  String unlockKioskStep3(Object pin, Object box) {
+    return 'Nhập mã PIN $pin để cửa $box bung chốt.';
+  }
+
+  @override
+  String get extrasNotEligible => 'Đơn chưa đủ điều kiện áp mã này';
+
+  @override
+  String get extrasCodeInvalid => 'Mã không hợp lệ hoặc đã hết hạn';
+
+  @override
+  String extrasCodeApplied(Object code) {
+    return 'Đã áp mã \"$code\"';
+  }
+
+  @override
+  String get extrasChooseCode => 'Chọn mã giảm giá';
+
+  @override
+  String get extrasNoCodes => 'Chưa có mã giảm giá nào.';
+
+  @override
+  String get extrasNoCodesHere => 'Chưa có mã giảm giá dùng được ở tủ này.';
+
+  @override
+  String get tierBronze => 'Đồng';
+
+  @override
+  String get tierSilver => 'Bạc';
+
+  @override
+  String get tierGold => 'Vàng';
+
+  @override
+  String get tierPlatinum => 'Bạch kim';
+
+  @override
+  String tierNextPoints(Object points, Object tier) {
+    return 'còn $points điểm lên hạng $tier';
+  }
+
+  @override
+  String tierYouHavePoints(Object points) {
+    return 'Bạn đang có $points điểm';
+  }
+
+  @override
+  String tierRank(Object tier) {
+    return 'hạng $tier';
+  }
+
+  @override
+  String get tierHighest => 'hạng cao nhất';
+
+  @override
+  String get payStatusPaid => 'Đã thanh toán';
+
+  @override
+  String get payStatusPending => 'Chờ thanh toán';
+
+  @override
+  String get payStatusFailed => 'Thanh toán lỗi';
+
+  @override
+  String get payStatusNone => 'Chưa có thanh toán';
+
+  @override
+  String rulesRentRange(Object min, Object max) {
+    return 'Thuê từ $min đến $max.';
+  }
+
+  @override
+  String rulesEvery24h(Object price) {
+    return 'Mỗi 24 giờ tính $price.';
+  }
+
+  @override
+  String rulesDailyCapFrom(Object hours, Object price) {
+    return 'Thuê từ $hours giờ trong một ngày chỉ tính giá ngày $price.';
+  }
+
+  @override
+  String rulesRentalOvertime(Object rate) {
+    return 'Quá giờ thuê tính $rate cho tới khi lấy đồ hoặc gia hạn.';
+  }
+
+  @override
+  String get rulesNoOvertimeFee => 'Không tính phí quá giờ.';
+
+  @override
+  String rulesPercentOfOrder(Object percent) {
+    return '$percent% giá trị đơn';
+  }
+
+  @override
+  String rulesCapSuffix(Object caps) {
+    return ' (tối đa $caps)';
+  }
+
+  @override
+  String get rulesAnd => ' và ';
+
+  @override
+  String rulesOvertimeFee(Object rate, Object cap) {
+    return 'Phí quá giờ $rate$cap.';
+  }
+
+  @override
+  String rulesSendPickup(Object hours, Object policy) {
+    return 'Người nhận có $hours giờ để lấy hàng kể từ lúc bạn bỏ hàng vào ô. $policy';
+  }
+
+  @override
+  String rulesDronePickup(Object hours, Object policy) {
+    return 'Đơn hàng được lưu trữ $hours giờ kể từ lúc drone thả hàng vào ô. Giờ và ngày hết hạn sẽ được báo ngay khi hàng vào ô. $policy';
+  }
+
+  @override
+  String rulesDroneStoredUntil(Object hours, Object deadline) {
+    return 'Đơn hàng được lưu trữ $hours giờ, vui lòng lấy trước $deadline.';
+  }
+
+  @override
+  String rulesLoyaltyEarn(Object percent, Object value) {
+    return 'Tích $percent% số tiền bạn thanh toán thành điểm (1 điểm = $value), cộng khi đơn hoàn tất.';
+  }
+
+  @override
+  String get rulesRedeemDisabled =>
+      'Hiện chưa áp dụng dùng điểm để thanh toán.';
+
+  @override
+  String rulesRedeemMin(Object points) {
+    return ' (từ $points điểm)';
+  }
+
+  @override
+  String rulesRedeem(Object value, Object percent, Object min) {
+    return '1 điểm = $value khi thanh toán, dùng tối đa $percent% giá trị đơn$min.';
+  }
+
+  @override
+  String get loyaltyRedeemDisabled =>
+      'Hiện chưa áp dụng dùng điểm để thanh toán';
+
+  @override
+  String get loyaltyFullyDiscounted =>
+      'Đơn đã được giảm hết, không cần dùng điểm';
+
+  @override
+  String get loyaltyNoPoints =>
+      'Bạn chưa có điểm — điểm được cộng khi đơn hoàn tất';
+
+  @override
+  String loyaltyBelowMin(Object balance, Object min) {
+    return 'Bạn có $balance điểm, cần tối thiểu $min điểm mỗi lần dùng';
+  }
+
+  @override
+  String loyaltyOrderTooSmall(Object min) {
+    return 'Đơn chưa đủ giá trị để dùng tối thiểu $min điểm';
+  }
+
+  @override
+  String loyaltyOffer(Object points, Object amount) {
+    return 'Dùng $points điểm · giảm $amount';
+  }
+
+  @override
+  String loyaltyYouHave(Object balance) {
+    return 'Bạn có $balance điểm';
+  }
+
+  @override
+  String loyaltyRule(Object value, Object percent) {
+    return '1 điểm = $value, tối đa $percent% giá trị đơn';
+  }
+
+  @override
+  String loyaltyPointsDiscount(Object amount, Object points) {
+    return '-$amount ($points điểm)';
+  }
+
+  @override
+  String get loyaltyCantUseNow =>
+      'Chưa dùng được điểm thưởng lúc này — đơn được tính đủ giá.';
+
+  @override
+  String loyaltyPlusPoints(Object points) {
+    return '+$points điểm';
+  }
+
+  @override
+  String get loyaltyWillEarn => 'Điểm sẽ được cộng';
+
+  @override
+  String get loyaltyEarned => 'Điểm được cộng';
+
+  @override
+  String get loyaltyNotRecorded => 'Chưa ghi nhận';
+
+  @override
+  String loyaltyReversed(Object text, Object points) {
+    return '$text · đã thu hồi $points';
+  }
+
+  @override
+  String get loyaltyChecking => 'Đang kiểm tra điểm thưởng...';
+
+  @override
+  String get loyaltyLoadFailed =>
+      'Chưa tải được điểm thưởng — đơn được tính đủ giá.';
+
+  @override
+  String get loyaltyUsePoints => 'Dùng điểm thưởng';
+
+  @override
+  String get sepayCreateFailed =>
+      'Không tạo được giao dịch thanh toán. Vui lòng thử lại.';
+
+  @override
+  String get sepayNoQr =>
+      'Máy chủ chưa trả mã VietQR cho giao dịch này. Vui lòng thử lại sau.';
+
+  @override
+  String get sepayNoTxForSim =>
+      'Chưa có mã giao dịch để giả lập. Vui lòng thử lại.';
+
+  @override
+  String get sepayReceivedUpdating =>
+      'Hệ thống đã nhận được tiền, đơn hàng đang được cập nhật...';
+
+  @override
+  String sepayPartial(Object received, Object remaining) {
+    return 'Đã nhận $received — còn thiếu $remaining. Mã QR bên dưới là số còn thiếu.';
+  }
+
+  @override
+  String get sepayScanToPay => 'Quét mã VietQR để thanh toán';
+
+  @override
+  String get sepayQrLoadFailed => 'Không tải được mã QR';
+
+  @override
+  String get sepayAccountNumber => 'Số tài khoản:';
+
+  @override
+  String get sepayAmountToTransfer => 'Số tiền cần chuyển:';
+
+  @override
+  String get sepayTransferContent => 'Nội dung chuyển khoản:';
+
+  @override
+  String get sepayContentCopied => 'Đã sao chép nội dung chuyển khoản';
+
+  @override
+  String get sepayWaiting => 'Đang chờ xác nhận thanh toán…';
+
+  @override
+  String get sepayAutoUpdate => 'Tự động cập nhật ngay sau khi nhận được tiền.';
+
+  @override
+  String get sepayPayWithBankApp => 'Thanh toán bằng app ngân hàng';
+
+  @override
+  String get sepayTransferExact =>
+      'Chuyển khoản đúng số tài khoản, số tiền và nội dung bên dưới.';
+
+  @override
+  String get sepayCreatingQr => 'Đang tạo mã thanh toán…';
+
+  @override
+  String get apiErrBleTestNotGranted =>
+      'Tài khoản chưa được admin cho thử mở ô qua Bluetooth ở tủ này.';
+
+  @override
+  String get apiErrResolutionPhotoRequired =>
+      'Cần ít nhất 1 ảnh nghiệm thu trước khi hoàn tất phiếu.';
+
+  @override
+  String get apiErrLandingPadAbsent => 'Tủ này không có bãi đáp drone.';
+
+  @override
+  String get apiErrLandingPadStatusInvalid =>
+      'Trạng thái bãi đáp không hợp lệ.';
+
+  @override
+  String get apiErrReportNotClaimable =>
+      'Phiếu không còn ở trạng thái chờ nhận.';
+
+  @override
+  String get apiErrDroneRouteRequired => 'Cần chọn cả tủ gửi và tủ nhận.';
+
+  @override
+  String get apiErrDroneRouteInvalid => 'Tủ gửi và tủ nhận phải khác nhau.';
+
+  @override
+  String get apiErrDroneRouteTooFar =>
+      'Tủ nhận nằm ngoài tầm bay của drone từ khu vực lấy hàng này.';
+
+  @override
+  String get apiErrDroneRouteTooShort =>
+      'Tủ nhận ở quá gần điểm lấy hàng nên không cần giao bằng drone — hãy gửi thẳng vào tủ nhận.';
+
+  @override
+  String get apiErrDronePickupOutOfRange =>
+      'Vị trí ghim nằm ngoài bán kính lấy hàng của tủ gửi drone. Khoảng cách này tính từ nhà bạn đến tủ gửi, khác quãng đường bay giữa hai tủ. Hãy kiểm tra ghim trên bản đồ rồi chọn lại vị trí.';
+
+  @override
+  String get apiErrDroneNoSourceLocker =>
+      'Hiện chưa có tủ nào gần bạn sẵn sàng phóng drone. Vui lòng thử lại sau.';
+
+  @override
+  String get apiErrDroneLockerLocationMissing =>
+      'Tủ nhận chưa có toạ độ nên chưa giao drone tới được.';
+
+  @override
+  String get apiErrDronePickupAddressRequired => 'Cần nhập địa chỉ lấy hàng.';
+
+  @override
+  String get apiErrDronePickupLocationRequired =>
+      'Cần chọn vị trí lấy hàng trên bản đồ.';
+
+  @override
+  String get apiErrDroneSenderNameRequired => 'Cần nhập tên người gửi.';
+
+  @override
+  String get apiErrDroneSenderPhoneInvalid =>
+      'Số điện thoại người gửi không hợp lệ.';
+
+  @override
+  String get apiErrDroneSenderEmailInvalid => 'Email người gửi không hợp lệ.';
+
+  @override
+  String get apiErrDroneReceiverNameRequired => 'Cần nhập tên người nhận.';
+
+  @override
+  String get apiErrDroneReceiverEmailInvalid =>
+      'Email người nhận không hợp lệ.';
+
+  @override
+  String get apiErrDroneParcelCategoryRequired => 'Cần chọn loại hàng.';
+
+  @override
+  String get apiErrDronePickupNotOffered =>
+      'Việc lấy hàng này không còn được mời cho bạn.';
+
+  @override
+  String get apiErrDronePickupOfferExpired => 'Lời mời lấy hàng đã hết hạn.';
+
+  @override
+  String get apiErrDronePickupNotAssignedToUser =>
+      'Việc lấy hàng này không thuộc về bạn.';
+
+  @override
+  String get apiErrDronePickupNotFound =>
+      'Đơn chưa có việc lấy hàng (có thể chưa thanh toán).';
+
+  @override
+  String get apiErrDronePickupCodeInvalid =>
+      'Mã lấy hàng không đúng. Nhờ người gửi đọc lại mã trong đơn.';
+
+  @override
+  String get apiErrDronePickupParcelNotVerified =>
+      'Cần xác nhận kiện đúng khai báo, hoặc báo không lấy được hàng.';
+
+  @override
+  String get apiErrDroneParcelNotPickedUp => 'Kiện chưa được lấy từ người gửi.';
+
+  @override
+  String get apiErrDroneOrderBlocked =>
+      'Đơn đang tạm dừng vì sự cố, chưa đi lấy hàng lúc này.';
+
+  @override
+  String get apiErrDroneTechnicianLocationRequired =>
+      'Cần bật định vị để vào ca nhận việc lấy hàng.';
+
+  @override
+  String get apiErrDroneTechnicianHasActivePickup =>
+      'Bạn còn việc lấy hàng đã nhận. Hoàn tất hoặc báo không lấy được trước khi ra ca.';
+
+  @override
+  String get apiErrDroneTechnicianOffDuty => 'Kỹ thuật viên này chưa vào ca.';
+
+  @override
+  String get apiErrDroneTechnicianBusy =>
+      'Kỹ thuật viên này đang bận việc khác.';
+
+  @override
+  String get apiErrDroneFailureReasonInvalid =>
+      'Lý do không hợp lệ cho thao tác này.';
+
+  @override
+  String get apiErrDroneUnchanged =>
+      'Drone này đang được gán cho nhiệm vụ rồi.';
+
+  @override
+  String get apiErrDroneFlightsSuspended =>
+      'Dịch vụ giao drone đang tạm dừng (thời tiết hoặc sự cố vận hành).';
+
+  @override
+  String get apiErrDroneOutsideFlightHours =>
+      'Ngoài khung giờ được phép phóng drone.';
+
+  @override
+  String get apiErrDroneOpenOrderLimit =>
+      'Bạn đang có quá nhiều đơn drone chưa hoàn tất. Hoàn tất hoặc huỷ bớt rồi đặt tiếp.';
+
+  @override
+  String get apiErrDroneProhibitedItemsNotDeclared =>
+      'Bạn cần cam kết kiện không chứa hàng cấm bay.';
+
+  @override
+  String get apiErrDroneParcelSizeInvalid =>
+      'Nhập đủ dài, rộng, cao của kiện hoặc bỏ trống cả ba.';
+
+  @override
+  String get apiErrDroneParcelTooLarge =>
+      'Kiện không lọt khoang hàng của drone.';
+
+  @override
+  String get apiErrDroneParcelCategoryInvalid => 'Loại hàng không hợp lệ.';
+
+  @override
+  String get apiErrDroneDeclaredValueTooHigh =>
+      'Giá trị khai báo vượt mức drone được phép chở.';
+
+  @override
+  String get apiErrDroneParcelNotDropped =>
+      'Người gửi chưa xác nhận bỏ kiện vào ô gửi nên chưa thể tiếp nhận.';
+
+  @override
+  String get apiErrDroneParcelReturnNotPending =>
+      'Đơn này không có kiện nào chờ trả.';
+
+  @override
+  String get apiErrDroneBatteryUnknown =>
+      'Chưa biết mức pin của drone, hãy cập nhật pin trước khi bay.';
+
+  @override
+  String get apiErrDroneSurchargeNotOwed =>
+      'Đơn không còn nợ phụ thu cân lệch.';
+
+  @override
+  String get apiErrDroneSourceNotFound => 'Không tìm thấy tủ gửi.';
+
+  @override
+  String get apiErrDroneDestinationNotFound => 'Không tìm thấy tủ nhận.';
+
+  @override
+  String get apiErrDroneLockerInactive =>
+      'Tủ gửi hoặc tủ nhận đang ngừng hoạt động.';
+
+  @override
+  String get apiErrDroneSourceCellUnavailable =>
+      'Ô drone ở tủ gửi đang có đơn khác. Vui lòng chờ đội bay nạp hàng hoặc chọn tủ khác.';
+
+  @override
+  String get apiErrDroneSourceCellMismatch =>
+      'Ô drone đã chọn không thuộc tủ gửi này.';
+
+  @override
+  String get apiErrDroneCellRequired => 'Chỉ đặt giao drone được ở ô drone.';
+
+  @override
+  String get apiErrBoxNotAvailable =>
+      'Ô tủ không còn trống. Vui lòng chọn ô hoặc tủ khác.';
+
+  @override
+  String get apiErrDroneDemoNotAllowed =>
+      'Tài khoản chưa được dùng chế độ mô phỏng drone.';
+
+  @override
+  String get apiErrDroneOrderUnpaid =>
+      'Đơn chưa thanh toán nên chưa thể tiếp nhận.';
+
+  @override
+  String get apiErrDroneOrderStatusInvalid =>
+      'Đơn không còn ở bước cho phép thao tác này.';
+
+  @override
+  String get apiErrDroneMissionAlreadyExists =>
+      'Đơn đã có điều phối viên khác tiếp nhận.';
+
+  @override
+  String get apiErrDroneMissionStatusInvalid =>
+      'Nhiệm vụ không còn ở bước cho phép thao tác này.';
+
+  @override
+  String get apiErrDroneMissionNotAssignedToUser =>
+      'Chỉ điều phối viên đã tiếp nhận mới thao tác được nhiệm vụ này.';
+
+  @override
+  String get apiErrDroneWrongSourceLocker =>
+      'Drone được chọn không đỗ tại tủ gửi của đơn.';
+
+  @override
+  String get apiErrDroneInactive => 'Drone đã ngừng hoạt động.';
+
+  @override
+  String get apiErrDroneNotIdle =>
+      'Drone không còn sẵn sàng, hãy chọn drone khác.';
+
+  @override
+  String get apiErrDroneBatteryTooLow =>
+      'Pin drone quá thấp để bay, cần sạc trước.';
+
+  @override
+  String get apiErrDroneStatusConflict =>
+      'Trạng thái drone vừa thay đổi, hãy tải lại và thử lại.';
+
+  @override
+  String get apiErrDroneReservationLost =>
+      'Drone không còn được giữ cho nhiệm vụ này (có thể đã báo lỗi).';
+
+  @override
+  String get apiErrDronePayloadTooHeavy =>
+      'Kiện hàng vượt tải trọng cho phép của drone.';
+
+  @override
+  String get apiErrDroneLoadingNotConfirmed =>
+      'Cần xác nhận nạp hàng trước khi phóng.';
+
+  @override
+  String get apiErrDroneSurchargeUnpaid =>
+      'Kiện nặng hơn khai báo. Chờ khách trả thêm phần phí chênh rồi mới phóng được.';
+
+  @override
+  String get apiErrDroneParcelWeightInvalid =>
+      'Khối lượng kiện hàng không hợp lệ.';
+
+  @override
+  String get apiErrDroneAlreadyInFlight =>
+      'Drone đã cất cánh, không thể huỷ nhiệm vụ.';
+
+  @override
+  String get apiErrDroneCancelNoteRequired =>
+      'Cần nhập ghi chú khi chọn lý do Khác.';
+
+  @override
+  String get apiErrDroneStageAutomated =>
+      'Đơn mô phỏng tự chuyển chặng, không cần xác nhận tay.';
+
+  @override
+  String get apiErrDroneReceiverPhoneInvalid =>
+      'Số điện thoại người nhận không hợp lệ.';
+
+  @override
+  String get apiErrLockerInactive => 'Tủ đang ngừng hoạt động.';
+
+  @override
+  String get apiErrLandingPadUnavailable => 'Bãi đáp drone chưa sẵn sàng.';
+
+  @override
+  String get apiErrDroneOwnershipRequired =>
+      'Bạn cần nhận phụ trách drone này trước.';
+
+  @override
+  String get apiErrDroneAlreadyAssigned =>
+      'Drone đã có kỹ thuật viên khác phụ trách.';
+
+  @override
+  String get apiErrDroneActiveMission =>
+      'Drone đang có nhiệm vụ, chỉ được báo lỗi (FAULT).';
+
+  @override
+  String get apiErrDroneFaultReasonRequired =>
+      'Cần nhập lý do khi báo drone lỗi.';
+
+  @override
+  String get apiErrDronePaymentRequiredBeforePickup =>
+      'Vui lòng thanh toán đơn drone trước khi mở tủ nhận hàng.';
+
+  @override
+  String get apiErrOrderStatusInvalid =>
+      'Đơn không còn ở trạng thái cho phép thao tác này.';
+
+  @override
+  String get apiErrNotSupportedUpdate =>
+      'Máy chủ chưa hỗ trợ chức năng này. Vui lòng cập nhật hệ thống rồi thử lại.';
+
+  @override
+  String get apiErrForbidden => 'Bạn không có quyền thực hiện thao tác này';
+
+  @override
+  String get apiErrConnection => 'Lỗi kết nối máy chủ';
+
+  @override
+  String get apiErrGeneric => 'Đã xảy ra lỗi';
+
+  @override
+  String get commonSending => 'Đang gửi...';
+
+  @override
+  String get commonDescription => 'Mô tả';
+
+  @override
+  String get commonYes => 'Có';
+
+  @override
+  String get commonNo => 'Không';
+
+  @override
+  String get commonOrder => 'Đơn hàng';
+
+  @override
+  String get commonTime => 'Thời gian';
+
+  @override
+  String get commonMessage => 'Lời nhắn';
+
+  @override
+  String get recvLoadFailed => 'Không đọc được chi tiết đơn. Vui lòng thử lại.';
+
+  @override
+  String get recvNotInList =>
+      'Đơn không còn trong danh sách của bạn (có thể đã được ủy quyền cho người khác). Đang hiện thông tin đã lưu.';
+
+  @override
+  String get recvSummaryOnly =>
+      'Máy chủ chưa hỗ trợ xem chi tiết đầy đủ — đang hiện thông tin tóm tắt.';
+
+  @override
+  String recvEmailSent(Object withCode, Object email) {
+    return 'Đã gửi thông tin đơn$withCode tới $email.';
+  }
+
+  @override
+  String get recvWithCode => ' kèm mã mở tủ';
+
+  @override
+  String get recvYourEmail => 'email của bạn';
+
+  @override
+  String get recvNoEmail => 'Chưa có email';
+
+  @override
+  String get recvNoEmailBody =>
+      'Tài khoản của bạn chưa có email để nhận thông tin đơn. Bổ sung email trong Hồ sơ rồi gửi lại.';
+
+  @override
+  String get recvAddEmail => 'Bổ sung email';
+
+  @override
+  String get recvDelegateDetail => 'Chi tiết đơn lấy hộ';
+
+  @override
+  String get recvDetail => 'Chi tiết đơn nhận';
+
+  @override
+  String get recvDelegator => 'Người ủy quyền';
+
+  @override
+  String get recvSender => 'Người gửi';
+
+  @override
+  String get recvPickupCode => 'Mã lấy hàng';
+
+  @override
+  String recvOpenBoxPickup(Object box) {
+    return 'Mở $box lấy hàng';
+  }
+
+  @override
+  String get recvTrackDrone => 'Theo dõi drone';
+
+  @override
+  String get recvSendingEmail => 'Đang gửi email…';
+
+  @override
+  String get recvResendEmail => 'Gửi lại thông tin qua email';
+
+  @override
+  String get recvSenderPhone => 'SĐT người gửi';
+
+  @override
+  String get recvSenderEmail => 'Email người gửi';
+
+  @override
+  String get recvRecipientName => 'Tên người nhận';
+
+  @override
+  String get recvRecipientPhone => 'SĐT người nhận';
+
+  @override
+  String get recvDelegatePerson => 'Người lấy hộ';
+
+  @override
+  String recvYouSuffix(Object name) {
+    return '$name (bạn)';
+  }
+
+  @override
+  String get recvYou => 'Bạn';
+
+  @override
+  String get recvDelegatePhone => 'SĐT lấy hộ';
+
+  @override
+  String get recvDelegation => 'Ủy quyền';
+
+  @override
+  String get recvOwnerDelegated => 'Chủ đơn đã ủy quyền người khác lấy hộ';
+
+  @override
+  String get recvLockerAndBox => 'Tủ & ô';
+
+  @override
+  String get recvReceivingLocker => 'Tủ nhận';
+
+  @override
+  String get recvLockerCode => 'Mã tủ';
+
+  @override
+  String get recvBoxSize => 'Kích cỡ ô';
+
+  @override
+  String get recvSourceAddress => 'Địa chỉ tủ gửi';
+
+  @override
+  String get recvSenderNote => 'Ghi chú người gửi';
+
+  @override
+  String get recvPickupDeadline => 'Hạn lấy';
+
+  @override
+  String get recvTimeLeft => 'Còn lại';
+
+  @override
+  String get recvExpectedPickup => 'Dự kiến lấy';
+
+  @override
+  String get recvCreatedAt => 'Tạo đơn lúc';
+
+  @override
+  String get recvCompletedAt => 'Hoàn tất lúc';
+
+  @override
+  String get recvUpdatedAt => 'Cập nhật lần cuối';
+
+  @override
+  String get recvTimeline => 'Dòng thời gian';
+
+  @override
+  String get recvDroneJourney => 'Hành trình drone';
+
+  @override
+  String get recvCurrentStage => 'Chặng hiện tại';
+
+  @override
+  String get recvEta => 'Dự kiến tới tủ';
+
+  @override
+  String get recvArrived => 'Đã tới';
+
+  @override
+  String recvAboutMinutes(Object minutes) {
+    return 'Khoảng $minutes phút';
+  }
+
+  @override
+  String get recvIncident => 'Sự cố';
+
+  @override
+  String get recvParcelReturnedToSender => 'Đã trả kiện cho người gửi';
+
+  @override
+  String get recvCodeMovedToDelegate =>
+      'Chủ đơn đã ủy quyền người khác lấy hộ nên mã lấy hàng không còn hiện ở đây.';
+
+  @override
+  String get recvCredCaption =>
+      'Nhập PIN hoặc quét QR tại tủ, hoặc mở ô ngay trên app';
+
+  @override
+  String get recvOverdueMayCharge =>
+      'Đơn đã quá hạn lấy — có thể phát sinh phí quá giờ.';
+
+  @override
+  String get recvCompleted => 'Đơn đã hoàn tất — hàng đã được lấy.';
+
+  @override
+  String recvCompletedAtTime(Object time) {
+    return 'Đơn đã hoàn tất — hàng đã được lấy lúc $time.';
+  }
+
+  @override
+  String get recvCancelled => 'Đơn đã hủy nên không còn mã lấy hàng.';
+
+  @override
+  String get recvExpired =>
+      'Đơn đã quá hạn lấy, ô đã được thu hồi. Vui lòng liên hệ người gửi hoặc hỗ trợ Lock.R.';
+
+  @override
+  String recvDroneNotReady(Object stage) {
+    return '$stage. Mã lấy hàng sẽ hiện khi drone đã đặt kiện vào ô tủ nhận.';
+  }
+
+  @override
+  String get recvSenderNotDropped =>
+      'Người gửi chưa bỏ hàng vào ô. Mã lấy hàng sẽ hiện khi hàng đã nằm trong ô.';
+
+  @override
+  String get recvNotReady =>
+      'Hàng chưa sẵn sàng. Mã lấy hàng sẽ hiện khi hàng đã nằm trong ô.';
+
+  @override
+  String get recvSenderPaid => 'Người gửi đã thanh toán';
+
+  @override
+  String get recvRefundingSender => 'Đang hoàn tiền cho người gửi';
+
+  @override
+  String get recvSenderRefunded => 'Đã hoàn tiền cho người gửi';
+
+  @override
+  String get recvSenderUnpaid => 'Người gửi chưa thanh toán';
+
+  @override
+  String get recvOrderCodeCopied => 'Đã sao chép mã đơn';
+
+  @override
+  String get recvCopyOrderCode => 'Sao chép mã đơn';
+
+  @override
+  String get recvYouAreDelegate => 'Bạn được ủy quyền lấy hộ đơn này.';
+
+  @override
+  String get recvYouAreRecipient => 'Bạn là người nhận của đơn này.';
+
+  @override
+  String recvOverdueBy(Object duration) {
+    return 'Đơn đã quá hạn lấy $duration — lấy hàng sớm để tránh phí quá giờ.';
+  }
+
+  @override
+  String get recvNoCodeYet =>
+      'Đơn chưa có mã lấy hàng — hàng có thể chưa được bỏ vào ô.';
+
+  @override
+  String recvBoxOpenedPickup(Object box) {
+    return 'Tủ đã mở $box — lấy hàng rồi đóng cửa tủ lại.';
+  }
+
+  @override
+  String get recvOpenByCodeNotSupported =>
+      'Máy chủ chưa hỗ trợ mở ô bằng mã. Hãy nhập mã tại màn hình tủ.';
+
+  @override
+  String recvLockerWithCode(Object code) {
+    return 'Tủ $code';
+  }
+
+  @override
+  String get recvDelegatorColon => 'Người ủy quyền:';
+
+  @override
+  String get recvSenderColon => 'Người gửi:';
+
+  @override
+  String get recvDelegatedPickup => 'Lấy hộ';
+
+  @override
+  String get recvIncomingParcel => 'Hàng nhận';
+
+  @override
+  String get recvStorageBox => 'Ô lưu đồ';
+
+  @override
+  String get recvCodeMovedShort =>
+      'Chủ đơn đã ủy quyền người khác lấy hộ nên mã lấy hàng không còn hiện ở đây.';
+
+  @override
+  String get recvCredCaptionShort => 'Nhập PIN tại tủ hoặc mở ô ngay trên app';
+
+  @override
+  String get recvReceived => 'Đã nhận hàng';
+
+  @override
+  String get recvDelegated => 'Đã ủy quyền lấy hộ';
+
+  @override
+  String get recvOverdueHurry =>
+      'Đơn đã quá hạn lấy — hãy lấy hàng sớm để tránh phát sinh thêm phí.';
+
+  @override
+  String get recvCodeTransferred =>
+      'Chủ đơn đã ủy quyền người khác lấy hộ — mã lấy hàng đã chuyển sang người lấy hộ.';
+
+  @override
+  String get detailCantCall => 'Máy này không gọi điện được.';
+
+  @override
+  String detailCopiedLabel(Object label) {
+    return 'Đã sao chép $label';
+  }
+
+  @override
+  String detailCallLabel(Object label) {
+    return 'Gọi $label';
+  }
+
+  @override
+  String detailCopyLabel(Object label) {
+    return 'Sao chép $label';
+  }
+
+  @override
+  String get parcelCategory => 'Loại hàng';
+
+  @override
+  String get parcelWeight => 'Cân nặng';
+
+  @override
+  String get parcelSize => 'Kích thước';
+
+  @override
+  String get parcelFragile => 'Hàng dễ vỡ';
+
+  @override
+  String get parcelFragileYes => 'Có — nhẹ tay';
+
+  @override
+  String get parcelDeclaredValue => 'Giá trị khai báo';
+
+  @override
+  String get parcelNoProhibited => 'Cam kết không hàng cấm';
+
+  @override
+  String get delegateTitle => 'Ủy quyền lấy hộ';
+
+  @override
+  String get delegateBody =>
+      'Người được ủy quyền thấy đơn và mã mở ô trong mục \"Đơn ủy quyền\" của app (theo số điện thoại). Mã PIN hiện tại sẽ được đổi mới.';
+
+  @override
+  String get delegatePhone => 'Số điện thoại người lấy hộ';
+
+  @override
+  String get delegateName => 'Tên người lấy hộ (không bắt buộc)';
+
+  @override
+  String get delegateMessage => 'Lời nhắn (không bắt buộc)';
+
+  @override
+  String get delegateInvalidPhone => 'Nhập số điện thoại hợp lệ (9–11 số).';
+
+  @override
+  String get delegateNotSupported => 'Máy chủ chưa hỗ trợ ủy quyền lấy hộ.';
+
+  @override
+  String get delegateAction => 'Ủy quyền';
+
+  @override
+  String get shareCopiedMessage =>
+      'Đã sao chép tin nhắn, dán vào Zalo, Messenger hoặc SMS để gửi cho người nhận.';
+
+  @override
+  String get shareCantOpenSheet => 'Không mở được bảng chia sẻ';
+
+  @override
+  String get shareCantOpenSms => 'Không mở được ứng dụng tin nhắn';
+
+  @override
+  String get shareTheRecipient => 'người nhận';
+
+  @override
+  String get shareTitle => 'Gửi mã cho người nhận';
+
+  @override
+  String shareBody(Object who) {
+    return 'Người nhận nhập mã tại màn hình tủ để mở ô. Gửi tin nhắn soạn sẵn cho $who qua Zalo, Messenger hoặc SMS.';
+  }
+
+  @override
+  String get shareButton => 'Chia sẻ mã cho người nhận';
+
+  @override
+  String get shareSms => 'Nhắn SMS';
+
+  @override
+  String get shareCopyMessage => 'Sao chép tin nhắn';
+
+  @override
+  String shareMsgLocker(Object where) {
+    return 'Bạn có kiện hàng gửi tới tủ $where.';
+  }
+
+  @override
+  String shareMsgDrone(Object where) {
+    return 'Bạn có kiện hàng giao bằng drone đang chờ tại tủ $where.';
+  }
+
+  @override
+  String shareMsgBox(Object number) {
+    return 'Ô số $number.';
+  }
+
+  @override
+  String shareMsgCode(Object code) {
+    return 'Mã lấy hàng: $code.';
+  }
+
+  @override
+  String shareMsgDeadline(Object deadline) {
+    return 'Hạn lấy: $deadline.';
+  }
+
+  @override
+  String get shareMsgHowTo => 'Nhập mã tại màn hình tủ (kiosk) để mở ô.';
+
+  @override
+  String get timelineTitle => 'Lịch sử trạng thái';
+
+  @override
+  String get timelineLoadFailed => 'Không tải được lịch sử trạng thái.';
+
+  @override
+  String get timelineEmpty => 'Chưa có chuyển trạng thái nào.';
+
+  @override
+  String timelineFrom(Object status) {
+    return 'Từ $status';
+  }
+
+  @override
+  String get pickerNoLockers => 'Chưa có tủ khả dụng';
+
+  @override
+  String get pickerTapToChange => 'Chạm để chọn tủ khác';
+
+  @override
+  String pickerUnavailable(Object reason) {
+    return 'Tạm không khả dụng: $reason';
+  }
+
+  @override
+  String payTransferAmount(Object amount) {
+    return 'Thanh toán chuyển khoản · $amount';
+  }
+
+  @override
+  String get payScanAnyBank =>
+      'Quét mã bằng app ngân hàng bất kỳ hoặc mở thẳng app ngân hàng.';
+
+  @override
+  String get svcRentSubtitle => 'Thuê ô theo giờ, PIN dùng nhiều lần';
+
+  @override
+  String get svcSendSubtitle => 'Bỏ hàng vào ô, gửi PIN cho người nhận';
+
+  @override
+  String get qrEnterLockerCode => 'Vui lòng nhập mã tủ.';
+
+  @override
+  String get qrThisLocker => 'tủ này';
+
+  @override
+  String qrLockerCodeMismatch(Object locker) {
+    return 'Mã tủ không khớp với $locker.';
+  }
+
+  @override
+  String get qrEnterLockerCodeTitle => 'Nhập mã tủ';
+
+  @override
+  String get qrLockerCodeHint => 'Mã in trên thân tủ';
+
+  @override
+  String qrCodeMismatch(Object locker) {
+    return 'Mã QR không khớp với $locker.\nVui lòng quét đúng mã QR dán trên thân tủ.';
+  }
+
+  @override
+  String get qrLockerBoxGeneric => 'ô tủ';
+
+  @override
+  String qrScanToOpen(Object box) {
+    return 'Quét mở $box';
+  }
+
+  @override
+  String qrLockerCodeValue(Object code) {
+    return 'Mã tủ: $code';
+  }
+
+  @override
+  String get qrPointCamera =>
+      'Hướng camera về phía tem mã QR dán trên mặt tủ để xác thực bạn đang đứng tại tủ.';
+
+  @override
+  String get qrCantScan => 'Không quét được? Nhập mã tủ';
 }

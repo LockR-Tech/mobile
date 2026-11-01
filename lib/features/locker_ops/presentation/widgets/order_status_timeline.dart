@@ -5,6 +5,7 @@ import 'package:smart_laundry_locker/features/drone_delivery/presentation/widget
 import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/ops_widgets.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/order_detail_widgets.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 /// Lịch sử chuyển trạng thái của một đơn, lấy từ `GET /api/orders/{id}/timeline`.
 ///
@@ -85,9 +86,9 @@ class _OrderStatusTimelineState extends State<OrderStatusTimeline> {
           children: [
             const Icon(LucideIcons.history, size: 16, color: opsMutedText),
             const SizedBox(width: 8),
-            const Expanded(
+            Expanded(
               child: Text(
-                'Lịch sử trạng thái',
+                context.l10n.timelineTitle,
                 style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w800,
@@ -101,7 +102,7 @@ class _OrderStatusTimelineState extends State<OrderStatusTimeline> {
                 icon: const Icon(LucideIcons.refreshCw, size: 15),
                 color: opsMutedText,
                 visualDensity: VisualDensity.compact,
-                tooltip: 'Tải lại',
+                tooltip: context.l10n.commonReload,
               ),
           ],
         ),
@@ -119,11 +120,11 @@ class _OrderStatusTimelineState extends State<OrderStatusTimeline> {
           )
         else if (_failed)
           _TimelineMessage(
-            text: 'Không tải được lịch sử trạng thái.',
+            text: context.l10n.timelineLoadFailed,
             onRetry: _load,
           )
         else if ((_events ?? const []).isEmpty)
-          const _TimelineMessage(text: 'Chưa có chuyển trạng thái nào.')
+          _TimelineMessage(text: context.l10n.timelineEmpty)
         else
           _TimelineList(events: _events!),
       ],
@@ -150,7 +151,7 @@ class _TimelineMessage extends StatelessWidget {
             ),
           ),
           if (onRetry != null)
-            TextButton(onPressed: onRetry, child: const Text('Thử lại')),
+            TextButton(onPressed: onRetry, child: Text(context.l10n.commonRetry)),
         ],
       ),
     );
@@ -203,7 +204,7 @@ class _TimelineTile extends StatelessWidget {
       // Trạng thái trước đó giúp đọc được đơn đã đi qua đường nào, nhất là khi
       // có bước bị bỏ qua.
       subtitle: oldStatus != null && oldStatus.isNotEmpty
-          ? 'Từ ${statusLabel(oldStatus)}'
+          ? context.l10n.timelineFrom(statusLabel(oldStatus))
           : null,
       note: event['note']?.toString(),
       footer: _location(event),

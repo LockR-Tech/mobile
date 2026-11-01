@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/ops_widgets.dart';
 import 'package:smart_laundry_locker/shared/widgets/controller_disposer.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 /// SĐT Việt Nam gõ tay: 9–11 chữ số (0xxx… hoặc 84xxx…).
 bool isPlausiblePhone(String value) =>
@@ -34,15 +35,14 @@ Future<Map<String, dynamic>?> showDelegateOrderDialog(
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(18),
           ),
-          title: const Text('Ủy quyền lấy hộ'),
+          title: Text(context.l10n.delegateTitle),
           content: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Người được ủy quyền thấy đơn và mã mở ô trong mục "Đơn ủy quyền" '
-                  'của app (theo số điện thoại). Mã PIN hiện tại sẽ được đổi mới.',
+                Text(
+                  context.l10n.delegateBody,
                   style: TextStyle(
                     fontSize: 12.5,
                     color: opsMutedText,
@@ -56,8 +56,8 @@ Future<Map<String, dynamic>?> showDelegateOrderDialog(
                   keyboardType: TextInputType.phone,
                   inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                   maxLength: 11,
-                  decoration: const InputDecoration(
-                    labelText: 'Số điện thoại người lấy hộ',
+                  decoration: InputDecoration(
+                    labelText: context.l10n.delegatePhone,
                     counterText: '',
                   ),
                 ),
@@ -65,8 +65,8 @@ Future<Map<String, dynamic>?> showDelegateOrderDialog(
                   controller: nameCtrl,
                   enabled: !sending,
                   maxLength: 100,
-                  decoration: const InputDecoration(
-                    labelText: 'Tên người lấy hộ (không bắt buộc)',
+                  decoration: InputDecoration(
+                    labelText: context.l10n.delegateName,
                     counterText: '',
                   ),
                 ),
@@ -75,8 +75,8 @@ Future<Map<String, dynamic>?> showDelegateOrderDialog(
                   enabled: !sending,
                   maxLines: 2,
                   maxLength: 500,
-                  decoration: const InputDecoration(
-                    labelText: 'Lời nhắn (không bắt buộc)',
+                  decoration: InputDecoration(
+                    labelText: context.l10n.delegateMessage,
                     counterText: '',
                   ),
                 ),
@@ -96,7 +96,7 @@ Future<Map<String, dynamic>?> showDelegateOrderDialog(
           actions: [
             TextButton(
               onPressed: sending ? null : () => Navigator.pop(ctx),
-              child: const Text('Hủy'),
+              child: Text(context.l10n.commonCancel),
             ),
             FilledButton(
               onPressed: sending
@@ -105,7 +105,7 @@ Future<Map<String, dynamic>?> showDelegateOrderDialog(
                       final phone = phoneCtrl.text.trim();
                       if (!isPlausiblePhone(phone)) {
                         setLocal(
-                          () => error = 'Nhập số điện thoại hợp lệ (9–11 số).',
+                          () => error = context.l10n.delegateInvalidPhone,
                         );
                         return;
                       }
@@ -125,12 +125,12 @@ Future<Map<String, dynamic>?> showDelegateOrderDialog(
                         setLocal(() {
                           sending = false;
                           error = LockerOpsService.isEndpointUnavailable(e)
-                              ? 'Máy chủ chưa hỗ trợ ủy quyền lấy hộ.'
+                              ? context.l10n.delegateNotSupported
                               : LockerOpsService.errorMessage(e);
                         });
                       }
                     },
-              child: Text(sending ? 'Đang gửi...' : 'Ủy quyền'),
+              child: Text(sending ? context.l10n.commonSending : context.l10n.delegateAction),
             ),
           ],
         ),

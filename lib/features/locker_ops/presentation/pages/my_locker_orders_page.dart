@@ -29,6 +29,7 @@ import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/re
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/user_report_detail_sheet.dart';
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
 import 'package:smart_laundry_locker/shared/shared.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 /// All locker orders of the signed-in customer, with the full action set gated
 /// to the backend state machine: confirm drop, pickup/complete, delegate,
@@ -248,7 +249,7 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
       if (!mounted) return;
       setState(
         () => _incomingError = LockerOpsService.isEndpointUnavailable(e)
-            ? 'Máy chủ chưa hỗ trợ mục Hàng chờ nhận. Vui lòng thử lại sau.'
+            ? context.l10n.ordIncomingNotSupported
             : LockerOpsService.errorMessage(e),
       );
     } finally {
@@ -296,7 +297,7 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
     _openedInitialOrder = true;
     _lastOpenedToken = widget.openToken;
     _lastOpenedId = id;
-    _snack('Không tìm thấy đơn trong danh sách của bạn.');
+    _snack(context.l10n.ordNotFoundInList);
   }
 
   Future<void> _openIncomingDetail(ReceiverOrder order) async {
@@ -376,7 +377,7 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
     final map = <String, List<ReceiverOrder>>{};
     for (final item in withDates) {
       final key =
-          item.date == null ? 'Không rõ ngày' : _dateGroupLabel(item.date!);
+          item.date == null ? context.l10n.commonUnknownDate : _dateGroupLabel(item.date!);
       (map[key] ??= []).add(item.order);
     }
     return map.entries.toList();
@@ -432,13 +433,13 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
   }
 
   String get _emptySubtitle => switch (_typeFilter) {
-    'RECENT' => 'Không có đơn hàng nào trong 7 ngày gần đây.',
-    'ACTIVE' => 'Hiện không có đơn hàng nào đang trong quá trình sử dụng.',
-    'COMPLETED' => 'Chưa có đơn hàng nào đã hoàn tất.',
-    'RENTAL' => 'Chưa có đơn thuê tủ nào.',
-    'SEND' => 'Chưa có đơn gửi hàng nào.',
-    'CANCELED' => 'Không có đơn nào đã hủy.',
-    _ => 'Tạo đơn Gửi hàng hoặc Thuê tủ từ màn hình chính.',
+    'RECENT' => context.l10n.ordEmptyRecent,
+    'ACTIVE' => context.l10n.ordEmptyActive,
+    'COMPLETED' => context.l10n.ordEmptyCompleted,
+    'RENTAL' => context.l10n.ordEmptyRental,
+    'SEND' => context.l10n.ordEmptySend,
+    'CANCELED' => context.l10n.ordEmptyCanceled,
+    _ => context.l10n.ordEmptyHint,
   };
 
   List<Map<String, dynamic>> get _visible {
@@ -579,7 +580,7 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
     final number = (lockerId == null || boxId == null)
         ? null
         : _lockerBoxesMap[lockerId]?[boxId];
-    return number == null ? 'ô này' : 'ô số $number';
+    return number == null ? L10n.current.boxThisLower : L10n.current.boxNumberLower(number);
   }
 
   static DateTime? _parseOrderDate(Map<String, dynamic> o) {
@@ -593,9 +594,9 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
     final today = DateTime(now.year, now.month, now.day);
     final day = DateTime(d.year, d.month, d.day);
     final diff = today.difference(day).inDays;
-    if (diff == 0) return 'Hôm nay';
-    if (diff == 1) return 'Hôm qua';
-    return '${d.day} tháng ${d.month}, ${d.year}';
+    if (diff == 0) return L10n.current.commonToday;
+    if (diff == 1) return L10n.current.commonYesterday;
+    return L10n.current.dateDayMonthYear(d.day, d.month, d.year);
   }
 
   /// Orders grouped by date label, sorted newest-first within each group.
@@ -615,7 +616,7 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
 
     final map = <String, List<Map<String, dynamic>>>{};
     for (final item in withDates) {
-      final key = item.date == null ? 'Không rõ ngày' : _dateGroupLabel(item.date!);
+      final key = item.date == null ? context.l10n.commonUnknownDate : _dateGroupLabel(item.date!);
       (map[key] ??= []).add(item.order);
     }
     return map.entries.toList();
@@ -664,22 +665,22 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: const Text('Huỷ đơn?'),
+        title: Text(context.l10n.ordCancelQuestion),
         content: Text(
-          'Đơn ${code ?? ''} sẽ bị huỷ, mã mở ô hết hiệu lực và ô đang giữ được nhả.'
-          '${isPaid ? ' Tiền đã thanh toán không tự hoàn — sau khi huỷ, mở lại đơn và chọn "Yêu cầu hoàn tiền".' : ''}',
+          '${context.l10n.ordCancelBody(code ?? '')}'
+          '${isPaid ? context.l10n.ordCancelPaidNote : ''}',
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext, false),
-            child: const Text('Giữ đơn'),
+            child: Text(context.l10n.ordKeepOrder),
           ),
           FilledButton(
             style: FilledButton.styleFrom(
               backgroundColor: const Color(0xFFDC2626),
             ),
             onPressed: () => Navigator.pop(dialogContext, true),
-            child: const Text('Huỷ đơn'),
+            child: Text(context.l10n.ordCancelOrderAlt),
           ),
         ],
       ),
@@ -701,12 +702,12 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
           ),
-          title: const Text('Gia hạn thuê'),
+          title: Text(context.l10n.ordExtendRental),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                'Thêm ${hours.round()} giờ',
+                context.l10n.ordAddHours(hours.round()),
                 style: const TextStyle(
                   fontWeight: FontWeight.w800,
                   fontSize: 18,
@@ -724,7 +725,7 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
                   onChanged: (v) => setSheet(() => hours = v),
                 ),
               Text(
-                'Tối đa $maxHours giờ mỗi lần gia hạn',
+                context.l10n.ordMaxHoursPerExtension(maxHours),
                 textAlign: TextAlign.center,
                 style: const TextStyle(fontSize: 12, color: opsMutedText),
               ),
@@ -733,11 +734,11 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('Hủy'),
+              child: Text(context.l10n.commonCancel),
             ),
             FilledButton(
               onPressed: () => Navigator.pop(ctx, true),
-              child: const Text('Gia hạn'),
+              child: Text(context.l10n.ordExtend),
             ),
           ],
         ),
@@ -746,7 +747,7 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
     if (confirmed == true) {
       await _runAction(
         () => _service.extendRental(orderId, hours.round()),
-        'Đã gia hạn ${hours.round()} giờ',
+        L10n.current.ordExtended(hours.round()),
       );
     }
   }
@@ -755,8 +756,9 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
     required int orderId,
 
     /// Nhãn ô cho người đọc (`ô số 4`), đã tra sẵn từ sơ đồ tủ.
-    String boxLabel = 'ô này',
+    String? boxLabel,
   }) async {
+    boxLabel ??= context.l10n.boxThisLower;
     final reasonCtrl = TextEditingController();
     // Ảnh hiện trường stage REPORT — tối đa theo cấu hình admin.
     final photos = PhotoPickerController(
@@ -778,7 +780,7 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(20),
             ),
-            title: const Text('Báo ô lỗi'),
+            title: Text(context.l10n.ordReportFaultyBox),
             content: SingleChildScrollView(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -788,14 +790,13 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
                     controller: reasonCtrl,
                     maxLines: 3,
                     enabled: !uploading,
-                    decoration: const InputDecoration(
-                      hintText: 'Mô tả sự cố (ô không mở, kẹt cửa...)',
+                    decoration: InputDecoration(
+                      hintText: context.l10n.ordDescribeIssueHint,
                     ),
                   ),
                   const SizedBox(height: 14),
                   Text(
-                    'Ảnh hiện trường (không bắt buộc, tối đa '
-                    '${photos.maxPhotos})',
+                    context.l10n.ordOnsitePhotosOptional(photos.maxPhotos),
                     style: const TextStyle(
                       fontSize: 12.5,
                       fontWeight: FontWeight.w700,
@@ -808,7 +809,7 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
                     enabled: !uploading,
                     thumbSize: 64,
                     accentColor: AislBrand.navy,
-                    helperText: 'Ảnh giúp đội bảo trì xử lý nhanh hơn.',
+                    helperText: context.l10n.ordPhotosHelp,
                   ),
                   if (dialogError != null) ...[
                     const SizedBox(height: 8),
@@ -826,7 +827,7 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
             actions: [
               TextButton(
                 onPressed: uploading ? null : () => Navigator.pop(ctx, false),
-                child: const Text('Hủy'),
+                child: Text(context.l10n.commonCancel),
               ),
               FilledButton(
                 style: FilledButton.styleFrom(
@@ -838,7 +839,7 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
                         if (reasonCtrl.text.trim().isEmpty && photos.isEmpty) {
                           setLocal(
                             () => dialogError =
-                                'Vui lòng mô tả sự cố hoặc đính kèm ảnh.',
+                                context.l10n.ordDescribeOrAttach,
                           );
                           return;
                         }
@@ -858,7 +859,7 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
                           }
                         }
                       },
-                child: Text(uploading ? 'Đang tải ảnh...' : 'Gửi báo lỗi'),
+                child: Text(uploading ? context.l10n.ordUploadingPhotos : context.l10n.ordSendReport),
               ),
             ],
           ),
@@ -870,7 +871,7 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
       try {
         await _service.reportOrderFault(
           orderId,
-          reason.isNotEmpty ? reason : 'Ô tủ gặp sự cố (xem ảnh đính kèm)',
+          reason.isNotEmpty ? reason : L10n.current.ordBoxFaultDefault,
           attachments: attachments,
         );
         await _load();
@@ -880,7 +881,7 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
           ..showSnackBar(
             SnackBar(
               content: Text(
-                'Đã gửi báo lỗi cho $boxLabel — đội bảo trì sẽ xử lý',
+                context.l10n.ordReportSentFor(boxLabel),
               ),
               action: SnackBarAction(
                 label: 'Xem',
@@ -918,8 +919,8 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const Text(
-              'Lấy đồ tại kiosk',
+            Text(
+              context.l10n.ordPickupAtKiosk,
               style: TextStyle(
                 fontWeight: FontWeight.w800,
                 fontSize: 18,
@@ -927,13 +928,13 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
               ),
             ),
             const SizedBox(height: 8),
-            const Text(
-              'Dùng mã này tại kiosk để mở ô, lấy đồ ra, rồi đóng cửa tủ lại trước khi xác nhận kết thúc thuê. Bạn cũng có thể bấm mở trực tiếp trên app nếu đang ở gần tủ.',
+            Text(
+              context.l10n.ordPickupAtKioskBody,
               style: TextStyle(fontSize: 14, color: opsMutedText, height: 1.45),
             ),
             const SizedBox(height: 16),
             OpsSheetAction(
-              label: 'Mở $boxLabel trên điện thoại (GPS/QR)',
+              label: context.l10n.ordOpenBoxOnPhone(boxLabel),
               icon: LucideIcons.doorOpen,
               primary: true,
               onTap: () {
@@ -950,14 +951,14 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
             ],
             const SizedBox(height: 16),
             OpsSheetAction(
-              label: 'Đã lấy đồ và đóng tủ',
+              label: context.l10n.ordPickedUpAndClosed,
               icon: LucideIcons.circleCheck,
               primary: false,
               onTap: () {
                 Navigator.pop(ctx);
                 _runAction(
                   () => _service.endRental(orderId),
-                  'Đã kết thúc kỳ thuê',
+                  context.l10n.ordRentalEnded,
                 );
               },
             ),
@@ -988,7 +989,7 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
         ? _asInt(order['destinationLockerId'] ?? order['lockerId'])
         : _asInt(order['lockerId'] ?? order['destinationLockerId']);
     if (lockerId == null) {
-      _snack('Đơn chưa có thông tin tủ.');
+      _snack(context.l10n.ordNoLockerInfo);
       return;
     }
     try {
@@ -1003,9 +1004,9 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
         case DirectionsResult.opened:
           break;
         case DirectionsResult.noLocation:
-          _snack('Tủ chưa có vị trí để chỉ đường.');
+          _snack(L10n.current.ordLockerNoLocation);
         case DirectionsResult.launchFailed:
-          _snack('Không mở được ứng dụng bản đồ trên máy này.');
+          _snack(L10n.current.ordCantOpenMapsApp);
       }
     } catch (e) {
       _snack(LockerOpsService.errorMessage(e));
@@ -1027,7 +1028,7 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
     final paidAmount = _asDouble(order['paidAmount']) ?? 0;
     final isRentalExtension = isRental && paidAmount > 0;
     final description = isRentalExtension
-        ? 'Thanh toán gia hạn thời gian đơn #$orderId'
+        ? context.l10n.ordExtensionPaymentFor(orderId)
         : null;
 
     try {
@@ -1043,21 +1044,21 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
         showPaymentResultDialog<void>(
           context,
           type: PaymentStatusType.success,
-          title: 'Thanh toán thành công!',
+          title: context.l10n.paymentSuccessExclaim,
           amountText: '${total.toInt()} đ',
-          message: 'Đơn hàng của bạn đã được thanh toán thành công.',
+          message: context.l10n.ordPaidSuccessfully,
         );
       } else if (outcome == OrderPaymentOutcome.failed) {
         showPaymentResultDialog<void>(
           context,
           type: PaymentStatusType.failure,
-          title: 'Thanh toán thất bại',
+          title: context.l10n.paymentFailed,
           amountText: '${total.toInt()} đ',
-          message: 'Giao dịch chưa hoàn tất hoặc đã bị hủy. Vui lòng thử lại.',
+          message: context.l10n.ordPaymentNotCompleted,
         );
       } else {
         _snack(
-          'Đang chờ xác nhận thanh toán — kéo xuống để làm mới sau ít phút.',
+          context.l10n.ordAwaitingPaymentPull,
         );
       }
       await _load();
@@ -1106,9 +1107,9 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
         showPaymentResultDialog<void>(
           context,
           type: PaymentStatusType.failure,
-          title: 'Thanh toán thất bại',
+          title: context.l10n.paymentFailed,
           amountText: fmtPrice(due),
-          message: 'Giao dịch chưa hoàn tất hoặc đã bị hủy. Vui lòng thử lại.',
+          message: context.l10n.ordPaymentNotCompleted,
         );
         await _load();
         return;
@@ -1116,8 +1117,7 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
       if (outcome == OrderPaymentOutcome.pending) {
         // Chưa có xác nhận PAID thì chưa chốt đơn — server cũng sẽ từ chối.
         _snack(
-          'Đang chờ xác nhận thanh toán — bấm lại "Xác nhận lấy đồ" sau khi '
-          'đơn hiện Đã thanh toán.',
+          context.l10n.ordAwaitingPaymentConfirmPickup,
         );
         await _load();
         return;
@@ -1129,24 +1129,24 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(18),
           ),
-          title: const Row(
+          title: Row(
             children: [
               Icon(LucideIcons.packageCheck, color: Color(0xFF16A34A)),
               SizedBox(width: 8),
               Text(
-                'Xác nhận lấy đồ',
+                context.l10n.ordConfirmPickup,
                 style: TextStyle(fontWeight: FontWeight.w700, fontSize: 17),
               ),
             ],
           ),
-          content: const Text(
-            'Bạn xác nhận đã nhận lại đầy đủ đồ đạc của đơn hàng này? Thao tác này sẽ đóng và hoàn tất đơn hàng.',
+          content: Text(
+            context.l10n.ordConfirmPickupBody,
             style: TextStyle(fontSize: 14, height: 1.4),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('Hủy', style: TextStyle(color: opsMutedText)),
+              child: Text(context.l10n.commonCancel, style: TextStyle(color: opsMutedText)),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
@@ -1157,7 +1157,7 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
                 ),
               ),
               onPressed: () => Navigator.pop(ctx, true),
-              child: const Text('Đã lấy đồ — Hoàn tất'),
+              child: Text(context.l10n.ordPickedUpComplete),
             ),
           ],
         ),
@@ -1172,12 +1172,12 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
         showPaymentResultDialog<void>(
           context,
           type: PaymentStatusType.success,
-          title: 'Hoàn tất đơn hàng!',
+          title: context.l10n.ordCompletedTitle,
           amountText: fmtPrice(due),
-          message: 'Bạn đã thanh toán và lấy đồ thành công. Đơn hàng đã hoàn tất.',
+          message: context.l10n.ordPaidAndPickedUp,
         );
       } else {
-        _snack('Đã nhận đồ — đơn hoàn tất');
+        _snack(context.l10n.ordReceivedComplete);
       }
     } catch (e) {
       if (!mounted) return;
@@ -1190,17 +1190,15 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(18),
             ),
-            title: const Text('Đã thanh toán — chưa hoàn tất đơn'),
+            title: Text(context.l10n.ordPaidNotCompletedTitle),
             content: Text(
-              'Hệ thống đã ghi nhận thanh toán nhưng chưa hoàn tất được đơn: '
-              '$reason\nBạn có thể thử lại "Xác nhận lấy đồ" hoặc gửi khiếu nại '
-              'trong chi tiết đơn.',
+              context.l10n.ordPaidNotCompletedBody(reason),
               style: const TextStyle(fontSize: 14, height: 1.4),
             ),
             actions: [
               FilledButton(
                 onPressed: () => Navigator.pop(ctx),
-                child: const Text('Đã hiểu'),
+                child: Text(context.l10n.commonGotIt),
               ),
             ],
           ),
@@ -1250,10 +1248,10 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
     // được assess thì dùng phí tạm tính để hiện; server vẫn tự tính tiền thật.
     final due = assessedOk ? orderAmountDue(order) : fee.toDouble();
     if (due <= 0) {
-      _snack('Đơn hàng không có phí quá giờ cần thanh toán');
+      _snack(context.l10n.ordNoOvertimeFeeDue);
       return;
     }
-    final lockerName = _lockerNameOf(order) ?? 'Tủ Lock.R';
+    final lockerName = _lockerNameOf(order) ?? context.l10n.ordLockrLocker;
     final boxId = _asInt(order['receiveBoxId'] ?? order['sendBoxId']);
     final boxLabel = _boxLabelFor(order, boxId);
     final deadline = order['pickupDeadline'];
@@ -1276,7 +1274,7 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
         boxLabel: boxLabel,
         overdueDurationText: durationText.isNotEmpty
             ? durationText
-            : 'Đã quá hạn',
+            : context.l10n.ordOverdue,
         overtimeRate: overtimeRateOf(order, config),
         overtimeCapped: overtimeCappedOf(order),
       ),
@@ -1293,7 +1291,7 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
           service: _service,
           orderId: orderId,
           total: due,
-          description: 'Phí quá hạn',
+          description: context.l10n.ordOverdueFee,
         );
       } catch (e) {
         _snack(LockerOpsService.errorMessage(e));
@@ -1304,21 +1302,21 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
         showPaymentResultDialog<void>(
           context,
           type: PaymentStatusType.failure,
-          title: 'Thanh toán thất bại',
+          title: context.l10n.paymentFailed,
           amountText: fmtPrice(due),
-          message: 'Giao dịch chưa hoàn tất hoặc đã bị hủy. Vui lòng thử lại.',
+          message: context.l10n.ordPaymentNotCompleted,
         );
         await _load();
         return;
       }
       if (outcome == OrderPaymentOutcome.pending) {
         _snack(
-          'Đang chờ xác nhận thanh toán — mở ô sau khi đơn hiện Đã thanh toán.',
+          context.l10n.ordAwaitingPaymentOpenBox,
         );
         await _load();
         return;
       }
-      _snack('Đã thanh toán phí quá giờ — chuẩn bị mở ô');
+      _snack(context.l10n.ordOvertimePaidOpening);
     }
 
     await _load();
@@ -1338,15 +1336,18 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
     String boxLabel,
     Map<String, dynamic> order,
   ) async {
-    _snack('Đang gửi lệnh mở $boxLabel tới tủ...');
+    _snack(context.l10n.ordSendingOpenCommand(boxLabel));
     try {
       final res = await _service.unlock(lockerId, boxId, pin);
       final accepted = res['accepted'] == true;
       final msg = res['message']?.toString();
       _snack(
         accepted
-            ? 'Tủ đã mở $boxLabel — mời bạn thao tác rồi đóng cửa.'
-            : 'Không mở được $boxLabel${msg != null && msg.isNotEmpty ? ': $msg' : ''}',
+            ? L10n.current.ordBoxOpened(boxLabel)
+            : L10n.current.ordBoxOpenFailed(
+                boxLabel,
+                msg != null && msg.isNotEmpty ? ': $msg' : '',
+              ),
       );
       if (accepted) {
         await _load();
@@ -1376,7 +1377,7 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
 
     final pin = order['pinCode'] as String?;
     if (lockerId == null || boxId == null || pin == null || pin.isEmpty) {
-      _snack('Đơn chưa có thông tin ô/PIN để mở tủ.');
+      _snack(context.l10n.ordNoBoxPinInfo);
       return;
     }
     final boxLabel = _boxLabelFor(order, boxId);
@@ -1388,7 +1389,7 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
         locker = await _service.locker(lockerId);
       } catch (_) {}
     }
-    final lockerName = locker?['name']?.toString() ?? 'Tủ Lock.R';
+    final lockerName = locker?['name']?.toString() ?? L10n.current.ordLockrLocker;
     final lockerCode = locker?['code']?.toString() ?? '';
 
     if (!mounted) return;
@@ -1414,7 +1415,7 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
       isRentalReturning: isRentalReturning && isRental && rawStatus == 'STORING',
       isOverdue: overdue,
       overdueNotice: overdue
-          ? 'Đơn thuê đã quá hạn. Đã ghi nhận xử lý phí quá giờ — mời bạn mở ô lấy đồ và đóng tủ để hoàn tất.'
+          ? context.l10n.ordOverdueRentalNotice
           : null,
     );
 
@@ -1437,8 +1438,11 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
     if (res == null || !mounted) return;
     final phone = res['receiverPhone']?.toString();
     _snack(
-      'Đã ủy quyền lấy hộ${phone == null || phone.isEmpty ? '' : ' cho $phone'}. '
-      'Mã PIN cũ đã hết hiệu lực.',
+      context.l10n.ordDelegatedTo(
+        phone == null || phone.isEmpty
+            ? ''
+            : context.l10n.ordDelegatedToPhone(phone),
+      ),
     );
     await _load();
   }
@@ -1453,22 +1457,21 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-        title: const Text('Đổi mã PIN?'),
+        title: Text(context.l10n.ordChangePinQuestion),
         content: Text(
           isSend && status == 'STORING'
-              ? 'Mã PIN hiện tại sẽ hết hiệu lực. Người nhận cần mã mới để lấy hàng '
-                    '— hãy gửi lại mã mới cho họ.'
-              : 'Mã PIN hiện tại sẽ hết hiệu lực ngay và được thay bằng mã mới.',
+              ? context.l10n.ordChangePinReceiver
+              : context.l10n.ordChangePinNow,
           style: const TextStyle(fontSize: 14, height: 1.4),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Hủy'),
+            child: Text(context.l10n.commonCancel),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Đổi mã'),
+            child: Text(context.l10n.ordChangeCode),
           ),
         ],
       ),
@@ -1479,14 +1482,14 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
       final pin = res['pinCode']?.toString();
       _snack(
         pin == null || pin.isEmpty
-            ? 'Đã đổi mã PIN — xem mã mới trong chi tiết đơn.'
-            : 'Đã đổi mã PIN mới: $pin',
+            ? L10n.current.ordPinChangedSeeDetail
+            : L10n.current.ordPinChangedNew(pin),
       );
       await _load();
     } catch (e) {
       _snack(
         LockerOpsService.isEndpointUnavailable(e)
-            ? 'Máy chủ chưa hỗ trợ đổi mã PIN.'
+            ? L10n.current.ordPinChangeNotSupported
             : LockerOpsService.errorMessage(e),
       );
     }
@@ -1515,16 +1518,16 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
       final masked = res['maskedEmail']?.toString() ?? email;
       _snack(
         res['sentAt'] == null
-            ? 'Đã lưu email người nhận $masked. Lock.R báo người nhận khi đơn được thanh toán.'
+            ? L10n.current.ordReceiverEmailSaved(masked)
             : res['includesPickupCode'] == true
-            ? 'Đã gửi mã mở tủ tới $masked.'
-            : 'Đã gửi lại thông tin đơn tới $masked.',
+            ? L10n.current.ordPickupCodeSentTo(masked)
+            : L10n.current.ordOrderInfoResentTo(masked),
       );
       await _load();
     } catch (e) {
       _snack(
         LockerOpsService.isEndpointUnavailable(e)
-            ? 'Máy chủ chưa hỗ trợ gửi mã qua email.'
+            ? L10n.current.ordEmailCodeNotSupported
             : LockerOpsService.errorMessage(e),
       );
     }
@@ -1562,14 +1565,14 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
             Navigator.pop(ctx);
             await _runAction(
               () => _service.reorder(id),
-              'Đã tạo đơn mới — xem trong danh sách',
+              context.l10n.ordNewOrderCreated,
             );
           },
           onConfirmDrop: (id) async {
             Navigator.pop(ctx);
             await _runAction(
               () => _service.confirmDrop(id),
-              'Đã xác nhận bỏ đồ',
+              context.l10n.ordDropoffConfirmed,
             );
           },
           onComplete: (id) async {
@@ -1579,19 +1582,18 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
             final ok = await showDialog<bool>(
               context: context,
               builder: (dialogCtx) => AlertDialog(
-                title: const Text('Xác nhận đã lấy đồ?'),
-                content: const Text(
-                  'Đơn sẽ hoàn tất và ô tủ được giải phóng. Chỉ xác nhận khi bạn '
-                  'đã lấy đồ ra khỏi ô.',
+                title: Text(context.l10n.ordConfirmPickedUpQuestion),
+                content: Text(
+                  context.l10n.ordConfirmPickedUpBody,
                 ),
                 actions: [
                   TextButton(
                     onPressed: () => Navigator.of(dialogCtx).pop(false),
-                    child: const Text('Chưa'),
+                    child: Text(context.l10n.commonNotYet),
                   ),
                   FilledButton(
                     onPressed: () => Navigator.of(dialogCtx).pop(true),
-                    child: const Text('Đã lấy đồ'),
+                    child: Text(context.l10n.ordPickedUp),
                   ),
                 ],
               ),
@@ -1599,7 +1601,7 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
             if (ok != true || !mounted) return;
             await _runAction(
               () => _service.completePickup(id),
-              'Đã nhận đồ — đơn hoàn tất',
+              context.l10n.ordReceivedComplete,
             );
           },
           onEndRental: (id) async {
@@ -1627,7 +1629,7 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
                 !_reportOnOtherBox(open, latest) &&
                 !isReportClosed(open['status'] ?? 'OPEN')) {
               _snack(
-                'Ô này đã có phiếu RPT-${open['id']} đang được KTV xử lý.',
+                context.l10n.ordBoxHasTicket(open['id']),
               );
               UserReportDetailSheet.show(context, report: open);
               return;
@@ -1644,7 +1646,7 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
               return;
             }
             if (!await _confirmCancelOrder(order)) return;
-            await _runAction(() => _service.cancelOrder(id), 'Đã hủy đơn');
+            await _runAction(() => _service.cancelOrder(id), L10n.current.ordCancelled);
             final lockerId = order['lockerId'] ?? order['locker']?['id'];
             AppEventBus.instance.emit(LockerLayoutUpdatedEvent(
               lockerId: lockerId?.toString(),
@@ -1707,8 +1709,8 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
       body: Column(
         children: [
           BrandHeroHeader(
-            title: 'Đơn tủ',
-            subtitle: 'Quản lý các đơn hàng của bạn',
+            title: context.l10n.homeLockerOrders,
+            subtitle: context.l10n.ordMyOrdersSubtitle,
             trailing: BrandCircleIconButton(
               icon: LucideIcons.refreshCw,
               onTap: _refresh,
@@ -1730,42 +1732,42 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
               child: Row(
                 children: [
                   _TypeChip(
-                    label: 'Tất cả',
+                    label: context.l10n.commonAll,
                     count: _orders.length,
                     selected: _typeFilter == 'ALL',
                     onTap: () => _setFilter('ALL'),
                   ),
                   const SizedBox(width: 8),
                   _TypeChip(
-                    label: 'Gần đây',
+                    label: context.l10n.ordTabRecent,
                     count: _countRecent,
                     selected: _typeFilter == 'RECENT',
                     onTap: () => _setFilter('RECENT'),
                   ),
                   const SizedBox(width: 8),
                   _TypeChip(
-                    label: 'Đang dùng',
+                    label: context.l10n.ordTabInUse,
                     count: _countActive,
                     selected: _typeFilter == 'ACTIVE',
                     onTap: () => _setFilter('ACTIVE'),
                   ),
                   const SizedBox(width: 8),
                   _TypeChip(
-                    label: 'Hoàn thành',
+                    label: context.l10n.ordTabCompleted,
                     count: _countCompleted,
                     selected: _typeFilter == 'COMPLETED',
                     onTap: () => _setFilter('COMPLETED'),
                   ),
                   const SizedBox(width: 8),
                   _TypeChip(
-                    label: 'Thuê tủ',
+                    label: context.l10n.homeRentLocker,
                     count: _countRental,
                     selected: _typeFilter == 'RENTAL',
                     onTap: () => _setFilter('RENTAL'),
                   ),
                   const SizedBox(width: 8),
                   _TypeChip(
-                    label: 'Gửi hàng',
+                    label: context.l10n.lockerSendParcel,
                     count: _countSend,
                     selected: _typeFilter == 'SEND',
                     onTap: () => _setFilter('SEND'),
@@ -1773,7 +1775,7 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
                   if (_countCanceled > 0) ...[
                     const SizedBox(width: 8),
                     _TypeChip(
-                      label: 'Đã hủy',
+                      label: context.l10n.ordTabCancelled,
                       count: _countCanceled,
                       selected: _typeFilter == 'CANCELED',
                       onTap: () => _setFilter('CANCELED'),
@@ -1789,28 +1791,28 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
               child: Row(
                 children: [
                   _TypeChip(
-                    label: 'Tất cả',
+                    label: context.l10n.commonAll,
                     count: _incoming.length,
                     selected: _incomingFilter == 'ALL',
                     onTap: () => _setIncomingFilter('ALL'),
                   ),
                   const SizedBox(width: 8),
                   _TypeChip(
-                    label: 'Gần đây',
+                    label: context.l10n.ordTabRecent,
                     count: _incomingCountRecent,
                     selected: _incomingFilter == 'RECENT',
                     onTap: () => _setIncomingFilter('RECENT'),
                   ),
                   const SizedBox(width: 8),
                   _TypeChip(
-                    label: 'Chờ lấy',
+                    label: context.l10n.ordTabAwaitingPickup,
                     count: _incomingCountActive,
                     selected: _incomingFilter == 'ACTIVE',
                     onTap: () => _setIncomingFilter('ACTIVE'),
                   ),
                   const SizedBox(width: 8),
                   _TypeChip(
-                    label: 'Hoàn thành',
+                    label: context.l10n.ordTabCompleted,
                     count: _incomingCountCompleted,
                     selected: _incomingFilter == 'COMPLETED',
                     onTap: () => _setIncomingFilter('COMPLETED'),
@@ -1827,7 +1829,7 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
                   if (_incomingCountSend > 0) ...[
                     const SizedBox(width: 8),
                     _TypeChip(
-                      label: 'Gửi hàng',
+                      label: context.l10n.lockerSendParcel,
                       count: _incomingCountSend,
                       selected: _incomingFilter == 'SEND',
                       onTap: () => _setIncomingFilter('SEND'),
@@ -1836,7 +1838,7 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
                   if (_incomingCountCanceled > 0) ...[
                     const SizedBox(width: 8),
                     _TypeChip(
-                      label: 'Đã hủy',
+                      label: context.l10n.ordTabCancelled,
                       count: _incomingCountCanceled,
                       selected: _incomingFilter == 'CANCELED',
                       onTap: () => _setIncomingFilter('CANCELED'),
@@ -1870,17 +1872,17 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
                     onOpen: _openIncomingDetail,
                   )
                 : _loading
-                ? const Center(
+                ? Center(
                     child: AppLoadingIndicator(
-                      message: 'Đang tải danh sách đơn...',
+                      message: context.l10n.ordListLoading,
                     ),
                   )
                 : _visible.isEmpty
                 ? OpsEmptyState(
                     icon: LucideIcons.packageOpen,
                     title: _typeFilter == 'ALL'
-                        ? 'Chưa có đơn nào'
-                        : 'Không có đơn phù hợp',
+                        ? context.l10n.ordNoOrdersYet
+                        : context.l10n.ordNoMatchingOrders,
                     subtitle: _emptySubtitle,
                   )
                 : RefreshIndicator(
@@ -2013,8 +2015,8 @@ class _IncomingOrdersView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (loading && orders.isEmpty) {
-      return const Center(
-        child: AppLoadingIndicator(message: 'Đang tải hàng chờ nhận...'),
+      return Center(
+        child: AppLoadingIndicator(message: context.l10n.ordIncomingLoading),
       );
     }
     if (error != null && orders.isEmpty) {
@@ -2032,7 +2034,7 @@ class _IncomingOrdersView extends StatelessWidget {
                 style: const TextStyle(fontSize: 13.5, color: opsDark),
               ),
               const SizedBox(height: 8),
-              TextButton(onPressed: onRefresh, child: const Text('Thử lại')),
+              TextButton(onPressed: onRefresh, child: Text(context.l10n.commonRetry)),
             ],
           ),
         ),
@@ -2043,13 +2045,13 @@ class _IncomingOrdersView extends StatelessWidget {
         color: AislBrand.navy,
         onRefresh: onRefresh,
         child: ListView(
-          children: const [
+          children: [
             SizedBox(height: 40),
             OpsEmptyState(
               icon: LucideIcons.inbox,
-              title: 'Chưa có hàng chờ nhận',
+              title: context.l10n.ordNoIncoming,
               subtitle:
-                  'Khi có người gửi hàng tới số điện thoại của bạn, đơn sẽ hiện ở đây.',
+                  context.l10n.ordNoIncomingHint,
             ),
           ],
         ),
@@ -2062,13 +2064,13 @@ class _IncomingOrdersView extends StatelessWidget {
           color: AislBrand.navy,
           onRefresh: onRefresh,
           child: ListView(
-            children: const [
+            children: [
               SizedBox(height: 40),
               OpsEmptyState(
                 icon: LucideIcons.packageOpen,
-                title: 'Không có đơn phù hợp',
+                title: context.l10n.ordNoMatchingOrders,
                 subtitle:
-                    'Không tìm thấy đơn hàng chờ nhận nào theo bộ lọc đã chọn.',
+                    context.l10n.ordNoIncomingMatch,
               ),
             ],
           ),
@@ -2240,9 +2242,9 @@ class _ScopeTabs extends StatelessWidget {
         ),
         child: Row(
           children: [
-            tab('Đơn của tôi', !showIncoming, () => onChanged(false)),
+            tab(context.l10n.ordMyOrders, !showIncoming, () => onChanged(false)),
             tab(
-              'Hàng chờ nhận',
+              context.l10n.ordIncoming,
               showIncoming,
               () => onChanged(true),
               badge: incomingReadyCount,
@@ -2506,7 +2508,7 @@ class _OrderCard extends StatelessWidget {
                               ),
                             ),
                             Text(
-                              'Hạn lấy: ${fmtDateTime(deadline)}',
+                              context.l10n.ordPickupDeadlineValue(fmtDateTime(deadline)),
                               style: TextStyle(
                                 fontSize: 12,
                                 color: overdue
@@ -2529,7 +2531,7 @@ class _OrderCard extends StatelessWidget {
                           children: [
                             _RouteRow(
                               isOrigin: true,
-                              text: lockerName ?? 'Chưa tra được tên tủ',
+                              text: lockerName ?? context.l10n.ordLockerNameUnknown,
                             ),
                             Padding(
                               padding: const EdgeInsets.only(
@@ -2588,8 +2590,8 @@ class _OrderCard extends StatelessWidget {
 
                               if (rawStatus == 'EXPIRED') {
                                 actionLabel = needsPay
-                                    ? 'Thanh toán & lấy đồ'
-                                    : 'Xác nhận lấy đồ';
+                                    ? context.l10n.ordPayAndPickup
+                                    : context.l10n.ordConfirmPickup;
                                 actionBgColor = const Color(
                                   0xFFDC2626,
                                 ).withValues(alpha: 0.12);
@@ -2599,7 +2601,7 @@ class _OrderCard extends StatelessWidget {
                                   width: 1.4,
                                 );
                               } else if (boxIncident) {
-                                actionLabel = 'Chờ KTV xử lý';
+                                actionLabel = context.l10n.ordAwaitingTechnician;
                                 actionBgColor = const Color(
                                   0xFFF59E0B,
                                 ).withValues(alpha: 0.12);
@@ -2609,7 +2611,7 @@ class _OrderCard extends StatelessWidget {
                                   width: 1.2,
                                 );
                               } else if (isDone) {
-                                actionLabel = 'Xem lại';
+                                actionLabel = context.l10n.ordReview;
                                 actionBgColor = null;
                                 actionTextColor = context.textPrimary;
                                 actionBorderSide = BorderSide(
@@ -2617,7 +2619,7 @@ class _OrderCard extends StatelessWidget {
                                   width: 1.5,
                                 );
                               } else if (rawStatus == 'INITIALIZED') {
-                                actionLabel = 'Bỏ đồ vào tủ';
+                                actionLabel = context.l10n.ordDropIntoLocker;
                                 actionBgColor = AislBrand.navy.withValues(
                                   alpha: 0.10,
                                 );
@@ -2628,8 +2630,8 @@ class _OrderCard extends StatelessWidget {
                                 );
                               } else if (overdue) {
                                 actionLabel = needsPay
-                                    ? 'Thanh toán & lấy đồ'
-                                    : 'Lấy đồ ngay';
+                                    ? context.l10n.ordPayAndPickup
+                                    : context.l10n.ordPickupNow;
                                 actionBgColor = const Color(
                                   0xFFDC2626,
                                 ).withValues(alpha: 0.12);
@@ -2639,7 +2641,7 @@ class _OrderCard extends StatelessWidget {
                                   width: 1.4,
                                 );
                               } else {
-                                actionLabel = 'Chi tiết';
+                                actionLabel = context.l10n.commonDetails;
                                 actionBgColor = null;
                                 actionTextColor = context.textPrimary;
                                 actionBorderSide = BorderSide(
@@ -2710,8 +2712,8 @@ class _OrderCard extends StatelessWidget {
                     Expanded(
                       child: Text(
                         order['boxIncidentOpenedAt'] == null
-                            ? 'Phí quá giờ tạm dừng — chờ KTV xử lý ô, chưa cần thanh toán'
-                            : 'Phí quá giờ tạm dừng từ ${fmtDateTime(order['boxIncidentOpenedAt'])} — chưa cần thanh toán',
+                            ? context.l10n.ordOvertimePausedNoTime
+                            : context.l10n.ordOvertimePausedSince(fmtDateTime(order['boxIncidentOpenedAt'])),
                         style: const TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
@@ -2740,7 +2742,7 @@ class _OrderCard extends StatelessWidget {
                     const SizedBox(width: 6),
                     Expanded(
                       child: Text(
-                        'Đơn đã hết hạn lưu tủ ${BusinessConfigService.instance.current.overdueReleaseHoursLabel} — Bấm để thanh toán & lấy đồ',
+                        context.l10n.ordStorageExpiredTapPay(BusinessConfigService.instance.current.overdueReleaseHoursLabel),
                         style: const TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
@@ -2760,7 +2762,7 @@ class _OrderCard extends StatelessWidget {
                 ),
                 color: const Color(0xFFFEF2F2),
                 child: Row(
-                  children: const [
+                  children: [
                     Icon(
                       LucideIcons.triangleAlert,
                       size: 13,
@@ -2771,7 +2773,7 @@ class _OrderCard extends StatelessWidget {
                     // tự nhiên nên câu này tràn khỏi màn hình 390px và hiện vạch vàng-đen.
                     Expanded(
                       child: Text(
-                        'Đơn đã quá hạn — có thể phát sinh phí',
+                        context.l10n.ordOverdueMayCharge,
                         style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
@@ -2935,37 +2937,34 @@ class _FaultOrderBanner extends StatelessWidget {
       border = const Color(0xFFBBF7D0);
       fg = const Color(0xFF15803D);
       icon = LucideIcons.arrowRightLeft;
-      title = 'Đã điều chuyển sang Ô số ${newBoxNum ?? ''} an toàn';
-      subtitle = 'KTV đã chuyển đồ từ ô cũ (#${oldBoxNum ?? ''}) sang ô mới do sự cố. Mã PIN mới đã sẵn sàng.';
+      title = context.l10n.ordRelocatedTitle(newBoxNum ?? '');
+      subtitle = context.l10n.ordRelocatedSubtitle(oldBoxNum ?? '');
     } else if (isRejected) {
       bg = const Color(0xFFF8FAFC);
       border = const Color(0xFFCBD5E1);
       fg = const Color(0xFF334155);
       icon = LucideIcons.shieldCheck;
-      title = 'KTV đã kiểm tra: $boxLabel không có sự cố';
-      subtitle = 'Ô hoạt động bình thường, bạn lấy đồ bằng mã PIN như thường lệ. '
-          'Xem phản hồi của KTV trong phiếu.';
+      title = context.l10n.ordCheckedNoIssueTitle(boxLabel);
+      subtitle = context.l10n.ordCheckedNoIssueSubtitle;
     } else if (isResolved) {
       bg = const Color(0xFFF0FDF4);
       border = const Color(0xFFBBF7D0);
       fg = const Color(0xFF15803D);
       icon = LucideIcons.shieldCheck;
-      title = '$boxLabel đã được KTV kiểm tra & xử lý xong';
-      subtitle = 'Tài sản trong ô được bảo vệ an toàn.';
+      title = context.l10n.ordResolvedTitle(boxLabel);
+      subtitle = context.l10n.ordResolvedSubtitle;
     } else {
       bg = const Color(0xFFFEF2F2);
       border = const Color(0xFFFCA5A5);
       fg = const Color(0xFFDC2626);
       icon = LucideIcons.triangleAlert;
-      title = '$boxLabel đã được báo sự cố';
+      title = context.l10n.ordReportedTitle(boxLabel);
       // Đơn đã có đồ trong ô thì không huỷ được (và huỷ cũng không lấy lại được đồ).
       subtitle = !itemsInside
-          ? 'Hãy hủy đơn này và đặt ô khác (hoặc liên hệ KTV).'
+          ? context.l10n.ordReportedCancelHint
           : accessBlocked
-              ? 'Đồ của bạn vẫn được giữ an toàn trong ô. KTV đang xử lý — phí quá giờ '
-                  'tạm dừng, bạn chưa cần thanh toán.'
-              : 'KTV sẽ tới kiểm tra ô. Bạn vẫn mở ô bằng mã PIN để lấy đồ được — '
-                  'phí quá giờ tạm dừng từ lúc báo.';
+              ? context.l10n.ordReportedBlocked
+              : context.l10n.ordReportedCanOpen;
     }
 
     void onTapBanner() {
@@ -3054,7 +3053,7 @@ class _FaultOrderBanner extends StatelessWidget {
                         if (reason != null && reason.isNotEmpty && !isRelocated) ...[
                           const SizedBox(height: 2),
                           Text(
-                            'Lý do: $reason',
+                            context.l10n.ordReasonValue(reason),
                             style: TextStyle(
                               fontSize: 11.5,
                               height: 1.35,
@@ -3088,8 +3087,8 @@ class _FaultOrderBanner extends StatelessWidget {
                       Flexible(
                         child: Text(
                           isRelocated
-                              ? 'Xem chi tiết điều chuyển & ảnh KTV'
-                              : 'Xem biên bản & ảnh minh chứng',
+                              ? context.l10n.ordViewRelocation
+                              : context.l10n.ordViewRecord,
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
@@ -3209,8 +3208,8 @@ class _PayOvertimeConfirmationSheet extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'Thanh toán phí quá giờ',
+                    Text(
+                      context.l10n.ordPayOvertimeFee,
                       style: TextStyle(
                         fontWeight: FontWeight.w800,
                         fontSize: 18,
@@ -3237,27 +3236,27 @@ class _PayOvertimeConfirmationSheet extends StatelessWidget {
             ),
             child: Column(
               children: [
-                _breakdownRow('Hạn trả ban đầu', fmtDateTime(deadline)),
+                _breakdownRow(context.l10n.ordOriginalDeadline, fmtDateTime(deadline)),
                 _breakdownRow(
-                  'Thời gian quá hạn',
+                  context.l10n.ordOverdueDuration,
                   overdueDurationText,
                   valueColor: const Color(0xFFDC2626),
                 ),
-                _breakdownRow('Đơn giá quá giờ', '${fmtPrice(overtimeRate)}/giờ'),
+                _breakdownRow(context.l10n.ordOvertimeRate, context.l10n.pricePerHour(fmtPrice(overtimeRate))),
                 if (overtimeCapped &&
                     (config.pickupMaxOvertimePercent > 0 ||
                         config.pickupMaxOvertimeFee > 0))
                   _breakdownRow(
-                    'Quy định mức trần',
+                    context.l10n.ordCapRule,
                     [
                       if (config.pickupMaxOvertimeFee > 0)
-                        'Tối đa ${fmtPrice(config.pickupMaxOvertimeFee)}',
+                        context.l10n.ordCapMax(fmtPrice(config.pickupMaxOvertimeFee)),
                       if (config.pickupMaxOvertimePercent > 0)
-                        '${config.pickupMaxOvertimePercent}% đơn',
+                        context.l10n.ordCapPercent(config.pickupMaxOvertimePercent),
                     ].join(' & '),
                   ),
                 if (overtimeFee != null && overtimeFee > 0)
-                  _breakdownRow('Phí quá giờ', fmtPrice(overtimeFee)),
+                  _breakdownRow(context.l10n.ordOvertimeFee, fmtPrice(overtimeFee)),
                 const Padding(
                   padding: EdgeInsets.symmetric(vertical: 8),
                   child: Divider(height: 1, color: opsBorder),
@@ -3265,8 +3264,8 @@ class _PayOvertimeConfirmationSheet extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text(
-                      'Cần thanh toán:',
+                    Text(
+                      context.l10n.ordAmountDue,
                       style: TextStyle(
                         fontWeight: FontWeight.w800,
                         fontSize: 15,
@@ -3292,8 +3291,8 @@ class _PayOvertimeConfirmationSheet extends StatelessWidget {
             icon: const Icon(LucideIcons.creditCard, size: 19),
             label: Text(
               amountDue > 0
-                  ? 'Thanh toán ${fmtPrice(amountDue)}'
-                  : 'Mở ô lấy đồ',
+                  ? context.l10n.ordPayAmount(fmtPrice(amountDue))
+                  : context.l10n.ordOpenBoxPickup,
               style: const TextStyle(
                 fontWeight: FontWeight.w800,
                 fontSize: 14.5,
@@ -3312,7 +3311,7 @@ class _PayOvertimeConfirmationSheet extends StatelessWidget {
           const SizedBox(height: 8),
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Để sau'),
+            child: Text(context.l10n.commonLater),
           ),
         ],
       ),
@@ -3399,8 +3398,8 @@ String _boxRouteLabel(
 ]) {
   if (sendBoxNumber == null && receiveBoxNumber == null) {
     return (status ?? '').toUpperCase() == 'EXPIRED'
-        ? 'Đã giải phóng ô'
-        : 'Chưa gán ô';
+        ? L10n.current.ordBoxReleased
+        : L10n.current.ordBoxNotAssigned;
   }
   // Đơn thuê không có ô nhận riêng — ô nhận rơi về cùng số ô, không hiện "3 → 3".
   if (sendBoxNumber != null &&
@@ -3424,7 +3423,7 @@ String _orderBoxLabel({
   final label = isPickupPhase
       ? (receiveBoxNumber ?? sendBoxNumber)
       : (sendBoxNumber ?? receiveBoxNumber);
-  return label == null ? 'Ô này' : 'Ô số $label';
+  return label == null ? L10n.current.boxThis : L10n.current.boxNumberLabel(label);
 }
 
 /// Bóc tách và chuẩn hóa thông tin điều chuyển ô do sự cố kỹ thuật của đơn hàng
@@ -3552,7 +3551,7 @@ class _IncidentRelocationInfo {
               (report?['assignedToUserId'] != null
                   ? 'KTV #${report!['assignedToUserId']}'
                   : null)),
-      initialPin: '•••••• (Đã hủy để bảo mật)',
+      initialPin: L10n.current.ordPinCancelledSecurity,
       currentPin: order['pinCode']?.toString(),
       faultReason: faultReason,
       photoUrls: photoUrls.toList(),
@@ -3575,7 +3574,7 @@ class _OrderRelocationCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final oldBox = relocation.oldBoxNumber ?? '—';
     final newBox = relocation.newBoxNumber ?? '—';
-    final tech = relocation.technician ?? 'KTV phụ trách';
+    final tech = relocation.technician ?? context.l10n.ordTechInCharge;
     final oldTime = relocation.oldBoxOpenedTime;
     final newTime = relocation.relocatedTime;
     final photos = relocation.photoUrls;
@@ -3614,12 +3613,12 @@ class _OrderRelocationCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 8),
-              const Expanded(
+              Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'HỒ SƠ ĐIỀU CHUYỂN Ô AN TOÀN',
+                      context.l10n.ordRelocationRecordUpper,
                       style: TextStyle(
                         fontSize: 12.5,
                         fontWeight: FontWeight.w800,
@@ -3628,7 +3627,7 @@ class _OrderRelocationCard extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      'Hàng đã được chuyển sang ô mới do ô cũ gặp sự cố kỹ thuật',
+                      context.l10n.ordRelocationRecordSubtitle,
                       style: TextStyle(
                         fontSize: 11,
                         color: Color(0xFF166534),
@@ -3672,12 +3671,12 @@ class _OrderRelocationCard extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Row(
+                      Row(
                         children: [
                           Icon(LucideIcons.circleAlert, size: 12, color: Color(0xFFDC2626)),
                           SizedBox(width: 4),
                           Text(
-                            'Ô BAN ĐẦU',
+                            context.l10n.ordOriginalBoxUpper,
                             style: TextStyle(
                               fontSize: 10,
                               fontWeight: FontWeight.w700,
@@ -3688,7 +3687,7 @@ class _OrderRelocationCard extends StatelessWidget {
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        'Ô số #$oldBox',
+                        context.l10n.ordBoxNumberHash(oldBox),
                         style: const TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.w800,
@@ -3699,7 +3698,7 @@ class _OrderRelocationCard extends StatelessWidget {
                       Text(
                         relocation.faultReason != null && relocation.faultReason!.isNotEmpty
                             ? relocation.faultReason!
-                            : 'Gặp sự cố kỹ thuật',
+                            : context.l10n.ordTechnicalIssue,
                         style: const TextStyle(fontSize: 10.5, color: Color(0xFFB91C1C)),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -3741,11 +3740,11 @@ class _OrderRelocationCard extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
-                      const Row(
+                      Row(
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: [
                           Text(
-                            'Ô TIẾP NHẬN MỚI',
+                            context.l10n.ordNewBoxUpper,
                             style: TextStyle(
                               fontSize: 10,
                               fontWeight: FontWeight.w700,
@@ -3758,7 +3757,7 @@ class _OrderRelocationCard extends StatelessWidget {
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        'Ô số #$newBox',
+                        context.l10n.ordBoxNumberHash(newBox),
                         style: const TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.w800,
@@ -3766,8 +3765,8 @@ class _OrderRelocationCard extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 1),
-                      const Text(
-                        'Đang chứa hàng an toàn',
+                      Text(
+                        context.l10n.ordHoldingSafely,
                         style: TextStyle(fontSize: 10.5, color: Color(0xFF166534)),
                       ),
                     ],
@@ -3791,7 +3790,7 @@ class _OrderRelocationCard extends StatelessWidget {
                 if (oldTime != null && oldTime.isNotEmpty) ...[
                   _detailRow(
                     icon: LucideIcons.doorOpen,
-                    label: 'Thời gian mở ô cũ kiểm tra',
+                    label: context.l10n.ordOldBoxCheckedAt,
                     value: oldTime,
                     valueColor: const Color(0xFFB45309),
                   ),
@@ -3800,7 +3799,7 @@ class _OrderRelocationCard extends StatelessWidget {
                 if (newTime != null && newTime.isNotEmpty) ...[
                   _detailRow(
                     icon: LucideIcons.packageCheck,
-                    label: 'Thời gian chuyển qua ô mới',
+                    label: context.l10n.ordMovedAt,
                     value: newTime,
                     valueColor: const Color(0xFF15803D),
                   ),
@@ -3808,15 +3807,15 @@ class _OrderRelocationCard extends StatelessWidget {
                 ],
                 _detailRow(
                   icon: LucideIcons.shieldAlert,
-                  label: 'Mã PIN ô ban đầu',
-                  value: 'Đã vô hiệu hoá (Mã cũ hết hạn)',
+                  label: context.l10n.ordOriginalBoxPin,
+                  value: context.l10n.ordPinDisabled,
                   valueColor: const Color(0xFF64748B),
                 ),
                 const Divider(height: 10, color: Color(0xFFF1F5F9)),
                 _detailRow(
                   icon: LucideIcons.key,
-                  label: 'Mã PIN mở ô mới (#$newBox)',
-                  value: '${relocation.currentPin ?? '••••••'} (Đang kích hoạt)',
+                  label: context.l10n.ordNewBoxPin(newBox),
+                  value: context.l10n.ordPinActive(relocation.currentPin ?? '••••••'),
                   valueColor: const Color(0xFF15803D),
                   isBold: true,
                 ),
@@ -3833,7 +3832,7 @@ class _OrderRelocationCard extends StatelessWidget {
                 const SizedBox(width: 5),
                 Expanded(
                   child: Text(
-                    'Ảnh KTV chụp quá trình kiểm tra & chuyển ô (${photos.length} ảnh):',
+                    context.l10n.ordTechPhotos(photos.length),
                     style: const TextStyle(
                       fontSize: 11.5,
                       fontWeight: FontWeight.w700,
@@ -3886,14 +3885,14 @@ class _OrderRelocationCard extends StatelessWidget {
                 width: double.infinity,
                 padding: const EdgeInsets.symmetric(vertical: 9, horizontal: 12),
                 alignment: Alignment.center,
-                child: const Row(
+                child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Icon(LucideIcons.fileText, size: 14, color: Colors.white),
                     SizedBox(width: 6),
                     Flexible(
                       child: Text(
-                        'Xem toàn bộ biên bản sự cố KTV & nhật ký ➔',
+                        context.l10n.ordViewFullRecord,
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           fontSize: 12,
@@ -4030,7 +4029,7 @@ class _MyLockerOrderDetailPageState extends State<_MyLockerOrderDetailPage> {
     final orderCode = _currentOrder['orderCode']?.toString();
     final displayTitle = (orderCode != null && orderCode.isNotEmpty)
         ? '#$orderCode'
-        : 'Chi tiết đơn #${_currentOrder['id'] ?? ''}';
+        : context.l10n.ordOrderDetailHash(_currentOrder['id'] ?? '');
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -4047,7 +4046,7 @@ class _MyLockerOrderDetailPageState extends State<_MyLockerOrderDetailPage> {
           IconButton(
             onPressed: _refreshing ? null : _refresh,
             icon: const Icon(LucideIcons.refreshCw, size: 18),
-            tooltip: 'Tải lại',
+            tooltip: context.l10n.commonReload,
           ),
         ],
         bottom: _refreshing
@@ -4304,7 +4303,7 @@ class _DetailSheet extends StatelessWidget {
           [
             (line['description']?.toString().trim() ?? '').isNotEmpty
                 ? line['description'].toString().trim()
-                : 'Dịch vụ #${line['serviceId'] ?? ''}',
+                : context.l10n.ordServiceHash(line['serviceId'] ?? ''),
             if (_asInt(line['quantity']) != null)
               '× ${_asInt(line['quantity'])}',
             if (line['price'] != null) '— ${fmtPrice(line['price'])}',
@@ -4373,8 +4372,8 @@ class _DetailSheet extends StatelessWidget {
       if (isDroneDelivery)
         OpsSheetAction(
           label: droneFlightFinished(rawStatus)
-              ? 'Xem lại hành trình drone'
-              : 'Theo dõi giao drone',
+              ? context.l10n.ordReviewDroneJourney
+              : context.l10n.ordTrackDrone,
           icon: LucideIcons.navigation,
           primary: !droneFlightFinished(rawStatus),
           onTap: () => onTrackDrone(id),
@@ -4384,7 +4383,7 @@ class _DetailSheet extends StatelessWidget {
           !(rawStatus == 'STORING' && needsPayOvertime) &&
           !(rawStatus == 'RETURNED' && needsPayOvertime))
         OpsSheetAction(
-          label: 'Thanh toán ${fmtPrice(orderAmountDue(order))}',
+          label: context.l10n.ordPayAmount(fmtPrice(orderAmountDue(order))),
           icon: LucideIcons.creditCard,
           primary: true,
           onTap: () => onPay(id),
@@ -4393,28 +4392,28 @@ class _DetailSheet extends StatelessWidget {
         if (canPay || orderAmountDue(order) > 0)
           OpsSheetAction(
             label:
-                'Thanh toán (${fmtPrice(orderAmountDue(order) > 0 ? orderAmountDue(order) : totalNum)}) & Lấy đồ hoàn tất',
+                context.l10n.ordPayAndCompletePickup(fmtPrice(orderAmountDue(order) > 0 ? orderAmountDue(order) : totalNum)),
             icon: LucideIcons.circleCheck,
             primary: true,
             onTap: () => onPayAndComplete?.call(id),
           )
         else
           OpsSheetAction(
-            label: 'Tôi đã lấy đồ — Hoàn tất đơn',
+            label: context.l10n.ordIPickedUpCompleteOrder,
             icon: LucideIcons.circleCheck,
             primary: true,
             onTap: () => onPayAndComplete?.call(id),
           ),
         if (boxId != null)
           OpsSheetAction(
-            label: 'Mở $boxLabel để lấy đồ',
+            label: context.l10n.ordOpenBoxToPickup(boxLabel),
             icon: LucideIcons.doorOpen,
             primary: false,
             onTap: onOpenLocker,
           ),
         if (!isDroneDelivery)
           OpsSheetAction(
-            label: 'Đặt lại đơn',
+            label: context.l10n.ordReorder,
             icon: LucideIcons.repeat,
             primary: false,
             onTap: () => onReorder(id),
@@ -4425,21 +4424,21 @@ class _DetailSheet extends StatelessWidget {
           rawStatus != 'EXPIRED' &&
           !isDroneDelivery)
         OpsSheetAction(
-          label: 'Đặt lại đơn',
+          label: context.l10n.ordReorder,
           icon: LucideIcons.repeat,
           primary: true,
           onTap: () => onReorder(id),
         ),
       if (canDrop)
         OpsSheetAction(
-          label: 'Mở $boxLabel để bỏ đồ',
+          label: context.l10n.ordOpenBoxToDrop(boxLabel),
           icon: LucideIcons.doorOpen,
           primary: true,
           onTap: onOpenLocker,
         ),
       if (rawStatus == 'INITIALIZED')
         OpsSheetAction(
-          label: 'Tôi đã bỏ đồ vào ô',
+          label: context.l10n.ordIDroppedOff,
           icon: LucideIcons.packageCheck,
           primary: !canDrop,
           onTap: () => onConfirmDrop(id),
@@ -4450,26 +4449,26 @@ class _DetailSheet extends StatelessWidget {
         if (needsPayOvertime) ...[
           OpsSheetAction(
             label:
-                'Thanh toán (${fmtPrice(orderAmountDue(order) > 0 ? orderAmountDue(order) : overtimeFee)}) & Lấy đồ hoàn tất',
+                context.l10n.ordPayAndCompletePickup(fmtPrice(orderAmountDue(order) > 0 ? orderAmountDue(order) : overtimeFee)),
             icon: LucideIcons.circleCheck,
             primary: true,
             onTap: () => onPayAndComplete?.call(id),
           ),
           OpsSheetAction(
-            label: 'Thanh toán phí quá giờ (${fmtPrice(overtimeFee)}) & Mở ô',
+            label: context.l10n.ordPayOvertimeAndOpen(fmtPrice(overtimeFee)),
             icon: LucideIcons.creditCard,
             primary: false,
             onTap: () => onPayOvertime(id, overtimeFee),
           ),
         ] else ...[
           OpsSheetAction(
-            label: 'Mở $boxLabel để lấy đồ',
+            label: context.l10n.ordOpenBoxToPickup(boxLabel),
             icon: LucideIcons.doorOpen,
             primary: true,
             onTap: onOpenLocker,
           ),
           OpsSheetAction(
-            label: 'Tôi đã lấy đồ — hoàn tất',
+            label: context.l10n.ordIPickedUpComplete,
             icon: LucideIcons.circleCheck,
             primary: false,
             onTap: () => onComplete(id),
@@ -4480,20 +4479,20 @@ class _DetailSheet extends StatelessWidget {
         if (needsPayOvertime) ...[
           OpsSheetAction(
             label:
-                'Thanh toán (${fmtPrice(orderAmountDue(order) > 0 ? orderAmountDue(order) : overtimeFee)}) & Lấy đồ hoàn tất',
+                context.l10n.ordPayAndCompletePickup(fmtPrice(orderAmountDue(order) > 0 ? orderAmountDue(order) : overtimeFee)),
             icon: LucideIcons.circleCheck,
             primary: true,
             onTap: () => onPayAndComplete?.call(id),
           ),
           OpsSheetAction(
-            label: 'Thanh toán phí quá giờ (${fmtPrice(overtimeFee)}) & Mở ô',
+            label: context.l10n.ordPayOvertimeAndOpen(fmtPrice(overtimeFee)),
             icon: LucideIcons.creditCard,
             primary: false,
             onTap: () => onPayOvertime(id, overtimeFee),
           ),
         ] else ...[
           OpsSheetAction(
-            label: 'Mở $boxLabel để trả tủ & lấy đồ',
+            label: context.l10n.ordOpenBoxToReturn(boxLabel),
             icon: LucideIcons.doorOpen,
             primary: true,
             onTap: onOpenLocker,
@@ -4501,12 +4500,12 @@ class _DetailSheet extends StatelessWidget {
         ],
         if (!feePaused)
           OpsSheetAction(
-            label: 'Gia hạn thuê',
+            label: context.l10n.ordExtendRental,
             icon: LucideIcons.timer,
             onTap: () => onExtend(id),
           ),
         OpsSheetAction(
-          label: 'Kết thúc thuê & lấy đồ',
+          label: context.l10n.ordEndRentalPickup,
           icon: LucideIcons.logOut,
           onTap: () => onEndRental(id),
         ),
@@ -4516,7 +4515,7 @@ class _DetailSheet extends StatelessWidget {
           !isDroneDelivery &&
           (rawStatus == 'STORING' || rawStatus == 'RETURNED'))
         OpsSheetAction(
-          label: 'Ủy quyền lấy hộ',
+          label: context.l10n.ordDelegatePickup,
           icon: LucideIcons.userPlus,
           onTap: () => onDelegate!(id),
         ),
@@ -4527,7 +4526,7 @@ class _DetailSheet extends StatelessWidget {
               rawStatus == 'STORING' ||
               rawStatus == 'RETURNED'))
         OpsSheetAction(
-          label: 'Đổi mã PIN',
+          label: context.l10n.ordChangePin,
           icon: LucideIcons.keyRound,
           onTap: onResetPin!,
         ),
@@ -4541,10 +4540,10 @@ class _DetailSheet extends StatelessWidget {
         OpsSheetAction(
           key: const ValueKey('send-receiver-email-action'),
           label: (order['receiverEmail'] ?? '').toString().trim().isEmpty
-              ? 'Thêm email người nhận'
+              ? context.l10n.ordAddReceiverEmail
               : (_receiverEmailMode(order) == _ReceiverEmailMode.saveOnly
-                    ? 'Đổi email người nhận'
-                    : 'Gửi lại thông tin cho người nhận'),
+                    ? context.l10n.ordChangeReceiverEmail
+                    : context.l10n.ordResendToReceiver),
           icon: LucideIcons.mailCheck,
           onTap: onReceiverEmail!,
         ),
@@ -4556,7 +4555,7 @@ class _DetailSheet extends StatelessWidget {
           rawStatus != 'CANCELED' &&
           rawStatus != 'EXPIRED')
         OpsSheetAction(
-          label: 'Báo ô lỗi',
+          label: context.l10n.ordReportFaultyBox,
           leading: const AppLottie(
             AppLottieAssets.baoSuCo,
             width: 22,
@@ -4573,13 +4572,13 @@ class _DetailSheet extends StatelessWidget {
                 'PICKUP_ASSIGNED',
               }.contains(status.toUpperCase())))
         OpsSheetAction(
-          label: 'Hủy đơn',
+          label: context.l10n.ordCancelOrder,
           icon: LucideIcons.circleX,
           danger: true,
           onTap: () => onCancel(id),
         ),
       OpsSheetAction(
-        label: 'Chỉ đường tới tủ',
+        label: context.l10n.ordDirectionsToLocker,
         icon: LucideIcons.map,
         onTap: onDirections,
       ),
@@ -4587,7 +4586,7 @@ class _DetailSheet extends StatelessWidget {
       // chưa trả); đơn đang chờ hoàn / đã hoàn xem ở Hồ sơ › Yêu cầu hoàn tiền.
       if (paymentStatus == 'PAID')
         OpsSheetAction(
-          label: 'Yêu cầu hoàn tiền',
+          label: context.l10n.ordRequestRefund,
           icon: LucideIcons.rotateCcw,
           onTap: () {
             Navigator.pop(context);
@@ -4682,8 +4681,8 @@ class _DetailSheet extends StatelessWidget {
               tone: OpsBannerTone.danger,
               icon: LucideIcons.triangleAlert,
               text: (canPay || orderAmountDue(order) > 0)
-                  ? 'Đơn đã quá hạn lưu tủ ${config.overdueReleaseHoursLabel}. Ô tủ đã được giải phóng và đồ đã chuyển về bảo quản an toàn. Quý khách vui lòng thanh toán phí còn lại và bấm "Thanh toán & lấy đồ" để hoàn tất.'
-                  : 'Đơn đã quá hạn lưu tủ ${config.overdueReleaseHoursLabel}. Ô tủ đã được giải phóng và đồ đã chuyển về bảo quản an toàn. Quý khách vui lòng kiểm tra nhận đồ và bấm "Tôi đã lấy đồ — Hoàn tất đơn" để hoàn tất.',
+                  ? context.l10n.ordStorageExpiredPay(config.overdueReleaseHoursLabel)
+                  : context.l10n.ordStorageExpiredCheck(config.overdueReleaseHoursLabel),
             ),
           )
         else if (overdue)
@@ -4695,9 +4694,8 @@ class _DetailSheet extends StatelessWidget {
                   ? LucideIcons.circleCheck
                   : LucideIcons.triangleAlert,
               text: isOvertimePaid
-                  ? 'Đơn quá hạn đã thanh toán phí quá giờ. Mời bạn mở ô để lấy đồ và hoàn tất trả tủ.'
-                  : 'Đơn đã quá hạn lấy — cần thanh toán phí quá giờ để mở tủ. '
-                        '${overtimePolicyText(config)}',
+                  ? context.l10n.ordOverduePaidOpen
+                  : context.l10n.ordOverdueNeedPay(overtimePolicyText(config)),
             ),
           )
         else if (rawStatus == 'INITIALIZED' && canPay)
@@ -4707,7 +4705,7 @@ class _DetailSheet extends StatelessWidget {
               tone: OpsBannerTone.warning,
               icon: LucideIcons.circleAlert,
               text:
-                  'Đơn hàng chưa thanh toán. Vui lòng thanh toán trong vòng ${config.autoCancelUnpaidMinutes} phút để giữ chỗ tủ, hoặc bấm "Hủy đơn" bên dưới để giải phóng ô tủ ngay.',
+                  context.l10n.ordUnpaidHold(config.autoCancelUnpaidMinutes),
             ),
           ),
 
@@ -4731,14 +4729,14 @@ class _DetailSheet extends StatelessWidget {
             children: [
               OpsInfoRow(
                 icon: LucideIcons.warehouse,
-                label: 'Tủ',
-                value: lockerName ?? 'Chưa tra được tên tủ',
+                label: context.l10n.commonLocker,
+                value: lockerName ?? context.l10n.ordLockerNameUnknown,
               ),
               // Địa chỉ nơi đặt tủ — người nhận cần biết đi đâu, không chỉ tủ tên gì.
               if (lockerAddress != null)
                 OpsInfoRow(
                   icon: LucideIcons.mapPin,
-                  label: 'Địa điểm',
+                  label: context.l10n.ordPlace,
                   value: lockerAddress,
                 ),
 
@@ -4746,40 +4744,40 @@ class _DetailSheet extends StatelessWidget {
               if (relocation.isRelocated) ...[
                 OpsInfoRow(
                   icon: LucideIcons.grid3x3,
-                  label: 'Ô mới tiếp nhận',
-                  value: 'Ô số ${relocation.newBoxNumber ?? sendBoxNumber ?? '—'} (Đang an toàn)',
+                  label: context.l10n.ordNewBox,
+                  value: context.l10n.ordNewBoxValue(relocation.newBoxNumber ?? sendBoxNumber ?? '—'),
                   valueColor: const Color(0xFF15803D),
                 ),
                 OpsInfoRow(
                   icon: LucideIcons.circleAlert,
-                  label: 'Ô ban đầu',
-                  value: 'Ô số ${relocation.oldBoxNumber ?? '—'} (Gặp sự cố)',
+                  label: context.l10n.ordOriginalBox,
+                  value: context.l10n.ordOriginalBoxValue(relocation.oldBoxNumber ?? '—'),
                   valueColor: const Color(0xFFDC2626),
                 ),
                 if (relocation.oldBoxOpenedTime != null && relocation.oldBoxOpenedTime!.isNotEmpty)
                   OpsInfoRow(
                     icon: LucideIcons.doorOpen,
-                    label: 'Thời gian mở ô cũ',
+                    label: context.l10n.ordOldBoxOpenedAt,
                     value: relocation.oldBoxOpenedTime!,
                     valueColor: const Color(0xFFB45309),
                   ),
                 if (relocation.relocatedTime != null && relocation.relocatedTime!.isNotEmpty)
                   OpsInfoRow(
                     icon: LucideIcons.checkCheck,
-                    label: 'Thời gian chuyển ô',
+                    label: context.l10n.ordBoxMovedAt,
                     value: relocation.relocatedTime!,
                     valueColor: const Color(0xFF15803D),
                   ),
                 OpsInfoRow(
                   icon: LucideIcons.keyRound,
-                  label: 'Mã PIN ban đầu',
-                  value: 'Đã vô hiệu hoá (Mã cũ hết hạn)',
+                  label: context.l10n.ordOriginalPin,
+                  value: context.l10n.ordPinDisabled,
                   valueColor: const Color(0xFF64748B),
                 ),
               ] else ...[
                 OpsInfoRow(
                   icon: LucideIcons.grid3x3,
-                  label: 'Ô',
+                  label: context.l10n.commonBox,
                   value: _boxRouteLabel(
                     sendBoxNumber,
                     receiveBoxNumber,
@@ -4790,58 +4788,58 @@ class _DetailSheet extends StatelessWidget {
               if (createdAt != null)
                 OpsInfoRow(
                   icon: LucideIcons.calendar,
-                  label: 'Ngày đặt',
+                  label: context.l10n.ordOrderDate,
                   value: fmtDateTime(createdAt),
                 ),
               if (isRental && rentalHours != null)
                 OpsInfoRow(
                   icon: LucideIcons.timer,
-                  label: 'Thời gian thuê',
-                  value: '$rentalHours giờ',
+                  label: context.l10n.ordRentalDuration,
+                  value: context.l10n.hoursValue(rentalHours),
                 ),
               if (deadline != null)
                 OpsInfoRow(
                   icon: LucideIcons.clock,
-                  label: 'Hạn ban đầu',
+                  label: context.l10n.ordOriginalDeadlineShort,
                   value: fmtDateTime(deadline),
                 ),
               if (overdue) ...[
                 OpsInfoRow(
                   icon: LucideIcons.clockAlert,
-                  label: 'Thời gian quá hạn',
+                  label: context.l10n.ordOverdueDuration,
                   value: overtimeDurationText.isNotEmpty
                       ? overtimeDurationText
-                      : 'Đã quá hạn',
+                      : context.l10n.ordOverdue,
                   valueColor: const Color(0xFFDC2626),
                 ),
                 OpsInfoRow(
                   icon: LucideIcons.receiptText,
-                  label: 'Đơn giá quá giờ',
-                  value: '${fmtPrice(overtimeRateOf(order, config))}/giờ',
+                  label: context.l10n.ordOvertimeRate,
+                  value: context.l10n.pricePerHour(fmtPrice(overtimeRateOf(order, config))),
                 ),
                 if (overtimeCappedOf(order) &&
                     (config.pickupMaxOvertimePercent > 0 ||
                         config.pickupMaxOvertimeFee > 0))
                   OpsInfoRow(
                     icon: LucideIcons.shieldAlert,
-                    label: 'Quy định trần',
+                    label: context.l10n.ordCapRuleShort,
                     value: [
                       if (config.pickupMaxOvertimeFee > 0)
-                        'Tối đa ${fmtPrice(config.pickupMaxOvertimeFee)}',
+                        context.l10n.ordCapMax(fmtPrice(config.pickupMaxOvertimeFee)),
                       if (config.pickupMaxOvertimePercent > 0)
-                        '${config.pickupMaxOvertimePercent}% đơn',
+                        context.l10n.ordCapPercent(config.pickupMaxOvertimePercent),
                     ].join(' & '),
                   ),
                 OpsInfoRow(
                   icon: LucideIcons.circleAlert,
-                  label: 'Phí quá giờ tạm tính',
+                  label: context.l10n.ordOvertimeFeeEstimate,
                   value: fmtPrice(overtimeFee),
                   valueColor: const Color(0xFFEA580C),
                 ),
                 OpsInfoRow(
                   icon: LucideIcons.badgeAlert,
-                  label: 'Trạng thái phạt',
-                  value: isOvertimePaid ? 'Đã thanh toán' : 'Chưa thanh toán',
+                  label: context.l10n.ordPenaltyStatus,
+                  value: isOvertimePaid ? context.l10n.enumPaid : context.l10n.enumUnpaid,
                   valueColor: isOvertimePaid
                       ? const Color(0xFF15803D)
                       : const Color(0xFFDC2626),
@@ -4849,7 +4847,7 @@ class _DetailSheet extends StatelessWidget {
                 if (needsPayOvertime)
                   OpsInfoRow(
                     icon: LucideIcons.circleDollarSign,
-                    label: 'Cần nộp để mở ô',
+                    label: context.l10n.ordDueToOpen,
                     value: fmtPrice(overtimeFee),
                     valueColor: const Color(0xFFDC2626),
                   ),
@@ -4857,76 +4855,76 @@ class _DetailSheet extends StatelessWidget {
               if (receiverLabel.isNotEmpty)
                 OpsInfoRow(
                   icon: LucideIcons.userCheck,
-                  label: 'Người nhận',
+                  label: context.l10n.ordRecipient,
                   value: receiverLabel,
                 ),
               if (receiverEmail != null)
                 OrderContactRow(
                   icon: LucideIcons.mail,
-                  label: 'Email người nhận',
+                  label: context.l10n.ordRecipientEmail,
                   value: receiverEmail,
                 ),
               if (delegatedAt != null) ...[
                 OpsInfoRow(
                   icon: LucideIcons.userPlus,
-                  label: 'Ủy quyền lấy hộ cho',
+                  label: context.l10n.ordDelegatedToLabel,
                   value: delegateLabel.isEmpty
-                      ? 'Người được ủy quyền'
+                      ? context.l10n.ordDelegatee
                       : delegateLabel,
                   valueColor: const Color(0xFF7C3AED),
                 ),
                 if (delegateNote != null)
                   OpsInfoRow(
                     icon: LucideIcons.messageSquareText,
-                    label: 'Lời nhắn ủy quyền',
+                    label: context.l10n.ordDelegationMessage,
                     value: delegateNote,
                   ),
                 OpsInfoRow(
                   icon: LucideIcons.clock,
-                  label: 'Ủy quyền lúc',
+                  label: context.l10n.ordDelegatedAt,
                   value: fmtDateTime(delegatedAt),
                 ),
               ],
               if (intendedReceiveAt != null)
                 OpsInfoRow(
                   icon: LucideIcons.calendarClock,
-                  label: 'Dự kiến người nhận lấy',
+                  label: context.l10n.ordExpectedPickup,
                   value: fmtDateTime(intendedReceiveAt),
                 ),
               if (deliveryAddress != null && deliveryAddress.isNotEmpty)
                 OpsInfoRow(
                   icon: LucideIcons.truck,
-                  label: 'Địa chỉ giao',
+                  label: context.l10n.ordDeliveryAddress,
                   value: deliveryAddress,
                 ),
               if (isDroneDelivery && sourceLockerName != null)
                 OpsInfoRow(
                   icon: LucideIcons.planeTakeoff,
-                  label: 'Gửi từ tủ',
+                  label: context.l10n.ordFromLocker,
                   value: sourceLockerName!,
                 ),
               if (isDroneDelivery && routeDistance != null)
                 OpsInfoRow(
                   icon: LucideIcons.route,
-                  label: 'Quãng đường bay',
+                  label: context.l10n.ordFlightDistance,
                   value: fmtDistanceMeters(routeDistance),
                 ),
               for (final line in serviceLines)
                 OpsInfoRow(
                   icon: LucideIcons.listChecks,
-                  label: 'Dịch vụ',
+                  label: context.l10n.commonService,
                   value: line,
                 ),
               if ((discountAmount > 0 || pointsUsed > 0) && originalPrice > 0)
                 OpsInfoRow(
                   icon: LucideIcons.tag,
-                  label: 'Giá gốc',
+                  label: context.l10n.ordBasePrice,
                   value: fmtPrice(originalPrice),
                 ),
               if (hasExtra)
                 OpsInfoRow(
                   icon: LucideIcons.circlePlus,
-                  label: 'Phí phát sinh',
+                  label: context.l10n.ordExtraFees,
                   value: fmtPrice(extraFee),
                   valueColor: const Color(0xFFB45309),
                 ),
@@ -4935,7 +4933,7 @@ class _DetailSheet extends StatelessWidget {
                   icon: LucideIcons.badgePercent,
                   label: promotionCode != null && promotionCode.isNotEmpty
                       ? 'Voucher'
-                      : 'Giảm giá',
+                      : context.l10n.commonDiscount,
                   value: promotionCode != null && promotionCode.isNotEmpty
                       ? '-${fmtPrice(discountAmount)} ($promotionCode)'
                       : '-${fmtPrice(discountAmount)}',
@@ -4944,13 +4942,13 @@ class _DetailSheet extends StatelessWidget {
               if (pointsUsed > 0)
                 OpsInfoRow(
                   icon: LucideIcons.sparkles,
-                  label: 'Điểm đã dùng',
+                  label: context.l10n.ordPointsUsed,
                   value: loyaltyPointsDiscountText(pointsUsed, pointsDiscount),
                   valueColor: const Color(0xFF15803D),
                 ),
               OpsInfoRow(
                 icon: LucideIcons.wallet,
-                label: 'Tổng tiền',
+                label: context.l10n.ordTotal,
                 value: fmtPrice(order['totalPrice']),
                 valueColor: opsDark,
               ),
@@ -4963,25 +4961,25 @@ class _DetailSheet extends StatelessWidget {
                   (_asDouble(order['paidAmount']) ?? 0) > 0) ...[
                 OpsInfoRow(
                   icon: LucideIcons.receiptText,
-                  label: 'Đã thanh toán',
+                  label: context.l10n.enumPaid,
                   value: fmtPrice(order['paidAmount']),
                   valueColor: const Color(0xFF15803D),
                 ),
                 OpsInfoRow(
                   icon: LucideIcons.circleDollarSign,
-                  label: 'Còn phải trả',
+                  label: context.l10n.ordRemaining,
                   value: fmtPrice(orderAmountDue(order)),
                   valueColor: const Color(0xFFB45309),
                 ),
               ],
               OpsInfoRow(
                 icon: LucideIcons.checkCheck,
-                label: 'Thanh toán',
+                label: context.l10n.commonPayment,
                 value: switch (paymentStatus) {
-                  'PAID' => 'Đã thanh toán',
-                  'REFUND_PENDING' => 'Chờ hoàn tiền',
-                  'REFUNDED' => 'Đã hoàn tiền',
-                  _ => 'Chưa thanh toán',
+                  'PAID' => context.l10n.enumPaid,
+                  'REFUND_PENDING' => context.l10n.enumAwaitingRefund,
+                  'REFUNDED' => context.l10n.enumRefunded,
+                  _ => context.l10n.enumUnpaid,
                 },
                 valueColor: paymentStatus == 'PAID'
                     ? const Color(0xFF15803D)
@@ -4994,7 +4992,7 @@ class _DetailSheet extends StatelessWidget {
               if (paidAt != null && paymentStatus != 'UNPAID')
                 OpsInfoRow(
                   icon: LucideIcons.receiptText,
-                  label: 'Thanh toán lúc',
+                  label: context.l10n.ordPaidAt,
                   value: fmtDateTime(paidAt),
                 ),
               // Hình thức thanh toán + mã giao dịch lấy từ payment-service.
@@ -5006,7 +5004,7 @@ class _DetailSheet extends StatelessWidget {
               if (customerNote != null && customerNote.isNotEmpty)
                 OpsInfoRow(
                   icon: LucideIcons.stickyNote,
-                  label: 'Ghi chú',
+                  label: context.l10n.commonNote,
                   value: customerNote,
                 ),
             ],
@@ -5014,44 +5012,44 @@ class _DetailSheet extends StatelessWidget {
         ),
         const SizedBox(height: 16),
         OrderDetailSection(
-          title: 'Kiện hàng',
+          title: context.l10n.ordParcel,
           icon: LucideIcons.package,
           rows: orderParcelRows(parcel),
         ),
         OrderDetailSection(
-          title: 'Sự cố giao hàng',
+          title: context.l10n.ordDeliveryIncident,
           icon: LucideIcons.triangleAlert,
           rows: [
             if (blockLabel != null)
               OpsInfoRow(
                 icon: LucideIcons.circlePause,
-                label: 'Đang tạm dừng',
+                label: context.l10n.ordPaused,
                 value: blockLabel,
                 valueColor: const Color(0xFFEA580C),
               ),
             if (blockLabel != null && order['deliveryBlockedAt'] != null)
               OpsInfoRow(
                 icon: LucideIcons.clock,
-                label: 'Tạm dừng lúc',
+                label: context.l10n.ordPausedAt,
                 value: fmtDateTime(order['deliveryBlockedAt']),
               ),
             if (failureLabel != null)
               OpsInfoRow(
                 icon: LucideIcons.circleX,
-                label: 'Giao không hoàn tất',
+                label: context.l10n.ordDeliveryIncomplete,
                 value: failureLabel,
                 valueColor: const Color(0xFFDC2626),
               ),
             if (failureLabel != null && order['failedAt'] != null)
               OpsInfoRow(
                 icon: LucideIcons.clock,
-                label: 'Ghi nhận lúc',
+                label: context.l10n.ordRecordedAt,
                 value: fmtDateTime(order['failedAt']),
               ),
             if (order['parcelReturnedAt'] != null)
               OpsInfoRow(
                 icon: LucideIcons.undo2,
-                label: 'Đã trả kiện cho bạn',
+                label: context.l10n.ordParcelReturned,
                 value: fmtDateTime(order['parcelReturnedAt']),
               ),
           ],
@@ -5073,7 +5071,7 @@ class _DetailSheet extends StatelessWidget {
                     const Icon(LucideIcons.keyRound, size: 14, color: Color(0xFF15803D)),
                     const SizedBox(width: 6),
                     Text(
-                      'Mã PIN mở Ô MỚI (#${relocation.newBoxNumber ?? '4'}):',
+                      context.l10n.ordNewBoxPinUpper(relocation.newBoxNumber ?? '4'),
                       style: const TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.bold,
@@ -5091,11 +5089,11 @@ class _DetailSheet extends StatelessWidget {
             ),
           ),
           if (relocation.isRelocated)
-            const Padding(
+            Padding(
               padding: EdgeInsets.only(top: 6),
               child: Center(
                 child: Text(
-                  '🔒 Mã PIN ô cũ đã bị vô hiệu hoá. Chỉ sử dụng mã trên để mở ô mới an toàn.',
+                  context.l10n.ordOldPinDisabledNote,
                   style: TextStyle(
                     fontSize: 11,
                     color: Color(0xFF64748B),
@@ -5123,8 +5121,8 @@ class _DetailSheet extends StatelessWidget {
             ),
             child: Column(
               children: [
-                const Text(
-                  'Mã lấy hàng — đọc cho kỹ thuật viên khi tới lấy',
+                Text(
+                  context.l10n.ordPickupCodeForTech,
                   style: TextStyle(fontSize: 12.5, color: Color(0xFF3730A3)),
                 ),
                 const SizedBox(height: 4),
@@ -5147,7 +5145,7 @@ class _DetailSheet extends StatelessWidget {
         const Divider(height: 1, color: opsBorder),
         const SizedBox(height: 12),
         OrderDetailSection(
-          title: 'Mốc thời gian',
+          title: context.l10n.ordTimeline,
           icon: LucideIcons.milestone,
           footer: milestones.isEmpty
               ? null
@@ -5243,11 +5241,11 @@ class _PaymentTraceRowsState extends State<_PaymentTraceRows> {
   }
 
   static String _methodLabel(String? method) => switch (method?.toUpperCase()) {
-    'WALLET' => 'Ví Lock.R',
-    'SEPAY' => 'Chuyển khoản (SePay)',
+    'WALLET' => L10n.current.payMethodWallet,
+    'SEPAY' => L10n.current.payMethodSepay,
     'VNPAY' => 'VNPay',
     'MOMO' => 'MoMo',
-    'CASH' => 'Tiền mặt',
+    'CASH' => L10n.current.payMethodCash,
     null => '—',
     final other => other,
   };
@@ -5324,25 +5322,25 @@ class _PaymentTraceRowsState extends State<_PaymentTraceRows> {
               ],
               OpsInfoRow(
                 icon: LucideIcons.creditCard,
-                label: 'Hình thức thanh toán',
+                label: context.l10n.ordPaymentMethod,
                 value: _methodLabel(done[i]['method'] as String?),
               ),
               OpsInfoRow(
                 icon: LucideIcons.hash,
-                label: 'Mã giao dịch',
+                label: context.l10n.ordTransactionId,
                 value: _transactionCode(done[i]),
               ),
               if (done[i]['amount'] != null)
                 OpsInfoRow(
                   icon: LucideIcons.banknote,
-                  label: 'Số tiền',
+                  label: context.l10n.commonAmount,
                   value: fmtPrice(done[i]['amount']),
                   valueColor: const Color(0xFF15803D),
                 ),
               if (done[i]['createdAt'] != null)
                 OpsInfoRow(
                   icon: LucideIcons.calendarCheck,
-                  label: 'Thời gian thanh toán',
+                  label: context.l10n.ordPaymentTime,
                   value: fmtDateTime(done[i]['createdAt']),
                 ),
             ],
@@ -5366,8 +5364,8 @@ class _PaymentTraceRowsState extends State<_PaymentTraceRows> {
     final isRejected = status == 'REJECTED';
 
     final statusText = isCompleted
-        ? 'Đã chuyển tiền'
-        : (isRejected ? 'Bị từ chối' : 'Chờ chuyển khoản');
+        ? context.l10n.ordTransferred
+        : (isRejected ? context.l10n.ordRejected : context.l10n.ordAwaitingTransfer);
     final statusColor = isCompleted
         ? const Color(0xFF15803D)
         : (isRejected ? const Color(0xFFE11D48) : const Color(0xFFD97706));
@@ -5423,7 +5421,7 @@ class _PaymentTraceRowsState extends State<_PaymentTraceRows> {
                       Icon(LucideIcons.rotateCcw, size: 15, color: statusColor),
                       const SizedBox(width: 6),
                       Text(
-                        'Hoàn tiền #${rf['id'] ?? ''}',
+                        context.l10n.ordRefundHash(rf['id'] ?? ''),
                         style: const TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w700,
@@ -5455,7 +5453,7 @@ class _PaymentTraceRowsState extends State<_PaymentTraceRows> {
               if (rf['amount'] != null)
                 OpsInfoRow(
                   icon: LucideIcons.banknote,
-                  label: 'Số tiền hoàn',
+                  label: context.l10n.ordRefundAmount,
                   value: fmtPrice(rf['amount']),
                   valueColor: isCompleted ? const Color(0xFF15803D) : const Color(0xFFD97706),
                 ),
@@ -5464,7 +5462,7 @@ class _PaymentTraceRowsState extends State<_PaymentTraceRows> {
               if (bankDisplay.isNotEmpty)
                 OpsInfoRow(
                   icon: LucideIcons.building2,
-                  label: 'Tài khoản nhận',
+                  label: context.l10n.ordReceivingAccount,
                   value: bankDisplay,
                 ),
 
@@ -5472,7 +5470,7 @@ class _PaymentTraceRowsState extends State<_PaymentTraceRows> {
               if (timeDisplay != null)
                 OpsInfoRow(
                   icon: LucideIcons.clock,
-                  label: isCompleted ? 'Thời gian hoàn tất' : 'Thời gian yêu cầu',
+                  label: isCompleted ? context.l10n.ordCompletedAt : context.l10n.ordRequestedAt,
                   value: timeDisplay,
                 ),
 
@@ -5481,7 +5479,7 @@ class _PaymentTraceRowsState extends State<_PaymentTraceRows> {
               const SizedBox(height: 8),
 
               // Dòng chữ xem chi tiết ở mục hoàn tiền
-              const Row(
+              Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Row(
@@ -5489,7 +5487,7 @@ class _PaymentTraceRowsState extends State<_PaymentTraceRows> {
                       Icon(LucideIcons.arrowUpRight, size: 13, color: Color(0xFF0284C7)),
                       SizedBox(width: 5),
                       Text(
-                        'Xem chi tiết ở mục Hoàn tiền',
+                        context.l10n.ordSeeRefunds,
                         style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
@@ -5516,15 +5514,15 @@ class _PaymentTraceRowsState extends State<_PaymentTraceRows> {
     var description = '${payment['description'] ?? ''}'.trim();
     if (isRentalExtension) {
       if (description.isEmpty) {
-        description = 'Thanh toán gia hạn thời gian';
+        description = L10n.current.ordExtensionPayment;
       } else {
         description = description.replaceAll(
           RegExp(r'thanh toán bổ sung', caseSensitive: false),
-          'Thanh toán gia hạn thời gian',
+          L10n.current.ordExtensionPayment,
         );
       }
     }
-    final order = 'Lần ${index + 1}';
+    final order = L10n.current.ordAttemptN(index + 1);
     return description.isEmpty ? order : '$order · $description';
   }
 
@@ -5763,9 +5761,9 @@ class _OrderIncidentResolutionSectionState
           children: [
             const Icon(LucideIcons.shieldCheck, size: 16, color: opsPrimary),
             const SizedBox(width: 6),
-            const Expanded(
+            Expanded(
               child: Text(
-                'Biên bản can thiệp & bảo vệ tài sản:',
+                context.l10n.ordInterventionRecord,
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 13,
@@ -5873,7 +5871,7 @@ class _OrderIncidentResolutionSectionState
                             report: _resolvedReport ?? {
                               'id': repId ?? 0,
                               'title':
-                                  'Sự cố ô tủ - Đơn hàng #${widget.order?['orderCode'] ?? widget.orderId}',
+                                  context.l10n.ordBoxIncidentTitle(widget.order?['orderCode'] ?? widget.orderId),
                               'description': rest,
                               'status': 'RESOLVED',
                             },
@@ -5926,7 +5924,7 @@ class _OrderIncidentResolutionSectionState
                                   borderRadius: BorderRadius.circular(6),
                                 ),
                                 child: Text(
-                                  '+${validPhotos.length - 3} ảnh',
+                                  context.l10n.photosMore(validPhotos.length - 3),
                                   style: TextStyle(
                                     fontSize: 11,
                                     fontWeight: FontWeight.bold,
@@ -5950,7 +5948,7 @@ class _OrderIncidentResolutionSectionState
                               report: _resolvedReport ?? {
                                 'id': repId ?? 0,
                                 'title':
-                                    'Sự cố ô tủ - Đơn hàng #${widget.order?['orderCode'] ?? widget.orderId}',
+                                    context.l10n.ordBoxIncidentTitle(widget.order?['orderCode'] ?? widget.orderId),
                                 'description': rest,
                                 'status': 'RESOLVED',
                               },
@@ -5980,7 +5978,7 @@ class _OrderIncidentResolutionSectionState
                                 ),
                                 const SizedBox(width: 6),
                                 Text(
-                                  'Xem chi tiết & ảnh minh chứng KTV',
+                                  context.l10n.ordViewTechEvidence,
                                   style: TextStyle(
                                     fontSize: 12,
                                     fontWeight: FontWeight.bold,
@@ -6004,7 +6002,7 @@ class _OrderIncidentResolutionSectionState
                       Padding(
                         padding: const EdgeInsets.only(top: 6),
                         child: Text(
-                          'ℹ️ Hàng của bạn đã được chuyển sang ô mới. Vui lòng kiểm tra mã mở ô mới trong app.',
+                          context.l10n.ordInfoRelocated,
                           style: TextStyle(
                             fontSize: 11.5,
                             color: style.fg,
@@ -6017,7 +6015,7 @@ class _OrderIncidentResolutionSectionState
                       Padding(
                         padding: const EdgeInsets.only(top: 6),
                         child: Text(
-                          'ℹ️ Hàng được niêm phong an toàn và đưa về Hub. Nhân viên sẽ liên hệ bạn để thu xếp lại.',
+                          context.l10n.ordInfoSealedHub,
                           style: TextStyle(
                             fontSize: 11.5,
                             color: style.fg,
@@ -6029,7 +6027,7 @@ class _OrderIncidentResolutionSectionState
                       Padding(
                         padding: const EdgeInsets.only(top: 6),
                         child: Text(
-                          'ℹ️ Hàng đã được bàn giao trực tiếp. Nếu có thắc mắc vui lòng liên hệ bộ phận CSKH.',
+                          context.l10n.ordInfoHandedOver,
                           style: TextStyle(
                             fontSize: 11.5,
                             color: style.fg,
@@ -6110,8 +6108,8 @@ class _ReceiverEmailDialogState extends State<_ReceiverEmailDialog> {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
       title: Text(
         widget.mode == _ReceiverEmailMode.saveOnly
-            ? 'Email người nhận'
-            : 'Gửi lại thông tin cho người nhận',
+            ? context.l10n.ordRecipientEmail
+            : context.l10n.ordResendToReceiver,
       ),
       content: Form(
         key: _formKey,
@@ -6122,14 +6120,11 @@ class _ReceiverEmailDialogState extends State<_ReceiverEmailDialog> {
             Text(
               switch (widget.mode) {
                 _ReceiverEmailMode.withCode =>
-                  'Lock.R gửi lại mã mở tủ, nơi lấy và hạn lấy hàng tới email này. Sửa email nếu người nhận '
-                      'chưa nhận được thư.',
+                  context.l10n.ordEmailWithCode,
                 _ReceiverEmailMode.orderInfo =>
-                  'Hàng chưa vào tủ: Lock.R gửi lại thư báo có đơn sắp tới (chưa kèm mã). Mã mở tủ được '
-                      'gửi khi bạn bỏ hàng vào ô.',
+                  context.l10n.ordEmailOrderInfo,
                 _ReceiverEmailMode.saveOnly =>
-                  'Đơn chưa thanh toán. Lock.R báo người nhận qua email này khi đơn được thanh toán, và gửi '
-                      'mã mở tủ khi bạn bỏ hàng vào ô.',
+                  context.l10n.ordEmailSaveOnly,
               },
               style: const TextStyle(fontSize: 14, height: 1.4),
             ),
@@ -6141,15 +6136,15 @@ class _ReceiverEmailDialogState extends State<_ReceiverEmailDialog> {
               keyboardType: TextInputType.emailAddress,
               autofillHints: const [AutofillHints.email],
               textInputAction: TextInputAction.done,
-              decoration: const InputDecoration(
-                labelText: 'Email người nhận',
+              decoration: InputDecoration(
+                labelText: context.l10n.ordRecipientEmail,
                 hintText: 'name@example.com',
                 border: OutlineInputBorder(),
               ),
               validator: (value) {
                 final email = value?.trim() ?? '';
-                if (email.isEmpty) return 'Nhập email người nhận';
-                return _emailPattern.hasMatch(email) ? null : 'Email không hợp lệ';
+                if (email.isEmpty) return context.l10n.ordEnterRecipientEmail;
+                return _emailPattern.hasMatch(email) ? null : context.l10n.authInvalidEmail;
               },
               onFieldSubmitted: (_) => _submit(),
             ),
@@ -6157,11 +6152,11 @@ class _ReceiverEmailDialogState extends State<_ReceiverEmailDialog> {
         ),
       ),
       actions: [
-        TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Hủy')),
+        TextButton(onPressed: () => Navigator.of(context).pop(), child: Text(context.l10n.commonCancel)),
         FilledButton(
           key: const ValueKey('receiver-email-submit'),
           onPressed: _submit,
-          child: Text(widget.mode == _ReceiverEmailMode.saveOnly ? 'Lưu email' : 'Gửi email'),
+          child: Text(widget.mode == _ReceiverEmailMode.saveOnly ? context.l10n.ordSaveEmail : context.l10n.ordSendEmail),
         ),
       ],
     );

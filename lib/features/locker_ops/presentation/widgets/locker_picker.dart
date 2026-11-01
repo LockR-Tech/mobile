@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/ops_widgets.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 /// Tappable "select a cabinet" field shared by the SEND and RENTAL forms.
 /// Shows the currently selected locker (name + address) and opens a bottom
@@ -28,10 +29,10 @@ class LockerPickerField extends StatelessWidget {
   final bool onlyActive;
 
   static String? _inactiveReason(Map<String, dynamic> locker) {
-    if (locker['online'] == false) return 'Mất kết nối';
+    if (locker['online'] == false) return L10n.current.commonDisconnected;
     final status = '${locker['status'] ?? 'ACTIVE'}'.trim().toUpperCase();
     if (status == 'ACTIVE') return null;
-    return status == 'MAINTENANCE' ? 'Đang bảo trì' : 'Tạm ngưng';
+    return status == 'MAINTENANCE' ? L10n.current.lockerStatusMaintenance : L10n.current.commonStatusSuspended;
   }
 
   Map<String, dynamic>? get _selected {
@@ -81,7 +82,7 @@ class LockerPickerField extends StatelessWidget {
                     selected == null
                         ? (lockers.isNotEmpty && placeholder != null
                               ? placeholder!
-                              : 'Chưa có tủ khả dụng')
+                              : context.l10n.pickerNoLockers)
                         : '${selected['name'] ?? selected['code'] ?? 'Tủ'}',
                     style: const TextStyle(
                       fontWeight: FontWeight.w800,
@@ -95,7 +96,7 @@ class LockerPickerField extends StatelessWidget {
                   Text(
                     selected?['address']?.toString().isNotEmpty == true
                         ? selected!['address'] as String
-                        : 'Chạm để chọn tủ khác',
+                        : context.l10n.pickerTapToChange,
                     style: const TextStyle(fontSize: 12, color: opsMutedText),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -123,10 +124,10 @@ class LockerPickerField extends StatelessWidget {
           shrinkWrap: true,
           padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
           children: [
-            const Padding(
+            Padding(
               padding: EdgeInsets.only(bottom: 8),
               child: Text(
-                'Chọn tủ',
+                context.l10n.commonChooseLocker,
                 style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
               ),
             ),
@@ -171,7 +172,7 @@ class LockerPickerField extends StatelessWidget {
                                 ),
                               if (reason != null)
                                 Text(
-                                  'Tạm không khả dụng: $reason',
+                                  context.l10n.pickerUnavailable(reason),
                                   style: const TextStyle(
                                     fontSize: 12,
                                     color: Color(0xFFB91C1C),

@@ -5,6 +5,7 @@ import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/ops_widgets.dart';
 import 'package:smart_laundry_locker/features/promotions/data/models/promotion_model.dart';
 import 'package:smart_laundry_locker/features/promotions/presentation/widgets/promotion_scope_tag.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 /// Compute the discount (in VND) a validated [promotion] grants on [total].
 /// Mirrors the order-service Promotion model (discountType / discountValue /
@@ -98,7 +99,7 @@ class _PromoCodeFieldState extends State<PromoCodeField> {
     if (code == null) return;
     final discount = computePromotionDiscount(_promotion, widget.orderTotal);
     if (discount <= 0) {
-      _reject('Đơn chưa đủ điều kiện áp mã này');
+      _reject(context.l10n.extrasNotEligible);
       return;
     }
     widget.onChanged(discount, code);
@@ -134,13 +135,13 @@ class _PromoCodeFieldState extends State<PromoCodeField> {
           : null;
       if (!valid || promotion == null) {
         _reject(
-          (res['reason'] as String?) ?? 'Mã không hợp lệ hoặc đã hết hạn',
+          (res['reason'] as String?) ?? context.l10n.extrasCodeInvalid,
         );
         return;
       }
       final discount = computePromotionDiscount(promotion, widget.orderTotal);
       if (discount <= 0) {
-        _reject('Đơn chưa đủ điều kiện áp mã này');
+        _reject(context.l10n.extrasNotEligible);
         return;
       }
       setState(() {
@@ -204,7 +205,7 @@ class _PromoCodeFieldState extends State<PromoCodeField> {
             const SizedBox(width: 8),
             Expanded(
               child: Text(
-                'Đã áp mã "$_appliedCode"',
+                context.l10n.extrasCodeApplied(_appliedCode!),
                 style: const TextStyle(
                   fontWeight: FontWeight.w700,
                   color: Color(0xFF166534),
@@ -213,7 +214,7 @@ class _PromoCodeFieldState extends State<PromoCodeField> {
             ),
             TextButton(
               onPressed: _clear,
-              child: const Text('Bỏ'),
+              child: Text(context.l10n.commonRemove),
             ),
           ],
         ),
@@ -235,9 +236,9 @@ class _PromoCodeFieldState extends State<PromoCodeField> {
               children: [
                 const Icon(LucideIcons.ticket, size: 18, color: opsMutedText),
                 const SizedBox(width: 10),
-                const Expanded(
+                Expanded(
                   child: Text(
-                    'Chọn mã giảm giá',
+                    context.l10n.extrasChooseCode,
                     style: TextStyle(
                       color: opsDark,
                       fontWeight: FontWeight.w600,
@@ -364,10 +365,10 @@ class _VoucherPickerSheetState extends State<_VoucherPickerSheet> {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        const Padding(
+        Padding(
           padding: EdgeInsets.symmetric(horizontal: 20, vertical: 4),
           child: Text(
-            'Chọn mã giảm giá',
+            context.l10n.extrasChooseCode,
             style: TextStyle(
               fontWeight: FontWeight.w800,
               fontSize: 18,
@@ -387,8 +388,8 @@ class _VoucherPickerSheetState extends State<_VoucherPickerSheet> {
             child: Center(
               child: Text(
                 widget.lockerId == null
-                    ? 'Chưa có mã giảm giá nào.'
-                    : 'Chưa có mã giảm giá dùng được ở tủ này.',
+                    ? context.l10n.extrasNoCodes
+                    : context.l10n.extrasNoCodesHere,
                 textAlign: TextAlign.center,
                 style: const TextStyle(color: opsMutedText),
               ),
@@ -448,8 +449,8 @@ class _VoucherPickerSheetState extends State<_VoucherPickerSheet> {
                                           color: const Color(0xFF16A34A).withValues(alpha: 0.12),
                                           borderRadius: BorderRadius.circular(6),
                                         ),
-                                        child: const Text(
-                                          'Đã lưu',
+                                        child: Text(
+                                          context.l10n.commonSaved,
                                           style: TextStyle(
                                             fontSize: 10.5,
                                             fontWeight: FontWeight.w700,
@@ -508,13 +509,13 @@ class _VoucherPickerSheetState extends State<_VoucherPickerSheet> {
 /// (`app.loyalty.tier-*-points`). `null` khi đã ở hạng cao nhất.
 String? nextLoyaltyTierText(int points, BusinessConfig config) {
   final tiers = [
-    (points: config.tierSilverPoints, name: 'Bạc'),
-    (points: config.tierGoldPoints, name: 'Vàng'),
-    (points: config.tierPlatinumPoints, name: 'Bạch kim'),
+    (points: config.tierSilverPoints, name: L10n.current.tierSilver),
+    (points: config.tierGoldPoints, name: L10n.current.tierGold),
+    (points: config.tierPlatinumPoints, name: L10n.current.tierPlatinum),
   ]..sort((a, b) => a.points.compareTo(b.points));
   for (final tier in tiers) {
     if (points < tier.points) {
-      return 'còn ${tier.points - points} điểm lên hạng ${tier.name}';
+      return L10n.current.tierNextPoints(tier.points - points, tier.name);
     }
   }
   return null;
@@ -526,10 +527,10 @@ String? loyaltyTierLabel({String? tierLabel, String? tier}) {
   final label = tierLabel?.trim();
   if (label != null && label.isNotEmpty) return label;
   return switch ((tier ?? '').trim().toUpperCase()) {
-    'BRONZE' => 'Đồng',
-    'SILVER' => 'Bạc',
-    'GOLD' => 'Vàng',
-    'PLATINUM' => 'Bạch kim',
+    'BRONZE' => L10n.current.tierBronze,
+    'SILVER' => L10n.current.tierSilver,
+    'GOLD' => L10n.current.tierGold,
+    'PLATINUM' => L10n.current.tierPlatinum,
     '' => null,
     final other => other,
   };
@@ -547,9 +548,10 @@ String loyaltyHintText(
 }) {
   final next = nextLoyaltyTierText(lifetimePoints ?? points, config);
   return [
-    'Bạn đang có $points điểm',
-    if (tierLabel != null && tierLabel.isNotEmpty) 'hạng $tierLabel',
-    next ?? 'hạng cao nhất',
+    L10n.current.tierYouHavePoints(points),
+    if (tierLabel != null && tierLabel.isNotEmpty)
+      L10n.current.tierRank(tierLabel),
+    next ?? L10n.current.tierHighest,
   ].join(' · ');
 }
 
@@ -611,27 +613,27 @@ class _PaymentStatusChipState extends State<PaymentStatusChip> {
       case 'COMPLETED':
         return (
           color: const Color(0xFF16A34A),
-          label: 'Đã thanh toán',
+          label: context.l10n.payStatusPaid,
           icon: LucideIcons.circleCheck,
         );
       case 'PENDING':
       case 'PROCESSING':
         return (
           color: const Color(0xFFCA8A04),
-          label: 'Chờ thanh toán',
+          label: context.l10n.payStatusPending,
           icon: LucideIcons.clock,
         );
       case 'FAILED':
       case 'CANCELED':
         return (
           color: const Color(0xFFDC2626),
-          label: 'Thanh toán lỗi',
+          label: context.l10n.payStatusFailed,
           icon: LucideIcons.circleX,
         );
       default:
         return (
           color: opsMutedText,
-          label: 'Chưa có thanh toán',
+          label: context.l10n.payStatusNone,
           icon: LucideIcons.wallet,
         );
     }
