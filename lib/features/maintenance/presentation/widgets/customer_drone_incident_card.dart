@@ -10,6 +10,7 @@ import 'package:smart_laundry_locker/features/drone_delivery/domain/entities/dro
 import 'package:smart_laundry_locker/features/drone_delivery/presentation/drone_error_messages.dart';
 import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
 import 'package:smart_laundry_locker/features/payment/data/payment_service.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 /// Thẻ sự cố rơi kiện của một đơn drone trên màn theo dõi của khách: trạng
 /// thái xử lý, nhật ký gần nhất và phương án Lock.R đề xuất để khách phản hồi.
@@ -162,10 +163,10 @@ class _CustomerDroneIncidentCardState extends State<CustomerDroneIncidentCard> {
         margin: const EdgeInsets.only(bottom: 16),
         child: ListTile(
           leading: const Icon(Icons.cloud_off_outlined),
-          title: const Text('Chưa tải được thông tin sự cố của đơn'),
+          title: Text(context.l10n.cdiLoadFailed),
           subtitle: Text(_error!),
           trailing: IconButton(
-            tooltip: 'Thử lại',
+            tooltip: context.l10n.commonRetry,
             onPressed: _load,
             icon: const Icon(Icons.refresh),
           ),
@@ -237,8 +238,8 @@ class _CustomerDroneIncidentCardState extends State<CustomerDroneIncidentCard> {
                 Expanded(
                   child: Text(
                     open
-                        ? 'Sự cố rơi kiện đang được xử lý'
-                        : 'Sự cố rơi kiện đã xử lý xong',
+                        ? context.l10n.cdiInProgress
+                      : context.l10n.cdiResolved,
                     style: const TextStyle(
                       fontWeight: FontWeight.w800,
                       fontSize: 16,
@@ -249,25 +250,25 @@ class _CustomerDroneIncidentCardState extends State<CustomerDroneIncidentCard> {
             ),
             const SizedBox(height: 10),
             if (incident['incidentCode'] != null)
-              _Line('Mã sự cố', '${incident['incidentCode']}'),
-            _Line('Trạng thái', droneIncidentStatusLabel(incident['status'])),
+              _Line(context.l10n.cdiCode, '${incident['incidentCode']}'),
+            _Line(context.l10n.commonStatus, droneIncidentStatusLabel(incident['status'])),
             _Line(
-              'Thu hồi kiện',
+              context.l10n.cdiRecovery,
               droneRecoveryStatusLabel(incident['recoveryStatus']),
             ),
             _Line(
-              'Tình trạng kiện',
+              context.l10n.cdiParcelState,
               droneParcelStateLabel(
                 incident['parcelStatus'],
                 incident['parcelCondition'],
               ),
             ),
             if (fieldNote.isNotEmpty)
-              _Line('Ghi chú hiện trường', fieldNote),
+              _Line(context.l10n.cdiFieldNote, fieldNote),
             if (recoveryPhotos.isNotEmpty) ...[
               const SizedBox(height: 8),
-              const Text(
-                'Ảnh kiện khi thu hồi',
+              Text(
+                context.l10n.cdiRecoveryPhotos,
                 style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
               ),
               const SizedBox(height: 6),
@@ -295,8 +296,8 @@ class _CustomerDroneIncidentCardState extends State<CustomerDroneIncidentCard> {
             ],
             if (timeline.isNotEmpty) ...[
               const Divider(height: 24),
-              const Text(
-                'Cập nhật gần nhất',
+              Text(
+                context.l10n.cdiLastUpdate,
                 style: TextStyle(fontWeight: FontWeight.w700),
               ),
               const SizedBox(height: 6),
@@ -312,8 +313,8 @@ class _CustomerDroneIncidentCardState extends State<CustomerDroneIncidentCard> {
             if (latest != null) ...[
               const Divider(height: 24),
               Text(
-                'Phương án xử lý'
-                '${_asInt(latest['version'] ?? latest['proposalVersion']) == null ? '' : ' (lần ${_asInt(latest['version'] ?? latest['proposalVersion'])})'}',
+                '${context.l10n.cdiProposal}'
+                '${_asInt(latest['version'] ?? latest['proposalVersion']) == null ? '' : context.l10n.cdiProposalVersion(_asInt(latest['version'] ?? latest['proposalVersion'])!)}',
                 style: const TextStyle(fontWeight: FontWeight.w800),
               ),
               const SizedBox(height: 5),
@@ -321,7 +322,7 @@ class _CustomerDroneIncidentCardState extends State<CustomerDroneIncidentCard> {
               if ('${latest['resolutionNote'] ?? ''}'.trim().isNotEmpty) ...[
                 const SizedBox(height: 4),
                 Text(
-                  'Nội dung: ${'${latest['resolutionNote']}'.trim()}',
+                  context.l10n.cdiContent('${latest['resolutionNote']}'.trim()),
                   style: const TextStyle(fontSize: 13),
                 ),
               ],
@@ -336,7 +337,7 @@ class _CustomerDroneIncidentCardState extends State<CustomerDroneIncidentCard> {
               ),
               if ('${latest['policyVersion'] ?? ''}'.trim().isNotEmpty)
                 Text(
-                  'Áp dụng chính sách sự cố tại thời điểm bạn đặt đơn',
+                  context.l10n.cdiPolicy,
                   style: const TextStyle(fontSize: 11, color: Color(0xFF64748B)),
                 ),
               if (showBankWarning) ...[
@@ -351,7 +352,7 @@ class _CustomerDroneIncidentCardState extends State<CustomerDroneIncidentCard> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Row(
+                      Row(
                         children: [
                           Icon(
                             Icons.account_balance_outlined,
@@ -361,7 +362,7 @@ class _CustomerDroneIncidentCardState extends State<CustomerDroneIncidentCard> {
                           SizedBox(width: 8),
                           Expanded(
                             child: Text(
-                              'Chưa có tài khoản ngân hàng nhận bồi thường',
+                              context.l10n.cdiNoBank,
                               style: TextStyle(
                                 fontSize: 13,
                                 fontWeight: FontWeight.w700,
@@ -372,8 +373,8 @@ class _CustomerDroneIncidentCardState extends State<CustomerDroneIncidentCard> {
                         ],
                       ),
                       const SizedBox(height: 4),
-                      const Text(
-                        'Phương án giải quyết có khoản hoàn tiền/bồi thường. Bạn cần liên kết tài khoản ngân hàng để hệ thống thực hiện chuyển khoản.',
+                      Text(
+                        context.l10n.cdiNoBankBody,
                         style: TextStyle(fontSize: 12, color: Color(0xFF7F1D1D)),
                       ),
                       const SizedBox(height: 8),
@@ -394,8 +395,8 @@ class _CustomerDroneIncidentCardState extends State<CustomerDroneIncidentCard> {
                             _load(quiet: true);
                           },
                           icon: const Icon(Icons.arrow_forward, size: 16),
-                          label: const Text(
-                            'Cập nhật tài khoản ngân hàng',
+                          label: Text(
+                            context.l10n.cdiUpdateBank,
                             style: TextStyle(
                               fontWeight: FontWeight.w700,
                               fontSize: 12,
@@ -409,8 +410,8 @@ class _CustomerDroneIncidentCardState extends State<CustomerDroneIncidentCard> {
               ],
               if (awaitingSender) ...[
                 const SizedBox(height: 10),
-                const Text(
-                  'Người gửi đơn sẽ đồng ý hoặc yêu cầu xem xét phương án này.',
+                Text(
+                  context.l10n.cdiSenderDecides,
                   style: TextStyle(fontSize: 12, color: Color(0xFF64748B)),
                 ),
               ],
@@ -425,7 +426,7 @@ class _CustomerDroneIncidentCardState extends State<CustomerDroneIncidentCard> {
                           onPressed: _responding
                               ? null
                               : () => _respond('REQUEST_REVIEW'),
-                          child: const Text('Yêu cầu xem xét'),
+                          child: Text(context.l10n.cdiRequestReview),
                         ),
                       ),
                       const SizedBox(width: 8),
@@ -434,7 +435,7 @@ class _CustomerDroneIncidentCardState extends State<CustomerDroneIncidentCard> {
                       child: FilledButton(
                         key: const ValueKey('drone-incident-accept'),
                         onPressed: _responding ? null : () => _respond('ACCEPT'),
-                        child: const Text('Đồng ý'),
+                        child: Text(context.l10n.cdiAccept),
                       ),
                     ),
                   ],
@@ -456,15 +457,15 @@ class _CustomerDroneIncidentCardState extends State<CustomerDroneIncidentCard> {
       builder: (context) => StatefulBuilder(
         builder: (context, setDialogState) => AlertDialog(
           title: Text(
-            accept ? 'Đồng ý phương án?' : 'Yêu cầu Lock.R xem xét lại?',
+            accept ? context.l10n.cdiAcceptQuestion : context.l10n.cdiReviewQuestion,
           ),
           content: TextField(
             controller: note,
             maxLines: 3,
             decoration: InputDecoration(
               labelText: accept
-                  ? 'Ghi chú (không bắt buộc)'
-                  : 'Lý do cần xem xét *',
+                  ? context.l10n.cdiNoteOptional
+                  : context.l10n.cdiReviewReason,
               errorText: noteError,
               border: const OutlineInputBorder(),
             ),
@@ -472,20 +473,20 @@ class _CustomerDroneIncidentCardState extends State<CustomerDroneIncidentCard> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context, false),
-              child: const Text('Hủy'),
+              child: Text(context.l10n.commonCancel),
             ),
             FilledButton(
               onPressed: () {
                 // Lý do bắt buộc khi xin xem xét: báo ngay trong hộp, không đóng hộp rồi mới báo.
                 if (!accept && note.text.trim().isEmpty) {
                   setDialogState(
-                    () => noteError = 'Vui lòng nhập lý do cần xem xét.',
+                    () => noteError = context.l10n.cdiEnterReason,
                   );
                   return;
                 }
                 Navigator.pop(context, true);
               },
-              child: const Text('Xác nhận'),
+              child: Text(context.l10n.commonConfirm),
             ),
           ],
         ),
@@ -512,8 +513,8 @@ class _CustomerDroneIncidentCardState extends State<CustomerDroneIncidentCard> {
           SnackBar(
             content: Text(
               accept
-                  ? 'Đã ghi nhận phương án bạn chọn.'
-                  : 'Đã gửi yêu cầu xem xét lại.',
+                  ? context.l10n.cdiAccepted
+                  : context.l10n.cdiReviewSent,
             ),
           ),
         );
@@ -536,12 +537,12 @@ class _CustomerDroneIncidentCardState extends State<CustomerDroneIncidentCard> {
     final money = '${NumberFormat.decimalPattern('vi_VN').format(amount)}đ';
     final parts = <String>[
       droneResolutionTypeLabel(proposal['resolutionType']),
-      if (amount > 0) 'Bồi thường $money',
+      if (amount > 0) L10n.current.cdiCompensation(money),
       // "Giao lại miễn phí" đã là tên loại phương án ⇒ không lặp lại.
       if (proposal['redeliveryOffered'] == true &&
           proposal['resolutionType'] != 'FREE_REDELIVERY')
-        'giao lại miễn phí',
-      if (proposal['refundShippingFee'] == true) 'hoàn phí giao',
+        L10n.current.cdiFreeRedelivery,
+      if (proposal['refundShippingFee'] == true) L10n.current.cdiRefundShipping,
     ];
     return parts.join(' · ');
   }

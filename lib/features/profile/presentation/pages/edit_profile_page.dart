@@ -14,6 +14,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:smart_laundry_locker/shared/shared.dart';
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 class EditProfilePage extends StatefulWidget {
   const EditProfilePage({super.key, this.profile});
@@ -88,18 +89,18 @@ class _EditProfilePageState extends State<EditProfilePage> {
     if (!mounted) return;
 
     if (_profileProvider.isSuccess) {
-      SmartDialog.showToast('Cập nhật thành công!');
+      SmartDialog.showToast(context.l10n.epUpdated);
       Navigator.of(context).pop(true);
     } else if (_profileProvider.error != null) {
       await showDialog<void>(
         context: context,
         builder: (ctx) => AlertDialog(
-          title: const Text('Không lưu được hồ sơ'),
+          title: Text(context.l10n.epSaveFailed),
           content: Text(_profileProvider.error!),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx),
-              child: const Text('Đóng'),
+              child: Text(context.l10n.commonClose),
             ),
           ],
         ),
@@ -124,12 +125,12 @@ class _EditProfilePageState extends State<EditProfilePage> {
             children: [
               ListTile(
                 leading: const Icon(Icons.photo_camera_outlined),
-                title: const Text('Chụp ảnh'),
+                title: Text(context.l10n.epTakePhoto),
                 onTap: () => Navigator.of(context).pop(ImageSource.camera),
               ),
               ListTile(
                 leading: const Icon(Icons.photo_library_outlined),
-                title: const Text('Chọn từ thư viện'),
+                title: Text(context.l10n.epFromGallery),
                 onTap: () => Navigator.of(context).pop(ImageSource.gallery),
               ),
               if (currentAvatar.isNotEmpty)
@@ -138,8 +139,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
                     Icons.delete_outline,
                     color: AppColors.error,
                   ),
-                  title: const Text(
-                    'Xoá ảnh đại diện',
+                  title: Text(
+                    context.l10n.epRemoveAvatar,
                     style: TextStyle(color: AppColors.error),
                   ),
                   onTap: () {
@@ -169,14 +170,14 @@ class _EditProfilePageState extends State<EditProfilePage> {
 
     final userId = _profileProvider.profile?.id ?? widget.profile?.id;
     if (userId == null || userId.isEmpty) {
-      SmartDialog.showToast('Không xác định được tài khoản để cập nhật ảnh');
+      SmartDialog.showToast(context.l10n.epNoAccountPhoto);
       return;
     }
 
     setState(() {
       _isUploadingAvatar = true;
     });
-    SmartDialog.showLoading(msg: 'Đang cập nhật ảnh đại diện...');
+    SmartDialog.showLoading(msg: context.l10n.epUpdatingAvatar);
 
     final repository = ProfileRepositoryImpl(
       remoteDataSource: ProfileRemoteDataSourceImpl(ApiClient()),
@@ -195,7 +196,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
       },
       (_) async {
         await _profileProvider.loadProfile();
-        SmartDialog.showToast('Cập nhật ảnh đại diện thành công');
+        SmartDialog.showToast(L10n.current.epAvatarUpdated);
       },
     );
 
@@ -211,16 +212,16 @@ class _EditProfilePageState extends State<EditProfilePage> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Xoá ảnh đại diện?'),
-        content: const Text('Ảnh đại diện hiện tại sẽ bị gỡ khỏi tài khoản.'),
+        title: Text(context.l10n.epRemoveQuestion),
+        content: Text(context.l10n.epRemoveBody),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Hủy'),
+            child: Text(context.l10n.commonCancel),
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Xoá', style: TextStyle(color: AppColors.error)),
+            child: Text(context.l10n.commonDelete, style: TextStyle(color: AppColors.error)),
           ),
         ],
       ),
@@ -228,7 +229,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
     if (confirmed != true || !mounted) return;
 
     setState(() => _isUploadingAvatar = true);
-    SmartDialog.showLoading(msg: 'Đang xoá ảnh đại diện...');
+    SmartDialog.showLoading(msg: context.l10n.epRemoving);
     final repository = ProfileRepositoryImpl(
       remoteDataSource: ProfileRemoteDataSourceImpl(ApiClient()),
     );
@@ -240,7 +241,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
       (failure) async => SmartDialog.showToast(failure.message),
       (_) async {
         await _profileProvider.loadProfile();
-        SmartDialog.showToast('Đã xoá ảnh đại diện');
+        SmartDialog.showToast(L10n.current.epRemoved);
       },
     );
     if (!mounted) return;
@@ -256,8 +257,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
         body: Column(
           children: [
             BrandHeroHeader(
-              title: 'Chỉnh sửa hồ sơ',
-              subtitle: 'Cập nhật thông tin tài khoản',
+              title: context.l10n.epTitle,
+              subtitle: context.l10n.epSubtitle,
               onBack: () => Navigator.of(context).pop(),
               trailing: Consumer<ProfileProvider>(
                 builder: (context, provider, child) {
@@ -276,7 +277,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Text(
-                        'Lưu',
+                        context.l10n.commonSave,
                         style: TextStyle(
                           color: provider.isLoading
                               ? Colors.white54
@@ -308,8 +309,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
               if (widget.profile == null &&
                   provider.isLoading &&
                   provider.profile == null) {
-                return const Center(
-                  child: AppLoadingIndicator(message: 'Đang tải thông tin...'),
+                return Center(
+                  child: AppLoadingIndicator(message: context.l10n.storeInfoLoading),
                 );
               }
 
@@ -327,7 +328,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                       const SizedBox(height: 16),
                       ElevatedButton(
                         onPressed: () => provider.loadProfile(),
-                        child: const Text('Thử lại'),
+                        child: Text(context.l10n.commonRetry),
                       ),
                     ],
                   ),
@@ -408,8 +409,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
                       const SizedBox(height: 32),
 
                       // Họ và tên
-                      const Text(
-                        'Họ và tên',
+                      Text(
+                        context.l10n.commonFullName,
                         style: TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w500,
@@ -426,7 +427,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                           ),
                           filled: true,
                           fillColor: AppColors.grey100,
-                          hintText: 'Nhập họ và tên',
+                          hintText: context.l10n.epNameHint,
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(16),
                             borderSide: BorderSide.none,
@@ -434,7 +435,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                         ),
                         validator: (value) {
                           if (value == null || value.trim().isEmpty) {
-                            return 'Vui lòng nhập họ và tên';
+                            return context.l10n.authEnterFullName;
                           }
                           return null;
                         },
@@ -443,8 +444,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
                       const SizedBox(height: 20),
 
                       // Số điện thoại
-                      const Text(
-                        'Số điện thoại',
+                      Text(
+                        context.l10n.commonPhoneNumber,
                         style: TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w500,
@@ -462,7 +463,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                           ),
                           filled: true,
                           fillColor: AppColors.grey100,
-                          hintText: 'Nhập số điện thoại',
+                          hintText: context.l10n.epPhoneHint,
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(16),
                             borderSide: BorderSide.none,
@@ -475,11 +476,11 @@ class _EditProfilePageState extends State<EditProfilePage> {
                             final hadPhone = (effectiveProfile?.phoneNumber ?? '')
                                 .trim()
                                 .isNotEmpty;
-                            return hadPhone ? 'Vui lòng nhập số điện thoại' : null;
+                            return hadPhone ? context.l10n.authEnterPhone : null;
                           }
                           if (!RegExp(r'^\+?[0-9]{9,12}$')
                               .hasMatch(value.trim())) {
-                            return 'Số điện thoại không hợp lệ';
+                            return context.l10n.epInvalidPhone;
                           }
                           return null;
                         },
@@ -508,7 +509,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                           ),
                           filled: true,
                           fillColor: AppColors.grey100,
-                          hintText: 'Nhập email',
+                          hintText: context.l10n.epEmailHint,
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(16),
                             borderSide: BorderSide.none,
@@ -519,14 +520,14 @@ class _EditProfilePageState extends State<EditProfilePage> {
                           if (email.isEmpty) return null;
                           if (!RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$')
                               .hasMatch(email)) {
-                            return 'Email không hợp lệ';
+                            return context.l10n.authInvalidEmail;
                           }
                           return null;
                         },
                       ),
                       const SizedBox(height: 10),
-                      const Text(
-                        'Đổi số điện thoại hoặc email cũng đổi thông tin dùng để đăng nhập.',
+                      Text(
+                        context.l10n.epLoginInfoNote,
                         style: TextStyle(
                           fontSize: 12,
                           color: AppColors.onSurfaceVariant,

@@ -3678,5 +3678,925 @@
   "txDebit": "Trừ từ ví",
   "txDirect": "Trả trực tiếp qua cổng",
   "txId": "Mã GD",
-  "txBalanceAfter": "Số dư ví sau GD"
+  "txBalanceAfter": "Số dư ví sau GD",
+  "commonUser": "Người dùng",
+  "commonDelete": "Xoá",
+  "commonUpdateNow": "Cập nhật ngay",
+  "reminderFieldEmail": "email",
+  "reminderFieldPhone": "số điện thoại",
+  "reminderMissing": "Tài khoản của bạn chưa có {fields}.",
+  "@reminderMissing": {
+    "placeholders": {
+      "fields": {}
+    }
+  },
+  "reminderTitle": "Bổ sung thông tin tài khoản",
+  "reminderBody": "{missing} Thêm vào để nhận mã mở tủ, thông báo đơn hàng và khôi phục tài khoản khi cần.",
+  "@reminderBody": {
+    "placeholders": {
+      "missing": {}
+    }
+  },
+  "reminderLater": "Để sau (nhắc lại sau {days} ngày)",
+  "@reminderLater": {
+    "placeholders": {
+      "days": {}
+    }
+  },
+  "loyEarn": "Tích điểm đơn hàng{order}",
+  "@loyEarn": {
+    "placeholders": {
+      "order": {}
+    }
+  },
+  "loyRedeem": "Dùng điểm thanh toán đơn{order}",
+  "@loyRedeem": {
+    "placeholders": {
+      "order": {}
+    }
+  },
+  "loyRedeemRefund": "Hoàn điểm đơn huỷ{order}",
+  "@loyRedeemRefund": {
+    "placeholders": {
+      "order": {}
+    }
+  },
+  "loyEarnReversal": "Thu hồi điểm đơn được hoàn tiền{order}",
+  "@loyEarnReversal": {
+    "placeholders": {
+      "order": {}
+    }
+  },
+  "loyVoucherExchange": "Đổi điểm lấy voucher",
+  "loyVoucherRefund": "Hoàn điểm đổi voucher",
+  "loyExchange": "Đổi điểm",
+  "loyAdjustment": "Điều chỉnh điểm",
+  "loyChange": "Biến động điểm",
+  "pwEnterCurrent": "Vui lòng nhập mật khẩu hiện tại",
+  "pwEnterNew": "Vui lòng nhập mật khẩu mới",
+  "pwMinLength": "Mật khẩu mới phải có ít nhất {min} ký tự",
+  "@pwMinLength": {
+    "placeholders": {
+      "min": {}
+    }
+  },
+  "pwSameAsCurrent": "Mật khẩu mới không được trùng mật khẩu hiện tại",
+  "pwConfirmMismatch": "Mật khẩu xác nhận chưa khớp",
+  "pwCurrentWrong": "Mật khẩu hiện tại không đúng",
+  "pwChangeFailed": "Đổi mật khẩu thất bại. Vui lòng thử lại.",
+  "nameMin": "Họ và tên phải có ít nhất {min} ký tự",
+  "@nameMin": {
+    "placeholders": {
+      "min": {}
+    }
+  },
+  "nameMax": "Họ và tên không được quá {max} ký tự",
+  "@nameMax": {
+    "placeholders": {
+      "max": {}
+    }
+  },
+  "nameLettersOnly": "Họ và tên chỉ gồm chữ cái và khoảng trắng",
+  "nameRealName": "Vui lòng nhập tên thật của bạn",
+  "profErrPhoneUsed": "Số điện thoại này đã được dùng cho tài khoản khác",
+  "profErrEmailUsed": "Email này đã được dùng cho tài khoản khác",
+  "profErrLoginUpdate": "Không cập nhật được tài khoản đăng nhập, vui lòng thử lại",
+  "profErrUpdateFailed": "Cập nhật hồ sơ thất bại. Vui lòng thử lại.",
+  "avTooLarge": "Ảnh không được vượt quá 5MB (kích thước hiện tại: {size}MB)",
+  "@avTooLarge": {
+    "placeholders": {
+      "size": {}
+    }
+  },
+  "avTooSmall": "Ảnh phải có kích thước tối thiểu {min}x{min}px (kích thước hiện tại: {width}x{height}px)",
+  "@avTooSmall": {
+    "placeholders": {
+      "min": {},
+      "width": {},
+      "height": {}
+    }
+  },
+  "avTooBig": "Ảnh không được vượt quá {max}x{max}px (kích thước hiện tại: {width}x{height}px)",
+  "@avTooBig": {
+    "placeholders": {
+      "max": {},
+      "width": {},
+      "height": {}
+    }
+  },
+  "avUnknownFormat": "Không thể xác định định dạng file",
+  "avFormats": "Chỉ hỗ trợ định dạng JPG, PNG, WebP",
+  "avNotFound": "File không tồn tại",
+  "avCantCheck": "Không thể kiểm tra file: {error}",
+  "@avCantCheck": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "pwStrengthEnter": "Nhập mật khẩu",
+  "pwStrengthWeak": "Mật khẩu yếu",
+  "pwStrengthMedium": "Mật khẩu trung bình",
+  "pwStrengthStrong": "Mật khẩu mạnh",
+  "pwStrengthVeryStrong": "Mật khẩu rất mạnh",
+  "pwMin8": "Mật khẩu phải có ít nhất 8 ký tự",
+  "pwNeedUpper": "Mật khẩu phải có ít nhất 1 chữ cái viết hoa",
+  "pwNeedLower": "Mật khẩu phải có ít nhất 1 chữ cái viết thường",
+  "pwNeedNumber": "Mật khẩu phải có ít nhất 1 số",
+  "pwNeedSpecial": "Mật khẩu phải có ít nhất 1 ký tự đặc biệt",
+  "pwConfirmNew": "Vui lòng xác nhận mật khẩu mới",
+  "pwConfirmNotMatch": "Mật khẩu xác nhận không khớp",
+  "pwReq8": "Ít nhất 8 ký tự",
+  "pwReqUpper": "Ít nhất 1 chữ viết hoa",
+  "pwReqLower": "Ít nhất 1 chữ viết thường",
+  "pwReqNumber": "Ít nhất 1 số",
+  "pwReqSpecial": "Ít nhất 1 ký tự đặc biệt",
+  "loyInvalidData": "Dữ liệu điểm thưởng không hợp lệ",
+  "pwChangeNotSupported": "Máy chủ chưa hỗ trợ đổi mật khẩu từ ứng dụng. Vui lòng thử lại sau.",
+  "avWaitSync": "Vui lòng đợi quá trình đồng bộ hoàn tất",
+  "avChooseAvatar": "Chọn ảnh đại diện",
+  "avEditAvatar": "Chỉnh sửa ảnh đại diện",
+  "avCamera": "camera",
+  "avGallery": "thư viện ảnh",
+  "avCantAccess": "Không thể truy cập {source}. Vui lòng cấp quyền trong cài đặt.",
+  "@avCantAccess": {
+    "placeholders": {
+      "source": {}
+    }
+  },
+  "avSelected": "Ảnh đã được chọn. Nhấn \"Lưu ảnh đại diện\" để cập nhật.",
+  "avNothingToUpload": "Không có ảnh nào để tải lên",
+  "avNoAccount": "Không xác định được tài khoản để cập nhật ảnh đại diện",
+  "avInvalid": "Ảnh không hợp lệ",
+  "avUpdated": "Cập nhật ảnh đại diện thành công!",
+  "avCancelled": "Đã hủy thay đổi ảnh đại diện",
+  "avChooseSource": "Chọn nguồn ảnh",
+  "avLibrary": "Thư viện",
+  "avUploading": "Đang tải lên",
+  "avProgress": "Hoàn thành {percent}",
+  "@avProgress": {
+    "placeholders": {
+      "percent": {}
+    }
+  },
+  "avPleaseWait": "Vui lòng đợi trong giây lát",
+  "epUpdated": "Cập nhật thành công!",
+  "epSaveFailed": "Không lưu được hồ sơ",
+  "epTakePhoto": "Chụp ảnh",
+  "epFromGallery": "Chọn từ thư viện",
+  "epRemoveAvatar": "Xoá ảnh đại diện",
+  "epNoAccountPhoto": "Không xác định được tài khoản để cập nhật ảnh",
+  "epUpdatingAvatar": "Đang cập nhật ảnh đại diện...",
+  "epAvatarUpdated": "Cập nhật ảnh đại diện thành công",
+  "epRemoveQuestion": "Xoá ảnh đại diện?",
+  "epRemoveBody": "Ảnh đại diện hiện tại sẽ bị gỡ khỏi tài khoản.",
+  "epRemoving": "Đang xoá ảnh đại diện...",
+  "epRemoved": "Đã xoá ảnh đại diện",
+  "epTitle": "Chỉnh sửa hồ sơ",
+  "epSubtitle": "Cập nhật thông tin tài khoản",
+  "epNameHint": "Nhập họ và tên",
+  "epPhoneHint": "Nhập số điện thoại",
+  "epInvalidPhone": "Số điện thoại không hợp lệ",
+  "epEmailHint": "Nhập email",
+  "epLoginInfoNote": "Đổi số điện thoại hoặc email cũng đổi thông tin dùng để đăng nhập.",
+  "frSuccess": "Đăng ký khuôn mặt thành công",
+  "frFailed": "Đăng ký thất bại",
+  "frNoCamera": "Không tìm thấy camera trên thiết bị.",
+  "frCantOpenCamera": "Không thể mở camera. Vui lòng kiểm tra quyền truy cập.",
+  "frNoUser": "Không tìm thấy thông tin người dùng",
+  "frCaptureError": "Lỗi trong quá trình chụp ảnh và đăng ký: {error}",
+  "@frCaptureError": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "frSample": "Lấy mẫu khuôn mặt",
+  "frHoldPhone": "Giữ điện thoại thẳng trước mặt và nhấn nút bên dưới để bắt đầu đăng ký.",
+  "frCapturing": "Đang chụp ảnh: {count}/{total}",
+  "@frCapturing": {
+    "placeholders": {
+      "count": {},
+      "total": {}
+    }
+  },
+  "frProcessing": "Đang xử lý đăng ký...",
+  "frStartScan": "Bắt đầu quét",
+  "fvSuccess": "Xác thực FaceID thành công",
+  "fvMatched": "Nhận diện thành công ID: {id}",
+  "@fvMatched": {
+    "placeholders": {
+      "id": {}
+    }
+  },
+  "fvFailedRetry": "Không thể xác thực FaceID. Vui lòng thử lại.",
+  "fvCameraError": "Không thể mở camera hoặc chụp ảnh xác thực.",
+  "fvFailed": "Xác thực thất bại",
+  "fvUsePassword": "Dùng mật khẩu",
+  "fvVerifying": "Đang xác thực...",
+  "fvLookStraight": "Vui lòng nhìn thẳng vào camera và giữ yên điện thoại để hệ thống nhận diện khuôn mặt của bạn.",
+  "fvNotSupported": "Đăng nhập bằng khuôn mặt hiện chưa được hỗ trợ.",
+  "locChecking": "Đang kiểm tra...",
+  "locServiceOff": "Định vị trên máy đang tắt",
+  "locGranted": "Đã cấp quyền vị trí",
+  "locNotGranted": "Chưa cấp quyền vị trí",
+  "locDenied": "Đã từ chối quyền vị trí",
+  "locCantOpenSettings": "Không mở được cài đặt. Vào Cài đặt của máy → Ứng dụng → Lock.R → Quyền để bật Vị trí.",
+  "locCantOpenLocationSettings": "Không mở được cài đặt định vị của máy.",
+  "locSubtitle": "Quyền truy cập vị trí của ứng dụng",
+  "locAlways": "Ứng dụng được dùng vị trí mọi lúc.",
+  "locWhileInUse": "Ứng dụng được dùng vị trí khi đang mở.",
+  "locTurnOnGps": "Bật Định vị (GPS) trong cài đặt của máy để ứng dụng lấy được vị trí.",
+  "locGrantToFind": "Cấp quyền để tìm tủ gần bạn và chỉ đường tới tủ.",
+  "locBlocked": "Bạn đã chặn quyền vị trí. Mở cài đặt ứng dụng để bật lại.",
+  "locRecheck": "Kiểm tra lại",
+  "locGrant": "Cấp quyền vị trí",
+  "locOpenAppSettings": "Mở cài đặt ứng dụng",
+  "locTurnOn": "Bật định vị",
+  "locChangeInSettings": "Thay đổi trong cài đặt hệ thống",
+  "locUsesFor": "Lock.R dùng vị trí để",
+  "locUseFind": "Tìm cửa hàng / tủ gần bạn",
+  "locUseDirections": "Chỉ đường tới tủ",
+  "locUsePhotos": "Gắn toạ độ vào ảnh khi báo sự cố",
+  "loyHistoryNotSupported": "Máy chủ chưa hỗ trợ xem lịch sử điểm.",
+  "loyNotSupported": "Máy chủ chưa hỗ trợ điểm thưởng. Vui lòng thử lại sau.",
+  "loySubtitle": "Tích điểm khi đơn hàng hoàn tất",
+  "loyLoading": "Đang tải điểm thưởng...",
+  "loyHistory": "Lịch sử điểm",
+  "loyEmpty": "Chưa có biến động điểm. Điểm được cộng tự động khi đơn hàng của bạn hoàn tất.",
+  "loyCurrent": "Điểm hiện có",
+  "loyTier": "Hạng {tier}",
+  "@loyTier": {
+    "placeholders": {
+      "tier": {}
+    }
+  },
+  "loyTopTier": "Bạn đang ở hạng cao nhất.",
+  "loyToNext": "Còn {points} điểm để lên hạng {tier}.",
+  "@loyToNext": {
+    "placeholders": {
+      "points": {},
+      "tier": {}
+    }
+  },
+  "loyLifetime": "Tổng điểm đã tích: {points} điểm (dùng để xếp hạng, tiêu điểm không tụt hạng)",
+  "@loyLifetime": {
+    "placeholders": {
+      "points": {}
+    }
+  },
+  "polLoadFailed": "Không thể tải nội dung",
+  "polAgree": "Tôi đồng ý với điều khoản sử dụng",
+  "pdTitle": "Thông tin cá nhân",
+  "pdSubtitle": "Chi tiết tài khoản của bạn",
+  "pdNoData": "Không có dữ liệu",
+  "pdStatusActive": "Trạng thái tài khoản: Đang hoạt động",
+  "pdStatusInactive": "Trạng thái tài khoản: Chưa kích hoạt",
+  "pdStatusLocked": "Trạng thái tài khoản: Đang bị khóa",
+  "pdDisabled": "Tài khoản của bạn hiện đang bị vô hiệu hóa kỹ thuật. Vui lòng liên hệ hỗ trợ.",
+  "pdYourEmail": "Email của bạn",
+  "pdNotUpdated": "Chưa cập nhật",
+  "pdPasswordNotSet": "Mật khẩu (chưa đặt — chạm để đặt)",
+  "pdNotSet": "Chưa đặt",
+  "secNoBiometric": "Thiết bị chưa đăng ký vân tay/khuôn mặt trong cài đặt hệ thống.",
+  "secEnableReason": "Xác thực để bật khóa ứng dụng",
+  "secAuthFailed": "Xác thực không thành công",
+  "secLockOn": "Đã bật khóa ứng dụng bằng sinh trắc học",
+  "secLockOff": "Đã tắt khóa ứng dụng bằng sinh trắc học",
+  "secPasswordSet": "Đã đặt mật khẩu",
+  "secPasswordChanged": "Đổi mật khẩu thành công",
+  "secSubtitle": "Bảo vệ tài khoản và thiết bị của bạn",
+  "secBiometricLock": "Khóa ứng dụng bằng sinh trắc học",
+  "secBiometricOn": "Yêu cầu vân tay/khuôn mặt mỗi khi mở app.",
+  "secBiometricUnavailable": "Thiết bị chưa đăng ký sinh trắc học.",
+  "secLoadFailed": "Không tải được thông tin tài khoản: {error}",
+  "@secLoadFailed": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "secChangePassword": "Đổi mật khẩu",
+  "secSetPassword": "Đặt mật khẩu",
+  "secChangeHint": "Nhập mật khẩu hiện tại và mật khẩu mới. Các thiết bị khác sẽ phải đăng nhập lại.",
+  "secSetHint": "Tài khoản của bạn đăng nhập bằng Google hoặc mã OTP nên chưa có mật khẩu. Đặt mật khẩu để có thể đăng nhập bằng email/số điện thoại và mật khẩu.",
+  "secCurrentPassword": "Mật khẩu hiện tại",
+  "secMinChars": "Ít nhất {min} ký tự",
+  "@secMinChars": {
+    "placeholders": {
+      "min": {}
+    }
+  },
+  "secConfirmNew": "Xác nhận mật khẩu mới",
+  "profSaveFailedNetwork": "Chưa lưu được. Kiểm tra mạng rồi thử lại.",
+  "phSyncing": "Đang đồng bộ...",
+  "phSaveAvatar": "Lưu ảnh đại diện",
+  "tcTitle": "Điều khoản dịch vụ",
+  "tcBody": "Trước khi dùng Lock.R, vui lòng đọc và đồng ý với Điều khoản dịch vụ và Chính sách bảo mật. Điều khoản quy định việc thuê tủ, gửi và nhận hàng, giao hàng bằng drone, phí, hoàn tiền và bồi thường khi có sự cố.",
+  "tcReadTerms": "Đọc Điều khoản dịch vụ",
+  "tcReadPrivacy": "Đọc Chính sách bảo mật",
+  "tcAgreeCheckbox": "Tôi đã đọc và đồng ý với Điều khoản dịch vụ và Chính sách bảo mật của Lock.R.",
+  "tcAgreeContinue": "Đồng ý và tiếp tục",
+  "qlNotConfirmed": "Máy chủ chưa xác nhận đăng nhập kiosk. Vui lòng quét lại mã trên kiosk.",
+  "qlExpired": "Mã đăng nhập đã hết hạn. Hãy tạo mã mới trên kiosk rồi quét lại.",
+  "qlUsed": "Mã đăng nhập này đã được dùng. Hãy tạo mã mới trên kiosk.",
+  "qlInvalid": "Mã đăng nhập kiosk không hợp lệ hoặc đã hết hiệu lực.",
+  "qlInactive": "Tài khoản của bạn đang bị khoá hoặc chưa kích hoạt nên không đăng nhập kiosk được.",
+  "qlSessionExpired": "Phiên đăng nhập trên app đã hết. Vui lòng đăng nhập lại rồi quét mã.",
+  "qlTooFast": "Thao tác quá nhanh. Vui lòng thử lại sau ít phút.",
+  "qlNoConnection": "Không kết nối được máy chủ. Kiểm tra mạng rồi thử lại.",
+  "qlNotSupported": "Máy chủ chưa hỗ trợ đăng nhập kiosk bằng mã QR. Vui lòng đăng nhập bằng số điện thoại trên kiosk.",
+  "aoChooseLocker": "Vui lòng chọn tủ.",
+  "aoEnterCode": "Vui lòng nhập mã lấy hàng.",
+  "aoPickupBox": "ô lấy hàng",
+  "aoOpened": "Tủ đã mở ô — lấy hàng rồi đóng cửa tủ lại.",
+  "aoOpenFailed": "Không mở được ô{detail}",
+  "@aoOpenFailed": {
+    "placeholders": {
+      "detail": {}
+    }
+  },
+  "aoTitle": "Mở tủ ủy quyền",
+  "aoSubtitle": "Lấy hàng bằng mã được gửi cho bạn",
+  "aoIntro": "Nhập mã lấy hàng (PIN) bạn nhận được — mã có trong mục \"Đơn ủy quyền\" hoặc do người gửi chuyển cho bạn. Bạn cần đứng tại tủ để mở ô.",
+  "aoOrder": "Đơn",
+  "aoTapToChoose": "Chạm để chọn tủ lấy hàng",
+  "aoOpenBox": "Mở ô lấy hàng",
+  "mdSubtitle": "Đơn người khác nhờ bạn lấy hộ",
+  "mdEmpty": "Chưa có đơn ủy quyền",
+  "mdEmptyHint": "Khi ai đó ủy quyền bạn lấy hộ (theo số điện thoại của bạn), đơn sẽ hiện ở đây.",
+  "mdNotSupported": "Máy chủ chưa hỗ trợ mục Đơn ủy quyền. Vui lòng thử lại sau.",
+  "dnTitleEnRoute": "Drone đang giao hàng",
+  "dnTitleApproaching": "Drone sắp đến",
+  "dnTitleArrived": "Drone đã đến nơi",
+  "dnTitleDelivered": "Giao hàng thành công",
+  "dnTitleDelayed": "Đơn hàng bị chậm",
+  "dnTitleFailed": "Giao hàng không thành công",
+  "dnTitleUpdate": "Cập nhật đơn hàng",
+  "dnBodyEnRoute": "Drone đang trên đường giao hàng của bạn",
+  "dnBodyApproaching": "Drone sắp đến nơi, vui lòng chuẩn bị ra nhận",
+  "dnBodyArrived": "Drone đã đến nơi, vui lòng ra nhận hàng",
+  "dnBodyDelivered": "Đã giao hàng thành công. Cảm ơn bạn!",
+  "dnBodyDelayedEta": "Đơn của bạn đang bị chậm, dự kiến tới {eta}",
+  "@dnBodyDelayedEta": {
+    "placeholders": {
+      "eta": {}
+    }
+  },
+  "dnBodyDelayed": "Đơn của bạn đang bị chậm so với dự kiến",
+  "dnBodyFailed": "Giao không thành công, drone đang quay về",
+  "dnBodyUpdate": "Đơn hàng của bạn có cập nhật mới",
+  "nlSubtitle": "Cập nhật mới nhất từ Lock.R",
+  "nlLoginRequired": "Bạn cần đăng nhập để xem thông báo",
+  "nlReadAll": "Đọc tất cả",
+  "nlLoading": "Đang tải thông báo...",
+  "nlAllSeen": "Đã xem hết thông báo",
+  "nlEmpty": "Chưa có thông báo nào",
+  "nlEmptyHint": "Khi có thông báo mới, chúng sẽ xuất hiện ở đây",
+  "nlLoadFailed": "Không tải được thông báo",
+  "nlDeleteAllQuestion": "Xoá tất cả thông báo?",
+  "nlDeleteAllBody": "Toàn bộ thông báo của tài khoản sẽ bị xoá và không khôi phục được.",
+  "nlDeleteAll": "Xoá tất cả",
+  "nlDeletedAll": "Đã xoá tất cả thông báo",
+  "nlJustNow": "Vừa xong",
+  "nlMinutesAgo": "{minutes} phút trước",
+  "@nlMinutesAgo": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "nlHoursAgo": "{hours} giờ trước",
+  "@nlHoursAgo": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      }
+    }
+  },
+  "nlDaysAgo": "{days} ngày trước",
+  "@nlDaysAgo": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "npLoadFailed": "Không tải được thông báo. Vui lòng thử lại.",
+  "npLoadMoreFailed": "Không tải thêm được thông báo. Vui lòng thử lại.",
+  "npDeleteNotFound": "Không tìm thấy thông báo hoặc máy chủ chưa hỗ trợ xoá.",
+  "npDeleteFailed": "Không xoá được thông báo. Vui lòng thử lại.",
+  "npDeleteNotSupported": "Máy chủ chưa hỗ trợ xoá thông báo. Vui lòng thử lại sau.",
+  "crNoLockers": "Không tìm thấy tủ nào để báo sự cố.",
+  "crNetworkError": "Lỗi kết nối mạng",
+  "crSessionExpired": "Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại.",
+  "crEnterTitle": "Vui lòng nhập tiêu đề",
+  "crEnterDescription": "Vui lòng nhập mô tả chi tiết",
+  "crChooseLocker": "Vui lòng chọn tủ gặp sự cố",
+  "crAttachPhoto": "Vui lòng đính kèm ít nhất 1 ảnh sự cố",
+  "crSending": "Đang gửi báo cáo...",
+  "crSent": "Gửi báo cáo thành công",
+  "crSendFailed": "Gửi báo cáo thất bại: {error}",
+  "@crSendFailed": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "crFirstPhotosOnly": "Chỉ lấy {count} ảnh đầu (tối đa {max})",
+  "@crFirstPhotosOnly": {
+    "placeholders": {
+      "count": {},
+      "max": {}
+    }
+  },
+  "crTitle": "Báo cáo sự cố",
+  "crTitleField": "Tiêu đề",
+  "crTitleHint": "Nhập tiêu đề sự cố",
+  "crDescriptionField": "Mô tả chi tiết",
+  "crDescriptionHint": "Mô tả rõ vấn đề bạn gặp phải",
+  "crCancelOrList": "Hủy / Danh sách",
+  "crBack": "Trở về",
+  "crSubmit": "Gửi báo cáo",
+  "crFaultyLocker": "Tủ đồ bị lỗi",
+  "crTapToChoose": "Chạm để chọn tủ gặp sự cố",
+  "crChooseBox": "Chọn ô gặp sự cố ",
+  "crOptional": "(Tuỳ chọn)",
+  "crLayout": "Sơ đồ",
+  "crCards": "Thẻ",
+  "crDeselect": "Bỏ chọn",
+  "crNoBoxes": "Không tìm thấy danh sách ô hoặc sự cố xảy ra chung toàn trạm.",
+  "crSelectedBox": "Đang chọn: Ô #{number} • {type} • {status}",
+  "@crSelectedBox": {
+    "placeholders": {
+      "number": {},
+      "type": {},
+      "status": {}
+    }
+  },
+  "crDoorOpenWarning": "⚠️ Cửa ô này hiện đang MỞ trên hệ thống.",
+  "crSelectedKiosk": "Đang chọn: Màn hình cảm ứng 7\" Kiosk (Sự cố toàn trạm)",
+  "crKioskHint": "Báo cáo lỗi màn hình đơ/tắt, lỗi cảm ứng hoặc sự cố không thuộc ô cụ thể.",
+  "crKioskTitle": "Sự cố màn hình cảm ứng Kiosk 7 inch",
+  "crKioskScreen": "Màn hình Kiosk",
+  "crTapToReport": "Chạm báo lỗi",
+  "crSuitcaseBayUpper": "KHOANG VALI LỚN",
+  "crOpen": "Mở",
+  "crPhotos": "Ảnh hiện trường sự cố",
+  "crPhotoCount": "{count} ảnh",
+  "@crPhotoCount": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "crPhotosHint": "Có thể thêm nhiều ảnh cùng lúc từ thư viện hoặc dùng camera chụp từng ảnh (tối đa {max} ảnh)",
+  "@crPhotosHint": {
+    "placeholders": {
+      "max": {}
+    }
+  },
+  "crPickMany": "Chọn nhiều ảnh",
+  "cdiLoadFailed": "Chưa tải được thông tin sự cố của đơn",
+  "cdiInProgress": "Sự cố rơi kiện đang được xử lý",
+  "cdiResolved": "Sự cố rơi kiện đã xử lý xong",
+  "cdiCode": "Mã sự cố",
+  "cdiRecovery": "Thu hồi kiện",
+  "cdiParcelState": "Tình trạng kiện",
+  "cdiFieldNote": "Ghi chú hiện trường",
+  "cdiRecoveryPhotos": "Ảnh kiện khi thu hồi",
+  "cdiLastUpdate": "Cập nhật gần nhất",
+  "cdiProposal": "Phương án xử lý",
+  "cdiProposalVersion": " (lần {version})",
+  "@cdiProposalVersion": {
+    "placeholders": {
+      "version": {}
+    }
+  },
+  "cdiContent": "Nội dung: {note}",
+  "@cdiContent": {
+    "placeholders": {
+      "note": {}
+    }
+  },
+  "cdiPolicy": "Áp dụng chính sách sự cố tại thời điểm bạn đặt đơn",
+  "cdiNoBank": "Chưa có tài khoản ngân hàng nhận bồi thường",
+  "cdiNoBankBody": "Phương án giải quyết có khoản hoàn tiền/bồi thường. Bạn cần liên kết tài khoản ngân hàng để hệ thống thực hiện chuyển khoản.",
+  "cdiUpdateBank": "Cập nhật tài khoản ngân hàng",
+  "cdiSenderDecides": "Người gửi đơn sẽ đồng ý hoặc yêu cầu xem xét phương án này.",
+  "cdiRequestReview": "Yêu cầu xem xét",
+  "cdiAccept": "Đồng ý",
+  "cdiAcceptQuestion": "Đồng ý phương án?",
+  "cdiReviewQuestion": "Yêu cầu Lock.R xem xét lại?",
+  "cdiNoteOptional": "Ghi chú (không bắt buộc)",
+  "cdiReviewReason": "Lý do cần xem xét *",
+  "cdiEnterReason": "Vui lòng nhập lý do cần xem xét.",
+  "cdiAccepted": "Đã ghi nhận phương án bạn chọn.",
+  "cdiReviewSent": "Đã gửi yêu cầu xem xét lại.",
+  "cdiCompensation": "Bồi thường {amount}",
+  "@cdiCompensation": {
+    "placeholders": {
+      "amount": {}
+    }
+  },
+  "cdiFreeRedelivery": "giao lại miễn phí",
+  "cdiRefundShipping": "hoàn phí giao",
+  "crSelectLocker": "Vui lòng chọn tủ gặp sự cố.",
+  "aiErrLength": "Câu hỏi cần từ 1 đến {max} ký tự.",
+  "@aiErrLength": {
+    "placeholders": {
+      "max": {}
+    }
+  },
+  "aiErrBadResponse": "Phản hồi từ máy chủ không hợp lệ.",
+  "aiErrGeneric": "Đã xảy ra lỗi, vui lòng thử lại.",
+  "aiErrNotFound": "Không tìm thấy cuộc hội thoại này, có thể nó đã bị xoá.",
+  "aiErrLength2000": "Câu hỏi cần từ 1 đến 2000 ký tự.",
+  "aiErrServer": "Máy chủ gặp lỗi, vui lòng thử lại sau.",
+  "aiErrConnectTimeout": "Kết nối tới máy chủ quá lâu, vui lòng thử lại.",
+  "aiErrReplyTimeout": "Trợ lý phản hồi quá lâu, vui lòng thử lại.",
+  "aiErrNoConnection": "Không thể kết nối máy chủ. Kiểm tra kết nối mạng.",
+  "aiErrCancelled": "Đã huỷ yêu cầu.",
+  "aiErrSession": "Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.",
+  "aiErrForbidden": "Bạn không có quyền dùng trợ lý hỏi đáp.",
+  "aiErrRateLimit": "Bạn đã hỏi quá nhiều câu, vui lòng thử lại sau.",
+  "aiErrBusy": "Trợ lý đang bận hoặc gặp sự cố, vui lòng thử lại sau.",
+  "aiDocument": "Tài liệu",
+  "aiConversation": "Cuộc hội thoại",
+  "aiEyebrow": "LOCK.R • TRỢ LÝ",
+  "aiTitle": "Trợ lý hỏi đáp",
+  "aiSubtitle": "Trả lời từ tài liệu chính thức, có trích nguồn",
+  "aiHistory": "Lịch sử hỏi đáp",
+  "aiNewConversation": "Cuộc hội thoại mới",
+  "aiDisabledTitle": "Trợ lý đang tạm tắt",
+  "aiDisabledBody": "Tính năng hỏi đáp đang được tạm tắt. Bạn vui lòng quay lại sau.",
+  "aiNotReadyTitle": "Trợ lý chưa sẵn sàng",
+  "aiNotReadyBody": "Trợ lý hỏi đáp chưa được cấu hình xong. Bạn vui lòng quay lại sau hoặc liên hệ bộ phận hỗ trợ Lock.R.",
+  "aiWaiting": "Đang chờ trợ lý trả lời…",
+  "aiInputHint": "Nhập câu hỏi của bạn…",
+  "aiSend": "Gửi câu hỏi",
+  "aiDeleteQuestion": "Xoá cuộc hội thoại?",
+  "aiDeleteBody": "Cuộc hội thoại “{title}” sẽ bị xoá vĩnh viễn và không khôi phục được.",
+  "@aiDeleteBody": {
+    "placeholders": {
+      "title": {}
+    }
+  },
+  "aiDeleted": "Đã xoá cuộc hội thoại",
+  "aiHistorySubtitle": "Các cuộc hội thoại của bạn với trợ lý",
+  "aiNoConversations": "Chưa có cuộc hội thoại nào",
+  "aiNoConversationsBody": "Các câu bạn hỏi trợ lý sẽ được lưu ở đây để xem lại.",
+  "aiAsk": "Đặt câu hỏi",
+  "aiMessageCount": "{count} tin nhắn",
+  "@aiMessageCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiTodayAt": "Hôm nay, {time}",
+  "@aiTodayAt": {
+    "placeholders": {
+      "time": {}
+    }
+  },
+  "aiYesterdayAt": "Hôm qua, {time}",
+  "@aiYesterdayAt": {
+    "placeholders": {
+      "time": {}
+    }
+  },
+  "aiQTechInspection": "Kiểm tra định kỳ không đạt thì xử lý thế nào?",
+  "aiQTechDoor": "Ô tủ báo lỗi cửa thì cần kiểm tra những gì?",
+  "aiQTechTicket": "Quy trình xử lý phiếu sự cố ra sao?",
+  "aiQTechIot": "Thiết bị IoT của tủ mất kết nối thì làm gì?",
+  "aiQDroneLaunch": "Quy trình tiếp nhận và phóng đơn drone ra sao?",
+  "aiQDroneCancel": "Khi nào được huỷ nhiệm vụ trước khi bay?",
+  "aiQDronePad": "Bãi đáp drone báo lỗi thì làm gì?",
+  "aiQSend": "Làm sao để gửi hàng qua tủ?",
+  "aiQPay": "Tôi thanh toán bằng những cách nào?",
+  "aiQRentEnd": "Hết giờ thuê ô thì làm sao?",
+  "aiQCantOpen": "Không mở được ô tủ thì phải làm gì?",
+  "aiDocsStaff": "quy trình vận hành, hướng dẫn kỹ thuật, chính sách",
+  "aiDocsCustomer": "hướng dẫn sử dụng, chính sách, câu hỏi thường gặp",
+  "aiHello": "Xin chào! Mình là trợ lý Lock.R",
+  "aiIntro": "Mình trả lời dựa trên tài liệu chính thức của Lock.R ({docs}) và luôn ghi rõ nguồn trích dẫn. Nếu tài liệu chưa đề cập, mình sẽ nói rõ để bạn liên hệ bộ phận hỗ trợ.",
+  "@aiIntro": {
+    "placeholders": {
+      "docs": {}
+    }
+  },
+  "aiOfficialDocs": "Tài liệu chính thức",
+  "aiWithSources": "Có trích nguồn",
+  "aiYouCanAsk": "Bạn có thể hỏi",
+  "aiNotSent": "Chưa gửi được",
+  "aiNotInDocs": "Chưa có trong tài liệu",
+  "aiTyping": "Trợ lý đang trả lời",
+  "aiSources": "Nguồn ({count})",
+  "@aiSources": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "aiCitationsUpper": "TRÍCH DẪN NGUỒN",
+  "aiNoExcerpt": "Không có đoạn trích.",
+  "aiVerbatim": "Trích nguyên văn từ tài liệu chính thức của Lock.R.",
+  "tagAccepted": "[NGHIỆM THU THÀNH CÔNG]",
+  "tagFieldNote": "[GHI CHÚ HIỆN TRƯỜNG]",
+  "tagSlaExtended": "[GIA HẠN SLA]",
+  "tagRepairProgress": "[TIẾN ĐỘ SỬA CHỮA]",
+  "urdInspectionPhotos": "KTV đã chụp ảnh kiểm tra hiện trường.",
+  "urdProgressPhotos": "KTV cập nhật ảnh tiến độ xử lý.",
+  "urdSlaExtended": "Phiếu được gia hạn thêm {hours} giờ.",
+  "@urdSlaExtended": {
+    "placeholders": {
+      "hours": {}
+    }
+  },
+  "urdNewDeadline": "- Hạn hoàn tất mới: {time}",
+  "@urdNewDeadline": {
+    "placeholders": {
+      "time": {}
+    }
+  },
+  "urdReason": "- Lý do: {reason}",
+  "@urdReason": {
+    "placeholders": {
+      "reason": {}
+    }
+  },
+  "urdTechResolved": "KTV đã hoàn tất phiếu.",
+  "urdTechSentAcceptance": "KTV đã gửi ảnh nghiệm thu.",
+  "urdKioskNoLocation": "Trạm Kiosk chưa có dữ liệu vị trí bản đồ.",
+  "urdPhotosAdded": "Đã bổ sung ảnh thành công!",
+  "urdKioskStation": "Trạm Kiosk",
+  "urdRecordTitle": "Hồ sơ chi tiết phiếu sự cố kỹ thuật",
+  "urdCreatedAt": "Tạo lúc: {time}",
+  "@urdCreatedAt": {
+    "placeholders": {
+      "time": {}
+    }
+  },
+  "urdTechInCharge": "KTV phụ trách: {name}",
+  "@urdTechInCharge": {
+    "placeholders": {
+      "name": {}
+    }
+  },
+  "urdDispatching": "Đang điều phối KTV",
+  "urdResolvedAt": "Hoàn tất lúc: {time}",
+  "@urdResolvedAt": {
+    "placeholders": {
+      "time": {}
+    }
+  },
+  "urdDeadline": "Hạn xử lý: {time}",
+  "@urdDeadline": {
+    "placeholders": {
+      "time": {}
+    }
+  },
+  "urdBoxIncident": "Sự cố Ô tủ #{box}",
+  "@urdBoxIncident": {
+    "placeholders": {
+      "box": {}
+    }
+  },
+  "urdKioskIncident": "Sự cố Trạm Kiosk",
+  "urdOrder": "Đơn hàng: {code}",
+  "@urdOrder": {
+    "placeholders": {
+      "code": {}
+    }
+  },
+  "urdDirectionsKiosk": "Chỉ đường tới Kiosk",
+  "urdCopyPhone": "Sao chép SĐT",
+  "urdPhoneCopied": "Đã sao chép số điện thoại",
+  "urdReportContent": "Nội dung phản ánh sự cố:",
+  "urdMorePhotos": "Bổ sung ảnh",
+  "urdYourPhotos": "Ảnh hiện trường sự cố bạn đã gửi",
+  "urdProgressTitle": "Tiến trình xử lý sự cố:",
+  "urdTeamResponse": "Phản hồi từ đội ngũ kỹ thuật:",
+  "urdTechId": "KTV #{id}",
+  "@urdTechId": {
+    "placeholders": {
+      "id": {}
+    }
+  },
+  "urdDispatchingAccept": "Đang điều phối KTV tiếp nhận",
+  "urdTechAcceptedAt": "{tech} · Tiếp nhận: {time}",
+  "@urdTechAcceptedAt": {
+    "placeholders": {
+      "tech": {},
+      "time": {}
+    }
+  },
+  "urdTechAccepted": "{tech} đã tiếp nhận điều phối",
+  "@urdTechAccepted": {
+    "placeholders": {
+      "tech": {}
+    }
+  },
+  "urdTechInspected": "KTV đã kiểm tra & xử lý hiện trường",
+  "urdHandledAt": "Đã xử lý lúc {time}{desc}",
+  "@urdHandledAt": {
+    "placeholders": {
+      "time": {},
+      "desc": {}
+    }
+  },
+  "urdCheckedHandled": "Đã kiểm tra & xử lý",
+  "urdFixedAt": "Đã hoàn tất xử lý lúc {time}",
+  "@urdFixedAt": {
+    "placeholders": {
+      "time": {}
+    }
+  },
+  "urdFixed": "Đã khắc phục hoàn tất",
+  "urdTechInspecting": "KTV đang kiểm tra hiện trường & xử lý",
+  "urdWaitingTech": "Chờ KTV tới trạm Kiosk kiểm tra",
+  "urdClosedAt": "Đóng lúc {time}{feedback}",
+  "@urdClosedAt": {
+    "placeholders": {
+      "time": {},
+      "feedback": {}
+    }
+  },
+  "urdFeedback": "Phản hồi: {text}",
+  "@urdFeedback": {
+    "placeholders": {
+      "text": {}
+    }
+  },
+  "urdCheckedNormal": "KTV đã kiểm tra, ô hoạt động bình thường",
+  "urdAcceptedAt": "Nghiệm thu lúc: {time}{note}",
+  "@urdAcceptedAt": {
+    "placeholders": {
+      "time": {},
+      "note": {}
+    }
+  },
+  "urdAcceptedDone": "Đã nghiệm thu hoàn tất{note}",
+  "@urdAcceptedDone": {
+    "placeholders": {
+      "note": {}
+    }
+  },
+  "urdExpectedBy": "Dự kiến hoàn tất trước: {time}",
+  "@urdExpectedBy": {
+    "placeholders": {
+      "time": {}
+    }
+  },
+  "urdAwaitingAcceptance": "Chờ nghiệm thu & đóng phiếu",
+  "urdSentAt": "Đã gửi: {time}",
+  "@urdSentAt": {
+    "placeholders": {
+      "time": {}
+    }
+  },
+  "urdRecorded": "Hệ thống đã ghi nhận sự cố",
+  "urdStepTechAccepts": "Kỹ thuật viên tiếp nhận",
+  "urdStepInspect": "Kiểm tra & Xử lý tại Kiosk",
+  "urdStepRejected": "KTV không xác nhận sự cố",
+  "urdStepAccept": "Nghiệm thu & Đóng phiếu",
+  "urdTechProgress": "Tiến độ xử lý của KTV:",
+  "urdAcceptingTech": "Kỹ thuật viên nghiệm thu",
+  "urdNoTechNotes": "KTV chưa ghi chú bước xử lý nào. Các thao tác của KTV sẽ hiển thị ở đây.",
+  "urdSlaApproval": "Phê duyệt gia hạn SLA",
+  "urdRepairPhotos": "Ảnh trong quá trình sửa ({count} ảnh):",
+  "@urdRepairPhotos": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "urdKioskTech": "Kỹ thuật viên kiosk",
+  "urdCustomerView": "Chế độ xem khách hàng · KTV cập nhật nhật ký & minh chứng qua Mobile App",
+  "urdSteps": "{count} bước xử lý",
+  "@urdSteps": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "urdThanksRating": "Cảm ơn bạn đã gửi đánh giá!",
+  "urdRatingError": "Lỗi gửi đánh giá: {error}",
+  "@urdRatingError": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "urdYourRating": "Đánh giá của bạn về KTV",
+  "urdRateTech": "Đánh giá chất lượng phục vụ của KTV",
+  "urdComment": "Nhận xét: \"{text}\"",
+  "@urdComment": {
+    "placeholders": {
+      "text": {}
+    }
+  },
+  "urdRatePrompt": "Phiếu sự cố đã được xử lý xong. Hãy đánh giá sự hài lòng của bạn:",
+  "urdRateHint": "Nhận xét thêm về thái độ hoặc tốc độ xử lý của KTV (tuỳ chọn)...",
+  "urdSendRating": "Gửi đánh giá",
+  "urdChoosePhoto": "Vui lòng chọn ít nhất 1 ảnh.",
+  "urdAddPhotosTitle": "Bổ sung ảnh sự cố",
+  "urdAddPhotosHint": "Tối đa {max} ảnh mỗi lần. Ảnh giúp đội bảo trì chuẩn bị đúng linh kiện trước khi tới.",
+  "@urdAddPhotosHint": {
+    "placeholders": {
+      "max": {}
+    }
+  },
+  "urdSendPhotos": "Gửi ảnh",
+  "mrUnknownTime": "Không rõ thời gian",
+  "mrAwaiting": "Chờ tiếp nhận",
+  "mrNone": "Chưa có báo cáo nào",
+  "mrNoneHint": "Báo lỗi từ chi tiết đơn hoặc tab \"Báo sự cố mới\" sẽ hiện ở đây.",
+  "mrReportNow": "Báo sự cố ngay",
+  "mrNoMatch": "Không có báo cáo phù hợp",
+  "mrNoMatchFilter": "Không có phiếu sự cố nào thuộc bộ lọc \"{filter}\".",
+  "@mrNoMatchFilter": {
+    "placeholders": {
+      "filter": {}
+    }
+  },
+  "mrViewAll": "Xem tất cả báo cáo",
+  "mrEyebrow": "LOCK.R • BÁO CÁO",
+  "mrSubtitle": "Theo dõi tiến độ xử lý và gửi báo cáo sự cố ô tủ",
+  "mrNewReport": "Báo sự cố mới",
+  "mrTicketHash": "Phiếu sự cố #{id}",
+  "@mrTicketHash": {
+    "placeholders": {
+      "id": {}
+    }
+  },
+  "mrLockerPoint": "Điểm tủ",
+  "mrBox": "Ô tủ",
+  "fbDamaged": "Hàng bị hư hỏng",
+  "fbMissing": "Thiếu / mất hàng",
+  "fbLocker": "Tủ / ô gặp sự cố",
+  "fbPayment": "Thanh toán / phí",
+  "fbService": "Chất lượng dịch vụ",
+  "fbStPending": "Đang chờ xử lý",
+  "fbStProcessing": "Đang xử lý",
+  "fbStResolved": "Đã xử lý",
+  "fbStRejected": "Đã từ chối",
+  "fbStRecorded": "Đã ghi nhận",
+  "fbRateOrder": "Đánh giá đơn hàng",
+  "fbRateHint": "Chia sẻ trải nghiệm của bạn (không bắt buộc)",
+  "fbRateNotSupported": "Máy chủ chưa hỗ trợ đánh giá đơn.",
+  "fbThanks": "Cảm ơn bạn đã đánh giá đơn hàng.",
+  "fbComplain": "Gửi khiếu nại",
+  "fbIssue": "Vấn đề",
+  "fbIssueHint": "Mô tả chi tiết vấn đề bạn gặp phải",
+  "fbDescribe": "Vui lòng mô tả vấn đề.",
+  "fbComplainNotSupported": "Máy chủ chưa hỗ trợ khiếu nại đơn.",
+  "fbComplaintSent": "Đã gửi khiếu nại — bộ phận hỗ trợ sẽ phản hồi qua thông báo.",
+  "fbRateAndComplain": "Đánh giá & khiếu nại",
+  "fbComplaint": "Khiếu nại",
+  "fbEditRating": "Sửa đánh giá",
+  "fbSentAt": "Gửi lúc {time}",
+  "@fbSentAt": {
+    "placeholders": {
+      "time": {}
+    }
+  },
+  "fbNotSupported": "Máy chủ chưa hỗ trợ đánh giá / khiếu nại đơn. Vui lòng thử lại sau.",
+  "btBoxOccupied": "Ô {box} đang có hàng",
+  "@btBoxOccupied": {
+    "placeholders": {
+      "box": {}
+    }
+  },
+  "btBoxOccupiedBody": "Ô này đang giữ hàng của một đơn. Chỉ mở khi bạn được giao kiểm tra tủ và đóng lại ngay sau khi thử.",
+  "btOpenAnyway": "Vẫn mở",
+  "btFetchingCode": "Đang lấy mã mở ô từ máy chủ…",
+  "btScanning": "Đang tìm tủ qua Bluetooth…",
+  "btConnecting": "Đang kết nối với tủ…",
+  "btSending": "Đang gửi lệnh mở ô…",
+  "btWaiting": "Chờ tủ mở khoá…",
+  "btSubtitle": "Đứng cạnh tủ, chọn ô rồi bấm mở",
+  "btChooseBox": "Chọn một ô để mở",
+  "btOpenBox": "Mở ô {box} qua Bluetooth",
+  "@btOpenBox": {
+    "placeholders": {
+      "box": {}
+    }
+  },
+  "btLoadFailed": "Không tải được danh sách tủ",
+  "btNotAllowed": "Chưa được cho thử",
+  "btNotAllowedBody": "Admin chưa cho tài khoản này thử mở ô qua Bluetooth ở tủ nào.",
+  "btHint": "Bật Bluetooth và đứng trong khoảng 2 m trước tủ. Mỗi lần mở đều được ghi vào nhật ký của tủ.",
+  "btChooseBoxLabel": "Chọn ô",
+  "btOpened": "Đã mở ô {box}",
+  "@btOpened": {
+    "placeholders": {
+      "box": {}
+    }
+  },
+  "btNotOpened": "Chưa mở được",
+  "btCloseAfter": "Nhớ đóng cửa ô sau khi thử.",
+  "btNoBoxes": "Tủ chưa có ô nào.",
+  "btBox": "Ô {number}",
+  "@btBox": {
+    "placeholders": {
+      "number": {}
+    }
+  }
 }

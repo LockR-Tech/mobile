@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 
 import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
 import 'package:smart_laundry_locker/features/locker_ops/data/receiver_order.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 /// "Đơn ủy quyền": đơn người khác ủy quyền cho tôi lấy hộ
 /// (`GET /api/orders/delegated-to-me`). Ủy quyền đơn của mình làm trong chi tiết
@@ -48,7 +49,7 @@ class DelegationProvider extends ChangeNotifier {
       _myDelegations = ReceiverOrder.listFrom(raw);
     } catch (e) {
       _error = LockerOpsService.isEndpointUnavailable(e)
-          ? 'Máy chủ chưa hỗ trợ mục Đơn ủy quyền. Vui lòng thử lại sau.'
+          ? L10n.current.mdNotSupported
           : LockerOpsService.errorMessage(e);
     } finally {
       _isLoading = false;

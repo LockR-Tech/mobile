@@ -11,6 +11,7 @@ import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/op
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/user_report_detail_sheet.dart';
 import 'package:smart_laundry_locker/features/maintenance/presentation/pages/create_report_page.dart';
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 /// View of the customer's own locker fault reports
 /// (`GET /api/lockers/my-reports`), so they can see claim/resolve progress
@@ -103,9 +104,9 @@ class _MyReportsPageState extends State<MyReportsPage> {
     final today = DateTime(now.year, now.month, now.day);
     final day = DateTime(d.year, d.month, d.day);
     final diff = today.difference(day).inDays;
-    if (diff == 0) return 'Hôm nay';
-    if (diff == 1) return 'Hôm qua';
-    return '${d.day} tháng ${d.month}, ${d.year}';
+    if (diff == 0) return L10n.current.commonToday;
+    if (diff == 1) return L10n.current.commonYesterday;
+    return L10n.current.dateDayMonthYear(d.day, d.month, d.year);
   }
 
   static bool _isRecent(DateTime? d) {
@@ -147,12 +148,12 @@ class _MyReportsPageState extends State<MyReportsPage> {
 
   String _filterLabel(String filter) {
     return switch (filter) {
-      'RECENT' => 'Gần đây',
-      'OPEN' => 'Chờ tiếp nhận',
-      'IN_PROGRESS' => 'Đang xử lý',
-      'RESOLVED' => 'Đã xong',
-      'PHOTOS' => 'Có ảnh',
-      _ => 'Tất cả',
+      'RECENT' => context.l10n.ordTabRecent,
+      'OPEN' => context.l10n.mrAwaiting,
+      'IN_PROGRESS' => context.l10n.stProcessing,
+      'RESOLVED' => context.l10n.stDone,
+      'PHOTOS' => context.l10n.rfHasPhoto,
+      _ => context.l10n.commonAll,
     };
   }
 
@@ -196,7 +197,7 @@ class _MyReportsPageState extends State<MyReportsPage> {
     final map = <String, List<Map<String, dynamic>>>{};
     for (final item in withDates) {
       final key =
-          item.date == null ? 'Không rõ thời gian' : _dateGroupLabel(item.date!);
+          item.date == null ? context.l10n.mrUnknownTime : _dateGroupLabel(item.date!);
       (map[key] ??= []).add(item.report);
     }
     return map.entries.toList();
@@ -285,18 +286,18 @@ class _MyReportsPageState extends State<MyReportsPage> {
         child: ListView(
           padding: const EdgeInsets.fromLTRB(16, 24, 16, 32),
           children: [
-            const OpsEmptyState(
+            OpsEmptyState(
               icon: LucideIcons.clipboardCheck,
-              title: 'Chưa có báo cáo nào',
+              title: context.l10n.mrNone,
               subtitle:
-                  'Báo lỗi từ chi tiết đơn hoặc tab "Báo sự cố mới" sẽ hiện ở đây.',
+                  context.l10n.mrNoneHint,
             ),
             const SizedBox(height: 16),
             Center(
               child: ElevatedButton.icon(
                 onPressed: () => setState(() => _selectedTab = 1),
                 icon: const Icon(LucideIcons.plusCircle, size: 16),
-                label: const Text('Báo sự cố ngay'),
+                label: Text(context.l10n.mrReportNow),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF0F172A),
                   foregroundColor: Colors.white,
@@ -320,16 +321,16 @@ class _MyReportsPageState extends State<MyReportsPage> {
           children: [
             OpsEmptyState(
               icon: LucideIcons.clipboardList,
-              title: 'Không có báo cáo phù hợp',
+              title: context.l10n.mrNoMatch,
               subtitle:
-                  'Không có phiếu sự cố nào thuộc bộ lọc "${_filterLabel(_filter)}".',
+                  context.l10n.mrNoMatchFilter(_filterLabel(_filter)),
             ),
             const SizedBox(height: 16),
             Center(
               child: OutlinedButton.icon(
                 onPressed: () => _setFilter('ALL'),
                 icon: const Icon(LucideIcons.rotateCcw, size: 15),
-                label: const Text('Xem tất cả báo cáo'),
+                label: Text(context.l10n.mrViewAll),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: const Color(0xFF0F172A),
                   side: const BorderSide(color: Color(0xFFCBD5E1)),
@@ -391,9 +392,9 @@ class _MyReportsPageState extends State<MyReportsPage> {
       body: Column(
         children: [
           BrandHeroHeader(
-            eyebrow: 'LOCK.R • BÁO CÁO',
-            title: 'Báo cáo của tôi',
-            subtitle: 'Theo dõi tiến độ xử lý và gửi báo cáo sự cố ô tủ',
+            eyebrow: context.l10n.mrEyebrow,
+            title: context.l10n.profileMyReports,
+            subtitle: context.l10n.mrSubtitle,
             onBack: () => Navigator.of(context).maybePop(),
             trailing: BrandCircleIconButton(
               icon: LucideIcons.refreshCw,
@@ -414,7 +415,7 @@ class _MyReportsPageState extends State<MyReportsPage> {
                 Expanded(
                   child: _buildTabButton(
                     index: 0,
-                    title: 'Báo cáo của tôi',
+                    title: context.l10n.profileMyReports,
                     count: _reports.length,
                     icon: LucideIcons.history,
                   ),
@@ -422,7 +423,7 @@ class _MyReportsPageState extends State<MyReportsPage> {
                 Expanded(
                   child: _buildTabButton(
                     index: 1,
-                    title: 'Báo sự cố mới',
+                    title: context.l10n.mrNewReport,
                     icon: LucideIcons.plusCircle,
                   ),
                 ),
@@ -436,35 +437,35 @@ class _MyReportsPageState extends State<MyReportsPage> {
               child: Row(
                 children: [
                   _ReportTypeChip(
-                    label: 'Tất cả',
+                    label: context.l10n.commonAll,
                     count: _reports.length,
                     selected: _filter == 'ALL',
                     onTap: () => _setFilter('ALL'),
                   ),
                   const SizedBox(width: 8),
                   _ReportTypeChip(
-                    label: 'Gần đây',
+                    label: context.l10n.ordTabRecent,
                     count: _countRecent,
                     selected: _filter == 'RECENT',
                     onTap: () => _setFilter('RECENT'),
                   ),
                   const SizedBox(width: 8),
                   _ReportTypeChip(
-                    label: 'Chờ tiếp nhận',
+                    label: context.l10n.mrAwaiting,
                     count: _countOpen,
                     selected: _filter == 'OPEN',
                     onTap: () => _setFilter('OPEN'),
                   ),
                   const SizedBox(width: 8),
                   _ReportTypeChip(
-                    label: 'Đang xử lý',
+                    label: context.l10n.stProcessing,
                     count: _countInProgress,
                     selected: _filter == 'IN_PROGRESS',
                     onTap: () => _setFilter('IN_PROGRESS'),
                   ),
                   const SizedBox(width: 8),
                   _ReportTypeChip(
-                    label: 'Đã xong',
+                    label: context.l10n.stDone,
                     count: _countResolved,
                     selected: _filter == 'RESOLVED',
                     onTap: () => _setFilter('RESOLVED'),
@@ -472,7 +473,7 @@ class _MyReportsPageState extends State<MyReportsPage> {
                   if (_countWithPhotos > 0) ...[
                     const SizedBox(width: 8),
                     _ReportTypeChip(
-                      label: 'Có ảnh',
+                      label: context.l10n.rfHasPhoto,
                       count: _countWithPhotos,
                       selected: _filter == 'PHOTOS',
                       onTap: () => _setFilter('PHOTOS'),
@@ -606,10 +607,10 @@ class _ReportCard extends StatelessWidget {
     final isRejected = status == 'REJECTED';
 
     final statusText = isRejected
-        ? 'Không xác nhận'
+        ? context.l10n.stNotConfirmed
         : isResolved
-            ? 'Đã xong'
-            : (isInProgress ? 'Đang xử lý' : 'Chờ tiếp nhận');
+            ? context.l10n.stDone
+            : (isInProgress ? context.l10n.stProcessing : context.l10n.mrAwaiting);
     final statusColor = isRejected
         ? const Color(0xFF475569)
         : isResolved
@@ -677,7 +678,7 @@ class _ReportCard extends StatelessWidget {
                         const SizedBox(width: 8),
                         Flexible(
                           child: Text(
-                            'Phiếu sự cố #${report['id'] ?? ''}',
+                            context.l10n.mrTicketHash(report['id'] ?? ''),
                             style: const TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.w700,
@@ -752,12 +753,12 @@ class _ReportCard extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Row(
+                  Row(
                     children: [
                       Icon(LucideIcons.warehouse, size: 13, color: Color(0xFF64748B)),
                       SizedBox(width: 6),
                       Text(
-                        'Điểm tủ',
+                        context.l10n.mrLockerPoint,
                         style: TextStyle(fontSize: 12, color: Color(0xFF64748B)),
                       ),
                     ],
@@ -784,18 +785,18 @@ class _ReportCard extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Row(
+                    Row(
                       children: [
                         Icon(LucideIcons.grid3x3, size: 13, color: Color(0xFF64748B)),
                         SizedBox(width: 6),
                         Text(
-                          'Ô tủ',
+                          context.l10n.mrBox,
                           style: TextStyle(fontSize: 12, color: Color(0xFF64748B)),
                         ),
                       ],
                     ),
                     Text(
-                      'Ô số ${report['boxNumber']}',
+                      context.l10n.boxNumberLabel('${report['boxNumber']}'),
                       style: const TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
@@ -812,12 +813,12 @@ class _ReportCard extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Row(
+                    Row(
                       children: [
                         Icon(LucideIcons.clock, size: 13, color: Color(0xFF64748B)),
                         SizedBox(width: 6),
                         Text(
-                          'Thời gian gửi',
+                          context.l10n.rfSentAt,
                           style: TextStyle(fontSize: 12, color: Color(0xFF64748B)),
                         ),
                       ],
@@ -865,7 +866,7 @@ class _ReportCard extends StatelessWidget {
                                 const Icon(LucideIcons.image, size: 11, color: Color(0xFF0284C7)),
                                 const SizedBox(width: 3.5),
                                 Text(
-                                  '${attachments.length} ảnh',
+                                  context.l10n.crPhotoCount(attachments.length),
                                   style: const TextStyle(
                                     fontSize: 10.5,
                                     fontWeight: FontWeight.w600,
@@ -882,13 +883,13 @@ class _ReportCard extends StatelessWidget {
                               color: const Color(0xFFDCFCE7),
                               borderRadius: BorderRadius.circular(5),
                             ),
-                            child: const Row(
+                            child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 Icon(LucideIcons.circleCheck, size: 11, color: Color(0xFF15803D)),
                                 SizedBox(width: 3.5),
                                 Text(
-                                  'Đã hoàn tất',
+                                  context.l10n.enumCompleted,
                                   style: TextStyle(
                                     fontSize: 10.5,
                                     fontWeight: FontWeight.w600,
@@ -902,11 +903,11 @@ class _ReportCard extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 8),
-                  const Row(
+                  Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
-                        'Xem chi tiết',
+                        context.l10n.rfViewDetail,
                         style: TextStyle(
                           fontSize: 11.5,
                           fontWeight: FontWeight.w600,

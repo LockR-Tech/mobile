@@ -7,6 +7,7 @@ import 'package:smart_laundry_locker/features/profile/application/use_cases/upda
 import 'package:smart_laundry_locker/features/profile/domain/entities/user_profile.dart';
 import 'package:smart_laundry_locker/core/services/token_service.dart';
 import 'package:flutter/foundation.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 class ProfileProvider extends ChangeNotifier {
   final GetProfileUseCase _getProfileUseCase;
@@ -187,7 +188,7 @@ class ProfileProvider extends ChangeNotifier {
       }
       return null;
     } catch (_) {
-      return 'Chưa lưu được. Kiểm tra mạng rồi thử lại.';
+      return L10n.current.profSaveFailedNetwork;
     }
   }
 

@@ -7236,4 +7236,1778 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get txBalanceAfter => 'Số dư ví sau GD';
+
+  @override
+  String get commonUser => 'Người dùng';
+
+  @override
+  String get commonDelete => 'Xoá';
+
+  @override
+  String get commonUpdateNow => 'Cập nhật ngay';
+
+  @override
+  String get reminderFieldEmail => 'email';
+
+  @override
+  String get reminderFieldPhone => 'số điện thoại';
+
+  @override
+  String reminderMissing(Object fields) {
+    return 'Tài khoản của bạn chưa có $fields.';
+  }
+
+  @override
+  String get reminderTitle => 'Bổ sung thông tin tài khoản';
+
+  @override
+  String reminderBody(Object missing) {
+    return '$missing Thêm vào để nhận mã mở tủ, thông báo đơn hàng và khôi phục tài khoản khi cần.';
+  }
+
+  @override
+  String reminderLater(Object days) {
+    return 'Để sau (nhắc lại sau $days ngày)';
+  }
+
+  @override
+  String loyEarn(Object order) {
+    return 'Tích điểm đơn hàng$order';
+  }
+
+  @override
+  String loyRedeem(Object order) {
+    return 'Dùng điểm thanh toán đơn$order';
+  }
+
+  @override
+  String loyRedeemRefund(Object order) {
+    return 'Hoàn điểm đơn huỷ$order';
+  }
+
+  @override
+  String loyEarnReversal(Object order) {
+    return 'Thu hồi điểm đơn được hoàn tiền$order';
+  }
+
+  @override
+  String get loyVoucherExchange => 'Đổi điểm lấy voucher';
+
+  @override
+  String get loyVoucherRefund => 'Hoàn điểm đổi voucher';
+
+  @override
+  String get loyExchange => 'Đổi điểm';
+
+  @override
+  String get loyAdjustment => 'Điều chỉnh điểm';
+
+  @override
+  String get loyChange => 'Biến động điểm';
+
+  @override
+  String get pwEnterCurrent => 'Vui lòng nhập mật khẩu hiện tại';
+
+  @override
+  String get pwEnterNew => 'Vui lòng nhập mật khẩu mới';
+
+  @override
+  String pwMinLength(Object min) {
+    return 'Mật khẩu mới phải có ít nhất $min ký tự';
+  }
+
+  @override
+  String get pwSameAsCurrent =>
+      'Mật khẩu mới không được trùng mật khẩu hiện tại';
+
+  @override
+  String get pwConfirmMismatch => 'Mật khẩu xác nhận chưa khớp';
+
+  @override
+  String get pwCurrentWrong => 'Mật khẩu hiện tại không đúng';
+
+  @override
+  String get pwChangeFailed => 'Đổi mật khẩu thất bại. Vui lòng thử lại.';
+
+  @override
+  String nameMin(Object min) {
+    return 'Họ và tên phải có ít nhất $min ký tự';
+  }
+
+  @override
+  String nameMax(Object max) {
+    return 'Họ và tên không được quá $max ký tự';
+  }
+
+  @override
+  String get nameLettersOnly => 'Họ và tên chỉ gồm chữ cái và khoảng trắng';
+
+  @override
+  String get nameRealName => 'Vui lòng nhập tên thật của bạn';
+
+  @override
+  String get profErrPhoneUsed =>
+      'Số điện thoại này đã được dùng cho tài khoản khác';
+
+  @override
+  String get profErrEmailUsed => 'Email này đã được dùng cho tài khoản khác';
+
+  @override
+  String get profErrLoginUpdate =>
+      'Không cập nhật được tài khoản đăng nhập, vui lòng thử lại';
+
+  @override
+  String get profErrUpdateFailed =>
+      'Cập nhật hồ sơ thất bại. Vui lòng thử lại.';
+
+  @override
+  String avTooLarge(Object size) {
+    return 'Ảnh không được vượt quá 5MB (kích thước hiện tại: ${size}MB)';
+  }
+
+  @override
+  String avTooSmall(Object min, Object width, Object height) {
+    return 'Ảnh phải có kích thước tối thiểu ${min}x${min}px (kích thước hiện tại: ${width}x${height}px)';
+  }
+
+  @override
+  String avTooBig(Object max, Object width, Object height) {
+    return 'Ảnh không được vượt quá ${max}x${max}px (kích thước hiện tại: ${width}x${height}px)';
+  }
+
+  @override
+  String get avUnknownFormat => 'Không thể xác định định dạng file';
+
+  @override
+  String get avFormats => 'Chỉ hỗ trợ định dạng JPG, PNG, WebP';
+
+  @override
+  String get avNotFound => 'File không tồn tại';
+
+  @override
+  String avCantCheck(Object error) {
+    return 'Không thể kiểm tra file: $error';
+  }
+
+  @override
+  String get pwStrengthEnter => 'Nhập mật khẩu';
+
+  @override
+  String get pwStrengthWeak => 'Mật khẩu yếu';
+
+  @override
+  String get pwStrengthMedium => 'Mật khẩu trung bình';
+
+  @override
+  String get pwStrengthStrong => 'Mật khẩu mạnh';
+
+  @override
+  String get pwStrengthVeryStrong => 'Mật khẩu rất mạnh';
+
+  @override
+  String get pwMin8 => 'Mật khẩu phải có ít nhất 8 ký tự';
+
+  @override
+  String get pwNeedUpper => 'Mật khẩu phải có ít nhất 1 chữ cái viết hoa';
+
+  @override
+  String get pwNeedLower => 'Mật khẩu phải có ít nhất 1 chữ cái viết thường';
+
+  @override
+  String get pwNeedNumber => 'Mật khẩu phải có ít nhất 1 số';
+
+  @override
+  String get pwNeedSpecial => 'Mật khẩu phải có ít nhất 1 ký tự đặc biệt';
+
+  @override
+  String get pwConfirmNew => 'Vui lòng xác nhận mật khẩu mới';
+
+  @override
+  String get pwConfirmNotMatch => 'Mật khẩu xác nhận không khớp';
+
+  @override
+  String get pwReq8 => 'Ít nhất 8 ký tự';
+
+  @override
+  String get pwReqUpper => 'Ít nhất 1 chữ viết hoa';
+
+  @override
+  String get pwReqLower => 'Ít nhất 1 chữ viết thường';
+
+  @override
+  String get pwReqNumber => 'Ít nhất 1 số';
+
+  @override
+  String get pwReqSpecial => 'Ít nhất 1 ký tự đặc biệt';
+
+  @override
+  String get loyInvalidData => 'Dữ liệu điểm thưởng không hợp lệ';
+
+  @override
+  String get pwChangeNotSupported =>
+      'Máy chủ chưa hỗ trợ đổi mật khẩu từ ứng dụng. Vui lòng thử lại sau.';
+
+  @override
+  String get avWaitSync => 'Vui lòng đợi quá trình đồng bộ hoàn tất';
+
+  @override
+  String get avChooseAvatar => 'Chọn ảnh đại diện';
+
+  @override
+  String get avEditAvatar => 'Chỉnh sửa ảnh đại diện';
+
+  @override
+  String get avCamera => 'camera';
+
+  @override
+  String get avGallery => 'thư viện ảnh';
+
+  @override
+  String avCantAccess(Object source) {
+    return 'Không thể truy cập $source. Vui lòng cấp quyền trong cài đặt.';
+  }
+
+  @override
+  String get avSelected =>
+      'Ảnh đã được chọn. Nhấn \"Lưu ảnh đại diện\" để cập nhật.';
+
+  @override
+  String get avNothingToUpload => 'Không có ảnh nào để tải lên';
+
+  @override
+  String get avNoAccount =>
+      'Không xác định được tài khoản để cập nhật ảnh đại diện';
+
+  @override
+  String get avInvalid => 'Ảnh không hợp lệ';
+
+  @override
+  String get avUpdated => 'Cập nhật ảnh đại diện thành công!';
+
+  @override
+  String get avCancelled => 'Đã hủy thay đổi ảnh đại diện';
+
+  @override
+  String get avChooseSource => 'Chọn nguồn ảnh';
+
+  @override
+  String get avLibrary => 'Thư viện';
+
+  @override
+  String get avUploading => 'Đang tải lên';
+
+  @override
+  String avProgress(Object percent) {
+    return 'Hoàn thành $percent';
+  }
+
+  @override
+  String get avPleaseWait => 'Vui lòng đợi trong giây lát';
+
+  @override
+  String get epUpdated => 'Cập nhật thành công!';
+
+  @override
+  String get epSaveFailed => 'Không lưu được hồ sơ';
+
+  @override
+  String get epTakePhoto => 'Chụp ảnh';
+
+  @override
+  String get epFromGallery => 'Chọn từ thư viện';
+
+  @override
+  String get epRemoveAvatar => 'Xoá ảnh đại diện';
+
+  @override
+  String get epNoAccountPhoto =>
+      'Không xác định được tài khoản để cập nhật ảnh';
+
+  @override
+  String get epUpdatingAvatar => 'Đang cập nhật ảnh đại diện...';
+
+  @override
+  String get epAvatarUpdated => 'Cập nhật ảnh đại diện thành công';
+
+  @override
+  String get epRemoveQuestion => 'Xoá ảnh đại diện?';
+
+  @override
+  String get epRemoveBody => 'Ảnh đại diện hiện tại sẽ bị gỡ khỏi tài khoản.';
+
+  @override
+  String get epRemoving => 'Đang xoá ảnh đại diện...';
+
+  @override
+  String get epRemoved => 'Đã xoá ảnh đại diện';
+
+  @override
+  String get epTitle => 'Chỉnh sửa hồ sơ';
+
+  @override
+  String get epSubtitle => 'Cập nhật thông tin tài khoản';
+
+  @override
+  String get epNameHint => 'Nhập họ và tên';
+
+  @override
+  String get epPhoneHint => 'Nhập số điện thoại';
+
+  @override
+  String get epInvalidPhone => 'Số điện thoại không hợp lệ';
+
+  @override
+  String get epEmailHint => 'Nhập email';
+
+  @override
+  String get epLoginInfoNote =>
+      'Đổi số điện thoại hoặc email cũng đổi thông tin dùng để đăng nhập.';
+
+  @override
+  String get frSuccess => 'Đăng ký khuôn mặt thành công';
+
+  @override
+  String get frFailed => 'Đăng ký thất bại';
+
+  @override
+  String get frNoCamera => 'Không tìm thấy camera trên thiết bị.';
+
+  @override
+  String get frCantOpenCamera =>
+      'Không thể mở camera. Vui lòng kiểm tra quyền truy cập.';
+
+  @override
+  String get frNoUser => 'Không tìm thấy thông tin người dùng';
+
+  @override
+  String frCaptureError(Object error) {
+    return 'Lỗi trong quá trình chụp ảnh và đăng ký: $error';
+  }
+
+  @override
+  String get frSample => 'Lấy mẫu khuôn mặt';
+
+  @override
+  String get frHoldPhone =>
+      'Giữ điện thoại thẳng trước mặt và nhấn nút bên dưới để bắt đầu đăng ký.';
+
+  @override
+  String frCapturing(Object count, Object total) {
+    return 'Đang chụp ảnh: $count/$total';
+  }
+
+  @override
+  String get frProcessing => 'Đang xử lý đăng ký...';
+
+  @override
+  String get frStartScan => 'Bắt đầu quét';
+
+  @override
+  String get fvSuccess => 'Xác thực FaceID thành công';
+
+  @override
+  String fvMatched(Object id) {
+    return 'Nhận diện thành công ID: $id';
+  }
+
+  @override
+  String get fvFailedRetry => 'Không thể xác thực FaceID. Vui lòng thử lại.';
+
+  @override
+  String get fvCameraError => 'Không thể mở camera hoặc chụp ảnh xác thực.';
+
+  @override
+  String get fvFailed => 'Xác thực thất bại';
+
+  @override
+  String get fvUsePassword => 'Dùng mật khẩu';
+
+  @override
+  String get fvVerifying => 'Đang xác thực...';
+
+  @override
+  String get fvLookStraight =>
+      'Vui lòng nhìn thẳng vào camera và giữ yên điện thoại để hệ thống nhận diện khuôn mặt của bạn.';
+
+  @override
+  String get fvNotSupported =>
+      'Đăng nhập bằng khuôn mặt hiện chưa được hỗ trợ.';
+
+  @override
+  String get locChecking => 'Đang kiểm tra...';
+
+  @override
+  String get locServiceOff => 'Định vị trên máy đang tắt';
+
+  @override
+  String get locGranted => 'Đã cấp quyền vị trí';
+
+  @override
+  String get locNotGranted => 'Chưa cấp quyền vị trí';
+
+  @override
+  String get locDenied => 'Đã từ chối quyền vị trí';
+
+  @override
+  String get locCantOpenSettings =>
+      'Không mở được cài đặt. Vào Cài đặt của máy → Ứng dụng → Lock.R → Quyền để bật Vị trí.';
+
+  @override
+  String get locCantOpenLocationSettings =>
+      'Không mở được cài đặt định vị của máy.';
+
+  @override
+  String get locSubtitle => 'Quyền truy cập vị trí của ứng dụng';
+
+  @override
+  String get locAlways => 'Ứng dụng được dùng vị trí mọi lúc.';
+
+  @override
+  String get locWhileInUse => 'Ứng dụng được dùng vị trí khi đang mở.';
+
+  @override
+  String get locTurnOnGps =>
+      'Bật Định vị (GPS) trong cài đặt của máy để ứng dụng lấy được vị trí.';
+
+  @override
+  String get locGrantToFind =>
+      'Cấp quyền để tìm tủ gần bạn và chỉ đường tới tủ.';
+
+  @override
+  String get locBlocked =>
+      'Bạn đã chặn quyền vị trí. Mở cài đặt ứng dụng để bật lại.';
+
+  @override
+  String get locRecheck => 'Kiểm tra lại';
+
+  @override
+  String get locGrant => 'Cấp quyền vị trí';
+
+  @override
+  String get locOpenAppSettings => 'Mở cài đặt ứng dụng';
+
+  @override
+  String get locTurnOn => 'Bật định vị';
+
+  @override
+  String get locChangeInSettings => 'Thay đổi trong cài đặt hệ thống';
+
+  @override
+  String get locUsesFor => 'Lock.R dùng vị trí để';
+
+  @override
+  String get locUseFind => 'Tìm cửa hàng / tủ gần bạn';
+
+  @override
+  String get locUseDirections => 'Chỉ đường tới tủ';
+
+  @override
+  String get locUsePhotos => 'Gắn toạ độ vào ảnh khi báo sự cố';
+
+  @override
+  String get loyHistoryNotSupported => 'Máy chủ chưa hỗ trợ xem lịch sử điểm.';
+
+  @override
+  String get loyNotSupported =>
+      'Máy chủ chưa hỗ trợ điểm thưởng. Vui lòng thử lại sau.';
+
+  @override
+  String get loySubtitle => 'Tích điểm khi đơn hàng hoàn tất';
+
+  @override
+  String get loyLoading => 'Đang tải điểm thưởng...';
+
+  @override
+  String get loyHistory => 'Lịch sử điểm';
+
+  @override
+  String get loyEmpty =>
+      'Chưa có biến động điểm. Điểm được cộng tự động khi đơn hàng của bạn hoàn tất.';
+
+  @override
+  String get loyCurrent => 'Điểm hiện có';
+
+  @override
+  String loyTier(Object tier) {
+    return 'Hạng $tier';
+  }
+
+  @override
+  String get loyTopTier => 'Bạn đang ở hạng cao nhất.';
+
+  @override
+  String loyToNext(Object points, Object tier) {
+    return 'Còn $points điểm để lên hạng $tier.';
+  }
+
+  @override
+  String loyLifetime(Object points) {
+    return 'Tổng điểm đã tích: $points điểm (dùng để xếp hạng, tiêu điểm không tụt hạng)';
+  }
+
+  @override
+  String get polLoadFailed => 'Không thể tải nội dung';
+
+  @override
+  String get polAgree => 'Tôi đồng ý với điều khoản sử dụng';
+
+  @override
+  String get pdTitle => 'Thông tin cá nhân';
+
+  @override
+  String get pdSubtitle => 'Chi tiết tài khoản của bạn';
+
+  @override
+  String get pdNoData => 'Không có dữ liệu';
+
+  @override
+  String get pdStatusActive => 'Trạng thái tài khoản: Đang hoạt động';
+
+  @override
+  String get pdStatusInactive => 'Trạng thái tài khoản: Chưa kích hoạt';
+
+  @override
+  String get pdStatusLocked => 'Trạng thái tài khoản: Đang bị khóa';
+
+  @override
+  String get pdDisabled =>
+      'Tài khoản của bạn hiện đang bị vô hiệu hóa kỹ thuật. Vui lòng liên hệ hỗ trợ.';
+
+  @override
+  String get pdYourEmail => 'Email của bạn';
+
+  @override
+  String get pdNotUpdated => 'Chưa cập nhật';
+
+  @override
+  String get pdPasswordNotSet => 'Mật khẩu (chưa đặt — chạm để đặt)';
+
+  @override
+  String get pdNotSet => 'Chưa đặt';
+
+  @override
+  String get secNoBiometric =>
+      'Thiết bị chưa đăng ký vân tay/khuôn mặt trong cài đặt hệ thống.';
+
+  @override
+  String get secEnableReason => 'Xác thực để bật khóa ứng dụng';
+
+  @override
+  String get secAuthFailed => 'Xác thực không thành công';
+
+  @override
+  String get secLockOn => 'Đã bật khóa ứng dụng bằng sinh trắc học';
+
+  @override
+  String get secLockOff => 'Đã tắt khóa ứng dụng bằng sinh trắc học';
+
+  @override
+  String get secPasswordSet => 'Đã đặt mật khẩu';
+
+  @override
+  String get secPasswordChanged => 'Đổi mật khẩu thành công';
+
+  @override
+  String get secSubtitle => 'Bảo vệ tài khoản và thiết bị của bạn';
+
+  @override
+  String get secBiometricLock => 'Khóa ứng dụng bằng sinh trắc học';
+
+  @override
+  String get secBiometricOn => 'Yêu cầu vân tay/khuôn mặt mỗi khi mở app.';
+
+  @override
+  String get secBiometricUnavailable => 'Thiết bị chưa đăng ký sinh trắc học.';
+
+  @override
+  String secLoadFailed(Object error) {
+    return 'Không tải được thông tin tài khoản: $error';
+  }
+
+  @override
+  String get secChangePassword => 'Đổi mật khẩu';
+
+  @override
+  String get secSetPassword => 'Đặt mật khẩu';
+
+  @override
+  String get secChangeHint =>
+      'Nhập mật khẩu hiện tại và mật khẩu mới. Các thiết bị khác sẽ phải đăng nhập lại.';
+
+  @override
+  String get secSetHint =>
+      'Tài khoản của bạn đăng nhập bằng Google hoặc mã OTP nên chưa có mật khẩu. Đặt mật khẩu để có thể đăng nhập bằng email/số điện thoại và mật khẩu.';
+
+  @override
+  String get secCurrentPassword => 'Mật khẩu hiện tại';
+
+  @override
+  String secMinChars(Object min) {
+    return 'Ít nhất $min ký tự';
+  }
+
+  @override
+  String get secConfirmNew => 'Xác nhận mật khẩu mới';
+
+  @override
+  String get profSaveFailedNetwork =>
+      'Chưa lưu được. Kiểm tra mạng rồi thử lại.';
+
+  @override
+  String get phSyncing => 'Đang đồng bộ...';
+
+  @override
+  String get phSaveAvatar => 'Lưu ảnh đại diện';
+
+  @override
+  String get tcTitle => 'Điều khoản dịch vụ';
+
+  @override
+  String get tcBody =>
+      'Trước khi dùng Lock.R, vui lòng đọc và đồng ý với Điều khoản dịch vụ và Chính sách bảo mật. Điều khoản quy định việc thuê tủ, gửi và nhận hàng, giao hàng bằng drone, phí, hoàn tiền và bồi thường khi có sự cố.';
+
+  @override
+  String get tcReadTerms => 'Đọc Điều khoản dịch vụ';
+
+  @override
+  String get tcReadPrivacy => 'Đọc Chính sách bảo mật';
+
+  @override
+  String get tcAgreeCheckbox =>
+      'Tôi đã đọc và đồng ý với Điều khoản dịch vụ và Chính sách bảo mật của Lock.R.';
+
+  @override
+  String get tcAgreeContinue => 'Đồng ý và tiếp tục';
+
+  @override
+  String get qlNotConfirmed =>
+      'Máy chủ chưa xác nhận đăng nhập kiosk. Vui lòng quét lại mã trên kiosk.';
+
+  @override
+  String get qlExpired =>
+      'Mã đăng nhập đã hết hạn. Hãy tạo mã mới trên kiosk rồi quét lại.';
+
+  @override
+  String get qlUsed =>
+      'Mã đăng nhập này đã được dùng. Hãy tạo mã mới trên kiosk.';
+
+  @override
+  String get qlInvalid =>
+      'Mã đăng nhập kiosk không hợp lệ hoặc đã hết hiệu lực.';
+
+  @override
+  String get qlInactive =>
+      'Tài khoản của bạn đang bị khoá hoặc chưa kích hoạt nên không đăng nhập kiosk được.';
+
+  @override
+  String get qlSessionExpired =>
+      'Phiên đăng nhập trên app đã hết. Vui lòng đăng nhập lại rồi quét mã.';
+
+  @override
+  String get qlTooFast => 'Thao tác quá nhanh. Vui lòng thử lại sau ít phút.';
+
+  @override
+  String get qlNoConnection =>
+      'Không kết nối được máy chủ. Kiểm tra mạng rồi thử lại.';
+
+  @override
+  String get qlNotSupported =>
+      'Máy chủ chưa hỗ trợ đăng nhập kiosk bằng mã QR. Vui lòng đăng nhập bằng số điện thoại trên kiosk.';
+
+  @override
+  String get aoChooseLocker => 'Vui lòng chọn tủ.';
+
+  @override
+  String get aoEnterCode => 'Vui lòng nhập mã lấy hàng.';
+
+  @override
+  String get aoPickupBox => 'ô lấy hàng';
+
+  @override
+  String get aoOpened => 'Tủ đã mở ô — lấy hàng rồi đóng cửa tủ lại.';
+
+  @override
+  String aoOpenFailed(Object detail) {
+    return 'Không mở được ô$detail';
+  }
+
+  @override
+  String get aoTitle => 'Mở tủ ủy quyền';
+
+  @override
+  String get aoSubtitle => 'Lấy hàng bằng mã được gửi cho bạn';
+
+  @override
+  String get aoIntro =>
+      'Nhập mã lấy hàng (PIN) bạn nhận được — mã có trong mục \"Đơn ủy quyền\" hoặc do người gửi chuyển cho bạn. Bạn cần đứng tại tủ để mở ô.';
+
+  @override
+  String get aoOrder => 'Đơn';
+
+  @override
+  String get aoTapToChoose => 'Chạm để chọn tủ lấy hàng';
+
+  @override
+  String get aoOpenBox => 'Mở ô lấy hàng';
+
+  @override
+  String get mdSubtitle => 'Đơn người khác nhờ bạn lấy hộ';
+
+  @override
+  String get mdEmpty => 'Chưa có đơn ủy quyền';
+
+  @override
+  String get mdEmptyHint =>
+      'Khi ai đó ủy quyền bạn lấy hộ (theo số điện thoại của bạn), đơn sẽ hiện ở đây.';
+
+  @override
+  String get mdNotSupported =>
+      'Máy chủ chưa hỗ trợ mục Đơn ủy quyền. Vui lòng thử lại sau.';
+
+  @override
+  String get dnTitleEnRoute => 'Drone đang giao hàng';
+
+  @override
+  String get dnTitleApproaching => 'Drone sắp đến';
+
+  @override
+  String get dnTitleArrived => 'Drone đã đến nơi';
+
+  @override
+  String get dnTitleDelivered => 'Giao hàng thành công';
+
+  @override
+  String get dnTitleDelayed => 'Đơn hàng bị chậm';
+
+  @override
+  String get dnTitleFailed => 'Giao hàng không thành công';
+
+  @override
+  String get dnTitleUpdate => 'Cập nhật đơn hàng';
+
+  @override
+  String get dnBodyEnRoute => 'Drone đang trên đường giao hàng của bạn';
+
+  @override
+  String get dnBodyApproaching =>
+      'Drone sắp đến nơi, vui lòng chuẩn bị ra nhận';
+
+  @override
+  String get dnBodyArrived => 'Drone đã đến nơi, vui lòng ra nhận hàng';
+
+  @override
+  String get dnBodyDelivered => 'Đã giao hàng thành công. Cảm ơn bạn!';
+
+  @override
+  String dnBodyDelayedEta(Object eta) {
+    return 'Đơn của bạn đang bị chậm, dự kiến tới $eta';
+  }
+
+  @override
+  String get dnBodyDelayed => 'Đơn của bạn đang bị chậm so với dự kiến';
+
+  @override
+  String get dnBodyFailed => 'Giao không thành công, drone đang quay về';
+
+  @override
+  String get dnBodyUpdate => 'Đơn hàng của bạn có cập nhật mới';
+
+  @override
+  String get nlSubtitle => 'Cập nhật mới nhất từ Lock.R';
+
+  @override
+  String get nlLoginRequired => 'Bạn cần đăng nhập để xem thông báo';
+
+  @override
+  String get nlReadAll => 'Đọc tất cả';
+
+  @override
+  String get nlLoading => 'Đang tải thông báo...';
+
+  @override
+  String get nlAllSeen => 'Đã xem hết thông báo';
+
+  @override
+  String get nlEmpty => 'Chưa có thông báo nào';
+
+  @override
+  String get nlEmptyHint => 'Khi có thông báo mới, chúng sẽ xuất hiện ở đây';
+
+  @override
+  String get nlLoadFailed => 'Không tải được thông báo';
+
+  @override
+  String get nlDeleteAllQuestion => 'Xoá tất cả thông báo?';
+
+  @override
+  String get nlDeleteAllBody =>
+      'Toàn bộ thông báo của tài khoản sẽ bị xoá và không khôi phục được.';
+
+  @override
+  String get nlDeleteAll => 'Xoá tất cả';
+
+  @override
+  String get nlDeletedAll => 'Đã xoá tất cả thông báo';
+
+  @override
+  String get nlJustNow => 'Vừa xong';
+
+  @override
+  String nlMinutesAgo(int minutes) {
+    return '$minutes phút trước';
+  }
+
+  @override
+  String nlHoursAgo(int hours) {
+    return '$hours giờ trước';
+  }
+
+  @override
+  String nlDaysAgo(int days) {
+    return '$days ngày trước';
+  }
+
+  @override
+  String get npLoadFailed => 'Không tải được thông báo. Vui lòng thử lại.';
+
+  @override
+  String get npLoadMoreFailed =>
+      'Không tải thêm được thông báo. Vui lòng thử lại.';
+
+  @override
+  String get npDeleteNotFound =>
+      'Không tìm thấy thông báo hoặc máy chủ chưa hỗ trợ xoá.';
+
+  @override
+  String get npDeleteFailed => 'Không xoá được thông báo. Vui lòng thử lại.';
+
+  @override
+  String get npDeleteNotSupported =>
+      'Máy chủ chưa hỗ trợ xoá thông báo. Vui lòng thử lại sau.';
+
+  @override
+  String get crNoLockers => 'Không tìm thấy tủ nào để báo sự cố.';
+
+  @override
+  String get crNetworkError => 'Lỗi kết nối mạng';
+
+  @override
+  String get crSessionExpired =>
+      'Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại.';
+
+  @override
+  String get crEnterTitle => 'Vui lòng nhập tiêu đề';
+
+  @override
+  String get crEnterDescription => 'Vui lòng nhập mô tả chi tiết';
+
+  @override
+  String get crChooseLocker => 'Vui lòng chọn tủ gặp sự cố';
+
+  @override
+  String get crAttachPhoto => 'Vui lòng đính kèm ít nhất 1 ảnh sự cố';
+
+  @override
+  String get crSending => 'Đang gửi báo cáo...';
+
+  @override
+  String get crSent => 'Gửi báo cáo thành công';
+
+  @override
+  String crSendFailed(Object error) {
+    return 'Gửi báo cáo thất bại: $error';
+  }
+
+  @override
+  String crFirstPhotosOnly(Object count, Object max) {
+    return 'Chỉ lấy $count ảnh đầu (tối đa $max)';
+  }
+
+  @override
+  String get crTitle => 'Báo cáo sự cố';
+
+  @override
+  String get crTitleField => 'Tiêu đề';
+
+  @override
+  String get crTitleHint => 'Nhập tiêu đề sự cố';
+
+  @override
+  String get crDescriptionField => 'Mô tả chi tiết';
+
+  @override
+  String get crDescriptionHint => 'Mô tả rõ vấn đề bạn gặp phải';
+
+  @override
+  String get crCancelOrList => 'Hủy / Danh sách';
+
+  @override
+  String get crBack => 'Trở về';
+
+  @override
+  String get crSubmit => 'Gửi báo cáo';
+
+  @override
+  String get crFaultyLocker => 'Tủ đồ bị lỗi';
+
+  @override
+  String get crTapToChoose => 'Chạm để chọn tủ gặp sự cố';
+
+  @override
+  String get crChooseBox => 'Chọn ô gặp sự cố ';
+
+  @override
+  String get crOptional => '(Tuỳ chọn)';
+
+  @override
+  String get crLayout => 'Sơ đồ';
+
+  @override
+  String get crCards => 'Thẻ';
+
+  @override
+  String get crDeselect => 'Bỏ chọn';
+
+  @override
+  String get crNoBoxes =>
+      'Không tìm thấy danh sách ô hoặc sự cố xảy ra chung toàn trạm.';
+
+  @override
+  String crSelectedBox(Object number, Object type, Object status) {
+    return 'Đang chọn: Ô #$number • $type • $status';
+  }
+
+  @override
+  String get crDoorOpenWarning => '⚠️ Cửa ô này hiện đang MỞ trên hệ thống.';
+
+  @override
+  String get crSelectedKiosk =>
+      'Đang chọn: Màn hình cảm ứng 7\" Kiosk (Sự cố toàn trạm)';
+
+  @override
+  String get crKioskHint =>
+      'Báo cáo lỗi màn hình đơ/tắt, lỗi cảm ứng hoặc sự cố không thuộc ô cụ thể.';
+
+  @override
+  String get crKioskTitle => 'Sự cố màn hình cảm ứng Kiosk 7 inch';
+
+  @override
+  String get crKioskScreen => 'Màn hình Kiosk';
+
+  @override
+  String get crTapToReport => 'Chạm báo lỗi';
+
+  @override
+  String get crSuitcaseBayUpper => 'KHOANG VALI LỚN';
+
+  @override
+  String get crOpen => 'Mở';
+
+  @override
+  String get crPhotos => 'Ảnh hiện trường sự cố';
+
+  @override
+  String crPhotoCount(Object count) {
+    return '$count ảnh';
+  }
+
+  @override
+  String crPhotosHint(Object max) {
+    return 'Có thể thêm nhiều ảnh cùng lúc từ thư viện hoặc dùng camera chụp từng ảnh (tối đa $max ảnh)';
+  }
+
+  @override
+  String get crPickMany => 'Chọn nhiều ảnh';
+
+  @override
+  String get cdiLoadFailed => 'Chưa tải được thông tin sự cố của đơn';
+
+  @override
+  String get cdiInProgress => 'Sự cố rơi kiện đang được xử lý';
+
+  @override
+  String get cdiResolved => 'Sự cố rơi kiện đã xử lý xong';
+
+  @override
+  String get cdiCode => 'Mã sự cố';
+
+  @override
+  String get cdiRecovery => 'Thu hồi kiện';
+
+  @override
+  String get cdiParcelState => 'Tình trạng kiện';
+
+  @override
+  String get cdiFieldNote => 'Ghi chú hiện trường';
+
+  @override
+  String get cdiRecoveryPhotos => 'Ảnh kiện khi thu hồi';
+
+  @override
+  String get cdiLastUpdate => 'Cập nhật gần nhất';
+
+  @override
+  String get cdiProposal => 'Phương án xử lý';
+
+  @override
+  String cdiProposalVersion(Object version) {
+    return ' (lần $version)';
+  }
+
+  @override
+  String cdiContent(Object note) {
+    return 'Nội dung: $note';
+  }
+
+  @override
+  String get cdiPolicy => 'Áp dụng chính sách sự cố tại thời điểm bạn đặt đơn';
+
+  @override
+  String get cdiNoBank => 'Chưa có tài khoản ngân hàng nhận bồi thường';
+
+  @override
+  String get cdiNoBankBody =>
+      'Phương án giải quyết có khoản hoàn tiền/bồi thường. Bạn cần liên kết tài khoản ngân hàng để hệ thống thực hiện chuyển khoản.';
+
+  @override
+  String get cdiUpdateBank => 'Cập nhật tài khoản ngân hàng';
+
+  @override
+  String get cdiSenderDecides =>
+      'Người gửi đơn sẽ đồng ý hoặc yêu cầu xem xét phương án này.';
+
+  @override
+  String get cdiRequestReview => 'Yêu cầu xem xét';
+
+  @override
+  String get cdiAccept => 'Đồng ý';
+
+  @override
+  String get cdiAcceptQuestion => 'Đồng ý phương án?';
+
+  @override
+  String get cdiReviewQuestion => 'Yêu cầu Lock.R xem xét lại?';
+
+  @override
+  String get cdiNoteOptional => 'Ghi chú (không bắt buộc)';
+
+  @override
+  String get cdiReviewReason => 'Lý do cần xem xét *';
+
+  @override
+  String get cdiEnterReason => 'Vui lòng nhập lý do cần xem xét.';
+
+  @override
+  String get cdiAccepted => 'Đã ghi nhận phương án bạn chọn.';
+
+  @override
+  String get cdiReviewSent => 'Đã gửi yêu cầu xem xét lại.';
+
+  @override
+  String cdiCompensation(Object amount) {
+    return 'Bồi thường $amount';
+  }
+
+  @override
+  String get cdiFreeRedelivery => 'giao lại miễn phí';
+
+  @override
+  String get cdiRefundShipping => 'hoàn phí giao';
+
+  @override
+  String get crSelectLocker => 'Vui lòng chọn tủ gặp sự cố.';
+
+  @override
+  String aiErrLength(Object max) {
+    return 'Câu hỏi cần từ 1 đến $max ký tự.';
+  }
+
+  @override
+  String get aiErrBadResponse => 'Phản hồi từ máy chủ không hợp lệ.';
+
+  @override
+  String get aiErrGeneric => 'Đã xảy ra lỗi, vui lòng thử lại.';
+
+  @override
+  String get aiErrNotFound =>
+      'Không tìm thấy cuộc hội thoại này, có thể nó đã bị xoá.';
+
+  @override
+  String get aiErrLength2000 => 'Câu hỏi cần từ 1 đến 2000 ký tự.';
+
+  @override
+  String get aiErrServer => 'Máy chủ gặp lỗi, vui lòng thử lại sau.';
+
+  @override
+  String get aiErrConnectTimeout =>
+      'Kết nối tới máy chủ quá lâu, vui lòng thử lại.';
+
+  @override
+  String get aiErrReplyTimeout => 'Trợ lý phản hồi quá lâu, vui lòng thử lại.';
+
+  @override
+  String get aiErrNoConnection =>
+      'Không thể kết nối máy chủ. Kiểm tra kết nối mạng.';
+
+  @override
+  String get aiErrCancelled => 'Đã huỷ yêu cầu.';
+
+  @override
+  String get aiErrSession => 'Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.';
+
+  @override
+  String get aiErrForbidden => 'Bạn không có quyền dùng trợ lý hỏi đáp.';
+
+  @override
+  String get aiErrRateLimit =>
+      'Bạn đã hỏi quá nhiều câu, vui lòng thử lại sau.';
+
+  @override
+  String get aiErrBusy =>
+      'Trợ lý đang bận hoặc gặp sự cố, vui lòng thử lại sau.';
+
+  @override
+  String get aiDocument => 'Tài liệu';
+
+  @override
+  String get aiConversation => 'Cuộc hội thoại';
+
+  @override
+  String get aiEyebrow => 'LOCK.R • TRỢ LÝ';
+
+  @override
+  String get aiTitle => 'Trợ lý hỏi đáp';
+
+  @override
+  String get aiSubtitle => 'Trả lời từ tài liệu chính thức, có trích nguồn';
+
+  @override
+  String get aiHistory => 'Lịch sử hỏi đáp';
+
+  @override
+  String get aiNewConversation => 'Cuộc hội thoại mới';
+
+  @override
+  String get aiDisabledTitle => 'Trợ lý đang tạm tắt';
+
+  @override
+  String get aiDisabledBody =>
+      'Tính năng hỏi đáp đang được tạm tắt. Bạn vui lòng quay lại sau.';
+
+  @override
+  String get aiNotReadyTitle => 'Trợ lý chưa sẵn sàng';
+
+  @override
+  String get aiNotReadyBody =>
+      'Trợ lý hỏi đáp chưa được cấu hình xong. Bạn vui lòng quay lại sau hoặc liên hệ bộ phận hỗ trợ Lock.R.';
+
+  @override
+  String get aiWaiting => 'Đang chờ trợ lý trả lời…';
+
+  @override
+  String get aiInputHint => 'Nhập câu hỏi của bạn…';
+
+  @override
+  String get aiSend => 'Gửi câu hỏi';
+
+  @override
+  String get aiDeleteQuestion => 'Xoá cuộc hội thoại?';
+
+  @override
+  String aiDeleteBody(Object title) {
+    return 'Cuộc hội thoại “$title” sẽ bị xoá vĩnh viễn và không khôi phục được.';
+  }
+
+  @override
+  String get aiDeleted => 'Đã xoá cuộc hội thoại';
+
+  @override
+  String get aiHistorySubtitle => 'Các cuộc hội thoại của bạn với trợ lý';
+
+  @override
+  String get aiNoConversations => 'Chưa có cuộc hội thoại nào';
+
+  @override
+  String get aiNoConversationsBody =>
+      'Các câu bạn hỏi trợ lý sẽ được lưu ở đây để xem lại.';
+
+  @override
+  String get aiAsk => 'Đặt câu hỏi';
+
+  @override
+  String aiMessageCount(int count) {
+    return '$count tin nhắn';
+  }
+
+  @override
+  String aiTodayAt(Object time) {
+    return 'Hôm nay, $time';
+  }
+
+  @override
+  String aiYesterdayAt(Object time) {
+    return 'Hôm qua, $time';
+  }
+
+  @override
+  String get aiQTechInspection =>
+      'Kiểm tra định kỳ không đạt thì xử lý thế nào?';
+
+  @override
+  String get aiQTechDoor => 'Ô tủ báo lỗi cửa thì cần kiểm tra những gì?';
+
+  @override
+  String get aiQTechTicket => 'Quy trình xử lý phiếu sự cố ra sao?';
+
+  @override
+  String get aiQTechIot => 'Thiết bị IoT của tủ mất kết nối thì làm gì?';
+
+  @override
+  String get aiQDroneLaunch => 'Quy trình tiếp nhận và phóng đơn drone ra sao?';
+
+  @override
+  String get aiQDroneCancel => 'Khi nào được huỷ nhiệm vụ trước khi bay?';
+
+  @override
+  String get aiQDronePad => 'Bãi đáp drone báo lỗi thì làm gì?';
+
+  @override
+  String get aiQSend => 'Làm sao để gửi hàng qua tủ?';
+
+  @override
+  String get aiQPay => 'Tôi thanh toán bằng những cách nào?';
+
+  @override
+  String get aiQRentEnd => 'Hết giờ thuê ô thì làm sao?';
+
+  @override
+  String get aiQCantOpen => 'Không mở được ô tủ thì phải làm gì?';
+
+  @override
+  String get aiDocsStaff =>
+      'quy trình vận hành, hướng dẫn kỹ thuật, chính sách';
+
+  @override
+  String get aiDocsCustomer =>
+      'hướng dẫn sử dụng, chính sách, câu hỏi thường gặp';
+
+  @override
+  String get aiHello => 'Xin chào! Mình là trợ lý Lock.R';
+
+  @override
+  String aiIntro(Object docs) {
+    return 'Mình trả lời dựa trên tài liệu chính thức của Lock.R ($docs) và luôn ghi rõ nguồn trích dẫn. Nếu tài liệu chưa đề cập, mình sẽ nói rõ để bạn liên hệ bộ phận hỗ trợ.';
+  }
+
+  @override
+  String get aiOfficialDocs => 'Tài liệu chính thức';
+
+  @override
+  String get aiWithSources => 'Có trích nguồn';
+
+  @override
+  String get aiYouCanAsk => 'Bạn có thể hỏi';
+
+  @override
+  String get aiNotSent => 'Chưa gửi được';
+
+  @override
+  String get aiNotInDocs => 'Chưa có trong tài liệu';
+
+  @override
+  String get aiTyping => 'Trợ lý đang trả lời';
+
+  @override
+  String aiSources(Object count) {
+    return 'Nguồn ($count)';
+  }
+
+  @override
+  String get aiCitationsUpper => 'TRÍCH DẪN NGUỒN';
+
+  @override
+  String get aiNoExcerpt => 'Không có đoạn trích.';
+
+  @override
+  String get aiVerbatim =>
+      'Trích nguyên văn từ tài liệu chính thức của Lock.R.';
+
+  @override
+  String get tagAccepted => '[NGHIỆM THU THÀNH CÔNG]';
+
+  @override
+  String get tagFieldNote => '[GHI CHÚ HIỆN TRƯỜNG]';
+
+  @override
+  String get tagSlaExtended => '[GIA HẠN SLA]';
+
+  @override
+  String get tagRepairProgress => '[TIẾN ĐỘ SỬA CHỮA]';
+
+  @override
+  String get urdInspectionPhotos => 'KTV đã chụp ảnh kiểm tra hiện trường.';
+
+  @override
+  String get urdProgressPhotos => 'KTV cập nhật ảnh tiến độ xử lý.';
+
+  @override
+  String urdSlaExtended(Object hours) {
+    return 'Phiếu được gia hạn thêm $hours giờ.';
+  }
+
+  @override
+  String urdNewDeadline(Object time) {
+    return '- Hạn hoàn tất mới: $time';
+  }
+
+  @override
+  String urdReason(Object reason) {
+    return '- Lý do: $reason';
+  }
+
+  @override
+  String get urdTechResolved => 'KTV đã hoàn tất phiếu.';
+
+  @override
+  String get urdTechSentAcceptance => 'KTV đã gửi ảnh nghiệm thu.';
+
+  @override
+  String get urdKioskNoLocation => 'Trạm Kiosk chưa có dữ liệu vị trí bản đồ.';
+
+  @override
+  String get urdPhotosAdded => 'Đã bổ sung ảnh thành công!';
+
+  @override
+  String get urdKioskStation => 'Trạm Kiosk';
+
+  @override
+  String get urdRecordTitle => 'Hồ sơ chi tiết phiếu sự cố kỹ thuật';
+
+  @override
+  String urdCreatedAt(Object time) {
+    return 'Tạo lúc: $time';
+  }
+
+  @override
+  String urdTechInCharge(Object name) {
+    return 'KTV phụ trách: $name';
+  }
+
+  @override
+  String get urdDispatching => 'Đang điều phối KTV';
+
+  @override
+  String urdResolvedAt(Object time) {
+    return 'Hoàn tất lúc: $time';
+  }
+
+  @override
+  String urdDeadline(Object time) {
+    return 'Hạn xử lý: $time';
+  }
+
+  @override
+  String urdBoxIncident(Object box) {
+    return 'Sự cố Ô tủ #$box';
+  }
+
+  @override
+  String get urdKioskIncident => 'Sự cố Trạm Kiosk';
+
+  @override
+  String urdOrder(Object code) {
+    return 'Đơn hàng: $code';
+  }
+
+  @override
+  String get urdDirectionsKiosk => 'Chỉ đường tới Kiosk';
+
+  @override
+  String get urdCopyPhone => 'Sao chép SĐT';
+
+  @override
+  String get urdPhoneCopied => 'Đã sao chép số điện thoại';
+
+  @override
+  String get urdReportContent => 'Nội dung phản ánh sự cố:';
+
+  @override
+  String get urdMorePhotos => 'Bổ sung ảnh';
+
+  @override
+  String get urdYourPhotos => 'Ảnh hiện trường sự cố bạn đã gửi';
+
+  @override
+  String get urdProgressTitle => 'Tiến trình xử lý sự cố:';
+
+  @override
+  String get urdTeamResponse => 'Phản hồi từ đội ngũ kỹ thuật:';
+
+  @override
+  String urdTechId(Object id) {
+    return 'KTV #$id';
+  }
+
+  @override
+  String get urdDispatchingAccept => 'Đang điều phối KTV tiếp nhận';
+
+  @override
+  String urdTechAcceptedAt(Object tech, Object time) {
+    return '$tech · Tiếp nhận: $time';
+  }
+
+  @override
+  String urdTechAccepted(Object tech) {
+    return '$tech đã tiếp nhận điều phối';
+  }
+
+  @override
+  String get urdTechInspected => 'KTV đã kiểm tra & xử lý hiện trường';
+
+  @override
+  String urdHandledAt(Object time, Object desc) {
+    return 'Đã xử lý lúc $time$desc';
+  }
+
+  @override
+  String get urdCheckedHandled => 'Đã kiểm tra & xử lý';
+
+  @override
+  String urdFixedAt(Object time) {
+    return 'Đã hoàn tất xử lý lúc $time';
+  }
+
+  @override
+  String get urdFixed => 'Đã khắc phục hoàn tất';
+
+  @override
+  String get urdTechInspecting => 'KTV đang kiểm tra hiện trường & xử lý';
+
+  @override
+  String get urdWaitingTech => 'Chờ KTV tới trạm Kiosk kiểm tra';
+
+  @override
+  String urdClosedAt(Object time, Object feedback) {
+    return 'Đóng lúc $time$feedback';
+  }
+
+  @override
+  String urdFeedback(Object text) {
+    return 'Phản hồi: $text';
+  }
+
+  @override
+  String get urdCheckedNormal => 'KTV đã kiểm tra, ô hoạt động bình thường';
+
+  @override
+  String urdAcceptedAt(Object time, Object note) {
+    return 'Nghiệm thu lúc: $time$note';
+  }
+
+  @override
+  String urdAcceptedDone(Object note) {
+    return 'Đã nghiệm thu hoàn tất$note';
+  }
+
+  @override
+  String urdExpectedBy(Object time) {
+    return 'Dự kiến hoàn tất trước: $time';
+  }
+
+  @override
+  String get urdAwaitingAcceptance => 'Chờ nghiệm thu & đóng phiếu';
+
+  @override
+  String urdSentAt(Object time) {
+    return 'Đã gửi: $time';
+  }
+
+  @override
+  String get urdRecorded => 'Hệ thống đã ghi nhận sự cố';
+
+  @override
+  String get urdStepTechAccepts => 'Kỹ thuật viên tiếp nhận';
+
+  @override
+  String get urdStepInspect => 'Kiểm tra & Xử lý tại Kiosk';
+
+  @override
+  String get urdStepRejected => 'KTV không xác nhận sự cố';
+
+  @override
+  String get urdStepAccept => 'Nghiệm thu & Đóng phiếu';
+
+  @override
+  String get urdTechProgress => 'Tiến độ xử lý của KTV:';
+
+  @override
+  String get urdAcceptingTech => 'Kỹ thuật viên nghiệm thu';
+
+  @override
+  String get urdNoTechNotes =>
+      'KTV chưa ghi chú bước xử lý nào. Các thao tác của KTV sẽ hiển thị ở đây.';
+
+  @override
+  String get urdSlaApproval => 'Phê duyệt gia hạn SLA';
+
+  @override
+  String urdRepairPhotos(Object count) {
+    return 'Ảnh trong quá trình sửa ($count ảnh):';
+  }
+
+  @override
+  String get urdKioskTech => 'Kỹ thuật viên kiosk';
+
+  @override
+  String get urdCustomerView =>
+      'Chế độ xem khách hàng · KTV cập nhật nhật ký & minh chứng qua Mobile App';
+
+  @override
+  String urdSteps(int count) {
+    return '$count bước xử lý';
+  }
+
+  @override
+  String get urdThanksRating => 'Cảm ơn bạn đã gửi đánh giá!';
+
+  @override
+  String urdRatingError(Object error) {
+    return 'Lỗi gửi đánh giá: $error';
+  }
+
+  @override
+  String get urdYourRating => 'Đánh giá của bạn về KTV';
+
+  @override
+  String get urdRateTech => 'Đánh giá chất lượng phục vụ của KTV';
+
+  @override
+  String urdComment(Object text) {
+    return 'Nhận xét: \"$text\"';
+  }
+
+  @override
+  String get urdRatePrompt =>
+      'Phiếu sự cố đã được xử lý xong. Hãy đánh giá sự hài lòng của bạn:';
+
+  @override
+  String get urdRateHint =>
+      'Nhận xét thêm về thái độ hoặc tốc độ xử lý của KTV (tuỳ chọn)...';
+
+  @override
+  String get urdSendRating => 'Gửi đánh giá';
+
+  @override
+  String get urdChoosePhoto => 'Vui lòng chọn ít nhất 1 ảnh.';
+
+  @override
+  String get urdAddPhotosTitle => 'Bổ sung ảnh sự cố';
+
+  @override
+  String urdAddPhotosHint(Object max) {
+    return 'Tối đa $max ảnh mỗi lần. Ảnh giúp đội bảo trì chuẩn bị đúng linh kiện trước khi tới.';
+  }
+
+  @override
+  String get urdSendPhotos => 'Gửi ảnh';
+
+  @override
+  String get mrUnknownTime => 'Không rõ thời gian';
+
+  @override
+  String get mrAwaiting => 'Chờ tiếp nhận';
+
+  @override
+  String get mrNone => 'Chưa có báo cáo nào';
+
+  @override
+  String get mrNoneHint =>
+      'Báo lỗi từ chi tiết đơn hoặc tab \"Báo sự cố mới\" sẽ hiện ở đây.';
+
+  @override
+  String get mrReportNow => 'Báo sự cố ngay';
+
+  @override
+  String get mrNoMatch => 'Không có báo cáo phù hợp';
+
+  @override
+  String mrNoMatchFilter(Object filter) {
+    return 'Không có phiếu sự cố nào thuộc bộ lọc \"$filter\".';
+  }
+
+  @override
+  String get mrViewAll => 'Xem tất cả báo cáo';
+
+  @override
+  String get mrEyebrow => 'LOCK.R • BÁO CÁO';
+
+  @override
+  String get mrSubtitle => 'Theo dõi tiến độ xử lý và gửi báo cáo sự cố ô tủ';
+
+  @override
+  String get mrNewReport => 'Báo sự cố mới';
+
+  @override
+  String mrTicketHash(Object id) {
+    return 'Phiếu sự cố #$id';
+  }
+
+  @override
+  String get mrLockerPoint => 'Điểm tủ';
+
+  @override
+  String get mrBox => 'Ô tủ';
+
+  @override
+  String get fbDamaged => 'Hàng bị hư hỏng';
+
+  @override
+  String get fbMissing => 'Thiếu / mất hàng';
+
+  @override
+  String get fbLocker => 'Tủ / ô gặp sự cố';
+
+  @override
+  String get fbPayment => 'Thanh toán / phí';
+
+  @override
+  String get fbService => 'Chất lượng dịch vụ';
+
+  @override
+  String get fbStPending => 'Đang chờ xử lý';
+
+  @override
+  String get fbStProcessing => 'Đang xử lý';
+
+  @override
+  String get fbStResolved => 'Đã xử lý';
+
+  @override
+  String get fbStRejected => 'Đã từ chối';
+
+  @override
+  String get fbStRecorded => 'Đã ghi nhận';
+
+  @override
+  String get fbRateOrder => 'Đánh giá đơn hàng';
+
+  @override
+  String get fbRateHint => 'Chia sẻ trải nghiệm của bạn (không bắt buộc)';
+
+  @override
+  String get fbRateNotSupported => 'Máy chủ chưa hỗ trợ đánh giá đơn.';
+
+  @override
+  String get fbThanks => 'Cảm ơn bạn đã đánh giá đơn hàng.';
+
+  @override
+  String get fbComplain => 'Gửi khiếu nại';
+
+  @override
+  String get fbIssue => 'Vấn đề';
+
+  @override
+  String get fbIssueHint => 'Mô tả chi tiết vấn đề bạn gặp phải';
+
+  @override
+  String get fbDescribe => 'Vui lòng mô tả vấn đề.';
+
+  @override
+  String get fbComplainNotSupported => 'Máy chủ chưa hỗ trợ khiếu nại đơn.';
+
+  @override
+  String get fbComplaintSent =>
+      'Đã gửi khiếu nại — bộ phận hỗ trợ sẽ phản hồi qua thông báo.';
+
+  @override
+  String get fbRateAndComplain => 'Đánh giá & khiếu nại';
+
+  @override
+  String get fbComplaint => 'Khiếu nại';
+
+  @override
+  String get fbEditRating => 'Sửa đánh giá';
+
+  @override
+  String fbSentAt(Object time) {
+    return 'Gửi lúc $time';
+  }
+
+  @override
+  String get fbNotSupported =>
+      'Máy chủ chưa hỗ trợ đánh giá / khiếu nại đơn. Vui lòng thử lại sau.';
+
+  @override
+  String btBoxOccupied(Object box) {
+    return 'Ô $box đang có hàng';
+  }
+
+  @override
+  String get btBoxOccupiedBody =>
+      'Ô này đang giữ hàng của một đơn. Chỉ mở khi bạn được giao kiểm tra tủ và đóng lại ngay sau khi thử.';
+
+  @override
+  String get btOpenAnyway => 'Vẫn mở';
+
+  @override
+  String get btFetchingCode => 'Đang lấy mã mở ô từ máy chủ…';
+
+  @override
+  String get btScanning => 'Đang tìm tủ qua Bluetooth…';
+
+  @override
+  String get btConnecting => 'Đang kết nối với tủ…';
+
+  @override
+  String get btSending => 'Đang gửi lệnh mở ô…';
+
+  @override
+  String get btWaiting => 'Chờ tủ mở khoá…';
+
+  @override
+  String get btSubtitle => 'Đứng cạnh tủ, chọn ô rồi bấm mở';
+
+  @override
+  String get btChooseBox => 'Chọn một ô để mở';
+
+  @override
+  String btOpenBox(Object box) {
+    return 'Mở ô $box qua Bluetooth';
+  }
+
+  @override
+  String get btLoadFailed => 'Không tải được danh sách tủ';
+
+  @override
+  String get btNotAllowed => 'Chưa được cho thử';
+
+  @override
+  String get btNotAllowedBody =>
+      'Admin chưa cho tài khoản này thử mở ô qua Bluetooth ở tủ nào.';
+
+  @override
+  String get btHint =>
+      'Bật Bluetooth và đứng trong khoảng 2 m trước tủ. Mỗi lần mở đều được ghi vào nhật ký của tủ.';
+
+  @override
+  String get btChooseBoxLabel => 'Chọn ô';
+
+  @override
+  String btOpened(Object box) {
+    return 'Đã mở ô $box';
+  }
+
+  @override
+  String get btNotOpened => 'Chưa mở được';
+
+  @override
+  String get btCloseAfter => 'Nhớ đóng cửa ô sau khi thử.';
+
+  @override
+  String get btNoBoxes => 'Tủ chưa có ô nào.';
+
+  @override
+  String btBox(Object number) {
+    return 'Ô $number';
+  }
 }

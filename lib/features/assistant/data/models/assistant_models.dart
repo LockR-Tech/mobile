@@ -2,6 +2,8 @@
 /// Class Dart thuần, không cần build_runner.
 library;
 
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
+
 /// `GET /api/assistant/status`: `enabled` = admin bật tính năng,
 /// `configured` = máy chủ đã có khoá mô hình để trả lời.
 class AssistantStatus {
@@ -42,7 +44,7 @@ class AssistantSource {
   factory AssistantSource.fromJson(Map<String, dynamic> json) =>
       AssistantSource(
         documentId: _int(json['documentId']) ?? 0,
-        documentTitle: _text(json['documentTitle']) ?? 'Tài liệu',
+        documentTitle: _text(json['documentTitle']) ?? L10n.current.aiDocument,
         chunkId: _int(json['chunkId']) ?? 0,
         heading: _text(json['heading']),
         citedText: _text(json['citedText']) ?? '',
@@ -99,7 +101,7 @@ class AssistantConversation {
   factory AssistantConversation.fromJson(Map<String, dynamic> json) =>
       AssistantConversation(
         id: _int(json['id']) ?? 0,
-        title: _text(json['title']) ?? 'Cuộc hội thoại',
+        title: _text(json['title']) ?? L10n.current.aiConversation,
         messageCount: _int(json['messageCount']) ?? 0,
         createdAt: parseServerTime(json['createdAt']),
         updatedAt: parseServerTime(json['updatedAt']),

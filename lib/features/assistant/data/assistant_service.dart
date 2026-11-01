@@ -4,6 +4,7 @@ import 'package:dio/dio.dart';
 import 'package:smart_laundry_locker/core/network/dio_client.dart';
 
 import 'models/assistant_models.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 /// Client của trợ lý hỏi đáp (assistant-service qua gateway, cần JWT — đã
 /// được [DioClient]/AuthInterceptor gắn sẵn). Mọi lỗi được đổi thành
@@ -34,8 +35,8 @@ class AssistantService {
       _guard(() async {
         final text = question.trim();
         if (text.isEmpty || text.length > maxQuestionLength) {
-          throw const AssistantException(
-            'Câu hỏi cần từ 1 đến $maxQuestionLength ký tự.',
+          throw AssistantException(
+            L10n.current.aiErrLength(maxQuestionLength),
             code: 'VALIDATION_ERROR',
           );
         }
@@ -80,8 +81,8 @@ class AssistantService {
     }
     final data = body is Map ? body['data'] : null;
     if (data is Map) return Map<String, dynamic>.from(data);
-    throw const AssistantException(
-      'Phản hồi từ máy chủ không hợp lệ.',
+    throw AssistantException(
+      L10n.current.aiErrBadResponse,
       code: 'BAD_RESPONSE',
     );
   }
@@ -94,8 +95,8 @@ class AssistantService {
     } on DioException catch (e) {
       throw AssistantException.fromDio(e);
     } catch (_) {
-      throw const AssistantException(
-        'Đã xảy ra lỗi, vui lòng thử lại.',
+      throw AssistantException(
+        L10n.current.aiErrGeneric,
         code: 'UNKNOWN',
       );
     }
@@ -119,32 +120,32 @@ class AssistantException implements Exception {
   bool get isNotFound => code == 'NOT_FOUND' || statusCode == 404;
 
   /// Mã chung của backend có thông báo tiếng Anh ⇒ thay bằng câu tiếng Việt.
-  static const _genericMessages = {
-    'NOT_FOUND': 'Không tìm thấy cuộc hội thoại này, có thể nó đã bị xoá.',
-    'VALIDATION_ERROR': 'Câu hỏi cần từ 1 đến 2000 ký tự.',
-    'INTERNAL_ERROR': 'Máy chủ gặp lỗi, vui lòng thử lại sau.',
+  static Map<String, String> get _genericMessages => {
+    'NOT_FOUND': L10n.current.aiErrNotFound,
+    'VALIDATION_ERROR': L10n.current.aiErrLength2000,
+    'INTERNAL_ERROR': L10n.current.aiErrServer,
   };
 
   factory AssistantException.fromDio(DioException e) {
     switch (e.type) {
       case DioExceptionType.connectionTimeout:
       case DioExceptionType.sendTimeout:
-        return const AssistantException(
-          'Kết nối tới máy chủ quá lâu, vui lòng thử lại.',
+        return AssistantException(
+          L10n.current.aiErrConnectTimeout,
           code: 'TIMEOUT',
         );
       case DioExceptionType.receiveTimeout:
-        return const AssistantException(
-          'Trợ lý phản hồi quá lâu, vui lòng thử lại.',
+        return AssistantException(
+          L10n.current.aiErrReplyTimeout,
           code: 'TIMEOUT',
         );
       case DioExceptionType.connectionError:
-        return const AssistantException(
-          'Không thể kết nối máy chủ. Kiểm tra kết nối mạng.',
+        return AssistantException(
+          L10n.current.aiErrNoConnection,
           code: 'NETWORK',
         );
       case DioExceptionType.cancel:
-        return const AssistantException('Đã huỷ yêu cầu.', code: 'CANCELLED');
+        return AssistantException(L10n.current.aiErrCancelled, code: 'CANCELLED');
       default:
         break;
     }
@@ -175,21 +176,21 @@ class AssistantException implements Exception {
   static String _statusMessage(int? status) {
     switch (status) {
       case 401:
-        return 'Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.';
+        return L10n.current.aiErrSession;
       case 403:
-        return 'Bạn không có quyền dùng trợ lý hỏi đáp.';
+        return L10n.current.aiErrForbidden;
       case 404:
         return _genericMessages['NOT_FOUND']!;
       case 429:
-        return 'Bạn đã hỏi quá nhiều câu, vui lòng thử lại sau.';
+        return L10n.current.aiErrRateLimit;
       case 502:
       case 503:
       case 504:
-        return 'Trợ lý đang bận hoặc gặp sự cố, vui lòng thử lại sau.';
+        return L10n.current.aiErrBusy;
       default:
         return status != null && status >= 500
-            ? 'Máy chủ gặp lỗi, vui lòng thử lại sau.'
-            : 'Đã xảy ra lỗi, vui lòng thử lại.';
+            ? L10n.current.aiErrServer
+        : L10n.current.aiErrGeneric;
     }
   }
 

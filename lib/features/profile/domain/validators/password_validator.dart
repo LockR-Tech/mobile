@@ -1,3 +1,4 @@
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 /// Password validation utility class
 /// Follows the validation rules from Mobile_Change_Password_Implementation_Guide.md
 class PasswordValidator {
@@ -62,24 +63,24 @@ class PasswordValidator {
   static String getStrengthLabel(int level) {
     switch (level) {
       case 0:
-        return 'Nhập mật khẩu';
+        return L10n.current.pwStrengthEnter;
       case 1:
-        return 'Mật khẩu yếu';
+        return L10n.current.pwStrengthWeak;
       case 2:
-        return 'Mật khẩu trung bình';
+        return L10n.current.pwStrengthMedium;
       case 3:
-        return 'Mật khẩu mạnh';
+        return L10n.current.pwStrengthStrong;
       case 4:
-        return 'Mật khẩu rất mạnh';
+        return L10n.current.pwStrengthVeryStrong;
       default:
-        return 'Nhập mật khẩu';
+        return L10n.current.pwStrengthEnter;
     }
   }
 
   /// Validate old password (required check only)
   static String? validateOldPassword(String? value) {
     if (value == null || value.isEmpty) {
-      return 'Vui lòng nhập mật khẩu hiện tại';
+      return L10n.current.pwEnterCurrent;
     }
     return null;
   }
@@ -87,22 +88,22 @@ class PasswordValidator {
   /// Validate new password with all requirements
   static String? validateNewPassword(String? value) {
     if (value == null || value.isEmpty) {
-      return 'Vui lòng nhập mật khẩu mới';
+      return L10n.current.pwEnterNew;
     }
     if (!hasMinLength(value)) {
-      return 'Mật khẩu phải có ít nhất 8 ký tự';
+      return L10n.current.pwMin8;
     }
     if (!hasUppercase(value)) {
-      return 'Mật khẩu phải có ít nhất 1 chữ cái viết hoa';
+      return L10n.current.pwNeedUpper;
     }
     if (!hasLowercase(value)) {
-      return 'Mật khẩu phải có ít nhất 1 chữ cái viết thường';
+      return L10n.current.pwNeedLower;
     }
     if (!hasNumber(value)) {
-      return 'Mật khẩu phải có ít nhất 1 số';
+      return L10n.current.pwNeedNumber;
     }
     if (!hasSpecialChar(value)) {
-      return 'Mật khẩu phải có ít nhất 1 ký tự đặc biệt';
+      return L10n.current.pwNeedSpecial;
     }
     return null;
   }
@@ -110,10 +111,10 @@ class PasswordValidator {
   /// Validate confirm password
   static String? validateConfirmPassword(String? value, String newPassword) {
     if (value == null || value.isEmpty) {
-      return 'Vui lòng xác nhận mật khẩu mới';
+      return L10n.current.pwConfirmNew;
     }
     if (!passwordsMatch(newPassword, value)) {
-      return 'Mật khẩu xác nhận không khớp';
+      return L10n.current.pwConfirmNotMatch;
     }
     return null;
   }
@@ -122,20 +123,20 @@ class PasswordValidator {
   static List<PasswordRequirement> getRequirements(String password) {
     return [
       PasswordRequirement(
-        text: 'Ít nhất 8 ký tự',
+        text: L10n.current.pwReq8,
         isMet: hasMinLength(password),
       ),
       PasswordRequirement(
-        text: 'Ít nhất 1 chữ viết hoa',
+        text: L10n.current.pwReqUpper,
         isMet: hasUppercase(password),
       ),
       PasswordRequirement(
-        text: 'Ít nhất 1 chữ viết thường',
+        text: L10n.current.pwReqLower,
         isMet: hasLowercase(password),
       ),
-      PasswordRequirement(text: 'Ít nhất 1 số', isMet: hasNumber(password)),
+      PasswordRequirement(text: L10n.current.pwReqNumber, isMet: hasNumber(password)),
       PasswordRequirement(
-        text: 'Ít nhất 1 ký tự đặc biệt',
+        text: L10n.current.pwReqSpecial,
         isMet: hasSpecialChar(password),
       ),
     ];

@@ -1,3 +1,4 @@
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 /// Thông báo tiếng Việt cho lỗi `PUT /api/user/profile`.
 ///
 /// Backend kiểm trùng email/SĐT với người dùng khác (`USER_EMAIL_TAKEN`,
@@ -9,16 +10,16 @@ String profileUpdateErrorMessage(String raw) {
   final m = raw.trim();
   final upper = m.toUpperCase();
   if (upper == 'USER_PHONE_TAKEN' || upper == 'AUTH_PHONE_TAKEN') {
-    return 'Số điện thoại này đã được dùng cho tài khoản khác';
+    return L10n.current.profErrPhoneUsed;
   }
   if (upper == 'USER_EMAIL_TAKEN' || upper == 'AUTH_EMAIL_TAKEN') {
-    return 'Email này đã được dùng cho tài khoản khác';
+    return L10n.current.profErrEmailUsed;
   }
   if (upper == 'AUTH_SYNC_FAILED') {
-    return 'Không cập nhật được tài khoản đăng nhập, vui lòng thử lại';
+    return L10n.current.profErrLoginUpdate;
   }
   if (m.isEmpty || m == 'Đã xảy ra lỗi.') {
-    return 'Cập nhật hồ sơ thất bại. Vui lòng thử lại.';
+    return L10n.current.profErrUpdateFailed;
   }
   return m;
 }

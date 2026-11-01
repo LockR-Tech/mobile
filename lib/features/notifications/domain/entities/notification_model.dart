@@ -1,4 +1,5 @@
 import 'package:smart_laundry_locker/core/utils/app_date_time.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 class NotificationDataPayload {
   final String actionType;
@@ -78,7 +79,8 @@ class NotificationModel {
   }
 
   factory NotificationModel.fromJson(Map<String, dynamic> json) {
-    final rawTitle = (json['title'] ?? 'Thông báo').toString();
+    final rawTitle =
+        (json['title'] ?? L10n.current.commonNotifications).toString();
     final bodyContent =
         (json['body'] ?? json['content'] ?? json['message'] ?? '').toString();
 
@@ -98,8 +100,9 @@ class NotificationModel {
     return NotificationModel(
       id: (json['id'] ?? json['notificationId'] ?? '').toString(),
       userId: json['userId']?.toString(),
-      title: _translateTitle(rawTitle),
-      body: _translateBody(bodyContent),
+      // Bản tiếng Anh giữ nguyên câu tiếng Anh server gửi.
+      title: L10n.isEnglish ? rawTitle : _translateTitle(rawTitle),
+      body: L10n.isEnglish ? bodyContent : _translateBody(bodyContent),
       dataPayload: payload.isNotEmpty
           ? NotificationDataPayload.fromJson(payload)
           : null,

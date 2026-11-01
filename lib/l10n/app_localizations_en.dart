@@ -7346,4 +7346,1825 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get txBalanceAfter => 'Wallet balance after';
+
+  @override
+  String get commonUser => 'User';
+
+  @override
+  String get commonDelete => 'Delete';
+
+  @override
+  String get commonUpdateNow => 'Update now';
+
+  @override
+  String get reminderFieldEmail => 'an email';
+
+  @override
+  String get reminderFieldPhone => 'a phone number';
+
+  @override
+  String reminderMissing(Object fields) {
+    return 'Your account doesn\'t have $fields yet.';
+  }
+
+  @override
+  String get reminderTitle => 'Complete your account details';
+
+  @override
+  String reminderBody(Object missing) {
+    return '$missing Add it to receive locker codes, order notifications and recover your account if needed.';
+  }
+
+  @override
+  String reminderLater(Object days) {
+    return 'Later (remind me in $days days)';
+  }
+
+  @override
+  String loyEarn(Object order) {
+    return 'Points earned for order$order';
+  }
+
+  @override
+  String loyRedeem(Object order) {
+    return 'Points used for order$order';
+  }
+
+  @override
+  String loyRedeemRefund(Object order) {
+    return 'Points returned for cancelled order$order';
+  }
+
+  @override
+  String loyEarnReversal(Object order) {
+    return 'Points reversed for refunded order$order';
+  }
+
+  @override
+  String get loyVoucherExchange => 'Points redeemed for a voucher';
+
+  @override
+  String get loyVoucherRefund => 'Voucher points returned';
+
+  @override
+  String get loyExchange => 'Points redeemed';
+
+  @override
+  String get loyAdjustment => 'Points adjustment';
+
+  @override
+  String get loyChange => 'Points change';
+
+  @override
+  String get pwEnterCurrent => 'Please enter your current password';
+
+  @override
+  String get pwEnterNew => 'Please enter a new password';
+
+  @override
+  String pwMinLength(Object min) {
+    return 'The new password must be at least $min characters';
+  }
+
+  @override
+  String get pwSameAsCurrent =>
+      'The new password must differ from the current one';
+
+  @override
+  String get pwConfirmMismatch => 'The confirmation password doesn\'t match';
+
+  @override
+  String get pwCurrentWrong => 'The current password is incorrect';
+
+  @override
+  String get pwChangeFailed => 'Password change failed. Please try again.';
+
+  @override
+  String nameMin(Object min) {
+    return 'Full name must be at least $min characters';
+  }
+
+  @override
+  String nameMax(Object max) {
+    return 'Full name can\'t exceed $max characters';
+  }
+
+  @override
+  String get nameLettersOnly => 'Full name may only contain letters and spaces';
+
+  @override
+  String get nameRealName => 'Please enter your real name';
+
+  @override
+  String get profErrPhoneUsed => 'This phone number is used by another account';
+
+  @override
+  String get profErrEmailUsed => 'This email is used by another account';
+
+  @override
+  String get profErrLoginUpdate =>
+      'Couldn\'t update your login account, please try again';
+
+  @override
+  String get profErrUpdateFailed => 'Profile update failed. Please try again.';
+
+  @override
+  String avTooLarge(Object size) {
+    return 'The image can\'t exceed 5MB (current size: ${size}MB)';
+  }
+
+  @override
+  String avTooSmall(Object min, Object width, Object height) {
+    return 'The image must be at least ${min}x${min}px (current size: ${width}x${height}px)';
+  }
+
+  @override
+  String avTooBig(Object max, Object width, Object height) {
+    return 'The image can\'t exceed ${max}x${max}px (current size: ${width}x${height}px)';
+  }
+
+  @override
+  String get avUnknownFormat => 'Couldn\'t determine the file format';
+
+  @override
+  String get avFormats => 'Only JPG, PNG and WebP are supported';
+
+  @override
+  String get avNotFound => 'File not found';
+
+  @override
+  String avCantCheck(Object error) {
+    return 'Couldn\'t check the file: $error';
+  }
+
+  @override
+  String get pwStrengthEnter => 'Enter a password';
+
+  @override
+  String get pwStrengthWeak => 'Weak password';
+
+  @override
+  String get pwStrengthMedium => 'Medium password';
+
+  @override
+  String get pwStrengthStrong => 'Strong password';
+
+  @override
+  String get pwStrengthVeryStrong => 'Very strong password';
+
+  @override
+  String get pwMin8 => 'Password must be at least 8 characters';
+
+  @override
+  String get pwNeedUpper => 'Password must contain at least 1 uppercase letter';
+
+  @override
+  String get pwNeedLower => 'Password must contain at least 1 lowercase letter';
+
+  @override
+  String get pwNeedNumber => 'Password must contain at least 1 number';
+
+  @override
+  String get pwNeedSpecial =>
+      'Password must contain at least 1 special character';
+
+  @override
+  String get pwConfirmNew => 'Please confirm the new password';
+
+  @override
+  String get pwConfirmNotMatch => 'The confirmation password doesn\'t match';
+
+  @override
+  String get pwReq8 => 'At least 8 characters';
+
+  @override
+  String get pwReqUpper => 'At least 1 uppercase letter';
+
+  @override
+  String get pwReqLower => 'At least 1 lowercase letter';
+
+  @override
+  String get pwReqNumber => 'At least 1 number';
+
+  @override
+  String get pwReqSpecial => 'At least 1 special character';
+
+  @override
+  String get loyInvalidData => 'Invalid reward points data';
+
+  @override
+  String get pwChangeNotSupported =>
+      'The server doesn\'t support changing the password from the app yet. Please try again later.';
+
+  @override
+  String get avWaitSync => 'Please wait for syncing to finish';
+
+  @override
+  String get avChooseAvatar => 'Choose a profile photo';
+
+  @override
+  String get avEditAvatar => 'Edit profile photo';
+
+  @override
+  String get avCamera => 'the camera';
+
+  @override
+  String get avGallery => 'the photo gallery';
+
+  @override
+  String avCantAccess(Object source) {
+    return 'Couldn\'t access $source. Please grant permission in settings.';
+  }
+
+  @override
+  String get avSelected =>
+      'Photo selected. Tap \"Save profile photo\" to update.';
+
+  @override
+  String get avNothingToUpload => 'No photo to upload';
+
+  @override
+  String get avNoAccount =>
+      'Couldn\'t identify the account to update the profile photo';
+
+  @override
+  String get avInvalid => 'Invalid image';
+
+  @override
+  String get avUpdated => 'Profile photo updated!';
+
+  @override
+  String get avCancelled => 'Profile photo change cancelled';
+
+  @override
+  String get avChooseSource => 'Choose photo source';
+
+  @override
+  String get avLibrary => 'Gallery';
+
+  @override
+  String get avUploading => 'Uploading';
+
+  @override
+  String avProgress(Object percent) {
+    return '$percent complete';
+  }
+
+  @override
+  String get avPleaseWait => 'Please wait a moment';
+
+  @override
+  String get epUpdated => 'Updated successfully!';
+
+  @override
+  String get epSaveFailed => 'Couldn\'t save your profile';
+
+  @override
+  String get epTakePhoto => 'Take photo';
+
+  @override
+  String get epFromGallery => 'Choose from gallery';
+
+  @override
+  String get epRemoveAvatar => 'Remove profile photo';
+
+  @override
+  String get epNoAccountPhoto =>
+      'Couldn\'t identify the account to update the photo';
+
+  @override
+  String get epUpdatingAvatar => 'Updating profile photo...';
+
+  @override
+  String get epAvatarUpdated => 'Profile photo updated';
+
+  @override
+  String get epRemoveQuestion => 'Remove profile photo?';
+
+  @override
+  String get epRemoveBody =>
+      'The current profile photo will be removed from your account.';
+
+  @override
+  String get epRemoving => 'Removing profile photo...';
+
+  @override
+  String get epRemoved => 'Profile photo removed';
+
+  @override
+  String get epTitle => 'Edit profile';
+
+  @override
+  String get epSubtitle => 'Update your account details';
+
+  @override
+  String get epNameHint => 'Enter your full name';
+
+  @override
+  String get epPhoneHint => 'Enter your phone number';
+
+  @override
+  String get epInvalidPhone => 'Invalid phone number';
+
+  @override
+  String get epEmailHint => 'Enter your email';
+
+  @override
+  String get epLoginInfoNote =>
+      'Changing your phone number or email also changes your login details.';
+
+  @override
+  String get frSuccess => 'Face registered successfully';
+
+  @override
+  String get frFailed => 'Registration failed';
+
+  @override
+  String get frNoCamera => 'No camera found on this device.';
+
+  @override
+  String get frCantOpenCamera =>
+      'Couldn\'t open the camera. Please check permissions.';
+
+  @override
+  String get frNoUser => 'User information not found';
+
+  @override
+  String frCaptureError(Object error) {
+    return 'Error while capturing and registering: $error';
+  }
+
+  @override
+  String get frSample => 'Face sampling';
+
+  @override
+  String get frHoldPhone =>
+      'Hold the phone straight in front of your face and tap the button below to start.';
+
+  @override
+  String frCapturing(Object count, Object total) {
+    return 'Capturing: $count/$total';
+  }
+
+  @override
+  String get frProcessing => 'Processing registration...';
+
+  @override
+  String get frStartScan => 'Start scan';
+
+  @override
+  String get fvSuccess => 'FaceID verified';
+
+  @override
+  String fvMatched(Object id) {
+    return 'Recognized ID: $id';
+  }
+
+  @override
+  String get fvFailedRetry => 'Couldn\'t verify FaceID. Please try again.';
+
+  @override
+  String get fvCameraError =>
+      'Couldn\'t open the camera or take the verification photo.';
+
+  @override
+  String get fvFailed => 'Verification failed';
+
+  @override
+  String get fvUsePassword => 'Use password';
+
+  @override
+  String get fvVerifying => 'Verifying...';
+
+  @override
+  String get fvLookStraight =>
+      'Please look straight at the camera and hold the phone still so the system can recognize your face.';
+
+  @override
+  String get fvNotSupported => 'Face login isn\'t supported yet.';
+
+  @override
+  String get locChecking => 'Checking...';
+
+  @override
+  String get locServiceOff => 'Device location is off';
+
+  @override
+  String get locGranted => 'Location permission granted';
+
+  @override
+  String get locNotGranted => 'Location permission not granted';
+
+  @override
+  String get locDenied => 'Location permission denied';
+
+  @override
+  String get locCantOpenSettings =>
+      'Couldn\'t open settings. Go to device Settings → Apps → Lock.R → Permissions to turn on Location.';
+
+  @override
+  String get locCantOpenLocationSettings =>
+      'Couldn\'t open the device\'s location settings.';
+
+  @override
+  String get locSubtitle => 'The app\'s location permission';
+
+  @override
+  String get locAlways => 'The app can use your location at any time.';
+
+  @override
+  String get locWhileInUse => 'The app can use your location while it\'s open.';
+
+  @override
+  String get locTurnOnGps =>
+      'Turn on Location (GPS) in your device settings so the app can get your location.';
+
+  @override
+  String get locGrantToFind =>
+      'Grant permission to find lockers near you and get directions.';
+
+  @override
+  String get locBlocked =>
+      'You\'ve blocked location permission. Open the app settings to turn it back on.';
+
+  @override
+  String get locRecheck => 'Check again';
+
+  @override
+  String get locGrant => 'Grant location permission';
+
+  @override
+  String get locOpenAppSettings => 'Open app settings';
+
+  @override
+  String get locTurnOn => 'Turn on location';
+
+  @override
+  String get locChangeInSettings => 'Change in system settings';
+
+  @override
+  String get locUsesFor => 'Lock.R uses your location to';
+
+  @override
+  String get locUseFind => 'Find stores / lockers near you';
+
+  @override
+  String get locUseDirections => 'Get directions to lockers';
+
+  @override
+  String get locUsePhotos =>
+      'Tag photos with coordinates when reporting issues';
+
+  @override
+  String get loyHistoryNotSupported =>
+      'The server doesn\'t support points history yet.';
+
+  @override
+  String get loyNotSupported =>
+      'The server doesn\'t support reward points yet. Please try again later.';
+
+  @override
+  String get loySubtitle => 'Earn points when orders are completed';
+
+  @override
+  String get loyLoading => 'Loading reward points...';
+
+  @override
+  String get loyHistory => 'Points history';
+
+  @override
+  String get loyEmpty =>
+      'No points activity yet. Points are added automatically when your orders are completed.';
+
+  @override
+  String get loyCurrent => 'Current points';
+
+  @override
+  String loyTier(Object tier) {
+    return '$tier tier';
+  }
+
+  @override
+  String get loyTopTier => 'You\'re at the top tier.';
+
+  @override
+  String loyToNext(Object points, Object tier) {
+    return '$points points to reach $tier.';
+  }
+
+  @override
+  String loyLifetime(Object points) {
+    return 'Lifetime points: $points (used for tiers; spending points doesn\'t lower your tier)';
+  }
+
+  @override
+  String get polLoadFailed => 'Couldn\'t load the content';
+
+  @override
+  String get polAgree => 'I agree to the terms of use';
+
+  @override
+  String get pdTitle => 'Personal information';
+
+  @override
+  String get pdSubtitle => 'Your account details';
+
+  @override
+  String get pdNoData => 'No data';
+
+  @override
+  String get pdStatusActive => 'Account status: Active';
+
+  @override
+  String get pdStatusInactive => 'Account status: Not activated';
+
+  @override
+  String get pdStatusLocked => 'Account status: Locked';
+
+  @override
+  String get pdDisabled =>
+      'Your account is currently disabled. Please contact support.';
+
+  @override
+  String get pdYourEmail => 'Your email';
+
+  @override
+  String get pdNotUpdated => 'Not set';
+
+  @override
+  String get pdPasswordNotSet => 'Password (not set — tap to set)';
+
+  @override
+  String get pdNotSet => 'Not set';
+
+  @override
+  String get secNoBiometric =>
+      'This device has no fingerprint/face registered in system settings.';
+
+  @override
+  String get secEnableReason => 'Authenticate to turn on app lock';
+
+  @override
+  String get secAuthFailed => 'Authentication failed';
+
+  @override
+  String get secLockOn => 'Biometric app lock turned on';
+
+  @override
+  String get secLockOff => 'Biometric app lock turned off';
+
+  @override
+  String get secPasswordSet => 'Password set';
+
+  @override
+  String get secPasswordChanged => 'Password changed';
+
+  @override
+  String get secSubtitle => 'Protect your account and device';
+
+  @override
+  String get secBiometricLock => 'Biometric app lock';
+
+  @override
+  String get secBiometricOn =>
+      'Require fingerprint/face each time you open the app.';
+
+  @override
+  String get secBiometricUnavailable =>
+      'No biometrics registered on this device.';
+
+  @override
+  String secLoadFailed(Object error) {
+    return 'Couldn\'t load account details: $error';
+  }
+
+  @override
+  String get secChangePassword => 'Change password';
+
+  @override
+  String get secSetPassword => 'Set password';
+
+  @override
+  String get secChangeHint =>
+      'Enter your current and new password. Other devices will need to log in again.';
+
+  @override
+  String get secSetHint =>
+      'Your account signs in with Google or OTP, so it has no password yet. Set one to log in with your email/phone number and password.';
+
+  @override
+  String get secCurrentPassword => 'Current password';
+
+  @override
+  String secMinChars(Object min) {
+    return 'At least $min characters';
+  }
+
+  @override
+  String get secConfirmNew => 'Confirm new password';
+
+  @override
+  String get profSaveFailedNetwork =>
+      'Couldn\'t save. Check your network and try again.';
+
+  @override
+  String get phSyncing => 'Syncing...';
+
+  @override
+  String get phSaveAvatar => 'Save profile photo';
+
+  @override
+  String get tcTitle => 'Terms of service';
+
+  @override
+  String get tcBody =>
+      'Before using Lock.R, please read and accept the Terms of service and Privacy policy. They cover locker rental, sending and receiving parcels, drone delivery, fees, refunds and compensation for incidents.';
+
+  @override
+  String get tcReadTerms => 'Read the Terms of service';
+
+  @override
+  String get tcReadPrivacy => 'Read the Privacy policy';
+
+  @override
+  String get tcAgreeCheckbox =>
+      'I have read and agree to Lock.R\'s Terms of service and Privacy policy.';
+
+  @override
+  String get tcAgreeContinue => 'Agree and continue';
+
+  @override
+  String get qlNotConfirmed =>
+      'The server didn\'t confirm the kiosk login. Please scan the code on the kiosk again.';
+
+  @override
+  String get qlExpired =>
+      'The login code has expired. Generate a new one on the kiosk and scan again.';
+
+  @override
+  String get qlUsed =>
+      'This login code has already been used. Generate a new one on the kiosk.';
+
+  @override
+  String get qlInvalid => 'The kiosk login code is invalid or no longer valid.';
+
+  @override
+  String get qlInactive =>
+      'Your account is locked or not activated, so it can\'t log in on the kiosk.';
+
+  @override
+  String get qlSessionExpired =>
+      'Your app session has expired. Please log in again and scan the code.';
+
+  @override
+  String get qlTooFast =>
+      'Too many attempts. Please try again in a few minutes.';
+
+  @override
+  String get qlNoConnection =>
+      'Couldn\'t reach the server. Check your network and try again.';
+
+  @override
+  String get qlNotSupported =>
+      'The server doesn\'t support kiosk login by QR code yet. Please log in with your phone number on the kiosk.';
+
+  @override
+  String get aoChooseLocker => 'Please choose a locker.';
+
+  @override
+  String get aoEnterCode => 'Please enter the pickup code.';
+
+  @override
+  String get aoPickupBox => 'the pickup compartment';
+
+  @override
+  String get aoOpened =>
+      'The compartment is open — take your parcel and close the door.';
+
+  @override
+  String aoOpenFailed(Object detail) {
+    return 'Couldn\'t open the compartment$detail';
+  }
+
+  @override
+  String get aoTitle => 'Delegated locker opening';
+
+  @override
+  String get aoSubtitle => 'Pick up with the code sent to you';
+
+  @override
+  String get aoIntro =>
+      'Enter the pickup code (PIN) you received — it\'s under \"Delegated orders\" or was sent to you by the sender. You need to be at the locker to open the compartment.';
+
+  @override
+  String get aoOrder => 'Order';
+
+  @override
+  String get aoTapToChoose => 'Tap to choose the pickup locker';
+
+  @override
+  String get aoOpenBox => 'Open compartment to pick up';
+
+  @override
+  String get mdSubtitle => 'Orders others asked you to pick up';
+
+  @override
+  String get mdEmpty => 'No delegated orders yet';
+
+  @override
+  String get mdEmptyHint =>
+      'When someone delegates a pickup to you (by your phone number), the order will appear here.';
+
+  @override
+  String get mdNotSupported =>
+      'The server doesn\'t support Delegated orders yet. Please try again later.';
+
+  @override
+  String get dnTitleEnRoute => 'Drone delivering';
+
+  @override
+  String get dnTitleApproaching => 'Drone approaching';
+
+  @override
+  String get dnTitleArrived => 'Drone arrived';
+
+  @override
+  String get dnTitleDelivered => 'Delivered';
+
+  @override
+  String get dnTitleDelayed => 'Order delayed';
+
+  @override
+  String get dnTitleFailed => 'Delivery failed';
+
+  @override
+  String get dnTitleUpdate => 'Order update';
+
+  @override
+  String get dnBodyEnRoute => 'The drone is on its way with your parcel';
+
+  @override
+  String get dnBodyApproaching =>
+      'The drone is almost there, please get ready to collect';
+
+  @override
+  String get dnBodyArrived =>
+      'The drone has arrived, please collect your parcel';
+
+  @override
+  String get dnBodyDelivered => 'Delivered successfully. Thank you!';
+
+  @override
+  String dnBodyDelayedEta(Object eta) {
+    return 'Your order is delayed, now expected in $eta';
+  }
+
+  @override
+  String get dnBodyDelayed => 'Your order is running behind schedule';
+
+  @override
+  String get dnBodyFailed => 'Delivery failed, the drone is returning';
+
+  @override
+  String get dnBodyUpdate => 'Your order has a new update';
+
+  @override
+  String get nlSubtitle => 'Latest updates from Lock.R';
+
+  @override
+  String get nlLoginRequired => 'You need to log in to see notifications';
+
+  @override
+  String get nlReadAll => 'Mark all as read';
+
+  @override
+  String get nlLoading => 'Loading notifications...';
+
+  @override
+  String get nlAllSeen => 'You\'re all caught up';
+
+  @override
+  String get nlEmpty => 'No notifications yet';
+
+  @override
+  String get nlEmptyHint => 'New notifications will appear here';
+
+  @override
+  String get nlLoadFailed => 'Couldn\'t load notifications';
+
+  @override
+  String get nlDeleteAllQuestion => 'Delete all notifications?';
+
+  @override
+  String get nlDeleteAllBody =>
+      'All notifications on your account will be deleted and can\'t be recovered.';
+
+  @override
+  String get nlDeleteAll => 'Delete all';
+
+  @override
+  String get nlDeletedAll => 'All notifications deleted';
+
+  @override
+  String get nlJustNow => 'Just now';
+
+  @override
+  String nlMinutesAgo(int minutes) {
+    String _temp0 = intl.Intl.pluralLogic(
+      minutes,
+      locale: localeName,
+      other: '$minutes minutes ago',
+      one: '1 minute ago',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String nlHoursAgo(int hours) {
+    String _temp0 = intl.Intl.pluralLogic(
+      hours,
+      locale: localeName,
+      other: '$hours hours ago',
+      one: '1 hour ago',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String nlDaysAgo(int days) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: '$days days ago',
+      one: '1 day ago',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get npLoadFailed => 'Couldn\'t load notifications. Please try again.';
+
+  @override
+  String get npLoadMoreFailed =>
+      'Couldn\'t load more notifications. Please try again.';
+
+  @override
+  String get npDeleteNotFound =>
+      'Notification not found or the server doesn\'t support deleting yet.';
+
+  @override
+  String get npDeleteFailed =>
+      'Couldn\'t delete the notification. Please try again.';
+
+  @override
+  String get npDeleteNotSupported =>
+      'The server doesn\'t support deleting notifications yet. Please try again later.';
+
+  @override
+  String get crNoLockers => 'No lockers found to report.';
+
+  @override
+  String get crNetworkError => 'Network connection error';
+
+  @override
+  String get crSessionExpired =>
+      'Your session has expired, please log in again.';
+
+  @override
+  String get crEnterTitle => 'Please enter a title';
+
+  @override
+  String get crEnterDescription => 'Please enter a detailed description';
+
+  @override
+  String get crChooseLocker => 'Please choose the affected locker';
+
+  @override
+  String get crAttachPhoto => 'Please attach at least 1 photo of the issue';
+
+  @override
+  String get crSending => 'Sending report...';
+
+  @override
+  String get crSent => 'Report sent';
+
+  @override
+  String crSendFailed(Object error) {
+    return 'Couldn\'t send the report: $error';
+  }
+
+  @override
+  String crFirstPhotosOnly(Object count, Object max) {
+    return 'Only the first $count photos were added (max $max)';
+  }
+
+  @override
+  String get crTitle => 'Report an issue';
+
+  @override
+  String get crTitleField => 'Title';
+
+  @override
+  String get crTitleHint => 'Enter a title for the issue';
+
+  @override
+  String get crDescriptionField => 'Detailed description';
+
+  @override
+  String get crDescriptionHint => 'Describe the problem clearly';
+
+  @override
+  String get crCancelOrList => 'Cancel / List';
+
+  @override
+  String get crBack => 'Back';
+
+  @override
+  String get crSubmit => 'Send report';
+
+  @override
+  String get crFaultyLocker => 'Faulty locker';
+
+  @override
+  String get crTapToChoose => 'Tap to choose the affected locker';
+
+  @override
+  String get crChooseBox => 'Choose the affected compartment ';
+
+  @override
+  String get crOptional => '(Optional)';
+
+  @override
+  String get crLayout => 'Layout';
+
+  @override
+  String get crCards => 'Cards';
+
+  @override
+  String get crDeselect => 'Deselect';
+
+  @override
+  String get crNoBoxes =>
+      'No compartment list found, or the issue affects the whole station.';
+
+  @override
+  String crSelectedBox(Object number, Object type, Object status) {
+    return 'Selected: Box #$number • $type • $status';
+  }
+
+  @override
+  String get crDoorOpenWarning =>
+      '⚠️ This compartment\'s door is currently OPEN in the system.';
+
+  @override
+  String get crSelectedKiosk =>
+      'Selected: 7\" kiosk touchscreen (station-wide issue)';
+
+  @override
+  String get crKioskHint =>
+      'Report a frozen/off screen, touch problems, or issues not tied to a specific compartment.';
+
+  @override
+  String get crKioskTitle => '7-inch kiosk touchscreen issue';
+
+  @override
+  String get crKioskScreen => 'Kiosk screen';
+
+  @override
+  String get crTapToReport => 'Tap to report';
+
+  @override
+  String get crSuitcaseBayUpper => 'LARGE SUITCASE BAY';
+
+  @override
+  String get crOpen => 'Open';
+
+  @override
+  String get crPhotos => 'On-site photos of the issue';
+
+  @override
+  String crPhotoCount(Object count) {
+    return '$count photos';
+  }
+
+  @override
+  String crPhotosHint(Object max) {
+    return 'You can add several photos from the gallery at once or take them one by one with the camera (up to $max photos)';
+  }
+
+  @override
+  String get crPickMany => 'Choose several photos';
+
+  @override
+  String get cdiLoadFailed => 'Couldn\'t load the order\'s incident details';
+
+  @override
+  String get cdiInProgress => 'The parcel drop incident is being handled';
+
+  @override
+  String get cdiResolved => 'The parcel drop incident has been resolved';
+
+  @override
+  String get cdiCode => 'Incident code';
+
+  @override
+  String get cdiRecovery => 'Parcel recovery';
+
+  @override
+  String get cdiParcelState => 'Parcel condition';
+
+  @override
+  String get cdiFieldNote => 'On-site note';
+
+  @override
+  String get cdiRecoveryPhotos => 'Parcel photos at recovery';
+
+  @override
+  String get cdiLastUpdate => 'Last update';
+
+  @override
+  String get cdiProposal => 'Proposed resolution';
+
+  @override
+  String cdiProposalVersion(Object version) {
+    return ' (version $version)';
+  }
+
+  @override
+  String cdiContent(Object note) {
+    return 'Details: $note';
+  }
+
+  @override
+  String get cdiPolicy =>
+      'The incident policy at the time of your order applies';
+
+  @override
+  String get cdiNoBank => 'No bank account for compensation yet';
+
+  @override
+  String get cdiNoBankBody =>
+      'The resolution includes a refund/compensation. Please link a bank account so the system can transfer it.';
+
+  @override
+  String get cdiUpdateBank => 'Update bank account';
+
+  @override
+  String get cdiSenderDecides =>
+      'The sender will accept or request a review of this proposal.';
+
+  @override
+  String get cdiRequestReview => 'Request review';
+
+  @override
+  String get cdiAccept => 'Accept';
+
+  @override
+  String get cdiAcceptQuestion => 'Accept the proposal?';
+
+  @override
+  String get cdiReviewQuestion => 'Ask Lock.R to review it again?';
+
+  @override
+  String get cdiNoteOptional => 'Note (optional)';
+
+  @override
+  String get cdiReviewReason => 'Reason for review *';
+
+  @override
+  String get cdiEnterReason => 'Please enter the reason for the review.';
+
+  @override
+  String get cdiAccepted => 'Your choice has been recorded.';
+
+  @override
+  String get cdiReviewSent => 'Review request sent.';
+
+  @override
+  String cdiCompensation(Object amount) {
+    return 'Compensation $amount';
+  }
+
+  @override
+  String get cdiFreeRedelivery => 'free redelivery';
+
+  @override
+  String get cdiRefundShipping => 'shipping fee refunded';
+
+  @override
+  String get crSelectLocker => 'Please choose the affected locker.';
+
+  @override
+  String aiErrLength(Object max) {
+    return 'Questions must be 1 to $max characters.';
+  }
+
+  @override
+  String get aiErrBadResponse => 'Invalid response from the server.';
+
+  @override
+  String get aiErrGeneric => 'Something went wrong, please try again.';
+
+  @override
+  String get aiErrNotFound =>
+      'Conversation not found; it may have been deleted.';
+
+  @override
+  String get aiErrLength2000 => 'Questions must be 1 to 2000 characters.';
+
+  @override
+  String get aiErrServer => 'Server error, please try again later.';
+
+  @override
+  String get aiErrConnectTimeout =>
+      'The connection took too long, please try again.';
+
+  @override
+  String get aiErrReplyTimeout =>
+      'The assistant took too long to reply, please try again.';
+
+  @override
+  String get aiErrNoConnection =>
+      'Can\'t connect to the server. Check your network connection.';
+
+  @override
+  String get aiErrCancelled => 'Request cancelled.';
+
+  @override
+  String get aiErrSession => 'Your session has expired. Please log in again.';
+
+  @override
+  String get aiErrForbidden => 'You don\'t have access to the Q&A assistant.';
+
+  @override
+  String get aiErrRateLimit =>
+      'You\'ve asked too many questions, please try again later.';
+
+  @override
+  String get aiErrBusy =>
+      'The assistant is busy or having problems, please try again later.';
+
+  @override
+  String get aiDocument => 'Document';
+
+  @override
+  String get aiConversation => 'Conversation';
+
+  @override
+  String get aiEyebrow => 'LOCK.R • ASSISTANT';
+
+  @override
+  String get aiTitle => 'Q&A assistant';
+
+  @override
+  String get aiSubtitle => 'Answers from official documents, with sources';
+
+  @override
+  String get aiHistory => 'Q&A history';
+
+  @override
+  String get aiNewConversation => 'New conversation';
+
+  @override
+  String get aiDisabledTitle => 'The assistant is temporarily off';
+
+  @override
+  String get aiDisabledBody =>
+      'The Q&A feature is temporarily off. Please come back later.';
+
+  @override
+  String get aiNotReadyTitle => 'The assistant isn\'t ready';
+
+  @override
+  String get aiNotReadyBody =>
+      'The Q&A assistant isn\'t fully set up yet. Please come back later or contact Lock.R support.';
+
+  @override
+  String get aiWaiting => 'Waiting for the assistant…';
+
+  @override
+  String get aiInputHint => 'Type your question…';
+
+  @override
+  String get aiSend => 'Send question';
+
+  @override
+  String get aiDeleteQuestion => 'Delete conversation?';
+
+  @override
+  String aiDeleteBody(Object title) {
+    return 'The conversation “$title” will be permanently deleted and can\'t be recovered.';
+  }
+
+  @override
+  String get aiDeleted => 'Conversation deleted';
+
+  @override
+  String get aiHistorySubtitle => 'Your conversations with the assistant';
+
+  @override
+  String get aiNoConversations => 'No conversations yet';
+
+  @override
+  String get aiNoConversationsBody =>
+      'Questions you ask the assistant are saved here to revisit.';
+
+  @override
+  String get aiAsk => 'Ask a question';
+
+  @override
+  String aiMessageCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count messages',
+      one: '1 message',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String aiTodayAt(Object time) {
+    return 'Today, $time';
+  }
+
+  @override
+  String aiYesterdayAt(Object time) {
+    return 'Yesterday, $time';
+  }
+
+  @override
+  String get aiQTechInspection =>
+      'What do I do if a periodic inspection fails?';
+
+  @override
+  String get aiQTechDoor =>
+      'What should I check when a compartment reports a door error?';
+
+  @override
+  String get aiQTechTicket => 'What\'s the incident ticket process?';
+
+  @override
+  String get aiQTechIot =>
+      'What do I do if the locker\'s IoT device disconnects?';
+
+  @override
+  String get aiQDroneLaunch => 'How are drone orders accepted and launched?';
+
+  @override
+  String get aiQDroneCancel => 'When can a mission be cancelled before flight?';
+
+  @override
+  String get aiQDronePad =>
+      'What do I do if the drone landing pad reports an error?';
+
+  @override
+  String get aiQSend => 'How do I send a parcel via a locker?';
+
+  @override
+  String get aiQPay => 'How can I pay?';
+
+  @override
+  String get aiQRentEnd => 'What happens when my rental time runs out?';
+
+  @override
+  String get aiQCantOpen => 'What should I do if a compartment won\'t open?';
+
+  @override
+  String get aiDocsStaff => 'operating procedures, technical guides, policies';
+
+  @override
+  String get aiDocsCustomer => 'user guides, policies, FAQ';
+
+  @override
+  String get aiHello => 'Hi! I\'m the Lock.R assistant';
+
+  @override
+  String aiIntro(Object docs) {
+    return 'I answer from Lock.R\'s official documents ($docs) and always cite my sources. If the documents don\'t cover something, I\'ll say so so you can contact support.';
+  }
+
+  @override
+  String get aiOfficialDocs => 'Official documents';
+
+  @override
+  String get aiWithSources => 'With sources';
+
+  @override
+  String get aiYouCanAsk => 'You can ask';
+
+  @override
+  String get aiNotSent => 'Not sent';
+
+  @override
+  String get aiNotInDocs => 'Not in the documents';
+
+  @override
+  String get aiTyping => 'The assistant is replying';
+
+  @override
+  String aiSources(Object count) {
+    return 'Sources ($count)';
+  }
+
+  @override
+  String get aiCitationsUpper => 'SOURCE CITATIONS';
+
+  @override
+  String get aiNoExcerpt => 'No excerpt.';
+
+  @override
+  String get aiVerbatim => 'Quoted verbatim from Lock.R\'s official documents.';
+
+  @override
+  String get tagAccepted => '[ACCEPTED]';
+
+  @override
+  String get tagFieldNote => '[ON-SITE NOTE]';
+
+  @override
+  String get tagSlaExtended => '[SLA EXTENDED]';
+
+  @override
+  String get tagRepairProgress => '[REPAIR PROGRESS]';
+
+  @override
+  String get urdInspectionPhotos =>
+      'The technician took on-site inspection photos.';
+
+  @override
+  String get urdProgressPhotos => 'The technician updated progress photos.';
+
+  @override
+  String urdSlaExtended(Object hours) {
+    return 'The ticket was extended by $hours hours.';
+  }
+
+  @override
+  String urdNewDeadline(Object time) {
+    return '- New deadline: $time';
+  }
+
+  @override
+  String urdReason(Object reason) {
+    return '- Reason: $reason';
+  }
+
+  @override
+  String get urdTechResolved => 'The technician resolved the ticket.';
+
+  @override
+  String get urdTechSentAcceptance => 'The technician sent acceptance photos.';
+
+  @override
+  String get urdKioskNoLocation => 'The kiosk station has no map location yet.';
+
+  @override
+  String get urdPhotosAdded => 'Photos added!';
+
+  @override
+  String get urdKioskStation => 'Kiosk station';
+
+  @override
+  String get urdRecordTitle => 'Technical incident ticket details';
+
+  @override
+  String urdCreatedAt(Object time) {
+    return 'Created: $time';
+  }
+
+  @override
+  String urdTechInCharge(Object name) {
+    return 'Technician: $name';
+  }
+
+  @override
+  String get urdDispatching => 'Assigning a technician';
+
+  @override
+  String urdResolvedAt(Object time) {
+    return 'Resolved: $time';
+  }
+
+  @override
+  String urdDeadline(Object time) {
+    return 'Due: $time';
+  }
+
+  @override
+  String urdBoxIncident(Object box) {
+    return 'Compartment #$box incident';
+  }
+
+  @override
+  String get urdKioskIncident => 'Kiosk station incident';
+
+  @override
+  String urdOrder(Object code) {
+    return 'Order: $code';
+  }
+
+  @override
+  String get urdDirectionsKiosk => 'Directions to the kiosk';
+
+  @override
+  String get urdCopyPhone => 'Copy phone number';
+
+  @override
+  String get urdPhoneCopied => 'Phone number copied';
+
+  @override
+  String get urdReportContent => 'Issue description:';
+
+  @override
+  String get urdMorePhotos => 'Add more photos';
+
+  @override
+  String get urdYourPhotos => 'On-site photos you sent';
+
+  @override
+  String get urdProgressTitle => 'Incident handling progress:';
+
+  @override
+  String get urdTeamResponse => 'Response from the technical team:';
+
+  @override
+  String urdTechId(Object id) {
+    return 'Technician #$id';
+  }
+
+  @override
+  String get urdDispatchingAccept => 'Assigning a technician to accept';
+
+  @override
+  String urdTechAcceptedAt(Object tech, Object time) {
+    return '$tech · Accepted: $time';
+  }
+
+  @override
+  String urdTechAccepted(Object tech) {
+    return '$tech accepted the assignment';
+  }
+
+  @override
+  String get urdTechInspected =>
+      'The technician inspected and handled it on site';
+
+  @override
+  String urdHandledAt(Object time, Object desc) {
+    return 'Handled at $time$desc';
+  }
+
+  @override
+  String get urdCheckedHandled => 'Inspected & handled';
+
+  @override
+  String urdFixedAt(Object time) {
+    return 'Fixed at $time';
+  }
+
+  @override
+  String get urdFixed => 'Fully fixed';
+
+  @override
+  String get urdTechInspecting =>
+      'The technician is inspecting and handling it on site';
+
+  @override
+  String get urdWaitingTech => 'Waiting for a technician to visit the kiosk';
+
+  @override
+  String urdClosedAt(Object time, Object feedback) {
+    return 'Closed at $time$feedback';
+  }
+
+  @override
+  String urdFeedback(Object text) {
+    return 'Response: $text';
+  }
+
+  @override
+  String get urdCheckedNormal =>
+      'The technician checked it; the compartment works normally';
+
+  @override
+  String urdAcceptedAt(Object time, Object note) {
+    return 'Accepted: $time$note';
+  }
+
+  @override
+  String urdAcceptedDone(Object note) {
+    return 'Accepted and completed$note';
+  }
+
+  @override
+  String urdExpectedBy(Object time) {
+    return 'Expected by: $time';
+  }
+
+  @override
+  String get urdAwaitingAcceptance => 'Awaiting acceptance & closure';
+
+  @override
+  String urdSentAt(Object time) {
+    return 'Sent: $time';
+  }
+
+  @override
+  String get urdRecorded => 'The system recorded the incident';
+
+  @override
+  String get urdStepTechAccepts => 'Technician accepts';
+
+  @override
+  String get urdStepInspect => 'Inspect & handle at the kiosk';
+
+  @override
+  String get urdStepRejected => 'Technician didn\'t confirm the issue';
+
+  @override
+  String get urdStepAccept => 'Acceptance & closure';
+
+  @override
+  String get urdTechProgress => 'Technician\'s progress:';
+
+  @override
+  String get urdAcceptingTech => 'Accepting technician';
+
+  @override
+  String get urdNoTechNotes =>
+      'The technician hasn\'t logged any steps yet. Their actions will appear here.';
+
+  @override
+  String get urdSlaApproval => 'SLA extension approval';
+
+  @override
+  String urdRepairPhotos(Object count) {
+    return 'Repair photos ($count photos):';
+  }
+
+  @override
+  String get urdKioskTech => 'Kiosk technician';
+
+  @override
+  String get urdCustomerView =>
+      'Customer view · Technicians update the log & evidence in the mobile app';
+
+  @override
+  String urdSteps(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count steps',
+      one: '1 step',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get urdThanksRating => 'Thanks for your rating!';
+
+  @override
+  String urdRatingError(Object error) {
+    return 'Couldn\'t send the rating: $error';
+  }
+
+  @override
+  String get urdYourRating => 'Your rating of the technician';
+
+  @override
+  String get urdRateTech => 'Rate the technician\'s service';
+
+  @override
+  String urdComment(Object text) {
+    return 'Comment: \"$text\"';
+  }
+
+  @override
+  String get urdRatePrompt =>
+      'The incident ticket is resolved. Please rate your satisfaction:';
+
+  @override
+  String get urdRateHint =>
+      'Any comments on the technician\'s attitude or speed (optional)...';
+
+  @override
+  String get urdSendRating => 'Send rating';
+
+  @override
+  String get urdChoosePhoto => 'Please choose at least 1 photo.';
+
+  @override
+  String get urdAddPhotosTitle => 'Add incident photos';
+
+  @override
+  String urdAddPhotosHint(Object max) {
+    return 'Up to $max photos at a time. Photos help the maintenance team bring the right parts.';
+  }
+
+  @override
+  String get urdSendPhotos => 'Send photos';
+
+  @override
+  String get mrUnknownTime => 'Unknown time';
+
+  @override
+  String get mrAwaiting => 'Awaiting';
+
+  @override
+  String get mrNone => 'No reports yet';
+
+  @override
+  String get mrNoneHint =>
+      'Issues reported from order details or the \"New report\" tab will appear here.';
+
+  @override
+  String get mrReportNow => 'Report an issue now';
+
+  @override
+  String get mrNoMatch => 'No matching reports';
+
+  @override
+  String mrNoMatchFilter(Object filter) {
+    return 'No incident tickets match the \"$filter\" filter.';
+  }
+
+  @override
+  String get mrViewAll => 'View all reports';
+
+  @override
+  String get mrEyebrow => 'LOCK.R • REPORTS';
+
+  @override
+  String get mrSubtitle => 'Track progress and report compartment issues';
+
+  @override
+  String get mrNewReport => 'New report';
+
+  @override
+  String mrTicketHash(Object id) {
+    return 'Incident ticket #$id';
+  }
+
+  @override
+  String get mrLockerPoint => 'Locker location';
+
+  @override
+  String get mrBox => 'Compartment';
+
+  @override
+  String get fbDamaged => 'Damaged goods';
+
+  @override
+  String get fbMissing => 'Missing / lost items';
+
+  @override
+  String get fbLocker => 'Locker / compartment issue';
+
+  @override
+  String get fbPayment => 'Payment / fees';
+
+  @override
+  String get fbService => 'Service quality';
+
+  @override
+  String get fbStPending => 'Pending';
+
+  @override
+  String get fbStProcessing => 'Processing';
+
+  @override
+  String get fbStResolved => 'Resolved';
+
+  @override
+  String get fbStRejected => 'Rejected';
+
+  @override
+  String get fbStRecorded => 'Recorded';
+
+  @override
+  String get fbRateOrder => 'Rate the order';
+
+  @override
+  String get fbRateHint => 'Share your experience (optional)';
+
+  @override
+  String get fbRateNotSupported =>
+      'The server doesn\'t support order ratings yet.';
+
+  @override
+  String get fbThanks => 'Thanks for rating your order.';
+
+  @override
+  String get fbComplain => 'File a complaint';
+
+  @override
+  String get fbIssue => 'Issue';
+
+  @override
+  String get fbIssueHint => 'Describe the problem in detail';
+
+  @override
+  String get fbDescribe => 'Please describe the issue.';
+
+  @override
+  String get fbComplainNotSupported =>
+      'The server doesn\'t support order complaints yet.';
+
+  @override
+  String get fbComplaintSent =>
+      'Complaint sent — support will reply via notification.';
+
+  @override
+  String get fbRateAndComplain => 'Rating & complaints';
+
+  @override
+  String get fbComplaint => 'Complaint';
+
+  @override
+  String get fbEditRating => 'Edit rating';
+
+  @override
+  String fbSentAt(Object time) {
+    return 'Sent at $time';
+  }
+
+  @override
+  String get fbNotSupported =>
+      'The server doesn\'t support order ratings / complaints yet. Please try again later.';
+
+  @override
+  String btBoxOccupied(Object box) {
+    return 'Compartment $box has items';
+  }
+
+  @override
+  String get btBoxOccupiedBody =>
+      'This compartment holds an order\'s items. Only open it if you\'re assigned to inspect the locker, and close it right after testing.';
+
+  @override
+  String get btOpenAnyway => 'Open anyway';
+
+  @override
+  String get btFetchingCode => 'Getting the opening code from the server…';
+
+  @override
+  String get btScanning => 'Searching for the locker via Bluetooth…';
+
+  @override
+  String get btConnecting => 'Connecting to the locker…';
+
+  @override
+  String get btSending => 'Sending the open command…';
+
+  @override
+  String get btWaiting => 'Waiting for the locker to unlock…';
+
+  @override
+  String get btSubtitle =>
+      'Stand next to the locker, choose a compartment and tap open';
+
+  @override
+  String get btChooseBox => 'Choose a compartment to open';
+
+  @override
+  String btOpenBox(Object box) {
+    return 'Open compartment $box via Bluetooth';
+  }
+
+  @override
+  String get btLoadFailed => 'Couldn\'t load lockers';
+
+  @override
+  String get btNotAllowed => 'Not allowed yet';
+
+  @override
+  String get btNotAllowedBody =>
+      'An admin hasn\'t allowed this account to test Bluetooth opening at any locker.';
+
+  @override
+  String get btHint =>
+      'Turn on Bluetooth and stand within 2 m of the locker. Every opening is recorded in the locker\'s log.';
+
+  @override
+  String get btChooseBoxLabel => 'Choose compartment';
+
+  @override
+  String btOpened(Object box) {
+    return 'Opened compartment $box';
+  }
+
+  @override
+  String get btNotOpened => 'Couldn\'t open';
+
+  @override
+  String get btCloseAfter => 'Remember to close the door after testing.';
+
+  @override
+  String get btNoBoxes => 'The locker has no compartments.';
+
+  @override
+  String btBox(Object number) {
+    return 'Box $number';
+  }
 }

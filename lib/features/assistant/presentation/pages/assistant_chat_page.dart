@@ -12,6 +12,7 @@ import '../providers/assistant_availability.dart';
 import '../providers/assistant_chat_controller.dart';
 import '../widgets/assistant_intro.dart';
 import '../widgets/assistant_message_bubble.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 /// Màn "Trợ lý hỏi đáp" (mọi vai trò): hỏi bằng tiếng Việt, trợ lý trả lời từ
 /// tài liệu chính thức của Lock.R kèm nguồn trích dẫn.
@@ -104,14 +105,14 @@ class _AssistantChatPageState extends State<AssistantChatPage> {
       body: Column(
         children: [
           BrandHeroHeader(
-            eyebrow: 'LOCK.R • TRỢ LÝ',
-            title: 'Trợ lý hỏi đáp',
-            subtitle: 'Trả lời từ tài liệu chính thức, có trích nguồn',
+            eyebrow: context.l10n.aiEyebrow,
+            title: context.l10n.aiTitle,
+            subtitle: context.l10n.aiSubtitle,
             trailing: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Tooltip(
-                  message: 'Lịch sử hỏi đáp',
+                  message: context.l10n.aiHistory,
                   child: BrandCircleIconButton(
                     icon: LucideIcons.history,
                     onTap: _openHistory,
@@ -119,7 +120,7 @@ class _AssistantChatPageState extends State<AssistantChatPage> {
                 ),
                 const SizedBox(width: 8),
                 Tooltip(
-                  message: 'Cuộc hội thoại mới',
+                  message: context.l10n.aiNewConversation,
                   child: BrandCircleIconButton(
                     icon: LucideIcons.squarePen,
                     onTap: _startNew,
@@ -195,19 +196,18 @@ class _AssistantChatPageState extends State<AssistantChatPage> {
 
   Widget _buildBottom(AssistantStatus? status) {
     if (status != null && !status.enabled) {
-      return const _StatusNotice(
+      return _StatusNotice(
         icon: LucideIcons.powerOff,
-        title: 'Trợ lý đang tạm tắt',
-        body: 'Tính năng hỏi đáp đang được tạm tắt. Bạn vui lòng quay lại sau.',
+        title: context.l10n.aiDisabledTitle,
+        body: context.l10n.aiDisabledBody,
       );
     }
     if (status != null && !status.configured) {
-      return const _StatusNotice(
+      return _StatusNotice(
         icon: LucideIcons.construction,
-        title: 'Trợ lý chưa sẵn sàng',
+        title: context.l10n.aiNotReadyTitle,
         body:
-            'Trợ lý hỏi đáp chưa được cấu hình xong. Bạn vui lòng quay lại sau '
-            'hoặc liên hệ bộ phận hỗ trợ Lock.R.',
+            context.l10n.aiNotReadyBody,
       );
     }
     return _Composer(
@@ -280,8 +280,8 @@ class _Composer extends StatelessWidget {
                 buildCounter: _buildCounter,
                 decoration: InputDecoration(
                   hintText: sending
-                      ? 'Đang chờ trợ lý trả lời…'
-                      : 'Nhập câu hỏi của bạn…',
+                      ? context.l10n.aiWaiting
+                          : context.l10n.aiInputHint,
                   hintStyle: TextStyle(color: context.textMuted),
                   isDense: true,
                   filled: true,
@@ -304,7 +304,7 @@ class _Composer extends StatelessWidget {
                 final canSend = enabled && value.text.trim().isNotEmpty;
                 return IconButton.filled(
                   key: const Key('assistant-send'),
-                  tooltip: 'Gửi câu hỏi',
+                  tooltip: context.l10n.aiSend,
                   onPressed: canSend ? onSend : null,
                   style: IconButton.styleFrom(
                     backgroundColor: AislBrand.navy,
@@ -420,11 +420,11 @@ class _LoadErrorView extends StatelessWidget {
                     backgroundColor: AislBrand.navy,
                   ),
                   icon: const Icon(LucideIcons.refreshCw, size: 16),
-                  label: const Text('Thử lại'),
+                  label: Text(context.l10n.commonRetry),
                 ),
                 OutlinedButton(
                   onPressed: onNew,
-                  child: const Text('Cuộc hội thoại mới'),
+                  child: Text(context.l10n.aiNewConversation),
                 ),
               ],
             ),

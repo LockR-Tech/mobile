@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 /// 6 mốc trạng thái của một chuyến giao hàng (drone) mà backend sẽ bắn xuống
 /// qua FCM. `unknown` để phòng khi nhận status lạ (không làm vỡ app).
@@ -36,19 +37,19 @@ enum DeliveryStatus {
   String get defaultTitle {
     switch (this) {
       case DeliveryStatus.dispatched:
-        return 'Drone đang giao hàng';
+        return L10n.current.dnTitleEnRoute;
       case DeliveryStatus.approaching:
-        return 'Drone sắp đến';
+        return L10n.current.dnTitleApproaching;
       case DeliveryStatus.arrived:
-        return 'Drone đã đến nơi';
+        return L10n.current.dnTitleArrived;
       case DeliveryStatus.delivered:
-        return 'Giao hàng thành công';
+        return L10n.current.dnTitleDelivered;
       case DeliveryStatus.delayed:
-        return 'Đơn hàng bị chậm';
+        return L10n.current.dnTitleDelayed;
       case DeliveryStatus.failed:
-        return 'Giao hàng không thành công';
+        return L10n.current.dnTitleFailed;
       case DeliveryStatus.unknown:
-        return 'Cập nhật đơn hàng';
+        return L10n.current.dnTitleUpdate;
     }
   }
 
@@ -57,21 +58,21 @@ enum DeliveryStatus {
   String defaultBody(String? eta) {
     switch (this) {
       case DeliveryStatus.dispatched:
-        return 'Drone đang trên đường giao hàng của bạn';
+        return L10n.current.dnBodyEnRoute;
       case DeliveryStatus.approaching:
-        return 'Drone sắp đến nơi, vui lòng chuẩn bị ra nhận';
+        return L10n.current.dnBodyApproaching;
       case DeliveryStatus.arrived:
-        return 'Drone đã đến nơi, vui lòng ra nhận hàng';
+        return L10n.current.dnBodyArrived;
       case DeliveryStatus.delivered:
-        return 'Đã giao hàng thành công. Cảm ơn bạn!';
+        return L10n.current.dnBodyDelivered;
       case DeliveryStatus.delayed:
         return (eta != null && eta.isNotEmpty)
-            ? 'Đơn của bạn đang bị chậm, dự kiến tới $eta'
-            : 'Đơn của bạn đang bị chậm so với dự kiến';
+            ? L10n.current.dnBodyDelayedEta(eta)
+            : L10n.current.dnBodyDelayed;
       case DeliveryStatus.failed:
-        return 'Giao không thành công, drone đang quay về';
+        return L10n.current.dnBodyFailed;
       case DeliveryStatus.unknown:
-        return 'Đơn hàng của bạn có cập nhật mới';
+        return L10n.current.dnBodyUpdate;
     }
   }
 

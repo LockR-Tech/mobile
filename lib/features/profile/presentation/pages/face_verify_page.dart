@@ -11,6 +11,7 @@ import 'package:smart_laundry_locker/features/auth/presentation/providers/login_
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 /// Đăng nhập bằng khuôn mặt (chỉ khi `FeatureFlags.faceRecognitionEnabled`).
 ///
@@ -88,7 +89,7 @@ class _FaceVerifyPageState extends State<FaceVerifyPage>
     if (_loginProvider.isLoading) return;
 
     if (_loginProvider.isSuccess) {
-      SmartDialog.showToast('Xác thực FaceID thành công');
+      SmartDialog.showToast(context.l10n.fvSuccess);
       await Future<void>.delayed(const Duration(milliseconds: 300));
       if (mounted) await AppRouter.goRoleHome(context);
       return;
@@ -96,7 +97,7 @@ class _FaceVerifyPageState extends State<FaceVerifyPage>
 
     if (_loginProvider.isFaceMatched && _loginProvider.matchedUserId != null) {
       SmartDialog.showToast(
-        'Nhận diện thành công ID: ${_loginProvider.matchedUserId}',
+        context.l10n.fvMatched('${_loginProvider.matchedUserId}'),
       );
       setState(() {
         _isVerifying = false;
@@ -126,7 +127,7 @@ class _FaceVerifyPageState extends State<FaceVerifyPage>
       await _disposeCameraController();
       final cameras = await availableCameras();
       if (cameras.isEmpty) {
-        throw Exception('Không tìm thấy camera trên thiết bị.');
+        throw Exception(L10n.current.frNoCamera);
       }
       final selected = cameras.firstWhere(
         (c) => c.lensDirection == CameraLensDirection.front,
@@ -158,10 +159,10 @@ class _FaceVerifyPageState extends State<FaceVerifyPage>
       if (!mounted) return;
       setState(() {
         _isVerifying = false;
-        _errorMessage = 'Không thể xác thực FaceID. Vui lòng thử lại.';
+        _errorMessage = context.l10n.fvFailedRetry;
       });
       await _showVerifyFailedDialog(
-        'Không thể mở camera hoặc chụp ảnh xác thực.',
+        context.l10n.fvCameraError,
       );
     }
   }
@@ -182,15 +183,15 @@ class _FaceVerifyPageState extends State<FaceVerifyPage>
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
-          title: const Text(
-            'Xác thực thất bại',
+          title: Text(
+            context.l10n.fvFailed,
             style: TextStyle(
               fontWeight: FontWeight.w800,
               color: Colors.black87,
             ),
           ),
           content: Text(
-            message ?? 'Khuôn mặt không khớp hoặc chưa được đăng ký',
+            message ?? context.l10n.authFaceMismatch,
             style: const TextStyle(color: Colors.black87),
           ),
           actions: [
@@ -199,8 +200,8 @@ class _FaceVerifyPageState extends State<FaceVerifyPage>
                 Navigator.of(context).pop();
                 _initializeAndVerify();
               },
-              child: const Text(
-                'Thử lại',
+              child: Text(
+                context.l10n.commonRetry,
                 style: TextStyle(color: AISLShadcnTheme.navyPrimary),
               ),
             ),
@@ -209,8 +210,8 @@ class _FaceVerifyPageState extends State<FaceVerifyPage>
                 Navigator.of(context).pop();
                 Navigator.of(this.context).pop(false);
               },
-              child: const Text(
-                'Dùng mật khẩu',
+              child: Text(
+                context.l10n.fvUsePassword,
                 style: TextStyle(color: Colors.black87),
               ),
             ),
@@ -358,8 +359,8 @@ class _FaceVerifyPageState extends State<FaceVerifyPage>
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Text(
-                    'Đang xác thực...',
+                  Text(
+                    context.l10n.fvVerifying,
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 22,
@@ -370,7 +371,7 @@ class _FaceVerifyPageState extends State<FaceVerifyPage>
                   ),
                   const SizedBox(height: 12),
                   Text(
-                    'Vui lòng nhìn thẳng vào camera và giữ yên điện thoại để hệ thống nhận diện khuôn mặt của bạn.',
+                    context.l10n.fvLookStraight,
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 14,
@@ -427,8 +428,8 @@ class _FaceVerifyPageState extends State<FaceVerifyPage>
         elevation: 0,
         foregroundColor: Colors.white,
         centerTitle: true,
-        title: const Text(
-          'Đăng nhập khuôn mặt',
+        title: Text(
+          context.l10n.authFaceLogin,
           style: TextStyle(fontWeight: FontWeight.w800),
         ),
       ),
@@ -440,16 +441,16 @@ class _FaceVerifyPageState extends State<FaceVerifyPage>
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Text(
-                      'Đăng nhập bằng khuôn mặt hiện chưa được hỗ trợ.',
+                    Text(
+                      context.l10n.fvNotSupported,
                       textAlign: TextAlign.center,
                       style: TextStyle(color: Colors.white, fontSize: 16),
                     ),
                     const SizedBox(height: 16),
                     TextButton(
                       onPressed: () => AppRouter.backOrHome(context),
-                      child: const Text(
-                        'Quay lại',
+                      child: Text(
+                        context.l10n.commonBack,
                         style: TextStyle(color: AISLShadcnTheme.navyPrimary),
                       ),
                     ),

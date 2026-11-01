@@ -12,6 +12,7 @@ import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:smart_laundry_locker/shared/shared.dart';
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 class ProfileDetailPage extends StatefulWidget {
   const ProfileDetailPage({super.key});
@@ -51,8 +52,8 @@ class _ProfileDetailPageState extends State<ProfileDetailPage> {
         body: Column(
           children: [
             BrandHeroHeader(
-              title: 'Thông tin cá nhân',
-              subtitle: 'Chi tiết tài khoản của bạn',
+              title: context.l10n.pdTitle,
+              subtitle: context.l10n.pdSubtitle,
               onBack: () => Navigator.of(context).pop(),
               trailing: Consumer<ProfileProvider>(
                 builder: (context, provider, child) {
@@ -83,8 +84,8 @@ class _ProfileDetailPageState extends State<ProfileDetailPage> {
               child: Consumer<ProfileProvider>(
             builder: (context, provider, child) {
               if (provider.isLoading && provider.profile == null) {
-                return const Center(
-                  child: AppLoadingIndicator(message: 'Đang tải thông tin...'),
+                return Center(
+                  child: AppLoadingIndicator(message: context.l10n.storeInfoLoading),
                 );
               }
 
@@ -101,7 +102,7 @@ class _ProfileDetailPageState extends State<ProfileDetailPage> {
                       const SizedBox(height: 16),
                       ElevatedButton(
                         onPressed: () => provider.loadProfile(),
-                        child: const Text('Thử lại'),
+                        child: Text(context.l10n.commonRetry),
                       ),
                     ],
                   ),
@@ -110,7 +111,7 @@ class _ProfileDetailPageState extends State<ProfileDetailPage> {
 
               final profile = provider.profile;
               if (profile == null) {
-                return const Center(child: Text('Không có dữ liệu'));
+                return Center(child: Text(context.l10n.pdNoData));
               }
 
               final String statusLabel;
@@ -119,17 +120,17 @@ class _ProfileDetailPageState extends State<ProfileDetailPage> {
 
               switch (profile.status) {
                 case UserStatus.ACTIVE:
-                  statusLabel = 'Trạng thái tài khoản: Đang hoạt động';
+                  statusLabel = context.l10n.pdStatusActive;
                   statusColor = Colors.green.shade700;
                   statusBgColor = Colors.green.shade50;
                   break;
                 case UserStatus.INACTIVE:
-                  statusLabel = 'Trạng thái tài khoản: Chưa kích hoạt';
+                  statusLabel = context.l10n.pdStatusInactive;
                   statusColor = Colors.orange.shade800;
                   statusBgColor = Colors.orange.shade50;
                   break;
                 case UserStatus.BLOCKED:
-                  statusLabel = 'Trạng thái tài khoản: Đang bị khóa';
+                  statusLabel = context.l10n.pdStatusLocked;
                   statusColor = AppColors.error;
                   statusBgColor = AppColors.error.withOpacity(0.12);
                   break;
@@ -153,7 +154,7 @@ class _ProfileDetailPageState extends State<ProfileDetailPage> {
                         ),
                         child: Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
-                          children: const [
+                          children: [
                             Icon(
                               Icons.warning_amber_rounded,
                               color: Colors.amber,
@@ -161,7 +162,7 @@ class _ProfileDetailPageState extends State<ProfileDetailPage> {
                             SizedBox(width: 8),
                             Expanded(
                               child: Text(
-                                'Tài khoản của bạn hiện đang bị vô hiệu hóa kỹ thuật. Vui lòng liên hệ hỗ trợ.',
+                                context.l10n.pdDisabled,
                                 style: TextStyle(
                                   fontSize: 13,
                                   color: AppColors.onBackground,
@@ -252,7 +253,7 @@ class _ProfileDetailPageState extends State<ProfileDetailPage> {
 
                     // Email
                     ProfileInputCard(
-                      label: 'Email của bạn',
+                      label: context.l10n.pdYourEmail,
                       value: profile.email,
                       hintText: 'name@example.com',
                       leadingIcon: Icons.email_rounded,
@@ -277,9 +278,9 @@ class _ProfileDetailPageState extends State<ProfileDetailPage> {
 
                     // Phone
                     ProfileInputCard(
-                      label: 'Số điện thoại',
+                      label: context.l10n.commonPhoneNumber,
                       value: profile.phoneNumber,
-                      hintText: 'Chưa cập nhật',
+                      hintText: context.l10n.pdNotUpdated,
                       leadingIcon: Icons.phone_rounded,
                       trailing: IconButton(
                         icon: Icon(
@@ -305,10 +306,10 @@ class _ProfileDetailPageState extends State<ProfileDetailPage> {
                       onTap: () => context.push(AppRouter.security),
                       child: ProfileInputCard(
                         label: profile.hasPassword
-                            ? 'Mật khẩu'
-                            : 'Mật khẩu (chưa đặt — chạm để đặt)',
+                            ? context.l10n.commonPassword
+                    : context.l10n.pdPasswordNotSet,
                         value: profile.hasPassword ? 'password' : '',
-                        hintText: profile.hasPassword ? '••••••••••••' : 'Chưa đặt',
+                        hintText: profile.hasPassword ? '••••••••••••' : context.l10n.pdNotSet,
                         leadingIcon: Icons.lock_outline_rounded,
                         trailing: const Icon(
                           Icons.arrow_forward_ios_rounded,
@@ -320,7 +321,6 @@ class _ProfileDetailPageState extends State<ProfileDetailPage> {
                     ),
 
                     const SizedBox(height: 24),
-
 
                     if (provider.error != null) ...[
                       const SizedBox(height: 16),

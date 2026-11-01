@@ -7,6 +7,8 @@
 /// bằng cách đăng nhập lại" như trước.
 library;
 
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
+
 /// Màn bảo mật hiển thị form nào.
 enum PasswordFormMode {
   /// Đổi mật khẩu: mật khẩu hiện tại + mật khẩu mới.
@@ -51,16 +53,16 @@ String? validatePasswordForm({
   final confirm = normalizePassword(confirmPassword);
 
   if (mode == PasswordFormMode.change && current.isEmpty) {
-    return 'Vui lòng nhập mật khẩu hiện tại';
+    return L10n.current.pwEnterCurrent;
   }
-  if (next.isEmpty) return 'Vui lòng nhập mật khẩu mới';
+  if (next.isEmpty) return L10n.current.pwEnterNew;
   if (next.length < kMinPasswordLength) {
-    return 'Mật khẩu mới phải có ít nhất $kMinPasswordLength ký tự';
+    return L10n.current.pwMinLength(kMinPasswordLength);
   }
   if (mode == PasswordFormMode.change && next == current) {
-    return 'Mật khẩu mới không được trùng mật khẩu hiện tại';
+    return L10n.current.pwSameAsCurrent;
   }
-  if (confirm != next) return 'Mật khẩu xác nhận chưa khớp';
+  if (confirm != next) return L10n.current.pwConfirmMismatch;
   return null;
 }
 
@@ -91,16 +93,16 @@ String passwordChangeErrorMessage(String raw) {
   final m = raw.trim();
   final upper = m.toUpperCase();
   if (upper.contains('AUTH_INVALID_PASSWORD')) {
-    return 'Mật khẩu hiện tại không đúng';
+    return L10n.current.pwCurrentWrong;
   }
   if (upper.contains('AUTH_CURRENT_PASSWORD_REQUIRED')) {
-    return 'Vui lòng nhập mật khẩu hiện tại';
+    return L10n.current.pwEnterCurrent;
   }
   if (upper.contains('AUTH_NEW_PASSWORD_REQUIRED')) {
-    return 'Vui lòng nhập mật khẩu mới';
+    return L10n.current.pwEnterNew;
   }
   if (m.isEmpty || m == 'Đã xảy ra lỗi.') {
-    return 'Đổi mật khẩu thất bại. Vui lòng thử lại.';
+    return L10n.current.pwChangeFailed;
   }
   return m;
 }
