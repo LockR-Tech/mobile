@@ -240,9 +240,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get commonFullNameHint => 'John Smith';
 
   @override
-  String get commonEmail => 'Email';
-
-  @override
   String get commonPhoneNumber => 'Phone number';
 
   @override
@@ -4420,9 +4417,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get commonDescription => 'Description';
-
-  @override
-  String get commonYes => 'Yes';
 
   @override
   String get commonNo => 'No';
@@ -9167,4 +9161,20 @@ class AppLocalizationsEn extends AppLocalizations {
   String btBox(Object number) {
     return 'Box $number';
   }
+
+  @override
+  String get apiErrValidation =>
+      'The submitted data is invalid, please check it again.';
+
+  @override
+  String get apiErrInternal =>
+      'The server had an error or doesn\'t support this action yet. Please try again later.';
+
+  @override
+  String get apiErrNotFound =>
+      'Data not found (it may have been deleted or changed).';
+
+  @override
+  String get apiErrLockerServiceUnavailable =>
+      'The locker service is temporarily unavailable, please try again later.';
 }

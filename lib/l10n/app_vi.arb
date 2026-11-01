@@ -79,7 +79,6 @@
   "commonLoading": "Đang tải...",
   "commonFullName": "Họ và tên",
   "commonFullNameHint": "Nguyễn Văn A",
-  "commonEmail": "Email",
   "commonPhoneNumber": "Số điện thoại",
   "commonPassword": "Mật khẩu",
   "commonPhoneShort": "SĐT",
@@ -2174,7 +2173,6 @@
   "apiErrGeneric": "Đã xảy ra lỗi",
   "commonSending": "Đang gửi...",
   "commonDescription": "Mô tả",
-  "commonYes": "Có",
   "commonNo": "Không",
   "commonOrder": "Đơn hàng",
   "commonTime": "Thời gian",
@@ -4598,5 +4596,9 @@
     "placeholders": {
       "number": {}
     }
-  }
+  },
+  "apiErrValidation": "Dữ liệu gửi lên không hợp lệ, vui lòng kiểm tra lại.",
+  "apiErrInternal": "Máy chủ gặp lỗi hoặc chưa hỗ trợ thao tác này. Vui lòng thử lại sau.",
+  "apiErrNotFound": "Không tìm thấy dữ liệu (có thể đã bị xoá hoặc thay đổi).",
+  "apiErrLockerServiceUnavailable": "Dịch vụ tủ đang tạm gián đoạn, vui lòng thử lại sau."
 }

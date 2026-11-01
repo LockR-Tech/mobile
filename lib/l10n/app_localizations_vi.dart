@@ -242,9 +242,6 @@ class AppLocalizationsVi extends AppLocalizations {
   String get commonFullNameHint => 'Nguyễn Văn A';
 
   @override
-  String get commonEmail => 'Email';
-
-  @override
   String get commonPhoneNumber => 'Số điện thoại';
 
   @override
@@ -4357,9 +4354,6 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get commonDescription => 'Mô tả';
-
-  @override
-  String get commonYes => 'Có';
 
   @override
   String get commonNo => 'Không';
@@ -9010,4 +9004,20 @@ class AppLocalizationsVi extends AppLocalizations {
   String btBox(Object number) {
     return 'Ô $number';
   }
+
+  @override
+  String get apiErrValidation =>
+      'Dữ liệu gửi lên không hợp lệ, vui lòng kiểm tra lại.';
+
+  @override
+  String get apiErrInternal =>
+      'Máy chủ gặp lỗi hoặc chưa hỗ trợ thao tác này. Vui lòng thử lại sau.';
+
+  @override
+  String get apiErrNotFound =>
+      'Không tìm thấy dữ liệu (có thể đã bị xoá hoặc thay đổi).';
+
+  @override
+  String get apiErrLockerServiceUnavailable =>
+      'Dịch vụ tủ đang tạm gián đoạn, vui lòng thử lại sau.';
 }

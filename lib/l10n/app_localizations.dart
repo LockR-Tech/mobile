@@ -542,12 +542,6 @@ abstract class AppLocalizations {
   /// **'Nguyễn Văn A'**
   String get commonFullNameHint;
 
-  /// No description provided for @commonEmail.
-  ///
-  /// In vi, this message translates to:
-  /// **'Email'**
-  String get commonEmail;
-
   /// No description provided for @commonPhoneNumber.
   ///
   /// In vi, this message translates to:
@@ -7603,12 +7597,6 @@ abstract class AppLocalizations {
   /// In vi, this message translates to:
   /// **'Mô tả'**
   String get commonDescription;
-
-  /// No description provided for @commonYes.
-  ///
-  /// In vi, this message translates to:
-  /// **'Có'**
-  String get commonYes;
 
   /// No description provided for @commonNo.
   ///
@@ -15733,6 +15721,30 @@ abstract class AppLocalizations {
   /// In vi, this message translates to:
   /// **'Ô {number}'**
   String btBox(Object number);
+
+  /// No description provided for @apiErrValidation.
+  ///
+  /// In vi, this message translates to:
+  /// **'Dữ liệu gửi lên không hợp lệ, vui lòng kiểm tra lại.'**
+  String get apiErrValidation;
+
+  /// No description provided for @apiErrInternal.
+  ///
+  /// In vi, this message translates to:
+  /// **'Máy chủ gặp lỗi hoặc chưa hỗ trợ thao tác này. Vui lòng thử lại sau.'**
+  String get apiErrInternal;
+
+  /// No description provided for @apiErrNotFound.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không tìm thấy dữ liệu (có thể đã bị xoá hoặc thay đổi).'**
+  String get apiErrNotFound;
+
+  /// No description provided for @apiErrLockerServiceUnavailable.
+  ///
+  /// In vi, this message translates to:
+  /// **'Dịch vụ tủ đang tạm gián đoạn, vui lòng thử lại sau.'**
+  String get apiErrLockerServiceUnavailable;
 }
 
 class _AppLocalizationsDelegate

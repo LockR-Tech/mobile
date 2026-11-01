@@ -358,9 +358,12 @@ class OpsInfoRow extends StatelessWidget {
         children: [
           Icon(icon, size: 16, color: opsMutedText),
           const SizedBox(width: 8),
-          Text(
-            label,
-            style: const TextStyle(fontSize: 13, color: opsMutedText),
+          // Nhãn tiếng Anh dài hơn tiếng Việt: cho xuống dòng thay vì tràn.
+          Flexible(
+            child: Text(
+              label,
+              style: const TextStyle(fontSize: 13, color: opsMutedText),
+            ),
           ),
           const SizedBox(width: 8),
           Expanded(

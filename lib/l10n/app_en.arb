@@ -74,7 +74,6 @@
   "commonLoading": "Loading...",
   "commonFullName": "Full name",
   "commonFullNameHint": "John Smith",
-  "commonEmail": "Email",
   "commonPhoneNumber": "Phone number",
   "commonPassword": "Password",
   "commonPhoneShort": "Phone",
@@ -1251,7 +1250,6 @@
   "apiErrGeneric": "Something went wrong",
   "commonSending": "Sending...",
   "commonDescription": "Description",
-  "commonYes": "Yes",
   "commonNo": "No",
   "commonOrder": "Order",
   "commonTime": "Time",
@@ -2605,5 +2603,9 @@
   "btNotOpened": "Couldn't open",
   "btCloseAfter": "Remember to close the door after testing.",
   "btNoBoxes": "The locker has no compartments.",
-  "btBox": "Box {number}"
+  "btBox": "Box {number}",
+  "apiErrValidation": "The submitted data is invalid, please check it again.",
+  "apiErrInternal": "The server had an error or doesn't support this action yet. Please try again later.",
+  "apiErrNotFound": "Data not found (it may have been deleted or changed).",
+  "apiErrLockerServiceUnavailable": "The locker service is temporarily unavailable, please try again later."
 }

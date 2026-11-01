@@ -1735,21 +1735,21 @@ class LockerOpsService {
   // ── Mã lỗi luồng KTV tủ ──
   /// Mã mà `message` server là tiếng Anh / lẫn chi tiết kỹ thuật ⇒ luôn thay
   /// bằng câu tiếng Việt cố định.
-  static const _technicianCodeMessages = <String, String>{
+  static Map<String, String> get _technicianCodeMessages => <String, String>{
     'HANDOVER_FAILED':
         'Bàn giao trực tiếp thất bại — kiểm tra lại mã PIN 6 số hoặc mã QR của đơn rồi thử lại.',
     'INVALID_OTP': 'Mã PIN/QR của đơn không đúng.',
     'ORDER_RELOCATE_FAILED':
         'Không chuyển được đơn sang ô mới. Hàng vẫn ở ô cũ — thử lại hoặc chọn phương án khác.',
-    'VALIDATION_ERROR': 'Dữ liệu gửi lên không hợp lệ, vui lòng kiểm tra lại.',
+    'VALIDATION_ERROR': L10n.current.apiErrValidation,
     'INTERNAL_ERROR':
-        'Máy chủ gặp lỗi hoặc chưa hỗ trợ thao tác này. Vui lòng thử lại sau.',
-    'NOT_FOUND': 'Không tìm thấy dữ liệu (có thể đã bị xoá hoặc thay đổi).',
+        L10n.current.apiErrInternal,
+    'NOT_FOUND': L10n.current.apiErrNotFound,
   };
 
   /// Mã mà server đã kèm câu tiếng Việt có số liệu cụ thể (giới hạn, số phiếu…)
   /// ⇒ ưu tiên câu của server, chỉ dùng câu dưới đây khi server không gửi.
-  static const _technicianCodeFallbacks = <String, String>{
+  static Map<String, String> get _technicianCodeFallbacks => <String, String>{
     'SLA_EXTENSION_NOT_ASSIGNEE':
         'Chỉ KTV đang được giao phiếu mới gia hạn được SLA.',
     'SLA_EXTENSION_LIMIT_REACHED':
@@ -1783,7 +1783,7 @@ class LockerOpsService {
     'DEVICE_STATUS_ONLINE_NOT_ALLOWED':
         'Trạng thái trực tuyến do máy chủ tự tính, không đặt tay được.',
     'LOCKER_SERVICE_UNAVAILABLE':
-        'Dịch vụ tủ đang tạm gián đoạn, vui lòng thử lại sau.',
+        L10n.current.apiErrLockerServiceUnavailable,
   };
 
   static const Set<String> _serverWordedCodes = {'DRONE_ROUTE_TOO_SHORT'};
