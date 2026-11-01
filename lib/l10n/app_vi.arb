@@ -3467,5 +3467,216 @@
       "duration": {}
     }
   },
-  "tlNotYet": "Chưa diễn ra"
+  "tlNotYet": "Chưa diễn ra",
+  "rbChooseBank": "Vui lòng chọn ngân hàng",
+  "rbSaved": "Đã lưu thông tin tài khoản nhận hoàn tiền thành công",
+  "rbSaveFailed": "Không thể lưu thông tin. Vui lòng kiểm tra lại",
+  "rbOneTimeSetup": "Cài đặt 1 lần duy nhất",
+  "rbIntro": "Hệ thống sẽ chuyển khoản hoàn tiền trực tiếp vào tài khoản này khi đơn hàng gặp sự cố (tủ kẹt, drone hủy, đơn giặt lỗi...). Bạn không cần phải nhập lại nhiều lần.",
+  "rbBeneficiaryBank": "Ngân hàng thụ hưởng",
+  "rbChooseBankShort": "Chọn ngân hàng",
+  "rbAccountNumber": "Số tài khoản ngân hàng",
+  "rbAccountNumberHint": "Nhập số tài khoản của bạn",
+  "rbEnterAccountNumber": "Vui lòng nhập số tài khoản",
+  "rbInvalidAccountNumber": "Số tài khoản không hợp lệ",
+  "rbHolderName": "Họ và tên chủ tài khoản",
+  "rbHolderHint": "Ví dụ: NGUYEN VAN A",
+  "rbEnterHolder": "Vui lòng nhập tên chủ tài khoản",
+  "rbUpdate": "Cập nhật tài khoản",
+  "rbSave": "Lưu tài khoản hoàn tiền",
+  "rbSearchHint": "Tìm theo tên hoặc mã ngân hàng...",
+  "rfCantPickImage": "Không thể chọn ảnh: {error}",
+  "@rfCantPickImage": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "rfChooseOrder": "Vui lòng chọn đơn hàng cần hoàn tiền",
+  "rfInvalidOrder": "Mã đơn hàng không hợp lệ",
+  "rfEnterReason": "Vui lòng nhập lý do yêu cầu hoàn tiền",
+  "rfEnterBank": "Vui lòng điền đầy đủ thông tin tài khoản ngân hàng nhận tiền",
+  "rfSending": "Đang gửi yêu cầu hoàn tiền...",
+  "rfSent": "Đã gửi yêu cầu hoàn tiền thành công!",
+  "rfError": "Lỗi: {message}",
+  "@rfError": {
+    "placeholders": {
+      "message": {}
+    }
+  },
+  "rfSubtitle": "Quản lý và tạo yêu cầu hoàn tiền cho đơn hàng",
+  "rfMyRequests": "Yêu cầu của tôi",
+  "rfNewRequest": "Tạo yêu cầu mới",
+  "rfEmptyRecent": "Không có yêu cầu hoàn tiền nào trong 7 ngày gần đây.",
+  "rfEmptyPending": "Không có yêu cầu hoàn tiền nào đang chờ xử lý.",
+  "rfEmptyCompleted": "Chưa có yêu cầu hoàn tiền nào đã được chuyển khoản thành công.",
+  "rfEmptyRejected": "Không có yêu cầu hoàn tiền nào bị từ chối.",
+  "rfEmptyCanceled": "Không có yêu cầu hoàn tiền nào đã hủy.",
+  "rfEmptyHint": "Bạn có thể tạo yêu cầu hoàn tiền mới từ tab bên cạnh.",
+  "rfNone": "Chưa có yêu cầu hoàn tiền nào",
+  "rfNoneHint": "Khi gặp sự cố tủ không mở, drone huỷ chuyến hoặc sự cố giặt ủi, bạn có thể tạo yêu cầu hoàn tiền tại đây.",
+  "rfCreateNow": "Tạo yêu cầu hoàn tiền ngay",
+  "rfNoneShort": "Chưa có yêu cầu hoàn tiền",
+  "rfNoMatch": "Không có yêu cầu phù hợp",
+  "rfTicketHash": "Phiếu hoàn tiền #{id}",
+  "@rfTicketHash": {
+    "placeholders": {
+      "id": {}
+    }
+  },
+  "rfSentAt": "Thời gian gửi",
+  "rfHasTransferSlip": "Có UNC",
+  "rfHasPhoto": "Có ảnh",
+  "rfViewDetail": "Xem chi tiết",
+  "rfDetailSubtitle": "Chi tiết yêu cầu & thông tin chuyển khoản",
+  "rfTransferDone": "Đã hoàn tất chuyển khoản thành công",
+  "rfRejectedTitle": "Yêu cầu hoàn tiền đã bị từ chối",
+  "rfAwaitingAdmin": "Đang chờ Admin đối soát và chuyển khoản",
+  "rfInfo": "Thông tin hoàn tiền",
+  "rfOrderCodeCopied": "Đã sao chép mã đơn hàng",
+  "rfAccountHolder": "Chủ tài khoản",
+  "rfReason": "Lý do hoàn",
+  "rfTransferId": "Mã GD chuyển tiền",
+  "rfTransferIdCopied": "Đã sao chép mã giao dịch",
+  "rfRejectReason": "Lý do từ chối",
+  "rfEvidence": "Chứng từ & Hình ảnh minh chứng",
+  "rfYourPhotos": "Ảnh minh chứng bạn đã gửi:",
+  "rfAdminSlip": "Biên lai chuyển khoản từ Admin (UNC):",
+  "rfChooseOrderTitle": "Chọn đơn hàng cần hoàn tiền",
+  "rfTapToChooseOrder": "Bấm vào đây để chọn đơn hàng",
+  "rfChoosePaidOrder": "Chọn đơn đã thanh toán bạn cần yêu cầu hoàn tiền",
+  "rfOrderValue": "Đơn: {code}",
+  "@rfOrderValue": {
+    "placeholders": {
+      "code": {}
+    }
+  },
+  "rfAmountLabel": "Số tiền: ",
+  "rfChange": "Đổi",
+  "rfChoose": "Chọn",
+  "rfSavedDefault": "Đã lưu mặc định",
+  "rfChooseReceivingBank": "Chọn ngân hàng nhận tiền",
+  "rfAccountNumberField": "Số tài khoản nhận tiền",
+  "rfAccountNumberHint": "Nhập số tài khoản",
+  "rfHolderField": "Tên chủ tài khoản (viết hoa không dấu)",
+  "rfSaveAsDefault": "Lưu làm tài khoản nhận hoàn tiền mặc định",
+  "rfReasonTitle": "Lý do yêu cầu hoàn tiền",
+  "rfQuickStuck": "Sự cố kẹt ô tủ",
+  "rfQuickDroneCancel": "Drone huỷ chuyến bay",
+  "rfQuickDoubleCharge": "Trừ tiền trùng cổng thanh toán",
+  "rfQuickLaundry": "Sự cố dịch vụ giặt ủi",
+  "rfReasonHint": "Mô tả chi tiết lý do và sự cố bạn gặp phải...",
+  "rfEvidenceOptional": "Hình ảnh minh chứng (tuỳ chọn)",
+  "rfTakePhoto": "Chụp ảnh",
+  "rfPickGallery": "Chọn thư viện",
+  "rfChangePhoto": "Đổi ảnh khác",
+  "rfExpectedAmount": "Số tiền hoàn dự kiến:",
+  "rfSubmit": "Gửi yêu cầu hoàn tiền",
+  "rfEvidenceDetail": "Chi tiết hình ảnh minh chứng",
+  "rfRules": "Quy tắc hoàn tiền",
+  "rfRulesIntro": "Lock.R hỗ trợ hoàn tiền cho các trường hợp:",
+  "rfRule1": "• Sự cố kỹ thuật ô tủ không mở được hoặc kẹt cửa > 30 phút.",
+  "rfRule2": "• Sự cố drone giao trễ vượt thời gian cam kết hoặc huỷ chuyến bay.",
+  "rfRule3": "• Lỗi cổng thanh toán trừ tiền 2 lần (double billing).",
+  "rfRule4": "• Hàng hoá/đồ giặt có sự cố từ đối tác giặt ủi.",
+  "rfProcessingTime": "Thời gian xử lý:",
+  "rfProcessingBody": "Quản trị viên sẽ đối soát và thực hiện chuyển khoản trong vòng 24 giờ làm việc. Bạn sẽ nhận được thông báo kèm biên lai chuyển khoản (UNC) ngay trên ứng dụng.",
+  "rfNoOrders": "Không có đơn hàng nào",
+  "rfSelected": "✓ Đang chọn",
+  "rfChooseBeneficiary": "Chọn ngân hàng thụ hưởng",
+  "rfSearchBank": "Tìm kiếm ngân hàng (mã, tên)...",
+  "bankUnknown": "Không xác định được ngân hàng nhận tiền. Vui lòng quét mã QR bằng app ngân hàng.",
+  "bankCantOpen": "Không mở được {app}. Có thể máy chưa cài app — hãy quét mã QR bằng app ngân hàng của bạn.",
+  "@bankCantOpen": {
+    "placeholders": {
+      "app": {}
+    }
+  },
+  "bankTitle": "Thanh toán bằng app ngân hàng",
+  "bankIntro": "Chọn app ngân hàng của bạn — số tài khoản, số tiền và nội dung chuyển khoản được điền sẵn, bạn chỉ cần xác nhận.",
+  "bankSearch": "Tìm ngân hàng",
+  "bankLoadFailed": "Không tải được danh sách app ngân hàng.\nBạn có thể quét mã QR bằng app ngân hàng.",
+  "bankNoMatch": "Không tìm thấy ngân hàng phù hợp",
+  "simBusy": "Đang giả lập…",
+  "simButton": "Giả lập thanh toán (test)",
+  "simFailed": "Không giả lập được",
+  "simTitle": "Giả lập đã chuyển khoản",
+  "simBody": "Chỉ dùng để test — không có tiền thật. Nhập ít hơn số cần trả để thử trường hợp chuyển thiếu.",
+  "simReceived": "Số tiền đã nhận",
+  "simAction": "Giả lập",
+  "txSepay": "Cổng SePay QR",
+  "txVnpay": "Cổng VNPay",
+  "txMomo": "Ví MoMo",
+  "txWithdraw": "Rút tiền",
+  "txTitleTopup": "Nạp tiền vào ví",
+  "txTitleWithdrawRefund": "Hoàn tiền rút",
+  "txTitleWithdraw": "Rút tiền về tài khoản ngân hàng",
+  "txTitleRefund": "Hoàn tiền vào ví",
+  "txTitleAdjustPlus": "Điều chỉnh số dư (cộng)",
+  "txTitleAdjustMinus": "Điều chỉnh số dư (trừ)",
+  "txTitleOrderWallet": "Thanh toán đơn bằng ví",
+  "txTitleOrderVia": "Thanh toán đơn qua {method}",
+  "@txTitleOrderVia": {
+    "placeholders": {
+      "method": {}
+    }
+  },
+  "txTitleIn": "Tiền vào ví",
+  "txTitleOut": "Tiền ra khỏi ví",
+  "txSvcLaundry": "Giặt sấy",
+  "txSvcOrder": "Thanh toán đơn",
+  "txSvcTopup": "Nạp tiền ví",
+  "txSvcAdjust": "Điều chỉnh số dư",
+  "txLoadFailed": "Không tải được lịch sử giao dịch.",
+  "txHistory": "Lịch sử giao dịch",
+  "txSubtitle": "Các khoản thanh toán & chi tiêu của bạn",
+  "txStats": "Thống kê chi tiêu",
+  "txThisMonth": "Tháng này",
+  "txThisYear": "Năm nay",
+  "txTotalSpent": "Tổng chi tiêu",
+  "txTotalIn": "Tổng tiền vào",
+  "txNet": "Biến động ròng:",
+  "txByMethod": "Tổng tiền theo hình thức",
+  "txByService": "Chi tiết theo từng dịch vụ",
+  "txMethod": "Hình thức",
+  "txSvcSmartRental": "Thuê tủ thông minh",
+  "txSvcSend": "Gửi đồ / Giao nhận",
+  "txSvcLaundryLocker": "Giặt sấy tủ",
+  "txSvcWithdrawBank": "Rút tiền về STK",
+  "txSvcOtherOrder": "Thanh toán đơn khác",
+  "txCount": "{count} giao dịch",
+  "@txCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "txAllMethods": "Tất cả hình thức",
+  "txSepayShort": "Cổng SePay",
+  "txFilterByMethod": "Lọc theo hình thức giao dịch",
+  "txAllCount": "Tất cả ({count} GD):",
+  "@txAllCount": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "txFilterCount": "{label} ({count} GD):",
+  "@txFilterCount": {
+    "placeholders": {
+      "label": {},
+      "count": {}
+    }
+  },
+  "txLoading": "Đang tải lịch sử giao dịch...",
+  "txNone": "Không có giao dịch nào",
+  "txNoMatch": "Không tìm thấy giao dịch theo bộ lọc đã chọn",
+  "txWithdrawRequest": "Yêu cầu rút tiền",
+  "txMethodLabel": "Hình thức GD",
+  "txType": "Loại",
+  "txDirection": "Chiều tiền",
+  "txCredit": "Cộng vào ví",
+  "txDebit": "Trừ từ ví",
+  "txDirect": "Trả trực tiếp qua cổng",
+  "txId": "Mã GD",
+  "txBalanceAfter": "Số dư ví sau GD"
 }

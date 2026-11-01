@@ -6821,4 +6821,529 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tlNotYet => 'Not yet';
+
+  @override
+  String get rbChooseBank => 'Please choose a bank';
+
+  @override
+  String get rbSaved => 'Refund bank account saved';
+
+  @override
+  String get rbSaveFailed =>
+      'Couldn\'t save the details. Please check them again';
+
+  @override
+  String get rbOneTimeSetup => 'One-time setup';
+
+  @override
+  String get rbIntro =>
+      'Refunds are transferred directly to this account when an order has a problem (stuck locker, cancelled drone, laundry issue...). You won\'t need to enter it again.';
+
+  @override
+  String get rbBeneficiaryBank => 'Beneficiary bank';
+
+  @override
+  String get rbChooseBankShort => 'Choose a bank';
+
+  @override
+  String get rbAccountNumber => 'Bank account number';
+
+  @override
+  String get rbAccountNumberHint => 'Enter your account number';
+
+  @override
+  String get rbEnterAccountNumber => 'Please enter the account number';
+
+  @override
+  String get rbInvalidAccountNumber => 'Invalid account number';
+
+  @override
+  String get rbHolderName => 'Account holder\'s full name';
+
+  @override
+  String get rbHolderHint => 'E.g. JOHN SMITH';
+
+  @override
+  String get rbEnterHolder => 'Please enter the account holder\'s name';
+
+  @override
+  String get rbUpdate => 'Update account';
+
+  @override
+  String get rbSave => 'Save refund account';
+
+  @override
+  String get rbSearchHint => 'Search by bank name or code...';
+
+  @override
+  String rfCantPickImage(Object error) {
+    return 'Couldn\'t pick the image: $error';
+  }
+
+  @override
+  String get rfChooseOrder => 'Please choose the order to refund';
+
+  @override
+  String get rfInvalidOrder => 'Invalid order code';
+
+  @override
+  String get rfEnterReason => 'Please enter the reason for the refund';
+
+  @override
+  String get rfEnterBank => 'Please fill in the receiving bank account details';
+
+  @override
+  String get rfSending => 'Sending refund request...';
+
+  @override
+  String get rfSent => 'Refund request sent!';
+
+  @override
+  String rfError(Object message) {
+    return 'Error: $message';
+  }
+
+  @override
+  String get rfSubtitle => 'Manage and create refund requests for orders';
+
+  @override
+  String get rfMyRequests => 'My requests';
+
+  @override
+  String get rfNewRequest => 'New request';
+
+  @override
+  String get rfEmptyRecent => 'No refund requests in the last 7 days.';
+
+  @override
+  String get rfEmptyPending => 'No pending refund requests.';
+
+  @override
+  String get rfEmptyCompleted => 'No refunds have been transferred yet.';
+
+  @override
+  String get rfEmptyRejected => 'No rejected refund requests.';
+
+  @override
+  String get rfEmptyCanceled => 'No cancelled refund requests.';
+
+  @override
+  String get rfEmptyHint =>
+      'You can create a new refund request from the next tab.';
+
+  @override
+  String get rfNone => 'No refund requests yet';
+
+  @override
+  String get rfNoneHint =>
+      'If a locker won\'t open, a drone flight is cancelled or there\'s a laundry issue, you can request a refund here.';
+
+  @override
+  String get rfCreateNow => 'Request a refund now';
+
+  @override
+  String get rfNoneShort => 'No refund requests yet';
+
+  @override
+  String get rfNoMatch => 'No matching requests';
+
+  @override
+  String rfTicketHash(Object id) {
+    return 'Refund ticket #$id';
+  }
+
+  @override
+  String get rfSentAt => 'Submitted at';
+
+  @override
+  String get rfHasTransferSlip => 'Transfer slip';
+
+  @override
+  String get rfHasPhoto => 'Photo';
+
+  @override
+  String get rfViewDetail => 'View details';
+
+  @override
+  String get rfDetailSubtitle => 'Request details & transfer information';
+
+  @override
+  String get rfTransferDone => 'Transfer completed successfully';
+
+  @override
+  String get rfRejectedTitle => 'The refund request was rejected';
+
+  @override
+  String get rfAwaitingAdmin =>
+      'Waiting for an admin to reconcile and transfer';
+
+  @override
+  String get rfInfo => 'Refund information';
+
+  @override
+  String get rfOrderCodeCopied => 'Order code copied';
+
+  @override
+  String get rfAccountHolder => 'Account holder';
+
+  @override
+  String get rfReason => 'Refund reason';
+
+  @override
+  String get rfTransferId => 'Transfer ID';
+
+  @override
+  String get rfTransferIdCopied => 'Transaction ID copied';
+
+  @override
+  String get rfRejectReason => 'Rejection reason';
+
+  @override
+  String get rfEvidence => 'Documents & evidence photos';
+
+  @override
+  String get rfYourPhotos => 'Evidence photos you sent:';
+
+  @override
+  String get rfAdminSlip => 'Admin transfer receipt (slip):';
+
+  @override
+  String get rfChooseOrderTitle => 'Choose the order to refund';
+
+  @override
+  String get rfTapToChooseOrder => 'Tap here to choose an order';
+
+  @override
+  String get rfChoosePaidOrder => 'Choose the paid order you want refunded';
+
+  @override
+  String rfOrderValue(Object code) {
+    return 'Order: $code';
+  }
+
+  @override
+  String get rfAmountLabel => 'Amount: ';
+
+  @override
+  String get rfChange => 'Change';
+
+  @override
+  String get rfChoose => 'Choose';
+
+  @override
+  String get rfSavedDefault => 'Saved as default';
+
+  @override
+  String get rfChooseReceivingBank => 'Choose the receiving bank';
+
+  @override
+  String get rfAccountNumberField => 'Receiving account number';
+
+  @override
+  String get rfAccountNumberHint => 'Enter account number';
+
+  @override
+  String get rfHolderField => 'Account holder name (uppercase, no accents)';
+
+  @override
+  String get rfSaveAsDefault => 'Save as default refund account';
+
+  @override
+  String get rfReasonTitle => 'Reason for the refund';
+
+  @override
+  String get rfQuickStuck => 'Stuck compartment';
+
+  @override
+  String get rfQuickDroneCancel => 'Drone flight cancelled';
+
+  @override
+  String get rfQuickDoubleCharge => 'Charged twice by the payment gateway';
+
+  @override
+  String get rfQuickLaundry => 'Laundry service issue';
+
+  @override
+  String get rfReasonHint => 'Describe the reason and the problem in detail...';
+
+  @override
+  String get rfEvidenceOptional => 'Evidence photos (optional)';
+
+  @override
+  String get rfTakePhoto => 'Take photo';
+
+  @override
+  String get rfPickGallery => 'From gallery';
+
+  @override
+  String get rfChangePhoto => 'Change photo';
+
+  @override
+  String get rfExpectedAmount => 'Expected refund:';
+
+  @override
+  String get rfSubmit => 'Submit refund request';
+
+  @override
+  String get rfEvidenceDetail => 'Evidence photo details';
+
+  @override
+  String get rfRules => 'Refund rules';
+
+  @override
+  String get rfRulesIntro => 'Lock.R supports refunds in these cases:';
+
+  @override
+  String get rfRule1 =>
+      '• A technical issue where the compartment won\'t open or the door is stuck > 30 minutes.';
+
+  @override
+  String get rfRule2 =>
+      '• A drone delivery later than promised or a cancelled flight.';
+
+  @override
+  String get rfRule3 => '• The payment gateway charged twice (double billing).';
+
+  @override
+  String get rfRule4 => '• Goods/laundry damaged by the laundry partner.';
+
+  @override
+  String get rfProcessingTime => 'Processing time:';
+
+  @override
+  String get rfProcessingBody =>
+      'An admin will reconcile and transfer within 24 working hours. You\'ll get a notification with the transfer slip right in the app.';
+
+  @override
+  String get rfNoOrders => 'No orders';
+
+  @override
+  String get rfSelected => '✓ Selected';
+
+  @override
+  String get rfChooseBeneficiary => 'Choose beneficiary bank';
+
+  @override
+  String get rfSearchBank => 'Search banks (code, name)...';
+
+  @override
+  String get bankUnknown =>
+      'Couldn\'t identify the receiving bank. Please scan the QR code with your banking app.';
+
+  @override
+  String bankCantOpen(Object app) {
+    return 'Couldn\'t open $app. It may not be installed — please scan the QR code with your banking app.';
+  }
+
+  @override
+  String get bankTitle => 'Pay with banking app';
+
+  @override
+  String get bankIntro =>
+      'Choose your banking app — the account number, amount and description are filled in, you just confirm.';
+
+  @override
+  String get bankSearch => 'Search banks';
+
+  @override
+  String get bankLoadFailed =>
+      'Couldn\'t load the banking apps.\nYou can scan the QR code with your banking app.';
+
+  @override
+  String get bankNoMatch => 'No matching bank';
+
+  @override
+  String get simBusy => 'Simulating…';
+
+  @override
+  String get simButton => 'Simulate payment (test)';
+
+  @override
+  String get simFailed => 'Couldn\'t simulate';
+
+  @override
+  String get simTitle => 'Simulate a transfer';
+
+  @override
+  String get simBody =>
+      'For testing only — no real money. Enter less than the amount due to test an underpayment.';
+
+  @override
+  String get simReceived => 'Amount received';
+
+  @override
+  String get simAction => 'Simulate';
+
+  @override
+  String get txSepay => 'SePay QR gateway';
+
+  @override
+  String get txVnpay => 'VNPay gateway';
+
+  @override
+  String get txMomo => 'MoMo wallet';
+
+  @override
+  String get txWithdraw => 'Withdrawal';
+
+  @override
+  String get txTitleTopup => 'Wallet top-up';
+
+  @override
+  String get txTitleWithdrawRefund => 'Withdrawal refunded';
+
+  @override
+  String get txTitleWithdraw => 'Withdrawal to bank account';
+
+  @override
+  String get txTitleRefund => 'Refund to wallet';
+
+  @override
+  String get txTitleAdjustPlus => 'Balance adjustment (credit)';
+
+  @override
+  String get txTitleAdjustMinus => 'Balance adjustment (debit)';
+
+  @override
+  String get txTitleOrderWallet => 'Order paid with wallet';
+
+  @override
+  String txTitleOrderVia(Object method) {
+    return 'Order paid via $method';
+  }
+
+  @override
+  String get txTitleIn => 'Money in';
+
+  @override
+  String get txTitleOut => 'Money out';
+
+  @override
+  String get txSvcLaundry => 'Laundry';
+
+  @override
+  String get txSvcOrder => 'Order payment';
+
+  @override
+  String get txSvcTopup => 'Wallet top-up';
+
+  @override
+  String get txSvcAdjust => 'Balance adjustment';
+
+  @override
+  String get txLoadFailed => 'Couldn\'t load your transaction history.';
+
+  @override
+  String get txHistory => 'Transaction history';
+
+  @override
+  String get txSubtitle => 'Your payments & spending';
+
+  @override
+  String get txStats => 'Spending stats';
+
+  @override
+  String get txThisMonth => 'This month';
+
+  @override
+  String get txThisYear => 'This year';
+
+  @override
+  String get txTotalSpent => 'Total spent';
+
+  @override
+  String get txTotalIn => 'Total in';
+
+  @override
+  String get txNet => 'Net change:';
+
+  @override
+  String get txByMethod => 'Totals by method';
+
+  @override
+  String get txByService => 'Breakdown by service';
+
+  @override
+  String get txMethod => 'Method';
+
+  @override
+  String get txSvcSmartRental => 'Smart locker rental';
+
+  @override
+  String get txSvcSend => 'Sending / delivery';
+
+  @override
+  String get txSvcLaundryLocker => 'Locker laundry';
+
+  @override
+  String get txSvcWithdrawBank => 'Withdrawal to bank';
+
+  @override
+  String get txSvcOtherOrder => 'Other order payments';
+
+  @override
+  String txCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count transactions',
+      one: '1 transaction',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get txAllMethods => 'All methods';
+
+  @override
+  String get txSepayShort => 'SePay gateway';
+
+  @override
+  String get txFilterByMethod => 'Filter by payment method';
+
+  @override
+  String txAllCount(Object count) {
+    return 'All ($count txns):';
+  }
+
+  @override
+  String txFilterCount(Object label, Object count) {
+    return '$label ($count txns):';
+  }
+
+  @override
+  String get txLoading => 'Loading transaction history...';
+
+  @override
+  String get txNone => 'No transactions';
+
+  @override
+  String get txNoMatch => 'No transactions match the selected filter';
+
+  @override
+  String get txWithdrawRequest => 'Withdrawal request';
+
+  @override
+  String get txMethodLabel => 'Method';
+
+  @override
+  String get txType => 'Type';
+
+  @override
+  String get txDirection => 'Direction';
+
+  @override
+  String get txCredit => 'Credited to wallet';
+
+  @override
+  String get txDebit => 'Debited from wallet';
+
+  @override
+  String get txDirect => 'Paid directly via gateway';
+
+  @override
+  String get txId => 'Transaction ID';
+
+  @override
+  String get txBalanceAfter => 'Wallet balance after';
 }

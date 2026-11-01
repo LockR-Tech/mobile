@@ -13,6 +13,7 @@ import 'package:smart_laundry_locker/features/transactions/presentation/provider
 import 'package:smart_laundry_locker/features/transactions/presentation/providers/transaction_provider.dart';
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
 import 'package:smart_laundry_locker/shared/shared.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 class TransactionsPage extends StatefulWidget {
   const TransactionsPage({super.key});
@@ -60,8 +61,8 @@ class _TransactionsPageState extends State<TransactionsPage> {
             return Column(
               children: [
                 BrandHeroHeader(
-                  title: 'Lịch sử giao dịch',
-                  subtitle: 'Các khoản thanh toán & chi tiêu của bạn',
+                  title: context.l10n.txHistory,
+                  subtitle: context.l10n.txSubtitle,
                   trailing: BrandCircleIconButton(
                     icon: Icons.refresh,
                     onTap: () => provider.fetchTransactions(refresh: true),
@@ -165,7 +166,7 @@ class _SpendingStatsCardState extends State<_SpendingStatsCard> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Row(
+              Row(
                 children: [
                   Icon(
                     Icons.insights_rounded,
@@ -174,7 +175,7 @@ class _SpendingStatsCardState extends State<_SpendingStatsCard> {
                   ),
                   SizedBox(width: 6),
                   Text(
-                    'Thống kê chi tiêu',
+                    context.l10n.txStats,
                     style: TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w700,
@@ -202,10 +203,10 @@ class _SpendingStatsCardState extends State<_SpendingStatsCard> {
             ),
             child: Row(
               children: [
-                _buildPeriodTab('Hôm nay', 'DAY', period),
-                _buildPeriodTab('Tháng này', 'MONTH', period),
-                _buildPeriodTab('Năm nay', 'YEAR', period),
-                _buildPeriodTab('Tất cả', 'ALL', period),
+                _buildPeriodTab(context.l10n.commonToday, 'DAY', period),
+                _buildPeriodTab(context.l10n.txThisMonth, 'MONTH', period),
+                _buildPeriodTab(context.l10n.txThisYear, 'YEAR', period),
+                _buildPeriodTab(context.l10n.commonAll, 'ALL', period),
               ],
             ),
           ),
@@ -216,7 +217,7 @@ class _SpendingStatsCardState extends State<_SpendingStatsCard> {
             children: [
               Expanded(
                 child: _MetricItem(
-                  label: 'Tổng chi tiêu',
+                  label: context.l10n.txTotalSpent,
                   value: '-$expenseFmt',
                   valueColor: const Color(0xFFDC2626),
                   icon: Icons.arrow_outward_rounded,
@@ -226,7 +227,7 @@ class _SpendingStatsCardState extends State<_SpendingStatsCard> {
               const SizedBox(width: 10),
               Expanded(
                 child: _MetricItem(
-                  label: 'Tổng tiền vào',
+                  label: context.l10n.txTotalIn,
                   value: '+$incomeFmt',
                   valueColor: const Color(0xFF16A34A),
                   icon: Icons.south_west_rounded,
@@ -260,8 +261,8 @@ class _SpendingStatsCardState extends State<_SpendingStatsCard> {
                           : const Color(0xFFDC2626),
                     ),
                     const SizedBox(width: 6),
-                    const Text(
-                      'Biến động ròng:',
+                    Text(
+                      context.l10n.txNet,
                       style: TextStyle(
                         fontSize: 12,
                         color: Color(0xFF64748B),
@@ -303,7 +304,7 @@ class _SpendingStatsCardState extends State<_SpendingStatsCard> {
                     const SizedBox(width: 6),
                     Expanded(
                       child: Text(
-                        _showMethodBreakdown ? 'Tổng tiền theo hình thức' : 'Chi tiết theo từng dịch vụ',
+                        _showMethodBreakdown ? context.l10n.txByMethod : context.l10n.txByService,
                         style: const TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w700,
@@ -324,12 +325,12 @@ class _SpendingStatsCardState extends State<_SpendingStatsCard> {
                 child: Row(
                   children: [
                     _buildSubTab(
-                      title: 'Dịch vụ',
+                      title: context.l10n.commonService,
                       isSelected: !_showMethodBreakdown,
                       onTap: () => setState(() => _showMethodBreakdown = false),
                     ),
                     _buildSubTab(
-                      title: 'Hình thức',
+                      title: context.l10n.txMethod,
                       isSelected: _showMethodBreakdown,
                       onTap: () => setState(() => _showMethodBreakdown = true),
                     ),
@@ -581,7 +582,7 @@ class _ServiceBreakdownList extends StatelessWidget {
     final services = <Map<String, dynamic>>[
       {
         'key': 'RENTAL',
-        'title': 'Thuê tủ thông minh',
+        'title': context.l10n.txSvcSmartRental,
         'amount': rentalAmt,
         'count': rentalCount,
         'color': const Color(0xFF2563EB),
@@ -589,7 +590,7 @@ class _ServiceBreakdownList extends StatelessWidget {
       },
       {
         'key': 'SEND',
-        'title': 'Gửi đồ / Giao nhận',
+        'title': context.l10n.txSvcSend,
         'amount': sendAmt,
         'count': sendCount,
         'color': const Color(0xFF7C3AED),
@@ -598,7 +599,7 @@ class _ServiceBreakdownList extends StatelessWidget {
       if (laundryAmt > 0 || laundryCount > 0)
         {
           'key': 'LAUNDRY',
-          'title': 'Giặt sấy tủ',
+          'title': context.l10n.txSvcLaundryLocker,
           'amount': laundryAmt,
           'count': laundryCount,
           'color': const Color(0xFF0D9488),
@@ -608,7 +609,7 @@ class _ServiceBreakdownList extends StatelessWidget {
       if (topupAmt > 0 || topupCount > 0)
         {
           'key': 'TOPUP',
-          'title': 'Nạp tiền ví',
+          'title': context.l10n.txSvcTopup,
           'amount': topupAmt,
           'count': topupCount,
           'color': const Color(0xFF16A34A),
@@ -617,7 +618,7 @@ class _ServiceBreakdownList extends StatelessWidget {
       if (withdrawAmt > 0 || withdrawCount > 0)
         {
           'key': 'WITHDRAW',
-          'title': 'Rút tiền về STK',
+          'title': context.l10n.txSvcWithdrawBank,
           'amount': withdrawAmt,
           'count': withdrawCount,
           'color': const Color(0xFFEA580C),
@@ -626,7 +627,7 @@ class _ServiceBreakdownList extends StatelessWidget {
       if (orderAmt > 0 || orderCount > 0)
         {
           'key': 'ORDER',
-          'title': 'Thanh toán đơn khác',
+          'title': context.l10n.txSvcOtherOrder,
           'amount': orderAmt,
           'count': orderCount,
           'color': const Color(0xFF0369A1),
@@ -635,7 +636,7 @@ class _ServiceBreakdownList extends StatelessWidget {
       if (refundAmt > 0 || refundCount > 0)
         {
           'key': 'REFUND',
-          'title': 'Hoàn tiền vào ví',
+          'title': context.l10n.txTitleRefund,
           'amount': refundAmt,
           'count': refundCount,
           'color': const Color(0xFF0891B2),
@@ -644,7 +645,7 @@ class _ServiceBreakdownList extends StatelessWidget {
       if (adjustAmt > 0 || adjustCount > 0)
         {
           'key': 'ADJUST',
-          'title': 'Điều chỉnh số dư',
+          'title': context.l10n.txSvcAdjust,
           'amount': adjustAmt,
           'count': adjustCount,
           'color': const Color(0xFF7C2D12),
@@ -653,7 +654,7 @@ class _ServiceBreakdownList extends StatelessWidget {
       if (otherAmt > 0 || otherCount > 0)
         {
           'key': 'OTHER',
-          'title': 'Khác',
+          'title': context.l10n.enumOther,
           'amount': otherAmt,
           'count': otherCount,
           'color': const Color(0xFF64748B),
@@ -705,7 +706,7 @@ class _ServiceBreakdownList extends StatelessWidget {
                           ),
                         ),
                         Text(
-                          '$cnt giao dịch',
+                          context.l10n.txCount(cnt),
                           style: const TextStyle(
                             fontSize: 11,
                             color: Color(0xFF94A3B8),
@@ -773,7 +774,7 @@ class _MethodBreakdownList extends StatelessWidget {
       if (walletAmt > 0 || walletCnt > 0)
         {
           'key': 'WALLET',
-          'title': 'Ví Lock.R',
+          'title': context.l10n.payMethodWallet,
           'amount': walletAmt,
           'count': walletCnt,
           'color': const Color(0xFF1E293B),
@@ -781,7 +782,7 @@ class _MethodBreakdownList extends StatelessWidget {
         },
       {
         'key': 'SEPAY',
-        'title': 'Cổng SePay QR',
+        'title': context.l10n.txSepay,
         'amount': sepayAmt,
         'count': sepayCnt,
         'color': const Color(0xFF0284C7),
@@ -791,7 +792,7 @@ class _MethodBreakdownList extends StatelessWidget {
       if (vnpayAmt > 0 || vnpayCnt > 0)
         {
           'key': 'VNPAY',
-          'title': 'Cổng VNPay',
+          'title': context.l10n.txVnpay,
           'amount': vnpayAmt,
           'count': vnpayCnt,
           'color': const Color(0xFFE11D48),
@@ -800,7 +801,7 @@ class _MethodBreakdownList extends StatelessWidget {
       if (momoAmt > 0 || momoCnt > 0)
         {
           'key': 'MOMO',
-          'title': 'Ví MoMo',
+          'title': context.l10n.txMomo,
           'amount': momoAmt,
           'count': momoCnt,
           'color': const Color(0xFFC026D3),
@@ -809,7 +810,7 @@ class _MethodBreakdownList extends StatelessWidget {
       if (withdrawAmt > 0 || withdrawCnt > 0)
         {
           'key': 'WITHDRAW',
-          'title': 'Rút tiền về STK',
+          'title': context.l10n.txSvcWithdrawBank,
           'amount': withdrawAmt,
           'count': withdrawCnt,
           'color': const Color(0xFFEA580C),
@@ -861,7 +862,7 @@ class _MethodBreakdownList extends StatelessWidget {
                           ),
                         ),
                         Text(
-                          '$cnt giao dịch',
+                          context.l10n.txCount(cnt),
                           style: const TextStyle(
                             fontSize: 11,
                             color: Color(0xFF94A3B8),
@@ -910,16 +911,16 @@ class _PaymentMethodFilterBar extends StatelessWidget {
     bool hasHistory(String key) =>
         provider.selectedMethod == key || provider.getMethodCount(key) > 0;
     final filters = [
-      {'key': 'ALL', 'label': 'Tất cả hình thức', 'icon': Icons.tune_rounded},
+      {'key': 'ALL', 'label': context.l10n.txAllMethods, 'icon': Icons.tune_rounded},
       if (hasHistory('WALLET'))
-        {'key': 'WALLET', 'label': 'Ví Lock.R', 'icon': Icons.account_balance_wallet_rounded},
-      {'key': 'SEPAY', 'label': 'Cổng SePay', 'icon': Icons.qr_code_2_rounded},
+        {'key': 'WALLET', 'label': context.l10n.payMethodWallet, 'icon': Icons.account_balance_wallet_rounded},
+      {'key': 'SEPAY', 'label': context.l10n.txSepayShort, 'icon': Icons.qr_code_2_rounded},
       if (hasHistory('VNPAY'))
-        {'key': 'VNPAY', 'label': 'Cổng VNPay', 'icon': Icons.credit_card_rounded},
+        {'key': 'VNPAY', 'label': context.l10n.txVnpay, 'icon': Icons.credit_card_rounded},
       if (hasHistory('MOMO'))
-        {'key': 'MOMO', 'label': 'Ví MoMo', 'icon': Icons.account_balance_wallet_outlined},
+        {'key': 'MOMO', 'label': context.l10n.txMomo, 'icon': Icons.account_balance_wallet_outlined},
       if (hasHistory('WITHDRAW'))
-        {'key': 'WITHDRAW', 'label': 'Rút tiền', 'icon': Icons.outbox_rounded},
+        {'key': 'WITHDRAW', 'label': context.l10n.txWithdraw, 'icon': Icons.outbox_rounded},
     ];
 
     final currentFilter = filters.firstWhere(
@@ -930,7 +931,7 @@ class _PaymentMethodFilterBar extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Padding(
+        Padding(
           padding: EdgeInsets.symmetric(horizontal: 16),
           child: Row(
             children: [
@@ -941,7 +942,7 @@ class _PaymentMethodFilterBar extends StatelessWidget {
               ),
               SizedBox(width: 6),
               Text(
-                'Lọc theo hình thức giao dịch',
+                context.l10n.txFilterByMethod,
                 style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w700,
@@ -1076,8 +1077,11 @@ class _PaymentMethodFilterBar extends StatelessWidget {
                       Flexible(
                         child: Text(
                           provider.selectedMethod == 'ALL'
-                              ? 'Tất cả (${provider.getMethodCount('ALL')} GD):'
-                              : '${currentFilter['label']} (${provider.getMethodCount(provider.selectedMethod)} GD):',
+                              ? context.l10n.txAllCount(provider.getMethodCount('ALL'))
+                              : context.l10n.txFilterCount(
+                                  '${currentFilter['label']}',
+                                  provider.getMethodCount(provider.selectedMethod),
+                                ),
                           style: const TextStyle(
                             fontSize: 12,
                             color: Color(0xFF64748B),
@@ -1140,11 +1144,11 @@ class _TransactionsSliverList extends StatelessWidget {
         final transactions = provider.filteredTransactions;
 
         if (provider.isLoading && provider.transactions.isEmpty) {
-          return const SliverFillRemaining(
+          return SliverFillRemaining(
             hasScrollBody: false,
             child: AppLoadingIndicator(
               fullScreen: true,
-              message: 'Đang tải lịch sử giao dịch...',
+              message: context.l10n.txLoading,
             ),
           );
         }
@@ -1165,7 +1169,7 @@ class _TransactionsSliverList extends StatelessWidget {
                     ),
                     TextButton(
                       onPressed: () => provider.fetchTransactions(refresh: true),
-                      child: const Text('Thử lại'),
+                      child: Text(context.l10n.commonRetry),
                     ),
                   ],
                 ),
@@ -1195,8 +1199,8 @@ class _TransactionsSliverList extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 12),
-                  const Text(
-                    'Không có giao dịch nào',
+                  Text(
+                    context.l10n.txNone,
                     style: TextStyle(
                       color: Color(0xFF64748B),
                       fontSize: 15,
@@ -1204,8 +1208,8 @@ class _TransactionsSliverList extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 4),
-                  const Text(
-                    'Không tìm thấy giao dịch theo bộ lọc đã chọn',
+                  Text(
+                    context.l10n.txNoMatch,
                     style: TextStyle(
                       color: Color(0xFF94A3B8),
                       fontSize: 12,
@@ -1302,7 +1306,7 @@ class _MBStyleTransactionItem extends StatelessWidget {
     // Giao dịch rút ví cũ: app không còn ví nên không tra trạng thái yêu cầu rút.
     final isWithdrawal =
         transaction.detectedService == 'WITHDRAW' && !isIncome;
-    final statusText = isWithdrawal ? 'Yêu cầu rút tiền' : 'Thành công';
+    final statusText = isWithdrawal ? context.l10n.txWithdrawRequest : context.l10n.commonSuccess;
     final statusColor =
         isWithdrawal ? const Color(0xFF64748B) : const Color(0xFF16A34A);
 
@@ -1393,35 +1397,35 @@ class _MBStyleTransactionItem extends StatelessWidget {
                     ),
                     child: Column(
                       children: [
-                        _dialogRow('Hình thức GD', methodLabel),
+                        _dialogRow(context.l10n.txMethodLabel, methodLabel),
                         const SizedBox(height: 6),
-                        _dialogRow('Loại', serviceLabel),
+                        _dialogRow(context.l10n.txType, serviceLabel),
                         const SizedBox(height: 6),
                         _dialogRow(
-                          'Chiều tiền',
+                          context.l10n.txDirection,
                           isIncome
-                              ? 'Cộng vào ví'
-                              : (showBalance ? 'Trừ từ ví' : 'Trả trực tiếp qua cổng'),
+                              ? context.l10n.txCredit
+                              : (showBalance ? context.l10n.txDebit : context.l10n.txDirect),
                         ),
                         const SizedBox(height: 6),
                         _dialogRow(
-                          'Thời gian',
+                          context.l10n.commonTime,
                           DateFormat('HH:mm:ss dd/MM/yyyy')
                               .format(transaction.createdAt.toLocal()),
                         ),
                         if (transaction.referenceId != null &&
                             transaction.referenceId!.isNotEmpty) ...[
                           const SizedBox(height: 6),
-                          _dialogRow('Mã GD', transaction.referenceId!),
+                          _dialogRow(context.l10n.txId, transaction.referenceId!),
                         ],
                         if (transaction.orderCode != null &&
                             transaction.orderCode!.isNotEmpty) ...[
                           const SizedBox(height: 6),
-                          _dialogRow('Mã đơn', transaction.orderCode!),
+                          _dialogRow(context.l10n.ddOrderCode, transaction.orderCode!),
                         ],
                         if (showBalance) ...[
                           const SizedBox(height: 6),
-                          _dialogRow('Số dư ví sau GD', balanceFmt),
+                          _dialogRow(context.l10n.txBalanceAfter, balanceFmt),
                         ],
                       ],
                     ),
@@ -1433,7 +1437,7 @@ class _MBStyleTransactionItem extends StatelessWidget {
                       backgroundColor: AISLShadcnTheme.navyPrimary,
                       minimumSize: const Size.fromHeight(46),
                     ),
-                    child: const Text('Đóng'),
+                    child: Text(context.l10n.commonClose),
                   ),
                 ],
               ),

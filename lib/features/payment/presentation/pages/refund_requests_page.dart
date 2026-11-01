@@ -20,6 +20,7 @@ import 'package:smart_laundry_locker/features/payment/data/user_bank_account.dar
 import 'package:smart_laundry_locker/features/payment/data/vietnamese_banks.dart';
 import 'package:smart_laundry_locker/shared/widgets/app_cached_image.dart';
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 class RefundRequestsPage extends StatefulWidget {
   const RefundRequestsPage({
@@ -206,7 +207,7 @@ class _RefundRequestsPageState extends State<RefundRequestsPage> {
         _base64ImageData = base64String;
       });
     } catch (e) {
-      SmartDialog.showToast('Không thể chọn ảnh: $e');
+      SmartDialog.showToast(L10n.current.rfCantPickImage(e));
     }
   }
 
@@ -251,25 +252,25 @@ class _RefundRequestsPageState extends State<RefundRequestsPage> {
 
   Future<void> _handleSubmit() async {
     if (_selectedOrder == null) {
-      SmartDialog.showToast('Vui lòng chọn đơn hàng cần hoàn tiền');
+      SmartDialog.showToast(context.l10n.rfChooseOrder);
       return;
     }
     final orderId = _selectedOrder!['id'];
     if (orderId == null) {
-      SmartDialog.showToast('Mã đơn hàng không hợp lệ');
+      SmartDialog.showToast(context.l10n.rfInvalidOrder);
       return;
     }
 
     final reason = _reasonController.text.trim();
     if (reason.isEmpty) {
-      SmartDialog.showToast('Vui lòng nhập lý do yêu cầu hoàn tiền');
+      SmartDialog.showToast(context.l10n.rfEnterReason);
       return;
     }
 
     final accNum = _accountNumberController.text.trim();
     final accHolder = _accountHolderController.text.trim();
     if (accNum.isEmpty || accHolder.isEmpty || _selectedBank == null) {
-      SmartDialog.showToast('Vui lòng điền đầy đủ thông tin tài khoản ngân hàng nhận tiền');
+      SmartDialog.showToast(context.l10n.rfEnterBank);
       return;
     }
 
@@ -282,7 +283,7 @@ class _RefundRequestsPageState extends State<RefundRequestsPage> {
     }
 
     setState(() => _isSubmitting = true);
-    SmartDialog.showLoading(msg: 'Đang gửi yêu cầu hoàn tiền...');
+    SmartDialog.showLoading(msg: context.l10n.rfSending);
 
     try {
       String? uploadedUrl;
@@ -321,7 +322,7 @@ class _RefundRequestsPageState extends State<RefundRequestsPage> {
       );
 
       SmartDialog.dismiss();
-      SmartDialog.showToast('Đã gửi yêu cầu hoàn tiền thành công!');
+      SmartDialog.showToast(L10n.current.rfSent);
 
       // Tạo bản ghi hoàn tiền hiển thị ngay lập tức trên UI
       final optimisticRefund = Map<String, dynamic>.from(newRefund);
@@ -356,7 +357,7 @@ class _RefundRequestsPageState extends State<RefundRequestsPage> {
       final msg = e.toString().contains('message:')
           ? e.toString().split('message:').last.replaceAll('}', '').trim()
           : '$e';
-      SmartDialog.showToast('Lỗi: $msg');
+      SmartDialog.showToast(L10n.current.rfError(msg));
     }
   }
 
@@ -367,9 +368,9 @@ class _RefundRequestsPageState extends State<RefundRequestsPage> {
       body: Column(
         children: [
           BrandHeroHeader(
-            eyebrow: 'LOCK.R • THANH TOÁN',
-            title: 'Hoàn tiền',
-            subtitle: 'Quản lý và tạo yêu cầu hoàn tiền cho đơn hàng',
+            eyebrow: context.l10n.commonPaymentEyebrow,
+            title: context.l10n.profileRefunds,
+            subtitle: context.l10n.rfSubtitle,
             onBack: () => AppRouter.backOrHome(context),
             trailing: Row(
               mainAxisSize: MainAxisSize.min,
@@ -401,7 +402,7 @@ class _RefundRequestsPageState extends State<RefundRequestsPage> {
                 Expanded(
                   child: _buildTabButton(
                     index: 0,
-                    title: 'Yêu cầu của tôi',
+                    title: context.l10n.rfMyRequests,
                     count: _refunds.length,
                     icon: LucideIcons.history,
                   ),
@@ -409,7 +410,7 @@ class _RefundRequestsPageState extends State<RefundRequestsPage> {
                 Expanded(
                   child: _buildTabButton(
                     index: 1,
-                    title: 'Tạo yêu cầu mới',
+                    title: context.l10n.rfNewRequest,
                     icon: LucideIcons.plusCircle,
                   ),
                 ),
@@ -506,9 +507,9 @@ class _RefundRequestsPageState extends State<RefundRequestsPage> {
     final today = DateTime(now.year, now.month, now.day);
     final day = DateTime(d.year, d.month, d.day);
     final diff = today.difference(day).inDays;
-    if (diff == 0) return 'Hôm nay';
-    if (diff == 1) return 'Hôm qua';
-    return '${d.day} tháng ${d.month}, ${d.year}';
+    if (diff == 0) return L10n.current.commonToday;
+    if (diff == 1) return L10n.current.commonYesterday;
+    return L10n.current.dateDayMonthYear(d.day, d.month, d.year);
   }
 
   bool _isRecent(Map<String, dynamic> rf) {
@@ -554,12 +555,12 @@ class _RefundRequestsPageState extends State<RefundRequestsPage> {
   }
 
   String get _emptySubtitle => switch (_refundFilter) {
-    'RECENT' => 'Không có yêu cầu hoàn tiền nào trong 7 ngày gần đây.',
-    'PENDING' => 'Không có yêu cầu hoàn tiền nào đang chờ xử lý.',
-    'COMPLETED' => 'Chưa có yêu cầu hoàn tiền nào đã được chuyển khoản thành công.',
-    'REJECTED' => 'Không có yêu cầu hoàn tiền nào bị từ chối.',
-    'CANCELED' => 'Không có yêu cầu hoàn tiền nào đã hủy.',
-    _ => 'Bạn có thể tạo yêu cầu hoàn tiền mới từ tab bên cạnh.',
+    'RECENT' => context.l10n.rfEmptyRecent,
+    'PENDING' => context.l10n.rfEmptyPending,
+    'COMPLETED' => context.l10n.rfEmptyCompleted,
+    'REJECTED' => context.l10n.rfEmptyRejected,
+    'CANCELED' => context.l10n.rfEmptyCanceled,
+    _ => context.l10n.rfEmptyHint,
   };
 
   List<Map<String, dynamic>> get _visibleRefunds {
@@ -599,7 +600,7 @@ class _RefundRequestsPageState extends State<RefundRequestsPage> {
 
     final map = <String, List<Map<String, dynamic>>>{};
     for (final item in withDates) {
-      final key = item.date == null ? 'Không rõ ngày' : _dateGroupLabel(item.date!);
+      final key = item.date == null ? context.l10n.commonUnknownDate : _dateGroupLabel(item.date!);
       (map[key] ??= []).add(item.refund);
     }
     return map.entries.toList();
@@ -624,28 +625,28 @@ class _RefundRequestsPageState extends State<RefundRequestsPage> {
       child: Row(
         children: [
           _TypeChip(
-            label: 'Tất cả',
+            label: context.l10n.commonAll,
             count: _refunds.length,
             selected: _refundFilter == 'ALL',
             onTap: () => _setRefundFilter('ALL'),
           ),
           const SizedBox(width: 8),
           _TypeChip(
-            label: 'Gần đây',
+            label: context.l10n.ordTabRecent,
             count: _countRecent,
             selected: _refundFilter == 'RECENT',
             onTap: () => _setRefundFilter('RECENT'),
           ),
           const SizedBox(width: 8),
           _TypeChip(
-            label: 'Chờ xử lý',
+            label: context.l10n.enumPending,
             count: _countPending,
             selected: _refundFilter == 'PENDING',
             onTap: () => _setRefundFilter('PENDING'),
           ),
           const SizedBox(width: 8),
           _TypeChip(
-            label: 'Đã chuyển tiền',
+            label: context.l10n.ordTransferred,
             count: _countCompleted,
             selected: _refundFilter == 'COMPLETED',
             onTap: () => _setRefundFilter('COMPLETED'),
@@ -653,7 +654,7 @@ class _RefundRequestsPageState extends State<RefundRequestsPage> {
           if (_countRejected > 0 || _refundFilter == 'REJECTED') ...[
             const SizedBox(width: 8),
             _TypeChip(
-              label: 'Bị từ chối',
+              label: context.l10n.ordRejected,
               count: _countRejected,
               selected: _refundFilter == 'REJECTED',
               onTap: () => _setRefundFilter('REJECTED'),
@@ -662,7 +663,7 @@ class _RefundRequestsPageState extends State<RefundRequestsPage> {
           if (_countCanceled > 0 || _refundFilter == 'CANCELED') ...[
             const SizedBox(width: 8),
             _TypeChip(
-              label: 'Đã hủy',
+              label: context.l10n.ordTabCancelled,
               count: _countCanceled,
               selected: _refundFilter == 'CANCELED',
               onTap: () => _setRefundFilter('CANCELED'),
@@ -697,8 +698,8 @@ class _RefundRequestsPageState extends State<RefundRequestsPage> {
               ),
             ),
             const SizedBox(height: 16),
-            const Text(
-              'Chưa có yêu cầu hoàn tiền nào',
+            Text(
+              context.l10n.rfNone,
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 16,
@@ -707,8 +708,8 @@ class _RefundRequestsPageState extends State<RefundRequestsPage> {
               ),
             ),
             const SizedBox(height: 8),
-            const Text(
-              'Khi gặp sự cố tủ không mở, drone huỷ chuyến hoặc sự cố giặt ủi, bạn có thể tạo yêu cầu hoàn tiền tại đây.',
+            Text(
+              context.l10n.rfNoneHint,
               textAlign: TextAlign.center,
               style: TextStyle(fontSize: 13, color: Color(0xFF64748B), height: 1.4),
             ),
@@ -717,7 +718,7 @@ class _RefundRequestsPageState extends State<RefundRequestsPage> {
               child: ElevatedButton.icon(
                 onPressed: () => setState(() => _selectedTab = 1),
                 icon: const Icon(LucideIcons.plus, size: 16),
-                label: const Text('Tạo yêu cầu hoàn tiền ngay'),
+                label: Text(context.l10n.rfCreateNow),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF0F172A),
                   foregroundColor: Colors.white,
@@ -749,8 +750,8 @@ class _RefundRequestsPageState extends State<RefundRequestsPage> {
                       OpsEmptyState(
                         icon: LucideIcons.rotateCcw,
                         title: _refundFilter == 'ALL'
-                            ? 'Chưa có yêu cầu hoàn tiền'
-                            : 'Không có yêu cầu phù hợp',
+                            ? context.l10n.rfNoneShort
+                            : context.l10n.rfNoMatch,
                         subtitle: _emptySubtitle,
                       ),
                     ],
@@ -794,8 +795,8 @@ class _RefundRequestsPageState extends State<RefundRequestsPage> {
     final isRejected = status == 'REJECTED';
 
     final statusText = isCompleted
-        ? 'Đã chuyển tiền'
-        : (isRejected ? 'Bị từ chối' : 'Chờ chuyển khoản');
+        ? context.l10n.ordTransferred
+        : (isRejected ? context.l10n.ordRejected : context.l10n.ordAwaitingTransfer);
     final statusColor = isCompleted
         ? const Color(0xFF15803D)
         : (isRejected ? const Color(0xFFE11D48) : const Color(0xFFD97706));
@@ -851,7 +852,7 @@ class _RefundRequestsPageState extends State<RefundRequestsPage> {
                       ),
                       const SizedBox(width: 8),
                       Text(
-                        'Phiếu hoàn tiền #${rf['id'] ?? ''}',
+                        context.l10n.rfTicketHash(rf['id'] ?? ''),
                         style: const TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w700,
@@ -885,8 +886,8 @@ class _RefundRequestsPageState extends State<RefundRequestsPage> {
                 textBaseline: TextBaseline.alphabetic,
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
-                    'Số tiền hoàn',
+                  Text(
+                    context.l10n.ordRefundAmount,
                     style: TextStyle(fontSize: 12.5, color: Color(0xFF64748B)),
                   ),
                   Text(
@@ -905,12 +906,12 @@ class _RefundRequestsPageState extends State<RefundRequestsPage> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Row(
+                    Row(
                       children: [
                         Icon(LucideIcons.package, size: 13, color: Color(0xFF64748B)),
                         SizedBox(width: 6),
                         Text(
-                          'Đơn hàng',
+                          context.l10n.commonOrder,
                           style: TextStyle(fontSize: 12, color: Color(0xFF64748B)),
                         ),
                       ],
@@ -936,12 +937,12 @@ class _RefundRequestsPageState extends State<RefundRequestsPage> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Row(
+                    Row(
                       children: [
                         Icon(LucideIcons.clock, size: 13, color: Color(0xFF64748B)),
                         SizedBox(width: 6),
                         Text(
-                          'Thời gian gửi',
+                          context.l10n.rfSentAt,
                           style: TextStyle(fontSize: 12, color: Color(0xFF64748B)),
                         ),
                       ],
@@ -976,13 +977,13 @@ class _RefundRequestsPageState extends State<RefundRequestsPage> {
                             color: const Color(0xFFDCFCE7),
                             borderRadius: BorderRadius.circular(5),
                           ),
-                          child: const Row(
+                          child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Icon(LucideIcons.fileCheck, size: 11, color: Color(0xFF15803D)),
                               SizedBox(width: 3.5),
                               Text(
-                                'Có UNC',
+                                context.l10n.rfHasTransferSlip,
                                 style: TextStyle(
                                   fontSize: 10.5,
                                   fontWeight: FontWeight.w600,
@@ -999,13 +1000,13 @@ class _RefundRequestsPageState extends State<RefundRequestsPage> {
                             color: const Color(0xFFE0F2FE),
                             borderRadius: BorderRadius.circular(5),
                           ),
-                          child: const Row(
+                          child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Icon(LucideIcons.image, size: 11, color: Color(0xFF0284C7)),
                               SizedBox(width: 3.5),
                               Text(
-                                'Có ảnh',
+                                context.l10n.rfHasPhoto,
                                 style: TextStyle(
                                   fontSize: 10.5,
                                   fontWeight: FontWeight.w600,
@@ -1022,13 +1023,13 @@ class _RefundRequestsPageState extends State<RefundRequestsPage> {
                             color: const Color(0xFFFFE4E6),
                             borderRadius: BorderRadius.circular(5),
                           ),
-                          child: const Row(
+                          child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Icon(LucideIcons.alertCircle, size: 11, color: Color(0xFFE11D48)),
                               SizedBox(width: 3.5),
                               Text(
-                                'Bị từ chối',
+                                context.l10n.ordRejected,
                                 style: TextStyle(
                                   fontSize: 10.5,
                                   fontWeight: FontWeight.w600,
@@ -1040,10 +1041,10 @@ class _RefundRequestsPageState extends State<RefundRequestsPage> {
                         ),
                     ],
                   ),
-                  const Row(
+                  Row(
                     children: [
                       Text(
-                        'Xem chi tiết',
+                        context.l10n.rfViewDetail,
                         style: TextStyle(
                           fontSize: 11.5,
                           fontWeight: FontWeight.w600,
@@ -1069,8 +1070,8 @@ class _RefundRequestsPageState extends State<RefundRequestsPage> {
     final isRejected = status == 'REJECTED';
 
     final statusText = isCompleted
-        ? 'Đã chuyển tiền'
-        : (isRejected ? 'Bị từ chối' : 'Chờ chuyển khoản');
+        ? context.l10n.ordTransferred
+        : (isRejected ? context.l10n.ordRejected : context.l10n.ordAwaitingTransfer);
     final statusColor = isCompleted
         ? const Color(0xFF15803D)
         : (isRejected ? const Color(0xFFE11D48) : const Color(0xFFD97706));
@@ -1127,7 +1128,7 @@ class _RefundRequestsPageState extends State<RefundRequestsPage> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Phiếu hoàn tiền #${rf['id'] ?? ''}',
+                              context.l10n.rfTicketHash(rf['id'] ?? ''),
                               style: const TextStyle(
                                 fontSize: 17,
                                 fontWeight: FontWeight.w700,
@@ -1135,8 +1136,8 @@ class _RefundRequestsPageState extends State<RefundRequestsPage> {
                               ),
                             ),
                             const SizedBox(height: 2),
-                            const Text(
-                              'Chi tiết yêu cầu & thông tin chuyển khoản',
+                            Text(
+                              context.l10n.rfDetailSubtitle,
                               style: TextStyle(
                                 fontSize: 12,
                                 color: Color(0xFF64748B),
@@ -1190,8 +1191,8 @@ class _RefundRequestsPageState extends State<RefundRequestsPage> {
                           ),
                           child: Column(
                             children: [
-                              const Text(
-                                'Số tiền hoàn',
+                              Text(
+                                context.l10n.ordRefundAmount,
                                 style: TextStyle(
                                   fontSize: 12.5,
                                   color: Color(0xFF64748B),
@@ -1210,10 +1211,10 @@ class _RefundRequestsPageState extends State<RefundRequestsPage> {
                               const SizedBox(height: 4),
                               Text(
                                 isCompleted
-                                    ? 'Đã hoàn tất chuyển khoản thành công'
+                                    ? context.l10n.rfTransferDone
                                     : (isRejected
-                                        ? 'Yêu cầu hoàn tiền đã bị từ chối'
-                                        : 'Đang chờ Admin đối soát và chuyển khoản'),
+                                        ? context.l10n.rfRejectedTitle
+                                        : context.l10n.rfAwaitingAdmin),
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
                                   fontSize: 12,
@@ -1227,8 +1228,8 @@ class _RefundRequestsPageState extends State<RefundRequestsPage> {
                         const SizedBox(height: 18),
 
                         // Section 1: Thông tin hoàn tiền
-                        const Text(
-                          'Thông tin hoàn tiền',
+                        Text(
+                          context.l10n.rfInfo,
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w700,
@@ -1248,63 +1249,63 @@ class _RefundRequestsPageState extends State<RefundRequestsPage> {
                               if (orderCode.isNotEmpty)
                                 _buildInfoRow(
                                   icon: LucideIcons.package,
-                                  label: 'Đơn hàng',
+                                  label: context.l10n.commonOrder,
                                   value: orderCode,
                                   onCopy: () {
                                     Clipboard.setData(ClipboardData(text: orderCode));
-                                    SmartDialog.showToast('Đã sao chép mã đơn hàng');
+                                    SmartDialog.showToast(context.l10n.rfOrderCodeCopied);
                                   },
                                 ),
                               if (rf['bankName'] != null || rf['accountNumber'] != null)
                                 _buildInfoRow(
                                   icon: LucideIcons.landmark,
-                                  label: 'Tài khoản nhận',
+                                  label: context.l10n.ordReceivingAccount,
                                   value: '${rf['bankName'] ?? ''} - ${rf['accountNumber'] ?? ''}',
                                 ),
                               if (rf['accountHolderName'] != null &&
                                   '${rf['accountHolderName']}'.isNotEmpty)
                                 _buildInfoRow(
                                   icon: LucideIcons.user,
-                                  label: 'Chủ tài khoản',
+                                  label: context.l10n.rfAccountHolder,
                                   value: '${rf['accountHolderName']}'.toUpperCase(),
                                 ),
                               if (rf['reason'] != null && _cleanReason(rf['reason']).isNotEmpty)
                                 _buildInfoRow(
                                   icon: LucideIcons.messageSquare,
-                                  label: 'Lý do hoàn',
+                                  label: context.l10n.rfReason,
                                   value: _cleanReason(rf['reason']),
                                 ),
                               if (_cleanTransferRef(rf['bankTransferRef']).isNotEmpty)
                                 _buildInfoRow(
                                   icon: LucideIcons.hash,
-                                  label: 'Mã GD chuyển tiền',
+                                  label: context.l10n.rfTransferId,
                                   value: _cleanTransferRef(rf['bankTransferRef']),
                                   valueColor: const Color(0xFF15803D),
                                   onCopy: () {
                                     Clipboard.setData(
                                       ClipboardData(text: _cleanTransferRef(rf['bankTransferRef'])),
                                     );
-                                    SmartDialog.showToast('Đã sao chép mã giao dịch');
+                                    SmartDialog.showToast(context.l10n.rfTransferIdCopied);
                                   },
                                 ),
                               if (rf['rejectionReason'] != null &&
                                   '${rf['rejectionReason']}'.isNotEmpty)
                                 _buildInfoRow(
                                   icon: LucideIcons.alertTriangle,
-                                  label: 'Lý do từ chối',
+                                  label: context.l10n.rfRejectReason,
                                   value: '${rf['rejectionReason']}',
                                   valueColor: const Color(0xFFE11D48),
                                 ),
                               if (rf['requestedAt'] != null)
                                 _buildInfoRow(
                                   icon: LucideIcons.clock,
-                                  label: 'Thời gian yêu cầu',
+                                  label: context.l10n.ordRequestedAt,
                                   value: fmtDateTime(rf['requestedAt']),
                                 ),
                               if (rf['processedAt'] != null)
                                 _buildInfoRow(
                                   icon: LucideIcons.calendarCheck,
-                                  label: 'Thời gian hoàn tất',
+                                  label: context.l10n.ordCompletedAt,
                                   value: fmtDateTime(rf['processedAt']),
                                   valueColor: const Color(0xFF15803D),
                                 ),
@@ -1316,8 +1317,8 @@ class _RefundRequestsPageState extends State<RefundRequestsPage> {
                         if ((customerProof != null && customerProof.trim().isNotEmpty) ||
                             (adminProof != null && adminProof.trim().isNotEmpty)) ...[
                           const SizedBox(height: 18),
-                          const Text(
-                            'Chứng từ & Hình ảnh minh chứng',
+                          Text(
+                            context.l10n.rfEvidence,
                             style: TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.w700,
@@ -1327,7 +1328,7 @@ class _RefundRequestsPageState extends State<RefundRequestsPage> {
                           const SizedBox(height: 10),
                           if (customerProof != null && customerProof.trim().isNotEmpty)
                             _buildImageAttachmentBox(
-                              title: 'Ảnh minh chứng bạn đã gửi:',
+                              title: context.l10n.rfYourPhotos,
                               imageUrl: customerProof,
                               iconColor: const Color(0xFF0284C7),
                             ),
@@ -1338,7 +1339,7 @@ class _RefundRequestsPageState extends State<RefundRequestsPage> {
                             const SizedBox(height: 10),
                           if (adminProof != null && adminProof.trim().isNotEmpty)
                             _buildImageAttachmentBox(
-                              title: 'Biên lai chuyển khoản từ Admin (UNC):',
+                              title: context.l10n.rfAdminSlip,
                               imageUrl: adminProof,
                               iconColor: const Color(0xFF15803D),
                             ),
@@ -1369,8 +1370,8 @@ class _RefundRequestsPageState extends State<RefundRequestsPage> {
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
-                      child: const Text(
-                        'Đóng',
+                      child: Text(
+                        context.l10n.commonClose,
                         style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
                       ),
                     ),
@@ -1524,10 +1525,10 @@ class _RefundRequestsPageState extends State<RefundRequestsPage> {
               ),
               InkWell(
                 onTap: () => _showImageLightbox(imageUrl),
-                child: const Row(
+                child: Row(
                   children: [
                     Text(
-                      'Phóng to',
+                      context.l10n.rmZoomIn,
                       style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Color(0xFF0284C7)),
                     ),
                     SizedBox(width: 2),
@@ -1611,7 +1612,7 @@ class _RefundRequestsPageState extends State<RefundRequestsPage> {
           // 1. Chọn đơn hàng
           _buildSectionHeader(
             step: '1',
-            title: 'Chọn đơn hàng cần hoàn tiền',
+            title: context.l10n.rfChooseOrderTitle,
           ),
           InkWell(
             onTap: _openOrderPicker,
@@ -1658,11 +1659,11 @@ class _RefundRequestsPageState extends State<RefundRequestsPage> {
                   const SizedBox(width: 12),
                   Expanded(
                     child: _selectedOrder == null
-                        ? const Column(
+                        ? Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'Bấm vào đây để chọn đơn hàng',
+                                context.l10n.rfTapToChooseOrder,
                                 style: TextStyle(
                                   fontSize: 13.5,
                                   fontWeight: FontWeight.w700,
@@ -1671,7 +1672,7 @@ class _RefundRequestsPageState extends State<RefundRequestsPage> {
                               ),
                               SizedBox(height: 3),
                               Text(
-                                'Chọn đơn đã thanh toán bạn cần yêu cầu hoàn tiền',
+                                context.l10n.rfChoosePaidOrder,
                                 style: TextStyle(
                                   fontSize: 11.5,
                                   color: Color(0xFF64748B),
@@ -1686,7 +1687,7 @@ class _RefundRequestsPageState extends State<RefundRequestsPage> {
                                 children: [
                                   Flexible(
                                     child: Text(
-                                      'Đơn: ${_selectedOrder!['orderCode'] ?? '#${_selectedOrder!['id']}'}',
+                                      context.l10n.rfOrderValue(_selectedOrder!['orderCode'] ?? '#${_selectedOrder!['id']}'),
                                       style: const TextStyle(
                                         fontSize: 13.5,
                                         fontWeight: FontWeight.w800,
@@ -1707,7 +1708,7 @@ class _RefundRequestsPageState extends State<RefundRequestsPage> {
                                       borderRadius: BorderRadius.circular(4),
                                     ),
                                     child: Text(
-                                      '${_selectedOrder!['type'] ?? 'Đơn hàng'}',
+                                      '${_selectedOrder!['type'] ?? context.l10n.commonOrder}',
                                       style: const TextStyle(
                                         fontSize: 10,
                                         fontWeight: FontWeight.w600,
@@ -1720,8 +1721,8 @@ class _RefundRequestsPageState extends State<RefundRequestsPage> {
                               const SizedBox(height: 4),
                               Row(
                                 children: [
-                                  const Text(
-                                    'Số tiền: ',
+                                  Text(
+                                    context.l10n.rfAmountLabel,
                                     style: TextStyle(
                                       fontSize: 12,
                                       color: Color(0xFF64748B),
@@ -1756,7 +1757,7 @@ class _RefundRequestsPageState extends State<RefundRequestsPage> {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
-                          _selectedOrder != null ? 'Đổi' : 'Chọn',
+                          _selectedOrder != null ? context.l10n.rfChange : context.l10n.rfChoose,
                           style: const TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.w600,
@@ -1781,7 +1782,7 @@ class _RefundRequestsPageState extends State<RefundRequestsPage> {
           // 2. Tài khoản ngân hàng nhận tiền
           _buildSectionHeader(
             step: '2',
-            title: 'Tài khoản nhận hoàn tiền',
+            title: context.l10n.profileRefundAccount,
             trailing: _savedBankAccount != null
                 ? Container(
                     padding: const EdgeInsets.symmetric(
@@ -1792,7 +1793,7 @@ class _RefundRequestsPageState extends State<RefundRequestsPage> {
                       color: const Color(0xFFDCFCE7),
                       borderRadius: BorderRadius.circular(6),
                     ),
-                    child: const Row(
+                    child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(
@@ -1802,7 +1803,7 @@ class _RefundRequestsPageState extends State<RefundRequestsPage> {
                         ),
                         SizedBox(width: 3),
                         Text(
-                          'Đã lưu mặc định',
+                          context.l10n.rfSavedDefault,
                           style: TextStyle(
                             fontSize: 10.5,
                             fontWeight: FontWeight.w700,
@@ -1857,7 +1858,7 @@ class _RefundRequestsPageState extends State<RefundRequestsPage> {
                           child: Text(
                             _selectedBank != null
                                 ? '${_selectedBank!.shortName} - ${_selectedBank!.name}'
-                                : 'Chọn ngân hàng nhận tiền',
+                                : context.l10n.rfChooseReceivingBank,
                             style: TextStyle(
                               fontSize: 13,
                               fontWeight: _selectedBank != null
@@ -1892,8 +1893,8 @@ class _RefundRequestsPageState extends State<RefundRequestsPage> {
                     letterSpacing: 0.5,
                   ),
                   decoration: InputDecoration(
-                    labelText: 'Số tài khoản nhận tiền',
-                    hintText: 'Nhập số tài khoản',
+                    labelText: context.l10n.rfAccountNumberField,
+                    hintText: context.l10n.rfAccountNumberHint,
                     prefixIcon: const Icon(LucideIcons.creditCard, size: 17),
                     isDense: true,
                     filled: true,
@@ -1931,7 +1932,7 @@ class _RefundRequestsPageState extends State<RefundRequestsPage> {
                     letterSpacing: 0.5,
                   ),
                   decoration: InputDecoration(
-                    labelText: 'Tên chủ tài khoản (viết hoa không dấu)',
+                    labelText: context.l10n.rfHolderField,
                     hintText: 'NGUYEN VAN A',
                     prefixIcon: const Icon(LucideIcons.user, size: 17),
                     isDense: true,
@@ -1984,9 +1985,9 @@ class _RefundRequestsPageState extends State<RefundRequestsPage> {
                           ),
                         ),
                         const SizedBox(width: 8),
-                        const Expanded(
+                        Expanded(
                           child: Text(
-                            'Lưu làm tài khoản nhận hoàn tiền mặc định',
+                            context.l10n.rfSaveAsDefault,
                             style: TextStyle(
                               fontSize: 12,
                               color: Color(0xFF475569),
@@ -2006,16 +2007,16 @@ class _RefundRequestsPageState extends State<RefundRequestsPage> {
           // 3. Lý do hoàn tiền
           _buildSectionHeader(
             step: '3',
-            title: 'Lý do yêu cầu hoàn tiền',
+            title: context.l10n.rfReasonTitle,
           ),
           Wrap(
             spacing: 8,
             runSpacing: 8,
             children: [
-              _buildQuickReasonChip('Sự cố kẹt ô tủ'),
-              _buildQuickReasonChip('Drone huỷ chuyến bay'),
-              _buildQuickReasonChip('Trừ tiền trùng cổng thanh toán'),
-              _buildQuickReasonChip('Sự cố dịch vụ giặt ủi'),
+              _buildQuickReasonChip(context.l10n.rfQuickStuck),
+              _buildQuickReasonChip(context.l10n.rfQuickDroneCancel),
+              _buildQuickReasonChip(context.l10n.rfQuickDoubleCharge),
+              _buildQuickReasonChip(context.l10n.rfQuickLaundry),
             ],
           ),
           const SizedBox(height: 10),
@@ -2024,7 +2025,7 @@ class _RefundRequestsPageState extends State<RefundRequestsPage> {
             maxLines: 3,
             style: const TextStyle(fontSize: 13),
             decoration: InputDecoration(
-              hintText: 'Mô tả chi tiết lý do và sự cố bạn gặp phải...',
+              hintText: context.l10n.rfReasonHint,
               filled: true,
               fillColor: Colors.white,
               contentPadding: const EdgeInsets.all(14),
@@ -2050,7 +2051,7 @@ class _RefundRequestsPageState extends State<RefundRequestsPage> {
           // 4. Hình ảnh minh chứng đính kèm
           _buildSectionHeader(
             step: '4',
-            title: 'Hình ảnh minh chứng (tuỳ chọn)',
+            title: context.l10n.rfEvidenceOptional,
           ),
           Container(
             padding: const EdgeInsets.all(14),
@@ -2073,8 +2074,8 @@ class _RefundRequestsPageState extends State<RefundRequestsPage> {
                         child: OutlinedButton.icon(
                           onPressed: () => _pickImage(ImageSource.camera),
                           icon: const Icon(LucideIcons.camera, size: 16),
-                          label: const Text(
-                            'Chụp ảnh',
+                          label: Text(
+                            context.l10n.rfTakePhoto,
                             style: TextStyle(
                               fontSize: 12.5,
                               fontWeight: FontWeight.w600,
@@ -2095,8 +2096,8 @@ class _RefundRequestsPageState extends State<RefundRequestsPage> {
                         child: OutlinedButton.icon(
                           onPressed: () => _pickImage(ImageSource.gallery),
                           icon: const Icon(LucideIcons.image, size: 16),
-                          label: const Text(
-                            'Chọn thư viện',
+                          label: Text(
+                            context.l10n.rfPickGallery,
                             style: TextStyle(
                               fontSize: 12.5,
                               fontWeight: FontWeight.w600,
@@ -2156,8 +2157,8 @@ class _RefundRequestsPageState extends State<RefundRequestsPage> {
                       TextButton.icon(
                         onPressed: () => _pickImage(ImageSource.gallery),
                         icon: const Icon(LucideIcons.refreshCw, size: 13),
-                        label: const Text(
-                          'Đổi ảnh khác',
+                        label: Text(
+                          context.l10n.rfChangePhoto,
                           style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w600,
@@ -2258,8 +2259,8 @@ class _RefundRequestsPageState extends State<RefundRequestsPage> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
-                    'Số tiền hoàn dự kiến:',
+                  Text(
+                    context.l10n.rfExpectedAmount,
                     style: TextStyle(
                       fontSize: 12.5,
                       color: Color(0xFF64748B),
@@ -2300,13 +2301,13 @@ class _RefundRequestsPageState extends State<RefundRequestsPage> {
                         strokeWidth: 2,
                       ),
                     )
-                  : const Row(
+                  : Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Icon(LucideIcons.sendHorizontal, size: 16),
                         SizedBox(width: 8),
                         Text(
-                          'Gửi yêu cầu hoàn tiền',
+                          context.l10n.rfSubmit,
                           style: TextStyle(
                             fontSize: 14.5,
                             fontWeight: FontWeight.w700,
@@ -2335,8 +2336,8 @@ class _RefundRequestsPageState extends State<RefundRequestsPage> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
-                  'Chi tiết hình ảnh minh chứng',
+                Text(
+                  context.l10n.rfEvidenceDetail,
                   style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600),
                 ),
                 IconButton(
@@ -2397,41 +2398,41 @@ class _RefundRequestsPageState extends State<RefundRequestsPage> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Row(
+        title: Row(
           children: [
             Icon(LucideIcons.shieldCheck, color: Color(0xFF15803D), size: 20),
             SizedBox(width: 8),
-            Text('Quy tắc hoàn tiền', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            Text(context.l10n.rfRules, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
           ],
         ),
-        content: const SingleChildScrollView(
+        content: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                'Lock.R hỗ trợ hoàn tiền cho các trường hợp:',
+                context.l10n.rfRulesIntro,
                 style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
               ),
               SizedBox(height: 8),
-              Text('• Sự cố kỹ thuật ô tủ không mở được hoặc kẹt cửa > 30 phút.'),
-              Text('• Sự cố drone giao trễ vượt thời gian cam kết hoặc huỷ chuyến bay.'),
-              Text('• Lỗi cổng thanh toán trừ tiền 2 lần (double billing).'),
-              Text('• Hàng hoá/đồ giặt có sự cố từ đối tác giặt ủi.'),
+              Text(context.l10n.rfRule1),
+              Text(context.l10n.rfRule2),
+              Text(context.l10n.rfRule3),
+              Text(context.l10n.rfRule4),
               SizedBox(height: 12),
               Text(
-                'Thời gian xử lý:',
+                context.l10n.rfProcessingTime,
                 style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
               ),
               SizedBox(height: 4),
-              Text('Quản trị viên sẽ đối soát và thực hiện chuyển khoản trong vòng 24 giờ làm việc. Bạn sẽ nhận được thông báo kèm biên lai chuyển khoản (UNC) ngay trên ứng dụng.'),
+              Text(context.l10n.rfProcessingBody),
             ],
           ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Đã hiểu'),
+            child: Text(context.l10n.commonGotIt),
           ),
         ],
       ),
@@ -2466,8 +2467,8 @@ class _OrderPickerSheet extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
-                  'Chọn đơn hàng cần hoàn tiền',
+                Text(
+                  context.l10n.rfChooseOrderTitle,
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
                 ),
                 IconButton(
@@ -2480,11 +2481,11 @@ class _OrderPickerSheet extends StatelessWidget {
           const Divider(height: 1),
           Expanded(
             child: orders.isEmpty
-                ? const Center(
+                ? Center(
                     child: Padding(
                       padding: EdgeInsets.all(24),
                       child: Text(
-                        'Không có đơn hàng nào',
+                        context.l10n.rfNoOrders,
                         style: TextStyle(color: Color(0xFF64748B)),
                       ),
                     ),
@@ -2497,7 +2498,7 @@ class _OrderPickerSheet extends StatelessWidget {
                       final o = orders[index];
                       final isCurrent = selected?['id'] == o['id'];
                       final code = '${o['orderCode'] ?? '#${o['id']}'}';
-                      final type = '${o['type'] ?? o['serviceCategory'] ?? 'Đơn hàng'}';
+                      final type = '${o['type'] ?? o['serviceCategory'] ?? context.l10n.commonOrder}';
                       final amount = o['paidAmount'] ?? o['totalPrice'] ?? 0;
 
                       return InkWell(
@@ -2552,8 +2553,8 @@ class _OrderPickerSheet extends StatelessWidget {
                                     style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13, color: Color(0xFF15803D)),
                                   ),
                                   if (isCurrent)
-                                    const Text(
-                                      '✓ Đang chọn',
+                                    Text(
+                                      context.l10n.rfSelected,
                                       style: TextStyle(fontSize: 10, color: Color(0xFF0F172A), fontWeight: FontWeight.bold),
                                     ),
                                 ],
@@ -2607,8 +2608,8 @@ class _BankPickerSheetState extends State<_BankPickerSheet> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
-                  'Chọn ngân hàng thụ hưởng',
+                Text(
+                  context.l10n.rfChooseBeneficiary,
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
                 ),
                 IconButton(
@@ -2623,7 +2624,7 @@ class _BankPickerSheetState extends State<_BankPickerSheet> {
             child: TextField(
               onChanged: (v) => setState(() => _search = v.trim()),
               decoration: InputDecoration(
-                hintText: 'Tìm kiếm ngân hàng (mã, tên)...',
+                hintText: context.l10n.rfSearchBank,
                 prefixIcon: const Icon(LucideIcons.search, size: 16),
                 isDense: true,
                 filled: true,

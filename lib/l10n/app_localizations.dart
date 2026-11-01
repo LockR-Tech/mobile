@@ -11653,6 +11653,984 @@ abstract class AppLocalizations {
   /// In vi, this message translates to:
   /// **'Chưa diễn ra'**
   String get tlNotYet;
+
+  /// No description provided for @rbChooseBank.
+  ///
+  /// In vi, this message translates to:
+  /// **'Vui lòng chọn ngân hàng'**
+  String get rbChooseBank;
+
+  /// No description provided for @rbSaved.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã lưu thông tin tài khoản nhận hoàn tiền thành công'**
+  String get rbSaved;
+
+  /// No description provided for @rbSaveFailed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không thể lưu thông tin. Vui lòng kiểm tra lại'**
+  String get rbSaveFailed;
+
+  /// No description provided for @rbOneTimeSetup.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cài đặt 1 lần duy nhất'**
+  String get rbOneTimeSetup;
+
+  /// No description provided for @rbIntro.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hệ thống sẽ chuyển khoản hoàn tiền trực tiếp vào tài khoản này khi đơn hàng gặp sự cố (tủ kẹt, drone hủy, đơn giặt lỗi...). Bạn không cần phải nhập lại nhiều lần.'**
+  String get rbIntro;
+
+  /// No description provided for @rbBeneficiaryBank.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ngân hàng thụ hưởng'**
+  String get rbBeneficiaryBank;
+
+  /// No description provided for @rbChooseBankShort.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chọn ngân hàng'**
+  String get rbChooseBankShort;
+
+  /// No description provided for @rbAccountNumber.
+  ///
+  /// In vi, this message translates to:
+  /// **'Số tài khoản ngân hàng'**
+  String get rbAccountNumber;
+
+  /// No description provided for @rbAccountNumberHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhập số tài khoản của bạn'**
+  String get rbAccountNumberHint;
+
+  /// No description provided for @rbEnterAccountNumber.
+  ///
+  /// In vi, this message translates to:
+  /// **'Vui lòng nhập số tài khoản'**
+  String get rbEnterAccountNumber;
+
+  /// No description provided for @rbInvalidAccountNumber.
+  ///
+  /// In vi, this message translates to:
+  /// **'Số tài khoản không hợp lệ'**
+  String get rbInvalidAccountNumber;
+
+  /// No description provided for @rbHolderName.
+  ///
+  /// In vi, this message translates to:
+  /// **'Họ và tên chủ tài khoản'**
+  String get rbHolderName;
+
+  /// No description provided for @rbHolderHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ví dụ: NGUYEN VAN A'**
+  String get rbHolderHint;
+
+  /// No description provided for @rbEnterHolder.
+  ///
+  /// In vi, this message translates to:
+  /// **'Vui lòng nhập tên chủ tài khoản'**
+  String get rbEnterHolder;
+
+  /// No description provided for @rbUpdate.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cập nhật tài khoản'**
+  String get rbUpdate;
+
+  /// No description provided for @rbSave.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lưu tài khoản hoàn tiền'**
+  String get rbSave;
+
+  /// No description provided for @rbSearchHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tìm theo tên hoặc mã ngân hàng...'**
+  String get rbSearchHint;
+
+  /// No description provided for @rfCantPickImage.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không thể chọn ảnh: {error}'**
+  String rfCantPickImage(Object error);
+
+  /// No description provided for @rfChooseOrder.
+  ///
+  /// In vi, this message translates to:
+  /// **'Vui lòng chọn đơn hàng cần hoàn tiền'**
+  String get rfChooseOrder;
+
+  /// No description provided for @rfInvalidOrder.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mã đơn hàng không hợp lệ'**
+  String get rfInvalidOrder;
+
+  /// No description provided for @rfEnterReason.
+  ///
+  /// In vi, this message translates to:
+  /// **'Vui lòng nhập lý do yêu cầu hoàn tiền'**
+  String get rfEnterReason;
+
+  /// No description provided for @rfEnterBank.
+  ///
+  /// In vi, this message translates to:
+  /// **'Vui lòng điền đầy đủ thông tin tài khoản ngân hàng nhận tiền'**
+  String get rfEnterBank;
+
+  /// No description provided for @rfSending.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang gửi yêu cầu hoàn tiền...'**
+  String get rfSending;
+
+  /// No description provided for @rfSent.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã gửi yêu cầu hoàn tiền thành công!'**
+  String get rfSent;
+
+  /// No description provided for @rfError.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lỗi: {message}'**
+  String rfError(Object message);
+
+  /// No description provided for @rfSubtitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Quản lý và tạo yêu cầu hoàn tiền cho đơn hàng'**
+  String get rfSubtitle;
+
+  /// No description provided for @rfMyRequests.
+  ///
+  /// In vi, this message translates to:
+  /// **'Yêu cầu của tôi'**
+  String get rfMyRequests;
+
+  /// No description provided for @rfNewRequest.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tạo yêu cầu mới'**
+  String get rfNewRequest;
+
+  /// No description provided for @rfEmptyRecent.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không có yêu cầu hoàn tiền nào trong 7 ngày gần đây.'**
+  String get rfEmptyRecent;
+
+  /// No description provided for @rfEmptyPending.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không có yêu cầu hoàn tiền nào đang chờ xử lý.'**
+  String get rfEmptyPending;
+
+  /// No description provided for @rfEmptyCompleted.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa có yêu cầu hoàn tiền nào đã được chuyển khoản thành công.'**
+  String get rfEmptyCompleted;
+
+  /// No description provided for @rfEmptyRejected.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không có yêu cầu hoàn tiền nào bị từ chối.'**
+  String get rfEmptyRejected;
+
+  /// No description provided for @rfEmptyCanceled.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không có yêu cầu hoàn tiền nào đã hủy.'**
+  String get rfEmptyCanceled;
+
+  /// No description provided for @rfEmptyHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bạn có thể tạo yêu cầu hoàn tiền mới từ tab bên cạnh.'**
+  String get rfEmptyHint;
+
+  /// No description provided for @rfNone.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa có yêu cầu hoàn tiền nào'**
+  String get rfNone;
+
+  /// No description provided for @rfNoneHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Khi gặp sự cố tủ không mở, drone huỷ chuyến hoặc sự cố giặt ủi, bạn có thể tạo yêu cầu hoàn tiền tại đây.'**
+  String get rfNoneHint;
+
+  /// No description provided for @rfCreateNow.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tạo yêu cầu hoàn tiền ngay'**
+  String get rfCreateNow;
+
+  /// No description provided for @rfNoneShort.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa có yêu cầu hoàn tiền'**
+  String get rfNoneShort;
+
+  /// No description provided for @rfNoMatch.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không có yêu cầu phù hợp'**
+  String get rfNoMatch;
+
+  /// No description provided for @rfTicketHash.
+  ///
+  /// In vi, this message translates to:
+  /// **'Phiếu hoàn tiền #{id}'**
+  String rfTicketHash(Object id);
+
+  /// No description provided for @rfSentAt.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thời gian gửi'**
+  String get rfSentAt;
+
+  /// No description provided for @rfHasTransferSlip.
+  ///
+  /// In vi, this message translates to:
+  /// **'Có UNC'**
+  String get rfHasTransferSlip;
+
+  /// No description provided for @rfHasPhoto.
+  ///
+  /// In vi, this message translates to:
+  /// **'Có ảnh'**
+  String get rfHasPhoto;
+
+  /// No description provided for @rfViewDetail.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xem chi tiết'**
+  String get rfViewDetail;
+
+  /// No description provided for @rfDetailSubtitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chi tiết yêu cầu & thông tin chuyển khoản'**
+  String get rfDetailSubtitle;
+
+  /// No description provided for @rfTransferDone.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã hoàn tất chuyển khoản thành công'**
+  String get rfTransferDone;
+
+  /// No description provided for @rfRejectedTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Yêu cầu hoàn tiền đã bị từ chối'**
+  String get rfRejectedTitle;
+
+  /// No description provided for @rfAwaitingAdmin.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang chờ Admin đối soát và chuyển khoản'**
+  String get rfAwaitingAdmin;
+
+  /// No description provided for @rfInfo.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thông tin hoàn tiền'**
+  String get rfInfo;
+
+  /// No description provided for @rfOrderCodeCopied.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã sao chép mã đơn hàng'**
+  String get rfOrderCodeCopied;
+
+  /// No description provided for @rfAccountHolder.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chủ tài khoản'**
+  String get rfAccountHolder;
+
+  /// No description provided for @rfReason.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lý do hoàn'**
+  String get rfReason;
+
+  /// No description provided for @rfTransferId.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mã GD chuyển tiền'**
+  String get rfTransferId;
+
+  /// No description provided for @rfTransferIdCopied.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã sao chép mã giao dịch'**
+  String get rfTransferIdCopied;
+
+  /// No description provided for @rfRejectReason.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lý do từ chối'**
+  String get rfRejectReason;
+
+  /// No description provided for @rfEvidence.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chứng từ & Hình ảnh minh chứng'**
+  String get rfEvidence;
+
+  /// No description provided for @rfYourPhotos.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ảnh minh chứng bạn đã gửi:'**
+  String get rfYourPhotos;
+
+  /// No description provided for @rfAdminSlip.
+  ///
+  /// In vi, this message translates to:
+  /// **'Biên lai chuyển khoản từ Admin (UNC):'**
+  String get rfAdminSlip;
+
+  /// No description provided for @rfChooseOrderTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chọn đơn hàng cần hoàn tiền'**
+  String get rfChooseOrderTitle;
+
+  /// No description provided for @rfTapToChooseOrder.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bấm vào đây để chọn đơn hàng'**
+  String get rfTapToChooseOrder;
+
+  /// No description provided for @rfChoosePaidOrder.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chọn đơn đã thanh toán bạn cần yêu cầu hoàn tiền'**
+  String get rfChoosePaidOrder;
+
+  /// No description provided for @rfOrderValue.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đơn: {code}'**
+  String rfOrderValue(Object code);
+
+  /// No description provided for @rfAmountLabel.
+  ///
+  /// In vi, this message translates to:
+  /// **'Số tiền: '**
+  String get rfAmountLabel;
+
+  /// No description provided for @rfChange.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đổi'**
+  String get rfChange;
+
+  /// No description provided for @rfChoose.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chọn'**
+  String get rfChoose;
+
+  /// No description provided for @rfSavedDefault.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã lưu mặc định'**
+  String get rfSavedDefault;
+
+  /// No description provided for @rfChooseReceivingBank.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chọn ngân hàng nhận tiền'**
+  String get rfChooseReceivingBank;
+
+  /// No description provided for @rfAccountNumberField.
+  ///
+  /// In vi, this message translates to:
+  /// **'Số tài khoản nhận tiền'**
+  String get rfAccountNumberField;
+
+  /// No description provided for @rfAccountNumberHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhập số tài khoản'**
+  String get rfAccountNumberHint;
+
+  /// No description provided for @rfHolderField.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tên chủ tài khoản (viết hoa không dấu)'**
+  String get rfHolderField;
+
+  /// No description provided for @rfSaveAsDefault.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lưu làm tài khoản nhận hoàn tiền mặc định'**
+  String get rfSaveAsDefault;
+
+  /// No description provided for @rfReasonTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lý do yêu cầu hoàn tiền'**
+  String get rfReasonTitle;
+
+  /// No description provided for @rfQuickStuck.
+  ///
+  /// In vi, this message translates to:
+  /// **'Sự cố kẹt ô tủ'**
+  String get rfQuickStuck;
+
+  /// No description provided for @rfQuickDroneCancel.
+  ///
+  /// In vi, this message translates to:
+  /// **'Drone huỷ chuyến bay'**
+  String get rfQuickDroneCancel;
+
+  /// No description provided for @rfQuickDoubleCharge.
+  ///
+  /// In vi, this message translates to:
+  /// **'Trừ tiền trùng cổng thanh toán'**
+  String get rfQuickDoubleCharge;
+
+  /// No description provided for @rfQuickLaundry.
+  ///
+  /// In vi, this message translates to:
+  /// **'Sự cố dịch vụ giặt ủi'**
+  String get rfQuickLaundry;
+
+  /// No description provided for @rfReasonHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mô tả chi tiết lý do và sự cố bạn gặp phải...'**
+  String get rfReasonHint;
+
+  /// No description provided for @rfEvidenceOptional.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hình ảnh minh chứng (tuỳ chọn)'**
+  String get rfEvidenceOptional;
+
+  /// No description provided for @rfTakePhoto.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chụp ảnh'**
+  String get rfTakePhoto;
+
+  /// No description provided for @rfPickGallery.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chọn thư viện'**
+  String get rfPickGallery;
+
+  /// No description provided for @rfChangePhoto.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đổi ảnh khác'**
+  String get rfChangePhoto;
+
+  /// No description provided for @rfExpectedAmount.
+  ///
+  /// In vi, this message translates to:
+  /// **'Số tiền hoàn dự kiến:'**
+  String get rfExpectedAmount;
+
+  /// No description provided for @rfSubmit.
+  ///
+  /// In vi, this message translates to:
+  /// **'Gửi yêu cầu hoàn tiền'**
+  String get rfSubmit;
+
+  /// No description provided for @rfEvidenceDetail.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chi tiết hình ảnh minh chứng'**
+  String get rfEvidenceDetail;
+
+  /// No description provided for @rfRules.
+  ///
+  /// In vi, this message translates to:
+  /// **'Quy tắc hoàn tiền'**
+  String get rfRules;
+
+  /// No description provided for @rfRulesIntro.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lock.R hỗ trợ hoàn tiền cho các trường hợp:'**
+  String get rfRulesIntro;
+
+  /// No description provided for @rfRule1.
+  ///
+  /// In vi, this message translates to:
+  /// **'• Sự cố kỹ thuật ô tủ không mở được hoặc kẹt cửa > 30 phút.'**
+  String get rfRule1;
+
+  /// No description provided for @rfRule2.
+  ///
+  /// In vi, this message translates to:
+  /// **'• Sự cố drone giao trễ vượt thời gian cam kết hoặc huỷ chuyến bay.'**
+  String get rfRule2;
+
+  /// No description provided for @rfRule3.
+  ///
+  /// In vi, this message translates to:
+  /// **'• Lỗi cổng thanh toán trừ tiền 2 lần (double billing).'**
+  String get rfRule3;
+
+  /// No description provided for @rfRule4.
+  ///
+  /// In vi, this message translates to:
+  /// **'• Hàng hoá/đồ giặt có sự cố từ đối tác giặt ủi.'**
+  String get rfRule4;
+
+  /// No description provided for @rfProcessingTime.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thời gian xử lý:'**
+  String get rfProcessingTime;
+
+  /// No description provided for @rfProcessingBody.
+  ///
+  /// In vi, this message translates to:
+  /// **'Quản trị viên sẽ đối soát và thực hiện chuyển khoản trong vòng 24 giờ làm việc. Bạn sẽ nhận được thông báo kèm biên lai chuyển khoản (UNC) ngay trên ứng dụng.'**
+  String get rfProcessingBody;
+
+  /// No description provided for @rfNoOrders.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không có đơn hàng nào'**
+  String get rfNoOrders;
+
+  /// No description provided for @rfSelected.
+  ///
+  /// In vi, this message translates to:
+  /// **'✓ Đang chọn'**
+  String get rfSelected;
+
+  /// No description provided for @rfChooseBeneficiary.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chọn ngân hàng thụ hưởng'**
+  String get rfChooseBeneficiary;
+
+  /// No description provided for @rfSearchBank.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tìm kiếm ngân hàng (mã, tên)...'**
+  String get rfSearchBank;
+
+  /// No description provided for @bankUnknown.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không xác định được ngân hàng nhận tiền. Vui lòng quét mã QR bằng app ngân hàng.'**
+  String get bankUnknown;
+
+  /// No description provided for @bankCantOpen.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không mở được {app}. Có thể máy chưa cài app — hãy quét mã QR bằng app ngân hàng của bạn.'**
+  String bankCantOpen(Object app);
+
+  /// No description provided for @bankTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thanh toán bằng app ngân hàng'**
+  String get bankTitle;
+
+  /// No description provided for @bankIntro.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chọn app ngân hàng của bạn — số tài khoản, số tiền và nội dung chuyển khoản được điền sẵn, bạn chỉ cần xác nhận.'**
+  String get bankIntro;
+
+  /// No description provided for @bankSearch.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tìm ngân hàng'**
+  String get bankSearch;
+
+  /// No description provided for @bankLoadFailed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không tải được danh sách app ngân hàng.\nBạn có thể quét mã QR bằng app ngân hàng.'**
+  String get bankLoadFailed;
+
+  /// No description provided for @bankNoMatch.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không tìm thấy ngân hàng phù hợp'**
+  String get bankNoMatch;
+
+  /// No description provided for @simBusy.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang giả lập…'**
+  String get simBusy;
+
+  /// No description provided for @simButton.
+  ///
+  /// In vi, this message translates to:
+  /// **'Giả lập thanh toán (test)'**
+  String get simButton;
+
+  /// No description provided for @simFailed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không giả lập được'**
+  String get simFailed;
+
+  /// No description provided for @simTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Giả lập đã chuyển khoản'**
+  String get simTitle;
+
+  /// No description provided for @simBody.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chỉ dùng để test — không có tiền thật. Nhập ít hơn số cần trả để thử trường hợp chuyển thiếu.'**
+  String get simBody;
+
+  /// No description provided for @simReceived.
+  ///
+  /// In vi, this message translates to:
+  /// **'Số tiền đã nhận'**
+  String get simReceived;
+
+  /// No description provided for @simAction.
+  ///
+  /// In vi, this message translates to:
+  /// **'Giả lập'**
+  String get simAction;
+
+  /// No description provided for @txSepay.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cổng SePay QR'**
+  String get txSepay;
+
+  /// No description provided for @txVnpay.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cổng VNPay'**
+  String get txVnpay;
+
+  /// No description provided for @txMomo.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ví MoMo'**
+  String get txMomo;
+
+  /// No description provided for @txWithdraw.
+  ///
+  /// In vi, this message translates to:
+  /// **'Rút tiền'**
+  String get txWithdraw;
+
+  /// No description provided for @txTitleTopup.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nạp tiền vào ví'**
+  String get txTitleTopup;
+
+  /// No description provided for @txTitleWithdrawRefund.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hoàn tiền rút'**
+  String get txTitleWithdrawRefund;
+
+  /// No description provided for @txTitleWithdraw.
+  ///
+  /// In vi, this message translates to:
+  /// **'Rút tiền về tài khoản ngân hàng'**
+  String get txTitleWithdraw;
+
+  /// No description provided for @txTitleRefund.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hoàn tiền vào ví'**
+  String get txTitleRefund;
+
+  /// No description provided for @txTitleAdjustPlus.
+  ///
+  /// In vi, this message translates to:
+  /// **'Điều chỉnh số dư (cộng)'**
+  String get txTitleAdjustPlus;
+
+  /// No description provided for @txTitleAdjustMinus.
+  ///
+  /// In vi, this message translates to:
+  /// **'Điều chỉnh số dư (trừ)'**
+  String get txTitleAdjustMinus;
+
+  /// No description provided for @txTitleOrderWallet.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thanh toán đơn bằng ví'**
+  String get txTitleOrderWallet;
+
+  /// No description provided for @txTitleOrderVia.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thanh toán đơn qua {method}'**
+  String txTitleOrderVia(Object method);
+
+  /// No description provided for @txTitleIn.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tiền vào ví'**
+  String get txTitleIn;
+
+  /// No description provided for @txTitleOut.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tiền ra khỏi ví'**
+  String get txTitleOut;
+
+  /// No description provided for @txSvcLaundry.
+  ///
+  /// In vi, this message translates to:
+  /// **'Giặt sấy'**
+  String get txSvcLaundry;
+
+  /// No description provided for @txSvcOrder.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thanh toán đơn'**
+  String get txSvcOrder;
+
+  /// No description provided for @txSvcTopup.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nạp tiền ví'**
+  String get txSvcTopup;
+
+  /// No description provided for @txSvcAdjust.
+  ///
+  /// In vi, this message translates to:
+  /// **'Điều chỉnh số dư'**
+  String get txSvcAdjust;
+
+  /// No description provided for @txLoadFailed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không tải được lịch sử giao dịch.'**
+  String get txLoadFailed;
+
+  /// No description provided for @txHistory.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lịch sử giao dịch'**
+  String get txHistory;
+
+  /// No description provided for @txSubtitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Các khoản thanh toán & chi tiêu của bạn'**
+  String get txSubtitle;
+
+  /// No description provided for @txStats.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thống kê chi tiêu'**
+  String get txStats;
+
+  /// No description provided for @txThisMonth.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tháng này'**
+  String get txThisMonth;
+
+  /// No description provided for @txThisYear.
+  ///
+  /// In vi, this message translates to:
+  /// **'Năm nay'**
+  String get txThisYear;
+
+  /// No description provided for @txTotalSpent.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tổng chi tiêu'**
+  String get txTotalSpent;
+
+  /// No description provided for @txTotalIn.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tổng tiền vào'**
+  String get txTotalIn;
+
+  /// No description provided for @txNet.
+  ///
+  /// In vi, this message translates to:
+  /// **'Biến động ròng:'**
+  String get txNet;
+
+  /// No description provided for @txByMethod.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tổng tiền theo hình thức'**
+  String get txByMethod;
+
+  /// No description provided for @txByService.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chi tiết theo từng dịch vụ'**
+  String get txByService;
+
+  /// No description provided for @txMethod.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hình thức'**
+  String get txMethod;
+
+  /// No description provided for @txSvcSmartRental.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thuê tủ thông minh'**
+  String get txSvcSmartRental;
+
+  /// No description provided for @txSvcSend.
+  ///
+  /// In vi, this message translates to:
+  /// **'Gửi đồ / Giao nhận'**
+  String get txSvcSend;
+
+  /// No description provided for @txSvcLaundryLocker.
+  ///
+  /// In vi, this message translates to:
+  /// **'Giặt sấy tủ'**
+  String get txSvcLaundryLocker;
+
+  /// No description provided for @txSvcWithdrawBank.
+  ///
+  /// In vi, this message translates to:
+  /// **'Rút tiền về STK'**
+  String get txSvcWithdrawBank;
+
+  /// No description provided for @txSvcOtherOrder.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thanh toán đơn khác'**
+  String get txSvcOtherOrder;
+
+  /// No description provided for @txCount.
+  ///
+  /// In vi, this message translates to:
+  /// **'{count} giao dịch'**
+  String txCount(int count);
+
+  /// No description provided for @txAllMethods.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tất cả hình thức'**
+  String get txAllMethods;
+
+  /// No description provided for @txSepayShort.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cổng SePay'**
+  String get txSepayShort;
+
+  /// No description provided for @txFilterByMethod.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lọc theo hình thức giao dịch'**
+  String get txFilterByMethod;
+
+  /// No description provided for @txAllCount.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tất cả ({count} GD):'**
+  String txAllCount(Object count);
+
+  /// No description provided for @txFilterCount.
+  ///
+  /// In vi, this message translates to:
+  /// **'{label} ({count} GD):'**
+  String txFilterCount(Object label, Object count);
+
+  /// No description provided for @txLoading.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang tải lịch sử giao dịch...'**
+  String get txLoading;
+
+  /// No description provided for @txNone.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không có giao dịch nào'**
+  String get txNone;
+
+  /// No description provided for @txNoMatch.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không tìm thấy giao dịch theo bộ lọc đã chọn'**
+  String get txNoMatch;
+
+  /// No description provided for @txWithdrawRequest.
+  ///
+  /// In vi, this message translates to:
+  /// **'Yêu cầu rút tiền'**
+  String get txWithdrawRequest;
+
+  /// No description provided for @txMethodLabel.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hình thức GD'**
+  String get txMethodLabel;
+
+  /// No description provided for @txType.
+  ///
+  /// In vi, this message translates to:
+  /// **'Loại'**
+  String get txType;
+
+  /// No description provided for @txDirection.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chiều tiền'**
+  String get txDirection;
+
+  /// No description provided for @txCredit.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cộng vào ví'**
+  String get txCredit;
+
+  /// No description provided for @txDebit.
+  ///
+  /// In vi, this message translates to:
+  /// **'Trừ từ ví'**
+  String get txDebit;
+
+  /// No description provided for @txDirect.
+  ///
+  /// In vi, this message translates to:
+  /// **'Trả trực tiếp qua cổng'**
+  String get txDirect;
+
+  /// No description provided for @txId.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mã GD'**
+  String get txId;
+
+  /// No description provided for @txBalanceAfter.
+  ///
+  /// In vi, this message translates to:
+  /// **'Số dư ví sau GD'**
+  String get txBalanceAfter;
 }
 
 class _AppLocalizationsDelegate

@@ -6714,4 +6714,526 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get tlNotYet => 'Chưa diễn ra';
+
+  @override
+  String get rbChooseBank => 'Vui lòng chọn ngân hàng';
+
+  @override
+  String get rbSaved => 'Đã lưu thông tin tài khoản nhận hoàn tiền thành công';
+
+  @override
+  String get rbSaveFailed => 'Không thể lưu thông tin. Vui lòng kiểm tra lại';
+
+  @override
+  String get rbOneTimeSetup => 'Cài đặt 1 lần duy nhất';
+
+  @override
+  String get rbIntro =>
+      'Hệ thống sẽ chuyển khoản hoàn tiền trực tiếp vào tài khoản này khi đơn hàng gặp sự cố (tủ kẹt, drone hủy, đơn giặt lỗi...). Bạn không cần phải nhập lại nhiều lần.';
+
+  @override
+  String get rbBeneficiaryBank => 'Ngân hàng thụ hưởng';
+
+  @override
+  String get rbChooseBankShort => 'Chọn ngân hàng';
+
+  @override
+  String get rbAccountNumber => 'Số tài khoản ngân hàng';
+
+  @override
+  String get rbAccountNumberHint => 'Nhập số tài khoản của bạn';
+
+  @override
+  String get rbEnterAccountNumber => 'Vui lòng nhập số tài khoản';
+
+  @override
+  String get rbInvalidAccountNumber => 'Số tài khoản không hợp lệ';
+
+  @override
+  String get rbHolderName => 'Họ và tên chủ tài khoản';
+
+  @override
+  String get rbHolderHint => 'Ví dụ: NGUYEN VAN A';
+
+  @override
+  String get rbEnterHolder => 'Vui lòng nhập tên chủ tài khoản';
+
+  @override
+  String get rbUpdate => 'Cập nhật tài khoản';
+
+  @override
+  String get rbSave => 'Lưu tài khoản hoàn tiền';
+
+  @override
+  String get rbSearchHint => 'Tìm theo tên hoặc mã ngân hàng...';
+
+  @override
+  String rfCantPickImage(Object error) {
+    return 'Không thể chọn ảnh: $error';
+  }
+
+  @override
+  String get rfChooseOrder => 'Vui lòng chọn đơn hàng cần hoàn tiền';
+
+  @override
+  String get rfInvalidOrder => 'Mã đơn hàng không hợp lệ';
+
+  @override
+  String get rfEnterReason => 'Vui lòng nhập lý do yêu cầu hoàn tiền';
+
+  @override
+  String get rfEnterBank =>
+      'Vui lòng điền đầy đủ thông tin tài khoản ngân hàng nhận tiền';
+
+  @override
+  String get rfSending => 'Đang gửi yêu cầu hoàn tiền...';
+
+  @override
+  String get rfSent => 'Đã gửi yêu cầu hoàn tiền thành công!';
+
+  @override
+  String rfError(Object message) {
+    return 'Lỗi: $message';
+  }
+
+  @override
+  String get rfSubtitle => 'Quản lý và tạo yêu cầu hoàn tiền cho đơn hàng';
+
+  @override
+  String get rfMyRequests => 'Yêu cầu của tôi';
+
+  @override
+  String get rfNewRequest => 'Tạo yêu cầu mới';
+
+  @override
+  String get rfEmptyRecent =>
+      'Không có yêu cầu hoàn tiền nào trong 7 ngày gần đây.';
+
+  @override
+  String get rfEmptyPending => 'Không có yêu cầu hoàn tiền nào đang chờ xử lý.';
+
+  @override
+  String get rfEmptyCompleted =>
+      'Chưa có yêu cầu hoàn tiền nào đã được chuyển khoản thành công.';
+
+  @override
+  String get rfEmptyRejected => 'Không có yêu cầu hoàn tiền nào bị từ chối.';
+
+  @override
+  String get rfEmptyCanceled => 'Không có yêu cầu hoàn tiền nào đã hủy.';
+
+  @override
+  String get rfEmptyHint =>
+      'Bạn có thể tạo yêu cầu hoàn tiền mới từ tab bên cạnh.';
+
+  @override
+  String get rfNone => 'Chưa có yêu cầu hoàn tiền nào';
+
+  @override
+  String get rfNoneHint =>
+      'Khi gặp sự cố tủ không mở, drone huỷ chuyến hoặc sự cố giặt ủi, bạn có thể tạo yêu cầu hoàn tiền tại đây.';
+
+  @override
+  String get rfCreateNow => 'Tạo yêu cầu hoàn tiền ngay';
+
+  @override
+  String get rfNoneShort => 'Chưa có yêu cầu hoàn tiền';
+
+  @override
+  String get rfNoMatch => 'Không có yêu cầu phù hợp';
+
+  @override
+  String rfTicketHash(Object id) {
+    return 'Phiếu hoàn tiền #$id';
+  }
+
+  @override
+  String get rfSentAt => 'Thời gian gửi';
+
+  @override
+  String get rfHasTransferSlip => 'Có UNC';
+
+  @override
+  String get rfHasPhoto => 'Có ảnh';
+
+  @override
+  String get rfViewDetail => 'Xem chi tiết';
+
+  @override
+  String get rfDetailSubtitle => 'Chi tiết yêu cầu & thông tin chuyển khoản';
+
+  @override
+  String get rfTransferDone => 'Đã hoàn tất chuyển khoản thành công';
+
+  @override
+  String get rfRejectedTitle => 'Yêu cầu hoàn tiền đã bị từ chối';
+
+  @override
+  String get rfAwaitingAdmin => 'Đang chờ Admin đối soát và chuyển khoản';
+
+  @override
+  String get rfInfo => 'Thông tin hoàn tiền';
+
+  @override
+  String get rfOrderCodeCopied => 'Đã sao chép mã đơn hàng';
+
+  @override
+  String get rfAccountHolder => 'Chủ tài khoản';
+
+  @override
+  String get rfReason => 'Lý do hoàn';
+
+  @override
+  String get rfTransferId => 'Mã GD chuyển tiền';
+
+  @override
+  String get rfTransferIdCopied => 'Đã sao chép mã giao dịch';
+
+  @override
+  String get rfRejectReason => 'Lý do từ chối';
+
+  @override
+  String get rfEvidence => 'Chứng từ & Hình ảnh minh chứng';
+
+  @override
+  String get rfYourPhotos => 'Ảnh minh chứng bạn đã gửi:';
+
+  @override
+  String get rfAdminSlip => 'Biên lai chuyển khoản từ Admin (UNC):';
+
+  @override
+  String get rfChooseOrderTitle => 'Chọn đơn hàng cần hoàn tiền';
+
+  @override
+  String get rfTapToChooseOrder => 'Bấm vào đây để chọn đơn hàng';
+
+  @override
+  String get rfChoosePaidOrder =>
+      'Chọn đơn đã thanh toán bạn cần yêu cầu hoàn tiền';
+
+  @override
+  String rfOrderValue(Object code) {
+    return 'Đơn: $code';
+  }
+
+  @override
+  String get rfAmountLabel => 'Số tiền: ';
+
+  @override
+  String get rfChange => 'Đổi';
+
+  @override
+  String get rfChoose => 'Chọn';
+
+  @override
+  String get rfSavedDefault => 'Đã lưu mặc định';
+
+  @override
+  String get rfChooseReceivingBank => 'Chọn ngân hàng nhận tiền';
+
+  @override
+  String get rfAccountNumberField => 'Số tài khoản nhận tiền';
+
+  @override
+  String get rfAccountNumberHint => 'Nhập số tài khoản';
+
+  @override
+  String get rfHolderField => 'Tên chủ tài khoản (viết hoa không dấu)';
+
+  @override
+  String get rfSaveAsDefault => 'Lưu làm tài khoản nhận hoàn tiền mặc định';
+
+  @override
+  String get rfReasonTitle => 'Lý do yêu cầu hoàn tiền';
+
+  @override
+  String get rfQuickStuck => 'Sự cố kẹt ô tủ';
+
+  @override
+  String get rfQuickDroneCancel => 'Drone huỷ chuyến bay';
+
+  @override
+  String get rfQuickDoubleCharge => 'Trừ tiền trùng cổng thanh toán';
+
+  @override
+  String get rfQuickLaundry => 'Sự cố dịch vụ giặt ủi';
+
+  @override
+  String get rfReasonHint => 'Mô tả chi tiết lý do và sự cố bạn gặp phải...';
+
+  @override
+  String get rfEvidenceOptional => 'Hình ảnh minh chứng (tuỳ chọn)';
+
+  @override
+  String get rfTakePhoto => 'Chụp ảnh';
+
+  @override
+  String get rfPickGallery => 'Chọn thư viện';
+
+  @override
+  String get rfChangePhoto => 'Đổi ảnh khác';
+
+  @override
+  String get rfExpectedAmount => 'Số tiền hoàn dự kiến:';
+
+  @override
+  String get rfSubmit => 'Gửi yêu cầu hoàn tiền';
+
+  @override
+  String get rfEvidenceDetail => 'Chi tiết hình ảnh minh chứng';
+
+  @override
+  String get rfRules => 'Quy tắc hoàn tiền';
+
+  @override
+  String get rfRulesIntro => 'Lock.R hỗ trợ hoàn tiền cho các trường hợp:';
+
+  @override
+  String get rfRule1 =>
+      '• Sự cố kỹ thuật ô tủ không mở được hoặc kẹt cửa > 30 phút.';
+
+  @override
+  String get rfRule2 =>
+      '• Sự cố drone giao trễ vượt thời gian cam kết hoặc huỷ chuyến bay.';
+
+  @override
+  String get rfRule3 =>
+      '• Lỗi cổng thanh toán trừ tiền 2 lần (double billing).';
+
+  @override
+  String get rfRule4 => '• Hàng hoá/đồ giặt có sự cố từ đối tác giặt ủi.';
+
+  @override
+  String get rfProcessingTime => 'Thời gian xử lý:';
+
+  @override
+  String get rfProcessingBody =>
+      'Quản trị viên sẽ đối soát và thực hiện chuyển khoản trong vòng 24 giờ làm việc. Bạn sẽ nhận được thông báo kèm biên lai chuyển khoản (UNC) ngay trên ứng dụng.';
+
+  @override
+  String get rfNoOrders => 'Không có đơn hàng nào';
+
+  @override
+  String get rfSelected => '✓ Đang chọn';
+
+  @override
+  String get rfChooseBeneficiary => 'Chọn ngân hàng thụ hưởng';
+
+  @override
+  String get rfSearchBank => 'Tìm kiếm ngân hàng (mã, tên)...';
+
+  @override
+  String get bankUnknown =>
+      'Không xác định được ngân hàng nhận tiền. Vui lòng quét mã QR bằng app ngân hàng.';
+
+  @override
+  String bankCantOpen(Object app) {
+    return 'Không mở được $app. Có thể máy chưa cài app — hãy quét mã QR bằng app ngân hàng của bạn.';
+  }
+
+  @override
+  String get bankTitle => 'Thanh toán bằng app ngân hàng';
+
+  @override
+  String get bankIntro =>
+      'Chọn app ngân hàng của bạn — số tài khoản, số tiền và nội dung chuyển khoản được điền sẵn, bạn chỉ cần xác nhận.';
+
+  @override
+  String get bankSearch => 'Tìm ngân hàng';
+
+  @override
+  String get bankLoadFailed =>
+      'Không tải được danh sách app ngân hàng.\nBạn có thể quét mã QR bằng app ngân hàng.';
+
+  @override
+  String get bankNoMatch => 'Không tìm thấy ngân hàng phù hợp';
+
+  @override
+  String get simBusy => 'Đang giả lập…';
+
+  @override
+  String get simButton => 'Giả lập thanh toán (test)';
+
+  @override
+  String get simFailed => 'Không giả lập được';
+
+  @override
+  String get simTitle => 'Giả lập đã chuyển khoản';
+
+  @override
+  String get simBody =>
+      'Chỉ dùng để test — không có tiền thật. Nhập ít hơn số cần trả để thử trường hợp chuyển thiếu.';
+
+  @override
+  String get simReceived => 'Số tiền đã nhận';
+
+  @override
+  String get simAction => 'Giả lập';
+
+  @override
+  String get txSepay => 'Cổng SePay QR';
+
+  @override
+  String get txVnpay => 'Cổng VNPay';
+
+  @override
+  String get txMomo => 'Ví MoMo';
+
+  @override
+  String get txWithdraw => 'Rút tiền';
+
+  @override
+  String get txTitleTopup => 'Nạp tiền vào ví';
+
+  @override
+  String get txTitleWithdrawRefund => 'Hoàn tiền rút';
+
+  @override
+  String get txTitleWithdraw => 'Rút tiền về tài khoản ngân hàng';
+
+  @override
+  String get txTitleRefund => 'Hoàn tiền vào ví';
+
+  @override
+  String get txTitleAdjustPlus => 'Điều chỉnh số dư (cộng)';
+
+  @override
+  String get txTitleAdjustMinus => 'Điều chỉnh số dư (trừ)';
+
+  @override
+  String get txTitleOrderWallet => 'Thanh toán đơn bằng ví';
+
+  @override
+  String txTitleOrderVia(Object method) {
+    return 'Thanh toán đơn qua $method';
+  }
+
+  @override
+  String get txTitleIn => 'Tiền vào ví';
+
+  @override
+  String get txTitleOut => 'Tiền ra khỏi ví';
+
+  @override
+  String get txSvcLaundry => 'Giặt sấy';
+
+  @override
+  String get txSvcOrder => 'Thanh toán đơn';
+
+  @override
+  String get txSvcTopup => 'Nạp tiền ví';
+
+  @override
+  String get txSvcAdjust => 'Điều chỉnh số dư';
+
+  @override
+  String get txLoadFailed => 'Không tải được lịch sử giao dịch.';
+
+  @override
+  String get txHistory => 'Lịch sử giao dịch';
+
+  @override
+  String get txSubtitle => 'Các khoản thanh toán & chi tiêu của bạn';
+
+  @override
+  String get txStats => 'Thống kê chi tiêu';
+
+  @override
+  String get txThisMonth => 'Tháng này';
+
+  @override
+  String get txThisYear => 'Năm nay';
+
+  @override
+  String get txTotalSpent => 'Tổng chi tiêu';
+
+  @override
+  String get txTotalIn => 'Tổng tiền vào';
+
+  @override
+  String get txNet => 'Biến động ròng:';
+
+  @override
+  String get txByMethod => 'Tổng tiền theo hình thức';
+
+  @override
+  String get txByService => 'Chi tiết theo từng dịch vụ';
+
+  @override
+  String get txMethod => 'Hình thức';
+
+  @override
+  String get txSvcSmartRental => 'Thuê tủ thông minh';
+
+  @override
+  String get txSvcSend => 'Gửi đồ / Giao nhận';
+
+  @override
+  String get txSvcLaundryLocker => 'Giặt sấy tủ';
+
+  @override
+  String get txSvcWithdrawBank => 'Rút tiền về STK';
+
+  @override
+  String get txSvcOtherOrder => 'Thanh toán đơn khác';
+
+  @override
+  String txCount(int count) {
+    return '$count giao dịch';
+  }
+
+  @override
+  String get txAllMethods => 'Tất cả hình thức';
+
+  @override
+  String get txSepayShort => 'Cổng SePay';
+
+  @override
+  String get txFilterByMethod => 'Lọc theo hình thức giao dịch';
+
+  @override
+  String txAllCount(Object count) {
+    return 'Tất cả ($count GD):';
+  }
+
+  @override
+  String txFilterCount(Object label, Object count) {
+    return '$label ($count GD):';
+  }
+
+  @override
+  String get txLoading => 'Đang tải lịch sử giao dịch...';
+
+  @override
+  String get txNone => 'Không có giao dịch nào';
+
+  @override
+  String get txNoMatch => 'Không tìm thấy giao dịch theo bộ lọc đã chọn';
+
+  @override
+  String get txWithdrawRequest => 'Yêu cầu rút tiền';
+
+  @override
+  String get txMethodLabel => 'Hình thức GD';
+
+  @override
+  String get txType => 'Loại';
+
+  @override
+  String get txDirection => 'Chiều tiền';
+
+  @override
+  String get txCredit => 'Cộng vào ví';
+
+  @override
+  String get txDebit => 'Trừ từ ví';
+
+  @override
+  String get txDirect => 'Trả trực tiếp qua cổng';
+
+  @override
+  String get txId => 'Mã GD';
+
+  @override
+  String get txBalanceAfter => 'Số dư ví sau GD';
 }

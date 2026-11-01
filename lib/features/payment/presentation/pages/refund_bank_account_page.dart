@@ -5,6 +5,7 @@ import 'package:smart_laundry_locker/core/theme/shadcn_theme.dart';
 import 'package:smart_laundry_locker/features/payment/data/payment_service.dart';
 import 'package:smart_laundry_locker/features/payment/data/user_bank_account.dart';
 import 'package:smart_laundry_locker/features/payment/data/vietnamese_banks.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 class RefundBankAccountPage extends StatefulWidget {
   const RefundBankAccountPage({super.key});
@@ -95,7 +96,7 @@ class _RefundBankAccountPageState extends State<RefundBankAccountPage> {
   Future<void> _handleSave() async {
     if (!_formKey.currentState!.validate()) return;
     if (_selectedBank == null) {
-      SmartDialog.showToast('Vui lòng chọn ngân hàng');
+      SmartDialog.showToast(context.l10n.rbChooseBank);
       return;
     }
 
@@ -113,10 +114,10 @@ class _RefundBankAccountPageState extends State<RefundBankAccountPage> {
         setState(() {
           _existingAccount = saved;
         });
-        SmartDialog.showToast('Đã lưu thông tin tài khoản nhận hoàn tiền thành công');
+        SmartDialog.showToast(context.l10n.rbSaved);
       }
     } catch (e) {
-      SmartDialog.showToast('Không thể lưu thông tin. Vui lòng kiểm tra lại');
+      SmartDialog.showToast(L10n.current.rbSaveFailed);
     } finally {
       if (mounted) {
         setState(() => _isSaving = false);
@@ -136,8 +137,8 @@ class _RefundBankAccountPageState extends State<RefundBankAccountPage> {
           icon: const Icon(LucideIcons.arrowLeft, color: Colors.black87),
           onPressed: () => Navigator.of(context).maybePop(),
         ),
-        title: const Text(
-          'Tài khoản nhận hoàn tiền',
+        title: Text(
+          context.l10n.profileRefundAccount,
           style: TextStyle(
             color: Colors.black87,
             fontSize: 18,
@@ -176,8 +177,8 @@ class _RefundBankAccountPageState extends State<RefundBankAccountPage> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Text(
-                                  'Cài đặt 1 lần duy nhất',
+                                Text(
+                                  context.l10n.rbOneTimeSetup,
                                   style: TextStyle(
                                     fontSize: 14,
                                     fontWeight: FontWeight.bold,
@@ -186,7 +187,7 @@ class _RefundBankAccountPageState extends State<RefundBankAccountPage> {
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
-                                  'Hệ thống sẽ chuyển khoản hoàn tiền trực tiếp vào tài khoản này khi đơn hàng gặp sự cố (tủ kẹt, drone hủy, đơn giặt lỗi...). Bạn không cần phải nhập lại nhiều lần.',
+                                  context.l10n.rbIntro,
                                   style: TextStyle(
                                     fontSize: 12,
                                     color: Colors.green.shade900,
@@ -202,8 +203,8 @@ class _RefundBankAccountPageState extends State<RefundBankAccountPage> {
                     const SizedBox(height: 24),
 
                     // Thông tin ngân hàng
-                    const Text(
-                      'Ngân hàng thụ hưởng',
+                    Text(
+                      context.l10n.rbBeneficiaryBank,
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
@@ -242,7 +243,7 @@ class _RefundBankAccountPageState extends State<RefundBankAccountPage> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    _selectedBank?.shortName ?? 'Chọn ngân hàng',
+                                    _selectedBank?.shortName ?? context.l10n.rbChooseBankShort,
                                     style: const TextStyle(
                                       fontSize: 15,
                                       fontWeight: FontWeight.w700,
@@ -274,8 +275,8 @@ class _RefundBankAccountPageState extends State<RefundBankAccountPage> {
                     const SizedBox(height: 18),
 
                     // Số tài khoản
-                    const Text(
-                      'Số tài khoản ngân hàng',
+                    Text(
+                      context.l10n.rbAccountNumber,
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
@@ -292,7 +293,7 @@ class _RefundBankAccountPageState extends State<RefundBankAccountPage> {
                         fontFamily: 'monospace',
                       ),
                       decoration: InputDecoration(
-                        hintText: 'Nhập số tài khoản của bạn',
+                        hintText: context.l10n.rbAccountNumberHint,
                         hintStyle: const TextStyle(
                           color: Color(0xFF94A3B8),
                           fontSize: 14,
@@ -321,10 +322,10 @@ class _RefundBankAccountPageState extends State<RefundBankAccountPage> {
                       ),
                       validator: (val) {
                         if (val == null || val.trim().isEmpty) {
-                          return 'Vui lòng nhập số tài khoản';
+                          return context.l10n.rbEnterAccountNumber;
                         }
                         if (val.trim().length < 6) {
-                          return 'Số tài khoản không hợp lệ';
+                          return context.l10n.rbInvalidAccountNumber;
                         }
                         return null;
                       },
@@ -332,8 +333,8 @@ class _RefundBankAccountPageState extends State<RefundBankAccountPage> {
                     const SizedBox(height: 18),
 
                     // Tên chủ tài khoản
-                    const Text(
-                      'Họ và tên chủ tài khoản',
+                    Text(
+                      context.l10n.rbHolderName,
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
@@ -350,7 +351,7 @@ class _RefundBankAccountPageState extends State<RefundBankAccountPage> {
                         letterSpacing: 0.5,
                       ),
                       decoration: InputDecoration(
-                        hintText: 'Ví dụ: NGUYEN VAN A',
+                        hintText: context.l10n.rbHolderHint,
                         hintStyle: const TextStyle(
                           color: Color(0xFF94A3B8),
                           fontSize: 14,
@@ -389,7 +390,7 @@ class _RefundBankAccountPageState extends State<RefundBankAccountPage> {
                       },
                       validator: (val) {
                         if (val == null || val.trim().isEmpty) {
-                          return 'Vui lòng nhập tên chủ tài khoản';
+                          return context.l10n.rbEnterHolder;
                         }
                         return null;
                       },
@@ -427,8 +428,8 @@ class _RefundBankAccountPageState extends State<RefundBankAccountPage> {
                                   const SizedBox(width: 8),
                                   Text(
                                     _existingAccount != null
-                                        ? 'Cập nhật tài khoản'
-                                        : 'Lưu tài khoản hoàn tiền',
+                                        ? context.l10n.rbUpdate
+                        : context.l10n.rbSave,
                                     style: const TextStyle(
                                       fontSize: 16,
                                       fontWeight: FontWeight.bold,
@@ -509,8 +510,8 @@ class _BankPickerSheetState extends State<_BankPickerSheet> {
             ),
           ),
           const SizedBox(height: 12),
-          const Text(
-            'Chọn ngân hàng',
+          Text(
+            context.l10n.rbChooseBankShort,
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
@@ -521,7 +522,7 @@ class _BankPickerSheetState extends State<_BankPickerSheet> {
           TextField(
             controller: _searchController,
             decoration: InputDecoration(
-              hintText: 'Tìm theo tên hoặc mã ngân hàng...',
+              hintText: context.l10n.rbSearchHint,
               prefixIcon: const Icon(LucideIcons.search, size: 18),
               filled: true,
               fillColor: const Color(0xFFF1F5F9),
