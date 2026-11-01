@@ -1300,4 +1300,951 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get locationConfirm => 'Confirm location';
+
+  @override
+  String get commonYou => 'Guest';
+
+  @override
+  String get commonSeeAllLower => 'See all';
+
+  @override
+  String get commonDirections => 'Directions';
+
+  @override
+  String get commonAddress => 'Address';
+
+  @override
+  String get commonDistance => 'Distance';
+
+  @override
+  String get commonStatus => 'Status';
+
+  @override
+  String get commonLocation => 'Location';
+
+  @override
+  String get commonSize => 'Size';
+
+  @override
+  String get commonBack => 'Back';
+
+  @override
+  String get commonNoAddress => 'No address yet';
+
+  @override
+  String get commonFavorites => 'Favorites';
+
+  @override
+  String get commonOffers => 'Offers';
+
+  @override
+  String get commonReportIssue => 'Report an issue';
+
+  @override
+  String get commonReports => 'Reports';
+
+  @override
+  String get commonStatusActive => 'Active';
+
+  @override
+  String get commonStatusSuspended => 'Suspended';
+
+  @override
+  String get commonDisconnected => 'Disconnected';
+
+  @override
+  String get commonOnline => 'Online';
+
+  @override
+  String get commonInUseShort => 'In use';
+
+  @override
+  String get commonReservedShort => 'Reserved';
+
+  @override
+  String get commonBroken => 'Broken';
+
+  @override
+  String get commonEmpty => 'Empty';
+
+  @override
+  String get commonExpired => 'Expired';
+
+  @override
+  String get commonHistory => 'History';
+
+  @override
+  String get commonAvailable => 'Available';
+
+  @override
+  String commonCopiedValue(Object value) {
+    return 'Copied: $value';
+  }
+
+  @override
+  String get commonStartDate => 'Start';
+
+  @override
+  String get commonEndDate => 'End';
+
+  @override
+  String get commonHowToUse => 'How to use';
+
+  @override
+  String get commonTapToCopy => 'Tap to copy the code';
+
+  @override
+  String get commonUnlimitedTime => 'No time limit';
+
+  @override
+  String get commonExchange => 'Redeem';
+
+  @override
+  String get commonSaved => 'Saved';
+
+  @override
+  String get commonLoadFailedData => 'Couldn\'t load data';
+
+  @override
+  String boxNumberLabel(Object number) {
+    return 'Compartment $number';
+  }
+
+  @override
+  String boxRowCol(Object row, Object col) {
+    return 'Compartment row $row, column $col';
+  }
+
+  @override
+  String rowCol(Object row, Object col) {
+    return 'Row $row, column $col';
+  }
+
+  @override
+  String boxHash(Object number) {
+    return 'Box #$number';
+  }
+
+  @override
+  String orderHash(Object id) {
+    return 'Order #$id';
+  }
+
+  @override
+  String get homeSendByDrone => 'Send by drone';
+
+  @override
+  String get homeDropPoints => 'Drop-off points';
+
+  @override
+  String get homeRentLocker => 'Rent a locker';
+
+  @override
+  String get homeLockerOrders => 'Locker orders';
+
+  @override
+  String get homeUtilities => 'Utilities';
+
+  @override
+  String get homeDroneDelivery => 'Drone delivery';
+
+  @override
+  String get homeActiveOrders => 'Orders in progress';
+
+  @override
+  String get homePickupDeadline => 'Pickup deadline';
+
+  @override
+  String get stepCreateOrder => 'Order created';
+
+  @override
+  String get stepFlightTeamAccepted => 'Flight team accepted';
+
+  @override
+  String get stepFlying => 'In flight';
+
+  @override
+  String get stepDropReported => 'Drop reported';
+
+  @override
+  String get stepIntoLocker => 'In pickup locker';
+
+  @override
+  String get stepDropIntoLocker => 'Placed in locker';
+
+  @override
+  String get stepStoring => 'Stored';
+
+  @override
+  String get stepInLocker => 'In locker';
+
+  @override
+  String get stepTransit => 'In transit';
+
+  @override
+  String get stepAwaitingPickup => 'Awaiting pickup';
+
+  @override
+  String get homeUtilitiesServices => 'Utilities & services';
+
+  @override
+  String get homeSendDrone => 'Send drone';
+
+  @override
+  String get homeKioskLocations => 'Kiosk locations';
+
+  @override
+  String get homeNoLockerLocations => 'No locker locations yet';
+
+  @override
+  String get homeOngoingOffers => 'Ongoing offers';
+
+  @override
+  String get storeDefaultName => 'Store';
+
+  @override
+  String get storeFavoritesLoadFailed => 'Couldn\'t load your favorites.';
+
+  @override
+  String get storeFavoritesSubtitle => 'Drop-off points you saved';
+
+  @override
+  String get storeFavoritesLoading => 'Loading favorites...';
+
+  @override
+  String get storeNoFavorites => 'No favorite stores yet';
+
+  @override
+  String get storeNoFavoritesHint =>
+      'Tap the heart icon on a store to save it here.';
+
+  @override
+  String get storeExplore => 'Explore stores';
+
+  @override
+  String get storeAddedFavorite => 'Added to favorites';
+
+  @override
+  String get storeRemovedFavorite => 'Removed from favorites';
+
+  @override
+  String get storeFavoriteSaveFailed => 'Couldn\'t save your favorites.';
+
+  @override
+  String get storeEnableLocation => 'Please turn on location services.';
+
+  @override
+  String get storeNeedLocation =>
+      'Location permission is needed to find stores near you.';
+
+  @override
+  String get storeNoCurrentLocation => 'Couldn\'t get your current location.';
+
+  @override
+  String get storeListLoadFailed => 'Couldn\'t load the store list.';
+
+  @override
+  String get storeListSubtitle => 'Explore locker points & partners';
+
+  @override
+  String get storeSearchHint => 'Search by name or address';
+
+  @override
+  String get storeListLoading => 'Loading locker points...';
+
+  @override
+  String get storeNone => 'No stores';
+
+  @override
+  String get storeRatingsLoadFailed => 'Couldn\'t load ratings.';
+
+  @override
+  String get storeInfoLoadFailed => 'Couldn\'t load store information.';
+
+  @override
+  String get storeNoLocation => 'This store has no location yet.';
+
+  @override
+  String get storeCantOpenMap => 'Couldn\'t open the map.';
+
+  @override
+  String get storeDetailTitle => 'Drop-off point details';
+
+  @override
+  String get storeDetailSubtitle => 'Locker point & partner';
+
+  @override
+  String get storeInfoLoading => 'Loading information...';
+
+  @override
+  String storeRatingCount(Object count) {
+    return '  ·  $count reviews';
+  }
+
+  @override
+  String get storeViewLockers => 'View lockers';
+
+  @override
+  String get storeCustomerReviews => 'Customer reviews';
+
+  @override
+  String get storeNoReviews => 'No reviews yet';
+
+  @override
+  String get storeTemporarilyClosed => 'Temporarily closed';
+
+  @override
+  String get storeCustomer => 'Customer';
+
+  @override
+  String get storeOpen => 'Open';
+
+  @override
+  String storeDistanceFromYou(Object km) {
+    return '$km km away';
+  }
+
+  @override
+  String lockerHash(Object id) {
+    return 'Locker #$id';
+  }
+
+  @override
+  String get lockerLockerTitle => 'Lockers';
+
+  @override
+  String get lockerPhysicalLocation => 'Physical locker location';
+
+  @override
+  String get lockerListLoading => 'Loading lockers...';
+
+  @override
+  String get lockerDroneCellHint =>
+      'Tap an empty drone compartment (purple) to send a parcel by drone to another locker.';
+
+  @override
+  String get lockerViewOnMap => 'View location on map';
+
+  @override
+  String get lockerKioskPoint => 'KIOSK LOCATION';
+
+  @override
+  String lockerCount(Object count) {
+    return '$count lockers';
+  }
+
+  @override
+  String get lockerTapToSeeFree => 'Tap a locker to see free compartments';
+
+  @override
+  String get lockerDefaultName => 'Locker';
+
+  @override
+  String get lockerOfflineCantBook =>
+      'The locker is disconnected from the server, so compartments can\'t be booked right now.';
+
+  @override
+  String get lockerUnderMaintenance =>
+      'The locker is under technical maintenance and isn\'t accepting orders.';
+
+  @override
+  String get lockerSuspended => 'The locker is temporarily out of service.';
+
+  @override
+  String lockerFreeOfTotal(Object available, Object total) {
+    return '$available/$total free';
+  }
+
+  @override
+  String get lockerNoCellsConfigured =>
+      'This locker has no compartments configured yet';
+
+  @override
+  String get lockerBoxPendingCheck => 'is waiting for a technician to check it';
+
+  @override
+  String get lockerBoxBroken => 'is out of order';
+
+  @override
+  String lockerBoxUnavailable(Object box, Object state) {
+    return '$box $state. Please choose another compartment.';
+  }
+
+  @override
+  String lockerBoxUnavailableReason(Object box, Object state, Object reason) {
+    return '$box $state: $reason. Please choose another compartment.';
+  }
+
+  @override
+  String get lockerScreen7 => '7\" screen';
+
+  @override
+  String get lockerFaultBroken => 'Fault / Broken';
+
+  @override
+  String get lockerDoorOpen => 'Door open';
+
+  @override
+  String get lockerDoorClosed => 'Door closed';
+
+  @override
+  String get lockerScreen => 'Screen';
+
+  @override
+  String get lockerKioskScreen => 'Kiosk screen';
+
+  @override
+  String get lockerKioskHelp =>
+      'At the kiosk screen you can enter your order PIN to open a compartment, or log in by scanning the kiosk\'s QR code with the scan button on the app\'s home page.';
+
+  @override
+  String get lockerKioskOffline =>
+      'The locker is disconnected from the server: the screen may not respond and new compartments can\'t be booked.';
+
+  @override
+  String get lockerReportKioskIssue => 'Report a kiosk screen issue';
+
+  @override
+  String get lockerBrokenUpper => 'BROKEN';
+
+  @override
+  String get lockerPendingCheckUpper => 'PENDING CHECK';
+
+  @override
+  String get lockerPendingCheck => 'Pending check';
+
+  @override
+  String get lockerCleaning => 'Cleaning';
+
+  @override
+  String get lockerDroneReceive => 'Drone receiving';
+
+  @override
+  String get lockerReady => 'Ready';
+
+  @override
+  String get sizeSmall => 'Small (S)';
+
+  @override
+  String get sizeMedium => 'Medium (M)';
+
+  @override
+  String get sizeLarge => 'Large (L)';
+
+  @override
+  String get sizeXlSuitcase => 'Large suitcase (XL)';
+
+  @override
+  String get lockerEmptySuitcaseBox => 'Empty suitcase compartment';
+
+  @override
+  String get lockerEmptyBox => 'Empty compartment';
+
+  @override
+  String get lockerWhatToDo =>
+      'What would you like to do with this compartment?';
+
+  @override
+  String get lockerRentSubtitle => 'By the hour or day';
+
+  @override
+  String get lockerSendParcel => 'Send parcel';
+
+  @override
+  String get lockerSendSubtitle => 'C2C transfer';
+
+  @override
+  String get lockerSuitcaseRentOnly =>
+      'Suitcase compartments are for storage rental only, not for sending parcels.';
+
+  @override
+  String get lockerReportBoxIssue =>
+      'Problem with this compartment? Report it now';
+
+  @override
+  String get lockerNoLockers => 'No lockers yet';
+
+  @override
+  String get lockerStoreNoActiveLockers =>
+      'This store has no active lockers yet.';
+
+  @override
+  String get lockerCabinetIdRequired => 'Cabinet ID is required';
+
+  @override
+  String get lockerLocationIdRequired => 'Location ID is required';
+
+  @override
+  String get lockerOfflinePickOther =>
+      'The locker is disconnected, so compartments can\'t be booked. Please choose another locker or try again later.';
+
+  @override
+  String get lockerMaintenancePickOther =>
+      'The locker is under maintenance and isn\'t accepting orders. Please choose another locker.';
+
+  @override
+  String get lockerSuspendedCantBook =>
+      'The locker is temporarily out of service, so compartments can\'t be booked.';
+
+  @override
+  String get groupSmall => 'Small (S)';
+
+  @override
+  String get groupMedium => 'Medium (M)';
+
+  @override
+  String get groupLarge => 'Large (L)';
+
+  @override
+  String get groupStandard => 'Standard';
+
+  @override
+  String get groupXl => 'Suitcase (XL)';
+
+  @override
+  String get groupDrone => 'Drone';
+
+  @override
+  String get cellTypeDroneRoof => 'Drone (roof)';
+
+  @override
+  String get cellTypeSuitcase => 'Suitcase (XL)';
+
+  @override
+  String get cellTypeStandard => 'Standard';
+
+  @override
+  String get cellOutOfService => 'Out of service';
+
+  @override
+  String get lockerSizeSmallDesc => 'Small, fits handbags and wallets';
+
+  @override
+  String get lockerSizeMediumDesc => 'Medium, fits backpacks';
+
+  @override
+  String get lockerSizeLargeDesc => 'Large, fits suitcases';
+
+  @override
+  String get lockerStatusAvailable => 'Available';
+
+  @override
+  String get lockerStatusInUse => 'In use';
+
+  @override
+  String get lockerStatusReserved => 'Reserved';
+
+  @override
+  String get lockerStatusMaintenance => 'Under maintenance';
+
+  @override
+  String get lockerStatusOutOfService => 'Out of service';
+
+  @override
+  String get lockerAlreadyRented => 'This locker is already rented.';
+
+  @override
+  String get lockerInsufficientBalance => 'Insufficient balance.';
+
+  @override
+  String get lockerFixedRentFailed => 'Fixed locker rental failed.';
+
+  @override
+  String get lockerOpenCommandSent => 'Open command sent.';
+
+  @override
+  String get lockerCloseCommandSent => 'Close command sent.';
+
+  @override
+  String get lockerDetailSubtitle => 'Lock.R locker location details';
+
+  @override
+  String get lockerNoCoordinates =>
+      'This locker has no coordinates yet, so the map and directions can\'t be shown.';
+
+  @override
+  String get lockerBookService => 'Book a service';
+
+  @override
+  String get lockerViewLayout => 'View compartment layout';
+
+  @override
+  String get lockerMapTitle => 'Locker map';
+
+  @override
+  String get lockerMapSubtitle => 'Find the nearest Lock.R locker';
+
+  @override
+  String get lockerMapLoading => 'Loading map...';
+
+  @override
+  String get lockerNoneYet => 'There are no lockers yet!';
+
+  @override
+  String get lockerGettingLocation => 'Getting your location...';
+
+  @override
+  String get lockerUseMyLocation => 'Use your location';
+
+  @override
+  String get lockerMapLoadFailed =>
+      'Couldn\'t load the map. The coordinates may be invalid.';
+
+  @override
+  String lockerInvalidCoordsHidden(Object count) {
+    return '$count locations with invalid coordinates were hidden.';
+  }
+
+  @override
+  String get lockerLocating => 'Locating...';
+
+  @override
+  String get lockerAddressFailed =>
+      'Couldn\'t determine the address, please try again';
+
+  @override
+  String lockerAddressFailedError(Object error) {
+    return 'Couldn\'t determine the address, please try again: $error';
+  }
+
+  @override
+  String get lockerLocationServiceOff =>
+      'Location services are off. Please turn on GPS.';
+
+  @override
+  String get lockerLocationDenied => 'Location permission was denied.';
+
+  @override
+  String get lockerLocationDeniedForever =>
+      'Location permission was permanently denied. Turn it back on in settings.';
+
+  @override
+  String get lockerOtherKiosk => 'Other kiosks';
+
+  @override
+  String lockerCountShort(Object count) {
+    return '$count lockers';
+  }
+
+  @override
+  String get commonAll => 'All';
+
+  @override
+  String get lockerLocationList => 'Locations';
+
+  @override
+  String get lockerLoginToSeeLocations => 'Log in to see available locations';
+
+  @override
+  String get lockerLoginRequiredLocations =>
+      'You need to log in to see the location list';
+
+  @override
+  String get lockerPickLocation => 'Choose a location to see details';
+
+  @override
+  String get lockerSearchLocation => 'Search locations...';
+
+  @override
+  String get lockerNoLocations => 'There are no locations yet!';
+
+  @override
+  String get lockerNotFoundHere => 'No lockers found at this location';
+
+  @override
+  String get lockerTryOtherLocation =>
+      'Try another location or view all available locations.';
+
+  @override
+  String get lockerViewAllLocations => 'View all locations';
+
+  @override
+  String get lockerLoadingFreeCells => 'Loading free compartments...';
+
+  @override
+  String lockerCellsLoadFailed(Object error) {
+    return 'Couldn\'t load compartments: $error';
+  }
+
+  @override
+  String get lockerFreeCells => 'Free compartments';
+
+  @override
+  String get lockerConnectionUnknown => 'Connection unknown';
+
+  @override
+  String get lockerMostUsed => 'Most used';
+
+  @override
+  String get promoUnlimited => 'Unlimited';
+
+  @override
+  String get promoExpired => 'Expired';
+
+  @override
+  String promoDaysLeft(Object days) {
+    return '$days days left';
+  }
+
+  @override
+  String promoHoursLeft(Object hours) {
+    return '$hours hours left';
+  }
+
+  @override
+  String promoMinutesLeft(Object minutes) {
+    return '$minutes minutes left';
+  }
+
+  @override
+  String promoMinOrder(Object amount) {
+    return 'Minimum order $amount';
+  }
+
+  @override
+  String get promoSystemWide => 'System-wide';
+
+  @override
+  String promoAppliesAt(Object name) {
+    return 'Applies at: $name';
+  }
+
+  @override
+  String get promoSubtitle => 'Explore offers available today';
+
+  @override
+  String get promoLoading => 'Loading promotions...';
+
+  @override
+  String get promoNoneActive => 'No active offers yet';
+
+  @override
+  String get promoExpiringSoon => 'Expiring soon';
+
+  @override
+  String promoSavedToMine(Object code) {
+    return 'Saved code $code to \"My offers\"';
+  }
+
+  @override
+  String get promoSaveNotSupported =>
+      'The server doesn\'t support saving codes yet. Please try again later.';
+
+  @override
+  String get promoSaveFailed =>
+      'Couldn\'t save the code — check that you\'re logged in and try again';
+
+  @override
+  String promoCopiedCode(Object code) {
+    return 'Copied code: $code';
+  }
+
+  @override
+  String promoDiscountPercent(Object percent) {
+    return '$percent% off';
+  }
+
+  @override
+  String promoDiscountAmount(Object amount) {
+    return '$amount off';
+  }
+
+  @override
+  String get promoDetailTitle => 'Offer details';
+
+  @override
+  String get promoOfferExpired => 'Offer expired';
+
+  @override
+  String get promoCodeLabel => 'Promo code';
+
+  @override
+  String get promoDiscountLevel => 'Discount';
+
+  @override
+  String get promoScope => 'Scope';
+
+  @override
+  String get promoMaxDiscount => 'Max discount';
+
+  @override
+  String get promoMinOrderLabel => 'Minimum order';
+
+  @override
+  String get promoActive => 'Active';
+
+  @override
+  String get promoExpiredCantUse =>
+      'This offer has expired and can\'t be used.';
+
+  @override
+  String get promoStep1Any =>
+      'Go to Rent locker, Send parcel or Send drone and choose a locker';
+
+  @override
+  String promoStep1At(Object locker) {
+    return 'Go to Rent locker, Send parcel or Send drone at $locker (drone orders: the take-off drone locker)';
+  }
+
+  @override
+  String get promoStep2 =>
+      'In \"Discount code\", tap \"Choose a discount code\" and pick this code from the list';
+
+  @override
+  String get promoStep3 =>
+      'The discount is deducted from the total if the order qualifies (minimum order, eligible locker)';
+
+  @override
+  String get promoLoadFailed => 'Couldn\'t load offers';
+
+  @override
+  String get promoAtThisLocker => 'Offers at this locker';
+
+  @override
+  String get voucherMine => 'My offers';
+
+  @override
+  String get voucherMineSubtitle => 'Your discount codes & gifts';
+
+  @override
+  String get voucherExchangeTab => 'Redeem points';
+
+  @override
+  String get voucherLoginToSee => 'You need to log in to see your saved offers';
+
+  @override
+  String get voucherLoading => 'Loading offers...';
+
+  @override
+  String get voucherNone => 'You don\'t have any offers yet';
+
+  @override
+  String get voucherExploreAndSave => 'Explore offers and save codes';
+
+  @override
+  String get voucherGift => 'Gift';
+
+  @override
+  String get voucherGiftUpper => 'GIFT';
+
+  @override
+  String get voucherDiscountUpper => 'DISCOUNT';
+
+  @override
+  String get voucherUsed => 'Used';
+
+  @override
+  String get voucherUsedLong => 'Used';
+
+  @override
+  String get voucherCopied => 'Voucher code copied';
+
+  @override
+  String get voucherCode => 'Voucher code';
+
+  @override
+  String get voucherOffer => 'Offer';
+
+  @override
+  String get voucherCampaign => 'Campaign';
+
+  @override
+  String get voucherValidUntil => 'Valid until';
+
+  @override
+  String get voucherExpiredCantUse =>
+      'This voucher has expired and can\'t be used.';
+
+  @override
+  String get voucherAlreadyUsed => 'This voucher has already been used.';
+
+  @override
+  String get voucherStepCopy => 'Copy the voucher code above';
+
+  @override
+  String get voucherStepBookAny =>
+      'Go to a booking page (Rent locker / Send parcel / Send drone)';
+
+  @override
+  String voucherStepBookAt(Object locker) {
+    return 'Book a service at $locker (drone orders: the take-off drone locker)';
+  }
+
+  @override
+  String get voucherStepEnter =>
+      'Enter the code in \"Discount code\" and tap Apply';
+
+  @override
+  String get voucherStepDeducted =>
+      'The discount will be deducted from the total';
+
+  @override
+  String get voucherExchangeNotSupported =>
+      'The server doesn\'t support redeeming points yet. Please try again later.';
+
+  @override
+  String get voucherExchangeLoadFailed =>
+      'Couldn\'t load the points rewards. Please try again.';
+
+  @override
+  String get voucherExchangeFailed =>
+      'Couldn\'t redeem the voucher. Please try again.';
+
+  @override
+  String get voucherWalletNotSupported =>
+      'The server doesn\'t support saved offers yet. Please try again later.';
+
+  @override
+  String get voucherMineLoadFailed =>
+      'Couldn\'t load your offers. Please try again.';
+
+  @override
+  String pointsCount(Object points) {
+    return '$points points';
+  }
+
+  @override
+  String voucherMaxSuffix(Object amount) {
+    return ' (up to $amount)';
+  }
+
+  @override
+  String get voucherExchangeLoading => 'Loading point vouchers...';
+
+  @override
+  String get voucherExchangeNone => 'No vouchers to redeem with points yet';
+
+  @override
+  String get voucherExchangeQuestion => 'Redeem voucher?';
+
+  @override
+  String voucherExchangeConfirm(Object points, Object reward, Object code) {
+    return 'Use $points to redeem the voucher \"$reward\". It will appear under Available; use code $code when placing an order.';
+  }
+
+  @override
+  String voucherExchanged(Object code) {
+    return 'Redeemed voucher $code — see it under Available';
+  }
+
+  @override
+  String get voucherYourPoints => 'Your points';
+
+  @override
+  String voucherPointRate(Object amount) {
+    return '1 point = $amount · redeem for order discount vouchers';
+  }
+
+  @override
+  String get voucherOwned => 'Owned';
+
+  @override
+  String voucherMissingPoints(Object points) {
+    return '$points short';
+  }
+
+  @override
+  String voucherOrderFrom(Object amount) {
+    return 'Orders from $amount';
+  }
 }

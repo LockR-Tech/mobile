@@ -501,5 +501,468 @@
   "paymentTapToContinue": "Chạm để tiếp tục",
   "locationPick": "Chọn vị trí",
   "locationSearchAddress": "Tìm kiếm địa chỉ...",
-  "locationConfirm": "Xác nhận vị trí"
+  "locationConfirm": "Xác nhận vị trí",
+  "commonYou": "Bạn",
+  "commonSeeAllLower": "Xem tất cả",
+  "commonDirections": "Chỉ đường",
+  "commonAddress": "Địa chỉ",
+  "commonDistance": "Khoảng cách",
+  "commonStatus": "Trạng thái",
+  "commonLocation": "Vị trí",
+  "commonSize": "Kích cỡ",
+  "commonBack": "Quay lại",
+  "commonNoAddress": "Chưa có địa chỉ",
+  "commonFavorites": "Yêu thích",
+  "commonOffers": "Ưu đãi",
+  "commonReportIssue": "Báo sự cố",
+  "commonReports": "Báo cáo",
+  "commonStatusActive": "Hoạt động",
+  "commonStatusSuspended": "Tạm ngưng",
+  "commonDisconnected": "Mất kết nối",
+  "commonOnline": "Trực tuyến",
+  "commonInUseShort": "Đang dùng",
+  "commonReservedShort": "Đã đặt",
+  "commonBroken": "Hỏng",
+  "commonEmpty": "Trống",
+  "commonExpired": "Hết hạn",
+  "commonHistory": "Lịch sử",
+  "commonAvailable": "Khả dụng",
+  "commonCopiedValue": "Đã sao chép: {value}",
+  "@commonCopiedValue": {
+    "placeholders": {
+      "value": {}
+    }
+  },
+  "commonStartDate": "Bắt đầu",
+  "commonEndDate": "Kết thúc",
+  "commonHowToUse": "Cách sử dụng",
+  "commonTapToCopy": "Chạm để sao chép mã",
+  "commonUnlimitedTime": "Không giới hạn thời gian",
+  "commonExchange": "Đổi",
+  "commonSaved": "Đã lưu",
+  "commonLoadFailedData": "Không tải được dữ liệu",
+  "boxNumberLabel": "Ô số {number}",
+  "@boxNumberLabel": {
+    "placeholders": {
+      "number": {}
+    }
+  },
+  "boxRowCol": "Ô hàng {row}, cột {col}",
+  "@boxRowCol": {
+    "placeholders": {
+      "row": {},
+      "col": {}
+    }
+  },
+  "rowCol": "Hàng {row}, cột {col}",
+  "@rowCol": {
+    "placeholders": {
+      "row": {},
+      "col": {}
+    }
+  },
+  "boxHash": "Ô #{number}",
+  "@boxHash": {
+    "placeholders": {
+      "number": {}
+    }
+  },
+  "orderHash": "Đơn #{id}",
+  "@orderHash": {
+    "placeholders": {
+      "id": {}
+    }
+  },
+  "homeSendByDrone": "Gửi hàng bằng drone",
+  "homeDropPoints": "Điểm gửi",
+  "homeRentLocker": "Thuê tủ",
+  "homeLockerOrders": "Đơn tủ",
+  "homeUtilities": "Tiện ích",
+  "homeDroneDelivery": "Giao bằng drone",
+  "homeActiveOrders": "Đơn đang xử lý",
+  "homePickupDeadline": "Hạn lấy đồ",
+  "stepCreateOrder": "Tạo đơn",
+  "stepFlightTeamAccepted": "Đội bay nhận",
+  "stepFlying": "Đang bay",
+  "stepDropReported": "Báo rơi kiện",
+  "stepIntoLocker": "Vào tủ nhận",
+  "stepDropIntoLocker": "Bỏ vào tủ",
+  "stepStoring": "Đang lưu tủ",
+  "stepInLocker": "Đã vào tủ",
+  "stepTransit": "Vận chuyển",
+  "stepAwaitingPickup": "Chờ nhận",
+  "homeUtilitiesServices": "Tiện ích & Dịch vụ",
+  "homeSendDrone": "Gửi drone",
+  "homeKioskLocations": "Các nơi đặt kiosk",
+  "homeNoLockerLocations": "Chưa có nơi đặt locker nào",
+  "homeOngoingOffers": "Ưu đãi đang diễn ra",
+  "storeDefaultName": "Cửa hàng",
+  "storeFavoritesLoadFailed": "Không tải được danh sách yêu thích.",
+  "storeFavoritesSubtitle": "Điểm gửi bạn đã lưu",
+  "storeFavoritesLoading": "Đang tải danh sách yêu thích...",
+  "storeNoFavorites": "Chưa có cửa hàng yêu thích",
+  "storeNoFavoritesHint": "Nhấn vào biểu tượng trái tim ở một cửa hàng để lưu lại đây.",
+  "storeExplore": "Khám phá cửa hàng",
+  "storeAddedFavorite": "Đã thêm vào yêu thích",
+  "storeRemovedFavorite": "Đã bỏ khỏi yêu thích",
+  "storeFavoriteSaveFailed": "Không lưu được danh sách yêu thích.",
+  "storeEnableLocation": "Vui lòng bật dịch vụ định vị.",
+  "storeNeedLocation": "Cần quyền vị trí để tìm cửa hàng gần bạn.",
+  "storeNoCurrentLocation": "Không lấy được vị trí hiện tại.",
+  "storeListLoadFailed": "Không tải được danh sách cửa hàng.",
+  "storeListSubtitle": "Khám phá điểm tủ & đối tác liên kết",
+  "storeSearchHint": "Tìm theo tên hoặc địa chỉ",
+  "storeListLoading": "Đang tải danh sách điểm tủ...",
+  "storeNone": "Không có cửa hàng nào",
+  "storeRatingsLoadFailed": "Không tải được đánh giá.",
+  "storeInfoLoadFailed": "Không tải được thông tin cửa hàng.",
+  "storeNoLocation": "Cửa hàng chưa có vị trí.",
+  "storeCantOpenMap": "Không mở được bản đồ.",
+  "storeDetailTitle": "Chi tiết điểm gửi",
+  "storeDetailSubtitle": "Điểm tủ & đối tác liên kết",
+  "storeInfoLoading": "Đang tải thông tin...",
+  "storeRatingCount": "  ·  {count} đánh giá",
+  "@storeRatingCount": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "storeViewLockers": "Xem tủ",
+  "storeCustomerReviews": "Đánh giá từ khách hàng",
+  "storeNoReviews": "Chưa có đánh giá nào",
+  "storeTemporarilyClosed": "Tạm đóng",
+  "storeCustomer": "Khách hàng",
+  "storeOpen": "Mở cửa",
+  "storeDistanceFromYou": "Cách bạn {km} km",
+  "@storeDistanceFromYou": {
+    "placeholders": {
+      "km": {}
+    }
+  },
+  "lockerHash": "Tủ #{id}",
+  "@lockerHash": {
+    "placeholders": {
+      "id": {}
+    }
+  },
+  "lockerLockerTitle": "Tủ locker",
+  "lockerPhysicalLocation": "Vị trí tủ vật lý",
+  "lockerListLoading": "Đang tải danh sách tủ...",
+  "lockerDroneCellHint": "Chạm vào ô drone còn trống (màu tím) để gửi hàng bằng drone tới tủ khác.",
+  "lockerViewOnMap": "Xem vị trí trên bản đồ",
+  "lockerKioskPoint": "ĐIỂM ĐẶT KIOSK",
+  "lockerCount": "{count} tủ locker",
+  "@lockerCount": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "lockerTapToSeeFree": "Chạm vào tủ để xem ô trống",
+  "lockerDefaultName": "Tủ",
+  "lockerOfflineCantBook": "Tủ đang mất kết nối với máy chủ nên tạm thời chưa đặt được ô.",
+  "lockerUnderMaintenance": "Tủ đang bảo trì kỹ thuật, tạm ngưng nhận đơn.",
+  "lockerSuspended": "Tủ đang tạm ngưng hoạt động.",
+  "lockerFreeOfTotal": "{available}/{total} ô trống",
+  "@lockerFreeOfTotal": {
+    "placeholders": {
+      "available": {},
+      "total": {}
+    }
+  },
+  "lockerNoCellsConfigured": "Tủ chưa có ô nào được cấu hình",
+  "lockerBoxPendingCheck": "đang chờ kỹ thuật viên kiểm tra sự cố",
+  "lockerBoxBroken": "đang hỏng",
+  "lockerBoxUnavailable": "{box} {state}. Hãy chọn ô khác.",
+  "@lockerBoxUnavailable": {
+    "placeholders": {
+      "box": {},
+      "state": {}
+    }
+  },
+  "lockerBoxUnavailableReason": "{box} {state}: {reason}. Hãy chọn ô khác.",
+  "@lockerBoxUnavailableReason": {
+    "placeholders": {
+      "box": {},
+      "state": {},
+      "reason": {}
+    }
+  },
+  "lockerScreen7": "Màn hình 7\"",
+  "lockerFaultBroken": "Lỗi / Hỏng",
+  "lockerDoorOpen": "Cửa mở",
+  "lockerDoorClosed": "Cửa đóng",
+  "lockerScreen": "Màn hình",
+  "lockerKioskScreen": "Màn hình kiosk",
+  "lockerKioskHelp": "Tại màn hình kiosk, bạn có thể nhập mã PIN của đơn để mở ô, hoặc đăng nhập bằng cách quét mã QR trên kiosk với nút quét ở trang chủ ứng dụng.",
+  "lockerKioskOffline": "Tủ đang mất kết nối với máy chủ: màn hình có thể không phản hồi và chưa đặt được ô mới.",
+  "lockerReportKioskIssue": "Báo sự cố màn hình kiosk",
+  "lockerBrokenUpper": "HỎNG",
+  "lockerPendingCheckUpper": "CHỜ KIỂM TRA",
+  "lockerPendingCheck": "Chờ kiểm tra",
+  "lockerCleaning": "Vệ sinh",
+  "lockerDroneReceive": "Nhận Drone",
+  "lockerReady": "Sẵn sàng",
+  "sizeSmall": "Nhỏ (S)",
+  "sizeMedium": "Vừa (M)",
+  "sizeLarge": "Lớn (L)",
+  "sizeXlSuitcase": "Vali cỡ lớn (XL)",
+  "lockerEmptySuitcaseBox": "Ô tủ vali trống",
+  "lockerEmptyBox": "Ô tủ trống",
+  "lockerWhatToDo": "Bạn muốn làm gì với ô tủ này?",
+  "lockerRentSubtitle": "Theo giờ hoặc ngày",
+  "lockerSendParcel": "Gửi hàng",
+  "lockerSendSubtitle": "Chuyển C2C",
+  "lockerSuitcaseRentOnly": "Ô vali chỉ dùng để thuê giữ đồ, không nhận gửi hàng.",
+  "lockerReportBoxIssue": "Gặp sự cố với ô này? Báo cáo ngay",
+  "lockerNoLockers": "Chưa có tủ locker",
+  "lockerStoreNoActiveLockers": "Cửa hàng này chưa có tủ locker đang hoạt động.",
+  "lockerCabinetIdRequired": "Cabinet ID không được để trống",
+  "lockerLocationIdRequired": "Location ID không được để trống",
+  "lockerOfflinePickOther": "Tủ đang mất kết nối nên chưa đặt được ô. Vui lòng chọn tủ khác hoặc thử lại sau.",
+  "lockerMaintenancePickOther": "Tủ đang bảo trì nên tạm ngưng nhận đơn. Vui lòng chọn tủ khác.",
+  "lockerSuspendedCantBook": "Tủ đang tạm ngưng hoạt động nên chưa đặt được ô.",
+  "groupSmall": "Ô nhỏ (S)",
+  "groupMedium": "Ô vừa (M)",
+  "groupLarge": "Ô lớn (L)",
+  "groupStandard": "Ô thường",
+  "groupXl": "Ô vali (XL)",
+  "groupDrone": "Ô drone",
+  "cellTypeDroneRoof": "Drone (Nóc tủ)",
+  "cellTypeSuitcase": "Vali (XL)",
+  "cellTypeStandard": "Tiêu chuẩn",
+  "cellOutOfService": "Ngưng dùng",
+  "lockerSizeSmallDesc": "Kích thước nhỏ, phù hợp cho túi xách, ví",
+  "lockerSizeMediumDesc": "Kích thước trung bình, phù hợp cho ba lô",
+  "lockerSizeLargeDesc": "Kích thước lớn, phù hợp cho vali",
+  "lockerStatusAvailable": "Có sẵn",
+  "lockerStatusInUse": "Đang sử dụng",
+  "lockerStatusReserved": "Đã đặt trước",
+  "lockerStatusMaintenance": "Đang bảo trì",
+  "lockerStatusOutOfService": "Ngừng hoạt động",
+  "lockerAlreadyRented": "Tủ này đang được thuê.",
+  "lockerInsufficientBalance": "Số dư không đủ.",
+  "lockerFixedRentFailed": "Thuê tủ cố định thất bại.",
+  "lockerOpenCommandSent": "Đã gửi lệnh mở tủ.",
+  "lockerCloseCommandSent": "Đã gửi lệnh đóng tủ.",
+  "lockerDetailSubtitle": "Chi tiết vị trí tủ Lock.R",
+  "lockerNoCoordinates": "Tủ chưa có toạ độ nên chưa hiển thị được bản đồ và chỉ đường.",
+  "lockerBookService": "Đặt dịch vụ",
+  "lockerViewLayout": "Xem sơ đồ ô tủ",
+  "lockerMapTitle": "Bản đồ tủ khóa",
+  "lockerMapSubtitle": "Tìm điểm tủ Lock.R gần bạn nhất",
+  "lockerMapLoading": "Đang tải bản đồ...",
+  "lockerNoneYet": "Hiện tại chưa có tủ nào!",
+  "lockerGettingLocation": "Đang lấy vị trí...",
+  "lockerUseMyLocation": "Sử dụng vị trí của bạn",
+  "lockerMapLoadFailed": "Không thể tải bản đồ. Toạ độ có thể không hợp lệ.",
+  "lockerInvalidCoordsHidden": "{count} địa điểm có toạ độ không hợp lệ đã được ẩn.",
+  "@lockerInvalidCoordsHidden": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "lockerLocating": "Đang xác định vị trí...",
+  "lockerAddressFailed": "Không thể xác định địa chỉ, vui lòng thử lại",
+  "lockerAddressFailedError": "Không thể xác định địa chỉ, vui lòng thử lại: {error}",
+  "@lockerAddressFailedError": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "lockerLocationServiceOff": "Dịch vụ vị trí đang tắt. Vui lòng bật GPS.",
+  "lockerLocationDenied": "Quyền truy cập vị trí bị từ chối.",
+  "lockerLocationDeniedForever": "Quyền vị trí bị từ chối vĩnh viễn. Hãy bật lại trong cài đặt.",
+  "lockerOtherKiosk": "Kiosk khác",
+  "lockerCountShort": "{count} tủ",
+  "@lockerCountShort": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "commonAll": "Tất cả",
+  "lockerLocationList": "Danh sách địa điểm",
+  "lockerLoginToSeeLocations": "Đăng nhập để xem các địa điểm khả dụng",
+  "lockerLoginRequiredLocations": "Bạn cần đăng nhập để xem danh sách địa điểm",
+  "lockerPickLocation": "Chọn địa điểm để xem chi tiết",
+  "lockerSearchLocation": "Tìm kiếm địa điểm...",
+  "lockerNoLocations": "Hiện tại chưa có địa điểm nào!",
+  "lockerNotFoundHere": "Không tìm thấy tủ tại địa điểm này",
+  "lockerTryOtherLocation": "Thử chọn địa điểm khác hoặc xem tất cả địa điểm khả dụng.",
+  "lockerViewAllLocations": "Xem tất cả địa điểm",
+  "lockerLoadingFreeCells": "Đang tải số ô trống...",
+  "lockerCellsLoadFailed": "Chưa tải được số ô: {error}",
+  "@lockerCellsLoadFailed": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "lockerFreeCells": "Ô trống",
+  "lockerConnectionUnknown": "Chưa rõ kết nối",
+  "lockerMostUsed": "Hay dùng nhất",
+  "promoUnlimited": "Không giới hạn",
+  "promoExpired": "Đã hết hạn",
+  "promoDaysLeft": "Còn {days} ngày",
+  "@promoDaysLeft": {
+    "placeholders": {
+      "days": {}
+    }
+  },
+  "promoHoursLeft": "Còn {hours} giờ",
+  "@promoHoursLeft": {
+    "placeholders": {
+      "hours": {}
+    }
+  },
+  "promoMinutesLeft": "Còn {minutes} phút",
+  "@promoMinutesLeft": {
+    "placeholders": {
+      "minutes": {}
+    }
+  },
+  "promoMinOrder": "Đơn tối thiểu {amount}",
+  "@promoMinOrder": {
+    "placeholders": {
+      "amount": {}
+    }
+  },
+  "promoSystemWide": "Toàn hệ thống",
+  "promoAppliesAt": "Áp dụng tại: {name}",
+  "@promoAppliesAt": {
+    "placeholders": {
+      "name": {}
+    }
+  },
+  "promoSubtitle": "Khám phá ưu đãi đang hiệu lực hôm nay",
+  "promoLoading": "Đang tải khuyến mãi...",
+  "promoNoneActive": "Chưa có ưu đãi nào đang hiệu lực",
+  "promoExpiringSoon": "Sắp hết hạn",
+  "promoSavedToMine": "Đã lưu mã {code} vào \"Ưu đãi của tôi\"",
+  "@promoSavedToMine": {
+    "placeholders": {
+      "code": {}
+    }
+  },
+  "promoSaveNotSupported": "Máy chủ chưa hỗ trợ lưu mã. Vui lòng thử lại sau.",
+  "promoSaveFailed": "Không lưu được mã — kiểm tra đăng nhập và thử lại",
+  "promoCopiedCode": "Đã sao chép mã: {code}",
+  "@promoCopiedCode": {
+    "placeholders": {
+      "code": {}
+    }
+  },
+  "promoDiscountPercent": "Giảm {percent}%",
+  "@promoDiscountPercent": {
+    "placeholders": {
+      "percent": {}
+    }
+  },
+  "promoDiscountAmount": "Giảm {amount}",
+  "@promoDiscountAmount": {
+    "placeholders": {
+      "amount": {}
+    }
+  },
+  "promoDetailTitle": "Chi tiết ưu đãi",
+  "promoOfferExpired": "Ưu đãi đã hết hạn",
+  "promoCodeLabel": "Mã khuyến mãi",
+  "promoDiscountLevel": "Mức giảm",
+  "promoScope": "Phạm vi",
+  "promoMaxDiscount": "Giảm tối đa",
+  "promoMinOrderLabel": "Đơn tối thiểu",
+  "promoActive": "Đang hiệu lực",
+  "promoExpiredCantUse": "Ưu đãi này đã hết hạn và không thể sử dụng.",
+  "promoStep1Any": "Vào trang Thuê tủ, Gửi hàng hoặc Gửi drone và chọn tủ",
+  "promoStep1At": "Vào trang Thuê tủ, Gửi hàng hoặc Gửi drone tại {locker} (đơn drone: tủ drone cất cánh)",
+  "@promoStep1At": {
+    "placeholders": {
+      "locker": {}
+    }
+  },
+  "promoStep2": "Ở mục \"Mã giảm giá\", chạm \"Chọn mã giảm giá\" rồi chọn mã này trong danh sách",
+  "promoStep3": "Mức giảm được trừ vào tổng tiền nếu đơn đủ điều kiện (đơn tối thiểu, tủ áp dụng)",
+  "promoLoadFailed": "Không tải được ưu đãi",
+  "promoAtThisLocker": "Ưu đãi tại tủ này",
+  "voucherMine": "Ưu đãi của tôi",
+  "voucherMineSubtitle": "Mã giảm giá & quà tặng của bạn",
+  "voucherExchangeTab": "Đổi điểm",
+  "voucherLoginToSee": "Bạn cần đăng nhập để xem ưu đãi đã lưu",
+  "voucherLoading": "Đang tải ưu đãi...",
+  "voucherNone": "Bạn chưa có ưu đãi nào",
+  "voucherExploreAndSave": "Khám phá ưu đãi và lưu mã",
+  "voucherGift": "Quà tặng",
+  "voucherGiftUpper": "QUÀ TẶNG",
+  "voucherDiscountUpper": "GIẢM GIÁ",
+  "voucherUsed": "Đã dùng",
+  "voucherUsedLong": "Đã sử dụng",
+  "voucherCopied": "Đã sao chép mã voucher",
+  "voucherCode": "Mã voucher",
+  "voucherOffer": "Ưu đãi",
+  "voucherCampaign": "Chiến dịch",
+  "voucherValidUntil": "Hạn sử dụng",
+  "voucherExpiredCantUse": "Voucher này đã hết hạn và không thể sử dụng.",
+  "voucherAlreadyUsed": "Voucher này đã được sử dụng.",
+  "voucherStepCopy": "Sao chép mã voucher ở trên",
+  "voucherStepBookAny": "Vào trang đặt dịch vụ (Thuê tủ / Gửi hàng / Gửi drone)",
+  "voucherStepBookAt": "Đặt dịch vụ tại {locker} (đơn drone: tủ drone cất cánh)",
+  "@voucherStepBookAt": {
+    "placeholders": {
+      "locker": {}
+    }
+  },
+  "voucherStepEnter": "Nhập mã vào ô \"Mã giảm giá\" và nhấn Áp dụng",
+  "voucherStepDeducted": "Mức giảm sẽ được trừ vào tổng tiền thanh toán",
+  "voucherExchangeNotSupported": "Máy chủ chưa hỗ trợ đổi điểm. Vui lòng thử lại sau.",
+  "voucherExchangeLoadFailed": "Không tải được danh sách đổi điểm. Vui lòng thử lại.",
+  "voucherExchangeFailed": "Chưa đổi được voucher. Vui lòng thử lại.",
+  "voucherWalletNotSupported": "Máy chủ chưa hỗ trợ kho ưu đãi. Vui lòng thử lại sau.",
+  "voucherMineLoadFailed": "Không tải được ưu đãi của bạn. Vui lòng thử lại.",
+  "pointsCount": "{points} điểm",
+  "@pointsCount": {
+    "placeholders": {
+      "points": {}
+    }
+  },
+  "voucherMaxSuffix": " (tối đa {amount})",
+  "@voucherMaxSuffix": {
+    "placeholders": {
+      "amount": {}
+    }
+  },
+  "voucherExchangeLoading": "Đang tải voucher đổi điểm...",
+  "voucherExchangeNone": "Hiện chưa có voucher nào để đổi điểm",
+  "voucherExchangeQuestion": "Đổi voucher?",
+  "voucherExchangeConfirm": "Dùng {points} đổi voucher \"{reward}\". Voucher sẽ nằm trong mục Khả dụng, dùng bằng mã {code} khi đặt đơn.",
+  "@voucherExchangeConfirm": {
+    "placeholders": {
+      "points": {},
+      "reward": {},
+      "code": {}
+    }
+  },
+  "voucherExchanged": "Đã đổi voucher {code} — xem ở mục Khả dụng",
+  "@voucherExchanged": {
+    "placeholders": {
+      "code": {}
+    }
+  },
+  "voucherYourPoints": "Điểm của bạn",
+  "voucherPointRate": "1 điểm = {amount} · đổi lấy voucher giảm giá cho đơn",
+  "@voucherPointRate": {
+    "placeholders": {
+      "amount": {}
+    }
+  },
+  "voucherOwned": "Đã có",
+  "voucherMissingPoints": "Thiếu {points}",
+  "@voucherMissingPoints": {
+    "placeholders": {
+      "points": {}
+    }
+  },
+  "voucherOrderFrom": "Đơn từ {amount}",
+  "@voucherOrderFrom": {
+    "placeholders": {
+      "amount": {}
+    }
+  }
 }

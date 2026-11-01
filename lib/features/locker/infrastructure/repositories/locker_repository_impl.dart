@@ -12,6 +12,7 @@ import 'package:smart_laundry_locker/features/locker/infrastructure/data_sources
 import 'package:smart_laundry_locker/features/locker/infrastructure/models/responses/responses.dart';
 import 'package:smart_laundry_locker/features/locker/infrastructure/models/locker_rent_request_model.dart';
 import 'package:dartz/dartz.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 /// Implementation của LockerRepository
 /// Kết hợp Remote và Local data sources để implement repository contract.
@@ -601,12 +602,12 @@ class LockerRepositoryImpl implements LockerRepository {
 Failure _mapFixedRentFailure(String message) {
   final m = message.toLowerCase();
   if (m.contains('tủ này đang được thuê')) {
-    return const ValidationFailure('Tủ này đang được thuê.');
+    return ValidationFailure(L10n.current.lockerAlreadyRented);
   }
   if (m.contains('số dư không đủ') || m.contains('insufficient')) {
-    return const ValidationFailure('Số dư không đủ.');
+    return ValidationFailure(L10n.current.lockerInsufficientBalance);
   }
   return ValidationFailure(
-    message.isNotEmpty ? message : 'Thuê tủ cố định thất bại.',
+    message.isNotEmpty ? message : L10n.current.lockerFixedRentFailed,
   );
 }

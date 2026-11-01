@@ -15,6 +15,7 @@ import 'package:smart_laundry_locker/features/stores/infrastructure/services/sto
 import 'package:smart_laundry_locker/features/stores/presentation/widgets/store_card.dart';
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
 import 'package:smart_laundry_locker/shared/shared.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 /// Customer-facing list of stores. Supports text search and "near me"
 /// sorting by distance. Mirrors the legacy RN `user/stores` screen.
@@ -76,9 +77,9 @@ class _StoresPageState extends State<StoresPage> {
           _favoriteIds.remove(store.id);
         }
       });
-      _toast(now ? 'Đã thêm vào yêu thích' : 'Đã bỏ khỏi yêu thích');
+      _toast(now ? context.l10n.storeAddedFavorite : context.l10n.storeRemovedFavorite);
     } catch (_) {
-      _toast('Không lưu được danh sách yêu thích.');
+      _toast(context.l10n.storeFavoriteSaveFailed);
     }
   }
 
@@ -147,7 +148,7 @@ class _StoresPageState extends State<StoresPage> {
     try {
       final serviceEnabled = await Geolocator.isLocationServiceEnabled();
       if (!serviceEnabled) {
-        _toast('Vui lòng bật dịch vụ định vị.');
+        _toast(L10n.current.storeEnableLocation);
         return;
       }
       var permission = await Geolocator.checkPermission();
@@ -156,7 +157,7 @@ class _StoresPageState extends State<StoresPage> {
       }
       if (permission == LocationPermission.denied ||
           permission == LocationPermission.deniedForever) {
-        _toast('Cần quyền vị trí để tìm cửa hàng gần bạn.');
+        _toast(L10n.current.storeNeedLocation);
         return;
       }
       final position = await Geolocator.getCurrentPosition(
@@ -166,7 +167,7 @@ class _StoresPageState extends State<StoresPage> {
       );
       await _load(latitude: position.latitude, longitude: position.longitude);
     } catch (_) {
-      _toast('Không lấy được vị trí hiện tại.');
+      _toast(L10n.current.storeNoCurrentLocation);
     } finally {
       if (mounted) setState(() => _nearbyLoading = false);
     }
@@ -183,7 +184,7 @@ class _StoresPageState extends State<StoresPage> {
     if (error is NetworkException) return error.message;
     if (error is ServerException) return error.message;
     if (error is ValidationException) return error.message;
-    return 'Không tải được danh sách cửa hàng.';
+    return context.l10n.storeListLoadFailed;
   }
 
   @override
@@ -193,8 +194,8 @@ class _StoresPageState extends State<StoresPage> {
       body: Column(
         children: [
           BrandHeroHeader(
-            title: 'Điểm gửi',
-            subtitle: 'Khám phá điểm tủ & đối tác liên kết',
+            title: context.l10n.homeDropPoints,
+            subtitle: context.l10n.storeListSubtitle,
             trailing: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -233,7 +234,7 @@ class _StoresPageState extends State<StoresPage> {
               onChanged: (_) => _applyFilter(),
               textInputAction: TextInputAction.search,
               decoration: InputDecoration(
-                hintText: 'Tìm theo tên hoặc địa chỉ',
+                hintText: context.l10n.storeSearchHint,
                 prefixIcon: const Icon(LucideIcons.search, size: 18),
                 filled: true,
                 fillColor: Colors.white,
@@ -282,9 +283,9 @@ class _StoresPageState extends State<StoresPage> {
 
   Widget _buildBody() {
     if (_loading) {
-      return const AppLoadingIndicator(
+      return AppLoadingIndicator(
         fullScreen: true,
-        message: 'Đang tải danh sách điểm tủ...',
+        message: context.l10n.storeListLoading,
       );
     }
     if (_error != null) {
@@ -294,11 +295,11 @@ class _StoresPageState extends State<StoresPage> {
       return RefreshIndicator(
         onRefresh: _load,
         child: ListView(
-          children: const [
+          children: [
             SizedBox(height: 120),
             Center(
               child: Text(
-                'Không có cửa hàng nào',
+                context.l10n.storeNone,
                 style: TextStyle(color: Colors.grey),
               ),
             ),
@@ -358,7 +359,7 @@ class _ErrorState extends StatelessWidget {
             FilledButton.icon(
               onPressed: onRetry,
               icon: const Icon(LucideIcons.refreshCw, size: 16),
-              label: const Text('Thử lại'),
+              label: Text(context.l10n.commonRetry),
             ),
           ],
         ),

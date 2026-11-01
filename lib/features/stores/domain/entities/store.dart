@@ -1,4 +1,5 @@
 import 'package:smart_laundry_locker/core/utils/app_date_time.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 /// A store/partner branch where lockers are hosted.
 ///
@@ -24,7 +25,7 @@ class Store {
       id: _asInt(json['id']),
       name: (json['name'] as String?)?.trim().isNotEmpty == true
           ? json['name'] as String
-          : 'Cửa hàng',
+          : L10n.current.storeDefaultName,
       address: json['address'] as String?,
       contactPhone: (json['contactPhone'] ?? json['contact_phone']) as String?,
       image: (json['image'] ?? json['imageUrl']) as String?,

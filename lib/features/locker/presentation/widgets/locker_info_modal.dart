@@ -4,6 +4,7 @@ import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/lo
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 /// Modal hiển thị thông tin chi tiết của tủ trên bản đồ: tên, địa chỉ, trạng
 /// thái kết nối (`online` của server) và số ô trống theo loại ô (từ layout).
@@ -100,7 +101,7 @@ class LockerInfoModal extends StatelessWidget {
                       Expanded(
                         child: Text(
                           location.address.isEmpty
-                              ? 'Chưa có địa chỉ'
+                              ? context.l10n.commonNoAddress
                               : location.address,
                           style: TextStyle(
                             fontSize: 14,
@@ -165,7 +166,7 @@ class LockerInfoModal extends StatelessWidget {
                           ? null
                           : () => showLocationServicesSheet(context, location),
                       icon: const Icon(LucideIcons.calendarPlus, size: 18),
-                      label: const Text('Đặt dịch vụ'),
+                      label: Text(context.l10n.lockerBookService),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AislBrand.navy,
                         foregroundColor: Colors.white,
@@ -183,7 +184,7 @@ class LockerInfoModal extends StatelessWidget {
                       child: OutlinedButton.icon(
                         onPressed: onOpenGrid,
                         icon: const Icon(LucideIcons.layoutGrid, size: 18),
-                        label: const Text('Xem sơ đồ ô tủ'),
+                        label: Text(context.l10n.lockerViewLayout),
                         style: OutlinedButton.styleFrom(
                           foregroundColor: AislBrand.navy,
                           padding: const EdgeInsets.symmetric(vertical: 12),
@@ -206,9 +207,9 @@ class LockerInfoModal extends StatelessWidget {
 
   Widget _buildCellCounts() {
     if (loadingCells && cellGroups == null) {
-      return const Center(
+      return Center(
         child: Text(
-          'Đang tải số ô trống...',
+          L10n.current.lockerLoadingFreeCells,
           style: TextStyle(color: Colors.grey),
         ),
       );
@@ -218,20 +219,20 @@ class LockerInfoModal extends StatelessWidget {
         children: [
           Expanded(
             child: Text(
-              'Chưa tải được số ô: $cellsError',
+              L10n.current.lockerCellsLoadFailed('$cellsError'),
               style: const TextStyle(color: Colors.redAccent, fontSize: 13),
             ),
           ),
           if (onRetryCells != null)
-            TextButton(onPressed: onRetryCells, child: const Text('Thử lại')),
+            TextButton(onPressed: onRetryCells, child: Text(L10n.current.commonRetry)),
         ],
       );
     }
     final groups = cellGroups ?? const <LockerCellGroupCount>[];
     if (groups.isEmpty) {
-      return const Center(
+      return Center(
         child: Text(
-          'Tủ chưa có ô nào được cấu hình',
+          L10n.current.lockerNoCellsConfigured,
           style: TextStyle(color: Colors.grey),
         ),
       );
@@ -286,7 +287,7 @@ class LockerInfoModal extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Ô trống',
+                  L10n.current.lockerFreeCells,
                   style: TextStyle(fontSize: 12, color: Colors.grey[600]),
                 ),
                 const SizedBox(height: 4),
@@ -315,9 +316,9 @@ class _ConnectionBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final (IconData icon, Color color, String label) = switch (online) {
-      true => (LucideIcons.wifi, const Color(0xFF16A34A), 'Trực tuyến'),
-      false => (LucideIcons.wifiOff, const Color(0xFFDC2626), 'Mất kết nối'),
-      null => (LucideIcons.wifi, const Color(0xFF94A3B8), 'Chưa rõ kết nối'),
+      true => (LucideIcons.wifi, const Color(0xFF16A34A), context.l10n.commonOnline),
+      false => (LucideIcons.wifiOff, const Color(0xFFDC2626), context.l10n.commonDisconnected),
+      null => (LucideIcons.wifi, const Color(0xFF94A3B8), context.l10n.lockerConnectionUnknown),
     };
     return Column(
       mainAxisSize: MainAxisSize.min,

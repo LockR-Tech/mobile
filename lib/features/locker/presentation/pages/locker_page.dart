@@ -12,6 +12,7 @@ import 'package:smart_laundry_locker/core/services/token_service.dart';
 import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
 import 'package:smart_laundry_locker/shared/widgets/unauthenticated_placeholder.dart';
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 class LockerPage extends ConsumerStatefulWidget {
   const LockerPage({super.key});
@@ -43,7 +44,7 @@ class _LockerPageState extends ConsumerState<LockerPage> {
   static String _kioskNameOf(LockerLocation loc) {
     final name = loc.storeName?.trim();
     if (name != null && name.isNotEmpty) return name;
-    return 'Kiosk khác';
+    return L10n.current.lockerOtherKiosk;
   }
 
   Map<String, int> _getKioskCounts(List<LockerLocation> list) {
@@ -283,7 +284,7 @@ class _LockerPageState extends ConsumerState<LockerPage> {
               ),
             ),
             child: Text(
-              '$count tủ',
+              context.l10n.lockerCountShort(count),
               style: TextStyle(
                 fontSize: 11,
                 fontWeight: FontWeight.w700,
@@ -311,7 +312,7 @@ class _LockerPageState extends ConsumerState<LockerPage> {
       child: Row(
         children: [
           _KioskChip(
-            label: 'Tất cả',
+            label: context.l10n.commonAll,
             count: allLocations.length,
             selected: activeKiosk == 'ALL',
             onTap: () => setState(() => _selectedKiosk = 'ALL'),
@@ -348,14 +349,14 @@ class _LockerPageState extends ConsumerState<LockerPage> {
           return Scaffold(
             backgroundColor: context.pageBg,
             body: Column(
-              children: const [
+              children: [
                 BrandHeroHeader(
-                  title: 'Danh sách địa điểm',
-                  subtitle: 'Đăng nhập để xem các địa điểm khả dụng',
+                  title: context.l10n.lockerLocationList,
+                  subtitle: context.l10n.lockerLoginToSeeLocations,
                 ),
                 Expanded(
                   child: UnauthenticatedPlaceholder(
-                    message: 'Bạn cần đăng nhập để xem danh sách địa điểm',
+                    message: context.l10n.lockerLoginRequiredLocations,
                   ),
                 ),
               ],
@@ -368,8 +369,8 @@ class _LockerPageState extends ConsumerState<LockerPage> {
           body: Column(
             children: [
               BrandHeroHeader(
-                title: 'Danh sách địa điểm',
-                subtitle: 'Chọn địa điểm để xem chi tiết',
+                title: context.l10n.lockerLocationList,
+                subtitle: context.l10n.lockerPickLocation,
                 trailing: BrandCircleIconButton(
                   icon: LucideIcons.mapPin,
                   onTap: () {
@@ -386,7 +387,7 @@ class _LockerPageState extends ConsumerState<LockerPage> {
                 child: TextField(
                   controller: _searchController,
                   decoration: InputDecoration(
-                    hintText: 'Tìm kiếm địa điểm...',
+                    hintText: context.l10n.lockerSearchLocation,
                     prefixIcon: Icon(LucideIcons.search,
                         size: 18, color: context.textMuted),
                     filled: true,
@@ -447,7 +448,7 @@ class _LockerPageState extends ConsumerState<LockerPage> {
               onPressed: () => ref
                   .read<LockerProvider>(lockerNotifierProvider)
                   .getLocations(),
-              child: const Text('Thử lại'),
+              child: Text(context.l10n.commonRetry),
             ),
           ],
         ),
@@ -458,7 +459,7 @@ class _LockerPageState extends ConsumerState<LockerPage> {
     if (state.locations.isEmpty) {
       return Center(
         child: Text(
-          'Hiện tại chưa có địa điểm nào!',
+          context.l10n.lockerNoLocations,
           style: TextStyle(color: Colors.grey[600], fontSize: 16),
         ),
       );
@@ -498,7 +499,7 @@ class _LockerPageState extends ConsumerState<LockerPage> {
               ),
               const SizedBox(height: 16),
               Text(
-                'Không tìm thấy tủ tại địa điểm này',
+                context.l10n.lockerNotFoundHere,
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w700,
@@ -508,7 +509,7 @@ class _LockerPageState extends ConsumerState<LockerPage> {
               ),
               const SizedBox(height: 6),
               Text(
-                'Thử chọn địa điểm khác hoặc xem tất cả địa điểm khả dụng.',
+                context.l10n.lockerTryOtherLocation,
                 style: TextStyle(fontSize: 13, color: context.textMuted),
                 textAlign: TextAlign.center,
               ),
@@ -516,7 +517,7 @@ class _LockerPageState extends ConsumerState<LockerPage> {
               OutlinedButton.icon(
                 onPressed: () => setState(() => _selectedKiosk = 'ALL'),
                 icon: const Icon(LucideIcons.rotateCcw, size: 15),
-                label: const Text('Xem tất cả địa điểm'),
+                label: Text(context.l10n.lockerViewAllLocations),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: const Color(0xFF0F172A),
                   side: const BorderSide(color: Color(0xFFCBD5E1)),

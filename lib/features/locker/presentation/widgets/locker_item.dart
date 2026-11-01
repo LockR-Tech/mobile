@@ -4,6 +4,7 @@ import 'package:smart_laundry_locker/features/locker/domain/entities/locker_loca
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 /// Widget hiển thị một location item trong danh sách tủ.
 class LockerItem extends StatelessWidget {
@@ -152,7 +153,7 @@ class LockerItem extends StatelessWidget {
                                   color: const Color(0xFFFDE68A),
                                 ),
                               ),
-                              child: const Row(
+                              child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   Icon(
@@ -162,7 +163,7 @@ class LockerItem extends StatelessWidget {
                                   ),
                                   SizedBox(width: 3),
                                   Text(
-                                    'Hay dùng nhất',
+                                    context.l10n.lockerMostUsed,
                                     style: TextStyle(
                                       fontSize: 10.5,
                                       fontWeight: FontWeight.w700,
@@ -229,7 +230,7 @@ class LockerItem extends StatelessWidget {
                         child: Text(
                           location.address.isNotEmpty
                               ? location.address
-                              : 'Chưa có địa chỉ',
+                              : context.l10n.commonNoAddress,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
@@ -340,19 +341,19 @@ class _StatusChip extends StatelessWidget {
 
     if (isDisconnected) {
       dotColor = const Color(0xFFEF4444);
-      text = 'Mất kết nối';
+      text = context.l10n.commonDisconnected;
       borderColor = const Color(0xFFEF4444).withValues(alpha: 0.5);
     } else if (isMaintenance) {
       dotColor = const Color(0xFFF59E0B);
-      text = 'Bảo trì';
+      text = context.l10n.enumMaintenance;
       borderColor = const Color(0xFFF59E0B).withValues(alpha: 0.5);
     } else if (active) {
       dotColor = const Color(0xFF22C55E);
-      text = 'Hoạt động';
+      text = context.l10n.commonStatusActive;
       borderColor = const Color(0xFF22C55E).withValues(alpha: 0.45);
     } else {
       dotColor = const Color(0xFF94A3B8);
-      text = 'Tạm ngưng';
+      text = context.l10n.commonStatusSuspended;
       borderColor = Colors.white.withValues(alpha: 0.22);
     }
 

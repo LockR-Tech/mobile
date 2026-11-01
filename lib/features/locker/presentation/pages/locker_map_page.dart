@@ -16,6 +16,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:smart_laundry_locker/shared/shared.dart';
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 class LockerMapPage extends ConsumerStatefulWidget {
   const LockerMapPage({super.key});
@@ -73,13 +74,13 @@ class _LockerMapPageState extends ConsumerState<LockerMapPage>
         body: Column(
           children: [
             BrandHeroHeader(
-              title: 'Bản đồ tủ khóa',
-              subtitle: 'Tìm điểm tủ Lock.R gần bạn nhất',
+              title: context.l10n.lockerMapTitle,
+              subtitle: context.l10n.lockerMapSubtitle,
               onBack: () => Navigator.maybePop(context),
             ),
-            const Expanded(
+            Expanded(
               child: Center(
-                child: AppLoadingIndicator(message: 'Đang tải bản đồ...'),
+                child: AppLoadingIndicator(message: context.l10n.lockerMapLoading),
               ),
             ),
           ],
@@ -92,8 +93,8 @@ class _LockerMapPageState extends ConsumerState<LockerMapPage>
         body: Column(
           children: [
             BrandHeroHeader(
-              title: 'Bản đồ tủ khóa',
-              subtitle: 'Tìm điểm tủ Lock.R gần bạn nhất',
+              title: context.l10n.lockerMapTitle,
+              subtitle: context.l10n.lockerMapSubtitle,
               onBack: () => Navigator.maybePop(context),
             ),
             Expanded(
@@ -111,7 +112,7 @@ class _LockerMapPageState extends ConsumerState<LockerMapPage>
                       onPressed: () => ref
                           .read<LockerProvider>(lockerNotifierProvider)
                           .getLocations(),
-                      child: const Text('Thử lại'),
+                      child: Text(context.l10n.commonRetry),
                     ),
                   ],
                 ),
@@ -127,14 +128,14 @@ class _LockerMapPageState extends ConsumerState<LockerMapPage>
         body: Column(
           children: [
             BrandHeroHeader(
-              title: 'Bản đồ tủ khóa',
-              subtitle: 'Tìm điểm tủ Lock.R gần bạn nhất',
+              title: context.l10n.lockerMapTitle,
+              subtitle: context.l10n.lockerMapSubtitle,
               onBack: () => Navigator.maybePop(context),
             ),
             Expanded(
               child: Center(
                 child: Text(
-                  'Hiện tại chưa có tủ nào!',
+                  context.l10n.lockerNoneYet,
                   style: TextStyle(color: Colors.grey[600], fontSize: 16),
                   textAlign: TextAlign.center,
                 ),
@@ -287,8 +288,8 @@ class _LockerMapPageState extends ConsumerState<LockerMapPage>
                           child: CircularProgressIndicator(strokeWidth: 2),
                         ),
                         const SizedBox(width: 8),
-                        const Text(
-                          'Đang lấy vị trí...',
+                        Text(
+                          context.l10n.lockerGettingLocation,
                           style: TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.w500,
@@ -301,8 +302,8 @@ class _LockerMapPageState extends ConsumerState<LockerMapPage>
                           size: 18,
                         ),
                         const SizedBox(width: 8),
-                        const Text(
-                          'Sử dụng vị trí của bạn',
+                        Text(
+                          context.l10n.lockerUseMyLocation,
                           style: TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.w500,
@@ -331,7 +332,7 @@ class _LockerMapPageState extends ConsumerState<LockerMapPage>
               ),
               const SizedBox(height: 16),
               Text(
-                'Không thể tải bản đồ. Toạ độ có thể không hợp lệ.',
+                context.l10n.lockerMapLoadFailed,
                 style: TextStyle(color: Colors.grey[800], fontSize: 18),
                 textAlign: TextAlign.center,
               ),
@@ -352,7 +353,7 @@ class _LockerMapPageState extends ConsumerState<LockerMapPage>
                     context.go(AppRouter.lockers);
                   }
                 },
-                child: const Text('Quay lại'),
+                child: Text(context.l10n.commonBack),
               ),
             ],
           ),
@@ -366,8 +367,8 @@ class _LockerMapPageState extends ConsumerState<LockerMapPage>
       body: Column(
         children: [
           BrandHeroHeader(
-            title: 'Bản đồ tủ khóa',
-            subtitle: 'Tìm điểm tủ Lock.R gần bạn nhất',
+            title: context.l10n.lockerMapTitle,
+            subtitle: context.l10n.lockerMapSubtitle,
             onBack: () {
               if (Navigator.canPop(context)) {
                 Navigator.pop(context);
@@ -396,7 +397,7 @@ class _LockerMapPageState extends ConsumerState<LockerMapPage>
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        '$invalidCount địa điểm có toạ độ không hợp lệ đã được ẩn.',
+                        context.l10n.lockerInvalidCoordsHidden(invalidCount),
                         style: TextStyle(
                           fontSize: 14,
                           color: const Color(0xFF061A30),
@@ -417,7 +418,7 @@ class _LockerMapPageState extends ConsumerState<LockerMapPage>
     final theme = Theme.of(context);
     final text =
         (_isLocating && (_currentAddress == null || _currentAddress!.isEmpty))
-        ? 'Đang xác định vị trí...'
+        ? context.l10n.lockerLocating
         : (_currentAddress ?? '');
 
     return Container(
@@ -544,7 +545,7 @@ class _LockerMapPageState extends ConsumerState<LockerMapPage>
       );
 
       if (response.statusCode != 200) {
-        return 'Không thể xác định địa chỉ, vui lòng thử lại';
+        return L10n.current.lockerAddressFailed;
       }
 
       final data = json.decode(response.body) as Map<String, dynamic>;
@@ -577,9 +578,9 @@ class _LockerMapPageState extends ConsumerState<LockerMapPage>
         }
       }
 
-      return 'Không thể xác định địa chỉ, vui lòng thử lại';
+      return L10n.current.lockerAddressFailed;
     } catch (_) {
-      return 'Không thể xác định địa chỉ, vui lòng thử lại';
+      return L10n.current.lockerAddressFailed;
     }
   }
 
@@ -592,7 +593,7 @@ class _LockerMapPageState extends ConsumerState<LockerMapPage>
       // check gps
       final serviceEnabled = await Geolocator.isLocationServiceEnabled();
       if (!serviceEnabled) {
-        SmartDialog.showToast('Dịch vụ vị trí đang tắt. Vui lòng bật GPS.');
+        SmartDialog.showToast(L10n.current.lockerLocationServiceOff);
         if (!mounted) return;
         setState(() {
           _isLocating = false;
@@ -605,7 +606,7 @@ class _LockerMapPageState extends ConsumerState<LockerMapPage>
       if (permission == LocationPermission.denied) {
         permission = await Geolocator.requestPermission();
         if (permission == LocationPermission.denied) {
-          SmartDialog.showToast('Quyền truy cập vị trí bị từ chối.');
+          SmartDialog.showToast(L10n.current.lockerLocationDenied);
           if (!mounted) return;
           setState(() {
             _isLocating = false;
@@ -616,7 +617,7 @@ class _LockerMapPageState extends ConsumerState<LockerMapPage>
 
       if (permission == LocationPermission.deniedForever) {
         SmartDialog.showToast(
-          'Quyền vị trí bị từ chối vĩnh viễn. Hãy bật lại trong cài đặt.',
+          L10n.current.lockerLocationDeniedForever,
         );
         if (!mounted) return;
         setState(() {
@@ -652,7 +653,7 @@ class _LockerMapPageState extends ConsumerState<LockerMapPage>
 
       _mapController.move(userLatLng, 15.0);
     } catch (e) {
-      SmartDialog.showToast('Không thể xác định địa chỉ, vui lòng thử lại: $e');
+      SmartDialog.showToast(context.l10n.lockerAddressFailedError(e));
       if (!mounted) return;
       setState(() {
         _isLocating = false;

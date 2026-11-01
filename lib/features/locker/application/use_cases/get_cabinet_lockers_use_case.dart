@@ -1,6 +1,7 @@
 import 'package:smart_laundry_locker/core/errors/failures.dart';
 import 'package:smart_laundry_locker/features/locker/domain/repositories/locker_repository.dart';
 import 'package:dartz/dartz.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 /// Use Case: GetCabinetLockersUseCase
 /// Lấy danh sách lockers trong một cabinet.
@@ -14,7 +15,7 @@ class GetCabinetLockersUseCase {
     GetCabinetLockersParams params,
   ) async {
     if (params.cabinetId.isEmpty) {
-      return Left(ValidationFailure('Cabinet ID không được để trống'));
+      return Left(ValidationFailure(L10n.current.lockerCabinetIdRequired));
     }
 
     return await _repository.getCabinetLockers(

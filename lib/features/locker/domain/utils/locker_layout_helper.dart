@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 /// Helper chuẩn hoá và đồng bộ sơ đồ tủ vật lý, phân loại ô và trạng thái cửa/hệ thống
 /// giữa trang hiển thị Tủ Kiosk (StoreLockersPage) và trang Báo cáo sự cố (CreateReportPage).
@@ -60,13 +61,13 @@ class LockerLayoutHelper {
   static String? bookingBlockReason({String? status, bool? online}) {
     final st = (status ?? 'ACTIVE').trim().toUpperCase();
     if (online == false || st == 'DISCONNECTED') {
-      return 'Tủ đang mất kết nối nên chưa đặt được ô. Vui lòng chọn tủ khác hoặc thử lại sau.';
+      return L10n.current.lockerOfflinePickOther;
     }
     if (st == 'MAINTENANCE') {
-      return 'Tủ đang bảo trì nên tạm ngưng nhận đơn. Vui lòng chọn tủ khác.';
+      return L10n.current.lockerMaintenancePickOther;
     }
     if (st != 'ACTIVE') {
-      return 'Tủ đang tạm ngưng hoạt động nên chưa đặt được ô.';
+      return L10n.current.lockerSuspendedCantBook;
     }
     return null;
   }
@@ -105,13 +106,13 @@ class LockerLayoutHelper {
     return result;
   }
 
-  static const _groupLabels = <String, String>{
-    'SMALL': 'Ô nhỏ (S)',
-    'MEDIUM': 'Ô vừa (M)',
-    'LARGE': 'Ô lớn (L)',
-    'STANDARD': 'Ô thường',
-    'XL': 'Ô vali (XL)',
-    'DRONE': 'Ô drone',
+  static Map<String, String> get _groupLabels => <String, String>{
+    'SMALL': L10n.current.groupSmall,
+    'MEDIUM': L10n.current.groupMedium,
+    'LARGE': L10n.current.groupLarge,
+    'STANDARD': L10n.current.groupStandard,
+    'XL': L10n.current.groupXl,
+    'DRONE': L10n.current.groupDrone,
   };
 
   /// Trạng thái mở cửa
@@ -127,23 +128,23 @@ class LockerLayoutHelper {
 
   /// Nhãn loại ô cho người dùng
   static String typeLabel(Map<String, dynamic> cell) {
-    if (isDrone(cell)) return 'Drone (Nóc tủ)';
-    if (isXl(cell)) return 'Vali (XL)';
-    return 'Tiêu chuẩn';
+    if (isDrone(cell)) return L10n.current.cellTypeDroneRoof;
+    if (isXl(cell)) return L10n.current.cellTypeSuitcase;
+    return L10n.current.cellTypeStandard;
   }
 
   /// Nhãn trạng thái hiển thị
   static String statusLabel(Map<String, dynamic> cell) {
     final st = status(cell);
     return switch (st) {
-      'AVAILABLE' => isDrone(cell) ? 'Nhận Drone' : 'Sẵn sàng',
-      'OCCUPIED' || 'IN_USE' => 'Đang dùng',
-      'RESERVED' => 'Đã đặt',
-      'FAULT' => 'Hỏng',
+      'AVAILABLE' => isDrone(cell) ? L10n.current.lockerDroneReceive : L10n.current.lockerReady,
+      'OCCUPIED' || 'IN_USE' => L10n.current.commonInUseShort,
+      'RESERVED' => L10n.current.commonReservedShort,
+      'FAULT' => L10n.current.commonBroken,
       // Khách báo sự cố: tạm ngưng nhận đơn mới, chờ KTV kiểm tra.
-      'PENDING_CHECK' => 'Chờ kiểm tra',
-      'CLEANING' => 'Bảo trì',
-      'OUT_OF_SERVICE' => 'Ngưng dùng',
+      'PENDING_CHECK' => L10n.current.lockerPendingCheck,
+      'CLEANING' => L10n.current.enumMaintenance,
+      'OUT_OF_SERVICE' => L10n.current.cellOutOfService,
       _ => st,
     };
   }

@@ -12,6 +12,7 @@ import 'package:smart_laundry_locker/features/promotions/presentation/widgets/pr
 import 'package:smart_laundry_locker/features/vouchers/data/repositories/voucher_repository.dart';
 import 'package:smart_laundry_locker/shared/shared.dart';
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 class PromotionsPage extends ConsumerStatefulWidget {
   const PromotionsPage({super.key});
@@ -50,8 +51,8 @@ class _PromotionsPageState extends ConsumerState<PromotionsPage> {
       backgroundColor: context.pageBg,
       body: BrandHeroScaffold(
         header: (collapse) => BrandHeroHeader(
-          title: 'Ưu đãi',
-          subtitle: 'Khám phá ưu đãi đang hiệu lực hôm nay',
+          title: context.l10n.commonOffers,
+          subtitle: context.l10n.promoSubtitle,
           onBack: () => AppRouter.backOrHome(context),
           collapseProgress: collapse,
           trailing: BrandCircleIconButton(
@@ -70,8 +71,8 @@ class _PromotionsPageState extends ConsumerState<PromotionsPage> {
 
   Widget _buildBody(PromotionProvider provider) {
     if (provider.isLoading && provider.promotions.isEmpty) {
-      return const Center(
-        child: AppLoadingIndicator(message: 'Đang tải khuyến mãi...'),
+      return Center(
+        child: AppLoadingIndicator(message: context.l10n.promoLoading),
       );
     }
     if (provider.error != null && provider.promotions.isEmpty) {
@@ -95,7 +96,7 @@ class _PromotionsPageState extends ConsumerState<PromotionsPage> {
           Icon(LucideIcons.ticketSlash, size: 52, color: Colors.grey.shade300),
           const SizedBox(height: 12),
           Text(
-            'Chưa có ưu đãi nào đang hiệu lực',
+            context.l10n.promoNoneActive,
             textAlign: TextAlign.center,
             style: TextStyle(color: Colors.grey.shade500, fontSize: 15),
           ),
@@ -201,14 +202,14 @@ class _PromotionsPageState extends ConsumerState<PromotionsPage> {
                                 const Color(0xFFE53E3E).withValues(alpha: 0.10),
                             borderRadius: BorderRadius.circular(20),
                           ),
-                          child: const Row(
+                          child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Icon(LucideIcons.clock,
                                   size: 10, color: Color(0xFFE53E3E)),
                               SizedBox(width: 4),
                               Text(
-                                'Sắp hết hạn',
+                                context.l10n.promoExpiringSoon,
                                 style: TextStyle(
                                   color: Color(0xFFE53E3E),
                                   fontWeight: FontWeight.w800,
@@ -325,14 +326,14 @@ class _PromotionsPageState extends ConsumerState<PromotionsPage> {
                             border: Border.all(
                                 color: AislBrand.blue.withValues(alpha: 0.35)),
                           ),
-                          child: const Row(
+                          child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Icon(LucideIcons.bookmarkPlus,
                                   size: 12, color: AislBrand.blue),
                               SizedBox(width: 4),
                               Text(
-                                'Lưu',
+                                context.l10n.commonSave,
                                 style: TextStyle(
                                   fontSize: 12,
                                   fontWeight: FontWeight.w800,
@@ -383,7 +384,7 @@ class _PromotionsPageState extends ConsumerState<PromotionsPage> {
               const SizedBox(width: 8),
               Expanded(
                   child: Text(
-                      'Đã lưu mã ${promo.code} vào "Ưu đãi của tôi"')),
+                      L10n.current.promoSavedToMine(promo.code))),
             ],
           ),
           backgroundColor: AislBrand.navy,
@@ -399,8 +400,8 @@ class _PromotionsPageState extends ConsumerState<PromotionsPage> {
           content: Text(
             userErrorMessage(
               e,
-              notFound: 'Máy chủ chưa hỗ trợ lưu mã. Vui lòng thử lại sau.',
-              fallback: 'Không lưu được mã — kiểm tra đăng nhập và thử lại',
+              notFound: L10n.current.promoSaveNotSupported,
+              fallback: L10n.current.promoSaveFailed,
             ),
           ),
           behavior: SnackBarBehavior.floating,
@@ -417,7 +418,7 @@ class _PromotionsPageState extends ConsumerState<PromotionsPage> {
           children: [
             const Icon(LucideIcons.check, color: Colors.white, size: 16),
             const SizedBox(width: 8),
-            Text('Đã sao chép mã: $code'),
+            Text(context.l10n.promoCopiedCode(code)),
           ],
         ),
         backgroundColor: AislBrand.navy,

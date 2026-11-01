@@ -13,6 +13,7 @@ import '../providers/voucher_provider.dart';
 import '../widgets/points_exchange_tab.dart';
 import '../../data/models/voucher_model.dart';
 import 'voucher_detail_page.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 class MyVouchersPage extends StatefulWidget {
   const MyVouchersPage({super.key});
@@ -56,8 +57,8 @@ class _MyVouchersPageState extends State<MyVouchersPage>
       body: Column(
         children: [
           BrandHeroHeader(
-            title: 'Ưu đãi của tôi',
-            subtitle: 'Mã giảm giá & quà tặng của bạn',
+            title: context.l10n.voucherMine,
+            subtitle: context.l10n.voucherMineSubtitle,
             onBack: () => AppRouter.backOrHome(context),
             trailing: BrandCircleIconButton(
               icon: LucideIcons.refreshCw,
@@ -76,10 +77,10 @@ class _MyVouchersPageState extends State<MyVouchersPage>
                 fontWeight: FontWeight.bold,
                 fontSize: 15,
               ),
-              tabs: const [
-                Tab(text: 'Khả dụng'),
-                Tab(text: 'Đổi điểm'),
-                Tab(text: 'Lịch sử'),
+              tabs: [
+                Tab(text: context.l10n.commonAvailable),
+                Tab(text: context.l10n.voucherExchangeTab),
+                Tab(text: context.l10n.commonHistory),
               ],
             ),
           ),
@@ -90,7 +91,7 @@ class _MyVouchersPageState extends State<MyVouchersPage>
                 // nhập thay vì gọi API rồi hiện lỗi 401.
                 if (!TokenService.authState.value) {
                   return UnauthenticatedPlaceholder(
-                    message: 'Bạn cần đăng nhập để xem ưu đãi đã lưu',
+                    message: context.l10n.voucherLoginToSee,
                     onAuthSuccess: _reload,
                   );
                 }
@@ -98,8 +99,8 @@ class _MyVouchersPageState extends State<MyVouchersPage>
                 // che khi kho voucher đang tải hoặc lỗi.
                 final Widget walletState;
                 if (provider.isLoading) {
-                  walletState = const Center(
-                    child: AppLoadingIndicator(message: 'Đang tải ưu đãi...'),
+                  walletState = Center(
+                    child: AppLoadingIndicator(message: context.l10n.voucherLoading),
                   );
                 } else if (provider.error != null) {
                   walletState = _buildErrorState(provider);
@@ -161,7 +162,7 @@ class _MyVouchersPageState extends State<MyVouchersPage>
             child: TextButton.icon(
               onPressed: () => provider.loadMyVouchers(),
               icon: const Icon(LucideIcons.refreshCw, size: 16),
-              label: const Text('Thử lại'),
+              label: Text(context.l10n.commonRetry),
             ),
           ),
         ],
@@ -191,7 +192,7 @@ class _MyVouchersPageState extends State<MyVouchersPage>
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    'Bạn chưa có ưu đãi nào',
+                    context.l10n.voucherNone,
                     style: TextStyle(
                       fontFamily: 'Roboto',
                       fontSize: 16,
@@ -203,7 +204,7 @@ class _MyVouchersPageState extends State<MyVouchersPage>
                   TextButton.icon(
                     onPressed: () => context.push(AppRouter.promotions),
                     icon: const Icon(LucideIcons.ticket, size: 16),
-                    label: const Text('Khám phá ưu đãi và lưu mã'),
+                    label: Text(context.l10n.voucherExploreAndSave),
                   ),
                 ],
               ),
@@ -240,14 +241,14 @@ class _MyVouchersPageState extends State<MyVouchersPage>
 
     String rewardText = '';
     if (voucher.rewardType == 'DISCOUNT_FIXED') {
-      rewardText = 'Giảm ${formatCurrency.format(voucher.rewardValue)}';
+      rewardText = context.l10n.promoDiscountAmount(formatCurrency.format(voucher.rewardValue));
     } else if (voucher.rewardType == 'DISCOUNT_PERCENT') {
-      rewardText = 'Giảm ${voucher.rewardValue.toInt()}%';
+      rewardText = context.l10n.promoDiscountPercent(voucher.rewardValue.toInt());
     } else {
-      rewardText = 'Quà tặng';
+      rewardText = context.l10n.voucherGift;
     }
 
-    String expireText = 'Không giới hạn';
+    String expireText = context.l10n.promoUnlimited;
     if (voucher.expiresAt != null) {
       expireText =
           'HSD: ${DateFormat('dd/MM/yyyy').format(voucher.expiresAt!)}';
@@ -296,7 +297,7 @@ class _MyVouchersPageState extends State<MyVouchersPage>
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    voucher.rewardType == 'GIFT' ? 'QUÀ TẶNG' : 'GIẢM GIÁ',
+                    voucher.rewardType == 'GIFT' ? context.l10n.voucherGiftUpper : context.l10n.voucherDiscountUpper,
                     style: TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.bold,
@@ -404,7 +405,7 @@ class _MyVouchersPageState extends State<MyVouchersPage>
                     Padding(
                       padding: const EdgeInsets.only(top: 6),
                       child: Text(
-                        voucher.status == 'USED' ? 'Đã dùng' : 'Hết hạn',
+                        voucher.status == 'USED' ? context.l10n.voucherUsed : context.l10n.commonExpired,
                         style: const TextStyle(
                           fontSize: 11,
                           color: Colors.grey,

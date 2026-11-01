@@ -64,7 +64,7 @@ class _SplashScreenState extends State<SplashScreen>
       if (await BiometricService.isEnabled() &&
           await BiometricService.isSupported()) {
         final ok = await BiometricService.authenticate(
-          reason: context.l10n.authBiometricReason,
+          reason: L10n.current.authBiometricReason,
         );
         if (!mounted) return;
         if (!ok) {

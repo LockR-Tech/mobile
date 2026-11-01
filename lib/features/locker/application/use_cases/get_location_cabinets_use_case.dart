@@ -1,6 +1,7 @@
 import 'package:smart_laundry_locker/core/errors/failures.dart';
 import 'package:smart_laundry_locker/features/locker/domain/repositories/locker_repository.dart';
 import 'package:dartz/dartz.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 /// Use Case: GetLocationCabinetsUseCase
 /// Lấy danh sách cabinets trong một location.
@@ -14,7 +15,7 @@ class GetLocationCabinetsUseCase {
     GetLocationCabinetsParams params,
   ) async {
     if (params.locationId.isEmpty) {
-      return Left(ValidationFailure('Location ID không được để trống'));
+      return Left(ValidationFailure(L10n.current.lockerLocationIdRequired));
     }
 
     return await _repository.getLocationCabinets(

@@ -2401,6 +2401,1686 @@ abstract class AppLocalizations {
   /// In vi, this message translates to:
   /// **'Xác nhận vị trí'**
   String get locationConfirm;
+
+  /// No description provided for @commonYou.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bạn'**
+  String get commonYou;
+
+  /// No description provided for @commonSeeAllLower.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xem tất cả'**
+  String get commonSeeAllLower;
+
+  /// No description provided for @commonDirections.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chỉ đường'**
+  String get commonDirections;
+
+  /// No description provided for @commonAddress.
+  ///
+  /// In vi, this message translates to:
+  /// **'Địa chỉ'**
+  String get commonAddress;
+
+  /// No description provided for @commonDistance.
+  ///
+  /// In vi, this message translates to:
+  /// **'Khoảng cách'**
+  String get commonDistance;
+
+  /// No description provided for @commonStatus.
+  ///
+  /// In vi, this message translates to:
+  /// **'Trạng thái'**
+  String get commonStatus;
+
+  /// No description provided for @commonLocation.
+  ///
+  /// In vi, this message translates to:
+  /// **'Vị trí'**
+  String get commonLocation;
+
+  /// No description provided for @commonSize.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kích cỡ'**
+  String get commonSize;
+
+  /// No description provided for @commonBack.
+  ///
+  /// In vi, this message translates to:
+  /// **'Quay lại'**
+  String get commonBack;
+
+  /// No description provided for @commonNoAddress.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa có địa chỉ'**
+  String get commonNoAddress;
+
+  /// No description provided for @commonFavorites.
+  ///
+  /// In vi, this message translates to:
+  /// **'Yêu thích'**
+  String get commonFavorites;
+
+  /// No description provided for @commonOffers.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ưu đãi'**
+  String get commonOffers;
+
+  /// No description provided for @commonReportIssue.
+  ///
+  /// In vi, this message translates to:
+  /// **'Báo sự cố'**
+  String get commonReportIssue;
+
+  /// No description provided for @commonReports.
+  ///
+  /// In vi, this message translates to:
+  /// **'Báo cáo'**
+  String get commonReports;
+
+  /// No description provided for @commonStatusActive.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hoạt động'**
+  String get commonStatusActive;
+
+  /// No description provided for @commonStatusSuspended.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tạm ngưng'**
+  String get commonStatusSuspended;
+
+  /// No description provided for @commonDisconnected.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mất kết nối'**
+  String get commonDisconnected;
+
+  /// No description provided for @commonOnline.
+  ///
+  /// In vi, this message translates to:
+  /// **'Trực tuyến'**
+  String get commonOnline;
+
+  /// No description provided for @commonInUseShort.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang dùng'**
+  String get commonInUseShort;
+
+  /// No description provided for @commonReservedShort.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã đặt'**
+  String get commonReservedShort;
+
+  /// No description provided for @commonBroken.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hỏng'**
+  String get commonBroken;
+
+  /// No description provided for @commonEmpty.
+  ///
+  /// In vi, this message translates to:
+  /// **'Trống'**
+  String get commonEmpty;
+
+  /// No description provided for @commonExpired.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hết hạn'**
+  String get commonExpired;
+
+  /// No description provided for @commonHistory.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lịch sử'**
+  String get commonHistory;
+
+  /// No description provided for @commonAvailable.
+  ///
+  /// In vi, this message translates to:
+  /// **'Khả dụng'**
+  String get commonAvailable;
+
+  /// No description provided for @commonCopiedValue.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã sao chép: {value}'**
+  String commonCopiedValue(Object value);
+
+  /// No description provided for @commonStartDate.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bắt đầu'**
+  String get commonStartDate;
+
+  /// No description provided for @commonEndDate.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kết thúc'**
+  String get commonEndDate;
+
+  /// No description provided for @commonHowToUse.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cách sử dụng'**
+  String get commonHowToUse;
+
+  /// No description provided for @commonTapToCopy.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chạm để sao chép mã'**
+  String get commonTapToCopy;
+
+  /// No description provided for @commonUnlimitedTime.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không giới hạn thời gian'**
+  String get commonUnlimitedTime;
+
+  /// No description provided for @commonExchange.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đổi'**
+  String get commonExchange;
+
+  /// No description provided for @commonSaved.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã lưu'**
+  String get commonSaved;
+
+  /// No description provided for @commonLoadFailedData.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không tải được dữ liệu'**
+  String get commonLoadFailedData;
+
+  /// No description provided for @boxNumberLabel.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ô số {number}'**
+  String boxNumberLabel(Object number);
+
+  /// No description provided for @boxRowCol.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ô hàng {row}, cột {col}'**
+  String boxRowCol(Object row, Object col);
+
+  /// No description provided for @rowCol.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hàng {row}, cột {col}'**
+  String rowCol(Object row, Object col);
+
+  /// No description provided for @boxHash.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ô #{number}'**
+  String boxHash(Object number);
+
+  /// No description provided for @orderHash.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đơn #{id}'**
+  String orderHash(Object id);
+
+  /// No description provided for @homeSendByDrone.
+  ///
+  /// In vi, this message translates to:
+  /// **'Gửi hàng bằng drone'**
+  String get homeSendByDrone;
+
+  /// No description provided for @homeDropPoints.
+  ///
+  /// In vi, this message translates to:
+  /// **'Điểm gửi'**
+  String get homeDropPoints;
+
+  /// No description provided for @homeRentLocker.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thuê tủ'**
+  String get homeRentLocker;
+
+  /// No description provided for @homeLockerOrders.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đơn tủ'**
+  String get homeLockerOrders;
+
+  /// No description provided for @homeUtilities.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tiện ích'**
+  String get homeUtilities;
+
+  /// No description provided for @homeDroneDelivery.
+  ///
+  /// In vi, this message translates to:
+  /// **'Giao bằng drone'**
+  String get homeDroneDelivery;
+
+  /// No description provided for @homeActiveOrders.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đơn đang xử lý'**
+  String get homeActiveOrders;
+
+  /// No description provided for @homePickupDeadline.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hạn lấy đồ'**
+  String get homePickupDeadline;
+
+  /// No description provided for @stepCreateOrder.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tạo đơn'**
+  String get stepCreateOrder;
+
+  /// No description provided for @stepFlightTeamAccepted.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đội bay nhận'**
+  String get stepFlightTeamAccepted;
+
+  /// No description provided for @stepFlying.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang bay'**
+  String get stepFlying;
+
+  /// No description provided for @stepDropReported.
+  ///
+  /// In vi, this message translates to:
+  /// **'Báo rơi kiện'**
+  String get stepDropReported;
+
+  /// No description provided for @stepIntoLocker.
+  ///
+  /// In vi, this message translates to:
+  /// **'Vào tủ nhận'**
+  String get stepIntoLocker;
+
+  /// No description provided for @stepDropIntoLocker.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bỏ vào tủ'**
+  String get stepDropIntoLocker;
+
+  /// No description provided for @stepStoring.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang lưu tủ'**
+  String get stepStoring;
+
+  /// No description provided for @stepInLocker.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã vào tủ'**
+  String get stepInLocker;
+
+  /// No description provided for @stepTransit.
+  ///
+  /// In vi, this message translates to:
+  /// **'Vận chuyển'**
+  String get stepTransit;
+
+  /// No description provided for @stepAwaitingPickup.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chờ nhận'**
+  String get stepAwaitingPickup;
+
+  /// No description provided for @homeUtilitiesServices.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tiện ích & Dịch vụ'**
+  String get homeUtilitiesServices;
+
+  /// No description provided for @homeSendDrone.
+  ///
+  /// In vi, this message translates to:
+  /// **'Gửi drone'**
+  String get homeSendDrone;
+
+  /// No description provided for @homeKioskLocations.
+  ///
+  /// In vi, this message translates to:
+  /// **'Các nơi đặt kiosk'**
+  String get homeKioskLocations;
+
+  /// No description provided for @homeNoLockerLocations.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa có nơi đặt locker nào'**
+  String get homeNoLockerLocations;
+
+  /// No description provided for @homeOngoingOffers.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ưu đãi đang diễn ra'**
+  String get homeOngoingOffers;
+
+  /// No description provided for @storeDefaultName.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cửa hàng'**
+  String get storeDefaultName;
+
+  /// No description provided for @storeFavoritesLoadFailed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không tải được danh sách yêu thích.'**
+  String get storeFavoritesLoadFailed;
+
+  /// No description provided for @storeFavoritesSubtitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Điểm gửi bạn đã lưu'**
+  String get storeFavoritesSubtitle;
+
+  /// No description provided for @storeFavoritesLoading.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang tải danh sách yêu thích...'**
+  String get storeFavoritesLoading;
+
+  /// No description provided for @storeNoFavorites.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa có cửa hàng yêu thích'**
+  String get storeNoFavorites;
+
+  /// No description provided for @storeNoFavoritesHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhấn vào biểu tượng trái tim ở một cửa hàng để lưu lại đây.'**
+  String get storeNoFavoritesHint;
+
+  /// No description provided for @storeExplore.
+  ///
+  /// In vi, this message translates to:
+  /// **'Khám phá cửa hàng'**
+  String get storeExplore;
+
+  /// No description provided for @storeAddedFavorite.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã thêm vào yêu thích'**
+  String get storeAddedFavorite;
+
+  /// No description provided for @storeRemovedFavorite.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã bỏ khỏi yêu thích'**
+  String get storeRemovedFavorite;
+
+  /// No description provided for @storeFavoriteSaveFailed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không lưu được danh sách yêu thích.'**
+  String get storeFavoriteSaveFailed;
+
+  /// No description provided for @storeEnableLocation.
+  ///
+  /// In vi, this message translates to:
+  /// **'Vui lòng bật dịch vụ định vị.'**
+  String get storeEnableLocation;
+
+  /// No description provided for @storeNeedLocation.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cần quyền vị trí để tìm cửa hàng gần bạn.'**
+  String get storeNeedLocation;
+
+  /// No description provided for @storeNoCurrentLocation.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không lấy được vị trí hiện tại.'**
+  String get storeNoCurrentLocation;
+
+  /// No description provided for @storeListLoadFailed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không tải được danh sách cửa hàng.'**
+  String get storeListLoadFailed;
+
+  /// No description provided for @storeListSubtitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Khám phá điểm tủ & đối tác liên kết'**
+  String get storeListSubtitle;
+
+  /// No description provided for @storeSearchHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tìm theo tên hoặc địa chỉ'**
+  String get storeSearchHint;
+
+  /// No description provided for @storeListLoading.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang tải danh sách điểm tủ...'**
+  String get storeListLoading;
+
+  /// No description provided for @storeNone.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không có cửa hàng nào'**
+  String get storeNone;
+
+  /// No description provided for @storeRatingsLoadFailed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không tải được đánh giá.'**
+  String get storeRatingsLoadFailed;
+
+  /// No description provided for @storeInfoLoadFailed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không tải được thông tin cửa hàng.'**
+  String get storeInfoLoadFailed;
+
+  /// No description provided for @storeNoLocation.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cửa hàng chưa có vị trí.'**
+  String get storeNoLocation;
+
+  /// No description provided for @storeCantOpenMap.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không mở được bản đồ.'**
+  String get storeCantOpenMap;
+
+  /// No description provided for @storeDetailTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chi tiết điểm gửi'**
+  String get storeDetailTitle;
+
+  /// No description provided for @storeDetailSubtitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Điểm tủ & đối tác liên kết'**
+  String get storeDetailSubtitle;
+
+  /// No description provided for @storeInfoLoading.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang tải thông tin...'**
+  String get storeInfoLoading;
+
+  /// No description provided for @storeRatingCount.
+  ///
+  /// In vi, this message translates to:
+  /// **'  ·  {count} đánh giá'**
+  String storeRatingCount(Object count);
+
+  /// No description provided for @storeViewLockers.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xem tủ'**
+  String get storeViewLockers;
+
+  /// No description provided for @storeCustomerReviews.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đánh giá từ khách hàng'**
+  String get storeCustomerReviews;
+
+  /// No description provided for @storeNoReviews.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa có đánh giá nào'**
+  String get storeNoReviews;
+
+  /// No description provided for @storeTemporarilyClosed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tạm đóng'**
+  String get storeTemporarilyClosed;
+
+  /// No description provided for @storeCustomer.
+  ///
+  /// In vi, this message translates to:
+  /// **'Khách hàng'**
+  String get storeCustomer;
+
+  /// No description provided for @storeOpen.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mở cửa'**
+  String get storeOpen;
+
+  /// No description provided for @storeDistanceFromYou.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cách bạn {km} km'**
+  String storeDistanceFromYou(Object km);
+
+  /// No description provided for @lockerHash.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tủ #{id}'**
+  String lockerHash(Object id);
+
+  /// No description provided for @lockerLockerTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tủ locker'**
+  String get lockerLockerTitle;
+
+  /// No description provided for @lockerPhysicalLocation.
+  ///
+  /// In vi, this message translates to:
+  /// **'Vị trí tủ vật lý'**
+  String get lockerPhysicalLocation;
+
+  /// No description provided for @lockerListLoading.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang tải danh sách tủ...'**
+  String get lockerListLoading;
+
+  /// No description provided for @lockerDroneCellHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chạm vào ô drone còn trống (màu tím) để gửi hàng bằng drone tới tủ khác.'**
+  String get lockerDroneCellHint;
+
+  /// No description provided for @lockerViewOnMap.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xem vị trí trên bản đồ'**
+  String get lockerViewOnMap;
+
+  /// No description provided for @lockerKioskPoint.
+  ///
+  /// In vi, this message translates to:
+  /// **'ĐIỂM ĐẶT KIOSK'**
+  String get lockerKioskPoint;
+
+  /// No description provided for @lockerCount.
+  ///
+  /// In vi, this message translates to:
+  /// **'{count} tủ locker'**
+  String lockerCount(Object count);
+
+  /// No description provided for @lockerTapToSeeFree.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chạm vào tủ để xem ô trống'**
+  String get lockerTapToSeeFree;
+
+  /// No description provided for @lockerDefaultName.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tủ'**
+  String get lockerDefaultName;
+
+  /// No description provided for @lockerOfflineCantBook.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tủ đang mất kết nối với máy chủ nên tạm thời chưa đặt được ô.'**
+  String get lockerOfflineCantBook;
+
+  /// No description provided for @lockerUnderMaintenance.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tủ đang bảo trì kỹ thuật, tạm ngưng nhận đơn.'**
+  String get lockerUnderMaintenance;
+
+  /// No description provided for @lockerSuspended.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tủ đang tạm ngưng hoạt động.'**
+  String get lockerSuspended;
+
+  /// No description provided for @lockerFreeOfTotal.
+  ///
+  /// In vi, this message translates to:
+  /// **'{available}/{total} ô trống'**
+  String lockerFreeOfTotal(Object available, Object total);
+
+  /// No description provided for @lockerNoCellsConfigured.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tủ chưa có ô nào được cấu hình'**
+  String get lockerNoCellsConfigured;
+
+  /// No description provided for @lockerBoxPendingCheck.
+  ///
+  /// In vi, this message translates to:
+  /// **'đang chờ kỹ thuật viên kiểm tra sự cố'**
+  String get lockerBoxPendingCheck;
+
+  /// No description provided for @lockerBoxBroken.
+  ///
+  /// In vi, this message translates to:
+  /// **'đang hỏng'**
+  String get lockerBoxBroken;
+
+  /// No description provided for @lockerBoxUnavailable.
+  ///
+  /// In vi, this message translates to:
+  /// **'{box} {state}. Hãy chọn ô khác.'**
+  String lockerBoxUnavailable(Object box, Object state);
+
+  /// No description provided for @lockerBoxUnavailableReason.
+  ///
+  /// In vi, this message translates to:
+  /// **'{box} {state}: {reason}. Hãy chọn ô khác.'**
+  String lockerBoxUnavailableReason(Object box, Object state, Object reason);
+
+  /// No description provided for @lockerScreen7.
+  ///
+  /// In vi, this message translates to:
+  /// **'Màn hình 7\"'**
+  String get lockerScreen7;
+
+  /// No description provided for @lockerFaultBroken.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lỗi / Hỏng'**
+  String get lockerFaultBroken;
+
+  /// No description provided for @lockerDoorOpen.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cửa mở'**
+  String get lockerDoorOpen;
+
+  /// No description provided for @lockerDoorClosed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cửa đóng'**
+  String get lockerDoorClosed;
+
+  /// No description provided for @lockerScreen.
+  ///
+  /// In vi, this message translates to:
+  /// **'Màn hình'**
+  String get lockerScreen;
+
+  /// No description provided for @lockerKioskScreen.
+  ///
+  /// In vi, this message translates to:
+  /// **'Màn hình kiosk'**
+  String get lockerKioskScreen;
+
+  /// No description provided for @lockerKioskHelp.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tại màn hình kiosk, bạn có thể nhập mã PIN của đơn để mở ô, hoặc đăng nhập bằng cách quét mã QR trên kiosk với nút quét ở trang chủ ứng dụng.'**
+  String get lockerKioskHelp;
+
+  /// No description provided for @lockerKioskOffline.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tủ đang mất kết nối với máy chủ: màn hình có thể không phản hồi và chưa đặt được ô mới.'**
+  String get lockerKioskOffline;
+
+  /// No description provided for @lockerReportKioskIssue.
+  ///
+  /// In vi, this message translates to:
+  /// **'Báo sự cố màn hình kiosk'**
+  String get lockerReportKioskIssue;
+
+  /// No description provided for @lockerBrokenUpper.
+  ///
+  /// In vi, this message translates to:
+  /// **'HỎNG'**
+  String get lockerBrokenUpper;
+
+  /// No description provided for @lockerPendingCheckUpper.
+  ///
+  /// In vi, this message translates to:
+  /// **'CHỜ KIỂM TRA'**
+  String get lockerPendingCheckUpper;
+
+  /// No description provided for @lockerPendingCheck.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chờ kiểm tra'**
+  String get lockerPendingCheck;
+
+  /// No description provided for @lockerCleaning.
+  ///
+  /// In vi, this message translates to:
+  /// **'Vệ sinh'**
+  String get lockerCleaning;
+
+  /// No description provided for @lockerDroneReceive.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhận Drone'**
+  String get lockerDroneReceive;
+
+  /// No description provided for @lockerReady.
+  ///
+  /// In vi, this message translates to:
+  /// **'Sẵn sàng'**
+  String get lockerReady;
+
+  /// No description provided for @sizeSmall.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhỏ (S)'**
+  String get sizeSmall;
+
+  /// No description provided for @sizeMedium.
+  ///
+  /// In vi, this message translates to:
+  /// **'Vừa (M)'**
+  String get sizeMedium;
+
+  /// No description provided for @sizeLarge.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lớn (L)'**
+  String get sizeLarge;
+
+  /// No description provided for @sizeXlSuitcase.
+  ///
+  /// In vi, this message translates to:
+  /// **'Vali cỡ lớn (XL)'**
+  String get sizeXlSuitcase;
+
+  /// No description provided for @lockerEmptySuitcaseBox.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ô tủ vali trống'**
+  String get lockerEmptySuitcaseBox;
+
+  /// No description provided for @lockerEmptyBox.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ô tủ trống'**
+  String get lockerEmptyBox;
+
+  /// No description provided for @lockerWhatToDo.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bạn muốn làm gì với ô tủ này?'**
+  String get lockerWhatToDo;
+
+  /// No description provided for @lockerRentSubtitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Theo giờ hoặc ngày'**
+  String get lockerRentSubtitle;
+
+  /// No description provided for @lockerSendParcel.
+  ///
+  /// In vi, this message translates to:
+  /// **'Gửi hàng'**
+  String get lockerSendParcel;
+
+  /// No description provided for @lockerSendSubtitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chuyển C2C'**
+  String get lockerSendSubtitle;
+
+  /// No description provided for @lockerSuitcaseRentOnly.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ô vali chỉ dùng để thuê giữ đồ, không nhận gửi hàng.'**
+  String get lockerSuitcaseRentOnly;
+
+  /// No description provided for @lockerReportBoxIssue.
+  ///
+  /// In vi, this message translates to:
+  /// **'Gặp sự cố với ô này? Báo cáo ngay'**
+  String get lockerReportBoxIssue;
+
+  /// No description provided for @lockerNoLockers.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa có tủ locker'**
+  String get lockerNoLockers;
+
+  /// No description provided for @lockerStoreNoActiveLockers.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cửa hàng này chưa có tủ locker đang hoạt động.'**
+  String get lockerStoreNoActiveLockers;
+
+  /// No description provided for @lockerCabinetIdRequired.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cabinet ID không được để trống'**
+  String get lockerCabinetIdRequired;
+
+  /// No description provided for @lockerLocationIdRequired.
+  ///
+  /// In vi, this message translates to:
+  /// **'Location ID không được để trống'**
+  String get lockerLocationIdRequired;
+
+  /// No description provided for @lockerOfflinePickOther.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tủ đang mất kết nối nên chưa đặt được ô. Vui lòng chọn tủ khác hoặc thử lại sau.'**
+  String get lockerOfflinePickOther;
+
+  /// No description provided for @lockerMaintenancePickOther.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tủ đang bảo trì nên tạm ngưng nhận đơn. Vui lòng chọn tủ khác.'**
+  String get lockerMaintenancePickOther;
+
+  /// No description provided for @lockerSuspendedCantBook.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tủ đang tạm ngưng hoạt động nên chưa đặt được ô.'**
+  String get lockerSuspendedCantBook;
+
+  /// No description provided for @groupSmall.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ô nhỏ (S)'**
+  String get groupSmall;
+
+  /// No description provided for @groupMedium.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ô vừa (M)'**
+  String get groupMedium;
+
+  /// No description provided for @groupLarge.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ô lớn (L)'**
+  String get groupLarge;
+
+  /// No description provided for @groupStandard.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ô thường'**
+  String get groupStandard;
+
+  /// No description provided for @groupXl.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ô vali (XL)'**
+  String get groupXl;
+
+  /// No description provided for @groupDrone.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ô drone'**
+  String get groupDrone;
+
+  /// No description provided for @cellTypeDroneRoof.
+  ///
+  /// In vi, this message translates to:
+  /// **'Drone (Nóc tủ)'**
+  String get cellTypeDroneRoof;
+
+  /// No description provided for @cellTypeSuitcase.
+  ///
+  /// In vi, this message translates to:
+  /// **'Vali (XL)'**
+  String get cellTypeSuitcase;
+
+  /// No description provided for @cellTypeStandard.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tiêu chuẩn'**
+  String get cellTypeStandard;
+
+  /// No description provided for @cellOutOfService.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ngưng dùng'**
+  String get cellOutOfService;
+
+  /// No description provided for @lockerSizeSmallDesc.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kích thước nhỏ, phù hợp cho túi xách, ví'**
+  String get lockerSizeSmallDesc;
+
+  /// No description provided for @lockerSizeMediumDesc.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kích thước trung bình, phù hợp cho ba lô'**
+  String get lockerSizeMediumDesc;
+
+  /// No description provided for @lockerSizeLargeDesc.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kích thước lớn, phù hợp cho vali'**
+  String get lockerSizeLargeDesc;
+
+  /// No description provided for @lockerStatusAvailable.
+  ///
+  /// In vi, this message translates to:
+  /// **'Có sẵn'**
+  String get lockerStatusAvailable;
+
+  /// No description provided for @lockerStatusInUse.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang sử dụng'**
+  String get lockerStatusInUse;
+
+  /// No description provided for @lockerStatusReserved.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã đặt trước'**
+  String get lockerStatusReserved;
+
+  /// No description provided for @lockerStatusMaintenance.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang bảo trì'**
+  String get lockerStatusMaintenance;
+
+  /// No description provided for @lockerStatusOutOfService.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ngừng hoạt động'**
+  String get lockerStatusOutOfService;
+
+  /// No description provided for @lockerAlreadyRented.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tủ này đang được thuê.'**
+  String get lockerAlreadyRented;
+
+  /// No description provided for @lockerInsufficientBalance.
+  ///
+  /// In vi, this message translates to:
+  /// **'Số dư không đủ.'**
+  String get lockerInsufficientBalance;
+
+  /// No description provided for @lockerFixedRentFailed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thuê tủ cố định thất bại.'**
+  String get lockerFixedRentFailed;
+
+  /// No description provided for @lockerOpenCommandSent.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã gửi lệnh mở tủ.'**
+  String get lockerOpenCommandSent;
+
+  /// No description provided for @lockerCloseCommandSent.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã gửi lệnh đóng tủ.'**
+  String get lockerCloseCommandSent;
+
+  /// No description provided for @lockerDetailSubtitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chi tiết vị trí tủ Lock.R'**
+  String get lockerDetailSubtitle;
+
+  /// No description provided for @lockerNoCoordinates.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tủ chưa có toạ độ nên chưa hiển thị được bản đồ và chỉ đường.'**
+  String get lockerNoCoordinates;
+
+  /// No description provided for @lockerBookService.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đặt dịch vụ'**
+  String get lockerBookService;
+
+  /// No description provided for @lockerViewLayout.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xem sơ đồ ô tủ'**
+  String get lockerViewLayout;
+
+  /// No description provided for @lockerMapTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bản đồ tủ khóa'**
+  String get lockerMapTitle;
+
+  /// No description provided for @lockerMapSubtitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tìm điểm tủ Lock.R gần bạn nhất'**
+  String get lockerMapSubtitle;
+
+  /// No description provided for @lockerMapLoading.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang tải bản đồ...'**
+  String get lockerMapLoading;
+
+  /// No description provided for @lockerNoneYet.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hiện tại chưa có tủ nào!'**
+  String get lockerNoneYet;
+
+  /// No description provided for @lockerGettingLocation.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang lấy vị trí...'**
+  String get lockerGettingLocation;
+
+  /// No description provided for @lockerUseMyLocation.
+  ///
+  /// In vi, this message translates to:
+  /// **'Sử dụng vị trí của bạn'**
+  String get lockerUseMyLocation;
+
+  /// No description provided for @lockerMapLoadFailed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không thể tải bản đồ. Toạ độ có thể không hợp lệ.'**
+  String get lockerMapLoadFailed;
+
+  /// No description provided for @lockerInvalidCoordsHidden.
+  ///
+  /// In vi, this message translates to:
+  /// **'{count} địa điểm có toạ độ không hợp lệ đã được ẩn.'**
+  String lockerInvalidCoordsHidden(Object count);
+
+  /// No description provided for @lockerLocating.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang xác định vị trí...'**
+  String get lockerLocating;
+
+  /// No description provided for @lockerAddressFailed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không thể xác định địa chỉ, vui lòng thử lại'**
+  String get lockerAddressFailed;
+
+  /// No description provided for @lockerAddressFailedError.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không thể xác định địa chỉ, vui lòng thử lại: {error}'**
+  String lockerAddressFailedError(Object error);
+
+  /// No description provided for @lockerLocationServiceOff.
+  ///
+  /// In vi, this message translates to:
+  /// **'Dịch vụ vị trí đang tắt. Vui lòng bật GPS.'**
+  String get lockerLocationServiceOff;
+
+  /// No description provided for @lockerLocationDenied.
+  ///
+  /// In vi, this message translates to:
+  /// **'Quyền truy cập vị trí bị từ chối.'**
+  String get lockerLocationDenied;
+
+  /// No description provided for @lockerLocationDeniedForever.
+  ///
+  /// In vi, this message translates to:
+  /// **'Quyền vị trí bị từ chối vĩnh viễn. Hãy bật lại trong cài đặt.'**
+  String get lockerLocationDeniedForever;
+
+  /// No description provided for @lockerOtherKiosk.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kiosk khác'**
+  String get lockerOtherKiosk;
+
+  /// No description provided for @lockerCountShort.
+  ///
+  /// In vi, this message translates to:
+  /// **'{count} tủ'**
+  String lockerCountShort(Object count);
+
+  /// No description provided for @commonAll.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tất cả'**
+  String get commonAll;
+
+  /// No description provided for @lockerLocationList.
+  ///
+  /// In vi, this message translates to:
+  /// **'Danh sách địa điểm'**
+  String get lockerLocationList;
+
+  /// No description provided for @lockerLoginToSeeLocations.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đăng nhập để xem các địa điểm khả dụng'**
+  String get lockerLoginToSeeLocations;
+
+  /// No description provided for @lockerLoginRequiredLocations.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bạn cần đăng nhập để xem danh sách địa điểm'**
+  String get lockerLoginRequiredLocations;
+
+  /// No description provided for @lockerPickLocation.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chọn địa điểm để xem chi tiết'**
+  String get lockerPickLocation;
+
+  /// No description provided for @lockerSearchLocation.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tìm kiếm địa điểm...'**
+  String get lockerSearchLocation;
+
+  /// No description provided for @lockerNoLocations.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hiện tại chưa có địa điểm nào!'**
+  String get lockerNoLocations;
+
+  /// No description provided for @lockerNotFoundHere.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không tìm thấy tủ tại địa điểm này'**
+  String get lockerNotFoundHere;
+
+  /// No description provided for @lockerTryOtherLocation.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thử chọn địa điểm khác hoặc xem tất cả địa điểm khả dụng.'**
+  String get lockerTryOtherLocation;
+
+  /// No description provided for @lockerViewAllLocations.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xem tất cả địa điểm'**
+  String get lockerViewAllLocations;
+
+  /// No description provided for @lockerLoadingFreeCells.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang tải số ô trống...'**
+  String get lockerLoadingFreeCells;
+
+  /// No description provided for @lockerCellsLoadFailed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa tải được số ô: {error}'**
+  String lockerCellsLoadFailed(Object error);
+
+  /// No description provided for @lockerFreeCells.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ô trống'**
+  String get lockerFreeCells;
+
+  /// No description provided for @lockerConnectionUnknown.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa rõ kết nối'**
+  String get lockerConnectionUnknown;
+
+  /// No description provided for @lockerMostUsed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hay dùng nhất'**
+  String get lockerMostUsed;
+
+  /// No description provided for @promoUnlimited.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không giới hạn'**
+  String get promoUnlimited;
+
+  /// No description provided for @promoExpired.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã hết hạn'**
+  String get promoExpired;
+
+  /// No description provided for @promoDaysLeft.
+  ///
+  /// In vi, this message translates to:
+  /// **'Còn {days} ngày'**
+  String promoDaysLeft(Object days);
+
+  /// No description provided for @promoHoursLeft.
+  ///
+  /// In vi, this message translates to:
+  /// **'Còn {hours} giờ'**
+  String promoHoursLeft(Object hours);
+
+  /// No description provided for @promoMinutesLeft.
+  ///
+  /// In vi, this message translates to:
+  /// **'Còn {minutes} phút'**
+  String promoMinutesLeft(Object minutes);
+
+  /// No description provided for @promoMinOrder.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đơn tối thiểu {amount}'**
+  String promoMinOrder(Object amount);
+
+  /// No description provided for @promoSystemWide.
+  ///
+  /// In vi, this message translates to:
+  /// **'Toàn hệ thống'**
+  String get promoSystemWide;
+
+  /// No description provided for @promoAppliesAt.
+  ///
+  /// In vi, this message translates to:
+  /// **'Áp dụng tại: {name}'**
+  String promoAppliesAt(Object name);
+
+  /// No description provided for @promoSubtitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Khám phá ưu đãi đang hiệu lực hôm nay'**
+  String get promoSubtitle;
+
+  /// No description provided for @promoLoading.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang tải khuyến mãi...'**
+  String get promoLoading;
+
+  /// No description provided for @promoNoneActive.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa có ưu đãi nào đang hiệu lực'**
+  String get promoNoneActive;
+
+  /// No description provided for @promoExpiringSoon.
+  ///
+  /// In vi, this message translates to:
+  /// **'Sắp hết hạn'**
+  String get promoExpiringSoon;
+
+  /// No description provided for @promoSavedToMine.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã lưu mã {code} vào \"Ưu đãi của tôi\"'**
+  String promoSavedToMine(Object code);
+
+  /// No description provided for @promoSaveNotSupported.
+  ///
+  /// In vi, this message translates to:
+  /// **'Máy chủ chưa hỗ trợ lưu mã. Vui lòng thử lại sau.'**
+  String get promoSaveNotSupported;
+
+  /// No description provided for @promoSaveFailed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không lưu được mã — kiểm tra đăng nhập và thử lại'**
+  String get promoSaveFailed;
+
+  /// No description provided for @promoCopiedCode.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã sao chép mã: {code}'**
+  String promoCopiedCode(Object code);
+
+  /// No description provided for @promoDiscountPercent.
+  ///
+  /// In vi, this message translates to:
+  /// **'Giảm {percent}%'**
+  String promoDiscountPercent(Object percent);
+
+  /// No description provided for @promoDiscountAmount.
+  ///
+  /// In vi, this message translates to:
+  /// **'Giảm {amount}'**
+  String promoDiscountAmount(Object amount);
+
+  /// No description provided for @promoDetailTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chi tiết ưu đãi'**
+  String get promoDetailTitle;
+
+  /// No description provided for @promoOfferExpired.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ưu đãi đã hết hạn'**
+  String get promoOfferExpired;
+
+  /// No description provided for @promoCodeLabel.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mã khuyến mãi'**
+  String get promoCodeLabel;
+
+  /// No description provided for @promoDiscountLevel.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mức giảm'**
+  String get promoDiscountLevel;
+
+  /// No description provided for @promoScope.
+  ///
+  /// In vi, this message translates to:
+  /// **'Phạm vi'**
+  String get promoScope;
+
+  /// No description provided for @promoMaxDiscount.
+  ///
+  /// In vi, this message translates to:
+  /// **'Giảm tối đa'**
+  String get promoMaxDiscount;
+
+  /// No description provided for @promoMinOrderLabel.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đơn tối thiểu'**
+  String get promoMinOrderLabel;
+
+  /// No description provided for @promoActive.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang hiệu lực'**
+  String get promoActive;
+
+  /// No description provided for @promoExpiredCantUse.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ưu đãi này đã hết hạn và không thể sử dụng.'**
+  String get promoExpiredCantUse;
+
+  /// No description provided for @promoStep1Any.
+  ///
+  /// In vi, this message translates to:
+  /// **'Vào trang Thuê tủ, Gửi hàng hoặc Gửi drone và chọn tủ'**
+  String get promoStep1Any;
+
+  /// No description provided for @promoStep1At.
+  ///
+  /// In vi, this message translates to:
+  /// **'Vào trang Thuê tủ, Gửi hàng hoặc Gửi drone tại {locker} (đơn drone: tủ drone cất cánh)'**
+  String promoStep1At(Object locker);
+
+  /// No description provided for @promoStep2.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ở mục \"Mã giảm giá\", chạm \"Chọn mã giảm giá\" rồi chọn mã này trong danh sách'**
+  String get promoStep2;
+
+  /// No description provided for @promoStep3.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mức giảm được trừ vào tổng tiền nếu đơn đủ điều kiện (đơn tối thiểu, tủ áp dụng)'**
+  String get promoStep3;
+
+  /// No description provided for @promoLoadFailed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không tải được ưu đãi'**
+  String get promoLoadFailed;
+
+  /// No description provided for @promoAtThisLocker.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ưu đãi tại tủ này'**
+  String get promoAtThisLocker;
+
+  /// No description provided for @voucherMine.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ưu đãi của tôi'**
+  String get voucherMine;
+
+  /// No description provided for @voucherMineSubtitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mã giảm giá & quà tặng của bạn'**
+  String get voucherMineSubtitle;
+
+  /// No description provided for @voucherExchangeTab.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đổi điểm'**
+  String get voucherExchangeTab;
+
+  /// No description provided for @voucherLoginToSee.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bạn cần đăng nhập để xem ưu đãi đã lưu'**
+  String get voucherLoginToSee;
+
+  /// No description provided for @voucherLoading.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang tải ưu đãi...'**
+  String get voucherLoading;
+
+  /// No description provided for @voucherNone.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bạn chưa có ưu đãi nào'**
+  String get voucherNone;
+
+  /// No description provided for @voucherExploreAndSave.
+  ///
+  /// In vi, this message translates to:
+  /// **'Khám phá ưu đãi và lưu mã'**
+  String get voucherExploreAndSave;
+
+  /// No description provided for @voucherGift.
+  ///
+  /// In vi, this message translates to:
+  /// **'Quà tặng'**
+  String get voucherGift;
+
+  /// No description provided for @voucherGiftUpper.
+  ///
+  /// In vi, this message translates to:
+  /// **'QUÀ TẶNG'**
+  String get voucherGiftUpper;
+
+  /// No description provided for @voucherDiscountUpper.
+  ///
+  /// In vi, this message translates to:
+  /// **'GIẢM GIÁ'**
+  String get voucherDiscountUpper;
+
+  /// No description provided for @voucherUsed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã dùng'**
+  String get voucherUsed;
+
+  /// No description provided for @voucherUsedLong.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã sử dụng'**
+  String get voucherUsedLong;
+
+  /// No description provided for @voucherCopied.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã sao chép mã voucher'**
+  String get voucherCopied;
+
+  /// No description provided for @voucherCode.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mã voucher'**
+  String get voucherCode;
+
+  /// No description provided for @voucherOffer.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ưu đãi'**
+  String get voucherOffer;
+
+  /// No description provided for @voucherCampaign.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chiến dịch'**
+  String get voucherCampaign;
+
+  /// No description provided for @voucherValidUntil.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hạn sử dụng'**
+  String get voucherValidUntil;
+
+  /// No description provided for @voucherExpiredCantUse.
+  ///
+  /// In vi, this message translates to:
+  /// **'Voucher này đã hết hạn và không thể sử dụng.'**
+  String get voucherExpiredCantUse;
+
+  /// No description provided for @voucherAlreadyUsed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Voucher này đã được sử dụng.'**
+  String get voucherAlreadyUsed;
+
+  /// No description provided for @voucherStepCopy.
+  ///
+  /// In vi, this message translates to:
+  /// **'Sao chép mã voucher ở trên'**
+  String get voucherStepCopy;
+
+  /// No description provided for @voucherStepBookAny.
+  ///
+  /// In vi, this message translates to:
+  /// **'Vào trang đặt dịch vụ (Thuê tủ / Gửi hàng / Gửi drone)'**
+  String get voucherStepBookAny;
+
+  /// No description provided for @voucherStepBookAt.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đặt dịch vụ tại {locker} (đơn drone: tủ drone cất cánh)'**
+  String voucherStepBookAt(Object locker);
+
+  /// No description provided for @voucherStepEnter.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhập mã vào ô \"Mã giảm giá\" và nhấn Áp dụng'**
+  String get voucherStepEnter;
+
+  /// No description provided for @voucherStepDeducted.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mức giảm sẽ được trừ vào tổng tiền thanh toán'**
+  String get voucherStepDeducted;
+
+  /// No description provided for @voucherExchangeNotSupported.
+  ///
+  /// In vi, this message translates to:
+  /// **'Máy chủ chưa hỗ trợ đổi điểm. Vui lòng thử lại sau.'**
+  String get voucherExchangeNotSupported;
+
+  /// No description provided for @voucherExchangeLoadFailed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không tải được danh sách đổi điểm. Vui lòng thử lại.'**
+  String get voucherExchangeLoadFailed;
+
+  /// No description provided for @voucherExchangeFailed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa đổi được voucher. Vui lòng thử lại.'**
+  String get voucherExchangeFailed;
+
+  /// No description provided for @voucherWalletNotSupported.
+  ///
+  /// In vi, this message translates to:
+  /// **'Máy chủ chưa hỗ trợ kho ưu đãi. Vui lòng thử lại sau.'**
+  String get voucherWalletNotSupported;
+
+  /// No description provided for @voucherMineLoadFailed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không tải được ưu đãi của bạn. Vui lòng thử lại.'**
+  String get voucherMineLoadFailed;
+
+  /// No description provided for @pointsCount.
+  ///
+  /// In vi, this message translates to:
+  /// **'{points} điểm'**
+  String pointsCount(Object points);
+
+  /// No description provided for @voucherMaxSuffix.
+  ///
+  /// In vi, this message translates to:
+  /// **' (tối đa {amount})'**
+  String voucherMaxSuffix(Object amount);
+
+  /// No description provided for @voucherExchangeLoading.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang tải voucher đổi điểm...'**
+  String get voucherExchangeLoading;
+
+  /// No description provided for @voucherExchangeNone.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hiện chưa có voucher nào để đổi điểm'**
+  String get voucherExchangeNone;
+
+  /// No description provided for @voucherExchangeQuestion.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đổi voucher?'**
+  String get voucherExchangeQuestion;
+
+  /// No description provided for @voucherExchangeConfirm.
+  ///
+  /// In vi, this message translates to:
+  /// **'Dùng {points} đổi voucher \"{reward}\". Voucher sẽ nằm trong mục Khả dụng, dùng bằng mã {code} khi đặt đơn.'**
+  String voucherExchangeConfirm(Object points, Object reward, Object code);
+
+  /// No description provided for @voucherExchanged.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã đổi voucher {code} — xem ở mục Khả dụng'**
+  String voucherExchanged(Object code);
+
+  /// No description provided for @voucherYourPoints.
+  ///
+  /// In vi, this message translates to:
+  /// **'Điểm của bạn'**
+  String get voucherYourPoints;
+
+  /// No description provided for @voucherPointRate.
+  ///
+  /// In vi, this message translates to:
+  /// **'1 điểm = {amount} · đổi lấy voucher giảm giá cho đơn'**
+  String voucherPointRate(Object amount);
+
+  /// No description provided for @voucherOwned.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã có'**
+  String get voucherOwned;
+
+  /// No description provided for @voucherMissingPoints.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thiếu {points}'**
+  String voucherMissingPoints(Object points);
+
+  /// No description provided for @voucherOrderFrom.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đơn từ {amount}'**
+  String voucherOrderFrom(Object amount);
 }
 
 class _AppLocalizationsDelegate

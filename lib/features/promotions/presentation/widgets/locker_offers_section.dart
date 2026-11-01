@@ -6,6 +6,7 @@ import 'package:smart_laundry_locker/features/promotions/data/models/promotion_m
 import 'package:smart_laundry_locker/features/promotions/presentation/pages/promotion_detail_page.dart';
 import 'package:smart_laundry_locker/features/vouchers/data/repositories/voucher_repository.dart';
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 /// Mã riêng của tủ [lockerId] đang chạy: hỏi `GET /api/promotions/active?lockerId=`
 /// rồi chỉ giữ mã gắn đúng tủ này (mã toàn hệ thống đã có ở Trang chủ / Ưu đãi).
@@ -83,7 +84,7 @@ class _LockerOffersSectionState extends State<LockerOffersSection> {
       setState(() => _claimed.add(promo.id));
       messenger.showSnackBar(
         SnackBar(
-          content: Text('Đã lưu mã ${promo.code} vào "Ưu đãi của tôi"'),
+          content: Text(context.l10n.promoSavedToMine(promo.code)),
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -93,8 +94,8 @@ class _LockerOffersSectionState extends State<LockerOffersSection> {
           content: Text(
             userErrorMessage(
               e,
-              notFound: 'Máy chủ chưa hỗ trợ lưu mã. Vui lòng thử lại sau.',
-              fallback: 'Không lưu được mã — kiểm tra đăng nhập và thử lại',
+              notFound: context.l10n.promoSaveNotSupported,
+              fallback: context.l10n.promoSaveFailed,
             ),
           ),
           behavior: SnackBarBehavior.floating,
@@ -118,12 +119,12 @@ class _LockerOffersSectionState extends State<LockerOffersSection> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Row(
+          Row(
             children: [
               Icon(LucideIcons.ticketPercent, size: 18, color: AislBrand.navy),
               SizedBox(width: 8),
               Text(
-                'Ưu đãi tại tủ này',
+                context.l10n.promoAtThisLocker,
                 style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w800,
@@ -231,7 +232,7 @@ class _OfferTile extends StatelessWidget {
                 claimed ? LucideIcons.bookmarkCheck : LucideIcons.bookmarkPlus,
                 size: 15,
               ),
-              label: Text(claimed ? 'Đã lưu' : 'Lưu'),
+              label: Text(claimed ? context.l10n.commonSaved : context.l10n.commonSave),
               style: TextButton.styleFrom(
                 foregroundColor: AislBrand.blue,
                 visualDensity: VisualDensity.compact,

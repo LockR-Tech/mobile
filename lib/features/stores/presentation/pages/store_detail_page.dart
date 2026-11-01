@@ -16,6 +16,7 @@ import 'package:smart_laundry_locker/features/stores/presentation/pages/store_lo
 import 'package:url_launcher/url_launcher.dart';
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
 import 'package:smart_laundry_locker/shared/shared.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 /// Store detail screen: store info + customer ratings.
 ///
@@ -91,7 +92,7 @@ class _StoreDetailPageState extends State<StoreDetailPage> {
         ratings = await _service.getRatings(store.id);
       } catch (_) {
         // Trang vẫn hiện thông tin cửa hàng; mục đánh giá báo lỗi + Thử lại.
-        ratingsError = 'Không tải được đánh giá.';
+        ratingsError = L10n.current.storeRatingsLoadFailed;
       }
       var favorite = false;
       try {
@@ -108,7 +109,7 @@ class _StoreDetailPageState extends State<StoreDetailPage> {
     } catch (e) {
       if (!mounted) return;
       setState(() {
-        _error = 'Không tải được thông tin cửa hàng.';
+        _error = context.l10n.storeInfoLoadFailed;
         _loading = false;
       });
     }
@@ -132,7 +133,7 @@ class _StoreDetailPageState extends State<StoreDetailPage> {
     }
     // No coordinates: fall back to an address search in the maps app.
     if ((store.address ?? '').isEmpty) {
-      _toast('Cửa hàng chưa có vị trí.');
+      _toast(context.l10n.storeNoLocation);
       return;
     }
     final uri = Uri.parse(
@@ -142,7 +143,7 @@ class _StoreDetailPageState extends State<StoreDetailPage> {
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
     } else {
-      _toast('Không mở được bản đồ.');
+      _toast(L10n.current.storeCantOpenMap);
     }
   }
 
@@ -153,9 +154,9 @@ class _StoreDetailPageState extends State<StoreDetailPage> {
       final now = await _favService.toggle(store.id);
       if (!mounted) return;
       setState(() => _favorite = now);
-      _toast(now ? 'Đã thêm vào yêu thích' : 'Đã bỏ khỏi yêu thích');
+      _toast(now ? context.l10n.storeAddedFavorite : context.l10n.storeRemovedFavorite);
     } catch (_) {
-      _toast('Không lưu được danh sách yêu thích.');
+      _toast(context.l10n.storeFavoriteSaveFailed);
     }
   }
 
@@ -173,8 +174,8 @@ class _StoreDetailPageState extends State<StoreDetailPage> {
       body: Column(
         children: [
           BrandHeroHeader(
-            title: 'Chi tiết điểm gửi',
-            subtitle: _store?.name ?? 'Điểm tủ & đối tác liên kết',
+            title: context.l10n.storeDetailTitle,
+            subtitle: _store?.name ?? context.l10n.storeDetailSubtitle,
             onBack: () => Navigator.of(context).pop(),
             trailing: _store == null
                 ? null
@@ -186,9 +187,9 @@ class _StoreDetailPageState extends State<StoreDetailPage> {
           ),
           Expanded(
             child: _loading
-                ? const AppLoadingIndicator(
+                ? AppLoadingIndicator(
                     fullScreen: true,
-                    message: 'Đang tải thông tin...',
+                    message: context.l10n.storeInfoLoading,
                   )
                 : _error != null
                 ? _buildError()
@@ -212,7 +213,7 @@ class _StoreDetailPageState extends State<StoreDetailPage> {
           const SizedBox(height: 12),
           Text(_error!, style: const TextStyle(color: Colors.black54)),
           const SizedBox(height: 16),
-          FilledButton(onPressed: _load, child: const Text('Thử lại')),
+          FilledButton(onPressed: _load, child: Text(context.l10n.commonRetry)),
         ],
       ),
     );
@@ -299,7 +300,7 @@ class _StoreDetailPageState extends State<StoreDetailPage> {
                   style: const TextStyle(fontWeight: FontWeight.w700),
                 ),
                 Text(
-                  '  ·  ${summary.count} đánh giá',
+                  context.l10n.storeRatingCount(summary.count),
                   style: const TextStyle(color: Colors.grey, fontSize: 13),
                 ),
               ],
@@ -309,19 +310,19 @@ class _StoreDetailPageState extends State<StoreDetailPage> {
           if ((store.address ?? '').isNotEmpty)
             _InfoRow(
               icon: LucideIcons.mapPin,
-              label: 'Địa chỉ',
+              label: context.l10n.commonAddress,
               value: store.address!,
             ),
           if ((store.contactPhone ?? '').isNotEmpty)
             _InfoRow(
               icon: LucideIcons.phone,
-              label: 'Số điện thoại',
+              label: context.l10n.commonPhoneNumber,
               value: store.contactPhone!,
             ),
           if (store.distanceKm != null)
             _InfoRow(
               icon: LucideIcons.navigation,
-              label: 'Khoảng cách',
+              label: context.l10n.commonDistance,
               value: '${store.distanceKm!.toStringAsFixed(1)} km',
             ),
           if ((store.description ?? '').isNotEmpty) ...[
@@ -346,7 +347,7 @@ class _StoreDetailPageState extends State<StoreDetailPage> {
                     padding: const EdgeInsets.symmetric(vertical: 14),
                   ),
                   icon: const Icon(LucideIcons.map, size: 18),
-                  label: const Text('Chỉ đường'),
+                  label: Text(context.l10n.commonDirections),
                 ),
               ),
               const SizedBox(width: 12),
@@ -364,7 +365,7 @@ class _StoreDetailPageState extends State<StoreDetailPage> {
                     padding: const EdgeInsets.symmetric(vertical: 14),
                   ),
                   icon: const Icon(LucideIcons.boxes, size: 18),
-                  label: const Text('Xem tủ'),
+                  label: Text(context.l10n.storeViewLockers),
                 ),
               ),
             ],
@@ -386,8 +387,8 @@ class _StoreDetailPageState extends State<StoreDetailPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Đánh giá từ khách hàng',
+          Text(
+            context.l10n.storeCustomerReviews,
             style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
           ),
           const SizedBox(height: 12),
@@ -400,15 +401,15 @@ class _StoreDetailPageState extends State<StoreDetailPage> {
                     style: const TextStyle(color: Colors.redAccent),
                   ),
                 ),
-                TextButton(onPressed: _load, child: const Text('Thử lại')),
+                TextButton(onPressed: _load, child: Text(context.l10n.commonRetry)),
               ],
             )
           else if (!summary.hasRatings)
-            const Padding(
+            Padding(
               padding: EdgeInsets.symmetric(vertical: 16),
               child: Center(
                 child: Text(
-                  'Chưa có đánh giá nào',
+                  context.l10n.storeNoReviews,
                   style: TextStyle(color: Colors.grey),
                 ),
               ),
@@ -450,7 +451,7 @@ class _StatusPill extends StatelessWidget {
         border: Border.all(color: color.withValues(alpha: 0.30)),
       ),
       child: Text(
-        active ? 'Đang hoạt động' : 'Tạm đóng',
+        active ? context.l10n.enumActive : context.l10n.storeTemporarilyClosed,
         style: TextStyle(
           fontSize: 11,
           fontWeight: FontWeight.w700,
@@ -532,7 +533,7 @@ class _RatingTile extends StatelessWidget {
             children: [
               Expanded(
                 child: Text(
-                  rating.userName ?? 'Khách hàng',
+                  rating.userName ?? context.l10n.storeCustomer,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(

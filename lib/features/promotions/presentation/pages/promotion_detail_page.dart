@@ -6,6 +6,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:smart_laundry_locker/features/promotions/data/models/promotion_model.dart';
 import 'package:smart_laundry_locker/features/promotions/presentation/widgets/promotion_scope_tag.dart';
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 class PromotionDetailPage extends StatelessWidget {
   const PromotionDetailPage({super.key, required this.promo});
@@ -26,8 +27,8 @@ class PromotionDetailPage extends StatelessWidget {
   String get _rewardText {
     final fmt = NumberFormat.currency(locale: 'vi_VN', symbol: 'đ');
     return promo.discountType == 'PERCENTAGE'
-        ? 'Giảm ${promo.discountValue.toInt()}%'
-        : 'Giảm ${fmt.format(promo.discountValue)}';
+        ? L10n.current.promoDiscountPercent(promo.discountValue.toInt())
+        : L10n.current.promoDiscountAmount(fmt.format(promo.discountValue));
   }
 
   @override
@@ -37,7 +38,7 @@ class PromotionDetailPage extends StatelessWidget {
       body: Column(
         children: [
           BrandHeroHeader(
-            title: 'Chi tiết ưu đãi',
+            title: context.l10n.promoDetailTitle,
             subtitle: promo.name,
             onBack: () => Navigator.of(context).pop(),
           ),
@@ -242,9 +243,9 @@ class _TicketBanner extends StatelessWidget {
                 const SizedBox(height: 4),
                 Text(
                   promo.isExpired
-                      ? 'Ưu đãi đã hết hạn'
-                      : promo.expiryLabel == 'Không giới hạn'
-                          ? 'Không giới hạn thời gian'
+                      ? context.l10n.promoOfferExpired
+                      : promo.expiryLabel == L10n.current.promoUnlimited
+                          ? context.l10n.commonUnlimitedTime
                           : promo.expiryLabel,
                   style: TextStyle(
                     fontSize: 13,
@@ -276,7 +277,7 @@ class _CodeSection extends StatelessWidget {
             children: [
               const Icon(LucideIcons.check, color: Colors.white, size: 16),
               const SizedBox(width: 8),
-              Text('Đã sao chép: $code'),
+              Text(context.l10n.commonCopiedValue(code)),
             ],
           ),
           backgroundColor: AislBrand.navy,
@@ -300,8 +301,8 @@ class _CodeSection extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Mã khuyến mãi',
+          Text(
+            context.l10n.promoCodeLabel,
             style: TextStyle(
               fontSize: 12,
               color: AislBrand.textMuted,
@@ -359,7 +360,7 @@ class _CodeSection extends StatelessWidget {
                 Icon(LucideIcons.copy, size: 13, color: AislBrand.blue),
                 const SizedBox(width: 4),
                 Text(
-                  'Chạm để sao chép mã',
+                  context.l10n.commonTapToCopy,
                   style: TextStyle(
                     fontSize: 12,
                     color: AislBrand.blue,
@@ -397,14 +398,14 @@ class _InfoSection extends StatelessWidget {
         children: [
           _Row(
             icon: LucideIcons.gift,
-            label: 'Mức giảm',
+            label: context.l10n.promoDiscountLevel,
             value: rewardText,
             valueColor: AislBrand.navy,
           ),
           const _Div(),
           _Row(
             icon: promo.isLockerScoped ? LucideIcons.mapPin : LucideIcons.globe,
-            label: 'Phạm vi',
+            label: context.l10n.promoScope,
             value: promo.scopeLabel,
             valueColor: promo.isLockerScoped
                 ? PromotionScopeTag.scopedColor
@@ -415,7 +416,7 @@ class _InfoSection extends StatelessWidget {
             const _Div(),
             _Row(
               icon: LucideIcons.arrowDownToLine,
-              label: 'Giảm tối đa',
+              label: context.l10n.promoMaxDiscount,
               value: fmt.format(promo.maxDiscountAmount),
             ),
           ],
@@ -424,7 +425,7 @@ class _InfoSection extends StatelessWidget {
             const _Div(),
             _Row(
               icon: LucideIcons.shoppingCart,
-              label: 'Đơn tối thiểu',
+              label: context.l10n.promoMinOrderLabel,
               value: fmt.format(promo.minOrderAmount),
             ),
           ],
@@ -432,7 +433,7 @@ class _InfoSection extends StatelessWidget {
             const _Div(),
             _Row(
               icon: LucideIcons.calendarCheck,
-              label: 'Bắt đầu',
+              label: context.l10n.commonStartDate,
               value: DateFormat('dd/MM/yyyy HH:mm').format(promo.startAt!),
             ),
           ],
@@ -440,7 +441,7 @@ class _InfoSection extends StatelessWidget {
             const _Div(),
             _Row(
               icon: LucideIcons.calendarX,
-              label: 'Kết thúc',
+              label: context.l10n.commonEndDate,
               value: DateFormat('dd/MM/yyyy HH:mm').format(promo.endAt!),
               valueColor: promo.isExpired ? const Color(0xFF991B1B) : null,
             ),
@@ -448,7 +449,7 @@ class _InfoSection extends StatelessWidget {
           const _Div(),
           _Row(
             icon: LucideIcons.checkCircle,
-            label: 'Trạng thái',
+            label: context.l10n.commonStatus,
             valueWidget: Container(
               padding:
                   const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
@@ -459,7 +460,7 @@ class _InfoSection extends StatelessWidget {
                 borderRadius: BorderRadius.circular(999),
               ),
               child: Text(
-                promo.isExpired ? 'Hết hạn' : 'Đang hiệu lực',
+                promo.isExpired ? context.l10n.commonExpired : context.l10n.promoActive,
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w700,
@@ -584,12 +585,12 @@ class _HowToUse extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Row(
+          Row(
             children: [
               Icon(LucideIcons.bookOpen, size: 16, color: AislBrand.navy),
               SizedBox(width: 8),
               Text(
-                'Cách sử dụng',
+                context.l10n.commonHowToUse,
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w800,
@@ -601,21 +602,20 @@ class _HowToUse extends StatelessWidget {
           const SizedBox(height: 12),
           if (isExpired)
             Text(
-              'Ưu đãi này đã hết hạn và không thể sử dụng.',
+              context.l10n.promoExpiredCantUse,
               style: TextStyle(fontSize: 13, color: Colors.grey.shade500),
             )
           else ...[
             _step(
               '1',
               lockerName == null
-                  ? 'Vào trang Thuê tủ, Gửi hàng hoặc Gửi drone và chọn tủ'
-                  : 'Vào trang Thuê tủ, Gửi hàng hoặc Gửi drone tại $lockerName '
-                      '(đơn drone: tủ drone cất cánh)',
+                  ? context.l10n.promoStep1Any
+: context.l10n.promoStep1At('$lockerName'),
             ),
             const SizedBox(height: 8),
-            _step('2', 'Ở mục "Mã giảm giá", chạm "Chọn mã giảm giá" rồi chọn mã này trong danh sách'),
+            _step('2', context.l10n.promoStep2),
             const SizedBox(height: 8),
-            _step('3', 'Mức giảm được trừ vào tổng tiền nếu đơn đủ điều kiện (đơn tối thiểu, tủ áp dụng)'),
+            _step('3', context.l10n.promoStep3),
           ],
         ],
       ),

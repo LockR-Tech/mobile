@@ -1285,4 +1285,948 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get locationConfirm => 'Xác nhận vị trí';
+
+  @override
+  String get commonYou => 'Bạn';
+
+  @override
+  String get commonSeeAllLower => 'Xem tất cả';
+
+  @override
+  String get commonDirections => 'Chỉ đường';
+
+  @override
+  String get commonAddress => 'Địa chỉ';
+
+  @override
+  String get commonDistance => 'Khoảng cách';
+
+  @override
+  String get commonStatus => 'Trạng thái';
+
+  @override
+  String get commonLocation => 'Vị trí';
+
+  @override
+  String get commonSize => 'Kích cỡ';
+
+  @override
+  String get commonBack => 'Quay lại';
+
+  @override
+  String get commonNoAddress => 'Chưa có địa chỉ';
+
+  @override
+  String get commonFavorites => 'Yêu thích';
+
+  @override
+  String get commonOffers => 'Ưu đãi';
+
+  @override
+  String get commonReportIssue => 'Báo sự cố';
+
+  @override
+  String get commonReports => 'Báo cáo';
+
+  @override
+  String get commonStatusActive => 'Hoạt động';
+
+  @override
+  String get commonStatusSuspended => 'Tạm ngưng';
+
+  @override
+  String get commonDisconnected => 'Mất kết nối';
+
+  @override
+  String get commonOnline => 'Trực tuyến';
+
+  @override
+  String get commonInUseShort => 'Đang dùng';
+
+  @override
+  String get commonReservedShort => 'Đã đặt';
+
+  @override
+  String get commonBroken => 'Hỏng';
+
+  @override
+  String get commonEmpty => 'Trống';
+
+  @override
+  String get commonExpired => 'Hết hạn';
+
+  @override
+  String get commonHistory => 'Lịch sử';
+
+  @override
+  String get commonAvailable => 'Khả dụng';
+
+  @override
+  String commonCopiedValue(Object value) {
+    return 'Đã sao chép: $value';
+  }
+
+  @override
+  String get commonStartDate => 'Bắt đầu';
+
+  @override
+  String get commonEndDate => 'Kết thúc';
+
+  @override
+  String get commonHowToUse => 'Cách sử dụng';
+
+  @override
+  String get commonTapToCopy => 'Chạm để sao chép mã';
+
+  @override
+  String get commonUnlimitedTime => 'Không giới hạn thời gian';
+
+  @override
+  String get commonExchange => 'Đổi';
+
+  @override
+  String get commonSaved => 'Đã lưu';
+
+  @override
+  String get commonLoadFailedData => 'Không tải được dữ liệu';
+
+  @override
+  String boxNumberLabel(Object number) {
+    return 'Ô số $number';
+  }
+
+  @override
+  String boxRowCol(Object row, Object col) {
+    return 'Ô hàng $row, cột $col';
+  }
+
+  @override
+  String rowCol(Object row, Object col) {
+    return 'Hàng $row, cột $col';
+  }
+
+  @override
+  String boxHash(Object number) {
+    return 'Ô #$number';
+  }
+
+  @override
+  String orderHash(Object id) {
+    return 'Đơn #$id';
+  }
+
+  @override
+  String get homeSendByDrone => 'Gửi hàng bằng drone';
+
+  @override
+  String get homeDropPoints => 'Điểm gửi';
+
+  @override
+  String get homeRentLocker => 'Thuê tủ';
+
+  @override
+  String get homeLockerOrders => 'Đơn tủ';
+
+  @override
+  String get homeUtilities => 'Tiện ích';
+
+  @override
+  String get homeDroneDelivery => 'Giao bằng drone';
+
+  @override
+  String get homeActiveOrders => 'Đơn đang xử lý';
+
+  @override
+  String get homePickupDeadline => 'Hạn lấy đồ';
+
+  @override
+  String get stepCreateOrder => 'Tạo đơn';
+
+  @override
+  String get stepFlightTeamAccepted => 'Đội bay nhận';
+
+  @override
+  String get stepFlying => 'Đang bay';
+
+  @override
+  String get stepDropReported => 'Báo rơi kiện';
+
+  @override
+  String get stepIntoLocker => 'Vào tủ nhận';
+
+  @override
+  String get stepDropIntoLocker => 'Bỏ vào tủ';
+
+  @override
+  String get stepStoring => 'Đang lưu tủ';
+
+  @override
+  String get stepInLocker => 'Đã vào tủ';
+
+  @override
+  String get stepTransit => 'Vận chuyển';
+
+  @override
+  String get stepAwaitingPickup => 'Chờ nhận';
+
+  @override
+  String get homeUtilitiesServices => 'Tiện ích & Dịch vụ';
+
+  @override
+  String get homeSendDrone => 'Gửi drone';
+
+  @override
+  String get homeKioskLocations => 'Các nơi đặt kiosk';
+
+  @override
+  String get homeNoLockerLocations => 'Chưa có nơi đặt locker nào';
+
+  @override
+  String get homeOngoingOffers => 'Ưu đãi đang diễn ra';
+
+  @override
+  String get storeDefaultName => 'Cửa hàng';
+
+  @override
+  String get storeFavoritesLoadFailed => 'Không tải được danh sách yêu thích.';
+
+  @override
+  String get storeFavoritesSubtitle => 'Điểm gửi bạn đã lưu';
+
+  @override
+  String get storeFavoritesLoading => 'Đang tải danh sách yêu thích...';
+
+  @override
+  String get storeNoFavorites => 'Chưa có cửa hàng yêu thích';
+
+  @override
+  String get storeNoFavoritesHint =>
+      'Nhấn vào biểu tượng trái tim ở một cửa hàng để lưu lại đây.';
+
+  @override
+  String get storeExplore => 'Khám phá cửa hàng';
+
+  @override
+  String get storeAddedFavorite => 'Đã thêm vào yêu thích';
+
+  @override
+  String get storeRemovedFavorite => 'Đã bỏ khỏi yêu thích';
+
+  @override
+  String get storeFavoriteSaveFailed => 'Không lưu được danh sách yêu thích.';
+
+  @override
+  String get storeEnableLocation => 'Vui lòng bật dịch vụ định vị.';
+
+  @override
+  String get storeNeedLocation => 'Cần quyền vị trí để tìm cửa hàng gần bạn.';
+
+  @override
+  String get storeNoCurrentLocation => 'Không lấy được vị trí hiện tại.';
+
+  @override
+  String get storeListLoadFailed => 'Không tải được danh sách cửa hàng.';
+
+  @override
+  String get storeListSubtitle => 'Khám phá điểm tủ & đối tác liên kết';
+
+  @override
+  String get storeSearchHint => 'Tìm theo tên hoặc địa chỉ';
+
+  @override
+  String get storeListLoading => 'Đang tải danh sách điểm tủ...';
+
+  @override
+  String get storeNone => 'Không có cửa hàng nào';
+
+  @override
+  String get storeRatingsLoadFailed => 'Không tải được đánh giá.';
+
+  @override
+  String get storeInfoLoadFailed => 'Không tải được thông tin cửa hàng.';
+
+  @override
+  String get storeNoLocation => 'Cửa hàng chưa có vị trí.';
+
+  @override
+  String get storeCantOpenMap => 'Không mở được bản đồ.';
+
+  @override
+  String get storeDetailTitle => 'Chi tiết điểm gửi';
+
+  @override
+  String get storeDetailSubtitle => 'Điểm tủ & đối tác liên kết';
+
+  @override
+  String get storeInfoLoading => 'Đang tải thông tin...';
+
+  @override
+  String storeRatingCount(Object count) {
+    return '  ·  $count đánh giá';
+  }
+
+  @override
+  String get storeViewLockers => 'Xem tủ';
+
+  @override
+  String get storeCustomerReviews => 'Đánh giá từ khách hàng';
+
+  @override
+  String get storeNoReviews => 'Chưa có đánh giá nào';
+
+  @override
+  String get storeTemporarilyClosed => 'Tạm đóng';
+
+  @override
+  String get storeCustomer => 'Khách hàng';
+
+  @override
+  String get storeOpen => 'Mở cửa';
+
+  @override
+  String storeDistanceFromYou(Object km) {
+    return 'Cách bạn $km km';
+  }
+
+  @override
+  String lockerHash(Object id) {
+    return 'Tủ #$id';
+  }
+
+  @override
+  String get lockerLockerTitle => 'Tủ locker';
+
+  @override
+  String get lockerPhysicalLocation => 'Vị trí tủ vật lý';
+
+  @override
+  String get lockerListLoading => 'Đang tải danh sách tủ...';
+
+  @override
+  String get lockerDroneCellHint =>
+      'Chạm vào ô drone còn trống (màu tím) để gửi hàng bằng drone tới tủ khác.';
+
+  @override
+  String get lockerViewOnMap => 'Xem vị trí trên bản đồ';
+
+  @override
+  String get lockerKioskPoint => 'ĐIỂM ĐẶT KIOSK';
+
+  @override
+  String lockerCount(Object count) {
+    return '$count tủ locker';
+  }
+
+  @override
+  String get lockerTapToSeeFree => 'Chạm vào tủ để xem ô trống';
+
+  @override
+  String get lockerDefaultName => 'Tủ';
+
+  @override
+  String get lockerOfflineCantBook =>
+      'Tủ đang mất kết nối với máy chủ nên tạm thời chưa đặt được ô.';
+
+  @override
+  String get lockerUnderMaintenance =>
+      'Tủ đang bảo trì kỹ thuật, tạm ngưng nhận đơn.';
+
+  @override
+  String get lockerSuspended => 'Tủ đang tạm ngưng hoạt động.';
+
+  @override
+  String lockerFreeOfTotal(Object available, Object total) {
+    return '$available/$total ô trống';
+  }
+
+  @override
+  String get lockerNoCellsConfigured => 'Tủ chưa có ô nào được cấu hình';
+
+  @override
+  String get lockerBoxPendingCheck => 'đang chờ kỹ thuật viên kiểm tra sự cố';
+
+  @override
+  String get lockerBoxBroken => 'đang hỏng';
+
+  @override
+  String lockerBoxUnavailable(Object box, Object state) {
+    return '$box $state. Hãy chọn ô khác.';
+  }
+
+  @override
+  String lockerBoxUnavailableReason(Object box, Object state, Object reason) {
+    return '$box $state: $reason. Hãy chọn ô khác.';
+  }
+
+  @override
+  String get lockerScreen7 => 'Màn hình 7\"';
+
+  @override
+  String get lockerFaultBroken => 'Lỗi / Hỏng';
+
+  @override
+  String get lockerDoorOpen => 'Cửa mở';
+
+  @override
+  String get lockerDoorClosed => 'Cửa đóng';
+
+  @override
+  String get lockerScreen => 'Màn hình';
+
+  @override
+  String get lockerKioskScreen => 'Màn hình kiosk';
+
+  @override
+  String get lockerKioskHelp =>
+      'Tại màn hình kiosk, bạn có thể nhập mã PIN của đơn để mở ô, hoặc đăng nhập bằng cách quét mã QR trên kiosk với nút quét ở trang chủ ứng dụng.';
+
+  @override
+  String get lockerKioskOffline =>
+      'Tủ đang mất kết nối với máy chủ: màn hình có thể không phản hồi và chưa đặt được ô mới.';
+
+  @override
+  String get lockerReportKioskIssue => 'Báo sự cố màn hình kiosk';
+
+  @override
+  String get lockerBrokenUpper => 'HỎNG';
+
+  @override
+  String get lockerPendingCheckUpper => 'CHỜ KIỂM TRA';
+
+  @override
+  String get lockerPendingCheck => 'Chờ kiểm tra';
+
+  @override
+  String get lockerCleaning => 'Vệ sinh';
+
+  @override
+  String get lockerDroneReceive => 'Nhận Drone';
+
+  @override
+  String get lockerReady => 'Sẵn sàng';
+
+  @override
+  String get sizeSmall => 'Nhỏ (S)';
+
+  @override
+  String get sizeMedium => 'Vừa (M)';
+
+  @override
+  String get sizeLarge => 'Lớn (L)';
+
+  @override
+  String get sizeXlSuitcase => 'Vali cỡ lớn (XL)';
+
+  @override
+  String get lockerEmptySuitcaseBox => 'Ô tủ vali trống';
+
+  @override
+  String get lockerEmptyBox => 'Ô tủ trống';
+
+  @override
+  String get lockerWhatToDo => 'Bạn muốn làm gì với ô tủ này?';
+
+  @override
+  String get lockerRentSubtitle => 'Theo giờ hoặc ngày';
+
+  @override
+  String get lockerSendParcel => 'Gửi hàng';
+
+  @override
+  String get lockerSendSubtitle => 'Chuyển C2C';
+
+  @override
+  String get lockerSuitcaseRentOnly =>
+      'Ô vali chỉ dùng để thuê giữ đồ, không nhận gửi hàng.';
+
+  @override
+  String get lockerReportBoxIssue => 'Gặp sự cố với ô này? Báo cáo ngay';
+
+  @override
+  String get lockerNoLockers => 'Chưa có tủ locker';
+
+  @override
+  String get lockerStoreNoActiveLockers =>
+      'Cửa hàng này chưa có tủ locker đang hoạt động.';
+
+  @override
+  String get lockerCabinetIdRequired => 'Cabinet ID không được để trống';
+
+  @override
+  String get lockerLocationIdRequired => 'Location ID không được để trống';
+
+  @override
+  String get lockerOfflinePickOther =>
+      'Tủ đang mất kết nối nên chưa đặt được ô. Vui lòng chọn tủ khác hoặc thử lại sau.';
+
+  @override
+  String get lockerMaintenancePickOther =>
+      'Tủ đang bảo trì nên tạm ngưng nhận đơn. Vui lòng chọn tủ khác.';
+
+  @override
+  String get lockerSuspendedCantBook =>
+      'Tủ đang tạm ngưng hoạt động nên chưa đặt được ô.';
+
+  @override
+  String get groupSmall => 'Ô nhỏ (S)';
+
+  @override
+  String get groupMedium => 'Ô vừa (M)';
+
+  @override
+  String get groupLarge => 'Ô lớn (L)';
+
+  @override
+  String get groupStandard => 'Ô thường';
+
+  @override
+  String get groupXl => 'Ô vali (XL)';
+
+  @override
+  String get groupDrone => 'Ô drone';
+
+  @override
+  String get cellTypeDroneRoof => 'Drone (Nóc tủ)';
+
+  @override
+  String get cellTypeSuitcase => 'Vali (XL)';
+
+  @override
+  String get cellTypeStandard => 'Tiêu chuẩn';
+
+  @override
+  String get cellOutOfService => 'Ngưng dùng';
+
+  @override
+  String get lockerSizeSmallDesc => 'Kích thước nhỏ, phù hợp cho túi xách, ví';
+
+  @override
+  String get lockerSizeMediumDesc => 'Kích thước trung bình, phù hợp cho ba lô';
+
+  @override
+  String get lockerSizeLargeDesc => 'Kích thước lớn, phù hợp cho vali';
+
+  @override
+  String get lockerStatusAvailable => 'Có sẵn';
+
+  @override
+  String get lockerStatusInUse => 'Đang sử dụng';
+
+  @override
+  String get lockerStatusReserved => 'Đã đặt trước';
+
+  @override
+  String get lockerStatusMaintenance => 'Đang bảo trì';
+
+  @override
+  String get lockerStatusOutOfService => 'Ngừng hoạt động';
+
+  @override
+  String get lockerAlreadyRented => 'Tủ này đang được thuê.';
+
+  @override
+  String get lockerInsufficientBalance => 'Số dư không đủ.';
+
+  @override
+  String get lockerFixedRentFailed => 'Thuê tủ cố định thất bại.';
+
+  @override
+  String get lockerOpenCommandSent => 'Đã gửi lệnh mở tủ.';
+
+  @override
+  String get lockerCloseCommandSent => 'Đã gửi lệnh đóng tủ.';
+
+  @override
+  String get lockerDetailSubtitle => 'Chi tiết vị trí tủ Lock.R';
+
+  @override
+  String get lockerNoCoordinates =>
+      'Tủ chưa có toạ độ nên chưa hiển thị được bản đồ và chỉ đường.';
+
+  @override
+  String get lockerBookService => 'Đặt dịch vụ';
+
+  @override
+  String get lockerViewLayout => 'Xem sơ đồ ô tủ';
+
+  @override
+  String get lockerMapTitle => 'Bản đồ tủ khóa';
+
+  @override
+  String get lockerMapSubtitle => 'Tìm điểm tủ Lock.R gần bạn nhất';
+
+  @override
+  String get lockerMapLoading => 'Đang tải bản đồ...';
+
+  @override
+  String get lockerNoneYet => 'Hiện tại chưa có tủ nào!';
+
+  @override
+  String get lockerGettingLocation => 'Đang lấy vị trí...';
+
+  @override
+  String get lockerUseMyLocation => 'Sử dụng vị trí của bạn';
+
+  @override
+  String get lockerMapLoadFailed =>
+      'Không thể tải bản đồ. Toạ độ có thể không hợp lệ.';
+
+  @override
+  String lockerInvalidCoordsHidden(Object count) {
+    return '$count địa điểm có toạ độ không hợp lệ đã được ẩn.';
+  }
+
+  @override
+  String get lockerLocating => 'Đang xác định vị trí...';
+
+  @override
+  String get lockerAddressFailed =>
+      'Không thể xác định địa chỉ, vui lòng thử lại';
+
+  @override
+  String lockerAddressFailedError(Object error) {
+    return 'Không thể xác định địa chỉ, vui lòng thử lại: $error';
+  }
+
+  @override
+  String get lockerLocationServiceOff =>
+      'Dịch vụ vị trí đang tắt. Vui lòng bật GPS.';
+
+  @override
+  String get lockerLocationDenied => 'Quyền truy cập vị trí bị từ chối.';
+
+  @override
+  String get lockerLocationDeniedForever =>
+      'Quyền vị trí bị từ chối vĩnh viễn. Hãy bật lại trong cài đặt.';
+
+  @override
+  String get lockerOtherKiosk => 'Kiosk khác';
+
+  @override
+  String lockerCountShort(Object count) {
+    return '$count tủ';
+  }
+
+  @override
+  String get commonAll => 'Tất cả';
+
+  @override
+  String get lockerLocationList => 'Danh sách địa điểm';
+
+  @override
+  String get lockerLoginToSeeLocations =>
+      'Đăng nhập để xem các địa điểm khả dụng';
+
+  @override
+  String get lockerLoginRequiredLocations =>
+      'Bạn cần đăng nhập để xem danh sách địa điểm';
+
+  @override
+  String get lockerPickLocation => 'Chọn địa điểm để xem chi tiết';
+
+  @override
+  String get lockerSearchLocation => 'Tìm kiếm địa điểm...';
+
+  @override
+  String get lockerNoLocations => 'Hiện tại chưa có địa điểm nào!';
+
+  @override
+  String get lockerNotFoundHere => 'Không tìm thấy tủ tại địa điểm này';
+
+  @override
+  String get lockerTryOtherLocation =>
+      'Thử chọn địa điểm khác hoặc xem tất cả địa điểm khả dụng.';
+
+  @override
+  String get lockerViewAllLocations => 'Xem tất cả địa điểm';
+
+  @override
+  String get lockerLoadingFreeCells => 'Đang tải số ô trống...';
+
+  @override
+  String lockerCellsLoadFailed(Object error) {
+    return 'Chưa tải được số ô: $error';
+  }
+
+  @override
+  String get lockerFreeCells => 'Ô trống';
+
+  @override
+  String get lockerConnectionUnknown => 'Chưa rõ kết nối';
+
+  @override
+  String get lockerMostUsed => 'Hay dùng nhất';
+
+  @override
+  String get promoUnlimited => 'Không giới hạn';
+
+  @override
+  String get promoExpired => 'Đã hết hạn';
+
+  @override
+  String promoDaysLeft(Object days) {
+    return 'Còn $days ngày';
+  }
+
+  @override
+  String promoHoursLeft(Object hours) {
+    return 'Còn $hours giờ';
+  }
+
+  @override
+  String promoMinutesLeft(Object minutes) {
+    return 'Còn $minutes phút';
+  }
+
+  @override
+  String promoMinOrder(Object amount) {
+    return 'Đơn tối thiểu $amount';
+  }
+
+  @override
+  String get promoSystemWide => 'Toàn hệ thống';
+
+  @override
+  String promoAppliesAt(Object name) {
+    return 'Áp dụng tại: $name';
+  }
+
+  @override
+  String get promoSubtitle => 'Khám phá ưu đãi đang hiệu lực hôm nay';
+
+  @override
+  String get promoLoading => 'Đang tải khuyến mãi...';
+
+  @override
+  String get promoNoneActive => 'Chưa có ưu đãi nào đang hiệu lực';
+
+  @override
+  String get promoExpiringSoon => 'Sắp hết hạn';
+
+  @override
+  String promoSavedToMine(Object code) {
+    return 'Đã lưu mã $code vào \"Ưu đãi của tôi\"';
+  }
+
+  @override
+  String get promoSaveNotSupported =>
+      'Máy chủ chưa hỗ trợ lưu mã. Vui lòng thử lại sau.';
+
+  @override
+  String get promoSaveFailed =>
+      'Không lưu được mã — kiểm tra đăng nhập và thử lại';
+
+  @override
+  String promoCopiedCode(Object code) {
+    return 'Đã sao chép mã: $code';
+  }
+
+  @override
+  String promoDiscountPercent(Object percent) {
+    return 'Giảm $percent%';
+  }
+
+  @override
+  String promoDiscountAmount(Object amount) {
+    return 'Giảm $amount';
+  }
+
+  @override
+  String get promoDetailTitle => 'Chi tiết ưu đãi';
+
+  @override
+  String get promoOfferExpired => 'Ưu đãi đã hết hạn';
+
+  @override
+  String get promoCodeLabel => 'Mã khuyến mãi';
+
+  @override
+  String get promoDiscountLevel => 'Mức giảm';
+
+  @override
+  String get promoScope => 'Phạm vi';
+
+  @override
+  String get promoMaxDiscount => 'Giảm tối đa';
+
+  @override
+  String get promoMinOrderLabel => 'Đơn tối thiểu';
+
+  @override
+  String get promoActive => 'Đang hiệu lực';
+
+  @override
+  String get promoExpiredCantUse =>
+      'Ưu đãi này đã hết hạn và không thể sử dụng.';
+
+  @override
+  String get promoStep1Any =>
+      'Vào trang Thuê tủ, Gửi hàng hoặc Gửi drone và chọn tủ';
+
+  @override
+  String promoStep1At(Object locker) {
+    return 'Vào trang Thuê tủ, Gửi hàng hoặc Gửi drone tại $locker (đơn drone: tủ drone cất cánh)';
+  }
+
+  @override
+  String get promoStep2 =>
+      'Ở mục \"Mã giảm giá\", chạm \"Chọn mã giảm giá\" rồi chọn mã này trong danh sách';
+
+  @override
+  String get promoStep3 =>
+      'Mức giảm được trừ vào tổng tiền nếu đơn đủ điều kiện (đơn tối thiểu, tủ áp dụng)';
+
+  @override
+  String get promoLoadFailed => 'Không tải được ưu đãi';
+
+  @override
+  String get promoAtThisLocker => 'Ưu đãi tại tủ này';
+
+  @override
+  String get voucherMine => 'Ưu đãi của tôi';
+
+  @override
+  String get voucherMineSubtitle => 'Mã giảm giá & quà tặng của bạn';
+
+  @override
+  String get voucherExchangeTab => 'Đổi điểm';
+
+  @override
+  String get voucherLoginToSee => 'Bạn cần đăng nhập để xem ưu đãi đã lưu';
+
+  @override
+  String get voucherLoading => 'Đang tải ưu đãi...';
+
+  @override
+  String get voucherNone => 'Bạn chưa có ưu đãi nào';
+
+  @override
+  String get voucherExploreAndSave => 'Khám phá ưu đãi và lưu mã';
+
+  @override
+  String get voucherGift => 'Quà tặng';
+
+  @override
+  String get voucherGiftUpper => 'QUÀ TẶNG';
+
+  @override
+  String get voucherDiscountUpper => 'GIẢM GIÁ';
+
+  @override
+  String get voucherUsed => 'Đã dùng';
+
+  @override
+  String get voucherUsedLong => 'Đã sử dụng';
+
+  @override
+  String get voucherCopied => 'Đã sao chép mã voucher';
+
+  @override
+  String get voucherCode => 'Mã voucher';
+
+  @override
+  String get voucherOffer => 'Ưu đãi';
+
+  @override
+  String get voucherCampaign => 'Chiến dịch';
+
+  @override
+  String get voucherValidUntil => 'Hạn sử dụng';
+
+  @override
+  String get voucherExpiredCantUse =>
+      'Voucher này đã hết hạn và không thể sử dụng.';
+
+  @override
+  String get voucherAlreadyUsed => 'Voucher này đã được sử dụng.';
+
+  @override
+  String get voucherStepCopy => 'Sao chép mã voucher ở trên';
+
+  @override
+  String get voucherStepBookAny =>
+      'Vào trang đặt dịch vụ (Thuê tủ / Gửi hàng / Gửi drone)';
+
+  @override
+  String voucherStepBookAt(Object locker) {
+    return 'Đặt dịch vụ tại $locker (đơn drone: tủ drone cất cánh)';
+  }
+
+  @override
+  String get voucherStepEnter =>
+      'Nhập mã vào ô \"Mã giảm giá\" và nhấn Áp dụng';
+
+  @override
+  String get voucherStepDeducted =>
+      'Mức giảm sẽ được trừ vào tổng tiền thanh toán';
+
+  @override
+  String get voucherExchangeNotSupported =>
+      'Máy chủ chưa hỗ trợ đổi điểm. Vui lòng thử lại sau.';
+
+  @override
+  String get voucherExchangeLoadFailed =>
+      'Không tải được danh sách đổi điểm. Vui lòng thử lại.';
+
+  @override
+  String get voucherExchangeFailed =>
+      'Chưa đổi được voucher. Vui lòng thử lại.';
+
+  @override
+  String get voucherWalletNotSupported =>
+      'Máy chủ chưa hỗ trợ kho ưu đãi. Vui lòng thử lại sau.';
+
+  @override
+  String get voucherMineLoadFailed =>
+      'Không tải được ưu đãi của bạn. Vui lòng thử lại.';
+
+  @override
+  String pointsCount(Object points) {
+    return '$points điểm';
+  }
+
+  @override
+  String voucherMaxSuffix(Object amount) {
+    return ' (tối đa $amount)';
+  }
+
+  @override
+  String get voucherExchangeLoading => 'Đang tải voucher đổi điểm...';
+
+  @override
+  String get voucherExchangeNone => 'Hiện chưa có voucher nào để đổi điểm';
+
+  @override
+  String get voucherExchangeQuestion => 'Đổi voucher?';
+
+  @override
+  String voucherExchangeConfirm(Object points, Object reward, Object code) {
+    return 'Dùng $points đổi voucher \"$reward\". Voucher sẽ nằm trong mục Khả dụng, dùng bằng mã $code khi đặt đơn.';
+  }
+
+  @override
+  String voucherExchanged(Object code) {
+    return 'Đã đổi voucher $code — xem ở mục Khả dụng';
+  }
+
+  @override
+  String get voucherYourPoints => 'Điểm của bạn';
+
+  @override
+  String voucherPointRate(Object amount) {
+    return '1 điểm = $amount · đổi lấy voucher giảm giá cho đơn';
+  }
+
+  @override
+  String get voucherOwned => 'Đã có';
+
+  @override
+  String voucherMissingPoints(Object points) {
+    return 'Thiếu $points';
+  }
+
+  @override
+  String voucherOrderFrom(Object amount) {
+    return 'Đơn từ $amount';
+  }
 }

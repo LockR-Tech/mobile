@@ -9,20 +9,23 @@ import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
 
 import '../../data/models/exchangeable_voucher_model.dart';
 import '../providers/voucher_provider.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 final _number = NumberFormat.decimalPattern('vi_VN');
 
 /// `200.000 điểm`.
-String fmtPointsText(int points) => '${_number.format(points)} điểm';
+String fmtPointsText(int points) => L10n.current.pointsCount(_number.format(points));
 
 /// `Giảm 10.000đ` / `Giảm 15% (tối đa 30.000đ)`.
 String exchangeVoucherRewardText(ExchangeableVoucherModel voucher) {
   if (voucher.isPercentage) {
     final max = voucher.maxDiscountAmount;
-    return 'Giảm ${voucher.discountValue.round()}%'
-        '${max != null && max > 0 ? ' (tối đa ${_number.format(max)}đ)' : ''}';
+    return L10n.current.promoDiscountPercent(voucher.discountValue.round()) +
+        (max != null && max > 0
+            ? L10n.current.voucherMaxSuffix('${_number.format(max)}đ')
+            : '');
   }
-  return 'Giảm ${_number.format(voucher.discountValue)}đ';
+  return L10n.current.promoDiscountAmount('${_number.format(voucher.discountValue)}đ');
 }
 
 /// Tab "Đổi điểm" ở "Ưu đãi của tôi": số điểm hiện có và các voucher đổi được.
@@ -38,8 +41,8 @@ class PointsExchangeTab extends StatelessWidget {
     return Consumer<VoucherProvider>(
       builder: (context, provider, _) {
         if (provider.exchangeLoading && provider.exchangeable.isEmpty) {
-          return const Center(
-            child: AppLoadingIndicator(message: 'Đang tải voucher đổi điểm...'),
+          return Center(
+            child: AppLoadingIndicator(message: context.l10n.voucherExchangeLoading),
           );
         }
         final balance = provider.pointsBalance;
@@ -57,9 +60,9 @@ class PointsExchangeTab extends StatelessWidget {
                   onRetry: provider.loadExchange,
                 )
               else if (provider.exchangeable.isEmpty)
-                const _Message(
+                _Message(
                   icon: LucideIcons.ticket,
-                  text: 'Hiện chưa có voucher nào để đổi điểm',
+                  text: context.l10n.voucherExchangeNone,
                 )
               else
                 for (final voucher in provider.exchangeable) ...[
@@ -87,20 +90,22 @@ class PointsExchangeTab extends StatelessWidget {
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Đổi voucher?'),
+        title: Text(context.l10n.voucherExchangeQuestion),
         content: Text(
-          'Dùng ${fmtPointsText(voucher.pointsCost)} đổi voucher '
-          '"${exchangeVoucherRewardText(voucher)}". Voucher sẽ nằm trong mục '
-          'Khả dụng, dùng bằng mã ${voucher.code} khi đặt đơn.',
+          context.l10n.voucherExchangeConfirm(
+                fmtPointsText(voucher.pointsCost),
+                exchangeVoucherRewardText(voucher),
+                voucher.code,
+              ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text('Huỷ'),
+            child: Text(context.l10n.commonCancelAlt),
           ),
           FilledButton(
             onPressed: () => Navigator.of(ctx).pop(true),
-            child: const Text('Đổi'),
+            child: Text(context.l10n.commonExchange),
           ),
         ],
       ),
@@ -110,7 +115,7 @@ class PointsExchangeTab extends StatelessWidget {
     messenger.showSnackBar(
       SnackBar(
         content: Text(
-          error ?? 'Đã đổi voucher ${voucher.code} — xem ở mục Khả dụng',
+          error ?? L10n.current.voucherExchanged(voucher.code),
         ),
       ),
     );
@@ -140,8 +145,8 @@ class _BalanceCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Điểm của bạn',
+                Text(
+                  context.l10n.voucherYourPoints,
                   style: TextStyle(color: Colors.white70, fontSize: 13),
                 ),
                 const SizedBox(height: 2),
@@ -156,8 +161,7 @@ class _BalanceCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  '1 điểm = ${_number.format(config.redeemVndPerPoint)}đ · '
-                  'đổi lấy voucher giảm giá cho đơn',
+                  context.l10n.voucherPointRate('${_number.format(config.redeemVndPerPoint)}đ'),
                   style: const TextStyle(color: Colors.white70, fontSize: 12),
                 ),
               ],
@@ -188,10 +192,10 @@ class _ExchangeCard extends StatelessWidget {
     final minOrder = voucher.minOrderAmount ?? 0;
     final Widget action;
     if (voucher.held) {
-      action = const _StatusChip(text: 'Đã có', color: Color(0xFF15803D));
+      action = _StatusChip(text: context.l10n.voucherOwned, color: Color(0xFF15803D));
     } else if (missing > 0) {
       action = _StatusChip(
-        text: 'Thiếu ${_number.format(missing)}',
+        text: context.l10n.voucherMissingPoints(_number.format(missing)),
         color: Colors.grey.shade600,
       );
     } else {
@@ -211,7 +215,7 @@ class _ExchangeCard extends StatelessWidget {
                   color: Colors.white,
                 ),
               )
-            : const Text('Đổi'),
+            : Text(context.l10n.commonExchange),
       );
     }
     return Container(
@@ -273,7 +277,7 @@ class _ExchangeCard extends StatelessWidget {
                 if (minOrder > 0) ...[
                   const SizedBox(height: 4),
                   Text(
-                    'Đơn từ ${_number.format(minOrder)}đ',
+                    context.l10n.voucherOrderFrom('${_number.format(minOrder)}đ'),
                     style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
                   ),
                 ],
@@ -338,7 +342,7 @@ class _Message extends StatelessWidget {
             TextButton.icon(
               onPressed: onRetry,
               icon: const Icon(LucideIcons.refreshCw, size: 16),
-              label: const Text('Thử lại'),
+              label: Text(context.l10n.commonRetry),
             ),
         ],
       ),

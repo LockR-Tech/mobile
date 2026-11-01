@@ -1,17 +1,25 @@
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 /// Value Object: LockerStatus
 /// Enum đại diện cho trạng thái của locker.
 enum LockerStatus {
-  available('AVAILABLE', 'Có sẵn'),
-  inUse('IN_USE', 'Đang sử dụng'),
-  occupied('OCCUPIED', 'Đang sử dụng'),
-  reserved('RESERVED', 'Đã đặt trước'),
-  maintenance('MAINTENANCE', 'Đang bảo trì'),
-  outOfService('OUT_OF_SERVICE', 'Ngừng hoạt động');
+  available('AVAILABLE'),
+  inUse('IN_USE'),
+  occupied('OCCUPIED'),
+  reserved('RESERVED'),
+  maintenance('MAINTENANCE'),
+  outOfService('OUT_OF_SERVICE');
 
   final String value;
-  final String displayName;
 
-  const LockerStatus(this.value, this.displayName);
+  const LockerStatus(this.value);
+
+  String get displayName => switch (this) {
+    available => L10n.current.lockerStatusAvailable,
+    inUse || occupied => L10n.current.lockerStatusInUse,
+    reserved => L10n.current.lockerStatusReserved,
+    maintenance => L10n.current.lockerStatusMaintenance,
+    outOfService => L10n.current.lockerStatusOutOfService,
+  };
 
   /// Factory: Tạo từ string value
   static LockerStatus fromValue(String value) {
