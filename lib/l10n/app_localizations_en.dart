@@ -606,4 +606,698 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get authSessionVerifyFailed =>
       'Couldn\'t verify your login session. Please try again.';
+
+  @override
+  String get commonCancelAlt => 'Cancel';
+
+  @override
+  String get commonClose => 'Close';
+
+  @override
+  String get commonDone => 'Done';
+
+  @override
+  String get commonGotIt => 'Got it';
+
+  @override
+  String get commonOpenSettings => 'Open Settings';
+
+  @override
+  String get commonSearchHint => 'Search...';
+
+  @override
+  String get commonSeeAll => 'SEE ALL';
+
+  @override
+  String get commonLoginRequiredFeature =>
+      'You need to log in to use this feature';
+
+  @override
+  String get commonLoginTitleCase => 'Log In';
+
+  @override
+  String get commonRegisterTitleCase => 'Sign Up';
+
+  @override
+  String get commonBrandEyebrow => 'LOCK.R • SMART LOCKER SYSTEM';
+
+  @override
+  String get commonUnknown => 'Unknown';
+
+  @override
+  String get commonUndetermined => 'Undetermined';
+
+  @override
+  String get commonError => 'Error';
+
+  @override
+  String get commonSuccess => 'Successful';
+
+  @override
+  String get commonFailed => 'Failed';
+
+  @override
+  String get commonPending => 'Pending';
+
+  @override
+  String deadlineAt(Object time, Object date) {
+    return '$time on $date';
+  }
+
+  @override
+  String get navHome => 'Home';
+
+  @override
+  String get navLockers => 'Lockers';
+
+  @override
+  String get navAssistant => 'AI assistant';
+
+  @override
+  String get navOrders => 'Orders';
+
+  @override
+  String get navProfile => 'Profile';
+
+  @override
+  String get routerPolicy => 'Policy';
+
+  @override
+  String get routerMissingDestination => 'Destination coordinates are missing.';
+
+  @override
+  String get routerDestination => 'Destination';
+
+  @override
+  String get backPressAgainToExit => 'Press back again to exit';
+
+  @override
+  String get paymentMethodUnsupported =>
+      'This payment method is no longer supported. Please pay by SePay bank transfer (VietQR).';
+
+  @override
+  String get qrExpired => 'The QR code or session has expired.';
+
+  @override
+  String get qrAlreadyUsed => 'The QR code has already been used.';
+
+  @override
+  String get errorTimeout => 'Connection timed out. Please try again.';
+
+  @override
+  String get errorCannotConnect =>
+      'Can\'t connect to the server. Check your network connection.';
+
+  @override
+  String get errorRequestCancelled => 'The request was cancelled.';
+
+  @override
+  String get errorUnknown => 'An unknown error occurred.';
+
+  @override
+  String get errorNoResponse => 'No response from the server.';
+
+  @override
+  String get errorSessionExpired =>
+      'Your session has expired. Please log in again.';
+
+  @override
+  String get errorForbidden => 'You don\'t have permission to do this.';
+
+  @override
+  String get errorSystemBusy =>
+      'The system is busy or under maintenance. Please try again in a few minutes.';
+
+  @override
+  String get errorServer => 'Server error. Please try again later.';
+
+  @override
+  String get errorNotSupportedYet =>
+      'The server doesn\'t support this feature yet. Please try again later.';
+
+  @override
+  String get errorGenericRetry => 'Something went wrong. Please try again.';
+
+  @override
+  String bleOpenedBox(Object box) {
+    return 'Opened compartment $box';
+  }
+
+  @override
+  String get bleNotFound =>
+      'Locker not found via Bluetooth. Stand close to the locker (within 2 m) and try again.';
+
+  @override
+  String get bleConnectFailed =>
+      'Couldn\'t connect to the locker via Bluetooth. Try again in a few seconds.';
+
+  @override
+  String get bleNoService =>
+      'The locker hasn\'t enabled Bluetooth opening (the controller needs an update).';
+
+  @override
+  String get bleTimeout =>
+      'The locker didn\'t respond. Check whether the compartment opened, then try again.';
+
+  @override
+  String get bleOff => 'Your phone\'s Bluetooth is off.';
+
+  @override
+  String get blePermissionDenied =>
+      'The app doesn\'t have Bluetooth permission.';
+
+  @override
+  String get bleUnsupported =>
+      'This device doesn\'t support Bluetooth (only available in the Android/iOS app).';
+
+  @override
+  String get bleBadCode => 'The locker rejected the opening code.';
+
+  @override
+  String get bleExpired =>
+      'The opening code has expired. Tap open again to get a new code.';
+
+  @override
+  String get bleReplayed =>
+      'This code has already been used. Tap open again to get a new code.';
+
+  @override
+  String get bleWrongLocker => 'You\'re connected to the wrong locker.';
+
+  @override
+  String get bleNoKey =>
+      'The locker hasn\'t downloaded its verification key from the server yet (it needs to be online once).';
+
+  @override
+  String get bleNotConfigured =>
+      'The locker isn\'t registered in the system yet.';
+
+  @override
+  String get bleInvalidSlot =>
+      'This compartment has no electric lock connected to the controller.';
+
+  @override
+  String bleOpenFailed(Object suffix) {
+    return 'Couldn\'t open the compartment$suffix.';
+  }
+
+  @override
+  String bleVeryClose(Object distance) {
+    return 'Very close (~${distance}m)';
+  }
+
+  @override
+  String bleNear(Object distance) {
+    return 'Near the locker (~${distance}m)';
+  }
+
+  @override
+  String bleAway(Object distance) {
+    return '~${distance}m from the locker';
+  }
+
+  @override
+  String get notifEnableTitle => 'Turn on notifications';
+
+  @override
+  String get notifEnableBody =>
+      'Notifications are turned off, so you won\'t receive delivery status updates. Go to Settings to turn notifications back on for the app.';
+
+  @override
+  String get notifNew => 'New notification';
+
+  @override
+  String get biometricOpenApp => 'Authenticate to open the app';
+
+  @override
+  String get enumLockerToLocker => 'Locker-to-locker delivery';
+
+  @override
+  String get enumHomeToLocker => 'Home-to-locker delivery';
+
+  @override
+  String get enumPendingProcessing => 'Pending';
+
+  @override
+  String get enumAwaitingCourier => 'Awaiting courier';
+
+  @override
+  String get enumAwaitingPickup => 'Awaiting pickup';
+
+  @override
+  String get enumActive => 'Active';
+
+  @override
+  String get enumCompleted => 'Completed';
+
+  @override
+  String get enumLockedByBalance => 'Locked due to balance';
+
+  @override
+  String get enumCancelled => 'Cancelled';
+
+  @override
+  String get enumPending => 'Pending';
+
+  @override
+  String get enumAwaitingDropoffConfirm => 'Awaiting drop-off confirmation';
+
+  @override
+  String get enumInTransit => 'In transit';
+
+  @override
+  String get enumInUse => 'In use';
+
+  @override
+  String get enumOverdue => 'Overdue';
+
+  @override
+  String get enumConsolidating => 'Consolidating';
+
+  @override
+  String get enumPickedUp => 'Picked up';
+
+  @override
+  String get enumAwaitingDropoff => 'Awaiting drop-off';
+
+  @override
+  String get enumAwaitingPayment => 'Awaiting payment';
+
+  @override
+  String get enumUnpaid => 'Unpaid';
+
+  @override
+  String get enumPaid => 'Paid';
+
+  @override
+  String get enumPartiallyPaid => 'Partially paid';
+
+  @override
+  String get enumAwaitingRefund => 'Awaiting refund';
+
+  @override
+  String get enumRefunded => 'Refunded';
+
+  @override
+  String get enumTopUp => 'Top-up';
+
+  @override
+  String get enumRentalFee => 'Locker rental fee';
+
+  @override
+  String get enumShippingFee => 'Shipping fee';
+
+  @override
+  String get enumOverdueFee => 'Overdue fee';
+
+  @override
+  String get enumRefund => 'Refund';
+
+  @override
+  String get enumWalletTopUp => 'Wallet top-up';
+
+  @override
+  String get enumWithdraw => 'Withdrawal';
+
+  @override
+  String get enumShippingService => 'Shipping service';
+
+  @override
+  String get enumPersonalRental => 'Personal locker rental';
+
+  @override
+  String get enumReady => 'Available';
+
+  @override
+  String get enumReserved => 'Reserved';
+
+  @override
+  String get enumLockedBalanceShort => 'Locked (balance)';
+
+  @override
+  String get enumFaulty => 'Faulty';
+
+  @override
+  String get enumPendingCheck => 'Pending check';
+
+  @override
+  String get enumMaintenance => 'Maintenance';
+
+  @override
+  String get enumInitializing => 'Initializing';
+
+  @override
+  String get enumLocked => 'Locked';
+
+  @override
+  String get enumUnlocked => 'Unlocked';
+
+  @override
+  String get enumOpen => 'Open';
+
+  @override
+  String get enumClosed => 'Closed';
+
+  @override
+  String get enumOpening => 'Opening...';
+
+  @override
+  String get enumClosing => 'Closing...';
+
+  @override
+  String get enumOffline => 'Offline';
+
+  @override
+  String get enumFood => 'Food';
+
+  @override
+  String get enumOther => 'Other';
+
+  @override
+  String get unitMinute => 'minute';
+
+  @override
+  String get unitHour => 'hour';
+
+  @override
+  String get unitDay => 'day';
+
+  @override
+  String get unitWeek => 'week';
+
+  @override
+  String get unitMonth => 'month';
+
+  @override
+  String minutesShort(Object minutes) {
+    return '$minutes min';
+  }
+
+  @override
+  String get qrSendingOpen => 'Sending the open command...';
+
+  @override
+  String get qrOpenedTest => 'Compartment opened (locker test)';
+
+  @override
+  String get qrNotOpened => 'Couldn\'t open the compartment';
+
+  @override
+  String qrLockerBox(Object locker, Object box) {
+    return 'Locker #$locker · compartment #$box';
+  }
+
+  @override
+  String get qrNotLockrCode =>
+      'This isn\'t a Lock.R kiosk login or compartment code. Scan the QR code shown on the locker screen.';
+
+  @override
+  String get qrConfirmingKiosk => 'Confirming kiosk login...';
+
+  @override
+  String qrAtLocker(Object name) {
+    return ' at $name';
+  }
+
+  @override
+  String qrKioskLoggedIn(Object where) {
+    return 'Logged in on the kiosk$where';
+  }
+
+  @override
+  String get qrKioskLoginFailedTitle => 'Couldn\'t log in on the kiosk';
+
+  @override
+  String get qrKioskLoginFailed =>
+      'Couldn\'t confirm the kiosk login. Please try again.';
+
+  @override
+  String get qrScan => 'Scan QR code';
+
+  @override
+  String get qrLoginToScan => 'You need to log in to scan QR codes';
+
+  @override
+  String get qrKioskLoginByQr => 'Kiosk login by QR';
+
+  @override
+  String get qrAimHint =>
+      'Point the frame at the QR code on the kiosk screen. You\'ll be asked to confirm before logging in.';
+
+  @override
+  String get qrEnterManually => 'Enter code manually';
+
+  @override
+  String get qrCameraPermission =>
+      'The app doesn\'t have camera permission. Grant it in your device settings or enter the code manually.';
+
+  @override
+  String get qrCameraUnsupported =>
+      'This device can\'t scan codes with the camera. Please enter the code manually.';
+
+  @override
+  String get qrCameraFailed =>
+      'Couldn\'t open the camera. Try again or enter the code manually.';
+
+  @override
+  String get qrKioskLoginQuestion => 'Log in on the kiosk?';
+
+  @override
+  String get qrKioskLoginBody =>
+      'Your Lock.R account will be logged in on the kiosk showing this code. Only confirm if you\'re standing in front of that kiosk.';
+
+  @override
+  String get qrKioskConfirmCode => 'Confirmation code on the kiosk';
+
+  @override
+  String get qrKioskLogin => 'Log in on kiosk';
+
+  @override
+  String get qrWrongCode =>
+      'Incorrect code. Check the session code and confirmation code shown on the kiosk.';
+
+  @override
+  String get qrEnterKioskCode => 'Enter kiosk login code';
+
+  @override
+  String get qrEnterKioskCodeHint =>
+      'Enter the session code and confirmation code shown below the QR code on the kiosk screen.';
+
+  @override
+  String get qrSessionCode => 'Session code';
+
+  @override
+  String get qrConfirmCode => 'Confirmation code';
+
+  @override
+  String get mapNoLocation =>
+      'Couldn\'t get your location — showing the locker only.';
+
+  @override
+  String get mapCantOpenMaps => 'Couldn\'t open the maps app.';
+
+  @override
+  String get mapFindingRoute => 'Finding a route...';
+
+  @override
+  String mapRemaining(Object distance) {
+    return '$distance left';
+  }
+
+  @override
+  String get mapStopNavigation => 'Stop navigation';
+
+  @override
+  String get mapStartNavigation => 'Start navigation';
+
+  @override
+  String get mapGetMyLocation => 'Get your location';
+
+  @override
+  String get mapOpenGoogleMaps => 'Open in Google Maps';
+
+  @override
+  String get mediaBadResponse =>
+      'The image server returned invalid data, please try again';
+
+  @override
+  String get mediaUploadCancelled => 'Image upload cancelled';
+
+  @override
+  String get mediaCannotConnect =>
+      'Couldn\'t reach the server, check your network and try again';
+
+  @override
+  String get mediaPurposeForbidden =>
+      'You don\'t have permission to upload this type of image';
+
+  @override
+  String get mediaNoUploadPermission =>
+      'Couldn\'t get upload permission, please try again';
+
+  @override
+  String get mediaUploadNetwork =>
+      'Couldn\'t upload the image, check your network and try again';
+
+  @override
+  String get mediaSessionExpired =>
+      'The upload session has expired, please try again';
+
+  @override
+  String get mediaTooLarge => 'The image is too large, please choose another';
+
+  @override
+  String get mediaFormatUnsupported =>
+      'Unsupported image format (use JPG, PNG, WEBP, HEIC)';
+
+  @override
+  String get mediaServerOverloaded =>
+      'The image server is overloaded, please try again in a few minutes';
+
+  @override
+  String get mediaUploadFailedRetry => 'Image upload failed, please try again';
+
+  @override
+  String get mediaStorageDisabled =>
+      'Image storage is temporarily disabled. Please submit without photos or try again later.';
+
+  @override
+  String get mediaPurposeInvalid => 'Invalid image type';
+
+  @override
+  String get mediaSignatureInvalid =>
+      'The uploaded image is invalid, please take it again';
+
+  @override
+  String get mediaOwnerMismatch =>
+      'The image doesn\'t belong to your account, please upload again';
+
+  @override
+  String get mediaAttachmentLimit =>
+      'The ticket has reached the maximum number of photos';
+
+  @override
+  String get mediaAttachmentStageInvalid =>
+      'Invalid photo type for this ticket';
+
+  @override
+  String get mediaReportNotInProgress => 'The ticket isn\'t in progress';
+
+  @override
+  String get mediaReportResolved =>
+      'The ticket is resolved, photos can\'t be added';
+
+  @override
+  String get mediaReportNotAssigned =>
+      'You aren\'t the technician assigned to this ticket';
+
+  @override
+  String get mediaReportNotOwned => 'You didn\'t submit this ticket';
+
+  @override
+  String get mediaDeleteForbidden =>
+      'You don\'t have permission to delete this photo';
+
+  @override
+  String get mediaResolutionPhotoRequired =>
+      'At least 1 acceptance photo is needed before resolving the ticket';
+
+  @override
+  String get mediaAlreadyAttached =>
+      'This photo is already attached to the ticket';
+
+  @override
+  String mediaTooLargeMax(Object mb) {
+    return 'The image is too large (max $mb MB), please choose another';
+  }
+
+  @override
+  String get photoAdd => 'Add photo';
+
+  @override
+  String photoMax(Object count) {
+    return 'Up to $count photos';
+  }
+
+  @override
+  String get photoTakeCamera => 'Take a photo with the camera';
+
+  @override
+  String photoPickGalleryMax(Object count) {
+    return 'Choose from gallery (up to $count)';
+  }
+
+  @override
+  String get photoPickGallery => 'Choose from gallery';
+
+  @override
+  String get photoCameraDenied =>
+      'Couldn\'t open the camera. Grant camera permission in settings.';
+
+  @override
+  String get photoGalleryDenied =>
+      'Couldn\'t open the photo gallery. Grant photo permission in settings.';
+
+  @override
+  String get photoUploadFailed => 'Image upload failed';
+
+  @override
+  String photoNumber(Object number) {
+    return 'Photo $number';
+  }
+
+  @override
+  String get attachmentReport => 'On-site photos (reporter)';
+
+  @override
+  String get attachmentInspection => 'Technician confirmation photos';
+
+  @override
+  String get attachmentProgress => 'Repair progress photos';
+
+  @override
+  String get attachmentResolution => 'Acceptance photos';
+
+  @override
+  String get attachmentPhoto => 'Photo';
+
+  @override
+  String attachmentCount(Object count) {
+    return '($count photos):';
+  }
+
+  @override
+  String get attachmentNone => 'No photos yet';
+
+  @override
+  String attachmentLocation(Object lat, Object lng) {
+    return 'Location $lat, $lng';
+  }
+
+  @override
+  String get attachmentLoadFailed => 'Couldn\'t load the image';
+
+  @override
+  String get paymentSuccess => 'Payment successful';
+
+  @override
+  String get paymentFailed => 'Payment failed';
+
+  @override
+  String get paymentSuccessExclaim => 'Payment successful!';
+
+  @override
+  String get paymentPreparingPin => 'Preparing the compartment PIN...';
+
+  @override
+  String get paymentTapToContinue => 'Tap to continue';
+
+  @override
+  String get locationPick => 'Choose location';
+
+  @override
+  String get locationSearchAddress => 'Search for an address...';
+
+  @override
+  String get locationConfirm => 'Confirm location';
 }

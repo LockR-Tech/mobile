@@ -29,8 +29,8 @@ import 'package:shadcn_ui/shadcn_ui.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
-
 import 'package:smart_laundry_locker/core/l10n/l10n.dart';
+
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
 

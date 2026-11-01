@@ -3,8 +3,8 @@ import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:smart_laundry_locker/core/routing/app_router.dart';
 import 'package:smart_laundry_locker/features/profile/domain/profile_completion.dart';
 import 'package:smart_laundry_locker/features/profile/presentation/providers/profile_provider.dart';
-
 import 'package:smart_laundry_locker/core/l10n/l10n.dart';
+
 /// "Hoàn tất đăng ký" sau khi đăng nhập bằng SĐT: tài khoản backend tự tạo chỉ
 /// có tên "User" ⇒ hỏi họ tên (email tuỳ chọn) và lưu qua
 /// `PUT /api/user/profile`. "Để sau" đóng hộp thoại; lần đăng nhập SĐT sau vẫn

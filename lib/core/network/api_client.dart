@@ -3,6 +3,7 @@ import 'package:smart_laundry_locker/core/constants/payment_methods.dart';
 import 'package:smart_laundry_locker/core/network/dio_client.dart';
 import 'package:smart_laundry_locker/core/services/token_service.dart';
 import 'package:dio/dio.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 /// ApiClient: Wrapper around DioClient cho việc gọi API
 /// Cung cấp các method tiện ích và xử lý error thống nhất.
@@ -162,28 +163,28 @@ class ApiClient {
       case DioExceptionType.connectionTimeout:
       case DioExceptionType.sendTimeout:
       case DioExceptionType.receiveTimeout:
-        return NetworkException('Kết nối timeout. Vui lòng thử lại.');
+        return NetworkException(L10n.current.errorTimeout);
 
       case DioExceptionType.connectionError:
         return NetworkException(
-          'Không thể kết nối đến server. Kiểm tra kết nối mạng.',
+          L10n.current.errorCannotConnect,
         );
 
       case DioExceptionType.badResponse:
         return _handleBadResponse(e.response);
 
       case DioExceptionType.cancel:
-        return NetworkException('Request đã bị hủy.');
+        return NetworkException(L10n.current.errorRequestCancelled);
 
       default:
-        return NetworkException(e.message ?? 'Đã xảy ra lỗi không xác định.');
+        return NetworkException(e.message ?? L10n.current.errorUnknown);
     }
   }
 
   /// Handle bad response (4xx, 5xx)
   Exception _handleBadResponse(Response? response) {
     if (response == null) {
-      return ServerException('Không có response từ server.');
+      return ServerException(L10n.current.errorNoResponse);
     }
 
     final statusCode = response.statusCode ?? 0;
@@ -231,7 +232,7 @@ class ApiClient {
         return ValidationException(cleanMessage);
       case 401:
         return AuthenticationException(
-          'Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.',
+          L10n.current.errorSessionExpired,
         );
       case 403:
         // 403 kèm mã nghiệp vụ (vd. ADMIN_AUTH_2FA_REQUIRED) có lời giải thích riêng của server.
@@ -240,7 +241,7 @@ class ApiClient {
         return AuthorizationException(
           hasBusinessCode && cleanMessage != 'Đã xảy ra lỗi.'
               ? cleanMessage
-              : 'Bạn không có quyền thực hiện hành động này.',
+              : L10n.current.errorForbidden,
         );
       case 404:
         return NotFoundException(cleanMessage);
@@ -251,10 +252,10 @@ class ApiClient {
         // "Bad Gateway"…) khi dịch vụ chưa chạy: không hiện thẳng cho người dùng.
         final rawHttpPhrase = RegExp(r'^[A-Za-z ]+$').hasMatch(cleanMessage);
         final errorMessage = rawHttpPhrase
-            ? 'Hệ thống đang bận hoặc đang bảo trì. Vui lòng thử lại sau ít phút.'
+            ? L10n.current.errorSystemBusy
             : cleanMessage.isNotEmpty && cleanMessage != 'Đã xảy ra lỗi.'
             ? cleanMessage
-            : 'Lỗi server. Vui lòng thử lại sau.';
+            : L10n.current.errorServer;
         return ServerException(errorMessage);
       default:
         return ServerException(cleanMessage);

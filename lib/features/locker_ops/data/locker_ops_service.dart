@@ -1614,7 +1614,7 @@ class LockerOpsService {
   }
 
   /// Các mã lỗi mà server trả `message` tiếng Anh — hiển thị bản tiếng Việt.
-  static const _codeMessages = <String, String>{
+  static Map<String, String> get _codeMessages => <String, String>{
     'BLE_TEST_NOT_GRANTED':
         'Tài khoản chưa được admin cho thử mở ô qua Bluetooth ở tủ này.',
     'RESOLUTION_PHOTO_REQUIRED':

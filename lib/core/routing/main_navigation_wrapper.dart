@@ -16,6 +16,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 class MainNavigationWrapper extends StatefulWidget {
   final StatefulNavigationShell? navigationShell;
@@ -237,16 +238,16 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper> {
             currentIndex: _calculateSelectedIndex(context),
             onTap: _onItemTapped,
             items: [
-              const NavigationItem(
+              NavigationItem(
                 icon: LucideIcons.house,
                 activeIcon: LucideIcons.house,
-                label: 'Trang chủ',
+                label: context.l10n.navHome,
                 route: AppRouter.home,
               ),
-              const NavigationItem(
+              NavigationItem(
                 icon: CustomIcons.drawer,
                 activeIcon: CustomIcons.drawer,
-                label: 'Tủ',
+                label: context.l10n.navLockers,
                 route: AppRouter.lockers,
               ),
               NavigationItem(
@@ -262,20 +263,20 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper> {
                   height: size,
                   fit: BoxFit.contain,
                 ),
-                label: 'Trợ lý AI',
+                label: context.l10n.navAssistant,
                 route: AppRouter.assistant,
                 isProminent: true,
               ),
-              const NavigationItem(
+              NavigationItem(
                 icon: CustomIcons.package,
                 activeIcon: CustomIcons.package,
-                label: 'Đơn hàng',
+                label: context.l10n.navOrders,
                 route: AppRouter.orders,
               ),
-              const NavigationItem(
+              NavigationItem(
                 icon: LucideIcons.user,
                 activeIcon: LucideIcons.user,
-                label: 'Hồ sơ',
+                label: context.l10n.navProfile,
                 route: AppRouter.profile,
               ),
             ],

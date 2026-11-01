@@ -1,3 +1,4 @@
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 /// `stage` của ảnh phiếu sự cố (docs/01-overview/media-storage.md §3).
 abstract final class ReportStage {
   static const report = 'REPORT';
@@ -9,11 +10,11 @@ abstract final class ReportStage {
   static const ordered = [report, inspection, progress, resolution];
 
   static String label(String stage) => switch (stage) {
-    report => 'Ảnh hiện trường (người báo)',
-    inspection => 'Ảnh xác nhận của KTV',
-    progress => 'Ảnh trong quá trình sửa',
-    resolution => 'Ảnh nghiệm thu',
-    _ => 'Ảnh',
+    report => L10n.current.attachmentReport,
+    inspection => L10n.current.attachmentInspection,
+    progress => L10n.current.attachmentProgress,
+    resolution => L10n.current.attachmentResolution,
+    _ => L10n.current.attachmentPhoto,
   };
 }
 

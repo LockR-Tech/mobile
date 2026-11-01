@@ -209,5 +209,297 @@
   "authGoogleLoginDisabled": "Đăng nhập bằng Google chưa được bật. Vui lòng dùng email để đăng nhập.",
   "authSiteGoogleNotAllowed": "Trang web này chưa được phép đăng nhập bằng Google. Vui lòng dùng email để đăng nhập.",
   "authGoogleEmailOtherProvider": "Email Google này đã gắn với cách đăng nhập khác. Vui lòng đăng nhập bằng cách bạn đã dùng trước đó.",
-  "authSessionVerifyFailed": "Không xác thực được phiên đăng nhập. Vui lòng thử lại."
+  "authSessionVerifyFailed": "Không xác thực được phiên đăng nhập. Vui lòng thử lại.",
+  "commonCancelAlt": "Huỷ",
+  "commonClose": "Đóng",
+  "commonDone": "Hoàn tất",
+  "commonGotIt": "Đã hiểu",
+  "commonOpenSettings": "Mở Cài đặt",
+  "commonSearchHint": "Tìm kiếm...",
+  "commonSeeAll": "XEM TẤT CẢ",
+  "commonLoginRequiredFeature": "Bạn cần đăng nhập để sử dụng tính năng này",
+  "commonLoginTitleCase": "Đăng Nhập",
+  "commonRegisterTitleCase": "Đăng Ký",
+  "commonBrandEyebrow": "LOCK.R • HỆ THỐNG TỦ THÔNG MINH",
+  "commonUnknown": "Không xác định",
+  "commonUndetermined": "Chưa xác định",
+  "commonError": "Lỗi",
+  "commonSuccess": "Thành công",
+  "commonFailed": "Thất bại",
+  "commonPending": "Đang chờ",
+  "deadlineAt": "{time} ngày {date}",
+  "@deadlineAt": {
+    "placeholders": {
+      "time": {},
+      "date": {}
+    }
+  },
+  "navHome": "Trang chủ",
+  "navLockers": "Tủ",
+  "navAssistant": "Trợ lý AI",
+  "navOrders": "Đơn hàng",
+  "navProfile": "Hồ sơ",
+  "routerPolicy": "Chính sách",
+  "routerMissingDestination": "Thiếu toạ độ điểm đến.",
+  "routerDestination": "Điểm đến",
+  "backPressAgainToExit": "Bấm quay lại lần nữa để thoát",
+  "paymentMethodUnsupported": "Phương thức thanh toán này không còn được hỗ trợ. Vui lòng thanh toán bằng chuyển khoản SePay (VietQR).",
+  "qrExpired": "Mã QR hết hạn hoặc phiên đã hết hạn.",
+  "qrAlreadyUsed": "Mã QR đã được sử dụng.",
+  "errorTimeout": "Kết nối timeout. Vui lòng thử lại.",
+  "errorCannotConnect": "Không thể kết nối đến server. Kiểm tra kết nối mạng.",
+  "errorRequestCancelled": "Request đã bị hủy.",
+  "errorUnknown": "Đã xảy ra lỗi không xác định.",
+  "errorNoResponse": "Không có response từ server.",
+  "errorSessionExpired": "Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.",
+  "errorForbidden": "Bạn không có quyền thực hiện hành động này.",
+  "errorSystemBusy": "Hệ thống đang bận hoặc đang bảo trì. Vui lòng thử lại sau ít phút.",
+  "errorServer": "Lỗi server. Vui lòng thử lại sau.",
+  "errorNotSupportedYet": "Máy chủ chưa hỗ trợ chức năng này. Vui lòng thử lại sau.",
+  "errorGenericRetry": "Đã xảy ra lỗi. Vui lòng thử lại.",
+  "bleOpenedBox": "Đã mở ô {box}",
+  "@bleOpenedBox": {
+    "placeholders": {
+      "box": {}
+    }
+  },
+  "bleNotFound": "Không thấy tủ qua Bluetooth. Hãy đứng sát tủ (dưới 2 m) rồi thử lại.",
+  "bleConnectFailed": "Không kết nối được Bluetooth với tủ. Thử lại sau vài giây.",
+  "bleNoService": "Tủ chưa bật chức năng mở ô qua Bluetooth (bộ điều khiển cần cập nhật).",
+  "bleTimeout": "Tủ không trả lời. Kiểm tra ô đã mở chưa rồi thử lại.",
+  "bleOff": "Bluetooth của điện thoại đang tắt.",
+  "blePermissionDenied": "App chưa được cấp quyền Bluetooth.",
+  "bleUnsupported": "Thiết bị này không hỗ trợ Bluetooth (chỉ dùng được trên app Android/iOS).",
+  "bleBadCode": "Tủ không chấp nhận mã mở ô.",
+  "bleExpired": "Mã mở ô đã hết hạn. Bấm mở lại để lấy mã mới.",
+  "bleReplayed": "Mã này đã dùng rồi. Bấm mở lại để lấy mã mới.",
+  "bleWrongLocker": "Bạn đang kết nối nhầm tủ.",
+  "bleNoKey": "Tủ chưa tải được khoá kiểm mã từ máy chủ (cần có mạng một lần).",
+  "bleNotConfigured": "Tủ chưa được gán trên hệ thống.",
+  "bleInvalidSlot": "Ô này không có khoá điện nối vào bộ điều khiển.",
+  "bleOpenFailed": "Mở ô không thành công{suffix}.",
+  "@bleOpenFailed": {
+    "placeholders": {
+      "suffix": {}
+    }
+  },
+  "bleVeryClose": "Rất gần (~{distance}m)",
+  "@bleVeryClose": {
+    "placeholders": {
+      "distance": {}
+    }
+  },
+  "bleNear": "Gần tủ (~{distance}m)",
+  "@bleNear": {
+    "placeholders": {
+      "distance": {}
+    }
+  },
+  "bleAway": "Cách tủ ~{distance}m",
+  "@bleAway": {
+    "placeholders": {
+      "distance": {}
+    }
+  },
+  "notifEnableTitle": "Bật thông báo",
+  "notifEnableBody": "Bạn đã tắt quyền thông báo nên sẽ không nhận được cập nhật trạng thái giao hàng. Hãy vào Cài đặt để bật lại thông báo cho ứng dụng.",
+  "notifNew": "Thông báo mới",
+  "biometricOpenApp": "Xác thực để mở ứng dụng",
+  "enumLockerToLocker": "Giao từ tủ qua tủ",
+  "enumHomeToLocker": "Giao từ nhà tới tủ",
+  "enumPendingProcessing": "Đang chờ xử lý",
+  "enumAwaitingCourier": "Chờ người giao hàng",
+  "enumAwaitingPickup": "Chờ lấy hàng",
+  "enumActive": "Đang hoạt động",
+  "enumCompleted": "Đã hoàn tất",
+  "enumLockedByBalance": "Bị khóa do số dư",
+  "enumCancelled": "Đã hủy",
+  "enumPending": "Chờ xử lý",
+  "enumAwaitingDropoffConfirm": "Chờ xác nhận gửi hàng",
+  "enumInTransit": "Đang vận chuyển",
+  "enumInUse": "Đang sử dụng",
+  "enumOverdue": "Quá hạn",
+  "enumConsolidating": "Đang gom hàng",
+  "enumPickedUp": "Đã lấy hàng",
+  "enumAwaitingDropoff": "Chờ gửi hàng",
+  "enumAwaitingPayment": "Chờ thanh toán",
+  "enumUnpaid": "Chưa thanh toán",
+  "enumPaid": "Đã thanh toán",
+  "enumPartiallyPaid": "Thanh toán một phần",
+  "enumAwaitingRefund": "Chờ hoàn tiền",
+  "enumRefunded": "Đã hoàn tiền",
+  "enumTopUp": "Nạp tiền",
+  "enumRentalFee": "Phí thuê tủ",
+  "enumShippingFee": "Phí vận chuyển",
+  "enumOverdueFee": "Phí quá hạn",
+  "enumRefund": "Hoàn tiền",
+  "enumWalletTopUp": "Nạp tiền vào ví",
+  "enumWithdraw": "Rút tiền",
+  "enumShippingService": "Dịch vụ vận chuyển",
+  "enumPersonalRental": "Thuê tủ cá nhân",
+  "enumReady": "Sẵn sàng",
+  "enumReserved": "Đã đặt trước",
+  "enumLockedBalanceShort": "Khóa do số dư",
+  "enumFaulty": "Bị lỗi",
+  "enumPendingCheck": "Chờ kiểm tra",
+  "enumMaintenance": "Bảo trì",
+  "enumInitializing": "Đang khởi tạo",
+  "enumLocked": "Đã khóa",
+  "enumUnlocked": "Đã mở khóa",
+  "enumOpen": "Đang mở",
+  "enumClosed": "Đã đóng",
+  "enumOpening": "Đang mở...",
+  "enumClosing": "Đang đóng...",
+  "enumOffline": "Ngoại tuyến",
+  "enumFood": "Thực phẩm",
+  "enumOther": "Khác",
+  "unitMinute": "phút",
+  "unitHour": "giờ",
+  "unitDay": "ngày",
+  "unitWeek": "tuần",
+  "unitMonth": "tháng",
+  "minutesShort": "{minutes} phút",
+  "@minutesShort": {
+    "placeholders": {
+      "minutes": {}
+    }
+  },
+  "qrSendingOpen": "Đang gửi lệnh mở ô...",
+  "qrOpenedTest": "Đã mở ô (thử tủ)",
+  "qrNotOpened": "Chưa mở được ô",
+  "qrLockerBox": "Tủ #{locker} · ô #{box}",
+  "@qrLockerBox": {
+    "placeholders": {
+      "locker": {},
+      "box": {}
+    }
+  },
+  "qrNotLockrCode": "Đây không phải mã đăng nhập kiosk hay mã mở ô Lock.R. Hãy quét mã QR đang hiện trên màn hình tủ.",
+  "qrConfirmingKiosk": "Đang xác nhận đăng nhập kiosk...",
+  "qrAtLocker": " tại {name}",
+  "@qrAtLocker": {
+    "placeholders": {
+      "name": {}
+    }
+  },
+  "qrKioskLoggedIn": "Đã đăng nhập trên kiosk{where}",
+  "@qrKioskLoggedIn": {
+    "placeholders": {
+      "where": {}
+    }
+  },
+  "qrKioskLoginFailedTitle": "Chưa đăng nhập được kiosk",
+  "qrKioskLoginFailed": "Không xác nhận được đăng nhập kiosk. Vui lòng thử lại.",
+  "qrScan": "Quét mã QR",
+  "qrLoginToScan": "Bạn cần đăng nhập để quét mã QR",
+  "qrKioskLoginByQr": "Đăng nhập kiosk bằng QR",
+  "qrAimHint": "Đưa khung vào mã QR trên màn hình kiosk. Bạn sẽ được hỏi lại trước khi đăng nhập.",
+  "qrEnterManually": "Nhập mã thủ công",
+  "qrCameraPermission": "Ứng dụng chưa được cấp quyền camera. Hãy cấp quyền trong cài đặt máy hoặc nhập mã thủ công.",
+  "qrCameraUnsupported": "Thiết bị không hỗ trợ quét mã bằng camera. Hãy nhập mã thủ công.",
+  "qrCameraFailed": "Không mở được camera. Hãy thử lại hoặc nhập mã thủ công.",
+  "qrKioskLoginQuestion": "Đăng nhập kiosk?",
+  "qrKioskLoginBody": "Tài khoản Lock.R của bạn sẽ được đăng nhập trên kiosk vừa hiện mã. Chỉ xác nhận khi bạn đang đứng trước kiosk đó.",
+  "qrKioskConfirmCode": "Mã xác nhận trên kiosk",
+  "qrKioskLogin": "Đăng nhập kiosk",
+  "qrWrongCode": "Mã chưa đúng. Kiểm tra lại mã phiên và mã xác nhận đang hiện trên kiosk.",
+  "qrEnterKioskCode": "Nhập mã đăng nhập kiosk",
+  "qrEnterKioskCodeHint": "Nhập mã phiên và mã xác nhận đang hiện dưới mã QR trên màn hình kiosk.",
+  "qrSessionCode": "Mã phiên",
+  "qrConfirmCode": "Mã xác nhận",
+  "mapNoLocation": "Không lấy được vị trí của bạn — chỉ hiển thị tủ.",
+  "mapCantOpenMaps": "Không mở được ứng dụng bản đồ.",
+  "mapFindingRoute": "Đang tìm đường...",
+  "mapRemaining": "{distance} còn lại",
+  "@mapRemaining": {
+    "placeholders": {
+      "distance": {}
+    }
+  },
+  "mapStopNavigation": "Dừng dẫn đường",
+  "mapStartNavigation": "Bắt đầu dẫn đường",
+  "mapGetMyLocation": "Lấy vị trí của bạn",
+  "mapOpenGoogleMaps": "Mở trên Google Maps",
+  "mediaBadResponse": "Máy chủ ảnh trả về dữ liệu không hợp lệ, vui lòng thử lại",
+  "mediaUploadCancelled": "Đã huỷ tải ảnh",
+  "mediaCannotConnect": "Không kết nối được máy chủ, kiểm tra mạng rồi thử lại",
+  "mediaPurposeForbidden": "Bạn không có quyền tải loại ảnh này",
+  "mediaNoUploadPermission": "Không lấy được quyền tải ảnh, vui lòng thử lại",
+  "mediaUploadNetwork": "Không tải được ảnh lên, kiểm tra kết nối mạng rồi thử lại",
+  "mediaSessionExpired": "Phiên tải ảnh đã hết hạn, vui lòng thử lại",
+  "mediaTooLarge": "Ảnh quá lớn, vui lòng chọn ảnh khác",
+  "mediaFormatUnsupported": "Định dạng ảnh không được hỗ trợ (dùng JPG, PNG, WEBP, HEIC)",
+  "mediaServerOverloaded": "Máy chủ ảnh đang quá tải, vui lòng thử lại sau ít phút",
+  "mediaUploadFailedRetry": "Tải ảnh lên thất bại, vui lòng thử lại",
+  "mediaStorageDisabled": "Hệ thống lưu ảnh đang tạm tắt. Vui lòng gửi không kèm ảnh hoặc thử lại sau.",
+  "mediaPurposeInvalid": "Loại ảnh tải lên không hợp lệ",
+  "mediaSignatureInvalid": "Ảnh tải lên không hợp lệ, vui lòng chụp lại",
+  "mediaOwnerMismatch": "Ảnh không thuộc tài khoản của bạn, vui lòng tải lại",
+  "mediaAttachmentLimit": "Phiếu đã đạt số ảnh tối đa cho phép",
+  "mediaAttachmentStageInvalid": "Loại ảnh không hợp lệ cho phiếu này",
+  "mediaReportNotInProgress": "Phiếu chưa ở trạng thái đang xử lý",
+  "mediaReportResolved": "Phiếu đã hoàn tất, không thể thêm ảnh",
+  "mediaReportNotAssigned": "Bạn không phải kỹ thuật viên được giao phiếu này",
+  "mediaReportNotOwned": "Bạn không phải người gửi phiếu này",
+  "mediaDeleteForbidden": "Bạn không có quyền xoá ảnh này",
+  "mediaResolutionPhotoRequired": "Cần ít nhất 1 ảnh nghiệm thu trước khi hoàn tất phiếu",
+  "mediaAlreadyAttached": "Ảnh này đã được gắn vào phiếu",
+  "mediaTooLargeMax": "Ảnh quá lớn (tối đa {mb} MB), vui lòng chọn ảnh khác",
+  "@mediaTooLargeMax": {
+    "placeholders": {
+      "mb": {}
+    }
+  },
+  "photoAdd": "Thêm ảnh",
+  "photoMax": "Tối đa {count} ảnh",
+  "@photoMax": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "photoTakeCamera": "Chụp ảnh từ máy ảnh",
+  "photoPickGalleryMax": "Chọn ảnh từ thư viện (tối đa {count})",
+  "@photoPickGalleryMax": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "photoPickGallery": "Chọn ảnh từ thư viện",
+  "photoCameraDenied": "Không mở được máy ảnh. Hãy cấp quyền camera trong cài đặt.",
+  "photoGalleryDenied": "Không mở được thư viện ảnh. Hãy cấp quyền ảnh trong cài đặt.",
+  "photoUploadFailed": "Tải ảnh thất bại",
+  "photoNumber": "Ảnh {number}",
+  "@photoNumber": {
+    "placeholders": {
+      "number": {}
+    }
+  },
+  "attachmentReport": "Ảnh hiện trường (người báo)",
+  "attachmentInspection": "Ảnh xác nhận của KTV",
+  "attachmentProgress": "Ảnh trong quá trình sửa",
+  "attachmentResolution": "Ảnh nghiệm thu",
+  "attachmentPhoto": "Ảnh",
+  "attachmentCount": "({count} ảnh):",
+  "@attachmentCount": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "attachmentNone": "Chưa có ảnh",
+  "attachmentLocation": "Vị trí {lat}, {lng}",
+  "@attachmentLocation": {
+    "placeholders": {
+      "lat": {},
+      "lng": {}
+    }
+  },
+  "attachmentLoadFailed": "Không tải được ảnh",
+  "paymentSuccess": "Thanh toán thành công",
+  "paymentFailed": "Thanh toán thất bại",
+  "paymentSuccessExclaim": "Thanh toán thành công!",
+  "paymentPreparingPin": "Đang chuẩn bị mã PIN mở ô tủ...",
+  "paymentTapToContinue": "Chạm để tiếp tục",
+  "locationPick": "Chọn vị trí",
+  "locationSearchAddress": "Tìm kiếm địa chỉ...",
+  "locationConfirm": "Xác nhận vị trí"
 }

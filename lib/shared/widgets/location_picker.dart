@@ -6,6 +6,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:http/http.dart' as http;
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:smart_laundry_locker/core/theme/shadcn_theme.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 class LocationResult {
   final String address;
@@ -123,8 +124,8 @@ class _LocationPickerState extends State<LocationPicker> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          'Chọn vị trí',
+        title: Text(
+          context.l10n.locationPick,
           style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
         ),
         backgroundColor: Colors.white,
@@ -194,7 +195,7 @@ class _LocationPickerState extends State<LocationPicker> {
                     onChanged: _onSearchChanged,
                     style: const TextStyle(color: Colors.black, fontSize: 16),
                     decoration: InputDecoration(
-                      hintText: 'Tìm kiếm địa chỉ...',
+                      hintText: context.l10n.locationSearchAddress,
                       hintStyle: TextStyle(color: Colors.grey.shade500),
                       prefixIcon: const Icon(
                         LucideIcons.search,
@@ -292,8 +293,8 @@ class _LocationPickerState extends State<LocationPicker> {
                   borderRadius: BorderRadius.circular(16),
                 ),
               ),
-              child: const Text(
-                'Xác nhận vị trí',
+              child: Text(
+                context.l10n.locationConfirm,
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 16,

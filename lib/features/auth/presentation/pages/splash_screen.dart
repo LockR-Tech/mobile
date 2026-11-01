@@ -8,8 +8,8 @@ import 'package:smart_laundry_locker/core/services/session_service.dart';
 import 'package:smart_laundry_locker/core/services/token_service.dart';
 import 'package:smart_laundry_locker/shared/shared.dart';
 import 'package:smart_laundry_locker/shared/widgets/app_lottie.dart';
-
 import 'package:smart_laundry_locker/core/l10n/l10n.dart';
+
 const String _kFastDeliveryLottie =
     'assets/animations/fast_shopping_delivery.json';
 

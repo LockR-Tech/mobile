@@ -6,8 +6,8 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:smart_laundry_locker/core/network/api_client.dart';
 import 'package:smart_laundry_locker/features/auth/presentation/providers/auth_injection.dart';
 import 'package:smart_laundry_locker/features/auth/presentation/providers/forgot_password_provider.dart';
-
 import 'package:smart_laundry_locker/core/l10n/l10n.dart';
+
 // Palette đồng bộ với LoginScreen để hai màn auth nhìn như một sản phẩm.
 const Color _kNavyDark = Color(0xFF001F2D);
 const Color _kNavy = Color(0xFF003D5B);

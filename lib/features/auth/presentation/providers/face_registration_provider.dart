@@ -1,8 +1,8 @@
 import 'dart:typed_data';
 import 'package:smart_laundry_locker/features/auth/application/use_cases/register_face_use_case.dart';
 import 'package:flutter/foundation.dart';
-
 import 'package:smart_laundry_locker/core/l10n/l10n.dart';
+
 class FaceRegistrationProvider extends ChangeNotifier {
   final RegisterFaceUseCase _registerFaceUseCase;
 

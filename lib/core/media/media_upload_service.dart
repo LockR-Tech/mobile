@@ -8,6 +8,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:smart_laundry_locker/core/media/media_upload.dart';
 import 'package:smart_laundry_locker/core/network/dio_client.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 /// Bytes đã sẵn sàng gửi lên Cloudinary.
 class PreparedImage {
@@ -77,8 +78,8 @@ class MediaUploadService {
       final body = res.data;
       final data = body is Map ? body['data'] : null;
       if (data is! Map) {
-        throw const MediaUploadException(
-          'Không lấy được quyền tải ảnh, vui lòng thử lại',
+        throw MediaUploadException(
+          L10n.current.mediaNoUploadPermission,
           code: 'SIGNATURE_BAD_RESPONSE',
         );
       }
@@ -86,8 +87,8 @@ class MediaUploadService {
         Map<String, dynamic>.from(data),
       );
       if (batch.uploadUrl.isEmpty || batch.uploads.length < safeCount) {
-        throw const MediaUploadException(
-          'Không lấy được quyền tải ảnh, vui lòng thử lại',
+        throw MediaUploadException(
+          L10n.current.mediaNoUploadPermission,
           code: 'SIGNATURE_BAD_RESPONSE',
         );
       }
@@ -112,7 +113,7 @@ class MediaUploadService {
     if (maxBytes != null && maxBytes > 0 && prepared.bytes.length > maxBytes) {
       final mb = (maxBytes / (1024 * 1024)).toStringAsFixed(0);
       throw MediaUploadException(
-        'Ảnh quá lớn (tối đa $mb MB), vui lòng chọn ảnh khác',
+        L10n.current.mediaTooLargeMax(mb),
         code: 'FILE_TOO_LARGE',
       );
     }
@@ -150,8 +151,8 @@ class MediaUploadService {
       );
       final body = res.data;
       if (body is! Map) {
-        throw const MediaUploadException(
-          'Máy chủ ảnh trả về dữ liệu không hợp lệ, vui lòng thử lại',
+        throw MediaUploadException(
+          L10n.current.mediaBadResponse,
           code: 'CLOUDINARY_BAD_RESPONSE',
         );
       }

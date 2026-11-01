@@ -4,6 +4,7 @@ import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:go_router/go_router.dart';
 import 'package:smart_laundry_locker/core/routing/role_routes.dart';
 import 'package:smart_laundry_locker/core/services/token_service.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 /// Nút / cử chỉ quay lại của điện thoại đi theo lịch sử trang như trình duyệt, không thoát app.
 ///
@@ -182,7 +183,7 @@ class AppBackNavigation with WidgetsBindingObserver {
       return true;
     }
     _lastExitPress = now;
-    SmartDialog.showToast('Bấm quay lại lần nữa để thoát');
+    SmartDialog.showToast(L10n.current.backPressAgainToExit);
     return true;
   }
 

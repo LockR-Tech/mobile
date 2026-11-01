@@ -15,8 +15,8 @@ import 'package:firebase_auth/firebase_auth.dart' show FirebaseAuthException;
 import 'package:flutter/foundation.dart';
 import 'package:smart_laundry_locker/core/utils/firebase_auth_errors.dart';
 import 'package:smart_laundry_locker/core/utils/phone_utils.dart';
-
 import 'package:smart_laundry_locker/core/l10n/l10n.dart';
+
 class LoginProvider extends ChangeNotifier {
   final LoginUseCase _loginUseCase;
   final LoginWithFaceUseCase _loginWithFaceUseCase;

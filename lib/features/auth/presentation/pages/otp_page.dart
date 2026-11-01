@@ -6,8 +6,8 @@ import 'package:smart_laundry_locker/features/auth/presentation/providers/verify
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
-
 import 'package:smart_laundry_locker/core/l10n/l10n.dart';
+
 class OtpPage extends StatefulWidget {
   final String? phoneNumber;
   final String? email;

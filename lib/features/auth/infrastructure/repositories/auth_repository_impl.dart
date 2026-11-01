@@ -15,8 +15,8 @@ import 'package:smart_laundry_locker/features/auth/infrastructure/models/login_r
 import 'package:smart_laundry_locker/features/auth/infrastructure/models/register_request_model.dart';
 import 'package:smart_laundry_locker/features/auth/infrastructure/models/verify_otp_request_model.dart';
 import 'package:dartz/dartz.dart';
-
 import 'package:smart_laundry_locker/core/l10n/l10n.dart';
+
 class AuthRepositoryImpl implements AuthRepository {
   final AuthRemoteDataSource _remoteDataSource;
 

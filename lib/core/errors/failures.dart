@@ -1,3 +1,4 @@
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 /// Base class cho tất cả Failures trong ứng dụng.
 /// Dùng để represent lỗi theo functional programming pattern.
 abstract class Failure {
@@ -52,13 +53,12 @@ class UnknownFailure extends Failure {
 
 /// Phiên QR đăng nhập web đã hết hạn (backend: "QR session expired").
 class QrExpiredFailure extends Failure {
-  const QrExpiredFailure([
-    String message = 'Mã QR hết hạn hoặc phiên đã hết hạn.',
-  ]) : super(message);
+  QrExpiredFailure([String? message])
+    : super(message ?? L10n.current.qrExpired);
 }
 
 /// Mã QR đã được xác nhận trước đó (backend: "QR session already used").
 class QrAlreadyUsedFailure extends Failure {
-  const QrAlreadyUsedFailure([String message = 'Mã QR đã được sử dụng.'])
-    : super(message);
+  QrAlreadyUsedFailure([String? message])
+    : super(message ?? L10n.current.qrAlreadyUsed);
 }

@@ -9,6 +9,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:smart_laundry_locker/core/theme/shadcn_theme.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 /// Reusable in-app directions screen: draws a driving route from the user's
 /// current location to [destination] on an OpenStreetMap map (via the public
@@ -67,7 +68,7 @@ class _DirectionsMapPageState extends State<DirectionsMapPage> {
       _fitBounds(me, widget.destination);
     } else {
       setState(
-        () => _hint = 'Không lấy được vị trí của bạn — chỉ hiển thị tủ.',
+        () => _hint = context.l10n.mapNoLocation,
       );
     }
     if (mounted) setState(() => _loading = false);
@@ -118,7 +119,7 @@ class _DirectionsMapPageState extends State<DirectionsMapPage> {
       _fitBounds(me, widget.destination);
     } else {
       setState(
-        () => _hint = 'Không lấy được vị trí của bạn — chỉ hiển thị tủ.',
+        () => _hint = context.l10n.mapNoLocation,
       );
     }
     if (mounted) setState(() => _loading = false);
@@ -186,7 +187,7 @@ class _DirectionsMapPageState extends State<DirectionsMapPage> {
       await launchUrl(appleMaps, mode: LaunchMode.externalApplication);
     } else if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Không mở được ứng dụng bản đồ.')),
+        SnackBar(content: Text(context.l10n.mapCantOpenMaps)),
       );
     }
   }
@@ -353,7 +354,7 @@ class _DirectionsMapPageState extends State<DirectionsMapPage> {
                       ),
                     ],
                   ),
-                  child: const Row(
+                  child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       SizedBox(
@@ -366,7 +367,7 @@ class _DirectionsMapPageState extends State<DirectionsMapPage> {
                       ),
                       SizedBox(width: 8),
                       Text(
-                        'Đang tìm đường...',
+                        context.l10n.mapFindingRoute,
                         style: TextStyle(fontSize: 12),
                       ),
                     ],
@@ -438,8 +439,8 @@ class _DirectionsMapPageState extends State<DirectionsMapPage> {
               icon: LucideIcons.navigation,
               iconColor: Colors.green,
               text: _remainingMeters! >= 1000
-                  ? '${(_remainingMeters! / 1000).toStringAsFixed(1)} km còn lại'
-                  : '${_remainingMeters!.round()} m còn lại',
+                  ? context.l10n.mapRemaining('${(_remainingMeters! / 1000).toStringAsFixed(1)} km')
+: context.l10n.mapRemaining('${_remainingMeters!.round()} m'),
             )
           else if (_distanceMeters != null && _durationSeconds != null)
             _RouteInfoRow(
@@ -447,7 +448,7 @@ class _DirectionsMapPageState extends State<DirectionsMapPage> {
               iconColor: AISLShadcnTheme.navyAccent,
               text:
                   '${(_distanceMeters! / 1000).toStringAsFixed(1)} km'
-                  '  ·  ~${(_durationSeconds! / 60).round()} phút',
+                  '  ·  ~${context.l10n.minutesShort((_durationSeconds! / 60).round())}',
             )
           else if (_hint != null)
             Padding(
@@ -472,7 +473,7 @@ class _DirectionsMapPageState extends State<DirectionsMapPage> {
                       padding: const EdgeInsets.symmetric(vertical: 14),
                     ),
                     icon: const Icon(Icons.stop_rounded, size: 18),
-                    label: const Text('Dừng dẫn đường'),
+                    label: Text(context.l10n.mapStopNavigation),
                   ),
                 ),
                 const SizedBox(width: 8),
@@ -502,7 +503,7 @@ class _DirectionsMapPageState extends State<DirectionsMapPage> {
                   size: 18,
                 ),
                 label: Text(
-                  _me != null ? 'Bắt đầu dẫn đường' : 'Lấy vị trí của bạn',
+                  _me != null ? context.l10n.mapStartNavigation : context.l10n.mapGetMyLocation,
                 ),
               ),
             ),
@@ -521,7 +522,7 @@ class _DirectionsMapPageState extends State<DirectionsMapPage> {
                   color: Colors.grey.shade500,
                 ),
                 label: Text(
-                  'Mở trên Google Maps',
+                  context.l10n.mapOpenGoogleMaps,
                   style: TextStyle(
                     color: Colors.grey.shade600,
                     fontSize: 13,

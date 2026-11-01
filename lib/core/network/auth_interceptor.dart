@@ -6,6 +6,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 /// Interceptor to handle authentication errors (401 Unauthorized).
 ///
@@ -132,7 +133,7 @@ class AuthInterceptor extends Interceptor {
     debugPrint('AuthInterceptor: cannot refresh, logging out.');
     await TokenService.clearTokens();
     DioClient.instance.clearAuthToken();
-    SmartDialog.showToast('Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.');
+    SmartDialog.showToast(L10n.current.errorSessionExpired);
     AppRouter.router.go(AppRouter.onboarding);
   }
 }

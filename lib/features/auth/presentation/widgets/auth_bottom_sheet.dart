@@ -19,8 +19,8 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
-
 import 'package:smart_laundry_locker/core/l10n/l10n.dart';
+
 class AuthBottomSheet extends StatefulWidget {
   final bool initialIsLogin;
 

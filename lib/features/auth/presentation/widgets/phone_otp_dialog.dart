@@ -5,8 +5,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:smart_laundry_locker/core/utils/phone_utils.dart';
 import 'package:smart_laundry_locker/features/auth/presentation/providers/login_provider.dart';
-
 import 'package:smart_laundry_locker/core/l10n/l10n.dart';
+
 /// Hộp thoại đăng nhập / đăng ký bằng số điện thoại (Firebase Phone Auth),
 /// dùng chung cho màn đăng nhập và bottom sheet đăng nhập.
 ///

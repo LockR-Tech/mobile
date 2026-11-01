@@ -600,4 +600,689 @@ class AppLocalizationsVi extends AppLocalizations {
   @override
   String get authSessionVerifyFailed =>
       'Không xác thực được phiên đăng nhập. Vui lòng thử lại.';
+
+  @override
+  String get commonCancelAlt => 'Huỷ';
+
+  @override
+  String get commonClose => 'Đóng';
+
+  @override
+  String get commonDone => 'Hoàn tất';
+
+  @override
+  String get commonGotIt => 'Đã hiểu';
+
+  @override
+  String get commonOpenSettings => 'Mở Cài đặt';
+
+  @override
+  String get commonSearchHint => 'Tìm kiếm...';
+
+  @override
+  String get commonSeeAll => 'XEM TẤT CẢ';
+
+  @override
+  String get commonLoginRequiredFeature =>
+      'Bạn cần đăng nhập để sử dụng tính năng này';
+
+  @override
+  String get commonLoginTitleCase => 'Đăng Nhập';
+
+  @override
+  String get commonRegisterTitleCase => 'Đăng Ký';
+
+  @override
+  String get commonBrandEyebrow => 'LOCK.R • HỆ THỐNG TỦ THÔNG MINH';
+
+  @override
+  String get commonUnknown => 'Không xác định';
+
+  @override
+  String get commonUndetermined => 'Chưa xác định';
+
+  @override
+  String get commonError => 'Lỗi';
+
+  @override
+  String get commonSuccess => 'Thành công';
+
+  @override
+  String get commonFailed => 'Thất bại';
+
+  @override
+  String get commonPending => 'Đang chờ';
+
+  @override
+  String deadlineAt(Object time, Object date) {
+    return '$time ngày $date';
+  }
+
+  @override
+  String get navHome => 'Trang chủ';
+
+  @override
+  String get navLockers => 'Tủ';
+
+  @override
+  String get navAssistant => 'Trợ lý AI';
+
+  @override
+  String get navOrders => 'Đơn hàng';
+
+  @override
+  String get navProfile => 'Hồ sơ';
+
+  @override
+  String get routerPolicy => 'Chính sách';
+
+  @override
+  String get routerMissingDestination => 'Thiếu toạ độ điểm đến.';
+
+  @override
+  String get routerDestination => 'Điểm đến';
+
+  @override
+  String get backPressAgainToExit => 'Bấm quay lại lần nữa để thoát';
+
+  @override
+  String get paymentMethodUnsupported =>
+      'Phương thức thanh toán này không còn được hỗ trợ. Vui lòng thanh toán bằng chuyển khoản SePay (VietQR).';
+
+  @override
+  String get qrExpired => 'Mã QR hết hạn hoặc phiên đã hết hạn.';
+
+  @override
+  String get qrAlreadyUsed => 'Mã QR đã được sử dụng.';
+
+  @override
+  String get errorTimeout => 'Kết nối timeout. Vui lòng thử lại.';
+
+  @override
+  String get errorCannotConnect =>
+      'Không thể kết nối đến server. Kiểm tra kết nối mạng.';
+
+  @override
+  String get errorRequestCancelled => 'Request đã bị hủy.';
+
+  @override
+  String get errorUnknown => 'Đã xảy ra lỗi không xác định.';
+
+  @override
+  String get errorNoResponse => 'Không có response từ server.';
+
+  @override
+  String get errorSessionExpired =>
+      'Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.';
+
+  @override
+  String get errorForbidden => 'Bạn không có quyền thực hiện hành động này.';
+
+  @override
+  String get errorSystemBusy =>
+      'Hệ thống đang bận hoặc đang bảo trì. Vui lòng thử lại sau ít phút.';
+
+  @override
+  String get errorServer => 'Lỗi server. Vui lòng thử lại sau.';
+
+  @override
+  String get errorNotSupportedYet =>
+      'Máy chủ chưa hỗ trợ chức năng này. Vui lòng thử lại sau.';
+
+  @override
+  String get errorGenericRetry => 'Đã xảy ra lỗi. Vui lòng thử lại.';
+
+  @override
+  String bleOpenedBox(Object box) {
+    return 'Đã mở ô $box';
+  }
+
+  @override
+  String get bleNotFound =>
+      'Không thấy tủ qua Bluetooth. Hãy đứng sát tủ (dưới 2 m) rồi thử lại.';
+
+  @override
+  String get bleConnectFailed =>
+      'Không kết nối được Bluetooth với tủ. Thử lại sau vài giây.';
+
+  @override
+  String get bleNoService =>
+      'Tủ chưa bật chức năng mở ô qua Bluetooth (bộ điều khiển cần cập nhật).';
+
+  @override
+  String get bleTimeout =>
+      'Tủ không trả lời. Kiểm tra ô đã mở chưa rồi thử lại.';
+
+  @override
+  String get bleOff => 'Bluetooth của điện thoại đang tắt.';
+
+  @override
+  String get blePermissionDenied => 'App chưa được cấp quyền Bluetooth.';
+
+  @override
+  String get bleUnsupported =>
+      'Thiết bị này không hỗ trợ Bluetooth (chỉ dùng được trên app Android/iOS).';
+
+  @override
+  String get bleBadCode => 'Tủ không chấp nhận mã mở ô.';
+
+  @override
+  String get bleExpired => 'Mã mở ô đã hết hạn. Bấm mở lại để lấy mã mới.';
+
+  @override
+  String get bleReplayed => 'Mã này đã dùng rồi. Bấm mở lại để lấy mã mới.';
+
+  @override
+  String get bleWrongLocker => 'Bạn đang kết nối nhầm tủ.';
+
+  @override
+  String get bleNoKey =>
+      'Tủ chưa tải được khoá kiểm mã từ máy chủ (cần có mạng một lần).';
+
+  @override
+  String get bleNotConfigured => 'Tủ chưa được gán trên hệ thống.';
+
+  @override
+  String get bleInvalidSlot =>
+      'Ô này không có khoá điện nối vào bộ điều khiển.';
+
+  @override
+  String bleOpenFailed(Object suffix) {
+    return 'Mở ô không thành công$suffix.';
+  }
+
+  @override
+  String bleVeryClose(Object distance) {
+    return 'Rất gần (~${distance}m)';
+  }
+
+  @override
+  String bleNear(Object distance) {
+    return 'Gần tủ (~${distance}m)';
+  }
+
+  @override
+  String bleAway(Object distance) {
+    return 'Cách tủ ~${distance}m';
+  }
+
+  @override
+  String get notifEnableTitle => 'Bật thông báo';
+
+  @override
+  String get notifEnableBody =>
+      'Bạn đã tắt quyền thông báo nên sẽ không nhận được cập nhật trạng thái giao hàng. Hãy vào Cài đặt để bật lại thông báo cho ứng dụng.';
+
+  @override
+  String get notifNew => 'Thông báo mới';
+
+  @override
+  String get biometricOpenApp => 'Xác thực để mở ứng dụng';
+
+  @override
+  String get enumLockerToLocker => 'Giao từ tủ qua tủ';
+
+  @override
+  String get enumHomeToLocker => 'Giao từ nhà tới tủ';
+
+  @override
+  String get enumPendingProcessing => 'Đang chờ xử lý';
+
+  @override
+  String get enumAwaitingCourier => 'Chờ người giao hàng';
+
+  @override
+  String get enumAwaitingPickup => 'Chờ lấy hàng';
+
+  @override
+  String get enumActive => 'Đang hoạt động';
+
+  @override
+  String get enumCompleted => 'Đã hoàn tất';
+
+  @override
+  String get enumLockedByBalance => 'Bị khóa do số dư';
+
+  @override
+  String get enumCancelled => 'Đã hủy';
+
+  @override
+  String get enumPending => 'Chờ xử lý';
+
+  @override
+  String get enumAwaitingDropoffConfirm => 'Chờ xác nhận gửi hàng';
+
+  @override
+  String get enumInTransit => 'Đang vận chuyển';
+
+  @override
+  String get enumInUse => 'Đang sử dụng';
+
+  @override
+  String get enumOverdue => 'Quá hạn';
+
+  @override
+  String get enumConsolidating => 'Đang gom hàng';
+
+  @override
+  String get enumPickedUp => 'Đã lấy hàng';
+
+  @override
+  String get enumAwaitingDropoff => 'Chờ gửi hàng';
+
+  @override
+  String get enumAwaitingPayment => 'Chờ thanh toán';
+
+  @override
+  String get enumUnpaid => 'Chưa thanh toán';
+
+  @override
+  String get enumPaid => 'Đã thanh toán';
+
+  @override
+  String get enumPartiallyPaid => 'Thanh toán một phần';
+
+  @override
+  String get enumAwaitingRefund => 'Chờ hoàn tiền';
+
+  @override
+  String get enumRefunded => 'Đã hoàn tiền';
+
+  @override
+  String get enumTopUp => 'Nạp tiền';
+
+  @override
+  String get enumRentalFee => 'Phí thuê tủ';
+
+  @override
+  String get enumShippingFee => 'Phí vận chuyển';
+
+  @override
+  String get enumOverdueFee => 'Phí quá hạn';
+
+  @override
+  String get enumRefund => 'Hoàn tiền';
+
+  @override
+  String get enumWalletTopUp => 'Nạp tiền vào ví';
+
+  @override
+  String get enumWithdraw => 'Rút tiền';
+
+  @override
+  String get enumShippingService => 'Dịch vụ vận chuyển';
+
+  @override
+  String get enumPersonalRental => 'Thuê tủ cá nhân';
+
+  @override
+  String get enumReady => 'Sẵn sàng';
+
+  @override
+  String get enumReserved => 'Đã đặt trước';
+
+  @override
+  String get enumLockedBalanceShort => 'Khóa do số dư';
+
+  @override
+  String get enumFaulty => 'Bị lỗi';
+
+  @override
+  String get enumPendingCheck => 'Chờ kiểm tra';
+
+  @override
+  String get enumMaintenance => 'Bảo trì';
+
+  @override
+  String get enumInitializing => 'Đang khởi tạo';
+
+  @override
+  String get enumLocked => 'Đã khóa';
+
+  @override
+  String get enumUnlocked => 'Đã mở khóa';
+
+  @override
+  String get enumOpen => 'Đang mở';
+
+  @override
+  String get enumClosed => 'Đã đóng';
+
+  @override
+  String get enumOpening => 'Đang mở...';
+
+  @override
+  String get enumClosing => 'Đang đóng...';
+
+  @override
+  String get enumOffline => 'Ngoại tuyến';
+
+  @override
+  String get enumFood => 'Thực phẩm';
+
+  @override
+  String get enumOther => 'Khác';
+
+  @override
+  String get unitMinute => 'phút';
+
+  @override
+  String get unitHour => 'giờ';
+
+  @override
+  String get unitDay => 'ngày';
+
+  @override
+  String get unitWeek => 'tuần';
+
+  @override
+  String get unitMonth => 'tháng';
+
+  @override
+  String minutesShort(Object minutes) {
+    return '$minutes phút';
+  }
+
+  @override
+  String get qrSendingOpen => 'Đang gửi lệnh mở ô...';
+
+  @override
+  String get qrOpenedTest => 'Đã mở ô (thử tủ)';
+
+  @override
+  String get qrNotOpened => 'Chưa mở được ô';
+
+  @override
+  String qrLockerBox(Object locker, Object box) {
+    return 'Tủ #$locker · ô #$box';
+  }
+
+  @override
+  String get qrNotLockrCode =>
+      'Đây không phải mã đăng nhập kiosk hay mã mở ô Lock.R. Hãy quét mã QR đang hiện trên màn hình tủ.';
+
+  @override
+  String get qrConfirmingKiosk => 'Đang xác nhận đăng nhập kiosk...';
+
+  @override
+  String qrAtLocker(Object name) {
+    return ' tại $name';
+  }
+
+  @override
+  String qrKioskLoggedIn(Object where) {
+    return 'Đã đăng nhập trên kiosk$where';
+  }
+
+  @override
+  String get qrKioskLoginFailedTitle => 'Chưa đăng nhập được kiosk';
+
+  @override
+  String get qrKioskLoginFailed =>
+      'Không xác nhận được đăng nhập kiosk. Vui lòng thử lại.';
+
+  @override
+  String get qrScan => 'Quét mã QR';
+
+  @override
+  String get qrLoginToScan => 'Bạn cần đăng nhập để quét mã QR';
+
+  @override
+  String get qrKioskLoginByQr => 'Đăng nhập kiosk bằng QR';
+
+  @override
+  String get qrAimHint =>
+      'Đưa khung vào mã QR trên màn hình kiosk. Bạn sẽ được hỏi lại trước khi đăng nhập.';
+
+  @override
+  String get qrEnterManually => 'Nhập mã thủ công';
+
+  @override
+  String get qrCameraPermission =>
+      'Ứng dụng chưa được cấp quyền camera. Hãy cấp quyền trong cài đặt máy hoặc nhập mã thủ công.';
+
+  @override
+  String get qrCameraUnsupported =>
+      'Thiết bị không hỗ trợ quét mã bằng camera. Hãy nhập mã thủ công.';
+
+  @override
+  String get qrCameraFailed =>
+      'Không mở được camera. Hãy thử lại hoặc nhập mã thủ công.';
+
+  @override
+  String get qrKioskLoginQuestion => 'Đăng nhập kiosk?';
+
+  @override
+  String get qrKioskLoginBody =>
+      'Tài khoản Lock.R của bạn sẽ được đăng nhập trên kiosk vừa hiện mã. Chỉ xác nhận khi bạn đang đứng trước kiosk đó.';
+
+  @override
+  String get qrKioskConfirmCode => 'Mã xác nhận trên kiosk';
+
+  @override
+  String get qrKioskLogin => 'Đăng nhập kiosk';
+
+  @override
+  String get qrWrongCode =>
+      'Mã chưa đúng. Kiểm tra lại mã phiên và mã xác nhận đang hiện trên kiosk.';
+
+  @override
+  String get qrEnterKioskCode => 'Nhập mã đăng nhập kiosk';
+
+  @override
+  String get qrEnterKioskCodeHint =>
+      'Nhập mã phiên và mã xác nhận đang hiện dưới mã QR trên màn hình kiosk.';
+
+  @override
+  String get qrSessionCode => 'Mã phiên';
+
+  @override
+  String get qrConfirmCode => 'Mã xác nhận';
+
+  @override
+  String get mapNoLocation =>
+      'Không lấy được vị trí của bạn — chỉ hiển thị tủ.';
+
+  @override
+  String get mapCantOpenMaps => 'Không mở được ứng dụng bản đồ.';
+
+  @override
+  String get mapFindingRoute => 'Đang tìm đường...';
+
+  @override
+  String mapRemaining(Object distance) {
+    return '$distance còn lại';
+  }
+
+  @override
+  String get mapStopNavigation => 'Dừng dẫn đường';
+
+  @override
+  String get mapStartNavigation => 'Bắt đầu dẫn đường';
+
+  @override
+  String get mapGetMyLocation => 'Lấy vị trí của bạn';
+
+  @override
+  String get mapOpenGoogleMaps => 'Mở trên Google Maps';
+
+  @override
+  String get mediaBadResponse =>
+      'Máy chủ ảnh trả về dữ liệu không hợp lệ, vui lòng thử lại';
+
+  @override
+  String get mediaUploadCancelled => 'Đã huỷ tải ảnh';
+
+  @override
+  String get mediaCannotConnect =>
+      'Không kết nối được máy chủ, kiểm tra mạng rồi thử lại';
+
+  @override
+  String get mediaPurposeForbidden => 'Bạn không có quyền tải loại ảnh này';
+
+  @override
+  String get mediaNoUploadPermission =>
+      'Không lấy được quyền tải ảnh, vui lòng thử lại';
+
+  @override
+  String get mediaUploadNetwork =>
+      'Không tải được ảnh lên, kiểm tra kết nối mạng rồi thử lại';
+
+  @override
+  String get mediaSessionExpired =>
+      'Phiên tải ảnh đã hết hạn, vui lòng thử lại';
+
+  @override
+  String get mediaTooLarge => 'Ảnh quá lớn, vui lòng chọn ảnh khác';
+
+  @override
+  String get mediaFormatUnsupported =>
+      'Định dạng ảnh không được hỗ trợ (dùng JPG, PNG, WEBP, HEIC)';
+
+  @override
+  String get mediaServerOverloaded =>
+      'Máy chủ ảnh đang quá tải, vui lòng thử lại sau ít phút';
+
+  @override
+  String get mediaUploadFailedRetry => 'Tải ảnh lên thất bại, vui lòng thử lại';
+
+  @override
+  String get mediaStorageDisabled =>
+      'Hệ thống lưu ảnh đang tạm tắt. Vui lòng gửi không kèm ảnh hoặc thử lại sau.';
+
+  @override
+  String get mediaPurposeInvalid => 'Loại ảnh tải lên không hợp lệ';
+
+  @override
+  String get mediaSignatureInvalid =>
+      'Ảnh tải lên không hợp lệ, vui lòng chụp lại';
+
+  @override
+  String get mediaOwnerMismatch =>
+      'Ảnh không thuộc tài khoản của bạn, vui lòng tải lại';
+
+  @override
+  String get mediaAttachmentLimit => 'Phiếu đã đạt số ảnh tối đa cho phép';
+
+  @override
+  String get mediaAttachmentStageInvalid =>
+      'Loại ảnh không hợp lệ cho phiếu này';
+
+  @override
+  String get mediaReportNotInProgress => 'Phiếu chưa ở trạng thái đang xử lý';
+
+  @override
+  String get mediaReportResolved => 'Phiếu đã hoàn tất, không thể thêm ảnh';
+
+  @override
+  String get mediaReportNotAssigned =>
+      'Bạn không phải kỹ thuật viên được giao phiếu này';
+
+  @override
+  String get mediaReportNotOwned => 'Bạn không phải người gửi phiếu này';
+
+  @override
+  String get mediaDeleteForbidden => 'Bạn không có quyền xoá ảnh này';
+
+  @override
+  String get mediaResolutionPhotoRequired =>
+      'Cần ít nhất 1 ảnh nghiệm thu trước khi hoàn tất phiếu';
+
+  @override
+  String get mediaAlreadyAttached => 'Ảnh này đã được gắn vào phiếu';
+
+  @override
+  String mediaTooLargeMax(Object mb) {
+    return 'Ảnh quá lớn (tối đa $mb MB), vui lòng chọn ảnh khác';
+  }
+
+  @override
+  String get photoAdd => 'Thêm ảnh';
+
+  @override
+  String photoMax(Object count) {
+    return 'Tối đa $count ảnh';
+  }
+
+  @override
+  String get photoTakeCamera => 'Chụp ảnh từ máy ảnh';
+
+  @override
+  String photoPickGalleryMax(Object count) {
+    return 'Chọn ảnh từ thư viện (tối đa $count)';
+  }
+
+  @override
+  String get photoPickGallery => 'Chọn ảnh từ thư viện';
+
+  @override
+  String get photoCameraDenied =>
+      'Không mở được máy ảnh. Hãy cấp quyền camera trong cài đặt.';
+
+  @override
+  String get photoGalleryDenied =>
+      'Không mở được thư viện ảnh. Hãy cấp quyền ảnh trong cài đặt.';
+
+  @override
+  String get photoUploadFailed => 'Tải ảnh thất bại';
+
+  @override
+  String photoNumber(Object number) {
+    return 'Ảnh $number';
+  }
+
+  @override
+  String get attachmentReport => 'Ảnh hiện trường (người báo)';
+
+  @override
+  String get attachmentInspection => 'Ảnh xác nhận của KTV';
+
+  @override
+  String get attachmentProgress => 'Ảnh trong quá trình sửa';
+
+  @override
+  String get attachmentResolution => 'Ảnh nghiệm thu';
+
+  @override
+  String get attachmentPhoto => 'Ảnh';
+
+  @override
+  String attachmentCount(Object count) {
+    return '($count ảnh):';
+  }
+
+  @override
+  String get attachmentNone => 'Chưa có ảnh';
+
+  @override
+  String attachmentLocation(Object lat, Object lng) {
+    return 'Vị trí $lat, $lng';
+  }
+
+  @override
+  String get attachmentLoadFailed => 'Không tải được ảnh';
+
+  @override
+  String get paymentSuccess => 'Thanh toán thành công';
+
+  @override
+  String get paymentFailed => 'Thanh toán thất bại';
+
+  @override
+  String get paymentSuccessExclaim => 'Thanh toán thành công!';
+
+  @override
+  String get paymentPreparingPin => 'Đang chuẩn bị mã PIN mở ô tủ...';
+
+  @override
+  String get paymentTapToContinue => 'Chạm để tiếp tục';
+
+  @override
+  String get locationPick => 'Chọn vị trí';
+
+  @override
+  String get locationSearchAddress => 'Tìm kiếm địa chỉ...';
+
+  @override
+  String get locationConfirm => 'Xác nhận vị trí';
 }

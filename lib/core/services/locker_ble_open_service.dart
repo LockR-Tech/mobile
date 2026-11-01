@@ -5,6 +5,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:smart_laundry_locker/core/services/locker_ble_service.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 /// Các bước khi mở ô qua Bluetooth — trang thử hiện tiến trình theo bước.
 enum BleOpenStep { scanning, connecting, sending, waiting }
@@ -63,24 +64,24 @@ class BleOpenOutcome {
 
   bool get isOk => error == null;
 
-  String get message => isOk ? 'Đã mở ô ${boxNumber ?? ''}'.trim() : errorText(error);
+  String get message => isOk ? L10n.current.bleOpenedBox(boxNumber ?? '').trim() : errorText(error);
 
   static String errorText(String? code) => switch (code) {
-        'NOT_FOUND' => 'Không thấy tủ qua Bluetooth. Hãy đứng sát tủ (dưới 2 m) rồi thử lại.',
-        'CONNECT_FAILED' => 'Không kết nối được Bluetooth với tủ. Thử lại sau vài giây.',
-        'NO_SERVICE' => 'Tủ chưa bật chức năng mở ô qua Bluetooth (bộ điều khiển cần cập nhật).',
-        'TIMEOUT' => 'Tủ không trả lời. Kiểm tra ô đã mở chưa rồi thử lại.',
-        'BLUETOOTH_OFF' => 'Bluetooth của điện thoại đang tắt.',
-        'PERMISSION_DENIED' => 'App chưa được cấp quyền Bluetooth.',
-        'UNSUPPORTED' => 'Thiết bị này không hỗ trợ Bluetooth (chỉ dùng được trên app Android/iOS).',
-        'BAD_SIGNATURE' || 'BAD_FORMAT' || 'BAD_VERSION' => 'Tủ không chấp nhận mã mở ô.',
-        'EXPIRED' || 'BAD_EXPIRY' => 'Mã mở ô đã hết hạn. Bấm mở lại để lấy mã mới.',
-        'REPLAYED' => 'Mã này đã dùng rồi. Bấm mở lại để lấy mã mới.',
-        'WRONG_LOCKER' => 'Bạn đang kết nối nhầm tủ.',
-        'NO_KEY' => 'Tủ chưa tải được khoá kiểm mã từ máy chủ (cần có mạng một lần).',
-        'NOT_CONFIGURED' => 'Tủ chưa được gán trên hệ thống.',
-        'INVALID_SLOT' => 'Ô này không có khoá điện nối vào bộ điều khiển.',
-        _ => 'Mở ô không thành công${code == null ? '' : ' ($code)'}.',
+        'NOT_FOUND' => L10n.current.bleNotFound,
+        'CONNECT_FAILED' => L10n.current.bleConnectFailed,
+        'NO_SERVICE' => L10n.current.bleNoService,
+        'TIMEOUT' => L10n.current.bleTimeout,
+        'BLUETOOTH_OFF' => L10n.current.bleOff,
+        'PERMISSION_DENIED' => L10n.current.blePermissionDenied,
+        'UNSUPPORTED' => L10n.current.bleUnsupported,
+        'BAD_SIGNATURE' || 'BAD_FORMAT' || 'BAD_VERSION' => L10n.current.bleBadCode,
+        'EXPIRED' || 'BAD_EXPIRY' => L10n.current.bleExpired,
+        'REPLAYED' => L10n.current.bleReplayed,
+        'WRONG_LOCKER' => L10n.current.bleWrongLocker,
+        'NO_KEY' => L10n.current.bleNoKey,
+        'NOT_CONFIGURED' => L10n.current.bleNotConfigured,
+        'INVALID_SLOT' => L10n.current.bleInvalidSlot,
+        _ => L10n.current.bleOpenFailed(code == null ? '' : ' ($code)'),
       };
 }
 

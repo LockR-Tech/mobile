@@ -59,6 +59,7 @@ import 'package:smart_laundry_locker/features/stores/presentation/pages/favorite
 import 'package:smart_laundry_locker/features/assistant/presentation/pages/assistant_chat_page.dart';
 import 'package:smart_laundry_locker/features/assistant/presentation/pages/assistant_history_page.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 class AppRouter {
   static const String splash = '/';
@@ -332,8 +333,8 @@ class AppRouter {
           if (params == null ||
               !params.containsKey('title') ||
               !params.containsKey('assetPath')) {
-            return const PolicyPage(
-              title: 'Chính sách',
+            return PolicyPage(
+              title: context.l10n.routerPolicy,
               assetPath: 'assets/markdown/privacy_policy.md',
             );
           }
@@ -559,13 +560,13 @@ class AppRouter {
           final lat = (map['lat'] as num?)?.toDouble();
           final lng = (map['lng'] as num?)?.toDouble();
           if (lat == null || lng == null) {
-            return const Scaffold(
-              body: Center(child: Text('Thiếu toạ độ điểm đến.')),
+            return Scaffold(
+              body: Center(child: Text(context.l10n.routerMissingDestination)),
             );
           }
           return DirectionsMapPage(
             destination: LatLng(lat, lng),
-            title: (map['title'] as String?) ?? 'Điểm đến',
+            title: (map['title'] as String?) ?? context.l10n.routerDestination,
             subtitle: map['subtitle'] as String?,
           );
         },

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:smart_laundry_locker/shared/widgets/app_lottie.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 /// Trạng thái kết quả thanh toán: Thành công hoặc Thất bại.
 enum PaymentStatusType {
@@ -26,7 +27,7 @@ class AppPaymentStatusView extends StatelessWidget {
   /// Loại kết quả: Thành công hoặc Thất bại
   final PaymentStatusType type;
 
-  /// Tiêu đề (Mặc định: 'Thanh toán thành công' hoặc 'Thanh toán thất bại')
+  /// Tiêu đề (Mặc định: context.l10n.paymentSuccess hoặc context.l10n.paymentFailed)
   final String? title;
 
   /// Số tiền giao dịch hiển thị nổi bật (vd: '50.000 đ')
@@ -41,7 +42,7 @@ class AppPaymentStatusView extends StatelessWidget {
   /// Callback khi ấn nút chính
   final VoidCallback? onPrimaryAction;
 
-  /// Nhãn nút phụ (vd: 'Đóng', 'Hủy')
+  /// Nhãn nút phụ (vd: context.l10n.commonClose, 'Hủy')
   final String? secondaryButtonText;
 
   /// Callback khi ấn nút phụ
@@ -58,7 +59,7 @@ class AppPaymentStatusView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final effectiveTitle = title ??
-        (isSuccess ? 'Thanh toán thành công' : 'Thanh toán thất bại');
+        (isSuccess ? context.l10n.paymentSuccess : context.l10n.paymentFailed);
 
     final effectiveColor =
         isSuccess ? const Color(0xFF16A34A) : const Color(0xFFDC2626);
@@ -256,7 +257,7 @@ Future<T?> showPaymentResultDialog<T>(
         message: message,
         detailsWidget: detailsWidget,
         primaryButtonText: primaryButtonText ??
-            (type == PaymentStatusType.success ? 'Hoàn tất' : 'Đóng'),
+            (type == PaymentStatusType.success ? context.l10n.commonDone : context.l10n.commonClose),
         onPrimaryAction: () {
           Navigator.of(dialogContext).pop();
           onPrimaryAction?.call();

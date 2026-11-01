@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
 
 import '../../core/constants/app_colors.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 /// Custom SliverAppBar with dynamic title scaling and stretch functionality
 class CustomSliverAppBar extends StatelessWidget {
@@ -286,7 +287,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
 
 /// App bar with search functionality
 class SearchAppBar extends StatelessWidget implements PreferredSizeWidget {
-  final String hintText;
+  final String? hintText;
   final ValueChanged<String>? onSearchChanged;
   final VoidCallback? onSearchTap;
   final List<Widget>? actions;
@@ -296,7 +297,7 @@ class SearchAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   const SearchAppBar({
     super.key,
-    this.hintText = 'Tìm kiếm...',
+    this.hintText,
     this.onSearchChanged,
     this.onSearchTap,
     this.actions,
@@ -332,7 +333,7 @@ class SearchAppBar extends StatelessWidget implements PreferredSizeWidget {
         onChanged: onSearchChanged,
         onTap: onSearchTap,
         decoration: InputDecoration(
-          hintText: hintText,
+          hintText: hintText ?? context.l10n.commonSearchHint,
           hintStyle: TextStyle(color: AppColors.onSurfaceVariant, fontSize: 16),
           prefixIcon: Icon(
             LucideIcons.search,

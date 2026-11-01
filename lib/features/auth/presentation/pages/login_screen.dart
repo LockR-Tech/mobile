@@ -21,8 +21,8 @@ import 'package:smart_laundry_locker/features/auth/presentation/widgets/social_l
 import 'package:smart_laundry_locker/features/profile/presentation/providers/profile_provider.dart';
 import 'package:smart_laundry_locker/shared/shared.dart';
 import 'package:smart_laundry_locker/shared/widgets/app_lottie.dart';
-
 import 'package:smart_laundry_locker/core/l10n/l10n.dart';
+
 /// Brand palette shared by the login + register flows so both halves of the
 /// auth screen feel like one product.
 const Color _kNavyDark = Color(0xFF001F2D);

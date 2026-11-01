@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:smart_laundry_locker/shared/widgets/app_lottie.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 /// Màn hình / Dialog hiển thị animation thanh toán thành công full màn hình
 /// trước khi chuyển sang màn hình hiển thị thông tin mã PIN (Hình 2).
@@ -99,7 +100,7 @@ class _FullScreenPaymentSuccessDialogState
                   // Tiêu đề nhỏ gọn ở trên đầu theo yêu cầu
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
-                    children: const [
+                    children: [
                       Icon(
                         Icons.check_circle_rounded,
                         color: Color(0xFF16A34A),
@@ -107,7 +108,7 @@ class _FullScreenPaymentSuccessDialogState
                       ),
                       SizedBox(width: 8),
                       Text(
-                        'Thanh toán thành công!',
+                        context.l10n.paymentSuccessExclaim,
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.w800,
@@ -118,8 +119,8 @@ class _FullScreenPaymentSuccessDialogState
                     ],
                   ),
                   const SizedBox(height: 4),
-                  const Text(
-                    'Đang chuẩn bị mã PIN mở ô tủ...',
+                  Text(
+                    context.l10n.paymentPreparingPin,
                     style: TextStyle(
                       fontSize: 13,
                       color: Color(0xFF64748B),
@@ -148,8 +149,8 @@ class _FullScreenPaymentSuccessDialogState
                     style: TextButton.styleFrom(
                       foregroundColor: const Color(0xFF94A3B8),
                     ),
-                    child: const Text(
-                      'Chạm để tiếp tục',
+                    child: Text(
+                      context.l10n.paymentTapToContinue,
                       style: TextStyle(fontSize: 13),
                     ),
                   ),

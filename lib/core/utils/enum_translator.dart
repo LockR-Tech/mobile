@@ -1,15 +1,16 @@
 import '../enums/app_enums.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 class EnumTranslator {
   static String translateLogisticsType(dynamic type) {
-    if (type == 0 || type == '0') return 'Giao từ tủ qua tủ';
-    if (type == 1 || type == '1') return 'Giao từ nhà tới tủ';
+    if (type == 0 || type == '0') return L10n.current.enumLockerToLocker;
+    if (type == 1 || type == '1') return L10n.current.enumHomeToLocker;
     final value = _getValue(type);
     switch (value) {
       case 'LOCKER_TO_LOCKER':
-        return 'Giao từ tủ qua tủ';
+        return L10n.current.enumLockerToLocker;
       case 'HOME_TO_LOCKER':
-        return 'Giao từ nhà tới tủ';
+        return L10n.current.enumHomeToLocker;
       default:
         return value;
     }
@@ -19,19 +20,19 @@ class EnumTranslator {
     final value = _getValue(status);
     switch (value) {
       case 'PENDING':
-        return 'Đang chờ xử lý';
+        return L10n.current.enumPendingProcessing;
       case 'AWAITING_COURIER':
-        return 'Chờ người giao hàng';
+        return L10n.current.enumAwaitingCourier;
       case 'AWAITING_PICKUP':
-        return 'Chờ lấy hàng';
+        return L10n.current.enumAwaitingPickup;
       case 'ACTIVE':
-        return 'Đang hoạt động';
+        return L10n.current.enumActive;
       case 'COMPLETED':
-        return 'Đã hoàn tất';
+        return L10n.current.enumCompleted;
       case 'LOCKED_BY_BALANCE':
-        return 'Bị khóa do số dư';
+        return L10n.current.enumLockedByBalance;
       case 'CANCELLED':
-        return 'Đã hủy';
+        return L10n.current.enumCancelled;
       default:
         return value;
     }
@@ -41,29 +42,29 @@ class EnumTranslator {
     final value = _getValue(status);
     switch (value) {
       case 'PENDING':
-        return 'Chờ xử lý';
+        return L10n.current.enumPending;
       case 'AWAITING_COURIER':
-        return 'Chờ người giao hàng';
+        return L10n.current.enumAwaitingCourier;
       case 'AWAITING_PICKUP':
-        return 'Chờ lấy hàng';
+        return L10n.current.enumAwaitingPickup;
       case 'AWAITING_CONFIRM_DEPOSIT':
-        return 'Chờ xác nhận gửi hàng';
+        return L10n.current.enumAwaitingDropoffConfirm;
       case 'IN_TRANSIT':
-        return 'Đang vận chuyển';
+        return L10n.current.enumInTransit;
       case 'OCCUPIED':
-        return 'Đang sử dụng';
+        return L10n.current.enumInUse;
       case 'COMPLETED':
-        return 'Hoàn tất';
+        return L10n.current.commonDone;
       case 'OVERDUE':
-        return 'Quá hạn';
+        return L10n.current.enumOverdue;
       case 'COLLECTING':
-        return 'Đang gom hàng';
+        return L10n.current.enumConsolidating;
       case 'COLLECTED':
-        return 'Đã lấy hàng';
+        return L10n.current.enumPickedUp;
       case 'AWAITING_DROP':
-        return 'Chờ gửi hàng';
+        return L10n.current.enumAwaitingDropoff;
       case 'CANCELLED':
-        return 'Đã hủy';
+        return L10n.current.enumCancelled;
       default:
         return value;
     }
@@ -73,19 +74,19 @@ class EnumTranslator {
     final value = _getValue(status);
     switch (value) {
       case 'PENDING':
-        return 'Chờ thanh toán';
+        return L10n.current.enumAwaitingPayment;
       case 'UNPAID':
-        return 'Chưa thanh toán';
+        return L10n.current.enumUnpaid;
       case 'PAID':
-        return 'Đã thanh toán';
+        return L10n.current.enumPaid;
       case 'PARTIAL_PAID':
-        return 'Thanh toán một phần';
+        return L10n.current.enumPartiallyPaid;
       case 'REFUND_PENDING':
-        return 'Chờ hoàn tiền';
+        return L10n.current.enumAwaitingRefund;
       case 'REFUNDED':
-        return 'Đã hoàn tiền';
+        return L10n.current.enumRefunded;
       default:
-        return value.isEmpty ? 'Chưa xác định' : value;
+        return value.isEmpty ? L10n.current.commonUndetermined : value;
     }
   }
 
@@ -93,19 +94,19 @@ class EnumTranslator {
     final value = _getValue(type);
     switch (value) {
       case 'DEPOSIT':
-        return 'Nạp tiền';
+        return L10n.current.enumTopUp;
       case 'RENTAL_DEDUCTION':
-        return 'Phí thuê tủ';
+        return L10n.current.enumRentalFee;
       case 'LOGISTICS_DEDUCTION':
-        return 'Phí vận chuyển';
+        return L10n.current.enumShippingFee;
       case 'OVERDUE_PENALTY':
-        return 'Phí quá hạn';
+        return L10n.current.enumOverdueFee;
       case 'REFUND':
-        return 'Hoàn tiền';
+        return L10n.current.enumRefund;
       case 'TOP_UP':
-        return 'Nạp tiền vào ví';
+        return L10n.current.enumWalletTopUp;
       case 'WITHDRAW':
-        return 'Rút tiền';
+        return L10n.current.enumWithdraw;
       default:
         return value;
     }
@@ -115,13 +116,13 @@ class EnumTranslator {
     final value = _getValue(status);
     switch (value) {
       case 'SUCCESS':
-        return 'Thành công';
+        return L10n.current.commonSuccess;
       case 'FAILED':
-        return 'Thất bại';
+        return L10n.current.commonFailed;
       case 'PENDING':
-        return 'Đang chờ';
+        return L10n.current.commonPending;
       case 'CANCELLED':
-        return 'Đã hủy';
+        return L10n.current.enumCancelled;
       default:
         return value;
     }
@@ -131,9 +132,9 @@ class EnumTranslator {
     final value = _getValue(type);
     switch (value) {
       case 'LOGISTICS':
-        return 'Dịch vụ vận chuyển';
+        return L10n.current.enumShippingService;
       case 'PERSONAL_RENTAL':
-        return 'Thuê tủ cá nhân';
+        return L10n.current.enumPersonalRental;
       default:
         return value;
     }
@@ -143,21 +144,21 @@ class EnumTranslator {
     final value = _getValue(status);
     switch (value) {
       case 'AVAILABLE':
-        return 'Sẵn sàng';
+        return L10n.current.enumReady;
       case 'OCCUPIED':
-        return 'Đang sử dụng';
+        return L10n.current.enumInUse;
       case 'RESERVED':
-        return 'Đã đặt trước';
+        return L10n.current.enumReserved;
       case 'LOCKED_BY_BALANCE':
-        return 'Khóa do số dư';
+        return L10n.current.enumLockedBalanceShort;
       case 'FAULT':
-        return 'Bị lỗi';
+        return L10n.current.enumFaulty;
       case 'PENDING_CHECK':
-        return 'Chờ kiểm tra';
+        return L10n.current.enumPendingCheck;
       case 'MAINTENANCE':
-        return 'Bảo trì';
+        return L10n.current.enumMaintenance;
       case 'INITIALIZING':
-        return 'Đang khởi tạo';
+        return L10n.current.enumInitializing;
       default:
         return value;
     }
@@ -167,23 +168,23 @@ class EnumTranslator {
     final value = _getValue(status).toLowerCase();
     switch (value) {
       case 'locked':
-        return 'Đã khóa';
+        return L10n.current.enumLocked;
       case 'unlocked':
-        return 'Đã mở khóa';
+        return L10n.current.enumUnlocked;
       case 'open':
-        return 'Đang mở';
+        return L10n.current.enumOpen;
       case 'closed':
-        return 'Đã đóng';
+        return L10n.current.enumClosed;
       case 'unknown':
-        return 'Không xác định';
+        return L10n.current.commonUnknown;
       case 'error':
-        return 'Lỗi';
+        return L10n.current.commonError;
       case 'opening':
-        return 'Đang mở...';
+        return L10n.current.enumOpening;
       case 'closing':
-        return 'Đang đóng...';
+        return L10n.current.enumClosing;
       case 'offline':
-        return 'Ngoại tuyến';
+        return L10n.current.enumOffline;
       default:
         return value;
     }
@@ -193,9 +194,9 @@ class EnumTranslator {
     final value = _getValue(type).toUpperCase();
     switch (value) {
       case 'FOOD':
-        return 'Thực phẩm';
+        return L10n.current.enumFood;
       case 'OTHER':
-        return 'Khác';
+        return L10n.current.enumOther;
       default:
         return value;
     }
@@ -205,15 +206,15 @@ class EnumTranslator {
     final value = _getValue(unit).toUpperCase();
     switch (value) {
       case 'MINUTE':
-        return 'phút';
+        return L10n.current.unitMinute;
       case 'HOUR':
-        return 'giờ';
+        return L10n.current.unitHour;
       case 'DAY':
-        return 'ngày';
+        return L10n.current.unitDay;
       case 'WEEK':
-        return 'tuần';
+        return L10n.current.unitWeek;
       case 'MONTH':
-        return 'tháng';
+        return L10n.current.unitMonth;
       default:
         return value.toLowerCase();
     }
