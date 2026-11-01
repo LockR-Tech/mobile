@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 import 'package:smart_laundry_locker/features/promotions/data/models/promotion_model.dart';
 import 'package:smart_laundry_locker/features/promotions/presentation/pages/promotion_detail_page.dart';
 import 'package:smart_laundry_locker/features/vouchers/data/models/voucher_model.dart';
 import 'package:smart_laundry_locker/features/vouchers/presentation/pages/voucher_detail_page.dart';
 import 'package:smart_laundry_locker/shared/widgets/adaptive_viewport.dart';
+import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
 
 /// Font test mặc định vẽ mọi ký tự rộng 1em (gấp ~1.8 lần chữ thật) nên báo
 /// tràn sai. Nạp đúng bộ Roboto app đóng gói (pubspec `fonts:`) để đo như máy.
@@ -94,4 +97,29 @@ void main() {
     );
     expect(tester.takeException(), isNull);
   });
+
+  for (final locale in L10n.supportedLocales) {
+    testWidgets(
+      'tiêu đề mục nổi bật + "Xem tất cả" không tràn (${locale.languageCode})',
+      (tester) async {
+        L10n.load(locale);
+        addTearDown(() => L10n.load(L10n.vi));
+        await pumpOnRealPhone(
+          tester,
+          Scaffold(
+            body: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: BrandSectionHeader(
+                icon: LucideIcons.store,
+                title: L10n.current.homeKioskLocations,
+                onSeeAll: () {},
+                highlightColor: const Color(0xFF0F172A),
+              ),
+            ),
+          ),
+        );
+        expect(tester.takeException(), isNull);
+      },
+    );
+  }
 }

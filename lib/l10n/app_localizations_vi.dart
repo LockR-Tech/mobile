@@ -9020,4 +9020,19 @@ class AppLocalizationsVi extends AppLocalizations {
   @override
   String get apiErrLockerServiceUnavailable =>
       'Dịch vụ tủ đang tạm gián đoạn, vui lòng thử lại sau.';
+
+  @override
+  String get dbHeight => 'Cao';
+
+  @override
+  String get commonView => 'Xem';
+
+  @override
+  String get ordFilterDrone => 'Giao drone';
+
+  @override
+  String get recvDroneDelivery => 'Giao Drone';
+
+  @override
+  String get holderNameHint => 'NGUYEN VAN A';
 }

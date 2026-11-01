@@ -353,31 +353,35 @@ class OpsInfoRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 5),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(icon, size: 16, color: opsMutedText),
-          const SizedBox(width: 8),
-          // Nhãn tiếng Anh dài hơn tiếng Việt: cho xuống dòng thay vì tràn.
-          Flexible(
-            child: Text(
-              label,
-              style: const TextStyle(fontSize: 13, color: opsMutedText),
-            ),
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              value,
-              textAlign: TextAlign.right,
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w700,
-                color: valueColor ?? const Color(0xFF0F172A),
+      child: LayoutBuilder(
+        builder: (context, constraints) => Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(icon, size: 16, color: opsMutedText),
+            const SizedBox(width: 8),
+            // Nhãn giữ độ rộng tự nhiên; nhãn dài (tiếng Anh) xuống dòng thay
+            // vì đẩy tràn hàng — phần còn lại luôn dành cho giá trị.
+            ConstrainedBox(
+              constraints: BoxConstraints(maxWidth: constraints.maxWidth * 0.55),
+              child: Text(
+                label,
+                style: const TextStyle(fontSize: 13, color: opsMutedText),
               ),
             ),
-          ),
-        ],
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                value,
+                textAlign: TextAlign.right,
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  color: valueColor ?? const Color(0xFF0F172A),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

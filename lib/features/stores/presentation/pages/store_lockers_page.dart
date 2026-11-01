@@ -1510,7 +1510,7 @@ class _GridLegend extends StatelessWidget {
           ),
           _LegendChip(
             color: _CellPalette.available,
-            label: 'Vali (XL)',
+            label: context.l10n.cellTypeSuitcase,
             icon: LucideIcons.luggage,
           ),
           _LegendChip(

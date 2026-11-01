@@ -1933,7 +1933,7 @@ class _RefundRequestsPageState extends State<RefundRequestsPage> {
                   ),
                   decoration: InputDecoration(
                     labelText: context.l10n.rfHolderField,
-                    hintText: 'NGUYEN VAN A',
+                    hintText: context.l10n.holderNameHint,
                     prefixIcon: const Icon(LucideIcons.user, size: 17),
                     isDense: true,
                     filled: true,

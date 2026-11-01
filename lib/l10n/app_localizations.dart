@@ -15745,6 +15745,36 @@ abstract class AppLocalizations {
   /// In vi, this message translates to:
   /// **'Dịch vụ tủ đang tạm gián đoạn, vui lòng thử lại sau.'**
   String get apiErrLockerServiceUnavailable;
+
+  /// No description provided for @dbHeight.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cao'**
+  String get dbHeight;
+
+  /// No description provided for @commonView.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xem'**
+  String get commonView;
+
+  /// No description provided for @ordFilterDrone.
+  ///
+  /// In vi, this message translates to:
+  /// **'Giao drone'**
+  String get ordFilterDrone;
+
+  /// No description provided for @recvDroneDelivery.
+  ///
+  /// In vi, this message translates to:
+  /// **'Giao Drone'**
+  String get recvDroneDelivery;
+
+  /// No description provided for @holderNameHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'NGUYEN VAN A'**
+  String get holderNameHint;
 }
 
 class _AppLocalizationsDelegate

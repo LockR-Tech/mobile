@@ -490,6 +490,7 @@ class BrandSectionHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         if (highlightColor == null) ...[
           Container(
@@ -524,15 +525,19 @@ class BrandSectionHeader extends StatelessWidget {
             ),
           ),
         ] else ...[
-          _HighlightBanner(
-            color: highlightColor!,
-            rollColor:
-                highlightRollColor ??
-                Color.lerp(highlightColor!, Colors.black, 0.30)!,
-            title: title,
-            lottieAsset: lottieAsset,
+          // Co lại khi tiêu đề + "Xem tất cả" rộng hơn màn hình (máy hẹp,
+          // cỡ chữ hệ thống lớn, tiêu đề tiếng Anh).
+          Flexible(
+            child: _HighlightBanner(
+              color: highlightColor!,
+              rollColor:
+                  highlightRollColor ??
+                  Color.lerp(highlightColor!, Colors.black, 0.30)!,
+              title: title,
+              lottieAsset: lottieAsset,
+            ),
           ),
-          const Spacer(),
+          if (onSeeAll != null) const SizedBox(width: 8),
         ],
         if (onSeeAll != null)
           GestureDetector(
@@ -794,7 +799,15 @@ class _HighlightBannerState extends State<_HighlightBanner> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Text(widget.title, softWrap: false, style: _textStyle),
+                  Flexible(
+                    child: Text(
+                      widget.title,
+                      softWrap: false,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: _textStyle,
+                    ),
+                  ),
                   if (widget.lottieAsset != null) ...[
                     const SizedBox(width: _lottieSpacing),
                     AppLottie(

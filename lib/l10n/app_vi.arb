@@ -4600,5 +4600,10 @@
   "apiErrValidation": "Dữ liệu gửi lên không hợp lệ, vui lòng kiểm tra lại.",
   "apiErrInternal": "Máy chủ gặp lỗi hoặc chưa hỗ trợ thao tác này. Vui lòng thử lại sau.",
   "apiErrNotFound": "Không tìm thấy dữ liệu (có thể đã bị xoá hoặc thay đổi).",
-  "apiErrLockerServiceUnavailable": "Dịch vụ tủ đang tạm gián đoạn, vui lòng thử lại sau."
+  "apiErrLockerServiceUnavailable": "Dịch vụ tủ đang tạm gián đoạn, vui lòng thử lại sau.",
+  "dbHeight": "Cao",
+  "commonView": "Xem",
+  "ordFilterDrone": "Giao drone",
+  "recvDroneDelivery": "Giao Drone",
+  "holderNameHint": "NGUYEN VAN A"
 }

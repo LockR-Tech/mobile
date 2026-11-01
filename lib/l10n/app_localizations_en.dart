@@ -9177,4 +9177,19 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get apiErrLockerServiceUnavailable =>
       'The locker service is temporarily unavailable, please try again later.';
+
+  @override
+  String get dbHeight => 'Height';
+
+  @override
+  String get commonView => 'View';
+
+  @override
+  String get ordFilterDrone => 'Drone delivery';
+
+  @override
+  String get recvDroneDelivery => 'Drone delivery';
+
+  @override
+  String get holderNameHint => 'JOHN SMITH';
 }

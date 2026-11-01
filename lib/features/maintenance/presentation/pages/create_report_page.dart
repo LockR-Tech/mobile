@@ -732,7 +732,7 @@ class _CreateReportPageState extends State<CreateReportPage> {
                 ),
                 _buildBoxLegendItem(
                   icon: LucideIcons.luggage,
-                  label: 'Vali (XL)',
+                  label: context.l10n.cellTypeSuitcase,
                   bg: const Color(0xFF0284C7),
                 ),
                 _buildBoxLegendItem(

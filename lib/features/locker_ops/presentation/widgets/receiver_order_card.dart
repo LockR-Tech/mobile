@@ -245,7 +245,7 @@ class ReceiverOrderCard extends StatelessWidget {
                           ] else
                             Text(
                               isDrone
-                                  ? 'Giao Drone'
+                                  ? context.l10n.recvDroneDelivery
                                   : (delegatedView ? context.l10n.recvDelegatedPickup : context.l10n.recvIncomingParcel),
                               style: TextStyle(
                                 fontSize: 12.5,

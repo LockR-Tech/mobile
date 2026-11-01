@@ -1058,7 +1058,7 @@ class _DroneBookingPageState extends State<DroneBookingPage>
                   child: _field(
                     'drone-parcel-height',
                     _height,
-                    'Cao',
+                    context.l10n.dbHeight,
                     suffix: 'cm',
                     keyboard: TextInputType.number,
                   ),

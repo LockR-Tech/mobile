@@ -884,7 +884,7 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
                 context.l10n.ordReportSentFor(boxLabel),
               ),
               action: SnackBarAction(
-                label: 'Xem',
+                label: context.l10n.commonView,
                 onPressed: () => context.push(AppRouter.myLockerReports),
               ),
             ),
@@ -1820,7 +1820,7 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
                   if (_incomingCountDrone > 0) ...[
                     const SizedBox(width: 8),
                     _TypeChip(
-                      label: 'Giao drone',
+                      label: context.l10n.ordFilterDrone,
                       count: _incomingCountDrone,
                       selected: _incomingFilter == 'DRONE',
                       onTap: () => _setIncomingFilter('DRONE'),

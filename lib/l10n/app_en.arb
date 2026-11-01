@@ -2607,5 +2607,10 @@
   "apiErrValidation": "The submitted data is invalid, please check it again.",
   "apiErrInternal": "The server had an error or doesn't support this action yet. Please try again later.",
   "apiErrNotFound": "Data not found (it may have been deleted or changed).",
-  "apiErrLockerServiceUnavailable": "The locker service is temporarily unavailable, please try again later."
+  "apiErrLockerServiceUnavailable": "The locker service is temporarily unavailable, please try again later.",
+  "dbHeight": "Height",
+  "commonView": "View",
+  "ordFilterDrone": "Drone delivery",
+  "recvDroneDelivery": "Drone delivery",
+  "holderNameHint": "JOHN SMITH"
 }
