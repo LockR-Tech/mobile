@@ -3,6 +3,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
 
 import 'assistant_message_bubble.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 /// Nhóm người hỏi — chỉ để chọn câu hỏi gợi ý. Tài liệu được dùng để trả lời
 /// do backend lọc theo vai trò trong JWT.
@@ -22,25 +23,25 @@ AssistantAudience assistantAudienceForRoles(List<String> roles) {
 List<String> assistantExampleQuestions(AssistantAudience audience) {
   switch (audience) {
     case AssistantAudience.lockerTechnician:
-      return const [
-        'Kiểm tra định kỳ không đạt thì xử lý thế nào?',
-        'Ô tủ báo lỗi cửa thì cần kiểm tra những gì?',
-        'Quy trình xử lý phiếu sự cố ra sao?',
-        'Thiết bị IoT của tủ mất kết nối thì làm gì?',
+      return [
+        L10n.current.aiQTechInspection,
+        L10n.current.aiQTechDoor,
+        L10n.current.aiQTechTicket,
+        L10n.current.aiQTechIot,
       ];
     case AssistantAudience.droneTechnician:
-      return const [
-        'Quy trình tiếp nhận và phóng đơn drone ra sao?',
-        'Khi nào được huỷ nhiệm vụ trước khi bay?',
-        'Kiểm tra định kỳ không đạt thì xử lý thế nào?',
-        'Bãi đáp drone báo lỗi thì làm gì?',
+      return [
+        L10n.current.aiQDroneLaunch,
+        L10n.current.aiQDroneCancel,
+        L10n.current.aiQTechInspection,
+        L10n.current.aiQDronePad,
       ];
     case AssistantAudience.customer:
-      return const [
-        'Làm sao để gửi hàng qua tủ?',
-        'Tôi thanh toán bằng những cách nào?',
-        'Hết giờ thuê ô thì làm sao?',
-        'Không mở được ô tủ thì phải làm gì?',
+      return [
+        L10n.current.aiQSend,
+        L10n.current.aiQPay,
+        L10n.current.aiQRentEnd,
+        L10n.current.aiQCantOpen,
       ];
   }
 }
@@ -59,15 +60,15 @@ class AssistantIntro extends StatelessWidget {
   Widget build(BuildContext context) {
     final isTechnician = audience != AssistantAudience.customer;
     final docs = isTechnician
-        ? 'quy trình vận hành, hướng dẫn kỹ thuật, chính sách'
-        : 'hướng dẫn sử dụng, chính sách, câu hỏi thường gặp';
+        ? context.l10n.aiDocsStaff
+        : context.l10n.aiDocsCustomer;
     return ListView(
       padding: const EdgeInsets.fromLTRB(20, 24, 20, 16),
       children: [
         const Center(child: AssistantAvatar(size: 64)),
         const SizedBox(height: 14),
         Text(
-          'Xin chào! Mình là trợ lý Lock.R',
+          context.l10n.aiHello,
           textAlign: TextAlign.center,
           style: TextStyle(
             fontSize: 19,
@@ -77,9 +78,7 @@ class AssistantIntro extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         Text(
-          'Mình trả lời dựa trên tài liệu chính thức của Lock.R ($docs) '
-          'và luôn ghi rõ nguồn trích dẫn. Nếu tài liệu chưa đề cập, mình sẽ '
-          'nói rõ để bạn liên hệ bộ phận hỗ trợ.',
+          context.l10n.aiIntro(docs),
           textAlign: TextAlign.center,
           style: TextStyle(
             fontSize: 13.5,
@@ -88,21 +87,21 @@ class AssistantIntro extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 16),
-        const Wrap(
+        Wrap(
           alignment: WrapAlignment.center,
           spacing: 8,
           runSpacing: 8,
           children: [
             _FeaturePill(
               icon: LucideIcons.bookOpenText,
-              label: 'Tài liệu chính thức',
+              label: context.l10n.aiOfficialDocs,
             ),
-            _FeaturePill(icon: LucideIcons.quote, label: 'Có trích nguồn'),
+            _FeaturePill(icon: LucideIcons.quote, label: context.l10n.aiWithSources),
           ],
         ),
         const SizedBox(height: 24),
         Text(
-          'Bạn có thể hỏi',
+          context.l10n.aiYouCanAsk,
           style: TextStyle(
             fontSize: 13,
             fontWeight: FontWeight.w700,

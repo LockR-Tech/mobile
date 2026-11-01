@@ -4,6 +4,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:smart_laundry_locker/features/payment/data/vietqr_service.dart';
 import 'package:smart_laundry_locker/features/payment/domain/sepay_transfer.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 /// Mở link [url] ra ngoài app; `false` khi không có app nào nhận.
 typedef ExternalUrlLauncher = Future<bool> Function(Uri url);
@@ -103,7 +104,7 @@ class _BankAppPickerSheetState extends State<BankAppPickerSheet> {
       setState(() {
         _opening = false;
         _error =
-            'Không xác định được ngân hàng nhận tiền. Vui lòng quét mã QR bằng app ngân hàng.';
+            context.l10n.bankUnknown;
       });
       return;
     }
@@ -123,7 +124,7 @@ class _BankAppPickerSheetState extends State<BankAppPickerSheet> {
     setState(() {
       _opening = false;
       _error =
-          'Không mở được ${app.appName}. Có thể máy chưa cài app — hãy quét mã QR bằng app ngân hàng của bạn.';
+          context.l10n.bankCantOpen(app.appName);
     });
   }
 
@@ -142,8 +143,8 @@ class _BankAppPickerSheetState extends State<BankAppPickerSheet> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const Text(
-              'Thanh toán bằng app ngân hàng',
+            Text(
+              context.l10n.bankTitle,
               style: TextStyle(
                 fontWeight: FontWeight.w800,
                 fontSize: 17,
@@ -151,9 +152,8 @@ class _BankAppPickerSheetState extends State<BankAppPickerSheet> {
               ),
             ),
             const SizedBox(height: 4),
-            const Text(
-              'Chọn app ngân hàng của bạn — số tài khoản, số tiền và nội dung '
-              'chuyển khoản được điền sẵn, bạn chỉ cần xác nhận.',
+            Text(
+              context.l10n.bankIntro,
               style: TextStyle(fontSize: 13, color: Color(0xFF64748B)),
             ),
             const SizedBox(height: 12),
@@ -161,7 +161,7 @@ class _BankAppPickerSheetState extends State<BankAppPickerSheet> {
               controller: _search,
               onChanged: (v) => setState(() => _query = v.trim().toLowerCase()),
               decoration: InputDecoration(
-                hintText: 'Tìm ngân hàng',
+                hintText: context.l10n.bankSearch,
                 prefixIcon: const Icon(LucideIcons.search, size: 18),
                 isDense: true,
                 border: OutlineInputBorder(
@@ -198,16 +198,15 @@ class _BankAppPickerSheetState extends State<BankAppPickerSheet> {
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Text(
-                            'Không tải được danh sách app ngân hàng.\n'
-                            'Bạn có thể quét mã QR bằng app ngân hàng.',
+                          Text(
+                            context.l10n.bankLoadFailed,
                             textAlign: TextAlign.center,
                             style: TextStyle(color: Color(0xFF64748B)),
                           ),
                           TextButton(
                             onPressed: () =>
                                 setState(() => _apps = _loadApps()),
-                            child: const Text('Thử lại'),
+                            child: Text(context.l10n.commonRetry),
                           ),
                         ],
                       ),
@@ -223,9 +222,9 @@ class _BankAppPickerSheetState extends State<BankAppPickerSheet> {
                             )
                             .toList();
                   if (filtered.isEmpty) {
-                    return const Center(
+                    return Center(
                       child: Text(
-                        'Không tìm thấy ngân hàng phù hợp',
+                        context.l10n.bankNoMatch,
                         style: TextStyle(color: Color(0xFF64748B)),
                       ),
                     );

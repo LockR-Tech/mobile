@@ -6,6 +6,7 @@ import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
 import '../../data/assistant_service.dart';
 import '../../data/models/assistant_models.dart';
 import '../providers/assistant_chat_controller.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 /// Lịch sử hỏi đáp của tôi. Chạm để mở lại, vuốt trái hoặc nhấn giữ để xoá.
 /// Luôn đóng bằng [AssistantHistoryResult] để màn chat biết hội thoại nào cần
@@ -63,22 +64,21 @@ class _AssistantHistoryPageState extends State<AssistantHistoryPage> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: const Text('Xoá cuộc hội thoại?'),
+        title: Text(context.l10n.aiDeleteQuestion),
         content: Text(
-          'Cuộc hội thoại “${item.title}” sẽ bị xoá vĩnh viễn và không '
-          'khôi phục được.',
+          context.l10n.aiDeleteBody(item.title),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: const Text('Huỷ'),
+            child: Text(context.l10n.commonCancelAlt),
           ),
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(true),
             style: TextButton.styleFrom(
               foregroundColor: const Color(0xFFDC2626),
             ),
-            child: const Text('Xoá'),
+            child: Text(context.l10n.commonDelete),
           ),
         ],
       ),
@@ -87,7 +87,7 @@ class _AssistantHistoryPageState extends State<AssistantHistoryPage> {
     try {
       await _service.deleteConversation(item.id);
       _deleted.add(item.id);
-      _toast('Đã xoá cuộc hội thoại');
+      _toast(L10n.current.aiDeleted);
       return true;
     } on AssistantException catch (e) {
       _toast(e.message);
@@ -118,9 +118,9 @@ class _AssistantHistoryPageState extends State<AssistantHistoryPage> {
         body: Column(
           children: [
             BrandHeroHeader(
-              eyebrow: 'LOCK.R • TRỢ LÝ',
-              title: 'Lịch sử hỏi đáp',
-              subtitle: 'Các cuộc hội thoại của bạn với trợ lý',
+              eyebrow: context.l10n.aiEyebrow,
+              title: context.l10n.aiHistory,
+              subtitle: context.l10n.aiHistorySubtitle,
               onBack: _close,
               trailing: BrandCircleIconButton(
                 icon: LucideIcons.refreshCw,
@@ -145,16 +145,16 @@ class _AssistantHistoryPageState extends State<AssistantHistoryPage> {
       return _CenteredMessage(
         icon: LucideIcons.circleAlert,
         title: error,
-        actionLabel: 'Thử lại',
+        actionLabel: context.l10n.commonRetry,
         onAction: _load,
       );
     }
     if (_items.isEmpty) {
       return _CenteredMessage(
         icon: LucideIcons.messagesSquare,
-        title: 'Chưa có cuộc hội thoại nào',
-        body: 'Các câu bạn hỏi trợ lý sẽ được lưu ở đây để xem lại.',
-        actionLabel: 'Đặt câu hỏi',
+        title: context.l10n.aiNoConversations,
+        body: context.l10n.aiNoConversationsBody,
+        actionLabel: context.l10n.aiAsk,
         onAction: _close,
       );
     }
@@ -251,7 +251,7 @@ class _ConversationTile extends StatelessWidget {
                     const SizedBox(height: 3),
                     Text(
                       [
-                        '${item.messageCount} tin nhắn',
+                        context.l10n.aiMessageCount(item.messageCount),
                         if (time != null) time,
                       ].join(' · '),
                       style: TextStyle(fontSize: 12, color: context.textMuted),
@@ -279,8 +279,8 @@ class _ConversationTile extends StatelessWidget {
     final day = DateTime(time.year, time.month, time.day);
     final clock = '${two(time.hour)}:${two(time.minute)}';
     final diff = today.difference(day).inDays;
-    if (diff == 0) return 'Hôm nay, $clock';
-    if (diff == 1) return 'Hôm qua, $clock';
+    if (diff == 0) return L10n.current.aiTodayAt(clock);
+    if (diff == 1) return L10n.current.aiYesterdayAt(clock);
     return '${two(time.day)}/${two(time.month)}/${time.year}';
   }
 }
@@ -297,13 +297,13 @@ class _DeleteBackground extends StatelessWidget {
         color: const Color(0xFFDC2626),
         borderRadius: BorderRadius.circular(14),
       ),
-      child: const Row(
+      child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(LucideIcons.trash2, color: Colors.white, size: 18),
           SizedBox(width: 6),
           Text(
-            'Xoá',
+            context.l10n.commonDelete,
             style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700),
           ),
         ],

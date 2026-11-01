@@ -8,6 +8,7 @@ import 'package:smart_laundry_locker/features/locker_ops/presentation/pages/rece
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/ops_widgets.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/receiver_order_card.dart';
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 /// "Đơn ủy quyền": các đơn người khác ủy quyền cho mình lấy hộ (theo SĐT tài
 /// khoản), kèm mã lấy hàng khi hàng đã sẵn sàng, mở ô và chỉ đường.
@@ -36,8 +37,8 @@ class _MyDelegationsView extends StatelessWidget {
       backgroundColor: const Color(0xFFF2F3F5),
       body: BrandHeroScaffold(
         header: (collapse) => BrandHeroHeader(
-          title: 'Đơn ủy quyền',
-          subtitle: 'Đơn người khác nhờ bạn lấy hộ',
+          title: context.l10n.profileDelegations,
+          subtitle: context.l10n.mdSubtitle,
           onBack: () => Navigator.of(context).maybePop(),
           collapseProgress: collapse,
           trailing: BrandCircleIconButton(
@@ -75,7 +76,7 @@ class _MyDelegationsView extends StatelessWidget {
               const SizedBox(height: 8),
               TextButton(
                 onPressed: provider.fetchMyDelegations,
-                child: const Text('Thử lại'),
+                child: Text(context.l10n.commonRetry),
               ),
             ],
           ),
@@ -87,13 +88,13 @@ class _MyDelegationsView extends StatelessWidget {
         color: AislBrand.navy,
         onRefresh: provider.fetchMyDelegations,
         child: ListView(
-          children: const [
+          children: [
             SizedBox(height: 40),
             OpsEmptyState(
               icon: LucideIcons.packageOpen,
-              title: 'Chưa có đơn ủy quyền',
+              title: context.l10n.mdEmpty,
               subtitle:
-                  'Khi ai đó ủy quyền bạn lấy hộ (theo số điện thoại của bạn), đơn sẽ hiện ở đây.',
+                  context.l10n.mdEmptyHint,
             ),
           ],
         ),

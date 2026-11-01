@@ -1,14 +1,15 @@
 import 'package:smart_laundry_locker/features/auth/presentation/widgets/auth_bottom_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 class UnauthenticatedPlaceholder extends StatelessWidget {
-  final String message;
+  final String? message;
   final VoidCallback? onAuthSuccess;
 
   const UnauthenticatedPlaceholder({
     super.key,
-    this.message = 'Bạn cần đăng nhập để sử dụng tính năng này',
+    this.message,
     this.onAuthSuccess,
   });
 
@@ -38,7 +39,7 @@ class UnauthenticatedPlaceholder extends StatelessWidget {
               ),
               const SizedBox(height: 24),
               Text(
-                message,
+                message ?? context.l10n.commonLoginRequiredFeature,
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 18,
@@ -60,8 +61,8 @@ class UnauthenticatedPlaceholder extends StatelessWidget {
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  child: const Text(
-                    'Đăng Nhập',
+                  child: Text(
+                    context.l10n.commonLoginTitleCase,
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                   ),
                 ),
@@ -80,8 +81,8 @@ class UnauthenticatedPlaceholder extends StatelessWidget {
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  child: const Text(
-                    'Đăng Ký',
+                  child: Text(
+                    context.l10n.commonRegisterTitleCase,
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                   ),
                 ),

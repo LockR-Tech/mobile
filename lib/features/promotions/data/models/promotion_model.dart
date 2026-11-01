@@ -1,5 +1,6 @@
 import 'package:intl/intl.dart';
 import 'package:smart_laundry_locker/core/utils/app_date_time.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 class PromotionModel {
   final int id;
@@ -102,12 +103,12 @@ class PromotionModel {
   }
 
   String get expiryLabel {
-    if (endAt == null) return 'Không giới hạn';
+    if (endAt == null) return L10n.current.promoUnlimited;
     final diff = endAt!.difference(DateTime.now());
-    if (diff.isNegative) return 'Đã hết hạn';
-    if (diff.inDays > 1) return 'Còn ${diff.inDays} ngày';
-    if (diff.inHours > 0) return 'Còn ${diff.inHours} giờ';
-    return 'Còn ${diff.inMinutes} phút';
+    if (diff.isNegative) return L10n.current.promoExpired;
+    if (diff.inDays > 1) return L10n.current.promoDaysLeft(diff.inDays);
+    if (diff.inHours > 0) return L10n.current.promoHoursLeft(diff.inHours);
+    return L10n.current.promoMinutesLeft(diff.inMinutes);
   }
 
   bool get isExpired {
@@ -123,7 +124,7 @@ class PromotionModel {
   String? get minOrderLabel {
     if (minOrderAmount == null || minOrderAmount == 0) return null;
     final f = NumberFormat('#,###', 'vi_VN');
-    return 'Đơn tối thiểu ${f.format(minOrderAmount)}đ';
+    return L10n.current.promoMinOrder('${f.format(minOrderAmount)}đ');
   }
 }
 
@@ -141,7 +142,7 @@ String? promotionLockerDisplayName({
   String? lockerCode,
 }) {
   if (lockerId == null) return null;
-  return _text(lockerName) ?? _text(lockerCode) ?? 'Tủ #$lockerId';
+  return _text(lockerName) ?? _text(lockerCode) ?? L10n.current.lockerHash(lockerId);
 }
 
 /// Nhãn phạm vi áp dụng của một mã: `Toàn hệ thống` hoặc
@@ -156,7 +157,7 @@ String promotionScopeLabel({
     lockerName: lockerName,
     lockerCode: lockerCode,
   );
-  return name == null ? 'Toàn hệ thống' : 'Áp dụng tại: $name';
+  return name == null ? L10n.current.promoSystemWide : L10n.current.promoAppliesAt(name);
 }
 
 String? _text(dynamic raw) {

@@ -10,6 +10,7 @@
 library;
 
 import 'package:smart_laundry_locker/core/utils/app_date_time.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 /// Loại đơn có mã dành cho người nhận.
 enum PickupShareKind {
@@ -100,16 +101,16 @@ String buildPickupShareMessage({
   final address = _clean(lockerAddress);
   final where = address == null ? name : '$name, $address';
   final intro = switch (kind) {
-    PickupShareKind.lockerParcel => 'Bạn có kiện hàng gửi tới tủ $where.',
+    PickupShareKind.lockerParcel => L10n.current.shareMsgLocker(where),
     PickupShareKind.droneDelivery =>
-      'Bạn có kiện hàng giao bằng drone đang chờ tại tủ $where.',
+      L10n.current.shareMsgDrone(where),
   };
   return [
     'Lock.R: $intro',
-    if (boxNumber != null) 'Ô số $boxNumber.',
-    'Mã lấy hàng: ${code.trim()}.',
-    if (deadline != null) 'Hạn lấy: ${formatPickupDeadline(deadline)}.',
-    'Nhập mã tại màn hình tủ (kiosk) để mở ô.',
+    if (boxNumber != null) L10n.current.shareMsgBox(boxNumber),
+    L10n.current.shareMsgCode(code.trim()),
+    if (deadline != null) L10n.current.shareMsgDeadline(formatPickupDeadline(deadline)),
+    L10n.current.shareMsgHowTo,
   ].join(' ');
 }
 

@@ -20,6 +20,7 @@ import 'package:smart_laundry_locker/shared/widgets/custom_input.dart';
 import 'package:smart_laundry_locker/shared/widgets/custom_textarea.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 class CreateReportPage extends StatefulWidget {
   final String lockerId;
@@ -164,7 +165,7 @@ class _CreateReportPageState extends State<CreateReportPage> {
         _selectedLockerId = preset ?? _selectedLockerId;
         _isLoadingLockerOptions = false;
         _lockerOptionsError = _lockers.isEmpty && preset == null
-            ? 'Không tìm thấy tủ nào để báo sự cố.'
+            ? context.l10n.crNoLockers
             : null;
       });
     } catch (e) {
@@ -201,15 +202,15 @@ class _CreateReportPageState extends State<CreateReportPage> {
     if (id == null) return '';
     for (final l in _lockers) {
       if ((l['id'] as num?)?.toInt() == id) {
-        return '${l['name'] ?? l['code'] ?? 'Tủ #$id'}';
+        return '${l['name'] ?? l['code'] ?? context.l10n.lockerHash(id)}';
       }
     }
-    return widget.cabinetName ?? widget.lockerName ?? 'Tủ #$id';
+    return widget.cabinetName ?? widget.lockerName ?? context.l10n.lockerHash(id);
   }
 
   String _friendlyErrorMessage(String? rawError) {
     if (rawError == null || rawError.trim().isEmpty) {
-      return 'Đã xảy ra lỗi. Vui lòng thử lại.';
+      return context.l10n.errorGenericRetry;
     }
 
     var message = rawError.trim();
@@ -230,10 +231,10 @@ class _CreateReportPageState extends State<CreateReportPage> {
     if (normalized.contains('network') ||
         normalized.contains('timeout') ||
         normalized.contains('socket')) {
-      return 'Lỗi kết nối mạng';
+      return context.l10n.crNetworkError;
     }
     if (normalized.contains('unauthorized') || normalized.contains('token')) {
-      return 'Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại.';
+      return context.l10n.crSessionExpired;
     }
 
     return message;
@@ -241,24 +242,24 @@ class _CreateReportPageState extends State<CreateReportPage> {
 
   Future<void> _submitReport() async {
     if (_titleController.text.trim().isEmpty) {
-      SmartDialog.showToast('Vui lòng nhập tiêu đề');
+      SmartDialog.showToast(context.l10n.crEnterTitle);
       return;
     }
     if (_descriptionController.text.trim().isEmpty) {
-      SmartDialog.showToast('Vui lòng nhập mô tả chi tiết');
+      SmartDialog.showToast(context.l10n.crEnterDescription);
       return;
     }
     final lockerId = _selectedLockerId;
     if (lockerId == null) {
-      SmartDialog.showToast('Vui lòng chọn tủ gặp sự cố');
+      SmartDialog.showToast(context.l10n.crChooseLocker);
       return;
     }
     if (_capturedPhotos.isEmpty) {
-      SmartDialog.showToast('Vui lòng đính kèm ít nhất 1 ảnh sự cố');
+      SmartDialog.showToast(context.l10n.crAttachPhoto);
       return;
     }
 
-    SmartDialog.showLoading<void>(msg: 'Đang gửi báo cáo...');
+    SmartDialog.showLoading<void>(msg: context.l10n.crSending);
 
     final result = await _provider.createReport(
       lockerId: '$lockerId',
@@ -272,7 +273,7 @@ class _CreateReportPageState extends State<CreateReportPage> {
     SmartDialog.dismiss<void>();
 
     if (result != null) {
-      SmartDialog.showToast('Gửi báo cáo thành công');
+      SmartDialog.showToast(L10n.current.crSent);
       AppEventBus.instance.emit(ReportUpdatedEvent(reportId: result.id.toString()));
       AppEventBus.instance.emit(LockerLayoutUpdatedEvent(
         lockerId: '$lockerId',
@@ -292,7 +293,7 @@ class _CreateReportPageState extends State<CreateReportPage> {
       }
     } else {
       final friendlyError = _friendlyErrorMessage(_provider.error);
-      SmartDialog.showToast('Gửi báo cáo thất bại: $friendlyError');
+      SmartDialog.showToast(L10n.current.crSendFailed(friendlyError));
     }
   }
 
@@ -305,7 +306,7 @@ class _CreateReportPageState extends State<CreateReportPage> {
   /// Chụp ảnh bằng camera (1 ảnh)
   Future<void> _capturePhoto() async {
     if (_remainingPhotos <= 0) {
-      SmartDialog.showToast('Tối đa $_maxPhotos ảnh');
+      SmartDialog.showToast(context.l10n.photoMax(_maxPhotos));
       return;
     }
     final image = await _picker.pickImage(
@@ -323,7 +324,7 @@ class _CreateReportPageState extends State<CreateReportPage> {
   /// Chọn nhiều ảnh cùng lúc từ thư viện
   Future<void> _pickMultiplePhotos() async {
     if (_remainingPhotos <= 0) {
-      SmartDialog.showToast('Tối đa $_maxPhotos ảnh');
+      SmartDialog.showToast(context.l10n.photoMax(_maxPhotos));
       return;
     }
     final images = await _picker.pickMultiImage(
@@ -335,7 +336,7 @@ class _CreateReportPageState extends State<CreateReportPage> {
     if (images.isEmpty) return;
     if (images.length > _remainingPhotos) {
       SmartDialog.showToast(
-        'Chỉ lấy $_remainingPhotos ảnh đầu (tối đa $_maxPhotos)',
+        L10n.current.crFirstPhotosOnly(_remainingPhotos, _maxPhotos),
       );
     }
     setState(() {
@@ -357,8 +358,8 @@ class _CreateReportPageState extends State<CreateReportPage> {
       backgroundColor: widget.isEmbedded ? const Color(0xFFF8FAFC) : const Color(0xFFF5F5F7),
       appBar: widget.isEmbedded
           ? null
-          : const CustomAppBar(
-              title: 'Báo cáo sự cố',
+          : CustomAppBar(
+              title: context.l10n.crTitle,
               centerTitle: true,
               showBackButton: true,
             ),
@@ -369,14 +370,14 @@ class _CreateReportPageState extends State<CreateReportPage> {
           children: [
             _buildTextField(
               controller: _titleController,
-              label: 'Tiêu đề',
-              hint: 'Nhập tiêu đề sự cố',
+              label: context.l10n.crTitleField,
+              hint: context.l10n.crTitleHint,
             ),
             const SizedBox(height: 16),
             _buildTextField(
               controller: _descriptionController,
-              label: 'Mô tả chi tiết',
-              hint: 'Mô tả rõ vấn đề bạn gặp phải',
+              label: context.l10n.crDescriptionField,
+              hint: context.l10n.crDescriptionHint,
               maxLines: 4,
             ),
             const SizedBox(height: 16),
@@ -412,7 +413,7 @@ class _CreateReportPageState extends State<CreateReportPage> {
                     ),
                   ),
                   child: Text(
-                    widget.isEmbedded ? 'Hủy / Danh sách' : 'Trở về',
+                    widget.isEmbedded ? context.l10n.crCancelOrList : context.l10n.crBack,
                     style: const TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 16,
@@ -433,8 +434,8 @@ class _CreateReportPageState extends State<CreateReportPage> {
                     ),
                     elevation: 0,
                   ),
-                  child: const Text(
-                    'Gửi báo cáo',
+                  child: Text(
+                    context.l10n.crSubmit,
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 16,
@@ -503,8 +504,8 @@ class _CreateReportPageState extends State<CreateReportPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Tủ đồ bị lỗi',
+        Text(
+          context.l10n.crFaultyLocker,
           style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w500,
@@ -546,7 +547,7 @@ class _CreateReportPageState extends State<CreateReportPage> {
                 ),
                 TextButton(
                   onPressed: _loadLockerAddressOptions,
-                  child: const Text('Thử lại'),
+                  child: Text(context.l10n.commonRetry),
                 ),
               ],
             ),
@@ -568,7 +569,7 @@ class _CreateReportPageState extends State<CreateReportPage> {
           LockerPickerField(
             lockers: _lockers,
             selectedId: _selectedLockerId,
-            placeholder: 'Chạm để chọn tủ gặp sự cố',
+            placeholder: context.l10n.crTapToChoose,
             onSelected: _selectLocker,
           ),
       ],
@@ -585,7 +586,7 @@ class _CreateReportPageState extends State<CreateReportPage> {
             Expanded(
               child: Text.rich(
                 TextSpan(
-                  text: 'Chọn ô gặp sự cố ',
+                  text: context.l10n.crChooseBox,
                   style: const TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
@@ -593,7 +594,7 @@ class _CreateReportPageState extends State<CreateReportPage> {
                   ),
                   children: [
                     TextSpan(
-                      text: '(Tuỳ chọn)',
+                      text: context.l10n.crOptional,
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.normal,
@@ -623,13 +624,13 @@ class _CreateReportPageState extends State<CreateReportPage> {
                     children: [
                       _buildViewModeButton(
                         icon: LucideIcons.layoutGrid,
-                        label: 'Sơ đồ',
+                        label: context.l10n.crLayout,
                         isActive: _isPhysicalView,
                         onTap: () => setState(() => _isPhysicalView = true),
                       ),
                       _buildViewModeButton(
                         icon: LucideIcons.rows3,
-                        label: 'Thẻ',
+                        label: context.l10n.crCards,
                         isActive: !_isPhysicalView,
                         onTap: () => setState(() => _isPhysicalView = false),
                       ),
@@ -652,13 +653,13 @@ class _CreateReportPageState extends State<CreateReportPage> {
                         borderRadius: BorderRadius.circular(6),
                         border: Border.all(color: const Color(0xFFFECACA), width: 0.8),
                       ),
-                      child: const Row(
+                      child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Icon(Icons.close, size: 12, color: Color(0xFFDC2626)),
                           SizedBox(width: 2.5),
                           Text(
-                            'Bỏ chọn',
+                            context.l10n.crDeselect,
                             style: TextStyle(
                               fontSize: 11,
                               fontWeight: FontWeight.w600,
@@ -696,7 +697,7 @@ class _CreateReportPageState extends State<CreateReportPage> {
               border: Border.all(color: Colors.grey.shade200),
             ),
             child: Text(
-              'Không tìm thấy danh sách ô hoặc sự cố xảy ra chung toàn trạm.',
+              context.l10n.crNoBoxes,
               style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
             ),
           )
@@ -716,12 +717,12 @@ class _CreateReportPageState extends State<CreateReportPage> {
               children: [
                 _buildBoxLegendItem(
                   icon: LucideIcons.monitor,
-                  label: 'Màn hình 7"',
+                  label: context.l10n.lockerScreen7,
                   bg: const Color(0xFF0F172A),
                 ),
                 _buildBoxLegendItem(
                   icon: LucideIcons.box,
-                  label: 'Trống',
+                  label: context.l10n.commonEmpty,
                   bg: const Color(0xFF00B4D8),
                 ),
                 _buildBoxLegendItem(
@@ -731,22 +732,22 @@ class _CreateReportPageState extends State<CreateReportPage> {
                 ),
                 _buildBoxLegendItem(
                   icon: LucideIcons.luggage,
-                  label: 'Vali (XL)',
+                  label: context.l10n.cellTypeSuitcase,
                   bg: const Color(0xFF0284C7),
                 ),
                 _buildBoxLegendItem(
                   icon: Icons.circle,
-                  label: 'Đang dùng',
+                  label: context.l10n.commonInUseShort,
                   bg: const Color(0xFF64748B),
                 ),
                 _buildBoxLegendItem(
                   icon: Icons.circle,
-                  label: 'Hỏng',
+                  label: context.l10n.commonBroken,
                   bg: const Color(0xFFDC2626),
                 ),
                 _buildBoxLegendItem(
                   icon: LucideIcons.doorOpen,
-                  label: 'Cửa mở',
+                  label: context.l10n.lockerDoorOpen,
                   bg: const Color(0xFFD97706),
                 ),
               ],
@@ -790,7 +791,7 @@ class _CreateReportPageState extends State<CreateReportPage> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Đang chọn: Ô #$numVal • $typeLabel • $stLabel',
+                              context.l10n.crSelectedBox(numVal, typeLabel, stLabel),
                               style: const TextStyle(
                                 fontSize: 12.5,
                                 fontWeight: FontWeight.w700,
@@ -799,8 +800,8 @@ class _CreateReportPageState extends State<CreateReportPage> {
                             ),
                             if (bIsDoorOpen) ...[
                               const SizedBox(height: 2),
-                              const Text(
-                                '⚠️ Cửa ô này hiện đang MỞ trên hệ thống.',
+                              Text(
+                                context.l10n.crDoorOpenWarning,
                                 style: TextStyle(
                                   fontSize: 11,
                                   fontWeight: FontWeight.w600,
@@ -826,13 +827,13 @@ class _CreateReportPageState extends State<CreateReportPage> {
                             borderRadius: BorderRadius.circular(6),
                             border: Border.all(color: const Color(0xFFA7F3D0)),
                           ),
-                          child: const Row(
+                          child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Icon(Icons.close, size: 12, color: Color(0xFF065F46)),
                               SizedBox(width: 2.5),
                               Text(
-                                'Bỏ chọn',
+                                context.l10n.crDeselect,
                                 style: TextStyle(
                                   fontSize: 11,
                                   fontWeight: FontWeight.w600,
@@ -861,12 +862,12 @@ class _CreateReportPageState extends State<CreateReportPage> {
                 children: [
                   const Icon(LucideIcons.monitor, size: 18, color: Color(0xFF0284C7)),
                   const SizedBox(width: 8),
-                  const Expanded(
+                  Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Đang chọn: Màn hình cảm ứng 7" Kiosk (Sự cố toàn trạm)',
+                          context.l10n.crSelectedKiosk,
                           style: TextStyle(
                             fontSize: 12.5,
                             fontWeight: FontWeight.w700,
@@ -875,7 +876,7 @@ class _CreateReportPageState extends State<CreateReportPage> {
                         ),
                         SizedBox(height: 2),
                         Text(
-                          'Báo cáo lỗi màn hình đơ/tắt, lỗi cảm ứng hoặc sự cố không thuộc ô cụ thể.',
+                          context.l10n.crKioskHint,
                           style: TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.w500,
@@ -899,13 +900,13 @@ class _CreateReportPageState extends State<CreateReportPage> {
                         borderRadius: BorderRadius.circular(6),
                         border: Border.all(color: const Color(0xFFBAE6FD)),
                       ),
-                      child: const Row(
+                      child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Icon(Icons.close, size: 12, color: Color(0xFF0284C7)),
                           SizedBox(width: 2.5),
                           Text(
-                            'Bỏ chọn',
+                            context.l10n.crDeselect,
                             style: TextStyle(
                               fontSize: 11,
                               fontWeight: FontWeight.w600,
@@ -1113,7 +1114,7 @@ class _CreateReportPageState extends State<CreateReportPage> {
             _isScreenIssueSelected = true;
             _selectedBoxId = null;
             if (_titleController.text.trim().isEmpty) {
-              _titleController.text = 'Sự cố màn hình cảm ứng Kiosk 7 inch';
+              _titleController.text = context.l10n.crKioskTitle;
             }
           }
         });
@@ -1171,9 +1172,9 @@ class _CreateReportPageState extends State<CreateReportPage> {
                     children: [
                       const Icon(LucideIcons.monitor, size: 12, color: Color(0xFF38BDF8)),
                       const SizedBox(width: 4),
-                      const Expanded(
+                      Expanded(
                         child: Text(
-                          'Màn hình Kiosk',
+                          context.l10n.crKioskScreen,
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: 9,
@@ -1221,7 +1222,7 @@ class _CreateReportPageState extends State<CreateReportPage> {
                       borderRadius: BorderRadius.circular(4),
                     ),
                     child: Text(
-                      isSel ? '✓ Đang chọn' : 'Chạm báo lỗi',
+                      isSel ? context.l10n.rfSelected : context.l10n.crTapToReport,
                       style: TextStyle(
                         color: isSel ? Colors.white : const Color(0xFF94A3B8),
                         fontSize: 8,
@@ -1267,7 +1268,7 @@ class _CreateReportPageState extends State<CreateReportPage> {
     final statusLabel = LockerLayoutHelper.statusLabel(c);
     final typeLabel = isDrone
         ? 'Drone'
-        : (isXl ? 'Vali (XL)' : 'Tiêu chuẩn');
+        : (isXl ? L10n.current.cellTypeSuitcase : L10n.current.cellTypeStandard);
 
     final bool isGreyedOut = statusStr == 'OCCUPIED' ||
         statusStr == 'IN_USE' ||
@@ -1350,7 +1351,7 @@ class _CreateReportPageState extends State<CreateReportPage> {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            'KHOANG VALI LỚN',
+                            context.l10n.crSuitcaseBayUpper,
                             style: TextStyle(
                               fontSize: 9,
                               fontWeight: FontWeight.w800,
@@ -1403,8 +1404,8 @@ class _CreateReportPageState extends State<CreateReportPage> {
                                 color: const Color(0xFFD97706),
                                 borderRadius: BorderRadius.circular(3),
                               ),
-                              child: const Text(
-                                'Mở',
+                              child: Text(
+                                context.l10n.crOpen,
                                 style: TextStyle(
                                   color: Colors.white,
                                   fontSize: 7.5,
@@ -1589,8 +1590,8 @@ class _CreateReportPageState extends State<CreateReportPage> {
                       borderRadius: BorderRadius.circular(3),
                       border: Border.all(color: const Color(0xFFEAB308), width: 0.6),
                     ),
-                    child: const Text(
-                      'Mở',
+                    child: Text(
+                      context.l10n.crOpen,
                       style: TextStyle(
                         fontSize: 7.5,
                         fontWeight: FontWeight.w800,
@@ -1642,8 +1643,8 @@ class _CreateReportPageState extends State<CreateReportPage> {
       children: [
         Row(
           children: [
-            const Text(
-              'Ảnh hiện trường sự cố',
+            Text(
+              context.l10n.crPhotos,
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
@@ -1658,7 +1659,7 @@ class _CreateReportPageState extends State<CreateReportPage> {
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Text(
-                '${_capturedPhotos.length} ảnh',
+                context.l10n.crPhotoCount(_capturedPhotos.length),
                 style: const TextStyle(
                   fontSize: 11,
                   color: Color(0xFF2E7D32),
@@ -1670,7 +1671,7 @@ class _CreateReportPageState extends State<CreateReportPage> {
         ),
         const SizedBox(height: 4),
         Text(
-          'Có thể thêm nhiều ảnh cùng lúc từ thư viện hoặc dùng camera chụp từng ảnh (tối đa $_maxPhotos ảnh)',
+          context.l10n.crPhotosHint(_maxPhotos),
           style: const TextStyle(fontSize: 12, color: Colors.grey),
         ),
         const SizedBox(height: 10),
@@ -1681,7 +1682,7 @@ class _CreateReportPageState extends State<CreateReportPage> {
               child: OutlinedButton.icon(
                 onPressed: _capturePhoto,
                 icon: const Icon(Icons.camera_alt_rounded, size: 18),
-                label: const Text('Chụp ảnh'),
+                label: Text(context.l10n.epTakePhoto),
                 style: OutlinedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 12),
                   foregroundColor: const Color(0xFF1A237E),
@@ -1697,7 +1698,7 @@ class _CreateReportPageState extends State<CreateReportPage> {
               child: OutlinedButton.icon(
                 onPressed: _pickMultiplePhotos,
                 icon: const Icon(Icons.photo_library_rounded, size: 18),
-                label: const Text('Chọn nhiều ảnh'),
+                label: Text(context.l10n.crPickMany),
                 style: OutlinedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 12),
                   foregroundColor: const Color(0xFF1A237E),
@@ -1741,7 +1742,7 @@ class _CreateReportPageState extends State<CreateReportPage> {
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
-                          'Ảnh ${index + 1}',
+                          context.l10n.photoNumber(index + 1),
                           style: const TextStyle(
                             color: Colors.white,
                             fontSize: 10,

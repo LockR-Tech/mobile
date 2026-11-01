@@ -19,6 +19,7 @@ import 'package:smart_laundry_locker/features/drone_delivery/presentation/widget
 import 'package:smart_laundry_locker/features/locker_ops/presentation/utils/business_rules_text.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/utils/locker_maps.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/ops_widgets.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 /// Thời điểm thực tế từng mốc timeline đã đạt, suy từ nhật ký hành trình.
 ///
@@ -71,31 +72,31 @@ Map<DroneDeliveryStage, List<DroneTimelineDetail>> droneStepDetails(
       status.stage == DroneDeliveryStage.completed;
   return {
     DroneDeliveryStage.awaitingDispatch: [
-      DroneTimelineDetail('Thanh toán', status.paidAt),
+      DroneTimelineDetail(L10n.current.ddTlPayment, status.paidAt),
       // Đơn cũ: người gửi tự mang kiện ra ô gửi.
       if (status.pickup == null)
-        DroneTimelineDetail('Bỏ kiện vào ô gửi', status.parcelDroppedAt),
+        DroneTimelineDetail(L10n.current.ddTlParcelDropped, status.parcelDroppedAt),
     ],
     if (status.pickup != null)
       DroneDeliveryStage.pickedUp: [
         DroneTimelineDetail(
-          'Lấy hàng tại nhà người gửi',
+          L10n.current.ddTlHomePickup,
           status.pickup!.pickedUpAt,
         ),
       ],
     DroneDeliveryStage.accepted: [
-      DroneTimelineDetail('Nạp hàng lên drone', status.loadedAt),
-      DroneTimelineDetail('Sẵn sàng phóng', status.readyToLaunchAt),
+      DroneTimelineDetail(L10n.current.ddTlLoaded, status.loadedAt),
+      DroneTimelineDetail(L10n.current.ddTlReady, status.readyToLaunchAt),
     ],
     if (reachedPickup)
       DroneDeliveryStage.readyForPickup: [
         DroneTimelineDetail(
-          'Gửi mã cho người nhận',
+          L10n.current.ddTlCodeSent,
           codeEvent?.occurredAt,
           note: codeEvent?.note,
         ),
-        DroneTimelineDetail('Hạn nhận hàng', status.pickupDeadline),
-        DroneTimelineDetail('Người nhận lấy hàng', status.completedAt),
+        DroneTimelineDetail(L10n.current.ddTlPickupDeadline, status.pickupDeadline),
+        DroneTimelineDetail(L10n.current.ddTlReceived, status.completedAt),
       ],
   };
 }
@@ -219,7 +220,7 @@ class DroneDeliveryDetail extends StatelessWidget {
         _RouteCard(status: status, forOperator: forOperator),
         const SizedBox(height: 16),
         _Card(
-          title: 'Tiến trình giao hàng',
+          title: context.l10n.ddProgress,
           icon: LucideIcons.listChecks,
           child: DroneDeliveryTimeline(
             stage: stage,
@@ -251,7 +252,7 @@ class DroneDeliveryDetail extends StatelessWidget {
   }
 }
 
-String? _etaText(int? minutes) => minutes == null ? null : '$minutes phút';
+String? _etaText(int? minutes) => minutes == null ? null : L10n.current.minutesShort(minutes);
 
 /// Tiêu đề + mô tả của thẻ đầu trang. Câu mặc định theo chặng sai ở vài trường hợp (test 2026-10-29):
 /// đơn đóng sau khi drone đã bay (rơi kiện) bị ghi "dừng trước khi drone cất cánh", đơn chưa trả tiền
@@ -260,30 +261,29 @@ String? _etaText(int? minutes) => minutes == null ? null : '$minutes phút';
   final stage = status.stage;
   if (stage == DroneDeliveryStage.canceled && status.launchingAt != null) {
     return (
-      title: 'Đơn drone đã đóng',
-      body: 'Chuyến bay không hoàn tất nên đơn này đã đóng; phương án xử lý '
-          'xem ở phần sự cố của đơn.',
+      title: L10n.current.ddClosedTitle,
+      body: L10n.current.ddClosedBody,
     );
   }
   if (stage == DroneDeliveryStage.awaitingDispatch && !status.isPaid) {
     return (
-      title: 'Chờ thanh toán',
-      body: 'Thanh toán xong hệ thống mới tìm kỹ thuật viên drone tới lấy hàng',
+      title: L10n.current.ddAwaitingPaymentTitle,
+      body: L10n.current.ddAwaitingPaymentBody,
     );
   }
   // Không lấy hàng tận nhà (đơn giao lại sau sự cố, đơn gửi tại tủ): kiện đã nằm ở kho / trạm, không
   // còn "tìm kỹ thuật viên gần bạn" (test 2026-10-29, đơn giao lại #144).
   if (stage == DroneDeliveryStage.awaitingDispatch && status.pickup == null) {
     return (
-      title: 'Chờ đội bay tiếp nhận',
-      body: 'Kiện đã sẵn sàng tại trạm Lock.R, chờ kỹ thuật viên drone nạp hàng và phóng',
+      title: L10n.current.ddAwaitingTeamTitle,
+      body: L10n.current.ddAwaitingTeamBody,
     );
   }
   if (stage == DroneDeliveryStage.accepted &&
       (status.missionStatus ?? '').toUpperCase() == 'READY_TO_LAUNCH') {
     return (
-      title: 'Sẵn sàng phóng',
-      body: 'Kiện đã được nạp và niêm phong trên drone, chờ đội bay phóng',
+      title: L10n.current.ddTlReady,
+      body: L10n.current.ddReadyBody,
     );
   }
   return (title: stage.title, body: stage.body(_etaText(status.etaMinutes)));
@@ -360,7 +360,7 @@ class _HeaderCard extends StatelessWidget {
               if ((status.orderCode ?? '').isNotEmpty)
                 _InfoChip(
                   icon: LucideIcons.package,
-                  label: 'Đơn ${status.orderCode}',
+                  label: context.l10n.commonOrderCode('${status.orderCode}'),
                 ),
               if ((status.droneCode ?? '').isNotEmpty)
                 _InfoChip(
@@ -371,12 +371,12 @@ class _HeaderCard extends StatelessWidget {
               if (status.etaMinutes != null && stage.isInFlight)
                 _InfoChip(
                   icon: LucideIcons.clock,
-                  label: 'Còn khoảng ${status.etaMinutes} phút',
+                  label: context.l10n.ddAboutMinutesLeft('${status.etaMinutes}'),
                 ),
               if (changedAt != null)
                 _InfoChip(
                   icon: LucideIcons.history,
-                  label: 'Từ ${formatDateTimeVn(changedAt)}',
+                  label: context.l10n.ddSince(formatDateTimeVn(changedAt)),
                 ),
             ],
           ),
@@ -452,12 +452,10 @@ class _StorageDeadlineCard extends StatelessWidget {
       message = dronePickupPolicyText(config);
     } else if (overdue) {
       message =
-          'Đơn hàng đã quá hạn lấy lúc ${formatDeadlineVn(deadline)}. '
-          '${overtimePolicyText(config)}';
+          context.l10n.ddOverdueAt(formatDeadlineVn(deadline), overtimePolicyText(config));
     } else if (forOperator) {
       message =
-          'Hạn người nhận lấy hàng: ${formatDeadlineVn(deadline)} '
-          '(lưu trữ ${_storedHours(deadline, config)} giờ).';
+          context.l10n.ddPickupDeadline(formatDeadlineVn(deadline), _storedHours(deadline, config));
     } else {
       message =
           '${droneStoredUntilText(_storedHours(deadline, config), deadline)} '
@@ -523,29 +521,25 @@ class _StatusBanner extends StatelessWidget {
         stage == DroneDeliveryStage.awaitingDispatch && !status.isPaid;
     final lines = <String>[
       closedAfterFlight
-          ? 'Chuyến bay không hoàn tất nên đơn này đã đóng. Phương án xử lý '
-                '(giao lại hoặc bồi thường) xem ở phần sự cố của đơn.'
+          ? context.l10n.ddFlightIncompleteClosed
           : awaitingPayment
-          ? 'Đơn chưa thanh toán. Thanh toán xong hệ thống mới bắt đầu tìm '
-                'kỹ thuật viên drone tới lấy hàng.'
+          ? context.l10n.ddUnpaidSearch
           : stage.body(_etaText(status.etaMinutes)),
-      if (endedAt != null) 'Lúc: ${formatDateTimeVn(endedAt)}',
-      if (stopped && reason != null) 'Lý do: $reason',
-      if (stopped && status.cancelNote != null) 'Ghi chú: ${status.cancelNote}',
-      if (failure?.ticketId != null) 'Phiếu sự cố: #${failure!.ticketId}',
+      if (endedAt != null) context.l10n.ddAt(formatDateTimeVn(endedAt)),
+      if (stopped && reason != null) context.l10n.ddReason(reason),
+      if (stopped && status.cancelNote != null) context.l10n.ddNoteValue('${status.cancelNote}'),
+      if (failure?.ticketId != null) context.l10n.ddTicket('${failure!.ticketId}'),
       if (stage == DroneDeliveryStage.failed && !parcelCollected)
-        'Kiện hàng chưa được lấy, vẫn ở chỗ người gửi.',
+        context.l10n.ddParcelWithSender,
       if (stopped &&
           (status.paymentStatus ?? '').toUpperCase() == 'REFUND_PENDING')
-        'Yêu cầu hoàn tiền đã được ghi nhận. Admin sẽ chuyển khoản về tài '
-            'khoản ngân hàng của người đặt.',
+        context.l10n.ddRefundRecorded,
       if (stopped && (status.paymentStatus ?? '').toUpperCase() == 'REFUNDED')
-        'Tiền đã được chuyển khoản hoàn cho người đặt.',
+        context.l10n.ddRefundDone,
       if (stopped && status.isPaid && closedAfterFlight)
-        'Khoản đã trả được xử lý theo phương án sự cố: giao lại miễn phí '
-            'hoặc bồi thường chuyển khoản về tài khoản ngân hàng đã liên kết.'
+        context.l10n.ddRefundByIncident
       else if (stopped && status.isPaid)
-        'Chưa ghi nhận được yêu cầu hoàn tiền — vui lòng liên hệ hỗ trợ.',
+        context.l10n.ddRefundNotRecorded,
     ];
     return Container(
       padding: const EdgeInsets.all(14),
@@ -597,16 +591,17 @@ class _UnpaidBanner extends StatelessWidget {
   String _surchargeText() {
     final amount = fmtPrice(status.payableAmount ?? status.weightSurcharge);
     final weights =
-        'Kiện cân thực tế ${droneWeightLabel(status.payloadWeightGrams)}, nặng hơn '
-        'mức ${droneWeightLabel(status.expectedWeightGrams)} đã khai báo.';
+        L10n.current.ddWeightOver(
+      droneWeightLabel(status.payloadWeightGrams),
+      droneWeightLabel(status.expectedWeightGrams),
+    );
     if (forOperator) {
-      return '$weights Chờ khách trả thêm $amount rồi mới phóng được.';
+      return '$weights ${L10n.current.ddSurchargeOperator(amount)}';
     }
     if (!viewerIsBooker) {
-      return '$weights Đang chờ người gửi trả thêm $amount để drone cất cánh.';
+      return '$weights ${L10n.current.ddSurchargeReceiver(amount)}';
     }
-    return '$weights Bạn cần trả thêm $amount để drone cất cánh. Không đồng ý thì '
-        'bạn có thể huỷ đơn: phần đã trả được hoàn và đội bay trả lại kiện.';
+    return '$weights ${L10n.current.ddSurchargeSender(amount)}';
   }
 
   @override
@@ -633,10 +628,10 @@ class _UnpaidBanner extends StatelessWidget {
                   surcharge
                       ? _surchargeText()
                       : forOperator
-                      ? 'Khách chưa thanh toán. Chỉ tiếp nhận được sau khi đơn đã thanh toán.'
+                      ? context.l10n.ddUnpaidOperator
                       : !viewerIsBooker
-                      ? 'Người gửi chưa thanh toán đơn. Đội bay tiếp nhận sau khi người gửi thanh toán.'
-                      : 'Đơn chưa thanh toán. Đội bay chỉ tiếp nhận sau khi bạn thanh toán.',
+                      ? context.l10n.ddUnpaidReceiver
+                      : context.l10n.ddUnpaidSender,
                   style: const TextStyle(
                     color: color,
                     fontSize: 13.5,
@@ -657,7 +652,7 @@ class _UnpaidBanner extends StatelessWidget {
                 onPressed: onPay,
                 icon: const Icon(LucideIcons.wallet, size: 18),
                 label: Text(
-                  surcharge ? 'Trả thêm phí chênh' : 'Thanh toán ngay',
+                  surcharge ? context.l10n.ddPaySurcharge : context.l10n.ddPayNow,
                 ),
               ),
             ),
@@ -672,7 +667,7 @@ class _UnpaidBanner extends StatelessWidget {
                 key: const ValueKey('drone-decline-surcharge'),
                 style: TextButton.styleFrom(foregroundColor: color),
                 onPressed: onDeclineSurcharge,
-                child: const Text('Không đồng ý · huỷ đơn và nhận hoàn tiền'),
+                child: Text(context.l10n.ddDeclineSurcharge),
               ),
             ),
         ],
@@ -695,20 +690,18 @@ class _BlockBanner extends StatelessWidget {
     final block = status.block!;
     final label = block.reasonLabel ?? droneFailureReasonLabel(block.reason);
     final lines = <String>[
-      'Đơn đang gặp sự cố: $label',
+      context.l10n.ddIncidentLabel(label),
       if (block.note != null) block.note!,
-      if (block.ticketId != null) 'Phiếu sự cố: #${block.ticketId}',
-      if (block.at != null) 'Từ lúc: ${formatDateTimeVn(block.at)}',
+      if (block.ticketId != null) context.l10n.ddTicket('${block.ticketId}'),
+      if (block.at != null) context.l10n.ddFromTime(formatDateTimeVn(block.at)),
       if (block.autoCloseAt != null)
         forOperator
-            ? 'Chưa khắc phục trước ${formatDateTimeVn(block.autoCloseAt)} thì đơn '
-                  'tự kết thúc "giao không hoàn tất" và hoàn tiền cho khách.'
-            : 'Nếu chưa khắc phục được trước ${formatDateTimeVn(block.autoCloseAt)}, '
-                  'đơn sẽ kết thúc và bạn được hoàn tiền.'
+            ? context.l10n.ddAutoCloseOperator(formatDateTimeVn(block.autoCloseAt))
+              : context.l10n.ddAutoCloseCustomer(formatDateTimeVn(block.autoCloseAt))
       else
         forOperator
-            ? 'Đổi phương án hoặc xác nhận giao không hoàn tất.'
-            : 'Đội bay đang xử lý.',
+            ? context.l10n.ddChangePlan
+            : context.l10n.ddTeamHandling,
     ];
     return Container(
       key: const ValueKey('drone-block-banner'),
@@ -755,20 +748,24 @@ class _PickupCard extends StatelessWidget {
 
   String _headline(DronePickupInfo pickup) {
     if (pickup.isPickedUp) {
-      return 'Đã lấy hàng${pickup.pickedUpAt == null ? '' : ' lúc ${formatDateTimeVn(pickup.pickedUpAt)}'}';
+      return L10n.current.ddPickedUp(
+        pickup.pickedUpAt == null
+            ? ''
+            : L10n.current.ddPickedUpAt(formatDateTimeVn(pickup.pickedUpAt)),
+      );
     }
     if (pickup.isAccepted) {
-      final who = pickup.technicianName ?? 'Kỹ thuật viên';
-      return forOperator ? 'Bạn đang tới lấy hàng' : '$who đang tới lấy hàng';
+      final who = pickup.technicianName ?? L10n.current.ddTechnician;
+      return forOperator ? L10n.current.ddYouHeadingToPickup : L10n.current.ddTechHeadingToPickup(who);
     }
     if (pickup.isOffered || pickup.isSearching) {
       return forOperator
-          ? 'Bạn được mời lấy hàng'
-          : 'Đang tìm kỹ thuật viên drone gần bạn nhất';
+          ? L10n.current.ddYouAreInvited
+          : L10n.current.ddSearchingTech;
     }
     return status.isPaid
-        ? 'Chờ điều phối lấy hàng'
-        : 'Kỹ thuật viên sẽ tới lấy hàng sau khi đơn được thanh toán';
+        ? L10n.current.ddAwaitingDispatchPickup
+        : L10n.current.ddTechAfterPayment;
   }
 
   @override
@@ -778,7 +775,7 @@ class _PickupCard extends StatelessWidget {
     final showCode =
         !forOperator && isSender && code != null && !pickup.isPickedUp;
     return _Card(
-      title: 'Lấy hàng tận nhà',
+      title: context.l10n.ddHomePickup,
       icon: LucideIcons.house,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -799,8 +796,8 @@ class _PickupCard extends StatelessWidget {
               ),
               child: Column(
                 children: [
-                  const Text(
-                    'Mã lấy hàng',
+                  Text(
+                    context.l10n.ddPickupCode,
                     style: TextStyle(fontSize: 12, color: Color(0xFF4F46E5)),
                   ),
                   const SizedBox(height: 4),
@@ -815,9 +812,8 @@ class _PickupCard extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 4),
-                  const Text(
-                    'Đọc mã này cho kỹ thuật viên khi giao kiện. Không gửi mã cho '
-                    'người khác.',
+                  Text(
+                    context.l10n.ddPickupCodeHint,
                     textAlign: TextAlign.center,
                     style: TextStyle(fontSize: 12, color: Color(0xFF4F46E5)),
                   ),
@@ -827,32 +823,32 @@ class _PickupCard extends StatelessWidget {
           ],
           const SizedBox(height: 12),
           _Rows([
-            ('Điểm lấy hàng', pickup.address ?? '—'),
-            if (pickup.note != null) ('Chỉ dẫn', pickup.note!),
+            (context.l10n.ddPickupPoint, pickup.address ?? '—'),
+            if (pickup.note != null) (context.l10n.ddDirections, pickup.note!),
             if (pickup.technicianName != null &&
                 (pickup.isAccepted || pickup.isPickedUp))
-              ('Kỹ thuật viên', pickup.technicianName!),
+              (context.l10n.ddTechnician, pickup.technicianName!),
             if (!forOperator &&
                 pickup.technicianPhone != null &&
                 (pickup.isAccepted || pickup.isPickedUp))
-              ('SĐT kỹ thuật viên', pickup.technicianPhone!),
+              (context.l10n.ddTechPhone, pickup.technicianPhone!),
             if (pickup.isAccepted && pickup.technicianDistanceMeters != null)
               (
-                'Cách điểm lấy lúc nhận việc',
+                context.l10n.ddDistanceAtAccept,
                 droneDistanceLabel(pickup.technicianDistanceMeters),
               ),
             if (pickup.distanceToSourceLockerMeters != null)
               (
-                'Điểm lấy hàng → tủ gửi',
+                context.l10n.ddPickupToSource,
                 droneDistanceLabel(pickup.distanceToSourceLockerMeters),
               ),
             if (pickup.technicianNote != null)
-              ('Ghi chú lúc lấy hàng', pickup.technicianNote!),
+              (context.l10n.ddPickupNote, pickup.technicianNote!),
           ]),
           if (pickup.pickupPhotoUrl case final photoUrl?) ...[
             const SizedBox(height: 12),
-            const Text(
-              'Ảnh kiện lúc lấy hàng',
+            Text(
+              context.l10n.ddPickupPhoto,
               style: TextStyle(fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 6),
@@ -870,10 +866,10 @@ class _PickupCard extends StatelessWidget {
                           child: Image.network(
                             photoUrl,
                             fit: BoxFit.contain,
-                            errorBuilder: (_, __, ___) => const Padding(
+                            errorBuilder: (_, __, ___) => Padding(
                               padding: EdgeInsets.all(24),
                               child: Text(
-                                'Không tải được ảnh',
+                                context.l10n.attachmentLoadFailed,
                                 style: TextStyle(color: Colors.white),
                               ),
                             ),
@@ -915,7 +911,7 @@ class _PickupCard extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.only(top: 4),
                 child: Text(
-                  'Chụp lúc ${formatDateTimeVn(pickup.pickupPhotoCapturedAt)}',
+                  context.l10n.ddPhotoTakenAt(formatDateTimeVn(pickup.pickupPhotoCapturedAt)),
                   style: const TextStyle(
                     fontSize: 11,
                     color: Color(0xFF64748B),
@@ -948,7 +944,9 @@ class _DropBanner extends StatelessWidget {
   Widget build(BuildContext context) {
     const color = Color(0xFF1E5A8A);
     final box = status.sourceBoxNumber;
-    final where = box == null ? 'ô drone ở tủ gửi' : 'ô drone số $box ở tủ gửi';
+    final where = box == null
+        ? context.l10n.ddDroneBoxAtSource
+        : context.l10n.ddDroneBoxNumberAtSource(box);
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
@@ -967,12 +965,10 @@ class _DropBanner extends StatelessWidget {
               Expanded(
                 child: Text(
                   forOperator
-                      ? 'Người gửi chưa xác nhận bỏ kiện vào $where. Chỉ tiếp nhận '
-                            'được sau khi kiện đã nằm trong ô.'
+                      ? context.l10n.ddSenderNotDroppedOperator(where)
                       : !viewerIsBooker
-                      ? 'Đang chờ người gửi bỏ kiện vào $where.'
-                      : 'Bỏ kiện vào $where rồi xác nhận bên dưới. Đội bay chỉ tiếp '
-                            'nhận đơn sau khi bạn xác nhận.',
+                      ? context.l10n.ddWaitingSenderDrop(where)
+            : context.l10n.ddDropThenConfirm(where),
                   style: const TextStyle(
                     color: color,
                     fontSize: 13.5,
@@ -992,7 +988,7 @@ class _DropBanner extends StatelessWidget {
                 style: FilledButton.styleFrom(backgroundColor: color),
                 onPressed: onConfirmDrop,
                 icon: const Icon(LucideIcons.packageCheck, size: 18),
-                label: const Text('Tôi đã bỏ kiện vào ô'),
+                label: Text(context.l10n.ddIDropped),
               ),
             ),
           ],
@@ -1018,18 +1014,20 @@ class _ParcelReturnBanner extends StatelessWidget {
     final String text;
     if (returned) {
       text =
-          'Kiện đã được trả lại cho người gửi lúc '
-          '${formatDateTimeVn(status.parcelReturnedAt)}.'
-          '${status.parcelReturnNote == null ? '' : ' Ghi chú: ${status.parcelReturnNote}'}';
+          '${context.l10n.ddParcelReturnedAt(formatDateTimeVn(status.parcelReturnedAt))}'
+          '${status.parcelReturnNote == null ? '' : ' ${context.l10n.ddNoteValue('${status.parcelReturnNote}')}'}';
     } else if (forOperator) {
       text = inSourceBox
-          ? 'Kiện còn trong ô gửi. Lấy kiện ra, trả cho người gửi rồi xác nhận đã trả.'
-          : 'Kiện đang do đội bay giữ. Trả cho người gửi rồi xác nhận đã trả.';
+          ? context.l10n.ddParcelInBoxOperator
+          : context.l10n.ddParcelWithTeamOperator;
     } else {
       text = inSourceBox
-          ? 'Kiện của bạn còn trong ô gửi. Đội bay sẽ liên hệ để trả lại kiện.'
-          : 'Kiện đang do kỹ thuật viên giữ và sẽ được mang trả lại'
-                '${status.pickup?.address == null ? ' cho người gửi' : ' tại ${status.pickup!.address}'}.';
+          ? context.l10n.ddParcelInBoxCustomer
+          : context.l10n.ddParcelHeldByTech(
+              status.pickup?.address == null
+                  ? context.l10n.ddToSender
+                  : context.l10n.ddAtAddress('${status.pickup!.address}'),
+            );
     }
     return Container(
       padding: const EdgeInsets.all(14),
@@ -1076,14 +1074,14 @@ class _CancelCard extends StatelessWidget {
   Widget build(BuildContext context) {
     const danger = Color(0xFFDC2626);
     return _Card(
-      title: 'Huỷ đơn',
+      title: context.l10n.ddCancelOrder,
       icon: LucideIcons.circleX,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Bạn huỷ được đơn khi đội bay chưa tiếp nhận. '
-            '${droneCancelRefundNote(isPaid: status.isPaid, totalPrice: status.totalPrice)}',
+            '${context.l10n.ddCancelAllowed} '
+              '${droneCancelRefundNote(isPaid: status.isPaid, totalPrice: status.totalPrice)}',
             style: const TextStyle(
               fontSize: 13,
               color: Color(0xFF475569),
@@ -1101,7 +1099,7 @@ class _CancelCard extends StatelessWidget {
               ),
               onPressed: onCancel,
               icon: const Icon(LucideIcons.circleX, size: 18),
-              label: const Text('Huỷ đơn'),
+              label: Text(context.l10n.ddCancelOrder),
             ),
           ),
         ],
@@ -1126,21 +1124,21 @@ class _RouteCard extends StatelessWidget {
     final depositedAt = status.depositedAt;
     final code = status.pickupCodeEvent;
     return _Card(
-      title: 'Lộ trình giao hàng',
+      title: context.l10n.ddRoute,
       icon: LucideIcons.route,
       child: Column(
         children: [
           _RoutePoint(
-            label: 'Tủ bay do hệ thống chọn (KTV nạp kiện trực tiếp lên drone)',
+            label: context.l10n.ddSystemPickedStation,
             point: status.sourceLocker,
             fallbackId: status.sourceLockerId,
             color: const Color(0xFF0F766E),
             extras: [
               if (status.pickup == null && status.sourceBoxNumber != null)
-                'Đơn cũ: kiện từng được gửi vào ô số ${status.sourceBoxNumber}',
-              'Gửi đi lúc: ${formatDateTimeVn(sentAt, empty: 'Chưa gửi')}',
+                context.l10n.ddLegacyBox('${status.sourceBoxNumber}'),
+              context.l10n.ddSentAt(formatDateTimeVn(sentAt, empty: context.l10n.ddNotSentYet)),
             ],
-            directionsLabel: forOperator ? 'Chỉ đường tới drone tại tủ bay' : null,
+            directionsLabel: forOperator ? context.l10n.ddDirectionsToDrone : null,
           ),
           Align(
             alignment: Alignment.centerLeft,
@@ -1153,20 +1151,21 @@ class _RouteCard extends StatelessWidget {
           ),
           _RoutePoint(
             label: forOperator
-                ? 'Tủ nhận khách đã chọn (người nhận lấy hàng)'
-                : 'Tủ nhận bạn đã chọn (người nhận lấy hàng)',
+                ? context.l10n.ddReceiverLockerOperator
+                : context.l10n.ddReceiverLockerCustomer,
             point: status.destinationLocker,
             fallbackId: status.destinationLockerId,
             color: AISLShadcnTheme.navyAccent,
             extras: [
-              if (box != null) 'Ô nhận số $box',
-              'Hàng vào tủ lúc: ${formatDateTimeVn(depositedAt, empty: 'Chưa tới')}',
+              if (box != null) context.l10n.ddReceiveBox(box),
+              context.l10n.ddDepositedAt(formatDateTimeVn(depositedAt, empty: context.l10n.ddNotArrived)),
               if (code?.occurredAt != null)
-                'Gửi mã cho người nhận lúc: ${formatDateTimeVn(code!.occurredAt)}',
-              'Người nhận lấy hàng lúc: '
-                  '${formatDateTimeVn(status.completedAt, empty: 'Chưa nhận')}',
+                context.l10n.ddCodeSentAt(formatDateTimeVn(code!.occurredAt)),
+              context.l10n.ddReceivedAt(
+            formatDateTimeVn(status.completedAt, empty: context.l10n.ddNotReceived),
+          ),
             ],
-            directionsLabel: 'Chỉ đường tới tủ nhận',
+            directionsLabel: context.l10n.ddDirectionsToReceiver,
             primary: true,
           ),
         ],
@@ -1204,8 +1203,8 @@ class _RoutePoint extends StatelessWidget {
     final messenger = ScaffoldMessenger.of(context);
     if (target == null || !target.canNavigate) {
       messenger.showSnackBar(
-        const SnackBar(
-          content: Text('Tủ này chưa có địa chỉ hoặc toạ độ để chỉ đường.'),
+        SnackBar(
+          content: Text(context.l10n.ddLockerNoAddress),
         ),
       );
       return;
@@ -1225,8 +1224,8 @@ class _RoutePoint extends StatelessWidget {
     final result = await openLockerDirectionsResult(address: target.address);
     if (result != DirectionsResult.opened) {
       messenger.showSnackBar(
-        const SnackBar(
-          content: Text('Không mở được ứng dụng bản đồ trên thiết bị.'),
+        SnackBar(
+          content: Text(L10n.current.ddCantOpenMaps),
         ),
       );
     }
@@ -1237,7 +1236,7 @@ class _RoutePoint extends StatelessWidget {
     final target = point;
     final name =
         target?.displayName ??
-        (fallbackId == null ? 'Chưa xác định' : 'Tủ #$fallbackId');
+        (fallbackId == null ? context.l10n.commonUndetermined : context.l10n.lockerHash('$fallbackId'));
     final address = (target?.address ?? '').trim();
     final button = primary
         ? FilledButton.icon(
@@ -1326,24 +1325,24 @@ class _OrderCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final box = status.reservedBoxNumber;
     return _Card(
-      title: 'Thông tin đơn hàng',
+      title: context.l10n.ddOrderInfo,
       icon: LucideIcons.package,
       child: _Rows([
-        ('Mã đơn', status.orderCode ?? '—'),
+        (context.l10n.ddOrderCode, status.orderCode ?? '—'),
         (
-          'Trạng thái đơn',
+          context.l10n.ddOrderStatus,
           // Kiện đã rơi: đơn vẫn AWAITING_DISPATCH tới khi khách chọn phương án,
           // không được ghi "Đang giao bằng drone".
           status.stage == DroneDeliveryStage.dropReported &&
                   (status.orderStatus ?? '').toUpperCase() == 'AWAITING_DISPATCH'
-              ? 'Tạm dừng do sự cố rơi kiện'
+              ? context.l10n.ddPausedDrop
               : droneOrderStatusLabel(status.orderStatus),
         ),
-        ('Thanh toán', dronePaymentStatusLabel(status.paymentStatus)),
+        (context.l10n.ddTlPayment, dronePaymentStatusLabel(status.paymentStatus)),
         // Phí gốc, rồi từng khoản giảm, rồi số tiền thực trả — không hiện số sau
         // khi trừ điểm dưới nhãn "Phí giao drone".
         (
-          'Phí giao drone',
+          context.l10n.ddDroneFee,
           (status.originalPrice ?? 0) > 0
               ? fmtPrice(status.originalPrice)
               : status.totalPrice == null
@@ -1351,42 +1350,42 @@ class _OrderCard extends StatelessWidget {
               : fmtPrice(status.totalPrice),
         ),
         if ((status.weightSurcharge ?? 0) > 0)
-          ('Trong đó thu thêm do cân lệch', fmtPrice(status.weightSurcharge)),
+          (context.l10n.ddWeightSurcharge, fmtPrice(status.weightSurcharge)),
         if ((status.discount ?? 0) > 0)
           (
             status.promotionCode == null || status.promotionCode!.isEmpty
-                ? 'Mã giảm giá'
-                : 'Mã giảm giá ${status.promotionCode}',
+                ? context.l10n.commonDiscountCode
+                : context.l10n.ddDiscountCodeValue('${status.promotionCode}'),
             '-${fmtPrice(status.discount)}',
           ),
         if ((status.pointsDiscount ?? 0) > 0)
           (
-            'Dùng ${fmtPrice(status.pointsUsed ?? 0).replaceAll('đ', '')} điểm',
+            context.l10n.ddUsePoints(fmtPrice(status.pointsUsed ?? 0).replaceAll('đ', '')),
             '-${fmtPrice(status.pointsDiscount)}',
           ),
         if ((status.originalPrice ?? 0) > 0 &&
             status.totalPrice != null &&
             status.totalPrice != status.originalPrice)
-          ('Số tiền thanh toán', fmtPrice(status.totalPrice)),
+          (context.l10n.ddAmountPaid, fmtPrice(status.totalPrice)),
         if (status.paymentMethod != null)
-          ('Phương thức', dronePaymentMethodLabel(status.paymentMethod)),
+          (context.l10n.ddMethod, dronePaymentMethodLabel(status.paymentMethod)),
         if (status.paymentReference != null)
-          ('Mã thanh toán', status.paymentReference!),
+          (context.l10n.ddPaymentRef, status.paymentReference!),
         if (status.paymentTransactionId != null)
-          ('Mã giao dịch', status.paymentTransactionId!),
+          (context.l10n.ordTransactionId, status.paymentTransactionId!),
         if (status.paidAt != null)
-          ('Thanh toán lúc', formatDateTimeVn(status.paidAt)),
+          (context.l10n.ordPaidAt, formatDateTimeVn(status.paidAt)),
         (
-          'Tủ nhận',
+          context.l10n.recvReceivingLocker,
           status.destinationLocker?.displayName ??
               (status.destinationLockerId == null
-                  ? 'Chưa xác định'
-                  : 'Tủ #${status.destinationLockerId}'),
+                  ? context.l10n.commonUndetermined
+                  : context.l10n.lockerHash('${status.destinationLockerId}')),
         ),
-        ('Ô nhận tại tủ', box == null ? 'Chưa gán ô' : 'Ô số $box'),
-        ('Khối lượng khai báo', droneWeightLabel(status.expectedWeightGrams)),
+        (context.l10n.ddBoxAtLocker, box == null ? context.l10n.ordBoxNotAssigned : context.l10n.boxNumberLabel(box)),
+        (context.l10n.ddDeclaredWeight, droneWeightLabel(status.expectedWeightGrams)),
         if (status.parcelCategory != null)
-          ('Loại hàng', droneParcelCategoryLabel(status.parcelCategory)),
+          (context.l10n.parcelCategory, droneParcelCategoryLabel(status.parcelCategory)),
         if (droneParcelSizeLabel(
               status.parcelLengthCm,
               status.parcelWidthCm,
@@ -1394,7 +1393,7 @@ class _OrderCard extends StatelessWidget {
             ) !=
             null)
           (
-            'Kích thước kiện',
+            context.l10n.ddParcelSize,
             droneParcelSizeLabel(
               status.parcelLengthCm,
               status.parcelWidthCm,
@@ -1402,23 +1401,23 @@ class _OrderCard extends StatelessWidget {
             )!,
           ),
         if (status.declaredValue != null)
-          ('Giá trị khai báo', fmtPrice(status.declaredValue)),
-        if (status.fragile == true) ('Lưu ý', 'Hàng dễ vỡ'),
+          (context.l10n.parcelDeclaredValue, fmtPrice(status.declaredValue)),
+        if (status.fragile == true) (context.l10n.ddCaution, context.l10n.parcelFragile),
         // Lấy hàng tận nhà: mốc này là lúc KTV nhận kiện, không có bước bỏ vào ô gửi.
         if (status.parcelDroppedAt != null)
           (
-            status.pickup == null ? 'Bỏ kiện vào ô gửi lúc' : 'KTV nhận kiện lúc',
+            status.pickup == null ? context.l10n.ddDroppedAtLabel : context.l10n.ddTechReceivedAt,
             formatDateTimeVn(status.parcelDroppedAt),
           ),
         if (status.routeDistanceMeters != null)
           (
-            'Quãng đường bay',
+            context.l10n.ordFlightDistance,
             status.routeDistanceMeters! < 1000
                 ? '${status.routeDistanceMeters} m'
                 : '${(status.routeDistanceMeters! / 1000).toStringAsFixed(1)} km',
           ),
-        ('Mô tả kiện hàng', status.description ?? 'Không có mô tả'),
-        ('Hình thức bay', droneFulfillmentModeLabel(status.fulfillmentMode)),
+        (context.l10n.ddParcelDescription, status.description ?? context.l10n.ddNoDescription),
+        (context.l10n.ddFlightMode, droneFulfillmentModeLabel(status.fulfillmentMode)),
       ]),
     );
   }
@@ -1433,29 +1432,29 @@ class _PeopleCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return _Card(
-      title: 'Người liên quan',
+      title: context.l10n.ddPeople,
       icon: LucideIcons.users,
       child: _Rows([
-        ('Người gửi', status.senderName ?? status.customerName ?? '—'),
-        ('SĐT người gửi', status.senderPhone ?? status.customerPhone ?? '—'),
+        (context.l10n.recvSender, status.senderName ?? status.customerName ?? '—'),
+        (context.l10n.recvSenderPhone, status.senderPhone ?? status.customerPhone ?? '—'),
         if (status.senderEmail != null)
-          ('Email người gửi', status.senderEmail!),
-        ('Người nhận', status.receiverName ?? status.customerName ?? '—'),
-        ('SĐT người nhận', status.receiverPhone ?? status.customerPhone ?? '—'),
+          (context.l10n.recvSenderEmail, status.senderEmail!),
+        (context.l10n.ordRecipient, status.receiverName ?? status.customerName ?? '—'),
+        (context.l10n.recvRecipientPhone, status.receiverPhone ?? status.customerPhone ?? '—'),
         if (status.receiverEmail != null)
-          ('Email người nhận', status.receiverEmail!),
+          (context.l10n.ordRecipientEmail, status.receiverEmail!),
         (
-          'Kỹ thuật viên drone',
+          context.l10n.ddDroneTech,
           status.assignedByName ??
               status.pickup?.technicianName ??
               (status.assignedByUserId == null
-                  ? 'Chưa có người nhận việc'
-                  : 'Đã nhận việc'),
+                  ? context.l10n.ddNoTechYet
+                  : context.l10n.ddTechAccepted),
         ),
         (
-          'Người nạp hàng',
+          context.l10n.ddLoader,
           status.loadedByName ??
-              (status.loadedByUserId == null ? 'Chưa nạp hàng' : 'Đã nạp'),
+              (status.loadedByUserId == null ? context.l10n.ddNotLoaded : context.l10n.ddLoaded),
         ),
       ]),
     );
@@ -1468,38 +1467,38 @@ class _MissionCard extends StatelessWidget {
   final DroneDeliveryStatus status;
 
   static String _check(bool? value) =>
-      value == null ? 'Chưa kiểm' : (value ? 'Đạt' : 'Không đạt');
+      value == null ? L10n.current.ddNotChecked : (value ? L10n.current.ddPass : L10n.current.ddFail);
 
   @override
   Widget build(BuildContext context) {
     return _Card(
-      title: 'Nhiệm vụ bay & hồ sơ nạp hàng',
+      title: context.l10n.ddMissionRecord,
       icon: LucideIcons.clipboardList,
       child: _Rows([
         (
-          'Mã nhiệm vụ',
-          status.deliveryId == null ? 'Chưa khởi tạo' : '#${status.deliveryId}',
+          context.l10n.ddMissionCode,
+          status.deliveryId == null ? context.l10n.msNotInit : '#${status.deliveryId}',
         ),
-        ('Drone', status.droneCode ?? 'Chưa phân công'),
-        ('Trạng thái nhiệm vụ', droneMissionStatusLabel(status.missionStatus)),
+        ('Drone', status.droneCode ?? context.l10n.ddNotAssigned),
+        (context.l10n.ddMissionStatus, droneMissionStatusLabel(status.missionStatus)),
         // Một chuỗi "vĩ độ, kinh độ" để copy dán thẳng vào Google Maps; thẻ hành trình phía trên
         // có bản bấm mở bản đồ và cập nhật trực tiếp.
         (
-          'Vị trí drone hiện tại',
+          context.l10n.ddDronePosition,
           status.currentLatitude != null && status.currentLongitude != null
               ? droneCoordinateLabel(
                   status.currentLatitude!,
                   status.currentLongitude!,
                 )
-              : 'Chưa có dữ liệu',
+              : context.l10n.ddNoData,
         ),
-        ('Khối lượng thực tế', droneWeightLabel(status.payloadWeightGrams)),
-        ('Mã niêm phong', status.sealCode ?? 'Chưa niêm phong'),
-        ('Đúng kiện, đúng đơn', _check(status.parcelMatched)),
-        ('Kiện đã cố định', _check(status.payloadSecured)),
-        ('Khoang hàng đã khoá', _check(status.compartmentLocked)),
+        (context.l10n.ddActualWeight, droneWeightLabel(status.payloadWeightGrams)),
+        (context.l10n.ddSealCode, status.sealCode ?? context.l10n.ddNotSealed),
+        (context.l10n.ddParcelMatched, _check(status.parcelMatched)),
+        (context.l10n.ddPayloadSecured, _check(status.payloadSecured)),
+        (context.l10n.ddCompartmentLocked, _check(status.compartmentLocked)),
         if (status.loadingNote != null)
-          ('Ghi chú nạp hàng', status.loadingNote!),
+          (context.l10n.ddLoadingNote, status.loadingNote!),
       ]),
     );
   }
@@ -1515,20 +1514,20 @@ class _JourneyCard extends StatelessWidget {
   static String _title(DroneJourneyEvent event) {
     final from = (event.fromStage ?? '').toUpperCase();
     final to = event.toStage.toUpperCase();
-    if (from == 'ACCEPTED' && to == 'ACCEPTED') return 'Đã nạp hàng lên drone';
-    if (event.isPickupCodeSent) return 'Gửi mã nhận hàng cho người nhận';
-    if (from.isEmpty && to == 'AWAITING_DISPATCH') return 'Đơn drone được tạo';
+    if (from == 'ACCEPTED' && to == 'ACCEPTED') return L10n.current.ddEvLoaded;
+    if (event.isPickupCodeSent) return L10n.current.ddEvCodeSent;
+    if (from.isEmpty && to == 'AWAITING_DISPATCH') return L10n.current.ddEvCreated;
     return DroneDeliveryStage.fromRaw(to).title;
   }
 
   @override
   Widget build(BuildContext context) {
     return _Card(
-      title: 'Nhật ký hành trình · mới nhất trước',
+      title: context.l10n.ddJourneyLog,
       icon: LucideIcons.history,
       child: events.isEmpty
-          ? const Text(
-              'Chưa có mốc hành trình nào.',
+          ? Text(
+              context.l10n.ddNoJourney,
               style: TextStyle(fontSize: 13, color: Color(0xFF64748B)),
             )
           : Column(
@@ -1563,7 +1562,7 @@ class _JourneyRow extends StatelessWidget {
     final stage = DroneDeliveryStage.fromRaw(event.toStage);
     final actor =
         event.actorName ??
-        (event.actorUserId == null ? 'Hệ thống' : 'Nhân viên Lock.R');
+        (event.actorUserId == null ? context.l10n.ddSystem : context.l10n.ddLockrStaff);
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -1592,8 +1591,8 @@ class _JourneyRow extends StatelessWidget {
                         color: const Color(0xFFDCFCE7),
                         borderRadius: BorderRadius.circular(6),
                       ),
-                      child: const Text(
-                        'Mới nhất',
+                      child: Text(
+                        context.l10n.ddNewest,
                         style: TextStyle(
                           fontSize: 10,
                           fontWeight: FontWeight.w800,

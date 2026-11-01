@@ -1,6 +1,8 @@
 import 'dart:async';
 
 import 'package:smart_laundry_locker/core/config/business_config_service.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
+import 'package:smart_laundry_locker/core/l10n/locale_provider.dart';
 import 'package:smart_laundry_locker/core/network/dio_client.dart';
 import 'package:smart_laundry_locker/core/routing/app_router.dart';
 import 'package:smart_laundry_locker/core/routing/app_back_navigation.dart';
@@ -38,20 +40,31 @@ class _AislToastWidget extends StatelessWidget {
     IconData iconData = LucideIcons.info;
     Color iconColor = AISLShadcnTheme.navyPrimary;
 
+    // Chọn icon theo từ khoá của câu thông báo (tiếng Việt hoặc tiếng Anh).
     final lowerMsg = msg.toLowerCase();
     if (lowerMsg.contains('thành công') ||
         lowerMsg.contains('thành công!') ||
         lowerMsg.contains('đã ') ||
-        lowerMsg.contains('xong')) {
+        lowerMsg.contains('xong') ||
+        lowerMsg.contains('success') ||
+        lowerMsg.contains('saved') ||
+        lowerMsg.contains('done')) {
       iconData = LucideIcons.circleCheckBig;
       iconColor = const Color(0xFF10B981);
     } else if (lowerMsg.contains('lỗi') ||
         lowerMsg.contains('thất bại') ||
         lowerMsg.contains('sai') ||
-        lowerMsg.contains('không thể')) {
+        lowerMsg.contains('không thể') ||
+        lowerMsg.contains('error') ||
+        lowerMsg.contains('failed') ||
+        lowerMsg.contains('invalid') ||
+        lowerMsg.contains('cannot') ||
+        lowerMsg.contains('could not')) {
       iconData = LucideIcons.circleAlert;
       iconColor = const Color(0xFFEF4444);
-    } else if (lowerMsg.contains('cảnh báo') || lowerMsg.contains('chú ý')) {
+    } else if (lowerMsg.contains('cảnh báo') ||
+        lowerMsg.contains('chú ý') ||
+        lowerMsg.contains('warning')) {
       iconData = LucideIcons.triangleAlert;
       iconColor = const Color(0xFFF59E0B);
     }
@@ -257,6 +270,8 @@ void main() async {
   }
 
   DioClient.instance.init();
+  // Ngôn ngữ đã chọn (mặc định tiếng Việt) phải có trước khung hình đầu.
+  await LocaleProvider.instance.restore();
   // Initialize token service from secure storage
   await TokenService.initializeFromStorage();
   // Quy tắc nghiệp vụ (giá, phí, giới hạn) do admin cấu hình: khôi phục
@@ -291,12 +306,17 @@ class AislApp extends StatelessWidget {
         ),
         ChangeNotifierProvider(create: (_) => VoucherProvider()),
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
+        ChangeNotifierProvider.value(value: LocaleProvider.instance),
       ],
       child: Builder(
         builder: (context) {
           final themeMode = context.watch<ThemeProvider>().themeMode;
+          final locale = context.watch<LocaleProvider>().locale;
           return ShadApp.router(
             title: 'Lockerly',
+            locale: locale,
+            supportedLocales: L10n.supportedLocales,
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
             routerConfig: AppRouter.router,
             onNavigationNotification: AppBackNavigation.onNavigationNotification,
             theme: AISLShadcnTheme.lightTheme,

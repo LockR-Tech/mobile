@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:provider/provider.dart';
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 class SecurityPage extends StatefulWidget {
   const SecurityPage({super.key});
@@ -60,17 +61,17 @@ class _SecurityPageState extends State<SecurityPage> {
   Future<void> _toggleBiometric(bool value) async {
     if (!_bioSupported) {
       SmartDialog.showToast(
-        'Thiết bị chưa đăng ký vân tay/khuôn mặt trong cài đặt hệ thống.',
+        context.l10n.secNoBiometric,
       );
       return;
     }
     if (value) {
       // Bắt xác thực thành công một lần trước khi bật để tránh tự khóa nhầm.
       final ok = await BiometricService.authenticate(
-        reason: 'Xác thực để bật khóa ứng dụng',
+        reason: context.l10n.secEnableReason,
       );
       if (!ok) {
-        SmartDialog.showToast('Xác thực không thành công');
+        SmartDialog.showToast(L10n.current.secAuthFailed);
         return;
       }
     }
@@ -79,8 +80,8 @@ class _SecurityPageState extends State<SecurityPage> {
     setState(() => _bioEnabled = value);
     SmartDialog.showToast(
       value
-          ? 'Đã bật khóa ứng dụng bằng sinh trắc học'
-          : 'Đã tắt khóa ứng dụng bằng sinh trắc học',
+          ? context.l10n.secLockOn
+          : context.l10n.secLockOff,
     );
   }
 
@@ -98,7 +99,7 @@ class _SecurityPageState extends State<SecurityPage> {
       _newController.clear();
       _confirmController.clear();
       SmartDialog.showToast(
-        wasSetMode ? 'Đã đặt mật khẩu' : 'Đổi mật khẩu thành công',
+        wasSetMode ? context.l10n.secPasswordSet : context.l10n.secPasswordChanged,
       );
     }
   }
@@ -117,8 +118,8 @@ class _SecurityPageState extends State<SecurityPage> {
         body: Column(
           children: [
             BrandHeroHeader(
-              title: 'Bảo mật',
-              subtitle: 'Bảo vệ tài khoản và thiết bị của bạn',
+              title: context.l10n.profileSecurity,
+              subtitle: context.l10n.secSubtitle,
               onBack: () => Navigator.of(context).pop(),
             ),
             Expanded(
@@ -157,14 +158,14 @@ class _SecurityPageState extends State<SecurityPage> {
           color: AppColors.success,
           size: 28,
         ),
-        title: const Text(
-          'Khóa ứng dụng bằng sinh trắc học',
+        title: Text(
+          context.l10n.secBiometricLock,
           style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
         ),
         subtitle: Text(
           _bioSupported
-              ? 'Yêu cầu vân tay/khuôn mặt mỗi khi mở app.'
-              : 'Thiết bị chưa đăng ký sinh trắc học.',
+              ? context.l10n.secBiometricOn
+                        : context.l10n.secBiometricUnavailable,
           style: const TextStyle(fontSize: 12.5),
         ),
       ),
@@ -188,17 +189,17 @@ class _SecurityPageState extends State<SecurityPage> {
       body = Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Mật khẩu', style: titleStyle),
+          Text(context.l10n.commonPassword, style: titleStyle),
           const SizedBox(height: 10),
           Text(
-            'Không tải được thông tin tài khoản: ${provider.profileError}',
+            context.l10n.secLoadFailed('${provider.profileError}'),
             style: const TextStyle(color: AppColors.error, fontSize: 13),
           ),
           const SizedBox(height: 12),
           OutlinedButton.icon(
             onPressed: provider.loadPasswordState,
             icon: const Icon(Icons.refresh_rounded, size: 18),
-            label: const Text('Thử lại'),
+            label: Text(context.l10n.commonRetry),
           ),
         ],
       );
@@ -207,12 +208,12 @@ class _SecurityPageState extends State<SecurityPage> {
       body = Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(isChange ? 'Đổi mật khẩu' : 'Đặt mật khẩu', style: titleStyle),
+          Text(isChange ? context.l10n.secChangePassword : context.l10n.secSetPassword, style: titleStyle),
           const SizedBox(height: 6),
           Text(
             isChange
-                ? 'Nhập mật khẩu hiện tại và mật khẩu mới. Các thiết bị khác sẽ phải đăng nhập lại.'
-                : 'Tài khoản của bạn đăng nhập bằng Google hoặc mã OTP nên chưa có mật khẩu. Đặt mật khẩu để có thể đăng nhập bằng email/số điện thoại và mật khẩu.',
+                ? context.l10n.secChangeHint
+                : context.l10n.secSetHint,
             style: const TextStyle(
               fontSize: 13,
               color: AppColors.onSurfaceVariant,
@@ -223,7 +224,7 @@ class _SecurityPageState extends State<SecurityPage> {
           if (isChange) ...[
             _PasswordField(
               controller: _currentController,
-              label: 'Mật khẩu hiện tại',
+              label: context.l10n.secCurrentPassword,
               obscure: _obscureCurrent,
               onToggle: () => setState(() => _obscureCurrent = !_obscureCurrent),
               onChanged: _onFieldChanged,
@@ -232,8 +233,8 @@ class _SecurityPageState extends State<SecurityPage> {
           ],
           _PasswordField(
             controller: _newController,
-            label: 'Mật khẩu mới',
-            helper: 'Ít nhất $kMinPasswordLength ký tự',
+            label: context.l10n.authNewPassword,
+            helper: context.l10n.secMinChars(kMinPasswordLength),
             obscure: _obscureNew,
             onToggle: () => setState(() => _obscureNew = !_obscureNew),
             onChanged: _onFieldChanged,
@@ -241,7 +242,7 @@ class _SecurityPageState extends State<SecurityPage> {
           const SizedBox(height: 12),
           _PasswordField(
             controller: _confirmController,
-            label: 'Xác nhận mật khẩu mới',
+            label: context.l10n.secConfirmNew,
             obscure: _obscureConfirm,
             onToggle: () => setState(() => _obscureConfirm = !_obscureConfirm),
             onChanged: _onFieldChanged,
@@ -282,7 +283,7 @@ class _SecurityPageState extends State<SecurityPage> {
                       ),
                     )
                   : Text(
-                      isChange ? 'Đổi mật khẩu' : 'Đặt mật khẩu',
+                      isChange ? context.l10n.secChangePassword : context.l10n.secSetPassword,
                       style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w700,

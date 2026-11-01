@@ -6,6 +6,7 @@ import 'package:smart_laundry_locker/features/auth/presentation/providers/verify
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 class OtpPage extends StatefulWidget {
   final String? phoneNumber;
@@ -109,8 +110,8 @@ class _OtpPageState extends State<OtpPage> {
             icon: const Icon(Icons.arrow_back, color: AppColors.onBackground),
             onPressed: () => Navigator.of(context).pop(),
           ),
-          title: const Text(
-            'Xác thực OTP',
+          title: Text(
+            context.l10n.authOtpVerification,
             style: TextStyle(
               color: AppColors.onBackground,
               fontWeight: FontWeight.w600,
@@ -128,8 +129,8 @@ class _OtpPageState extends State<OtpPage> {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       const SizedBox(height: 40),
-                      const Text(
-                        'Nhập mã OTP',
+                      Text(
+                        context.l10n.authEnterOtp,
                         style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
@@ -140,7 +141,7 @@ class _OtpPageState extends State<OtpPage> {
                       const SizedBox(height: 8),
                       if (widget.email != null)
                         Text(
-                          'Mã OTP đã được gửi đến ${widget.email}',
+                          context.l10n.authOtpSentTo(widget.email ?? ''),
                           style: const TextStyle(
                             fontSize: 14,
                             color: AppColors.onSurfaceVariant,
@@ -256,8 +257,8 @@ class _OtpPageState extends State<OtpPage> {
                                       ),
                                     ),
                                   )
-                                : const Text(
-                                    'Tiếp tục',
+                                : Text(
+                                    context.l10n.commonContinue,
                                     style: TextStyle(
                                       fontSize: 16,
                                       fontWeight: FontWeight.w600,

@@ -1,3 +1,4 @@
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 /// Value Object: LockerSize
 /// Đại diện cho kích thước của locker (S, M, L).
 /// Value Object là immutable và được so sánh theo giá trị.
@@ -31,7 +32,7 @@ class LockerSize {
     width: 57,
     height: 42.8,
     depth: 12.6,
-    description: 'Kích thước nhỏ, phù hợp cho túi xách, ví',
+    description: L10n.current.lockerSizeSmallDesc,
   );
 
   factory LockerSize.medium({String id = 'size_m'}) => LockerSize(
@@ -40,7 +41,7 @@ class LockerSize {
     width: 57,
     height: 42.8,
     depth: 24.4,
-    description: 'Kích thước trung bình, phù hợp cho ba lô',
+    description: L10n.current.lockerSizeMediumDesc,
   );
 
   factory LockerSize.large({String id = 'size_l'}) => LockerSize(
@@ -49,7 +50,7 @@ class LockerSize {
     width: 57,
     height: 42.8,
     depth: 49.2,
-    description: 'Kích thước lớn, phù hợp cho vali',
+    description: L10n.current.lockerSizeLargeDesc,
   );
 
   @override

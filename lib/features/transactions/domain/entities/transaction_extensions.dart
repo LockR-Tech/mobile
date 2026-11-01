@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'transaction.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 /// Phân loại một dòng `GET /api/wallet/transactions`.
 ///
@@ -54,18 +55,18 @@ extension TransactionClassification on Transaction {
   String get detectedMethodLabel {
     switch (detectedMethod) {
       case 'SEPAY':
-        return 'Cổng SePay QR';
+        return L10n.current.txSepay;
       case 'VNPAY':
-        return 'Cổng VNPay';
+        return L10n.current.txVnpay;
       case 'MOMO':
-        return 'Ví MoMo';
+        return L10n.current.txMomo;
       case 'CASH':
-        return 'Tiền mặt';
+        return L10n.current.payMethodCash;
       case 'WITHDRAW':
-        return 'Rút tiền';
+        return L10n.current.txWithdraw;
       case 'WALLET':
       default:
-        return 'Ví Lock.R';
+        return L10n.current.payMethodWallet;
     }
   }
 
@@ -202,22 +203,22 @@ extension TransactionClassification on Transaction {
   String get displayTitle {
     switch (detectedService) {
       case 'TOPUP':
-        return 'Nạp tiền vào ví';
+        return L10n.current.txTitleTopup;
       case 'WITHDRAW':
-        return isCredit ? 'Hoàn tiền rút' : 'Rút tiền về tài khoản ngân hàng';
+        return isCredit ? L10n.current.txTitleWithdrawRefund : L10n.current.txTitleWithdraw;
       case 'REFUND':
-        return 'Hoàn tiền vào ví';
+        return L10n.current.txTitleRefund;
       case 'ADJUST':
-        return isCredit ? 'Điều chỉnh số dư (cộng)' : 'Điều chỉnh số dư (trừ)';
+        return isCredit ? L10n.current.txTitleAdjustPlus : L10n.current.txTitleAdjustMinus;
       case 'RENTAL':
       case 'SEND':
       case 'LAUNDRY':
       case 'ORDER':
         return detectedMethod == 'WALLET'
-            ? 'Thanh toán đơn bằng ví'
-            : 'Thanh toán đơn qua $detectedMethodLabel';
+            ? L10n.current.txTitleOrderWallet
+            : L10n.current.txTitleOrderVia(detectedMethodLabel);
       default:
-        return isCredit ? 'Tiền vào ví' : 'Tiền ra khỏi ví';
+        return isCredit ? L10n.current.txTitleIn : L10n.current.txTitleOut;
     }
   }
 
@@ -232,23 +233,23 @@ extension TransactionClassification on Transaction {
 String transactionServiceLabel(String service) {
   switch (service) {
     case 'RENTAL':
-      return 'Thuê tủ';
+      return L10n.current.homeRentLocker;
     case 'SEND':
-      return 'Gửi hàng';
+      return L10n.current.lockerSendParcel;
     case 'LAUNDRY':
-      return 'Giặt sấy';
+      return L10n.current.txSvcLaundry;
     case 'ORDER':
-      return 'Thanh toán đơn';
+      return L10n.current.txSvcOrder;
     case 'TOPUP':
-      return 'Nạp tiền ví';
+      return L10n.current.txSvcTopup;
     case 'WITHDRAW':
-      return 'Rút tiền';
+      return L10n.current.txWithdraw;
     case 'REFUND':
-      return 'Hoàn tiền';
+      return L10n.current.enumRefund;
     case 'ADJUST':
-      return 'Điều chỉnh số dư';
+      return L10n.current.txSvcAdjust;
     default:
-      return 'Khác';
+      return L10n.current.enumOther;
   }
 }
 

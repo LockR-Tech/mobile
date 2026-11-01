@@ -6,6 +6,7 @@ import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
 import '../../data/models/assistant_models.dart';
 import '../../../../shared/shared.dart';
 import 'assistant_sources.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 double _maxBubbleWidth(BuildContext context) =>
     MediaQuery.sizeOf(context).width * 0.8;
@@ -46,7 +47,7 @@ class AssistantUserBubble extends StatelessWidget {
               ),
             ),
             if (message.failed)
-              const Padding(
+              Padding(
                 padding: EdgeInsets.only(top: 4, right: 4),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
@@ -58,7 +59,7 @@ class AssistantUserBubble extends StatelessWidget {
                     ),
                     SizedBox(width: 4),
                     Text(
-                      'Chưa gửi được',
+                      context.l10n.aiNotSent,
                       style: TextStyle(fontSize: 11, color: Color(0xFFDC2626)),
                     ),
                   ],
@@ -106,7 +107,7 @@ class AssistantAnswerBubble extends StatelessWidget {
                   const SizedBox(width: 6),
                   Flexible(
                     child: Text(
-                      'Chưa có trong tài liệu',
+                      context.l10n.aiNotInDocs,
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w700,
@@ -156,7 +157,7 @@ class AssistantAnswerBubble extends StatelessWidget {
 class AssistantTypingIndicator extends StatefulWidget {
   const AssistantTypingIndicator({super.key});
 
-  static const semanticsLabel = 'Trợ lý đang trả lời';
+  static String get semanticsLabel => L10n.current.aiTyping;
 
   @override
   State<AssistantTypingIndicator> createState() =>
@@ -279,7 +280,7 @@ class AssistantErrorCard extends StatelessWidget {
               onPressed: onRetry,
               style: TextButton.styleFrom(foregroundColor: accent),
               icon: const Icon(LucideIcons.refreshCw, size: 15),
-              label: const Text('Thử lại'),
+              label: Text(context.l10n.commonRetry),
             ),
         ],
       ),

@@ -6,6 +6,7 @@
 library;
 
 import 'package:smart_laundry_locker/features/profile/domain/entities/user_profile.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 /// Phiên bản Điều khoản dịch vụ đang áp dụng (`assets/markdown/terms_of_service.md`). Đổi điều khoản thì
 /// tăng số này; backend lưu phiên bản người dùng đã đồng ý.
@@ -20,8 +21,8 @@ bool needsTermsConsent(UserProfile? profile) => profile != null && !profile.term
 List<String> missingContactFields(UserProfile? profile) {
   if (profile == null) return const [];
   return [
-    if (profile.email.trim().isEmpty) 'email',
-    if (profile.phoneNumber.trim().isEmpty) 'số điện thoại',
+    if (profile.email.trim().isEmpty) L10n.current.reminderFieldEmail,
+    if (profile.phoneNumber.trim().isEmpty) L10n.current.reminderFieldPhone,
   ];
 }
 
@@ -31,7 +32,9 @@ bool reminderDue(DateTime? snoozedUntil, DateTime now) =>
 
 String missingContactSentence(List<String> missing) => switch (missing.length) {
   0 => '',
-  1 => 'Tài khoản của bạn chưa có ${missing.first}.',
-  _ => 'Tài khoản của bạn chưa có ${missing.sublist(0, missing.length - 1).join(', ')} '
-      'và ${missing.last}.',
+  1 => L10n.current.reminderMissing(missing.first),
+  _ => L10n.current.reminderMissing(
+      '${missing.sublist(0, missing.length - 1).join(', ')}'
+      '${L10n.current.rulesAnd}${missing.last}',
+    ),
 };

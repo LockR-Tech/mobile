@@ -12,6 +12,7 @@ import 'package:smart_laundry_locker/features/stores/infrastructure/services/sto
 import 'package:smart_laundry_locker/features/stores/presentation/widgets/store_card.dart';
 import 'package:smart_laundry_locker/shared/shared.dart';
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 /// Favourite stores (device-only). Ported from the legacy RN `user/favorites`
 /// screen: resolves the saved favourite ids against the live store catalogue.
@@ -68,7 +69,7 @@ class _FavoritesPageState extends State<FavoritesPage> {
     } catch (_) {
       if (!mounted || silent) return;
       setState(() {
-        _error = 'Không tải được danh sách yêu thích.';
+        _error = context.l10n.storeFavoritesLoadFailed;
         _loading = false;
       });
     }
@@ -89,8 +90,8 @@ class _FavoritesPageState extends State<FavoritesPage> {
       backgroundColor: const Color(0xFFF7FAFC),
       body: BrandHeroScaffold(
         header: (collapse) => BrandHeroHeader(
-          title: 'Yêu thích',
-          subtitle: 'Điểm gửi bạn đã lưu',
+          title: context.l10n.commonFavorites,
+          subtitle: context.l10n.storeFavoritesSubtitle,
           onBack: () => AppRouter.backOrHome(context),
           collapseProgress: collapse,
         ),
@@ -101,8 +102,8 @@ class _FavoritesPageState extends State<FavoritesPage> {
 
   Widget _buildBody() {
     if (_loading) {
-      return const Center(
-        child: AppLoadingIndicator(message: 'Đang tải danh sách yêu thích...'),
+      return Center(
+        child: AppLoadingIndicator(message: context.l10n.storeFavoritesLoading),
       );
     }
     if (_error != null) {
@@ -121,7 +122,7 @@ class _FavoritesPageState extends State<FavoritesPage> {
             FilledButton(
               onPressed: _load,
               style: FilledButton.styleFrom(backgroundColor: AislBrand.navy),
-              child: const Text('Thử lại'),
+              child: Text(context.l10n.commonRetry),
             ),
           ],
         ),
@@ -148,8 +149,8 @@ class _FavoritesPageState extends State<FavoritesPage> {
                 ),
               ),
               const SizedBox(height: 16),
-              const Text(
-                'Chưa có cửa hàng yêu thích',
+              Text(
+                context.l10n.storeNoFavorites,
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w700,
@@ -157,8 +158,8 @@ class _FavoritesPageState extends State<FavoritesPage> {
                 ),
               ),
               const SizedBox(height: 6),
-              const Text(
-                'Nhấn vào biểu tượng trái tim ở một cửa hàng để lưu lại đây.',
+              Text(
+                context.l10n.storeNoFavoritesHint,
                 textAlign: TextAlign.center,
                 style: TextStyle(color: AislBrand.textMuted),
               ),
@@ -167,7 +168,7 @@ class _FavoritesPageState extends State<FavoritesPage> {
                 onPressed: () => context.go(AppRouter.stores),
                 style: FilledButton.styleFrom(backgroundColor: AislBrand.navy),
                 icon: const Icon(LucideIcons.store, size: 16),
-                label: const Text('Khám phá cửa hàng'),
+                label: Text(context.l10n.storeExplore),
               ),
             ],
           ),

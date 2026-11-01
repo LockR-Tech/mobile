@@ -1,0 +1,7 @@
+arb-dir: lib/l10n
+# Chuỗi gốc viết bằng tiếng Việt; tiếng Anh dịch theo từng khoá.
+template-arb-file: app_vi.arb
+output-localization-file: app_localizations.dart
+output-class: AppLocalizations
+nullable-getter: true
+untranslated-messages-file: build/l10n_untranslated.json

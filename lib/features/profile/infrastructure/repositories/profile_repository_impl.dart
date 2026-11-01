@@ -8,6 +8,7 @@ import 'package:smart_laundry_locker/features/profile/domain/utils/person_name.d
 import 'package:smart_laundry_locker/features/profile/infrastructure/data_sources/profile_remote_data_source.dart';
 import 'package:smart_laundry_locker/features/profile/infrastructure/models/user_profile_model.dart';
 import 'package:dartz/dartz.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 class ProfileRepositoryImpl implements ProfileRepository {
   final ProfileRemoteDataSource _remoteDataSource;
@@ -155,9 +156,9 @@ class ProfileRepositoryImpl implements ProfileRepository {
     } on AuthorizationException catch (e) {
       return Left(AuthorizationFailure(e.message));
     } on NotFoundException {
-      return const Left(
+      return Left(
         NotFoundFailure(
-          'Máy chủ chưa hỗ trợ đổi mật khẩu từ ứng dụng. Vui lòng thử lại sau.',
+          L10n.current.pwChangeNotSupported,
         ),
       );
     } catch (e) {

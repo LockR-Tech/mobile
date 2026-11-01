@@ -6,6 +6,7 @@ import 'package:smart_laundry_locker/shared/utils/avatar_url_helper.dart';
 import 'package:smart_laundry_locker/shared/widgets/app_cached_image.dart';
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 /// Profile header widget with user information
 class ProfileHeader extends StatelessWidget {
@@ -236,7 +237,7 @@ class ProfileHeader extends StatelessWidget {
         onPressed: isAvatarSyncing ? null : onSaveAvatar,
         backgroundColor: AislBrand.navy,
         child: isAvatarSyncing
-            ? const Row(
+            ? Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -250,7 +251,7 @@ class ProfileHeader extends StatelessWidget {
                   ),
                   SizedBox(width: 8),
                   Text(
-                    'Đang đồng bộ...',
+                    context.l10n.phSyncing,
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
@@ -259,14 +260,14 @@ class ProfileHeader extends StatelessWidget {
                   ),
                 ],
               )
-            : const Row(
+            : Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Icon(LucideIcons.check, size: 16, color: Colors.white),
                   SizedBox(width: 6),
                   Text(
-                    'Lưu ảnh đại diện',
+                    context.l10n.phSaveAvatar,
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
@@ -281,7 +282,7 @@ class ProfileHeader extends StatelessWidget {
 
   Widget _buildDefaultAvatar(BuildContext context) {
     // Get the first letter of the user's name
-    final fullName = user['fullName']?.toString() ?? 'Người dùng';
+    final fullName = user['fullName']?.toString() ?? context.l10n.commonUser;
     final firstLetter = fullName.isNotEmpty
         ? fullName.trim().substring(0, 1).toUpperCase()
         : 'N';
@@ -315,7 +316,7 @@ class ProfileHeader extends StatelessWidget {
         children: [
           // Full name
           Text(
-            user['fullName']?.toString() ?? 'Người dùng',
+            user['fullName']?.toString() ?? context.l10n.commonUser,
             style: TextStyle(
               fontFamily: 'Roboto',
               fontSize: 20,

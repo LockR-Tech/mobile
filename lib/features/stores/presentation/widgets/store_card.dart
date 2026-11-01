@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:smart_laundry_locker/core/theme/shadcn_theme.dart';
 import 'package:smart_laundry_locker/features/stores/domain/entities/store.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 /// Compact card used in the stores list and on the home preview row.
 class StoreCard extends StatelessWidget {
@@ -68,7 +69,7 @@ class StoreCard extends StatelessWidget {
                       const SizedBox(width: 4),
                       Expanded(
                         child: Text(
-                          store.address ?? 'Chưa có địa chỉ',
+                          store.address ?? context.l10n.commonNoAddress,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
@@ -82,7 +83,7 @@ class StoreCard extends StatelessWidget {
                   if (store.distanceKm != null) ...[
                     const SizedBox(height: 4),
                     Text(
-                      'Cách bạn ${store.distanceKm!.toStringAsFixed(1)} km',
+                      context.l10n.storeDistanceFromYou(store.distanceKm!.toStringAsFixed(1)),
                       style: TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w600,
@@ -167,7 +168,7 @@ class _StatusChip extends StatelessWidget {
         borderRadius: BorderRadius.circular(999),
       ),
       child: Text(
-        active ? 'Mở cửa' : 'Đóng',
+        active ? context.l10n.storeOpen : context.l10n.commonClose,
         style: TextStyle(
           fontSize: 10,
           fontWeight: FontWeight.w700,

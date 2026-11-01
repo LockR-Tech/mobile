@@ -4,6 +4,7 @@ import 'package:smart_laundry_locker/core/network/api_client.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/domain/entities/drone_delivery_status.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/domain/repositories/drone_delivery_repository.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/infrastructure/data_sources/drone_delivery_remote_datasource.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 class DroneDeliveryRepositoryImpl implements DroneDeliveryRepository {
   final DroneDeliveryRemoteDataSource _remoteDataSource;
@@ -26,10 +27,9 @@ class DroneDeliveryRepositoryImpl implements DroneDeliveryRepository {
     } on NotFoundException catch (e) {
       return Left(NotFoundFailure(e.message));
     } on AuthorizationException {
-      return const Left(
+      return Left(
         ServerFailure(
-          'Bạn không có quyền xem đơn drone này. Chỉ người đặt và người nhận '
-          'theo dõi được đơn.',
+          L10n.current.droneNoPermission,
         ),
       );
     } on AuthenticationException catch (e) {
@@ -37,8 +37,8 @@ class DroneDeliveryRepositoryImpl implements DroneDeliveryRepository {
     } on ValidationException catch (e) {
       return Left(ServerFailure(e.message));
     } catch (_) {
-      return const Left(
-        UnknownFailure('Không tải được trạng thái giao hàng. Đang thử lại...'),
+      return Left(
+        UnknownFailure(L10n.current.droneStatusLoadFailedRetrying),
       );
     }
   }

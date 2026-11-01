@@ -7,6 +7,7 @@ import 'package:smart_laundry_locker/features/drone_delivery/domain/entities/dro
 import 'package:smart_laundry_locker/features/drone_delivery/presentation/widgets/drone_coordinates_line.dart';
 import 'package:smart_laundry_locker/features/locker_ops/data/order_milestone.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/ops_widgets.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 /// Khối dựng dùng chung cho hai màn chi tiết đơn: "Đơn của tôi" (người gửi) và
 /// "Hàng chờ nhận" / "Đơn ủy quyền" (người nhận, người lấy hộ) — để hai màn
@@ -16,18 +17,18 @@ import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/op
 
 /// Kích cỡ ô theo locker-service.
 String boxSizeLabel(String? size) => switch ((size ?? '').toUpperCase()) {
-  'SMALL' || 'S' => 'Nhỏ (S)',
-  'MEDIUM' || 'M' => 'Vừa (M)',
-  'LARGE' || 'L' => 'Lớn (L)',
+  'SMALL' || 'S' => L10n.current.sizeSmall,
+  'MEDIUM' || 'M' => L10n.current.sizeMedium,
+  'LARGE' || 'L' => L10n.current.sizeLarge,
   '' => '—',
   _ => size!,
 };
 
 /// Loại ô theo locker-service.
 String boxTypeLabel(String? type) => switch ((type ?? '').toUpperCase()) {
-  'STANDARD' => 'Ô thường',
-  'XL' => 'Ô vali (XL)',
-  'DRONE' => 'Ô drone',
+  'STANDARD' => L10n.current.groupStandard,
+  'XL' => L10n.current.groupXl,
+  'DRONE' => L10n.current.groupDrone,
   '' => '—',
   _ => type!,
 };
@@ -149,7 +150,7 @@ class OrderContactRow extends StatelessWidget {
       ScaffoldMessenger.maybeOf(context)
         ?..hideCurrentSnackBar()
         ..showSnackBar(
-          const SnackBar(content: Text('Máy này không gọi điện được.')),
+          SnackBar(content: Text(context.l10n.detailCantCall)),
         );
     }
   }
@@ -158,7 +159,7 @@ class OrderContactRow extends StatelessWidget {
     Clipboard.setData(ClipboardData(text: value));
     ScaffoldMessenger.maybeOf(context)
       ?..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text('Đã sao chép $label')));
+      ..showSnackBar(SnackBar(content: Text(context.l10n.detailCopiedLabel(label))));
   }
 
   @override
@@ -196,8 +197,8 @@ class OrderContactRow extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 4),
-          if (phone) action(LucideIcons.phone, 'Gọi $label', () => _call(context)),
-          action(LucideIcons.copy, 'Sao chép $label', () => _copy(context)),
+          if (phone) action(LucideIcons.phone, context.l10n.detailCallLabel(label), () => _call(context)),
+          action(LucideIcons.copy, context.l10n.detailCopyLabel(label), () => _copy(context)),
         ],
       ),
     );
@@ -221,36 +222,36 @@ List<Widget> orderParcelRows(OrderParcel? parcel) {
     if (parcel.description != null)
       OpsInfoRow(
         icon: LucideIcons.package,
-        label: 'Mô tả',
+        label: L10n.current.commonDescription,
         value: parcel.description!,
       ),
     if (parcel.category != null)
       OpsInfoRow(
         icon: LucideIcons.tag,
-        label: 'Loại hàng',
+        label: L10n.current.parcelCategory,
         value: droneParcelCategoryLabel(parcel.category),
       ),
     if (weight != null)
-      OpsInfoRow(icon: LucideIcons.weight, label: 'Cân nặng', value: weight),
+      OpsInfoRow(icon: LucideIcons.weight, label: L10n.current.parcelWeight, value: weight),
     if (size != null)
-      OpsInfoRow(icon: LucideIcons.ruler, label: 'Kích thước', value: size),
+      OpsInfoRow(icon: LucideIcons.ruler, label: L10n.current.parcelSize, value: size),
     if (parcel.fragile != null)
       OpsInfoRow(
         icon: LucideIcons.wineOff,
-        label: 'Hàng dễ vỡ',
-        value: parcel.fragile! ? 'Có — nhẹ tay' : 'Không',
+        label: L10n.current.parcelFragile,
+        value: parcel.fragile! ? L10n.current.parcelFragileYes : L10n.current.commonNo,
         valueColor: parcel.fragile! ? const Color(0xFFB45309) : null,
       ),
     if (parcel.declaredValue != null && parcel.declaredValue! > 0)
       OpsInfoRow(
         icon: LucideIcons.shieldCheck,
-        label: 'Giá trị khai báo',
+        label: L10n.current.parcelDeclaredValue,
         value: fmtPrice(parcel.declaredValue),
       ),
     if (parcel.prohibitedItemsDeclaredAt != null)
       OpsInfoRow(
         icon: LucideIcons.badgeCheck,
-        label: 'Cam kết không hàng cấm',
+        label: L10n.current.parcelNoProhibited,
         value: fmtDateTime(parcel.prohibitedItemsDeclaredAt),
       ),
   ];

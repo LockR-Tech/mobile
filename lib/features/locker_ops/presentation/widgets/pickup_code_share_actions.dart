@@ -6,6 +6,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:smart_laundry_locker/features/locker_ops/domain/pickup_code_share.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/ops_widgets.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 /// Mở bảng chia sẻ của máy với [text]; [origin] là vị trí nút (iPad cần để
 /// neo popover).
@@ -62,8 +63,7 @@ class PickupCodeShareActions extends StatelessWidget {
     if (!context.mounted) return;
     _snack(
       context,
-      '${reason == null ? '' : '$reason — '}Đã sao chép tin nhắn, dán vào '
-      'Zalo, Messenger hoặc SMS để gửi cho người nhận.',
+      '${reason == null ? '' : '$reason — '}${context.l10n.shareCopiedMessage}',
     );
   }
 
@@ -79,7 +79,7 @@ class PickupCodeShareActions extends StatelessWidget {
       if (!buttonContext.mounted) return;
       await _copyMessage(
         buttonContext,
-        reason: 'Không mở được bảng chia sẻ',
+        reason: L10n.current.shareCantOpenSheet,
       );
     }
   }
@@ -92,7 +92,7 @@ class PickupCodeShareActions extends StatelessWidget {
       debugPrint('PickupCodeShareActions sms failed: $error');
     }
     if (opened || !context.mounted) return;
-    await _copyMessage(context, reason: 'Không mở được ứng dụng tin nhắn');
+    await _copyMessage(context, reason: context.l10n.shareCantOpenSms);
   }
 
   @override
@@ -105,7 +105,7 @@ class PickupCodeShareActions extends StatelessWidget {
         : null;
     final receiverName = share.receiverName?.trim();
     final who = receiverName == null || receiverName.isEmpty
-        ? 'người nhận'
+        ? context.l10n.shareTheRecipient
         : receiverName;
 
     return Container(
@@ -119,13 +119,13 @@ class PickupCodeShareActions extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const Row(
+          Row(
             children: [
               Icon(LucideIcons.send, size: 16, color: opsPrimary),
               SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  'Gửi mã cho người nhận',
+                  context.l10n.shareTitle,
                   style: TextStyle(
                     fontWeight: FontWeight.w800,
                     fontSize: 14,
@@ -137,8 +137,7 @@ class PickupCodeShareActions extends StatelessWidget {
           ),
           const SizedBox(height: 4),
           Text(
-            'Người nhận nhập mã tại màn hình tủ để mở ô. Gửi tin nhắn soạn sẵn '
-            'cho $who qua Zalo, Messenger hoặc SMS.',
+            context.l10n.shareBody(who),
             style: const TextStyle(
               fontSize: 12.5,
               color: opsMutedText,
@@ -149,7 +148,7 @@ class PickupCodeShareActions extends StatelessWidget {
           Builder(
             builder: (buttonContext) => OpsPrimaryButton(
               key: const ValueKey('pickup-code-share-button'),
-              label: 'Chia sẻ mã cho người nhận',
+              label: context.l10n.shareButton,
               icon: LucideIcons.share2,
               color: opsPrimary,
               onPressed: () => _share(buttonContext),
@@ -163,7 +162,7 @@ class PickupCodeShareActions extends StatelessWidget {
                   child: _ShareMiniAction(
                     key: const ValueKey('pickup-code-share-sms'),
                     icon: LucideIcons.messageSquareText,
-                    label: 'Nhắn SMS',
+                    label: context.l10n.shareSms,
                     onTap: () => _sms(context, smsUri),
                   ),
                 ),
@@ -173,7 +172,7 @@ class PickupCodeShareActions extends StatelessWidget {
                 child: _ShareMiniAction(
                   key: const ValueKey('pickup-code-share-copy'),
                   icon: LucideIcons.copy,
-                  label: 'Sao chép tin nhắn',
+                  label: context.l10n.shareCopyMessage,
                   onTap: () => _copyMessage(context),
                 ),
               ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/order_payment_sheet.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 typedef DroneOrderPayer =
     Future<OrderPaymentOutcome> Function(
@@ -30,11 +31,11 @@ Future<OrderPaymentOutcome> payDroneOrder(
 String droneOrderPaymentMessage(OrderPaymentOutcome outcome) =>
     switch (outcome) {
       OrderPaymentOutcome.paid =>
-        'Đã thanh toán. Đội bay sẽ tiếp nhận đơn của bạn.',
+        L10n.current.opPaid,
       OrderPaymentOutcome.pending =>
-        'Đang chờ xác nhận thanh toán, trạng thái sẽ tự cập nhật.',
+        L10n.current.opPending,
       OrderPaymentOutcome.failed =>
-        'Thanh toán chưa thành công. Đơn vẫn được giữ, bạn có thể thanh toán lại.',
+        L10n.current.opFailed,
       OrderPaymentOutcome.cancelled =>
-        'Đơn drone chưa thanh toán. Thanh toán để đội bay tiếp nhận.',
+        L10n.current.opUnpaid,
     };

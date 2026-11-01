@@ -8,6 +8,7 @@ import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/lo
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/ops_widgets.dart';
 import 'package:smart_laundry_locker/shared/widgets/app_lottie.dart';
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 /// Mở ô của một đơn mình là người nhận / người lấy hộ: xác nhận đang đứng tại tủ
 /// (Bluetooth hoặc quét tem QR trên tủ) rồi gọi `POST /api/iot/unlock-with-code`
@@ -27,13 +28,13 @@ Future<bool> openReceiverOrderBox(
   final lockerId = order.lockerId;
   final pin = order.pickupPin;
   if (!order.canUnlockWithCode || lockerId == null || pin == null) {
-    snack('Đơn chưa có mã lấy hàng — hàng có thể chưa được bỏ vào ô.');
+    snack(L10n.current.recvNoCodeYet);
     return false;
   }
 
   final action = await LockerUnlockModal.show(
     context,
-    lockerName: order.lockerName ?? 'Tủ Lock.R',
+    lockerName: order.lockerName ?? L10n.current.ordLockrLocker,
     lockerCode: order.lockerCode ?? '',
     lockerId: lockerId,
     boxId: order.boxId,
@@ -46,22 +47,24 @@ Future<bool> openReceiverOrderBox(
     return false;
   }
 
-  snack('Đang gửi lệnh mở ${order.boxLabel} tới tủ...');
+  snack(L10n.current.ordSendingOpenCommand(order.boxLabel));
   try {
     final res = await service.unlockWithCode(lockerId, pin);
     final accepted = res['accepted'] == true;
     final msg = res['message']?.toString();
     snack(
       accepted
-          ? 'Tủ đã mở ${order.boxLabel} — lấy hàng rồi đóng cửa tủ lại.'
-          : 'Không mở được ${order.boxLabel}'
-                '${msg != null && msg.isNotEmpty ? ': $msg' : ''}',
+          ? L10n.current.recvBoxOpenedPickup(order.boxLabel)
+          : L10n.current.ordBoxOpenFailed(
+              order.boxLabel,
+              msg != null && msg.isNotEmpty ? ': $msg' : '',
+            ),
     );
     return accepted;
   } catch (e) {
     snack(
       LockerOpsService.isEndpointUnavailable(e)
-          ? 'Máy chủ chưa hỗ trợ mở ô bằng mã. Hãy nhập mã tại màn hình tủ.'
+          ? L10n.current.recvOpenByCodeNotSupported
           : LockerOpsService.errorMessage(e),
     );
     return false;
@@ -81,9 +84,9 @@ Future<void> openReceiverOrderDirections(
   );
   final msg = switch (result) {
     DirectionsResult.opened => null,
-    DirectionsResult.noLocation => 'Tủ chưa có vị trí để chỉ đường.',
+    DirectionsResult.noLocation => L10n.current.ordLockerNoLocation,
     DirectionsResult.launchFailed =>
-      'Không mở được ứng dụng bản đồ trên máy này.',
+      L10n.current.ordCantOpenMapsApp,
   };
   if (msg != null) {
     messenger
@@ -127,8 +130,8 @@ class ReceiverOrderCard extends StatelessWidget {
     final lockerTitle = (order.lockerName ?? '').trim().isNotEmpty
         ? order.lockerName!.trim()
         : ((order.lockerCode ?? '').trim().isNotEmpty
-            ? 'Tủ ${order.lockerCode}'
-            : 'Tủ Lock.R');
+            ? context.l10n.recvLockerWithCode('${order.lockerCode}')
+            : L10n.current.ordLockrLocker);
 
     return Material(
       color: context.cardBg,
@@ -222,7 +225,7 @@ class ReceiverOrderCard extends StatelessWidget {
                         children: [
                           if ((order.senderName ?? '').isNotEmpty) ...[
                             Text(
-                              delegatedView ? 'Người ủy quyền:' : 'Người gửi:',
+                              delegatedView ? context.l10n.recvDelegatorColon : context.l10n.recvSenderColon,
                               style: TextStyle(
                                 fontSize: 12.5,
                                 color: context.textMuted,
@@ -242,8 +245,8 @@ class ReceiverOrderCard extends StatelessWidget {
                           ] else
                             Text(
                               isDrone
-                                  ? 'Giao Drone'
-                                  : (delegatedView ? 'Lấy hộ' : 'Hàng nhận'),
+                                  ? context.l10n.recvDroneDelivery
+                                  : (delegatedView ? context.l10n.recvDelegatedPickup : context.l10n.recvIncomingParcel),
                               style: TextStyle(
                                 fontSize: 12.5,
                                 color: context.textMuted,
@@ -261,7 +264,7 @@ class ReceiverOrderCard extends StatelessWidget {
                               ),
                             ),
                             Text(
-                              'Hạn lấy: ${fmtDateTime(order.pickupDeadline)}',
+                              context.l10n.ordPickupDeadlineValue(fmtDateTime(order.pickupDeadline)),
                               style: TextStyle(
                                 fontSize: 12,
                                 color: overdue
@@ -315,8 +318,8 @@ class ReceiverOrderCard extends StatelessWidget {
                             _RouteRow(
                               isOrigin: false,
                               text: order.boxNumber != null
-                                  ? 'Ô số ${order.boxNumber}'
-                                  : 'Ô lưu đồ',
+                                  ? context.l10n.boxNumberLabel('${order.boxNumber}')
+                                  : context.l10n.recvStorageBox,
                             ),
                           ],
                         ),
@@ -324,29 +327,28 @@ class ReceiverOrderCard extends StatelessWidget {
                       const SizedBox(height: 14),
 
                       if (!delegatedView && order.delegated)
-                        const OpsBanner(
+                        OpsBanner(
                           tone: OpsBannerTone.info,
                           icon: LucideIcons.userCheck,
                           text:
-                              'Chủ đơn đã ủy quyền người khác lấy hộ nên mã lấy hàng không '
-                              'còn hiện ở đây.',
+                              context.l10n.recvCodeMovedShort,
                         )
                       else if (order.isActive && (order.pickupPin ?? '').isNotEmpty) ...[
                         Center(
                           child: AccessCredentials(
                             pin: order.pickupPin,
                             qrToken: order.qrToken,
-                            caption: 'Nhập PIN tại tủ hoặc mở ô ngay trên app',
+                            caption: context.l10n.recvCredCaptionShort,
                             showSuccessAnimation: false,
                           ),
                         ),
                         const SizedBox(height: 10),
                       ] else if (!order.isFinished) ...[
-                        const OpsBanner(
+                        OpsBanner(
                           tone: OpsBannerTone.info,
                           icon: LucideIcons.hourglass,
                           text:
-                              'Hàng chưa sẵn sàng. Mã lấy hàng sẽ hiện khi hàng đã nằm trong ô.',
+                              context.l10n.recvNotReady,
                         ),
                         const SizedBox(height: 10),
                       ],
@@ -358,8 +360,8 @@ class ReceiverOrderCard extends StatelessWidget {
                         crossAxisAlignment: WrapCrossAlignment.center,
                         children: [
                           if (isDone)
-                            const Text(
-                              'Đã nhận hàng',
+                            Text(
+                              context.l10n.recvReceived,
                               style: TextStyle(
                                 fontSize: 13.5,
                                 fontWeight: FontWeight.w700,
@@ -368,7 +370,7 @@ class ReceiverOrderCard extends StatelessWidget {
                             )
                           else if (order.delegated)
                             Text(
-                              'Đã ủy quyền lấy hộ',
+                              context.l10n.recvDelegated,
                               style: TextStyle(
                                 fontSize: 13,
                                 fontWeight: FontWeight.w600,
@@ -385,7 +387,7 @@ class ReceiverOrderCard extends StatelessWidget {
                               final BorderSide actionBorderSide;
 
                               if (order.canUnlockWithCode) {
-                                actionLabel = 'Mở ${order.boxLabel} lấy hàng';
+                                actionLabel = context.l10n.recvOpenBoxPickup(order.boxLabel);
                                 actionBgColor = const Color(0xFF0284C7)
                                     .withValues(alpha: 0.12);
                                 actionTextColor = const Color(0xFF0284C7);
@@ -394,7 +396,7 @@ class ReceiverOrderCard extends StatelessWidget {
                                   width: 1.4,
                                 );
                               } else {
-                                actionLabel = 'Chi tiết';
+                                actionLabel = context.l10n.commonDetails;
                                 actionBgColor = null;
                                 actionTextColor = context.textPrimary;
                                 actionBorderSide = BorderSide(
@@ -452,7 +454,7 @@ class ReceiverOrderCard extends StatelessWidget {
                   vertical: 8,
                 ),
                 color: const Color(0xFFFEF2F2),
-                child: const Row(
+                child: Row(
                   children: [
                     Icon(
                       LucideIcons.triangleAlert,
@@ -462,7 +464,7 @@ class ReceiverOrderCard extends StatelessWidget {
                     SizedBox(width: 6),
                     Expanded(
                       child: Text(
-                        'Đơn đã quá hạn lấy — hãy lấy hàng sớm để tránh phát sinh thêm phí.',
+                        context.l10n.recvOverdueHurry,
                         style: TextStyle(
                           fontSize: 11.5,
                           fontWeight: FontWeight.w600,
@@ -483,7 +485,7 @@ class ReceiverOrderCard extends StatelessWidget {
                   vertical: 8,
                 ),
                 color: const Color(0xFFF0F9FF),
-                child: const Row(
+                child: Row(
                   children: [
                     Icon(
                       LucideIcons.userCheck,
@@ -493,7 +495,7 @@ class ReceiverOrderCard extends StatelessWidget {
                     SizedBox(width: 6),
                     Expanded(
                       child: Text(
-                        'Chủ đơn đã ủy quyền người khác lấy hộ — mã lấy hàng đã chuyển sang người lấy hộ.',
+                        context.l10n.recvCodeTransferred,
                         style: TextStyle(
                           fontSize: 11.5,
                           fontWeight: FontWeight.w600,

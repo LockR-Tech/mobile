@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:smart_laundry_locker/core/media/report_attachment.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 const _defaultAccent = Color(0xFF1E5A8A);
 const _mutedText = Color(0xFF64748B);
@@ -176,7 +177,7 @@ class AttachmentStageGallery extends StatelessWidget {
                 Flexible(
                   child: Text(
                     '${labels[entry.key] ?? ReportStage.label(entry.key)} '
-                    '(${entry.value.length} ảnh):',
+                    '${context.l10n.attachmentCount(entry.value.length)}',
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w700,
@@ -188,10 +189,10 @@ class AttachmentStageGallery extends StatelessWidget {
             ),
           ),
           if (entry.value.isEmpty)
-            const Padding(
+            Padding(
               padding: EdgeInsets.only(left: 18, bottom: 4),
               child: Text(
-                'Chưa có ảnh',
+                context.l10n.attachmentNone,
                 style: TextStyle(
                   fontSize: 11.5,
                   fontStyle: FontStyle.italic,
@@ -283,7 +284,7 @@ class _AttachmentViewerState extends State<_AttachmentViewer> {
       if (time != null)
         '${current.capturedAt != null ? 'Chụp lúc' : 'Tải lên lúc'} ${_fmtDateTime(time)}',
       if (current.hasLocation)
-        'Vị trí ${current.latitude!.toStringAsFixed(5)}, ${current.longitude!.toStringAsFixed(5)}',
+        context.l10n.attachmentLocation(current.latitude!.toStringAsFixed(5), current.longitude!.toStringAsFixed(5)),
     ];
 
     return Dialog.fullscreen(
@@ -304,9 +305,9 @@ class _AttachmentViewerState extends State<_AttachmentViewer> {
                     placeholder: (_, _) => const Center(
                       child: CircularProgressIndicator(color: Colors.white),
                     ),
-                    errorWidget: (_, _, _) => const Center(
+                    errorWidget: (_, _, _) => Center(
                       child: Text(
-                        'Không tải được ảnh',
+                        context.l10n.attachmentLoadFailed,
                         style: TextStyle(color: Colors.white),
                       ),
                     ),
@@ -338,7 +339,7 @@ class _AttachmentViewerState extends State<_AttachmentViewer> {
                     ),
                     IconButton(
                       icon: const Icon(Icons.close, color: Colors.white),
-                      tooltip: 'Đóng',
+                      tooltip: context.l10n.commonClose,
                       onPressed: () => Navigator.of(context).pop(),
                     ),
                   ],

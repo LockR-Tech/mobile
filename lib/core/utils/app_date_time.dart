@@ -8,6 +8,8 @@
 /// Dùng hàm này cho **mọi** mốc thời gian lấy từ backend.
 library;
 
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
+
 /// Đọc mốc thời gian từ backend rồi đổi sang giờ máy.
 ///
 /// Chuỗi đã kèm `Z` hoặc offset (`+07:00`) thì giữ nguyên ý nghĩa; chuỗi trần
@@ -42,8 +44,10 @@ String _two(int n) => n.toString().padLeft(2, '0');
 String formatDeadlineVn(DateTime? value, {String empty = '—'}) {
   if (value == null) return empty;
   final d = value.toLocal();
-  return '${_two(d.hour)}:${_two(d.minute)} ngày '
-      '${_two(d.day)}/${_two(d.month)}/${d.year}';
+  return L10n.current.deadlineAt(
+    '${_two(d.hour)}:${_two(d.minute)}',
+    '${_two(d.day)}/${_two(d.month)}/${d.year}',
+  );
 }
 
 /// `HH:mm:ss dd/MM/yyyy` — định dạng chuẩn của dự án.

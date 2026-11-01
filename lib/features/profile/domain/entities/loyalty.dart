@@ -1,4 +1,5 @@
 import 'package:smart_laundry_locker/core/utils/app_date_time.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 /// Tài khoản điểm thưởng của chính người dùng (`GET /api/loyalty/summary`,
 /// loyalty-service lấy người dùng từ token):
@@ -79,14 +80,14 @@ class PointTransaction {
 String loyaltyTierLabel(String tier) {
   switch (tier.toUpperCase()) {
     case 'SILVER':
-      return 'Bạc';
+      return L10n.current.tierSilver;
     case 'GOLD':
-      return 'Vàng';
+      return L10n.current.tierGold;
     case 'PLATINUM':
-      return 'Bạch kim';
+      return L10n.current.tierPlatinum;
     case 'BRONZE':
     default:
-      return 'Đồng';
+      return L10n.current.tierBronze;
   }
 }
 
@@ -94,23 +95,23 @@ String pointTransactionLabel(String type, {int? orderId}) {
   final order = orderId != null ? ' #$orderId' : '';
   switch (type.toUpperCase()) {
     case 'ORDER_EARN':
-      return 'Tích điểm đơn hàng$order';
+      return L10n.current.loyEarn(order);
     case 'ORDER_REDEEM':
-      return 'Dùng điểm thanh toán đơn$order';
+      return L10n.current.loyRedeem(order);
     case 'ORDER_REDEEM_REFUND':
-      return 'Hoàn điểm đơn huỷ$order';
+      return L10n.current.loyRedeemRefund(order);
     case 'ORDER_EARN_REVERSAL':
-      return 'Thu hồi điểm đơn được hoàn tiền$order';
+      return L10n.current.loyEarnReversal(order);
     case 'VOUCHER_EXCHANGE':
-      return 'Đổi điểm lấy voucher';
+      return L10n.current.loyVoucherExchange;
     case 'VOUCHER_EXCHANGE_REFUND':
-      return 'Hoàn điểm đổi voucher';
+      return L10n.current.loyVoucherRefund;
     case 'REDEEM':
-      return 'Đổi điểm';
+      return L10n.current.loyExchange;
     case 'ADJUSTMENT':
-      return 'Điều chỉnh điểm';
+      return L10n.current.loyAdjustment;
     default:
-      return 'Biến động điểm';
+      return L10n.current.loyChange;
   }
 }
 
@@ -123,9 +124,9 @@ String pointTransactionLabel(String type, {int? orderId}) {
   required int platinumPoints,
 }) {
   final tiers = [
-    (points: silverPoints, name: 'Bạc'),
-    (points: goldPoints, name: 'Vàng'),
-    (points: platinumPoints, name: 'Bạch kim'),
+    (points: silverPoints, name: L10n.current.tierSilver),
+    (points: goldPoints, name: L10n.current.tierGold),
+    (points: platinumPoints, name: L10n.current.tierPlatinum),
   ]..sort((a, b) => a.points.compareTo(b.points));
   for (final tier in tiers) {
     if (points < tier.points) {

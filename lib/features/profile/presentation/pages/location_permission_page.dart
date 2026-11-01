@@ -5,6 +5,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:smart_laundry_locker/core/theme/shadcn_theme.dart';
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 /// Trạng thái truy cập vị trí của app, gộp từ dịch vụ định vị + quyền.
 enum LocationAccess {
@@ -45,15 +46,15 @@ LocationAccess resolveLocationAccess({
 String locationAccessLabel(LocationAccess access) {
   switch (access) {
     case LocationAccess.unknown:
-      return 'Đang kiểm tra...';
+      return L10n.current.locChecking;
     case LocationAccess.serviceDisabled:
-      return 'Định vị trên máy đang tắt';
+      return L10n.current.locServiceOff;
     case LocationAccess.granted:
-      return 'Đã cấp quyền vị trí';
+      return L10n.current.locGranted;
     case LocationAccess.denied:
-      return 'Chưa cấp quyền vị trí';
+      return L10n.current.locNotGranted;
     case LocationAccess.deniedForever:
-      return 'Đã từ chối quyền vị trí';
+      return L10n.current.locDenied;
   }
 }
 
@@ -126,7 +127,7 @@ class _LocationPermissionPageState extends State<LocationPermissionPage>
     final opened = await _safeOpen(Geolocator.openAppSettings);
     if (!opened) {
       SmartDialog.showToast(
-        'Không mở được cài đặt. Vào Cài đặt của máy → Ứng dụng → Lock.R → Quyền để bật Vị trí.',
+        L10n.current.locCantOpenSettings,
       );
     }
   }
@@ -134,7 +135,7 @@ class _LocationPermissionPageState extends State<LocationPermissionPage>
   Future<void> _openLocationSettings() async {
     final opened = await _safeOpen(Geolocator.openLocationSettings);
     if (!opened) {
-      SmartDialog.showToast('Không mở được cài đặt định vị của máy.');
+      SmartDialog.showToast(L10n.current.locCantOpenLocationSettings);
     }
   }
 
@@ -154,8 +155,8 @@ class _LocationPermissionPageState extends State<LocationPermissionPage>
       body: Column(
         children: [
           BrandHeroHeader(
-            title: 'Vị trí',
-            subtitle: 'Quyền truy cập vị trí của ứng dụng',
+            title: context.l10n.profileLocation,
+            subtitle: context.l10n.locSubtitle,
             onBack: () => Navigator.of(context).pop(),
           ),
           Expanded(
@@ -183,14 +184,14 @@ class _LocationPermissionPageState extends State<LocationPermissionPage>
     final detail = switch (_access) {
       LocationAccess.unknown => '',
       LocationAccess.granted => _permission == LocationPermission.always
-          ? 'Ứng dụng được dùng vị trí mọi lúc.'
-          : 'Ứng dụng được dùng vị trí khi đang mở.',
+          ? context.l10n.locAlways
+            : context.l10n.locWhileInUse,
       LocationAccess.serviceDisabled =>
-        'Bật Định vị (GPS) trong cài đặt của máy để ứng dụng lấy được vị trí.',
+        context.l10n.locTurnOnGps,
       LocationAccess.denied =>
-        'Cấp quyền để tìm tủ gần bạn và chỉ đường tới tủ.',
+        context.l10n.locGrantToFind,
       LocationAccess.deniedForever =>
-        'Bạn đã chặn quyền vị trí. Mở cài đặt ứng dụng để bật lại.',
+        context.l10n.locBlocked,
     };
 
     return Container(
@@ -229,7 +230,7 @@ class _LocationPermissionPageState extends State<LocationPermissionPage>
                 ),
               ),
               IconButton(
-                tooltip: 'Kiểm tra lại',
+                tooltip: context.l10n.locRecheck,
                 onPressed: _refresh,
                 icon: const Icon(LucideIcons.refreshCw, size: 18),
               ),
@@ -244,21 +245,21 @@ class _LocationPermissionPageState extends State<LocationPermissionPage>
           ],
           if (_access == LocationAccess.denied) ...[
             const SizedBox(height: 14),
-            _actionButton('Cấp quyền vị trí', _busy ? null : _requestPermission),
+            _actionButton(context.l10n.locGrant, _busy ? null : _requestPermission),
           ],
           if (_access == LocationAccess.deniedForever) ...[
             const SizedBox(height: 14),
-            _actionButton('Mở cài đặt ứng dụng', _openAppSettings),
+            _actionButton(context.l10n.locOpenAppSettings, _openAppSettings),
           ],
           if (_access == LocationAccess.serviceDisabled) ...[
             const SizedBox(height: 14),
-            _actionButton('Bật định vị', _openLocationSettings),
+            _actionButton(context.l10n.locTurnOn, _openLocationSettings),
           ],
           if (granted) ...[
             const SizedBox(height: 10),
             TextButton(
               onPressed: _openAppSettings,
-              child: const Text('Thay đổi trong cài đặt hệ thống'),
+              child: Text(context.l10n.locChangeInSettings),
             ),
           ],
         ],
@@ -310,14 +311,14 @@ class _LocationPermissionPageState extends State<LocationPermissionPage>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Lock.R dùng vị trí để',
+          Text(
+            context.l10n.locUsesFor,
             style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
           ),
           const SizedBox(height: 12),
-          row(LucideIcons.locateFixed, 'Tìm cửa hàng / tủ gần bạn'),
-          row(LucideIcons.navigation, 'Chỉ đường tới tủ'),
-          row(LucideIcons.camera, 'Gắn toạ độ vào ảnh khi báo sự cố'),
+          row(LucideIcons.locateFixed, context.l10n.locUseFind),
+          row(LucideIcons.navigation, context.l10n.locUseDirections),
+          row(LucideIcons.camera, context.l10n.locUsePhotos),
         ],
       ),
     );

@@ -1,4 +1,5 @@
 import 'package:smart_laundry_locker/core/utils/app_date_time.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 /// Một đơn nhìn từ phía người nhận — `ReceiverOrderResponse` của
 /// `GET /api/orders/incoming` (hàng gửi tới tôi) và
@@ -123,7 +124,7 @@ class ReceiverOrder {
       isActive && lockerId != null && (pickupPin ?? '').isNotEmpty;
 
   /// `Ô số 4` — chỉ dùng số in trên tủ; thiếu thì nói chung chung.
-  String get boxLabel => boxNumber == null ? 'ô của đơn' : 'ô số $boxNumber';
+  String get boxLabel => boxNumber == null ? L10n.current.boxOfOrder : L10n.current.boxNumberLower(boxNumber!);
 
   String get displayCode =>
       (orderCode == null || orderCode!.isEmpty) ? '#$id' : '#$orderCode';

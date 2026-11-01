@@ -15,6 +15,7 @@ import 'package:firebase_auth/firebase_auth.dart' show FirebaseAuthException;
 import 'package:flutter/foundation.dart';
 import 'package:smart_laundry_locker/core/utils/firebase_auth_errors.dart';
 import 'package:smart_laundry_locker/core/utils/phone_utils.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 class LoginProvider extends ChangeNotifier {
   final LoginUseCase _loginUseCase;
@@ -113,7 +114,7 @@ class LoginProvider extends ChangeNotifier {
       notifyListeners();
     } catch (e) {
       _isLoading = false;
-      _error = 'Đăng nhập Google thất bại';
+      _error = L10n.current.authGoogleLoginFailed;
       notifyListeners();
     }
   }
@@ -134,7 +135,7 @@ class LoginProvider extends ChangeNotifier {
       result.fold(_handleFailure, _handleLoginSuccess);
     } catch (e) {
       _isLoading = false;
-      _error = 'Đăng nhập Facebook thất bại';
+      _error = L10n.current.authFacebookLoginFailed;
       notifyListeners();
     }
   }
@@ -177,7 +178,7 @@ class LoginProvider extends ChangeNotifier {
     final phone = toE164Phone(phoneNumber);
     if (!isLikelyValidPhone(phone)) {
       _error = phone.isEmpty
-          ? 'Vui lòng nhập số điện thoại'
+          ? L10n.current.authEnterPhone
           : phoneAuthErrorMessage('invalid-phone-number');
       notifyListeners();
       return;
@@ -246,7 +247,7 @@ class LoginProvider extends ChangeNotifier {
     if (session == null || _phoneSignInInFlight || _isSuccess) return;
     final code = smsCode.trim();
     if (!RegExp(r'^\d{6}$').hasMatch(code)) {
-      _error = 'Mã OTP gồm 6 chữ số';
+      _error = L10n.current.authOtp6DigitsShort;
       notifyListeners();
       return;
     }
@@ -271,13 +272,13 @@ class LoginProvider extends ChangeNotifier {
       _error = phoneAuthErrorMessage(
         e.code,
         message: e.message,
-        fallback: 'Không xác nhận được mã OTP. Vui lòng thử lại.',
+        fallback: L10n.current.authOtpConfirmFailed,
       );
       notifyListeners();
     } catch (e) {
       debugPrint('Confirm phone OTP error: $e');
       _isLoading = false;
-      _error = 'Không xác nhận được mã OTP. Vui lòng thử lại.';
+      _error = L10n.current.authOtpConfirmFailed;
       notifyListeners();
     }
   }
@@ -301,7 +302,7 @@ class LoginProvider extends ChangeNotifier {
       debugPrint('Phone login error: $e');
       if (!_isSuccess) {
         _isLoading = false;
-        _error = 'Đăng nhập thất bại. Vui lòng thử lại.';
+        _error = L10n.current.authLoginFailedRetry;
         notifyListeners();
       }
     } finally {

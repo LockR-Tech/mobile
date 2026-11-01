@@ -1,4 +1,5 @@
 import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 /// Câu báo lỗi cho thao tác của khách trên đơn drone. Bổ sung các mã chỉ luồng
 /// khách gặp (giữ ngoài bảng chung của `LockerOpsService` để các nhánh sửa song
@@ -6,19 +7,19 @@ import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service
 String droneCustomerErrorMessage(Object error) {
   switch (LockerOpsService.errorCode(error)) {
     case 'ORDER_FORBIDDEN':
-      return 'Chỉ người đặt đơn mới thực hiện được thao tác này.';
+      return L10n.current.droneErrOwnerOnly;
     case 'INCIDENT_CUSTOMER_FORBIDDEN':
-      return 'Sự cố này không thuộc đơn của bạn.';
+      return L10n.current.droneErrNotYourIncident;
     case 'INCIDENT_DISPUTE_DISABLED':
-      return 'Chính sách của đơn không cho yêu cầu xem xét lại phương án.';
+      return L10n.current.droneErrNoReview;
     case 'PROPOSAL_ALREADY_RESPONDED':
-      return 'Phương án này đã được phản hồi. Vui lòng tải lại.';
+      return L10n.current.droneErrAlreadyResponded;
     case 'RESOLUTION_PROPOSAL_NOT_FOUND':
-      return 'Chưa có phương án nào chờ bạn phản hồi.';
+      return L10n.current.droneErrNoProposal;
     case 'CUSTOMER_DECISION_INVALID':
-      return 'Lựa chọn không hợp lệ.';
+      return L10n.current.droneErrInvalidChoice;
     case 'USER_LOOKUP_UNAVAILABLE':
-      return 'Chưa tra được thông tin người nhận. Vui lòng thử lại sau.';
+      return L10n.current.droneErrRecipientLookup;
   }
   return LockerOpsService.errorMessage(error);
 }

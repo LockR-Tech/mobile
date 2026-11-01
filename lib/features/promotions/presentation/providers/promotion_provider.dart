@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/legacy.dart';
 import 'package:smart_laundry_locker/features/locker/presentation/providers/locker_providers.dart';
 import 'package:smart_laundry_locker/features/promotions/data/models/promotion_model.dart';
 import 'package:smart_laundry_locker/features/promotions/data/repositories/promotion_repository.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 class PromotionProvider extends ChangeNotifier {
   final PromotionRepository _repository;
@@ -44,7 +45,7 @@ class PromotionProvider extends ChangeNotifier {
       _loadedOnce = true;
       _error = null;
     } catch (e) {
-      if (!silent) _error = 'Không tải được ưu đãi';
+      if (!silent) _error = L10n.current.promoLoadFailed;
       debugPrint('[PROMOTION] load error: $e');
     } finally {
       _isLoading = false;

@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:smart_laundry_locker/core/network/dio_client.dart';
 import 'package:smart_laundry_locker/features/qr_login/domain/kiosk_qr_payload.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 /// Kết quả khi server ghi nhận khách đã xác nhận đăng nhập kiosk.
 class KioskQrConfirmResult {
@@ -46,8 +47,8 @@ class QrLoginRemoteDataSourceImpl implements QrLoginRemoteDataSource {
       final data = body is Map ? body['data'] : null;
       // Không thấy `confirmed: true` thì không báo thành công.
       if (data is! Map || data['confirmed'] != true) {
-        throw const KioskQrLoginException(
-          'Máy chủ chưa xác nhận đăng nhập kiosk. Vui lòng quét lại mã trên kiosk.',
+        throw KioskQrLoginException(
+          L10n.current.qlNotConfirmed,
         );
       }
       final lockerId = data['lockerId'];
@@ -79,20 +80,20 @@ String kioskQrErrorMessage(DioException error) {
 
   switch (code) {
     case 'KIOSK_QR_EXPIRED':
-      return 'Mã đăng nhập đã hết hạn. Hãy tạo mã mới trên kiosk rồi quét lại.';
+      return L10n.current.qlExpired;
     case 'KIOSK_QR_ALREADY_USED':
-      return 'Mã đăng nhập này đã được dùng. Hãy tạo mã mới trên kiosk.';
+      return L10n.current.qlUsed;
     case 'KIOSK_QR_INVALID':
       // Server ghi rõ còn mấy lần thử / phiên đã huỷ — dùng nguyên câu đó.
       return serverMessage.isNotEmpty
           ? serverMessage
-          : 'Mã đăng nhập kiosk không hợp lệ hoặc đã hết hiệu lực.';
+          : L10n.current.qlInvalid;
     case 'AUTH_ACCOUNT_INACTIVE':
-      return 'Tài khoản của bạn đang bị khoá hoặc chưa kích hoạt nên không đăng nhập kiosk được.';
+      return L10n.current.qlInactive;
     case 'AUTH_REQUIRED':
-      return 'Phiên đăng nhập trên app đã hết. Vui lòng đăng nhập lại rồi quét mã.';
+      return L10n.current.qlSessionExpired;
     case 'KIOSK_QR_RATE_LIMITED':
-      return 'Thao tác quá nhanh. Vui lòng thử lại sau ít phút.';
+      return L10n.current.qlTooFast;
   }
 
   switch (error.type) {
@@ -100,19 +101,18 @@ String kioskQrErrorMessage(DioException error) {
     case DioExceptionType.sendTimeout:
     case DioExceptionType.receiveTimeout:
     case DioExceptionType.connectionError:
-      return 'Không kết nối được máy chủ. Kiểm tra mạng rồi thử lại.';
+      return L10n.current.qlNoConnection;
     default:
       break;
   }
 
   if (status == 401) {
-    return 'Phiên đăng nhập trên app đã hết. Vui lòng đăng nhập lại rồi quét mã.';
+    return L10n.current.qlSessionExpired;
   }
   if (status == 404) {
     // 404 không kèm mã nghiệp vụ = máy chủ chưa có tính năng này.
-    return 'Máy chủ chưa hỗ trợ đăng nhập kiosk bằng mã QR. '
-        'Vui lòng đăng nhập bằng số điện thoại trên kiosk.';
+    return L10n.current.qlNotSupported;
   }
   if (serverMessage.isNotEmpty) return serverMessage;
-  return 'Không xác nhận được đăng nhập kiosk. Vui lòng thử lại.';
+  return L10n.current.qrKioskLoginFailed;
 }

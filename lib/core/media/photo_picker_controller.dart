@@ -6,6 +6,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:smart_laundry_locker/core/media/media_upload.dart';
 import 'package:smart_laundry_locker/core/media/media_upload_service.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 enum PendingPhotoStatus { pending, uploading, uploaded, failed }
 
@@ -170,7 +171,7 @@ class PhotoPickerController extends ChangeNotifier {
       } catch (e) {
         final message = e is MediaUploadException
             ? e.message
-            : 'Tải ảnh lên thất bại, vui lòng thử lại';
+            : L10n.current.mediaUploadFailedRetry;
         for (final p in todo.where((p) => p.upload == null)) {
           p
             ..status = PendingPhotoStatus.failed

@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/foundation.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 /// Validation result for avatar image
 class AvatarValidationResult {
@@ -45,7 +46,7 @@ class AvatarImageValidator {
     if (fileSizeBytes > maxFileSizeBytes) {
       final sizeMB = (fileSizeBytes / (1024 * 1024)).toStringAsFixed(1);
       return AvatarValidationResult.failure(
-        'Ảnh không được vượt quá 5MB (kích thước hiện tại: ${sizeMB}MB)',
+        L10n.current.avTooLarge(sizeMB),
       );
     }
     return AvatarValidationResult.success();
@@ -56,13 +57,13 @@ class AvatarImageValidator {
   static AvatarValidationResult validateDimensions(int width, int height) {
     if (width < minDimension || height < minDimension) {
       return AvatarValidationResult.failure(
-        'Ảnh phải có kích thước tối thiểu ${minDimension}x${minDimension}px (kích thước hiện tại: ${width}x${height}px)',
+        L10n.current.avTooSmall(minDimension, width, height),
       );
     }
 
     if (width > maxDimension || height > maxDimension) {
       return AvatarValidationResult.failure(
-        'Ảnh không được vượt quá ${maxDimension}x${maxDimension}px (kích thước hiện tại: ${width}x${height}px)',
+        L10n.current.avTooBig(maxDimension, width, height),
       );
     }
 
@@ -74,14 +75,14 @@ class AvatarImageValidator {
   static AvatarValidationResult validateMimeType(String? mimeType) {
     if (mimeType == null || mimeType.isEmpty) {
       return AvatarValidationResult.failure(
-        'Không thể xác định định dạng file',
+        L10n.current.avUnknownFormat,
       );
     }
 
     final normalizedMimeType = mimeType.toLowerCase();
     if (!allowedMimeTypes.contains(normalizedMimeType)) {
       return AvatarValidationResult.failure(
-        'Chỉ hỗ trợ định dạng JPG, PNG, WebP',
+        L10n.current.avFormats,
       );
     }
 
@@ -96,7 +97,7 @@ class AvatarImageValidator {
 
     if (!allowedExtensions.contains(extension)) {
       return AvatarValidationResult.failure(
-        'Chỉ hỗ trợ định dạng JPG, PNG, WebP',
+        L10n.current.avFormats,
       );
     }
 
@@ -109,7 +110,7 @@ class AvatarImageValidator {
     try {
       // Check if file exists
       if (!await file.exists()) {
-        return AvatarValidationResult.failure('File không tồn tại');
+        return AvatarValidationResult.failure(L10n.current.avNotFound);
       }
 
       // Validate file size
@@ -128,7 +129,7 @@ class AvatarImageValidator {
       return AvatarValidationResult.success();
     } catch (e) {
       debugPrint('Error validating file: $e');
-      return AvatarValidationResult.failure('Không thể kiểm tra file: $e');
+      return AvatarValidationResult.failure(L10n.current.avCantCheck(e));
     }
   }
 
@@ -166,7 +167,7 @@ class AvatarImageValidator {
       }
     } else {
       return AvatarValidationResult.failure(
-        'Không thể xác định định dạng file',
+        L10n.current.avUnknownFormat,
       );
     }
 

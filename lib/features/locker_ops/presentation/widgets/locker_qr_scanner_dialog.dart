@@ -8,6 +8,7 @@ import 'package:smart_laundry_locker/core/presentation/pages/qr_scanner_page.dar
     show QrScannerOverlayShape;
 import 'package:smart_laundry_locker/core/theme/shadcn_theme.dart';
 import 'package:smart_laundry_locker/shared/widgets/controller_disposer.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 /// Nội dung quét được (hoặc gõ tay) có đúng là tủ [expectedId] / [expectedCode]
 /// không. So khớp CHÍNH XÁC, không dùng `contains` — "LOC-1" không được khớp
@@ -145,8 +146,8 @@ class _LockerQrScannerDialogState extends State<LockerQrScannerDialog> {
               } else {
                 setLocal(
                   () => error = ctrl.text.trim().isEmpty
-                      ? 'Vui lòng nhập mã tủ.'
-                      : 'Mã tủ không khớp với ${widget.lockerName ?? 'tủ này'}.',
+                      ? context.l10n.qrEnterLockerCode
+                      : context.l10n.qrLockerCodeMismatch(widget.lockerName ?? context.l10n.qrThisLocker),
                 );
               }
             }
@@ -155,7 +156,7 @@ class _LockerQrScannerDialogState extends State<LockerQrScannerDialog> {
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(18),
               ),
-              title: const Text('Nhập mã tủ'),
+              title: Text(context.l10n.qrEnterLockerCodeTitle),
               content: TextField(
                 controller: ctrl,
                 autofocus: true,
@@ -163,16 +164,16 @@ class _LockerQrScannerDialogState extends State<LockerQrScannerDialog> {
                 textInputAction: TextInputAction.done,
                 onSubmitted: (_) => submit(),
                 decoration: InputDecoration(
-                  hintText: 'Mã in trên thân tủ',
+                  hintText: context.l10n.qrLockerCodeHint,
                   errorText: error,
                 ),
               ),
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(ctx, false),
-                  child: const Text('Hủy'),
+                  child: Text(context.l10n.commonCancel),
                 ),
-                FilledButton(onPressed: submit, child: const Text('Xác nhận')),
+                FilledButton(onPressed: submit, child: Text(context.l10n.commonConfirm)),
               ],
             );
           },
@@ -206,7 +207,7 @@ class _LockerQrScannerDialogState extends State<LockerQrScannerDialog> {
       HapticFeedback.vibrate();
       setState(() {
         _errorMessage =
-            'Mã QR không khớp với ${widget.lockerName ?? 'tủ này'}.\nVui lòng quét đúng mã QR dán trên thân tủ.';
+            context.l10n.qrCodeMismatch(widget.lockerName ?? context.l10n.qrThisLocker);
       });
       // Đợi 2.5s để người dùng đọc thông báo lỗi rồi cho phép quét lại
       await Future<void>.delayed(const Duration(milliseconds: 2500));
@@ -222,8 +223,8 @@ class _LockerQrScannerDialogState extends State<LockerQrScannerDialog> {
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
-    final lockerLabel = widget.lockerName ?? 'Tủ Lock.R';
-    final boxLabel = widget.boxLabel ?? 'ô tủ';
+    final lockerLabel = widget.lockerName ?? context.l10n.ordLockrLocker;
+    final boxLabel = widget.boxLabel ?? context.l10n.qrLockerBoxGeneric;
 
     return Container(
       height: size.height * 0.88,
@@ -285,7 +286,7 @@ class _LockerQrScannerDialogState extends State<LockerQrScannerDialog> {
                       const Icon(LucideIcons.scanLine, color: Colors.white, size: 16),
                       const SizedBox(width: 8),
                       Text(
-                        'Quét mở $boxLabel',
+                        context.l10n.qrScanToOpen(boxLabel),
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 13,
@@ -372,7 +373,7 @@ class _LockerQrScannerDialogState extends State<LockerQrScannerDialog> {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'Mã tủ: ${widget.expectedLockerCode}',
+                        context.l10n.qrLockerCodeValue('${widget.expectedLockerCode}'),
                         style: const TextStyle(
                           color: Colors.white70,
                           fontSize: 12.5,
@@ -380,8 +381,8 @@ class _LockerQrScannerDialogState extends State<LockerQrScannerDialog> {
                         ),
                       ),
                       const SizedBox(height: 8),
-                      const Text(
-                        'Hướng camera về phía tem mã QR dán trên mặt tủ để xác thực bạn đang đứng tại tủ.',
+                      Text(
+                        context.l10n.qrPointCamera,
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           color: Colors.white60,
@@ -397,8 +398,8 @@ class _LockerQrScannerDialogState extends State<LockerQrScannerDialog> {
                           size: 16,
                           color: Colors.white,
                         ),
-                        label: const Text(
-                          'Không quét được? Nhập mã tủ',
+                        label: Text(
+                          context.l10n.qrCantScan,
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: 12.5,

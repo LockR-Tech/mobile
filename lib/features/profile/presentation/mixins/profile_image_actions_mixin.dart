@@ -13,6 +13,7 @@ import 'package:smart_laundry_locker/features/profile/infrastructure/data_source
 import 'package:smart_laundry_locker/features/profile/infrastructure/repositories/profile_repository_impl.dart';
 import 'package:smart_laundry_locker/shared/shared.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 final _logger = Logger(printer: PrettyPrinter());
 
@@ -40,12 +41,12 @@ mixin ProfileImageActionsMixin<T extends StatefulWidget> on State<T> {
     if (!mounted) return;
 
     if (isAvatarSyncing) {
-      _showSnackBar('Vui lòng đợi quá trình đồng bộ hoàn tất', isError: true);
+      _showSnackBar(context.l10n.avWaitSync, isError: true);
       return;
     }
 
     // Show picker dialog
-    final source = await _showImageSourcePicker('Chọn ảnh đại diện');
+    final source = await _showImageSourcePicker(context.l10n.avChooseAvatar);
     if (source == null || !mounted) return;
 
     // Process image
@@ -58,17 +59,17 @@ mixin ProfileImageActionsMixin<T extends StatefulWidget> on State<T> {
       maxHeight: 1024,
       maxSizeMB: 1,
       minCompressQuality: 20,
-      title: 'Chỉnh sửa ảnh đại diện',
+      title: context.l10n.avEditAvatar,
       lockAspectRatio: true,
     );
 
     if (tempFile == null) {
       if (mounted) {
         final sourceName = source == ImageSource.camera
-            ? 'camera'
-            : 'thư viện ảnh';
+            ? context.l10n.avCamera
+            : context.l10n.avGallery;
         _showSnackBar(
-          'Không thể truy cập $sourceName. Vui lòng cấp quyền trong cài đặt.',
+          context.l10n.avCantAccess(sourceName),
           isError: true,
         );
       }
@@ -83,7 +84,7 @@ mixin ProfileImageActionsMixin<T extends StatefulWidget> on State<T> {
     });
 
     _showSnackBar(
-      'Ảnh đã được chọn. Nhấn "Lưu ảnh đại diện" để cập nhật.',
+      context.l10n.avSelected,
       isError: false,
     );
   }
@@ -93,14 +94,14 @@ mixin ProfileImageActionsMixin<T extends StatefulWidget> on State<T> {
     if (!mounted) return;
 
     if (localAvatarFile == null) {
-      _showSnackBar('Không có ảnh nào để tải lên', isError: true);
+      _showSnackBar(context.l10n.avNothingToUpload, isError: true);
       return;
     }
 
     final userId = currentUserIdForAvatar;
     if (userId == null || userId.isEmpty) {
       _showSnackBar(
-        'Không xác định được tài khoản để cập nhật ảnh đại diện',
+        context.l10n.avNoAccount,
         isError: true,
       );
       return;
@@ -112,7 +113,7 @@ mixin ProfileImageActionsMixin<T extends StatefulWidget> on State<T> {
     );
     if (!validationResult.isValid) {
       _showSnackBar(
-        validationResult.error ?? 'Ảnh không hợp lệ',
+        validationResult.error ?? L10n.current.avInvalid,
         isError: true,
       );
       return;
@@ -216,7 +217,7 @@ mixin ProfileImageActionsMixin<T extends StatefulWidget> on State<T> {
               isAvatarSyncing = false;
             });
 
-            _showSnackBar('Cập nhật ảnh đại diện thành công!', isError: false);
+            _showSnackBar(L10n.current.avUpdated, isError: false);
           });
         },
       );
@@ -233,7 +234,7 @@ mixin ProfileImageActionsMixin<T extends StatefulWidget> on State<T> {
         updateState(() {
           isAvatarSyncing = false;
         });
-        _showSnackBar('Lỗi: $e', isError: true);
+        _showSnackBar(context.l10n.rfError(e), isError: true);
       });
     }
   }
@@ -255,7 +256,7 @@ mixin ProfileImageActionsMixin<T extends StatefulWidget> on State<T> {
       });
     }
 
-    _showSnackBar('Đã hủy thay đổi ảnh đại diện', isError: false);
+    _showSnackBar(context.l10n.avCancelled, isError: false);
   }
 
   /// Show image source picker bottom sheet (centered modal style)
@@ -319,7 +320,7 @@ mixin ProfileImageActionsMixin<T extends StatefulWidget> on State<T> {
 
                       // Subtitle
                       Text(
-                        'Chọn nguồn ảnh',
+                        context.l10n.avChooseSource,
                         style: TextStyle(
                           fontSize: 14,
                           color: mutedForegroundColor,
@@ -348,7 +349,7 @@ mixin ProfileImageActionsMixin<T extends StatefulWidget> on State<T> {
                       _buildActionButton(
                         context: sheetContext,
                         icon: LucideIcons.image,
-                        label: 'Thư viện',
+                        label: context.l10n.avLibrary,
                         backgroundColor: theme.colorScheme.accent,
                         foregroundColor: foregroundColor,
                         onPressed: () {
@@ -476,7 +477,7 @@ mixin ProfileImageActionsMixin<T extends StatefulWidget> on State<T> {
                 ),
                 const SizedBox(width: 12),
                 Text(
-                  'Hủy',
+                  context.l10n.commonCancel,
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
@@ -503,11 +504,11 @@ mixin ProfileImageActionsMixin<T extends StatefulWidget> on State<T> {
             '${(value * 100).clamp(0, 100).toStringAsFixed(0)}%';
         return ShadDialog(
           title: Text(
-            'Đang tải lên',
+            context.l10n.avUploading,
             style: TextStyle(color: theme.colorScheme.foreground),
           ),
           description: Text(
-            'Hoàn thành $percentLabel',
+            context.l10n.avProgress(percentLabel),
             style: TextStyle(color: theme.colorScheme.mutedForeground),
           ),
           backgroundColor: theme.colorScheme.popover,
@@ -529,7 +530,7 @@ mixin ProfileImageActionsMixin<T extends StatefulWidget> on State<T> {
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  'Vui lòng đợi trong giây lát',
+                  context.l10n.avPleaseWait,
                   style: theme.textTheme.muted,
                   textAlign: TextAlign.center,
                 ),

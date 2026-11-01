@@ -1,6 +1,7 @@
 import 'package:flutter/services.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 /// Khóa ứng dụng bằng sinh trắc học thiết bị (vân tay / khuôn mặt hệ điều hành).
 ///
@@ -36,11 +37,11 @@ class BiometricService {
 
   /// Hiện prompt sinh trắc của hệ điều hành. Trả về true nếu xác thực thành công.
   static Future<bool> authenticate({
-    String reason = 'Xác thực để mở ứng dụng',
+    String? reason,
   }) async {
     try {
       return await _auth.authenticate(
-        localizedReason: reason,
+        localizedReason: reason ?? L10n.current.biometricOpenApp,
         options: const AuthenticationOptions(
           stickyAuth: true,
           biometricOnly: false, // cho phép fallback PIN/mật khẩu thiết bị

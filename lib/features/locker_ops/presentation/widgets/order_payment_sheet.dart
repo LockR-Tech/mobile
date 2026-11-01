@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/ops_widgets.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/sepay_payment.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 export 'package:smart_laundry_locker/features/payment/domain/sepay_transfer.dart'
     show checkoutQrUrl;
@@ -124,7 +125,7 @@ class _SepayPaymentSheetState extends State<_SepayPaymentSheet> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Text(
-            'Thanh toán chuyển khoản · ${fmtPrice(widget.controller.amount)}',
+            context.l10n.payTransferAmount(fmtPrice(widget.controller.amount)),
             style: const TextStyle(
               fontWeight: FontWeight.w800,
               fontSize: 17,
@@ -132,8 +133,8 @@ class _SepayPaymentSheetState extends State<_SepayPaymentSheet> {
             ),
           ),
           const SizedBox(height: 2),
-          const Text(
-            'Quét mã bằng app ngân hàng bất kỳ hoặc mở thẳng app ngân hàng.',
+          Text(
+            context.l10n.payScanAnyBank,
             style: TextStyle(fontSize: 13, color: opsMutedText),
           ),
           const SizedBox(height: 16),

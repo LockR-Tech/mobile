@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:smart_laundry_locker/features/profile/domain/account_reminders.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 enum ProfileReminderChoice { update, later }
 
@@ -37,7 +38,7 @@ class ProfileReminderSheet extends StatelessWidget {
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
-                  'Bổ sung thông tin tài khoản',
+                  context.l10n.reminderTitle,
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
                 ),
               ),
@@ -45,21 +46,20 @@ class ProfileReminderSheet extends StatelessWidget {
           ),
           const SizedBox(height: 10),
           Text(
-            '${missingContactSentence(missing)} Thêm vào để nhận mã mở tủ, thông báo đơn hàng và khôi phục '
-            'tài khoản khi cần.',
+            context.l10n.reminderBody(missingContactSentence(missing)),
             style: TextStyle(fontSize: 14, height: 1.45, color: muted),
           ),
           const SizedBox(height: 18),
           FilledButton(
             key: const ValueKey('profile-reminder-update'),
             onPressed: () => Navigator.of(context).pop(ProfileReminderChoice.update),
-            child: const Text('Cập nhật ngay'),
+            child: Text(context.l10n.commonUpdateNow),
           ),
           const SizedBox(height: 6),
           TextButton(
             key: const ValueKey('profile-reminder-later'),
             onPressed: () => Navigator.of(context).pop(ProfileReminderChoice.later),
-            child: Text('Để sau (nhắc lại sau ${reminderSnooze.inDays} ngày)'),
+            child: Text(context.l10n.reminderLater(reminderSnooze.inDays)),
           ),
         ],
       ),

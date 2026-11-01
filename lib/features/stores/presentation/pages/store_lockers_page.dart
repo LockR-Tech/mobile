@@ -17,6 +17,7 @@ import 'dart:async';
 import 'package:smart_laundry_locker/core/services/app_event_bus.dart';
 import 'package:smart_laundry_locker/features/notifications/infrastructure/services/realtime_notification_service.dart';
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 /// Hiển thị lưới ô tủ locker.
 ///
@@ -259,7 +260,7 @@ class _StoreLockerGridPageState extends State<StoreLockerGridPage> {
     final lockerName =
         (target['name'] as String?) ??
         (target['code'] as String?) ??
-        'Tủ #$lockerId';
+        context.l10n.lockerHash(lockerId);
 
     Navigator.of(context, rootNavigator: true).push<void>(
       MaterialPageRoute(
@@ -290,7 +291,7 @@ class _StoreLockerGridPageState extends State<StoreLockerGridPage> {
       body: Column(
         children: [
           BrandHeroHeader(
-            title: 'Tủ locker',
+            title: context.l10n.lockerLockerTitle,
             subtitle: _currentLockerName ?? widget.store.name,
             onBack: () => Navigator.pop(context),
             trailing: BrandCircleIconButton(
@@ -305,7 +306,7 @@ class _StoreLockerGridPageState extends State<StoreLockerGridPage> {
           // 1. Thanh vị trí chính xác của tủ (đồng bộ từ admin/lockers/5)
           if (lockerAddr != null && lockerAddr.isNotEmpty)
             _AddressBar(
-              label: 'Vị trí tủ vật lý',
+              label: context.l10n.lockerPhysicalLocation,
               address: lockerAddr,
               onDirections: hasCoord ? _openDirections : null,
             ),
@@ -330,8 +331,8 @@ class _StoreLockerGridPageState extends State<StoreLockerGridPage> {
 
   Widget _buildBody() {
     if (_loading) {
-      return const Center(
-        child: AppLoadingIndicator(message: 'Đang tải danh sách tủ...'),
+      return Center(
+        child: AppLoadingIndicator(message: context.l10n.lockerListLoading),
       );
     }
     if (_error != null) {
@@ -381,13 +382,13 @@ class _DroneHintBanner extends StatelessWidget {
           color: const Color(0xFF6366F1).withValues(alpha: 0.3),
         ),
       ),
-      child: const Row(
+      child: Row(
         children: [
           Icon(Icons.flight_rounded, color: Color(0xFF4F46E5), size: 18),
           SizedBox(width: 8),
           Expanded(
             child: Text(
-              'Chạm vào ô drone còn trống (màu tím) để gửi hàng bằng drone tới tủ khác.',
+              context.l10n.lockerDroneCellHint,
               style: TextStyle(
                 fontSize: 12,
                 color: Color(0xFF4338CA),
@@ -453,7 +454,7 @@ class _AddressBar extends StatelessWidget {
                   const SizedBox(height: 2),
                 ],
                 Text(
-                  address ?? 'Xem vị trí trên bản đồ',
+                  address ?? context.l10n.lockerViewOnMap,
                   style: const TextStyle(
                     color: AislBrand.navy,
                     fontSize: 12,
@@ -485,7 +486,7 @@ class _AddressBar extends StatelessWidget {
                     ),
                   ],
                 ),
-                child: const Row(
+                child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(
@@ -495,7 +496,7 @@ class _AddressBar extends StatelessWidget {
                     ),
                     SizedBox(width: 4),
                     Text(
-                      'Chỉ đường',
+                      context.l10n.commonDirections,
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: 11,
@@ -561,10 +562,10 @@ class _KioskLocationBar extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Row(
+                Row(
                   children: [
                     Text(
-                      'ĐIỂM ĐẶT KIOSK',
+                      context.l10n.lockerKioskPoint,
                       style: TextStyle(
                         color: Color(0xFF4F46E5),
                         fontSize: 9.5,
@@ -614,7 +615,7 @@ class _KioskLocationBar extends StatelessWidget {
                     color: const Color(0xFF6366F1).withValues(alpha: 0.35),
                   ),
                 ),
-                child: const Row(
+                child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(
@@ -624,7 +625,7 @@ class _KioskLocationBar extends StatelessWidget {
                     ),
                     SizedBox(width: 4),
                     Text(
-                      'Chỉ đường',
+                      context.l10n.commonDirections,
                       style: TextStyle(
                         color: Color(0xFF4F46E5),
                         fontSize: 11,
@@ -662,7 +663,7 @@ class _SummaryBanner extends StatelessWidget {
           const Icon(LucideIcons.server, color: AislBrand.navy, size: 16),
           const SizedBox(width: 8),
           Text(
-            '$count tủ locker',
+            context.l10n.lockerCount(count),
             style: const TextStyle(
               color: AislBrand.navy,
               fontWeight: FontWeight.w600,
@@ -676,8 +677,8 @@ class _SummaryBanner extends StatelessWidget {
                 color: AislBrand.cyan.withValues(alpha: 0.14),
                 borderRadius: BorderRadius.circular(20),
               ),
-              child: const Text(
-                'Chạm vào tủ để xem ô trống',
+              child: Text(
+                context.l10n.lockerTapToSeeFree,
                 style: TextStyle(
                   color: AislBrand.blue,
                   fontSize: 11,
@@ -729,7 +730,7 @@ class _LockerCardState extends State<_LockerCard> {
   String get _lockerName {
     final n = widget.locker['name'] as String?;
     final c = widget.locker['code'] as String?;
-    return (n?.isNotEmpty == true) ? n! : (c ?? 'Tủ');
+    return (n?.isNotEmpty == true) ? n! : (c ?? context.l10n.lockerDefaultName);
   }
 
   List<Map<String, dynamic>> get _currentCells =>
@@ -870,26 +871,26 @@ class _LockerCardState extends State<_LockerCard> {
             totalCells: totalCells,
           ),
           if (isDisconnected)
-            const _StateNotice(
+            _StateNotice(
               icon: LucideIcons.wifiOff,
               text:
-                  'Tủ đang mất kết nối với máy chủ nên tạm thời chưa đặt được ô.',
+                  context.l10n.lockerOfflineCantBook,
               color: Color(0xFFB91C1C),
               background: Color(0xFFFEF2F2),
               border: Color(0xFFFECACA),
             )
           else if (isMaintenance)
-            const _StateNotice(
+            _StateNotice(
               icon: LucideIcons.wrench,
-              text: 'Tủ đang bảo trì kỹ thuật, tạm ngưng nhận đơn.',
+              text: context.l10n.lockerUnderMaintenance,
               color: Color(0xFFB45309),
               background: Color(0xFFFFFBEB),
               border: Color(0xFFFDE68A),
             )
           else if (!isActive)
-            const _StateNotice(
+            _StateNotice(
               icon: LucideIcons.ban,
-              text: 'Tủ đang tạm ngưng hoạt động.',
+              text: context.l10n.lockerSuspended,
               color: Color(0xFF475569),
               background: Color(0xFFF1F5F9),
               border: Color(0xFFE2E8F0),
@@ -964,33 +965,33 @@ class _LockerCardState extends State<_LockerCard> {
                     children: [
                       if (_layout != null)
                         _Pill(
-                          label: '$available/$totalCells ô trống',
+                          label: context.l10n.lockerFreeOfTotal(available, totalCells),
                           bg: available > 0
                               ? AislBrand.cyan
                               : const Color(0xFFE2E8F0),
                           fg: available > 0 ? Colors.white : Colors.grey,
                         ),
                       if (isDisconnected)
-                        const _Pill(
-                          label: 'Mất kết nối',
+                        _Pill(
+                          label: context.l10n.commonDisconnected,
                           bg: Color(0xFFFDE8E8),
                           fg: Color(0xFF9B1C1C),
                         )
                       else if (isMaintenance)
-                        const _Pill(
-                          label: 'Bảo trì',
+                        _Pill(
+                          label: context.l10n.enumMaintenance,
                           bg: Color(0xFFFEF3C7),
                           fg: Color(0xFFD97706),
                         )
                       else if (isActive)
-                        const _Pill(
-                          label: 'Hoạt động',
+                        _Pill(
+                          label: context.l10n.commonStatusActive,
                           bg: Color(0xFFDEF7EC),
                           fg: Color(0xFF046C4E),
                         )
                       else
-                        const _Pill(
-                          label: 'Tạm ngưng',
+                        _Pill(
+                          label: context.l10n.commonStatusSuspended,
                           bg: Color(0xFFF1F5F9),
                           fg: Color(0xFF64748B),
                         ),
@@ -1021,7 +1022,7 @@ class _LockerCardState extends State<_LockerCard> {
                             borderRadius: BorderRadius.circular(20),
                             border: Border.all(color: const Color(0xFFFECDD3)),
                           ),
-                          child: const Row(
+                          child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               AppLottie(
@@ -1031,7 +1032,7 @@ class _LockerCardState extends State<_LockerCard> {
                               ),
                               SizedBox(width: 4),
                               Text(
-                                'Báo sự cố',
+                                context.l10n.commonReportIssue,
                                 style: TextStyle(
                                   fontSize: 10,
                                   fontWeight: FontWeight.w600,
@@ -1087,11 +1088,11 @@ class _LockerCardState extends State<_LockerCard> {
             onRetry: () => _loadLayout(force: true),
           )
         else if (cells.isEmpty)
-          const Padding(
+          Padding(
             padding: EdgeInsets.symmetric(vertical: 28),
             child: Center(
               child: Text(
-                'Tủ chưa có ô nào được cấu hình',
+                context.l10n.lockerNoCellsConfigured,
                 style: TextStyle(color: Colors.grey),
               ),
             ),
@@ -1130,10 +1131,12 @@ class _LockerCardState extends State<_LockerCard> {
     final pending =
         (cell['status'] as String?)?.toUpperCase() == 'PENDING_CHECK';
     // Ô khách vừa báo: chưa chắc hỏng, KTV sẽ kiểm tra — tạm không nhận đơn mới.
-    final state = pending ? 'đang chờ kỹ thuật viên kiểm tra sự cố' : 'đang hỏng';
+    final state = pending
+        ? context.l10n.lockerBoxPendingCheck
+        : context.l10n.lockerBoxBroken;
     final message = reason == null || reason.isEmpty
-        ? '$boxLabel $state. Hãy chọn ô khác.'
-        : '$boxLabel $state: $reason. Hãy chọn ô khác.';
+        ? context.l10n.lockerBoxUnavailable(boxLabel, state)
+        : context.l10n.lockerBoxUnavailableReason(boxLabel, state, reason);
 
     ScaffoldMessenger.of(ctx)
       ..hideCurrentSnackBar()
@@ -1141,7 +1144,7 @@ class _LockerCardState extends State<_LockerCard> {
         SnackBar(
           content: Text(message),
           action: SnackBarAction(
-            label: 'Báo sự cố',
+            label: context.l10n.commonReportIssue,
             textColor: Colors.amberAccent,
             onPressed: () {
               Navigator.of(ctx, rootNavigator: true).push<void>(
@@ -1167,10 +1170,10 @@ class _LockerCardState extends State<_LockerCard> {
 
   String _boxLabel(Map<String, dynamic> cell) {
     final boxNum = (cell['boxNumber'] as num?)?.toInt();
-    if (boxNum != null) return 'Ô số $boxNum';
+    if (boxNum != null) return context.l10n.boxNumberLabel(boxNum);
     final r = (cell['rowIndex'] as num?)?.toInt() ?? 0;
     final c = (cell['colIndex'] as num?)?.toInt() ?? 0;
-    return 'Ô hàng ${r + 1}, cột ${c + 1}';
+    return context.l10n.boxRowCol(r + 1, c + 1);
   }
 
   void _showBookingSheet(BuildContext ctx, Map<String, dynamic> cell) {
@@ -1489,17 +1492,17 @@ class _GridLegend extends StatelessWidget {
       child: Wrap(
         spacing: 8,
         runSpacing: 8,
-        children: const [
+        children: [
           _LegendChip(
             color: Color(0xFF0284C7),
-            label: 'Màn hình 7"',
+            label: context.l10n.lockerScreen7,
             icon: LucideIcons.monitor,
           ),
-          _LegendChip(color: _CellPalette.available, label: 'Trống'),
-          _LegendChip(color: _CellPalette.occupied, label: 'Đang dùng'),
-          _LegendChip(color: _CellPalette.reserved, label: 'Đã đặt'),
-          _LegendChip(color: _CellPalette.fault, label: 'Lỗi / Hỏng'),
-          _LegendChip(color: _CellPalette.cleaning, label: 'Bảo trì'),
+          _LegendChip(color: _CellPalette.available, label: context.l10n.commonEmpty),
+          _LegendChip(color: _CellPalette.occupied, label: context.l10n.commonInUseShort),
+          _LegendChip(color: _CellPalette.reserved, label: context.l10n.commonReservedShort),
+          _LegendChip(color: _CellPalette.fault, label: context.l10n.lockerFaultBroken),
+          _LegendChip(color: _CellPalette.cleaning, label: context.l10n.enumMaintenance),
           _LegendChip(
             color: _CellPalette.drone,
             label: 'Drone',
@@ -1507,17 +1510,17 @@ class _GridLegend extends StatelessWidget {
           ),
           _LegendChip(
             color: _CellPalette.available,
-            label: 'Vali (XL)',
+            label: context.l10n.cellTypeSuitcase,
             icon: LucideIcons.luggage,
           ),
           _LegendChip(
             color: Color(0xFFD97706),
-            label: 'Cửa mở',
+            label: context.l10n.lockerDoorOpen,
             icon: LucideIcons.doorOpen,
           ),
           _LegendChip(
             color: Color(0xFF64748B),
-            label: 'Cửa đóng',
+            label: context.l10n.lockerDoorClosed,
             icon: LucideIcons.doorClosed,
           ),
         ],
@@ -1623,9 +1626,9 @@ class _ScreenTile extends StatelessWidget {
                             : const Color(0xFF94A3B8),
                       ),
                       const SizedBox(width: 3),
-                      const Expanded(
+                      Expanded(
                         child: Text(
-                          'Màn hình',
+                          context.l10n.lockerScreen,
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: 8.5,
@@ -1822,8 +1825,8 @@ class _KioskScreenDetailSheet extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        'Màn hình kiosk',
+                      Text(
+                        context.l10n.lockerKioskScreen,
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w800,
@@ -1873,7 +1876,7 @@ class _KioskScreenDetailSheet extends StatelessWidget {
                       ),
                       const SizedBox(width: 5),
                       Text(
-                        isOnline ? 'Trực tuyến' : 'Mất kết nối',
+                        isOnline ? context.l10n.commonOnline : context.l10n.commonDisconnected,
                         style: TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.w700,
@@ -1896,16 +1899,14 @@ class _KioskScreenDetailSheet extends StatelessWidget {
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(color: const Color(0xFFBBF7D0)),
               ),
-              child: const Row(
+              child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Icon(LucideIcons.info, size: 18, color: Color(0xFF16A34A)),
                   SizedBox(width: 10),
                   Expanded(
                     child: Text(
-                      'Tại màn hình kiosk, bạn có thể nhập mã PIN của đơn để mở ô, '
-                      'hoặc đăng nhập bằng cách quét mã QR trên kiosk với nút quét '
-                      'ở trang chủ ứng dụng.',
+                      context.l10n.lockerKioskHelp,
                       style: TextStyle(
                         fontSize: 12,
                         color: Color(0xFF15803D),
@@ -1919,9 +1920,8 @@ class _KioskScreenDetailSheet extends StatelessWidget {
             ),
             if (!isOnline) ...[
               const SizedBox(height: 10),
-              const Text(
-                'Tủ đang mất kết nối với máy chủ: màn hình có thể không phản hồi '
-                'và chưa đặt được ô mới.',
+              Text(
+                context.l10n.lockerKioskOffline,
                 style: TextStyle(
                   fontSize: 12,
                   color: Color(0xFFB91C1C),
@@ -1956,8 +1956,8 @@ class _KioskScreenDetailSheet extends StatelessWidget {
                   );
                 },
                 icon: const Icon(LucideIcons.alertCircle, size: 16),
-                label: const Text(
-                  'Báo sự cố màn hình kiosk',
+                label: Text(
+                  context.l10n.lockerReportKioskIssue,
                   style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
                 ),
               ),
@@ -1975,8 +1975,8 @@ class _KioskScreenDetailSheet extends StatelessWidget {
                   elevation: 0,
                 ),
                 onPressed: () => Navigator.pop(context),
-                child: const Text(
-                  'Đóng',
+                child: Text(
+                  context.l10n.commonClose,
                   style: TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.w700,
@@ -2188,7 +2188,7 @@ class _CellTile extends StatelessWidget {
                   borderRadius: BorderRadius.circular(999),
                 ),
                 child: Text(
-                  _isFault ? 'HỎNG' : 'CHỜ KIỂM TRA',
+                  _isFault ? context.l10n.lockerBrokenUpper : context.l10n.lockerPendingCheckUpper,
                   style: TextStyle(
                     color: _isFault
                         ? const Color(0xFFDC2626)
@@ -2249,19 +2249,19 @@ class _CellTile extends StatelessWidget {
 
     final String statusText;
     if (_isFault) {
-      statusText = 'Hỏng';
+      statusText = L10n.current.commonBroken;
     } else if (_isPendingCheck) {
-      statusText = 'Chờ kiểm tra';
+      statusText = L10n.current.lockerPendingCheck;
     } else if (_isCleaning) {
-      statusText = 'Vệ sinh';
+      statusText = L10n.current.lockerCleaning;
     } else if (_status == 'OCCUPIED' || _status == 'IN_USE') {
-      statusText = 'Đang dùng';
+      statusText = L10n.current.commonInUseShort;
     } else if (_status == 'RESERVED') {
-      statusText = 'Đã đặt';
+      statusText = L10n.current.commonReservedShort;
     } else if (_isDrone && _isAvailable) {
-      statusText = 'Nhận Drone';
+      statusText = L10n.current.lockerDroneReceive;
     } else if (_isAvailable) {
-      statusText = 'Sẵn sàng';
+      statusText = L10n.current.lockerReady;
     } else {
       statusText = _status;
     }
@@ -2280,7 +2280,7 @@ class _CellTile extends StatelessWidget {
             children: [
               Flexible(
                 child: Text(
-                  'Ô #${_boxNumber ?? '?'}$boxEmoji',
+                  '${L10n.current.boxHash(_boxNumber ?? '?')}$boxEmoji',
                   style: TextStyle(
                     color: _fg,
                     fontSize: 10,
@@ -2385,18 +2385,18 @@ class _BookingSheet extends StatelessWidget {
   bool get _isXl => LockerLayoutHelper.isXl(cell);
 
   String get _sizeVi => switch ((cell['size'] as String?) ?? '') {
-    'SMALL' => 'Nhỏ (S)',
-    'MEDIUM' => 'Vừa (M)',
-    'LARGE' => 'Lớn (L)',
-    _ => _isXl ? 'Vali cỡ lớn (XL)' : ((cell['cellType'] as String?) ?? '—'),
+    'SMALL' => L10n.current.sizeSmall,
+    'MEDIUM' => L10n.current.sizeMedium,
+    'LARGE' => L10n.current.sizeLarge,
+    _ => _isXl ? L10n.current.sizeXlSuitcase : ((cell['cellType'] as String?) ?? '—'),
   };
 
   String get _boxLabel {
     final boxNum = (cell['boxNumber'] as num?)?.toInt();
-    if (boxNum != null) return 'Ô số $boxNum';
+    if (boxNum != null) return L10n.current.boxNumberLabel(boxNum);
     final r = (cell['rowIndex'] as num?)?.toInt() ?? 0;
     final c = (cell['colIndex'] as num?)?.toInt() ?? 0;
-    return 'Hàng ${r + 1}, cột ${c + 1}';
+    return L10n.current.rowCol(r + 1, c + 1);
   }
 
   @override
@@ -2460,7 +2460,7 @@ class _BookingSheet extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      _isXl ? 'Ô tủ vali trống' : 'Ô tủ trống',
+                      _isXl ? context.l10n.lockerEmptySuitcaseBox : context.l10n.lockerEmptyBox,
                       style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w800,
@@ -2495,20 +2495,20 @@ class _BookingSheet extends StatelessWidget {
               children: [
                 _SheetInfoTile(
                   icon: Icons.straighten_rounded,
-                  label: 'Kích cỡ',
+                  label: context.l10n.commonSize,
                   value: _sizeVi,
                 ),
                 const _VerticalDivider(),
                 _SheetInfoTile(
                   icon: Icons.tag_rounded,
-                  label: 'Vị trí',
+                  label: context.l10n.commonLocation,
                   value: _boxLabel,
                 ),
                 const _VerticalDivider(),
                 _SheetInfoTile(
                   icon: Icons.check_circle_outline_rounded,
-                  label: 'Trạng thái',
-                  value: 'Trống',
+                  label: context.l10n.commonStatus,
+                  value: context.l10n.commonEmpty,
                   valueColor: AislBrand.cyan,
                 ),
               ],
@@ -2516,8 +2516,8 @@ class _BookingSheet extends StatelessWidget {
           ),
           const SizedBox(height: 20),
 
-          const Text(
-            'Bạn muốn làm gì với ô tủ này?',
+          Text(
+            context.l10n.lockerWhatToDo,
             style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w600,
@@ -2532,8 +2532,8 @@ class _BookingSheet extends StatelessWidget {
               Expanded(
                 child: _ServiceButton(
                   lottieAsset: AppLottieAssets.box,
-                  label: 'Thuê tủ',
-                  sublabel: 'Theo giờ hoặc ngày',
+                  label: context.l10n.homeRentLocker,
+                  sublabel: context.l10n.lockerRentSubtitle,
                   gradient: const LinearGradient(
                     colors: [AislBrand.navy, AislBrand.blue],
                     begin: Alignment.topLeft,
@@ -2547,8 +2547,8 @@ class _BookingSheet extends StatelessWidget {
                 Expanded(
                   child: _ServiceButton(
                     lottieAsset: AppLottieAssets.box,
-                    label: 'Gửi hàng',
-                    sublabel: 'Chuyển C2C',
+                    label: context.l10n.lockerSendParcel,
+                    sublabel: context.l10n.lockerSendSubtitle,
                     gradient: const LinearGradient(
                       colors: [Color(0xFF1D4ED8), Color(0xFF0284C7)],
                       begin: Alignment.topLeft,
@@ -2562,8 +2562,8 @@ class _BookingSheet extends StatelessWidget {
           ),
           if (onSend == null) ...[
             const SizedBox(height: 10),
-            const Text(
-              'Ô vali chỉ dùng để thuê giữ đồ, không nhận gửi hàng.',
+            Text(
+              context.l10n.lockerSuitcaseRentOnly,
               textAlign: TextAlign.center,
               style: TextStyle(fontSize: 12, color: AislBrand.textMuted),
             ),
@@ -2591,8 +2591,8 @@ class _BookingSheet extends StatelessWidget {
               size: 14,
               color: Color(0xFFEF4444),
             ),
-            label: const Text(
-              'Gặp sự cố với ô này? Báo cáo ngay',
+            label: Text(
+              context.l10n.lockerReportBoxIssue,
               style: TextStyle(
                 fontSize: 12,
                 color: Color(0xFFEF4444),
@@ -2783,7 +2783,7 @@ class _LayoutErrorRow extends StatelessWidget {
           TextButton.icon(
             onPressed: onRetry,
             icon: const Icon(LucideIcons.refreshCcw, size: 14),
-            label: const Text('Thử lại'),
+            label: Text(context.l10n.commonRetry),
             style: TextButton.styleFrom(foregroundColor: AislBrand.navy),
           ),
         ],
@@ -2821,8 +2821,8 @@ class _ErrorView extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
-            const Text(
-              'Không tải được dữ liệu',
+            Text(
+              context.l10n.commonLoadFailedData,
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w700,
@@ -2839,7 +2839,7 @@ class _ErrorView extends StatelessWidget {
             FilledButton.icon(
               onPressed: onRetry,
               icon: const Icon(LucideIcons.refreshCcw, size: 16),
-              label: const Text('Thử lại'),
+              label: Text(context.l10n.commonRetry),
               style: FilledButton.styleFrom(backgroundColor: AislBrand.navy),
             ),
           ],
@@ -2874,8 +2874,8 @@ class _EmptyView extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 20),
-            const Text(
-              'Chưa có tủ locker',
+            Text(
+              context.l10n.lockerNoLockers,
               style: TextStyle(
                 fontSize: 17,
                 fontWeight: FontWeight.w700,
@@ -2883,8 +2883,8 @@ class _EmptyView extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 8),
-            const Text(
-              'Cửa hàng này chưa có tủ locker đang hoạt động.',
+            Text(
+              context.l10n.lockerStoreNoActiveLockers,
               style: TextStyle(fontSize: 14, color: AislBrand.textMuted),
               textAlign: TextAlign.center,
             ),

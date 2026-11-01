@@ -26,6 +26,7 @@ import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/op
     show statusLabel, typeLabel, statusColor, fmtDateTime;
 import 'package:smart_laundry_locker/shared/widgets/app_lottie.dart';
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key});
@@ -401,7 +402,7 @@ class _HomePageState extends ConsumerState<HomePage>
   }
 
   String _resolveDisplayName(UserProfile? profile) {
-    if (profile == null) return 'Bạn';
+    if (profile == null) return context.l10n.commonYou;
     final name = profile.fullName.trim();
     if (name.isNotEmpty && name.toLowerCase() != 'người dùng') {
       return _capitalizeWords(name);
@@ -414,7 +415,7 @@ class _HomePageState extends ConsumerState<HomePage>
     if (phone.isNotEmpty) {
       return phone;
     }
-    return 'Bạn';
+    return context.l10n.commonYou;
   }
 
   String _capitalizeWords(String input) {
@@ -438,7 +439,7 @@ class _HomePageState extends ConsumerState<HomePage>
           final dpr = MediaQuery.devicePixelRatioOf(context);
           return Center(
             child: Semantics(
-              label: 'Gửi hàng bằng drone',
+              label: context.l10n.homeSendByDrone,
               button: true,
               child: SizedBox.fromSize(
                 size: size,
@@ -484,7 +485,7 @@ class _HomePageState extends ConsumerState<HomePage>
             context: context,
             icon: LucideIcons.store,
             lottieAsset: AppLottieAssets.cuaHang,
-            label: 'Điểm gửi',
+            label: context.l10n.homeDropPoints,
             isPrimary: false,
             textColor: textColor,
             onTap: () => context.push(AppRouter.stores),
@@ -493,7 +494,7 @@ class _HomePageState extends ConsumerState<HomePage>
             context: context,
             icon: LucideIcons.box,
             lottieAsset: AppLottieAssets.thueTu,
-            label: 'Thuê tủ',
+            label: context.l10n.homeRentLocker,
             isPrimary: false,
             textColor: textColor,
             onTap: () => context.go(AppRouter.lockers),
@@ -502,7 +503,7 @@ class _HomePageState extends ConsumerState<HomePage>
             context: context,
             icon: LucideIcons.calendarClock,
             lottieAsset: AppLottieAssets.donTu,
-            label: 'Đơn tủ',
+            label: context.l10n.homeLockerOrders,
             isPrimary: false,
             textColor: textColor,
             onTap: () => context.go(AppRouter.orders),
@@ -510,7 +511,7 @@ class _HomePageState extends ConsumerState<HomePage>
           _buildQuickBadgeItem(
             context: context,
             icon: LucideIcons.ellipsis,
-            label: 'Tiện ích',
+            label: context.l10n.homeUtilities,
             isPrimary: false,
             textColor: textColor,
             onTap: () => _showMoreUtilitiesSheet(context),
@@ -589,7 +590,7 @@ class _HomePageState extends ConsumerState<HomePage>
       rawType.toUpperCase().contains('DRONE');
 
   static String _orderTypeLabel(String rawType) =>
-      _isDroneOrder(rawType) ? 'Giao bằng drone' : typeLabel(rawType);
+      _isDroneOrder(rawType) ? L10n.current.homeDroneDelivery : typeLabel(rawType);
 
   /// Chặng hiển thị: đơn drone dùng `deliveryStage`, đơn khác dùng `status`.
   static String _displayStatus(Map<String, dynamic> order) {
@@ -634,11 +635,14 @@ class _HomePageState extends ConsumerState<HomePage>
     final subColor = isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B);
 
     final code = '${order['orderCode'] ?? ''}'.trim();
-    final orderCode = code.isNotEmpty ? '#$code' : 'Đơn #${order['id'] ?? ''}';
+    final orderCode =
+        code.isNotEmpty ? '#$code' : context.l10n.orderHash(order['id'] ?? '');
     final rawType = order['type'] as String? ?? '';
     final boxNum = order['boxNumber'];
     final typeName = _orderTypeLabel(rawType);
-    final subtitle = boxNum != null ? '$typeName • Ô số $boxNum' : typeName;
+    final subtitle = boxNum != null
+        ? '$typeName • ${context.l10n.boxNumberLabel(boxNum)}'
+        : typeName;
     final routeText = (order['lockerName'] as String?)?.trim() ?? '';
     final rawStatus = _displayStatus(order);
     final displayStatus = statusLabel(rawStatus);
@@ -656,7 +660,7 @@ class _HomePageState extends ConsumerState<HomePage>
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Đơn đang xử lý',
+                context.l10n.homeActiveOrders,
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w800,
@@ -670,7 +674,7 @@ class _HomePageState extends ConsumerState<HomePage>
                 child: Row(
                   children: [
                     Text(
-                      'Xem tất cả',
+                      context.l10n.commonSeeAllLower,
                       style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
@@ -826,7 +830,7 @@ class _HomePageState extends ConsumerState<HomePage>
                           if (deadlineStr != null) ...[
                             const SizedBox(height: 6),
                             Text(
-                              'Hạn lấy đồ',
+                              context.l10n.homePickupDeadline,
                               style: TextStyle(
                                 fontSize: 10.5,
                                 color: subColor,
@@ -888,8 +892,8 @@ class _HomePageState extends ConsumerState<HomePage>
       final stage = '${order['deliveryStage'] ?? ''}'.toUpperCase();
       final dropReported = stage == 'DROP_REPORTED';
       titles = dropReported
-          ? const ['Tạo đơn', 'Đội bay nhận', 'Đang bay', 'Báo rơi kiện']
-          : const ['Tạo đơn', 'Đội bay nhận', 'Đang bay', 'Vào tủ nhận'];
+          ? [L10n.current.stepCreateOrder, L10n.current.stepFlightTeamAccepted, L10n.current.stepFlying, L10n.current.stepDropReported]
+          : [L10n.current.stepCreateOrder, L10n.current.stepFlightTeamAccepted, L10n.current.stepFlying, L10n.current.stepIntoLocker];
       activeStepCount = switch (stage) {
         'ACCEPTED' || 'LOADING_CONFIRMED' => 2,
         'LAUNCHING' ||
@@ -903,7 +907,7 @@ class _HomePageState extends ConsumerState<HomePage>
         _ => 1,
       };
     } else if (isRental) {
-      titles = const ['Tạo đơn', 'Bỏ vào tủ', 'Đang lưu tủ', 'Hoàn tất'];
+      titles = [L10n.current.stepCreateOrder, L10n.current.stepDropIntoLocker, L10n.current.stepStoring, L10n.current.commonDone];
       if (rawStatus == 'INITIALIZED') {
         activeStepCount = 1;
       } else if (rawStatus == 'STORING') {
@@ -912,7 +916,7 @@ class _HomePageState extends ConsumerState<HomePage>
         activeStepCount = 2;
       }
     } else {
-      titles = const ['Tạo đơn', 'Đã vào tủ', 'Vận chuyển', 'Chờ nhận'];
+      titles = [L10n.current.stepCreateOrder, L10n.current.stepInLocker, L10n.current.stepTransit, L10n.current.stepAwaitingPickup];
       if (rawStatus == 'INITIALIZED') {
         activeStepCount = 1;
       } else if (rawStatus == 'STORING') {
@@ -1185,7 +1189,7 @@ class _HomePageState extends ConsumerState<HomePage>
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  'Tiện ích & Dịch vụ',
+                  context.l10n.homeUtilitiesServices,
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w800,
@@ -1201,7 +1205,7 @@ class _HomePageState extends ConsumerState<HomePage>
                       ctx,
                       icon: LucideIcons.gift,
                       lottieAsset: AppLottieAssets.uuDai,
-                      label: 'Ưu đãi',
+                      label: context.l10n.commonOffers,
                       color: const Color(0xFFEC4899),
                       onTap: () {
                         Navigator.pop(ctx);
@@ -1212,7 +1216,7 @@ class _HomePageState extends ConsumerState<HomePage>
                       ctx,
                       icon: LucideIcons.triangleAlert,
                       lottieAsset: AppLottieAssets.baoSuCo,
-                      label: 'Báo sự cố',
+                      label: context.l10n.commonReportIssue,
                       color: const Color(0xFFF59E0B),
                       onTap: () {
                         Navigator.pop(ctx);
@@ -1223,7 +1227,7 @@ class _HomePageState extends ConsumerState<HomePage>
                       ctx,
                       icon: LucideIcons.clipboardList,
                       lottieAsset: AppLottieAssets.baoCao,
-                      label: 'Báo cáo',
+                      label: context.l10n.commonReports,
                       color: const Color(0xFF3B82F6),
                       onTap: () {
                         Navigator.pop(ctx);
@@ -1234,7 +1238,7 @@ class _HomePageState extends ConsumerState<HomePage>
                       ctx,
                       icon: LucideIcons.store,
                       lottieAsset: AppLottieAssets.cuaHang,
-                      label: 'Điểm gửi',
+                      label: context.l10n.homeDropPoints,
                       color: const Color(0xFF8B5CF6),
                       onTap: () {
                         Navigator.pop(ctx);
@@ -1244,7 +1248,7 @@ class _HomePageState extends ConsumerState<HomePage>
                     _buildUtilityItem(
                       ctx,
                       icon: LucideIcons.heart,
-                      label: 'Yêu thích',
+                      label: context.l10n.commonFavorites,
                       color: const Color(0xFFEF4444),
                       onTap: () {
                         Navigator.pop(ctx);
@@ -1255,7 +1259,7 @@ class _HomePageState extends ConsumerState<HomePage>
                       ctx,
                       icon: Icons.flight_takeoff_rounded,
                       lottieAsset: AppLottieAssets.airplaneBox,
-                      label: 'Gửi drone',
+                      label: context.l10n.homeSendDrone,
                       color: const Color(0xFF6366F1),
                       onTap: () {
                         Navigator.pop(ctx);
@@ -1265,7 +1269,7 @@ class _HomePageState extends ConsumerState<HomePage>
                     _buildUtilityItem(
                       ctx,
                       icon: LucideIcons.bell,
-                      label: 'Thông báo',
+                      label: context.l10n.commonNotifications,
                       color: const Color(0xFF06B6D4),
                       onTap: () {
                         Navigator.pop(ctx);
@@ -1348,7 +1352,7 @@ class _HomePageState extends ConsumerState<HomePage>
           padding: const EdgeInsets.symmetric(horizontal: 20),
           child: BrandSectionHeader(
             icon: LucideIcons.store,
-            title: 'Các nơi đặt kiosk',
+            title: context.l10n.homeKioskLocations,
             onSeeAll: () => context.go(AppRouter.lockers),
             highlightColor: const Color(0xFF0F172A),
             highlightRollColor: const Color(0xFF020617),
@@ -1397,7 +1401,7 @@ class _HomePageState extends ConsumerState<HomePage>
         padding: const EdgeInsets.symmetric(horizontal: 20),
         child: _storeMessage(
           LucideIcons.store,
-          'Chưa có nơi đặt locker nào',
+          context.l10n.homeNoLockerLocations,
           const Color(0xFFA0AEC0),
         ),
       );
@@ -1481,12 +1485,12 @@ class _HomePageState extends ConsumerState<HomePage>
                   left: 12,
                   child: BrandStatusBadge(
                     label: location.status == 'MAINTENANCE'
-                        ? 'Bảo trì'
+                        ? context.l10n.enumMaintenance
                         : (location.status == 'DISCONNECTED'
-                              ? 'Mất kết nối'
+                              ? context.l10n.commonDisconnected
                               : (location.isActive
-                                    ? 'Hoạt động'
-                                    : 'Tạm ngưng')),
+                                    ? context.l10n.commonStatusActive
+                                    : context.l10n.commonStatusSuspended)),
                     dotColor: location.status == 'MAINTENANCE'
                         ? const Color(0xFFF59E0B)
                         : (location.status == 'DISCONNECTED'
@@ -1535,7 +1539,7 @@ class _HomePageState extends ConsumerState<HomePage>
                             child: Text(
                               location.address.isNotEmpty
                                   ? location.address
-                                  : 'Chưa có địa chỉ',
+                                  : context.l10n.commonNoAddress,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: const TextStyle(
@@ -1610,7 +1614,7 @@ class _HomePageState extends ConsumerState<HomePage>
           padding: const EdgeInsets.symmetric(horizontal: 20),
           child: BrandSectionHeader(
             icon: LucideIcons.zap,
-            title: 'Ưu đãi đang diễn ra',
+            title: context.l10n.homeOngoingOffers,
             lottieAsset: lottieAsset,
             onSeeAll: () => context.push(AppRouter.promotions),
             highlightColor: const Color(0xFFE11D48),
@@ -1889,7 +1893,7 @@ class _PromotionCard extends StatelessWidget {
     Clipboard.setData(ClipboardData(text: promo.code));
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('Đã sao chép: ${promo.code}'),
+        content: Text(context.l10n.commonCopiedValue(promo.code)),
         backgroundColor: AislBrand.navy,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),

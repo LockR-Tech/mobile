@@ -13,6 +13,7 @@ import 'package:smart_laundry_locker/features/qr_login/presentation/providers/qr
 import 'package:smart_laundry_locker/shared/widgets/unauthenticated_placeholder.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:provider/provider.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 /// Quét mã QR trên màn hình kiosk để đăng nhập tài khoản Lock.R tại tủ
 /// (CONTRACTS §1): QR `lockr://kiosk-login?sid=&code=` ⇒ hỏi xác nhận ⇒ gửi
@@ -105,7 +106,7 @@ class _QrScannerPageState extends State<QrScannerPage>
     setState(() => _isProcessing = true);
     unawaited(_scannerController.stop());
 
-    SmartDialog.showLoading<void>(msg: 'Đang gửi lệnh mở ô...');
+    SmartDialog.showLoading<void>(msg: context.l10n.qrSendingOpen);
     bool ok;
     String message;
     try {
@@ -122,12 +123,12 @@ class _QrScannerPageState extends State<QrScannerPage>
     await showDialog<void>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text(ok ? 'Đã mở ô (thử tủ)' : 'Chưa mở được ô'),
-        content: Text('Tủ #${qr.lockerId} · ô #${qr.boxId}\n$message'),
+        title: Text(ok ? context.l10n.qrOpenedTest : context.l10n.qrNotOpened),
+        content: Text('${context.l10n.qrLockerBox(qr.lockerId, qr.boxId)}\n$message'),
         actions: [
           FilledButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Đã hiểu'),
+            child: Text(context.l10n.commonGotIt),
           ),
         ],
       ),
@@ -146,7 +147,7 @@ class _QrScannerPageState extends State<QrScannerPage>
     _lastInvalidRaw = raw;
     _lastInvalidAt = now;
     SmartDialog.showToast(
-      'Đây không phải mã đăng nhập kiosk hay mã mở ô Lock.R. Hãy quét mã QR đang hiện trên màn hình tủ.',
+      context.l10n.qrNotLockrCode,
       displayTime: const Duration(seconds: 3),
     );
   }
@@ -171,14 +172,14 @@ class _QrScannerPageState extends State<QrScannerPage>
     }
 
     final provider = context.read<QrLoginProvider>();
-    SmartDialog.showLoading<void>(msg: 'Đang xác nhận đăng nhập kiosk...');
+    SmartDialog.showLoading<void>(msg: context.l10n.qrConfirmingKiosk);
     final result = await provider.confirmKioskLogin(payload);
     SmartDialog.dismiss<void>(status: SmartStatus.loading);
     if (!mounted) return;
 
     if (result != null) {
-      final where = result.lockerName == null ? '' : ' tại ${result.lockerName}';
-      SmartDialog.showToast('Đã đăng nhập trên kiosk$where');
+      final where = result.lockerName == null ? '' : context.l10n.qrAtLocker('${result.lockerName}');
+      SmartDialog.showToast(context.l10n.qrKioskLoggedIn(where));
       AppRouter.backOrHome(context);
       return;
     }
@@ -186,14 +187,14 @@ class _QrScannerPageState extends State<QrScannerPage>
     await showDialog<void>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Chưa đăng nhập được kiosk'),
+        title: Text(context.l10n.qrKioskLoginFailedTitle),
         content: Text(
-          provider.error ?? 'Không xác nhận được đăng nhập kiosk. Vui lòng thử lại.',
+          provider.error ?? context.l10n.qrKioskLoginFailed,
         ),
         actions: [
           FilledButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Đã hiểu'),
+            child: Text(context.l10n.commonGotIt),
           ),
         ],
       ),
@@ -229,8 +230,8 @@ class _QrScannerPageState extends State<QrScannerPage>
               backgroundColor: Colors.white,
               elevation: 0,
               centerTitle: true,
-              title: const Text(
-                'Quét mã QR',
+              title: Text(
+                context.l10n.qrScan,
                 style: TextStyle(
                   color: Colors.black87,
                   fontSize: 18,
@@ -242,8 +243,8 @@ class _QrScannerPageState extends State<QrScannerPage>
                 onPressed: () => AppRouter.backOrHome(context),
               ),
             ),
-            body: const UnauthenticatedPlaceholder(
-              message: 'Bạn cần đăng nhập để quét mã QR',
+            body: UnauthenticatedPlaceholder(
+              message: context.l10n.qrLoginToScan,
             ),
           );
         }
@@ -254,8 +255,8 @@ class _QrScannerPageState extends State<QrScannerPage>
           appBar: AppBar(
             backgroundColor: Colors.transparent,
             elevation: 0,
-            title: const Text(
-              'Đăng nhập kiosk bằng QR',
+            title: Text(
+              context.l10n.qrKioskLoginByQr,
               style: TextStyle(
                 color: Colors.white,
                 fontSize: 18,
@@ -327,8 +328,8 @@ class _QrScannerPageState extends State<QrScannerPage>
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Text(
-                      'Đưa khung vào mã QR trên màn hình kiosk. Bạn sẽ được hỏi lại trước khi đăng nhập.',
+                    Text(
+                      context.l10n.qrAimHint,
                       textAlign: TextAlign.center,
                       style: TextStyle(color: Colors.white, fontSize: 13, height: 1.4),
                     ),
@@ -345,7 +346,7 @@ class _QrScannerPageState extends State<QrScannerPage>
                       ),
                       onPressed: _isProcessing ? null : _openManualEntry,
                       icon: const Icon(LucideIcons.keyboard, size: 18),
-                      label: const Text('Nhập mã thủ công'),
+                      label: Text(context.l10n.qrEnterManually),
                     ),
                   ],
                 ),
@@ -368,10 +369,10 @@ class _CameraErrorView extends StatelessWidget {
   Widget build(BuildContext context) {
     final message = switch (error.errorCode) {
       MobileScannerErrorCode.permissionDenied =>
-        'Ứng dụng chưa được cấp quyền camera. Hãy cấp quyền trong cài đặt máy hoặc nhập mã thủ công.',
+        context.l10n.qrCameraPermission,
       MobileScannerErrorCode.unsupported =>
-        'Thiết bị không hỗ trợ quét mã bằng camera. Hãy nhập mã thủ công.',
-      _ => 'Không mở được camera. Hãy thử lại hoặc nhập mã thủ công.',
+        context.l10n.qrCameraUnsupported,
+      _ => context.l10n.qrCameraFailed,
     };
     return Container(
       color: Colors.black,
@@ -391,7 +392,7 @@ class _CameraErrorView extends StatelessWidget {
           FilledButton.icon(
             onPressed: onManualEntry,
             icon: const Icon(LucideIcons.keyboard, size: 18),
-            label: const Text('Nhập mã thủ công'),
+            label: Text(context.l10n.qrEnterManually),
           ),
         ],
       ),
@@ -439,15 +440,14 @@ class _KioskLoginConfirmSheet extends StatelessWidget {
             color: AISLShadcnTheme.navyPrimary,
           ),
           const SizedBox(height: 12),
-          const Text(
-            'Đăng nhập kiosk?',
+          Text(
+            context.l10n.qrKioskLoginQuestion,
             textAlign: TextAlign.center,
             style: TextStyle(fontSize: 19, fontWeight: FontWeight.w800),
           ),
           const SizedBox(height: 8),
-          const Text(
-            'Tài khoản Lock.R của bạn sẽ được đăng nhập trên kiosk vừa hiện mã. '
-            'Chỉ xác nhận khi bạn đang đứng trước kiosk đó.',
+          Text(
+            context.l10n.qrKioskLoginBody,
             textAlign: TextAlign.center,
             style: TextStyle(fontSize: 13.5, color: Color(0xFF475569), height: 1.4),
           ),
@@ -460,8 +460,8 @@ class _KioskLoginConfirmSheet extends StatelessWidget {
             ),
             child: Column(
               children: [
-                const Text(
-                  'Mã xác nhận trên kiosk',
+                Text(
+                  context.l10n.qrKioskConfirmCode,
                   style: TextStyle(fontSize: 12, color: Color(0xFF64748B)),
                 ),
                 const SizedBox(height: 4),
@@ -485,12 +485,12 @@ class _KioskLoginConfirmSheet extends StatelessWidget {
               padding: const EdgeInsets.symmetric(vertical: 14),
             ),
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Đăng nhập kiosk'),
+            child: Text(context.l10n.qrKioskLogin),
           ),
           const SizedBox(height: 6),
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Huỷ'),
+            child: Text(context.l10n.commonCancelAlt),
           ),
         ],
       ),
@@ -526,7 +526,7 @@ class _ManualKioskCodeSheetState extends State<_ManualKioskCodeSheet> {
     if (payload == null) {
       setState(
         () => _error =
-            'Mã chưa đúng. Kiểm tra lại mã phiên và mã xác nhận đang hiện trên kiosk.',
+            context.l10n.qrWrongCode,
       );
       return;
     }
@@ -564,13 +564,13 @@ class _ManualKioskCodeSheetState extends State<_ManualKioskCodeSheet> {
               ),
             ),
             const SizedBox(height: 16),
-            const Text(
-              'Nhập mã đăng nhập kiosk',
+            Text(
+              context.l10n.qrEnterKioskCode,
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
             ),
             const SizedBox(height: 6),
-            const Text(
-              'Nhập mã phiên và mã xác nhận đang hiện dưới mã QR trên màn hình kiosk.',
+            Text(
+              context.l10n.qrEnterKioskCodeHint,
               style: TextStyle(fontSize: 13, color: Color(0xFF64748B)),
             ),
             const SizedBox(height: 14),
@@ -578,8 +578,8 @@ class _ManualKioskCodeSheetState extends State<_ManualKioskCodeSheet> {
               key: const ValueKey('kiosk-qr-sid'),
               controller: _sidController,
               autocorrect: false,
-              decoration: const InputDecoration(
-                labelText: 'Mã phiên',
+              decoration: InputDecoration(
+                labelText: context.l10n.qrSessionCode,
                 border: OutlineInputBorder(),
               ),
             ),
@@ -589,8 +589,8 @@ class _ManualKioskCodeSheetState extends State<_ManualKioskCodeSheet> {
               controller: _codeController,
               autocorrect: false,
               textCapitalization: TextCapitalization.characters,
-              decoration: const InputDecoration(
-                labelText: 'Mã xác nhận',
+              decoration: InputDecoration(
+                labelText: context.l10n.qrConfirmCode,
                 border: OutlineInputBorder(),
               ),
               onSubmitted: (_) => _submit(),
@@ -610,7 +610,7 @@ class _ManualKioskCodeSheetState extends State<_ManualKioskCodeSheet> {
                 padding: const EdgeInsets.symmetric(vertical: 14),
               ),
               onPressed: _submit,
-              child: const Text('Tiếp tục'),
+              child: Text(context.l10n.commonContinue),
             ),
           ],
         ),

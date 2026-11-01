@@ -3,6 +3,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
 
 import '../../data/models/assistant_models.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 /// Mục "Nguồn (n)" thu gọn dưới câu trả lời; mở ra thấy tên tài liệu, mục và
 /// câu được trích. Chạm một nguồn để xem nguyên văn trong bottom sheet.
@@ -41,7 +42,7 @@ class _AssistantSourcesSectionState extends State<AssistantSourcesSection> {
                   const SizedBox(width: 6),
                   Expanded(
                     child: Text(
-                      'Nguồn (${widget.sources.length})',
+                      context.l10n.aiSources(widget.sources.length),
                       style: TextStyle(
                         fontSize: 12.5,
                         fontWeight: FontWeight.w700,
@@ -158,7 +159,7 @@ Future<void> showAssistantSourceSheet(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'TRÍCH DẪN NGUỒN',
+                  context.l10n.aiCitationsUpper,
                   style: TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w700,
@@ -200,7 +201,7 @@ Future<void> showAssistantSourceSheet(
                       ),
                     ),
                     child: SelectableText(
-                      cited.isEmpty ? 'Không có đoạn trích.' : cited,
+                      cited.isEmpty ? context.l10n.aiNoExcerpt : cited,
                       style: TextStyle(
                         fontSize: 14.5,
                         height: 1.5,
@@ -211,7 +212,7 @@ Future<void> showAssistantSourceSheet(
                 ),
                 const SizedBox(height: 12),
                 Text(
-                  'Trích nguyên văn từ tài liệu chính thức của Lock.R.',
+                  context.l10n.aiVerbatim,
                   style: TextStyle(fontSize: 12, color: sheetContext.textMuted),
                 ),
               ],

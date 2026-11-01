@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:smart_laundry_locker/shared/widgets/app_lottie.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 /// Convenience extension so widgets can do `context.isDark`, `context.cardBg` etc.
 extension AislTheme on BuildContext {
@@ -316,7 +317,7 @@ class BrandHeroHeader extends StatelessWidget {
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 Text(
-                                  eyebrow ?? 'LOCK.R • HỆ THỐNG TỦ THÔNG MINH',
+                                  eyebrow ?? context.l10n.commonBrandEyebrow,
                                   style: const TextStyle(
                                     color: Color(0xFF94A3B8),
                                     fontSize: 10,
@@ -469,7 +470,7 @@ class BrandSectionHeader extends StatelessWidget {
     required this.title,
     this.lottieAsset,
     this.onSeeAll,
-    this.seeAllLabel = 'XEM TẤT CẢ',
+    this.seeAllLabel,
     this.highlightColor,
     this.highlightRollColor,
   });
@@ -478,7 +479,7 @@ class BrandSectionHeader extends StatelessWidget {
   final String title;
   final String? lottieAsset;
   final VoidCallback? onSeeAll;
-  final String seeAllLabel;
+  final String? seeAllLabel;
 
   /// Màu thân banner (bật chế độ highlight giống "Đang thịnh hành" Threads)
   final Color? highlightColor;
@@ -489,6 +490,7 @@ class BrandSectionHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         if (highlightColor == null) ...[
           Container(
@@ -523,15 +525,19 @@ class BrandSectionHeader extends StatelessWidget {
             ),
           ),
         ] else ...[
-          _HighlightBanner(
-            color: highlightColor!,
-            rollColor:
-                highlightRollColor ??
-                Color.lerp(highlightColor!, Colors.black, 0.30)!,
-            title: title,
-            lottieAsset: lottieAsset,
+          // Co lại khi tiêu đề + "Xem tất cả" rộng hơn màn hình (máy hẹp,
+          // cỡ chữ hệ thống lớn, tiêu đề tiếng Anh).
+          Flexible(
+            child: _HighlightBanner(
+              color: highlightColor!,
+              rollColor:
+                  highlightRollColor ??
+                  Color.lerp(highlightColor!, Colors.black, 0.30)!,
+              title: title,
+              lottieAsset: lottieAsset,
+            ),
           ),
-          const Spacer(),
+          if (onSeeAll != null) const SizedBox(width: 8),
         ],
         if (onSeeAll != null)
           GestureDetector(
@@ -541,7 +547,7 @@ class BrandSectionHeader extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  seeAllLabel,
+                  seeAllLabel ?? context.l10n.commonSeeAll,
                   style: const TextStyle(
                     fontSize: 10,
                     fontWeight: FontWeight.w700,
@@ -793,7 +799,15 @@ class _HighlightBannerState extends State<_HighlightBanner> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Text(widget.title, softWrap: false, style: _textStyle),
+                  Flexible(
+                    child: Text(
+                      widget.title,
+                      softWrap: false,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: _textStyle,
+                    ),
+                  ),
                   if (widget.lottieAsset != null) ...[
                     const SizedBox(width: _lottieSpacing),
                     AppLottie(

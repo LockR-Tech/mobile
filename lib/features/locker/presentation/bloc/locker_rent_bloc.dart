@@ -5,6 +5,7 @@ import 'package:smart_laundry_locker/features/locker/presentation/bloc/locker_re
 import 'package:smart_laundry_locker/features/locker/presentation/bloc/locker_rent_state.dart';
 import 'package:smart_laundry_locker/features/locker/infrastructure/models/fixed_rent_response_model.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 class LockerRentBloc extends Bloc<LockerRentEvent, LockerRentState> {
   final FixedRentUseCase _fixedRentUseCase;
@@ -54,7 +55,7 @@ class LockerRentBloc extends Bloc<LockerRentEvent, LockerRentState> {
         state.copyWith(
           isSubmitting: false,
           fixedRent: data,
-          successMessage: 'Thanh toán thành công',
+          successMessage: L10n.current.paymentSuccess,
           clearError: true,
         ),
       ),
@@ -89,7 +90,7 @@ class LockerRentBloc extends Bloc<LockerRentEvent, LockerRentState> {
         state.copyWith(
           isSubmitting: false,
           flexibleRent: FixedRentResponseModel.fromJson(data).entity,
-          successMessage: 'Thanh toán thành công',
+          successMessage: L10n.current.paymentSuccess,
           clearError: true,
         ),
       ),
@@ -124,8 +125,8 @@ class LockerRentBloc extends Bloc<LockerRentEvent, LockerRentState> {
         state.copyWith(
           isTogglingLocker: false,
           successMessage: event.type == LockerControlType.open
-              ? 'Đã gửi lệnh mở tủ.'
-              : 'Đã gửi lệnh đóng tủ.',
+              ? L10n.current.lockerOpenCommandSent
+              : L10n.current.lockerCloseCommandSent,
           clearError: true,
         ),
       ),

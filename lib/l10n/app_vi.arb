@@ -1,0 +1,4609 @@
+{
+  "@@locale": "vi",
+  "commonRetry": "Thử lại",
+  "commonCancel": "Hủy",
+  "commonLogout": "Đăng xuất",
+  "commonLoggingOut": "Đang đăng xuất...",
+  "commonLoggedOut": "Đã đăng xuất",
+  "commonLogoutConfirm": "Bạn có chắc chắn muốn đăng xuất khỏi tài khoản?",
+  "commonNotifications": "Thông báo",
+  "commonTransactions": "Giao dịch",
+  "commonPayment": "Thanh toán",
+  "commonWebsite": "Website",
+  "commonTermsOfUse": "Điều khoản sử dụng",
+  "commonPrivacyPolicy": "Chính sách bảo mật",
+  "languageVietnamese": "Tiếng Việt",
+  "languageEnglish": "English",
+  "profileTitle": "Hồ sơ",
+  "profileSubtitle": "Quản lý tài khoản của bạn",
+  "profileLoading": "Đang tải hồ sơ...",
+  "profileLoadFailed": "Không tải được hồ sơ",
+  "profileLoadFailedDot": "Không tải được hồ sơ.",
+  "profileRefreshFailed": "Không làm mới được hồ sơ: {error}",
+  "@profileRefreshFailed": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "profileSectionAccount": "Tài khoản",
+  "profilePersonalInfo": "Thông tin cá nhân",
+  "profileRefundAccount": "Tài khoản nhận hoàn tiền",
+  "profileLoyalty": "Điểm thưởng",
+  "profileLoyaltySubtitle": "Điểm tích lũy, hạng thành viên và lịch sử",
+  "profileFaceReRegister": "Đăng ký lại khuôn mặt",
+  "profileFaceRegister": "Đăng ký khuôn mặt",
+  "profileSecurity": "Bảo mật",
+  "profileVouchers": "Ưu đãi & Quà tặng",
+  "profileSectionManage": "Quản lý",
+  "profileDelegations": "Đơn ủy quyền",
+  "profileRefunds": "Hoàn tiền",
+  "profileMyReports": "Báo cáo của tôi",
+  "profileBleTest": "Thử mở ô qua Bluetooth",
+  "profileSectionSettings": "Cài đặt",
+  "profileLanguage": "Ngôn ngữ",
+  "profileLanguageSheetSubtitle": "Chọn ngôn ngữ hiển thị cho ứng dụng",
+  "profileLanguageViDescription": "Hiển thị bằng tiếng Việt",
+  "profileLanguageEnDescription": "Hiển thị bằng tiếng Anh",
+  "profileTheme": "Giao diện",
+  "profileLocation": "Vị trí",
+  "profileLocationSubtitle": "Quyền truy cập vị trí để tìm tủ gần bạn",
+  "profileSectionSupport": "Hỗ trợ",
+  "profileAssistant": "Trợ lý AI Lock.R",
+  "profileAssistantSubtitle": "Hỏi đáp & hỗ trợ thông minh 24/7",
+  "profileQuickHelp": "Trợ giúp nhanh",
+  "profileQuickHelpSubtitle": "Hướng dẫn sử dụng & câu hỏi thường gặp",
+  "profileContact": "Liên hệ",
+  "profileTerms": "Điều khoản",
+  "profileHelpSendTitle": "Gửi hàng",
+  "profileHelpSendBody": "Chọn cửa hàng → chạm ô trống → Gửi hàng → thanh toán → dùng PIN/nút \"Mở tủ\" để bỏ hàng.",
+  "profileHelpRentTitle": "Thuê tủ giữ đồ",
+  "profileHelpRentBody": "Chọn ô trống → Thuê tủ → chọn số giờ → thanh toán → PIN dùng nhiều lần tới hết hạn.",
+  "profileHelpCantOpenTitle": "Không mở được ô?",
+  "profileHelpCantOpenBody": "Vào Đơn tủ → mở đơn → \"Báo ô lỗi\". Đội bảo trì sẽ xử lý và bạn nhận được thông báo.",
+  "profileHelpPaymentBody": "Mọi đơn thanh toán bằng chuyển khoản SePay (VietQR): quét mã hoặc bấm \"Thanh toán bằng app ngân hàng\" để mở app ngân hàng điền sẵn. Xem lại các khoản đã trả ở mục Giao dịch.",
+  "profileContactTitle": "Liên hệ hỗ trợ",
+  "profileContactEmail": "Email hỗ trợ",
+  "profileContactHours": "Giờ hỗ trợ",
+  "profileContactHoursValue": "08:00 – 22:00 hằng ngày",
+  "profileThemeSheetSubtitle": "Chọn chủ đề hiển thị cho ứng dụng",
+  "profileThemeLight": "Sáng",
+  "profileThemeLightDescription": "Giao diện nền trắng",
+  "profileThemeDark": "Tối",
+  "profileThemeDarkDescription": "Giao diện nền tối",
+  "profileThemeSystem": "Theo hệ thống",
+  "profileThemeSystemDescription": "Tự động theo cài đặt thiết bị",
+  "commonConfirm": "Xác nhận",
+  "commonContinue": "Tiếp tục",
+  "commonSave": "Lưu",
+  "commonLater": "Để sau",
+  "commonLoading": "Đang tải...",
+  "commonFullName": "Họ và tên",
+  "commonFullNameHint": "Nguyễn Văn A",
+  "commonPhoneNumber": "Số điện thoại",
+  "commonPassword": "Mật khẩu",
+  "commonPhoneShort": "SĐT",
+  "authLogin": "Đăng nhập",
+  "authRegister": "Đăng ký",
+  "authCreateAccount": "Tạo tài khoản",
+  "authRegisterSuccess": "Đăng ký thành công!",
+  "authRegisterSuccessPleaseLogin": "Đăng ký thành công! Vui lòng đăng nhập.",
+  "authEnterIdentifierAndPassword": "Nhập email/SĐT và mật khẩu",
+  "authPleaseAcceptTerms": "Vui lòng đồng ý với Điều khoản sử dụng",
+  "authTagline": "Tủ thông minh • Giao nhận 24/7",
+  "authEmailOrPhone": "Email / Số điện thoại",
+  "authLoginWithOtp": "Đăng nhập bằng OTP",
+  "authForgotPasswordQuestion": "Quên mật khẩu?",
+  "authEnterFullName": "Vui lòng nhập họ và tên",
+  "authEnterEmail": "Vui lòng nhập email",
+  "authInvalidEmail": "Email không hợp lệ",
+  "authEnterPhone": "Vui lòng nhập số điện thoại",
+  "authEnterPassword": "Vui lòng nhập mật khẩu",
+  "authPasswordMin6": "Mật khẩu phải có ít nhất 6 ký tự",
+  "authAgreePrefix": "Tôi đồng ý với ",
+  "authOrContinueWith": "Hoặc tiếp tục với",
+  "authNoAccount": "Chưa có tài khoản? ",
+  "authHaveAccount": "Đã có tài khoản? ",
+  "authRegisterNow": "Đăng ký ngay",
+  "authEnterValidEmailForOtp": "Vui lòng nhập Email hợp lệ để nhận OTP",
+  "authEnterOtp": "Nhập mã OTP",
+  "authOtpSentTo": "Mã OTP đã được gửi đến {email}",
+  "@authOtpSentTo": {
+    "placeholders": {
+      "email": {}
+    }
+  },
+  "authOtpSendingTo": "Đang gửi mã OTP đến {email}...",
+  "@authOtpSendingTo": {
+    "placeholders": {
+      "email": {}
+    }
+  },
+  "authOtp6Digits": "Mã OTP (6 số)",
+  "authPasswordHint": "Nhập mật khẩu",
+  "authFaceLogin": "Đăng nhập khuôn mặt",
+  "authRegisterFailedRetry": "Đăng ký thất bại. Vui lòng thử lại.",
+  "authFaceMismatch": "Khuôn mặt không khớp hoặc chưa được đăng ký",
+  "authFaceAiBusy": "Hệ thống AI đang bận hoặc ảnh không hợp lệ",
+  "authLoginFailedRetry": "Đăng nhập thất bại. Vui lòng thử lại.",
+  "authNoTokenFromServer": "Không nhận được token xác thực từ server.",
+  "authFaceRegisterFailed": "Đăng ký khuôn mặt thất bại",
+  "authEmailNotRegistered": "Email chưa được đăng ký tài khoản. Vui lòng kiểm tra lại.",
+  "authOtpInvalidOrExpired": "Mã OTP không hợp lệ hoặc đã hết hạn.",
+  "authPasswordsDontMatch": "Mật khẩu nhập lại không khớp.",
+  "authResetPasswordFailed": "Không thể đặt lại mật khẩu. Vui lòng thử lại.",
+  "authEmailTaken": "Email đã được đăng ký. Vui lòng dùng email khác.",
+  "authPhoneTaken": "Số điện thoại đã được đăng ký. Vui lòng dùng số khác.",
+  "authEmailOrPhoneTaken": "Email hoặc số điện thoại đã được đăng ký.",
+  "authRegisterServerError": "Lỗi server khi đăng ký. Vui lòng thử lại.",
+  "authOtpServerTokenError": "Mã OTP đúng nhưng hệ thống xác thực đang lỗi nội bộ (chưa trả được token). Vui lòng thử lại sau ít phút.",
+  "authOtpVerifyFailed": "Không thể xác thực OTP. Vui lòng thử lại.",
+  "authResetPasswordSuccess": "Đặt lại mật khẩu thành công. Vui lòng đăng nhập bằng mật khẩu mới.",
+  "authEnterValidEmail": "Vui lòng nhập email hợp lệ.",
+  "authOtpMustBe6Digits": "Mã OTP gồm 6 chữ số.",
+  "authNewPasswordMin6": "Mật khẩu mới phải có ít nhất 6 ký tự.",
+  "authForgotPasswordTitle": "Quên mật khẩu",
+  "authEnterOtpAndNewPassword": "Nhập mã OTP & mật khẩu mới",
+  "authResetPassword": "Đặt lại mật khẩu",
+  "authResetOtpSentTo": "Mã OTP gồm 6 chữ số đã được gửi tới\n{email} (hết hạn sau 5 phút).",
+  "@authResetOtpSentTo": {
+    "placeholders": {
+      "email": {}
+    }
+  },
+  "authResetEnterEmail": "Nhập email đã đăng ký tài khoản.\nChúng tôi sẽ gửi mã OTP để đặt lại mật khẩu.",
+  "authSendOtp": "Gửi mã OTP",
+  "authResendOtp": "Gửi lại mã OTP",
+  "authOtpCode": "Mã OTP",
+  "authNewPassword": "Mật khẩu mới",
+  "authConfirmNewPassword": "Nhập lại mật khẩu mới",
+  "authPhoneLogin": "Đăng nhập bằng số điện thoại",
+  "authSmsSentTo": "Mã 6 số đã được gửi qua SMS tới {phone}.",
+  "@authSmsSentTo": {
+    "placeholders": {
+      "phone": {}
+    }
+  },
+  "authYourNumber": "số của bạn",
+  "authPhoneAutoCreateAccount": "Chưa có tài khoản? Hệ thống tự tạo tài khoản khi bạn xác nhận mã.",
+  "authPhoneFormatHint": "Nhập số nội địa (0xxx) hoặc quốc tế (+84xxx) đều được.",
+  "authChangePhone": "Đổi số điện thoại",
+  "authResendCodeIn": "Gửi lại mã ({seconds}s)",
+  "@authResendCodeIn": {
+    "placeholders": {
+      "seconds": {}
+    }
+  },
+  "authResendCode": "Gửi lại mã",
+  "authProfileSaved": "Đã lưu thông tin tài khoản",
+  "authProfileSaveFailed": "Không lưu được thông tin. Vui lòng thử lại.",
+  "authCompleteRegistration": "Hoàn tất đăng ký",
+  "authCompleteRegistrationBody": "Cho chúng tôi biết tên của bạn để hiển thị trên đơn hàng và khi liên hệ hỗ trợ.",
+  "authEmailOptional": "Email (không bắt buộc)",
+  "authBiometricReason": "Xác thực để mở Lock.R",
+  "authSplashTagline": "Hệ thống tủ khóa thông minh 24/7",
+  "authBiometricRequired": "Cần xác thực sinh trắc học để tiếp tục",
+  "authBiometricButton": "Xác thực vân tay / Face ID",
+  "authLogoutUsePassword": "Đăng xuất và dùng mật khẩu",
+  "authGoogleLoginFailed": "Đăng nhập Google thất bại",
+  "authFacebookLoginFailed": "Đăng nhập Facebook thất bại",
+  "authOtp6DigitsShort": "Mã OTP gồm 6 chữ số",
+  "authOtpConfirmFailed": "Không xác nhận được mã OTP. Vui lòng thử lại.",
+  "authOtpVerification": "Xác thực OTP",
+  "authCaptureFaceFirst": "Vui lòng lấy mẫu khuôn mặt trước",
+  "authPhoneLoginDisabled": "Đăng nhập bằng SĐT chưa được bật. Vui lòng dùng email để đăng nhập.",
+  "authOtpSendFailed": "Không gửi được mã OTP. Vui lòng thử lại.",
+  "authInvalidPhone": "Số điện thoại không hợp lệ. Vui lòng kiểm tra lại (VD: 0912345678).",
+  "authTooManyRequests": "Bạn đã yêu cầu mã quá nhiều lần. Vui lòng thử lại sau ít phút.",
+  "authSmsQuotaExceeded": "Hệ thống đã hết lượt gửi SMS trong hôm nay. Vui lòng thử lại sau hoặc đăng nhập bằng email.",
+  "authOtpWrong": "Mã OTP không đúng. Vui lòng kiểm tra lại.",
+  "authEnterOtpCode": "Vui lòng nhập mã OTP.",
+  "authOtpExpired": "Mã OTP đã hết hạn. Vui lòng bấm \"Gửi lại mã\".",
+  "authAppNotVerified": "Ứng dụng chưa được xác minh để gửi mã OTP. Vui lòng cập nhật ứng dụng hoặc dùng email để đăng nhập.",
+  "authRecaptchaFailed": "Xác minh reCAPTCHA không thành công. Vui lòng thử lại.",
+  "authSitePhoneNotAllowed": "Trang web này chưa được phép đăng nhập bằng SĐT. Vui lòng dùng email để đăng nhập.",
+  "authNoNetwork": "Không có kết nối mạng. Vui lòng kiểm tra Internet rồi thử lại.",
+  "authAccountDisabled": "Tài khoản này đã bị khoá. Vui lòng liên hệ hỗ trợ.",
+  "authVerificationCancelled": "Đã huỷ xác minh. Vui lòng thử lại.",
+  "authGooglePopupBlocked": "Trình duyệt đã chặn cửa sổ đăng nhập Google. Hãy cho phép cửa sổ bật lên rồi thử lại.",
+  "authGoogleLoginDisabled": "Đăng nhập bằng Google chưa được bật. Vui lòng dùng email để đăng nhập.",
+  "authSiteGoogleNotAllowed": "Trang web này chưa được phép đăng nhập bằng Google. Vui lòng dùng email để đăng nhập.",
+  "authGoogleEmailOtherProvider": "Email Google này đã gắn với cách đăng nhập khác. Vui lòng đăng nhập bằng cách bạn đã dùng trước đó.",
+  "authSessionVerifyFailed": "Không xác thực được phiên đăng nhập. Vui lòng thử lại.",
+  "commonCancelAlt": "Huỷ",
+  "commonClose": "Đóng",
+  "commonDone": "Hoàn tất",
+  "commonGotIt": "Đã hiểu",
+  "commonOpenSettings": "Mở Cài đặt",
+  "commonSearchHint": "Tìm kiếm...",
+  "commonSeeAll": "XEM TẤT CẢ",
+  "commonLoginRequiredFeature": "Bạn cần đăng nhập để sử dụng tính năng này",
+  "commonLoginTitleCase": "Đăng Nhập",
+  "commonRegisterTitleCase": "Đăng Ký",
+  "commonBrandEyebrow": "LOCK.R • HỆ THỐNG TỦ THÔNG MINH",
+  "commonUnknown": "Không xác định",
+  "commonUndetermined": "Chưa xác định",
+  "commonError": "Lỗi",
+  "commonSuccess": "Thành công",
+  "commonFailed": "Thất bại",
+  "commonPending": "Đang chờ",
+  "deadlineAt": "{time} ngày {date}",
+  "@deadlineAt": {
+    "placeholders": {
+      "time": {},
+      "date": {}
+    }
+  },
+  "navHome": "Trang chủ",
+  "navLockers": "Tủ",
+  "navAssistant": "Trợ lý AI",
+  "navOrders": "Đơn hàng",
+  "navProfile": "Hồ sơ",
+  "routerPolicy": "Chính sách",
+  "routerMissingDestination": "Thiếu toạ độ điểm đến.",
+  "routerDestination": "Điểm đến",
+  "backPressAgainToExit": "Bấm quay lại lần nữa để thoát",
+  "paymentMethodUnsupported": "Phương thức thanh toán này không còn được hỗ trợ. Vui lòng thanh toán bằng chuyển khoản SePay (VietQR).",
+  "qrExpired": "Mã QR hết hạn hoặc phiên đã hết hạn.",
+  "qrAlreadyUsed": "Mã QR đã được sử dụng.",
+  "errorTimeout": "Kết nối timeout. Vui lòng thử lại.",
+  "errorCannotConnect": "Không thể kết nối đến server. Kiểm tra kết nối mạng.",
+  "errorRequestCancelled": "Request đã bị hủy.",
+  "errorUnknown": "Đã xảy ra lỗi không xác định.",
+  "errorNoResponse": "Không có response từ server.",
+  "errorSessionExpired": "Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.",
+  "errorForbidden": "Bạn không có quyền thực hiện hành động này.",
+  "errorSystemBusy": "Hệ thống đang bận hoặc đang bảo trì. Vui lòng thử lại sau ít phút.",
+  "errorServer": "Lỗi server. Vui lòng thử lại sau.",
+  "errorNotSupportedYet": "Máy chủ chưa hỗ trợ chức năng này. Vui lòng thử lại sau.",
+  "errorGenericRetry": "Đã xảy ra lỗi. Vui lòng thử lại.",
+  "bleOpenedBox": "Đã mở ô {box}",
+  "@bleOpenedBox": {
+    "placeholders": {
+      "box": {}
+    }
+  },
+  "bleNotFound": "Không thấy tủ qua Bluetooth. Hãy đứng sát tủ (dưới 2 m) rồi thử lại.",
+  "bleConnectFailed": "Không kết nối được Bluetooth với tủ. Thử lại sau vài giây.",
+  "bleNoService": "Tủ chưa bật chức năng mở ô qua Bluetooth (bộ điều khiển cần cập nhật).",
+  "bleTimeout": "Tủ không trả lời. Kiểm tra ô đã mở chưa rồi thử lại.",
+  "bleOff": "Bluetooth của điện thoại đang tắt.",
+  "blePermissionDenied": "App chưa được cấp quyền Bluetooth.",
+  "bleUnsupported": "Thiết bị này không hỗ trợ Bluetooth (chỉ dùng được trên app Android/iOS).",
+  "bleBadCode": "Tủ không chấp nhận mã mở ô.",
+  "bleExpired": "Mã mở ô đã hết hạn. Bấm mở lại để lấy mã mới.",
+  "bleReplayed": "Mã này đã dùng rồi. Bấm mở lại để lấy mã mới.",
+  "bleWrongLocker": "Bạn đang kết nối nhầm tủ.",
+  "bleNoKey": "Tủ chưa tải được khoá kiểm mã từ máy chủ (cần có mạng một lần).",
+  "bleNotConfigured": "Tủ chưa được gán trên hệ thống.",
+  "bleInvalidSlot": "Ô này không có khoá điện nối vào bộ điều khiển.",
+  "bleOpenFailed": "Mở ô không thành công{suffix}.",
+  "@bleOpenFailed": {
+    "placeholders": {
+      "suffix": {}
+    }
+  },
+  "bleVeryClose": "Rất gần (~{distance}m)",
+  "@bleVeryClose": {
+    "placeholders": {
+      "distance": {}
+    }
+  },
+  "bleNear": "Gần tủ (~{distance}m)",
+  "@bleNear": {
+    "placeholders": {
+      "distance": {}
+    }
+  },
+  "bleAway": "Cách tủ ~{distance}m",
+  "@bleAway": {
+    "placeholders": {
+      "distance": {}
+    }
+  },
+  "notifEnableTitle": "Bật thông báo",
+  "notifEnableBody": "Bạn đã tắt quyền thông báo nên sẽ không nhận được cập nhật trạng thái giao hàng. Hãy vào Cài đặt để bật lại thông báo cho ứng dụng.",
+  "notifNew": "Thông báo mới",
+  "biometricOpenApp": "Xác thực để mở ứng dụng",
+  "enumLockerToLocker": "Giao từ tủ qua tủ",
+  "enumHomeToLocker": "Giao từ nhà tới tủ",
+  "enumPendingProcessing": "Đang chờ xử lý",
+  "enumAwaitingCourier": "Chờ người giao hàng",
+  "enumAwaitingPickup": "Chờ lấy hàng",
+  "enumActive": "Đang hoạt động",
+  "enumCompleted": "Đã hoàn tất",
+  "enumLockedByBalance": "Bị khóa do số dư",
+  "enumCancelled": "Đã hủy",
+  "enumPending": "Chờ xử lý",
+  "enumAwaitingDropoffConfirm": "Chờ xác nhận gửi hàng",
+  "enumInTransit": "Đang vận chuyển",
+  "enumInUse": "Đang sử dụng",
+  "enumOverdue": "Quá hạn",
+  "enumConsolidating": "Đang gom hàng",
+  "enumPickedUp": "Đã lấy hàng",
+  "enumAwaitingDropoff": "Chờ gửi hàng",
+  "enumAwaitingPayment": "Chờ thanh toán",
+  "enumUnpaid": "Chưa thanh toán",
+  "enumPaid": "Đã thanh toán",
+  "enumPartiallyPaid": "Thanh toán một phần",
+  "enumAwaitingRefund": "Chờ hoàn tiền",
+  "enumRefunded": "Đã hoàn tiền",
+  "enumTopUp": "Nạp tiền",
+  "enumRentalFee": "Phí thuê tủ",
+  "enumShippingFee": "Phí vận chuyển",
+  "enumOverdueFee": "Phí quá hạn",
+  "enumRefund": "Hoàn tiền",
+  "enumWalletTopUp": "Nạp tiền vào ví",
+  "enumWithdraw": "Rút tiền",
+  "enumShippingService": "Dịch vụ vận chuyển",
+  "enumPersonalRental": "Thuê tủ cá nhân",
+  "enumReady": "Sẵn sàng",
+  "enumReserved": "Đã đặt trước",
+  "enumLockedBalanceShort": "Khóa do số dư",
+  "enumFaulty": "Bị lỗi",
+  "enumPendingCheck": "Chờ kiểm tra",
+  "enumMaintenance": "Bảo trì",
+  "enumInitializing": "Đang khởi tạo",
+  "enumLocked": "Đã khóa",
+  "enumUnlocked": "Đã mở khóa",
+  "enumOpen": "Đang mở",
+  "enumClosed": "Đã đóng",
+  "enumOpening": "Đang mở...",
+  "enumClosing": "Đang đóng...",
+  "enumOffline": "Ngoại tuyến",
+  "enumFood": "Thực phẩm",
+  "enumOther": "Khác",
+  "unitMinute": "phút",
+  "unitHour": "giờ",
+  "unitDay": "ngày",
+  "unitWeek": "tuần",
+  "unitMonth": "tháng",
+  "minutesShort": "{minutes} phút",
+  "@minutesShort": {
+    "placeholders": {
+      "minutes": {}
+    }
+  },
+  "qrSendingOpen": "Đang gửi lệnh mở ô...",
+  "qrOpenedTest": "Đã mở ô (thử tủ)",
+  "qrNotOpened": "Chưa mở được ô",
+  "qrLockerBox": "Tủ #{locker} · ô #{box}",
+  "@qrLockerBox": {
+    "placeholders": {
+      "locker": {},
+      "box": {}
+    }
+  },
+  "qrNotLockrCode": "Đây không phải mã đăng nhập kiosk hay mã mở ô Lock.R. Hãy quét mã QR đang hiện trên màn hình tủ.",
+  "qrConfirmingKiosk": "Đang xác nhận đăng nhập kiosk...",
+  "qrAtLocker": " tại {name}",
+  "@qrAtLocker": {
+    "placeholders": {
+      "name": {}
+    }
+  },
+  "qrKioskLoggedIn": "Đã đăng nhập trên kiosk{where}",
+  "@qrKioskLoggedIn": {
+    "placeholders": {
+      "where": {}
+    }
+  },
+  "qrKioskLoginFailedTitle": "Chưa đăng nhập được kiosk",
+  "qrKioskLoginFailed": "Không xác nhận được đăng nhập kiosk. Vui lòng thử lại.",
+  "qrScan": "Quét mã QR",
+  "qrLoginToScan": "Bạn cần đăng nhập để quét mã QR",
+  "qrKioskLoginByQr": "Đăng nhập kiosk bằng QR",
+  "qrAimHint": "Đưa khung vào mã QR trên màn hình kiosk. Bạn sẽ được hỏi lại trước khi đăng nhập.",
+  "qrEnterManually": "Nhập mã thủ công",
+  "qrCameraPermission": "Ứng dụng chưa được cấp quyền camera. Hãy cấp quyền trong cài đặt máy hoặc nhập mã thủ công.",
+  "qrCameraUnsupported": "Thiết bị không hỗ trợ quét mã bằng camera. Hãy nhập mã thủ công.",
+  "qrCameraFailed": "Không mở được camera. Hãy thử lại hoặc nhập mã thủ công.",
+  "qrKioskLoginQuestion": "Đăng nhập kiosk?",
+  "qrKioskLoginBody": "Tài khoản Lock.R của bạn sẽ được đăng nhập trên kiosk vừa hiện mã. Chỉ xác nhận khi bạn đang đứng trước kiosk đó.",
+  "qrKioskConfirmCode": "Mã xác nhận trên kiosk",
+  "qrKioskLogin": "Đăng nhập kiosk",
+  "qrWrongCode": "Mã chưa đúng. Kiểm tra lại mã phiên và mã xác nhận đang hiện trên kiosk.",
+  "qrEnterKioskCode": "Nhập mã đăng nhập kiosk",
+  "qrEnterKioskCodeHint": "Nhập mã phiên và mã xác nhận đang hiện dưới mã QR trên màn hình kiosk.",
+  "qrSessionCode": "Mã phiên",
+  "qrConfirmCode": "Mã xác nhận",
+  "mapNoLocation": "Không lấy được vị trí của bạn — chỉ hiển thị tủ.",
+  "mapCantOpenMaps": "Không mở được ứng dụng bản đồ.",
+  "mapFindingRoute": "Đang tìm đường...",
+  "mapRemaining": "{distance} còn lại",
+  "@mapRemaining": {
+    "placeholders": {
+      "distance": {}
+    }
+  },
+  "mapStopNavigation": "Dừng dẫn đường",
+  "mapStartNavigation": "Bắt đầu dẫn đường",
+  "mapGetMyLocation": "Lấy vị trí của bạn",
+  "mapOpenGoogleMaps": "Mở trên Google Maps",
+  "mediaBadResponse": "Máy chủ ảnh trả về dữ liệu không hợp lệ, vui lòng thử lại",
+  "mediaUploadCancelled": "Đã huỷ tải ảnh",
+  "mediaCannotConnect": "Không kết nối được máy chủ, kiểm tra mạng rồi thử lại",
+  "mediaPurposeForbidden": "Bạn không có quyền tải loại ảnh này",
+  "mediaNoUploadPermission": "Không lấy được quyền tải ảnh, vui lòng thử lại",
+  "mediaUploadNetwork": "Không tải được ảnh lên, kiểm tra kết nối mạng rồi thử lại",
+  "mediaSessionExpired": "Phiên tải ảnh đã hết hạn, vui lòng thử lại",
+  "mediaTooLarge": "Ảnh quá lớn, vui lòng chọn ảnh khác",
+  "mediaFormatUnsupported": "Định dạng ảnh không được hỗ trợ (dùng JPG, PNG, WEBP, HEIC)",
+  "mediaServerOverloaded": "Máy chủ ảnh đang quá tải, vui lòng thử lại sau ít phút",
+  "mediaUploadFailedRetry": "Tải ảnh lên thất bại, vui lòng thử lại",
+  "mediaStorageDisabled": "Hệ thống lưu ảnh đang tạm tắt. Vui lòng gửi không kèm ảnh hoặc thử lại sau.",
+  "mediaPurposeInvalid": "Loại ảnh tải lên không hợp lệ",
+  "mediaSignatureInvalid": "Ảnh tải lên không hợp lệ, vui lòng chụp lại",
+  "mediaOwnerMismatch": "Ảnh không thuộc tài khoản của bạn, vui lòng tải lại",
+  "mediaAttachmentLimit": "Phiếu đã đạt số ảnh tối đa cho phép",
+  "mediaAttachmentStageInvalid": "Loại ảnh không hợp lệ cho phiếu này",
+  "mediaReportNotInProgress": "Phiếu chưa ở trạng thái đang xử lý",
+  "mediaReportResolved": "Phiếu đã hoàn tất, không thể thêm ảnh",
+  "mediaReportNotAssigned": "Bạn không phải kỹ thuật viên được giao phiếu này",
+  "mediaReportNotOwned": "Bạn không phải người gửi phiếu này",
+  "mediaDeleteForbidden": "Bạn không có quyền xoá ảnh này",
+  "mediaResolutionPhotoRequired": "Cần ít nhất 1 ảnh nghiệm thu trước khi hoàn tất phiếu",
+  "mediaAlreadyAttached": "Ảnh này đã được gắn vào phiếu",
+  "mediaTooLargeMax": "Ảnh quá lớn (tối đa {mb} MB), vui lòng chọn ảnh khác",
+  "@mediaTooLargeMax": {
+    "placeholders": {
+      "mb": {}
+    }
+  },
+  "photoAdd": "Thêm ảnh",
+  "photoMax": "Tối đa {count} ảnh",
+  "@photoMax": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "photoTakeCamera": "Chụp ảnh từ máy ảnh",
+  "photoPickGalleryMax": "Chọn ảnh từ thư viện (tối đa {count})",
+  "@photoPickGalleryMax": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "photoPickGallery": "Chọn ảnh từ thư viện",
+  "photoCameraDenied": "Không mở được máy ảnh. Hãy cấp quyền camera trong cài đặt.",
+  "photoGalleryDenied": "Không mở được thư viện ảnh. Hãy cấp quyền ảnh trong cài đặt.",
+  "photoUploadFailed": "Tải ảnh thất bại",
+  "photoNumber": "Ảnh {number}",
+  "@photoNumber": {
+    "placeholders": {
+      "number": {}
+    }
+  },
+  "attachmentReport": "Ảnh hiện trường (người báo)",
+  "attachmentInspection": "Ảnh xác nhận của KTV",
+  "attachmentProgress": "Ảnh trong quá trình sửa",
+  "attachmentResolution": "Ảnh nghiệm thu",
+  "attachmentPhoto": "Ảnh",
+  "attachmentCount": "({count} ảnh):",
+  "@attachmentCount": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "attachmentNone": "Chưa có ảnh",
+  "attachmentLocation": "Vị trí {lat}, {lng}",
+  "@attachmentLocation": {
+    "placeholders": {
+      "lat": {},
+      "lng": {}
+    }
+  },
+  "attachmentLoadFailed": "Không tải được ảnh",
+  "paymentSuccess": "Thanh toán thành công",
+  "paymentFailed": "Thanh toán thất bại",
+  "paymentSuccessExclaim": "Thanh toán thành công!",
+  "paymentPreparingPin": "Đang chuẩn bị mã PIN mở ô tủ...",
+  "paymentTapToContinue": "Chạm để tiếp tục",
+  "locationPick": "Chọn vị trí",
+  "locationSearchAddress": "Tìm kiếm địa chỉ...",
+  "locationConfirm": "Xác nhận vị trí",
+  "commonYou": "Bạn",
+  "commonSeeAllLower": "Xem tất cả",
+  "commonDirections": "Chỉ đường",
+  "commonAddress": "Địa chỉ",
+  "commonDistance": "Khoảng cách",
+  "commonStatus": "Trạng thái",
+  "commonLocation": "Vị trí",
+  "commonSize": "Kích cỡ",
+  "commonBack": "Quay lại",
+  "commonNoAddress": "Chưa có địa chỉ",
+  "commonFavorites": "Yêu thích",
+  "commonOffers": "Ưu đãi",
+  "commonReportIssue": "Báo sự cố",
+  "commonReports": "Báo cáo",
+  "commonStatusActive": "Hoạt động",
+  "commonStatusSuspended": "Tạm ngưng",
+  "commonDisconnected": "Mất kết nối",
+  "commonOnline": "Trực tuyến",
+  "commonInUseShort": "Đang dùng",
+  "commonReservedShort": "Đã đặt",
+  "commonBroken": "Hỏng",
+  "commonEmpty": "Trống",
+  "commonExpired": "Hết hạn",
+  "commonHistory": "Lịch sử",
+  "commonAvailable": "Khả dụng",
+  "commonCopiedValue": "Đã sao chép: {value}",
+  "@commonCopiedValue": {
+    "placeholders": {
+      "value": {}
+    }
+  },
+  "commonStartDate": "Bắt đầu",
+  "commonEndDate": "Kết thúc",
+  "commonHowToUse": "Cách sử dụng",
+  "commonTapToCopy": "Chạm để sao chép mã",
+  "commonUnlimitedTime": "Không giới hạn thời gian",
+  "commonExchange": "Đổi",
+  "commonSaved": "Đã lưu",
+  "commonLoadFailedData": "Không tải được dữ liệu",
+  "boxNumberLabel": "Ô số {number}",
+  "@boxNumberLabel": {
+    "placeholders": {
+      "number": {}
+    }
+  },
+  "boxRowCol": "Ô hàng {row}, cột {col}",
+  "@boxRowCol": {
+    "placeholders": {
+      "row": {},
+      "col": {}
+    }
+  },
+  "rowCol": "Hàng {row}, cột {col}",
+  "@rowCol": {
+    "placeholders": {
+      "row": {},
+      "col": {}
+    }
+  },
+  "boxHash": "Ô #{number}",
+  "@boxHash": {
+    "placeholders": {
+      "number": {}
+    }
+  },
+  "orderHash": "Đơn #{id}",
+  "@orderHash": {
+    "placeholders": {
+      "id": {}
+    }
+  },
+  "homeSendByDrone": "Gửi hàng bằng drone",
+  "homeDropPoints": "Điểm gửi",
+  "homeRentLocker": "Thuê tủ",
+  "homeLockerOrders": "Đơn tủ",
+  "homeUtilities": "Tiện ích",
+  "homeDroneDelivery": "Giao bằng drone",
+  "homeActiveOrders": "Đơn đang xử lý",
+  "homePickupDeadline": "Hạn lấy đồ",
+  "stepCreateOrder": "Tạo đơn",
+  "stepFlightTeamAccepted": "Đội bay nhận",
+  "stepFlying": "Đang bay",
+  "stepDropReported": "Báo rơi kiện",
+  "stepIntoLocker": "Vào tủ nhận",
+  "stepDropIntoLocker": "Bỏ vào tủ",
+  "stepStoring": "Đang lưu tủ",
+  "stepInLocker": "Đã vào tủ",
+  "stepTransit": "Vận chuyển",
+  "stepAwaitingPickup": "Chờ nhận",
+  "homeUtilitiesServices": "Tiện ích & Dịch vụ",
+  "homeSendDrone": "Gửi drone",
+  "homeKioskLocations": "Các nơi đặt kiosk",
+  "homeNoLockerLocations": "Chưa có nơi đặt locker nào",
+  "homeOngoingOffers": "Ưu đãi đang diễn ra",
+  "storeDefaultName": "Cửa hàng",
+  "storeFavoritesLoadFailed": "Không tải được danh sách yêu thích.",
+  "storeFavoritesSubtitle": "Điểm gửi bạn đã lưu",
+  "storeFavoritesLoading": "Đang tải danh sách yêu thích...",
+  "storeNoFavorites": "Chưa có cửa hàng yêu thích",
+  "storeNoFavoritesHint": "Nhấn vào biểu tượng trái tim ở một cửa hàng để lưu lại đây.",
+  "storeExplore": "Khám phá cửa hàng",
+  "storeAddedFavorite": "Đã thêm vào yêu thích",
+  "storeRemovedFavorite": "Đã bỏ khỏi yêu thích",
+  "storeFavoriteSaveFailed": "Không lưu được danh sách yêu thích.",
+  "storeEnableLocation": "Vui lòng bật dịch vụ định vị.",
+  "storeNeedLocation": "Cần quyền vị trí để tìm cửa hàng gần bạn.",
+  "storeNoCurrentLocation": "Không lấy được vị trí hiện tại.",
+  "storeListLoadFailed": "Không tải được danh sách cửa hàng.",
+  "storeListSubtitle": "Khám phá điểm tủ & đối tác liên kết",
+  "storeSearchHint": "Tìm theo tên hoặc địa chỉ",
+  "storeListLoading": "Đang tải danh sách điểm tủ...",
+  "storeNone": "Không có cửa hàng nào",
+  "storeRatingsLoadFailed": "Không tải được đánh giá.",
+  "storeInfoLoadFailed": "Không tải được thông tin cửa hàng.",
+  "storeNoLocation": "Cửa hàng chưa có vị trí.",
+  "storeCantOpenMap": "Không mở được bản đồ.",
+  "storeDetailTitle": "Chi tiết điểm gửi",
+  "storeDetailSubtitle": "Điểm tủ & đối tác liên kết",
+  "storeInfoLoading": "Đang tải thông tin...",
+  "storeRatingCount": "  ·  {count} đánh giá",
+  "@storeRatingCount": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "storeViewLockers": "Xem tủ",
+  "storeCustomerReviews": "Đánh giá từ khách hàng",
+  "storeNoReviews": "Chưa có đánh giá nào",
+  "storeTemporarilyClosed": "Tạm đóng",
+  "storeCustomer": "Khách hàng",
+  "storeOpen": "Mở cửa",
+  "storeDistanceFromYou": "Cách bạn {km} km",
+  "@storeDistanceFromYou": {
+    "placeholders": {
+      "km": {}
+    }
+  },
+  "lockerHash": "Tủ #{id}",
+  "@lockerHash": {
+    "placeholders": {
+      "id": {}
+    }
+  },
+  "lockerLockerTitle": "Tủ locker",
+  "lockerPhysicalLocation": "Vị trí tủ vật lý",
+  "lockerListLoading": "Đang tải danh sách tủ...",
+  "lockerDroneCellHint": "Chạm vào ô drone còn trống (màu tím) để gửi hàng bằng drone tới tủ khác.",
+  "lockerViewOnMap": "Xem vị trí trên bản đồ",
+  "lockerKioskPoint": "ĐIỂM ĐẶT KIOSK",
+  "lockerCount": "{count} tủ locker",
+  "@lockerCount": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "lockerTapToSeeFree": "Chạm vào tủ để xem ô trống",
+  "lockerDefaultName": "Tủ",
+  "lockerOfflineCantBook": "Tủ đang mất kết nối với máy chủ nên tạm thời chưa đặt được ô.",
+  "lockerUnderMaintenance": "Tủ đang bảo trì kỹ thuật, tạm ngưng nhận đơn.",
+  "lockerSuspended": "Tủ đang tạm ngưng hoạt động.",
+  "lockerFreeOfTotal": "{available}/{total} ô trống",
+  "@lockerFreeOfTotal": {
+    "placeholders": {
+      "available": {},
+      "total": {}
+    }
+  },
+  "lockerNoCellsConfigured": "Tủ chưa có ô nào được cấu hình",
+  "lockerBoxPendingCheck": "đang chờ kỹ thuật viên kiểm tra sự cố",
+  "lockerBoxBroken": "đang hỏng",
+  "lockerBoxUnavailable": "{box} {state}. Hãy chọn ô khác.",
+  "@lockerBoxUnavailable": {
+    "placeholders": {
+      "box": {},
+      "state": {}
+    }
+  },
+  "lockerBoxUnavailableReason": "{box} {state}: {reason}. Hãy chọn ô khác.",
+  "@lockerBoxUnavailableReason": {
+    "placeholders": {
+      "box": {},
+      "state": {},
+      "reason": {}
+    }
+  },
+  "lockerScreen7": "Màn hình 7\"",
+  "lockerFaultBroken": "Lỗi / Hỏng",
+  "lockerDoorOpen": "Cửa mở",
+  "lockerDoorClosed": "Cửa đóng",
+  "lockerScreen": "Màn hình",
+  "lockerKioskScreen": "Màn hình kiosk",
+  "lockerKioskHelp": "Tại màn hình kiosk, bạn có thể nhập mã PIN của đơn để mở ô, hoặc đăng nhập bằng cách quét mã QR trên kiosk với nút quét ở trang chủ ứng dụng.",
+  "lockerKioskOffline": "Tủ đang mất kết nối với máy chủ: màn hình có thể không phản hồi và chưa đặt được ô mới.",
+  "lockerReportKioskIssue": "Báo sự cố màn hình kiosk",
+  "lockerBrokenUpper": "HỎNG",
+  "lockerPendingCheckUpper": "CHỜ KIỂM TRA",
+  "lockerPendingCheck": "Chờ kiểm tra",
+  "lockerCleaning": "Vệ sinh",
+  "lockerDroneReceive": "Nhận Drone",
+  "lockerReady": "Sẵn sàng",
+  "sizeSmall": "Nhỏ (S)",
+  "sizeMedium": "Vừa (M)",
+  "sizeLarge": "Lớn (L)",
+  "sizeXlSuitcase": "Vali cỡ lớn (XL)",
+  "lockerEmptySuitcaseBox": "Ô tủ vali trống",
+  "lockerEmptyBox": "Ô tủ trống",
+  "lockerWhatToDo": "Bạn muốn làm gì với ô tủ này?",
+  "lockerRentSubtitle": "Theo giờ hoặc ngày",
+  "lockerSendParcel": "Gửi hàng",
+  "lockerSendSubtitle": "Chuyển C2C",
+  "lockerSuitcaseRentOnly": "Ô vali chỉ dùng để thuê giữ đồ, không nhận gửi hàng.",
+  "lockerReportBoxIssue": "Gặp sự cố với ô này? Báo cáo ngay",
+  "lockerNoLockers": "Chưa có tủ locker",
+  "lockerStoreNoActiveLockers": "Cửa hàng này chưa có tủ locker đang hoạt động.",
+  "lockerCabinetIdRequired": "Cabinet ID không được để trống",
+  "lockerLocationIdRequired": "Location ID không được để trống",
+  "lockerOfflinePickOther": "Tủ đang mất kết nối nên chưa đặt được ô. Vui lòng chọn tủ khác hoặc thử lại sau.",
+  "lockerMaintenancePickOther": "Tủ đang bảo trì nên tạm ngưng nhận đơn. Vui lòng chọn tủ khác.",
+  "lockerSuspendedCantBook": "Tủ đang tạm ngưng hoạt động nên chưa đặt được ô.",
+  "groupSmall": "Ô nhỏ (S)",
+  "groupMedium": "Ô vừa (M)",
+  "groupLarge": "Ô lớn (L)",
+  "groupStandard": "Ô thường",
+  "groupXl": "Ô vali (XL)",
+  "groupDrone": "Ô drone",
+  "cellTypeDroneRoof": "Drone (Nóc tủ)",
+  "cellTypeSuitcase": "Vali (XL)",
+  "cellTypeStandard": "Tiêu chuẩn",
+  "cellOutOfService": "Ngưng dùng",
+  "lockerSizeSmallDesc": "Kích thước nhỏ, phù hợp cho túi xách, ví",
+  "lockerSizeMediumDesc": "Kích thước trung bình, phù hợp cho ba lô",
+  "lockerSizeLargeDesc": "Kích thước lớn, phù hợp cho vali",
+  "lockerStatusAvailable": "Có sẵn",
+  "lockerStatusInUse": "Đang sử dụng",
+  "lockerStatusReserved": "Đã đặt trước",
+  "lockerStatusMaintenance": "Đang bảo trì",
+  "lockerStatusOutOfService": "Ngừng hoạt động",
+  "lockerAlreadyRented": "Tủ này đang được thuê.",
+  "lockerInsufficientBalance": "Số dư không đủ.",
+  "lockerFixedRentFailed": "Thuê tủ cố định thất bại.",
+  "lockerOpenCommandSent": "Đã gửi lệnh mở tủ.",
+  "lockerCloseCommandSent": "Đã gửi lệnh đóng tủ.",
+  "lockerDetailSubtitle": "Chi tiết vị trí tủ Lock.R",
+  "lockerNoCoordinates": "Tủ chưa có toạ độ nên chưa hiển thị được bản đồ và chỉ đường.",
+  "lockerBookService": "Đặt dịch vụ",
+  "lockerViewLayout": "Xem sơ đồ ô tủ",
+  "lockerMapTitle": "Bản đồ tủ khóa",
+  "lockerMapSubtitle": "Tìm điểm tủ Lock.R gần bạn nhất",
+  "lockerMapLoading": "Đang tải bản đồ...",
+  "lockerNoneYet": "Hiện tại chưa có tủ nào!",
+  "lockerGettingLocation": "Đang lấy vị trí...",
+  "lockerUseMyLocation": "Sử dụng vị trí của bạn",
+  "lockerMapLoadFailed": "Không thể tải bản đồ. Toạ độ có thể không hợp lệ.",
+  "lockerInvalidCoordsHidden": "{count} địa điểm có toạ độ không hợp lệ đã được ẩn.",
+  "@lockerInvalidCoordsHidden": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "lockerLocating": "Đang xác định vị trí...",
+  "lockerAddressFailed": "Không thể xác định địa chỉ, vui lòng thử lại",
+  "lockerAddressFailedError": "Không thể xác định địa chỉ, vui lòng thử lại: {error}",
+  "@lockerAddressFailedError": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "lockerLocationServiceOff": "Dịch vụ vị trí đang tắt. Vui lòng bật GPS.",
+  "lockerLocationDenied": "Quyền truy cập vị trí bị từ chối.",
+  "lockerLocationDeniedForever": "Quyền vị trí bị từ chối vĩnh viễn. Hãy bật lại trong cài đặt.",
+  "lockerOtherKiosk": "Kiosk khác",
+  "lockerCountShort": "{count} tủ",
+  "@lockerCountShort": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "commonAll": "Tất cả",
+  "lockerLocationList": "Danh sách địa điểm",
+  "lockerLoginToSeeLocations": "Đăng nhập để xem các địa điểm khả dụng",
+  "lockerLoginRequiredLocations": "Bạn cần đăng nhập để xem danh sách địa điểm",
+  "lockerPickLocation": "Chọn địa điểm để xem chi tiết",
+  "lockerSearchLocation": "Tìm kiếm địa điểm...",
+  "lockerNoLocations": "Hiện tại chưa có địa điểm nào!",
+  "lockerNotFoundHere": "Không tìm thấy tủ tại địa điểm này",
+  "lockerTryOtherLocation": "Thử chọn địa điểm khác hoặc xem tất cả địa điểm khả dụng.",
+  "lockerViewAllLocations": "Xem tất cả địa điểm",
+  "lockerLoadingFreeCells": "Đang tải số ô trống...",
+  "lockerCellsLoadFailed": "Chưa tải được số ô: {error}",
+  "@lockerCellsLoadFailed": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "lockerFreeCells": "Ô trống",
+  "lockerConnectionUnknown": "Chưa rõ kết nối",
+  "lockerMostUsed": "Hay dùng nhất",
+  "promoUnlimited": "Không giới hạn",
+  "promoExpired": "Đã hết hạn",
+  "promoDaysLeft": "Còn {days} ngày",
+  "@promoDaysLeft": {
+    "placeholders": {
+      "days": {}
+    }
+  },
+  "promoHoursLeft": "Còn {hours} giờ",
+  "@promoHoursLeft": {
+    "placeholders": {
+      "hours": {}
+    }
+  },
+  "promoMinutesLeft": "Còn {minutes} phút",
+  "@promoMinutesLeft": {
+    "placeholders": {
+      "minutes": {}
+    }
+  },
+  "promoMinOrder": "Đơn tối thiểu {amount}",
+  "@promoMinOrder": {
+    "placeholders": {
+      "amount": {}
+    }
+  },
+  "promoSystemWide": "Toàn hệ thống",
+  "promoAppliesAt": "Áp dụng tại: {name}",
+  "@promoAppliesAt": {
+    "placeholders": {
+      "name": {}
+    }
+  },
+  "promoSubtitle": "Khám phá ưu đãi đang hiệu lực hôm nay",
+  "promoLoading": "Đang tải khuyến mãi...",
+  "promoNoneActive": "Chưa có ưu đãi nào đang hiệu lực",
+  "promoExpiringSoon": "Sắp hết hạn",
+  "promoSavedToMine": "Đã lưu mã {code} vào \"Ưu đãi của tôi\"",
+  "@promoSavedToMine": {
+    "placeholders": {
+      "code": {}
+    }
+  },
+  "promoSaveNotSupported": "Máy chủ chưa hỗ trợ lưu mã. Vui lòng thử lại sau.",
+  "promoSaveFailed": "Không lưu được mã — kiểm tra đăng nhập và thử lại",
+  "promoCopiedCode": "Đã sao chép mã: {code}",
+  "@promoCopiedCode": {
+    "placeholders": {
+      "code": {}
+    }
+  },
+  "promoDiscountPercent": "Giảm {percent}%",
+  "@promoDiscountPercent": {
+    "placeholders": {
+      "percent": {}
+    }
+  },
+  "promoDiscountAmount": "Giảm {amount}",
+  "@promoDiscountAmount": {
+    "placeholders": {
+      "amount": {}
+    }
+  },
+  "promoDetailTitle": "Chi tiết ưu đãi",
+  "promoOfferExpired": "Ưu đãi đã hết hạn",
+  "promoCodeLabel": "Mã khuyến mãi",
+  "promoDiscountLevel": "Mức giảm",
+  "promoScope": "Phạm vi",
+  "promoMaxDiscount": "Giảm tối đa",
+  "promoMinOrderLabel": "Đơn tối thiểu",
+  "promoActive": "Đang hiệu lực",
+  "promoExpiredCantUse": "Ưu đãi này đã hết hạn và không thể sử dụng.",
+  "promoStep1Any": "Vào trang Thuê tủ, Gửi hàng hoặc Gửi drone và chọn tủ",
+  "promoStep1At": "Vào trang Thuê tủ, Gửi hàng hoặc Gửi drone tại {locker} (đơn drone: tủ drone cất cánh)",
+  "@promoStep1At": {
+    "placeholders": {
+      "locker": {}
+    }
+  },
+  "promoStep2": "Ở mục \"Mã giảm giá\", chạm \"Chọn mã giảm giá\" rồi chọn mã này trong danh sách",
+  "promoStep3": "Mức giảm được trừ vào tổng tiền nếu đơn đủ điều kiện (đơn tối thiểu, tủ áp dụng)",
+  "promoLoadFailed": "Không tải được ưu đãi",
+  "promoAtThisLocker": "Ưu đãi tại tủ này",
+  "voucherMine": "Ưu đãi của tôi",
+  "voucherMineSubtitle": "Mã giảm giá & quà tặng của bạn",
+  "voucherExchangeTab": "Đổi điểm",
+  "voucherLoginToSee": "Bạn cần đăng nhập để xem ưu đãi đã lưu",
+  "voucherLoading": "Đang tải ưu đãi...",
+  "voucherNone": "Bạn chưa có ưu đãi nào",
+  "voucherExploreAndSave": "Khám phá ưu đãi và lưu mã",
+  "voucherGift": "Quà tặng",
+  "voucherGiftUpper": "QUÀ TẶNG",
+  "voucherDiscountUpper": "GIẢM GIÁ",
+  "voucherUsed": "Đã dùng",
+  "voucherUsedLong": "Đã sử dụng",
+  "voucherCopied": "Đã sao chép mã voucher",
+  "voucherCode": "Mã voucher",
+  "voucherOffer": "Ưu đãi",
+  "voucherCampaign": "Chiến dịch",
+  "voucherValidUntil": "Hạn sử dụng",
+  "voucherExpiredCantUse": "Voucher này đã hết hạn và không thể sử dụng.",
+  "voucherAlreadyUsed": "Voucher này đã được sử dụng.",
+  "voucherStepCopy": "Sao chép mã voucher ở trên",
+  "voucherStepBookAny": "Vào trang đặt dịch vụ (Thuê tủ / Gửi hàng / Gửi drone)",
+  "voucherStepBookAt": "Đặt dịch vụ tại {locker} (đơn drone: tủ drone cất cánh)",
+  "@voucherStepBookAt": {
+    "placeholders": {
+      "locker": {}
+    }
+  },
+  "voucherStepEnter": "Nhập mã vào ô \"Mã giảm giá\" và nhấn Áp dụng",
+  "voucherStepDeducted": "Mức giảm sẽ được trừ vào tổng tiền thanh toán",
+  "voucherExchangeNotSupported": "Máy chủ chưa hỗ trợ đổi điểm. Vui lòng thử lại sau.",
+  "voucherExchangeLoadFailed": "Không tải được danh sách đổi điểm. Vui lòng thử lại.",
+  "voucherExchangeFailed": "Chưa đổi được voucher. Vui lòng thử lại.",
+  "voucherWalletNotSupported": "Máy chủ chưa hỗ trợ kho ưu đãi. Vui lòng thử lại sau.",
+  "voucherMineLoadFailed": "Không tải được ưu đãi của bạn. Vui lòng thử lại.",
+  "pointsCount": "{points} điểm",
+  "@pointsCount": {
+    "placeholders": {
+      "points": {}
+    }
+  },
+  "voucherMaxSuffix": " (tối đa {amount})",
+  "@voucherMaxSuffix": {
+    "placeholders": {
+      "amount": {}
+    }
+  },
+  "voucherExchangeLoading": "Đang tải voucher đổi điểm...",
+  "voucherExchangeNone": "Hiện chưa có voucher nào để đổi điểm",
+  "voucherExchangeQuestion": "Đổi voucher?",
+  "voucherExchangeConfirm": "Dùng {points} đổi voucher \"{reward}\". Voucher sẽ nằm trong mục Khả dụng, dùng bằng mã {code} khi đặt đơn.",
+  "@voucherExchangeConfirm": {
+    "placeholders": {
+      "points": {},
+      "reward": {},
+      "code": {}
+    }
+  },
+  "voucherExchanged": "Đã đổi voucher {code} — xem ở mục Khả dụng",
+  "@voucherExchanged": {
+    "placeholders": {
+      "code": {}
+    }
+  },
+  "voucherYourPoints": "Điểm của bạn",
+  "voucherPointRate": "1 điểm = {amount} · đổi lấy voucher giảm giá cho đơn",
+  "@voucherPointRate": {
+    "placeholders": {
+      "amount": {}
+    }
+  },
+  "voucherOwned": "Đã có",
+  "voucherMissingPoints": "Thiếu {points}",
+  "@voucherMissingPoints": {
+    "placeholders": {
+      "points": {}
+    }
+  },
+  "voucherOrderFrom": "Đơn từ {amount}",
+  "@voucherOrderFrom": {
+    "placeholders": {
+      "amount": {}
+    }
+  },
+  "commonDetails": "Chi tiết",
+  "commonNotYet": "Chưa",
+  "commonNote": "Ghi chú",
+  "commonReload": "Tải lại",
+  "commonService": "Dịch vụ",
+  "commonDiscount": "Giảm giá",
+  "commonVoucher": "Voucher",
+  "commonAmount": "Số tiền",
+  "commonLocker": "Tủ",
+  "commonBox": "Ô",
+  "commonToday": "Hôm nay",
+  "commonYesterday": "Hôm qua",
+  "commonUnknownDate": "Không rõ ngày",
+  "dateDayMonthYear": "{day} tháng {month}, {year}",
+  "@dateDayMonthYear": {
+    "placeholders": {
+      "day": {},
+      "month": {},
+      "year": {}
+    }
+  },
+  "hoursValue": "{hours} giờ",
+  "@hoursValue": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      }
+    }
+  },
+  "pricePerHour": "{price}/giờ",
+  "@pricePerHour": {
+    "placeholders": {
+      "price": {}
+    }
+  },
+  "photosMore": "+{count} ảnh",
+  "@photosMore": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "boxThisLower": "ô này",
+  "boxNumberLower": "ô số {number}",
+  "@boxNumberLower": {
+    "placeholders": {
+      "number": {}
+    }
+  },
+  "boxThis": "Ô này",
+  "ordIncomingNotSupported": "Máy chủ chưa hỗ trợ mục Hàng chờ nhận. Vui lòng thử lại sau.",
+  "ordNotFoundInList": "Không tìm thấy đơn trong danh sách của bạn.",
+  "ordEmptyRecent": "Không có đơn hàng nào trong 7 ngày gần đây.",
+  "ordEmptyActive": "Hiện không có đơn hàng nào đang trong quá trình sử dụng.",
+  "ordEmptyCompleted": "Chưa có đơn hàng nào đã hoàn tất.",
+  "ordEmptyRental": "Chưa có đơn thuê tủ nào.",
+  "ordEmptySend": "Chưa có đơn gửi hàng nào.",
+  "ordEmptyCanceled": "Không có đơn nào đã hủy.",
+  "ordEmptyHint": "Tạo đơn Gửi hàng hoặc Thuê tủ từ màn hình chính.",
+  "ordCancelQuestion": "Huỷ đơn?",
+  "ordCancelBody": "Đơn {code} sẽ bị huỷ, mã mở ô hết hiệu lực và ô đang giữ được nhả.",
+  "@ordCancelBody": {
+    "placeholders": {
+      "code": {}
+    }
+  },
+  "ordCancelPaidNote": " Tiền đã thanh toán không tự hoàn — sau khi huỷ, mở lại đơn và chọn \"Yêu cầu hoàn tiền\".",
+  "ordKeepOrder": "Giữ đơn",
+  "ordCancelOrderAlt": "Huỷ đơn",
+  "ordExtendRental": "Gia hạn thuê",
+  "ordAddHours": "Thêm {hours} giờ",
+  "@ordAddHours": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      }
+    }
+  },
+  "ordMaxHoursPerExtension": "Tối đa {hours} giờ mỗi lần gia hạn",
+  "@ordMaxHoursPerExtension": {
+    "placeholders": {
+      "hours": {}
+    }
+  },
+  "ordExtend": "Gia hạn",
+  "ordExtended": "Đã gia hạn {hours} giờ",
+  "@ordExtended": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      }
+    }
+  },
+  "ordReportFaultyBox": "Báo ô lỗi",
+  "ordDescribeIssueHint": "Mô tả sự cố (ô không mở, kẹt cửa...)",
+  "ordOnsitePhotosOptional": "Ảnh hiện trường (không bắt buộc, tối đa {max})",
+  "@ordOnsitePhotosOptional": {
+    "placeholders": {
+      "max": {}
+    }
+  },
+  "ordPhotosHelp": "Ảnh giúp đội bảo trì xử lý nhanh hơn.",
+  "ordDescribeOrAttach": "Vui lòng mô tả sự cố hoặc đính kèm ảnh.",
+  "ordUploadingPhotos": "Đang tải ảnh...",
+  "ordSendReport": "Gửi báo lỗi",
+  "ordBoxFaultDefault": "Ô tủ gặp sự cố (xem ảnh đính kèm)",
+  "ordReportSentFor": "Đã gửi báo lỗi cho {box} — đội bảo trì sẽ xử lý",
+  "@ordReportSentFor": {
+    "placeholders": {
+      "box": {}
+    }
+  },
+  "ordPickupAtKiosk": "Lấy đồ tại kiosk",
+  "ordPickupAtKioskBody": "Dùng mã này tại kiosk để mở ô, lấy đồ ra, rồi đóng cửa tủ lại trước khi xác nhận kết thúc thuê. Bạn cũng có thể bấm mở trực tiếp trên app nếu đang ở gần tủ.",
+  "ordOpenBoxOnPhone": "Mở {box} trên điện thoại (GPS/QR)",
+  "@ordOpenBoxOnPhone": {
+    "placeholders": {
+      "box": {}
+    }
+  },
+  "ordPickedUpAndClosed": "Đã lấy đồ và đóng tủ",
+  "ordRentalEnded": "Đã kết thúc kỳ thuê",
+  "ordNoLockerInfo": "Đơn chưa có thông tin tủ.",
+  "ordLockerNoLocation": "Tủ chưa có vị trí để chỉ đường.",
+  "ordCantOpenMapsApp": "Không mở được ứng dụng bản đồ trên máy này.",
+  "ordExtensionPaymentFor": "Thanh toán gia hạn thời gian đơn #{id}",
+  "@ordExtensionPaymentFor": {
+    "placeholders": {
+      "id": {}
+    }
+  },
+  "ordPaidSuccessfully": "Đơn hàng của bạn đã được thanh toán thành công.",
+  "ordPaymentNotCompleted": "Giao dịch chưa hoàn tất hoặc đã bị hủy. Vui lòng thử lại.",
+  "ordAwaitingPaymentPull": "Đang chờ xác nhận thanh toán — kéo xuống để làm mới sau ít phút.",
+  "ordAwaitingPaymentConfirmPickup": "Đang chờ xác nhận thanh toán — bấm lại \"Xác nhận lấy đồ\" sau khi đơn hiện Đã thanh toán.",
+  "ordConfirmPickup": "Xác nhận lấy đồ",
+  "ordConfirmPickupBody": "Bạn xác nhận đã nhận lại đầy đủ đồ đạc của đơn hàng này? Thao tác này sẽ đóng và hoàn tất đơn hàng.",
+  "ordPickedUpComplete": "Đã lấy đồ — Hoàn tất",
+  "ordCompletedTitle": "Hoàn tất đơn hàng!",
+  "ordPaidAndPickedUp": "Bạn đã thanh toán và lấy đồ thành công. Đơn hàng đã hoàn tất.",
+  "ordReceivedComplete": "Đã nhận đồ — đơn hoàn tất",
+  "ordPaidNotCompletedTitle": "Đã thanh toán — chưa hoàn tất đơn",
+  "ordPaidNotCompletedBody": "Hệ thống đã ghi nhận thanh toán nhưng chưa hoàn tất được đơn: {reason}\nBạn có thể thử lại \"Xác nhận lấy đồ\" hoặc gửi khiếu nại trong chi tiết đơn.",
+  "@ordPaidNotCompletedBody": {
+    "placeholders": {
+      "reason": {}
+    }
+  },
+  "ordNoOvertimeFeeDue": "Đơn hàng không có phí quá giờ cần thanh toán",
+  "ordLockrLocker": "Tủ Lock.R",
+  "ordOverdue": "Đã quá hạn",
+  "ordOverdueFee": "Phí quá hạn",
+  "ordAwaitingPaymentOpenBox": "Đang chờ xác nhận thanh toán — mở ô sau khi đơn hiện Đã thanh toán.",
+  "ordOvertimePaidOpening": "Đã thanh toán phí quá giờ — chuẩn bị mở ô",
+  "ordSendingOpenCommand": "Đang gửi lệnh mở {box} tới tủ...",
+  "@ordSendingOpenCommand": {
+    "placeholders": {
+      "box": {}
+    }
+  },
+  "ordBoxOpened": "Tủ đã mở {box} — mời bạn thao tác rồi đóng cửa.",
+  "@ordBoxOpened": {
+    "placeholders": {
+      "box": {}
+    }
+  },
+  "ordBoxOpenFailed": "Không mở được {box}{detail}",
+  "@ordBoxOpenFailed": {
+    "placeholders": {
+      "box": {},
+      "detail": {}
+    }
+  },
+  "ordNoBoxPinInfo": "Đơn chưa có thông tin ô/PIN để mở tủ.",
+  "ordOverdueRentalNotice": "Đơn thuê đã quá hạn. Đã ghi nhận xử lý phí quá giờ — mời bạn mở ô lấy đồ và đóng tủ để hoàn tất.",
+  "ordDelegatedTo": "Đã ủy quyền lấy hộ{to}. Mã PIN cũ đã hết hiệu lực.",
+  "@ordDelegatedTo": {
+    "placeholders": {
+      "to": {}
+    }
+  },
+  "ordDelegatedToPhone": " cho {phone}",
+  "@ordDelegatedToPhone": {
+    "placeholders": {
+      "phone": {}
+    }
+  },
+  "ordChangePinQuestion": "Đổi mã PIN?",
+  "ordChangePinReceiver": "Mã PIN hiện tại sẽ hết hiệu lực. Người nhận cần mã mới để lấy hàng — hãy gửi lại mã mới cho họ.",
+  "ordChangePinNow": "Mã PIN hiện tại sẽ hết hiệu lực ngay và được thay bằng mã mới.",
+  "ordChangeCode": "Đổi mã",
+  "ordPinChangedSeeDetail": "Đã đổi mã PIN — xem mã mới trong chi tiết đơn.",
+  "ordPinChangedNew": "Đã đổi mã PIN mới: {pin}",
+  "@ordPinChangedNew": {
+    "placeholders": {
+      "pin": {}
+    }
+  },
+  "ordPinChangeNotSupported": "Máy chủ chưa hỗ trợ đổi mã PIN.",
+  "ordReceiverEmailSaved": "Đã lưu email người nhận {email}. Lock.R báo người nhận khi đơn được thanh toán.",
+  "@ordReceiverEmailSaved": {
+    "placeholders": {
+      "email": {}
+    }
+  },
+  "ordPickupCodeSentTo": "Đã gửi mã mở tủ tới {email}.",
+  "@ordPickupCodeSentTo": {
+    "placeholders": {
+      "email": {}
+    }
+  },
+  "ordOrderInfoResentTo": "Đã gửi lại thông tin đơn tới {email}.",
+  "@ordOrderInfoResentTo": {
+    "placeholders": {
+      "email": {}
+    }
+  },
+  "ordEmailCodeNotSupported": "Máy chủ chưa hỗ trợ gửi mã qua email.",
+  "ordNewOrderCreated": "Đã tạo đơn mới — xem trong danh sách",
+  "ordDropoffConfirmed": "Đã xác nhận bỏ đồ",
+  "ordConfirmPickedUpQuestion": "Xác nhận đã lấy đồ?",
+  "ordConfirmPickedUpBody": "Đơn sẽ hoàn tất và ô tủ được giải phóng. Chỉ xác nhận khi bạn đã lấy đồ ra khỏi ô.",
+  "ordPickedUp": "Đã lấy đồ",
+  "ordBoxHasTicket": "Ô này đã có phiếu RPT-{id} đang được KTV xử lý.",
+  "@ordBoxHasTicket": {
+    "placeholders": {
+      "id": {}
+    }
+  },
+  "ordCancelled": "Đã hủy đơn",
+  "ordMyOrdersSubtitle": "Quản lý các đơn hàng của bạn",
+  "ordTabRecent": "Gần đây",
+  "ordTabInUse": "Đang dùng",
+  "ordTabCompleted": "Hoàn thành",
+  "ordTabCancelled": "Đã hủy",
+  "ordTabAwaitingPickup": "Chờ lấy",
+  "ordListLoading": "Đang tải danh sách đơn...",
+  "ordNoOrdersYet": "Chưa có đơn nào",
+  "ordNoMatchingOrders": "Không có đơn phù hợp",
+  "ordIncomingLoading": "Đang tải hàng chờ nhận...",
+  "ordNoIncoming": "Chưa có hàng chờ nhận",
+  "ordNoIncomingHint": "Khi có người gửi hàng tới số điện thoại của bạn, đơn sẽ hiện ở đây.",
+  "ordNoIncomingMatch": "Không tìm thấy đơn hàng chờ nhận nào theo bộ lọc đã chọn.",
+  "ordMyOrders": "Đơn của tôi",
+  "ordIncoming": "Hàng chờ nhận",
+  "ordPickupDeadlineValue": "Hạn lấy: {time}",
+  "@ordPickupDeadlineValue": {
+    "placeholders": {
+      "time": {}
+    }
+  },
+  "ordLockerNameUnknown": "Chưa tra được tên tủ",
+  "ordPayAndPickup": "Thanh toán & lấy đồ",
+  "ordAwaitingTechnician": "Chờ KTV xử lý",
+  "ordReview": "Xem lại",
+  "ordDropIntoLocker": "Bỏ đồ vào tủ",
+  "ordPickupNow": "Lấy đồ ngay",
+  "ordOvertimePausedNoTime": "Phí quá giờ tạm dừng — chờ KTV xử lý ô, chưa cần thanh toán",
+  "ordOvertimePausedSince": "Phí quá giờ tạm dừng từ {time} — chưa cần thanh toán",
+  "@ordOvertimePausedSince": {
+    "placeholders": {
+      "time": {}
+    }
+  },
+  "ordStorageExpiredTapPay": "Đơn đã hết hạn lưu tủ {hours} — Bấm để thanh toán & lấy đồ",
+  "@ordStorageExpiredTapPay": {
+    "placeholders": {
+      "hours": {}
+    }
+  },
+  "ordOverdueMayCharge": "Đơn đã quá hạn — có thể phát sinh phí",
+  "ordRelocatedTitle": "Đã điều chuyển sang Ô số {box} an toàn",
+  "@ordRelocatedTitle": {
+    "placeholders": {
+      "box": {}
+    }
+  },
+  "ordRelocatedSubtitle": "KTV đã chuyển đồ từ ô cũ (#{oldBox}) sang ô mới do sự cố. Mã PIN mới đã sẵn sàng.",
+  "@ordRelocatedSubtitle": {
+    "placeholders": {
+      "oldBox": {}
+    }
+  },
+  "ordCheckedNoIssueTitle": "KTV đã kiểm tra: {box} không có sự cố",
+  "@ordCheckedNoIssueTitle": {
+    "placeholders": {
+      "box": {}
+    }
+  },
+  "ordCheckedNoIssueSubtitle": "Ô hoạt động bình thường, bạn lấy đồ bằng mã PIN như thường lệ. Xem phản hồi của KTV trong phiếu.",
+  "ordResolvedTitle": "{box} đã được KTV kiểm tra & xử lý xong",
+  "@ordResolvedTitle": {
+    "placeholders": {
+      "box": {}
+    }
+  },
+  "ordResolvedSubtitle": "Tài sản trong ô được bảo vệ an toàn.",
+  "ordReportedTitle": "{box} đã được báo sự cố",
+  "@ordReportedTitle": {
+    "placeholders": {
+      "box": {}
+    }
+  },
+  "ordReportedCancelHint": "Hãy hủy đơn này và đặt ô khác (hoặc liên hệ KTV).",
+  "ordReportedBlocked": "Đồ của bạn vẫn được giữ an toàn trong ô. KTV đang xử lý — phí quá giờ tạm dừng, bạn chưa cần thanh toán.",
+  "ordReportedCanOpen": "KTV sẽ tới kiểm tra ô. Bạn vẫn mở ô bằng mã PIN để lấy đồ được — phí quá giờ tạm dừng từ lúc báo.",
+  "ordReasonValue": "Lý do: {reason}",
+  "@ordReasonValue": {
+    "placeholders": {
+      "reason": {}
+    }
+  },
+  "ordViewRelocation": "Xem chi tiết điều chuyển & ảnh KTV",
+  "ordViewRecord": "Xem biên bản & ảnh minh chứng",
+  "ordPayOvertimeFee": "Thanh toán phí quá giờ",
+  "ordOriginalDeadline": "Hạn trả ban đầu",
+  "ordOverdueDuration": "Thời gian quá hạn",
+  "ordOvertimeRate": "Đơn giá quá giờ",
+  "ordCapRule": "Quy định mức trần",
+  "ordCapMax": "Tối đa {amount}",
+  "@ordCapMax": {
+    "placeholders": {
+      "amount": {}
+    }
+  },
+  "ordCapPercent": "{percent}% đơn",
+  "@ordCapPercent": {
+    "placeholders": {
+      "percent": {}
+    }
+  },
+  "ordOvertimeFee": "Phí quá giờ",
+  "ordAmountDue": "Cần thanh toán:",
+  "ordPayAmount": "Thanh toán {amount}",
+  "@ordPayAmount": {
+    "placeholders": {
+      "amount": {}
+    }
+  },
+  "ordOpenBoxPickup": "Mở ô lấy đồ",
+  "ordBoxReleased": "Đã giải phóng ô",
+  "ordBoxNotAssigned": "Chưa gán ô",
+  "ordPinCancelledSecurity": "•••••• (Đã hủy để bảo mật)",
+  "ordTechInCharge": "KTV phụ trách",
+  "ordRelocationRecordUpper": "HỒ SƠ ĐIỀU CHUYỂN Ô AN TOÀN",
+  "ordRelocationRecordSubtitle": "Hàng đã được chuyển sang ô mới do ô cũ gặp sự cố kỹ thuật",
+  "ordOriginalBoxUpper": "Ô BAN ĐẦU",
+  "ordBoxNumberHash": "Ô số #{number}",
+  "@ordBoxNumberHash": {
+    "placeholders": {
+      "number": {}
+    }
+  },
+  "ordTechnicalIssue": "Gặp sự cố kỹ thuật",
+  "ordNewBoxUpper": "Ô TIẾP NHẬN MỚI",
+  "ordHoldingSafely": "Đang chứa hàng an toàn",
+  "ordOldBoxCheckedAt": "Thời gian mở ô cũ kiểm tra",
+  "ordMovedAt": "Thời gian chuyển qua ô mới",
+  "ordOriginalBoxPin": "Mã PIN ô ban đầu",
+  "ordPinDisabled": "Đã vô hiệu hoá (Mã cũ hết hạn)",
+  "ordNewBoxPin": "Mã PIN mở ô mới (#{box})",
+  "@ordNewBoxPin": {
+    "placeholders": {
+      "box": {}
+    }
+  },
+  "ordPinActive": "{pin} (Đang kích hoạt)",
+  "@ordPinActive": {
+    "placeholders": {
+      "pin": {}
+    }
+  },
+  "ordTechPhotos": "Ảnh KTV chụp quá trình kiểm tra & chuyển ô ({count} ảnh):",
+  "@ordTechPhotos": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "ordViewFullRecord": "Xem toàn bộ biên bản sự cố KTV & nhật ký ➔",
+  "ordOrderDetailHash": "Chi tiết đơn #{id}",
+  "@ordOrderDetailHash": {
+    "placeholders": {
+      "id": {}
+    }
+  },
+  "ordServiceHash": "Dịch vụ #{id}",
+  "@ordServiceHash": {
+    "placeholders": {
+      "id": {}
+    }
+  },
+  "ordReviewDroneJourney": "Xem lại hành trình drone",
+  "ordTrackDrone": "Theo dõi giao drone",
+  "ordPayAndCompletePickup": "Thanh toán ({amount}) & Lấy đồ hoàn tất",
+  "@ordPayAndCompletePickup": {
+    "placeholders": {
+      "amount": {}
+    }
+  },
+  "ordIPickedUpCompleteOrder": "Tôi đã lấy đồ — Hoàn tất đơn",
+  "ordOpenBoxToPickup": "Mở {box} để lấy đồ",
+  "@ordOpenBoxToPickup": {
+    "placeholders": {
+      "box": {}
+    }
+  },
+  "ordReorder": "Đặt lại đơn",
+  "ordOpenBoxToDrop": "Mở {box} để bỏ đồ",
+  "@ordOpenBoxToDrop": {
+    "placeholders": {
+      "box": {}
+    }
+  },
+  "ordIDroppedOff": "Tôi đã bỏ đồ vào ô",
+  "ordPayOvertimeAndOpen": "Thanh toán phí quá giờ ({amount}) & Mở ô",
+  "@ordPayOvertimeAndOpen": {
+    "placeholders": {
+      "amount": {}
+    }
+  },
+  "ordIPickedUpComplete": "Tôi đã lấy đồ — hoàn tất",
+  "ordOpenBoxToReturn": "Mở {box} để trả tủ & lấy đồ",
+  "@ordOpenBoxToReturn": {
+    "placeholders": {
+      "box": {}
+    }
+  },
+  "ordEndRentalPickup": "Kết thúc thuê & lấy đồ",
+  "ordDelegatePickup": "Ủy quyền lấy hộ",
+  "ordChangePin": "Đổi mã PIN",
+  "ordAddReceiverEmail": "Thêm email người nhận",
+  "ordChangeReceiverEmail": "Đổi email người nhận",
+  "ordResendToReceiver": "Gửi lại thông tin cho người nhận",
+  "ordCancelOrder": "Hủy đơn",
+  "ordDirectionsToLocker": "Chỉ đường tới tủ",
+  "ordRequestRefund": "Yêu cầu hoàn tiền",
+  "ordStorageExpiredPay": "Đơn đã quá hạn lưu tủ {hours}. Ô tủ đã được giải phóng và đồ đã chuyển về bảo quản an toàn. Quý khách vui lòng thanh toán phí còn lại và bấm \"Thanh toán & lấy đồ\" để hoàn tất.",
+  "@ordStorageExpiredPay": {
+    "placeholders": {
+      "hours": {}
+    }
+  },
+  "ordStorageExpiredCheck": "Đơn đã quá hạn lưu tủ {hours}. Ô tủ đã được giải phóng và đồ đã chuyển về bảo quản an toàn. Quý khách vui lòng kiểm tra nhận đồ và bấm \"Tôi đã lấy đồ — Hoàn tất đơn\" để hoàn tất.",
+  "@ordStorageExpiredCheck": {
+    "placeholders": {
+      "hours": {}
+    }
+  },
+  "ordOverduePaidOpen": "Đơn quá hạn đã thanh toán phí quá giờ. Mời bạn mở ô để lấy đồ và hoàn tất trả tủ.",
+  "ordOverdueNeedPay": "Đơn đã quá hạn lấy — cần thanh toán phí quá giờ để mở tủ. {policy}",
+  "@ordOverdueNeedPay": {
+    "placeholders": {
+      "policy": {}
+    }
+  },
+  "ordUnpaidHold": "Đơn hàng chưa thanh toán. Vui lòng thanh toán trong vòng {minutes} phút để giữ chỗ tủ, hoặc bấm \"Hủy đơn\" bên dưới để giải phóng ô tủ ngay.",
+  "@ordUnpaidHold": {
+    "placeholders": {
+      "minutes": {}
+    }
+  },
+  "ordPlace": "Địa điểm",
+  "ordNewBox": "Ô mới tiếp nhận",
+  "ordNewBoxValue": "Ô số {box} (Đang an toàn)",
+  "@ordNewBoxValue": {
+    "placeholders": {
+      "box": {}
+    }
+  },
+  "ordOriginalBox": "Ô ban đầu",
+  "ordOriginalBoxValue": "Ô số {box} (Gặp sự cố)",
+  "@ordOriginalBoxValue": {
+    "placeholders": {
+      "box": {}
+    }
+  },
+  "ordOldBoxOpenedAt": "Thời gian mở ô cũ",
+  "ordBoxMovedAt": "Thời gian chuyển ô",
+  "ordOriginalPin": "Mã PIN ban đầu",
+  "ordOrderDate": "Ngày đặt",
+  "ordRentalDuration": "Thời gian thuê",
+  "ordOriginalDeadlineShort": "Hạn ban đầu",
+  "ordCapRuleShort": "Quy định trần",
+  "ordOvertimeFeeEstimate": "Phí quá giờ tạm tính",
+  "ordPenaltyStatus": "Trạng thái phạt",
+  "ordDueToOpen": "Cần nộp để mở ô",
+  "ordRecipient": "Người nhận",
+  "ordRecipientEmail": "Email người nhận",
+  "ordDelegatedToLabel": "Ủy quyền lấy hộ cho",
+  "ordDelegatee": "Người được ủy quyền",
+  "ordDelegationMessage": "Lời nhắn ủy quyền",
+  "ordDelegatedAt": "Ủy quyền lúc",
+  "ordExpectedPickup": "Dự kiến người nhận lấy",
+  "ordDeliveryAddress": "Địa chỉ giao",
+  "ordFromLocker": "Gửi từ tủ",
+  "ordFlightDistance": "Quãng đường bay",
+  "ordBasePrice": "Giá gốc",
+  "ordExtraFees": "Phí phát sinh",
+  "ordPointsUsed": "Điểm đã dùng",
+  "ordTotal": "Tổng tiền",
+  "ordRemaining": "Còn phải trả",
+  "ordPaidAt": "Thanh toán lúc",
+  "ordParcel": "Kiện hàng",
+  "ordDeliveryIncident": "Sự cố giao hàng",
+  "ordPaused": "Đang tạm dừng",
+  "ordPausedAt": "Tạm dừng lúc",
+  "ordDeliveryIncomplete": "Giao không hoàn tất",
+  "ordRecordedAt": "Ghi nhận lúc",
+  "ordParcelReturned": "Đã trả kiện cho bạn",
+  "ordNewBoxPinUpper": "Mã PIN mở Ô MỚI (#{box}):",
+  "@ordNewBoxPinUpper": {
+    "placeholders": {
+      "box": {}
+    }
+  },
+  "ordOldPinDisabledNote": "🔒 Mã PIN ô cũ đã bị vô hiệu hoá. Chỉ sử dụng mã trên để mở ô mới an toàn.",
+  "ordPickupCodeForTech": "Mã lấy hàng — đọc cho kỹ thuật viên khi tới lấy",
+  "ordTimeline": "Mốc thời gian",
+  "payMethodWallet": "Ví Lock.R",
+  "payMethodSepay": "Chuyển khoản (SePay)",
+  "payMethodCash": "Tiền mặt",
+  "ordPaymentMethod": "Hình thức thanh toán",
+  "ordTransactionId": "Mã giao dịch",
+  "ordPaymentTime": "Thời gian thanh toán",
+  "ordTransferred": "Đã chuyển tiền",
+  "ordRejected": "Bị từ chối",
+  "ordAwaitingTransfer": "Chờ chuyển khoản",
+  "ordRefundHash": "Hoàn tiền #{id}",
+  "@ordRefundHash": {
+    "placeholders": {
+      "id": {}
+    }
+  },
+  "ordRefundAmount": "Số tiền hoàn",
+  "ordReceivingAccount": "Tài khoản nhận",
+  "ordCompletedAt": "Thời gian hoàn tất",
+  "ordRequestedAt": "Thời gian yêu cầu",
+  "ordSeeRefunds": "Xem chi tiết ở mục Hoàn tiền",
+  "ordExtensionPayment": "Thanh toán gia hạn thời gian",
+  "ordAttemptN": "Lần {n}",
+  "@ordAttemptN": {
+    "placeholders": {
+      "n": {}
+    }
+  },
+  "ordInterventionRecord": "Biên bản can thiệp & bảo vệ tài sản:",
+  "ordBoxIncidentTitle": "Sự cố ô tủ - Đơn hàng #{code}",
+  "@ordBoxIncidentTitle": {
+    "placeholders": {
+      "code": {}
+    }
+  },
+  "ordViewTechEvidence": "Xem chi tiết & ảnh minh chứng KTV",
+  "ordInfoRelocated": "ℹ️ Hàng của bạn đã được chuyển sang ô mới. Vui lòng kiểm tra mã mở ô mới trong app.",
+  "ordInfoSealedHub": "ℹ️ Hàng được niêm phong an toàn và đưa về Hub. Nhân viên sẽ liên hệ bạn để thu xếp lại.",
+  "ordInfoHandedOver": "ℹ️ Hàng đã được bàn giao trực tiếp. Nếu có thắc mắc vui lòng liên hệ bộ phận CSKH.",
+  "ordEmailWithCode": "Lock.R gửi lại mã mở tủ, nơi lấy và hạn lấy hàng tới email này. Sửa email nếu người nhận chưa nhận được thư.",
+  "ordEmailOrderInfo": "Hàng chưa vào tủ: Lock.R gửi lại thư báo có đơn sắp tới (chưa kèm mã). Mã mở tủ được gửi khi bạn bỏ hàng vào ô.",
+  "ordEmailSaveOnly": "Đơn chưa thanh toán. Lock.R báo người nhận qua email này khi đơn được thanh toán, và gửi mã mở tủ khi bạn bỏ hàng vào ô.",
+  "ordEnterRecipientEmail": "Nhập email người nhận",
+  "ordSaveEmail": "Lưu email",
+  "ordSendEmail": "Gửi email",
+  "commonCopy": "Sao chép",
+  "commonCopyTapHint": "Chạm để sao chép",
+  "commonRemove": "Bỏ",
+  "commonFullNameShort": "Họ tên",
+  "commonSubtotal": "Tạm tính",
+  "commonDiscountCode": "Mã giảm giá",
+  "commonRewardPoints": "Điểm thưởng",
+  "commonChooseLocker": "Chọn tủ",
+  "commonBoxType": "Loại ô",
+  "commonSelectedLocker": "Tủ đã chọn",
+  "commonNoFreeBoxes": "Hết ô",
+  "commonFreeBoxes": "Còn {count} ô trống",
+  "@commonFreeBoxes": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "commonStayToPay": "Ở lại thanh toán",
+  "commonCancelAndExit": "Hủy đơn & Thoát",
+  "commonPaymentEyebrow": "LOCK.R • THANH TOÁN",
+  "commonOrderCode": "Đơn {code}",
+  "@commonOrderCode": {
+    "placeholders": {
+      "code": {}
+    }
+  },
+  "commonScanQrPayHold": "Quét mã QR trên và chuyển khoản trong {minutes} phút để giữ ô — mã bỏ hàng sẽ tự hiện sau khi thanh toán.",
+  "@commonScanQrPayHold": {
+    "placeholders": {
+      "minutes": {}
+    }
+  },
+  "commonScanQrPayHoldRent": "Quét mã QR trên và chuyển khoản trong {minutes} phút để giữ ô — mã mở ô sẽ tự hiện sau khi thanh toán.",
+  "@commonScanQrPayHoldRent": {
+    "placeholders": {
+      "minutes": {}
+    }
+  },
+  "commonPaySuccessPinReady": "Thanh toán thành công! Mã PIN mở ô tủ đã sẵn sàng.",
+  "daysValue": "{days} ngày",
+  "@daysValue": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "pricePerDay": "{price}/ngày",
+  "@pricePerDay": {
+    "placeholders": {
+      "price": {}
+    }
+  },
+  "sizeSmallShort": "Nhỏ",
+  "sizeMediumShort": "Vừa",
+  "sizeLargeShort": "Lớn",
+  "boxOfOrder": "ô của đơn",
+  "sendBoxOpened": "Ô đã mở — đặt hàng vào, đóng cửa rồi bấm xác nhận.",
+  "sendBoxOpenFailed": "Không mở được ô",
+  "sendDroppedShare": "Đã bỏ hàng. Gửi mã lấy hàng cho người nhận bằng nút Chia sẻ bên dưới.",
+  "sendEnterRecipientEmail": "Nhập email người nhận để Lock.R gửi mã mở tủ",
+  "sendEnterRecipientPhone": "Nhập số điện thoại người nhận",
+  "sendPhone10Digits": "Số điện thoại gồm 10 số, bắt đầu bằng 0",
+  "sendCancelCreateQuestion": "Hủy tạo đơn hàng?",
+  "sendCancelCreateBody": "Đơn hàng chưa được thanh toán. Nếu bạn thoát bây giờ hoặc không hoàn tất thanh toán trong vòng {minutes} phút, đơn hàng sẽ bị hủy và ô tủ sẽ được giải phóng.",
+  "@sendCancelCreateBody": {
+    "placeholders": {
+      "minutes": {}
+    }
+  },
+  "sendCancelledReleased": "Đã hủy đơn hàng và giải phóng ô tủ.",
+  "sendTitle": "Gửi hàng qua tủ",
+  "sendSubtitle": "Gửi đồ nhanh chóng & tiện lợi",
+  "sendCreateAndGetPin": "Tạo đơn & lấy PIN bỏ hàng",
+  "sendLoadingLockers": "Đang tải danh sách tủ...",
+  "sendIntro": "Gửi hàng cho người khác qua tủ: bạn bỏ hàng vào ô bằng PIN, hệ thống sinh PIN mới gửi người nhận để họ tới lấy.",
+  "sendStandardOnly": "Gửi hàng dùng ô thường; ô vali (XL) chỉ để thuê giữ đồ. Hãy chắc kiện hàng vừa ô trước khi tạo đơn.",
+  "sendRecipientPhoneHint": "Số điện thoại người nhận",
+  "sendRecipientNameHint": "Tên người nhận (tùy chọn)",
+  "sendRecipientEmailHint": "Email người nhận",
+  "sendEmailInfo": "Lock.R gửi email cho người nhận ngay khi đơn được thanh toán (báo có hàng sắp tới) và gửi mã lấy hàng khi bạn bỏ hàng vào ô. Gửi lại được trong chi tiết đơn; bấm \"Chia sẻ mã cho người nhận\" để gửi thêm qua Zalo/SMS.",
+  "sendRecipientMessage": "Lời nhắn cho người nhận",
+  "sendMessageHint": "VD: Hàng dễ vỡ, mở nhẹ tay (tùy chọn)",
+  "sendBoxSize": "Ô {size}",
+  "@sendBoxSize": {
+    "placeholders": {
+      "size": {}
+    }
+  },
+  "sendSelectedBox": "Ô đã chọn",
+  "sendFeePerParcel": "{price}/lượt gửi",
+  "@sendFeePerParcel": {
+    "placeholders": {
+      "price": {}
+    }
+  },
+  "sendBoxTaken": "Ô vừa được đặt — chọn ô khác",
+  "sendStep1Title": "Bước 1 — Bỏ hàng vào ô",
+  "sendStep1Body": "Đến tủ, nhập PIN bên dưới để mở {box}, đặt hàng vào rồi đóng cửa.",
+  "@sendStep1Body": {
+    "placeholders": {
+      "box": {}
+    }
+  },
+  "sendStep2Title": "Bước 2 — Đã bỏ hàng xong",
+  "sendPinSentToRecipient": "PIN nhận hàng đã được gửi tới tài khoản người nhận.",
+  "sendSharePinWithRecipient": "Hãy chuyển mã PIN nhận hàng bên dưới cho người nhận.",
+  "sendRecipientEntersPin": "Người nhận nhập PIN tại tủ để lấy hàng",
+  "sendEnterPinToDrop": "Nhập PIN tại tủ để mở ô và bỏ hàng",
+  "sendLockrAccount": "Tài khoản Lock.R",
+  "sendHasAccount": "Đã có — PIN gửi thẳng vào app",
+  "sendNoAccount": "Chưa có — bạn cần chuyển PIN cho người nhận",
+  "sendPickupBefore": "Người nhận cần lấy hàng trước {deadline} ({remaining}). {policy}",
+  "@sendPickupBefore": {
+    "placeholders": {
+      "deadline": {},
+      "remaining": {},
+      "policy": {}
+    }
+  },
+  "sendDropInstructions": "Mở ô bằng nút bên dưới hoặc nhập PIN tại tủ, đặt hàng vào, đóng cửa rồi xác nhận. Xác nhận ngay trên màn hình tủ cũng được.",
+  "sendOpenToDrop": "Mở ô để bỏ hàng",
+  "sendIDropped": "Tôi đã bỏ hàng vào ô",
+  "sendStepDrop": "Bỏ hàng",
+  "sendStepRecipientPicks": "Người nhận lấy",
+  "rentPaymentWaiting": "Đang chờ xác nhận thanh toán, vui lòng đợi giây lát",
+  "rentOpenedStart": "Ô đã mở thành công — bắt đầu kỳ thuê!",
+  "rentOpenSimulated": "Không mở được ô thật (giả lập: đã xác nhận bỏ đồ & bắt đầu kỳ thuê)",
+  "rentCancelQuestion": "Hủy tạo đơn thuê tủ?",
+  "rentCancelBody": "Đơn thuê tủ chưa được thanh toán. Nếu bạn thoát bây giờ hoặc không hoàn tất thanh toán trong vòng {minutes} phút, đơn sẽ bị hủy và ô tủ sẽ được giải phóng.",
+  "@rentCancelBody": {
+    "placeholders": {
+      "minutes": {}
+    }
+  },
+  "rentCancelledReleased": "Đã hủy đơn thuê tủ và giải phóng ô tủ.",
+  "rentTitle": "Thuê tủ giữ đồ",
+  "rentSubtitle": "Chọn điểm tủ & thời gian sử dụng",
+  "rentNow": "Thuê ngay",
+  "rentLoadingInfo": "Đang tải thông tin điểm tủ...",
+  "rentIntro": "Thuê ô để giữ đồ cá nhân theo giờ hoặc theo ngày. PIN mở ô được dùng nhiều lần trong suốt kỳ thuê.",
+  "rentDuration": "Thời gian thuê",
+  "rentOptionalHint": "Tùy chọn...",
+  "rentDiscountValue": "Giảm: -{amount}",
+  "@rentDiscountValue": {
+    "placeholders": {
+      "amount": {}
+    }
+  },
+  "rentPointsValue": "Điểm thưởng: {value}",
+  "@rentPointsValue": {
+    "placeholders": {
+      "value": {}
+    }
+  },
+  "rentByHour": "Theo giờ",
+  "rentByDay": "Theo ngày",
+  "rentMinusDay": "Bớt 1 ngày",
+  "rentDaysHours": "{days} ngày · {hours} giờ",
+  "@rentDaysHours": {
+    "placeholders": {
+      "days": {},
+      "hours": {}
+    }
+  },
+  "rentPlusDay": "Thêm 1 ngày",
+  "rentRunning": "Kỳ thuê đang chạy",
+  "rentPinUntil": "PIN mở ô nhiều lần tới {time}.",
+  "@rentPinUntil": {
+    "placeholders": {
+      "time": {}
+    }
+  },
+  "rentPinMultiUse": "PIN dùng nhiều lần trong kỳ thuê",
+  "rentExpiresAt": "Hết hạn thuê: {deadline} ({remaining}). {policy}",
+  "@rentExpiresAt": {
+    "placeholders": {
+      "deadline": {},
+      "remaining": {},
+      "policy": {}
+    }
+  },
+  "rentHeldDropOff": "Đã giữ ô — bỏ đồ vào",
+  "rentEnterPinToOpen": "Nhập PIN để mở {box} hoặc mở bằng nút bên dưới để bắt đầu kỳ thuê.",
+  "@rentEnterPinToOpen": {
+    "placeholders": {
+      "box": {}
+    }
+  },
+  "rentOpenToDrop": "Mở ô để bỏ đồ",
+  "rentExtensionUnpaid": "Còn phí gia hạn chưa thanh toán — cần trả trước khi kết thúc thuê.",
+  "rentDoneSeeOrders": "Xong — xem trong Đơn của tôi",
+  "cellAvailable": "Trống",
+  "cellReservedHeld": "Đã giữ chỗ",
+  "cellOccupied": "Có đồ",
+  "cellAwaitingTechCheck": "Chờ KTV kiểm tra",
+  "cellCleaning": "Đang vệ sinh",
+  "stAwaitingDropoff": "Chờ bỏ đồ",
+  "stAwaitingDispatch": "Chờ điều phối",
+  "stAccepted": "Đã tiếp nhận",
+  "stLaunching": "Đang khởi phóng",
+  "stDropReported": "Đã báo rơi kiện",
+  "stPickupAssigned": "KTV đang tới lấy hàng",
+  "stPickedUpByTech": "KTV đã lấy hàng",
+  "stFailed": "Giao không thành công",
+  "stDeparted": "Drone đã rời trạm",
+  "stEnRoute": "Drone đang bay",
+  "stApproaching": "Drone sắp đến",
+  "stArrived": "Drone đã đến tủ",
+  "stReadyForPickup": "Chờ nhận hàng",
+  "stStoring": "Đang trong tủ",
+  "stCollected": "Đã thu gom",
+  "stProcessing": "Đang xử lý",
+  "stReadyToReturn": "Sẵn sàng trả",
+  "stNew": "Mới",
+  "stDone": "Đã xong",
+  "stNotConfirmed": "Không xác nhận",
+  "typeLaundry": "Giặt ủi",
+  "typeStorage": "Gửi đồ",
+  "typeParcel": "Nhận hàng",
+  "incidentSince": " từ {time}",
+  "@incidentSince": {
+    "placeholders": {
+      "time": {}
+    }
+  },
+  "incidentReportedCanOpen": "Bạn đã báo sự cố ô — kỹ thuật viên sẽ tới kiểm tra. Bạn vẫn có thể mở ô bằng mã PIN để lấy đồ; phí quá giờ tạm dừng{since}.",
+  "@incidentReportedCanOpen": {
+    "placeholders": {
+      "since": {}
+    }
+  },
+  "incidentBlocked": "Ô đang chờ kỹ thuật viên xử lý sự cố. Đồ của bạn vẫn được giữ an toàn trong ô, phí quá giờ tạm dừng{since} — bạn chưa cần thanh toán hay gia hạn. Lock.R sẽ báo khi lấy được đồ.",
+  "@incidentBlocked": {
+    "placeholders": {
+      "since": {}
+    }
+  },
+  "durDaysHours": "{days} ngày {hours} giờ",
+  "@durDaysHours": {
+    "placeholders": {
+      "days": {},
+      "hours": {}
+    }
+  },
+  "durHoursMinutes": "{hours} giờ {minutes} phút",
+  "@durHoursMinutes": {
+    "placeholders": {
+      "hours": {},
+      "minutes": {}
+    }
+  },
+  "durUnderMinute": "dưới 1 phút",
+  "timeRemaining": "Còn {time}",
+  "@timeRemaining": {
+    "placeholders": {
+      "time": {}
+    }
+  },
+  "timeOverdueBy": "Quá hạn {time}",
+  "@timeOverdueBy": {
+    "placeholders": {
+      "time": {}
+    }
+  },
+  "credEnterPinAtLocker": "Nhập PIN tại màn hình tủ để mở ô",
+  "credPinCopied": "Đã sao chép mã PIN",
+  "credAt": "Tại: {name}",
+  "@credAt": {
+    "placeholders": {
+      "name": {}
+    }
+  },
+  "unlockBlePermissionBlocked": "Quyền Bluetooth (Thiết bị lân cận) đang bị chặn. Mở Cài đặt để cho phép rồi quét lại.",
+  "unlockBlePermissionDenied": "App cần quyền Bluetooth để dò tủ. Bấm Quét lại và chọn Cho phép.",
+  "unlockBleOff": "Bluetooth của điện thoại đang tắt. Bật Bluetooth rồi bấm Quét lại.",
+  "unlockBleUnsupported": "Thiết bị này không hỗ trợ Bluetooth. Dùng Quét mã QR hoặc mã PIN.",
+  "unlockNoSignal": "Chưa phát hiện sóng Bluetooth của tủ gần đây.",
+  "unlockOpenBox": "Mở {box}",
+  "@unlockOpenBox": {
+    "placeholders": {
+      "box": {}
+    }
+  },
+  "unlockOverdueRental": "Đơn thuê đã quá hạn. Đã ghi nhận xử lý phí quá giờ — mời bạn lấy đồ và đóng tủ để hoàn tất trả tủ.",
+  "unlockEndsRental": "Mở ô sẽ kết thúc kỳ thuê và giải phóng ô tủ. Vui lòng lấy hết đồ.",
+  "unlockScanQr": "Quét QR",
+  "unlockPin": "Mã PIN",
+  "unlockScanning": "Đang quét sóng Bluetooth của tủ...",
+  "unlockStandClose": "Vui lòng đứng cách tủ {locker} dưới 2m",
+  "@unlockStandClose": {
+    "placeholders": {
+      "locker": {}
+    }
+  },
+  "unlockConnected": "Đã kết nối Bluetooth tủ",
+  "unlockSimulateRpi": "Mô phỏng RPi",
+  "unlockDistanceSignal": "Khoảng cách: {distance} • Tín hiệu {rssi} dBm",
+  "@unlockDistanceSignal": {
+    "placeholders": {
+      "distance": {},
+      "rssi": {}
+    }
+  },
+  "unlockOpenAndReturn": "Mở {box} & Trả tủ",
+  "@unlockOpenAndReturn": {
+    "placeholders": {
+      "box": {}
+    }
+  },
+  "unlockOpenNow": "Mở {box} ngay (1-chạm)",
+  "@unlockOpenNow": {
+    "placeholders": {
+      "box": {}
+    }
+  },
+  "unlockNotFound": "Không tìm thấy sóng Bluetooth của tủ",
+  "unlockEnsureBluetooth": "Đảm bảo điện thoại đã bật Bluetooth hoặc dùng Quét mã QR thay thế.",
+  "unlockScanAgain": "Quét lại",
+  "unlockRescan": "Dò sóng lại",
+  "unlockQrTitle": "Xác thực qua tem QR trên tủ",
+  "unlockQrBody": "Dùng camera điện thoại quét mã QR dán trên thân tủ {locker} để mở {box}.",
+  "@unlockQrBody": {
+    "placeholders": {
+      "locker": {},
+      "box": {}
+    }
+  },
+  "unlockStartCamera": "Bật Camera quét tem QR",
+  "unlockKioskPinUpper": "MÃ PIN MỞ TRÊN MÀN HÌNH KIOSK",
+  "unlockCodeCopied": "Đã sao chép mã",
+  "unlockCopyPin": "Sao chép mã PIN",
+  "unlockKioskGuide": "Hướng dẫn mở tại màn hình Kiosk:",
+  "unlockKioskStep1": "Đến trước màn hình cảm ứng của {locker}.",
+  "@unlockKioskStep1": {
+    "placeholders": {
+      "locker": {}
+    }
+  },
+  "unlockKioskStep2": "Chọn nút \"Mở tủ\" hoặc \"Nhận đồ\".",
+  "unlockKioskStep3": "Nhập mã PIN {pin} để cửa {box} bung chốt.",
+  "@unlockKioskStep3": {
+    "placeholders": {
+      "pin": {},
+      "box": {}
+    }
+  },
+  "extrasNotEligible": "Đơn chưa đủ điều kiện áp mã này",
+  "extrasCodeInvalid": "Mã không hợp lệ hoặc đã hết hạn",
+  "extrasCodeApplied": "Đã áp mã \"{code}\"",
+  "@extrasCodeApplied": {
+    "placeholders": {
+      "code": {}
+    }
+  },
+  "extrasChooseCode": "Chọn mã giảm giá",
+  "extrasNoCodes": "Chưa có mã giảm giá nào.",
+  "extrasNoCodesHere": "Chưa có mã giảm giá dùng được ở tủ này.",
+  "tierBronze": "Đồng",
+  "tierSilver": "Bạc",
+  "tierGold": "Vàng",
+  "tierPlatinum": "Bạch kim",
+  "tierNextPoints": "còn {points} điểm lên hạng {tier}",
+  "@tierNextPoints": {
+    "placeholders": {
+      "points": {},
+      "tier": {}
+    }
+  },
+  "tierYouHavePoints": "Bạn đang có {points} điểm",
+  "@tierYouHavePoints": {
+    "placeholders": {
+      "points": {}
+    }
+  },
+  "tierRank": "hạng {tier}",
+  "@tierRank": {
+    "placeholders": {
+      "tier": {}
+    }
+  },
+  "tierHighest": "hạng cao nhất",
+  "payStatusPaid": "Đã thanh toán",
+  "payStatusPending": "Chờ thanh toán",
+  "payStatusFailed": "Thanh toán lỗi",
+  "payStatusNone": "Chưa có thanh toán",
+  "rulesRentRange": "Thuê từ {min} đến {max}.",
+  "@rulesRentRange": {
+    "placeholders": {
+      "min": {},
+      "max": {}
+    }
+  },
+  "rulesEvery24h": "Mỗi 24 giờ tính {price}.",
+  "@rulesEvery24h": {
+    "placeholders": {
+      "price": {}
+    }
+  },
+  "rulesDailyCapFrom": "Thuê từ {hours} giờ trong một ngày chỉ tính giá ngày {price}.",
+  "@rulesDailyCapFrom": {
+    "placeholders": {
+      "hours": {},
+      "price": {}
+    }
+  },
+  "rulesRentalOvertime": "Quá giờ thuê tính {rate} cho tới khi lấy đồ hoặc gia hạn.",
+  "@rulesRentalOvertime": {
+    "placeholders": {
+      "rate": {}
+    }
+  },
+  "rulesNoOvertimeFee": "Không tính phí quá giờ.",
+  "rulesPercentOfOrder": "{percent}% giá trị đơn",
+  "@rulesPercentOfOrder": {
+    "placeholders": {
+      "percent": {}
+    }
+  },
+  "rulesCapSuffix": " (tối đa {caps})",
+  "@rulesCapSuffix": {
+    "placeholders": {
+      "caps": {}
+    }
+  },
+  "rulesAnd": " và ",
+  "rulesOvertimeFee": "Phí quá giờ {rate}{cap}.",
+  "@rulesOvertimeFee": {
+    "placeholders": {
+      "rate": {},
+      "cap": {}
+    }
+  },
+  "rulesSendPickup": "Người nhận có {hours} giờ để lấy hàng kể từ lúc bạn bỏ hàng vào ô. {policy}",
+  "@rulesSendPickup": {
+    "placeholders": {
+      "hours": {},
+      "policy": {}
+    }
+  },
+  "rulesDronePickup": "Đơn hàng được lưu trữ {hours} giờ kể từ lúc drone thả hàng vào ô. Giờ và ngày hết hạn sẽ được báo ngay khi hàng vào ô. {policy}",
+  "@rulesDronePickup": {
+    "placeholders": {
+      "hours": {},
+      "policy": {}
+    }
+  },
+  "rulesDroneStoredUntil": "Đơn hàng được lưu trữ {hours} giờ, vui lòng lấy trước {deadline}.",
+  "@rulesDroneStoredUntil": {
+    "placeholders": {
+      "hours": {},
+      "deadline": {}
+    }
+  },
+  "rulesLoyaltyEarn": "Tích {percent}% số tiền bạn thanh toán thành điểm (1 điểm = {value}), cộng khi đơn hoàn tất.",
+  "@rulesLoyaltyEarn": {
+    "placeholders": {
+      "percent": {},
+      "value": {}
+    }
+  },
+  "rulesRedeemDisabled": "Hiện chưa áp dụng dùng điểm để thanh toán.",
+  "rulesRedeemMin": " (từ {points} điểm)",
+  "@rulesRedeemMin": {
+    "placeholders": {
+      "points": {}
+    }
+  },
+  "rulesRedeem": "1 điểm = {value} khi thanh toán, dùng tối đa {percent}% giá trị đơn{min}.",
+  "@rulesRedeem": {
+    "placeholders": {
+      "value": {},
+      "percent": {},
+      "min": {}
+    }
+  },
+  "loyaltyRedeemDisabled": "Hiện chưa áp dụng dùng điểm để thanh toán",
+  "loyaltyFullyDiscounted": "Đơn đã được giảm hết, không cần dùng điểm",
+  "loyaltyNoPoints": "Bạn chưa có điểm — điểm được cộng khi đơn hoàn tất",
+  "loyaltyBelowMin": "Bạn có {balance} điểm, cần tối thiểu {min} điểm mỗi lần dùng",
+  "@loyaltyBelowMin": {
+    "placeholders": {
+      "balance": {},
+      "min": {}
+    }
+  },
+  "loyaltyOrderTooSmall": "Đơn chưa đủ giá trị để dùng tối thiểu {min} điểm",
+  "@loyaltyOrderTooSmall": {
+    "placeholders": {
+      "min": {}
+    }
+  },
+  "loyaltyOffer": "Dùng {points} điểm · giảm {amount}",
+  "@loyaltyOffer": {
+    "placeholders": {
+      "points": {},
+      "amount": {}
+    }
+  },
+  "loyaltyYouHave": "Bạn có {balance} điểm",
+  "@loyaltyYouHave": {
+    "placeholders": {
+      "balance": {}
+    }
+  },
+  "loyaltyRule": "1 điểm = {value}, tối đa {percent}% giá trị đơn",
+  "@loyaltyRule": {
+    "placeholders": {
+      "value": {},
+      "percent": {}
+    }
+  },
+  "loyaltyPointsDiscount": "-{amount} ({points} điểm)",
+  "@loyaltyPointsDiscount": {
+    "placeholders": {
+      "amount": {},
+      "points": {}
+    }
+  },
+  "loyaltyCantUseNow": "Chưa dùng được điểm thưởng lúc này — đơn được tính đủ giá.",
+  "loyaltyPlusPoints": "+{points} điểm",
+  "@loyaltyPlusPoints": {
+    "placeholders": {
+      "points": {}
+    }
+  },
+  "loyaltyWillEarn": "Điểm sẽ được cộng",
+  "loyaltyEarned": "Điểm được cộng",
+  "loyaltyNotRecorded": "Chưa ghi nhận",
+  "loyaltyReversed": "{text} · đã thu hồi {points}",
+  "@loyaltyReversed": {
+    "placeholders": {
+      "text": {},
+      "points": {}
+    }
+  },
+  "loyaltyChecking": "Đang kiểm tra điểm thưởng...",
+  "loyaltyLoadFailed": "Chưa tải được điểm thưởng — đơn được tính đủ giá.",
+  "loyaltyUsePoints": "Dùng điểm thưởng",
+  "sepayCreateFailed": "Không tạo được giao dịch thanh toán. Vui lòng thử lại.",
+  "sepayNoQr": "Máy chủ chưa trả mã VietQR cho giao dịch này. Vui lòng thử lại sau.",
+  "sepayNoTxForSim": "Chưa có mã giao dịch để giả lập. Vui lòng thử lại.",
+  "sepayReceivedUpdating": "Hệ thống đã nhận được tiền, đơn hàng đang được cập nhật...",
+  "sepayPartial": "Đã nhận {received} — còn thiếu {remaining}. Mã QR bên dưới là số còn thiếu.",
+  "@sepayPartial": {
+    "placeholders": {
+      "received": {},
+      "remaining": {}
+    }
+  },
+  "sepayScanToPay": "Quét mã VietQR để thanh toán",
+  "sepayQrLoadFailed": "Không tải được mã QR",
+  "sepayAccountNumber": "Số tài khoản:",
+  "sepayAmountToTransfer": "Số tiền cần chuyển:",
+  "sepayTransferContent": "Nội dung chuyển khoản:",
+  "sepayContentCopied": "Đã sao chép nội dung chuyển khoản",
+  "sepayWaiting": "Đang chờ xác nhận thanh toán…",
+  "sepayAutoUpdate": "Tự động cập nhật ngay sau khi nhận được tiền.",
+  "sepayPayWithBankApp": "Thanh toán bằng app ngân hàng",
+  "sepayTransferExact": "Chuyển khoản đúng số tài khoản, số tiền và nội dung bên dưới.",
+  "sepayCreatingQr": "Đang tạo mã thanh toán…",
+  "apiErrBleTestNotGranted": "Tài khoản chưa được admin cho thử mở ô qua Bluetooth ở tủ này.",
+  "apiErrResolutionPhotoRequired": "Cần ít nhất 1 ảnh nghiệm thu trước khi hoàn tất phiếu.",
+  "apiErrLandingPadAbsent": "Tủ này không có bãi đáp drone.",
+  "apiErrLandingPadStatusInvalid": "Trạng thái bãi đáp không hợp lệ.",
+  "apiErrReportNotClaimable": "Phiếu không còn ở trạng thái chờ nhận.",
+  "apiErrDroneRouteRequired": "Cần chọn cả tủ gửi và tủ nhận.",
+  "apiErrDroneRouteInvalid": "Tủ gửi và tủ nhận phải khác nhau.",
+  "apiErrDroneRouteTooFar": "Tủ nhận nằm ngoài tầm bay của drone từ khu vực lấy hàng này.",
+  "apiErrDroneRouteTooShort": "Tủ nhận ở quá gần điểm lấy hàng nên không cần giao bằng drone — hãy gửi thẳng vào tủ nhận.",
+  "apiErrDronePickupOutOfRange": "Vị trí ghim nằm ngoài bán kính lấy hàng của tủ gửi drone. Khoảng cách này tính từ nhà bạn đến tủ gửi, khác quãng đường bay giữa hai tủ. Hãy kiểm tra ghim trên bản đồ rồi chọn lại vị trí.",
+  "apiErrDroneNoSourceLocker": "Hiện chưa có tủ nào gần bạn sẵn sàng phóng drone. Vui lòng thử lại sau.",
+  "apiErrDroneLockerLocationMissing": "Tủ nhận chưa có toạ độ nên chưa giao drone tới được.",
+  "apiErrDronePickupAddressRequired": "Cần nhập địa chỉ lấy hàng.",
+  "apiErrDronePickupLocationRequired": "Cần chọn vị trí lấy hàng trên bản đồ.",
+  "apiErrDroneSenderNameRequired": "Cần nhập tên người gửi.",
+  "apiErrDroneSenderPhoneInvalid": "Số điện thoại người gửi không hợp lệ.",
+  "apiErrDroneSenderEmailInvalid": "Email người gửi không hợp lệ.",
+  "apiErrDroneReceiverNameRequired": "Cần nhập tên người nhận.",
+  "apiErrDroneReceiverEmailInvalid": "Email người nhận không hợp lệ.",
+  "apiErrDroneParcelCategoryRequired": "Cần chọn loại hàng.",
+  "apiErrDronePickupNotOffered": "Việc lấy hàng này không còn được mời cho bạn.",
+  "apiErrDronePickupOfferExpired": "Lời mời lấy hàng đã hết hạn.",
+  "apiErrDronePickupNotAssignedToUser": "Việc lấy hàng này không thuộc về bạn.",
+  "apiErrDronePickupNotFound": "Đơn chưa có việc lấy hàng (có thể chưa thanh toán).",
+  "apiErrDronePickupCodeInvalid": "Mã lấy hàng không đúng. Nhờ người gửi đọc lại mã trong đơn.",
+  "apiErrDronePickupParcelNotVerified": "Cần xác nhận kiện đúng khai báo, hoặc báo không lấy được hàng.",
+  "apiErrDroneParcelNotPickedUp": "Kiện chưa được lấy từ người gửi.",
+  "apiErrDroneOrderBlocked": "Đơn đang tạm dừng vì sự cố, chưa đi lấy hàng lúc này.",
+  "apiErrDroneTechnicianLocationRequired": "Cần bật định vị để vào ca nhận việc lấy hàng.",
+  "apiErrDroneTechnicianHasActivePickup": "Bạn còn việc lấy hàng đã nhận. Hoàn tất hoặc báo không lấy được trước khi ra ca.",
+  "apiErrDroneTechnicianOffDuty": "Kỹ thuật viên này chưa vào ca.",
+  "apiErrDroneTechnicianBusy": "Kỹ thuật viên này đang bận việc khác.",
+  "apiErrDroneFailureReasonInvalid": "Lý do không hợp lệ cho thao tác này.",
+  "apiErrDroneUnchanged": "Drone này đang được gán cho nhiệm vụ rồi.",
+  "apiErrDroneFlightsSuspended": "Dịch vụ giao drone đang tạm dừng (thời tiết hoặc sự cố vận hành).",
+  "apiErrDroneOutsideFlightHours": "Ngoài khung giờ được phép phóng drone.",
+  "apiErrDroneOpenOrderLimit": "Bạn đang có quá nhiều đơn drone chưa hoàn tất. Hoàn tất hoặc huỷ bớt rồi đặt tiếp.",
+  "apiErrDroneProhibitedItemsNotDeclared": "Bạn cần cam kết kiện không chứa hàng cấm bay.",
+  "apiErrDroneParcelSizeInvalid": "Nhập đủ dài, rộng, cao của kiện hoặc bỏ trống cả ba.",
+  "apiErrDroneParcelTooLarge": "Kiện không lọt khoang hàng của drone.",
+  "apiErrDroneParcelCategoryInvalid": "Loại hàng không hợp lệ.",
+  "apiErrDroneDeclaredValueTooHigh": "Giá trị khai báo vượt mức drone được phép chở.",
+  "apiErrDroneParcelNotDropped": "Người gửi chưa xác nhận bỏ kiện vào ô gửi nên chưa thể tiếp nhận.",
+  "apiErrDroneParcelReturnNotPending": "Đơn này không có kiện nào chờ trả.",
+  "apiErrDroneBatteryUnknown": "Chưa biết mức pin của drone, hãy cập nhật pin trước khi bay.",
+  "apiErrDroneSurchargeNotOwed": "Đơn không còn nợ phụ thu cân lệch.",
+  "apiErrDroneSourceNotFound": "Không tìm thấy tủ gửi.",
+  "apiErrDroneDestinationNotFound": "Không tìm thấy tủ nhận.",
+  "apiErrDroneLockerInactive": "Tủ gửi hoặc tủ nhận đang ngừng hoạt động.",
+  "apiErrDroneSourceCellUnavailable": "Ô drone ở tủ gửi đang có đơn khác. Vui lòng chờ đội bay nạp hàng hoặc chọn tủ khác.",
+  "apiErrDroneSourceCellMismatch": "Ô drone đã chọn không thuộc tủ gửi này.",
+  "apiErrDroneCellRequired": "Chỉ đặt giao drone được ở ô drone.",
+  "apiErrBoxNotAvailable": "Ô tủ không còn trống. Vui lòng chọn ô hoặc tủ khác.",
+  "apiErrDroneDemoNotAllowed": "Tài khoản chưa được dùng chế độ mô phỏng drone.",
+  "apiErrDroneOrderUnpaid": "Đơn chưa thanh toán nên chưa thể tiếp nhận.",
+  "apiErrDroneOrderStatusInvalid": "Đơn không còn ở bước cho phép thao tác này.",
+  "apiErrDroneMissionAlreadyExists": "Đơn đã có điều phối viên khác tiếp nhận.",
+  "apiErrDroneMissionStatusInvalid": "Nhiệm vụ không còn ở bước cho phép thao tác này.",
+  "apiErrDroneMissionNotAssignedToUser": "Chỉ điều phối viên đã tiếp nhận mới thao tác được nhiệm vụ này.",
+  "apiErrDroneWrongSourceLocker": "Drone được chọn không đỗ tại tủ gửi của đơn.",
+  "apiErrDroneInactive": "Drone đã ngừng hoạt động.",
+  "apiErrDroneNotIdle": "Drone không còn sẵn sàng, hãy chọn drone khác.",
+  "apiErrDroneBatteryTooLow": "Pin drone quá thấp để bay, cần sạc trước.",
+  "apiErrDroneStatusConflict": "Trạng thái drone vừa thay đổi, hãy tải lại và thử lại.",
+  "apiErrDroneReservationLost": "Drone không còn được giữ cho nhiệm vụ này (có thể đã báo lỗi).",
+  "apiErrDronePayloadTooHeavy": "Kiện hàng vượt tải trọng cho phép của drone.",
+  "apiErrDroneLoadingNotConfirmed": "Cần xác nhận nạp hàng trước khi phóng.",
+  "apiErrDroneSurchargeUnpaid": "Kiện nặng hơn khai báo. Chờ khách trả thêm phần phí chênh rồi mới phóng được.",
+  "apiErrDroneParcelWeightInvalid": "Khối lượng kiện hàng không hợp lệ.",
+  "apiErrDroneAlreadyInFlight": "Drone đã cất cánh, không thể huỷ nhiệm vụ.",
+  "apiErrDroneCancelNoteRequired": "Cần nhập ghi chú khi chọn lý do Khác.",
+  "apiErrDroneStageAutomated": "Đơn mô phỏng tự chuyển chặng, không cần xác nhận tay.",
+  "apiErrDroneReceiverPhoneInvalid": "Số điện thoại người nhận không hợp lệ.",
+  "apiErrLockerInactive": "Tủ đang ngừng hoạt động.",
+  "apiErrLandingPadUnavailable": "Bãi đáp drone chưa sẵn sàng.",
+  "apiErrDroneOwnershipRequired": "Bạn cần nhận phụ trách drone này trước.",
+  "apiErrDroneAlreadyAssigned": "Drone đã có kỹ thuật viên khác phụ trách.",
+  "apiErrDroneActiveMission": "Drone đang có nhiệm vụ, chỉ được báo lỗi (FAULT).",
+  "apiErrDroneFaultReasonRequired": "Cần nhập lý do khi báo drone lỗi.",
+  "apiErrDronePaymentRequiredBeforePickup": "Vui lòng thanh toán đơn drone trước khi mở tủ nhận hàng.",
+  "apiErrOrderStatusInvalid": "Đơn không còn ở trạng thái cho phép thao tác này.",
+  "apiErrNotSupportedUpdate": "Máy chủ chưa hỗ trợ chức năng này. Vui lòng cập nhật hệ thống rồi thử lại.",
+  "apiErrForbidden": "Bạn không có quyền thực hiện thao tác này",
+  "apiErrConnection": "Lỗi kết nối máy chủ",
+  "apiErrGeneric": "Đã xảy ra lỗi",
+  "commonSending": "Đang gửi...",
+  "commonDescription": "Mô tả",
+  "commonNo": "Không",
+  "commonOrder": "Đơn hàng",
+  "commonTime": "Thời gian",
+  "commonMessage": "Lời nhắn",
+  "recvLoadFailed": "Không đọc được chi tiết đơn. Vui lòng thử lại.",
+  "recvNotInList": "Đơn không còn trong danh sách của bạn (có thể đã được ủy quyền cho người khác). Đang hiện thông tin đã lưu.",
+  "recvSummaryOnly": "Máy chủ chưa hỗ trợ xem chi tiết đầy đủ — đang hiện thông tin tóm tắt.",
+  "recvEmailSent": "Đã gửi thông tin đơn{withCode} tới {email}.",
+  "@recvEmailSent": {
+    "placeholders": {
+      "withCode": {},
+      "email": {}
+    }
+  },
+  "recvWithCode": " kèm mã mở tủ",
+  "recvYourEmail": "email của bạn",
+  "recvNoEmail": "Chưa có email",
+  "recvNoEmailBody": "Tài khoản của bạn chưa có email để nhận thông tin đơn. Bổ sung email trong Hồ sơ rồi gửi lại.",
+  "recvAddEmail": "Bổ sung email",
+  "recvDelegateDetail": "Chi tiết đơn lấy hộ",
+  "recvDetail": "Chi tiết đơn nhận",
+  "recvDelegator": "Người ủy quyền",
+  "recvSender": "Người gửi",
+  "recvPickupCode": "Mã lấy hàng",
+  "recvOpenBoxPickup": "Mở {box} lấy hàng",
+  "@recvOpenBoxPickup": {
+    "placeholders": {
+      "box": {}
+    }
+  },
+  "recvTrackDrone": "Theo dõi drone",
+  "recvSendingEmail": "Đang gửi email…",
+  "recvResendEmail": "Gửi lại thông tin qua email",
+  "recvSenderPhone": "SĐT người gửi",
+  "recvSenderEmail": "Email người gửi",
+  "recvRecipientName": "Tên người nhận",
+  "recvRecipientPhone": "SĐT người nhận",
+  "recvDelegatePerson": "Người lấy hộ",
+  "recvYouSuffix": "{name} (bạn)",
+  "@recvYouSuffix": {
+    "placeholders": {
+      "name": {}
+    }
+  },
+  "recvYou": "Bạn",
+  "recvDelegatePhone": "SĐT lấy hộ",
+  "recvDelegation": "Ủy quyền",
+  "recvOwnerDelegated": "Chủ đơn đã ủy quyền người khác lấy hộ",
+  "recvLockerAndBox": "Tủ & ô",
+  "recvReceivingLocker": "Tủ nhận",
+  "recvLockerCode": "Mã tủ",
+  "recvBoxSize": "Kích cỡ ô",
+  "recvSourceAddress": "Địa chỉ tủ gửi",
+  "recvSenderNote": "Ghi chú người gửi",
+  "recvPickupDeadline": "Hạn lấy",
+  "recvTimeLeft": "Còn lại",
+  "recvExpectedPickup": "Dự kiến lấy",
+  "recvCreatedAt": "Tạo đơn lúc",
+  "recvCompletedAt": "Hoàn tất lúc",
+  "recvUpdatedAt": "Cập nhật lần cuối",
+  "recvTimeline": "Dòng thời gian",
+  "recvDroneJourney": "Hành trình drone",
+  "recvCurrentStage": "Chặng hiện tại",
+  "recvEta": "Dự kiến tới tủ",
+  "recvArrived": "Đã tới",
+  "recvAboutMinutes": "Khoảng {minutes} phút",
+  "@recvAboutMinutes": {
+    "placeholders": {
+      "minutes": {}
+    }
+  },
+  "recvIncident": "Sự cố",
+  "recvParcelReturnedToSender": "Đã trả kiện cho người gửi",
+  "recvCodeMovedToDelegate": "Chủ đơn đã ủy quyền người khác lấy hộ nên mã lấy hàng không còn hiện ở đây.",
+  "recvCredCaption": "Nhập PIN hoặc quét QR tại tủ, hoặc mở ô ngay trên app",
+  "recvOverdueMayCharge": "Đơn đã quá hạn lấy — có thể phát sinh phí quá giờ.",
+  "recvCompleted": "Đơn đã hoàn tất — hàng đã được lấy.",
+  "recvCompletedAtTime": "Đơn đã hoàn tất — hàng đã được lấy lúc {time}.",
+  "@recvCompletedAtTime": {
+    "placeholders": {
+      "time": {}
+    }
+  },
+  "recvCancelled": "Đơn đã hủy nên không còn mã lấy hàng.",
+  "recvExpired": "Đơn đã quá hạn lấy, ô đã được thu hồi. Vui lòng liên hệ người gửi hoặc hỗ trợ Lock.R.",
+  "recvDroneNotReady": "{stage}. Mã lấy hàng sẽ hiện khi drone đã đặt kiện vào ô tủ nhận.",
+  "@recvDroneNotReady": {
+    "placeholders": {
+      "stage": {}
+    }
+  },
+  "recvSenderNotDropped": "Người gửi chưa bỏ hàng vào ô. Mã lấy hàng sẽ hiện khi hàng đã nằm trong ô.",
+  "recvNotReady": "Hàng chưa sẵn sàng. Mã lấy hàng sẽ hiện khi hàng đã nằm trong ô.",
+  "recvSenderPaid": "Người gửi đã thanh toán",
+  "recvRefundingSender": "Đang hoàn tiền cho người gửi",
+  "recvSenderRefunded": "Đã hoàn tiền cho người gửi",
+  "recvSenderUnpaid": "Người gửi chưa thanh toán",
+  "recvOrderCodeCopied": "Đã sao chép mã đơn",
+  "recvCopyOrderCode": "Sao chép mã đơn",
+  "recvYouAreDelegate": "Bạn được ủy quyền lấy hộ đơn này.",
+  "recvYouAreRecipient": "Bạn là người nhận của đơn này.",
+  "recvOverdueBy": "Đơn đã quá hạn lấy {duration} — lấy hàng sớm để tránh phí quá giờ.",
+  "@recvOverdueBy": {
+    "placeholders": {
+      "duration": {}
+    }
+  },
+  "recvNoCodeYet": "Đơn chưa có mã lấy hàng — hàng có thể chưa được bỏ vào ô.",
+  "recvBoxOpenedPickup": "Tủ đã mở {box} — lấy hàng rồi đóng cửa tủ lại.",
+  "@recvBoxOpenedPickup": {
+    "placeholders": {
+      "box": {}
+    }
+  },
+  "recvOpenByCodeNotSupported": "Máy chủ chưa hỗ trợ mở ô bằng mã. Hãy nhập mã tại màn hình tủ.",
+  "recvLockerWithCode": "Tủ {code}",
+  "@recvLockerWithCode": {
+    "placeholders": {
+      "code": {}
+    }
+  },
+  "recvDelegatorColon": "Người ủy quyền:",
+  "recvSenderColon": "Người gửi:",
+  "recvDelegatedPickup": "Lấy hộ",
+  "recvIncomingParcel": "Hàng nhận",
+  "recvStorageBox": "Ô lưu đồ",
+  "recvCodeMovedShort": "Chủ đơn đã ủy quyền người khác lấy hộ nên mã lấy hàng không còn hiện ở đây.",
+  "recvCredCaptionShort": "Nhập PIN tại tủ hoặc mở ô ngay trên app",
+  "recvReceived": "Đã nhận hàng",
+  "recvDelegated": "Đã ủy quyền lấy hộ",
+  "recvOverdueHurry": "Đơn đã quá hạn lấy — hãy lấy hàng sớm để tránh phát sinh thêm phí.",
+  "recvCodeTransferred": "Chủ đơn đã ủy quyền người khác lấy hộ — mã lấy hàng đã chuyển sang người lấy hộ.",
+  "detailCantCall": "Máy này không gọi điện được.",
+  "detailCopiedLabel": "Đã sao chép {label}",
+  "@detailCopiedLabel": {
+    "placeholders": {
+      "label": {}
+    }
+  },
+  "detailCallLabel": "Gọi {label}",
+  "@detailCallLabel": {
+    "placeholders": {
+      "label": {}
+    }
+  },
+  "detailCopyLabel": "Sao chép {label}",
+  "@detailCopyLabel": {
+    "placeholders": {
+      "label": {}
+    }
+  },
+  "parcelCategory": "Loại hàng",
+  "parcelWeight": "Cân nặng",
+  "parcelSize": "Kích thước",
+  "parcelFragile": "Hàng dễ vỡ",
+  "parcelFragileYes": "Có — nhẹ tay",
+  "parcelDeclaredValue": "Giá trị khai báo",
+  "parcelNoProhibited": "Cam kết không hàng cấm",
+  "delegateTitle": "Ủy quyền lấy hộ",
+  "delegateBody": "Người được ủy quyền thấy đơn và mã mở ô trong mục \"Đơn ủy quyền\" của app (theo số điện thoại). Mã PIN hiện tại sẽ được đổi mới.",
+  "delegatePhone": "Số điện thoại người lấy hộ",
+  "delegateName": "Tên người lấy hộ (không bắt buộc)",
+  "delegateMessage": "Lời nhắn (không bắt buộc)",
+  "delegateInvalidPhone": "Nhập số điện thoại hợp lệ (9–11 số).",
+  "delegateNotSupported": "Máy chủ chưa hỗ trợ ủy quyền lấy hộ.",
+  "delegateAction": "Ủy quyền",
+  "shareCopiedMessage": "Đã sao chép tin nhắn, dán vào Zalo, Messenger hoặc SMS để gửi cho người nhận.",
+  "shareCantOpenSheet": "Không mở được bảng chia sẻ",
+  "shareCantOpenSms": "Không mở được ứng dụng tin nhắn",
+  "shareTheRecipient": "người nhận",
+  "shareTitle": "Gửi mã cho người nhận",
+  "shareBody": "Người nhận nhập mã tại màn hình tủ để mở ô. Gửi tin nhắn soạn sẵn cho {who} qua Zalo, Messenger hoặc SMS.",
+  "@shareBody": {
+    "placeholders": {
+      "who": {}
+    }
+  },
+  "shareButton": "Chia sẻ mã cho người nhận",
+  "shareSms": "Nhắn SMS",
+  "shareCopyMessage": "Sao chép tin nhắn",
+  "shareMsgLocker": "Bạn có kiện hàng gửi tới tủ {where}.",
+  "@shareMsgLocker": {
+    "placeholders": {
+      "where": {}
+    }
+  },
+  "shareMsgDrone": "Bạn có kiện hàng giao bằng drone đang chờ tại tủ {where}.",
+  "@shareMsgDrone": {
+    "placeholders": {
+      "where": {}
+    }
+  },
+  "shareMsgBox": "Ô số {number}.",
+  "@shareMsgBox": {
+    "placeholders": {
+      "number": {}
+    }
+  },
+  "shareMsgCode": "Mã lấy hàng: {code}.",
+  "@shareMsgCode": {
+    "placeholders": {
+      "code": {}
+    }
+  },
+  "shareMsgDeadline": "Hạn lấy: {deadline}.",
+  "@shareMsgDeadline": {
+    "placeholders": {
+      "deadline": {}
+    }
+  },
+  "shareMsgHowTo": "Nhập mã tại màn hình tủ (kiosk) để mở ô.",
+  "timelineTitle": "Lịch sử trạng thái",
+  "timelineLoadFailed": "Không tải được lịch sử trạng thái.",
+  "timelineEmpty": "Chưa có chuyển trạng thái nào.",
+  "timelineFrom": "Từ {status}",
+  "@timelineFrom": {
+    "placeholders": {
+      "status": {}
+    }
+  },
+  "pickerNoLockers": "Chưa có tủ khả dụng",
+  "pickerTapToChange": "Chạm để chọn tủ khác",
+  "pickerUnavailable": "Tạm không khả dụng: {reason}",
+  "@pickerUnavailable": {
+    "placeholders": {
+      "reason": {}
+    }
+  },
+  "payTransferAmount": "Thanh toán chuyển khoản · {amount}",
+  "@payTransferAmount": {
+    "placeholders": {
+      "amount": {}
+    }
+  },
+  "payScanAnyBank": "Quét mã bằng app ngân hàng bất kỳ hoặc mở thẳng app ngân hàng.",
+  "svcRentSubtitle": "Thuê ô theo giờ, PIN dùng nhiều lần",
+  "svcSendSubtitle": "Bỏ hàng vào ô, gửi PIN cho người nhận",
+  "qrEnterLockerCode": "Vui lòng nhập mã tủ.",
+  "qrThisLocker": "tủ này",
+  "qrLockerCodeMismatch": "Mã tủ không khớp với {locker}.",
+  "@qrLockerCodeMismatch": {
+    "placeholders": {
+      "locker": {}
+    }
+  },
+  "qrEnterLockerCodeTitle": "Nhập mã tủ",
+  "qrLockerCodeHint": "Mã in trên thân tủ",
+  "qrCodeMismatch": "Mã QR không khớp với {locker}.\nVui lòng quét đúng mã QR dán trên thân tủ.",
+  "@qrCodeMismatch": {
+    "placeholders": {
+      "locker": {}
+    }
+  },
+  "qrLockerBoxGeneric": "ô tủ",
+  "qrScanToOpen": "Quét mở {box}",
+  "@qrScanToOpen": {
+    "placeholders": {
+      "box": {}
+    }
+  },
+  "qrLockerCodeValue": "Mã tủ: {code}",
+  "@qrLockerCodeValue": {
+    "placeholders": {
+      "code": {}
+    }
+  },
+  "qrPointCamera": "Hướng camera về phía tem mã QR dán trên mặt tủ để xác thực bạn đang đứng tại tủ.",
+  "qrCantScan": "Không quét được? Nhập mã tủ",
+  "secondsValue": "{seconds} giây",
+  "@secondsValue": {
+    "placeholders": {
+      "seconds": {}
+    }
+  },
+  "durDays": "{days} ngày",
+  "@durDays": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "durDaysHoursLong": "{days} ngày {hours} giờ",
+  "@durDaysHoursLong": {
+    "placeholders": {
+      "days": {},
+      "hours": {}
+    }
+  },
+  "durHours": "{hours} giờ",
+  "@durHours": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      }
+    }
+  },
+  "durHoursMinutesLong": "{hours} giờ {minutes} phút",
+  "@durHoursMinutesLong": {
+    "placeholders": {
+      "hours": {},
+      "minutes": {}
+    }
+  },
+  "durMinutesSeconds": "{minutes} phút {seconds} giây",
+  "@durMinutesSeconds": {
+    "placeholders": {
+      "minutes": {},
+      "seconds": {}
+    }
+  },
+  "incStReported": "Đã ghi nhận",
+  "incStEvidencePending": "Đang thu thập bằng chứng",
+  "incStInvestigating": "Đang điều tra",
+  "incStRecoveryInProgress": "Đang thu hồi kiện",
+  "incStAwaitingAdmin": "Chờ quản trị viên xem xét",
+  "incStResolutionProposed": "Đã có phương án xử lý",
+  "incStAwaitingCustomer": "Chờ bạn phản hồi phương án",
+  "incStResolutionInProgress": "Đang thực hiện phương án",
+  "incStDisputed": "Đang xem xét lại theo yêu cầu",
+  "incStResolved": "Đã xử lý xong",
+  "incStClosed": "Đã đóng",
+  "incStManual": "Nhân viên đang xử lý trực tiếp",
+  "recStOpen": "Mới mở",
+  "recStAwaitingAssignment": "Chờ phân công người thu hồi",
+  "recStAssigned": "Đã phân công",
+  "recStAccepted": "Nhân viên đã nhận việc",
+  "recStSearching": "Đang tìm kiện",
+  "recStFound": "Đã tìm thấy kiện",
+  "recStNotFound": "Chưa tìm thấy kiện",
+  "recStRecovered": "Đã thu hồi kiện",
+  "recStSubmitted": "Đã báo kết quả thu hồi",
+  "recStVerified": "Đã xác minh kết quả",
+  "recStClosed": "Đã bàn giao kiện về kho",
+  "recStCancelled": "Đã huỷ",
+  "parStInTransit": "Đang vận chuyển",
+  "parStDropReported": "Đã báo rơi",
+  "parStRecoveryPending": "Chờ thu hồi",
+  "parStFound": "Đã tìm thấy",
+  "parStRecovered": "Đã thu hồi",
+  "parStDamaged": "Bị hư hỏng",
+  "parStLost": "Thất lạc",
+  "parStReturnedToHub": "Đã về kho Lock.R",
+  "parStRedeliveryPending": "Chờ giao lại",
+  "parStRedelivered": "Đã giao lại",
+  "parStCompensated": "Đã bồi thường",
+  "incEvReported": "Ghi nhận kiện rơi khỏi drone",
+  "incEvRecoveryAssigned": "Phân công người thu hồi kiện",
+  "incEvRecoveryAccept": "Nhân viên nhận việc thu hồi",
+  "incEvRecoverySearching": "Nhân viên bắt đầu tìm kiện",
+  "incEvReturnFlightConfirmed": "Drone đã về trạm",
+  "incEvRecoverySubmitted": "Báo kết quả thu hồi",
+  "incEvRecoveryVerified": "Xác minh kết quả thu hồi",
+  "incEvStationDispatched": "Kiện được điều phối về trạm bay để giao lại",
+  "incEvStationUnavailable": "Đang điều phối trạm nhận kiện",
+  "incEvReturnedToHub": "Kiện đã về kho Lock.R",
+  "incEvResolutionProposed": "Lock.R đề xuất phương án",
+  "incEvCustomerAccept": "Bạn đồng ý phương án",
+  "incEvCustomerReview": "Bạn yêu cầu xem xét lại",
+  "incEvReturnFlightUpdated": "Cập nhật chuyến bay về trạm",
+  "incEvRedeliveryRequested": "Đã tạo đơn giao lại",
+  "incEvRedeliveryUnavailable": "Chưa tạo được đơn giao lại — nhân viên sẽ liên hệ",
+  "incEvRedeliveryCompleted": "Đã giao lại thành công",
+  "incEvCompensationSubmitted": "Đã gửi yêu cầu chi bồi thường",
+  "incEvCompensationPaid": "Đã chi bồi thường",
+  "incEvCompensationFailed": "Chi bồi thường chưa thành công",
+  "incEvResolved": "Đã hoàn tất xử lý sự cố",
+  "resFreeRedelivery": "Giao lại miễn phí",
+  "resRedeliveryPartial": "Giao lại kèm bồi thường một phần",
+  "resCompensationOnly": "Bồi thường",
+  "resManual": "Thỏa thuận riêng",
+  "condIntact": "còn nguyên vẹn",
+  "condMinor": "hư hại nhẹ",
+  "condMajor": "hư hại nặng",
+  "condUnusable": "không thể sử dụng",
+  "propAwaiting": "Chờ bạn phản hồi",
+  "propAccepted": "Bạn đã đồng ý",
+  "propDisputed": "Đã yêu cầu xem xét lại",
+  "propSuperseded": "Đã thay bằng phương án mới",
+  "incEvRecoveryUpdate": "Cập nhật thu hồi kiện",
+  "incEvCompensationUpdate": "Cập nhật bồi thường",
+  "incEvRedeliveryUpdate": "Cập nhật giao lại",
+  "msNotInit": "Chưa khởi tạo",
+  "msAwaitingLoading": "Chờ nạp hàng",
+  "msReadyToLaunch": "Sẵn sàng phóng",
+  "msLaunching": "Đang khởi phóng",
+  "msDeparted": "Đã rời trạm",
+  "msEnRoute": "Đang bay",
+  "msApproaching": "Sắp tới tủ nhận",
+  "msArrived": "Đã tới tủ nhận",
+  "msDeposited": "Đã gửi hàng vào ô",
+  "msFailed": "Chuyến bay thất bại",
+  "msDropReported": "Dừng do sự cố rơi kiện",
+  "dosAwaitingDispatch": "Đang giao bằng drone",
+  "dosStoring": "Hàng đang trong tủ nhận",
+  "dosExpired": "Quá hạn nhận",
+  "cancelWeather": "Thời tiết xấu",
+  "cancelDroneFault": "Drone lỗi",
+  "cancelPadNotReady": "Bãi đáp không sẵn sàng",
+  "cancelOperational": "Lý do vận hành",
+  "cancelOther": "Lý do khác",
+  "cancelReasonCode": "Lý do #{code}",
+  "@cancelReasonCode": {
+    "placeholders": {
+      "code": {}
+    }
+  },
+  "modeDemo": "Mô phỏng (DEMO)",
+  "modeStandard": "Drone thật",
+  "stgTitleAwaitingTech": "Chờ kỹ thuật viên nhận lấy hàng",
+  "stgTitleTechOnWay": "Kỹ thuật viên đang tới lấy hàng",
+  "stgTitlePickedUp": "Đã lấy hàng, đang mang tới drone",
+  "stgTitleLoading": "Đang nạp hàng lên drone",
+  "stgTitleLaunching": "Drone đang khởi phóng",
+  "stgTitleDeparted": "Drone đã rời trạm",
+  "stgTitleEnRoute": "Drone đang trên đường",
+  "stgTitleApproaching": "Drone sắp đến",
+  "stgTitleArrived": "Drone đã đến tủ",
+  "stgTitleReady": "Sẵn sàng nhận hàng",
+  "stgTitleDelayed": "Đơn hàng bị chậm",
+  "stgTitleFailed": "Giao không hoàn tất",
+  "stgTitleDrop": "Kiện hàng gặp sự cố rơi",
+  "stgTitleCancelled": "Đơn drone đã huỷ",
+  "stgTitleReceived": "Đã nhận hàng",
+  "stgTitleExpired": "Quá hạn nhận hàng",
+  "stgTitleUpdate": "Cập nhật đơn hàng",
+  "stgDescAwaitingTech": "Sau khi thanh toán, hệ thống tìm kỹ thuật viên drone rảnh gần bạn nhất",
+  "stgDescTechOnWay": "Kỹ thuật viên đang tới điểm lấy hàng, chuẩn bị kiện và mã lấy hàng",
+  "stgDescPickedUp": "Kiện đang được mang tới drone để nạp trực tiếp; không bỏ vào ô tủ bay",
+  "stgDescLoading": "Drone đã được gán, kỹ thuật viên đang cân và nạp kiện",
+  "stgDescLaunching": "Đội bay đang thực hiện quy trình khởi phóng",
+  "stgDescDeparted": "Drone đã cất cánh khỏi trạm nguồn",
+  "stgDescEnRoute": "Drone đang bay tới tủ nhận",
+  "stgDescEnRouteEta": "Drone dự kiến đến trong {eta}",
+  "@stgDescEnRouteEta": {
+    "placeholders": {
+      "eta": {}
+    }
+  },
+  "stgDescApproaching": "Drone đang tiếp cận tủ nhận của bạn",
+  "stgDescArrived": "Drone đã đến và đang gửi kiện hàng vào tủ",
+  "stgDescReady": "Kiện hàng đã nằm trong tủ nhận, dùng mã PIN/QR của đơn để mở ô",
+  "stgDescDelayed": "Đơn đang bị chậm so với dự kiến",
+  "stgDescDelayedEta": "Đơn đang bị chậm, dự kiến tới {eta}",
+  "@stgDescDelayedEta": {
+    "placeholders": {
+      "eta": {}
+    }
+  },
+  "stgDescFailed": "Đơn giao không hoàn tất",
+  "stgDescDrop": "Kiện được báo rơi khỏi drone trong chuyến bay. Tiến trình thu hồi và phương án xử lý xem ở thẻ sự cố của đơn.",
+  "stgDescCancelled": "Đơn đã dừng trước khi drone cất cánh",
+  "stgDescReceived": "Người nhận đã lấy kiện hàng khỏi tủ",
+  "stgDescExpired": "Đã quá hạn nhận hàng, vui lòng liên hệ hỗ trợ",
+  "stgDescUpdate": "Đơn hàng của bạn có cập nhật mới",
+  "droneNoWeatherData": "Chưa có dữ liệu thời tiết.",
+  "failWeather": "Tạm dừng bay do thời tiết hoặc lệnh điều hành",
+  "failWeatherUnsafe": "Thời tiết tuyến bay không an toàn",
+  "failStationSuspended": "Trạm bay đang tạm dừng",
+  "failDroneFault": "Drone gặp sự cố",
+  "failNoDrone": "Tủ gửi không còn drone sẵn sàng",
+  "failSourceLocker": "Tủ gửi gặp sự cố",
+  "failDestinationLocker": "Tủ nhận gặp sự cố",
+  "failLandingPad": "Bãi đáp drone không sẵn sàng",
+  "failNoTechnician": "Không có kỹ thuật viên nhận lấy hàng",
+  "failLaunchOverdue": "Quá hạn phóng drone sau khi lấy hàng",
+  "failCustomerAbsent": "Không gặp được người gửi tại điểm lấy hàng",
+  "failParcelRejected": "Kiện hàng không đúng khai báo",
+  "failAddressNotFound": "Không tìm thấy địa chỉ lấy hàng",
+  "failFlightIncident": "Sự cố trong lúc bay",
+  "failShortCustomerAbsent": "Không gặp được người gửi",
+  "failShortParcelRejected": "Kiện không đúng khai báo",
+  "failShortAddressNotFound": "Không tìm thấy địa chỉ",
+  "failShortNoDrone": "Không còn drone",
+  "failShortSourceLocker": "Tủ gửi lỗi",
+  "failShortDestinationLocker": "Tủ nhận lỗi",
+  "failShortFlightIncident": "Sự cố lúc bay",
+  "catDocument": "Tài liệu",
+  "catFood": "Đồ ăn",
+  "catClothing": "Quần áo",
+  "catElectronics": "Điện tử",
+  "catCosmetics": "Mỹ phẩm",
+  "heldSourceBox": "Còn trong ô gửi",
+  "heldFlightTeam": "Đội bay đang giữ",
+  "blockDisconnected": "mất kết nối",
+  "blockMaintenance": "đang bảo trì",
+  "blockSuspended": "tạm ngưng",
+  "blockNoPad": "chưa có bãi đáp drone",
+  "blockPadMaintenance": "bãi đáp đang bảo trì",
+  "blockPadFault": "bãi đáp đang lỗi",
+  "droneErrOwnerOnly": "Chỉ người đặt đơn mới thực hiện được thao tác này.",
+  "droneErrNotYourIncident": "Sự cố này không thuộc đơn của bạn.",
+  "droneErrNoReview": "Chính sách của đơn không cho yêu cầu xem xét lại phương án.",
+  "droneErrAlreadyResponded": "Phương án này đã được phản hồi. Vui lòng tải lại.",
+  "droneErrNoProposal": "Chưa có phương án nào chờ bạn phản hồi.",
+  "droneErrInvalidChoice": "Lựa chọn không hợp lệ.",
+  "droneErrRecipientLookup": "Chưa tra được thông tin người nhận. Vui lòng thử lại sau.",
+  "droneNoPermission": "Bạn không có quyền xem đơn drone này. Chỉ người đặt và người nhận theo dõi được đơn.",
+  "droneStatusLoadFailedRetrying": "Không tải được trạng thái giao hàng. Đang thử lại...",
+  "dronePickupCodeNotSupported": "Máy chủ chưa hỗ trợ tra mã nhận hàng trong ứng dụng. Hãy dùng mã PIN đã gửi qua thông báo, email hoặc SMS.",
+  "droneTrackingDisabled": "Tính năng theo dõi giao drone đang tạm tắt.",
+  "droneStatusLoadFailed": "Không tải được trạng thái giao hàng.",
+  "ddTlPayment": "Thanh toán",
+  "ddTlParcelDropped": "Bỏ kiện vào ô gửi",
+  "ddTlHomePickup": "Lấy hàng tại nhà người gửi",
+  "ddTlLoaded": "Nạp hàng lên drone",
+  "ddTlReady": "Sẵn sàng phóng",
+  "ddTlCodeSent": "Gửi mã cho người nhận",
+  "ddTlPickupDeadline": "Hạn nhận hàng",
+  "ddTlReceived": "Người nhận lấy hàng",
+  "ddProgress": "Tiến trình giao hàng",
+  "ddClosedTitle": "Đơn drone đã đóng",
+  "ddClosedBody": "Chuyến bay không hoàn tất nên đơn này đã đóng; phương án xử lý xem ở phần sự cố của đơn.",
+  "ddAwaitingPaymentTitle": "Chờ thanh toán",
+  "ddAwaitingPaymentBody": "Thanh toán xong hệ thống mới tìm kỹ thuật viên drone tới lấy hàng",
+  "ddAwaitingTeamTitle": "Chờ đội bay tiếp nhận",
+  "ddAwaitingTeamBody": "Kiện đã sẵn sàng tại trạm Lock.R, chờ kỹ thuật viên drone nạp hàng và phóng",
+  "ddReadyBody": "Kiện đã được nạp và niêm phong trên drone, chờ đội bay phóng",
+  "ddAboutMinutesLeft": "Còn khoảng {minutes} phút",
+  "@ddAboutMinutesLeft": {
+    "placeholders": {
+      "minutes": {}
+    }
+  },
+  "ddSince": "Từ {time}",
+  "@ddSince": {
+    "placeholders": {
+      "time": {}
+    }
+  },
+  "ddOverdueAt": "Đơn hàng đã quá hạn lấy lúc {deadline}. {policy}",
+  "@ddOverdueAt": {
+    "placeholders": {
+      "deadline": {},
+      "policy": {}
+    }
+  },
+  "ddPickupDeadline": "Hạn người nhận lấy hàng: {deadline} (lưu trữ {hours} giờ).",
+  "@ddPickupDeadline": {
+    "placeholders": {
+      "deadline": {},
+      "hours": {}
+    }
+  },
+  "ddFlightIncompleteClosed": "Chuyến bay không hoàn tất nên đơn này đã đóng. Phương án xử lý (giao lại hoặc bồi thường) xem ở phần sự cố của đơn.",
+  "ddUnpaidSearch": "Đơn chưa thanh toán. Thanh toán xong hệ thống mới bắt đầu tìm kỹ thuật viên drone tới lấy hàng.",
+  "ddAt": "Lúc: {time}",
+  "@ddAt": {
+    "placeholders": {
+      "time": {}
+    }
+  },
+  "ddReason": "Lý do: {reason}",
+  "@ddReason": {
+    "placeholders": {
+      "reason": {}
+    }
+  },
+  "ddNoteValue": "Ghi chú: {note}",
+  "@ddNoteValue": {
+    "placeholders": {
+      "note": {}
+    }
+  },
+  "ddTicket": "Phiếu sự cố: #{id}",
+  "@ddTicket": {
+    "placeholders": {
+      "id": {}
+    }
+  },
+  "ddParcelWithSender": "Kiện hàng chưa được lấy, vẫn ở chỗ người gửi.",
+  "ddRefundRecorded": "Yêu cầu hoàn tiền đã được ghi nhận. Admin sẽ chuyển khoản về tài khoản ngân hàng của người đặt.",
+  "ddRefundDone": "Tiền đã được chuyển khoản hoàn cho người đặt.",
+  "ddRefundByIncident": "Khoản đã trả được xử lý theo phương án sự cố: giao lại miễn phí hoặc bồi thường chuyển khoản về tài khoản ngân hàng đã liên kết.",
+  "ddRefundNotRecorded": "Chưa ghi nhận được yêu cầu hoàn tiền — vui lòng liên hệ hỗ trợ.",
+  "ddWeightOver": "Kiện cân thực tế {actual}, nặng hơn mức {expected} đã khai báo.",
+  "@ddWeightOver": {
+    "placeholders": {
+      "actual": {},
+      "expected": {}
+    }
+  },
+  "ddSurchargeOperator": "Chờ khách trả thêm {amount} rồi mới phóng được.",
+  "@ddSurchargeOperator": {
+    "placeholders": {
+      "amount": {}
+    }
+  },
+  "ddSurchargeReceiver": "Đang chờ người gửi trả thêm {amount} để drone cất cánh.",
+  "@ddSurchargeReceiver": {
+    "placeholders": {
+      "amount": {}
+    }
+  },
+  "ddSurchargeSender": "Bạn cần trả thêm {amount} để drone cất cánh. Không đồng ý thì bạn có thể huỷ đơn: phần đã trả được hoàn và đội bay trả lại kiện.",
+  "@ddSurchargeSender": {
+    "placeholders": {
+      "amount": {}
+    }
+  },
+  "ddUnpaidOperator": "Khách chưa thanh toán. Chỉ tiếp nhận được sau khi đơn đã thanh toán.",
+  "ddUnpaidReceiver": "Người gửi chưa thanh toán đơn. Đội bay tiếp nhận sau khi người gửi thanh toán.",
+  "ddUnpaidSender": "Đơn chưa thanh toán. Đội bay chỉ tiếp nhận sau khi bạn thanh toán.",
+  "ddPaySurcharge": "Trả thêm phí chênh",
+  "ddPayNow": "Thanh toán ngay",
+  "ddDeclineSurcharge": "Không đồng ý · huỷ đơn và nhận hoàn tiền",
+  "ddIncidentLabel": "Đơn đang gặp sự cố: {label}",
+  "@ddIncidentLabel": {
+    "placeholders": {
+      "label": {}
+    }
+  },
+  "ddFromTime": "Từ lúc: {time}",
+  "@ddFromTime": {
+    "placeholders": {
+      "time": {}
+    }
+  },
+  "ddAutoCloseOperator": "Chưa khắc phục trước {time} thì đơn tự kết thúc \"giao không hoàn tất\" và hoàn tiền cho khách.",
+  "@ddAutoCloseOperator": {
+    "placeholders": {
+      "time": {}
+    }
+  },
+  "ddAutoCloseCustomer": "Nếu chưa khắc phục được trước {time}, đơn sẽ kết thúc và bạn được hoàn tiền.",
+  "@ddAutoCloseCustomer": {
+    "placeholders": {
+      "time": {}
+    }
+  },
+  "ddChangePlan": "Đổi phương án hoặc xác nhận giao không hoàn tất.",
+  "ddTeamHandling": "Đội bay đang xử lý.",
+  "ddPickedUp": "Đã lấy hàng{at}",
+  "@ddPickedUp": {
+    "placeholders": {
+      "at": {}
+    }
+  },
+  "ddPickedUpAt": " lúc {time}",
+  "@ddPickedUpAt": {
+    "placeholders": {
+      "time": {}
+    }
+  },
+  "ddTechnician": "Kỹ thuật viên",
+  "ddYouHeadingToPickup": "Bạn đang tới lấy hàng",
+  "ddTechHeadingToPickup": "{who} đang tới lấy hàng",
+  "@ddTechHeadingToPickup": {
+    "placeholders": {
+      "who": {}
+    }
+  },
+  "ddYouAreInvited": "Bạn được mời lấy hàng",
+  "ddSearchingTech": "Đang tìm kỹ thuật viên drone gần bạn nhất",
+  "ddAwaitingDispatchPickup": "Chờ điều phối lấy hàng",
+  "ddTechAfterPayment": "Kỹ thuật viên sẽ tới lấy hàng sau khi đơn được thanh toán",
+  "ddHomePickup": "Lấy hàng tận nhà",
+  "ddPickupCode": "Mã lấy hàng",
+  "ddPickupCodeHint": "Đọc mã này cho kỹ thuật viên khi giao kiện. Không gửi mã cho người khác.",
+  "ddPickupPoint": "Điểm lấy hàng",
+  "ddDirections": "Chỉ dẫn",
+  "ddTechPhone": "SĐT kỹ thuật viên",
+  "ddDistanceAtAccept": "Cách điểm lấy lúc nhận việc",
+  "ddPickupToSource": "Điểm lấy hàng → tủ gửi",
+  "ddPickupNote": "Ghi chú lúc lấy hàng",
+  "ddPickupPhoto": "Ảnh kiện lúc lấy hàng",
+  "ddPhotoTakenAt": "Chụp lúc {time}",
+  "@ddPhotoTakenAt": {
+    "placeholders": {
+      "time": {}
+    }
+  },
+  "ddDroneBoxAtSource": "ô drone ở tủ gửi",
+  "ddDroneBoxNumberAtSource": "ô drone số {box} ở tủ gửi",
+  "@ddDroneBoxNumberAtSource": {
+    "placeholders": {
+      "box": {}
+    }
+  },
+  "ddSenderNotDroppedOperator": "Người gửi chưa xác nhận bỏ kiện vào {where}. Chỉ tiếp nhận được sau khi kiện đã nằm trong ô.",
+  "@ddSenderNotDroppedOperator": {
+    "placeholders": {
+      "where": {}
+    }
+  },
+  "ddWaitingSenderDrop": "Đang chờ người gửi bỏ kiện vào {where}.",
+  "@ddWaitingSenderDrop": {
+    "placeholders": {
+      "where": {}
+    }
+  },
+  "ddDropThenConfirm": "Bỏ kiện vào {where} rồi xác nhận bên dưới. Đội bay chỉ tiếp nhận đơn sau khi bạn xác nhận.",
+  "@ddDropThenConfirm": {
+    "placeholders": {
+      "where": {}
+    }
+  },
+  "ddIDropped": "Tôi đã bỏ kiện vào ô",
+  "ddParcelReturnedAt": "Kiện đã được trả lại cho người gửi lúc {time}.",
+  "@ddParcelReturnedAt": {
+    "placeholders": {
+      "time": {}
+    }
+  },
+  "ddParcelInBoxOperator": "Kiện còn trong ô gửi. Lấy kiện ra, trả cho người gửi rồi xác nhận đã trả.",
+  "ddParcelWithTeamOperator": "Kiện đang do đội bay giữ. Trả cho người gửi rồi xác nhận đã trả.",
+  "ddParcelInBoxCustomer": "Kiện của bạn còn trong ô gửi. Đội bay sẽ liên hệ để trả lại kiện.",
+  "ddParcelHeldByTech": "Kiện đang do kỹ thuật viên giữ và sẽ được mang trả lại{where}.",
+  "@ddParcelHeldByTech": {
+    "placeholders": {
+      "where": {}
+    }
+  },
+  "ddToSender": " cho người gửi",
+  "ddAtAddress": " tại {address}",
+  "@ddAtAddress": {
+    "placeholders": {
+      "address": {}
+    }
+  },
+  "ddCancelOrder": "Huỷ đơn",
+  "ddCancelAllowed": "Bạn huỷ được đơn khi đội bay chưa tiếp nhận.",
+  "ddRoute": "Lộ trình giao hàng",
+  "ddSystemPickedStation": "Tủ bay do hệ thống chọn (KTV nạp kiện trực tiếp lên drone)",
+  "ddLegacyBox": "Đơn cũ: kiện từng được gửi vào ô số {box}",
+  "@ddLegacyBox": {
+    "placeholders": {
+      "box": {}
+    }
+  },
+  "ddSentAt": "Gửi đi lúc: {time}",
+  "@ddSentAt": {
+    "placeholders": {
+      "time": {}
+    }
+  },
+  "ddNotSentYet": "Chưa gửi",
+  "ddDirectionsToDrone": "Chỉ đường tới drone tại tủ bay",
+  "ddReceiverLockerOperator": "Tủ nhận khách đã chọn (người nhận lấy hàng)",
+  "ddReceiverLockerCustomer": "Tủ nhận bạn đã chọn (người nhận lấy hàng)",
+  "ddReceiveBox": "Ô nhận số {box}",
+  "@ddReceiveBox": {
+    "placeholders": {
+      "box": {}
+    }
+  },
+  "ddDepositedAt": "Hàng vào tủ lúc: {time}",
+  "@ddDepositedAt": {
+    "placeholders": {
+      "time": {}
+    }
+  },
+  "ddNotArrived": "Chưa tới",
+  "ddCodeSentAt": "Gửi mã cho người nhận lúc: {time}",
+  "@ddCodeSentAt": {
+    "placeholders": {
+      "time": {}
+    }
+  },
+  "ddReceivedAt": "Người nhận lấy hàng lúc: {time}",
+  "@ddReceivedAt": {
+    "placeholders": {
+      "time": {}
+    }
+  },
+  "ddNotReceived": "Chưa nhận",
+  "ddDirectionsToReceiver": "Chỉ đường tới tủ nhận",
+  "ddLockerNoAddress": "Tủ này chưa có địa chỉ hoặc toạ độ để chỉ đường.",
+  "ddCantOpenMaps": "Không mở được ứng dụng bản đồ trên thiết bị.",
+  "ddOrderInfo": "Thông tin đơn hàng",
+  "ddOrderCode": "Mã đơn",
+  "ddOrderStatus": "Trạng thái đơn",
+  "ddPausedDrop": "Tạm dừng do sự cố rơi kiện",
+  "ddDroneFee": "Phí giao drone",
+  "ddWeightSurcharge": "Trong đó thu thêm do cân lệch",
+  "ddDiscountCodeValue": "Mã giảm giá {code}",
+  "@ddDiscountCodeValue": {
+    "placeholders": {
+      "code": {}
+    }
+  },
+  "ddUsePoints": "Dùng {points} điểm",
+  "@ddUsePoints": {
+    "placeholders": {
+      "points": {}
+    }
+  },
+  "ddAmountPaid": "Số tiền thanh toán",
+  "ddMethod": "Phương thức",
+  "ddPaymentRef": "Mã thanh toán",
+  "ddBoxAtLocker": "Ô nhận tại tủ",
+  "ddDeclaredWeight": "Khối lượng khai báo",
+  "ddParcelSize": "Kích thước kiện",
+  "ddCaution": "Lưu ý",
+  "ddDroppedAtLabel": "Bỏ kiện vào ô gửi lúc",
+  "ddTechReceivedAt": "KTV nhận kiện lúc",
+  "ddParcelDescription": "Mô tả kiện hàng",
+  "ddNoDescription": "Không có mô tả",
+  "ddFlightMode": "Hình thức bay",
+  "ddPeople": "Người liên quan",
+  "ddDroneTech": "Kỹ thuật viên drone",
+  "ddNoTechYet": "Chưa có người nhận việc",
+  "ddTechAccepted": "Đã nhận việc",
+  "ddLoader": "Người nạp hàng",
+  "ddNotLoaded": "Chưa nạp hàng",
+  "ddLoaded": "Đã nạp",
+  "ddNotChecked": "Chưa kiểm",
+  "ddPass": "Đạt",
+  "ddFail": "Không đạt",
+  "ddMissionRecord": "Nhiệm vụ bay & hồ sơ nạp hàng",
+  "ddMissionCode": "Mã nhiệm vụ",
+  "ddNotAssigned": "Chưa phân công",
+  "ddMissionStatus": "Trạng thái nhiệm vụ",
+  "ddDronePosition": "Vị trí drone hiện tại",
+  "ddNoData": "Chưa có dữ liệu",
+  "ddActualWeight": "Khối lượng thực tế",
+  "ddSealCode": "Mã niêm phong",
+  "ddNotSealed": "Chưa niêm phong",
+  "ddParcelMatched": "Đúng kiện, đúng đơn",
+  "ddPayloadSecured": "Kiện đã cố định",
+  "ddCompartmentLocked": "Khoang hàng đã khoá",
+  "ddLoadingNote": "Ghi chú nạp hàng",
+  "ddEvLoaded": "Đã nạp hàng lên drone",
+  "ddEvCodeSent": "Gửi mã nhận hàng cho người nhận",
+  "ddEvCreated": "Đơn drone được tạo",
+  "ddJourneyLog": "Nhật ký hành trình · mới nhất trước",
+  "ddNoJourney": "Chưa có mốc hành trình nào.",
+  "ddSystem": "Hệ thống",
+  "ddLockrStaff": "Nhân viên Lock.R",
+  "ddNewest": "Mới nhất",
+  "dbBoxTaken": "{box} vừa được người khác giữ. Hãy chọn ô drone khác.",
+  "@dbBoxTaken": {
+    "placeholders": {
+      "box": {}
+    }
+  },
+  "dbYourBox": "Ô bạn chọn",
+  "dbCheckingBoxes": "Đang kiểm tra ô drone…",
+  "dbNoFreeBoxes": "Không còn ô drone nhận trống",
+  "dbChooseBox": "Chọn ô người nhận sẽ lấy hàng",
+  "dbDistancePrefix": "Cách bạn {distance} · ",
+  "@dbDistancePrefix": {
+    "placeholders": {
+      "distance": {}
+    }
+  },
+  "dbNoPad": "Chưa có bãi đáp drone",
+  "dbNoCoordinates": "Chưa có toạ độ tủ",
+  "dbCheckingBoxesShort": "Đang kiểm tra ô drone",
+  "dbOutOfBoxes": "Hết ô drone trống",
+  "dbFreeBoxes": "{count} ô drone trống",
+  "@dbFreeBoxes": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "dbEnterName": "Nhập tên {who}",
+  "@dbEnterName": {
+    "placeholders": {
+      "who": {}
+    }
+  },
+  "dbInvalidPhone": "Số điện thoại {who} không hợp lệ",
+  "@dbInvalidPhone": {
+    "placeholders": {
+      "who": {}
+    }
+  },
+  "dbInvalidEmail": "Email {who} không hợp lệ",
+  "@dbInvalidEmail": {
+    "placeholders": {
+      "who": {}
+    }
+  },
+  "dbChoosePickup": "Chọn điểm lấy hàng",
+  "dbWhoSender": "người gửi",
+  "dbWhoReceiver": "người nhận",
+  "dbChooseReceiverLocker": "Chọn tủ nhận",
+  "dbCheckingReceiverBoxes": "Đang kiểm tra ô drone trống của tủ nhận, vui lòng chờ một chút",
+  "dbReceiverFull": "Tủ nhận này đã hết ô drone trống, hãy chọn tủ khác",
+  "dbChooseReceiverBox": "Chọn ô drone nhận còn trống tại tủ nhận",
+  "dbChooseCategory": "Chọn loại hàng",
+  "dbSizeAllOrNone": "Nhập đủ dài, rộng, cao của kiện (cm) hoặc bỏ trống cả ba",
+  "dbTooLarge": "Kiện không lọt khoang drone (tối đa {l} × {w} × {h} cm)",
+  "@dbTooLarge": {
+    "placeholders": {
+      "l": {},
+      "w": {},
+      "h": {}
+    }
+  },
+  "dbMaxValue": "Drone chỉ nhận kiện có giá trị tới {amount}",
+  "@dbMaxValue": {
+    "placeholders": {
+      "amount": {}
+    }
+  },
+  "dbConfirmNoProhibited": "Bạn cần cam kết kiện không chứa hàng cấm bay",
+  "dbPaidByVoucher": "Đơn đã được thanh toán bằng ưu đãi. Đội bay sẽ tiếp nhận đơn của bạn.",
+  "dbCreatedNotPaid": "Đã tạo đơn drone nhưng chưa thanh toán được: {error}",
+  "@dbCreatedNotPaid": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "dbTitle": "Gửi hàng bằng drone",
+  "dbIntro": "Đặt và thanh toán xong, kỹ thuật viên drone gần bạn nhất sẽ tới lấy kiện, mang tới drone tại tủ bay để nạp trực tiếp lên drone (không bỏ vào ô tủ), rồi drone bay tới ô nhận bạn đã chọn. Người nhận lấy hàng bằng mã mở ô gửi qua email.",
+  "dbSuspended": "Dịch vụ giao drone đang tạm dừng (thời tiết hoặc sự cố vận hành). Vui lòng thử lại sau.",
+  "dbPickupAt": "Lấy hàng tại",
+  "dbTechInstructions": "Chỉ dẫn cho kỹ thuật viên (tuỳ chọn)",
+  "dbTechInstructionsHint": "Tầng, cổng, giờ có nhà…",
+  "dbSenderName": "Họ tên người gửi *",
+  "dbSenderPhone": "Số điện thoại người gửi *",
+  "dbSenderEmail": "Email người gửi *",
+  "dbReceiverName": "Họ tên người nhận *",
+  "dbReceiverPhone": "Số điện thoại người nhận *",
+  "dbReceiverEmail": "Email người nhận *",
+  "dbEmailInfo": "Khi drone được phóng, người gửi và người nhận đều nhận email báo đơn. Khi hàng vào tủ, mã mở ô được gửi tới email người nhận.",
+  "dbReceiverLockerField": "Tủ nhận *",
+  "dbLoadingLockers": "Đang tải tủ nhận...",
+  "dbNoLockersInSystem": "Hệ thống chưa có tủ nào",
+  "dbReceiverBoxField": "Ô drone nhận *",
+  "dbFreeReceiverBoxes": "Ô nhận drone còn trống: {count}",
+  "@dbFreeReceiverBoxes": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "dbChecking": "đang kiểm tra…",
+  "dbLockerCantReceive": "Tủ này chưa nhận được drone: {reason}",
+  "@dbLockerCantReceive": {
+    "placeholders": {
+      "reason": {}
+    }
+  },
+  "dbWeightField": "Khối lượng * (tối đa {max} một đơn)",
+  "@dbWeightField": {
+    "placeholders": {
+      "max": {}
+    }
+  },
+  "dbWeightHint": "Chọn mức bằng hoặc lớn hơn khối lượng thật. Kỹ thuật viên cân lại khi nạp hàng: nặng hơn mức đã chọn quá {tolerance} g thì bạn trả thêm phần phí chênh trước khi drone bay; nhẹ hơn không hoàn lại.",
+  "@dbWeightHint": {
+    "placeholders": {
+      "tolerance": {}
+    }
+  },
+  "dbCategoryField": "Loại hàng *",
+  "dbDescriptionField": "Mô tả hàng hoá (tuỳ chọn)",
+  "dbLength": "Dài",
+  "dbWidth": "Rộng",
+  "dbSizeHint": "Kích thước tuỳ chọn. Khoang drone tối đa {size} cm.",
+  "@dbSizeHint": {
+    "placeholders": {
+      "size": {}
+    }
+  },
+  "dbDeclaredValueField": "Giá trị khai báo (tuỳ chọn)",
+  "dbDeclaredValueHint": "Căn cứ bồi thường nếu kiện hư hỏng, thất lạc. Tối đa {amount}.",
+  "@dbDeclaredValueHint": {
+    "placeholders": {
+      "amount": {}
+    }
+  },
+  "dbRouteAndFee": "Lộ trình và phí",
+  "dbAutoCancel": "Đơn chưa thanh toán sau {minutes} phút sẽ tự huỷ.",
+  "@dbAutoCancel": {
+    "placeholders": {
+      "minutes": {}
+    }
+  },
+  "dbNoProhibitedCheckbox": "Tôi cam kết kiện không chứa hàng cấm bay: pin rời, chất lỏng, chất dễ cháy nổ, hàng cấm theo pháp luật. *",
+  "dbCreateAndPay": "Tạo đơn và thanh toán {amount}",
+  "@dbCreateAndPay": {
+    "placeholders": {
+      "amount": {}
+    }
+  },
+  "dbCreateFree": "Tạo đơn (ưu đãi đã trừ hết phí)",
+  "dbLockerCodeOnly": "Mã riêng của tủ chỉ dùng được khi drone cất cánh tại {locker}.",
+  "@dbLockerCodeOnly": {
+    "placeholders": {
+      "locker": {}
+    }
+  },
+  "dbChoosePickupHint": "Chọn điểm lấy hàng * — dùng vị trí hiện tại hoặc tự nhập/ghim trên bản đồ",
+  "dbLatLngTap": "Vĩ độ {lat} · kinh độ {lng} · chạm để đổi",
+  "@dbLatLngTap": {
+    "placeholders": {
+      "lat": {},
+      "lng": {}
+    }
+  },
+  "dbQuoteHint": "Chọn điểm lấy hàng và tủ nhận để xem tủ gửi, quãng đường và phí.",
+  "dbCalculatingRoute": "Đang tính lộ trình…",
+  "dbSystemStation": "Tủ bay do hệ thống chọn: {locker}",
+  "@dbSystemStation": {
+    "placeholders": {
+      "locker": {}
+    }
+  },
+  "dbRouteSummary": "Kỹ thuật viên mang kiện {pickup} tới drone ở tủ bay để nạp trực tiếp · drone bay {route} tới ô nhận tại tủ đích",
+  "@dbRouteSummary": {
+    "placeholders": {
+      "pickup": {},
+      "route": {}
+    }
+  },
+  "dbFeeValue": "Phí giao drone: {amount}",
+  "@dbFeeValue": {
+    "placeholders": {
+      "amount": {}
+    }
+  },
+  "dbWind": "gió {speed} km/h",
+  "@dbWind": {
+    "placeholders": {
+      "speed": {}
+    }
+  },
+  "dbGust": "giật {speed} km/h",
+  "@dbGust": {
+    "placeholders": {
+      "speed": {}
+    }
+  },
+  "dbRain": "mưa {mm} mm",
+  "@dbRain": {
+    "placeholders": {
+      "mm": {}
+    }
+  },
+  "dbUpdatedAt": "Cập nhật {time}",
+  "@dbUpdatedAt": {
+    "placeholders": {
+      "time": {}
+    }
+  },
+  "dbSource": "nguồn {source}",
+  "@dbSource": {
+    "placeholders": {
+      "source": {}
+    }
+  },
+  "dbWeatherOk": "Thời tiết tuyến bay: Đủ điều kiện",
+  "dbWeatherUnknown": "Chưa xác nhận được thời tiết",
+  "dbWeatherSuspended": "Thời tiết tuyến bay: Tạm ngưng bay",
+  "dbWeatherRefresh": "Xem lại thời tiết",
+  "dbWeatherWindow": "Dự báo {minutes} phút tới (thời gian giao dự kiến) từ nơi gửi → {locker} → tủ nhận",
+  "@dbWeatherWindow": {
+    "placeholders": {
+      "minutes": {},
+      "locker": {}
+    }
+  },
+  "dbWeatherOnlyWhenSafe": "{message} Đơn chỉ đặt được khi trời đủ điều kiện bay.",
+  "@dbWeatherOnlyWhenSafe": {
+    "placeholders": {
+      "message": {}
+    }
+  },
+  "dtTitle": "Theo dõi giao drone",
+  "dtCheckConnection": "Vui lòng kiểm tra kết nối và thử lại.",
+  "dtConfirmDroppedTitle": "Xác nhận đã bỏ kiện",
+  "dtConfirmDroppedBody": "Bạn đã bỏ kiện vào {where} và đóng cửa ô? Đội bay sẽ tới nạp hàng sau khi bạn xác nhận.",
+  "@dtConfirmDroppedBody": {
+    "placeholders": {
+      "where": {}
+    }
+  },
+  "dtDropped": "Đã bỏ kiện",
+  "dtDroppedDone": "Đã ghi nhận. Đội bay sẽ tiếp nhận đơn của bạn.",
+  "dtCancelSurchargeTitle": "Huỷ đơn vì không đồng ý phụ thu",
+  "dtCancelSurchargeBody": "Đơn {code} sẽ bị huỷ. Phần bạn đã trả được ghi yêu cầu hoàn tiền và đội bay sẽ liên hệ để trả lại kiện. Không hoàn tác được.",
+  "@dtCancelSurchargeBody": {
+    "placeholders": {
+      "code": {}
+    }
+  },
+  "dtCancelledReturn": "Đã huỷ đơn. Đội bay sẽ trả lại kiện cho bạn.",
+  "dtMapSimulated": "Theo dõi trên bản đồ (mô phỏng)",
+  "dtMap": "Theo dõi trên bản đồ",
+  "dtInLockerShare": "Kiện đã vào tủ nhận. Vào \"Xem chi tiết đơn\" để chia sẻ mã mở ô cho người nhận.",
+  "dtInLockerPickup": "Kiện đã vào tủ nhận. Mở mã PIN để lấy hàng tại tủ.",
+  "dtViewDetail": "Xem chi tiết đơn",
+  "dtPickup": "Nhận hàng",
+  "dtOffline": "Mất kết nối · đang thử lại, thông tin bên dưới là lần cập nhật gần nhất",
+  "dtLive": "Đang cập nhật trực tiếp · trạng thái tự làm mới khi có thay đổi",
+  "dtLoadFailed": "Không tải được trạng thái giao hàng",
+  "rmNoCoordinates": "Tủ gửi hoặc tủ nhận chưa có toạ độ nên chưa vẽ được bản đồ hành trình.",
+  "rmZoomHint": "Chụm/mở hai ngón hoặc bấm +/− để phóng to; bấm ⤢ để xem toàn màn hình.",
+  "rmTotal": "Quãng đường {distance}",
+  "@rmTotal": {
+    "placeholders": {
+      "distance": {}
+    }
+  },
+  "rmRemaining": "Còn khoảng {distance}",
+  "@rmRemaining": {
+    "placeholders": {
+      "distance": {}
+    }
+  },
+  "rmLiveCoords": "Toạ độ cập nhật mỗi khi drone gửi vị trí về. Bấm vào toạ độ để mở Google Maps.",
+  "rmEstimatedCamera": "Vị trí drone ước theo chặng bay hiện tại. Số đo bay thật (GPS, pin, chế độ bay) xem ở khung camera phía trên.",
+  "rmEstimatedOpenMap": "Vị trí drone ước theo chặng bay hiện tại. Mở \"Theo dõi trên bản đồ\" để xem vị trí {mode}.",
+  "@rmEstimatedOpenMap": {
+    "placeholders": {
+      "mode": {}
+    }
+  },
+  "rmSimulated": "mô phỏng",
+  "rmLive": "trực tiếp",
+  "rmEstimated": "Vị trí drone ước theo chặng bay hiện tại.",
+  "rmZoomIn": "Phóng to",
+  "rmZoomOut": "Thu nhỏ",
+  "rmFitRoute": "Xem cả tuyến",
+  "rmFullscreen": "Toàn màn hình",
+  "rmRouteMap": "Bản đồ hành trình",
+  "rmDroneSentAt": "Drone gửi về lúc {time}{suffix}",
+  "@rmDroneSentAt": {
+    "placeholders": {
+      "time": {},
+      "suffix": {}
+    }
+  },
+  "rmSimSuffix": " · mô phỏng",
+  "rmAtReceiver": "Tại tủ nhận",
+  "rmSimByStage": "Mô phỏng theo chặng bay",
+  "rmTelemetry": "Theo telemetry của drone",
+  "rmEstimatedByStage": "Ước theo chặng bay",
+  "rmAtSourceNotLaunched": "Tại tủ gửi, chưa cất cánh",
+  "plServiceOff": "Dịch vụ vị trí đang tắt. Vui lòng bật GPS.",
+  "plDenied": "Quyền truy cập vị trí bị từ chối.",
+  "plDeniedForever": "Quyền vị trí bị từ chối vĩnh viễn. Hãy bật lại trong cài đặt.",
+  "plNoLocation": "Không lấy được vị trí hiện tại.",
+  "plNoLocationHint": "Không lấy được vị trí hiện tại. Hãy ra chỗ thoáng hoặc gõ địa chỉ để tìm.",
+  "plNoAddressForPoint": "Chưa tra được địa chỉ của điểm này. Hãy tự nhập địa chỉ bên dưới.",
+  "plMin3Chars": "Nhập ít nhất 3 ký tự để tìm địa chỉ.",
+  "plNotFound": "Không tìm thấy địa chỉ này. Thử gõ rõ hơn hoặc chạm lên bản đồ để ghim.",
+  "plNoPoint": "Chưa chọn vị trí lấy hàng trên bản đồ.",
+  "plEnterAddress": "Nhập địa chỉ lấy hàng (số nhà, đường, phường…).",
+  "plTitle": "Chọn điểm lấy hàng",
+  "plSearchHint": "Gõ địa chỉ (số nhà, đường, phường…)",
+  "plClear": "Xoá",
+  "plTapToSeePin": "{lng} · chạm để xem ghim",
+  "@plTapToSeePin": {
+    "placeholders": {
+      "lng": {}
+    }
+  },
+  "plCurrentLocation": "Vị trí hiện tại",
+  "plAddressField": "Địa chỉ lấy hàng",
+  "plTapMapToPin": "Chạm lên bản đồ để ghim điểm lấy hàng",
+  "plPinInfo": "Vĩ độ {lat} · kinh độ {lng} · vị trí ghim dùng để tính vùng phục vụ; kiểm tra ghim có đúng địa chỉ trước khi xác nhận",
+  "@plPinInfo": {
+    "placeholders": {
+      "lat": {},
+      "lng": {}
+    }
+  },
+  "plPickupHere": "Lấy hàng tại đây",
+  "psLoadFailed": "Không tải được mã nhận hàng. Vui lòng thử lại.",
+  "psReceivingLocker": "Tủ nhận hàng",
+  "psNotInQueue": "Không thấy đơn này trong hàng chờ nhận của bạn. Có thể đơn đã được lấy, hoặc mã nhận hàng được gửi cho số điện thoại khác.",
+  "psDelegated": "Bạn đã ủy quyền cho {name} lấy hộ đơn này nên mã nhận hàng đã chuyển cho người được ủy quyền.",
+  "@psDelegated": {
+    "placeholders": {
+      "name": {}
+    }
+  },
+  "psSomeoneElse": "người khác",
+  "psNotReady": "Mã nhận hàng chưa sẵn sàng. Mã sẽ có khi kiện đã vào ô tủ nhận.",
+  "psPin": "Mã PIN mở ô",
+  "psEnterAtKiosk": "Nhập mã này trên màn hình kiosk tại tủ để mở ô.",
+  "psReceiveBox": "Ô nhận",
+  "psPickupBefore": "Lấy trước",
+  "ocPaidRefund": "Đơn đã thanh toán: {amount} sẽ được hoàn bằng chuyển khoản sau khi admin duyệt. Hãy kiểm tra tài khoản ngân hàng nhận tiền trong Hồ sơ.",
+  "@ocPaidRefund": {
+    "placeholders": {
+      "amount": {}
+    }
+  },
+  "ocDroneFee": "phí giao drone",
+  "ocUnpaidNoFee": "Đơn chưa thanh toán nên không phát sinh phí.",
+  "ocTitle": "Huỷ đơn giao drone?",
+  "ocBody": "Đơn {code} sẽ bị huỷ và ô nhận đã giữ cho đơn được nhả. {refund}",
+  "@ocBody": {
+    "placeholders": {
+      "code": {},
+      "refund": {}
+    }
+  },
+  "ocRefundPending": "Đã huỷ đơn. Yêu cầu hoàn tiền đã được ghi nhận, admin sẽ chuyển khoản cho bạn.",
+  "ocRefunded": "Đã huỷ đơn. Tiền đã được chuyển khoản hoàn cho bạn.",
+  "ocPaidNoRefund": "Đã huỷ đơn. Chưa ghi nhận được yêu cầu hoàn tiền, vui lòng liên hệ hỗ trợ.",
+  "ocCancelled": "Đã huỷ đơn.",
+  "ocAlreadyAccepted": "Đội bay đã tiếp nhận nên đơn không còn huỷ được trong ứng dụng.",
+  "ocOwnerOnly": "Chỉ người đặt đơn mới huỷ được đơn này.",
+  "lmTitleSimulated": "Theo dõi drone · mô phỏng",
+  "lmSignalLost": "Mất tín hiệu · vị trí lúc {time}",
+  "@lmSignalLost": {
+    "placeholders": {
+      "time": {}
+    }
+  },
+  "lmConnecting": "Đang kết nối tới drone...",
+  "lmNoPosition": "Chưa nhận được vị trí drone. Đang thử lại...",
+  "lmOnTheWay": "Đang trên đường tới tủ nhận",
+  "lmAlmostThere": "Sắp tới nơi",
+  "lmEta": "Dự kiến đến",
+  "lmSpeed": "Tốc độ",
+  "lmLiveSimulated": "mô phỏng · cập nhật trực tiếp",
+  "lmLiveUpdates": "cập nhật trực tiếp",
+  "clCantOpenMaps": "Không mở được Google Maps.",
+  "clCopied": "Đã copy toạ độ {coords}",
+  "@clCopied": {
+    "placeholders": {
+      "coords": {}
+    }
+  },
+  "clDronePosition": "Vị trí drone · {note}",
+  "@clDronePosition": {
+    "placeholders": {
+      "note": {}
+    }
+  },
+  "clCopyCoords": "Copy toạ độ",
+  "clPickupPin": "Điểm lấy hàng người gửi ghim",
+  "clTechnician": "Vị trí kỹ thuật viên lúc đó",
+  "clSourceLocker": "Tại trạm/tủ gửi",
+  "clDroneGps": "Vị trí drone (GPS)",
+  "clDroneSim": "Vị trí drone (mô phỏng)",
+  "clDestination": "Tại tủ nhận",
+  "clAtEvent": "Vị trí lúc ghi mốc",
+  "lpIntro": "Chọn tủ nhận hàng (ưu tiên sắp xếp gần bạn nhất). Hệ thống tự chọn tủ bay và KTV đến lấy kiện tại nhà.",
+  "lpLoadFailed": "Không tải được danh sách tủ: {error}",
+  "@lpLoadFailed": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "lpNoLockers": "Chưa có tủ nào trên hệ thống.",
+  "lpDistance": "Cách bạn {distance}",
+  "@lpDistance": {
+    "placeholders": {
+      "distance": {}
+    }
+  },
+  "lpChecking": "Đang kiểm tra ô drone nhận",
+  "lpFreeSlots": "Còn {count} ô drone nhận trống",
+  "@lpFreeSlots": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "lpUnavailable": "Tạm không gửi drone: {reason}",
+  "@lpUnavailable": {
+    "placeholders": {
+      "reason": {}
+    }
+  },
+  "asTitle": "Drone sắp đến nơi",
+  "asPrepare": "Vui lòng chuẩn bị ra nhận hàng.",
+  "asDroneCode": "\nMã drone: {code}",
+  "@asDroneCode": {
+    "placeholders": {
+      "code": {}
+    }
+  },
+  "asEta": "Dự kiến: {eta}",
+  "@asEta": {
+    "placeholders": {
+      "eta": {}
+    }
+  },
+  "opPaid": "Đã thanh toán. Đội bay sẽ tiếp nhận đơn của bạn.",
+  "opPending": "Đang chờ xác nhận thanh toán, trạng thái sẽ tự cập nhật.",
+  "opFailed": "Thanh toán chưa thành công. Đơn vẫn được giữ, bạn có thể thanh toán lại.",
+  "opUnpaid": "Đơn drone chưa thanh toán. Thanh toán để đội bay tiếp nhận.",
+  "tlMovedAfter": "Chuyển sau {duration}",
+  "@tlMovedAfter": {
+    "placeholders": {
+      "duration": {}
+    }
+  },
+  "tlInStageFor": "Đã ở chặng này {duration}",
+  "@tlInStageFor": {
+    "placeholders": {
+      "duration": {}
+    }
+  },
+  "tlNotYet": "Chưa diễn ra",
+  "rbChooseBank": "Vui lòng chọn ngân hàng",
+  "rbSaved": "Đã lưu thông tin tài khoản nhận hoàn tiền thành công",
+  "rbSaveFailed": "Không thể lưu thông tin. Vui lòng kiểm tra lại",
+  "rbOneTimeSetup": "Cài đặt 1 lần duy nhất",
+  "rbIntro": "Hệ thống sẽ chuyển khoản hoàn tiền trực tiếp vào tài khoản này khi đơn hàng gặp sự cố (tủ kẹt, drone hủy, đơn giặt lỗi...). Bạn không cần phải nhập lại nhiều lần.",
+  "rbBeneficiaryBank": "Ngân hàng thụ hưởng",
+  "rbChooseBankShort": "Chọn ngân hàng",
+  "rbAccountNumber": "Số tài khoản ngân hàng",
+  "rbAccountNumberHint": "Nhập số tài khoản của bạn",
+  "rbEnterAccountNumber": "Vui lòng nhập số tài khoản",
+  "rbInvalidAccountNumber": "Số tài khoản không hợp lệ",
+  "rbHolderName": "Họ và tên chủ tài khoản",
+  "rbHolderHint": "Ví dụ: NGUYEN VAN A",
+  "rbEnterHolder": "Vui lòng nhập tên chủ tài khoản",
+  "rbUpdate": "Cập nhật tài khoản",
+  "rbSave": "Lưu tài khoản hoàn tiền",
+  "rbSearchHint": "Tìm theo tên hoặc mã ngân hàng...",
+  "rfCantPickImage": "Không thể chọn ảnh: {error}",
+  "@rfCantPickImage": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "rfChooseOrder": "Vui lòng chọn đơn hàng cần hoàn tiền",
+  "rfInvalidOrder": "Mã đơn hàng không hợp lệ",
+  "rfEnterReason": "Vui lòng nhập lý do yêu cầu hoàn tiền",
+  "rfEnterBank": "Vui lòng điền đầy đủ thông tin tài khoản ngân hàng nhận tiền",
+  "rfSending": "Đang gửi yêu cầu hoàn tiền...",
+  "rfSent": "Đã gửi yêu cầu hoàn tiền thành công!",
+  "rfError": "Lỗi: {message}",
+  "@rfError": {
+    "placeholders": {
+      "message": {}
+    }
+  },
+  "rfSubtitle": "Quản lý và tạo yêu cầu hoàn tiền cho đơn hàng",
+  "rfMyRequests": "Yêu cầu của tôi",
+  "rfNewRequest": "Tạo yêu cầu mới",
+  "rfEmptyRecent": "Không có yêu cầu hoàn tiền nào trong 7 ngày gần đây.",
+  "rfEmptyPending": "Không có yêu cầu hoàn tiền nào đang chờ xử lý.",
+  "rfEmptyCompleted": "Chưa có yêu cầu hoàn tiền nào đã được chuyển khoản thành công.",
+  "rfEmptyRejected": "Không có yêu cầu hoàn tiền nào bị từ chối.",
+  "rfEmptyCanceled": "Không có yêu cầu hoàn tiền nào đã hủy.",
+  "rfEmptyHint": "Bạn có thể tạo yêu cầu hoàn tiền mới từ tab bên cạnh.",
+  "rfNone": "Chưa có yêu cầu hoàn tiền nào",
+  "rfNoneHint": "Khi gặp sự cố tủ không mở, drone huỷ chuyến hoặc sự cố giặt ủi, bạn có thể tạo yêu cầu hoàn tiền tại đây.",
+  "rfCreateNow": "Tạo yêu cầu hoàn tiền ngay",
+  "rfNoneShort": "Chưa có yêu cầu hoàn tiền",
+  "rfNoMatch": "Không có yêu cầu phù hợp",
+  "rfTicketHash": "Phiếu hoàn tiền #{id}",
+  "@rfTicketHash": {
+    "placeholders": {
+      "id": {}
+    }
+  },
+  "rfSentAt": "Thời gian gửi",
+  "rfHasTransferSlip": "Có UNC",
+  "rfHasPhoto": "Có ảnh",
+  "rfViewDetail": "Xem chi tiết",
+  "rfDetailSubtitle": "Chi tiết yêu cầu & thông tin chuyển khoản",
+  "rfTransferDone": "Đã hoàn tất chuyển khoản thành công",
+  "rfRejectedTitle": "Yêu cầu hoàn tiền đã bị từ chối",
+  "rfAwaitingAdmin": "Đang chờ Admin đối soát và chuyển khoản",
+  "rfInfo": "Thông tin hoàn tiền",
+  "rfOrderCodeCopied": "Đã sao chép mã đơn hàng",
+  "rfAccountHolder": "Chủ tài khoản",
+  "rfReason": "Lý do hoàn",
+  "rfTransferId": "Mã GD chuyển tiền",
+  "rfTransferIdCopied": "Đã sao chép mã giao dịch",
+  "rfRejectReason": "Lý do từ chối",
+  "rfEvidence": "Chứng từ & Hình ảnh minh chứng",
+  "rfYourPhotos": "Ảnh minh chứng bạn đã gửi:",
+  "rfAdminSlip": "Biên lai chuyển khoản từ Admin (UNC):",
+  "rfChooseOrderTitle": "Chọn đơn hàng cần hoàn tiền",
+  "rfTapToChooseOrder": "Bấm vào đây để chọn đơn hàng",
+  "rfChoosePaidOrder": "Chọn đơn đã thanh toán bạn cần yêu cầu hoàn tiền",
+  "rfOrderValue": "Đơn: {code}",
+  "@rfOrderValue": {
+    "placeholders": {
+      "code": {}
+    }
+  },
+  "rfAmountLabel": "Số tiền: ",
+  "rfChange": "Đổi",
+  "rfChoose": "Chọn",
+  "rfSavedDefault": "Đã lưu mặc định",
+  "rfChooseReceivingBank": "Chọn ngân hàng nhận tiền",
+  "rfAccountNumberField": "Số tài khoản nhận tiền",
+  "rfAccountNumberHint": "Nhập số tài khoản",
+  "rfHolderField": "Tên chủ tài khoản (viết hoa không dấu)",
+  "rfSaveAsDefault": "Lưu làm tài khoản nhận hoàn tiền mặc định",
+  "rfReasonTitle": "Lý do yêu cầu hoàn tiền",
+  "rfQuickStuck": "Sự cố kẹt ô tủ",
+  "rfQuickDroneCancel": "Drone huỷ chuyến bay",
+  "rfQuickDoubleCharge": "Trừ tiền trùng cổng thanh toán",
+  "rfQuickLaundry": "Sự cố dịch vụ giặt ủi",
+  "rfReasonHint": "Mô tả chi tiết lý do và sự cố bạn gặp phải...",
+  "rfEvidenceOptional": "Hình ảnh minh chứng (tuỳ chọn)",
+  "rfTakePhoto": "Chụp ảnh",
+  "rfPickGallery": "Chọn thư viện",
+  "rfChangePhoto": "Đổi ảnh khác",
+  "rfExpectedAmount": "Số tiền hoàn dự kiến:",
+  "rfSubmit": "Gửi yêu cầu hoàn tiền",
+  "rfEvidenceDetail": "Chi tiết hình ảnh minh chứng",
+  "rfRules": "Quy tắc hoàn tiền",
+  "rfRulesIntro": "Lock.R hỗ trợ hoàn tiền cho các trường hợp:",
+  "rfRule1": "• Sự cố kỹ thuật ô tủ không mở được hoặc kẹt cửa > 30 phút.",
+  "rfRule2": "• Sự cố drone giao trễ vượt thời gian cam kết hoặc huỷ chuyến bay.",
+  "rfRule3": "• Lỗi cổng thanh toán trừ tiền 2 lần (double billing).",
+  "rfRule4": "• Hàng hoá/đồ giặt có sự cố từ đối tác giặt ủi.",
+  "rfProcessingTime": "Thời gian xử lý:",
+  "rfProcessingBody": "Quản trị viên sẽ đối soát và thực hiện chuyển khoản trong vòng 24 giờ làm việc. Bạn sẽ nhận được thông báo kèm biên lai chuyển khoản (UNC) ngay trên ứng dụng.",
+  "rfNoOrders": "Không có đơn hàng nào",
+  "rfSelected": "✓ Đang chọn",
+  "rfChooseBeneficiary": "Chọn ngân hàng thụ hưởng",
+  "rfSearchBank": "Tìm kiếm ngân hàng (mã, tên)...",
+  "bankUnknown": "Không xác định được ngân hàng nhận tiền. Vui lòng quét mã QR bằng app ngân hàng.",
+  "bankCantOpen": "Không mở được {app}. Có thể máy chưa cài app — hãy quét mã QR bằng app ngân hàng của bạn.",
+  "@bankCantOpen": {
+    "placeholders": {
+      "app": {}
+    }
+  },
+  "bankTitle": "Thanh toán bằng app ngân hàng",
+  "bankIntro": "Chọn app ngân hàng của bạn — số tài khoản, số tiền và nội dung chuyển khoản được điền sẵn, bạn chỉ cần xác nhận.",
+  "bankSearch": "Tìm ngân hàng",
+  "bankLoadFailed": "Không tải được danh sách app ngân hàng.\nBạn có thể quét mã QR bằng app ngân hàng.",
+  "bankNoMatch": "Không tìm thấy ngân hàng phù hợp",
+  "simBusy": "Đang giả lập…",
+  "simButton": "Giả lập thanh toán (test)",
+  "simFailed": "Không giả lập được",
+  "simTitle": "Giả lập đã chuyển khoản",
+  "simBody": "Chỉ dùng để test — không có tiền thật. Nhập ít hơn số cần trả để thử trường hợp chuyển thiếu.",
+  "simReceived": "Số tiền đã nhận",
+  "simAction": "Giả lập",
+  "txSepay": "Cổng SePay QR",
+  "txVnpay": "Cổng VNPay",
+  "txMomo": "Ví MoMo",
+  "txWithdraw": "Rút tiền",
+  "txTitleTopup": "Nạp tiền vào ví",
+  "txTitleWithdrawRefund": "Hoàn tiền rút",
+  "txTitleWithdraw": "Rút tiền về tài khoản ngân hàng",
+  "txTitleRefund": "Hoàn tiền vào ví",
+  "txTitleAdjustPlus": "Điều chỉnh số dư (cộng)",
+  "txTitleAdjustMinus": "Điều chỉnh số dư (trừ)",
+  "txTitleOrderWallet": "Thanh toán đơn bằng ví",
+  "txTitleOrderVia": "Thanh toán đơn qua {method}",
+  "@txTitleOrderVia": {
+    "placeholders": {
+      "method": {}
+    }
+  },
+  "txTitleIn": "Tiền vào ví",
+  "txTitleOut": "Tiền ra khỏi ví",
+  "txSvcLaundry": "Giặt sấy",
+  "txSvcOrder": "Thanh toán đơn",
+  "txSvcTopup": "Nạp tiền ví",
+  "txSvcAdjust": "Điều chỉnh số dư",
+  "txLoadFailed": "Không tải được lịch sử giao dịch.",
+  "txHistory": "Lịch sử giao dịch",
+  "txSubtitle": "Các khoản thanh toán & chi tiêu của bạn",
+  "txStats": "Thống kê chi tiêu",
+  "txThisMonth": "Tháng này",
+  "txThisYear": "Năm nay",
+  "txTotalSpent": "Tổng chi tiêu",
+  "txTotalIn": "Tổng tiền vào",
+  "txNet": "Biến động ròng:",
+  "txByMethod": "Tổng tiền theo hình thức",
+  "txByService": "Chi tiết theo từng dịch vụ",
+  "txMethod": "Hình thức",
+  "txSvcSmartRental": "Thuê tủ thông minh",
+  "txSvcSend": "Gửi đồ / Giao nhận",
+  "txSvcLaundryLocker": "Giặt sấy tủ",
+  "txSvcWithdrawBank": "Rút tiền về STK",
+  "txSvcOtherOrder": "Thanh toán đơn khác",
+  "txCount": "{count} giao dịch",
+  "@txCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "txAllMethods": "Tất cả hình thức",
+  "txSepayShort": "Cổng SePay",
+  "txFilterByMethod": "Lọc theo hình thức giao dịch",
+  "txAllCount": "Tất cả ({count} GD):",
+  "@txAllCount": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "txFilterCount": "{label} ({count} GD):",
+  "@txFilterCount": {
+    "placeholders": {
+      "label": {},
+      "count": {}
+    }
+  },
+  "txLoading": "Đang tải lịch sử giao dịch...",
+  "txNone": "Không có giao dịch nào",
+  "txNoMatch": "Không tìm thấy giao dịch theo bộ lọc đã chọn",
+  "txWithdrawRequest": "Yêu cầu rút tiền",
+  "txMethodLabel": "Hình thức GD",
+  "txType": "Loại",
+  "txDirection": "Chiều tiền",
+  "txCredit": "Cộng vào ví",
+  "txDebit": "Trừ từ ví",
+  "txDirect": "Trả trực tiếp qua cổng",
+  "txId": "Mã GD",
+  "txBalanceAfter": "Số dư ví sau GD",
+  "commonUser": "Người dùng",
+  "commonDelete": "Xoá",
+  "commonUpdateNow": "Cập nhật ngay",
+  "reminderFieldEmail": "email",
+  "reminderFieldPhone": "số điện thoại",
+  "reminderMissing": "Tài khoản của bạn chưa có {fields}.",
+  "@reminderMissing": {
+    "placeholders": {
+      "fields": {}
+    }
+  },
+  "reminderTitle": "Bổ sung thông tin tài khoản",
+  "reminderBody": "{missing} Thêm vào để nhận mã mở tủ, thông báo đơn hàng và khôi phục tài khoản khi cần.",
+  "@reminderBody": {
+    "placeholders": {
+      "missing": {}
+    }
+  },
+  "reminderLater": "Để sau (nhắc lại sau {days} ngày)",
+  "@reminderLater": {
+    "placeholders": {
+      "days": {}
+    }
+  },
+  "loyEarn": "Tích điểm đơn hàng{order}",
+  "@loyEarn": {
+    "placeholders": {
+      "order": {}
+    }
+  },
+  "loyRedeem": "Dùng điểm thanh toán đơn{order}",
+  "@loyRedeem": {
+    "placeholders": {
+      "order": {}
+    }
+  },
+  "loyRedeemRefund": "Hoàn điểm đơn huỷ{order}",
+  "@loyRedeemRefund": {
+    "placeholders": {
+      "order": {}
+    }
+  },
+  "loyEarnReversal": "Thu hồi điểm đơn được hoàn tiền{order}",
+  "@loyEarnReversal": {
+    "placeholders": {
+      "order": {}
+    }
+  },
+  "loyVoucherExchange": "Đổi điểm lấy voucher",
+  "loyVoucherRefund": "Hoàn điểm đổi voucher",
+  "loyExchange": "Đổi điểm",
+  "loyAdjustment": "Điều chỉnh điểm",
+  "loyChange": "Biến động điểm",
+  "pwEnterCurrent": "Vui lòng nhập mật khẩu hiện tại",
+  "pwEnterNew": "Vui lòng nhập mật khẩu mới",
+  "pwMinLength": "Mật khẩu mới phải có ít nhất {min} ký tự",
+  "@pwMinLength": {
+    "placeholders": {
+      "min": {}
+    }
+  },
+  "pwSameAsCurrent": "Mật khẩu mới không được trùng mật khẩu hiện tại",
+  "pwConfirmMismatch": "Mật khẩu xác nhận chưa khớp",
+  "pwCurrentWrong": "Mật khẩu hiện tại không đúng",
+  "pwChangeFailed": "Đổi mật khẩu thất bại. Vui lòng thử lại.",
+  "nameMin": "Họ và tên phải có ít nhất {min} ký tự",
+  "@nameMin": {
+    "placeholders": {
+      "min": {}
+    }
+  },
+  "nameMax": "Họ và tên không được quá {max} ký tự",
+  "@nameMax": {
+    "placeholders": {
+      "max": {}
+    }
+  },
+  "nameLettersOnly": "Họ và tên chỉ gồm chữ cái và khoảng trắng",
+  "nameRealName": "Vui lòng nhập tên thật của bạn",
+  "profErrPhoneUsed": "Số điện thoại này đã được dùng cho tài khoản khác",
+  "profErrEmailUsed": "Email này đã được dùng cho tài khoản khác",
+  "profErrLoginUpdate": "Không cập nhật được tài khoản đăng nhập, vui lòng thử lại",
+  "profErrUpdateFailed": "Cập nhật hồ sơ thất bại. Vui lòng thử lại.",
+  "avTooLarge": "Ảnh không được vượt quá 5MB (kích thước hiện tại: {size}MB)",
+  "@avTooLarge": {
+    "placeholders": {
+      "size": {}
+    }
+  },
+  "avTooSmall": "Ảnh phải có kích thước tối thiểu {min}x{min}px (kích thước hiện tại: {width}x{height}px)",
+  "@avTooSmall": {
+    "placeholders": {
+      "min": {},
+      "width": {},
+      "height": {}
+    }
+  },
+  "avTooBig": "Ảnh không được vượt quá {max}x{max}px (kích thước hiện tại: {width}x{height}px)",
+  "@avTooBig": {
+    "placeholders": {
+      "max": {},
+      "width": {},
+      "height": {}
+    }
+  },
+  "avUnknownFormat": "Không thể xác định định dạng file",
+  "avFormats": "Chỉ hỗ trợ định dạng JPG, PNG, WebP",
+  "avNotFound": "File không tồn tại",
+  "avCantCheck": "Không thể kiểm tra file: {error}",
+  "@avCantCheck": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "pwStrengthEnter": "Nhập mật khẩu",
+  "pwStrengthWeak": "Mật khẩu yếu",
+  "pwStrengthMedium": "Mật khẩu trung bình",
+  "pwStrengthStrong": "Mật khẩu mạnh",
+  "pwStrengthVeryStrong": "Mật khẩu rất mạnh",
+  "pwMin8": "Mật khẩu phải có ít nhất 8 ký tự",
+  "pwNeedUpper": "Mật khẩu phải có ít nhất 1 chữ cái viết hoa",
+  "pwNeedLower": "Mật khẩu phải có ít nhất 1 chữ cái viết thường",
+  "pwNeedNumber": "Mật khẩu phải có ít nhất 1 số",
+  "pwNeedSpecial": "Mật khẩu phải có ít nhất 1 ký tự đặc biệt",
+  "pwConfirmNew": "Vui lòng xác nhận mật khẩu mới",
+  "pwConfirmNotMatch": "Mật khẩu xác nhận không khớp",
+  "pwReq8": "Ít nhất 8 ký tự",
+  "pwReqUpper": "Ít nhất 1 chữ viết hoa",
+  "pwReqLower": "Ít nhất 1 chữ viết thường",
+  "pwReqNumber": "Ít nhất 1 số",
+  "pwReqSpecial": "Ít nhất 1 ký tự đặc biệt",
+  "loyInvalidData": "Dữ liệu điểm thưởng không hợp lệ",
+  "pwChangeNotSupported": "Máy chủ chưa hỗ trợ đổi mật khẩu từ ứng dụng. Vui lòng thử lại sau.",
+  "avWaitSync": "Vui lòng đợi quá trình đồng bộ hoàn tất",
+  "avChooseAvatar": "Chọn ảnh đại diện",
+  "avEditAvatar": "Chỉnh sửa ảnh đại diện",
+  "avCamera": "camera",
+  "avGallery": "thư viện ảnh",
+  "avCantAccess": "Không thể truy cập {source}. Vui lòng cấp quyền trong cài đặt.",
+  "@avCantAccess": {
+    "placeholders": {
+      "source": {}
+    }
+  },
+  "avSelected": "Ảnh đã được chọn. Nhấn \"Lưu ảnh đại diện\" để cập nhật.",
+  "avNothingToUpload": "Không có ảnh nào để tải lên",
+  "avNoAccount": "Không xác định được tài khoản để cập nhật ảnh đại diện",
+  "avInvalid": "Ảnh không hợp lệ",
+  "avUpdated": "Cập nhật ảnh đại diện thành công!",
+  "avCancelled": "Đã hủy thay đổi ảnh đại diện",
+  "avChooseSource": "Chọn nguồn ảnh",
+  "avLibrary": "Thư viện",
+  "avUploading": "Đang tải lên",
+  "avProgress": "Hoàn thành {percent}",
+  "@avProgress": {
+    "placeholders": {
+      "percent": {}
+    }
+  },
+  "avPleaseWait": "Vui lòng đợi trong giây lát",
+  "epUpdated": "Cập nhật thành công!",
+  "epSaveFailed": "Không lưu được hồ sơ",
+  "epTakePhoto": "Chụp ảnh",
+  "epFromGallery": "Chọn từ thư viện",
+  "epRemoveAvatar": "Xoá ảnh đại diện",
+  "epNoAccountPhoto": "Không xác định được tài khoản để cập nhật ảnh",
+  "epUpdatingAvatar": "Đang cập nhật ảnh đại diện...",
+  "epAvatarUpdated": "Cập nhật ảnh đại diện thành công",
+  "epRemoveQuestion": "Xoá ảnh đại diện?",
+  "epRemoveBody": "Ảnh đại diện hiện tại sẽ bị gỡ khỏi tài khoản.",
+  "epRemoving": "Đang xoá ảnh đại diện...",
+  "epRemoved": "Đã xoá ảnh đại diện",
+  "epTitle": "Chỉnh sửa hồ sơ",
+  "epSubtitle": "Cập nhật thông tin tài khoản",
+  "epNameHint": "Nhập họ và tên",
+  "epPhoneHint": "Nhập số điện thoại",
+  "epInvalidPhone": "Số điện thoại không hợp lệ",
+  "epEmailHint": "Nhập email",
+  "epLoginInfoNote": "Đổi số điện thoại hoặc email cũng đổi thông tin dùng để đăng nhập.",
+  "frSuccess": "Đăng ký khuôn mặt thành công",
+  "frFailed": "Đăng ký thất bại",
+  "frNoCamera": "Không tìm thấy camera trên thiết bị.",
+  "frCantOpenCamera": "Không thể mở camera. Vui lòng kiểm tra quyền truy cập.",
+  "frNoUser": "Không tìm thấy thông tin người dùng",
+  "frCaptureError": "Lỗi trong quá trình chụp ảnh và đăng ký: {error}",
+  "@frCaptureError": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "frSample": "Lấy mẫu khuôn mặt",
+  "frHoldPhone": "Giữ điện thoại thẳng trước mặt và nhấn nút bên dưới để bắt đầu đăng ký.",
+  "frCapturing": "Đang chụp ảnh: {count}/{total}",
+  "@frCapturing": {
+    "placeholders": {
+      "count": {},
+      "total": {}
+    }
+  },
+  "frProcessing": "Đang xử lý đăng ký...",
+  "frStartScan": "Bắt đầu quét",
+  "fvSuccess": "Xác thực FaceID thành công",
+  "fvMatched": "Nhận diện thành công ID: {id}",
+  "@fvMatched": {
+    "placeholders": {
+      "id": {}
+    }
+  },
+  "fvFailedRetry": "Không thể xác thực FaceID. Vui lòng thử lại.",
+  "fvCameraError": "Không thể mở camera hoặc chụp ảnh xác thực.",
+  "fvFailed": "Xác thực thất bại",
+  "fvUsePassword": "Dùng mật khẩu",
+  "fvVerifying": "Đang xác thực...",
+  "fvLookStraight": "Vui lòng nhìn thẳng vào camera và giữ yên điện thoại để hệ thống nhận diện khuôn mặt của bạn.",
+  "fvNotSupported": "Đăng nhập bằng khuôn mặt hiện chưa được hỗ trợ.",
+  "locChecking": "Đang kiểm tra...",
+  "locServiceOff": "Định vị trên máy đang tắt",
+  "locGranted": "Đã cấp quyền vị trí",
+  "locNotGranted": "Chưa cấp quyền vị trí",
+  "locDenied": "Đã từ chối quyền vị trí",
+  "locCantOpenSettings": "Không mở được cài đặt. Vào Cài đặt của máy → Ứng dụng → Lock.R → Quyền để bật Vị trí.",
+  "locCantOpenLocationSettings": "Không mở được cài đặt định vị của máy.",
+  "locSubtitle": "Quyền truy cập vị trí của ứng dụng",
+  "locAlways": "Ứng dụng được dùng vị trí mọi lúc.",
+  "locWhileInUse": "Ứng dụng được dùng vị trí khi đang mở.",
+  "locTurnOnGps": "Bật Định vị (GPS) trong cài đặt của máy để ứng dụng lấy được vị trí.",
+  "locGrantToFind": "Cấp quyền để tìm tủ gần bạn và chỉ đường tới tủ.",
+  "locBlocked": "Bạn đã chặn quyền vị trí. Mở cài đặt ứng dụng để bật lại.",
+  "locRecheck": "Kiểm tra lại",
+  "locGrant": "Cấp quyền vị trí",
+  "locOpenAppSettings": "Mở cài đặt ứng dụng",
+  "locTurnOn": "Bật định vị",
+  "locChangeInSettings": "Thay đổi trong cài đặt hệ thống",
+  "locUsesFor": "Lock.R dùng vị trí để",
+  "locUseFind": "Tìm cửa hàng / tủ gần bạn",
+  "locUseDirections": "Chỉ đường tới tủ",
+  "locUsePhotos": "Gắn toạ độ vào ảnh khi báo sự cố",
+  "loyHistoryNotSupported": "Máy chủ chưa hỗ trợ xem lịch sử điểm.",
+  "loyNotSupported": "Máy chủ chưa hỗ trợ điểm thưởng. Vui lòng thử lại sau.",
+  "loySubtitle": "Tích điểm khi đơn hàng hoàn tất",
+  "loyLoading": "Đang tải điểm thưởng...",
+  "loyHistory": "Lịch sử điểm",
+  "loyEmpty": "Chưa có biến động điểm. Điểm được cộng tự động khi đơn hàng của bạn hoàn tất.",
+  "loyCurrent": "Điểm hiện có",
+  "loyTier": "Hạng {tier}",
+  "@loyTier": {
+    "placeholders": {
+      "tier": {}
+    }
+  },
+  "loyTopTier": "Bạn đang ở hạng cao nhất.",
+  "loyToNext": "Còn {points} điểm để lên hạng {tier}.",
+  "@loyToNext": {
+    "placeholders": {
+      "points": {},
+      "tier": {}
+    }
+  },
+  "loyLifetime": "Tổng điểm đã tích: {points} điểm (dùng để xếp hạng, tiêu điểm không tụt hạng)",
+  "@loyLifetime": {
+    "placeholders": {
+      "points": {}
+    }
+  },
+  "polLoadFailed": "Không thể tải nội dung",
+  "polAgree": "Tôi đồng ý với điều khoản sử dụng",
+  "pdTitle": "Thông tin cá nhân",
+  "pdSubtitle": "Chi tiết tài khoản của bạn",
+  "pdNoData": "Không có dữ liệu",
+  "pdStatusActive": "Trạng thái tài khoản: Đang hoạt động",
+  "pdStatusInactive": "Trạng thái tài khoản: Chưa kích hoạt",
+  "pdStatusLocked": "Trạng thái tài khoản: Đang bị khóa",
+  "pdDisabled": "Tài khoản của bạn hiện đang bị vô hiệu hóa kỹ thuật. Vui lòng liên hệ hỗ trợ.",
+  "pdYourEmail": "Email của bạn",
+  "pdNotUpdated": "Chưa cập nhật",
+  "pdPasswordNotSet": "Mật khẩu (chưa đặt — chạm để đặt)",
+  "pdNotSet": "Chưa đặt",
+  "secNoBiometric": "Thiết bị chưa đăng ký vân tay/khuôn mặt trong cài đặt hệ thống.",
+  "secEnableReason": "Xác thực để bật khóa ứng dụng",
+  "secAuthFailed": "Xác thực không thành công",
+  "secLockOn": "Đã bật khóa ứng dụng bằng sinh trắc học",
+  "secLockOff": "Đã tắt khóa ứng dụng bằng sinh trắc học",
+  "secPasswordSet": "Đã đặt mật khẩu",
+  "secPasswordChanged": "Đổi mật khẩu thành công",
+  "secSubtitle": "Bảo vệ tài khoản và thiết bị của bạn",
+  "secBiometricLock": "Khóa ứng dụng bằng sinh trắc học",
+  "secBiometricOn": "Yêu cầu vân tay/khuôn mặt mỗi khi mở app.",
+  "secBiometricUnavailable": "Thiết bị chưa đăng ký sinh trắc học.",
+  "secLoadFailed": "Không tải được thông tin tài khoản: {error}",
+  "@secLoadFailed": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "secChangePassword": "Đổi mật khẩu",
+  "secSetPassword": "Đặt mật khẩu",
+  "secChangeHint": "Nhập mật khẩu hiện tại và mật khẩu mới. Các thiết bị khác sẽ phải đăng nhập lại.",
+  "secSetHint": "Tài khoản của bạn đăng nhập bằng Google hoặc mã OTP nên chưa có mật khẩu. Đặt mật khẩu để có thể đăng nhập bằng email/số điện thoại và mật khẩu.",
+  "secCurrentPassword": "Mật khẩu hiện tại",
+  "secMinChars": "Ít nhất {min} ký tự",
+  "@secMinChars": {
+    "placeholders": {
+      "min": {}
+    }
+  },
+  "secConfirmNew": "Xác nhận mật khẩu mới",
+  "profSaveFailedNetwork": "Chưa lưu được. Kiểm tra mạng rồi thử lại.",
+  "phSyncing": "Đang đồng bộ...",
+  "phSaveAvatar": "Lưu ảnh đại diện",
+  "tcTitle": "Điều khoản dịch vụ",
+  "tcBody": "Trước khi dùng Lock.R, vui lòng đọc và đồng ý với Điều khoản dịch vụ và Chính sách bảo mật. Điều khoản quy định việc thuê tủ, gửi và nhận hàng, giao hàng bằng drone, phí, hoàn tiền và bồi thường khi có sự cố.",
+  "tcReadTerms": "Đọc Điều khoản dịch vụ",
+  "tcReadPrivacy": "Đọc Chính sách bảo mật",
+  "tcAgreeCheckbox": "Tôi đã đọc và đồng ý với Điều khoản dịch vụ và Chính sách bảo mật của Lock.R.",
+  "tcAgreeContinue": "Đồng ý và tiếp tục",
+  "qlNotConfirmed": "Máy chủ chưa xác nhận đăng nhập kiosk. Vui lòng quét lại mã trên kiosk.",
+  "qlExpired": "Mã đăng nhập đã hết hạn. Hãy tạo mã mới trên kiosk rồi quét lại.",
+  "qlUsed": "Mã đăng nhập này đã được dùng. Hãy tạo mã mới trên kiosk.",
+  "qlInvalid": "Mã đăng nhập kiosk không hợp lệ hoặc đã hết hiệu lực.",
+  "qlInactive": "Tài khoản của bạn đang bị khoá hoặc chưa kích hoạt nên không đăng nhập kiosk được.",
+  "qlSessionExpired": "Phiên đăng nhập trên app đã hết. Vui lòng đăng nhập lại rồi quét mã.",
+  "qlTooFast": "Thao tác quá nhanh. Vui lòng thử lại sau ít phút.",
+  "qlNoConnection": "Không kết nối được máy chủ. Kiểm tra mạng rồi thử lại.",
+  "qlNotSupported": "Máy chủ chưa hỗ trợ đăng nhập kiosk bằng mã QR. Vui lòng đăng nhập bằng số điện thoại trên kiosk.",
+  "aoChooseLocker": "Vui lòng chọn tủ.",
+  "aoEnterCode": "Vui lòng nhập mã lấy hàng.",
+  "aoPickupBox": "ô lấy hàng",
+  "aoOpened": "Tủ đã mở ô — lấy hàng rồi đóng cửa tủ lại.",
+  "aoOpenFailed": "Không mở được ô{detail}",
+  "@aoOpenFailed": {
+    "placeholders": {
+      "detail": {}
+    }
+  },
+  "aoTitle": "Mở tủ ủy quyền",
+  "aoSubtitle": "Lấy hàng bằng mã được gửi cho bạn",
+  "aoIntro": "Nhập mã lấy hàng (PIN) bạn nhận được — mã có trong mục \"Đơn ủy quyền\" hoặc do người gửi chuyển cho bạn. Bạn cần đứng tại tủ để mở ô.",
+  "aoOrder": "Đơn",
+  "aoTapToChoose": "Chạm để chọn tủ lấy hàng",
+  "aoOpenBox": "Mở ô lấy hàng",
+  "mdSubtitle": "Đơn người khác nhờ bạn lấy hộ",
+  "mdEmpty": "Chưa có đơn ủy quyền",
+  "mdEmptyHint": "Khi ai đó ủy quyền bạn lấy hộ (theo số điện thoại của bạn), đơn sẽ hiện ở đây.",
+  "mdNotSupported": "Máy chủ chưa hỗ trợ mục Đơn ủy quyền. Vui lòng thử lại sau.",
+  "dnTitleEnRoute": "Drone đang giao hàng",
+  "dnTitleApproaching": "Drone sắp đến",
+  "dnTitleArrived": "Drone đã đến nơi",
+  "dnTitleDelivered": "Giao hàng thành công",
+  "dnTitleDelayed": "Đơn hàng bị chậm",
+  "dnTitleFailed": "Giao hàng không thành công",
+  "dnTitleUpdate": "Cập nhật đơn hàng",
+  "dnBodyEnRoute": "Drone đang trên đường giao hàng của bạn",
+  "dnBodyApproaching": "Drone sắp đến nơi, vui lòng chuẩn bị ra nhận",
+  "dnBodyArrived": "Drone đã đến nơi, vui lòng ra nhận hàng",
+  "dnBodyDelivered": "Đã giao hàng thành công. Cảm ơn bạn!",
+  "dnBodyDelayedEta": "Đơn của bạn đang bị chậm, dự kiến tới {eta}",
+  "@dnBodyDelayedEta": {
+    "placeholders": {
+      "eta": {}
+    }
+  },
+  "dnBodyDelayed": "Đơn của bạn đang bị chậm so với dự kiến",
+  "dnBodyFailed": "Giao không thành công, drone đang quay về",
+  "dnBodyUpdate": "Đơn hàng của bạn có cập nhật mới",
+  "nlSubtitle": "Cập nhật mới nhất từ Lock.R",
+  "nlLoginRequired": "Bạn cần đăng nhập để xem thông báo",
+  "nlReadAll": "Đọc tất cả",
+  "nlLoading": "Đang tải thông báo...",
+  "nlAllSeen": "Đã xem hết thông báo",
+  "nlEmpty": "Chưa có thông báo nào",
+  "nlEmptyHint": "Khi có thông báo mới, chúng sẽ xuất hiện ở đây",
+  "nlLoadFailed": "Không tải được thông báo",
+  "nlDeleteAllQuestion": "Xoá tất cả thông báo?",
+  "nlDeleteAllBody": "Toàn bộ thông báo của tài khoản sẽ bị xoá và không khôi phục được.",
+  "nlDeleteAll": "Xoá tất cả",
+  "nlDeletedAll": "Đã xoá tất cả thông báo",
+  "nlJustNow": "Vừa xong",
+  "nlMinutesAgo": "{minutes} phút trước",
+  "@nlMinutesAgo": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "nlHoursAgo": "{hours} giờ trước",
+  "@nlHoursAgo": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      }
+    }
+  },
+  "nlDaysAgo": "{days} ngày trước",
+  "@nlDaysAgo": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "npLoadFailed": "Không tải được thông báo. Vui lòng thử lại.",
+  "npLoadMoreFailed": "Không tải thêm được thông báo. Vui lòng thử lại.",
+  "npDeleteNotFound": "Không tìm thấy thông báo hoặc máy chủ chưa hỗ trợ xoá.",
+  "npDeleteFailed": "Không xoá được thông báo. Vui lòng thử lại.",
+  "npDeleteNotSupported": "Máy chủ chưa hỗ trợ xoá thông báo. Vui lòng thử lại sau.",
+  "crNoLockers": "Không tìm thấy tủ nào để báo sự cố.",
+  "crNetworkError": "Lỗi kết nối mạng",
+  "crSessionExpired": "Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại.",
+  "crEnterTitle": "Vui lòng nhập tiêu đề",
+  "crEnterDescription": "Vui lòng nhập mô tả chi tiết",
+  "crChooseLocker": "Vui lòng chọn tủ gặp sự cố",
+  "crAttachPhoto": "Vui lòng đính kèm ít nhất 1 ảnh sự cố",
+  "crSending": "Đang gửi báo cáo...",
+  "crSent": "Gửi báo cáo thành công",
+  "crSendFailed": "Gửi báo cáo thất bại: {error}",
+  "@crSendFailed": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "crFirstPhotosOnly": "Chỉ lấy {count} ảnh đầu (tối đa {max})",
+  "@crFirstPhotosOnly": {
+    "placeholders": {
+      "count": {},
+      "max": {}
+    }
+  },
+  "crTitle": "Báo cáo sự cố",
+  "crTitleField": "Tiêu đề",
+  "crTitleHint": "Nhập tiêu đề sự cố",
+  "crDescriptionField": "Mô tả chi tiết",
+  "crDescriptionHint": "Mô tả rõ vấn đề bạn gặp phải",
+  "crCancelOrList": "Hủy / Danh sách",
+  "crBack": "Trở về",
+  "crSubmit": "Gửi báo cáo",
+  "crFaultyLocker": "Tủ đồ bị lỗi",
+  "crTapToChoose": "Chạm để chọn tủ gặp sự cố",
+  "crChooseBox": "Chọn ô gặp sự cố ",
+  "crOptional": "(Tuỳ chọn)",
+  "crLayout": "Sơ đồ",
+  "crCards": "Thẻ",
+  "crDeselect": "Bỏ chọn",
+  "crNoBoxes": "Không tìm thấy danh sách ô hoặc sự cố xảy ra chung toàn trạm.",
+  "crSelectedBox": "Đang chọn: Ô #{number} • {type} • {status}",
+  "@crSelectedBox": {
+    "placeholders": {
+      "number": {},
+      "type": {},
+      "status": {}
+    }
+  },
+  "crDoorOpenWarning": "⚠️ Cửa ô này hiện đang MỞ trên hệ thống.",
+  "crSelectedKiosk": "Đang chọn: Màn hình cảm ứng 7\" Kiosk (Sự cố toàn trạm)",
+  "crKioskHint": "Báo cáo lỗi màn hình đơ/tắt, lỗi cảm ứng hoặc sự cố không thuộc ô cụ thể.",
+  "crKioskTitle": "Sự cố màn hình cảm ứng Kiosk 7 inch",
+  "crKioskScreen": "Màn hình Kiosk",
+  "crTapToReport": "Chạm báo lỗi",
+  "crSuitcaseBayUpper": "KHOANG VALI LỚN",
+  "crOpen": "Mở",
+  "crPhotos": "Ảnh hiện trường sự cố",
+  "crPhotoCount": "{count} ảnh",
+  "@crPhotoCount": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "crPhotosHint": "Có thể thêm nhiều ảnh cùng lúc từ thư viện hoặc dùng camera chụp từng ảnh (tối đa {max} ảnh)",
+  "@crPhotosHint": {
+    "placeholders": {
+      "max": {}
+    }
+  },
+  "crPickMany": "Chọn nhiều ảnh",
+  "cdiLoadFailed": "Chưa tải được thông tin sự cố của đơn",
+  "cdiInProgress": "Sự cố rơi kiện đang được xử lý",
+  "cdiResolved": "Sự cố rơi kiện đã xử lý xong",
+  "cdiCode": "Mã sự cố",
+  "cdiRecovery": "Thu hồi kiện",
+  "cdiParcelState": "Tình trạng kiện",
+  "cdiFieldNote": "Ghi chú hiện trường",
+  "cdiRecoveryPhotos": "Ảnh kiện khi thu hồi",
+  "cdiLastUpdate": "Cập nhật gần nhất",
+  "cdiProposal": "Phương án xử lý",
+  "cdiProposalVersion": " (lần {version})",
+  "@cdiProposalVersion": {
+    "placeholders": {
+      "version": {}
+    }
+  },
+  "cdiContent": "Nội dung: {note}",
+  "@cdiContent": {
+    "placeholders": {
+      "note": {}
+    }
+  },
+  "cdiPolicy": "Áp dụng chính sách sự cố tại thời điểm bạn đặt đơn",
+  "cdiNoBank": "Chưa có tài khoản ngân hàng nhận bồi thường",
+  "cdiNoBankBody": "Phương án giải quyết có khoản hoàn tiền/bồi thường. Bạn cần liên kết tài khoản ngân hàng để hệ thống thực hiện chuyển khoản.",
+  "cdiUpdateBank": "Cập nhật tài khoản ngân hàng",
+  "cdiSenderDecides": "Người gửi đơn sẽ đồng ý hoặc yêu cầu xem xét phương án này.",
+  "cdiRequestReview": "Yêu cầu xem xét",
+  "cdiAccept": "Đồng ý",
+  "cdiAcceptQuestion": "Đồng ý phương án?",
+  "cdiReviewQuestion": "Yêu cầu Lock.R xem xét lại?",
+  "cdiNoteOptional": "Ghi chú (không bắt buộc)",
+  "cdiReviewReason": "Lý do cần xem xét *",
+  "cdiEnterReason": "Vui lòng nhập lý do cần xem xét.",
+  "cdiAccepted": "Đã ghi nhận phương án bạn chọn.",
+  "cdiReviewSent": "Đã gửi yêu cầu xem xét lại.",
+  "cdiCompensation": "Bồi thường {amount}",
+  "@cdiCompensation": {
+    "placeholders": {
+      "amount": {}
+    }
+  },
+  "cdiFreeRedelivery": "giao lại miễn phí",
+  "cdiRefundShipping": "hoàn phí giao",
+  "crSelectLocker": "Vui lòng chọn tủ gặp sự cố.",
+  "aiErrLength": "Câu hỏi cần từ 1 đến {max} ký tự.",
+  "@aiErrLength": {
+    "placeholders": {
+      "max": {}
+    }
+  },
+  "aiErrBadResponse": "Phản hồi từ máy chủ không hợp lệ.",
+  "aiErrGeneric": "Đã xảy ra lỗi, vui lòng thử lại.",
+  "aiErrNotFound": "Không tìm thấy cuộc hội thoại này, có thể nó đã bị xoá.",
+  "aiErrLength2000": "Câu hỏi cần từ 1 đến 2000 ký tự.",
+  "aiErrServer": "Máy chủ gặp lỗi, vui lòng thử lại sau.",
+  "aiErrConnectTimeout": "Kết nối tới máy chủ quá lâu, vui lòng thử lại.",
+  "aiErrReplyTimeout": "Trợ lý phản hồi quá lâu, vui lòng thử lại.",
+  "aiErrNoConnection": "Không thể kết nối máy chủ. Kiểm tra kết nối mạng.",
+  "aiErrCancelled": "Đã huỷ yêu cầu.",
+  "aiErrSession": "Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.",
+  "aiErrForbidden": "Bạn không có quyền dùng trợ lý hỏi đáp.",
+  "aiErrRateLimit": "Bạn đã hỏi quá nhiều câu, vui lòng thử lại sau.",
+  "aiErrBusy": "Trợ lý đang bận hoặc gặp sự cố, vui lòng thử lại sau.",
+  "aiDocument": "Tài liệu",
+  "aiConversation": "Cuộc hội thoại",
+  "aiEyebrow": "LOCK.R • TRỢ LÝ",
+  "aiTitle": "Trợ lý hỏi đáp",
+  "aiSubtitle": "Trả lời từ tài liệu chính thức, có trích nguồn",
+  "aiHistory": "Lịch sử hỏi đáp",
+  "aiNewConversation": "Cuộc hội thoại mới",
+  "aiDisabledTitle": "Trợ lý đang tạm tắt",
+  "aiDisabledBody": "Tính năng hỏi đáp đang được tạm tắt. Bạn vui lòng quay lại sau.",
+  "aiNotReadyTitle": "Trợ lý chưa sẵn sàng",
+  "aiNotReadyBody": "Trợ lý hỏi đáp chưa được cấu hình xong. Bạn vui lòng quay lại sau hoặc liên hệ bộ phận hỗ trợ Lock.R.",
+  "aiWaiting": "Đang chờ trợ lý trả lời…",
+  "aiInputHint": "Nhập câu hỏi của bạn…",
+  "aiSend": "Gửi câu hỏi",
+  "aiDeleteQuestion": "Xoá cuộc hội thoại?",
+  "aiDeleteBody": "Cuộc hội thoại “{title}” sẽ bị xoá vĩnh viễn và không khôi phục được.",
+  "@aiDeleteBody": {
+    "placeholders": {
+      "title": {}
+    }
+  },
+  "aiDeleted": "Đã xoá cuộc hội thoại",
+  "aiHistorySubtitle": "Các cuộc hội thoại của bạn với trợ lý",
+  "aiNoConversations": "Chưa có cuộc hội thoại nào",
+  "aiNoConversationsBody": "Các câu bạn hỏi trợ lý sẽ được lưu ở đây để xem lại.",
+  "aiAsk": "Đặt câu hỏi",
+  "aiMessageCount": "{count} tin nhắn",
+  "@aiMessageCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiTodayAt": "Hôm nay, {time}",
+  "@aiTodayAt": {
+    "placeholders": {
+      "time": {}
+    }
+  },
+  "aiYesterdayAt": "Hôm qua, {time}",
+  "@aiYesterdayAt": {
+    "placeholders": {
+      "time": {}
+    }
+  },
+  "aiQTechInspection": "Kiểm tra định kỳ không đạt thì xử lý thế nào?",
+  "aiQTechDoor": "Ô tủ báo lỗi cửa thì cần kiểm tra những gì?",
+  "aiQTechTicket": "Quy trình xử lý phiếu sự cố ra sao?",
+  "aiQTechIot": "Thiết bị IoT của tủ mất kết nối thì làm gì?",
+  "aiQDroneLaunch": "Quy trình tiếp nhận và phóng đơn drone ra sao?",
+  "aiQDroneCancel": "Khi nào được huỷ nhiệm vụ trước khi bay?",
+  "aiQDronePad": "Bãi đáp drone báo lỗi thì làm gì?",
+  "aiQSend": "Làm sao để gửi hàng qua tủ?",
+  "aiQPay": "Tôi thanh toán bằng những cách nào?",
+  "aiQRentEnd": "Hết giờ thuê ô thì làm sao?",
+  "aiQCantOpen": "Không mở được ô tủ thì phải làm gì?",
+  "aiDocsStaff": "quy trình vận hành, hướng dẫn kỹ thuật, chính sách",
+  "aiDocsCustomer": "hướng dẫn sử dụng, chính sách, câu hỏi thường gặp",
+  "aiHello": "Xin chào! Mình là trợ lý Lock.R",
+  "aiIntro": "Mình trả lời dựa trên tài liệu chính thức của Lock.R ({docs}) và luôn ghi rõ nguồn trích dẫn. Nếu tài liệu chưa đề cập, mình sẽ nói rõ để bạn liên hệ bộ phận hỗ trợ.",
+  "@aiIntro": {
+    "placeholders": {
+      "docs": {}
+    }
+  },
+  "aiOfficialDocs": "Tài liệu chính thức",
+  "aiWithSources": "Có trích nguồn",
+  "aiYouCanAsk": "Bạn có thể hỏi",
+  "aiNotSent": "Chưa gửi được",
+  "aiNotInDocs": "Chưa có trong tài liệu",
+  "aiTyping": "Trợ lý đang trả lời",
+  "aiSources": "Nguồn ({count})",
+  "@aiSources": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "aiCitationsUpper": "TRÍCH DẪN NGUỒN",
+  "aiNoExcerpt": "Không có đoạn trích.",
+  "aiVerbatim": "Trích nguyên văn từ tài liệu chính thức của Lock.R.",
+  "tagAccepted": "[NGHIỆM THU THÀNH CÔNG]",
+  "tagFieldNote": "[GHI CHÚ HIỆN TRƯỜNG]",
+  "tagSlaExtended": "[GIA HẠN SLA]",
+  "tagRepairProgress": "[TIẾN ĐỘ SỬA CHỮA]",
+  "urdInspectionPhotos": "KTV đã chụp ảnh kiểm tra hiện trường.",
+  "urdProgressPhotos": "KTV cập nhật ảnh tiến độ xử lý.",
+  "urdSlaExtended": "Phiếu được gia hạn thêm {hours} giờ.",
+  "@urdSlaExtended": {
+    "placeholders": {
+      "hours": {}
+    }
+  },
+  "urdNewDeadline": "- Hạn hoàn tất mới: {time}",
+  "@urdNewDeadline": {
+    "placeholders": {
+      "time": {}
+    }
+  },
+  "urdReason": "- Lý do: {reason}",
+  "@urdReason": {
+    "placeholders": {
+      "reason": {}
+    }
+  },
+  "urdTechResolved": "KTV đã hoàn tất phiếu.",
+  "urdTechSentAcceptance": "KTV đã gửi ảnh nghiệm thu.",
+  "urdKioskNoLocation": "Trạm Kiosk chưa có dữ liệu vị trí bản đồ.",
+  "urdPhotosAdded": "Đã bổ sung ảnh thành công!",
+  "urdKioskStation": "Trạm Kiosk",
+  "urdRecordTitle": "Hồ sơ chi tiết phiếu sự cố kỹ thuật",
+  "urdCreatedAt": "Tạo lúc: {time}",
+  "@urdCreatedAt": {
+    "placeholders": {
+      "time": {}
+    }
+  },
+  "urdTechInCharge": "KTV phụ trách: {name}",
+  "@urdTechInCharge": {
+    "placeholders": {
+      "name": {}
+    }
+  },
+  "urdDispatching": "Đang điều phối KTV",
+  "urdResolvedAt": "Hoàn tất lúc: {time}",
+  "@urdResolvedAt": {
+    "placeholders": {
+      "time": {}
+    }
+  },
+  "urdDeadline": "Hạn xử lý: {time}",
+  "@urdDeadline": {
+    "placeholders": {
+      "time": {}
+    }
+  },
+  "urdBoxIncident": "Sự cố Ô tủ #{box}",
+  "@urdBoxIncident": {
+    "placeholders": {
+      "box": {}
+    }
+  },
+  "urdKioskIncident": "Sự cố Trạm Kiosk",
+  "urdOrder": "Đơn hàng: {code}",
+  "@urdOrder": {
+    "placeholders": {
+      "code": {}
+    }
+  },
+  "urdDirectionsKiosk": "Chỉ đường tới Kiosk",
+  "urdCopyPhone": "Sao chép SĐT",
+  "urdPhoneCopied": "Đã sao chép số điện thoại",
+  "urdReportContent": "Nội dung phản ánh sự cố:",
+  "urdMorePhotos": "Bổ sung ảnh",
+  "urdYourPhotos": "Ảnh hiện trường sự cố bạn đã gửi",
+  "urdProgressTitle": "Tiến trình xử lý sự cố:",
+  "urdTeamResponse": "Phản hồi từ đội ngũ kỹ thuật:",
+  "urdTechId": "KTV #{id}",
+  "@urdTechId": {
+    "placeholders": {
+      "id": {}
+    }
+  },
+  "urdDispatchingAccept": "Đang điều phối KTV tiếp nhận",
+  "urdTechAcceptedAt": "{tech} · Tiếp nhận: {time}",
+  "@urdTechAcceptedAt": {
+    "placeholders": {
+      "tech": {},
+      "time": {}
+    }
+  },
+  "urdTechAccepted": "{tech} đã tiếp nhận điều phối",
+  "@urdTechAccepted": {
+    "placeholders": {
+      "tech": {}
+    }
+  },
+  "urdTechInspected": "KTV đã kiểm tra & xử lý hiện trường",
+  "urdHandledAt": "Đã xử lý lúc {time}{desc}",
+  "@urdHandledAt": {
+    "placeholders": {
+      "time": {},
+      "desc": {}
+    }
+  },
+  "urdCheckedHandled": "Đã kiểm tra & xử lý",
+  "urdFixedAt": "Đã hoàn tất xử lý lúc {time}",
+  "@urdFixedAt": {
+    "placeholders": {
+      "time": {}
+    }
+  },
+  "urdFixed": "Đã khắc phục hoàn tất",
+  "urdTechInspecting": "KTV đang kiểm tra hiện trường & xử lý",
+  "urdWaitingTech": "Chờ KTV tới trạm Kiosk kiểm tra",
+  "urdClosedAt": "Đóng lúc {time}{feedback}",
+  "@urdClosedAt": {
+    "placeholders": {
+      "time": {},
+      "feedback": {}
+    }
+  },
+  "urdFeedback": "Phản hồi: {text}",
+  "@urdFeedback": {
+    "placeholders": {
+      "text": {}
+    }
+  },
+  "urdCheckedNormal": "KTV đã kiểm tra, ô hoạt động bình thường",
+  "urdAcceptedAt": "Nghiệm thu lúc: {time}{note}",
+  "@urdAcceptedAt": {
+    "placeholders": {
+      "time": {},
+      "note": {}
+    }
+  },
+  "urdAcceptedDone": "Đã nghiệm thu hoàn tất{note}",
+  "@urdAcceptedDone": {
+    "placeholders": {
+      "note": {}
+    }
+  },
+  "urdExpectedBy": "Dự kiến hoàn tất trước: {time}",
+  "@urdExpectedBy": {
+    "placeholders": {
+      "time": {}
+    }
+  },
+  "urdAwaitingAcceptance": "Chờ nghiệm thu & đóng phiếu",
+  "urdSentAt": "Đã gửi: {time}",
+  "@urdSentAt": {
+    "placeholders": {
+      "time": {}
+    }
+  },
+  "urdRecorded": "Hệ thống đã ghi nhận sự cố",
+  "urdStepTechAccepts": "Kỹ thuật viên tiếp nhận",
+  "urdStepInspect": "Kiểm tra & Xử lý tại Kiosk",
+  "urdStepRejected": "KTV không xác nhận sự cố",
+  "urdStepAccept": "Nghiệm thu & Đóng phiếu",
+  "urdTechProgress": "Tiến độ xử lý của KTV:",
+  "urdAcceptingTech": "Kỹ thuật viên nghiệm thu",
+  "urdNoTechNotes": "KTV chưa ghi chú bước xử lý nào. Các thao tác của KTV sẽ hiển thị ở đây.",
+  "urdSlaApproval": "Phê duyệt gia hạn SLA",
+  "urdRepairPhotos": "Ảnh trong quá trình sửa ({count} ảnh):",
+  "@urdRepairPhotos": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "urdKioskTech": "Kỹ thuật viên kiosk",
+  "urdCustomerView": "Chế độ xem khách hàng · KTV cập nhật nhật ký & minh chứng qua Mobile App",
+  "urdSteps": "{count} bước xử lý",
+  "@urdSteps": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "urdThanksRating": "Cảm ơn bạn đã gửi đánh giá!",
+  "urdRatingError": "Lỗi gửi đánh giá: {error}",
+  "@urdRatingError": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "urdYourRating": "Đánh giá của bạn về KTV",
+  "urdRateTech": "Đánh giá chất lượng phục vụ của KTV",
+  "urdComment": "Nhận xét: \"{text}\"",
+  "@urdComment": {
+    "placeholders": {
+      "text": {}
+    }
+  },
+  "urdRatePrompt": "Phiếu sự cố đã được xử lý xong. Hãy đánh giá sự hài lòng của bạn:",
+  "urdRateHint": "Nhận xét thêm về thái độ hoặc tốc độ xử lý của KTV (tuỳ chọn)...",
+  "urdSendRating": "Gửi đánh giá",
+  "urdChoosePhoto": "Vui lòng chọn ít nhất 1 ảnh.",
+  "urdAddPhotosTitle": "Bổ sung ảnh sự cố",
+  "urdAddPhotosHint": "Tối đa {max} ảnh mỗi lần. Ảnh giúp đội bảo trì chuẩn bị đúng linh kiện trước khi tới.",
+  "@urdAddPhotosHint": {
+    "placeholders": {
+      "max": {}
+    }
+  },
+  "urdSendPhotos": "Gửi ảnh",
+  "mrUnknownTime": "Không rõ thời gian",
+  "mrAwaiting": "Chờ tiếp nhận",
+  "mrNone": "Chưa có báo cáo nào",
+  "mrNoneHint": "Báo lỗi từ chi tiết đơn hoặc tab \"Báo sự cố mới\" sẽ hiện ở đây.",
+  "mrReportNow": "Báo sự cố ngay",
+  "mrNoMatch": "Không có báo cáo phù hợp",
+  "mrNoMatchFilter": "Không có phiếu sự cố nào thuộc bộ lọc \"{filter}\".",
+  "@mrNoMatchFilter": {
+    "placeholders": {
+      "filter": {}
+    }
+  },
+  "mrViewAll": "Xem tất cả báo cáo",
+  "mrEyebrow": "LOCK.R • BÁO CÁO",
+  "mrSubtitle": "Theo dõi tiến độ xử lý và gửi báo cáo sự cố ô tủ",
+  "mrNewReport": "Báo sự cố mới",
+  "mrTicketHash": "Phiếu sự cố #{id}",
+  "@mrTicketHash": {
+    "placeholders": {
+      "id": {}
+    }
+  },
+  "mrLockerPoint": "Điểm tủ",
+  "mrBox": "Ô tủ",
+  "fbDamaged": "Hàng bị hư hỏng",
+  "fbMissing": "Thiếu / mất hàng",
+  "fbLocker": "Tủ / ô gặp sự cố",
+  "fbPayment": "Thanh toán / phí",
+  "fbService": "Chất lượng dịch vụ",
+  "fbStPending": "Đang chờ xử lý",
+  "fbStProcessing": "Đang xử lý",
+  "fbStResolved": "Đã xử lý",
+  "fbStRejected": "Đã từ chối",
+  "fbStRecorded": "Đã ghi nhận",
+  "fbRateOrder": "Đánh giá đơn hàng",
+  "fbRateHint": "Chia sẻ trải nghiệm của bạn (không bắt buộc)",
+  "fbRateNotSupported": "Máy chủ chưa hỗ trợ đánh giá đơn.",
+  "fbThanks": "Cảm ơn bạn đã đánh giá đơn hàng.",
+  "fbComplain": "Gửi khiếu nại",
+  "fbIssue": "Vấn đề",
+  "fbIssueHint": "Mô tả chi tiết vấn đề bạn gặp phải",
+  "fbDescribe": "Vui lòng mô tả vấn đề.",
+  "fbComplainNotSupported": "Máy chủ chưa hỗ trợ khiếu nại đơn.",
+  "fbComplaintSent": "Đã gửi khiếu nại — bộ phận hỗ trợ sẽ phản hồi qua thông báo.",
+  "fbRateAndComplain": "Đánh giá & khiếu nại",
+  "fbComplaint": "Khiếu nại",
+  "fbEditRating": "Sửa đánh giá",
+  "fbSentAt": "Gửi lúc {time}",
+  "@fbSentAt": {
+    "placeholders": {
+      "time": {}
+    }
+  },
+  "fbNotSupported": "Máy chủ chưa hỗ trợ đánh giá / khiếu nại đơn. Vui lòng thử lại sau.",
+  "btBoxOccupied": "Ô {box} đang có hàng",
+  "@btBoxOccupied": {
+    "placeholders": {
+      "box": {}
+    }
+  },
+  "btBoxOccupiedBody": "Ô này đang giữ hàng của một đơn. Chỉ mở khi bạn được giao kiểm tra tủ và đóng lại ngay sau khi thử.",
+  "btOpenAnyway": "Vẫn mở",
+  "btFetchingCode": "Đang lấy mã mở ô từ máy chủ…",
+  "btScanning": "Đang tìm tủ qua Bluetooth…",
+  "btConnecting": "Đang kết nối với tủ…",
+  "btSending": "Đang gửi lệnh mở ô…",
+  "btWaiting": "Chờ tủ mở khoá…",
+  "btSubtitle": "Đứng cạnh tủ, chọn ô rồi bấm mở",
+  "btChooseBox": "Chọn một ô để mở",
+  "btOpenBox": "Mở ô {box} qua Bluetooth",
+  "@btOpenBox": {
+    "placeholders": {
+      "box": {}
+    }
+  },
+  "btLoadFailed": "Không tải được danh sách tủ",
+  "btNotAllowed": "Chưa được cho thử",
+  "btNotAllowedBody": "Admin chưa cho tài khoản này thử mở ô qua Bluetooth ở tủ nào.",
+  "btHint": "Bật Bluetooth và đứng trong khoảng 2 m trước tủ. Mỗi lần mở đều được ghi vào nhật ký của tủ.",
+  "btChooseBoxLabel": "Chọn ô",
+  "btOpened": "Đã mở ô {box}",
+  "@btOpened": {
+    "placeholders": {
+      "box": {}
+    }
+  },
+  "btNotOpened": "Chưa mở được",
+  "btCloseAfter": "Nhớ đóng cửa ô sau khi thử.",
+  "btNoBoxes": "Tủ chưa có ô nào.",
+  "btBox": "Ô {number}",
+  "@btBox": {
+    "placeholders": {
+      "number": {}
+    }
+  },
+  "apiErrValidation": "Dữ liệu gửi lên không hợp lệ, vui lòng kiểm tra lại.",
+  "apiErrInternal": "Máy chủ gặp lỗi hoặc chưa hỗ trợ thao tác này. Vui lòng thử lại sau.",
+  "apiErrNotFound": "Không tìm thấy dữ liệu (có thể đã bị xoá hoặc thay đổi).",
+  "apiErrLockerServiceUnavailable": "Dịch vụ tủ đang tạm gián đoạn, vui lòng thử lại sau.",
+  "dbHeight": "Cao",
+  "commonView": "Xem",
+  "ordFilterDrone": "Giao drone",
+  "recvDroneDelivery": "Giao Drone",
+  "holderNameHint": "NGUYEN VAN A"
+}

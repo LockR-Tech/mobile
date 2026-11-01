@@ -7,6 +7,7 @@ import 'package:smart_laundry_locker/core/media/media_upload_service.dart';
 import 'package:smart_laundry_locker/core/media/report_attachment.dart';
 import 'package:smart_laundry_locker/core/network/api_client.dart';
 import 'package:smart_laundry_locker/features/maintenance/infrastructure/models/maintenance_report_model.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 abstract class MaintenanceRemoteDataSource {
   Future<MaintenanceReportModel> createReport({
@@ -48,7 +49,7 @@ class MaintenanceRemoteDataSourceImpl implements MaintenanceRemoteDataSource {
     // khách chọn; không có thì dừng, không bao giờ đoán sang tủ khác.
     final targetLockerId = int.tryParse(lockerId) ?? int.tryParse(cabinetId);
     if (targetLockerId == null) {
-      throw ValidationException('Vui lòng chọn tủ gặp sự cố.');
+      throw ValidationException(L10n.current.crSelectLocker);
     }
 
     final formattedDescription = description.trim();

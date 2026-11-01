@@ -7,6 +7,7 @@ import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/lo
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/locker_qr_scanner_dialog.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/ops_widgets.dart';
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 /// "Mở tủ ủy quyền": người lấy hộ (hoặc người nhận) chọn tủ, nhập mã lấy hàng
 /// rồi mở ô qua `POST /api/iot/unlock-with-code {lockerId, code}` — server tự tra
@@ -91,14 +92,14 @@ class _AuthorizedOpeningPageState extends State<AuthorizedOpeningPage> {
     final code = _codeCtrl.text.trim();
     if (lockerId == null) {
       setState(() {
-        _result = 'Vui lòng chọn tủ.';
+        _result = context.l10n.aoChooseLocker;
         _resultOk = false;
       });
       return;
     }
     if (code.length < 4) {
       setState(() {
-        _result = 'Vui lòng nhập mã lấy hàng.';
+        _result = context.l10n.aoEnterCode;
         _resultOk = false;
       });
       return;
@@ -109,7 +110,7 @@ class _AuthorizedOpeningPageState extends State<AuthorizedOpeningPage> {
       expectedLockerCode: locker?['code']?.toString() ?? '',
       expectedLockerId: lockerId,
       lockerName: locker?['name']?.toString(),
-      boxLabel: 'ô lấy hàng',
+      boxLabel: context.l10n.aoPickupBox,
     );
     if (atLocker != true || !mounted) return;
 
@@ -125,15 +126,15 @@ class _AuthorizedOpeningPageState extends State<AuthorizedOpeningPage> {
       setState(() {
         _resultOk = accepted;
         _result = accepted
-            ? 'Tủ đã mở ô — lấy hàng rồi đóng cửa tủ lại.'
-            : 'Không mở được ô${msg != null && msg.isNotEmpty ? ': $msg' : '.'}';
+            ? context.l10n.aoOpened
+            : context.l10n.aoOpenFailed(msg != null && msg.isNotEmpty ? ': $msg' : '.');
       });
     } catch (e) {
       if (!mounted) return;
       setState(() {
         _resultOk = false;
         _result = LockerOpsService.isEndpointUnavailable(e)
-            ? 'Máy chủ chưa hỗ trợ mở ô bằng mã. Hãy nhập mã tại màn hình tủ.'
+            ? context.l10n.recvOpenByCodeNotSupported
             : LockerOpsService.errorMessage(e);
       });
     } finally {
@@ -148,30 +149,29 @@ class _AuthorizedOpeningPageState extends State<AuthorizedOpeningPage> {
       body: Column(
         children: [
           BrandHeroHeader(
-            title: 'Mở tủ ủy quyền',
-            subtitle: 'Lấy hàng bằng mã được gửi cho bạn',
+            title: context.l10n.aoTitle,
+            subtitle: context.l10n.aoSubtitle,
             onBack: () => Navigator.of(context).maybePop(),
           ),
           Expanded(
             child: ListView(
               padding: const EdgeInsets.all(16),
               children: [
-                const OpsBanner(
+                OpsBanner(
                   icon: LucideIcons.keyRound,
                   text:
-                      'Nhập mã lấy hàng (PIN) bạn nhận được — mã có trong mục "Đơn ủy quyền" '
-                      'hoặc do người gửi chuyển cho bạn. Bạn cần đứng tại tủ để mở ô.',
+                      context.l10n.aoIntro,
                 ),
                 if ((widget.orderCode ?? '').isNotEmpty) ...[
                   const SizedBox(height: 12),
                   OpsInfoRow(
                     icon: LucideIcons.hash,
-                    label: 'Đơn',
+                    label: context.l10n.aoOrder,
                     value: widget.orderCode!,
                   ),
                 ],
                 const SizedBox(height: 20),
-                const OpsSectionLabel('Chọn tủ', icon: LucideIcons.warehouse),
+                OpsSectionLabel(context.l10n.commonChooseLocker, icon: LucideIcons.warehouse),
                 if (_loadingLockers)
                   const Padding(
                     padding: EdgeInsets.all(16),
@@ -191,7 +191,7 @@ class _AuthorizedOpeningPageState extends State<AuthorizedOpeningPage> {
                       ),
                       TextButton(
                         onPressed: _loadLockers,
-                        child: const Text('Thử lại'),
+                        child: Text(context.l10n.commonRetry),
                       ),
                     ],
                   )
@@ -199,13 +199,13 @@ class _AuthorizedOpeningPageState extends State<AuthorizedOpeningPage> {
                   LockerPickerField(
                     lockers: _lockers,
                     selectedId: _lockerId,
-                    placeholder: 'Chạm để chọn tủ lấy hàng',
+                    placeholder: context.l10n.aoTapToChoose,
                     onSelected: (l) =>
                         setState(() => _lockerId = (l['id'] as num?)?.toInt()),
                   ),
                 const SizedBox(height: 20),
-                const OpsSectionLabel(
-                  'Mã lấy hàng',
+                OpsSectionLabel(
+                  context.l10n.recvPickupCode,
                   icon: LucideIcons.keyRound,
                 ),
                 TextField(
@@ -245,7 +245,7 @@ class _AuthorizedOpeningPageState extends State<AuthorizedOpeningPage> {
                 ],
                 const SizedBox(height: 20),
                 OpsPrimaryButton(
-                  label: 'Mở ô lấy hàng',
+                  label: context.l10n.aoOpenBox,
                   icon: LucideIcons.doorOpen,
                   loading: _opening,
                   onPressed: _opening ? null : _open,

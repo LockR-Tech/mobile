@@ -15,6 +15,7 @@ import 'package:smart_laundry_locker/features/auth/infrastructure/models/login_r
 import 'package:smart_laundry_locker/features/auth/infrastructure/models/register_request_model.dart';
 import 'package:smart_laundry_locker/features/auth/infrastructure/models/verify_otp_request_model.dart';
 import 'package:dartz/dartz.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 class AuthRepositoryImpl implements AuthRepository {
   final AuthRemoteDataSource _remoteDataSource;
@@ -56,7 +57,7 @@ class AuthRepositoryImpl implements AuthRepository {
       if (success == false) {
         return Right(
           RegisterEntity.failure(
-            message: message ?? 'Đăng ký thất bại. Vui lòng thử lại.',
+            message: message ?? L10n.current.authRegisterFailedRetry,
           ),
         );
       }
@@ -168,30 +169,30 @@ class AuthRepositoryImpl implements AuthRepository {
       }
 
       // Fallback: if backend doesn't return expected fields.
-      return const Left(
-        AuthenticationFailure('Khuôn mặt không khớp hoặc chưa được đăng ký'),
+      return Left(
+        AuthenticationFailure(L10n.current.authFaceMismatch),
       );
     } on AuthenticationException {
-      return const Left(
-        AuthenticationFailure('Khuôn mặt không khớp hoặc chưa được đăng ký'),
+      return Left(
+        AuthenticationFailure(L10n.current.authFaceMismatch),
       );
     } on AuthorizationException {
-      return const Left(
-        AuthorizationFailure('Khuôn mặt không khớp hoặc chưa được đăng ký'),
+      return Left(
+        AuthorizationFailure(L10n.current.authFaceMismatch),
       );
     } on ValidationException {
-      return const Left(
-        ValidationFailure('Hệ thống AI đang bận hoặc ảnh không hợp lệ'),
+      return Left(
+        ValidationFailure(L10n.current.authFaceAiBusy),
       );
     } on ServerException {
-      return const Left(
-        ServerFailure('Hệ thống AI đang bận hoặc ảnh không hợp lệ'),
+      return Left(
+        ServerFailure(L10n.current.authFaceAiBusy),
       );
     } on NetworkException catch (e) {
       return Left(NetworkFailure(e.message));
     } catch (_) {
-      return const Left(
-        UnknownFailure('Khuôn mặt không khớp hoặc chưa được đăng ký'),
+      return Left(
+        UnknownFailure(L10n.current.authFaceMismatch),
       );
     }
   }
@@ -216,8 +217,8 @@ class AuthRepositoryImpl implements AuthRepository {
     } on AuthorizationException catch (e) {
       return Left(AuthorizationFailure(e.message));
     } catch (e) {
-      return const Left(
-        UnknownFailure('Đăng nhập thất bại. Vui lòng thử lại.'),
+      return Left(
+        UnknownFailure(L10n.current.authLoginFailedRetry),
       );
     }
   }
@@ -297,8 +298,8 @@ class AuthRepositoryImpl implements AuthRepository {
       );
 
       if (tokenEntity.accessToken.isEmpty) {
-        return const Left(
-          AuthenticationFailure('Không nhận được token xác thực từ server.'),
+        return Left(
+          AuthenticationFailure(L10n.current.authNoTokenFromServer),
         );
       }
 
@@ -347,7 +348,7 @@ class AuthRepositoryImpl implements AuthRepository {
       } else {
         return Left(
           ServerFailure(
-            response['message']?.toString() ?? 'Đăng ký khuôn mặt thất bại',
+            response['message']?.toString() ?? L10n.current.authFaceRegisterFailed,
           ),
         );
       }
@@ -410,20 +411,18 @@ Failure _mapPasswordResetBackendFailure(Object error) {
   };
   final m = message.toLowerCase().trim();
   if (m.contains('user not found') || m.contains('not found')) {
-    return const ValidationFailure(
-      'Email chưa được đăng ký tài khoản. Vui lòng kiểm tra lại.',
-    );
+    return ValidationFailure(L10n.current.authEmailNotRegistered);
   }
   if (m.contains('otp')) {
-    return const ValidationFailure('Mã OTP không hợp lệ hoặc đã hết hạn.');
+    return ValidationFailure(L10n.current.authOtpInvalidOrExpired);
   }
   if (m.contains('do not match') || m.contains('mismatch')) {
-    return const ValidationFailure('Mật khẩu nhập lại không khớp.');
+    return ValidationFailure(L10n.current.authPasswordsDontMatch);
   }
   return ServerFailure(
     message.isNotEmpty
         ? message
-        : 'Không thể đặt lại mật khẩu. Vui lòng thử lại.',
+        : L10n.current.authResetPasswordFailed,
   );
 }
 
@@ -435,30 +434,26 @@ Failure _mapRegisterBackendFailure(String message) {
       m.contains('already exists') ||
       m.contains('đã tồn tại')) {
     if (m.contains('email')) {
-      return const ValidationFailure(
-        'Email đã được đăng ký. Vui lòng dùng email khác.',
-      );
+      return ValidationFailure(L10n.current.authEmailTaken);
     }
     if (m.contains('phone') ||
         m.contains('phone_number') ||
         m.contains('phonenumber') ||
         m.contains('số điện thoại')) {
-      return const ValidationFailure(
-        'Số điện thoại đã được đăng ký. Vui lòng dùng số khác.',
-      );
+      return ValidationFailure(L10n.current.authPhoneTaken);
     }
-    return const ValidationFailure('Email hoặc số điện thoại đã được đăng ký.');
+    return ValidationFailure(L10n.current.authEmailOrPhoneTaken);
   }
 
   if (m.contains('thất bại trong quá trình đăng ký') ||
       m.contains('register failed')) {
     return ValidationFailure(
-      message.isNotEmpty ? message : 'Đăng ký thất bại. Vui lòng thử lại.',
+      message.isNotEmpty ? message : L10n.current.authRegisterFailedRetry,
     );
   }
 
   return ServerFailure(
-    message.isNotEmpty ? message : 'Lỗi server khi đăng ký. Vui lòng thử lại.',
+    message.isNotEmpty ? message : L10n.current.authRegisterServerError,
   );
 }
 
@@ -467,9 +462,7 @@ Failure _mapVerifyOtpBackendFailure(String message) {
 
   if (m.contains('cannot read properties of null') &&
       m.contains('accesstoken')) {
-    return const ServerFailure(
-      'Mã OTP đúng nhưng hệ thống xác thực đang lỗi nội bộ (chưa trả được token). Vui lòng thử lại sau ít phút.',
-    );
+    return ServerFailure(L10n.current.authOtpServerTokenError);
   }
 
   if (m.contains('otp') &&
@@ -477,10 +470,10 @@ Failure _mapVerifyOtpBackendFailure(String message) {
           m.contains('expired') ||
           m.contains('hết hạn') ||
           m.contains('không hợp lệ'))) {
-    return const ValidationFailure('Mã OTP không hợp lệ hoặc đã hết hạn.');
+    return ValidationFailure(L10n.current.authOtpInvalidOrExpired);
   }
 
   return ServerFailure(
-    message.isNotEmpty ? message : 'Không thể xác thực OTP. Vui lòng thử lại.',
+    message.isNotEmpty ? message : L10n.current.authOtpVerifyFailed,
   );
 }

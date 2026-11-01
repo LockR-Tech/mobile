@@ -1,3 +1,4 @@
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 /// Phương thức thanh toán của app khách.
 ///
 /// Quyết định của chủ sản phẩm: MỌI khoản thanh toán đơn (gửi hàng, thuê tủ,
@@ -17,9 +18,7 @@ class PaymentMethods {
   /// Mã lỗi backend khi gửi phương thức đã bỏ (MOMO/VNPAY).
   static const String unsupportedErrorCode = 'PAYMENT_METHOD_UNSUPPORTED';
 
-  static const String unsupportedMessage =
-      'Phương thức thanh toán này không còn được hỗ trợ. '
-      'Vui lòng thanh toán bằng chuyển khoản SePay (VietQR).';
+  static String get unsupportedMessage => L10n.current.paymentMethodUnsupported;
 
   /// Lọc danh sách admin bật (`enabled-methods`) về các phương thức app hỗ trợ
   /// trong [allowed], giữ thứ tự của [allowed].

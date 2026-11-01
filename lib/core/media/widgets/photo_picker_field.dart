@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:smart_laundry_locker/core/media/photo_picker_controller.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 const _defaultAccent = Color(0xFF1E5A8A);
 const _mutedText = Color(0xFF64748B);
@@ -18,7 +19,7 @@ class PhotoPickerField extends StatelessWidget {
     this.showAddTile = true,
     this.thumbSize = 72,
     this.accentColor = _defaultAccent,
-    this.addLabel = 'Thêm ảnh',
+    this.addLabel,
     this.helperText,
     this.onPhotoTap,
     this.cameraOnly = false,
@@ -29,7 +30,7 @@ class PhotoPickerField extends StatelessWidget {
   final bool showAddTile;
   final double thumbSize;
   final Color accentColor;
-  final String addLabel;
+  final String? addLabel;
 
   /// Dòng mô tả nhỏ phía dưới (vd. "Tối đa 5 ảnh").
   final String? helperText;
@@ -45,7 +46,7 @@ class PhotoPickerField extends StatelessWidget {
     Color accentColor = _defaultAccent,
   }) async {
     if (!controller.canAddMore) {
-      _snack(context, 'Tối đa ${controller.maxPhotos} ảnh');
+      _snack(context, context.l10n.photoMax(controller.maxPhotos));
       return;
     }
     final source = await showModalBottomSheet<ImageSource>(
@@ -58,15 +59,15 @@ class PhotoPickerField extends StatelessWidget {
           children: [
             ListTile(
               leading: Icon(Icons.camera_alt_outlined, color: accentColor),
-              title: const Text('Chụp ảnh từ máy ảnh'),
+              title: Text(context.l10n.photoTakeCamera),
               onTap: () => Navigator.pop(ctx, ImageSource.camera),
             ),
             ListTile(
               leading: Icon(Icons.photo_library_outlined, color: accentColor),
               title: Text(
                 controller.remaining > 1
-                    ? 'Chọn ảnh từ thư viện (tối đa ${controller.remaining})'
-                    : 'Chọn ảnh từ thư viện',
+                    ? context.l10n.photoPickGalleryMax(controller.remaining)
+                    : context.l10n.photoPickGallery,
               ),
               onTap: () => Navigator.pop(ctx, ImageSource.gallery),
             ),
@@ -82,8 +83,8 @@ class PhotoPickerField extends StatelessWidget {
         _snack(
           context,
           source == ImageSource.camera
-              ? 'Không mở được máy ảnh. Hãy cấp quyền camera trong cài đặt.'
-              : 'Không mở được thư viện ảnh. Hãy cấp quyền ảnh trong cài đặt.',
+              ? context.l10n.photoCameraDenied
+              : context.l10n.photoGalleryDenied,
         );
       }
     }
@@ -94,14 +95,14 @@ class PhotoPickerField extends StatelessWidget {
     PhotoPickerController controller,
   ) async {
     if (!controller.canAddMore) {
-      _snack(context, 'Tối đa ${controller.maxPhotos} ảnh');
+      _snack(context, context.l10n.photoMax(controller.maxPhotos));
       return;
     }
     try {
       await controller.pick(ImageSource.camera);
     } catch (_) {
       if (context.mounted) {
-        _snack(context, 'Không mở được máy ảnh. Hãy cấp quyền camera trong cài đặt.');
+        _snack(context, context.l10n.photoCameraDenied);
       }
     }
   }
@@ -148,7 +149,7 @@ class PhotoPickerField extends StatelessWidget {
                     _AddTile(
                       size: thumbSize,
                       color: accentColor,
-                      label: addLabel,
+                      label: addLabel ?? context.l10n.photoAdd,
                       onTap: () => cameraOnly
                           ? _pickFromCamera(context, controller)
                           : pickWithSourceSheet(
@@ -283,7 +284,7 @@ class _PendingThumb extends StatelessWidget {
             if (status == PendingPhotoStatus.failed)
               Positioned.fill(
                 child: Tooltip(
-                  message: photo.error ?? 'Tải ảnh thất bại',
+                  message: photo.error ?? context.l10n.photoUploadFailed,
                   child: Container(
                     decoration: BoxDecoration(
                       color: const Color(0xFFDC2626).withValues(alpha: 0.35),
@@ -319,7 +320,7 @@ class _PendingThumb extends StatelessWidget {
                   borderRadius: BorderRadius.circular(4),
                 ),
                 child: Text(
-                  'Ảnh ${index + 1}',
+                  context.l10n.photoNumber(index + 1),
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 9,

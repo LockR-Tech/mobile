@@ -22,6 +22,7 @@ import 'package:smart_laundry_locker/shared/shared.dart';
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
 import 'package:smart_laundry_locker/core/services/app_event_bus.dart';
 import 'package:smart_laundry_locker/features/profile/domain/constants/profile_constants.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 /// SEND flow (gửi hàng C2C qua tủ).
 /// Stage 1: tạo đơn + nhận PIN bỏ hàng. Stage 2: thanh toán → mở ô → bỏ hàng →
@@ -309,7 +310,7 @@ class _SendParcelPageState extends State<SendParcelPage>
     scheduleMicrotask(payment.dispose);
     setState(() => _order = {...?_order, 'paymentStatus': 'PAID'});
     _refreshOrder();
-    _snack('Thanh toán thành công! Mã PIN mở ô tủ đã sẵn sàng.');
+    _snack(context.l10n.commonPaySuccessPinReady);
   }
 
   Future<void> _loadLockers() async {
@@ -456,7 +457,7 @@ class _SendParcelPageState extends State<SendParcelPage>
     final boxId = order?['sendBoxId'] as int?;
     final pin = order?['pinCode'] as String?;
     if (lockerId == null || boxId == null || pin == null || pin.isEmpty) {
-      _snack('Đơn chưa có thông tin ô/PIN để mở tủ.');
+      _snack(context.l10n.ordNoBoxPinInfo);
       return;
     }
     setState(() => _loading = true);
@@ -465,8 +466,8 @@ class _SendParcelPageState extends State<SendParcelPage>
       final message = res['message']?.toString();
       _snack(
         res['accepted'] == true
-            ? 'Ô đã mở — đặt hàng vào, đóng cửa rồi bấm xác nhận.'
-            : (message == null || message.isEmpty ? 'Không mở được ô' : message),
+            ? L10n.current.sendBoxOpened
+            : (message == null || message.isEmpty ? L10n.current.sendBoxOpenFailed : message),
       );
     } catch (e) {
       _snack(LockerOpsService.errorMessage(e));
@@ -485,7 +486,7 @@ class _SendParcelPageState extends State<SendParcelPage>
       setState(() => _order = updated);
       _syncPayment();
       unawaited(_loadLockerInfoForShare(updated));
-      _snack('Đã bỏ hàng. Gửi mã lấy hàng cho người nhận bằng nút Chia sẻ bên dưới.');
+      _snack(context.l10n.sendDroppedShare);
     } catch (e) {
       _snack(LockerOpsService.errorMessage(e));
     } finally {
@@ -502,32 +503,32 @@ class _SendParcelPageState extends State<SendParcelPage>
   /// Lock.R báo người nhận lúc đơn được thanh toán và gửi mã khi bỏ hàng vào ô.
   static String? _validateReceiverEmail(String? value) {
     final email = value?.trim() ?? '';
-    if (email.isEmpty) return 'Nhập email người nhận để Lock.R gửi mã mở tủ';
-    return _looksLikeEmail(email) ? null : 'Email không hợp lệ';
+    if (email.isEmpty) return L10n.current.sendEnterRecipientEmail;
+    return _looksLikeEmail(email) ? null : L10n.current.authInvalidEmail;
   }
 
   /// Số di động Việt Nam 10 số bắt đầu bằng 0 — SMS và tra tài khoản người
   /// nhận đều dựa vào số này, gõ thiếu là người nhận không nhận được mã.
   static String? _validateReceiverPhone(String? value) {
     final phone = value?.trim() ?? '';
-    if (phone.isEmpty) return 'Nhập số điện thoại người nhận';
+    if (phone.isEmpty) return L10n.current.sendEnterRecipientPhone;
     if (!ProfileConstants.vnPhoneRegex.hasMatch(phone)) {
-      return 'Số điện thoại gồm 10 số, bắt đầu bằng 0';
+      return L10n.current.sendPhone10Digits;
     }
     return null;
   }
 
   String _sizeLabel(String size) => switch (size) {
-        'SMALL' => 'Nhỏ',
-        'LARGE' => 'Lớn',
-        _ => 'Vừa',
+        'SMALL' => L10n.current.sizeSmallShort,
+        'LARGE' => L10n.current.sizeLargeShort,
+        _ => L10n.current.sizeMediumShort,
       };
 
   /// `Ô vừa (M)` — cùng cách gọi với sơ đồ tủ và bảng chọn ô.
   String _sizeTitle(String size) => switch (size) {
-        'SMALL' => 'Ô nhỏ (S)',
-        'LARGE' => 'Ô lớn (L)',
-        _ => 'Ô vừa (M)',
+        'SMALL' => L10n.current.groupSmall,
+        'LARGE' => L10n.current.groupLarge,
+        _ => L10n.current.groupMedium,
       };
 
   Future<void> _handleBack() async {
@@ -553,31 +554,31 @@ class _SendParcelPageState extends State<SendParcelPage>
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-        title: const Row(
+        title: Row(
           children: [
             Icon(LucideIcons.triangleAlert, color: Color(0xFFEA580C)),
             SizedBox(width: 8),
             Text(
-              'Hủy tạo đơn hàng?',
+              context.l10n.sendCancelCreateQuestion,
               style: TextStyle(fontWeight: FontWeight.w700, fontSize: 17),
             ),
           ],
         ),
         content: Text(
-          'Đơn hàng chưa được thanh toán. Nếu bạn thoát bây giờ hoặc không hoàn tất thanh toán trong vòng ${businessConfig.autoCancelUnpaidMinutes} phút, đơn hàng sẽ bị hủy và ô tủ sẽ được giải phóng.',
+          context.l10n.sendCancelCreateBody(businessConfig.autoCancelUnpaidMinutes),
           style: const TextStyle(fontSize: 14, color: opsDark, height: 1.4),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Ở lại thanh toán'),
+            child: Text(context.l10n.commonStayToPay),
           ),
           FilledButton(
             style: FilledButton.styleFrom(
               backgroundColor: const Color(0xFFDC2626),
             ),
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Hủy đơn & Thoát'),
+            child: Text(context.l10n.commonCancelAndExit),
           ),
         ],
       ),
@@ -589,7 +590,7 @@ class _SendParcelPageState extends State<SendParcelPage>
     if (orderId != null) {
       try {
         await _service.cancelOrder(orderId);
-        _snack('Đã hủy đơn hàng và giải phóng ô tủ.');
+        _snack(L10n.current.sendCancelledReleased);
         AppEventBus.instance.emit(LockerLayoutUpdatedEvent(
           lockerId: _lockerId?.toString(),
         ));
@@ -621,11 +622,11 @@ class _SendParcelPageState extends State<SendParcelPage>
         body: Column(
           children: [
             BrandHeroHeader(
-              eyebrow: _order == null ? null : 'LOCK.R • THANH TOÁN',
+              eyebrow: _order == null ? null : context.l10n.commonPaymentEyebrow,
               title: _order == null
-                  ? 'Gửi hàng qua tủ'
-                  : 'Đơn ${_order!['orderCode'] ?? '#${_order!['id']}'}',
-              subtitle: _order == null ? 'Gửi đồ nhanh chóng & tiện lợi' : null,
+                  ? context.l10n.sendTitle
+                  : context.l10n.commonOrderCode(_order!['orderCode'] ?? '#${_order!['id']}'),
+              subtitle: _order == null ? context.l10n.sendSubtitle : null,
               trailing: _order == null
                   ? null
                   : StatusChip(_order!['status'] as String?),
@@ -666,7 +667,7 @@ class _SendParcelPageState extends State<SendParcelPage>
             _priceCard(),
             const SizedBox(height: 16),
             OpsPrimaryButton(
-              label: 'Tạo đơn & lấy PIN bỏ hàng',
+              label: context.l10n.sendCreateAndGetPin,
               icon: LucideIcons.arrowRight,
               loading: _loading,
               onPressed: _noCellAvailable ? null : _create,
@@ -714,8 +715,8 @@ class _SendParcelPageState extends State<SendParcelPage>
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'Tạm tính',
+                    Text(
+                      context.l10n.commonSubtotal,
                       style: TextStyle(color: Colors.white70, fontSize: 12),
                     ),
                     Text(
@@ -755,13 +756,13 @@ class _SendParcelPageState extends State<SendParcelPage>
           ),
           if (_discount > 0)
             _adjustmentLine(
-              label: 'Mã giảm giá',
+              label: context.l10n.commonDiscountCode,
               value: '-${fmtPrice(_discount)}',
               color: const Color(0xFF86EFAC),
             ),
           if (_pointsDiscount > 0)
             _adjustmentLine(
-              label: 'Điểm thưởng',
+              label: context.l10n.commonRewardPoints,
               value: loyaltyPointsDiscountText(_pointsToUse, _pointsDiscount),
               color: const Color(0xFFFDE68A),
             ),
@@ -804,8 +805,8 @@ class _SendParcelPageState extends State<SendParcelPage>
   // ---- Stage 1: form ----
   Widget _buildForm() {
     if (_loadingLockers) {
-      return const Center(
-        child: AppLoadingIndicator(message: 'Đang tải danh sách tủ...'),
+      return Center(
+        child: AppLoadingIndicator(message: context.l10n.sendLoadingLockers),
       );
     }
     return Form(
@@ -815,9 +816,8 @@ class _SendParcelPageState extends State<SendParcelPage>
         children: [
           const _SendStepper(active: 0),
           const SizedBox(height: 16),
-          const OpsBanner(
-            text: 'Gửi hàng cho người khác qua tủ: bạn bỏ hàng vào ô bằng PIN, '
-                'hệ thống sinh PIN mới gửi người nhận để họ tới lấy.',
+          OpsBanner(
+            text: context.l10n.sendIntro,
             icon: LucideIcons.packagePlus,
           ),
           if (widget.locationName != null) ...[
@@ -825,7 +825,7 @@ class _SendParcelPageState extends State<SendParcelPage>
             LocationHint(name: widget.locationName!),
           ],
           const SizedBox(height: 20),
-          const OpsSectionLabel('Chọn tủ', icon: LucideIcons.warehouse),
+          OpsSectionLabel(context.l10n.commonChooseLocker, icon: LucideIcons.warehouse),
           if (widget.initialLockerId != null)
             _lockedLockerCard()
           else
@@ -843,7 +843,7 @@ class _SendParcelPageState extends State<SendParcelPage>
               },
             ),
           const SizedBox(height: 20),
-          const OpsSectionLabel('Loại ô', icon: LucideIcons.boxes),
+          OpsSectionLabel(context.l10n.commonBoxType, icon: LucideIcons.boxes),
           if (widget.initialBoxId != null)
             _lockedCellCard()
           else
@@ -856,16 +856,15 @@ class _SendParcelPageState extends State<SendParcelPage>
               ],
             ),
           const SizedBox(height: 6),
-          const Text(
-            'Gửi hàng dùng ô thường; ô vali (XL) chỉ để thuê giữ đồ. Hãy chắc '
-            'kiện hàng vừa ô trước khi tạo đơn.',
+          Text(
+            context.l10n.sendStandardOnly,
             style: TextStyle(fontSize: 12, color: opsMutedText, height: 1.4),
           ),
           const SizedBox(height: 20),
-          const OpsSectionLabel('Người nhận', icon: LucideIcons.userRound),
+          OpsSectionLabel(context.l10n.ordRecipient, icon: LucideIcons.userRound),
           _field(
             controller: _phoneCtrl,
-            hint: 'Số điện thoại người nhận',
+            hint: context.l10n.sendRecipientPhoneHint,
             icon: LucideIcons.phone,
             keyboardType: TextInputType.phone,
             inputFormatters: [
@@ -877,14 +876,14 @@ class _SendParcelPageState extends State<SendParcelPage>
           const SizedBox(height: 10),
           _field(
             controller: _nameCtrl,
-            hint: 'Tên người nhận (tùy chọn)',
+            hint: context.l10n.sendRecipientNameHint,
             icon: LucideIcons.idCard,
           ),
           const SizedBox(height: 10),
           _field(
             key: const ValueKey('send-receiver-email'),
             controller: _emailCtrl,
-            hint: 'Email người nhận',
+            hint: context.l10n.sendRecipientEmailHint,
             icon: LucideIcons.mail,
             keyboardType: TextInputType.emailAddress,
             // Bắt buộc: Lock.R báo người nhận qua email này, và người gửi gửi lại được từ chi tiết đơn.
@@ -892,22 +891,19 @@ class _SendParcelPageState extends State<SendParcelPage>
           ),
           const SizedBox(height: 8),
           // Nói rõ người nhận được báo lúc nào để người gửi khỏi nhắn trùng.
-          const OpsBanner(
+          OpsBanner(
             tone: OpsBannerTone.info,
             icon: LucideIcons.mailCheck,
-            text: 'Lock.R gửi email cho người nhận ngay khi đơn được thanh toán '
-                '(báo có hàng sắp tới) và gửi mã lấy hàng khi bạn bỏ hàng vào ô. '
-                'Gửi lại được trong chi tiết đơn; bấm "Chia sẻ mã cho người nhận" '
-                'để gửi thêm qua Zalo/SMS.',
+            text: context.l10n.sendEmailInfo,
           ),
           const SizedBox(height: 20),
-          const OpsSectionLabel(
-            'Lời nhắn cho người nhận',
+          OpsSectionLabel(
+            context.l10n.sendRecipientMessage,
             icon: LucideIcons.messageSquareText,
           ),
           _field(
             controller: _noteCtrl,
-            hint: 'VD: Hàng dễ vỡ, mở nhẹ tay (tùy chọn)',
+            hint: context.l10n.sendMessageHint,
             icon: LucideIcons.pencil,
             maxLines: 2,
             maxLength: _noteMaxLength,
@@ -921,7 +917,7 @@ class _SendParcelPageState extends State<SendParcelPage>
           // Admin đặt 0 mã mỗi đơn ⇒ tắt nhập mã.
           if (businessConfig.maxVouchersPerOrder > 0) ...[
             const SizedBox(height: 20),
-            const OpsSectionLabel('Mã giảm giá', icon: LucideIcons.ticket),
+            OpsSectionLabel(context.l10n.commonDiscountCode, icon: LucideIcons.ticket),
             PromoCodeField(
               orderTotal: _fee,
               lockerId: _lockerId,
@@ -933,7 +929,7 @@ class _SendParcelPageState extends State<SendParcelPage>
             ),
           ],
           const SizedBox(height: 20),
-          const OpsSectionLabel('Điểm thưởng', icon: LucideIcons.sparkles),
+          OpsSectionLabel(context.l10n.commonRewardPoints, icon: LucideIcons.sparkles),
           LoyaltyRedeemToggle(
             orderTotal: _feeAfterVoucher,
             service: _service,
@@ -972,7 +968,7 @@ class _SendParcelPageState extends State<SendParcelPage>
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  _lockerName ?? widget.locationName ?? 'Tủ đã chọn',
+                  _lockerName ?? widget.locationName ?? context.l10n.commonSelectedLocker,
                   style: const TextStyle(
                     fontWeight: FontWeight.w800,
                     fontSize: 14.5,
@@ -1001,8 +997,8 @@ class _SendParcelPageState extends State<SendParcelPage>
   Widget? _availabilityText(int? available) {
     if (available == null) return null;
     return available == 0
-        ? const Text(
-            'Hết ô',
+        ? Text(
+            context.l10n.commonNoFreeBoxes,
             style: TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.bold,
@@ -1010,7 +1006,7 @@ class _SendParcelPageState extends State<SendParcelPage>
             ),
           )
         : Text(
-            'Còn $available ô trống',
+            context.l10n.commonFreeBoxes(available),
             style: const TextStyle(fontSize: 11, color: Colors.green),
           );
   }
@@ -1068,7 +1064,7 @@ class _SendParcelPageState extends State<SendParcelPage>
               ),
               const SizedBox(height: 8),
               Text(
-                'Ô ${_sizeLabel(size).toLowerCase()}',
+                context.l10n.sendBoxSize(_sizeLabel(size).toLowerCase()),
                 style: TextStyle(fontWeight: FontWeight.w800, color: color),
               ),
               const SizedBox(height: 4),
@@ -1090,8 +1086,8 @@ class _SendParcelPageState extends State<SendParcelPage>
     final knownSize = _normalizeSize(widget.initialBoxSize) != null;
     final available = knownSize ? (_availableBySize?[_size]) : null;
     final title = [
-      if (widget.initialBoxNumber != null) 'Ô số ${widget.initialBoxNumber}',
-      knownSize ? _sizeTitle(_size) : 'Ô đã chọn',
+      if (widget.initialBoxNumber != null) context.l10n.boxNumberLabel(widget.initialBoxNumber!),
+      knownSize ? _sizeTitle(_size) : context.l10n.sendSelectedBox,
     ].join(' · ');
     return Container(
       padding: const EdgeInsets.all(14),
@@ -1129,7 +1125,7 @@ class _SendParcelPageState extends State<SendParcelPage>
                   children: [
                     Flexible(
                       child: Text(
-                        '${fmtPrice(_fee)}/lượt gửi',
+                        context.l10n.sendFeePerParcel(fmtPrice(_fee)),
                         style: const TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w700,
@@ -1139,8 +1135,8 @@ class _SendParcelPageState extends State<SendParcelPage>
                     ),
                     if (_selectedBoxTaken) ...[
                       const SizedBox(width: 8),
-                      const Text(
-                        'Ô vừa được đặt — chọn ô khác',
+                      Text(
+                        context.l10n.sendBoxTaken,
                         style: TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.bold,
@@ -1193,7 +1189,7 @@ class _SendParcelPageState extends State<SendParcelPage>
             tone: OpsBannerTone.info,
             icon: LucideIcons.badgeAlert,
             text:
-                'Quét mã QR trên và chuyển khoản trong ${config.autoCancelUnpaidMinutes} phút để giữ ô — mã bỏ hàng sẽ tự hiện sau khi thanh toán.',
+                context.l10n.commonScanQrPayHold(config.autoCancelUnpaidMinutes),
           ),
         ],
       );
@@ -1214,7 +1210,7 @@ class _SendParcelPageState extends State<SendParcelPage>
                 children: [
                   Expanded(
                     child: Text(
-                      'Đơn ${order['orderCode'] ?? '#${order['id']}'}',
+                      context.l10n.commonOrderCode(order['orderCode'] ?? '#${order['id']}'),
                       style: const TextStyle(
                         fontWeight: FontWeight.w800,
                         color: opsDark,
@@ -1247,18 +1243,21 @@ class _SendParcelPageState extends State<SendParcelPage>
                 if (!isDropped) ...[
                   _ResultHeadline(
                     icon: LucideIcons.packageOpen,
-                    title: 'Bước 1 — Bỏ hàng vào ô',
+                    title: context.l10n.sendStep1Title,
                     subtitle:
-                        'Đến tủ, nhập PIN bên dưới để mở ${order['sendBoxNumber'] == null ? 'ô của đơn' : 'ô số ${order['sendBoxNumber']}'}, '
-                        'đặt hàng vào rồi đóng cửa.',
+                        context.l10n.sendStep1Body(
+                          order['sendBoxNumber'] == null
+                              ? context.l10n.boxOfOrder
+                              : context.l10n.boxNumberLower(order['sendBoxNumber']),
+                        ),
                   ),
                 ] else ...[
                   _ResultHeadline(
                     icon: LucideIcons.packageCheck,
-                    title: 'Bước 2 — Đã bỏ hàng xong',
+                    title: context.l10n.sendStep2Title,
                     subtitle: hasReceiverAccount
-                        ? 'PIN nhận hàng đã được gửi tới tài khoản người nhận.'
-                        : 'Hãy chuyển mã PIN nhận hàng bên dưới cho người nhận.',
+                        ? context.l10n.sendPinSentToRecipient
+                        : context.l10n.sendSharePinWithRecipient,
                   ),
                 ],
                 const SizedBox(height: 16),
@@ -1266,8 +1265,8 @@ class _SendParcelPageState extends State<SendParcelPage>
                   pin: order['pinCode'] as String?,
                   qrToken: order['qrToken'] as String?,
                   caption: isDropped
-                      ? 'Người nhận nhập PIN tại tủ để lấy hàng'
-                      : 'Nhập PIN tại tủ để mở ô và bỏ hàng',
+                      ? context.l10n.sendRecipientEntersPin
+                      : context.l10n.sendEnterPinToDrop,
                 ),
                 // Chỉ PIN nhận hàng (sau khi bỏ hàng) mới chia sẻ; PIN bỏ hàng
                 // là của người gửi.
@@ -1280,18 +1279,18 @@ class _SendParcelPageState extends State<SendParcelPage>
               // lại, nên không kiểm tra được mình gõ đúng số chưa.
               ...[
                 const SizedBox(height: 16),
-                const OpsSectionLabel(
-                  'Người nhận',
+                OpsSectionLabel(
+                  context.l10n.ordRecipient,
                   icon: LucideIcons.userRound,
                 ),
                 OpsInfoRow(
                   icon: LucideIcons.user,
-                  label: 'Họ tên',
+                  label: context.l10n.commonFullNameShort,
                   value: _textOrDash(order['receiverName']),
                 ),
                 OpsInfoRow(
                   icon: LucideIcons.phone,
-                  label: 'Số điện thoại',
+                  label: context.l10n.commonPhoneNumber,
                   value: _textOrDash(order['receiverPhone']),
                 ),
                 if (_hasText(order['receiverEmail']))
@@ -1302,15 +1301,15 @@ class _SendParcelPageState extends State<SendParcelPage>
                   ),
                 OpsInfoRow(
                   icon: LucideIcons.userCheck,
-                  label: 'Tài khoản Lock.R',
+                  label: context.l10n.sendLockrAccount,
                   value: hasReceiverAccount
-                      ? 'Đã có — PIN gửi thẳng vào app'
-                      : 'Chưa có — bạn cần chuyển PIN cho người nhận',
+                      ? context.l10n.sendHasAccount
+                      : context.l10n.sendNoAccount,
                 ),
                 if (_hasText(order['customerNote']))
                   OpsInfoRow(
                     icon: LucideIcons.stickyNote,
-                    label: 'Ghi chú',
+                    label: context.l10n.commonNote,
                     value: '${order['customerNote']}',
                   ),
               ],
@@ -1319,10 +1318,11 @@ class _SendParcelPageState extends State<SendParcelPage>
                 OpsBanner(
                   tone: OpsBannerTone.warning,
                   icon: LucideIcons.clock,
-                  text: 'Người nhận cần lấy hàng trước '
-                      '${fmtDateTime(order['pickupDeadline'])} '
-                      '(${fmtRemaining(order['pickupDeadline'])}). '
-                      '${overtimePolicyText(config)}',
+                  text: context.l10n.sendPickupBefore(
+                    fmtDateTime(order['pickupDeadline']),
+                    fmtRemaining(order['pickupDeadline']),
+                    overtimePolicyText(config),
+                  ),
                 ),
               ],
             ],
@@ -1334,7 +1334,7 @@ class _SendParcelPageState extends State<SendParcelPage>
             tone: OpsBannerTone.info,
             icon: LucideIcons.badgeAlert,
             text:
-                'Quét mã QR trên và chuyển khoản trong ${config.autoCancelUnpaidMinutes} phút để giữ ô — mã bỏ hàng sẽ tự hiện sau khi thanh toán.',
+                context.l10n.commonScanQrPayHold(config.autoCancelUnpaidMinutes),
           ),
           const SizedBox(height: 12),
           if (payment != null) SepayPaymentActions(controller: payment),
@@ -1347,15 +1347,14 @@ class _SendParcelPageState extends State<SendParcelPage>
             SepayPaymentActions(controller: payment),
             const SizedBox(height: 12),
           ],
-          const OpsBanner(
+          OpsBanner(
             tone: OpsBannerTone.info,
             icon: LucideIcons.lockKeyholeOpen,
-            text: 'Mở ô bằng nút bên dưới hoặc nhập PIN tại tủ, đặt hàng vào, '
-                'đóng cửa rồi xác nhận. Xác nhận ngay trên màn hình tủ cũng được.',
+            text: context.l10n.sendDropInstructions,
           ),
           const SizedBox(height: 12),
           OpsPrimaryButton(
-            label: 'Mở ô để bỏ hàng',
+            label: context.l10n.sendOpenToDrop,
             icon: LucideIcons.lockKeyholeOpen,
             color: opsPrimary,
             loading: _loading,
@@ -1363,14 +1362,14 @@ class _SendParcelPageState extends State<SendParcelPage>
           ),
           const SizedBox(height: 12),
           OpsPrimaryButton(
-            label: 'Tôi đã bỏ hàng vào ô',
+            label: context.l10n.sendIDropped,
             icon: LucideIcons.check,
             loading: _loading,
             onPressed: _confirmDrop,
           ),
         ] else
           OpsPrimaryButton(
-            label: 'Hoàn tất',
+            label: context.l10n.commonDone,
             icon: LucideIcons.house,
             onPressed: () {
               final router = GoRouter.of(context);
@@ -1435,9 +1434,9 @@ class _SendStepper extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        _step(1, 'Bỏ hàng', done: active >= 2, current: active <= 1),
+        _step(1, context.l10n.sendStepDrop, done: active >= 2, current: active <= 1),
         _connector(active >= 2),
-        _step(2, 'Người nhận lấy', done: false, current: active >= 2),
+        _step(2, context.l10n.sendStepRecipientPicks, done: false, current: active >= 2),
       ],
     );
   }

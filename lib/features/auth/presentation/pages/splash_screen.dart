@@ -8,6 +8,7 @@ import 'package:smart_laundry_locker/core/services/session_service.dart';
 import 'package:smart_laundry_locker/core/services/token_service.dart';
 import 'package:smart_laundry_locker/shared/shared.dart';
 import 'package:smart_laundry_locker/shared/widgets/app_lottie.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 const String _kFastDeliveryLottie =
     'assets/animations/fast_shopping_delivery.json';
@@ -63,7 +64,7 @@ class _SplashScreenState extends State<SplashScreen>
       if (await BiometricService.isEnabled() &&
           await BiometricService.isSupported()) {
         final ok = await BiometricService.authenticate(
-          reason: 'Xác thực để mở Lock.R',
+          reason: L10n.current.authBiometricReason,
         );
         if (!mounted) return;
         if (!ok) {
@@ -83,7 +84,7 @@ class _SplashScreenState extends State<SplashScreen>
   Future<void> _retryBiometric() async {
     setState(() => _bioBlocked = false);
     final ok = await BiometricService.authenticate(
-      reason: 'Xác thực để mở Lock.R',
+      reason: context.l10n.authBiometricReason,
     );
     if (!mounted) return;
     if (ok) {
@@ -214,8 +215,8 @@ class _SplashScreenState extends State<SplashScreen>
                                 color: const Color(0xFFE2E8F0),
                               ),
                             ),
-                            child: const Text(
-                              'Hệ thống tủ khóa thông minh 24/7',
+                            child: Text(
+                              context.l10n.authSplashTagline,
                               style: TextStyle(
                                 fontSize: 12.5,
                                 fontWeight: FontWeight.w600,
@@ -258,8 +259,8 @@ class _SplashScreenState extends State<SplashScreen>
                               ),
                             ),
                             const SizedBox(height: 10),
-                            const Text(
-                              'Đang tải...',
+                            Text(
+                              context.l10n.commonLoading,
                               style: TextStyle(
                                 fontSize: 13,
                                 fontWeight: FontWeight.w500,
@@ -286,8 +287,8 @@ class _SplashScreenState extends State<SplashScreen>
                               ),
                               child: Column(
                                 children: [
-                                  const Text(
-                                    'Cần xác thực sinh trắc học để tiếp tục',
+                                  Text(
+                                    context.l10n.authBiometricRequired,
                                     style: TextStyle(
                                       fontSize: 14,
                                       fontWeight: FontWeight.w500,
@@ -301,8 +302,8 @@ class _SplashScreenState extends State<SplashScreen>
                                       LucideIcons.fingerprint,
                                       size: 20,
                                     ),
-                                    label: const Text(
-                                      'Xác thực vân tay / Face ID',
+                                    label: Text(
+                                      context.l10n.authBiometricButton,
                                       style: TextStyle(
                                         fontWeight: FontWeight.w700,
                                       ),
@@ -323,8 +324,8 @@ class _SplashScreenState extends State<SplashScreen>
                                   const SizedBox(height: 6),
                                   TextButton(
                                     onPressed: _signOutInstead,
-                                    child: const Text(
-                                      'Đăng xuất và dùng mật khẩu',
+                                    child: Text(
+                                      context.l10n.authLogoutUsePassword,
                                       style: TextStyle(
                                         color: Color(0xFF64748B),
                                         fontSize: 13.5,

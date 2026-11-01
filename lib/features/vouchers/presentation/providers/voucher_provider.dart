@@ -6,6 +6,7 @@ import 'package:smart_laundry_locker/core/utils/user_error_message.dart';
 import '../../data/models/exchangeable_voucher_model.dart';
 import '../../data/models/voucher_model.dart';
 import '../../data/repositories/voucher_repository.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 class VoucherProvider extends ChangeNotifier {
   final VoucherRepository _repository = VoucherRepository();
@@ -91,8 +92,8 @@ class VoucherProvider extends ChangeNotifier {
       _exchangeable = [];
       _exchangeError = userErrorMessage(
         e,
-        notFound: 'Máy chủ chưa hỗ trợ đổi điểm. Vui lòng thử lại sau.',
-        fallback: 'Không tải được danh sách đổi điểm. Vui lòng thử lại.',
+        notFound: L10n.current.voucherExchangeNotSupported,
+        fallback: L10n.current.voucherExchangeLoadFailed,
       );
     } finally {
       _exchangeLoading = false;
@@ -114,7 +115,7 @@ class VoucherProvider extends ChangeNotifier {
     } catch (e) {
       return userErrorMessage(
         e,
-        fallback: 'Chưa đổi được voucher. Vui lòng thử lại.',
+        fallback: L10n.current.voucherExchangeFailed,
       );
     } finally {
       _exchangingId = null;
@@ -139,8 +140,8 @@ class VoucherProvider extends ChangeNotifier {
       _vouchers = [];
       _error = userErrorMessage(
         e,
-        notFound: 'Máy chủ chưa hỗ trợ kho ưu đãi. Vui lòng thử lại sau.',
-        fallback: 'Không tải được ưu đãi của bạn. Vui lòng thử lại.',
+        notFound: L10n.current.voucherWalletNotSupported,
+        fallback: L10n.current.voucherMineLoadFailed,
       );
     } finally {
       _isLoading = false;

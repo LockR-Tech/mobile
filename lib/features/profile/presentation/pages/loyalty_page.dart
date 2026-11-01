@@ -12,6 +12,7 @@ import 'package:smart_laundry_locker/features/profile/domain/entities/loyalty.da
 import 'package:smart_laundry_locker/features/profile/infrastructure/data_sources/loyalty_remote_data_source.dart';
 import 'package:smart_laundry_locker/shared/shared.dart';
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 /// "Điểm thưởng": điểm hiện có, hạng thành viên và lịch sử cộng/trừ điểm.
 /// Điểm do backend tự cộng khi đơn hoàn tất (mỗi đơn một lần); dùng điểm để
@@ -74,7 +75,7 @@ class _LoyaltyPageState extends State<LoyaltyPage>
       } catch (e) {
         historyError = userErrorMessage(
           e,
-          notFound: 'Máy chủ chưa hỗ trợ xem lịch sử điểm.',
+          notFound: L10n.current.loyHistoryNotSupported,
         );
       }
       if (!mounted) return;
@@ -89,7 +90,7 @@ class _LoyaltyPageState extends State<LoyaltyPage>
       setState(() {
         _error = userErrorMessage(
           e,
-          notFound: 'Máy chủ chưa hỗ trợ điểm thưởng. Vui lòng thử lại sau.',
+          notFound: context.l10n.loyNotSupported,
         );
         _loading = false;
       });
@@ -103,8 +104,8 @@ class _LoyaltyPageState extends State<LoyaltyPage>
       body: Column(
         children: [
           BrandHeroHeader(
-            title: 'Điểm thưởng',
-            subtitle: 'Tích điểm khi đơn hàng hoàn tất',
+            title: context.l10n.commonRewardPoints,
+            subtitle: context.l10n.loySubtitle,
             onBack: () => Navigator.of(context).pop(),
             trailing: BrandCircleIconButton(
               icon: LucideIcons.refreshCw,
@@ -121,8 +122,8 @@ class _LoyaltyPageState extends State<LoyaltyPage>
 
   Widget _buildBody() {
     if (_loading && _summary == null) {
-      return const Center(
-        child: AppLoadingIndicator(message: 'Đang tải điểm thưởng...'),
+      return Center(
+        child: AppLoadingIndicator(message: context.l10n.loyLoading),
       );
     }
     if (_error != null && _summary == null) {
@@ -145,7 +146,7 @@ class _LoyaltyPageState extends State<LoyaltyPage>
                 backgroundColor: AISLShadcnTheme.navyPrimary,
               ),
               icon: const Icon(LucideIcons.refreshCw, size: 16),
-              label: const Text('Thử lại'),
+              label: Text(context.l10n.commonRetry),
             ),
           ),
         ],
@@ -163,7 +164,7 @@ class _LoyaltyPageState extends State<LoyaltyPage>
           _buildRulesCard(),
           const SizedBox(height: 18),
           Text(
-            'Lịch sử điểm',
+            context.l10n.loyHistory,
             style: TextStyle(
               fontSize: 15,
               fontWeight: FontWeight.w700,
@@ -183,7 +184,7 @@ class _LoyaltyPageState extends State<LoyaltyPage>
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 24),
               child: Text(
-                'Chưa có biến động điểm. Điểm được cộng tự động khi đơn hàng của bạn hoàn tất.',
+                context.l10n.loyEmpty,
                 textAlign: TextAlign.center,
                 style: TextStyle(color: context.textMuted, fontSize: 13),
               ),
@@ -222,8 +223,8 @@ class _LoyaltyPageState extends State<LoyaltyPage>
             children: [
               const Icon(LucideIcons.sparkles, color: Color(0xFFFACC15)),
               const SizedBox(width: 8),
-              const Text(
-                'Điểm hiện có',
+              Text(
+                context.l10n.loyCurrent,
                 style: TextStyle(color: Colors.white70, fontSize: 13),
               ),
               const Spacer(),
@@ -239,7 +240,7 @@ class _LoyaltyPageState extends State<LoyaltyPage>
                     const Icon(LucideIcons.crown, size: 13, color: Colors.white),
                     const SizedBox(width: 4),
                     Text(
-                      'Hạng ${summary.tierLabel}',
+                      context.l10n.loyTier(summary.tierLabel),
                       style: const TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.w700,
@@ -253,7 +254,7 @@ class _LoyaltyPageState extends State<LoyaltyPage>
           ),
           const SizedBox(height: 10),
           Text(
-            '${summary.points} điểm',
+            context.l10n.pointsCount(summary.points),
             style: const TextStyle(
               color: Colors.white,
               fontSize: 30,
@@ -263,15 +264,14 @@ class _LoyaltyPageState extends State<LoyaltyPage>
           const SizedBox(height: 6),
           Text(
             next == null
-                ? 'Bạn đang ở hạng cao nhất.'
-                : 'Còn ${next.missing} điểm để lên hạng ${next.name}.',
+                ? context.l10n.loyTopTier
+                  : context.l10n.loyToNext(next.missing, next.name),
             style: const TextStyle(color: Colors.white70, fontSize: 13),
           ),
           if (summary.lifetimePoints != null) ...[
             const SizedBox(height: 4),
             Text(
-              'Tổng điểm đã tích: ${summary.lifetimePoints} điểm '
-              '(dùng để xếp hạng, tiêu điểm không tụt hạng)',
+              context.l10n.loyLifetime('${summary.lifetimePoints}'),
               style: const TextStyle(color: Colors.white60, fontSize: 12),
             ),
           ],

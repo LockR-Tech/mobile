@@ -13,6 +13,7 @@ import 'package:smart_laundry_locker/core/theme/shadcn_theme.dart';
 import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/utils/locker_maps.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/ops_widgets.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 const _maxReportPhotosPerReport = 10;
 int get _maxReportPhotosPerRequest =>
@@ -210,7 +211,7 @@ class _UserReportDetailSheetState extends State<UserReportDetailSheet> {
         'createdAt': (first.createdAt ?? first.capturedAt ?? assignedAt)
             ?.toIso8601String(),
         'note': cap.isEmpty
-            ? '[GHI CHÚ HIỆN TRƯỜNG] KTV đã chụp ảnh kiểm tra hiện trường.'
+            ? '[GHI CHÚ HIỆN TRƯỜNG] ${L10n.current.urdInspectionPhotos}'
             : (cap.startsWith('[') ? cap : '[GHI CHÚ HIỆN TRƯỜNG] $cap'),
         'attachments': inspectionAtts.map(attJson).toList(),
       });
@@ -224,7 +225,7 @@ class _UserReportDetailSheetState extends State<UserReportDetailSheet> {
         'actorName': ktvName,
         'createdAt': (att.createdAt ?? att.capturedAt)?.toIso8601String(),
         'note': cap.isEmpty
-            ? '[TIẾN ĐỘ SỬA CHỮA] KTV cập nhật ảnh tiến độ xử lý.'
+            ? '[TIẾN ĐỘ SỬA CHỮA] ${L10n.current.urdProgressPhotos}'
             : (cap.startsWith('[') ? cap : '[TIẾN ĐỘ SỬA CHỮA] $cap'),
         'attachments': [attJson(att)],
       });
@@ -240,9 +241,9 @@ class _UserReportDetailSheetState extends State<UserReportDetailSheet> {
         'actorName': ktvName,
         'createdAt': null,
         'note': [
-          '[GIA HẠN SLA] Phiếu được gia hạn thêm $extHours giờ.',
-          if (slaDueAt != null) '- Hạn hoàn tất mới: ${_fmtSec(slaDueAt)}',
-          if (extReason.isNotEmpty) '- Lý do: $extReason',
+          '[GIA HẠN SLA] ${L10n.current.urdSlaExtended(extHours)}',
+          if (slaDueAt != null) L10n.current.urdNewDeadline(_fmtSec(slaDueAt)),
+          if (extReason.isNotEmpty) L10n.current.urdReason(extReason),
         ].join('\n'),
         'attachments': const [],
       });
@@ -257,8 +258,8 @@ class _UserReportDetailSheetState extends State<UserReportDetailSheet> {
       }
       if (resNote.isEmpty) {
         resNote = isResolved
-            ? 'KTV đã hoàn tất phiếu.'
-            : 'KTV đã gửi ảnh nghiệm thu.';
+            ? L10n.current.urdTechResolved
+            : L10n.current.urdTechSentAcceptance;
       }
       if (!resNote.startsWith('[')) {
         resNote = '[NGHIỆM THU THÀNH CÔNG] $resNote';
@@ -293,10 +294,10 @@ class _UserReportDetailSheetState extends State<UserReportDetailSheet> {
 
   String _ageLabel(DateTime d) {
     final diff = DateTime.now().difference(d);
-    if (diff.inMinutes < 1) return 'Vừa xong';
-    if (diff.inMinutes < 60) return '${diff.inMinutes} phút trước';
-    if (diff.inHours < 24) return '${diff.inHours} giờ trước';
-    return '${diff.inDays} ngày trước';
+    if (diff.inMinutes < 1) return L10n.current.nlJustNow;
+    if (diff.inMinutes < 60) return L10n.current.nlMinutesAgo(diff.inMinutes);
+    if (diff.inHours < 24) return L10n.current.nlHoursAgo(diff.inHours);
+    return L10n.current.nlDaysAgo(diff.inDays);
   }
 
   String _formatFullDateTime(DateTime? d) {
@@ -349,7 +350,7 @@ class _UserReportDetailSheetState extends State<UserReportDetailSheet> {
     );
     if (!opened && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Trạm Kiosk chưa có dữ liệu vị trí bản đồ.')),
+        SnackBar(content: Text(context.l10n.urdKioskNoLocation)),
       );
     }
   }
@@ -374,8 +375,8 @@ class _UserReportDetailSheetState extends State<UserReportDetailSheet> {
     );
     if (added == true && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Đã bổ sung ảnh thành công!'),
+        SnackBar(
+          content: Text(context.l10n.urdPhotosAdded),
           backgroundColor: Color(0xFF16A34A),
         ),
       );
@@ -390,7 +391,7 @@ class _UserReportDetailSheetState extends State<UserReportDetailSheet> {
     final r = _report;
     final status = r['status'] as String? ?? 'OPEN';
     final reportId = r['id'] is int ? r['id'] as int : int.tryParse(r['id']?.toString() ?? '');
-    final lockerLabel = r['lockerName'] ?? r['lockerCode'] ?? 'Trạm Kiosk';
+    final lockerLabel = r['lockerName'] ?? r['lockerCode'] ?? context.l10n.urdKioskStation;
     final boxLabel = r['boxNumber'] ?? r['boxId'];
     final createdAt = _parseDate(r['createdAt']);
     final assignedAt = _parseDate(r['assignedAt'] ?? r['claimedAt']);
@@ -493,7 +494,7 @@ class _UserReportDetailSheetState extends State<UserReportDetailSheet> {
                       ),
                       const SizedBox(height: 3),
                       Text(
-                        'Hồ sơ chi tiết phiếu sự cố kỹ thuật',
+                        context.l10n.urdRecordTitle,
                         style: TextStyle(
                           fontSize: 12,
                           color: Colors.grey.shade600,
@@ -532,41 +533,47 @@ class _UserReportDetailSheetState extends State<UserReportDetailSheet> {
                       if (createdAt != null)
                         _MiniPill(
                           icon: Icons.access_time,
-                          text: 'Tạo lúc: ${_formatFullDateTime(createdAt)}',
+                          text: context.l10n.urdCreatedAt(_formatFullDateTime(createdAt)),
                         ),
                       if (r['assignedToUserId'] != null)
                         _MiniPill(
                           icon: Icons.engineering_outlined,
-                          text: 'KTV phụ trách: ${(r['assignedToTechnicianName'] ?? '').toString().trim().isNotEmpty ? r['assignedToTechnicianName'] : '#${r['assignedToUserId']}'}',
+                          text: context.l10n.urdTechInCharge(
+                      (r['assignedToTechnicianName'] ?? '').toString().trim().isNotEmpty
+                          ? '${r['assignedToTechnicianName']}'
+                          : '#${r['assignedToUserId']}',
+                    ),
                           color: const Color(0xFF0284C7),
                         )
                       else if (!isResolved)
-                        const _MiniPill(
+                        _MiniPill(
                           icon: Icons.hourglass_top_outlined,
-                          text: 'Đang điều phối KTV',
+                          text: context.l10n.urdDispatching,
                           color: Color(0xFFD97706),
                         ),
                       if (isResolved && resolvedAt != null)
                         _MiniPill(
                           icon: Icons.check_circle_outline,
-                          text: 'Hoàn tất lúc: ${_formatFullDateTime(resolvedAt)}',
+                          text: context.l10n.urdResolvedAt(_formatFullDateTime(resolvedAt)),
                           color: const Color(0xFF16A34A),
                         )
                       else if (slaDueAt != null)
                         _MiniPill(
                           icon: Icons.timelapse,
-                          text: 'Hạn xử lý: ${_formatFullDateTime(slaDueAt)}',
+                          text: context.l10n.urdDeadline(_formatFullDateTime(slaDueAt)),
                           color: const Color(0xFF2563EB),
                         ),
                       _MiniPill(
                         icon: Icons.category_outlined,
-                        text: boxLabel != null ? 'Sự cố Ô tủ #$boxLabel' : 'Sự cố Trạm Kiosk',
+                        text: boxLabel != null
+                        ? context.l10n.urdBoxIncident(boxLabel)
+                        : context.l10n.urdKioskIncident,
                         color: const Color(0xFF475569),
                       ),
                       if (r['orderCode'] != null && r['orderCode'].toString().trim().isNotEmpty)
                         _MiniPill(
                           icon: Icons.receipt_long_outlined,
-                          text: 'Đơn hàng: ${r['orderCode']}',
+                          text: context.l10n.urdOrder('${r['orderCode']}'),
                           color: const Color(0xFF0D9488),
                         ),
                     ],
@@ -623,8 +630,8 @@ class _UserReportDetailSheetState extends State<UserReportDetailSheet> {
                           child: OutlinedButton.icon(
                             onPressed: _openDirections,
                             icon: const Icon(Icons.near_me_outlined, size: 14, color: opsPrimary),
-                            label: const Text(
-                              'Chỉ đường tới Kiosk',
+                            label: Text(
+                              context.l10n.urdDirectionsKiosk,
                               style: TextStyle(fontSize: 12, color: opsPrimary, fontWeight: FontWeight.w600),
                             ),
                             style: OutlinedButton.styleFrom(
@@ -665,7 +672,7 @@ class _UserReportDetailSheetState extends State<UserReportDetailSheet> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  reporterName.isNotEmpty ? reporterName : 'Khách hàng',
+                                  reporterName.isNotEmpty ? reporterName : context.l10n.storeCustomer,
                                   style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: opsDark),
                                 ),
                                 if (reporterPhone.isNotEmpty)
@@ -679,11 +686,11 @@ class _UserReportDetailSheetState extends State<UserReportDetailSheet> {
                           if (reporterPhone.isNotEmpty)
                             IconButton(
                               icon: const Icon(Icons.copy, size: 18, color: opsPrimary),
-                              tooltip: 'Sao chép SĐT',
+                              tooltip: context.l10n.urdCopyPhone,
                               onPressed: () {
                                 Clipboard.setData(ClipboardData(text: reporterPhone));
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text('Đã sao chép số điện thoại')),
+                                  SnackBar(content: Text(context.l10n.urdPhoneCopied)),
                                 );
                               },
                             ),
@@ -698,8 +705,8 @@ class _UserReportDetailSheetState extends State<UserReportDetailSheet> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text(
-                          'Nội dung phản ánh sự cố:',
+                        Text(
+                          context.l10n.urdReportContent,
                           style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12.5, color: opsDark),
                         ),
                         if (canAddPhotos)
@@ -707,7 +714,7 @@ class _UserReportDetailSheetState extends State<UserReportDetailSheet> {
                             onPressed: () => _addPhotos(reportId, reportPhotoCount),
                             icon: const Icon(LucideIcons.imagePlus, size: 14),
                             label: Text(
-                              userReportPhotos.isEmpty ? 'Thêm ảnh' : 'Bổ sung ảnh',
+                              userReportPhotos.isEmpty ? context.l10n.photoAdd : context.l10n.urdMorePhotos,
                               style: const TextStyle(fontSize: 12),
                             ),
                             style: TextButton.styleFrom(
@@ -736,15 +743,15 @@ class _UserReportDetailSheetState extends State<UserReportDetailSheet> {
                       const SizedBox(height: 8),
                       AttachmentStrip(
                         attachments: userReportPhotos,
-                        viewerTitle: 'Ảnh hiện trường sự cố bạn đã gửi',
+                        viewerTitle: context.l10n.urdYourPhotos,
                       ),
                     ],
                     const SizedBox(height: 16),
                   ],
 
                   // Timeline tiến trình xử lý
-                  const Text(
-                    'Tiến trình xử lý sự cố:',
+                  Text(
+                    context.l10n.urdProgressTitle,
                     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12.5, color: opsDark),
                   ),
                   const SizedBox(height: 8),
@@ -771,12 +778,12 @@ class _UserReportDetailSheetState extends State<UserReportDetailSheet> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Row(
+                          Row(
                             children: [
                               Icon(Icons.comment_outlined, size: 16, color: Color(0xFF0284C7)),
                               SizedBox(width: 6),
                               Text(
-                                'Phản hồi từ đội ngũ kỹ thuật:',
+                                context.l10n.urdTeamResponse,
                                 style: TextStyle(
                                   fontWeight: FontWeight.bold,
                                   fontSize: 12.5,
@@ -842,7 +849,7 @@ class _UserReportDetailSheetState extends State<UserReportDetailSheet> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  child: const Text('Đóng', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                  child: Text(context.l10n.commonClose, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
                 ),
               ),
             ),
@@ -878,7 +885,9 @@ class _UserReportDetailSheetState extends State<UserReportDetailSheet> {
     // 1. KTV tiếp nhận
     final ktvId = _report['assignedToUserId'] ?? _report['technicianId'];
     final ktvName = (_report['assignedToTechnicianName'] ?? _report['technicianName'] ?? '').toString().trim();
-    final ktvText = ktvName.isNotEmpty ? ktvName : (ktvId != null ? 'KTV #$ktvId' : 'KTV phụ trách');
+    final ktvText = ktvName.isNotEmpty
+        ? ktvName
+        : (ktvId != null ? context.l10n.urdTechId(ktvId) : context.l10n.ordTechInCharge);
 
     DateTime? effectiveAssignedAt = assignedAt ?? inspectionTime;
     if (effectiveAssignedAt == null && !isPending && logs.isNotEmpty) {
@@ -890,11 +899,11 @@ class _UserReportDetailSheetState extends State<UserReportDetailSheet> {
 
     String ktvSubtitle;
     if (isPending) {
-      ktvSubtitle = 'Đang điều phối KTV tiếp nhận';
+      ktvSubtitle = context.l10n.urdDispatchingAccept;
     } else if (effectiveAssignedAt != null) {
-      ktvSubtitle = '$ktvText · Tiếp nhận: ${_formatFullDateTime(effectiveAssignedAt)}';
+      ktvSubtitle = context.l10n.urdTechAcceptedAt(ktvText, _formatFullDateTime(effectiveAssignedAt));
     } else {
-      ktvSubtitle = '$ktvText đã tiếp nhận điều phối';
+      ktvSubtitle = context.l10n.urdTechAccepted(ktvText);
     }
 
     // 2. Kiểm tra & xử lý tại Kiosk
@@ -919,7 +928,7 @@ class _UserReportDetailSheetState extends State<UserReportDetailSheet> {
       if (progressDesc.isEmpty) {
         progressDesc = (inspectionAtt?.caption ?? '').trim();
         if (progressDesc.isEmpty) {
-          progressDesc = 'KTV đã kiểm tra & xử lý hiện trường';
+          progressDesc = context.l10n.urdTechInspected;
         }
       }
     }
@@ -956,17 +965,20 @@ class _UserReportDetailSheetState extends State<UserReportDetailSheet> {
 
     String step3Subtitle;
     if (progressTime != null) {
-      step3Subtitle = 'Đã xử lý lúc ${_formatFullDateTime(progressTime)}${progressDesc.isNotEmpty ? ' · $progressDesc' : ' · Đã kiểm tra & xử lý'}';
+      step3Subtitle = context.l10n.urdHandledAt(
+        _formatFullDateTime(progressTime),
+        progressDesc.isNotEmpty ? ' · $progressDesc' : ' · ${context.l10n.urdCheckedHandled}',
+      );
     } else if (isResolved) {
       step3Subtitle = effectiveResolvedAt != null
-          ? 'Đã hoàn tất xử lý lúc ${_formatFullDateTime(effectiveResolvedAt)}'
-          : 'Đã khắc phục hoàn tất';
+          ? context.l10n.urdFixedAt(_formatFullDateTime(effectiveResolvedAt))
+          : context.l10n.urdFixed;
     } else if (isInProgress) {
       step3Subtitle = effectiveAssignedAt != null
-          ? '${_formatFullDateTime(effectiveAssignedAt)} · KTV đang kiểm tra hiện trường & xử lý'
-          : 'KTV đang kiểm tra hiện trường & xử lý';
+          ? '${_formatFullDateTime(effectiveAssignedAt)} · ${context.l10n.urdTechInspecting}'
+          : context.l10n.urdTechInspecting;
     } else {
-      step3Subtitle = 'Chờ KTV tới trạm Kiosk kiểm tra';
+      step3Subtitle = context.l10n.urdWaitingTech;
     }
 
     String step4Subtitle;
@@ -975,45 +987,57 @@ class _UserReportDetailSheetState extends State<UserReportDetailSheet> {
           .replaceAll(RegExp(r'^\[KHÔNG XÁC NHẬN SỰ CỐ\]\s*', caseSensitive: false), '')
           .trim();
       step4Subtitle = effectiveResolvedAt != null
-          ? 'Đóng lúc ${_formatFullDateTime(effectiveResolvedAt)}${feedback.isNotEmpty ? ' · Phản hồi: $feedback' : ''}'
-          : (feedback.isNotEmpty ? 'Phản hồi: $feedback' : 'KTV đã kiểm tra, ô hoạt động bình thường');
+          ? context.l10n.urdClosedAt(
+              _formatFullDateTime(effectiveResolvedAt),
+              feedback.isNotEmpty ? ' · ${context.l10n.urdFeedback(feedback)}' : '',
+            )
+          : (feedback.isNotEmpty
+              ? context.l10n.urdFeedback(feedback)
+              : context.l10n.urdCheckedNormal);
     } else if (isResolved) {
       if (effectiveResolvedAt != null) {
-        step4Subtitle = 'Nghiệm thu lúc: ${_formatFullDateTime(effectiveResolvedAt)}${resolutionNote.isNotEmpty ? ' · $resolutionNote' : ''}';
+        step4Subtitle = context.l10n.urdAcceptedAt(
+        _formatFullDateTime(effectiveResolvedAt),
+        resolutionNote.isNotEmpty ? ' · $resolutionNote' : '',
+      );
       } else {
-        step4Subtitle = 'Đã nghiệm thu hoàn tất${resolutionNote.isNotEmpty ? ' · $resolutionNote' : ''}';
+        step4Subtitle = context.l10n.urdAcceptedDone(
+        resolutionNote.isNotEmpty ? ' · $resolutionNote' : '',
+      );
       }
     } else {
       final slaDueAt = _parseDate(_report['slaDueAt']);
       step4Subtitle = slaDueAt != null
-          ? 'Dự kiến hoàn tất trước: ${_formatFullDateTime(slaDueAt)}'
-          : 'Chờ nghiệm thu & đóng phiếu';
+          ? context.l10n.urdExpectedBy(_formatFullDateTime(slaDueAt))
+          : context.l10n.urdAwaitingAcceptance;
     }
 
     final steps = [
       _TimelineStepData(
-        title: 'Gửi báo cáo thành công',
-        subtitle: createdAt != null ? 'Đã gửi: ${_formatFullDateTime(createdAt)}' : 'Hệ thống đã ghi nhận sự cố',
+        title: context.l10n.crSent,
+        subtitle: createdAt != null
+              ? context.l10n.urdSentAt(_formatFullDateTime(createdAt))
+              : context.l10n.urdRecorded,
         isDone: true,
         isActive: isPending,
         icon: LucideIcons.fileCheck,
       ),
       _TimelineStepData(
-        title: 'Kỹ thuật viên tiếp nhận',
+        title: context.l10n.urdStepTechAccepts,
         subtitle: ktvSubtitle,
         isDone: !isPending,
         isActive: isInProgress && assignedAt == null,
         icon: LucideIcons.userCheck,
       ),
       _TimelineStepData(
-        title: 'Kiểm tra & Xử lý tại Kiosk',
+        title: context.l10n.urdStepInspect,
         subtitle: step3Subtitle,
         isDone: isResolved,
         isActive: isInProgress,
         icon: LucideIcons.wrench,
       ),
       _TimelineStepData(
-        title: isRejected ? 'KTV không xác nhận sự cố' : 'Nghiệm thu & Đóng phiếu',
+        title: isRejected ? context.l10n.urdStepRejected : context.l10n.urdStepAccept,
         subtitle: step4Subtitle,
         isDone: isResolved,
         isActive: isResolved,
@@ -1196,6 +1220,16 @@ class _UserRepairLogsSection extends StatelessWidget {
     return '${two(d.hour)}:${two(d.minute)}:${two(d.second)} ${two(d.day)}/${two(d.month)}/${d.year}';
   }
 
+  /// Thẻ ghi chú viết bằng tiếng Việt (dùng để so khớp ở trên) — hiển thị theo
+  /// ngôn ngữ đang chọn.
+  static String _localizedTag(String tag) => switch (tag) {
+    '[NGHIỆM THU THÀNH CÔNG]' => L10n.current.tagAccepted,
+    '[GHI CHÚ HIỆN TRƯỜNG]' => L10n.current.tagFieldNote,
+    '[GIA HẠN SLA]' => L10n.current.tagSlaExtended,
+    '[TIẾN ĐỘ SỬA CHỮA]' => L10n.current.tagRepairProgress,
+    _ => tag,
+  };
+
   Widget _buildTaggedNote(String noteText) {
     var rawText = noteText.trim();
     if (rawText.isNotEmpty) {
@@ -1258,7 +1292,7 @@ class _UserRepairLogsSection extends StatelessWidget {
               borderRadius: BorderRadius.circular(6),
             ),
             child: Text(
-              tag,
+              _localizedTag(tag),
               style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.bold, color: tagFg),
             ),
           ),
@@ -1282,8 +1316,8 @@ class _UserRepairLogsSection extends StatelessWidget {
           children: [
             const Icon(Icons.history_edu_outlined, size: 16, color: opsPrimary),
             const SizedBox(width: 6),
-            const Text(
-              'Tiến độ xử lý của KTV:',
+            Text(
+              context.l10n.urdTechProgress,
               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12.5, color: opsDark),
             ),
             if (logs.isNotEmpty) ...[
@@ -1342,7 +1376,7 @@ class _UserRepairLogsSection extends StatelessWidget {
                             child: Text(
                               technicianName != null && '$technicianName'.trim().isNotEmpty
                                   ? '$technicianName'
-                                  : (technicianId != null ? 'KTV #$technicianId' : 'Kỹ thuật viên nghiệm thu'),
+                                  : (technicianId != null ? context.l10n.urdTechId(technicianId) : context.l10n.urdAcceptingTech),
                               style: const TextStyle(
                                 fontSize: 11,
                                 fontWeight: FontWeight.bold,
@@ -1375,13 +1409,13 @@ class _UserRepairLogsSection extends StatelessWidget {
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(color: const Color(0xFFE2E8F0)),
                   ),
-                  child: const Row(
+                  child: Row(
                     children: [
                       Icon(Icons.info_outline, size: 16, color: opsMutedText),
                       SizedBox(width: 8),
                       Expanded(
                         child: Text(
-                          'KTV chưa ghi chú bước xử lý nào. Các thao tác của KTV sẽ hiển thị ở đây.',
+                          context.l10n.urdNoTechNotes,
                           style: TextStyle(fontSize: 12, color: opsMutedText),
                         ),
                       ),
@@ -1435,13 +1469,13 @@ class _UserRepairLogsSection extends StatelessWidget {
                                       borderRadius: BorderRadius.circular(6),
                                       border: Border.all(color: const Color(0xFFFCD34D)),
                                     ),
-                                    child: const Row(
+                                    child: Row(
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
                                         Icon(LucideIcons.clock, size: 11, color: Color(0xFFB45309)),
                                         SizedBox(width: 4),
                                         Text(
-                                          'Phê duyệt gia hạn SLA',
+                                          context.l10n.urdSlaApproval,
                                           style: TextStyle(
                                             fontSize: 10.5,
                                             fontWeight: FontWeight.bold,
@@ -1469,7 +1503,7 @@ class _UserRepairLogsSection extends StatelessWidget {
                                 const SizedBox(width: 4),
                                 Expanded(
                                   child: Text(
-                                    'Ảnh trong quá trình sửa (${logPhotos.length} ảnh):',
+                                    context.l10n.urdRepairPhotos(logPhotos.length),
                                     style: const TextStyle(
                                       fontSize: 11,
                                       fontWeight: FontWeight.w600,
@@ -1513,7 +1547,7 @@ class _UserRepairLogsSection extends StatelessWidget {
                                             ? '${log['actorName']}'
                                             : (log['actorUserId'] != null
                                                 ? 'KTV #${log['actorUserId']}'
-                                                : 'Kỹ thuật viên kiosk')),
+                                                : context.l10n.urdKioskTech)),
                                     textAlign: TextAlign.right,
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
@@ -1540,9 +1574,9 @@ class _UserRepairLogsSection extends StatelessWidget {
                   children: [
                     const Icon(LucideIcons.shieldCheck, size: 13, color: opsMutedText),
                     const SizedBox(width: 4),
-                    const Expanded(
+                    Expanded(
                       child: Text(
-                        'Chế độ xem khách hàng · KTV cập nhật nhật ký & minh chứng qua Mobile App',
+                        context.l10n.urdCustomerView,
                         style: TextStyle(fontSize: 11, color: opsMutedText, fontStyle: FontStyle.italic),
                       ),
                     ),
@@ -1553,7 +1587,7 @@ class _UserRepairLogsSection extends StatelessWidget {
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: Text(
-                        '${logs.length} bước xử lý',
+                        context.l10n.urdSteps(logs.length),
                         style: const TextStyle(fontSize: 10.5, fontWeight: FontWeight.bold, color: opsDark),
                       ),
                     ),
@@ -1623,8 +1657,8 @@ class _ReportRatingSectionState extends State<_ReportRatingSection> {
       if (mounted) {
         setState(() => _rating = res);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Cảm ơn bạn đã gửi đánh giá!'),
+          SnackBar(
+            content: Text(context.l10n.urdThanksRating),
             backgroundColor: Color(0xFF16A34A),
           ),
         );
@@ -1633,7 +1667,7 @@ class _ReportRatingSectionState extends State<_ReportRatingSection> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Lỗi gửi đánh giá: ${LockerOpsService.errorMessage(e)}'),
+            content: Text(context.l10n.urdRatingError(LockerOpsService.errorMessage(e))),
             backgroundColor: const Color(0xFFDC2626),
           ),
         );
@@ -1673,7 +1707,7 @@ class _ReportRatingSectionState extends State<_ReportRatingSection> {
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  hasRated ? 'Đánh giá của bạn về KTV' : 'Đánh giá chất lượng phục vụ của KTV',
+                  hasRated ? context.l10n.urdYourRating : context.l10n.urdRateTech,
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 13,
@@ -1709,13 +1743,13 @@ class _ReportRatingSectionState extends State<_ReportRatingSection> {
             if (_rating!['feedback'] != null && _rating!['feedback'].toString().isNotEmpty) ...[
               const SizedBox(height: 6),
               Text(
-                'Nhận xét: "${_rating!['feedback']}"',
+                context.l10n.urdComment('${_rating!['feedback']}'),
                 style: const TextStyle(fontSize: 12, color: Color(0xFF78350F), fontStyle: FontStyle.italic),
               ),
             ],
           ] else ...[
-            const Text(
-              'Phiếu sự cố đã được xử lý xong. Hãy đánh giá sự hài lòng của bạn:',
+            Text(
+              context.l10n.urdRatePrompt,
               style: TextStyle(fontSize: 12, color: Color(0xFF78350F)),
             ),
             const SizedBox(height: 8),
@@ -1740,7 +1774,7 @@ class _ReportRatingSectionState extends State<_ReportRatingSection> {
               controller: _feedbackCtrl,
               maxLines: 2,
               decoration: InputDecoration(
-                hintText: 'Nhận xét thêm về thái độ hoặc tốc độ xử lý của KTV (tuỳ chọn)...',
+                hintText: context.l10n.urdRateHint,
                 hintStyle: const TextStyle(fontSize: 12, color: opsMutedText),
                 filled: true,
                 fillColor: Colors.white,
@@ -1771,7 +1805,7 @@ class _ReportRatingSectionState extends State<_ReportRatingSection> {
                         child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                       )
                     : const Icon(LucideIcons.send, size: 14),
-                label: const Text('Gửi đánh giá', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                label: Text(context.l10n.urdSendRating, style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
               ),
             ),
           ],
@@ -1812,7 +1846,7 @@ class _AddUserPhotosSheetState extends State<_AddUserPhotosSheet> {
 
   Future<void> _submit() async {
     if (_photos.isEmpty) {
-      setState(() => _error = 'Vui lòng chọn ít nhất 1 ảnh.');
+      setState(() => _error = context.l10n.urdChoosePhoto);
       return;
     }
     setState(() {
@@ -1846,8 +1880,8 @@ class _AddUserPhotosSheetState extends State<_AddUserPhotosSheet> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'Bổ sung ảnh sự cố',
+              Text(
+                context.l10n.urdAddPhotosTitle,
                 style: TextStyle(
                   fontWeight: FontWeight.w800,
                   fontSize: 16,
@@ -1856,8 +1890,7 @@ class _AddUserPhotosSheetState extends State<_AddUserPhotosSheet> {
               ),
               const SizedBox(height: 4),
               Text(
-                'Tối đa ${widget.maxPhotos} ảnh mỗi lần. Ảnh giúp đội bảo trì '
-                'chuẩn bị đúng linh kiện trước khi tới.',
+                context.l10n.urdAddPhotosHint(widget.maxPhotos),
                 style: const TextStyle(fontSize: 12.5, color: opsMutedText),
               ),
               const SizedBox(height: 14),
@@ -1897,7 +1930,7 @@ class _AddUserPhotosSheetState extends State<_AddUserPhotosSheet> {
                           ),
                         )
                       : const Icon(LucideIcons.upload, size: 18),
-                  label: Text(_submitting ? 'Đang tải ảnh...' : 'Gửi ảnh'),
+                  label: Text(_submitting ? context.l10n.ordUploadingPhotos : context.l10n.urdSendPhotos),
                 ),
               ),
             ],

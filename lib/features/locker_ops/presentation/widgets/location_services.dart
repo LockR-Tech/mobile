@@ -4,6 +4,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:smart_laundry_locker/core/routing/app_router.dart';
 import 'package:smart_laundry_locker/core/theme/shadcn_theme.dart';
 import 'package:smart_laundry_locker/features/locker/domain/entities/locker_location.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 /// A bookable service that can be ordered AT a given locker location.
 /// These are the 3 location-scoped entries lifted from the old home
@@ -24,17 +25,17 @@ class _BookableService {
   final String route;
 }
 
-const List<_BookableService> _bookableServices = [
+List<_BookableService> get _bookableServices => [
   _BookableService(
-    title: 'Thuê tủ giữ đồ',
-    subtitle: 'Thuê ô theo giờ, PIN dùng nhiều lần',
+    title: L10n.current.rentTitle,
+    subtitle: L10n.current.svcRentSubtitle,
     icon: LucideIcons.key,
     color: Color(0xFF2563EB),
     route: AppRouter.rentLocker,
   ),
   _BookableService(
-    title: 'Gửi hàng qua tủ',
-    subtitle: 'Bỏ hàng vào ô, gửi PIN cho người nhận',
+    title: L10n.current.sendTitle,
+    subtitle: L10n.current.svcSendSubtitle,
     icon: LucideIcons.send,
     color: Color(0xFF16A34A),
     route: AppRouter.sendParcel,
@@ -76,8 +77,8 @@ Future<void> showLocationServicesSheet(
                 ),
               ),
               const SizedBox(height: 16),
-              const Text(
-                'Đặt dịch vụ',
+              Text(
+                context.l10n.lockerBookService,
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.w800,

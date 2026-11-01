@@ -5,6 +5,7 @@ import 'package:smart_laundry_locker/core/routing/app_router.dart';
 import 'package:smart_laundry_locker/core/theme/shadcn_theme.dart';
 import 'package:smart_laundry_locker/core/utils/app_date_time.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/infrastructure/data_sources/drone_pickup_remote_datasource.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 /// Sheet "Nhận hàng" cho NGƯỜI NHẬN đơn drone: mã PIN mở ô lấy từ hàng chờ
 /// nhận (`GET /api/orders/incoming`), tủ/ô nhận, hạn lấy và chỉ đường.
@@ -65,7 +66,7 @@ class _DronePickupSheetState extends State<_DronePickupSheet> {
       setState(() {
         _error = error is DronePickupException
             ? error.message
-            : 'Không tải được mã nhận hàng. Vui lòng thử lại.';
+            : L10n.current.psLoadFailed;
         _loading = false;
       });
     }
@@ -78,7 +79,7 @@ class _DronePickupSheetState extends State<_DronePickupSheet> {
       extra: <String, dynamic>{
         'lat': info.lockerLatitude,
         'lng': info.lockerLongitude,
-        'title': info.lockerName ?? 'Tủ nhận hàng',
+        'title': info.lockerName ?? context.l10n.psReceivingLocker,
         'subtitle': info.lockerAddress,
       },
     );
@@ -112,8 +113,8 @@ class _DronePickupSheetState extends State<_DronePickupSheet> {
             ),
           ),
           const SizedBox(height: 16),
-          const Text(
-            'Nhận hàng',
+          Text(
+            context.l10n.dtPickup,
             style: TextStyle(fontSize: 19, fontWeight: FontWeight.w800),
           ),
           const SizedBox(height: 14),
@@ -140,12 +141,11 @@ class _DronePickupSheetState extends State<_DronePickupSheet> {
     }
     final info = _info;
     if (_notFound || info == null) {
-      return const _Message(
+      return _Message(
         icon: LucideIcons.packageSearch,
         color: Color(0xFF64748B),
         text:
-            'Không thấy đơn này trong hàng chờ nhận của bạn. Có thể đơn đã được '
-            'lấy, hoặc mã nhận hàng được gửi cho số điện thoại khác.',
+            context.l10n.psNotInQueue,
       );
     }
     if (info.delegated) {
@@ -153,8 +153,7 @@ class _DronePickupSheetState extends State<_DronePickupSheet> {
         icon: LucideIcons.userCheck,
         color: AISLShadcnTheme.navyPrimary,
         text:
-            'Bạn đã ủy quyền cho ${info.delegateName ?? 'người khác'} lấy hộ đơn '
-            'này nên mã nhận hàng đã chuyển cho người được ủy quyền.',
+            context.l10n.psDelegated(info.delegateName ?? context.l10n.psSomeoneElse),
       );
     }
     final pin = info.pickupPin;
@@ -162,10 +161,10 @@ class _DronePickupSheetState extends State<_DronePickupSheet> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         if (pin == null || !info.readyForPickup)
-          const _Message(
+          _Message(
             icon: LucideIcons.clock,
             color: Color(0xFFB45309),
-            text: 'Mã nhận hàng chưa sẵn sàng. Mã sẽ có khi kiện đã vào ô tủ nhận.',
+            text: context.l10n.psNotReady,
           )
         else
           Container(
@@ -177,8 +176,8 @@ class _DronePickupSheetState extends State<_DronePickupSheet> {
             ),
             child: Column(
               children: [
-                const Text(
-                  'Mã PIN mở ô',
+                Text(
+                  context.l10n.psPin,
                   style: TextStyle(fontSize: 12, color: Color(0xFF15803D)),
                 ),
                 const SizedBox(height: 4),
@@ -194,26 +193,26 @@ class _DronePickupSheetState extends State<_DronePickupSheet> {
                   ),
                 ),
                 const SizedBox(height: 4),
-                const Text(
-                  'Nhập mã này trên màn hình kiosk tại tủ để mở ô.',
+                Text(
+                  context.l10n.psEnterAtKiosk,
                   style: TextStyle(fontSize: 12, color: Color(0xFF15803D)),
                 ),
               ],
             ),
           ),
         const SizedBox(height: 14),
-        _Row('Tủ nhận', info.lockerName ?? 'Tủ #${info.lockerId ?? '?'}'),
-        if (info.lockerAddress != null) _Row('Địa chỉ', info.lockerAddress!),
-        if (info.boxNumber != null) _Row('Ô nhận', 'Ô số ${info.boxNumber}'),
+        _Row(context.l10n.recvReceivingLocker, info.lockerName ?? context.l10n.lockerHash(info.lockerId ?? '?')),
+        if (info.lockerAddress != null) _Row(context.l10n.commonAddress, info.lockerAddress!),
+        if (info.boxNumber != null) _Row(context.l10n.psReceiveBox, context.l10n.boxNumberLabel('${info.boxNumber}')),
         if (info.pickupDeadline != null)
-          _Row('Lấy trước', formatDeadlineVn(info.pickupDeadline)),
-        if (info.senderName != null) _Row('Người gửi', info.senderName!),
+          _Row(context.l10n.psPickupBefore, formatDeadlineVn(info.pickupDeadline)),
+        if (info.senderName != null) _Row(context.l10n.recvSender, info.senderName!),
         if (info.hasCoordinates) ...[
           const SizedBox(height: 12),
           OutlinedButton.icon(
             onPressed: () => _openDirections(info),
             icon: const Icon(LucideIcons.navigation, size: 18),
-            label: const Text('Chỉ đường tới tủ nhận'),
+            label: Text(context.l10n.ddDirectionsToReceiver),
           ),
         ],
       ],
@@ -293,7 +292,7 @@ class _Message extends StatelessWidget {
             child: TextButton.icon(
               onPressed: onRetry,
               icon: const Icon(LucideIcons.refreshCw, size: 16),
-              label: const Text('Thử lại'),
+              label: Text(context.l10n.commonRetry),
             ),
           ),
       ],

@@ -11,6 +11,7 @@ import 'package:smart_laundry_locker/features/payment/domain/sepay_transfer.dart
 import 'package:smart_laundry_locker/features/payment/presentation/widgets/bank_app_picker_sheet.dart';
 import 'package:smart_laundry_locker/features/payment/presentation/widgets/payment_simulation_button.dart';
 import 'package:smart_laundry_locker/shared/shared.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 /// Một lần thanh toán SePay (VietQR) cho một đơn — dùng chung cho thuê tủ, gửi
 /// hàng, gia hạn, phí quá hạn, đơn drone.
@@ -107,7 +108,7 @@ class SepayPaymentController extends ChangeNotifier
       final status = '${res['status'] ?? ''}'.toUpperCase();
       if (status == 'FAILED' || status == 'CANCELED' || status == 'CANCELLED') {
         _gatewayFailed = true;
-        _error = 'Không tạo được giao dịch thanh toán. Vui lòng thử lại.';
+        _error = L10n.current.sepayCreateFailed;
         return;
       }
       if (status == 'COMPLETED' || status == 'PAID' || status == 'SUCCESS') {
@@ -122,7 +123,7 @@ class SepayPaymentController extends ChangeNotifier
       );
       if (!transfer.isUsable) {
         _error =
-            'Máy chủ chưa trả mã VietQR cho giao dịch này. Vui lòng thử lại sau.';
+            L10n.current.sepayNoQr;
         return;
       }
       _transfer = transfer;
@@ -175,7 +176,7 @@ class SepayPaymentController extends ChangeNotifier
     if (_paid) return;
     final id = _paymentId;
     if (id == null) {
-      throw Exception('Chưa có mã giao dịch để giả lập. Vui lòng thử lại.');
+      throw Exception(L10n.current.sepayNoTxForSim);
     }
     try {
       await service.simulatePayment(paymentId: id, amount: amount);
@@ -256,10 +257,10 @@ class SepayQrSection extends StatelessWidget {
         if (controller.paid) {
           return AppPaymentStatusView(
             type: PaymentStatusType.success,
-            title: 'Thanh toán thành công!',
+            title: context.l10n.paymentSuccessExclaim,
             amountText: fmtPrice(transfer?.amount ?? controller.amount),
             message:
-                'Hệ thống đã nhận được tiền, đơn hàng đang được cập nhật...',
+                context.l10n.sepayReceivedUpdating,
             iconSize: 100,
           );
         }
@@ -280,8 +281,10 @@ class SepayQrSection extends StatelessWidget {
                     border: Border.all(color: const Color(0xFFFDBA74)),
                   ),
                   child: Text(
-                    'Đã nhận ${fmtPrice(controller.receivedAmount!)} — còn thiếu '
-                    '${fmtPrice(controller.remainingAmount!)}. Mã QR bên dưới là số còn thiếu.',
+                    context.l10n.sepayPartial(
+                      fmtPrice(controller.receivedAmount!),
+                      fmtPrice(controller.remainingAmount!),
+                    ),
                     style: const TextStyle(color: Color(0xFF9A3412)),
                   ),
                 ),
@@ -350,13 +353,13 @@ class InlineVietQrCard extends StatelessWidget {
               ),
               borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
             ),
-            child: const Row(
+            child: Row(
               children: [
                 Icon(LucideIcons.qrCode, color: Colors.white, size: 18),
                 SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    'Quét mã VietQR để thanh toán',
+                    context.l10n.sepayScanToPay,
                     style: TextStyle(
                       color: Colors.white,
                       fontWeight: FontWeight.w700,
@@ -385,7 +388,7 @@ class InlineVietQrCard extends StatelessWidget {
                               child: AppLoadingIndicator(size: 48),
                             ),
                           ),
-                    errorBuilder: (_, __, ___) => const SizedBox(
+                    errorBuilder: (_, __, ___) => SizedBox(
                       height: 150,
                       child: Center(
                         child: Column(
@@ -398,7 +401,7 @@ class InlineVietQrCard extends StatelessWidget {
                             ),
                             SizedBox(height: 6),
                             Text(
-                              'Không tải được mã QR',
+                              context.l10n.sepayQrLoadFailed,
                               style: TextStyle(
                                 color: opsMutedText,
                                 fontSize: 13,
@@ -416,7 +419,7 @@ class InlineVietQrCard extends StatelessWidget {
             const _NoQrHint(),
             if (transfer.accountNo != null)
               _InfoLine(
-                label: 'Số tài khoản:',
+                label: context.l10n.sepayAccountNumber,
                 value: [
                   transfer.accountNo!,
                   if (transfer.accountName != null) transfer.accountName!,
@@ -428,9 +431,9 @@ class InlineVietQrCard extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Flexible(
+                Flexible(
                   child: Text(
-                    'Số tiền cần chuyển:',
+                    context.l10n.sepayAmountToTransfer,
                     style: TextStyle(color: opsMutedText, fontSize: 13.5),
                   ),
                 ),
@@ -456,8 +459,8 @@ class InlineVietQrCard extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
-                          'Nội dung chuyển khoản:',
+                        Text(
+                          context.l10n.sepayTransferContent,
                           style: TextStyle(color: opsMutedText, fontSize: 11.5),
                         ),
                         const SizedBox(height: 2),
@@ -477,14 +480,14 @@ class InlineVietQrCard extends StatelessWidget {
                     onPressed: () {
                       Clipboard.setData(ClipboardData(text: content));
                       ScaffoldMessenger.maybeOf(context)?.showSnackBar(
-                        const SnackBar(
-                          content: Text('Đã sao chép nội dung chuyển khoản'),
+                        SnackBar(
+                          content: Text(context.l10n.sepayContentCopied),
                           duration: Duration(seconds: 2),
                         ),
                       );
                     },
                     icon: const Icon(LucideIcons.copy, size: 14),
-                    label: const Text('Sao chép'),
+                    label: Text(context.l10n.commonCopy),
                     style: TextButton.styleFrom(
                       foregroundColor: const Color(0xFF3B82F6),
                       padding: const EdgeInsets.symmetric(
@@ -511,7 +514,7 @@ class InlineVietQrCard extends StatelessWidget {
               borderRadius: BorderRadius.circular(12),
               border: Border.all(color: const Color(0xFFE2E8F0)),
             ),
-            child: const Row(
+            child: Row(
               children: [
                 SizedBox(
                   width: 36,
@@ -524,7 +527,7 @@ class InlineVietQrCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Đang chờ xác nhận thanh toán…',
+                        context.l10n.sepayWaiting,
                         style: TextStyle(
                           color: opsDark,
                           fontSize: 13,
@@ -533,7 +536,7 @@ class InlineVietQrCard extends StatelessWidget {
                       ),
                       SizedBox(height: 2),
                       Text(
-                        'Tự động cập nhật ngay sau khi nhận được tiền.',
+                        context.l10n.sepayAutoUpdate,
                         style: TextStyle(
                           color: opsMutedText,
                           fontSize: 11.5,
@@ -585,7 +588,7 @@ class SepayPaymentActions extends StatelessWidget {
         final button = OutlinedButton.icon(
           onPressed: () => openBankApp(context, transfer: transfer),
           icon: const Icon(LucideIcons.landmark, size: 18),
-          label: const Text('Thanh toán bằng app ngân hàng'),
+          label: Text(context.l10n.sepayPayWithBankApp),
           style: OutlinedButton.styleFrom(
             minimumSize: const Size(double.infinity, 50),
             foregroundColor: const Color(0xFF1E40AF),
@@ -666,10 +669,10 @@ class _NoQrHint extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Padding(
+    return Padding(
       padding: EdgeInsets.fromLTRB(20, 16, 20, 4),
       child: Text(
-        'Chuyển khoản đúng số tài khoản, số tiền và nội dung bên dưới.',
+        context.l10n.sepayTransferExact,
         style: TextStyle(color: opsMutedText, fontSize: 13),
       ),
     );
@@ -689,7 +692,7 @@ class _SepayCreatingBox extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: const Color(0xFFE2E8F0)),
       ),
-      child: const Column(
+      child: Column(
         children: [
           SizedBox(
             width: 28,
@@ -698,7 +701,7 @@ class _SepayCreatingBox extends StatelessWidget {
           ),
           SizedBox(height: 12),
           Text(
-            'Đang tạo mã thanh toán…',
+            context.l10n.sepayCreatingQr,
             style: TextStyle(color: opsMutedText, fontSize: 13),
           ),
         ],
@@ -730,7 +733,7 @@ class _SepayErrorBox extends StatelessWidget {
         ),
         const SizedBox(height: 10),
         OpsPrimaryButton(
-          label: 'Thử lại',
+          label: context.l10n.commonRetry,
           icon: LucideIcons.refreshCw,
           loading: retrying,
           onPressed: onRetry,

@@ -11,6 +11,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 class FaceRegistrationPage extends StatefulWidget {
   const FaceRegistrationPage({super.key});
@@ -83,7 +84,7 @@ class _FaceRegistrationPageState extends State<FaceRegistrationPage>
     if (_registrationProvider.isLoading) return;
 
     if (_registrationProvider.isSuccess) {
-      SmartDialog.showToast('Đăng ký khuôn mặt thành công');
+      SmartDialog.showToast(context.l10n.frSuccess);
       // Refresh profile to update registration status
       if (mounted) {
         final profileProvider = context.read<ProfileProvider>();
@@ -100,7 +101,7 @@ class _FaceRegistrationPageState extends State<FaceRegistrationPage>
         _errorMessage = _registrationProvider.error;
       });
       await _showDialog(
-        title: 'Đăng ký thất bại',
+        title: context.l10n.frFailed,
         message: _registrationProvider.error!,
         isError: true,
       );
@@ -117,7 +118,7 @@ class _FaceRegistrationPageState extends State<FaceRegistrationPage>
       await _disposeCameraController();
       final cameras = await availableCameras();
       if (cameras.isEmpty) {
-        throw Exception('Không tìm thấy camera trên thiết bị.');
+        throw Exception(L10n.current.frNoCamera);
       }
       final selected = cameras.firstWhere(
         (c) => c.lensDirection == CameraLensDirection.front,
@@ -143,7 +144,7 @@ class _FaceRegistrationPageState extends State<FaceRegistrationPage>
       if (!mounted) return;
       setState(() {
         _errorMessage =
-            'Không thể mở camera. Vui lòng kiểm tra quyền truy cập.';
+            context.l10n.frCantOpenCamera;
       });
     }
   }
@@ -165,7 +166,7 @@ class _FaceRegistrationPageState extends State<FaceRegistrationPage>
       final userId = profileProvider.profile?.id;
 
       if (userId == null) {
-        throw Exception('Không tìm thấy thông tin người dùng');
+        throw Exception(context.l10n.frNoUser);
       }
 
       for (int i = 0; i < FaceRegistrationProvider.requiredSamples; i++) {
@@ -190,7 +191,7 @@ class _FaceRegistrationPageState extends State<FaceRegistrationPage>
       if (!mounted) return;
       setState(() {
         _isCapturing = false;
-        _errorMessage = 'Lỗi trong quá trình chụp ảnh và đăng ký: $e';
+        _errorMessage = context.l10n.frCaptureError(e);
       });
     }
   }
@@ -218,7 +219,7 @@ class _FaceRegistrationPageState extends State<FaceRegistrationPage>
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
               child: Text(
-                'Đóng',
+                context.l10n.commonClose,
                 style: TextStyle(
                   color: isError ? Colors.red : AISLShadcnTheme.navyPrimary,
                 ),
@@ -263,8 +264,8 @@ class _FaceRegistrationPageState extends State<FaceRegistrationPage>
         elevation: 0,
         foregroundColor: Colors.white,
         centerTitle: true,
-        title: const Text(
-          'Đăng ký khuôn mặt',
+        title: Text(
+          context.l10n.profileFaceRegister,
           style: TextStyle(fontWeight: FontWeight.w800),
         ),
       ),
@@ -394,8 +395,8 @@ class _FaceRegistrationPageState extends State<FaceRegistrationPage>
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Text(
-                    'Lấy mẫu khuôn mặt',
+                  Text(
+                    context.l10n.frSample,
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 20,
@@ -405,7 +406,7 @@ class _FaceRegistrationPageState extends State<FaceRegistrationPage>
                   ),
                   const SizedBox(height: 12),
                   Text(
-                    'Giữ điện thoại thẳng trước mặt và nhấn nút bên dưới để bắt đầu đăng ký.',
+                    context.l10n.frHoldPhone,
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 14,
@@ -429,8 +430,11 @@ class _FaceRegistrationPageState extends State<FaceRegistrationPage>
                         const SizedBox(height: 16),
                         Text(
                           _isCapturing
-                              ? 'Đang chụp ảnh: ${_registrationProvider.sampleCount}/${FaceRegistrationProvider.requiredSamples}'
-                              : 'Đang xử lý đăng ký...',
+                              ? context.l10n.frCapturing(
+                          _registrationProvider.sampleCount,
+                          FaceRegistrationProvider.requiredSamples,
+                        )
+                      : context.l10n.frProcessing,
                           style: const TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.w600,
@@ -452,8 +456,8 @@ class _FaceRegistrationPageState extends State<FaceRegistrationPage>
                           borderRadius: BorderRadius.circular(30),
                         ),
                       ),
-                      child: const Text(
-                        'Bắt đầu quét',
+                      child: Text(
+                        context.l10n.frStartScan,
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,

@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 class PolicyPage extends StatefulWidget {
   final String title;
@@ -124,7 +125,7 @@ class _PolicyPageState extends State<PolicyPage> {
                           ),
                           const SizedBox(height: 16),
                           Text(
-                            'Không thể tải nội dung',
+                            context.l10n.polLoadFailed,
                             style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.w600,
@@ -149,7 +150,7 @@ class _PolicyPageState extends State<PolicyPage> {
                             onPressed: () {
                               (context as Element).markNeedsBuild();
                             },
-                            child: const Text('Thử lại'),
+                            child: Text(context.l10n.commonRetry),
                           ),
                         ],
                       ),
@@ -276,7 +277,7 @@ class _PolicyPageState extends State<PolicyPage> {
                       ),
                       Expanded(
                         child: Text(
-                          'Tôi đồng ý với điều khoản sử dụng',
+                          context.l10n.polAgree,
                           style: TextStyle(
                             fontSize: 16,
                             color: _isScrolledToBottom

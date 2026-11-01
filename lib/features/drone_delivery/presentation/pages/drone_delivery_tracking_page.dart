@@ -20,6 +20,7 @@ import 'package:smart_laundry_locker/features/drone_delivery/presentation/widget
 import 'package:smart_laundry_locker/features/drone_delivery/presentation/widgets/drone_weather_panel.dart';
 import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
 import 'package:smart_laundry_locker/features/maintenance/presentation/widgets/customer_drone_incident_card.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 /// Màn theo dõi đơn giao bằng drone cho khách (người đặt hoặc người nhận):
 /// timeline tự làm mới, bản đồ hành trình, thao tác theo vai trò người xem.
@@ -95,8 +96,8 @@ class _DroneDeliveryTrackingPageState
             }
           },
         ),
-        title: const Text(
-          'Theo dõi giao drone',
+        title: Text(
+          context.l10n.dtTitle,
           style: TextStyle(
             color: AISLShadcnTheme.navyPrimary,
             fontWeight: FontWeight.w700,
@@ -123,7 +124,7 @@ class _DroneDeliveryTrackingPageState
             child: _ErrorState(
               message: err is DroneStatusLoadException
                   ? err.message
-                  : 'Vui lòng kiểm tra kết nối và thử lại.',
+                  : context.l10n.dtCheckConnection,
               onRetry: () =>
                   ref.invalidate(droneDeliveryStatusProvider(widget.orderId)),
             ),
@@ -210,7 +211,7 @@ class _DroneDeliveryTrackingPageState
                     ),
                     onPressed: _canceling ? null : () => _cancel(status),
                     icon: const Icon(Icons.close_rounded, size: 18),
-                    label: const Text('Huỷ đơn'),
+                    label: Text(context.l10n.ddCancelOrder),
                   ),
                 ),
               if (bar.cancel && bar.pay) const SizedBox(width: 10),
@@ -230,8 +231,8 @@ class _DroneDeliveryTrackingPageState
                     ),
                     label: Text(
                       status.needsSurchargePayment
-                          ? 'Trả thêm phí chênh'
-                          : 'Thanh toán ngay',
+                          ? context.l10n.ddPaySurcharge
+                          : context.l10n.ddPayNow,
                     ),
                   ),
                 ),
@@ -270,26 +271,28 @@ class _DroneDeliveryTrackingPageState
   Future<void> _confirmDrop(DroneDeliveryStatus status) async {
     final box = status.sourceBoxNumber;
     await _confirmThen(
-      title: 'Xác nhận đã bỏ kiện',
+      title: context.l10n.dtConfirmDroppedTitle,
       body:
-          'Bạn đã bỏ kiện vào ${box == null ? 'ô drone ở tủ gửi' : 'ô drone số $box ở tủ gửi'} '
-          'và đóng cửa ô? Đội bay sẽ tới nạp hàng sau khi bạn xác nhận.',
-      confirmLabel: 'Đã bỏ kiện',
+          context.l10n.dtConfirmDroppedBody(
+        box == null
+            ? context.l10n.ddDroneBoxAtSource
+            : context.l10n.ddDroneBoxNumberAtSource(box),
+      ),
+      confirmLabel: context.l10n.dtDropped,
       action: (orderId) => LockerOpsService().confirmDroneParcelDrop(orderId),
-      done: 'Đã ghi nhận. Đội bay sẽ tiếp nhận đơn của bạn.',
+      done: context.l10n.dtDroppedDone,
     );
   }
 
   /// Khách không đồng ý phụ thu cân lệch: huỷ đơn, hoàn phần đã trả, đội bay trả kiện.
   Future<void> _declineSurcharge(DroneDeliveryStatus status) async {
     await _confirmThen(
-      title: 'Huỷ đơn vì không đồng ý phụ thu',
+      title: context.l10n.dtCancelSurchargeTitle,
       body:
-          'Đơn ${status.orderCode ?? ''} sẽ bị huỷ. Phần bạn đã trả được ghi yêu cầu hoàn '
-          'tiền và đội bay sẽ liên hệ để trả lại kiện. Không hoàn tác được.',
-      confirmLabel: 'Huỷ đơn',
+          context.l10n.dtCancelSurchargeBody(status.orderCode ?? ''),
+      confirmLabel: context.l10n.ddCancelOrder,
       action: (orderId) => LockerOpsService().declineDroneSurcharge(orderId),
-      done: 'Đã huỷ đơn. Đội bay sẽ trả lại kiện cho bạn.',
+      done: context.l10n.dtCancelledReturn,
     );
   }
 
@@ -314,7 +317,7 @@ class _DroneDeliveryTrackingPageState
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('Chưa'),
+              child: Text(context.l10n.commonNotYet),
             ),
             FilledButton(
               onPressed: () => Navigator.pop(ctx, true),
@@ -383,7 +386,7 @@ class _DroneDeliveryTrackingPageState
   }
 
   static String? _etaText(int? minutes) =>
-      (minutes == null) ? null : '$minutes phút';
+      (minutes == null) ? null : L10n.current.minutesShort(minutes);
 }
 
 class _TrackingBody extends StatelessWidget {
@@ -461,8 +464,8 @@ class _TrackingBody extends StatelessWidget {
                   icon: const Icon(LucideIcons.map, size: 18),
                   label: Text(
                     simulated
-                        ? 'Theo dõi trên bản đồ (mô phỏng)'
-                        : 'Theo dõi trên bản đồ',
+                        ? context.l10n.dtMapSimulated
+                        : context.l10n.dtMap,
                   ),
                 ),
               ),
@@ -498,8 +501,8 @@ class _PickupCard extends StatelessWidget {
         children: [
           Text(
             forOther
-                ? 'Kiện đã vào tủ nhận. Vào "Xem chi tiết đơn" để chia sẻ mã mở ô cho người nhận.'
-                : 'Kiện đã vào tủ nhận. Mở mã PIN để lấy hàng tại tủ.',
+                ? context.l10n.dtInLockerShare
+                : context.l10n.dtInLockerPickup,
             style: const TextStyle(
               color: color,
               fontSize: 13.5,
@@ -513,7 +516,7 @@ class _PickupCard extends StatelessWidget {
             style: FilledButton.styleFrom(backgroundColor: color),
             onPressed: onPickup,
             icon: const Icon(LucideIcons.packageCheck, size: 18),
-            label: Text(forOther ? 'Xem chi tiết đơn' : 'Nhận hàng'),
+            label: Text(forOther ? context.l10n.dtViewDetail : context.l10n.dtPickup),
           ),
         ],
       ),
@@ -544,8 +547,8 @@ class _LiveIndicator extends StatelessWidget {
         Expanded(
           child: Text(
             reconnecting
-                ? 'Mất kết nối · đang thử lại, thông tin bên dưới là lần cập nhật gần nhất'
-                : 'Đang cập nhật trực tiếp · trạng thái tự làm mới khi có thay đổi',
+                ? context.l10n.dtOffline
+                : context.l10n.dtLive,
             style: TextStyle(
               fontSize: 12,
               color: reconnecting ? color : const Color(0xFF64748B),
@@ -570,8 +573,8 @@ class _ErrorState extends StatelessWidget {
       children: [
         const Icon(LucideIcons.circleAlert, color: Color(0xFFDC2626), size: 56),
         const SizedBox(height: 16),
-        const Text(
-          'Không tải được trạng thái giao hàng',
+        Text(
+          context.l10n.dtLoadFailed,
           style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w700,
@@ -591,7 +594,7 @@ class _ErrorState extends StatelessWidget {
         TextButton.icon(
           onPressed: onRetry,
           icon: const Icon(LucideIcons.refreshCw, size: 16),
-          label: const Text('Thử lại'),
+          label: Text(context.l10n.commonRetry),
         ),
       ],
     );

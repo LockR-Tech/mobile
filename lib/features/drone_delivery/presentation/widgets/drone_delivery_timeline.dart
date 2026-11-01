@@ -4,6 +4,7 @@ import 'package:smart_laundry_locker/features/drone_delivery/domain/entities/dro
 import 'package:smart_laundry_locker/features/drone_delivery/domain/entities/drone_delivery_status.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/domain/entities/drone_labels.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/presentation/widgets/drone_coordinates_line.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 /// Một mốc phụ hiện dưới một chặng của timeline (vd "Thanh toán" dưới chặng chờ
 /// tiếp nhận, "Người nhận lấy hàng" dưới chặng hàng vào ô).
@@ -296,13 +297,13 @@ class _TimelineRow extends StatelessWidget {
                           if (sincePrevious != null)
                             _Pill(
                               text:
-                                  'Chuyển sau ${droneDurationLabel(sincePrevious!)}',
+                                  context.l10n.tlMovedAfter(droneDurationLabel(sincePrevious!)),
                               color: const Color(0xFF475569),
                             ),
                           if (inStageFor != null)
                             _Pill(
                               text:
-                                  'Đã ở chặng này ${droneDurationLabel(inStageFor!)}',
+                                  context.l10n.tlInStageFor(droneDurationLabel(inStageFor!)),
                               color: _navySecondary,
                             ),
                         ],
@@ -369,7 +370,7 @@ class _DetailLine extends StatelessWidget {
                   style: const TextStyle(color: Color(0xFF64748B)),
                 ),
                 TextSpan(
-                  text: formatDateTimeVn(at, empty: 'Chưa diễn ra'),
+                  text: formatDateTimeVn(at, empty: context.l10n.tlNotYet),
                   style: TextStyle(
                     fontWeight: FontWeight.w700,
                     color: at == null

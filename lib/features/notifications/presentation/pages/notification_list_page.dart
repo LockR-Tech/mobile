@@ -10,6 +10,7 @@ import 'package:provider/provider.dart';
 import 'package:smart_laundry_locker/core/routing/app_router.dart';
 import 'package:smart_laundry_locker/core/routing/notification_deep_link.dart';
 import 'package:smart_laundry_locker/core/services/token_service.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 class NotificationListPage extends StatefulWidget {
   const NotificationListPage({super.key});
@@ -152,13 +153,13 @@ class _NotificationListPageState extends State<NotificationListPage> {
             body: Column(
               children: [
                 BrandHeroHeader(
-                  title: 'Thông báo',
-                  subtitle: 'Cập nhật mới nhất từ Lock.R',
+                  title: context.l10n.commonNotifications,
+                  subtitle: context.l10n.nlSubtitle,
                   onBack: () => AppRouter.backOrHome(context),
                 ),
-                const Expanded(
+                Expanded(
                   child: UnauthenticatedPlaceholder(
-                    message: 'Bạn cần đăng nhập để xem thông báo',
+                    message: context.l10n.nlLoginRequired,
                   ),
                 ),
               ],
@@ -170,8 +171,8 @@ class _NotificationListPageState extends State<NotificationListPage> {
           backgroundColor: const Color(0xFFF7FAFC),
           body: BrandHeroScaffold(
             header: (collapse) => BrandHeroHeader(
-              title: 'Thông báo',
-              subtitle: 'Cập nhật mới nhất từ Lock.R',
+              title: context.l10n.commonNotifications,
+              subtitle: context.l10n.nlSubtitle,
               onBack: () => AppRouter.backOrHome(context),
               collapseProgress: collapse,
               trailing: Consumer<NotificationProvider>(
@@ -205,7 +206,7 @@ class _NotificationListPageState extends State<NotificationListPage> {
                                   color: Colors.white.withValues(alpha: 0.22),
                                 ),
                               ),
-                              child: const Row(
+                              child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   Icon(
@@ -215,7 +216,7 @@ class _NotificationListPageState extends State<NotificationListPage> {
                                   ),
                                   SizedBox(width: 4),
                                   Text(
-                                    'Đọc tất cả',
+                                    context.l10n.nlReadAll,
                                     style: TextStyle(
                                       fontSize: 12,
                                       fontWeight: FontWeight.w700,
@@ -241,8 +242,8 @@ class _NotificationListPageState extends State<NotificationListPage> {
             child: Consumer<NotificationProvider>(
                   builder: (context, provider, _) {
                     if (provider.isLoading && provider.notifications.isEmpty) {
-                      return const Center(
-                        child: AppLoadingIndicator(message: 'Đang tải thông báo...'),
+                      return Center(
+                        child: AppLoadingIndicator(message: context.l10n.nlLoading),
                       );
                     }
 
@@ -283,7 +284,7 @@ class _NotificationListPageState extends State<NotificationListPage> {
                                     ),
                                     TextButton(
                                       onPressed: provider.loadMore,
-                                      child: const Text('Thử lại'),
+                                      child: Text(context.l10n.commonRetry),
                                     ),
                                   ],
                                 ),
@@ -303,7 +304,7 @@ class _NotificationListPageState extends State<NotificationListPage> {
                                 padding: const EdgeInsets.all(16.0),
                                 child: Center(
                                   child: Text(
-                                    'Đã xem hết thông báo',
+                                    context.l10n.nlAllSeen,
                                     style: TextStyle(
                                       color: Colors.grey.shade500,
                                     ),
@@ -335,7 +336,7 @@ class _NotificationListPageState extends State<NotificationListPage> {
           Icon(LucideIcons.bellRing, size: 64, color: Colors.grey.shade300),
           const SizedBox(height: 16),
           Text(
-            'Chưa có thông báo nào',
+            context.l10n.nlEmpty,
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w600,
@@ -344,7 +345,7 @@ class _NotificationListPageState extends State<NotificationListPage> {
           ),
           const SizedBox(height: 8),
           Text(
-            'Khi có thông báo mới, chúng sẽ xuất hiện ở đây',
+            context.l10n.nlEmptyHint,
             style: TextStyle(color: Colors.grey.shade500),
             textAlign: TextAlign.center,
           ),
@@ -361,7 +362,7 @@ class _NotificationListPageState extends State<NotificationListPage> {
           Icon(LucideIcons.serverCrash, size: 64, color: Colors.red.shade300),
           const SizedBox(height: 16),
           Text(
-            'Không tải được thông báo',
+            context.l10n.nlLoadFailed,
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w600,
@@ -384,7 +385,7 @@ class _NotificationListPageState extends State<NotificationListPage> {
               backgroundColor: AislBrand.navy,
               foregroundColor: Colors.white,
             ),
-            child: const Text('Thử lại'),
+            child: Text(context.l10n.commonRetry),
           ),
         ],
       ),
@@ -396,18 +397,18 @@ class _NotificationListPageState extends State<NotificationListPage> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Xoá tất cả thông báo?'),
-        content: const Text(
-          'Toàn bộ thông báo của tài khoản sẽ bị xoá và không khôi phục được.',
+        title: Text(context.l10n.nlDeleteAllQuestion),
+        content: Text(
+          context.l10n.nlDeleteAllBody,
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Hủy'),
+            child: Text(context.l10n.commonCancel),
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Xoá tất cả', style: TextStyle(color: Colors.red)),
+            child: Text(context.l10n.nlDeleteAll, style: TextStyle(color: Colors.red)),
           ),
         ],
       ),
@@ -415,7 +416,7 @@ class _NotificationListPageState extends State<NotificationListPage> {
     if (confirmed != true || !mounted) return;
     final error = await provider.deleteAllNotifications();
     if (!mounted) return;
-    _showSnack(error ?? 'Đã xoá tất cả thông báo', isError: error != null);
+    _showSnack(error ?? context.l10n.nlDeletedAll, isError: error != null);
   }
 
   void _showSnack(String message, {bool isError = false}) {
@@ -440,13 +441,13 @@ class _NotificationListPageState extends State<NotificationListPage> {
         color: Colors.red.shade600,
         alignment: Alignment.centerRight,
         padding: const EdgeInsets.symmetric(horizontal: 24),
-        child: const Row(
+        child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(LucideIcons.trash2, color: Colors.white, size: 20),
             SizedBox(width: 6),
             Text(
-              'Xoá',
+              context.l10n.commonDelete,
               style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700),
             ),
           ],
@@ -588,10 +589,10 @@ class _NotificationListPageState extends State<NotificationListPage> {
     final diff = now.difference(time);
 
     // Đồng hồ máy chậm hơn server vài giây thì diff âm — vẫn là "vừa xong".
-    if (diff.inMinutes < 1) return 'Vừa xong';
-    if (diff.inHours < 1) return '${diff.inMinutes} phút trước';
-    if (diff.inDays < 1) return '${diff.inHours} giờ trước';
-    if (diff.inDays < 30) return '${diff.inDays} ngày trước';
+    if (diff.inMinutes < 1) return L10n.current.nlJustNow;
+    if (diff.inHours < 1) return L10n.current.nlMinutesAgo(diff.inMinutes);
+    if (diff.inDays < 1) return L10n.current.nlHoursAgo(diff.inHours);
+    if (diff.inDays < 30) return L10n.current.nlDaysAgo(diff.inDays);
     return '${time.day}/${time.month}/${time.year}';
   }
 }

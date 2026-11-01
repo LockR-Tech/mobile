@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 /// Tiện ích quyền thông báo: kiểm tra/xin quyền và hướng dẫn người dùng bật lại
 /// trong Settings khi đã từ chối (đặc biệt khi bị từ chối vĩnh viễn — lúc đó
@@ -49,22 +50,21 @@ class NotificationPermissionHelper {
     return showDialog<void>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Bật thông báo'),
-        content: const Text(
-          'Bạn đã tắt quyền thông báo nên sẽ không nhận được cập nhật trạng '
-          'thái giao hàng. Hãy vào Cài đặt để bật lại thông báo cho ứng dụng.',
+        title: Text(context.l10n.notifEnableTitle),
+        content: Text(
+          context.l10n.notifEnableBody,
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Để sau'),
+            child: Text(context.l10n.commonLater),
           ),
           FilledButton(
             onPressed: () {
               Navigator.pop(ctx);
               openSettings();
             },
-            child: const Text('Mở Cài đặt'),
+            child: Text(context.l10n.commonOpenSettings),
           ),
         ],
       ),

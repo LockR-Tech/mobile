@@ -2,6 +2,7 @@ import 'package:smart_laundry_locker/core/errors/failures.dart';
 import 'package:smart_laundry_locker/features/locker/domain/entities/locker_location.dart';
 import 'package:smart_laundry_locker/features/locker/domain/repositories/locker_repository.dart';
 import 'package:dartz/dartz.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 /// Use Case: GetLocationDetailUseCase
 /// Lấy chi tiết một location theo ID.
@@ -16,7 +17,7 @@ class GetLocationDetailUseCase {
   /// Returns: Either<Failure, LockerLocation>
   Future<Either<Failure, LockerLocation>> call(String id) async {
     if (id.isEmpty) {
-      return Left(ValidationFailure('Location ID không được để trống'));
+      return Left(ValidationFailure(L10n.current.lockerLocationIdRequired));
     }
     return await _repository.getLocationById(id);
   }

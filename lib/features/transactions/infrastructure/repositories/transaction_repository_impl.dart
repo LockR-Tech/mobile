@@ -8,6 +8,7 @@ import 'package:smart_laundry_locker/features/transactions/domain/entities/trans
 import 'package:smart_laundry_locker/features/transactions/domain/repositories/transaction_repository.dart';
 import 'package:flutter/foundation.dart';
 import '../data_sources/transaction_remote_data_source.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 class TransactionRepositoryImpl implements TransactionRepository {
   final TransactionRemoteDataSource remoteDataSource;
@@ -39,7 +40,7 @@ class TransactionRepositoryImpl implements TransactionRepository {
       debugPrint('[TX][repo] getTransactions CATCH-ALL: $e');
       return Left(
         UnknownFailure(
-          userErrorMessage(e, fallback: 'Không tải được lịch sử giao dịch.'),
+          userErrorMessage(e, fallback: L10n.current.txLoadFailed),
         ),
       );
     }

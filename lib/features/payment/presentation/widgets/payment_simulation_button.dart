@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:smart_laundry_locker/core/config/business_config_service.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 /// Nút "Giả lập thanh toán" cho màn VietQR — chỉ hiện khi admin bật
 /// `app.payment.simulation-enabled` (Cài đặt → Thanh toán → Giả lập thanh toán).
@@ -47,7 +48,7 @@ class _PaymentSimulationButtonState extends State<PaymentSimulationButton> {
                   )
                 : const Icon(LucideIcons.flaskConical, size: 18),
             label: Text(
-              _busy ? 'Đang giả lập…' : 'Giả lập thanh toán (test)',
+              _busy ? context.l10n.simBusy : context.l10n.simButton,
             ),
             style: OutlinedButton.styleFrom(
               minimumSize: const Size(double.infinity, 46),
@@ -90,12 +91,12 @@ class _PaymentSimulationButtonState extends State<PaymentSimulationButton> {
       useRootNavigator: true,
       builder: (dialogContext) => AlertDialog(
         key: const Key('payment-simulate-error'),
-        title: const Text('Không giả lập được'),
+        title: Text(context.l10n.simFailed),
         content: Text(message),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(),
-            child: const Text('Đóng'),
+            child: Text(context.l10n.commonClose),
           ),
         ],
       ),
@@ -137,14 +138,13 @@ class _SimulationAmountDialogState extends State<_SimulationAmountDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('Giả lập đã chuyển khoản'),
+      title: Text(context.l10n.simTitle),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Chỉ dùng để test — không có tiền thật. Nhập ít hơn số cần trả để '
-            'thử trường hợp chuyển thiếu.',
+          Text(
+            context.l10n.simBody,
             style: TextStyle(fontSize: 13),
           ),
           const SizedBox(height: 12),
@@ -153,8 +153,8 @@ class _SimulationAmountDialogState extends State<_SimulationAmountDialog> {
             controller: _amount,
             keyboardType: TextInputType.number,
             inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-            decoration: const InputDecoration(
-              labelText: 'Số tiền đã nhận',
+            decoration: InputDecoration(
+              labelText: context.l10n.simReceived,
               suffixText: 'đ',
             ),
             onSubmitted: (_) => _submit(),
@@ -164,12 +164,12 @@ class _SimulationAmountDialogState extends State<_SimulationAmountDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Huỷ'),
+          child: Text(context.l10n.commonCancelAlt),
         ),
         FilledButton(
           key: const Key('payment-simulate-confirm'),
           onPressed: _submit,
-          child: const Text('Giả lập'),
+          child: Text(context.l10n.simAction),
         ),
       ],
     );

@@ -13,6 +13,7 @@ import 'package:smart_laundry_locker/core/routing/app_router.dart';
 import 'package:smart_laundry_locker/core/routing/notification_deep_link.dart';
 import 'package:smart_laundry_locker/features/notifications/domain/entities/delivery_notification.dart';
 import 'package:go_router/go_router.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 /// Top-level background message handler
 @pragma('vm:entry-point')
@@ -246,7 +247,7 @@ class FirebaseMessagingService {
       final title =
           message.notification?.title ??
           message.data['title'] as String? ??
-          'Thông báo mới';
+          L10n.current.notifNew;
       SmartDialog.showToast(title);
     }
   }
@@ -261,7 +262,7 @@ class FirebaseMessagingService {
         message.notification?.title ??
         message.data['title'] as String? ??
         delivery?.displayTitle ??
-        'Thông báo';
+        L10n.current.commonNotifications;
     final body =
         message.notification?.body ??
         message.data['content'] as String? ??

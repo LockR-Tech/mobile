@@ -14,6 +14,7 @@ import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/lo
 import 'package:smart_laundry_locker/features/promotions/presentation/widgets/locker_offers_section.dart';
 import 'package:smart_laundry_locker/features/stores/presentation/pages/store_lockers_page.dart';
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 /// Chi tiết một tủ trên bản đồ: vị trí, trạng thái kết nối và số ô trống theo
 /// loại ô (tải từ `GET /api/lockers/{id}/layout`).
@@ -144,7 +145,7 @@ class _LockerDetailMapPageState extends State<LockerDetailMapPage> {
           children: [
             BrandHeroHeader(
               title: widget.location.name,
-              subtitle: 'Chi tiết vị trí tủ Lock.R',
+              subtitle: context.l10n.lockerDetailSubtitle,
               onBack: () => Navigator.of(context).pop(),
             ),
             Expanded(
@@ -161,8 +162,7 @@ class _LockerDetailMapPageState extends State<LockerDetailMapPage> {
                       ),
                       const SizedBox(height: 16),
                       Text(
-                        'Tủ chưa có toạ độ nên chưa hiển thị được bản đồ '
-                        'và chỉ đường.',
+                        context.l10n.lockerNoCoordinates,
                         style: TextStyle(color: Colors.grey[800], fontSize: 16),
                         textAlign: TextAlign.center,
                       ),
@@ -186,7 +186,7 @@ class _LockerDetailMapPageState extends State<LockerDetailMapPage> {
                                 widget.location,
                               ),
                         icon: const Icon(Icons.add_box_outlined, size: 18),
-                        label: const Text('Đặt dịch vụ'),
+                        label: Text(context.l10n.lockerBookService),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AislBrand.navy,
                           foregroundColor: Colors.white,
@@ -195,12 +195,12 @@ class _LockerDetailMapPageState extends State<LockerDetailMapPage> {
                       const SizedBox(height: 8),
                       OutlinedButton(
                         onPressed: _openGrid,
-                        child: const Text('Xem sơ đồ ô tủ'),
+                        child: Text(context.l10n.lockerViewLayout),
                       ),
                       const SizedBox(height: 12),
                       TextButton(
                         onPressed: () => Navigator.maybePop(context),
-                        child: const Text('Quay lại'),
+                        child: Text(context.l10n.commonBack),
                       ),
                     ],
                   ),
@@ -271,7 +271,7 @@ class _LockerDetailMapPageState extends State<LockerDetailMapPage> {
         children: [
           BrandHeroHeader(
             title: widget.location.name,
-            subtitle: 'Chi tiết vị trí tủ Lock.R',
+            subtitle: context.l10n.lockerDetailSubtitle,
             onBack: () => Navigator.of(context).pop(),
           ),
           Expanded(child: mapStack),
@@ -289,7 +289,7 @@ class _LockerDetailMapPageState extends State<LockerDetailMapPage> {
         backgroundColor: const Color(0xFF14171F),
         foregroundColor: Colors.white,
         icon: const Icon(Icons.directions_rounded),
-        label: const Text('Chỉ đường'),
+        label: Text(context.l10n.commonDirections),
       ),
     );
   }

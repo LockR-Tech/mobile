@@ -4,6 +4,7 @@ import 'dart:math' as math;
 import 'package:flutter/foundation.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 /// Kết quả phát hiện tín hiệu Bluetooth của tủ
 class LockerBleDetectionResult {
@@ -24,9 +25,9 @@ class LockerBleDetectionResult {
   });
 
   String get proximityText {
-    if (estimatedDistanceMeters <= 1.0) return 'Rất gần (~${estimatedDistanceMeters.toStringAsFixed(1)}m)';
-    if (estimatedDistanceMeters <= 2.5) return 'Gần tủ (~${estimatedDistanceMeters.toStringAsFixed(1)}m)';
-    return 'Cách tủ ~${estimatedDistanceMeters.toStringAsFixed(1)}m';
+    if (estimatedDistanceMeters <= 1.0) return L10n.current.bleVeryClose(estimatedDistanceMeters.toStringAsFixed(1));
+    if (estimatedDistanceMeters <= 2.5) return L10n.current.bleNear(estimatedDistanceMeters.toStringAsFixed(1));
+    return L10n.current.bleAway(estimatedDistanceMeters.toStringAsFixed(1));
   }
 }
 

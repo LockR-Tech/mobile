@@ -1,5 +1,6 @@
 import 'package:smart_laundry_locker/core/network/api_client.dart';
 import 'package:smart_laundry_locker/features/profile/domain/entities/loyalty.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 /// Điểm thưởng của chính người dùng. loyalty-service lấy người dùng từ token
 /// (gateway gắn `X-User-Id`) — app không gửi userId.
@@ -13,7 +14,7 @@ class LoyaltyRemoteDataSource {
     final response = await _apiClient.get<dynamic>('/api/loyalty/summary');
     final data = _data(response.data);
     if (data is! Map<String, dynamic>) {
-      throw ServerException('Dữ liệu điểm thưởng không hợp lệ');
+      throw ServerException(L10n.current.loyInvalidData);
     }
     return LoyaltySummary.fromJson(data);
   }

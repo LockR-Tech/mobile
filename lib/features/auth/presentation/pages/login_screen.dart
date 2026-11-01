@@ -6,6 +6,7 @@ import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:provider/provider.dart';
+import 'package:smart_laundry_locker/core/l10n/language_toggle.dart';
 import 'package:smart_laundry_locker/core/network/api_client.dart';
 import 'package:smart_laundry_locker/core/routing/app_router.dart';
 import 'package:smart_laundry_locker/core/routing/role_routes.dart';
@@ -20,6 +21,7 @@ import 'package:smart_laundry_locker/features/auth/presentation/widgets/social_l
 import 'package:smart_laundry_locker/features/profile/presentation/providers/profile_provider.dart';
 import 'package:smart_laundry_locker/shared/shared.dart';
 import 'package:smart_laundry_locker/shared/widgets/app_lottie.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 /// Brand palette shared by the login + register flows so both halves of the
 /// auth screen feel like one product.
@@ -68,8 +70,8 @@ class _LoginScreenState extends State<LoginScreen>
   late final TapGestureRecognizer _termsRecognizer = TapGestureRecognizer()
     ..onTap = () => context.push(
       AppRouter.policy,
-      extra: const {
-        'title': 'Điều khoản sử dụng',
+      extra: {
+        'title': context.l10n.commonTermsOfUse,
         'assetPath': 'assets/markdown/terms_of_service.md',
       },
     );
@@ -146,7 +148,7 @@ class _LoginScreenState extends State<LoginScreen>
         _registerProvider.signedIn &&
         !_hasNavigated) {
       _hasNavigated = true;
-      SmartDialog.showToast('Đăng ký thành công!');
+      SmartDialog.showToast(context.l10n.authRegisterSuccess);
       _registerProvider.reset();
       _navigateAfterLogin();
       return;
@@ -157,7 +159,7 @@ class _LoginScreenState extends State<LoginScreen>
       final identifier = _emailController.text.trim().isNotEmpty
           ? _emailController.text.trim()
           : _phoneController.text.trim();
-      SmartDialog.showToast('Đăng ký thành công! Vui lòng đăng nhập.');
+      SmartDialog.showToast(context.l10n.authRegisterSuccessPleaseLogin);
       _registerProvider.reset();
       setState(() {
         _isLoginTab = true;
@@ -195,7 +197,7 @@ class _LoginScreenState extends State<LoginScreen>
     // Cắt khoảng trắng như form đăng ký/đổi mật khẩu để mật khẩu luôn khớp.
     final password = _loginPasswordController.text.trim();
     if (identifier.isEmpty || password.isEmpty) {
-      setState(() => _loginError = 'Nhập email/SĐT và mật khẩu');
+      setState(() => _loginError = context.l10n.authEnterIdentifierAndPassword);
       return;
     }
     setState(() => _loginError = null);
@@ -205,7 +207,7 @@ class _LoginScreenState extends State<LoginScreen>
   void _handleRegister() {
     if (!(_registerFormKey.currentState?.validate() ?? false)) return;
     if (!_agreeToTerms) {
-      SmartDialog.showToast('Vui lòng đồng ý với Điều khoản sử dụng');
+      SmartDialog.showToast(context.l10n.authPleaseAcceptTerms);
       return;
     }
     _registerProvider.register(
@@ -318,6 +320,7 @@ class _LoginScreenState extends State<LoginScreen>
             left: -50,
             child: _circle(160, _kCyan.withValues(alpha: 0.08)),
           ),
+          const Positioned(top: -12, right: 0, child: LanguageToggle()),
           Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -373,7 +376,7 @@ class _LoginScreenState extends State<LoginScreen>
                             ),
                           ),
                           Text(
-                            'Tủ thông minh • Giao nhận 24/7',
+                            context.l10n.authTagline,
                             style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w500,
@@ -426,8 +429,8 @@ class _LoginScreenState extends State<LoginScreen>
       padding: const EdgeInsets.all(4),
       child: Row(
         children: [
-          _tabButton('Đăng nhập', _isLoginTab, () => _switchTab(true)),
-          _tabButton('Đăng ký', !_isLoginTab, () => _switchTab(false)),
+          _tabButton(context.l10n.authLogin, _isLoginTab, () => _switchTab(true)),
+          _tabButton(context.l10n.authRegister, !_isLoginTab, () => _switchTab(false)),
         ],
       ),
     );
@@ -483,7 +486,7 @@ class _LoginScreenState extends State<LoginScreen>
       key: const ValueKey('login'),
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        _fieldLabel('Email / Số điện thoại'),
+        _fieldLabel(context.l10n.authEmailOrPhone),
         const SizedBox(height: 8),
         TextField(
           controller: _identifierController,
@@ -495,7 +498,7 @@ class _LoginScreenState extends State<LoginScreen>
           ),
         ),
         const SizedBox(height: 16),
-        _fieldLabel('Mật khẩu'),
+        _fieldLabel(context.l10n.commonPassword),
         const SizedBox(height: 8),
         TextField(
           controller: _loginPasswordController,
@@ -522,8 +525,8 @@ class _LoginScreenState extends State<LoginScreen>
                 minimumSize: Size.zero,
                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,
               ),
-              child: const Text(
-                'Đăng nhập bằng OTP',
+              child: Text(
+                context.l10n.authLoginWithOtp,
                 style: TextStyle(
                   fontSize: 13,
                   color: _kBlue,
@@ -538,8 +541,8 @@ class _LoginScreenState extends State<LoginScreen>
                 minimumSize: Size.zero,
                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,
               ),
-              child: const Text(
-                'Quên mật khẩu?',
+              child: Text(
+                context.l10n.authForgotPasswordQuestion,
                 style: TextStyle(
                   fontSize: 13,
                   color: _kBlue,
@@ -564,18 +567,18 @@ class _LoginScreenState extends State<LoginScreen>
         key: const ValueKey('register'),
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          _fieldLabel('Họ và tên'),
+          _fieldLabel(context.l10n.commonFullName),
           const SizedBox(height: 8),
           TextFormField(
             controller: _fullNameController,
             textCapitalization: TextCapitalization.words,
             textInputAction: TextInputAction.next,
             decoration: _inputDecoration(
-              'Nguyễn Văn A',
+              context.l10n.commonFullNameHint,
               icon: LucideIcons.user,
             ),
             validator: (v) =>
-                (v == null || v.trim().isEmpty) ? 'Vui lòng nhập họ và tên' : null,
+                (v == null || v.trim().isEmpty) ? context.l10n.authEnterFullName : null,
           ),
           const SizedBox(height: 16),
           _fieldLabel('Email'),
@@ -589,13 +592,13 @@ class _LoginScreenState extends State<LoginScreen>
               icon: LucideIcons.mail,
             ),
             validator: (v) {
-              if (v == null || v.trim().isEmpty) return 'Vui lòng nhập email';
-              if (!v.contains('@')) return 'Email không hợp lệ';
+              if (v == null || v.trim().isEmpty) return context.l10n.authEnterEmail;
+              if (!v.contains('@')) return context.l10n.authInvalidEmail;
               return null;
             },
           ),
           const SizedBox(height: 16),
-          _fieldLabel('Số điện thoại'),
+          _fieldLabel(context.l10n.commonPhoneNumber),
           const SizedBox(height: 8),
           TextFormField(
             controller: _phoneController,
@@ -606,11 +609,11 @@ class _LoginScreenState extends State<LoginScreen>
               icon: LucideIcons.smartphone,
             ),
             validator: (v) => (v == null || v.trim().isEmpty)
-                ? 'Vui lòng nhập số điện thoại'
+                ? context.l10n.authEnterPhone
                 : null,
           ),
           const SizedBox(height: 16),
-          _fieldLabel('Mật khẩu'),
+          _fieldLabel(context.l10n.commonPassword),
           const SizedBox(height: 8),
           TextFormField(
             controller: _registerPasswordController,
@@ -626,8 +629,8 @@ class _LoginScreenState extends State<LoginScreen>
                   ),
                 ),
             validator: (v) {
-              if (v == null || v.trim().isEmpty) return 'Vui lòng nhập mật khẩu';
-              if (v.trim().length < 6) return 'Mật khẩu phải có ít nhất 6 ký tự';
+              if (v == null || v.trim().isEmpty) return context.l10n.authEnterPassword;
+              if (v.trim().length < 6) return context.l10n.authPasswordMin6;
               return null;
             },
           ),
@@ -663,9 +666,9 @@ class _LoginScreenState extends State<LoginScreen>
               TextSpan(
                 style: const TextStyle(fontSize: 13, color: _kMuted),
                 children: [
-                  const TextSpan(text: 'Tôi đồng ý với '),
+                  TextSpan(text: context.l10n.authAgreePrefix),
                   TextSpan(
-                    text: 'Điều khoản sử dụng',
+                    text: context.l10n.commonTermsOfUse,
                     style: const TextStyle(
                       color: _kBlue,
                       fontWeight: FontWeight.w600,
@@ -709,7 +712,7 @@ class _LoginScreenState extends State<LoginScreen>
         _socialButton(
           icon: Icons.phone_android,
           iconColor: _kBlue,
-          label: 'SĐT',
+          label: context.l10n.commonPhoneShort,
           onTap: _busy ? null : _showPhoneOtpDialog,
         ),
     ];
@@ -721,7 +724,7 @@ class _LoginScreenState extends State<LoginScreen>
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 12),
               child: Text(
-                'Hoặc tiếp tục với',
+                context.l10n.authOrContinueWith,
                 style: TextStyle(fontSize: 12, color: Colors.grey[600]),
               ),
             ),
@@ -801,7 +804,7 @@ class _LoginScreenState extends State<LoginScreen>
               ),
             )
           : Text(
-              _isLoginTab ? 'Đăng nhập' : 'Tạo tài khoản',
+              _isLoginTab ? context.l10n.authLogin : context.l10n.authCreateAccount,
               style: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
@@ -821,11 +824,11 @@ class _LoginScreenState extends State<LoginScreen>
             children: [
               TextSpan(
                 text: _isLoginTab
-                    ? 'Chưa có tài khoản? '
-                    : 'Đã có tài khoản? ',
+                    ? context.l10n.authNoAccount
+                    : context.l10n.authHaveAccount,
               ),
               TextSpan(
-                text: _isLoginTab ? 'Đăng ký ngay' : 'Đăng nhập',
+                text: _isLoginTab ? context.l10n.authRegisterNow : context.l10n.authLogin,
                 style: const TextStyle(
                   color: _kBlue,
                   fontWeight: FontWeight.bold,
@@ -933,7 +936,7 @@ class _LoginScreenState extends State<LoginScreen>
   void _handleEmailOtpLogin() {
     final email = _identifierController.text.trim();
     if (email.isEmpty || !email.contains('@')) {
-      setState(() => _loginError = 'Vui lòng nhập Email hợp lệ để nhận OTP');
+      setState(() => _loginError = context.l10n.authEnterValidEmailForOtp);
       return;
     }
     setState(() => _loginError = null);
@@ -969,8 +972,8 @@ class _LoginScreenState extends State<LoginScreen>
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    const Text(
-                      'Nhập mã OTP',
+                    Text(
+                      context.l10n.authEnterOtp,
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 18,
@@ -981,8 +984,8 @@ class _LoginScreenState extends State<LoginScreen>
                     const SizedBox(height: 16),
                     Text(
                       isSent
-                          ? 'Mã OTP đã được gửi đến $email'
-                          : 'Đang gửi mã OTP đến $email...',
+                          ? context.l10n.authOtpSentTo(email)
+                          : context.l10n.authOtpSendingTo(email),
                       textAlign: TextAlign.center,
                       style: const TextStyle(fontSize: 14, color: _kMuted),
                     ),
@@ -992,8 +995,8 @@ class _LoginScreenState extends State<LoginScreen>
                         controller: otpController,
                         keyboardType: TextInputType.number,
                         autofocus: true,
-                        decoration: const InputDecoration(
-                          labelText: 'Mã OTP (6 số)',
+                        decoration: InputDecoration(
+                          labelText: context.l10n.authOtp6Digits,
                           hintText: '------',
                           border: OutlineInputBorder(),
                         ),
@@ -1032,7 +1035,7 @@ class _LoginScreenState extends State<LoginScreen>
                                     color: Colors.white,
                                   ),
                                 )
-                              : const Text('Xác nhận'),
+                              : Text(context.l10n.commonConfirm),
                         ),
                       ),
                     if (provider.error != null)

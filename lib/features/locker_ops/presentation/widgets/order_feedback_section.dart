@@ -4,28 +4,29 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/ops_widgets.dart';
 import 'package:smart_laundry_locker/shared/widgets/controller_disposer.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 /// Loại khiếu nại gửi lên `POST /api/orders/{id}/complaint` (server lưu viết hoa,
 /// không giới hạn danh sách) kèm nhãn hiển thị.
-const orderComplaintTypes = <String, String>{
-  'DAMAGED': 'Hàng bị hư hỏng',
-  'MISSING': 'Thiếu / mất hàng',
-  'LOCKER': 'Tủ / ô gặp sự cố',
-  'PAYMENT': 'Thanh toán / phí',
-  'SERVICE': 'Chất lượng dịch vụ',
-  'OTHER': 'Khác',
+Map<String, String> get orderComplaintTypes => <String, String>{
+  'DAMAGED': L10n.current.fbDamaged,
+  'MISSING': L10n.current.fbMissing,
+  'LOCKER': L10n.current.fbLocker,
+  'PAYMENT': L10n.current.fbPayment,
+  'SERVICE': L10n.current.fbService,
+  'OTHER': L10n.current.enumOther,
 };
 
 String orderComplaintTypeLabel(String? type) =>
-    orderComplaintTypes[(type ?? '').toUpperCase()] ?? 'Khác';
+    orderComplaintTypes[(type ?? '').toUpperCase()] ?? L10n.current.enumOther;
 
 String orderComplaintStatusLabel(String? status) =>
     switch ((status ?? '').toUpperCase()) {
-      'OPEN' || 'PENDING' || 'NEW' => 'Đang chờ xử lý',
-      'IN_PROGRESS' || 'PROCESSING' => 'Đang xử lý',
-      'RESOLVED' || 'CLOSED' => 'Đã xử lý',
-      'REJECTED' => 'Đã từ chối',
-      _ => 'Đã ghi nhận',
+      'OPEN' || 'PENDING' || 'NEW' => L10n.current.fbStPending,
+      'IN_PROGRESS' || 'PROCESSING' => L10n.current.fbStProcessing,
+      'RESOLVED' || 'CLOSED' => L10n.current.fbStResolved,
+      'REJECTED' => L10n.current.fbStRejected,
+      _ => L10n.current.fbStRecorded,
     };
 
 /// "Đánh giá / Khiếu nại" trong chi tiết đơn: đánh giá chỉ cho đơn hoàn tất,
@@ -134,7 +135,7 @@ class _OrderFeedbackSectionState extends State<OrderFeedbackSection> {
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(18),
             ),
-            title: const Text('Đánh giá đơn hàng'),
+            title: Text(context.l10n.fbRateOrder),
             content: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -162,8 +163,8 @@ class _OrderFeedbackSectionState extends State<OrderFeedbackSection> {
                   enabled: !sending,
                   maxLines: 3,
                   maxLength: 500,
-                  decoration: const InputDecoration(
-                    hintText: 'Chia sẻ trải nghiệm của bạn (không bắt buộc)',
+                  decoration: InputDecoration(
+                    hintText: context.l10n.fbRateHint,
                   ),
                 ),
                 if (error != null)
@@ -179,7 +180,7 @@ class _OrderFeedbackSectionState extends State<OrderFeedbackSection> {
             actions: [
               TextButton(
                 onPressed: sending ? null : () => Navigator.pop(ctx, false),
-                child: const Text('Hủy'),
+                child: Text(context.l10n.commonCancel),
               ),
               FilledButton(
                 onPressed: sending
@@ -200,12 +201,12 @@ class _OrderFeedbackSectionState extends State<OrderFeedbackSection> {
                           setLocal(() {
                             sending = false;
                             error = LockerOpsService.isEndpointUnavailable(e)
-                                ? 'Máy chủ chưa hỗ trợ đánh giá đơn.'
+                                ? context.l10n.fbRateNotSupported
                                 : LockerOpsService.errorMessage(e);
                           });
                         }
                       },
-                child: Text(sending ? 'Đang gửi...' : 'Gửi đánh giá'),
+                child: Text(sending ? context.l10n.commonSending : context.l10n.urdSendRating),
               ),
             ],
           ),
@@ -213,7 +214,7 @@ class _OrderFeedbackSectionState extends State<OrderFeedbackSection> {
       ),
     );
     if (done == true) {
-      _snack('Cảm ơn bạn đã đánh giá đơn hàng.');
+      _snack(L10n.current.fbThanks);
       await _load();
     }
   }
@@ -233,7 +234,7 @@ class _OrderFeedbackSectionState extends State<OrderFeedbackSection> {
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(18),
             ),
-            title: const Text('Gửi khiếu nại'),
+            title: Text(context.l10n.fbComplain),
             content: SingleChildScrollView(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -241,7 +242,7 @@ class _OrderFeedbackSectionState extends State<OrderFeedbackSection> {
                 children: [
                   DropdownButtonFormField<String>(
                     initialValue: type,
-                    decoration: const InputDecoration(labelText: 'Vấn đề'),
+                    decoration: InputDecoration(labelText: context.l10n.fbIssue),
                     items: [
                       for (final e in orderComplaintTypes.entries)
                         DropdownMenuItem(value: e.key, child: Text(e.value)),
@@ -256,8 +257,8 @@ class _OrderFeedbackSectionState extends State<OrderFeedbackSection> {
                     enabled: !sending,
                     maxLines: 4,
                     maxLength: 1000,
-                    decoration: const InputDecoration(
-                      hintText: 'Mô tả chi tiết vấn đề bạn gặp phải',
+                    decoration: InputDecoration(
+                      hintText: context.l10n.fbIssueHint,
                     ),
                   ),
                   if (error != null)
@@ -274,14 +275,14 @@ class _OrderFeedbackSectionState extends State<OrderFeedbackSection> {
             actions: [
               TextButton(
                 onPressed: sending ? null : () => Navigator.pop(ctx, false),
-                child: const Text('Hủy'),
+                child: Text(context.l10n.commonCancel),
               ),
               FilledButton(
                 onPressed: sending
                     ? null
                     : () async {
                         if (descCtrl.text.trim().isEmpty) {
-                          setLocal(() => error = 'Vui lòng mô tả vấn đề.');
+                          setLocal(() => error = context.l10n.fbDescribe);
                           return;
                         }
                         setLocal(() {
@@ -299,12 +300,12 @@ class _OrderFeedbackSectionState extends State<OrderFeedbackSection> {
                           setLocal(() {
                             sending = false;
                             error = LockerOpsService.isEndpointUnavailable(e)
-                                ? 'Máy chủ chưa hỗ trợ khiếu nại đơn.'
+                                ? context.l10n.fbComplainNotSupported
                                 : LockerOpsService.errorMessage(e);
                           });
                         }
                       },
-                child: Text(sending ? 'Đang gửi...' : 'Gửi khiếu nại'),
+                child: Text(sending ? context.l10n.commonSending : context.l10n.fbComplain),
               ),
             ],
           ),
@@ -312,7 +313,7 @@ class _OrderFeedbackSectionState extends State<OrderFeedbackSection> {
       ),
     );
     if (done == true) {
-      _snack('Đã gửi khiếu nại — bộ phận hỗ trợ sẽ phản hồi qua thông báo.');
+      _snack(L10n.current.fbComplaintSent);
       await _load();
     }
   }
@@ -328,7 +329,7 @@ class _OrderFeedbackSectionState extends State<OrderFeedbackSection> {
         const Divider(height: 1, color: opsBorder),
         const SizedBox(height: 12),
         OpsSectionLabel(
-          _canRate ? 'Đánh giá & khiếu nại' : 'Khiếu nại',
+          _canRate ? context.l10n.fbRateAndComplain : context.l10n.fbComplaint,
           icon: LucideIcons.messageSquare,
         ),
         if (_loading)
@@ -368,7 +369,7 @@ class _OrderFeedbackSectionState extends State<OrderFeedbackSection> {
                       const Spacer(),
                       TextButton(
                         onPressed: _rate,
-                        child: const Text('Sửa đánh giá'),
+                        child: Text(context.l10n.fbEditRating),
                       ),
                     ],
                   ),
@@ -382,7 +383,7 @@ class _OrderFeedbackSectionState extends State<OrderFeedbackSection> {
             )
           else if (_canRate && !_unavailable)
             OpsSheetAction(
-              label: 'Đánh giá đơn hàng',
+              label: context.l10n.fbRateOrder,
               icon: LucideIcons.star,
               onTap: _rate,
             ),
@@ -430,7 +431,7 @@ class _OrderFeedbackSectionState extends State<OrderFeedbackSection> {
                   if (c['createdAt'] != null) ...[
                     const SizedBox(height: 4),
                     Text(
-                      'Gửi lúc ${fmtDateTime(c['createdAt'])}',
+                      context.l10n.fbSentAt(fmtDateTime(c['createdAt'])),
                       style: const TextStyle(
                         fontSize: 11.5,
                         color: opsMutedText,
@@ -442,13 +443,13 @@ class _OrderFeedbackSectionState extends State<OrderFeedbackSection> {
             ),
           if (!_unavailable)
             OpsSheetAction(
-              label: 'Gửi khiếu nại',
+              label: context.l10n.fbComplain,
               icon: LucideIcons.messageSquareWarning,
               onTap: _complain,
             ),
           if (_unavailable)
-            const Text(
-              'Máy chủ chưa hỗ trợ đánh giá / khiếu nại đơn. Vui lòng thử lại sau.',
+            Text(
+              context.l10n.fbNotSupported,
               style: TextStyle(fontSize: 12, color: opsMutedText),
             )
           else if (_error != null)
@@ -463,7 +464,7 @@ class _OrderFeedbackSectionState extends State<OrderFeedbackSection> {
                     ),
                   ),
                 ),
-                TextButton(onPressed: _load, child: const Text('Thử lại')),
+                TextButton(onPressed: _load, child: Text(context.l10n.commonRetry)),
               ],
             ),
         ],

@@ -1,5 +1,6 @@
 import 'package:smart_laundry_locker/core/errors/failures.dart';
 import 'package:smart_laundry_locker/core/network/api_client.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 /// Thông báo lỗi hiển thị cho người dùng, không kèm tiền tố kỹ thuật
 /// ("ServerException: …", "NotFoundException: …") như khi gọi `e.toString()`.
@@ -8,10 +9,13 @@ import 'package:smart_laundry_locker/core/network/api_client.dart';
 /// ⇒ nói rõ là máy chủ chưa hỗ trợ thay vì hiện message kỹ thuật.
 String userErrorMessage(
   Object error, {
-  String notFound = 'Máy chủ chưa hỗ trợ chức năng này. Vui lòng thử lại sau.',
-  String fallback = 'Đã xảy ra lỗi. Vui lòng thử lại.',
+  String? notFound,
+  String? fallback,
 }) {
-  if (error is NotFoundException || error is NotFoundFailure) return notFound;
+  fallback ??= L10n.current.errorGenericRetry;
+  if (error is NotFoundException || error is NotFoundFailure) {
+    return notFound ?? L10n.current.errorNotSupportedYet;
+  }
   final message = switch (error) {
     ServerException(:final message) => message,
     NetworkException(:final message) => message,

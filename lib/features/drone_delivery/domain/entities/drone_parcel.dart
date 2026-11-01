@@ -2,14 +2,16 @@
 /// `CreateDroneDeliveryOrderRequest` của order-service.
 library;
 
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
+
 /// Mã loại hàng backend chấp nhận → nhãn hiển thị. Thứ tự là thứ tự hiện trên form.
-const droneParcelCategories = <String, String>{
-  'DOCUMENT': 'Tài liệu',
-  'FOOD': 'Đồ ăn',
-  'CLOTHING': 'Quần áo',
-  'ELECTRONICS': 'Điện tử',
-  'COSMETICS': 'Mỹ phẩm',
-  'OTHER': 'Khác',
+Map<String, String> get droneParcelCategories => <String, String>{
+  'DOCUMENT': L10n.current.catDocument,
+  'FOOD': L10n.current.catFood,
+  'CLOTHING': L10n.current.catClothing,
+  'ELECTRONICS': L10n.current.catElectronics,
+  'COSMETICS': L10n.current.catCosmetics,
+  'OTHER': L10n.current.enumOther,
 };
 
 String droneParcelCategoryLabel(String? code) {
@@ -39,8 +41,8 @@ bool droneParcelFits(List<int> parcelCm, List<int> bayCm) {
 /// Kiện chờ trả đang ở đâu (`parcelHeldAt` của read model).
 String droneParcelHeldAtLabel(String? code) =>
     switch ((code ?? '').toUpperCase()) {
-      'SOURCE_BOX' => 'Còn trong ô gửi',
-      'FLIGHT_TEAM' => 'Đội bay đang giữ',
+      'SOURCE_BOX' => L10n.current.heldSourceBox,
+      'FLIGHT_TEAM' => L10n.current.heldFlightTeam,
       _ => '—',
     };
 

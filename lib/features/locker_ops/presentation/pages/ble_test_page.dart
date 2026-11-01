@@ -5,6 +5,7 @@ import 'package:smart_laundry_locker/features/locker/domain/utils/locker_layout_
 import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/ops_widgets.dart';
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 /// Thử mở ô qua Bluetooth (F3-G11) — chỉ tài khoản admin đã cho thử ở trang chi tiết tủ.
 /// Chọn tủ, chọn ô bất kỳ, app xin mã mở ô từ máy chủ rồi ghi thẳng cho Pi của tủ qua BLE.
@@ -100,13 +101,13 @@ class _BleTestPageState extends State<BleTestPage> {
       final go = await showDialog<bool>(
         context: context,
         builder: (ctx) => AlertDialog(
-          title: Text('Ô $box đang có hàng'),
-          content: const Text(
-            'Ô này đang giữ hàng của một đơn. Chỉ mở khi bạn được giao kiểm tra tủ và đóng lại ngay sau khi thử.',
+          title: Text(context.l10n.btBoxOccupied(box)),
+          content: Text(
+            context.l10n.btBoxOccupiedBody,
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Huỷ')),
-            FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Vẫn mở')),
+            TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(context.l10n.commonCancelAlt)),
+            FilledButton(onPressed: () => Navigator.pop(ctx, true), child: Text(context.l10n.btOpenAnyway)),
           ],
         ),
       );
@@ -116,7 +117,7 @@ class _BleTestPageState extends State<BleTestPage> {
     setState(() {
       _opening = true;
       _outcome = null;
-      _stepText = 'Đang lấy mã mở ô từ máy chủ…';
+      _stepText = context.l10n.btFetchingCode;
     });
     final BleOpenOutcome outcome;
     try {
@@ -145,10 +146,10 @@ class _BleTestPageState extends State<BleTestPage> {
   }
 
   static String _stepLabel(BleOpenStep step) => switch (step) {
-        BleOpenStep.scanning => 'Đang tìm tủ qua Bluetooth…',
-        BleOpenStep.connecting => 'Đang kết nối với tủ…',
-        BleOpenStep.sending => 'Đang gửi lệnh mở ô…',
-        BleOpenStep.waiting => 'Chờ tủ mở khoá…',
+        BleOpenStep.scanning => L10n.current.btScanning,
+        BleOpenStep.connecting => L10n.current.btConnecting,
+        BleOpenStep.sending => L10n.current.btSending,
+        BleOpenStep.waiting => L10n.current.btWaiting,
       };
 
   void _showSnack(String text) {
@@ -161,10 +162,10 @@ class _BleTestPageState extends State<BleTestPage> {
       backgroundColor: opsSurface,
       body: Column(
         children: [
-          const BrandHeroHeader(
+          BrandHeroHeader(
             eyebrow: 'LOCK.R • BLUETOOTH',
-            title: 'Thử mở ô qua Bluetooth',
-            subtitle: 'Đứng cạnh tủ, chọn ô rồi bấm mở',
+            title: context.l10n.profileBleTest,
+            subtitle: context.l10n.btSubtitle,
           ),
           Expanded(child: _body()),
         ],
@@ -174,7 +175,7 @@ class _BleTestPageState extends State<BleTestPage> {
           : SafeArea(
               minimum: const EdgeInsets.fromLTRB(16, 8, 16, 12),
               child: OpsPrimaryButton(
-                label: _boxNumber == null ? 'Chọn một ô để mở' : 'Mở ô $_boxNumber qua Bluetooth',
+                label: _boxNumber == null ? context.l10n.btChooseBox : context.l10n.btOpenBox(_boxNumber!),
                 icon: LucideIcons.bluetooth,
                 loading: _opening,
                 onPressed: _boxNumber == null || _opening ? null : _open,
@@ -189,27 +190,27 @@ class _BleTestPageState extends State<BleTestPage> {
       return Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          OpsEmptyState(icon: LucideIcons.cloudOff, title: 'Không tải được danh sách tủ', subtitle: _error),
+          OpsEmptyState(icon: LucideIcons.cloudOff, title: context.l10n.btLoadFailed, subtitle: _error),
           TextButton.icon(
             onPressed: _loadLockers,
             icon: const Icon(LucideIcons.refreshCw, size: 16),
-            label: const Text('Thử lại'),
+            label: Text(context.l10n.commonRetry),
           ),
         ],
       );
     }
     if (_lockers.isEmpty) {
-      return const OpsEmptyState(
+      return OpsEmptyState(
         icon: LucideIcons.bluetoothOff,
-        title: 'Chưa được cho thử',
-        subtitle: 'Admin chưa cho tài khoản này thử mở ô qua Bluetooth ở tủ nào.',
+        title: context.l10n.btNotAllowed,
+        subtitle: context.l10n.btNotAllowedBody,
       );
     }
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
       children: [
         if (_lockers.length > 1) ...[
-          const OpsSectionLabel('Tủ'),
+          OpsSectionLabel(context.l10n.commonLocker),
           Wrap(
             spacing: 8,
             runSpacing: 8,
@@ -231,12 +232,12 @@ class _BleTestPageState extends State<BleTestPage> {
               style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: opsDark),
             ),
           ),
-        const OpsBanner(
+        OpsBanner(
           icon: LucideIcons.bluetooth,
-          text: 'Bật Bluetooth và đứng trong khoảng 2 m trước tủ. Mỗi lần mở đều được ghi vào nhật ký của tủ.',
+          text: context.l10n.btHint,
         ),
         const SizedBox(height: 16),
-        const OpsSectionLabel('Chọn ô'),
+        OpsSectionLabel(context.l10n.btChooseBoxLabel),
         if (_layoutLoading)
           const Padding(
             padding: EdgeInsets.all(24),
@@ -270,8 +271,8 @@ class _BleTestPageState extends State<BleTestPage> {
           OpsBanner(
             tone: _outcome!.isOk ? OpsBannerTone.success : OpsBannerTone.danger,
             icon: _outcome!.isOk ? LucideIcons.lockOpen : LucideIcons.circleAlert,
-            title: _outcome!.isOk ? 'Đã mở ô ${_outcome!.boxNumber ?? _boxNumber}' : 'Chưa mở được',
-            text: _outcome!.isOk ? 'Nhớ đóng cửa ô sau khi thử.' : _outcome!.message,
+            title: _outcome!.isOk ? context.l10n.btOpened('${_outcome!.boxNumber ?? _boxNumber}') : context.l10n.btNotOpened,
+            text: _outcome!.isOk ? context.l10n.btCloseAfter : _outcome!.message,
           ),
         ],
       ],
@@ -282,7 +283,7 @@ class _BleTestPageState extends State<BleTestPage> {
     final name = l['name'] as String?;
     final code = l['code'] as String?;
     if (name != null && code != null) return '$name ($code)';
-    return name ?? code ?? 'Tủ #${l['lockerId']}';
+    return name ?? code ?? L10n.current.lockerHash('${l['lockerId']}');
   }
 }
 
@@ -297,7 +298,7 @@ class _BoxGrid extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (cells.isEmpty) {
-      return const OpsBanner(tone: OpsBannerTone.warning, text: 'Tủ chưa có ô nào.');
+      return OpsBanner(tone: OpsBannerTone.warning, text: context.l10n.btNoBoxes);
     }
     final placed = cells.every((c) => c['rowIndex'] is num && c['colIndex'] is num);
     if (!placed) {
@@ -358,7 +359,7 @@ class _BoxGrid extends StatelessWidget {
                   Icon(LockerLayoutHelper.cellIcon(c), size: 14, color: isSelected ? Colors.white : opsDark),
                   const SizedBox(width: 4),
                   Text(
-                    'Ô $number',
+                    L10n.current.btBox(number),
                     style: TextStyle(
                       fontWeight: FontWeight.w800,
                       color: isSelected ? Colors.white : opsDark,

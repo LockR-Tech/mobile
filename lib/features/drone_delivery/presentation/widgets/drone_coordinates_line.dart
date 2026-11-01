@@ -4,6 +4,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:smart_laundry_locker/core/theme/shadcn_theme.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/domain/entities/drone_route_geometry.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 /// Google Maps ghim đúng điểm toạ độ (có địa chỉ thực tế bên dưới).
 Uri droneGoogleMapsUri(double latitude, double longitude) => Uri.parse(
@@ -32,7 +33,7 @@ class DroneCoordinatesLine extends StatelessWidget {
     );
     if (!opened && context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Không mở được Google Maps.')),
+        SnackBar(content: Text(context.l10n.clCantOpenMaps)),
       );
     }
   }
@@ -41,7 +42,7 @@ class DroneCoordinatesLine extends StatelessWidget {
     await Clipboard.setData(ClipboardData(text: text));
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Đã copy toạ độ $text')),
+        SnackBar(content: Text(context.l10n.clCopied(text))),
       );
     }
   }
@@ -80,7 +81,7 @@ class DroneCoordinatesLine extends StatelessWidget {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    'Vị trí drone · $note',
+                    context.l10n.clDronePosition(note),
                     style: const TextStyle(fontSize: 11.5, color: Color(0xFF64748B)),
                   ),
                 ],
@@ -88,7 +89,7 @@ class DroneCoordinatesLine extends StatelessWidget {
             ),
           ),
           IconButton(
-            tooltip: 'Copy toạ độ',
+            tooltip: context.l10n.clCopyCoords,
             visualDensity: VisualDensity.compact,
             icon: const Icon(LucideIcons.copy, size: 18),
             onPressed: () => _copy(context, text),
@@ -101,13 +102,13 @@ class DroneCoordinatesLine extends StatelessWidget {
 
 /// Nhãn nguồn toạ độ của một mốc hành trình (`locationSource` của order-service).
 String journeyLocationSourceLabel(String? source) => switch (source) {
-  'PICKUP_ADDRESS' => 'Điểm lấy hàng người gửi ghim',
-  'TECHNICIAN' => 'Vị trí kỹ thuật viên lúc đó',
-  'SOURCE_LOCKER' => 'Tại trạm/tủ gửi',
-  'DRONE' => 'Vị trí drone (GPS)',
-  'DRONE_SIMULATED' => 'Vị trí drone (mô phỏng)',
-  'DESTINATION_LOCKER' => 'Tại tủ nhận',
-  _ => 'Vị trí lúc ghi mốc',
+  'PICKUP_ADDRESS' => L10n.current.clPickupPin,
+  'TECHNICIAN' => L10n.current.clTechnician,
+  'SOURCE_LOCKER' => L10n.current.clSourceLocker,
+  'DRONE' => L10n.current.clDroneGps,
+  'DRONE_SIMULATED' => L10n.current.clDroneSim,
+  'DESTINATION_LOCKER' => L10n.current.clDestination,
+  _ => L10n.current.clAtEvent,
 };
 
 /// Dòng toạ độ gọn dưới một mốc hành trình: kiện ở đâu lúc mốc xảy ra. Bấm mở Google Maps,
@@ -139,7 +140,7 @@ class JourneyLocationLine extends StatelessWidget {
           );
           if (!opened && context.mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Không mở được Google Maps.')),
+              SnackBar(content: Text(context.l10n.clCantOpenMaps)),
             );
           }
         },
@@ -147,7 +148,7 @@ class JourneyLocationLine extends StatelessWidget {
           await Clipboard.setData(ClipboardData(text: text));
           if (context.mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Đã copy toạ độ $text')),
+              SnackBar(content: Text(context.l10n.clCopied(text))),
             );
           }
         },

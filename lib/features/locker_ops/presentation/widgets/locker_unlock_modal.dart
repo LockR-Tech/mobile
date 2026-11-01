@@ -7,6 +7,7 @@ import 'package:permission_handler/permission_handler.dart' show openAppSettings
 import 'package:smart_laundry_locker/core/services/locker_ble_service.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/locker_qr_scanner_dialog.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/ops_widgets.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 /// Kết quả người dùng chọn hành động từ Modal mở tủ
 enum LockerUnlockActionType {
@@ -135,12 +136,12 @@ class _LockerUnlockModalState extends State<LockerUnlockModal> with SingleTicker
         _blePermissionBlocked = problem == 'PERMISSION_BLOCKED';
         _bleError = switch (problem) {
           'PERMISSION_BLOCKED' =>
-            'Quyền Bluetooth (Thiết bị lân cận) đang bị chặn. Mở Cài đặt để cho phép rồi quét lại.',
+            context.l10n.unlockBlePermissionBlocked,
           'PERMISSION_DENIED' =>
-            'App cần quyền Bluetooth để dò tủ. Bấm Quét lại và chọn Cho phép.',
+            context.l10n.unlockBlePermissionDenied,
           'BLUETOOTH_OFF' =>
-            'Bluetooth của điện thoại đang tắt. Bật Bluetooth rồi bấm Quét lại.',
-          _ => 'Thiết bị này không hỗ trợ Bluetooth. Dùng Quét mã QR hoặc mã PIN.',
+            context.l10n.unlockBleOff,
+          _ => context.l10n.unlockBleUnsupported,
         };
       });
       return;
@@ -157,7 +158,7 @@ class _LockerUnlockModalState extends State<LockerUnlockModal> with SingleTicker
       _isBleScanning = false;
       _bleResult = res;
       if (res == null) {
-        _bleError = 'Chưa phát hiện sóng Bluetooth của tủ gần đây.';
+        _bleError = context.l10n.unlockNoSignal;
       }
     });
   }
@@ -254,7 +255,7 @@ class _LockerUnlockModalState extends State<LockerUnlockModal> with SingleTicker
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Mở ${widget.boxLabel}',
+                      context.l10n.unlockOpenBox(widget.boxLabel),
                       style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w800,
@@ -297,7 +298,7 @@ class _LockerUnlockModalState extends State<LockerUnlockModal> with SingleTicker
                   Expanded(
                     child: Text(
                       widget.overdueNotice ??
-                          'Đơn thuê đã quá hạn. Đã ghi nhận xử lý phí quá giờ — mời bạn lấy đồ và đóng tủ để hoàn tất trả tủ.',
+                          context.l10n.unlockOverdueRental,
                       style: const TextStyle(
                         fontSize: 12,
                         color: Color(0xFF991B1B),
@@ -319,13 +320,13 @@ class _LockerUnlockModalState extends State<LockerUnlockModal> with SingleTicker
                 borderRadius: BorderRadius.circular(10),
                 border: Border.all(color: const Color(0xFFFDE68A)),
               ),
-              child: const Row(
+              child: Row(
                 children: [
                   Icon(LucideIcons.triangleAlert, color: Color(0xFFD97706), size: 16),
                   SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      'Mở ô sẽ kết thúc kỳ thuê và giải phóng ô tủ. Vui lòng lấy hết đồ.',
+                      context.l10n.unlockEndsRental,
                       style: TextStyle(fontSize: 12, color: Color(0xFF92400E), fontWeight: FontWeight.w600),
                     ),
                   ),
@@ -354,12 +355,12 @@ class _LockerUnlockModalState extends State<LockerUnlockModal> with SingleTicker
                 _buildTabItem(
                   index: 1,
                   icon: LucideIcons.scanLine,
-                  label: 'Quét QR',
+                  label: context.l10n.unlockScanQr,
                 ),
                 _buildTabItem(
                   index: 2,
                   icon: LucideIcons.keyRound,
-                  label: 'Mã PIN',
+                  label: context.l10n.unlockPin,
                 ),
               ],
             ),
@@ -478,13 +479,13 @@ class _LockerUnlockModalState extends State<LockerUnlockModal> with SingleTicker
                   ),
                 ),
                 const SizedBox(height: 14),
-                const Text(
-                  'Đang quét sóng Bluetooth của tủ...',
+                Text(
+                  context.l10n.unlockScanning,
                   style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14.5, color: opsDark),
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'Vui lòng đứng cách tủ ${widget.lockerName} dưới 2m',
+                  context.l10n.unlockStandClose(widget.lockerName),
                   style: const TextStyle(fontSize: 12.5, color: opsMutedText),
                 ),
               ],
@@ -518,9 +519,9 @@ class _LockerUnlockModalState extends State<LockerUnlockModal> with SingleTicker
                         children: [
                           Row(
                             children: [
-                              const Flexible(
+                              Flexible(
                                 child: Text(
-                                  'Đã kết nối Bluetooth tủ',
+                                  context.l10n.unlockConnected,
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                   style: TextStyle(
@@ -538,8 +539,8 @@ class _LockerUnlockModalState extends State<LockerUnlockModal> with SingleTicker
                                     color: const Color(0xFFFEF3C7),
                                     borderRadius: BorderRadius.circular(6),
                                   ),
-                                  child: const Text(
-                                    'Mô phỏng RPi',
+                                  child: Text(
+                                    context.l10n.unlockSimulateRpi,
                                     style: TextStyle(
                                       fontSize: 10,
                                       fontWeight: FontWeight.w700,
@@ -552,7 +553,7 @@ class _LockerUnlockModalState extends State<LockerUnlockModal> with SingleTicker
                           ),
                           const SizedBox(height: 2),
                           Text(
-                            'Khoảng cách: ${result.proximityText} • Tín hiệu ${result.rssi} dBm',
+                            context.l10n.unlockDistanceSignal(result.proximityText, result.rssi),
                             style: const TextStyle(fontSize: 12, color: Color(0xFF166534)),
                           ),
                         ],
@@ -572,7 +573,7 @@ class _LockerUnlockModalState extends State<LockerUnlockModal> with SingleTicker
             ),
             icon: const Icon(LucideIcons.doorOpen, size: 22),
             label: Text(
-              widget.isRentalReturning ? 'Mở ${widget.boxLabel} & Trả tủ' : 'Mở ${widget.boxLabel} ngay (1-chạm)',
+              widget.isRentalReturning ? context.l10n.unlockOpenAndReturn(widget.boxLabel) : context.l10n.unlockOpenNow(widget.boxLabel),
               style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 15.5),
             ),
             onPressed: () {
@@ -599,13 +600,13 @@ class _LockerUnlockModalState extends State<LockerUnlockModal> with SingleTicker
                 const Icon(LucideIcons.bluetoothOff, color: opsMutedText, size: 30),
                 const SizedBox(height: 10),
                 Text(
-                  _bleError ?? 'Không tìm thấy sóng Bluetooth của tủ',
+                  _bleError ?? context.l10n.unlockNotFound,
                   textAlign: TextAlign.center,
                   style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13.5, color: opsDark),
                 ),
                 const SizedBox(height: 4),
-                const Text(
-                  'Đảm bảo điện thoại đã bật Bluetooth hoặc dùng Quét mã QR thay thế.',
+                Text(
+                  context.l10n.unlockEnsureBluetooth,
                   textAlign: TextAlign.center,
                   style: TextStyle(fontSize: 12, color: opsMutedText),
                 ),
@@ -622,7 +623,7 @@ class _LockerUnlockModalState extends State<LockerUnlockModal> with SingleTicker
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
                   icon: const Icon(LucideIcons.refreshCw, size: 16),
-                  label: const Text('Quét lại', style: TextStyle(fontSize: 13)),
+                  label: Text(context.l10n.unlockScanAgain, style: TextStyle(fontSize: 13)),
                   onPressed: _startBleScan,
                 ),
               ),
@@ -635,7 +636,7 @@ class _LockerUnlockModalState extends State<LockerUnlockModal> with SingleTicker
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     ),
                     icon: const Icon(LucideIcons.settings, size: 16),
-                    label: const Text('Mở Cài đặt', style: TextStyle(fontSize: 13)),
+                    label: Text(context.l10n.commonOpenSettings, style: TextStyle(fontSize: 13)),
                     onPressed: openAppSettings,
                   ),
                 ),
@@ -651,7 +652,7 @@ class _LockerUnlockModalState extends State<LockerUnlockModal> with SingleTicker
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     ),
                     icon: const Icon(LucideIcons.sparkles, size: 16),
-                    label: const Text('Mô phỏng RPi', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700)),
+                    label: Text(context.l10n.unlockSimulateRpi, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700)),
                     onPressed: _triggerSimulationMode,
                   ),
                 ),
@@ -665,7 +666,7 @@ class _LockerUnlockModalState extends State<LockerUnlockModal> with SingleTicker
           Center(
             child: TextButton.icon(
               icon: const Icon(LucideIcons.refreshCw, size: 14),
-              label: const Text('Dò sóng lại', style: TextStyle(fontSize: 12.5)),
+              label: Text(context.l10n.unlockRescan, style: TextStyle(fontSize: 12.5)),
               onPressed: _startBleScan,
             ),
           ),
@@ -705,13 +706,13 @@ class _LockerUnlockModalState extends State<LockerUnlockModal> with SingleTicker
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'Xác thực qua tem QR trên tủ',
+                    Text(
+                      context.l10n.unlockQrTitle,
                       style: TextStyle(fontWeight: FontWeight.w800, fontSize: 14.5, color: Color(0xFF92400E)),
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      'Dùng camera điện thoại quét mã QR dán trên thân tủ ${widget.lockerName} để mở ${widget.boxLabel}.',
+                      context.l10n.unlockQrBody(widget.lockerName, widget.boxLabel),
                       style: const TextStyle(fontSize: 12.5, color: Color(0xFFB45309)),
                     ),
                   ],
@@ -728,7 +729,7 @@ class _LockerUnlockModalState extends State<LockerUnlockModal> with SingleTicker
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           ),
           icon: const Icon(LucideIcons.camera, size: 20),
-          label: const Text('Bật Camera quét tem QR', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 15)),
+          label: Text(context.l10n.unlockStartCamera, style: TextStyle(fontWeight: FontWeight.w800, fontSize: 15)),
           onPressed: _openViaQr,
         ),
       ],
@@ -755,8 +756,8 @@ class _LockerUnlockModalState extends State<LockerUnlockModal> with SingleTicker
           ),
           child: Column(
             children: [
-              const Text(
-                'MÃ PIN MỞ TRÊN MÀN HÌNH KIOSK',
+              Text(
+                context.l10n.unlockKioskPinUpper,
                 style: TextStyle(
                   fontSize: 11.5,
                   fontWeight: FontWeight.w800,
@@ -815,7 +816,7 @@ class _LockerUnlockModalState extends State<LockerUnlockModal> with SingleTicker
                   color: _copiedPin ? const Color(0xFF16A34A) : opsDark,
                 ),
                 label: Text(
-                  _copiedPin ? 'Đã sao chép mã' : 'Sao chép mã PIN',
+                  _copiedPin ? context.l10n.unlockCodeCopied : context.l10n.unlockCopyPin,
                   style: TextStyle(
                     fontSize: 12.5,
                     fontWeight: FontWeight.w600,
@@ -840,11 +841,11 @@ class _LockerUnlockModalState extends State<LockerUnlockModal> with SingleTicker
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('Hướng dẫn mở tại màn hình Kiosk:', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13, color: opsDark)),
+              Text(context.l10n.unlockKioskGuide, style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13, color: opsDark)),
               const SizedBox(height: 6),
-              _buildStepItem('1', 'Đến trước màn hình cảm ứng của ${widget.lockerName}.'),
-              _buildStepItem('2', 'Chọn nút "Mở tủ" hoặc "Nhận đồ".'),
-              _buildStepItem('3', 'Nhập mã PIN ${widget.pinCode} để cửa ${widget.boxLabel} bung chốt.'),
+              _buildStepItem('1', context.l10n.unlockKioskStep1(widget.lockerName)),
+              _buildStepItem('2', context.l10n.unlockKioskStep2),
+              _buildStepItem('3', context.l10n.unlockKioskStep3(widget.pinCode, widget.boxLabel)),
             ],
           ),
         ),

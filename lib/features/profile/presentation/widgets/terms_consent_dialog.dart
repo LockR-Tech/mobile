@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:smart_laundry_locker/core/routing/app_router.dart';
 import 'package:smart_laundry_locker/features/profile/domain/account_reminders.dart';
 import 'package:smart_laundry_locker/features/profile/presentation/providers/profile_provider.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 /// Hộp thoại bắt buộc lần đầu đăng nhập: khách phải tích "Tôi đã đọc và đồng ý" rồi bấm "Đồng ý và tiếp tục"
 /// mới dùng app; lựa chọn khác duy nhất là đăng xuất. Đồng ý ⇒ `POST /api/user/terms` (DB lưu `true`).
@@ -71,16 +72,14 @@ class _TermsConsentDialogState extends State<TermsConsentDialog> {
       child: AlertDialog(
         key: const ValueKey('terms-consent-dialog'),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('Điều khoản dịch vụ'),
+        title: Text(context.l10n.tcTitle),
         content: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Text(
-                'Trước khi dùng Lock.R, vui lòng đọc và đồng ý với Điều khoản dịch vụ và Chính sách bảo mật. '
-                'Điều khoản quy định việc thuê tủ, gửi và nhận hàng, giao hàng bằng drone, phí, hoàn tiền và '
-                'bồi thường khi có sự cố.',
+                context.l10n.tcBody,
                 style: TextStyle(fontSize: 14, height: 1.45, color: muted),
               ),
               const SizedBox(height: 12),
@@ -90,14 +89,14 @@ class _TermsConsentDialogState extends State<TermsConsentDialog> {
                   TextButton(
                     onPressed: _saving
                         ? null
-                        : () => _openTerms('Điều khoản sử dụng', 'assets/markdown/terms_of_service.md'),
-                    child: const Text('Đọc Điều khoản dịch vụ'),
+                        : () => _openTerms(context.l10n.commonTermsOfUse, 'assets/markdown/terms_of_service.md'),
+                    child: Text(context.l10n.tcReadTerms),
                   ),
                   TextButton(
                     onPressed: _saving
                         ? null
-                        : () => _openTerms('Chính sách bảo mật', 'assets/markdown/privacy_policy.md'),
-                    child: const Text('Đọc Chính sách bảo mật'),
+                        : () => _openTerms(context.l10n.commonPrivacyPolicy, 'assets/markdown/privacy_policy.md'),
+                    child: Text(context.l10n.tcReadPrivacy),
                   ),
                 ],
               ),
@@ -108,8 +107,8 @@ class _TermsConsentDialogState extends State<TermsConsentDialog> {
                 onChanged: _saving ? null : (v) => setState(() => _checked = v ?? false),
                 contentPadding: EdgeInsets.zero,
                 controlAffinity: ListTileControlAffinity.leading,
-                title: const Text(
-                  'Tôi đã đọc và đồng ý với Điều khoản dịch vụ và Chính sách bảo mật của Lock.R.',
+                title: Text(
+                  context.l10n.tcAgreeCheckbox,
                   style: TextStyle(fontSize: 14),
                 ),
               ),
@@ -124,14 +123,14 @@ class _TermsConsentDialogState extends State<TermsConsentDialog> {
         actions: [
           TextButton(
             onPressed: _saving ? null : _signOut,
-            child: const Text('Đăng xuất'),
+            child: Text(context.l10n.commonLogout),
           ),
           ElevatedButton(
             key: const ValueKey('terms-consent-accept'),
             onPressed: _saving || !_checked ? null : _accept,
             child: _saving
                 ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
-                : const Text('Đồng ý và tiếp tục'),
+                : Text(context.l10n.tcAgreeContinue),
           ),
         ],
       ),

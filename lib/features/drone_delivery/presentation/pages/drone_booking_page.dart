@@ -18,6 +18,7 @@ import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/lo
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/ops_widgets.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/order_extras.dart';
 import 'package:smart_laundry_locker/features/profile/presentation/providers/profile_provider.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 typedef DroneOrderCreator =
     Future<Map<String, dynamic>> Function(
@@ -389,7 +390,7 @@ class _DroneBookingPageState extends State<DroneBookingPage>
           });
           if (lostLabel != null) {
             _showMessage(
-              '$lostLabel vừa được người khác giữ. Hãy chọn ô drone khác.',
+              context.l10n.dbBoxTaken(lostLabel),
             );
           }
         } catch (_) {
@@ -405,10 +406,10 @@ class _DroneBookingPageState extends State<DroneBookingPage>
   String _boxLabel(int lockerId, int boxId) {
     for (final box in _availableDroneBoxes[lockerId] ?? const []) {
       if (_asInt(box['id']) == boxId) {
-        return 'Ô số ${box['boxNumber'] ?? boxId}';
+        return context.l10n.boxNumberLabel(box['boxNumber'] ?? boxId);
       }
     }
-    return 'Ô bạn chọn';
+    return context.l10n.dbYourBox;
   }
 
   static List<Map<String, dynamic>> _extractAvailableDroneBoxes(
@@ -465,9 +466,9 @@ class _DroneBookingPageState extends State<DroneBookingPage>
       return _destinationUnavailableReason(locker);
     }
     final slots = _availableDroneSlots[_destinationLockerId];
-    if (slots == null) return 'Đang kiểm tra ô drone…';
-    if (slots == 0) return 'Không còn ô drone nhận trống';
-    return 'Chọn ô người nhận sẽ lấy hàng';
+    if (slots == null) return context.l10n.dbCheckingBoxes;
+    if (slots == 0) return context.l10n.dbNoFreeBoxes;
+    return context.l10n.dbChooseBox;
   }
 
   String _destinationUnavailableReason(Map<String, dynamic> locker) {
@@ -476,22 +477,27 @@ class _DroneBookingPageState extends State<DroneBookingPage>
       _pickup?.latitude ?? _customerLat,
       _pickup?.longitude ?? _customerLng,
     );
-    final distPrefix = distKm != null ? 'Cách bạn ${droneKmLabel(distKm)} · ' : '';
-    if (locker['online'] == false) return '${distPrefix}Mất kết nối';
+    final distPrefix =
+        distKm != null ? context.l10n.dbDistancePrefix(droneKmLabel(distKm)) : '';
+    if (locker['online'] == false) {
+      return '$distPrefix${context.l10n.commonDisconnected}';
+    }
     final status = '${locker['status']}'.toUpperCase();
     if (status != 'ACTIVE') {
       return '$distPrefix${status == 'MAINTENANCE' ? 'Đang bảo trì' : 'Chưa hoạt động'}';
     }
-    if (locker['landingPad'] != true) return '${distPrefix}Chưa có bãi đáp drone';
+    if (locker['landingPad'] != true) {
+      return '$distPrefix${context.l10n.dbNoPad}';
+    }
     final padStatus = '${locker['landingPadStatus'] ?? 'OK'}'.trim().toUpperCase();
     if (padStatus.isNotEmpty && padStatus != 'OK') {
       return '$distPrefix${padStatus == 'MAINTENANCE' ? 'Bãi đáp đang bảo trì' : 'Bãi đáp đang lỗi'}';
     }
-    if (!_hasCoordinates(locker)) return 'Chưa có toạ độ tủ';
+    if (!_hasCoordinates(locker)) return context.l10n.dbNoCoordinates;
     final slots = _availableDroneSlots[_asInt(locker['id'])];
-    if (slots == null) return '${distPrefix}Đang kiểm tra ô drone';
-    if (slots == 0) return '${distPrefix}Hết ô drone trống';
-    return '$distPrefix$slots ô drone trống';
+    if (slots == null) return '$distPrefix${context.l10n.dbCheckingBoxesShort}';
+    if (slots == 0) return '$distPrefix${context.l10n.dbOutOfBoxes}';
+    return '$distPrefix${context.l10n.dbFreeBoxes(slots)}';
   }
 
   @override
@@ -611,15 +617,15 @@ class _DroneBookingPageState extends State<DroneBookingPage>
     final cleanPhone = phone.text.replaceAll(' ', '');
     final cleanEmail = email.text.trim();
     if (cleanName.isEmpty) {
-      _showMessage('Nhập tên $who');
+      _showMessage(context.l10n.dbEnterName(who));
       return null;
     }
     if (!_phonePattern.hasMatch(cleanPhone)) {
-      _showMessage('Số điện thoại $who không hợp lệ');
+      _showMessage(context.l10n.dbInvalidPhone(who));
       return null;
     }
     if (!_emailPattern.hasMatch(cleanEmail)) {
-      _showMessage('Email $who không hợp lệ');
+      _showMessage(context.l10n.dbInvalidEmail(who));
       return null;
     }
     return DroneContact(name: cleanName, phone: cleanPhone, email: cleanEmail);
@@ -629,18 +635,18 @@ class _DroneBookingPageState extends State<DroneBookingPage>
   DroneBookingRequest? _readRequest() {
     final pickup = _pickup;
     if (pickup == null) {
-      _showMessage('Chọn điểm lấy hàng');
+      _showMessage(context.l10n.dbChoosePickup);
       return null;
     }
     final sender = _readContact(
-      'người gửi',
+      context.l10n.dbWhoSender,
       _senderName,
       _senderPhone,
       _senderEmail,
     );
     if (sender == null) return null;
     final receiver = _readContact(
-      'người nhận',
+      context.l10n.dbWhoReceiver,
       _receiverName,
       _receiverPhone,
       _receiverEmail,
@@ -648,18 +654,18 @@ class _DroneBookingPageState extends State<DroneBookingPage>
     if (receiver == null) return null;
     final destination = _destinationLockerId;
     if (destination == null) {
-      _showMessage('Chọn tủ nhận');
+      _showMessage(context.l10n.dbChooseReceiverLocker);
       return null;
     }
     final availableDroneSlots = _availableDroneSlots[destination];
     if (availableDroneSlots == null) {
       _showMessage(
-        'Đang kiểm tra ô drone trống của tủ nhận, vui lòng chờ một chút',
+        context.l10n.dbCheckingReceiverBoxes,
       );
       return null;
     }
     if (availableDroneSlots == 0) {
-      _showMessage('Tủ nhận này đã hết ô drone trống, hãy chọn tủ khác');
+      _showMessage(context.l10n.dbReceiverFull);
       return null;
     }
     final destinationBox = _destinationBoxId;
@@ -668,12 +674,12 @@ class _DroneBookingPageState extends State<DroneBookingPage>
               (box) => _asInt(box['id']) == destinationBox,
             ) ??
             false)) {
-      _showMessage('Chọn ô drone nhận còn trống tại tủ nhận');
+      _showMessage(context.l10n.dbChooseReceiverBox);
       return null;
     }
     final category = _category;
     if (category == null) {
-      _showMessage('Chọn loại hàng');
+      _showMessage(context.l10n.dbChooseCategory);
       return null;
     }
 
@@ -687,7 +693,7 @@ class _DroneBookingPageState extends State<DroneBookingPage>
       final parsed = sizeTexts.map(int.tryParse).toList();
       if (parsed.any((value) => value == null || value <= 0)) {
         _showMessage(
-          'Nhập đủ dài, rộng, cao của kiện (cm) hoặc bỏ trống cả ba',
+          context.l10n.dbSizeAllOrNone,
         );
         return null;
       }
@@ -695,7 +701,7 @@ class _DroneBookingPageState extends State<DroneBookingPage>
       final bay = businessConfig.droneMaxParcelSizeCm;
       if (!droneParcelFits(size, bay)) {
         _showMessage(
-          'Kiện không lọt khoang drone (tối đa ${bay[0]} × ${bay[1]} × ${bay[2]} cm)',
+          context.l10n.dbTooLarge(bay[0], bay[1], bay[2]),
         );
         return null;
       }
@@ -707,14 +713,13 @@ class _DroneBookingPageState extends State<DroneBookingPage>
       if (declaredValue == null ||
           declaredValue > businessConfig.droneMaxDeclaredValue) {
         _showMessage(
-          'Drone chỉ nhận kiện có giá trị tới '
-          '${fmtPrice(businessConfig.droneMaxDeclaredValue)}',
+          context.l10n.dbMaxValue(fmtPrice(businessConfig.droneMaxDeclaredValue)),
         );
         return null;
       }
     }
     if (!_declared) {
-      _showMessage('Bạn cần cam kết kiện không chứa hàng cấm bay');
+      _showMessage(context.l10n.dbConfirmNoProhibited);
       return null;
     }
     final note = _pickupNote.text.trim();
@@ -765,7 +770,7 @@ class _DroneBookingPageState extends State<DroneBookingPage>
       // toán ngay. Khách đóng bảng thanh toán thì vẫn tới màn theo dõi, nơi trả tiếp được.
       // Mã giảm giá + điểm trừ hết phí ⇒ server đã ghi PAID, bỏ qua bước SePay.
       final message = orderFullyCovered(response)
-          ? 'Đơn đã được thanh toán bằng ưu đãi. Đội bay sẽ tiếp nhận đơn của bạn.'
+          ? context.l10n.dbPaidByVoucher
           : await _payCreatedOrder(orderId, response);
       if (!mounted) return;
       widget.onBooked?.call(orderId);
@@ -796,8 +801,7 @@ class _DroneBookingPageState extends State<DroneBookingPage>
       );
       return droneOrderPaymentMessage(outcome);
     } catch (error) {
-      return 'Đã tạo đơn drone nhưng chưa thanh toán được: '
-          '${LockerOpsService.errorMessage(error)}';
+      return L10n.current.dbCreatedNotPaid(LockerOpsService.errorMessage(error));
     }
   }
 
@@ -810,79 +814,74 @@ class _DroneBookingPageState extends State<DroneBookingPage>
         _quote?.fee ?? businessConfig.droneDeliveryFeeFor(_selectedWeight);
     return Scaffold(
       backgroundColor: const Color(0xFFF6F8FB),
-      appBar: AppBar(title: const Text('Gửi hàng bằng drone')),
+      appBar: AppBar(title: Text(context.l10n.dbTitle)),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
         children: [
-          const _Notice(
+          _Notice(
             icon: Icons.info_outline,
             color: Color(0xFF4F46E5),
             background: Color(0xFFEEF2FF),
             text:
-                'Đặt và thanh toán xong, kỹ thuật viên drone gần bạn nhất sẽ tới lấy '
-                'kiện, mang tới drone tại tủ bay để nạp trực tiếp lên drone (không bỏ vào ô tủ), '
-                'rồi drone bay tới ô nhận bạn đã chọn. Người nhận '
-                'lấy hàng bằng mã mở ô gửi qua email.',
+                context.l10n.dbIntro,
           ),
           if (suspended) ...[
             const SizedBox(height: 12),
-            const _Notice(
+            _Notice(
               icon: Icons.cloud_off_outlined,
               color: Color(0xFFB45309),
               background: Color(0xFFFEF3C7),
               text:
-                  'Dịch vụ giao drone đang tạm dừng (thời tiết hoặc sự cố vận hành). '
-                  'Vui lòng thử lại sau.',
+                  context.l10n.dbSuspended,
             ),
           ],
-          _section('Lấy hàng tại', Icons.home_outlined, [
+          _section(context.l10n.dbPickupAt, Icons.home_outlined, [
             _PickupTile(pickup: _pickup, onTap: _choosePickup),
             const SizedBox(height: 10),
             _field(
               'drone-pickup-note',
               _pickupNote,
-              'Chỉ dẫn cho kỹ thuật viên (tuỳ chọn)',
-              hint: 'Tầng, cổng, giờ có nhà…',
+              context.l10n.dbTechInstructions,
+              hint: context.l10n.dbTechInstructionsHint,
               maxLines: 2,
             ),
           ]),
-          _section('Người gửi', Icons.person_outline, [
-            _field('drone-sender-name', _senderName, 'Họ tên người gửi *'),
+          _section(context.l10n.recvSender, Icons.person_outline, [
+            _field('drone-sender-name', _senderName, context.l10n.dbSenderName),
             const SizedBox(height: 10),
             _field(
               'drone-sender-phone',
               _senderPhone,
-              'Số điện thoại người gửi *',
+              context.l10n.dbSenderPhone,
               keyboard: TextInputType.phone,
             ),
             const SizedBox(height: 10),
             _field(
               'drone-sender-email',
               _senderEmail,
-              'Email người gửi *',
+              context.l10n.dbSenderEmail,
               keyboard: TextInputType.emailAddress,
             ),
           ]),
-          _section('Người nhận', Icons.person_pin_circle_outlined, [
-            _field('drone-receiver-name', _receiverName, 'Họ tên người nhận *'),
+          _section(context.l10n.ordRecipient, Icons.person_pin_circle_outlined, [
+            _field('drone-receiver-name', _receiverName, context.l10n.dbReceiverName),
             const SizedBox(height: 10),
             _field(
               'drone-receiver-phone',
               _receiverPhone,
-              'Số điện thoại người nhận *',
+              context.l10n.dbReceiverPhone,
               keyboard: TextInputType.phone,
             ),
             const SizedBox(height: 10),
             _field(
               'drone-receiver-email',
               _receiverEmail,
-              'Email người nhận *',
+              context.l10n.dbReceiverEmail,
               keyboard: TextInputType.emailAddress,
             ),
             const SizedBox(height: 6),
-            const Text(
-              'Khi drone được phóng, người gửi và người nhận đều nhận email báo đơn. '
-              'Khi hàng vào tủ, mã mở ô được gửi tới email người nhận.',
+            Text(
+              context.l10n.dbEmailInfo,
               style: TextStyle(fontSize: 12, color: Colors.black54),
             ),
             const SizedBox(height: 12),
@@ -890,8 +889,8 @@ class _DroneBookingPageState extends State<DroneBookingPage>
               key: const ValueKey('drone-destination-locker'),
               initialValue: _destinationLockerId,
               isExpanded: true,
-              decoration: const InputDecoration(
-                labelText: 'Tủ nhận *',
+              decoration: InputDecoration(
+                labelText: context.l10n.dbReceiverLockerField,
                 prefixIcon: Icon(Icons.location_on_outlined),
                 border: OutlineInputBorder(),
                 filled: true,
@@ -899,10 +898,10 @@ class _DroneBookingPageState extends State<DroneBookingPage>
               ),
               hint: Text(
                 _loadingDestinations
-                    ? 'Đang tải tủ nhận...'
+                    ? context.l10n.dbLoadingLockers
                     : _destinations.isEmpty
-                    ? 'Hệ thống chưa có tủ nào'
-                    : 'Chọn tủ nhận',
+                    ? context.l10n.dbNoLockersInSystem
+                    : context.l10n.dbChooseReceiverLocker,
               ),
               items: [
                 for (final locker in _destinations)
@@ -934,8 +933,8 @@ class _DroneBookingPageState extends State<DroneBookingPage>
                 key: const ValueKey('drone-destination-box'),
                 initialValue: _destinationBoxId,
                 isExpanded: true,
-                decoration: const InputDecoration(
-                  labelText: 'Ô drone nhận *',
+                decoration: InputDecoration(
+                  labelText: context.l10n.dbReceiverBoxField,
                   prefixIcon: Icon(Icons.grid_view_rounded),
                   border: OutlineInputBorder(),
                   filled: true,
@@ -948,7 +947,7 @@ class _DroneBookingPageState extends State<DroneBookingPage>
                     if (_asInt(box['id']) != null)
                       DropdownMenuItem<int>(
                         value: _asInt(box['id']),
-                        child: Text('Ô số ${box['boxNumber'] ?? box['id']}'),
+                        child: Text(context.l10n.boxNumberLabel(box['boxNumber'] ?? box['id'])),
                       ),
                 ],
                 onChanged: (value) => setState(() => _destinationBoxId = value),
@@ -958,8 +957,13 @@ class _DroneBookingPageState extends State<DroneBookingPage>
               const SizedBox(height: 6),
               Text(
                 _canReceiveDrone(locker)
-                    ? 'Ô nhận drone còn trống: ${_availableDroneSlots[_destinationLockerId] ?? 'đang kiểm tra…'}'
-                    : 'Tủ này chưa nhận được drone: ${_destinationUnavailableReason(locker).toLowerCase()}',
+                    ? context.l10n.dbFreeReceiverBoxes(
+                          _availableDroneSlots[_destinationLockerId] ??
+                              context.l10n.dbChecking,
+                        )
+                      : context.l10n.dbLockerCantReceive(
+                          _destinationUnavailableReason(locker).toLowerCase(),
+                        ),
                 key: const ValueKey('drone-destination-availability'),
                 style: TextStyle(
                   fontSize: 12,
@@ -972,10 +976,11 @@ class _DroneBookingPageState extends State<DroneBookingPage>
               ),
             ],
           ]),
-          _section('Kiện hàng', Icons.inventory_2_outlined, [
+          _section(context.l10n.ordParcel, Icons.inventory_2_outlined, [
             Text(
-              'Khối lượng * (tối đa '
-              '${droneWeightShortLabel(businessConfig.droneMaxPayloadWeightGrams)} một đơn)',
+              context.l10n.dbWeightField(
+                droneWeightShortLabel(businessConfig.droneMaxPayloadWeightGrams),
+              ),
               style: const TextStyle(fontWeight: FontWeight.w700),
             ),
             const SizedBox(height: 8),
@@ -997,15 +1002,12 @@ class _DroneBookingPageState extends State<DroneBookingPage>
             ),
             const SizedBox(height: 6),
             Text(
-              'Chọn mức bằng hoặc lớn hơn khối lượng thật. Kỹ thuật viên cân lại khi '
-              'nạp hàng: nặng hơn mức đã chọn quá '
-              '${businessConfig.droneWeightToleranceGrams} g thì bạn trả thêm phần '
-              'phí chênh trước khi drone bay; nhẹ hơn không hoàn lại.',
+              context.l10n.dbWeightHint(businessConfig.droneWeightToleranceGrams),
               style: const TextStyle(fontSize: 12, color: Colors.black54),
             ),
             const SizedBox(height: 12),
-            const Text(
-              'Loại hàng *',
+            Text(
+              context.l10n.dbCategoryField,
               style: TextStyle(fontWeight: FontWeight.w700),
             ),
             const SizedBox(height: 8),
@@ -1026,7 +1028,7 @@ class _DroneBookingPageState extends State<DroneBookingPage>
             _field(
               'drone-description',
               _description,
-              'Mô tả hàng hoá (tuỳ chọn)',
+              context.l10n.dbDescriptionField,
               maxLines: 2,
             ),
             const SizedBox(height: 10),
@@ -1036,7 +1038,7 @@ class _DroneBookingPageState extends State<DroneBookingPage>
                   child: _field(
                     'drone-parcel-length',
                     _length,
-                    'Dài',
+                    context.l10n.dbLength,
                     suffix: 'cm',
                     keyboard: TextInputType.number,
                   ),
@@ -1046,7 +1048,7 @@ class _DroneBookingPageState extends State<DroneBookingPage>
                   child: _field(
                     'drone-parcel-width',
                     _width,
-                    'Rộng',
+                    context.l10n.dbWidth,
                     suffix: 'cm',
                     keyboard: TextInputType.number,
                   ),
@@ -1056,7 +1058,7 @@ class _DroneBookingPageState extends State<DroneBookingPage>
                   child: _field(
                     'drone-parcel-height',
                     _height,
-                    'Cao',
+                    context.l10n.dbHeight,
                     suffix: 'cm',
                     keyboard: TextInputType.number,
                   ),
@@ -1065,27 +1067,25 @@ class _DroneBookingPageState extends State<DroneBookingPage>
             ),
             const SizedBox(height: 6),
             Text(
-              'Kích thước tuỳ chọn. Khoang drone tối đa '
-              '${businessConfig.droneMaxParcelSizeCm.join(' × ')} cm.',
+              context.l10n.dbSizeHint(businessConfig.droneMaxParcelSizeCm.join(' × ')),
               style: const TextStyle(fontSize: 12, color: Colors.black54),
             ),
             const SizedBox(height: 10),
             _field(
               'drone-parcel-value',
               _value,
-              'Giá trị khai báo (tuỳ chọn)',
+              context.l10n.dbDeclaredValueField,
               suffix: 'đ',
               keyboard: TextInputType.number,
             ),
             const SizedBox(height: 6),
             Text(
-              'Căn cứ bồi thường nếu kiện hư hỏng, thất lạc. Tối đa '
-              '${fmtPrice(businessConfig.droneMaxDeclaredValue)}.',
+              context.l10n.dbDeclaredValueHint(fmtPrice(businessConfig.droneMaxDeclaredValue)),
               style: const TextStyle(fontSize: 12, color: Colors.black54),
             ),
             Row(
               children: [
-                const Expanded(child: Text('Hàng dễ vỡ')),
+                Expanded(child: Text(context.l10n.parcelFragile)),
                 Switch(
                   key: const ValueKey('drone-parcel-fragile'),
                   value: _fragile,
@@ -1094,7 +1094,7 @@ class _DroneBookingPageState extends State<DroneBookingPage>
               ],
             ),
           ]),
-          _section('Lộ trình và phí', Icons.route_outlined, [
+          _section(context.l10n.dbRouteAndFee, Icons.route_outlined, [
             _QuotePanel(
               quote: _quote,
               quoting: _quoting,
@@ -1111,8 +1111,7 @@ class _DroneBookingPageState extends State<DroneBookingPage>
             if (businessConfig.droneUnpaidCancelMinutes > 0) ...[
               const SizedBox(height: 4),
               Text(
-                'Đơn chưa thanh toán sau ${businessConfig.droneUnpaidCancelMinutes} '
-                'phút sẽ tự huỷ.',
+                context.l10n.dbAutoCancel(businessConfig.droneUnpaidCancelMinutes),
                 style: const TextStyle(fontSize: 12, color: Colors.black54),
               ),
             ],
@@ -1133,11 +1132,10 @@ class _DroneBookingPageState extends State<DroneBookingPage>
                 child: GestureDetector(
                   behavior: HitTestBehavior.opaque,
                   onTap: () => setState(() => _declared = !_declared),
-                  child: const Padding(
+                  child: Padding(
                     padding: EdgeInsets.only(top: 12),
                     child: Text(
-                      'Tôi cam kết kiện không chứa hàng cấm bay: pin rời, chất '
-                      'lỏng, chất dễ cháy nổ, hàng cấm theo pháp luật. *',
+                      context.l10n.dbNoProhibitedCheckbox,
                       style: TextStyle(fontSize: 12.5),
                     ),
                   ),
@@ -1177,8 +1175,8 @@ class _DroneBookingPageState extends State<DroneBookingPage>
               : const Icon(Icons.send_rounded, size: 18),
           label: Text(
             _netFee > 0
-                ? 'Tạo đơn và thanh toán ${fmtPrice(_netFee)}'
-                : 'Tạo đơn (ưu đãi đã trừ hết phí)',
+                ? context.l10n.dbCreateAndPay(fmtPrice(_netFee))
+                : context.l10n.dbCreateFree,
             style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
           ),
         ),
@@ -1189,7 +1187,7 @@ class _DroneBookingPageState extends State<DroneBookingPage>
   /// Mã giảm giá (theo tủ gửi) + điểm thưởng + tạm tính sau giảm.
   Widget _offersSection(DroneQuote quote) {
     final fee = _fee;
-    return _section('Ưu đãi', Icons.local_offer_outlined, [
+    return _section(context.l10n.commonOffers, Icons.local_offer_outlined, [
       if (businessConfig.maxVouchersPerOrder > 0) ...[
         PromoCodeField(
           // Đổi tủ gửi ⇒ ô mã làm lại từ đầu (mã cũ kiểm theo tủ cũ).
@@ -1204,8 +1202,7 @@ class _DroneBookingPageState extends State<DroneBookingPage>
         ),
         const SizedBox(height: 6),
         Text(
-          'Mã riêng của tủ chỉ dùng được khi drone cất cánh tại '
-          '${quote.sourceLockerName}.',
+          context.l10n.dbLockerCodeOnly(quote.sourceLockerName),
           style: const TextStyle(fontSize: 12, color: Colors.black54),
         ),
         const SizedBox(height: 12),
@@ -1222,13 +1219,13 @@ class _DroneBookingPageState extends State<DroneBookingPage>
         const SizedBox(height: 10),
         OpsInfoRow(
           icon: Icons.flight_takeoff,
-          label: 'Phí giao drone',
+          label: context.l10n.ddDroneFee,
           value: fmtPrice(fee),
         ),
         if (_discount > 0)
           OpsInfoRow(
             icon: Icons.local_offer_outlined,
-            label: 'Mã giảm giá',
+            label: context.l10n.commonDiscountCode,
             value: _promoCode == null
                 ? '-${fmtPrice(_discount)}'
                 : '-${fmtPrice(_discount)} ($_promoCode)',
@@ -1237,14 +1234,14 @@ class _DroneBookingPageState extends State<DroneBookingPage>
         if (_pointsDiscount > 0)
           OpsInfoRow(
             icon: Icons.auto_awesome_outlined,
-            label: 'Điểm thưởng',
+            label: context.l10n.commonRewardPoints,
             value: loyaltyPointsDiscountText(_pointsToUse, _pointsDiscount),
             valueColor: const Color(0xFF15803D),
           ),
         OpsInfoRow(
           key: const ValueKey('drone-net-fee'),
           icon: Icons.payments_outlined,
-          label: 'Tạm tính',
+          label: context.l10n.commonSubtotal,
           value: fmtPrice(_netFee),
           valueColor: opsDark,
         ),
@@ -1377,9 +1374,8 @@ class _PickupTile extends StatelessWidget {
             const SizedBox(width: 10),
             Expanded(
               child: pickup == null
-                  ? const Text(
-                      'Chọn điểm lấy hàng * — dùng vị trí hiện tại hoặc tự nhập/ghim '
-                      'trên bản đồ',
+                  ? Text(
+                      context.l10n.dbChoosePickupHint,
                       style: TextStyle(fontWeight: FontWeight.w600),
                     )
                   : Column(
@@ -1391,8 +1387,10 @@ class _PickupTile extends StatelessWidget {
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          'Vĩ độ ${pickup.latitude.toStringAsFixed(5)} · '
-                          'kinh độ ${pickup.longitude.toStringAsFixed(5)} · chạm để đổi',
+                          context.l10n.dbLatLngTap(
+                    pickup.latitude.toStringAsFixed(5),
+                    pickup.longitude.toStringAsFixed(5),
+                  ),
                           style: const TextStyle(
                             fontSize: 12,
                             color: Colors.black54,
@@ -1443,8 +1441,8 @@ class _QuotePanel extends StatelessWidget {
       );
     }
     if (!ready) {
-      return const Text(
-        'Chọn điểm lấy hàng và tủ nhận để xem tủ gửi, quãng đường và phí.',
+      return Text(
+        context.l10n.dbQuoteHint,
         style: TextStyle(color: Colors.black54),
       );
     }
@@ -1458,7 +1456,7 @@ class _QuotePanel extends StatelessWidget {
               child: CircularProgressIndicator(strokeWidth: 2),
             ),
           const SizedBox(width: 8),
-          const Text('Đang tính lộ trình…'),
+          Text(context.l10n.dbCalculatingRoute),
         ],
       );
     }
@@ -1467,7 +1465,7 @@ class _QuotePanel extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Tủ bay do hệ thống chọn: ${quote.sourceLockerName}',
+          context.l10n.dbSystemStation(quote.sourceLockerName),
           style: const TextStyle(fontWeight: FontWeight.w700),
         ),
         if (quote.sourceLockerAddress != null)
@@ -1477,14 +1475,15 @@ class _QuotePanel extends StatelessWidget {
           ),
         const SizedBox(height: 6),
         Text(
-          'Kỹ thuật viên mang kiện ${droneDistanceLabel(quote.pickupDistanceMeters)} '
-          'tới drone ở tủ bay để nạp trực tiếp · drone bay '
-          '${droneDistanceLabel(quote.routeDistanceMeters)} tới ô nhận tại tủ đích',
+          context.l10n.dbRouteSummary(
+              droneDistanceLabel(quote.pickupDistanceMeters),
+              droneDistanceLabel(quote.routeDistanceMeters),
+            ),
           style: const TextStyle(fontSize: 12.5),
         ),
         const SizedBox(height: 6),
         Text(
-          'Phí giao drone: ${fmtPrice(fee)}',
+          context.l10n.dbFeeValue(fmtPrice(fee)),
           style: const TextStyle(
             color: Color(0xFF15803D),
             fontWeight: FontWeight.w800,
@@ -1520,16 +1519,16 @@ class _QuoteWeather extends StatelessWidget {
       if (quote.weatherTemperatureC != null)
         '${quote.weatherTemperatureC!.toStringAsFixed(0)}°C',
       if (!unavailable) ...[
-        'gió ${quote.weatherMaxWindKmh.toStringAsFixed(0)} km/h',
-        'giật ${quote.weatherMaxGustKmh.toStringAsFixed(0)} km/h',
-        'mưa ${quote.weatherMaxPrecipitationMm.toStringAsFixed(1)} mm',
+        context.l10n.dbWind(quote.weatherMaxWindKmh.toStringAsFixed(0)),
+        context.l10n.dbGust(quote.weatherMaxGustKmh.toStringAsFixed(0)),
+        context.l10n.dbRain(quote.weatherMaxPrecipitationMm.toStringAsFixed(1)),
       ],
     ];
     final footer = [
       if (quote.weatherCheckedAt != null)
-        'Cập nhật ${MaterialLocalizations.of(context).formatTimeOfDay(TimeOfDay.fromDateTime(quote.weatherCheckedAt!.toLocal()))}',
+        context.l10n.dbUpdatedAt(MaterialLocalizations.of(context).formatTimeOfDay(TimeOfDay.fromDateTime(quote.weatherCheckedAt!.toLocal()))),
       if (quote.weatherProviderLabel != null)
-        'nguồn ${quote.weatherProviderLabel}',
+        context.l10n.dbSource('${quote.weatherProviderLabel}'),
     ];
     return Container(
       key: const ValueKey('drone-quote-weather'),
@@ -1562,16 +1561,16 @@ class _QuoteWeather extends StatelessWidget {
               Expanded(
                 child: Text(
                   safe
-                      ? 'Thời tiết tuyến bay: Đủ điều kiện'
+                      ? context.l10n.dbWeatherOk
                       : unavailable
-                      ? 'Chưa xác nhận được thời tiết'
-                      : 'Thời tiết tuyến bay: Tạm ngưng bay',
+                      ? context.l10n.dbWeatherUnknown
+                      : context.l10n.dbWeatherSuspended,
                   style: TextStyle(fontWeight: FontWeight.w700, color: tone),
                 ),
               ),
               IconButton(
                 key: const ValueKey('drone-quote-weather-refresh'),
-                tooltip: 'Xem lại thời tiết',
+                tooltip: context.l10n.dbWeatherRefresh,
                 visualDensity: VisualDensity.compact,
                 onPressed: onRefresh,
                 icon: const Icon(Icons.refresh, size: 20),
@@ -1579,8 +1578,7 @@ class _QuoteWeather extends StatelessWidget {
             ],
           ),
           Text(
-            'Dự báo ${quote.weatherWindowMinutes} phút tới (thời gian giao dự kiến) từ nơi gửi → '
-            '${quote.sourceLockerName} → tủ nhận',
+            context.l10n.dbWeatherWindow(quote.weatherWindowMinutes, quote.sourceLockerName),
             style: const TextStyle(fontSize: 12, color: Color(0xFF475569)),
           ),
           if (facts.isNotEmpty)
@@ -1595,7 +1593,7 @@ class _QuoteWeather extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.only(top: 4),
               child: Text(
-                '${quote.weatherMessage} Đơn chỉ đặt được khi trời đủ điều kiện bay.',
+                context.l10n.dbWeatherOnlyWhenSafe(quote.weatherMessage),
                 style: TextStyle(fontSize: 12, color: tone),
               ),
             ),

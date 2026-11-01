@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:dio/dio.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 /// `purpose` khi xin chữ ký upload (docs/01-overview/media-storage.md §3).
 abstract final class MediaPurpose {
@@ -112,8 +113,8 @@ class MediaUpload {
     final version = _asInt(json['version']);
     final signature = json['signature']?.toString() ?? '';
     if (publicId.isEmpty || version == null || signature.isEmpty) {
-      throw const MediaUploadException(
-        'Máy chủ ảnh trả về dữ liệu không hợp lệ, vui lòng thử lại',
+      throw MediaUploadException(
+        L10n.current.mediaBadResponse,
         code: 'CLOUDINARY_BAD_RESPONSE',
       );
     }
@@ -191,21 +192,21 @@ class MediaUploadException implements Exception {
     }
     if (error.type == DioExceptionType.cancel) {
       return MediaUploadException(
-        'Đã huỷ tải ảnh',
+        L10n.current.mediaUploadCancelled,
         code: 'CANCELLED',
         statusCode: status,
       );
     }
     if (error.response == null) {
       return MediaUploadException(
-        'Không kết nối được máy chủ, kiểm tra mạng rồi thử lại',
+        L10n.current.mediaCannotConnect,
         code: code,
         statusCode: status,
       );
     }
     if (status == 403) {
       return MediaUploadException(
-        'Bạn không có quyền tải loại ảnh này',
+        L10n.current.mediaPurposeForbidden,
         code: code,
         statusCode: status,
       );
@@ -213,7 +214,7 @@ class MediaUploadException implements Exception {
     return MediaUploadException(
       (serverMessage != null && serverMessage.trim().isNotEmpty)
           ? serverMessage
-          : 'Không lấy được quyền tải ảnh, vui lòng thử lại',
+          : L10n.current.mediaNoUploadPermission,
       code: code,
       statusCode: status,
     );
@@ -224,14 +225,14 @@ class MediaUploadException implements Exception {
     final status = error.response?.statusCode;
     if (error.type == DioExceptionType.cancel) {
       return MediaUploadException(
-        'Đã huỷ tải ảnh',
+        L10n.current.mediaUploadCancelled,
         code: 'CANCELLED',
         statusCode: status,
       );
     }
     if (error.response == null) {
       return MediaUploadException(
-        'Không tải được ảnh lên, kiểm tra kết nối mạng rồi thử lại',
+        L10n.current.mediaUploadNetwork,
         code: 'CLOUDINARY_NETWORK',
         statusCode: status,
       );
@@ -248,15 +249,15 @@ class MediaUploadException implements Exception {
         lower.contains('expired') ||
         lower.contains('invalid signature') ||
         status == 401) {
-      message = 'Phiên tải ảnh đã hết hạn, vui lòng thử lại';
+      message = L10n.current.mediaSessionExpired;
     } else if (lower.contains('too large') || status == 413) {
-      message = 'Ảnh quá lớn, vui lòng chọn ảnh khác';
+      message = L10n.current.mediaTooLarge;
     } else if (lower.contains('format') || lower.contains('invalid image')) {
-      message = 'Định dạng ảnh không được hỗ trợ (dùng JPG, PNG, WEBP, HEIC)';
+      message = L10n.current.mediaFormatUnsupported;
     } else if (status == 420 || status == 429) {
-      message = 'Máy chủ ảnh đang quá tải, vui lòng thử lại sau ít phút';
+      message = L10n.current.mediaServerOverloaded;
     } else {
-      message = 'Tải ảnh lên thất bại, vui lòng thử lại';
+      message = L10n.current.mediaUploadFailedRetry;
     }
     return MediaUploadException(
       message,
@@ -271,26 +272,23 @@ class MediaUploadException implements Exception {
 
 /// Mã lỗi backend liên quan ảnh ⇒ câu thông báo tiếng Việt.
 abstract final class MediaErrorMessages {
-  static const _messages = <String, String>{
+  static Map<String, String> get _messages => <String, String>{
     'MEDIA_STORAGE_DISABLED':
-        'Hệ thống lưu ảnh đang tạm tắt. Vui lòng gửi không kèm ảnh hoặc thử lại sau.',
-    'MEDIA_PURPOSE_INVALID': 'Loại ảnh tải lên không hợp lệ',
-    'MEDIA_PURPOSE_FORBIDDEN': 'Bạn không có quyền tải loại ảnh này',
-    'MEDIA_SIGNATURE_INVALID': 'Ảnh tải lên không hợp lệ, vui lòng chụp lại',
-    'MEDIA_OWNER_MISMATCH':
-        'Ảnh không thuộc tài khoản của bạn, vui lòng tải lại',
-    'MEDIA_FORMAT_INVALID':
-        'Định dạng ảnh không được hỗ trợ (dùng JPG, PNG, WEBP, HEIC)',
-    'ATTACHMENT_LIMIT_EXCEEDED': 'Phiếu đã đạt số ảnh tối đa cho phép',
-    'ATTACHMENT_STAGE_INVALID': 'Loại ảnh không hợp lệ cho phiếu này',
-    'REPORT_NOT_IN_PROGRESS': 'Phiếu chưa ở trạng thái đang xử lý',
-    'REPORT_ALREADY_RESOLVED': 'Phiếu đã hoàn tất, không thể thêm ảnh',
-    'REPORT_NOT_ASSIGNED': 'Bạn không phải kỹ thuật viên được giao phiếu này',
-    'REPORT_NOT_OWNED': 'Bạn không phải người gửi phiếu này',
-    'ATTACHMENT_DELETE_FORBIDDEN': 'Bạn không có quyền xoá ảnh này',
-    'RESOLUTION_PHOTO_REQUIRED':
-        'Cần ít nhất 1 ảnh nghiệm thu trước khi hoàn tất phiếu',
-    'DATA_CONFLICT': 'Ảnh này đã được gắn vào phiếu',
+        L10n.current.mediaStorageDisabled,
+    'MEDIA_PURPOSE_INVALID': L10n.current.mediaPurposeInvalid,
+    'MEDIA_PURPOSE_FORBIDDEN': L10n.current.mediaPurposeForbidden,
+    'MEDIA_SIGNATURE_INVALID': L10n.current.mediaSignatureInvalid,
+    'MEDIA_OWNER_MISMATCH': L10n.current.mediaOwnerMismatch,
+    'MEDIA_FORMAT_INVALID': L10n.current.mediaFormatUnsupported,
+    'ATTACHMENT_LIMIT_EXCEEDED': L10n.current.mediaAttachmentLimit,
+    'ATTACHMENT_STAGE_INVALID': L10n.current.mediaAttachmentStageInvalid,
+    'REPORT_NOT_IN_PROGRESS': L10n.current.mediaReportNotInProgress,
+    'REPORT_ALREADY_RESOLVED': L10n.current.mediaReportResolved,
+    'REPORT_NOT_ASSIGNED': L10n.current.mediaReportNotAssigned,
+    'REPORT_NOT_OWNED': L10n.current.mediaReportNotOwned,
+    'ATTACHMENT_DELETE_FORBIDDEN': L10n.current.mediaDeleteForbidden,
+    'RESOLUTION_PHOTO_REQUIRED': L10n.current.mediaResolutionPhotoRequired,
+    'DATA_CONFLICT': L10n.current.mediaAlreadyAttached,
   };
 
   /// `null` nếu [code] không phải lỗi ảnh đã biết.

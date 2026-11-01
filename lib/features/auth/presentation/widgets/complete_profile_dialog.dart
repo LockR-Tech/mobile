@@ -3,6 +3,7 @@ import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:smart_laundry_locker/core/routing/app_router.dart';
 import 'package:smart_laundry_locker/features/profile/domain/profile_completion.dart';
 import 'package:smart_laundry_locker/features/profile/presentation/providers/profile_provider.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 /// "Hoàn tất đăng ký" sau khi đăng nhập bằng SĐT: tài khoản backend tự tạo chỉ
 /// có tên "User" ⇒ hỏi họ tên (email tuỳ chọn) và lưu qua
@@ -77,14 +78,14 @@ class _CompleteProfileDialogState extends State<CompleteProfileDialog> {
     if (!mounted) return;
     if (widget.profileProvider.isSuccess) {
       Navigator.of(context).pop();
-      SmartDialog.showToast('Đã lưu thông tin tài khoản');
+      SmartDialog.showToast(context.l10n.authProfileSaved);
       return;
     }
     setState(() {
       _saving = false;
       _error =
           widget.profileProvider.error ??
-          'Không lưu được thông tin. Vui lòng thử lại.';
+          context.l10n.authProfileSaveFailed;
     });
   }
 
@@ -92,7 +93,7 @@ class _CompleteProfileDialogState extends State<CompleteProfileDialog> {
   Widget build(BuildContext context) {
     return AlertDialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      title: const Text('Hoàn tất đăng ký'),
+      title: Text(context.l10n.authCompleteRegistration),
       content: SingleChildScrollView(
         child: Form(
           key: _formKey,
@@ -100,9 +101,8 @@ class _CompleteProfileDialogState extends State<CompleteProfileDialog> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const Text(
-                'Cho chúng tôi biết tên của bạn để hiển thị trên đơn hàng và '
-                'khi liên hệ hỗ trợ.',
+              Text(
+                context.l10n.authCompleteRegistrationBody,
                 style: TextStyle(fontSize: 14, color: Color(0xFF64748B)),
               ),
               const SizedBox(height: 16),
@@ -116,9 +116,9 @@ class _CompleteProfileDialogState extends State<CompleteProfileDialog> {
                 textInputAction: widget.askEmail
                     ? TextInputAction.next
                     : TextInputAction.done,
-                decoration: const InputDecoration(
-                  labelText: 'Họ và tên',
-                  hintText: 'Nguyễn Văn A',
+                decoration: InputDecoration(
+                  labelText: context.l10n.commonFullName,
+                  hintText: context.l10n.commonFullNameHint,
                   border: OutlineInputBorder(),
                 ),
                 validator: validateCompletionFullName,
@@ -134,8 +134,8 @@ class _CompleteProfileDialogState extends State<CompleteProfileDialog> {
                   keyboardType: TextInputType.emailAddress,
                   autofillHints: const [AutofillHints.email],
                   textInputAction: TextInputAction.done,
-                  decoration: const InputDecoration(
-                    labelText: 'Email (không bắt buộc)',
+                  decoration: InputDecoration(
+                    labelText: context.l10n.authEmailOptional,
                     hintText: 'name@example.com',
                     border: OutlineInputBorder(),
                   ),
@@ -158,7 +158,7 @@ class _CompleteProfileDialogState extends State<CompleteProfileDialog> {
       actions: [
         TextButton(
           onPressed: _saving ? null : () => Navigator.of(context).pop(),
-          child: const Text('Để sau'),
+          child: Text(context.l10n.commonLater),
         ),
         ElevatedButton(
           onPressed: _saving ? null : _save,
@@ -168,7 +168,7 @@ class _CompleteProfileDialogState extends State<CompleteProfileDialog> {
                   height: 18,
                   child: CircularProgressIndicator(strokeWidth: 2),
                 )
-              : const Text('Lưu'),
+              : Text(context.l10n.commonSave),
         ),
       ],
     );

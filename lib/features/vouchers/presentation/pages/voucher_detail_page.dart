@@ -7,6 +7,7 @@ import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
 import 'package:smart_laundry_locker/features/promotions/data/models/promotion_model.dart';
 import 'package:smart_laundry_locker/features/promotions/presentation/widgets/promotion_scope_tag.dart';
 import '../../data/models/voucher_model.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 class VoucherDetailPage extends StatelessWidget {
   const VoucherDetailPage({super.key, required this.voucher});
@@ -21,16 +22,16 @@ class VoucherDetailPage extends StatelessWidget {
   String get _rewardText {
     final fmt = NumberFormat.currency(locale: 'vi_VN', symbol: 'đ');
     return switch (voucher.rewardType) {
-      'DISCOUNT_FIXED' => 'Giảm ${fmt.format(voucher.rewardValue)}',
-      'DISCOUNT_PERCENT' => 'Giảm ${voucher.rewardValue.toInt()}%',
-      _ => 'Quà tặng',
+      'DISCOUNT_FIXED' => L10n.current.promoDiscountAmount(fmt.format(voucher.rewardValue)),
+      'DISCOUNT_PERCENT' => L10n.current.promoDiscountPercent(voucher.rewardValue.toInt()),
+      _ => L10n.current.voucherGift,
     };
   }
 
   String get _statusLabel => switch (voucher.status) {
-    'UNUSED' => 'Khả dụng',
-    'USED' => 'Đã sử dụng',
-    'EXPIRED' => 'Hết hạn',
+    'UNUSED' => L10n.current.commonAvailable,
+    'USED' => L10n.current.voucherUsedLong,
+    'EXPIRED' => L10n.current.commonExpired,
     _ => voucher.status,
   };
 
@@ -55,7 +56,7 @@ class VoucherDetailPage extends StatelessWidget {
       body: Column(
         children: [
           BrandHeroHeader(
-            title: 'Chi tiết ưu đãi',
+            title: context.l10n.promoDetailTitle,
             subtitle: voucher.campaignTitle,
             onBack: () => AppRouter.backOrHome(context),
           ),
@@ -156,7 +157,7 @@ class _TicketCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    isGift ? 'QUÀ TẶNG' : 'GIẢM GIÁ',
+                    isGift ? context.l10n.voucherGiftUpper : context.l10n.voucherDiscountUpper,
                     style: const TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.w800,
@@ -196,10 +197,10 @@ class _TicketCard extends StatelessWidget {
                       alignment: Alignment.centerLeft,
                       child: Text(
                         isGift
-                            ? 'Quà tặng'
+                            ? context.l10n.voucherGift
                             : isPercent
-                                ? 'Giảm ${voucher.rewardValue.toInt()}%'
-                                : 'Giảm ${fmt.format(voucher.rewardValue)}',
+                                ? context.l10n.promoDiscountPercent(voucher.rewardValue.toInt())
+                                : context.l10n.promoDiscountAmount(fmt.format(voucher.rewardValue)),
                         maxLines: 1,
                         style: TextStyle(
                           fontSize: 26,
@@ -232,7 +233,7 @@ class _TicketCard extends StatelessWidget {
                       )
                     else
                       Text(
-                        'Không giới hạn thời gian',
+                        context.l10n.commonUnlimitedTime,
                         style: TextStyle(fontSize: 12, color: Colors.grey.shade400),
                       ),
                   ],
@@ -321,8 +322,8 @@ class _CodeSection extends StatelessWidget {
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
       ..showSnackBar(
-        const SnackBar(
-          content: Text('Đã sao chép mã voucher'),
+        SnackBar(
+          content: Text(context.l10n.voucherCopied),
           duration: Duration(seconds: 2),
         ),
       );
@@ -347,8 +348,8 @@ class _CodeSection extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Mã voucher',
+          Text(
+            context.l10n.voucherCode,
             style: TextStyle(
               fontSize: 12,
               color: AislBrand.textMuted,
@@ -416,7 +417,7 @@ class _CodeSection extends StatelessWidget {
                   Icon(LucideIcons.copy, size: 13, color: AislBrand.blue),
                   const SizedBox(width: 4),
                   Text(
-                    'Chạm để sao chép mã',
+                    context.l10n.commonTapToCopy,
                     style: TextStyle(
                       fontSize: 12,
                       color: AislBrand.blue,
@@ -464,14 +465,14 @@ class _InfoSection extends StatelessWidget {
         children: [
           _InfoRow(
             icon: LucideIcons.gift,
-            label: 'Ưu đãi',
+            label: context.l10n.voucherOffer,
             value: rewardText,
             valueColor: accentColor,
           ),
           const _Divider(),
           _InfoRow(
             icon: LucideIcons.tag,
-            label: 'Chiến dịch',
+            label: context.l10n.voucherCampaign,
             value: voucher.campaignTitle,
           ),
           const _Divider(),
@@ -479,7 +480,7 @@ class _InfoSection extends StatelessWidget {
             icon: voucher.lockerId != null
                 ? LucideIcons.mapPin
                 : LucideIcons.globe,
-            label: 'Phạm vi',
+            label: context.l10n.promoScope,
             value: voucher.scopeLabel,
             valueColor: voucher.lockerId != null
                 ? PromotionScopeTag.scopedColor
@@ -488,7 +489,7 @@ class _InfoSection extends StatelessWidget {
           const _Divider(),
           _InfoRow(
             icon: LucideIcons.checkCircle,
-            label: 'Trạng thái',
+            label: context.l10n.commonStatus,
             valueWidget: Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
               decoration: BoxDecoration(
@@ -509,7 +510,7 @@ class _InfoSection extends StatelessWidget {
             const _Divider(),
             _InfoRow(
               icon: LucideIcons.calendarX,
-              label: 'Hạn sử dụng',
+              label: context.l10n.voucherValidUntil,
               value: DateFormat('HH:mm dd/MM/yyyy').format(voucher.expiresAt!),
               valueColor: voucher.status == 'EXPIRED'
                   ? const Color(0xFF991B1B)
@@ -650,8 +651,8 @@ class _HowToUseCard extends StatelessWidget {
             children: [
               Icon(LucideIcons.bookOpen, size: 16, color: AislBrand.navy),
               const SizedBox(width: 8),
-              const Text(
-                'Cách sử dụng',
+              Text(
+                context.l10n.commonHowToUse,
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w800,
@@ -664,31 +665,31 @@ class _HowToUseCard extends StatelessWidget {
           if (!isActive)
             Text(
               isExpired
-                  ? 'Voucher này đã hết hạn và không thể sử dụng.'
-                  : 'Voucher này đã được sử dụng.',
+                  ? context.l10n.voucherExpiredCantUse
+                  : context.l10n.voucherAlreadyUsed,
               style: TextStyle(fontSize: 13, color: Colors.grey.shade500),
             )
           else ...[
             _Step(
               step: '1',
-              text: 'Sao chép mã voucher ở trên',
+              text: context.l10n.voucherStepCopy,
             ),
             const SizedBox(height: 8),
             _Step(
               step: '2',
               text: lockerName == null
-                  ? 'Vào trang đặt dịch vụ (Thuê tủ / Gửi hàng / Gửi drone)'
-                  : 'Đặt dịch vụ tại $lockerName (đơn drone: tủ drone cất cánh)',
+                  ? context.l10n.voucherStepBookAny
+                  : context.l10n.voucherStepBookAt('$lockerName'),
             ),
             const SizedBox(height: 8),
             _Step(
               step: '3',
-              text: 'Nhập mã vào ô "Mã giảm giá" và nhấn Áp dụng',
+              text: context.l10n.voucherStepEnter,
             ),
             const SizedBox(height: 8),
             _Step(
               step: '4',
-              text: 'Mức giảm sẽ được trừ vào tổng tiền thanh toán',
+              text: context.l10n.voucherStepDeducted,
             ),
           ],
         ],

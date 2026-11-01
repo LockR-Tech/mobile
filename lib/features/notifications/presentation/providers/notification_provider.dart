@@ -7,6 +7,7 @@ import 'package:smart_laundry_locker/core/services/app_event_bus.dart';
 import 'package:smart_laundry_locker/core/utils/user_error_message.dart';
 import 'package:flutter/foundation.dart';
 import 'dart:async';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 class NotificationProvider extends ChangeNotifier {
   final NotificationRepository _repository;
@@ -240,7 +241,7 @@ class NotificationProvider extends ChangeNotifier {
     } catch (e) {
       _error = userErrorMessage(
         e,
-        fallback: 'Không tải được thông báo. Vui lòng thử lại.',
+        fallback: L10n.current.npLoadFailed,
       );
     } finally {
       _isLoading = false;
@@ -264,7 +265,7 @@ class NotificationProvider extends ChangeNotifier {
     } catch (e) {
       _error = userErrorMessage(
         e,
-        fallback: 'Không tải thêm được thông báo. Vui lòng thử lại.',
+        fallback: L10n.current.npLoadMoreFailed,
       );
       _currentPage--; // Revert page on failure
     } finally {
@@ -338,8 +339,8 @@ class NotificationProvider extends ChangeNotifier {
       debugPrint('Failed to delete notification: $e');
       return userErrorMessage(
         e,
-        notFound: 'Không tìm thấy thông báo hoặc máy chủ chưa hỗ trợ xoá.',
-        fallback: 'Không xoá được thông báo. Vui lòng thử lại.',
+        notFound: L10n.current.npDeleteNotFound,
+        fallback: L10n.current.npDeleteFailed,
       );
     }
   }
@@ -369,8 +370,8 @@ class NotificationProvider extends ChangeNotifier {
       debugPrint('Failed to delete all notifications: $e');
       return userErrorMessage(
         e,
-        notFound: 'Máy chủ chưa hỗ trợ xoá thông báo. Vui lòng thử lại sau.',
-        fallback: 'Không xoá được thông báo. Vui lòng thử lại.',
+        notFound: L10n.current.npDeleteNotSupported,
+        fallback: L10n.current.npDeleteFailed,
       );
     }
   }

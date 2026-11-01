@@ -9,6 +9,7 @@ library;
 import 'package:smart_laundry_locker/features/profile/domain/constants/profile_constants.dart';
 import 'package:smart_laundry_locker/features/profile/domain/entities/user_profile.dart';
 import 'package:smart_laundry_locker/features/profile/domain/utils/person_name.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 /// `true` khi hồ sơ (đã tải từ server) còn tên trống/mặc định ("User",
 /// "Customer", "Khách"…).
@@ -18,17 +19,17 @@ bool needsProfileCompletion(UserProfile? profile) =>
 /// Kiểm ô "Họ và tên"; `null` = hợp lệ.
 String? validateCompletionFullName(String? value) {
   final name = (value ?? '').trim().replaceAll(RegExp(r'\s+'), ' ');
-  if (name.isEmpty) return 'Vui lòng nhập họ và tên';
+  if (name.isEmpty) return L10n.current.authEnterFullName;
   if (name.length < ProfileConstants.minFullNameLength) {
-    return 'Họ và tên phải có ít nhất ${ProfileConstants.minFullNameLength} ký tự';
+    return L10n.current.nameMin(ProfileConstants.minFullNameLength);
   }
   if (name.length > ProfileConstants.maxFullNameLength) {
-    return 'Họ và tên không được quá ${ProfileConstants.maxFullNameLength} ký tự';
+    return L10n.current.nameMax(ProfileConstants.maxFullNameLength);
   }
   if (!ProfileConstants.fullNameRegex.hasMatch(name)) {
-    return 'Họ và tên chỉ gồm chữ cái và khoảng trắng';
+    return L10n.current.nameLettersOnly;
   }
-  if (isPlaceholderName(name)) return 'Vui lòng nhập tên thật của bạn';
+  if (isPlaceholderName(name)) return L10n.current.nameRealName;
   return null;
 }
 
@@ -38,6 +39,6 @@ final RegExp _emailPattern = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]{2,}$');
 String? validateOptionalEmail(String? value) {
   final email = (value ?? '').trim();
   if (email.isEmpty) return null;
-  if (!_emailPattern.hasMatch(email)) return 'Email không hợp lệ';
+  if (!_emailPattern.hasMatch(email)) return L10n.current.authInvalidEmail;
   return null;
 }
