@@ -6630,6 +6630,9 @@ class AppLocalizationsVi extends AppLocalizations {
   String get clDroneSim => 'Vị trí drone (mô phỏng)';
 
   @override
+  String get clEstimatedRoute => 'Ước theo chặng (đơn cũ, không có GPS)';
+
+  @override
   String get clDestination => 'Tại tủ nhận';
 
   @override

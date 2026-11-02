@@ -52,6 +52,22 @@ void main() {
       expect(ReceiverOrderDetail.tryParse({'orderCode': 'x'}), isNull);
     });
 
+    test('mốc dòng thời gian mang toạ độ kiện của server', () {
+      final m = OrderMilestone.tryParse({
+        'code': 'STORED',
+        'label': 'Kiện đã vào ô tủ nhận',
+        'occurredAt': '2026-10-02T07:37:30',
+        'latitude': 10.8424,
+        'longitude': 106.838,
+        'locationSource': 'DESTINATION_LOCKER',
+      })!;
+      expect(m.latitude, 10.8424);
+      expect(m.longitude, 106.838);
+      expect(m.locationSource, 'DESTINATION_LOCKER');
+      final old = OrderMilestone.tryParse({'code': 'CREATED', 'label': 'Đơn được tạo'})!;
+      expect(old.latitude, isNull);
+    });
+
     test('khai báo kiện rỗng coi như không có', () {
       expect(OrderParcel.tryParse({'description': '  '}), isNull);
       expect(OrderParcel.tryParse(null), isNull);

@@ -6737,6 +6737,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get clDroneSim => 'Drone position (simulated)';
 
   @override
+  String get clEstimatedRoute => 'Estimated from the stage (older order, no GPS)';
+
+  @override
   String get clDestination => 'At the receiving locker';
 
   @override
