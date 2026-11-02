@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:smart_laundry_locker/core/config/feature_flags.dart';
+import 'package:smart_laundry_locker/core/l10n/user_language_sync.dart';
 import 'package:smart_laundry_locker/core/network/api_client.dart';
 import 'package:smart_laundry_locker/core/services/firebase_messaging_service.dart';
 import 'package:smart_laundry_locker/features/profile/application/use_cases/get_profile_use_case.dart';
@@ -107,6 +108,8 @@ class ProfileProvider extends ChangeNotifier {
             _apiClient,
           ),
         );
+        // Thư/SMS gửi ngoài app theo ngôn ngữ đang chọn.
+        unawaited(UserLanguageSync.sync(apiClient: _apiClient));
 
         notifyListeners();
       },

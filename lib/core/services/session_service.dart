@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
+import 'package:smart_laundry_locker/core/l10n/user_language_sync.dart';
 import 'package:smart_laundry_locker/core/network/api_client.dart';
 import 'package:smart_laundry_locker/core/services/firebase_messaging_service.dart';
 import 'package:smart_laundry_locker/core/services/token_service.dart';
@@ -37,6 +38,7 @@ class SessionService {
     ]);
 
     await TokenService.clearTokens();
+    UserLanguageSync.reset();
   }
 
   static Future<T?> _quietly<T>(Future<T> call) async {

@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:provider/provider.dart';
 import 'package:smart_laundry_locker/core/l10n/language_toggle.dart';
+import 'package:smart_laundry_locker/core/l10n/user_language_sync.dart';
 import 'package:smart_laundry_locker/core/network/api_client.dart';
 import 'package:smart_laundry_locker/core/routing/app_router.dart';
 import 'package:smart_laundry_locker/core/routing/role_routes.dart';
@@ -183,6 +184,7 @@ class _LoginScreenState extends State<LoginScreen>
       unawaited(
         FirebaseMessagingService.instance.updateBackendDeviceToken(ApiClient()),
       );
+      unawaited(UserLanguageSync.sync());
       if (!mounted) return;
       context.go(homeForRoles(roles));
     } catch (_) {
