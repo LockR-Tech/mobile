@@ -217,9 +217,20 @@ void main() {
       expect(service.calls, ['accept 21']);
       expect(reloads, 1);
 
+      // Từ chối phải hỏi lại: bấm "Quay lại" thì không gọi server.
       await tester.tap(find.byKey(const ValueKey('drone-pickup-decline-22')));
-      await tester.pump();
-      await tester.pump();
+      await tester.pumpAndSettle();
+      expect(find.text('Từ chối lời mời lấy hàng?'), findsOneWidget);
+      await tester.tap(find.text('Quay lại'));
+      await tester.pumpAndSettle();
+      expect(service.calls.last, 'accept 21');
+
+      await tester.tap(find.byKey(const ValueKey('drone-pickup-decline-22')));
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.byKey(const ValueKey('drone-pickup-decline-confirm')),
+      );
+      await tester.pumpAndSettle();
       expect(service.calls.last, 'decline 22');
     },
   );

@@ -133,13 +133,34 @@ class MissionRepository {
     );
   }
 
-  String _safeName(String name) {
-    final cleaned = name.trim().replaceAll(RegExp(r'[^\w\-. ]'), '_');
-    return cleaned.isEmpty ? 'mission' : cleaned;
-  }
+  String _safeName(String name) => missionFileBaseName(name);
 
   String _stripExtension(String fileName) {
     final dot = fileName.lastIndexOf('.');
     return dot > 0 ? fileName.substring(0, dot) : fileName;
   }
+}
+
+/// File name (without extension) for an exported plan. Vietnamese letters are
+/// folded to ASCII first — the old `[^\w]` filter turned "Kế hoạch bay mới"
+/// into "K_ ho_ch bay m_i" (test 2026-11-02).
+String missionFileBaseName(String name) {
+  const from =
+      'àáạảãâầấậẩẫăằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹđ';
+  const to =
+      'aaaaaaaaaaaaaaaaaeeeeeeeeeeeiiiiiooooooooooooooooouuuuuuuuuuuyyyyyd';
+  final folded = StringBuffer();
+  for (final rune in name.trim().runes) {
+    final char = String.fromCharCode(rune);
+    final lower = char.toLowerCase();
+    final index = from.indexOf(lower);
+    if (index < 0) {
+      folded.write(char);
+    } else {
+      final ascii = to[index];
+      folded.write(char == lower ? ascii : ascii.toUpperCase());
+    }
+  }
+  final cleaned = folded.toString().replaceAll(RegExp(r'[^\w\-. ]'), '_');
+  return cleaned.isEmpty ? 'mission' : cleaned;
 }

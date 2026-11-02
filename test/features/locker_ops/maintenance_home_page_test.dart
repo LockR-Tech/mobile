@@ -159,6 +159,16 @@ class _FakeMaintenanceService extends LockerOpsService {
     return Map<String, dynamic>.from(droneReport);
   }
 
+  int? claimedDroneId;
+
+  @override
+  Future<Map<String, dynamic>> claimDrone(int id) async {
+    claimedDroneId = id;
+    final drone = customDrones?.firstWhere((d) => d['id'] == id);
+    drone?['assignedTechnicianId'] = 99;
+    return Map<String, dynamic>.from(drone ?? {'id': id});
+  }
+
   @override
   Future<List<Map<String, dynamic>>> droneUnits() async {
     if (customDrones != null) return customDrones!;
@@ -942,7 +952,9 @@ void main() {
     },
   );
 
-  testWidgets('tab Đội bay chỉ hiện drone mà mình được phụ trách', (tester) async {
+  testWidgets('tab Đội bay: drone của mình, drone chưa ai phụ trách thì nhận được', (
+    tester,
+  ) async {
     _setPhoneViewport(tester);
     final service = _FakeMaintenanceService()
       ..customDrones = [
@@ -989,7 +1001,16 @@ void main() {
 
     expect(find.text('DRONE-MY-01'), findsOneWidget);
     expect(find.text('DRONE-OTHER-02'), findsNothing);
-    expect(find.text('DRONE-FREE-03'), findsNothing);
+    // Drone chưa ai phụ trách hiện ở mục riêng để KTV "Nhận xử lý" (test 2026-11-02:
+    // KTV chưa có drone nào không có cách nào nhận drone từ app).
+    expect(find.text('Drone chưa có KTV phụ trách (1)'), findsOneWidget);
+    await tester.ensureVisible(find.text('DRONE-FREE-03'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('DRONE-FREE-03'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Nhận xử lý'));
+    await tester.pumpAndSettle();
+    expect(service.claimedDroneId, 3);
   });
 
   testWidgets(

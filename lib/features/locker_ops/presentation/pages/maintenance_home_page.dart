@@ -159,6 +159,14 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
       )
       .toList(growable: false);
 
+  /// Drone đang hoạt động chưa có KTV nào phụ trách — KTV mở để "Nhận xử lý".
+  List<Map<String, dynamic>> get _unassignedDrones => _drones
+      .where(
+        (drone) =>
+            drone['assignedTechnicianId'] == null && drone['active'] != false,
+      )
+      .toList(growable: false);
+
   @override
   void initState() {
     super.initState();
@@ -273,6 +281,9 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
           _deliveries = deliveries;
           _deliveriesLoadError = null;
         });
+        // Đơn đổi chặng thì drone cũng đổi trạng thái (giữ chỗ → đang bay → sẵn sàng);
+        // không tải lại thì tab Đội bay còn "Đang bay" khi kiện đã vào tủ (test 2026-11-02).
+        unawaited(_loadDrones());
       }
     } catch (_) {
       // Giữ dữ liệu cuối cùng khi mất mạng; lần poll sau sẽ thử lại.
@@ -3034,13 +3045,31 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
           ],
           const SizedBox(height: 12),
           if (_myDrones.isEmpty && _dronesLoadError == null)
-            const OpsEmptyState(
+            OpsEmptyState(
               icon: Icons.flight_outlined,
               title: 'Chưa phụ trách drone nào',
-              subtitle: 'Các drone bạn được phân công phụ trách sẽ hiển thị ở đây.',
+              subtitle: _unassignedDrones.isEmpty
+                  ? 'Các drone bạn được phân công phụ trách sẽ hiển thị ở đây.'
+                  : 'Chọn một drone chưa có người phụ trách bên dưới để nhận xử lý.',
             )
           else
             for (final d in _myDrones) _droneCard(d),
+          // Trước đây tab chỉ liệt kê drone của mình nên nút "Nhận xử lý" (chỉ hiện với
+          // drone chưa thuộc mình) không bao giờ mở được (test 2026-11-02).
+          if (_unassignedDrones.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            Text(
+              'Drone chưa có KTV phụ trách (${_unassignedDrones.length})',
+              key: const ValueKey('drone-unassigned-title'),
+              style: const TextStyle(
+                fontWeight: FontWeight.w800,
+                fontSize: 14,
+                color: opsDark,
+              ),
+            ),
+            const SizedBox(height: 8),
+            for (final d in _unassignedDrones) _droneCard(d),
+          ],
         ],
       ),
     );
@@ -4721,9 +4750,10 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
             ],
           ),
           actions: [
+            // "Quay lại" chứ không "Hủy": đặt cạnh "Xác nhận hủy" dễ bấm nhầm.
             TextButton(
               onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('Hủy'),
+              child: const Text('Quay lại'),
             ),
             FilledButton(
               style: FilledButton.styleFrom(
