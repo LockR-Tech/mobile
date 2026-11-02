@@ -1,6 +1,9 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:smart_laundry_locker/core/l10n/l10n.dart';
+import 'package:smart_laundry_locker/core/services/firebase_messaging_service.dart';
 
 /// Ngôn ngữ giao diện người dùng chọn ở Hồ sơ. Mặc định tiếng Việt, không
 /// theo ngôn ngữ máy — khách chủ yếu là người Việt.
@@ -32,5 +35,9 @@ class LocaleProvider extends ChangeNotifier {
     notifyListeners();
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_key, locale.languageCode);
+    // Push FCM do backend soạn: báo ngôn ngữ mới, lỗi mạng không chặn đổi ngôn ngữ.
+    unawaited(
+      FirebaseMessagingService.instance.syncLanguage().catchError((_) {}),
+    );
   }
 }

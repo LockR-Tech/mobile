@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:smart_laundry_locker/core/utils/server_note_keys.dart';
 import 'package:smart_laundry_locker/core/services/app_event_bus.dart';
 import 'package:smart_laundry_locker/core/utils/app_date_time.dart';
 import 'package:flutter/material.dart';
@@ -2911,15 +2912,13 @@ class _FaultOrderBanner extends StatelessWidget {
 
     for (final log in movedToCurrentBox ? const <Map<String, dynamic>>[] : logs) {
       final note = (log['note'] ?? '').toString();
-      final upper = note.toUpperCase();
+      final upper = serverNoteKeys(note);
       if (upper.contains('ĐIỀU CHUYỂN') || upper.contains('RELOCATE')) {
         isRelocated = true;
-        final mNew = RegExp(r'sang ô #?(\d+)', caseSensitive: false).firstMatch(note);
-        if (mNew != null) newBoxNum = mNew.group(1);
-        final mOld = RegExp(r'khóa bảo trì ô #?(\d+)', caseSensitive: false).firstMatch(note) ??
-            RegExp(r'ô #?(\d+)', caseSensitive: false).firstMatch(note);
+        newBoxNum = relocatedBoxNumber(note) ?? newBoxNum;
+        final mOld = lockedOrFirstBoxNumber(note);
         if (mOld != null && (oldBoxNum == null || oldBoxNum.isEmpty)) {
-          oldBoxNum = mOld.group(1);
+          oldBoxNum = mOld;
         }
         break;
       }
@@ -3487,7 +3486,7 @@ class _IncidentRelocationInfo {
     // Quét qua logs để bóc tách thông tin KTV và các mốc can thiệp
     for (final l in logs) {
       final note = (l['note'] ?? l['description'] ?? '').toString();
-      final upper = note.toUpperCase();
+      final upper = serverNoteKeys(note);
       final dt = l['createdAt'] ?? l['created_at'] ?? l['timestamp'] ?? l['changedAt'];
       final dtStr = _fmtSec(dt);
 
@@ -3514,12 +3513,10 @@ class _IncidentRelocationInfo {
         if (relTime == null && dtStr.isNotEmpty) {
           relTime = dtStr;
         }
-        final mNew = RegExp(r'sang ô #?(\d+)', caseSensitive: false).firstMatch(note);
-        if (mNew != null) newBox = mNew.group(1);
-        final mOld = RegExp(r'khóa bảo trì ô #?(\d+)', caseSensitive: false).firstMatch(note) ??
-            RegExp(r'ô #?(\d+)', caseSensitive: false).firstMatch(note);
+        newBox = relocatedBoxNumber(note) ?? newBox;
+        final mOld = lockedOrFirstBoxNumber(note);
         if (mOld != null && (oldBox == null || oldBox.isEmpty)) {
-          oldBox = mOld.group(1);
+          oldBox = mOld;
         }
       } else {
         // Ghi chú hiện trường / kiểm tra mở ô cũ
@@ -3527,8 +3524,7 @@ class _IncidentRelocationInfo {
           oldOpenedTime = dtStr;
         }
         if (oldBox == null || oldBox.isEmpty) {
-          final mOld = RegExp(r'ô #?(\d+)', caseSensitive: false).firstMatch(note);
-          if (mOld != null) oldBox = mOld.group(1);
+          oldBox = firstBoxNumber(note);
         }
       }
     }
@@ -5265,7 +5261,8 @@ class _PaymentTraceRowsState extends State<_PaymentTraceRows> {
     final desc = '${payment['description'] ?? ''}'.toLowerCase();
     if (desc.contains('quá hạn') ||
         desc.contains('quá giờ') ||
-        desc.contains('overtime')) {
+        desc.contains('overtime') ||
+        desc.contains('overdue')) {
       return false;
     }
     return true;
@@ -5517,7 +5514,7 @@ class _PaymentTraceRowsState extends State<_PaymentTraceRows> {
         description = L10n.current.ordExtensionPayment;
       } else {
         description = description.replaceAll(
-          RegExp(r'thanh toán bổ sung', caseSensitive: false),
+          RegExp(r'thanh toán bổ sung|additional payment', caseSensitive: false),
           L10n.current.ordExtensionPayment,
         );
       }
@@ -5596,10 +5593,21 @@ class _OrderIncidentResolutionSectionState
   /// tag `[...]`); null nếu không phải ghi chú xử lý sự cố.
   static String? _untaggedIncidentTag(String note) {
     final lower = note.toLowerCase();
-    if (lower.contains('đã xử lý sự cố ô')) return '[ĐÃ XỬ LÝ SỰ CỐ]';
-    if (lower.startsWith('ktv điều chuyển hàng sang ô')) return '[ĐIỀU CHUYỂN Ô]';
-    if (lower.contains('bàn giao hàng trực tiếp')) return '[BÀN GIAO TRỰC TIẾP]';
-    if (lower.contains('niêm phong')) return '[NIÊM PHONG VỀ HUB]';
+    final en = L10n.isEnglish;
+    if (lower.contains('đã xử lý sự cố ô') || lower.contains('box issue resolved')) {
+      return en ? '[ISSUE RESOLVED]' : '[ĐÃ XỬ LÝ SỰ CỐ]';
+    }
+    if (lower.startsWith('ktv điều chuyển hàng sang ô') ||
+        lower.startsWith('technician moved the parcel to box')) {
+      return en ? '[BOX RELOCATED]' : '[ĐIỀU CHUYỂN Ô]';
+    }
+    if (lower.contains('bàn giao hàng trực tiếp') ||
+        lower.contains('handed the parcel directly')) {
+      return en ? '[HANDED OVER IN PERSON]' : '[BÀN GIAO TRỰC TIẾP]';
+    }
+    if (lower.contains('niêm phong') || lower.contains('sealed')) {
+      return en ? '[SEALED TO HUB]' : '[NIÊM PHONG VỀ HUB]';
+    }
     return null;
   }
 
@@ -5623,7 +5631,7 @@ class _OrderIncidentResolutionSectionState
       // tự viết khi chuyển ô / xử lý xong sự cố (không có tag).
       final incidents = events.where((e) {
         final note = (e['note'] ?? e['description'] ?? '').toString().trim();
-        final upperNote = note.toUpperCase();
+        final upperNote = serverNoteKeys(note);
         return _incidentTags.any((t) => upperNote.contains(t.toUpperCase())) ||
             _untaggedIncidentTag(note) != null;
       }).toList();
@@ -5632,7 +5640,7 @@ class _OrderIncidentResolutionSectionState
       if (incidents.isEmpty && widget.logs.isNotEmpty) {
         for (final l in widget.logs) {
           final note = (l['note'] ?? l['description'] ?? '').toString().trim();
-          final upperNote = note.toUpperCase();
+          final upperNote = serverNoteKeys(note);
           if (_incidentTags.any((t) => upperNote.contains(t.toUpperCase())) ||
               upperNote.contains('ĐIỀU CHUYỂN') ||
               upperNote.contains('SỰ CỐ') ||
@@ -5799,7 +5807,7 @@ class _OrderIncidentResolutionSectionState
               final untagged = match == null ? _untaggedIncidentTag(rawNote) : null;
               final tag = match?.group(1) ?? untagged ?? rawNote;
               final rest = match?.group(2) ?? (untagged != null ? rawNote : '');
-              final style = _tagStyle(tag.toUpperCase());
+              final style = _tagStyle(serverNoteKeys(tag));
               final ts = _fmtDt(
                 event['changedAt'] ?? event['createdAt'] ?? event['timestamp'],
               );
@@ -5998,7 +6006,7 @@ class _OrderIncidentResolutionSectionState
                       ),
                     ),
                     // Thông báo người dùng nếu có nội dung actionable
-                    if (tag.toUpperCase().contains('ĐIỀU CHUYỂN'))
+                    if (serverNoteKeys(tag).contains('ĐIỀU CHUYỂN'))
                       Padding(
                         padding: const EdgeInsets.only(top: 6),
                         child: Text(
@@ -6010,7 +6018,7 @@ class _OrderIncidentResolutionSectionState
                           ),
                         ),
                       )
-                    else if (tag.toUpperCase().contains('NIÊM PHONG') ||
+                    else if (serverNoteKeys(tag).contains('NIÊM PHONG') ||
                         tag.toUpperCase().contains('HUB'))
                       Padding(
                         padding: const EdgeInsets.only(top: 6),
@@ -6023,7 +6031,7 @@ class _OrderIncidentResolutionSectionState
                           ),
                         ),
                       )
-                    else if (tag.toUpperCase().contains('BÀN GIAO'))
+                    else if (serverNoteKeys(tag).contains('BÀN GIAO'))
                       Padding(
                         padding: const EdgeInsets.only(top: 6),
                         child: Text(

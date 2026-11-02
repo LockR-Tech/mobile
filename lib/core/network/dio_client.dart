@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 
 import '../constants/api_constants.dart';
+import '../l10n/l10n.dart';
 import 'auth_interceptor.dart';
 
 /// A singleton wrapper around Dio for making HTTP requests.
@@ -61,6 +62,8 @@ class DioClient {
       );
     }
 
+    _dio.interceptors.add(AppLanguageInterceptor());
+
     // Add Auth Interceptor
     _dio.interceptors.add(AuthInterceptor());
 
@@ -86,5 +89,18 @@ class DioClient {
   /// Add a custom interceptor.
   void addInterceptor(Interceptor interceptor) {
     _dio.interceptors.add(interceptor);
+  }
+}
+
+/// Báo backend ngôn ngữ app đang chọn: `X-App-Language: en` ⇒ câu server tự
+/// soạn (lỗi, thông báo, ghi chú mốc đơn…) trả về bằng tiếng Anh. Đọc lại mỗi
+/// request nên đổi ngôn ngữ có hiệu lực ngay.
+class AppLanguageInterceptor extends Interceptor {
+  static const header = 'X-App-Language';
+
+  @override
+  void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
+    options.headers[header] = L10n.current.localeName;
+    handler.next(options);
   }
 }
