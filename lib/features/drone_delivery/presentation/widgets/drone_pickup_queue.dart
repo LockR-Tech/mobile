@@ -322,6 +322,40 @@ class _DronePickupQueueState extends State<DronePickupQueue>
     await _loadPresence();
   }
 
+  /// Từ chối là mất lời mời và không được mời lại đơn này một thời gian, nên hỏi lại
+  /// trước (test 2026-11-02: bấm "Từ chối" một lần là mất lời mời ngay).
+  Future<void> _declineOffer(Map<String, dynamic> order, int orderId) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Từ chối lời mời lấy hàng?'),
+        content: Text(
+          'Đơn ${order['orderCode'] ?? '#$orderId'} sẽ được mời người khác và bạn '
+          'không được mời lại đơn này trong một thời gian.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Quay lại'),
+          ),
+          FilledButton(
+            key: const ValueKey('drone-pickup-decline-confirm'),
+            style: FilledButton.styleFrom(
+              backgroundColor: const Color(0xFFDC2626),
+            ),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Từ chối'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+    await _act(
+      () => widget.service.declineDronePickup(orderId),
+      'Đã từ chối · hệ thống mời người khác',
+    );
+  }
+
   Future<void> _confirmPickup(Map<String, dynamic> order) async {
     final orderId = _asInt(order['orderId']);
     if (orderId == null) return;
@@ -857,10 +891,7 @@ class _DronePickupQueueState extends State<DronePickupQueue>
                 key: ValueKey('drone-pickup-decline-$orderId'),
                 onPressed: _acting || orderId == null
                     ? null
-                    : () => _act(
-                        () => widget.service.declineDronePickup(orderId),
-                        'Đã từ chối · hệ thống mời người khác',
-                      ),
+                    : () => _declineOffer(order, orderId),
                 child: const Text('Từ chối'),
               ),
             ),

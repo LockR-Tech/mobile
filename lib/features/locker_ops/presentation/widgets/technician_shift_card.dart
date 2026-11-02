@@ -788,6 +788,16 @@ class _TechnicianShiftCardState extends State<TechnicianShiftCard> {
                   ),
                 ),
                 const SizedBox(width: 6),
+                // Nút bị khoá trong lúc đang lấy GPS thì cú chạm không được rơi xuống
+                // InkWell của thẻ: trước đây bấm "Hết ca" lúc đồng bộ ngầm lại mở sheet
+                // thông tin GPS (test 2026-11-02).
+                GestureDetector(
+                  key: const ValueKey('shift-card-actions'),
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () {},
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
                 // Nút Cập nhật GPS nhanh khi đang trong ca
                 if (_onDuty) ...[
                   IconButton(
@@ -826,6 +836,9 @@ class _TechnicianShiftCardState extends State<TechnicianShiftCard> {
                       fontSize: 12,
                       fontWeight: FontWeight.w700,
                     ),
+                  ),
+                ),
+                    ],
                   ),
                 ),
               ],

@@ -323,10 +323,16 @@ class _DroneReportDetailSheetState extends State<DroneReportDetailSheet> {
     final overdue = _report['overdue'] == true;
     final slaDue = _formatDate(_report['slaDueAt']);
 
-    return SafeArea(
+    // Bàn phím mở thì sheet co lại phía trên bàn phím, ô nhật ký đang gõ tự cuộn
+    // lên; trước đây sheet cao cố định nên bàn phím che mất ô nhập (test 2026-11-02).
+    final keyboard = MediaQuery.viewInsetsOf(context).bottom;
+    return Padding(
+      padding: EdgeInsets.only(bottom: keyboard),
+      child: SafeArea(
       top: false,
       child: SizedBox(
-        height: MediaQuery.sizeOf(context).height * .9,
+        height: (MediaQuery.sizeOf(context).height * .9 - keyboard)
+            .clamp(240.0, double.infinity),
         child: Column(
           children: [
             Center(
@@ -610,6 +616,7 @@ class _DroneReportDetailSheetState extends State<DroneReportDetailSheet> {
             ),
           ],
         ),
+      ),
       ),
     );
   }
