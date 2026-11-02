@@ -1,3 +1,5 @@
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
+
 /// Kết quả lệnh khởi động lại bộ điều khiển tủ
 /// (`POST /api/locker-technician/devices/{id}/restart`).
 ///
@@ -38,15 +40,12 @@ class DeviceRestartResult {
 
   /// Câu hiển thị cho KTV theo kết quả.
   String get displayMessage {
-    if (isUnconfirmed) {
-      return 'Đã gửi lệnh khởi động lại nhưng máy chủ chưa trả kết quả xác nhận — '
-          'kiểm tra trạng thái thiết bị sau ít phút.';
-    }
+    if (isUnconfirmed) return L10n.current.techUiRestartUnconfirmed;
     if (message != null) return message!;
     return switch (status) {
-      'ACCEPTED' => 'Bộ điều khiển tủ đã nhận lệnh và đang khởi động lại.',
-      'TIMEOUT' => 'Tủ không phản hồi lệnh khởi động lại — kiểm tra kết nối của tủ.',
-      _ => 'Khởi động lại thất bại — vui lòng thử lại.',
+      'ACCEPTED' => L10n.current.techUiRestartAccepted,
+      'TIMEOUT' => L10n.current.techUiRestartTimeout,
+      _ => L10n.current.techUiRestartFailed,
     };
   }
 }

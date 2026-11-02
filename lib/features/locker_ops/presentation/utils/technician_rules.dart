@@ -2,6 +2,8 @@
 /// tách riêng để kiểm thử được.
 library;
 
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
+
 int? _int(dynamic value) {
   if (value is int) return value;
   if (value is num) return value.toInt();
@@ -22,7 +24,7 @@ bool isDroneTechnicianRoles(List<String> roles) {
 
 /// Nhãn ngắn của vai trò KTV.
 String technicianRoleLabel({required bool drone}) =>
-    drone ? 'KTV drone' : 'KTV tủ';
+    drone ? L10n.current.techUiRoleDrone : L10n.current.techUiRoleLocker;
 
 /// Quy tắc nút "Gia hạn SLA" của một phiếu (CONTRACTS §4): chỉ KTV đang được
 /// giao phiếu IN_PROGRESS; tối đa `slaExtensionsMax` lần (server trả kèm phiếu).
@@ -65,11 +67,14 @@ class SlaExtensionPolicy {
   bool get canExtend => visible && !limitReached;
 
   /// "Đã gia hạn 1/2"; `null` khi chưa biết giới hạn.
-  String? get usageLabel => max == null ? null : 'Đã gia hạn ${used ?? 0}/$max';
+  String? get usageLabel => max == null
+      ? null
+      : L10n.current.techUiSlaExtensionUsage(used ?? 0, max!);
 
   /// Nhãn nút theo trạng thái.
-  String get buttonLabel =>
-      limitReached ? 'Hết lượt gia hạn (${used ?? 0}/$max)' : 'Gia hạn SLA';
+  String get buttonLabel => limitReached
+      ? L10n.current.techUiSlaExtensionLimit(used ?? 0, max!)
+      : L10n.current.techUiExtendSla;
 }
 
 /// Giới hạn tự gia hạn SLA admin cấu hình (`GET /api/settings/locker/public`).
@@ -142,11 +147,11 @@ class TechnicianSlaStatus {
   bool get blocksNewWork => level == 'RESTRICTED' || level == 'SUSPENDED';
 
   String get label => switch (level) {
-    'SUSPENDED' => 'Đình chỉ',
-    'RESTRICTED' => 'Hạn chế nhận việc',
-    'WARNING' => 'Cảnh báo',
-    'NORMAL' => 'Bình thường',
-    null => 'Chưa tải được',
+    'SUSPENDED' => L10n.current.techUiSlaSuspended,
+    'RESTRICTED' => L10n.current.techUiSlaRestricted,
+    'WARNING' => L10n.current.techUiSlaWarning,
+    'NORMAL' => L10n.current.techUiSlaNormal,
+    null => L10n.current.techUiSlaNotLoaded,
     _ => level!,
   };
 }
@@ -159,7 +164,7 @@ String? ratingSummary(Map<String, dynamic>? rating) {
   if (count <= 0) return null;
   final avg = _double(rating['average'] ?? rating['averageRating']);
   if (avg == null) return null;
-  return '${avg.toStringAsFixed(1)}/5 ($count lượt)';
+  return L10n.current.techUiRatingSummary(avg.toStringAsFixed(1), count);
 }
 
 /// Số phiếu còn mở (chưa RESOLVED) — dùng cho nhãn tab "Sự cố (N)".
@@ -180,24 +185,24 @@ String? validateBoxIncidentInput({
   String? customerOtp,
   String? sealNumber,
 }) {
-  if (selectedBoxId == null) return 'Vui lòng chọn ô sự cố.';
+  if (selectedBoxId == null) return L10n.current.techUiSelectIncidentBox;
   switch (action) {
     case 'RELOCATE':
       if (targetBoxId == null) {
-        return 'Vui lòng chọn ô trống để chuyển hàng sang.';
+        return L10n.current.techUiSelectTargetBox;
       }
     case 'HANDOVER':
       // order-service nhận PIN 6 số hoặc mã QR của đơn.
       final code = (customerOtp ?? '').trim();
       if (code.isEmpty) {
-        return 'Nhập mã PIN 6 số hoặc mã QR của đơn để xác nhận bàn giao.';
+        return L10n.current.techUiEnterHandoverCode;
       }
       if (RegExp(r'^\d+$').hasMatch(code) && code.length != 6) {
-        return 'Mã PIN lấy hàng gồm đúng 6 chữ số.';
+        return L10n.current.techUiPinSixDigits;
       }
     case 'HUB_ESCROW':
       if ((sealNumber ?? '').trim().isEmpty) {
-        return 'Nhập mã Seal in trên túi niêm phong.';
+        return L10n.current.techUiEnterSealCode;
       }
   }
   return null;
@@ -209,7 +214,7 @@ String? deviceLockerLabel(Map<String, dynamic> device) {
   final code = device['lockerCode']?.toString().trim() ?? '';
   if (name.isEmpty && code.isEmpty) {
     final id = _int(device['lockerId']);
-    return id == null ? null : 'Tủ #$id';
+    return id == null ? null : L10n.current.lockerHash(id);
   }
   if (name.isEmpty) return code;
   if (code.isEmpty) return name;

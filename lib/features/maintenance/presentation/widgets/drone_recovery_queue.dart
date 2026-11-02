@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 import 'package:smart_laundry_locker/core/presentation/pages/directions_map_page.dart';
 import 'package:smart_laundry_locker/core/media/photo_picker_controller.dart';
 import 'package:smart_laundry_locker/core/media/widgets/photo_picker_field.dart';
@@ -54,38 +55,41 @@ class DroneRecoveryQueue extends StatelessWidget {
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    'Không tải được nhiệm vụ thu hồi: $error',
+                    context.l10n.techRecLoadError('$error'),
                     style: const TextStyle(
                       fontSize: 12.5,
                       color: Color(0xFF991B1B),
                     ),
                   ),
                 ),
-                TextButton(onPressed: onRefresh, child: const Text('Thử lại')),
+                TextButton(
+                  onPressed: onRefresh,
+                  child: Text(context.l10n.commonRetry),
+                ),
               ],
             ),
           ),
           const SizedBox(height: 12),
         ],
         if (items.isEmpty && error == null)
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: 64),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 64),
             child: Column(
               children: [
-                Icon(
+                const Icon(
                   Icons.travel_explore_outlined,
                   size: 48,
                   color: Color(0xFF94A3B8),
                 ),
-                SizedBox(height: 10),
+                const SizedBox(height: 10),
                 Text(
-                  'Chưa có nhiệm vụ thu hồi kiện',
-                  style: TextStyle(fontWeight: FontWeight.w700),
+                  context.l10n.techRecEmptyTitle,
+                  style: const TextStyle(fontWeight: FontWeight.w700),
                 ),
-                SizedBox(height: 4),
+                const SizedBox(height: 4),
                 Text(
-                  'Nhiệm vụ được phân công sẽ xuất hiện tại đây.',
-                  style: TextStyle(color: Color(0xFF64748B)),
+                  context.l10n.techRecEmptyHint,
+                  style: const TextStyle(color: Color(0xFF64748B)),
                 ),
               ],
             ),
@@ -128,14 +132,14 @@ class _Banner extends StatelessWidget {
       borderRadius: BorderRadius.circular(14),
       border: Border.all(color: const Color(0xFFBAE6FD)),
     ),
-    child: const Row(
+    child: Row(
       children: [
-        Icon(Icons.info_outline, color: Color(0xFF0369A1)),
-        SizedBox(width: 10),
+        const Icon(Icons.info_outline, color: Color(0xFF0369A1)),
+        const SizedBox(width: 10),
         Expanded(
           child: Text(
-            'Thu hồi kiện theo vị trí rơi đã xác minh. Phải chụp ảnh thật, ghi GPS và tình trạng kiện trước khi gửi Admin duyệt.',
-            style: TextStyle(fontSize: 12, color: Color(0xFF075985)),
+            context.l10n.techRecBanner,
+            style: const TextStyle(fontSize: 12, color: Color(0xFF075985)),
           ),
         ),
       ],
@@ -172,19 +176,19 @@ class _RecoveryCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(color: const Color(0xFFFECACA)),
                 ),
-                child: const Row(
+                child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(
+                    const Icon(
                       Icons.warning_amber_rounded,
                       size: 15,
                       color: Color(0xFFDC2626),
                     ),
-                    SizedBox(width: 5),
+                    const SizedBox(width: 5),
                     Flexible(
                       child: Text(
-                        'Nhiệm vụ tìm kiếm khẩn cấp · Drone rơi',
-                        style: TextStyle(
+                        context.l10n.techRecUrgentTag,
+                        style: const TextStyle(
                           fontSize: 11.5,
                           fontWeight: FontWeight.w700,
                           color: Color(0xFFDC2626),
@@ -198,7 +202,7 @@ class _RecoveryCard extends StatelessWidget {
                 children: [
                   Expanded(
                     child: Text(
-                      '${item['incidentCode'] ?? 'Sự cố #${item['id']}'}',
+                      '${item['incidentCode'] ?? context.l10n.techRecIncidentHash('${item['id']}')}',
                       style: const TextStyle(fontWeight: FontWeight.w800),
                     ),
                   ),
@@ -207,7 +211,7 @@ class _RecoveryCard extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               Text(
-                '${item['orderCode'] ?? 'Đơn #${item['orderId']}'} · ${item['droneCode'] ?? 'Drone'}',
+                '${item['orderCode'] ?? context.l10n.orderHash('${item['orderId']}')} · ${item['droneCode'] ?? 'Drone'}',
                 style: const TextStyle(fontSize: 12, color: Color(0xFF475569)),
               ),
               const SizedBox(height: 5),
@@ -227,7 +231,7 @@ class _RecoveryCard extends StatelessWidget {
                   const SizedBox(width: 4),
                   Expanded(
                     child: Text(
-                      _location(item),
+                      _location(context, item),
                       style: const TextStyle(fontSize: 12),
                     ),
                   ),
@@ -241,8 +245,9 @@ class _RecoveryCard extends StatelessWidget {
     );
   }
 
-  String _location(Map<String, dynamic> item) => item['dropLatitude'] == null
-      ? 'Không có GPS · kiểm tra bằng chứng trước khi đi'
+  String _location(BuildContext context, Map<String, dynamic> item) =>
+      item['dropLatitude'] == null
+      ? context.l10n.techRecNoGps
       : '${item['dropLatitude']}, ${item['dropLongitude']}';
 }
 
@@ -324,7 +329,10 @@ class _DroneRecoveryDetailState extends State<DroneRecoveryDetail> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(_error!),
-                  TextButton(onPressed: _load, child: const Text('Thử lại')),
+                  TextButton(
+                    onPressed: _load,
+                    child: Text(context.l10n.commonRetry),
+                  ),
                 ],
               ),
       );
@@ -362,12 +370,19 @@ class _DroneRecoveryDetailState extends State<DroneRecoveryDetail> {
           ],
         ),
         const SizedBox(height: 14),
-        _Info(title: 'Tình huống', value: '${item['reason']}'),
+        _Info(title: context.l10n.techRecSituation, value: '${item['reason']}'),
         const SizedBox(height: 10),
         _Info(
-          title: 'Độ chính xác dữ liệu',
-          value:
-              'Nguồn vị trí: ${_gpsSourceLabel(item['gpsSource'])} · sai số ${item['gpsAccuracyM'] == null ? 'không rõ' : '±${item['gpsAccuracyM']} m'} · telemetry ${item['telemetryStale'] == true ? 'đã cũ' : 'trực tuyến'}',
+          title: context.l10n.techRecDataAccuracy,
+          value: context.l10n.techRecAccuracyLine(
+            _gpsSourceLabel(item['gpsSource']),
+            item['gpsAccuracyM'] == null
+                ? context.l10n.techRecUnknown
+                : '±${item['gpsAccuracyM']} m',
+            item['telemetryStale'] == true
+                ? context.l10n.techRecTelemetryStale
+                : context.l10n.techRecTelemetryLive,
+          ),
         ),
         if (item['dropLatitude'] != null) ...[
           const SizedBox(height: 10),
@@ -379,14 +394,14 @@ class _DroneRecoveryDetailState extends State<DroneRecoveryDetail> {
               mode: LaunchMode.externalApplication,
             ),
             icon: const Icon(Icons.directions_outlined),
-            label: const Text('Mở chỉ đường tới vị trí rơi'),
+            label: Text(context.l10n.techRecDirectionsToDrop),
           ),
         ],
         if (evidence.isNotEmpty) ...[
           const SizedBox(height: 14),
-          const Text(
-            'Bằng chứng hiện có',
-            style: TextStyle(fontWeight: FontWeight.w700),
+          Text(
+            context.l10n.techRecEvidence,
+            style: const TextStyle(fontWeight: FontWeight.w700),
           ),
           const SizedBox(height: 8),
           SizedBox(
@@ -418,18 +433,18 @@ class _DroneRecoveryDetailState extends State<DroneRecoveryDetail> {
                             width: 120,
                             height: 100,
                             color: const Color(0xFFE2E8F0),
-                            child: const Column(
+                            child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Icon(
+                                const Icon(
                                   Icons.broken_image_outlined,
                                   color: Color(0xFF94A3B8),
                                   size: 24,
                                 ),
-                                SizedBox(height: 4),
+                                const SizedBox(height: 4),
                                 Text(
-                                  'Lỗi tải ảnh',
-                                  style: TextStyle(
+                                  context.l10n.techRecImageLoadError,
+                                  style: const TextStyle(
                                     fontSize: 10,
                                     color: Color(0xFF64748B),
                                   ),
@@ -466,39 +481,43 @@ class _DroneRecoveryDetailState extends State<DroneRecoveryDetail> {
         if (status == 'ASSIGNED')
           FilledButton(
             onPressed: _busy ? null : () => _action('ACCEPT'),
-            child: const Text('Nhận nhiệm vụ'),
+            child: Text(context.l10n.techRecAccept),
           ),
         if (status == 'ACCEPTED')
           FilledButton(
             onPressed: _busy ? null : () => _action('START_SEARCHING'),
-            child: const Text('Bắt đầu tìm kiếm'),
+            child: Text(context.l10n.techRecStartSearch),
           ),
         if (status == 'SEARCHING')
           FilledButton.icon(
             onPressed: _busy ? null : () => _submitSheet(item),
             icon: const Icon(Icons.fact_check_outlined),
-            label: const Text('Ghi nhận kết quả tìm kiếm'),
+            label: Text(context.l10n.techRecRecordResult),
           ),
         if (status == 'VERIFIED' && item['recoveryOutcome'] == 'FOUND')
           FilledButton(
             onPressed: _busy ? null : _handover,
             child: Text(
               _stationName(item) == null
-                  ? 'Xác nhận bàn giao kiện về Hub / kho'
-                  : 'Xác nhận đã giao kiện tại trạm ${_stationName(item)}',
+                  ? context.l10n.techRecConfirmHubHandover
+                  : context.l10n.techRecConfirmStationHandover(
+                      '${_stationName(item)}',
+                    ),
             ),
           ),
         if (status == 'SUBMITTED')
-          const _Info(
-            title: 'Kết quả đã gửi',
-            value: 'Admin sẽ xác minh bằng chứng và quyết định bước tiếp theo.',
+          _Info(
+            title: context.l10n.techRecSubmittedTitle,
+            value: context.l10n.techRecSubmittedBody,
           ),
         if (status == 'CLOSED')
           _Info(
-            title: 'Đã hoàn tất thu hồi',
+            title: context.l10n.techRecClosedTitle,
             value: _stationName(item) == null
-                ? 'Admin đã xác minh và kiện đã về Hub / kho. Bạn không cần làm gì thêm.'
-                : 'Kiện đã giao tại trạm ${_stationName(item)}. Bạn không cần làm gì thêm.',
+                ? context.l10n.techRecClosedHubBody
+                : context.l10n.techRecClosedStationBody(
+                    '${_stationName(item)}',
+                  ),
           ),
       ],
     );
@@ -534,23 +553,19 @@ class _DroneRecoveryDetailState extends State<DroneRecoveryDetail> {
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Không lấy được vị trí GPS'),
-        content: const Text(
-          'Kết quả thu hồi cần toạ độ nơi chụp để Admin đối chiếu. Hãy bật định vị '
-          'và cấp quyền vị trí rồi thử lại. Chỉ gửi không kèm GPS khi thật sự không '
-          'thể định vị — Admin sẽ thấy bằng chứng thiếu toạ độ.',
-        ),
+        title: Text(ctx.l10n.techRecNoGpsTitle),
+        content: Text(ctx.l10n.techRecNoGpsBody),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Thử lại sau'),
+            child: Text(ctx.l10n.techRecRetryLater),
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
             style: TextButton.styleFrom(
               foregroundColor: const Color(0xFFDC2626),
             ),
-            child: const Text('Vẫn gửi không kèm GPS'),
+            child: Text(ctx.l10n.techRecSendWithoutGps),
           ),
         ],
       ),
@@ -576,7 +591,7 @@ class _DroneRecoveryDetailState extends State<DroneRecoveryDetail> {
             (item['recoveryStationLatitude'] as num).toDouble(),
             (item['recoveryStationLongitude'] as num).toDouble(),
           ),
-          title: 'Trạm ${_stationName(item) ?? ''}',
+          title: context.l10n.techRecStationTitle(_stationName(item) ?? ''),
           subtitle: address.isEmpty || address == 'null' ? null : address,
         ),
       ),
@@ -591,24 +606,22 @@ class _DroneRecoveryDetailState extends State<DroneRecoveryDetail> {
       builder: (dialogContext) => AlertDialog(
         title: Text(
           station == null
-              ? 'Bàn giao kiện về Hub / kho?'
-              : 'Đã giao kiện tại trạm $station?',
+              ? dialogContext.l10n.techRecHandoverHubTitle
+              : dialogContext.l10n.techRecHandoverStationTitle(station),
         ),
         content: Text(
           station == null
-              ? 'Chỉ xác nhận khi kiện đã nằm ở Hub / kho và đã có người nhận bàn giao. '
-                    'Sau bước này kiện thuộc trách nhiệm của Hub.'
-              : 'Chỉ xác nhận khi kiện đã nằm ở trạm $station và đã có người nhận bàn giao. '
-                    'Sau bước này kiện chờ drone bay giao lại cho khách.',
+              ? dialogContext.l10n.techRecHandoverHubBody
+              : dialogContext.l10n.techRecHandoverStationBody(station),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext, false),
-            child: const Text('Chưa'),
+            child: Text(dialogContext.l10n.commonNotYet),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(dialogContext, true),
-            child: const Text('Đã bàn giao'),
+            child: Text(dialogContext.l10n.techRecHandedOver),
           ),
         ],
       ),
@@ -620,8 +633,8 @@ class _DroneRecoveryDetailState extends State<DroneRecoveryDetail> {
       await _load();
       _message(
         station == null
-            ? 'Đã xác nhận kiện về Hub / kho.'
-            : 'Đã xác nhận giao kiện tại trạm $station.',
+            ? L10n.current.techRecHubHandoverDone
+            : L10n.current.techRecStationHandoverDone(station),
       );
     } catch (error) {
       _message(LockerOpsService.errorMessage(error));
@@ -644,12 +657,12 @@ class _DroneRecoveryDetailState extends State<DroneRecoveryDetail> {
     final dropLat = (item['dropLatitude'] as num?)?.toDouble();
     final dropLng = (item['dropLongitude'] as num?)?.toDouble();
 
-    const quickNoteTags = [
-      'Kiện còn nguyên vẹn, niêm phong tốt',
-      'Bao bì rách/móp nhẹ do va đập',
-      'Drone gãy cánh, kẹt cành cây',
-      'Đã tìm khắp khu vực không thấy kiện',
-      'Khu vực không an toàn, không tiếp cận được',
+    final quickNoteTags = [
+      context.l10n.techRecTagIntact,
+      context.l10n.techRecTagPackagingDamaged,
+      context.l10n.techRecTagDroneStuck,
+      context.l10n.techRecTagNotFound,
+      context.l10n.techRecTagUnsafe,
     ];
 
     await showModalBottomSheet<void>(
@@ -675,14 +688,20 @@ class _DroneRecoveryDetailState extends State<DroneRecoveryDetail> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const Text(
-                    'Báo cáo hiện trường & Kết quả thu hồi',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+                  Text(
+                    context.l10n.techRecSheetTitle,
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w800,
+                    ),
                   ),
                   const SizedBox(height: 6),
-                  const Text(
-                    'KTV kiosk phải bấm xác nhận tọa độ thực tế tại điểm tìm kiếm, nhập ghi chú tình trạng và chụp ảnh bằng chứng.',
-                    style: TextStyle(fontSize: 12, color: Color(0xFF64748B)),
+                  Text(
+                    context.l10n.techRecSheetHint,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: Color(0xFF64748B),
+                    ),
                   ),
                   const SizedBox(height: 14),
 
@@ -718,8 +737,8 @@ class _DroneRecoveryDetailState extends State<DroneRecoveryDetail> {
                             Expanded(
                               child: Text(
                                 confirmedPosition != null
-                                    ? 'Đã xác nhận tọa độ hiện trường'
-                                    : 'Xác nhận tọa độ GPS tại hiện trường',
+                                    ? context.l10n.techRecGpsConfirmed
+                                    : context.l10n.techRecConfirmGpsTitle,
                                 style: TextStyle(
                                   fontSize: 13,
                                   fontWeight: FontWeight.w700,
@@ -733,9 +752,9 @@ class _DroneRecoveryDetailState extends State<DroneRecoveryDetail> {
                         ),
                         const SizedBox(height: 6),
                         if (confirmedPosition == null) ...[
-                          const Text(
-                            'Bấm nút bên dưới để lấy toạ độ GPS chính xác nơi bạn đang đứng đối chiếu với điểm drone rơi.',
-                            style: TextStyle(
+                          Text(
+                            context.l10n.techRecConfirmGpsHint,
+                            style: const TextStyle(
                               fontSize: 11.5,
                               color: Color(0xFF64748B),
                             ),
@@ -767,7 +786,7 @@ class _DroneRecoveryDetailState extends State<DroneRecoveryDetail> {
                                           });
                                         } else {
                                           _message(
-                                            'Không lấy được toạ độ GPS. Vui lòng bật định vị và cấp quyền vị trí.',
+                                            L10n.current.techRecGpsUnavailable,
                                           );
                                         }
                                       } finally {
@@ -787,14 +806,18 @@ class _DroneRecoveryDetailState extends State<DroneRecoveryDetail> {
                                   : const Icon(Icons.gps_fixed, size: 16),
                               label: Text(
                                 checkingGps
-                                    ? 'Đang đọc tín hiệu GPS...'
-                                    : 'Bấm xác nhận tọa độ hiện trường',
+                                    ? context.l10n.techRecReadingGps
+                                    : context.l10n.techRecConfirmGpsButton,
                               ),
                             ),
                           ),
                         ] else ...[
                           Text(
-                            'Tọa độ: ${confirmedPosition!.latitude.toStringAsFixed(6)}, ${confirmedPosition!.longitude.toStringAsFixed(6)} (Sai số: ±${confirmedPosition!.accuracy.toStringAsFixed(1)} m)',
+                            context.l10n.techRecCoordinates(
+                              confirmedPosition!.latitude.toStringAsFixed(6),
+                              confirmedPosition!.longitude.toStringAsFixed(6),
+                              confirmedPosition!.accuracy.toStringAsFixed(1),
+                            ),
                             style: const TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w600,
@@ -816,8 +839,12 @@ class _DroneRecoveryDetailState extends State<DroneRecoveryDetail> {
                               ),
                               child: Text(
                                 distanceMeters! <= 100
-                                    ? '✓ Trong phạm vi hiện trường (~${distanceMeters!.round()} m từ điểm rơi)'
-                                    : '⚠️ Cách điểm rơi ~${distanceMeters!.round()} m (Tiến lại gần hơn nếu có thể)',
+                                    ? context.l10n.techRecWithinRange(
+                                        distanceMeters!.round(),
+                                      )
+                                    : context.l10n.techRecOutOfRange(
+                                        distanceMeters!.round(),
+                                      ),
                                 style: TextStyle(
                                   fontSize: 11,
                                   fontWeight: FontWeight.w600,
@@ -865,9 +892,9 @@ class _DroneRecoveryDetailState extends State<DroneRecoveryDetail> {
                                       }
                                     },
                               icon: const Icon(Icons.refresh, size: 14),
-                              label: const Text(
-                                'Cập nhật lại GPS',
-                                style: TextStyle(fontSize: 12),
+                              label: Text(
+                                context.l10n.techRecRefreshGps,
+                                style: const TextStyle(fontSize: 12),
                               ),
                             ),
                           ),
@@ -880,22 +907,22 @@ class _DroneRecoveryDetailState extends State<DroneRecoveryDetail> {
                   // ---- Phần 2: Kết quả & Tình trạng kiện ----
                   DropdownButtonFormField<String>(
                     initialValue: outcome,
-                    decoration: const InputDecoration(
-                      labelText: 'Kết quả tìm kiếm',
-                      border: OutlineInputBorder(),
+                    decoration: InputDecoration(
+                      labelText: context.l10n.techRecSearchResult,
+                      border: const OutlineInputBorder(),
                     ),
-                    items: const [
+                    items: [
                       DropdownMenuItem(
                         value: 'FOUND',
-                        child: Text('Đã tìm thấy kiện hàng'),
+                        child: Text(context.l10n.techRecOutcomeFound),
                       ),
                       DropdownMenuItem(
                         value: 'NOT_FOUND',
-                        child: Text('Không tìm thấy kiện hàng'),
+                        child: Text(context.l10n.techRecOutcomeNotFound),
                       ),
                       DropdownMenuItem(
                         value: 'UNSAFE',
-                        child: Text('Khu vực không an toàn để tìm'),
+                        child: Text(context.l10n.techRecOutcomeUnsafe),
                       ),
                     ],
                     onChanged: (value) =>
@@ -905,30 +932,30 @@ class _DroneRecoveryDetailState extends State<DroneRecoveryDetail> {
                     const SizedBox(height: 10),
                     DropdownButtonFormField<String>(
                       initialValue: condition,
-                      decoration: const InputDecoration(
-                        labelText: 'Tình trạng kiện',
-                        border: OutlineInputBorder(),
+                      decoration: InputDecoration(
+                        labelText: context.l10n.cdiParcelState,
+                        border: const OutlineInputBorder(),
                       ),
-                      items: const [
+                      items: [
                         DropdownMenuItem(
                           value: 'INTACT',
-                          child: Text('Nguyên vẹn'),
+                          child: Text(context.l10n.techRecCondIntact),
                         ),
                         DropdownMenuItem(
                           value: 'MINOR_DAMAGE',
-                          child: Text('Hư hại nhẹ'),
+                          child: Text(context.l10n.techRecCondMinor),
                         ),
                         DropdownMenuItem(
                           value: 'MAJOR_DAMAGE',
-                          child: Text('Hư hại nặng'),
+                          child: Text(context.l10n.techRecCondMajor),
                         ),
                         DropdownMenuItem(
                           value: 'UNUSABLE',
-                          child: Text('Không thể sử dụng'),
+                          child: Text(context.l10n.techRecCondUnusable),
                         ),
                         DropdownMenuItem(
                           value: 'UNKNOWN',
-                          child: Text('Chưa xác định'),
+                          child: Text(context.l10n.commonUndetermined),
                         ),
                       ],
                       onChanged: (value) =>
@@ -941,11 +968,10 @@ class _DroneRecoveryDetailState extends State<DroneRecoveryDetail> {
                   TextField(
                     controller: note,
                     maxLines: 3,
-                    decoration: const InputDecoration(
-                      labelText: 'Ghi chú hiện trường (Bắt buộc nhập mô tả)',
-                      hintText:
-                          'Mô tả vị trí phát hiện, hiện trạng drone, tình trạng kiện, nơi lưu trữ tạm...',
-                      border: OutlineInputBorder(),
+                    decoration: InputDecoration(
+                      labelText: context.l10n.techRecNoteLabel,
+                      hintText: context.l10n.techRecNoteHint,
+                      border: const OutlineInputBorder(),
                     ),
                   ),
                   const SizedBox(height: 6),
@@ -995,8 +1021,7 @@ class _DroneRecoveryDetailState extends State<DroneRecoveryDetail> {
                       controller: photos,
                       enabled: !sending,
                       cameraOnly: true,
-                      helperText:
-                          'Bắt buộc ít nhất 1 ảnh chụp trực tiếp tại hiện trường (kèm toạ độ).',
+                      helperText: context.l10n.techRecPhotoHelper,
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -1018,14 +1043,14 @@ class _DroneRecoveryDetailState extends State<DroneRecoveryDetail> {
                             if (photos.isEmpty) {
                               setLocal(
                                 () => formError =
-                                    'Vui lòng chụp ít nhất 1 ảnh hiện trường.',
+                                    context.l10n.techRecPhotoRequired,
                               );
                               return;
                             }
                             if (note.text.trim().isEmpty) {
                               setLocal(
                                 () => formError =
-                                    'Vui lòng nhập ghi chú hiện trường.',
+                                    context.l10n.techRecNoteRequired,
                               );
                               return;
                             }
@@ -1086,7 +1111,7 @@ class _DroneRecoveryDetailState extends State<DroneRecoveryDetail> {
                           },
                     child: sending
                         ? const CircularProgressIndicator()
-                        : const Text('Gửi Admin xác minh'),
+                        : Text(context.l10n.techRecSubmit),
                   ),
                 ],
               ),
@@ -1197,7 +1222,7 @@ class _RecoveryStationCard extends StatelessWidget {
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  'Mang kiện tới trạm $name',
+                  context.l10n.techRecBringToStation(name),
                   style: TextStyle(fontWeight: FontWeight.w800, color: tone),
                 ),
               ),
@@ -1211,10 +1236,12 @@ class _RecoveryStationCard extends StatelessWidget {
           Text(
             [
               if (distance is num)
-                'Cách nơi tìm thấy ~${(distance / 1000).toStringAsFixed(1)} km',
+                context.l10n.techRecDistanceFromFound(
+                  (distance / 1000).toStringAsFixed(1),
+                ),
               noDrone
-                  ? 'Trạm đang hết drone — kiện chờ drone tại trạm'
-                  : 'Trạm còn drone sẵn sàng giao lại',
+                  ? context.l10n.techRecStationNoDrone
+                  : context.l10n.techRecStationHasDrone,
             ].join(' · '),
             style: const TextStyle(fontSize: 12, color: Color(0xFF64748B)),
           ),
@@ -1224,7 +1251,7 @@ class _RecoveryStationCard extends StatelessWidget {
               key: const ValueKey('drone-recovery-station-directions'),
               onPressed: onDirections,
               icon: const Icon(Icons.directions_outlined),
-              label: const Text('Chỉ đường tới trạm'),
+              label: Text(context.l10n.techRecDirectionsToStation),
             ),
           ],
         ],
@@ -1282,9 +1309,9 @@ class _Pill extends StatelessWidget {
 
 /// Toạ độ điểm rơi lấy từ đâu: GPS drone thật hay ước theo tuyến bay.
 String _gpsSourceLabel(Object? source) => switch ('${source ?? ''}'.toUpperCase()) {
-  'TELEMETRY' || 'DRONE_GPS' || 'GPS' => 'GPS drone',
-  'FLIGHT_PATH' => 'ước theo tuyến bay',
-  'UNAVAILABLE' => 'chưa có',
-  '' => 'không rõ',
+  'TELEMETRY' || 'DRONE_GPS' || 'GPS' => L10n.current.techRecGpsSourceDrone,
+  'FLIGHT_PATH' => L10n.current.techRecGpsSourceFlightPath,
+  'UNAVAILABLE' => L10n.current.techRecGpsSourceNone,
+  '' => L10n.current.techRecUnknown,
   final other => other.toLowerCase(),
 };

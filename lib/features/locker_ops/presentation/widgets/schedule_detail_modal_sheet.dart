@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 import 'package:smart_laundry_locker/core/media/media.dart';
 import 'package:smart_laundry_locker/core/services/app_event_bus.dart';
 import 'package:smart_laundry_locker/core/utils/app_date_time.dart';
@@ -157,7 +158,7 @@ class _ScheduleDetailModalSheetState extends State<ScheduleDetailModalSheet> {
   }
 
   String _formatDateTime(dynamic value) {
-    if (value == null) return 'Chưa xác định';
+    if (value == null) return context.l10n.commonUndetermined;
     final dt = parseServerDateTime(value);
     if (dt == null) return '$value';
     String two(int n) => n.toString().padLeft(2, '0');
@@ -165,7 +166,7 @@ class _ScheduleDetailModalSheetState extends State<ScheduleDetailModalSheet> {
   }
 
   String _formatDateOnly(dynamic value) {
-    if (value == null) return 'Chưa xác định';
+    if (value == null) return context.l10n.commonUndetermined;
     final dt = parseServerDateTime(value);
     if (dt == null) return '$value';
     String two(int n) => n.toString().padLeft(2, '0');
@@ -226,13 +227,12 @@ class _ScheduleDetailModalSheetState extends State<ScheduleDetailModalSheet> {
     final dayDiff = targetDate.difference(today).inDays;
 
     if (dayDiff < 0) {
-      return ('Quá hạn ${-dayDiff} ngày', true);
+      return (context.l10n.techUiOverdueDays(-dayDiff), true);
     } else if (dayDiff == 0) {
-      return ('Đến hạn hôm nay', true);
-    } else if (dayDiff == 1) {
-      return ('Còn 1 ngày nữa đến hạn', false);
+      return (context.l10n.techUiDueToday, true);
     } else {
-      return ('Còn $dayDiff ngày nữa đến hạn', false);
+      // Gồm cả 1 ngày: bản tiếng Việt "Còn 1 ngày nữa đến hạn" giữ nguyên.
+      return (context.l10n.techUiDueInDays(dayDiff), false);
     }
   }
 
@@ -274,7 +274,7 @@ class _ScheduleDetailModalSheetState extends State<ScheduleDetailModalSheet> {
     final lockerName = s['lockerName'];
     final targetLabel = isDrone
         ? 'Drone ${s['droneCode'] ?? s['droneUnitId'] ?? '—'}'
-        : '${lockerName ?? "Trạm Kiosk"}${lockerCode != null ? " ($lockerCode)" : ""}';
+        : '${lockerName ?? context.l10n.urdKioskStation}${lockerCode != null ? " ($lockerCode)" : ""}';
     final lastDone = s['lastDoneAt'] != null
         ? _formatDateTime(s['lastDoneAt'])
         : null;
@@ -285,20 +285,20 @@ class _ScheduleDetailModalSheetState extends State<ScheduleDetailModalSheet> {
     final assignedId = s['assignedTechnicianId']?.toString();
     final assignedToMe = widget.isMine;
     final blockedReason = pendingReportId != null
-        ? 'Lần trước không đạt — hoàn tất phiếu RPT-$pendingReportId trước khi kiểm tra lại.'
+        ? context.l10n.techUiPrevFailedFinishTicket(pendingReportId)
         : assignedId != null && !assignedToMe
-        ? 'Lịch do KTV khác phụ trách.'
+        ? context.l10n.techUiScheduleOtherTech
         : null;
 
     final rawPriority = (s['priority'] ?? 'NORMAL').toString().toUpperCase();
     final (priorityLabel, priorityColor) = switch (rawPriority) {
-      'URGENT' => ('Khẩn cấp', const Color(0xFFDC2626)),
-      'HIGH' => ('Cao', const Color(0xFFEA580C)),
-      'LOW' => ('Thấp', const Color(0xFF64748B)),
+      'URGENT' => (context.l10n.techUiPriorityUrgent, const Color(0xFFDC2626)),
+      'HIGH' => (context.l10n.techUiPriorityHigh, const Color(0xFFEA580C)),
+      'LOW' => (context.l10n.techUiPriorityLow, const Color(0xFF64748B)),
       _ => (
         isDrone
-            ? 'Bình thường (Drone tiêu chuẩn)'
-            : 'Bình thường (Trạm tiêu chuẩn)',
+            ? context.l10n.techUiPriorityNormalDrone
+            : context.l10n.techUiPriorityNormalStation,
         const Color(0xFF0284C7),
       ),
     };
@@ -382,7 +382,7 @@ class _ScheduleDetailModalSheetState extends State<ScheduleDetailModalSheet> {
                           const SizedBox(width: 8),
                           Flexible(
                             child: Text(
-                              s['title'] ?? 'Lịch kiểm tra định kỳ',
+                              s['title'] ?? context.l10n.techUiRoutineSchedule,
                               style: const TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
@@ -405,7 +405,9 @@ class _ScheduleDetailModalSheetState extends State<ScheduleDetailModalSheet> {
                               borderRadius: BorderRadius.circular(6),
                             ),
                             child: Text(
-                              isDrone ? 'Định kỳ Drone' : 'Định kỳ Kiosk',
+                              isDrone
+                                  ? context.l10n.techUiDroneRoutine
+                                  : context.l10n.techUiKioskRoutine,
                               style: const TextStyle(
                                 fontSize: 11,
                                 fontWeight: FontWeight.w600,
@@ -417,7 +419,7 @@ class _ScheduleDetailModalSheetState extends State<ScheduleDetailModalSheet> {
                       ),
                       const SizedBox(height: 3),
                       Text(
-                        'Hồ sơ chi tiết kế hoạch kiểm tra bảo trì định kỳ',
+                        context.l10n.techUiSchedulePlanRecord,
                         style: TextStyle(
                           fontSize: 12,
                           color: Colors.grey.shade600,
@@ -466,8 +468,8 @@ class _ScheduleDetailModalSheetState extends State<ScheduleDetailModalSheet> {
                             children: [
                               Text(
                                 isDrone
-                                    ? 'Kế hoạch bảo trì định kỳ Drone'
-                                    : 'Kế hoạch kiểm tra bảo trì định kỳ Kiosk',
+                                    ? context.l10n.techUiDroneMaintenancePlan
+                                    : context.l10n.techUiKioskInspectionPlan,
                                 style: const TextStyle(
                                   fontWeight: FontWeight.bold,
                                   fontSize: 13,
@@ -477,8 +479,8 @@ class _ScheduleDetailModalSheetState extends State<ScheduleDetailModalSheet> {
                               const SizedBox(height: 2),
                               Text(
                                 isDrone
-                                    ? 'Đây là lịch bảo trì Drone theo chu kỳ do Quản trị viên thiết lập; kết quả checklist được lưu vào hồ sơ vận hành.'
-                                    : 'Đây là lịch kiểm tra bảo dưỡng định kỳ tự động theo chu kỳ cho trạm Kiosk do Quản trị viên thiết lập (không phải là phiếu báo hỏng sự cố).',
+                                    ? context.l10n.techUiDronePlanNote
+                                    : context.l10n.techUiKioskPlanNote,
                                 style: const TextStyle(
                                   fontSize: 11.5,
                                   color: Color(0xFF6D28D9),
@@ -501,7 +503,7 @@ class _ScheduleDetailModalSheetState extends State<ScheduleDetailModalSheet> {
                       if (due)
                         _buildMiniPill(
                           icon: Icons.warning_amber_rounded,
-                          text: 'Đến hạn kiểm tra',
+                          text: context.l10n.techUiInspectionDue,
                           color: const Color(0xFFDC2626),
                         )
                       else if (rem.$1.isNotEmpty)
@@ -512,27 +514,31 @@ class _ScheduleDetailModalSheetState extends State<ScheduleDetailModalSheet> {
                         ),
                       _buildMiniPill(
                         icon: Icons.flag_outlined,
-                        text: 'Ưu tiên: $priorityLabel',
+                        text: context.l10n.techUiPriorityLabel(priorityLabel),
                         color: priorityColor,
                       ),
                       _buildMiniPill(
                         icon: Icons.repeat,
-                        text: 'Chu kỳ: Mỗi ${s['intervalDays']} ngày',
+                        text: context.l10n.techUiCycleEveryDays(
+                          '${s['intervalDays']}',
+                        ),
                         color: const Color(0xFF475569),
                       ),
                       if (timeSlot.isNotEmpty)
                         _buildMiniPill(
                           icon: Icons.access_time_filled,
-                          text: 'Ca: $timeSlot',
+                          text: context.l10n.techUiShiftSlot(timeSlot),
                           color: const Color(0xFFD97706),
                         ),
                       _buildMiniPill(
                         icon: Icons.engineering_outlined,
                         text: assignedId == null
-                            ? 'Chưa giao KTV'
+                            ? context.l10n.techUiNoTechAssigned
                             : assignedToMe
-                            ? 'KTV phụ trách: Bạn'
-                            : 'KTV phụ trách: ${s['assignedTechnicianName'] ?? '#$assignedId'}',
+                            ? context.l10n.techUiTechInChargeYou
+                            : context.l10n.urdTechInCharge(
+                                '${s['assignedTechnicianName'] ?? '#$assignedId'}',
+                              ),
                         color: assignedToMe
                             ? const Color(0xFF16A34A)
                             : opsMutedText,
@@ -586,7 +592,9 @@ class _ScheduleDetailModalSheetState extends State<ScheduleDetailModalSheet> {
                               const SizedBox(width: 6),
                               Expanded(
                                 child: Text(
-                                  'Vị trí đặt trong toà nhà: $locationNote',
+                                  context.l10n.techUiPlacementInBuilding(
+                                    locationNote,
+                                  ),
                                   style: const TextStyle(
                                     fontSize: 12,
                                     color: Color(0xFF4F46E5),
@@ -637,8 +645,8 @@ class _ScheduleDetailModalSheetState extends State<ScheduleDetailModalSheet> {
                             ),
                             label: Text(
                               isDrone
-                                  ? 'Chỉ đường tới trạm Drone'
-                                  : 'Chỉ đường tới tủ',
+                                  ? context.l10n.techUiDirectionsDroneStation
+                                  : context.l10n.ordDirectionsToLocker,
                               style: const TextStyle(
                                 fontSize: 12,
                                 color: opsPrimary,
@@ -677,9 +685,9 @@ class _ScheduleDetailModalSheetState extends State<ScheduleDetailModalSheet> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
-                          'Kế hoạch & Thời hạn kiểm tra:',
-                          style: TextStyle(
+                        Text(
+                          context.l10n.techUiPlanAndDeadline,
+                          style: const TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 13,
                             color: opsDark,
@@ -688,7 +696,7 @@ class _ScheduleDetailModalSheetState extends State<ScheduleDetailModalSheet> {
                         const SizedBox(height: 10),
                         _buildDetailRow(
                           icon: Icons.event,
-                          label: 'Hạn kiểm tra tới (Ngày hẹn):',
+                          label: context.l10n.techUiDueDateLabel,
                           value: _formatDateOnly(s['nextDueAt']),
                           highlightColor: due
                               ? const Color(0xFFDC2626)
@@ -698,42 +706,43 @@ class _ScheduleDetailModalSheetState extends State<ScheduleDetailModalSheet> {
                           const SizedBox(height: 8),
                           _buildDetailRow(
                             icon: Icons.access_time,
-                            label: 'Giờ hẹn bắt đầu cụ thể:',
+                            label: context.l10n.techUiStartTimeLabel,
                             value: _formatTimeOnly(s['nextDueAt']),
                           ),
                         ],
                         const SizedBox(height: 8),
                         _buildDetailRow(
                           icon: Icons.hourglass_top_outlined,
-                          label: 'Khung giờ / Ca kiểm tra:',
+                          label: context.l10n.techUiTimeSlotLabel,
                           value: timeSlot.isNotEmpty
                               ? timeSlot
-                              : 'Khung giờ linh hoạt',
+                              : context.l10n.techUiFlexibleSlot,
                         ),
                         const SizedBox(height: 8),
                         _buildDetailRow(
                           icon: Icons.repeat,
-                          label: 'Chu kỳ lặp lại:',
-                          value:
-                              'Mỗi ${s['intervalDays']} ngày thực hiện 1 lần',
+                          label: context.l10n.techUiRepeatCycleLabel,
+                          value: context.l10n.techUiEveryDaysOnce(
+                            '${s['intervalDays']}',
+                          ),
                         ),
                         const SizedBox(height: 8),
                         _buildDetailRow(
                           icon: Icons.flag_outlined,
-                          label: 'Mức độ ưu tiên:',
+                          label: context.l10n.techUiPriorityLevelLabel,
                           value: priorityLabel,
                           highlightColor: priorityColor,
                         ),
                         const SizedBox(height: 8),
                         _buildDetailRow(
                           icon: Icons.engineering_outlined,
-                          label: 'Kỹ thuật viên phụ trách:',
+                          label: context.l10n.techUiTechnicianLabel,
                           value: assignedId == null
-                              ? 'Chưa phân công (Chờ nhận)'
+                              ? context.l10n.techUiUnassignedWaiting
                               : assignedToMe
-                              ? 'Bạn (Được giao cho tôi)'
+                              ? context.l10n.techUiYouAssigned
                               : (s['assignedTechnicianName'] ??
-                                    'KTV #$assignedId'),
+                                    context.l10n.urdTechId(assignedId)),
                           highlightColor: assignedToMe
                               ? const Color(0xFF16A34A)
                               : null,
@@ -741,8 +750,9 @@ class _ScheduleDetailModalSheetState extends State<ScheduleDetailModalSheet> {
                         const SizedBox(height: 8),
                         _buildDetailRow(
                           icon: Icons.history,
-                          label: 'Lần kiểm tra trước:',
-                          value: lastDone ?? 'Chưa có lịch sử kiểm tra',
+                          label: context.l10n.techUiLastInspectionLabel,
+                          value:
+                              lastDone ?? context.l10n.techUiNoInspectionHistory,
                         ),
                       ],
                     ),
@@ -771,7 +781,9 @@ class _ScheduleDetailModalSheetState extends State<ScheduleDetailModalSheet> {
                             const SizedBox(width: 6),
                             Expanded(
                               child: Text(
-                                'Bộ tiêu chí kiểm định (${checklistItems.length} mục KTV cần thực hiện):',
+                                context.l10n.techUiChecklistCriteria(
+                                  checklistItems.length,
+                                ),
                                 style: const TextStyle(
                                   fontWeight: FontWeight.bold,
                                   fontSize: 13,
@@ -829,8 +841,8 @@ class _ScheduleDetailModalSheetState extends State<ScheduleDetailModalSheet> {
                         else
                           Text(
                             isDrone
-                                ? 'Kiểm tra toàn diện tình trạng vận hành của Drone.'
-                                : 'Kiểm tra toàn diện hoạt động của trạm tủ Kiosk.',
+                                ? context.l10n.techUiDroneFullCheck
+                                : context.l10n.techUiKioskFullCheck,
                             style: const TextStyle(
                               fontSize: 12,
                               color: opsMutedText,
@@ -856,17 +868,17 @@ class _ScheduleDetailModalSheetState extends State<ScheduleDetailModalSheet> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Row(
-                            children: const [
-                              Icon(
+                            children: [
+                              const Icon(
                                 Icons.lightbulb_outline,
                                 size: 16,
                                 color: Color(0xFFD97706),
                               ),
-                              SizedBox(width: 6),
+                              const SizedBox(width: 6),
                               Expanded(
                                 child: Text(
-                                  'Hướng dẫn nghiệp vụ (Ghi chú SOP từ Quản trị viên):',
-                                  style: TextStyle(
+                                  context.l10n.techUiSopGuide,
+                                  style: const TextStyle(
                                     fontWeight: FontWeight.bold,
                                     fontSize: 12.5,
                                     color: Color(0xFF92400E),
@@ -910,9 +922,9 @@ class _ScheduleDetailModalSheetState extends State<ScheduleDetailModalSheet> {
                               color: opsPrimary,
                             ),
                             const SizedBox(width: 6),
-                            const Text(
-                              'Kết quả kiểm tra lần trước:',
-                              style: TextStyle(
+                            Text(
+                              context.l10n.techUiPrevResultLabel,
+                              style: const TextStyle(
                                 fontWeight: FontWeight.bold,
                                 fontSize: 13,
                                 color: opsDark,
@@ -946,7 +958,9 @@ class _ScheduleDetailModalSheetState extends State<ScheduleDetailModalSheet> {
                               const SizedBox(width: 6),
                               Expanded(
                                 child: Text(
-                                  'Không tải được nhật ký kiểm tra: $_logsError',
+                                  context.l10n.techUiInspectionLogsFailed(
+                                    _logsError!,
+                                  ),
                                   style: const TextStyle(
                                     fontSize: 12,
                                     color: Color(0xFF991B1B),
@@ -955,7 +969,7 @@ class _ScheduleDetailModalSheetState extends State<ScheduleDetailModalSheet> {
                               ),
                               TextButton(
                                 onPressed: _loadInspectionLogs,
-                                child: const Text('Thử lại'),
+                                child: Text(context.l10n.commonRetry),
                               ),
                             ],
                           ),
@@ -1001,10 +1015,10 @@ class _ScheduleDetailModalSheetState extends State<ScheduleDetailModalSheet> {
                                     children: [
                                       Text(
                                         overall == null
-                                            ? 'Đã kiểm tra — không có kết quả chung trong nhật ký'
+                                            ? context.l10n.techUiCheckedNoOverall
                                             : isPassed
-                                            ? 'ĐẠT — Toàn bộ tiêu chí đạt yêu cầu'
-                                            : 'KHÔNG ĐẠT — Có hạng mục bị lỗi cần xử lý',
+                                            ? context.l10n.techUiPassedAllCriteria
+                                            : context.l10n.techUiFailedHasIssues,
                                         style: TextStyle(
                                           fontWeight: FontWeight.bold,
                                           fontSize: 12.5,
@@ -1017,8 +1031,15 @@ class _ScheduleDetailModalSheetState extends State<ScheduleDetailModalSheet> {
                                       ),
                                       const SizedBox(height: 2),
                                       Text(
-                                        'Thời gian: ${_formatDateTime(logCreatedAt)}'
-                                        '${logTechName != null && logTechName.isNotEmpty ? ' · KTV: $logTechName' : ''}',
+                                        logTechName != null &&
+                                                logTechName.isNotEmpty
+                                            ? context.l10n.techUiLogTimeWithTech(
+                                                _formatDateTime(logCreatedAt),
+                                                logTechName,
+                                              )
+                                            : context.l10n.techUiLogTime(
+                                                _formatDateTime(logCreatedAt),
+                                              ),
                                         style: const TextStyle(
                                           fontSize: 11,
                                           color: opsMutedText,
@@ -1044,7 +1065,9 @@ class _ScheduleDetailModalSheetState extends State<ScheduleDetailModalSheet> {
                                 const SizedBox(width: 6),
                                 Expanded(
                                   child: Text(
-                                    'Chi tiết đánh giá từng hạng mục (${itemsToShow.length} mục):',
+                                    context.l10n.techUiItemDetails(
+                                      itemsToShow.length,
+                                    ),
                                     style: const TextStyle(
                                       fontWeight: FontWeight.bold,
                                       fontSize: 12,
@@ -1074,19 +1097,19 @@ class _ScheduleDetailModalSheetState extends State<ScheduleDetailModalSheet> {
                                     resBorder,
                                   ) = switch (itemResult) {
                                     'PASS' => (
-                                      '✓ Đạt',
+                                      '✓ ${context.l10n.ddPass}',
                                       const Color(0xFFDCFCE7),
                                       const Color(0xFF166534),
                                       const Color(0xFF86EFAC),
                                     ),
                                     'FAIL' => (
-                                      '✕ Không đạt',
+                                      '✕ ${context.l10n.ddFail}',
                                       const Color(0xFFFEE2E2),
                                       const Color(0xFF991B1B),
                                       const Color(0xFFFCA5A5),
                                     ),
                                     _ => (
-                                      '— Không áp dụng',
+                                      '— ${context.l10n.techUiNotApplicable}',
                                       const Color(0xFFF1F5F9),
                                       const Color(0xFF475569),
                                       const Color(0xFFCBD5E1),
@@ -1198,7 +1221,9 @@ class _ScheduleDetailModalSheetState extends State<ScheduleDetailModalSheet> {
                                                 const SizedBox(width: 4),
                                                 Expanded(
                                                   child: Text(
-                                                    'Ghi chú KTV: $itemNote',
+                                                    context.l10n.techUiTechNote(
+                                                      itemNote,
+                                                    ),
                                                     style: const TextStyle(
                                                       fontSize: 11.5,
                                                       color: Color(0xFFB91C1C),
@@ -1219,9 +1244,9 @@ class _ScheduleDetailModalSheetState extends State<ScheduleDetailModalSheet> {
                             ],
                             const SizedBox(height: 6),
                           ] else ...[
-                            const Text(
-                              'Nhật ký lần trước không lưu kết quả từng hạng mục — chỉ có kết quả chung ở trên.',
-                              style: TextStyle(
+                            Text(
+                              context.l10n.techUiNoItemResultsInLog,
+                              style: const TextStyle(
                                 fontSize: 11.5,
                                 color: opsMutedText,
                                 fontStyle: FontStyle.italic,
@@ -1254,7 +1279,9 @@ class _ScheduleDetailModalSheetState extends State<ScheduleDetailModalSheet> {
                                   const SizedBox(width: 6),
                                   Expanded(
                                     child: Text(
-                                      'Ghi chú KTV: "${_latestLog!['note']}"',
+                                      context.l10n.techUiTechNoteQuoted(
+                                        '${_latestLog!['note']}',
+                                      ),
                                       style: const TextStyle(
                                         fontSize: 11.5,
                                         color: opsDark,
@@ -1291,7 +1318,9 @@ class _ScheduleDetailModalSheetState extends State<ScheduleDetailModalSheet> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      'Ảnh hiện trường KTV đã chụp (${attachments.length} ảnh):',
+                                      context.l10n.techUiFieldPhotosCount(
+                                        attachments.length,
+                                      ),
                                       style: const TextStyle(
                                         fontWeight: FontWeight.bold,
                                         fontSize: 12,
@@ -1301,8 +1330,9 @@ class _ScheduleDetailModalSheetState extends State<ScheduleDetailModalSheet> {
                                     const SizedBox(height: 6),
                                     AttachmentStrip(
                                       attachments: attachments,
-                                      viewerTitle:
-                                          'Ảnh kiểm tra định kỳ lần trước',
+                                      viewerTitle: context
+                                          .l10n
+                                          .techUiPrevInspectionPhotos,
                                     ),
                                     const SizedBox(height: 8),
                                   ],
@@ -1346,7 +1376,9 @@ class _ScheduleDetailModalSheetState extends State<ScheduleDetailModalSheet> {
                                           // Flexible: màn hẹp thì xuống dòng thay vì tràn
                                           Flexible(
                                             child: Text(
-                                              'Phiếu sự cố kỹ thuật liên quan: RPT-$repId',
+                                              context.l10n.techUiRelatedTicket(
+                                                repId,
+                                              ),
                                               style: const TextStyle(
                                                 fontWeight: FontWeight.bold,
                                                 fontSize: 12.5,
@@ -1357,9 +1389,9 @@ class _ScheduleDetailModalSheetState extends State<ScheduleDetailModalSheet> {
                                         ],
                                       ),
                                       const SizedBox(height: 4),
-                                      const Text(
-                                        'Do lần kiểm tra trước không đạt, hệ thống đã mở phiếu sự cố kỹ thuật. Bạn cần xử lý và nghiệm thu hoàn tất phiếu này để lịch định kỳ mở lại cho lần kiểm tra tiếp theo.',
-                                        style: TextStyle(
+                                      Text(
+                                        context.l10n.techUiFailedTicketOpenedNote,
+                                        style: const TextStyle(
                                           fontSize: 11.5,
                                           color: Color(0xFF9A3412),
                                           height: 1.35,
@@ -1390,7 +1422,9 @@ class _ScheduleDetailModalSheetState extends State<ScheduleDetailModalSheet> {
                                             size: 15,
                                           ),
                                           label: Text(
-                                            'Mở phiếu sự cố RPT-$repId để xử lý',
+                                            context.l10n.techUiOpenTicketToHandle(
+                                              repId,
+                                            ),
                                           ),
                                         ),
                                       ),
@@ -1401,9 +1435,9 @@ class _ScheduleDetailModalSheetState extends State<ScheduleDetailModalSheet> {
                             ),
                           ],
                         ] else ...[
-                          const Text(
-                            'Chưa có dữ liệu kiểm tra lần trước (Lịch kiểm tra mới được thiết lập).',
-                            style: TextStyle(
+                          Text(
+                            context.l10n.techUiNoPrevInspection,
+                            style: const TextStyle(
                               fontSize: 12,
                               color: opsMutedText,
                               fontStyle: FontStyle.italic,
@@ -1459,7 +1493,7 @@ class _ScheduleDetailModalSheetState extends State<ScheduleDetailModalSheet> {
                           size: 16,
                         ),
                         label: Text(
-                          'Xử lý phiếu sự cố RPT-$pendingReportId',
+                          context.l10n.techUiHandleTicket(pendingReportId),
                           style: const TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 13.5,
@@ -1490,10 +1524,10 @@ class _ScheduleDetailModalSheetState extends State<ScheduleDetailModalSheet> {
                         icon: const Icon(Icons.fact_check_outlined, size: 16),
                         label: Text(
                           blockedReason != null
-                              ? 'Lịch do KTV khác phụ trách'
+                              ? context.l10n.techUiScheduleOtherTechShort
                               : (due
-                                    ? 'Bắt đầu kiểm tra ngay (Đến hạn)'
-                                    : 'Kiểm tra ngay'),
+                                    ? context.l10n.techUiStartInspectionDue
+                                    : context.l10n.techUiInspectNow),
                           style: const TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 13.5,

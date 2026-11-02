@@ -478,7 +478,7 @@ class _UserReportDetailSheetState extends State<UserReportDetailSheet> {
                         children: [
                           Flexible(
                             child: Text(
-                              'RPT-${r['id']} · ${r['title'] ?? 'Báo cáo sự cố'}',
+                              'RPT-${r['id']} · ${r['title'] ?? context.l10n.techUiIncidentReport}',
                               style: const TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
@@ -598,7 +598,7 @@ class _UserReportDetailSheetState extends State<UserReportDetailSheet> {
                             const SizedBox(width: 6),
                             Expanded(
                               child: Text(
-                                '$lockerLabel${boxLabel != null ? ' · Ô #$boxLabel' : ''}',
+                                '$lockerLabel${boxLabel != null ? ' · ${context.l10n.boxHash(boxLabel)}' : ''}',
                                 style: const TextStyle(
                                   fontWeight: FontWeight.bold,
                                   fontSize: 13,

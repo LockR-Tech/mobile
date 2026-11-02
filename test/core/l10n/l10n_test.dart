@@ -52,6 +52,17 @@ void main() {
     expect(en.commonRetry, 'Try again');
   });
 
+  test('màn KTV tủ có bản tiếng Anh', () {
+    final vi = lookupAppLocalizations(L10n.vi);
+    final en = lookupAppLocalizations(L10n.en);
+
+    expect(vi.techUiOnShiftBadge, 'ĐANG TRONG CA');
+    expect(en.techUiOnShiftBadge, 'ON SHIFT');
+    expect(en.techRecEmptyTitle, 'No parcel recovery tasks yet');
+    // Số ít / số nhiều của các bộ đếm trên màn KTV.
+    expect(en.hoursValue(1), '1 hour');
+  });
+
   testWidgets('nút VI | EN đổi ngôn ngữ và dựng lại app', (tester) async {
     SharedPreferences.setMockInitialValues({});
     await tester.pumpWidget(

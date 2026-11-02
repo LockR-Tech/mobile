@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 /// Hộp thoại giải thích (Pre-permission Rationale) xuất hiện khi Kỹ thuật viên
 /// mở app lần đầu hoặc chuẩn bị vào ca trực.
@@ -108,11 +109,9 @@ class _TechnicianLocationPermissionSheetState
       if (permission == LocationPermission.deniedForever) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text(
-                'Quyền vị trí bị từ chối vĩnh viễn. Vui lòng mở Cài đặt để bật vị trí.',
-              ),
-              backgroundColor: Color(0xFFDC2626),
+            SnackBar(
+              content: Text(context.l10n.techUiLocationDeniedForever),
+              backgroundColor: const Color(0xFFDC2626),
             ),
           );
           await Geolocator.openAppSettings();
@@ -173,22 +172,22 @@ class _TechnicianLocationPermissionSheetState
                   ),
                 ),
                 const SizedBox(width: 14),
-                const Expanded(
+                Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Quyền truy cập vị trí',
-                        style: TextStyle(
+                        context.l10n.techUiLocationAccessTitle,
+                        style: const TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.w800,
                           color: Color(0xFF0F172A),
                         ),
                       ),
-                      SizedBox(height: 2),
+                      const SizedBox(height: 2),
                       Text(
-                        'Dành cho tài khoản Kỹ thuật viên',
-                        style: TextStyle(
+                        context.l10n.techUiForTechnicianAccounts,
+                        style: const TextStyle(
                           fontSize: 13,
                           color: Color(0xFF64748B),
                         ),
@@ -206,9 +205,9 @@ class _TechnicianLocationPermissionSheetState
                 borderRadius: BorderRadius.circular(14),
                 border: Border.all(color: const Color(0xFFE2E8F0)),
               ),
-              child: const Text(
-                'Để hệ thống điều phối chính xác sự cố trạm tủ và nhiệm vụ drone gần bạn nhất, ứng dụng cần truy cập vị trí thiết bị khi bạn đang trong ca làm việc.',
-                style: TextStyle(
+              child: Text(
+                context.l10n.techUiLocationRationale,
+                style: const TextStyle(
                   fontSize: 13.5,
                   height: 1.45,
                   color: Color(0xFF334155),
@@ -219,25 +218,22 @@ class _TechnicianLocationPermissionSheetState
             _benefitRow(
               icon: Icons.near_me_rounded,
               color: const Color(0xFF10B981),
-              title: 'Điều phối & Phân công theo vị trí',
-              subtitle:
-                  'Tự động gán phiếu xử lý, kiểm tra định kỳ và cứu hộ drone tại các tủ quanh bạn.',
+              title: context.l10n.techUiBenefitDispatchTitle,
+              subtitle: context.l10n.techUiBenefitDispatchBody,
             ),
             const SizedBox(height: 12),
             _benefitRow(
               icon: Icons.shield_outlined,
               color: const Color(0xFF0077B6),
-              title: 'Tự động tắt khi hết ca trực',
-              subtitle:
-                  'Vị trí chỉ được truy cập khi bạn bật Vào ca. Khi Hết ca, định vị tự động tắt hoàn toàn để bảo vệ quyền riêng tư.',
+              title: context.l10n.techUiBenefitAutoOffTitle,
+              subtitle: context.l10n.techUiBenefitAutoOffBody,
             ),
             const SizedBox(height: 12),
             _benefitRow(
               icon: Icons.battery_charging_full_rounded,
               color: const Color(0xFFF59E0B),
-              title: 'Tối ưu pin & dữ liệu nền',
-              subtitle:
-                  'Tần suất định vị tự động tối ưu theo khoảng cách di chuyển để không hao pin điện thoại.',
+              title: context.l10n.techUiBenefitBatteryTitle,
+              subtitle: context.l10n.techUiBenefitBatteryBody,
             ),
             const SizedBox(height: 24),
             // Actions
@@ -263,9 +259,9 @@ class _TechnicianLocationPermissionSheetState
                           color: Colors.white,
                         ),
                       )
-                    : const Text(
-                        'Cho phép truy cập vị trí',
-                        style: TextStyle(
+                    : Text(
+                        context.l10n.techUiAllowLocation,
+                        style: const TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.w700,
                         ),
@@ -276,9 +272,9 @@ class _TechnicianLocationPermissionSheetState
             Center(
               child: TextButton(
                 onPressed: _requesting ? null : () => Navigator.pop(context, false),
-                child: const Text(
-                  'Để sau',
-                  style: TextStyle(
+                child: Text(
+                  context.l10n.commonLater,
+                  style: const TextStyle(
                     color: Color(0xFF64748B),
                     fontWeight: FontWeight.w600,
                     fontSize: 14,

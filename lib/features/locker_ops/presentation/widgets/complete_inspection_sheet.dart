@@ -1,20 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:smart_laundry_locker/core/config/business_config_service.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 import 'package:smart_laundry_locker/core/media/media.dart';
 import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/ops_widgets.dart';
 
 /// Kết quả 1 mục checklist kiểm tra định kỳ (giá trị `result` gửi server).
 enum InspectionResult {
-  pass('PASS', 'Đạt', Color(0xFF16A34A)),
-  fail('FAIL', 'Không đạt', Color(0xFFDC2626)),
-  na('NA', 'Không áp dụng', Color(0xFF64748B));
+  pass('PASS', Color(0xFF16A34A)),
+  fail('FAIL', Color(0xFFDC2626)),
+  na('NA', Color(0xFF64748B));
 
-  const InspectionResult(this.code, this.label, this.color);
+  const InspectionResult(this.code, this.color);
 
   final String code;
-  final String label;
   final Color color;
+
+  String get label => switch (this) {
+    InspectionResult.pass => L10n.current.ddPass,
+    InspectionResult.fail => L10n.current.ddFail,
+    InspectionResult.na => L10n.current.techUiNotApplicable,
+  };
 }
 
 /// Các mục checklist của lịch: ưu tiên `checklistItems` server đã tách; response
@@ -173,7 +179,7 @@ class _CompleteInspectionSheetState extends State<CompleteInspectionSheet> {
   Future<void> _submit() async {
     final id = _asInt(widget.schedule['id']);
     if (id == null) {
-      setState(() => _error = 'Mã lịch kiểm tra không hợp lệ.');
+      setState(() => _error = context.l10n.techUiInvalidScheduleId);
       return;
     }
     if (!_complete) return;
@@ -225,13 +231,15 @@ class _CompleteInspectionSheetState extends State<CompleteInspectionSheet> {
     final isDrone = s['droneUnitId'] != null;
     final title =
         s['title'] ??
-        (isDrone ? 'Bảo trì định kỳ Drone' : 'Kiểm tra định kỳ Kiosk');
+        (isDrone
+            ? context.l10n.techUiDroneRoutineMaintenance
+            : context.l10n.techUiKioskRoutineInspection);
     final lockerCode = s['lockerCode'];
     final lockerName = s['lockerName'];
     final targetLabel = isDrone
         ? 'Drone ${s['droneCode'] ?? s['droneUnitId'] ?? '—'}'
-        : '${lockerName ?? "Tủ Kiosk"}${lockerCode != null ? " ($lockerCode)" : ""}';
-    final intervalDays = s['intervalDays'] ?? 30;
+        : '${lockerName ?? context.l10n.techUiKioskLocker}${lockerCode != null ? " ($lockerCode)" : ""}';
+    final intervalDays = _asInt(s['intervalDays']) ?? 30;
     final address = s['address']?.toString() ?? '';
     final locationNote = s['locationNote']?.toString() ?? '';
 
@@ -277,9 +285,9 @@ class _CompleteInspectionSheetState extends State<CompleteInspectionSheet> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
-                          'Xác nhận kiểm tra định kỳ',
-                          style: TextStyle(
+                        Text(
+                          context.l10n.techUiConfirmRoutineInspection,
+                          style: const TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 16,
                             color: opsDark,
@@ -338,7 +346,7 @@ class _CompleteInspectionSheetState extends State<CompleteInspectionSheet> {
                         border: Border.all(color: const Color(0xFFFDE68A)),
                       ),
                       child: Text(
-                        'Chu kỳ: $intervalDays ngày',
+                        context.l10n.techUiCycleDays(intervalDays),
                         style: const TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.bold,
@@ -387,7 +395,10 @@ class _CompleteInspectionSheetState extends State<CompleteInspectionSheet> {
 
               if (_hasChecklist) ...[
                 Text(
-                  'Hạng mục kiểm tra ($_answered/${_items.length})',
+                  context.l10n.techUiChecklistProgress(
+                    _answered,
+                    _items.length,
+                  ),
                   style: const TextStyle(
                     fontSize: 12.5,
                     fontWeight: FontWeight.bold,
@@ -397,9 +408,9 @@ class _CompleteInspectionSheetState extends State<CompleteInspectionSheet> {
                 const SizedBox(height: 8),
                 for (var i = 0; i < _items.length; i++) _itemTile(i),
               ] else ...[
-                const Text(
-                  'Lịch này chưa có checklist — chọn kết quả chung:',
-                  style: TextStyle(
+                Text(
+                  context.l10n.techUiNoChecklistPickOverall,
+                  style: const TextStyle(
                     fontSize: 12.5,
                     fontWeight: FontWeight.bold,
                     color: opsDark,
@@ -438,10 +449,10 @@ class _CompleteInspectionSheetState extends State<CompleteInspectionSheet> {
                 minLines: 2,
                 maxLines: 4,
                 decoration: InputDecoration(
-                  labelText: 'Ghi chú biên bản kiểm tra (tuỳ chọn)',
+                  labelText: context.l10n.techUiInspectionNoteLabel,
                   hintText: isDrone
-                      ? 'Tình trạng pin, động cơ, cánh quạt, cảm biến hoặc linh kiện đã thay...'
-                      : 'Tình trạng chung, vệ sinh ô tủ, linh kiện đã thay nếu có...',
+                      ? context.l10n.techUiInspectionNoteHintDrone
+                      : context.l10n.techUiInspectionNoteHintKiosk,
                   isDense: true,
                   alignLabelWithHint: true,
                   border: OutlineInputBorder(
@@ -453,9 +464,9 @@ class _CompleteInspectionSheetState extends State<CompleteInspectionSheet> {
               const SizedBox(height: 14),
 
               // Ảnh minh chứng (tuỳ chọn)
-              const Text(
-                'Ảnh minh chứng hiện trường (tuỳ chọn):',
-                style: TextStyle(
+              Text(
+                context.l10n.techUiFieldPhotosOptional,
+                style: const TextStyle(
                   fontSize: 12.5,
                   fontWeight: FontWeight.bold,
                   color: opsDark,
@@ -464,8 +475,8 @@ class _CompleteInspectionSheetState extends State<CompleteInspectionSheet> {
               const SizedBox(height: 4),
               Text(
                 isDrone
-                    ? 'Chụp ảnh Drone, pin hoặc linh kiện vừa kiểm tra để lưu hồ sơ đối soát.'
-                    : 'Chụp ảnh toàn cảnh tủ, ổ khóa hoặc linh kiện vừa kiểm tra để lưu hồ sơ đối soát.',
+                    ? context.l10n.techUiFieldPhotosHintDrone
+                    : context.l10n.techUiFieldPhotosHintKiosk,
                 style: const TextStyle(fontSize: 11.5, color: opsMutedText),
               ),
               const SizedBox(height: 8),
@@ -474,8 +485,8 @@ class _CompleteInspectionSheetState extends State<CompleteInspectionSheet> {
                 enabled: !_submitting,
                 thumbSize: 76,
                 accentColor: _accent,
-                addLabel: 'Chụp ảnh',
-                helperText: 'Tối đa ${_photos.maxPhotos} ảnh',
+                addLabel: context.l10n.rfTakePhoto,
+                helperText: context.l10n.photoMax(_photos.maxPhotos),
               ),
 
               if (_error != null) ...[
@@ -502,9 +513,9 @@ class _CompleteInspectionSheetState extends State<CompleteInspectionSheet> {
                         ),
                         side: const BorderSide(color: Color(0xFFCBD5E1)),
                       ),
-                      child: const Text(
-                        'Đóng',
-                        style: TextStyle(
+                      child: Text(
+                        context.l10n.commonClose,
+                        style: const TextStyle(
                           fontWeight: FontWeight.w600,
                           color: opsDark,
                         ),
@@ -543,8 +554,8 @@ class _CompleteInspectionSheetState extends State<CompleteInspectionSheet> {
                             ),
                       label: Text(
                         _submitting
-                            ? 'Đang cập nhật...'
-                            : 'Xác nhận hoàn thành',
+                            ? context.l10n.techUiUpdating
+                            : context.l10n.techUiConfirmComplete,
                         style: const TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 14,
@@ -608,8 +619,8 @@ class _CompleteInspectionSheetState extends State<CompleteInspectionSheet> {
               maxLines: 3,
               decoration: InputDecoration(
                 hintText: selected == InspectionResult.fail
-                    ? 'Mô tả lỗi phát hiện (tuỳ chọn)'
-                    : 'Ghi chú (tuỳ chọn)',
+                    ? context.l10n.techUiFaultDescOptional
+                    : context.l10n.techUiNoteOptional,
                 isDense: true,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
@@ -629,7 +640,10 @@ class _CompleteInspectionSheetState extends State<CompleteInspectionSheet> {
                   padding: EdgeInsets.zero,
                 ),
                 icon: const Icon(Icons.edit_note, size: 16),
-                label: const Text('Ghi chú', style: TextStyle(fontSize: 11.5)),
+                label: Text(
+                  context.l10n.commonNote,
+                  style: const TextStyle(fontSize: 11.5),
+                ),
               ),
             ),
         ],
@@ -681,14 +695,17 @@ class _CompleteInspectionSheetState extends State<CompleteInspectionSheet> {
   }
 
   /// Kết quả suy ra từ các mục (server suy lại y hệt khi nhận `items`).
-  Widget _verdictBanner(Object intervalDays) {
+  Widget _verdictBanner(int intervalDays) {
     if (!_complete) {
       return OpsBanner(
         tone: OpsBannerTone.info,
         icon: Icons.pending_actions_outlined,
         text: _hasChecklist
-            ? 'Còn ${_items.length - _answered}/${_items.length} hạng mục chưa đánh giá.'
-            : 'Chọn Đạt hoặc Không đạt cho lần kiểm tra này.',
+            ? context.l10n.techUiItemsRemaining(
+                _items.length - _answered,
+                _items.length,
+              )
+            : context.l10n.techUiPickPassOrFail,
       );
     }
     if (_failed) {
@@ -696,16 +713,14 @@ class _CompleteInspectionSheetState extends State<CompleteInspectionSheet> {
         tone: OpsBannerTone.danger,
         icon: Icons.report_gmailerrorred_outlined,
         text: _lockerId != null
-            ? 'Kết quả: KHÔNG ĐẠT — hệ thống sẽ mở phiếu sự cố giao cho bạn. '
-                  'Hạn kiểm tra kế tiếp chỉ dời khi phiếu được hoàn tất.'
-            : 'Kết quả: KHÔNG ĐẠT.',
+            ? context.l10n.techUiResultFailWithTicket
+            : context.l10n.techUiResultFail,
       );
     }
     return OpsBanner(
       tone: OpsBannerTone.success,
       icon: Icons.verified_outlined,
-      text:
-          'Kết quả: ĐẠT — hạn kiểm tra kế tiếp dời sang $intervalDays ngày sau.',
+      text: context.l10n.techUiResultPass(intervalDays),
     );
   }
 
@@ -723,18 +738,18 @@ class _CompleteInspectionSheetState extends State<CompleteInspectionSheet> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Ô bị hỏng (tuỳ chọn)',
-            style: TextStyle(
+          Text(
+            context.l10n.techUiFaultyBoxOptional,
+            style: const TextStyle(
               fontSize: 12.5,
               fontWeight: FontWeight.bold,
               color: Color(0xFF991B1B),
             ),
           ),
           const SizedBox(height: 2),
-          const Text(
-            'Chọn ô ⇒ ô chuyển Hỏng và phiếu gắn với ô đó; không chọn ⇒ phiếu cấp tủ.',
-            style: TextStyle(fontSize: 11, color: opsMutedText),
+          Text(
+            context.l10n.techUiFaultyBoxHint,
+            style: const TextStyle(fontSize: 11, color: opsMutedText),
           ),
           const SizedBox(height: 8),
           if (_cellsLoading)
@@ -762,18 +777,21 @@ class _CompleteInspectionSheetState extends State<CompleteInspectionSheet> {
                 ),
               ),
               items: [
-                const DropdownMenuItem<int?>(
+                DropdownMenuItem<int?>(
                   value: null,
                   child: Text(
-                    'Không gắn ô — sự cố cấp tủ',
-                    style: TextStyle(fontSize: 12.5),
+                    context.l10n.techUiNoBoxLockerLevel,
+                    style: const TextStyle(fontSize: 12.5),
                   ),
                 ),
                 for (final c in cells)
                   DropdownMenuItem<int?>(
                     value: _asInt(c['id']),
                     child: Text(
-                      'Ô #${c['boxNumber']} · ${statusLabel(c['status']?.toString())}',
+                      context.l10n.techUiBoxWithStatus(
+                        '${c['boxNumber']}',
+                        statusLabel(c['status']?.toString()),
+                      ),
                       style: const TextStyle(fontSize: 12.5),
                     ),
                   ),
@@ -789,8 +807,8 @@ class _CompleteInspectionSheetState extends State<CompleteInspectionSheet> {
             minLines: 1,
             maxLines: 3,
             decoration: InputDecoration(
-              labelText: 'Mô tả sự cố (tuỳ chọn)',
-              hintText: 'Để trống ⇒ phiếu liệt kê các mục không đạt',
+              labelText: context.l10n.techUiIncidentDescOptional,
+              hintText: context.l10n.techUiIncidentDescHint,
               isDense: true,
               filled: true,
               fillColor: Colors.white,

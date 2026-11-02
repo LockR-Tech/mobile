@@ -15,8 +15,8 @@ import 'package:smart_laundry_locker/core/routing/app_router.dart';
 import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
 import 'package:smart_laundry_locker/core/theme/shadcn_theme.dart';
 import 'package:smart_laundry_locker/core/theme/theme_provider.dart';
+import 'package:smart_laundry_locker/core/l10n/language_picker.dart';
 import 'package:smart_laundry_locker/core/l10n/locale_provider.dart';
-import 'package:smart_laundry_locker/core/services/app_restart_service.dart';
 import 'package:smart_laundry_locker/features/assistant/presentation/providers/assistant_availability.dart';
 import 'package:smart_laundry_locker/features/profile/presentation/mixins/profile_image_actions_mixin.dart';
 import 'package:smart_laundry_locker/features/profile/presentation/pages/location_permission_page.dart';
@@ -747,20 +747,7 @@ class _ProfilePageState extends State<ProfilePage>
 
   /// Đổi ngôn ngữ rồi dựng lại app để mọi màn (kể cả nhãn dựng ngoài widget)
   /// đọc lại bản dịch mới.
-  Future<void> _handleLanguage() async {
-    final selected = await showModalBottomSheet<Locale>(
-      context: context,
-      useRootNavigator: true,
-      backgroundColor: Colors.transparent,
-      builder: (ctx) => _LanguagePickerSheet(current: LocaleProvider.instance.locale),
-    );
-    if (selected == null || !mounted) return;
-    if (selected.languageCode == LocaleProvider.instance.locale.languageCode) {
-      return;
-    }
-    await LocaleProvider.instance.setLocale(selected);
-    if (mounted) RestartableApp.restartApp(context);
-  }
+  Future<void> _handleLanguage() => pickAppLanguage(context);
 
   void _handleLocation() {
     if (!mounted) return;
@@ -1086,74 +1073,6 @@ class _ThemePickerSheet extends StatelessWidget {
               context.read<ThemeProvider>().setThemeMode(ThemeMode.system);
               Navigator.pop(context);
             },
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-// ── Language picker bottom sheet ───────────────────────────────────────────────
-
-class _LanguagePickerSheet extends StatelessWidget {
-  final Locale current;
-  const _LanguagePickerSheet({required this.current});
-
-  @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final bg = isDark ? const Color(0xFF0A2342) : Colors.white;
-    final textColor = isDark ? Colors.white : const Color(0xFF0F172A);
-    final mutedColor = isDark
-        ? const Color(0xFF94A3B8)
-        : const Color(0xFF64748B);
-
-    return Container(
-      decoration: BoxDecoration(
-        color: bg,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            width: 40,
-            height: 4,
-            margin: const EdgeInsets.only(bottom: 20),
-            decoration: BoxDecoration(
-              color: mutedColor.withValues(alpha: 0.3),
-              borderRadius: BorderRadius.circular(2),
-            ),
-          ),
-          Text(
-            context.l10n.profileLanguage,
-            style: TextStyle(
-              fontSize: 17,
-              fontWeight: FontWeight.w800,
-              color: textColor,
-            ),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            context.l10n.profileLanguageSheetSubtitle,
-            style: TextStyle(fontSize: 13, color: mutedColor),
-          ),
-          const SizedBox(height: 20),
-          _ThemeOption(
-            icon: LucideIcons.languages,
-            label: context.l10n.languageVietnamese,
-            description: context.l10n.profileLanguageViDescription,
-            selected: current.languageCode == L10n.vi.languageCode,
-            onTap: () => Navigator.pop(context, L10n.vi),
-          ),
-          const SizedBox(height: 10),
-          _ThemeOption(
-            icon: LucideIcons.globe,
-            label: context.l10n.languageEnglish,
-            description: context.l10n.profileLanguageEnDescription,
-            selected: current.languageCode == L10n.en.languageCode,
-            onTap: () => Navigator.pop(context, L10n.en),
           ),
         ],
       ),

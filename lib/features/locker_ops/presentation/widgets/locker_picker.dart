@@ -83,7 +83,7 @@ class LockerPickerField extends StatelessWidget {
                         ? (lockers.isNotEmpty && placeholder != null
                               ? placeholder!
                               : context.l10n.pickerNoLockers)
-                        : '${selected['name'] ?? selected['code'] ?? 'Tủ'}',
+                        : '${selected['name'] ?? selected['code'] ?? context.l10n.commonLocker}',
                     style: const TextStyle(
                       fontWeight: FontWeight.w800,
                       fontSize: 14.5,
@@ -153,7 +153,7 @@ class LockerPickerField extends StatelessWidget {
                       ),
                     ),
                     title: Text(
-                      '${l['name'] ?? l['code'] ?? 'Tủ'}',
+                      '${l['name'] ?? l['code'] ?? context.l10n.commonLocker}',
                       style: TextStyle(
                         fontWeight: FontWeight.w700,
                         color: enabled ? opsDark : const Color(0xFF94A3B8),

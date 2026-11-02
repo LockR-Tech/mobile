@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:smart_laundry_locker/core/media/photo_picker_controller.dart';
 import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
@@ -90,4 +91,24 @@ void main() {
     await tester.tap(find.text('Thử lại'));
     expect(refreshed, 1);
   });
+
+  testWidgets('tiếng Anh: hàng đợi thu hồi trống và nút thử lại', (tester) async {
+    L10n.load(L10n.en);
+    addTearDown(() => L10n.load(L10n.vi));
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: DroneRecoveryQueue(
+            items: const [],
+            service: LockerOpsService(dio: createMockDio().dio),
+            onRefresh: () async {},
+          ),
+        ),
+      ),
+    );
+
+    expect(find.text('No parcel recovery tasks yet'), findsOneWidget);
+    expect(find.text('Chưa có nhiệm vụ thu hồi kiện'), findsNothing);
+  });
 }
+

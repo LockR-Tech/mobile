@@ -1736,11 +1736,9 @@ class LockerOpsService {
   /// Mã mà `message` server là tiếng Anh / lẫn chi tiết kỹ thuật ⇒ luôn thay
   /// bằng câu tiếng Việt cố định.
   static Map<String, String> get _technicianCodeMessages => <String, String>{
-    'HANDOVER_FAILED':
-        'Bàn giao trực tiếp thất bại — kiểm tra lại mã PIN 6 số hoặc mã QR của đơn rồi thử lại.',
-    'INVALID_OTP': 'Mã PIN/QR của đơn không đúng.',
-    'ORDER_RELOCATE_FAILED':
-        'Không chuyển được đơn sang ô mới. Hàng vẫn ở ô cũ — thử lại hoặc chọn phương án khác.',
+    'HANDOVER_FAILED': L10n.current.techRecErrHandoverFailed,
+    'INVALID_OTP': L10n.current.techRecErrInvalidOtp,
+    'ORDER_RELOCATE_FAILED': L10n.current.techRecErrRelocateFailed,
     'VALIDATION_ERROR': L10n.current.apiErrValidation,
     'INTERNAL_ERROR':
         L10n.current.apiErrInternal,
@@ -1750,38 +1748,34 @@ class LockerOpsService {
   /// Mã mà server đã kèm câu tiếng Việt có số liệu cụ thể (giới hạn, số phiếu…)
   /// ⇒ ưu tiên câu của server, chỉ dùng câu dưới đây khi server không gửi.
   static Map<String, String> get _technicianCodeFallbacks => <String, String>{
-    'SLA_EXTENSION_NOT_ASSIGNEE':
-        'Chỉ KTV đang được giao phiếu mới gia hạn được SLA.',
-    'SLA_EXTENSION_LIMIT_REACHED':
-        'Phiếu đã hết lượt tự gia hạn SLA — liên hệ admin nếu cần thêm thời gian.',
-    'SLA_EXTENSION_HOURS_EXCEEDED': 'Số giờ gia hạn vượt mức cho phép mỗi lần.',
-    'SLA_EXTENSION_REASON_REQUIRED': 'Cần nêu lý do gia hạn SLA.',
-    'INVALID_EXTENSION_HOURS': 'Thời gian gia hạn phải từ 1 giờ trở lên.',
-    'TECHNICIAN_SLA_RESTRICTED':
-        'Bạn đang có quá nhiều phiếu trễ hạn SLA nên tạm thời không nhận được việc mới.',
-    'REPORT_RELEASE_REASON_REQUIRED': 'Cần nêu lý do trả phiếu về hàng chờ.',
-    'REPORT_NOT_CLAIMED': 'Phiếu đang ở hàng chờ, chưa có KTV nhận.',
-    'REPORT_ALREADY_RESOLVED': 'Phiếu đã được hoàn tất.',
-    'REPORT_OPEN':
-        'Ô/bãi đáp đang có phiếu sự cố mở — hoàn tất phiếu đó trước.',
-    'TARGET_BOX_REQUIRED': 'Cần chọn ô trống đích để điều chuyển hàng.',
-    'TARGET_BOX_NOT_AVAILABLE':
-        'Ô đích không còn trống — tải lại sơ đồ và chọn ô khác.',
-    'BOX_NOT_FAULT': 'Ô không còn ở trạng thái lỗi.',
-    'HANDOVER_OTP_REQUIRED': 'Cần mã PIN 6 số hoặc mã QR của đơn để bàn giao.',
-    'HANDOVER_OTP_UNAVAILABLE':
-        'Đơn chưa có mã lấy hàng nên chưa bàn giao trực tiếp được.',
-    'SEAL_NUMBER_REQUIRED': 'Nhập mã Seal in trên túi niêm phong.',
-    'INCIDENT_ACTION_INVALID': 'Phương án xử lý không hợp lệ.',
-    'INCIDENT_BOX_NOT_IN_LOCKER': 'Ô đã chọn không thuộc tủ của phiếu.',
+    'SLA_EXTENSION_NOT_ASSIGNEE': L10n.current.techRecErrSlaNotAssignee,
+    'SLA_EXTENSION_LIMIT_REACHED': L10n.current.techRecErrSlaLimitReached,
+    'SLA_EXTENSION_HOURS_EXCEEDED': L10n.current.techRecErrSlaHoursExceeded,
+    'SLA_EXTENSION_REASON_REQUIRED': L10n.current.techRecErrSlaReasonRequired,
+    'INVALID_EXTENSION_HOURS': L10n.current.techRecErrInvalidExtensionHours,
+    'TECHNICIAN_SLA_RESTRICTED': L10n.current.techRecErrSlaRestricted,
+    'REPORT_RELEASE_REASON_REQUIRED':
+        L10n.current.techRecErrReleaseReasonRequired,
+    'REPORT_NOT_CLAIMED': L10n.current.techRecErrReportNotClaimed,
+    'REPORT_ALREADY_RESOLVED': L10n.current.techRecErrReportResolved,
+    'REPORT_OPEN': L10n.current.techRecErrReportOpen,
+    'TARGET_BOX_REQUIRED': L10n.current.techRecErrTargetBoxRequired,
+    'TARGET_BOX_NOT_AVAILABLE': L10n.current.techRecErrTargetBoxUnavailable,
+    'BOX_NOT_FAULT': L10n.current.techRecErrBoxNotFault,
+    'HANDOVER_OTP_REQUIRED': L10n.current.techRecErrHandoverOtpRequired,
+    'HANDOVER_OTP_UNAVAILABLE': L10n.current.techRecErrHandoverOtpUnavailable,
+    'SEAL_NUMBER_REQUIRED': L10n.current.techRecErrSealRequired,
+    'INCIDENT_ACTION_INVALID': L10n.current.techRecErrIncidentActionInvalid,
+    'INCIDENT_BOX_NOT_IN_LOCKER': L10n.current.techRecErrIncidentBoxNotInLocker,
     'FORCE_OPEN_REPORT_REQUIRED':
-        'Ảnh khi mở khẩn cấp chỉ lưu được khi mở từ một phiếu sự cố.',
-    'FORCE_OPEN_REPORT_MISMATCH': 'Phiếu sự cố không thuộc tủ của ô này.',
-    'DRONE_REPORT_REQUIRED': 'Phiếu này không phải phiếu drone.',
-    'DEVICE_NOT_PAIRED': 'Thiết bị chưa được gắn với tủ nào.',
-    'DEVICE_NOT_IN_SCOPE': 'Thiết bị không thuộc tủ bạn phụ trách.',
+        L10n.current.techRecErrForceOpenReportRequired,
+    'FORCE_OPEN_REPORT_MISMATCH':
+        L10n.current.techRecErrForceOpenReportMismatch,
+    'DRONE_REPORT_REQUIRED': L10n.current.techRecErrDroneReportRequired,
+    'DEVICE_NOT_PAIRED': L10n.current.techRecErrDeviceNotPaired,
+    'DEVICE_NOT_IN_SCOPE': L10n.current.techRecErrDeviceNotInScope,
     'DEVICE_STATUS_ONLINE_NOT_ALLOWED':
-        'Trạng thái trực tuyến do máy chủ tự tính, không đặt tay được.',
+        L10n.current.techRecErrDeviceOnlineNotAllowed,
     'LOCKER_SERVICE_UNAVAILABLE':
         L10n.current.apiErrLockerServiceUnavailable,
   };
