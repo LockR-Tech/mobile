@@ -1,3 +1,4 @@
+import 'package:smart_laundry_locker/core/utils/server_note_keys.dart';
 import 'package:smart_laundry_locker/core/utils/app_date_time.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
@@ -4737,6 +4738,8 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
     }
     if (t.contains('đội bay') ||
         d.contains('đội bay') ||
+        t.contains('flight team') ||
+        d.contains('flight team') ||
         t.contains('pin drone') ||
         d.contains('pin drone')) {
       return true;
@@ -4750,7 +4753,9 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
     if (t.contains('hạ cánh') ||
         d.contains('hạ cánh') ||
         t.contains('bãi đáp') ||
-        d.contains('bãi đáp')) {
+        d.contains('bãi đáp') ||
+        t.contains('landing pad') ||
+        d.contains('landing pad')) {
       return true;
     }
     return false;
@@ -4763,6 +4768,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
     return ct == 'DRONE' ||
         r.contains('drone') ||
         r.contains('bãi đáp') ||
+        r.contains('landing pad') ||
         ln.contains('drone');
   }
 
@@ -7080,16 +7086,16 @@ class _ReportLogsSectionState extends State<_ReportLogsSection> {
     if (match != null) {
       var tag = match.group(1)!;
       final rest = match.group(2) ?? '';
-      final upperTag = tag.toUpperCase();
+      final upperTag = serverNoteKeys(tag);
 
       // [SỬA TẠI CHỖ THÀNH CÔNG] hoặc [XỬ LÝ TẠI CHỖ] -> hiển thị là [GHI CHÚ HIỆN TRƯỜNG]
       if (upperTag.contains('SỬA TẠI CHỖ') || upperTag.contains('XỬ LÝ TẠI CHỖ')) {
-        tag = '[GHI CHÚ HIỆN TRƯỜNG]';
+        tag = L10n.isEnglish ? '[ON-SITE NOTE]' : '[GHI CHÚ HIỆN TRƯỜNG]';
       }
 
       Color tagBg = const Color(0xFFE2E8F0);
       Color tagFg = const Color(0xFF334155);
-      final currentUpper = tag.toUpperCase();
+      final currentUpper = serverNoteKeys(tag);
       if (currentUpper.contains('NGHIỆM THU') || currentUpper.contains('THÀNH CÔNG')) {
         tagBg = const Color(0xFFDCFCE7);
         tagFg = const Color(0xFF15803D);
@@ -9341,7 +9347,8 @@ class _BoxIncidentResolutionSheetState
                       ? rawDesc
                       : ((rawTitle != null && rawTitle.isNotEmpty) ? rawTitle : context.l10n.techHomeSystemRecordedIncident);
                   final isFromInspection = widget.report['periodicInspectionId'] != null ||
-                      (widget.report['title'] as String? ?? '').toLowerCase().contains('định kỳ');
+                      RegExp('định kỳ|routine', caseSensitive: false)
+                          .hasMatch(widget.report['title'] as String? ?? '');
 
                   return Container(
                     width: double.infinity,

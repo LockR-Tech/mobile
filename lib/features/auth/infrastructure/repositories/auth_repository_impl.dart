@@ -432,14 +432,17 @@ Failure _mapRegisterBackendFailure(String message) {
   if (m.contains('duplicate key') ||
       m.contains('unique constraint') ||
       m.contains('already exists') ||
-      m.contains('đã tồn tại')) {
+      m.contains('đã tồn tại') ||
+      m.contains('already has a login account') ||
+      m.contains('already used by another user')) {
     if (m.contains('email')) {
       return ValidationFailure(L10n.current.authEmailTaken);
     }
     if (m.contains('phone') ||
         m.contains('phone_number') ||
         m.contains('phonenumber') ||
-        m.contains('số điện thoại')) {
+        m.contains('số điện thoại') ||
+        m.contains('phone number')) {
       return ValidationFailure(L10n.current.authPhoneTaken);
     }
     return ValidationFailure(L10n.current.authEmailOrPhoneTaken);

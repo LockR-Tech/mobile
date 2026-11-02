@@ -31,88 +31,6 @@ import 'package:smart_laundry_locker/features/vouchers/presentation/providers/vo
 import 'package:smart_laundry_locker/core/theme/theme_provider.dart';
 import 'package:smart_laundry_locker/shared/shared.dart';
 
-class _AislToastWidget extends StatelessWidget {
-  final String msg;
-  const _AislToastWidget({required this.msg});
-
-  @override
-  Widget build(BuildContext context) {
-    IconData iconData = LucideIcons.info;
-    Color iconColor = AISLShadcnTheme.navyPrimary;
-
-    // Chọn icon theo từ khoá của câu thông báo (tiếng Việt hoặc tiếng Anh).
-    final lowerMsg = msg.toLowerCase();
-    if (lowerMsg.contains('thành công') ||
-        lowerMsg.contains('thành công!') ||
-        lowerMsg.contains('đã ') ||
-        lowerMsg.contains('xong') ||
-        lowerMsg.contains('success') ||
-        lowerMsg.contains('saved') ||
-        lowerMsg.contains('done')) {
-      iconData = LucideIcons.circleCheckBig;
-      iconColor = const Color(0xFF10B981);
-    } else if (lowerMsg.contains('lỗi') ||
-        lowerMsg.contains('thất bại') ||
-        lowerMsg.contains('sai') ||
-        lowerMsg.contains('không thể') ||
-        lowerMsg.contains('error') ||
-        lowerMsg.contains('failed') ||
-        lowerMsg.contains('invalid') ||
-        lowerMsg.contains('cannot') ||
-        lowerMsg.contains('could not')) {
-      iconData = LucideIcons.circleAlert;
-      iconColor = const Color(0xFFEF4444);
-    } else if (lowerMsg.contains('cảnh báo') ||
-        lowerMsg.contains('chú ý') ||
-        lowerMsg.contains('warning')) {
-      iconData = LucideIcons.triangleAlert;
-      iconColor = const Color(0xFFF59E0B);
-    }
-
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 50),
-      child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 24),
-        decoration: BoxDecoration(
-          color: Colors.black.withOpacity(0.85),
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.15),
-              blurRadius: 16,
-              offset: const Offset(0, 8),
-            ),
-          ],
-        ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(16),
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(iconData, color: iconColor, size: 20),
-                const SizedBox(width: 12),
-                Flexible(
-                  child: Text(
-                    msg,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w600,
-                      fontSize: 14,
-                      height: 1.3,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
 class _AislLoadingWidget extends StatelessWidget {
   final String msg;
   const _AislLoadingWidget({required this.msg});
@@ -154,73 +72,18 @@ class _AislLoadingWidget extends StatelessWidget {
   }
 }
 
+/// `SmartDialog.showNotify` — cùng kiểu thẻ với toast, đặt giữa màn hình.
 class _AislNotifyWidget extends StatelessWidget {
   final String msg;
-  final IconData icon;
-  final Color iconColor;
-  const _AislNotifyWidget({
-    required this.msg,
-    required this.icon,
-    required this.iconColor,
-  });
+  final ToastTone tone;
+  const _AislNotifyWidget({required this.msg, required this.tone});
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 24),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(20),
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 20,
-            offset: const Offset(0, 10),
-          ),
-        ],
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(20),
-        child: IntrinsicHeight(
-          child: Row(
-            children: [
-              Container(width: 6, color: iconColor),
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 16,
-                  ),
-                  child: Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: iconColor.withOpacity(0.1),
-                          shape: BoxShape.circle,
-                        ),
-                        child: Icon(icon, size: 20, color: iconColor),
-                      ),
-                      const SizedBox(width: 14),
-                      Expanded(
-                        child: Text(
-                          msg,
-                          style: const TextStyle(
-                            color: Colors.black87,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w700,
-                            height: 1.3,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
+    return AppToast(
+      message: msg,
+      tone: tone,
+      margin: const EdgeInsets.symmetric(horizontal: 16),
     );
   }
 }
@@ -330,36 +193,20 @@ class AislApp extends StatelessWidget {
                   key: AppMessengerService.scaffoldMessengerKey,
                   child:
                       FlutterSmartDialog.init(
-                        toastBuilder: (String msg) =>
-                            _AislToastWidget(msg: msg),
+                        toastBuilder: (String msg) => AppToast(message: msg),
                         loadingBuilder: (String msg) =>
                             _AislLoadingWidget(msg: msg),
                         notifyStyle: FlutterSmartNotifyStyle(
-                          successBuilder: (msg) => _AislNotifyWidget(
-                            msg: msg,
-                            icon: LucideIcons.circleCheckBig,
-                            iconColor: const Color(0xFF10B981),
-                          ),
-                          failureBuilder: (msg) => _AislNotifyWidget(
-                            msg: msg,
-                            icon: LucideIcons.circleX,
-                            iconColor: const Color(0xFFEF4444),
-                          ),
-                          warningBuilder: (msg) => _AislNotifyWidget(
-                            msg: msg,
-                            icon: LucideIcons.triangleAlert,
-                            iconColor: const Color(0xFFF59E0B),
-                          ),
-                          alertBuilder: (msg) => _AislNotifyWidget(
-                            msg: msg,
-                            icon: LucideIcons.info,
-                            iconColor: AISLShadcnTheme.navyPrimary,
-                          ),
-                          errorBuilder: (msg) => _AislNotifyWidget(
-                            msg: msg,
-                            icon: LucideIcons.octagonAlert,
-                            iconColor: const Color(0xFFEF4444),
-                          ),
+                          successBuilder: (msg) =>
+                              _AislNotifyWidget(msg: msg, tone: ToastTone.success),
+                          failureBuilder: (msg) =>
+                              _AislNotifyWidget(msg: msg, tone: ToastTone.error),
+                          warningBuilder: (msg) =>
+                              _AislNotifyWidget(msg: msg, tone: ToastTone.warning),
+                          alertBuilder: (msg) =>
+                              _AislNotifyWidget(msg: msg, tone: ToastTone.info),
+                          errorBuilder: (msg) =>
+                              _AislNotifyWidget(msg: msg, tone: ToastTone.error),
                         ),
                       )(
                         context,

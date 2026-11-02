@@ -180,6 +180,16 @@ class FirebaseMessagingService {
     }
   }
 
+  /// Đổi ngôn ngữ app ⇒ đăng ký lại token để backend gửi push đúng ngôn ngữ
+  /// (header `X-App-Language` đi kèm request). Chưa đăng nhập thì bỏ qua.
+  Future<void> syncLanguage() async {
+    if (_apiClient == null) return;
+    final token = await getToken();
+    if (token != null) {
+      await _registerToken(token);
+    }
+  }
+
   /// Khi FCM xoay vòng token: đăng ký lại token mới (nếu đã có ApiClient sau
   /// đăng nhập).
   void _onTokenRefresh(String token) {
