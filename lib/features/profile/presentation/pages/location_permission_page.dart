@@ -155,6 +155,7 @@ class _LocationPermissionPageState extends State<LocationPermissionPage>
       body: Column(
         children: [
           BrandHeroHeader(
+            art: HeroArt.location,
             title: context.l10n.profileLocation,
             subtitle: context.l10n.locSubtitle,
             onBack: () => Navigator.of(context).pop(),

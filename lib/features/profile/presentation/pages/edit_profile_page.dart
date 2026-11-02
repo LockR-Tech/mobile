@@ -257,11 +257,14 @@ class _EditProfilePageState extends State<EditProfilePage> {
         body: Column(
           children: [
             BrandHeroHeader(
+              art: HeroArt.profile,
               title: context.l10n.epTitle,
               subtitle: context.l10n.epSubtitle,
               onBack: () => Navigator.of(context).pop(),
               trailing: Consumer<ProfileProvider>(
                 builder: (context, provider, child) {
+                  // Trên header sáng nút Lưu đảo màu: nền navy, chữ trắng.
+                  final hero = BrandHeroColors.maybeOf(context);
                   return GestureDetector(
                     behavior: HitTestBehavior.opaque,
                     onTap: provider.isLoading ? null : _handleSave,
@@ -272,16 +275,16 @@ class _EditProfilePageState extends State<EditProfilePage> {
                       ),
                       decoration: BoxDecoration(
                         color: provider.isLoading
-                            ? Colors.white.withValues(alpha: 0.1)
-                            : Colors.white,
+                            ? hero?.buttonBg ?? Colors.white.withValues(alpha: 0.1)
+                            : hero?.buttonFg ?? Colors.white,
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Text(
                         context.l10n.commonSave,
                         style: TextStyle(
                           color: provider.isLoading
-                              ? Colors.white54
-                              : const Color(0xFF14171F),
+                              ? hero?.subtitle ?? Colors.white54
+                              : hero?.buttonBg ?? const Color(0xFF14171F),
                           fontWeight: FontWeight.w700,
                           fontSize: 14,
                         ),

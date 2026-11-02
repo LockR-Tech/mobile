@@ -61,6 +61,7 @@ class _TransactionsPageState extends State<TransactionsPage> {
             return Column(
               children: [
                 BrandHeroHeader(
+                  art: HeroArt.wallet,
                   title: context.l10n.txHistory,
                   subtitle: context.l10n.txSubtitle,
                   trailing: BrandCircleIconButton(

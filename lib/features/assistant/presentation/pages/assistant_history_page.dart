@@ -118,6 +118,7 @@ class _AssistantHistoryPageState extends State<AssistantHistoryPage> {
         body: Column(
           children: [
             BrandHeroHeader(
+              art: HeroArt.chat,
               eyebrow: context.l10n.aiEyebrow,
               title: context.l10n.aiHistory,
               subtitle: context.l10n.aiHistorySubtitle,

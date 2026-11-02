@@ -90,6 +90,7 @@ class _FavoritesPageState extends State<FavoritesPage> {
       backgroundColor: const Color(0xFFF7FAFC),
       body: BrandHeroScaffold(
         header: (collapse) => BrandHeroHeader(
+          art: HeroArt.favorite,
           title: context.l10n.commonFavorites,
           subtitle: context.l10n.storeFavoritesSubtitle,
           onBack: () => AppRouter.backOrHome(context),

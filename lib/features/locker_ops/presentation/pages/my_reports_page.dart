@@ -392,6 +392,7 @@ class _MyReportsPageState extends State<MyReportsPage> {
       body: Column(
         children: [
           BrandHeroHeader(
+            art: HeroArt.report,
             eyebrow: context.l10n.mrEyebrow,
             title: context.l10n.profileMyReports,
             subtitle: context.l10n.mrSubtitle,

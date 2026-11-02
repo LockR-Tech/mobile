@@ -149,6 +149,7 @@ class _AuthorizedOpeningPageState extends State<AuthorizedOpeningPage> {
       body: Column(
         children: [
           BrandHeroHeader(
+            art: HeroArt.delegation,
             title: context.l10n.aoTitle,
             subtitle: context.l10n.aoSubtitle,
             onBack: () => Navigator.of(context).maybePop(),

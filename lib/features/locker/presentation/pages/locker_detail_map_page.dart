@@ -144,6 +144,7 @@ class _LockerDetailMapPageState extends State<LockerDetailMapPage> {
         body: Column(
           children: [
             BrandHeroHeader(
+              art: HeroArt.locker,
               title: widget.location.name,
               subtitle: context.l10n.lockerDetailSubtitle,
               onBack: () => Navigator.of(context).pop(),
@@ -270,6 +271,7 @@ class _LockerDetailMapPageState extends State<LockerDetailMapPage> {
       body: Column(
         children: [
           BrandHeroHeader(
+            art: HeroArt.locker,
             title: widget.location.name,
             subtitle: context.l10n.lockerDetailSubtitle,
             onBack: () => Navigator.of(context).pop(),

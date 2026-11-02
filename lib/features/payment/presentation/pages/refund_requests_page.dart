@@ -368,6 +368,7 @@ class _RefundRequestsPageState extends State<RefundRequestsPage> {
       body: Column(
         children: [
           BrandHeroHeader(
+            art: HeroArt.wallet,
             eyebrow: context.l10n.commonPaymentEyebrow,
             title: context.l10n.profileRefunds,
             subtitle: context.l10n.rfSubtitle,

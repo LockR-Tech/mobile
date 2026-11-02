@@ -351,6 +351,7 @@ class _LockerPageState extends ConsumerState<LockerPage> {
             body: Column(
               children: [
                 BrandHeroHeader(
+                  art: HeroArt.locker,
                   title: context.l10n.lockerLocationList,
                   subtitle: context.l10n.lockerLoginToSeeLocations,
                 ),
@@ -369,6 +370,7 @@ class _LockerPageState extends ConsumerState<LockerPage> {
           body: Column(
             children: [
               BrandHeroHeader(
+                art: HeroArt.locker,
                 title: context.l10n.lockerLocationList,
                 subtitle: context.l10n.lockerPickLocation,
                 trailing: BrandCircleIconButton(

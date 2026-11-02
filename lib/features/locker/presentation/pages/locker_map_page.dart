@@ -74,6 +74,7 @@ class _LockerMapPageState extends ConsumerState<LockerMapPage>
         body: Column(
           children: [
             BrandHeroHeader(
+              art: HeroArt.locker,
               title: context.l10n.lockerMapTitle,
               subtitle: context.l10n.lockerMapSubtitle,
               onBack: () => Navigator.maybePop(context),
@@ -93,6 +94,7 @@ class _LockerMapPageState extends ConsumerState<LockerMapPage>
         body: Column(
           children: [
             BrandHeroHeader(
+              art: HeroArt.locker,
               title: context.l10n.lockerMapTitle,
               subtitle: context.l10n.lockerMapSubtitle,
               onBack: () => Navigator.maybePop(context),
@@ -128,6 +130,7 @@ class _LockerMapPageState extends ConsumerState<LockerMapPage>
         body: Column(
           children: [
             BrandHeroHeader(
+              art: HeroArt.locker,
               title: context.l10n.lockerMapTitle,
               subtitle: context.l10n.lockerMapSubtitle,
               onBack: () => Navigator.maybePop(context),
@@ -367,6 +370,7 @@ class _LockerMapPageState extends ConsumerState<LockerMapPage>
       body: Column(
         children: [
           BrandHeroHeader(
+            art: HeroArt.locker,
             title: context.l10n.lockerMapTitle,
             subtitle: context.l10n.lockerMapSubtitle,
             onBack: () {

@@ -291,6 +291,7 @@ class _StoreLockerGridPageState extends State<StoreLockerGridPage> {
       body: Column(
         children: [
           BrandHeroHeader(
+            art: HeroArt.locker,
             title: context.l10n.lockerLockerTitle,
             subtitle: _currentLockerName ?? widget.store.name,
             onBack: () => Navigator.pop(context),

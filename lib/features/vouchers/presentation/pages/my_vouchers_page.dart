@@ -57,6 +57,7 @@ class _MyVouchersPageState extends State<MyVouchersPage>
       body: Column(
         children: [
           BrandHeroHeader(
+            art: HeroArt.ticket,
             title: context.l10n.voucherMine,
             subtitle: context.l10n.voucherMineSubtitle,
             onBack: () => AppRouter.backOrHome(context),

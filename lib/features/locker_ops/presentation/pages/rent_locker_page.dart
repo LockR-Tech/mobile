@@ -601,6 +601,7 @@ class _RentLockerPageState extends State<RentLockerPage>
         body: Column(
           children: [
             BrandHeroHeader(
+              art: HeroArt.locker,
               eyebrow: _order == null ? null : context.l10n.commonPaymentEyebrow,
               title: _order == null
                   ? context.l10n.rentTitle

@@ -174,6 +174,7 @@ class _StoreDetailPageState extends State<StoreDetailPage> {
       body: Column(
         children: [
           BrandHeroHeader(
+            art: HeroArt.store,
             title: context.l10n.storeDetailTitle,
             subtitle: _store?.name ?? context.l10n.storeDetailSubtitle,
             onBack: () => Navigator.of(context).pop(),

@@ -194,6 +194,7 @@ class _StoresPageState extends State<StoresPage> {
       body: Column(
         children: [
           BrandHeroHeader(
+            art: HeroArt.store,
             title: context.l10n.homeDropPoints,
             subtitle: context.l10n.storeListSubtitle,
             trailing: Row(

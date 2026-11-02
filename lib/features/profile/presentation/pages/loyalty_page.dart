@@ -104,6 +104,7 @@ class _LoyaltyPageState extends State<LoyaltyPage>
       body: Column(
         children: [
           BrandHeroHeader(
+            art: HeroArt.gift,
             title: context.l10n.commonRewardPoints,
             subtitle: context.l10n.loySubtitle,
             onBack: () => Navigator.of(context).pop(),
