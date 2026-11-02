@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
@@ -13,6 +15,12 @@ import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 const String _kFastDeliveryLottie =
     'assets/animations/fast_shopping_delivery.json';
 
+/// Thời gian tối thiểu người dùng thấy animation splash, tính từ lúc nó dựng xong.
+const Duration _kSplashVisible = Duration(milliseconds: 1200);
+
+/// Máy chậm / lỗi tải animation: không giữ người dùng ở splash quá mức này.
+const Duration _kSplashAnimationWait = Duration(milliseconds: 2500);
+
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
 
@@ -26,8 +34,11 @@ class _SplashScreenState extends State<SplashScreen>
   bool _bioBlocked = false;
 
   late final AnimationController _animCtrl;
-  late final Animation<double> _fadeAnimation;
   late final Animation<double> _scaleAnimation;
+
+  /// Xong khi animation Lottie đã tải và dựng (file 236 KB, phân tích trên
+  /// luồng giao diện — máy chậm mất cả giây).
+  final Completer<void> _lottieReady = Completer<void>();
 
   @override
   void initState() {
@@ -36,14 +47,18 @@ class _SplashScreenState extends State<SplashScreen>
       vsync: this,
       duration: const Duration(milliseconds: 900),
     );
-    _fadeAnimation = CurvedAnimation(parent: _animCtrl, curve: Curves.easeOut);
+    // Không mờ dần từ 0: máy chậm thì những khung hình đầu chỉ là màn trắng.
     _scaleAnimation = Tween<double>(
-      begin: 0.85,
+      begin: 0.94,
       end: 1.0,
     ).animate(CurvedAnimation(parent: _animCtrl, curve: Curves.easeOutBack));
     _animCtrl.forward();
 
     _checkAuthAndNavigate();
+  }
+
+  void _onLottieLoaded() {
+    if (!_lottieReady.isCompleted) _lottieReady.complete();
   }
 
   @override
@@ -53,11 +68,15 @@ class _SplashScreenState extends State<SplashScreen>
   }
 
   Future<void> _checkAuthAndNavigate() async {
-    // Chỉ chờ hết hiệu ứng logo (~0,9 s) — trước đây chờ cứng 5 s mỗi lần mở app.
-    await Future<void>.delayed(const Duration(milliseconds: 900));
+    // Đọc token song song với lúc chờ animation.
+    final hasTokenFuture = TokenService.hasToken();
+    // Đếm giờ từ khi animation đã hiện, không phải từ initState: trước đây máy
+    // chậm còn đang phân tích Lottie thì đã hết 0,9 s và chuyển trang.
+    await _lottieReady.future.timeout(_kSplashAnimationWait, onTimeout: () {});
+    await Future<void>.delayed(_kSplashVisible);
     if (!mounted) return;
 
-    final hasToken = await TokenService.hasToken();
+    final hasToken = await hasTokenFuture;
     if (!mounted) return;
     if (hasToken) {
       // App-lock sinh trắc học (bật trong Hồ sơ → Bảo mật).
@@ -112,237 +131,238 @@ class _SplashScreenState extends State<SplashScreen>
         height: double.infinity,
         decoration: const BoxDecoration(color: Colors.white),
         child: SafeArea(
-          child: FadeTransition(
-            opacity: _fadeAnimation,
-            child: ScaleTransition(
-              scale: _scaleAnimation,
-              child: Stack(
-                children: [
-                  // Ambient soft decorative circles for subtle depth on white
-                  Positioned(
-                    top: -50,
-                    right: -40,
-                    child: Container(
-                      width: 220,
-                      height: 220,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: const Color(0xFFE0F2FE).withValues(alpha: 0.5),
-                      ),
+          child: ScaleTransition(
+            scale: _scaleAnimation,
+            child: Stack(
+              children: [
+                // Ambient soft decorative circles for subtle depth on white
+                Positioned(
+                  top: -50,
+                  right: -40,
+                  child: Container(
+                    width: 220,
+                    height: 220,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: const Color(0xFFE0F2FE).withValues(alpha: 0.5),
                     ),
                   ),
-                  Positioned(
-                    bottom: -60,
-                    left: -50,
-                    child: Container(
-                      width: 240,
-                      height: 240,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: const Color(0xFFF0FDF4).withValues(alpha: 0.6),
-                      ),
+                ),
+                Positioned(
+                  bottom: -60,
+                  left: -50,
+                  child: Container(
+                    width: 240,
+                    height: 240,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: const Color(0xFFF0FDF4).withValues(alpha: 0.6),
                     ),
                   ),
+                ),
 
-                  // Main Content
-                  Center(
-                    child: SingleChildScrollView(
-                      physics: const BouncingScrollPhysics(),
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
+                // Main Content
+                Center(
+                  child: SingleChildScrollView(
+                    physics: const BouncingScrollPhysics(),
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const SizedBox(height: 10),
+
+                        // ── 1. LOGO Ở TRÊN ──────────────────────────────────────
+                        Container(
+                          width: 86,
+                          height: 86,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(24),
+                            boxShadow: [
+                              BoxShadow(
+                                color: const Color(
+                                  0xFF0F172A,
+                                ).withValues(alpha: 0.08),
+                                blurRadius: 20,
+                                spreadRadius: 2,
+                                offset: const Offset(0, 6),
+                              ),
+                            ],
+                          ),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(24),
+                            child: Image.asset(
+                              'assets/images/logo.png',
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) {
+                                return Container(
+                                  color: const Color(0xFF0F172A),
+                                  child: const Icon(
+                                    LucideIcons.box,
+                                    size: 40,
+                                    color: Colors.white,
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 14),
+
+                        // App Name & Tagline
+                        const Text(
+                          'LOCK.R',
+                          style: TextStyle(
+                            fontSize: 28,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: 3.5,
+                            color: Color(0xFF0F172A),
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 5,
+                          ),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF1F5F9),
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(color: const Color(0xFFE2E8F0)),
+                          ),
+                          child: Text(
+                            context.l10n.authSplashTagline,
+                            style: TextStyle(
+                              fontSize: 12.5,
+                              fontWeight: FontWeight.w600,
+                              letterSpacing: 0.3,
+                              color: Color(0xFF475569),
+                            ),
+                          ),
+                        ),
+
+                        const SizedBox(height: 20),
+
+                        // ── 2. LOTTIE ANIMATION PHÓNG TO Ở DƯỚI LOGO ────────────
+                        Container(
+                          width: 320,
+                          height: 320,
+                          alignment: Alignment.center,
+                          child: AppLottie(
+                            _kFastDeliveryLottie,
+                            animate: true,
+                            repeat: true,
+                            fit: BoxFit.contain,
+                            onLoaded: _onLottieLoaded,
+                            // Thiếu/lỗi file: đừng giữ splash tới hết thời gian chờ.
+                            fallback: (_) {
+                              _onLottieLoaded();
+                              return const SizedBox.shrink();
+                            },
+                          ),
+                        ),
+
+                        const SizedBox(height: 20),
+
+                        // ── 3. LOADING INDICATOR HOẶC BIOMETRIC PROMPT ──────────
+                        if (!_bioBlocked) ...[
+                          SizedBox(
+                            width: 140,
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(10),
+                              child: const LinearProgressIndicator(
+                                minHeight: 4,
+                                backgroundColor: Color(0xFFE2E8F0),
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                  Color(0xFF0077B6),
+                                ),
+                              ),
+                            ),
+                          ),
                           const SizedBox(height: 10),
-
-                          // ── 1. LOGO Ở TRÊN ──────────────────────────────────────
+                          Text(
+                            context.l10n.commonLoading,
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w500,
+                              color: Color(0xFF94A3B8),
+                            ),
+                          ),
+                        ] else ...[
+                          // Biometric prompt card
                           Container(
-                            width: 86,
-                            height: 86,
+                            padding: const EdgeInsets.all(20),
                             decoration: BoxDecoration(
                               color: Colors.white,
                               borderRadius: BorderRadius.circular(24),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: const Color(
-                                    0xFF0F172A,
-                                  ).withValues(alpha: 0.08),
-                                  blurRadius: 20,
-                                  spreadRadius: 2,
-                                  offset: const Offset(0, 6),
-                                ),
-                              ],
-                            ),
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(24),
-                              child: Image.asset(
-                                'assets/images/logo.png',
-                                fit: BoxFit.cover,
-                                errorBuilder: (context, error, stackTrace) {
-                                  return Container(
-                                    color: const Color(0xFF0F172A),
-                                    child: const Icon(
-                                      LucideIcons.box,
-                                      size: 40,
-                                      color: Colors.white,
-                                    ),
-                                  );
-                                },
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 14),
-
-                          // App Name & Tagline
-                          const Text(
-                            'LOCK.R',
-                            style: TextStyle(
-                              fontSize: 28,
-                              fontWeight: FontWeight.w900,
-                              letterSpacing: 3.5,
-                              color: Color(0xFF0F172A),
-                            ),
-                          ),
-                          const SizedBox(height: 6),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 5,
-                            ),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFF1F5F9),
-                              borderRadius: BorderRadius.circular(20),
                               border: Border.all(
                                 color: const Color(0xFFE2E8F0),
                               ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 0.05),
+                                  blurRadius: 16,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
                             ),
-                            child: Text(
-                              context.l10n.authSplashTagline,
-                              style: TextStyle(
-                                fontSize: 12.5,
-                                fontWeight: FontWeight.w600,
-                                letterSpacing: 0.3,
-                                color: Color(0xFF475569),
-                              ),
-                            ),
-                          ),
-
-                          const SizedBox(height: 20),
-
-                          // ── 2. LOTTIE ANIMATION PHÓNG TO Ở DƯỚI LOGO ────────────
-                          Container(
-                            width: 320,
-                            height: 320,
-                            alignment: Alignment.center,
-                            child: const AppLottie(
-                              _kFastDeliveryLottie,
-                              animate: true,
-                              repeat: true,
-                              fit: BoxFit.contain,
-                            ),
-                          ),
-
-                          const SizedBox(height: 20),
-
-                          // ── 3. LOADING INDICATOR HOẶC BIOMETRIC PROMPT ──────────
-                          if (!_bioBlocked) ...[
-                            SizedBox(
-                              width: 140,
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.circular(10),
-                                child: const LinearProgressIndicator(
-                                  minHeight: 4,
-                                  backgroundColor: Color(0xFFE2E8F0),
-                                  valueColor: AlwaysStoppedAnimation<Color>(
-                                    Color(0xFF0077B6),
+                            child: Column(
+                              children: [
+                                Text(
+                                  context.l10n.authBiometricRequired,
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w500,
+                                    color: Color(0xFF475569),
                                   ),
                                 ),
-                              ),
-                            ),
-                            const SizedBox(height: 10),
-                            Text(
-                              context.l10n.commonLoading,
-                              style: TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w500,
-                                color: Color(0xFF94A3B8),
-                              ),
-                            ),
-                          ] else ...[
-                            // Biometric prompt card
-                            Container(
-                              padding: const EdgeInsets.all(20),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(24),
-                                border: Border.all(
-                                  color: const Color(0xFFE2E8F0),
-                                ),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withValues(alpha: 0.05),
-                                    blurRadius: 16,
-                                    offset: const Offset(0, 4),
+                                const SizedBox(height: 14),
+                                ElevatedButton.icon(
+                                  onPressed: _retryBiometric,
+                                  icon: const Icon(
+                                    LucideIcons.fingerprint,
+                                    size: 20,
                                   ),
-                                ],
-                              ),
-                              child: Column(
-                                children: [
-                                  Text(
-                                    context.l10n.authBiometricRequired,
+                                  label: Text(
+                                    context.l10n.authBiometricButton,
                                     style: TextStyle(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w500,
-                                      color: Color(0xFF475569),
+                                      fontWeight: FontWeight.w700,
                                     ),
                                   ),
-                                  const SizedBox(height: 14),
-                                  ElevatedButton.icon(
-                                    onPressed: _retryBiometric,
-                                    icon: const Icon(
-                                      LucideIcons.fingerprint,
-                                      size: 20,
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: const Color(0xFF003D5B),
+                                    foregroundColor: Colors.white,
+                                    elevation: 0,
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 24,
+                                      vertical: 14,
                                     ),
-                                    label: Text(
-                                      context.l10n.authBiometricButton,
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.w700,
-                                      ),
-                                    ),
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: const Color(0xFF003D5B),
-                                      foregroundColor: Colors.white,
-                                      elevation: 0,
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 24,
-                                        vertical: 14,
-                                      ),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(16),
-                                      ),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(16),
                                     ),
                                   ),
-                                  const SizedBox(height: 6),
-                                  TextButton(
-                                    onPressed: _signOutInstead,
-                                    child: Text(
-                                      context.l10n.authLogoutUsePassword,
-                                      style: TextStyle(
-                                        color: Color(0xFF64748B),
-                                        fontSize: 13.5,
-                                      ),
+                                ),
+                                const SizedBox(height: 6),
+                                TextButton(
+                                  onPressed: _signOutInstead,
+                                  child: Text(
+                                    context.l10n.authLogoutUsePassword,
+                                    style: TextStyle(
+                                      color: Color(0xFF64748B),
+                                      fontSize: 13.5,
                                     ),
                                   ),
-                                ],
-                              ),
+                                ),
+                              ],
                             ),
-                          ],
-                          const SizedBox(height: 20),
+                          ),
                         ],
-                      ),
+                        const SizedBox(height: 20),
+                      ],
                     ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         ),

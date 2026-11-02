@@ -116,10 +116,15 @@ void main() async {
           options: DefaultFirebaseOptions.currentPlatform,
         );
       }
-      // Initialize Messaging Service
-      await FirebaseMessagingService.instance.init();
+      // Thông báo khởi tạo nền: kênh thông báo, listener, noti đã mở app không
+      // được chặn khung hình đầu (trước đây màn trắng tới khi xong cả chuỗi).
+      unawaited(
+        FirebaseMessagingService.instance.init().catchError(
+          (Object e) => debugPrint("Firebase messaging init failed: $e"),
+        ),
+      );
     } catch (e) {
-      debugPrint("Firebase init/messaging failed: $e");
+      debugPrint("Firebase init failed: $e");
     }
   }
 

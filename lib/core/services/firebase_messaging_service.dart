@@ -105,25 +105,9 @@ class FirebaseMessagingService {
         >()
         ?.createNotificationChannel(channel);
 
-    // Request Android 13+ notification permission explicitly
-    await _localNotificationsPlugin
-        .resolvePlatformSpecificImplementation<
-          AndroidFlutterLocalNotificationsPlugin
-        >()
-        ?.requestNotificationsPermission();
-
-    // 2. Request permissions (FCM)
-    NotificationSettings settings = await _firebaseMessaging.requestPermission(
-      alert: true,
-      announcement: false,
-      badge: true,
-      carPlay: false,
-      criticalAlert: false,
-      provisional: false,
-      sound: true,
-    );
-
-    debugPrint('User granted permission: ${settings.authorizationStatus}');
+    // 2. Quyền thông báo xin sau, khi đã đăng nhập vào app
+    //    ([updateBackendDeviceToken] → [requestPermission]) — không bật hộp
+    //    thoại đè lên splash lúc mở app.
 
     // iOS: Allow FCM to show banners while app is in foreground
     await FirebaseMessaging.instance
@@ -155,6 +139,34 @@ class FirebaseMessagingService {
     _initialized = true;
   }
 
+  bool _permissionRequested = false;
+
+  /// Xin quyền thông báo (Android 13+ và iOS) — một lần mỗi phiên chạy app; đã
+  /// cho/đã từ chối thì hệ điều hành không hỏi lại.
+  Future<void> requestPermission() async {
+    if (kIsWeb || _permissionRequested) return;
+    _permissionRequested = true;
+    try {
+      await _localNotificationsPlugin
+          .resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin
+          >()
+          ?.requestNotificationsPermission();
+      final settings = await _firebaseMessaging.requestPermission(
+        alert: true,
+        announcement: false,
+        badge: true,
+        carPlay: false,
+        criticalAlert: false,
+        provisional: false,
+        sound: true,
+      );
+      debugPrint('User granted permission: ${settings.authorizationStatus}');
+    } catch (e) {
+      debugPrint('Notification permission request failed: $e');
+    }
+  }
+
   /// Get the device FCM token (useful for sending to your backend to register this device)
   Future<String?> getToken() async {
     // Web chỉ dùng Firebase Auth: chưa có service worker/VAPID cho push, gọi
@@ -174,6 +186,7 @@ class FirebaseMessagingService {
   /// Lưu lại [apiClient] để dùng cho onTokenRefresh về sau.
   Future<void> updateBackendDeviceToken(ApiClient apiClient) async {
     _apiClient = apiClient;
+    await requestPermission();
     final token = await getToken();
     if (token != null) {
       await _registerToken(token);
