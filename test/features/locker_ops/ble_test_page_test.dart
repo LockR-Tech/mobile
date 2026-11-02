@@ -109,5 +109,6 @@ void main() {
     expect(ops.tokenBoxes, [3]);
     expect(find.text('Chưa mở được'), findsOneWidget);
     expect(find.textContaining('đứng sát tủ'), findsOneWidget);
+    expect(find.textContaining('Mã lỗi: NOT_FOUND'), findsOneWidget);
   });
 }

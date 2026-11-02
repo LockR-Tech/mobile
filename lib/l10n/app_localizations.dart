@@ -1430,6 +1430,12 @@ abstract class AppLocalizations {
   /// **'Không thấy tủ qua Bluetooth. Hãy đứng sát tủ (dưới 2 m) rồi thử lại.'**
   String get bleNotFound;
 
+  /// No description provided for @bleNotFoundLocationOff.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không thấy tủ qua Bluetooth. Hãy đứng sát tủ rồi thử lại — điện thoại Android 11 trở xuống cần bật Vị trí (GPS) mới quét được Bluetooth.'**
+  String get bleNotFoundLocationOff;
+
   /// No description provided for @bleConnectFailed.
   ///
   /// In vi, this message translates to:
@@ -1441,6 +1447,24 @@ abstract class AppLocalizations {
   /// In vi, this message translates to:
   /// **'Tủ chưa bật chức năng mở ô qua Bluetooth (bộ điều khiển cần cập nhật).'**
   String get bleNoService;
+
+  /// No description provided for @bleMtuTooSmall.
+  ///
+  /// In vi, this message translates to:
+  /// **'Điện thoại không gửi được trọn mã mở ô trong một lần qua Bluetooth. Tắt rồi bật lại Bluetooth và thử lại.'**
+  String get bleMtuTooSmall;
+
+  /// No description provided for @bleWriteFailed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không gửi được mã mở ô cho tủ. Thử lại sau vài giây.'**
+  String get bleWriteFailed;
+
+  /// No description provided for @bleDisconnected.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mất kết nối Bluetooth với tủ trước khi có kết quả. Kiểm tra ô đã mở chưa rồi thử lại.'**
+  String get bleDisconnected;
 
   /// No description provided for @bleTimeout.
   ///
@@ -1507,6 +1531,12 @@ abstract class AppLocalizations {
   /// In vi, this message translates to:
   /// **'Ô này không có khoá điện nối vào bộ điều khiển.'**
   String get bleInvalidSlot;
+
+  /// No description provided for @bleHardwareError.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tủ nhận mã nhưng khoá điện của ô không phản hồi. Báo kỹ thuật viên.'**
+  String get bleHardwareError;
 
   /// No description provided for @bleOpenFailed.
   ///
@@ -15715,6 +15745,12 @@ abstract class AppLocalizations {
   /// In vi, this message translates to:
   /// **'Nhớ đóng cửa ô sau khi thử.'**
   String get btCloseAfter;
+
+  /// No description provided for @btErrorCode.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mã lỗi: {code}'**
+  String btErrorCode(Object code);
 
   /// No description provided for @btNoBoxes.
   ///

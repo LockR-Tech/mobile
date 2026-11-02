@@ -745,12 +745,28 @@ class AppLocalizationsEn extends AppLocalizations {
       'Locker not found via Bluetooth. Stand close to the locker (within 2 m) and try again.';
 
   @override
+  String get bleNotFoundLocationOff =>
+      'Locker not found via Bluetooth. Stand close to the locker and try again — phones on Android 11 or older need Location (GPS) turned on to scan for Bluetooth.';
+
+  @override
   String get bleConnectFailed =>
       'Couldn\'t connect to the locker via Bluetooth. Try again in a few seconds.';
 
   @override
   String get bleNoService =>
       'The locker hasn\'t enabled Bluetooth opening (the controller needs an update).';
+
+  @override
+  String get bleMtuTooSmall =>
+      'Your phone couldn\'t send the whole opening code over Bluetooth in one go. Turn Bluetooth off and on, then try again.';
+
+  @override
+  String get bleWriteFailed =>
+      'Couldn\'t send the opening code to the locker. Try again in a few seconds.';
+
+  @override
+  String get bleDisconnected =>
+      'The Bluetooth connection to the locker dropped before a result came back. Check whether the compartment opened, then try again.';
 
   @override
   String get bleTimeout =>
@@ -792,6 +808,10 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get bleInvalidSlot =>
       'This compartment has no electric lock connected to the controller.';
+
+  @override
+  String get bleHardwareError =>
+      'The locker accepted the code but the compartment\'s lock didn\'t respond. Contact a technician.';
 
   @override
   String bleOpenFailed(Object suffix) {
@@ -9156,6 +9176,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get btCloseAfter => 'Remember to close the door after testing.';
+
+  @override
+  String btErrorCode(Object code) {
+    return 'Error code: $code';
+  }
 
   @override
   String get btNoBoxes => 'The locker has no compartments.';

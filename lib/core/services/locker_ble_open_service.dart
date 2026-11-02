@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:smart_laundry_locker/core/services/locker_ble_service.dart';
 import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
@@ -53,8 +54,9 @@ class BleOpenTicket {
   }
 }
 
-/// Kết quả một lần mở. [error] là mã Pi trả (BAD_SIGNATURE, EXPIRED, REPLAYED…) hoặc mã phía app
-/// (NOT_FOUND, CONNECT_FAILED, NO_SERVICE, TIMEOUT, BLUETOOTH_OFF, PERMISSION_DENIED, UNSUPPORTED).
+/// Kết quả một lần mở. [error] là mã Pi trả (BAD_SIGNATURE, EXPIRED, REPLAYED, HARDWARE_ERROR…) hoặc
+/// mã phía app (NOT_FOUND, NOT_FOUND_LOCATION_OFF, CONNECT_FAILED, NO_SERVICE, MTU_TOO_SMALL,
+/// WRITE_FAILED, DISCONNECTED, TIMEOUT, BLUETOOTH_OFF, PERMISSION_DENIED, UNSUPPORTED).
 class BleOpenOutcome {
   const BleOpenOutcome.ok(this.boxNumber) : error = null;
   const BleOpenOutcome.failed(this.error, {this.boxNumber});
@@ -68,9 +70,14 @@ class BleOpenOutcome {
 
   static String errorText(String? code) => switch (code) {
         'NOT_FOUND' => L10n.current.bleNotFound,
+        'NOT_FOUND_LOCATION_OFF' => L10n.current.bleNotFoundLocationOff,
         'CONNECT_FAILED' => L10n.current.bleConnectFailed,
         'NO_SERVICE' => L10n.current.bleNoService,
+        'MTU_TOO_SMALL' => L10n.current.bleMtuTooSmall,
+        'WRITE_FAILED' => L10n.current.bleWriteFailed,
+        'DISCONNECTED' => L10n.current.bleDisconnected,
         'TIMEOUT' => L10n.current.bleTimeout,
+        'HARDWARE_ERROR' => L10n.current.bleHardwareError,
         'BLUETOOTH_OFF' => L10n.current.bleOff,
         'PERMISSION_DENIED' => L10n.current.blePermissionDenied,
         'UNSUPPORTED' => L10n.current.bleUnsupported,
@@ -85,10 +92,59 @@ class BleOpenOutcome {
       };
 }
 
+/// Thiết bị quét được khớp với tủ cần mở tới đâu — càng đứng trước càng chắc.
+enum BleMatch { exactName, fuzzyName, serviceOnly }
+
 /// Mở ô bằng cách ghi mã cho Pi qua BLE GATT (F3-G11, docs/01-overview/ble-open-contract.md).
 class LockerBleOpenService {
   LockerBleOpenService._();
   static final LockerBleOpenService instance = LockerBleOpenService._();
+
+  /// Thấy thiết bị chưa khớp đúng tên thì chờ thêm chừng này để gói scan response (chứa tên) tới
+  /// và để so RSSI khi có nhiều tủ.
+  static const _settleDelay = Duration(milliseconds: 1500);
+
+  /// Android hay trả lỗi GATT 133 ở lần kết nối đầu ngay sau khi quét.
+  static const _connectAttempts = 3;
+
+  /// Pi đặt tên `LOCKR_<mã tủ>`; tủ giả trên Windows không đặt được tên nên chỉ có service UUID.
+  @visibleForTesting
+  static BleMatch? matchLevel({
+    required String advName,
+    required String platformName,
+    required List<Guid> serviceUuids,
+    required BleOpenTicket ticket,
+  }) {
+    if (ticket.deviceName.isNotEmpty && (advName == ticket.deviceName || platformName == ticket.deviceName)) {
+      return BleMatch.exactName;
+    }
+    if (LockerBleService.isDeviceMatchingLocker(
+      advertisementName: advName,
+      platformName: platformName,
+      expectedLockerCode: ticket.lockerCode,
+      expectedLockerId: ticket.lockerId,
+    )) {
+      return BleMatch.fuzzyName;
+    }
+    if (ticket.serviceUuid.isNotEmpty && serviceUuids.contains(Guid(ticket.serviceUuid))) {
+      return BleMatch.serviceOnly;
+    }
+    return null;
+  }
+
+  /// Chọn thiết bị khớp chắc nhất; cùng mức thì lấy tín hiệu mạnh nhất (tủ người dùng đứng trước).
+  @visibleForTesting
+  static T? pickBest<T>(Iterable<({T device, BleMatch match, int rssi})> candidates) {
+    ({T device, BleMatch match, int rssi})? best;
+    for (final c in candidates) {
+      if (best == null ||
+          c.match.index < best.match.index ||
+          (c.match == best.match && c.rssi > best.rssi)) {
+        best = c;
+      }
+    }
+    return best?.device;
+  }
 
   /// Pi trả JSON `{"nonce","result","box","error"}`; trả `null` nếu không phải kết quả của [nonce].
   @visibleForTesting
@@ -121,43 +177,87 @@ class LockerBleOpenService {
 
     onStep?.call(BleOpenStep.scanning);
     await LockerBleService.instance.stopScan();
-    final device = await _find(ticket, scanTimeout);
-    if (device == null) return const BleOpenOutcome.failed('NOT_FOUND');
+    final found = await _find(ticket, scanTimeout);
+    final device = found.device;
+    if (device == null) {
+      if (found.error != null) return BleOpenOutcome.failed(found.error);
+      return BleOpenOutcome.failed(await _locationOff() ? 'NOT_FOUND_LOCATION_OFF' : 'NOT_FOUND');
+    }
 
-    StreamSubscription<List<int>>? sub;
+    StreamSubscription<List<int>>? valueSub;
+    StreamSubscription<BluetoothConnectionState>? stateSub;
+    Timer? poll;
     try {
       onStep?.call(BleOpenStep.connecting);
-      try {
-        await device.connect(timeout: const Duration(seconds: 12));
-      } catch (e) {
-        debugPrint('[LockerBleOpen] connect failed: $e');
-        return const BleOpenOutcome.failed('CONNECT_FAILED');
-      }
-      // Mã 91 byte phải nằm gọn trong một lần ghi: Pi không ghép "long write".
-      if (!kIsWeb && Platform.isAndroid && device.mtuNow < 100) {
+      if (!await _connect(device)) return const BleOpenOutcome.failed('CONNECT_FAILED');
+
+      // Mã 91 byte phải nằm gọn trong một lần ghi: Pi không ghép "long write". Android đã xin MTU 512
+      // lúc kết nối; có máy chỉ nhận mức thấp hơn nên xin lại một lần.
+      final needed = ticket.token.length + 3;
+      if (!kIsWeb && Platform.isAndroid && device.mtuNow < needed) {
         try {
           await device.requestMtu(247);
-        } catch (_) {}
+        } catch (e) {
+          debugPrint('[LockerBleOpen] requestMtu failed: $e');
+        }
       }
-      final services = await device.discoverServices();
-      final service = services.where((s) => s.uuid == Guid(ticket.serviceUuid)).firstOrNull;
-      final openChar =
-          service?.characteristics.where((c) => c.uuid == Guid(ticket.openCharUuid)).firstOrNull;
-      final resultChar =
-          service?.characteristics.where((c) => c.uuid == Guid(ticket.resultCharUuid)).firstOrNull;
-      if (openChar == null || resultChar == null) return const BleOpenOutcome.failed('NO_SERVICE');
+      if (device.mtuNow < needed) {
+        debugPrint('[LockerBleOpen] MTU ${device.mtuNow} < $needed');
+        return const BleOpenOutcome.failed('MTU_TOO_SMALL');
+      }
+
+      var chars = await _characteristics(device, ticket);
+      if (chars == null && !kIsWeb && Platform.isAndroid) {
+        // Android nhớ bảng GATT cũ của địa chỉ này (Pi vừa cập nhật / đổi dịch vụ): xoá rồi tìm lại.
+        try {
+          await device.clearGattCache();
+          chars = await _characteristics(device, ticket);
+        } catch (e) {
+          debugPrint('[LockerBleOpen] clearGattCache failed: $e');
+        }
+      }
+      if (chars == null) return const BleOpenOutcome.failed('NO_SERVICE');
+      final (openChar, resultChar) = chars;
 
       final completer = Completer<BleOpenOutcome>();
-      sub = resultChar.onValueReceived.listen((value) {
+      void finish(BleOpenOutcome outcome) {
+        if (!completer.isCompleted) completer.complete(outcome);
+      }
+
+      valueSub = resultChar.onValueReceived.listen((value) {
         final outcome = parseResult(value, ticket.nonce);
-        if (outcome != null && !completer.isCompleted) completer.complete(outcome);
+        if (outcome != null) finish(outcome);
       });
-      await resultChar.setNotifyValue(true);
+      var notifying = true;
+      try {
+        await resultChar.setNotifyValue(true);
+      } catch (e) {
+        // Không bật được notify thì đọc RESULT định kỳ sau khi ghi.
+        debugPrint('[LockerBleOpen] setNotifyValue failed: $e');
+        notifying = false;
+      }
 
       onStep?.call(BleOpenStep.sending);
-      await openChar.write(ticket.token, withoutResponse: false);
+      try {
+        await openChar.write(ticket.token, withoutResponse: false);
+      } catch (e) {
+        debugPrint('[LockerBleOpen] write failed: $e');
+        return BleOpenOutcome.failed(device.isConnected ? 'WRITE_FAILED' : 'DISCONNECTED');
+      }
 
       onStep?.call(BleOpenStep.waiting);
+      // Mất kết nối sau khi đã gửi mã: tủ có thể đã mở — báo riêng để người dùng kiểm tra ô.
+      stateSub = device.connectionState.listen((s) {
+        if (s == BluetoothConnectionState.disconnected) finish(const BleOpenOutcome.failed('DISCONNECTED'));
+      });
+      if (!notifying) {
+        poll = Timer.periodic(const Duration(milliseconds: 800), (_) async {
+          try {
+            final outcome = parseResult(await resultChar.read(), ticket.nonce);
+            if (outcome != null) finish(outcome);
+          } catch (_) {}
+        });
+      }
       try {
         return await completer.future.timeout(resultTimeout);
       } on TimeoutException {
@@ -172,10 +272,48 @@ class LockerBleOpenService {
       debugPrint('[LockerBleOpen] open failed: $e');
       return const BleOpenOutcome.failed('CONNECT_FAILED');
     } finally {
-      await sub?.cancel();
+      poll?.cancel();
+      await stateSub?.cancel();
+      await valueSub?.cancel();
       try {
         await device.disconnect();
       } catch (_) {}
+    }
+  }
+
+  Future<bool> _connect(BluetoothDevice device) async {
+    for (var attempt = 1; attempt <= _connectAttempts; attempt++) {
+      try {
+        await device.connect(timeout: const Duration(seconds: 10));
+        return true;
+      } catch (e) {
+        debugPrint('[LockerBleOpen] connect attempt $attempt failed: $e');
+        try {
+          await device.disconnect();
+        } catch (_) {}
+        if (attempt < _connectAttempts) await Future<void>.delayed(const Duration(milliseconds: 700));
+      }
+    }
+    return false;
+  }
+
+  Future<(BluetoothCharacteristic, BluetoothCharacteristic)?> _characteristics(
+      BluetoothDevice device, BleOpenTicket ticket) async {
+    final services = await device.discoverServices();
+    final service = services.where((s) => s.uuid == Guid(ticket.serviceUuid)).firstOrNull;
+    final openChar = service?.characteristics.where((c) => c.uuid == Guid(ticket.openCharUuid)).firstOrNull;
+    final resultChar = service?.characteristics.where((c) => c.uuid == Guid(ticket.resultCharUuid)).firstOrNull;
+    if (openChar == null || resultChar == null) return null;
+    return (openChar, resultChar);
+  }
+
+  /// Android 11 trở xuống không trả kết quả quét khi tắt Vị trí (Android 12+ thì không cần).
+  Future<bool> _locationOff() async {
+    if (kIsWeb || !Platform.isAndroid) return false;
+    try {
+      return await Permission.location.serviceStatus == ServiceStatus.disabled;
+    } catch (_) {
+      return false;
     }
   }
 
@@ -190,39 +328,59 @@ class LockerBleOpenService {
     return false;
   }
 
-  /// Quét tìm Pi theo service UUID hoặc tên `LOCKR_<mã tủ>`; lấy thiết bị đầu tiên khớp.
-  Future<BluetoothDevice?> _find(BleOpenTicket ticket, Duration timeout) async {
-    final completer = Completer<BluetoothDevice?>();
-    final serviceGuid = Guid(ticket.serviceUuid);
+  /// Quét tìm Pi theo tên `LOCKR_<mã tủ>` hoặc service UUID. Đúng tên thì dừng ngay; chỉ khớp một
+  /// phần thì chờ [_settleDelay] rồi chọn thiết bị chắc nhất, gần nhất ([pickBest]).
+  Future<({BluetoothDevice? device, String? error})> _find(BleOpenTicket ticket, Duration timeout) async {
+    final candidates = <DeviceIdentifier, ({BluetoothDevice device, BleMatch match, int rssi})>{};
+    final done = Completer<void>();
+    Timer? settle;
+    void finish() {
+      if (!done.isCompleted) done.complete();
+    }
+
     final sub = FlutterBluePlus.onScanResults.listen((results) {
       for (final r in results) {
-        final adv = r.advertisementData;
-        final byService = adv.serviceUuids.contains(serviceGuid);
-        final byName = adv.advName == ticket.deviceName ||
-            r.device.platformName == ticket.deviceName ||
-            LockerBleService.isDeviceMatchingLocker(
-              advertisementName: adv.advName,
-              platformName: r.device.platformName,
-              expectedLockerCode: ticket.lockerCode,
-              expectedLockerId: ticket.lockerId,
-            );
-        if ((byService || byName) && !completer.isCompleted) {
-          completer.complete(r.device);
-          return;
+        final match = matchLevel(
+          advName: r.advertisementData.advName,
+          platformName: r.device.platformName,
+          serviceUuids: r.advertisementData.serviceUuids,
+          ticket: ticket,
+        );
+        if (match == null) continue;
+        candidates[r.device.remoteId] = (device: r.device, match: match, rssi: r.rssi);
+        if (match == BleMatch.exactName) {
+          finish();
+        } else {
+          settle ??= Timer(_settleDelay, finish);
         }
       }
     });
     try {
-      await FlutterBluePlus.startScan(timeout: timeout, androidUsesFineLocation: false);
-      return await completer.future.timeout(timeout, onTimeout: () => null);
+      // Không để FBP chặn quét khi tắt Vị trí: Android 12+ (BLUETOOTH_SCAN neverForLocation) không cần.
+      await FlutterBluePlus.startScan(
+        timeout: timeout,
+        androidUsesFineLocation: false,
+        androidCheckLocationServices: false,
+      );
+      await done.future.timeout(timeout, onTimeout: () {});
     } catch (e) {
       debugPrint('[LockerBleOpen] scan failed: $e');
-      return null;
+      // Android 11 trở xuống: FBP xin ACCESS_FINE_LOCATION lúc quét, bị từ chối thì báo quyền.
+      if (candidates.isEmpty) {
+        return (device: null, error: '$e'.contains('Permission') ? 'PERMISSION_DENIED' : null);
+      }
     } finally {
+      settle?.cancel();
       await sub.cancel();
       try {
         await FlutterBluePlus.stopScan();
       } catch (_) {}
     }
+    final best = pickBest(candidates.values);
+    if (best != null) {
+      final c = candidates[best.remoteId]!;
+      debugPrint('[LockerBleOpen] chọn ${best.remoteId} (${c.match.name}, ${c.rssi} dBm) / ${candidates.length} ứng viên');
+    }
+    return (device: best, error: null);
   }
 }

@@ -739,12 +739,28 @@ class AppLocalizationsVi extends AppLocalizations {
       'Không thấy tủ qua Bluetooth. Hãy đứng sát tủ (dưới 2 m) rồi thử lại.';
 
   @override
+  String get bleNotFoundLocationOff =>
+      'Không thấy tủ qua Bluetooth. Hãy đứng sát tủ rồi thử lại — điện thoại Android 11 trở xuống cần bật Vị trí (GPS) mới quét được Bluetooth.';
+
+  @override
   String get bleConnectFailed =>
       'Không kết nối được Bluetooth với tủ. Thử lại sau vài giây.';
 
   @override
   String get bleNoService =>
       'Tủ chưa bật chức năng mở ô qua Bluetooth (bộ điều khiển cần cập nhật).';
+
+  @override
+  String get bleMtuTooSmall =>
+      'Điện thoại không gửi được trọn mã mở ô trong một lần qua Bluetooth. Tắt rồi bật lại Bluetooth và thử lại.';
+
+  @override
+  String get bleWriteFailed =>
+      'Không gửi được mã mở ô cho tủ. Thử lại sau vài giây.';
+
+  @override
+  String get bleDisconnected =>
+      'Mất kết nối Bluetooth với tủ trước khi có kết quả. Kiểm tra ô đã mở chưa rồi thử lại.';
 
   @override
   String get bleTimeout =>
@@ -782,6 +798,10 @@ class AppLocalizationsVi extends AppLocalizations {
   @override
   String get bleInvalidSlot =>
       'Ô này không có khoá điện nối vào bộ điều khiển.';
+
+  @override
+  String get bleHardwareError =>
+      'Tủ nhận mã nhưng khoá điện của ô không phản hồi. Báo kỹ thuật viên.';
 
   @override
   String bleOpenFailed(Object suffix) {
@@ -8999,6 +9019,11 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get btCloseAfter => 'Nhớ đóng cửa ô sau khi thử.';
+
+  @override
+  String btErrorCode(Object code) {
+    return 'Mã lỗi: $code';
+  }
 
   @override
   String get btNoBoxes => 'Tủ chưa có ô nào.';
