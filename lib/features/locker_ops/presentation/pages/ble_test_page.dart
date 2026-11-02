@@ -272,11 +272,19 @@ class _BleTestPageState extends State<BleTestPage> {
             tone: _outcome!.isOk ? OpsBannerTone.success : OpsBannerTone.danger,
             icon: _outcome!.isOk ? LucideIcons.lockOpen : LucideIcons.circleAlert,
             title: _outcome!.isOk ? context.l10n.btOpened('${_outcome!.boxNumber ?? _boxNumber}') : context.l10n.btNotOpened,
-            text: _outcome!.isOk ? context.l10n.btCloseAfter : _outcome!.message,
+            text: _outcome!.isOk ? context.l10n.btCloseAfter : _failureText(_outcome!),
           ),
         ],
       ],
     );
+  }
+
+  /// Trang thử: kèm mã lỗi để báo lại cho kỹ thuật (mã lạ đã nằm sẵn trong câu báo).
+  static String _failureText(BleOpenOutcome outcome) {
+    final code = outcome.error;
+    final message = outcome.message;
+    if (code == null || message.contains(code)) return message;
+    return '$message\n${L10n.current.btErrorCode(code)}';
   }
 
   static String _lockerLabel(Map<String, dynamic> l) {

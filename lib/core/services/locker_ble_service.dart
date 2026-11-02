@@ -115,8 +115,10 @@ class LockerBleService {
         return (scanStatus.isGranted || scanStatus.isLimited) &&
             (connectStatus.isGranted || connectStatus.isLimited);
       } else if (Platform.isIOS) {
-        final btStatus = await Permission.bluetooth.request();
-        return btStatus.isGranted || btStatus.isLimited;
+        // permission_handler chỉ hỏi được Bluetooth trên iOS khi Podfile bật macro
+        // PERMISSION_BLUETOOTH (Podfile không commit); đọc thẳng trạng thái CoreBluetooth — lần đầu đọc
+        // iOS tự hiện hộp thoại xin quyền.
+        return await _iosAdapterState() != BluetoothAdapterState.unauthorized;
       }
       return true;
     } catch (e) {
@@ -124,6 +126,11 @@ class LockerBleService {
       return false;
     }
   }
+
+  Future<BluetoothAdapterState> _iosAdapterState() => FlutterBluePlus.adapterState
+      .where((s) => s != BluetoothAdapterState.unknown)
+      .first
+      .timeout(const Duration(seconds: 3), onTimeout: () => BluetoothAdapterState.unknown);
 
   /// Lý do chưa quét được tủ, null = sẵn sàng. Xin quyền nếu chưa có; Bluetooth tắt thì
   /// Android hiện hộp thoại hệ thống xin bật.
@@ -135,10 +142,11 @@ class LockerBleService {
       return 'UNSUPPORTED';
     }
     if (!await requestPermissions()) {
+      // iOS chỉ hỏi một lần; đã từ chối thì phải vào Cài đặt.
       final blocked = Platform.isAndroid
           ? await Permission.bluetoothScan.isPermanentlyDenied ||
                 await Permission.bluetoothConnect.isPermanentlyDenied
-          : await Permission.bluetooth.isPermanentlyDenied;
+          : true;
       return blocked ? 'PERMISSION_BLOCKED' : 'PERMISSION_DENIED';
     }
     if (await isBluetoothAvailable()) return null;
@@ -199,6 +207,8 @@ class LockerBleService {
       await FlutterBluePlus.startScan(
         timeout: timeout,
         androidUsesFineLocation: false,
+        // Android 12+ quét được khi tắt Vị trí — đừng để FBP từ chối quét.
+        androidCheckLocationServices: false,
       );
 
       _scanSubscription = FlutterBluePlus.scanResults.listen((results) {
