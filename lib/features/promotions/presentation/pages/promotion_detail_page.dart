@@ -38,6 +38,7 @@ class PromotionDetailPage extends StatelessWidget {
       body: Column(
         children: [
           BrandHeroHeader(
+            art: HeroArt.ticket,
             title: context.l10n.promoDetailTitle,
             subtitle: promo.name,
             onBack: () => Navigator.of(context).pop(),

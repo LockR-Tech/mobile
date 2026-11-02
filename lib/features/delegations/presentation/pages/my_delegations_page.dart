@@ -37,6 +37,7 @@ class _MyDelegationsView extends StatelessWidget {
       backgroundColor: const Color(0xFFF2F3F5),
       body: BrandHeroScaffold(
         header: (collapse) => BrandHeroHeader(
+          art: HeroArt.delegation,
           title: context.l10n.profileDelegations,
           subtitle: context.l10n.mdSubtitle,
           onBack: () => Navigator.of(context).maybePop(),

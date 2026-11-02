@@ -52,6 +52,7 @@ class _ProfileDetailPageState extends State<ProfileDetailPage> {
         body: Column(
           children: [
             BrandHeroHeader(
+              art: HeroArt.profile,
               title: context.l10n.pdTitle,
               subtitle: context.l10n.pdSubtitle,
               onBack: () => Navigator.of(context).pop(),

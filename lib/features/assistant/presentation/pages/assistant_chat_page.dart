@@ -105,6 +105,7 @@ class _AssistantChatPageState extends State<AssistantChatPage> {
       body: Column(
         children: [
           BrandHeroHeader(
+            art: HeroArt.chat,
             eyebrow: context.l10n.aiEyebrow,
             title: context.l10n.aiTitle,
             subtitle: context.l10n.aiSubtitle,

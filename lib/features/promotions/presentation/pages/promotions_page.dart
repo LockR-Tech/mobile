@@ -51,6 +51,7 @@ class _PromotionsPageState extends ConsumerState<PromotionsPage> {
       backgroundColor: context.pageBg,
       body: BrandHeroScaffold(
         header: (collapse) => BrandHeroHeader(
+          art: HeroArt.ticket,
           title: context.l10n.commonOffers,
           subtitle: context.l10n.promoSubtitle,
           onBack: () => AppRouter.backOrHome(context),

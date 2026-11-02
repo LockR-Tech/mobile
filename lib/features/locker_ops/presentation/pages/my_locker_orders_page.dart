@@ -1710,6 +1710,7 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
       body: Column(
         children: [
           BrandHeroHeader(
+            art: HeroArt.order,
             title: context.l10n.homeLockerOrders,
             subtitle: context.l10n.ordMyOrdersSubtitle,
             trailing: BrandCircleIconButton(

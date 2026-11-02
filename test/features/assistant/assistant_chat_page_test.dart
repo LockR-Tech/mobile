@@ -8,6 +8,7 @@ import 'package:smart_laundry_locker/features/assistant/data/assistant_service.d
 import 'package:smart_laundry_locker/features/assistant/data/models/assistant_models.dart';
 import 'package:smart_laundry_locker/features/assistant/presentation/pages/assistant_chat_page.dart';
 import 'package:smart_laundry_locker/features/assistant/presentation/pages/assistant_history_page.dart';
+import 'package:smart_laundry_locker/features/assistant/presentation/widgets/assistant_intro.dart';
 import 'package:smart_laundry_locker/features/assistant/presentation/widgets/assistant_message_bubble.dart';
 
 import '../../helpers/test_helpers.dart';
@@ -17,6 +18,17 @@ final _input = find.byKey(const Key('assistant-input'));
 final _sendButton = find.byKey(const Key('assistant-send'));
 
 Finder _text(String text) => find.textContaining(text, findRichText: true);
+
+/// Câu gợi ý nằm cuối danh sách giới thiệu (dựng lười): cuộn tới khi thấy rồi
+/// dựng lại khung để lệnh chạm tính đúng vị trí mới.
+Future<void> _scrollIntroTo(WidgetTester tester, Finder target) async {
+  await tester.scrollUntilVisible(
+    target,
+    120,
+    scrollable: find.descendant(of: find.byType(AssistantIntro), matching: find.byType(Scrollable)),
+  );
+  await tester.pumpAndSettle();
+}
 
 Future<void> _pumpChat(
   WidgetTester tester,
@@ -273,7 +285,7 @@ void main() {
     await _pumpChat(tester, service);
 
     final example = find.text('Hết giờ thuê ô thì làm sao?');
-    await tester.ensureVisible(example);
+    await _scrollIntroTo(tester, example);
     await tester.tap(example);
     await tester.pumpAndSettle();
 
@@ -294,7 +306,7 @@ void main() {
 
     // Câu hỏi gợi ý chỉ để đọc.
     final example = find.text('Hết giờ thuê ô thì làm sao?');
-    await tester.ensureVisible(example);
+    await _scrollIntroTo(tester, example);
     await tester.tap(example);
     await tester.pumpAndSettle();
     expect(service.askCalls, isEmpty);

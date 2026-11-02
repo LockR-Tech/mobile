@@ -56,6 +56,7 @@ class VoucherDetailPage extends StatelessWidget {
       body: Column(
         children: [
           BrandHeroHeader(
+            art: HeroArt.ticket,
             title: context.l10n.promoDetailTitle,
             subtitle: voucher.campaignTitle,
             onBack: () => AppRouter.backOrHome(context),

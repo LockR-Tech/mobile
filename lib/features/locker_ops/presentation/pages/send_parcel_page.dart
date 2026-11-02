@@ -622,6 +622,7 @@ class _SendParcelPageState extends State<SendParcelPage>
         body: Column(
           children: [
             BrandHeroHeader(
+              art: HeroArt.parcel,
               eyebrow: _order == null ? null : context.l10n.commonPaymentEyebrow,
               title: _order == null
                   ? context.l10n.sendTitle

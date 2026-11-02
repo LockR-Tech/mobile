@@ -163,6 +163,7 @@ class _BleTestPageState extends State<BleTestPage> {
       body: Column(
         children: [
           BrandHeroHeader(
+            art: HeroArt.locker,
             eyebrow: 'LOCK.R • BLUETOOTH',
             title: context.l10n.profileBleTest,
             subtitle: context.l10n.btSubtitle,

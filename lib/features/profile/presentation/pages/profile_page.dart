@@ -199,6 +199,7 @@ class _ProfilePageState extends State<ProfilePage>
         body: Column(
           children: [
             BrandHeroHeader(
+              art: HeroArt.profile,
               title: context.l10n.profileTitle,
               subtitle: context.l10n.profileSubtitle,
             ),
@@ -220,6 +221,7 @@ class _ProfilePageState extends State<ProfilePage>
         body: Column(
           children: [
             BrandHeroHeader(
+              art: HeroArt.profile,
               title: context.l10n.profileTitle,
               subtitle: context.l10n.profileSubtitle,
             ),
@@ -247,6 +249,7 @@ class _ProfilePageState extends State<ProfilePage>
         child: Column(
           children: [
             BrandHeroHeader(
+              art: HeroArt.profile,
               title: context.l10n.profileTitle,
               subtitle: context.l10n.profileSubtitle,
               trailing: BrandCircleIconButton(

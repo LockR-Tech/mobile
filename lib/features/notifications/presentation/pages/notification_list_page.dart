@@ -153,6 +153,7 @@ class _NotificationListPageState extends State<NotificationListPage> {
             body: Column(
               children: [
                 BrandHeroHeader(
+                  art: HeroArt.bell,
                   title: context.l10n.commonNotifications,
                   subtitle: context.l10n.nlSubtitle,
                   onBack: () => AppRouter.backOrHome(context),
@@ -171,6 +172,7 @@ class _NotificationListPageState extends State<NotificationListPage> {
           backgroundColor: const Color(0xFFF7FAFC),
           body: BrandHeroScaffold(
             header: (collapse) => BrandHeroHeader(
+              art: HeroArt.bell,
               title: context.l10n.commonNotifications,
               subtitle: context.l10n.nlSubtitle,
               onBack: () => AppRouter.backOrHome(context),
@@ -179,6 +181,7 @@ class _NotificationListPageState extends State<NotificationListPage> {
                   builder: (context, provider, _) {
                     final showMarkAll = provider.unreadCount > 0 &&
                         provider.notifications.isNotEmpty;
+                    final hero = BrandHeroColors.maybeOf(context);
                     return Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
@@ -200,10 +203,10 @@ class _NotificationListPageState extends State<NotificationListPage> {
                                 vertical: 8,
                               ),
                               decoration: BoxDecoration(
-                                color: Colors.white.withValues(alpha: 0.14),
+                                color: hero?.buttonBg ?? Colors.white.withValues(alpha: 0.14),
                                 borderRadius: BorderRadius.circular(20),
                                 border: Border.all(
-                                  color: Colors.white.withValues(alpha: 0.22),
+                                  color: hero?.buttonBorder ?? Colors.white.withValues(alpha: 0.22),
                                 ),
                               ),
                               child: Row(
@@ -212,7 +215,7 @@ class _NotificationListPageState extends State<NotificationListPage> {
                                   Icon(
                                     LucideIcons.checkCheck,
                                     size: 14,
-                                    color: Colors.white,
+                                    color: hero?.buttonFg ?? Colors.white,
                                   ),
                                   SizedBox(width: 4),
                                   Text(
@@ -220,7 +223,7 @@ class _NotificationListPageState extends State<NotificationListPage> {
                                     style: TextStyle(
                                       fontSize: 12,
                                       fontWeight: FontWeight.w700,
-                                      color: Colors.white,
+                                      color: hero?.buttonFg ?? Colors.white,
                                     ),
                                   ),
                                 ],

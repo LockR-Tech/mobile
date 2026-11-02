@@ -118,6 +118,7 @@ class _SecurityPageState extends State<SecurityPage> {
         body: Column(
           children: [
             BrandHeroHeader(
+              art: HeroArt.security,
               title: context.l10n.profileSecurity,
               subtitle: context.l10n.secSubtitle,
               onBack: () => Navigator.of(context).pop(),
