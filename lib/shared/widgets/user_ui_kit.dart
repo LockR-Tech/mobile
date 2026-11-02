@@ -332,6 +332,9 @@ class BrandHeroHeader extends StatelessWidget {
   final Color? backgroundColor;
   final HeroArt art;
 
+  /// Phần hình minh hoạ lộ ra trong header (~130 px): chữ chừa chỗ để không đè lên.
+  static const double _artGap = 124;
+
   @override
   Widget build(BuildContext context) {
     final t = collapseProgress.clamp(0.0, 1.0);
@@ -395,7 +398,7 @@ class BrandHeroHeader extends StatelessWidget {
                         SizedBox(height: 14 - 6 * t),
                         Padding(
                           // Chừa chỗ cho hình minh hoạ để chữ không đè lên.
-                          padding: EdgeInsets.only(right: hasArt ? 96 * (1 - t) : 0),
+                          padding: EdgeInsets.only(right: hasArt ? _artGap * (1 - t) : 0),
                           child: Text(
                             title,
                             maxLines: 2,
@@ -413,7 +416,7 @@ class BrandHeroHeader extends StatelessWidget {
                           _Collapsible(
                             progress: t,
                             child: Padding(
-                              padding: EdgeInsets.only(top: 6, right: hasArt ? 96 : 0),
+                              padding: EdgeInsets.only(top: 6, right: hasArt ? _artGap : 0),
                               child: Text(
                                 subtitle!,
                                 maxLines: 2,
