@@ -3406,6 +3406,7 @@
   "clSourceLocker": "Tại trạm/tủ gửi",
   "clDroneGps": "Vị trí drone (GPS)",
   "clDroneSim": "Vị trí drone (mô phỏng)",
+  "clEstimatedRoute": "Ước theo chặng (đơn cũ, không có GPS)",
   "clDestination": "Tại tủ nhận",
   "clAtEvent": "Vị trí lúc ghi mốc",
   "lpIntro": "Chọn tủ nhận hàng (ưu tiên sắp xếp gần bạn nhất). Hệ thống tự chọn tủ bay và KTV đến lấy kiện tại nhà.",

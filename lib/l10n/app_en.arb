@@ -1904,6 +1904,7 @@
   "clSourceLocker": "At the station/sending locker",
   "clDroneGps": "Drone position (GPS)",
   "clDroneSim": "Drone position (simulated)",
+  "clEstimatedRoute": "Estimated from the stage (older order, no GPS)",
   "clDestination": "At the receiving locker",
   "clAtEvent": "Position when recorded",
   "lpIntro": "Choose the receiving locker (sorted by distance). The system picks the flight locker and a technician collects the parcel from your home.",

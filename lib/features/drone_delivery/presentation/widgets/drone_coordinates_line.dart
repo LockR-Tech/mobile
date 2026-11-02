@@ -108,6 +108,7 @@ String journeyLocationSourceLabel(String? source) => switch (source) {
   'DRONE' => L10n.current.clDroneGps,
   'DRONE_SIMULATED' => L10n.current.clDroneSim,
   'DESTINATION_LOCKER' => L10n.current.clDestination,
+  'ESTIMATED_ROUTE' => L10n.current.clEstimatedRoute,
   _ => L10n.current.clAtEvent,
 };
 

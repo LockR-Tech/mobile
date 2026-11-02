@@ -20,7 +20,8 @@ class OrderMilestone {
   final String label;
   final DateTime? occurredAt;
 
-  /// Kiện ở đâu lúc đạt mốc — chỉ có ở hành trình drone (xem `DroneJourneyStep`).
+  /// Kiện ở đâu lúc đạt mốc — chỉ đơn drone; người nhận không thấy điểm lấy hàng của người gửi
+  /// và vị trí KTV.
   final double? latitude;
   final double? longitude;
   final String? locationSource;
@@ -34,6 +35,9 @@ class OrderMilestone {
       label: label,
       code: code.isEmpty ? null : code,
       occurredAt: parseServerDateTime(raw['occurredAt']),
+      latitude: (raw['latitude'] as num?)?.toDouble(),
+      longitude: (raw['longitude'] as num?)?.toDouble(),
+      locationSource: raw['locationSource'] as String?,
     );
   }
 

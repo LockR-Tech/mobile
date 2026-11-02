@@ -11522,6 +11522,12 @@ abstract class AppLocalizations {
   /// **'Vị trí drone (mô phỏng)'**
   String get clDroneSim;
 
+  /// No description provided for @clEstimatedRoute.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ước theo chặng (đơn cũ, không có GPS)'**
+  String get clEstimatedRoute;
+
   /// No description provided for @clDestination.
   ///
   /// In vi, this message translates to:
