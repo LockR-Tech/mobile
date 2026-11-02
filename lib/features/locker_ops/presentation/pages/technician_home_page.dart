@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:smart_laundry_locker/core/config/business_config_service.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 import 'package:smart_laundry_locker/core/media/media.dart';
 import 'package:smart_laundry_locker/core/routing/app_router.dart';
 import 'package:smart_laundry_locker/core/services/token_service.dart';
@@ -253,7 +254,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
       } else {
         _showErrorText(
           _errors[_Section.schedules] ??
-              'Không tìm thấy lịch kiểm tra #$scheduleId (có thể đã bị xoá hoặc không thuộc tủ bạn xem được).',
+              L10n.current.techHomeScheduleNotFound(scheduleId),
         );
       }
     }
@@ -500,7 +501,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: _RetryBanner(
-        message: 'Không tải được đầy đủ dữ liệu: ${messages.join(' · ')}',
+        message: context.l10n.techHomeLoadPartialFailed(messages.join(' · ')),
         onRetry: _loading ? null : _load,
       ),
     );
@@ -514,20 +515,20 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Row(
+        title: Row(
           children: [
-            Icon(Icons.logout_rounded, color: Color(0xFFDC2626)),
-            SizedBox(width: 10),
-            Text('Đăng xuất ca trực'),
+            const Icon(Icons.logout_rounded, color: Color(0xFFDC2626)),
+            const SizedBox(width: 10),
+            Text(context.l10n.techHomeLogoutShiftTitle),
           ],
         ),
-        content: const Text(
-          'Bạn có chắc chắn muốn kết thúc ca trực và đăng xuất khỏi tài khoản KTV tủ không?',
+        content: Text(
+          context.l10n.techHomeLogoutShiftConfirm,
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text('Hủy', style: TextStyle(color: Colors.grey)),
+            child: Text(context.l10n.commonCancel, style: const TextStyle(color: Colors.grey)),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
@@ -538,7 +539,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
               ),
             ),
             onPressed: () => Navigator.of(ctx).pop(true),
-            child: const Text('Đăng xuất'),
+            child: Text(context.l10n.commonLogout),
           ),
         ],
       ),
@@ -582,9 +583,9 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
       }
     } catch (_) {}
 
-    final techName = resolvedName ?? profileName ?? _jwtUserName ?? 'Kỹ thuật viên tủ';
+    final techName = resolvedName ?? profileName ?? _jwtUserName ?? context.l10n.techHomeLockerTechnician;
     final techEmail = profileEmail ?? _jwtUserEmail;
-    final techPhone = profilePhone ?? 'Chưa cập nhật SĐT';
+    final techPhone = profilePhone ?? context.l10n.techHomePhoneNotSet;
 
     showModalBottomSheet<void>(
       context: context,
@@ -673,9 +674,9 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                             overflow: TextOverflow.ellipsis,
                           ),
                           const SizedBox(height: 4),
-                          const Text(
-                            'Kỹ thuật viên tủ (ô tủ & phần cứng)',
-                            style: TextStyle(fontSize: 12.5, color: opsMutedText, fontWeight: FontWeight.w600),
+                          Text(
+                            context.l10n.techHomeLockerTechnicianRole,
+                            style: const TextStyle(fontSize: 12.5, color: opsMutedText, fontWeight: FontWeight.w600),
                           ),
                           if (techEmail != null && techEmail.isNotEmpty) ...[
                             const SizedBox(height: 2),
@@ -696,20 +697,20 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                 Row(
                   children: [
                     Expanded(
-                      child: _buildProfileStatTile('Phiếu đã nhận', '$myTotal', const Color(0xFF4F46E5)),
+                      child: _buildProfileStatTile(context.l10n.techHomeStatReceived, '$myTotal', const Color(0xFF4F46E5)),
                     ),
                     const SizedBox(width: 8),
                     Expanded(
-                      child: _buildProfileStatTile('Đang làm', '$myInProgress', const Color(0xFF2563EB)),
+                      child: _buildProfileStatTile(context.l10n.techHomeStatInProgress, '$myInProgress', const Color(0xFF2563EB)),
                     ),
                     const SizedBox(width: 8),
                     Expanded(
-                      child: _buildProfileStatTile('Đã xong', '$myResolved', const Color(0xFF16A34A)),
+                      child: _buildProfileStatTile(context.l10n.stDone, '$myResolved', const Color(0xFF16A34A)),
                     ),
                     const SizedBox(width: 8),
                     Expanded(
                       child: _buildProfileStatTile(
-                        'Quá hạn',
+                        context.l10n.enumOverdue,
                         '$myOverdue',
                         myOverdue > 0 ? const Color(0xFFDC2626) : const Color(0xFF16A34A),
                       ),
@@ -731,10 +732,10 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                         children: [
                           const Icon(Icons.star_rounded, color: Color(0xFFF59E0B), size: 20),
                           const SizedBox(width: 8),
-                          const Text('Đánh giá chất lượng: ', style: TextStyle(fontSize: 13, color: opsDark)),
+                          Text(context.l10n.techHomeQualityRatingLabel, style: const TextStyle(fontSize: 13, color: opsDark)),
                           Flexible(
                             child: Text(
-                              rating ?? 'Chưa có đánh giá',
+                              rating ?? context.l10n.techHomeNoRatingYet,
                               style: TextStyle(
                                 fontSize: 13,
                                 fontWeight: rating == null ? FontWeight.w500 : FontWeight.bold,
@@ -757,7 +758,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                             size: 20,
                           ),
                           const SizedBox(width: 8),
-                          const Text('Quy chế SLA: ', style: TextStyle(fontSize: 13, color: opsDark)),
+                          Text(context.l10n.techHomeSlaPolicyLabel, style: const TextStyle(fontSize: 13, color: opsDark)),
                           Flexible(
                             child: Container(
                               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
@@ -793,7 +794,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                           children: [
                             const Icon(Icons.phone_outlined, color: opsMutedText, size: 18),
                             const SizedBox(width: 8),
-                            const Text('SĐT kỹ thuật: ', style: TextStyle(fontSize: 13, color: opsDark)),
+                            Text(context.l10n.techHomeTechPhoneLabel, style: const TextStyle(fontSize: 13, color: opsDark)),
                             Expanded(
                               child: Text(techPhone, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: opsDark)),
                             ),
@@ -823,7 +824,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                         ),
                         icon: const Icon(Icons.edit_note_rounded, size: 20),
-                        label: const Text('Xem & Chỉnh sửa hồ sơ', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13.5)),
+                        label: Text(context.l10n.techHomeViewEditProfile, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13.5)),
                       ),
                     ),
                     const SizedBox(width: 10),
@@ -839,7 +840,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       ),
                       icon: const Icon(Icons.logout, size: 18),
-                      label: const Text('Đăng xuất', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13.5)),
+                      label: Text(context.l10n.commonLogout, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13.5)),
                     ),
                   ],
                 ),
@@ -881,14 +882,14 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Row(
+        title: Row(
           children: [
-            Icon(Icons.warning_amber_rounded, color: Color(0xFFDC2626), size: 28),
-            SizedBox(width: 8),
+            const Icon(Icons.warning_amber_rounded, color: Color(0xFFDC2626), size: 28),
+            const SizedBox(width: 8),
             Expanded(
               child: Text(
-                'Hạn chế nhận việc mới',
-                style: TextStyle(fontSize: 16.5, fontWeight: FontWeight.bold),
+                context.l10n.techHomeSlaRestrictedTitle,
+                style: const TextStyle(fontSize: 16.5, fontWeight: FontWeight.bold),
               ),
             ),
           ],
@@ -914,18 +915,16 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
               ),
             ),
             const SizedBox(height: 12),
-            const Text(
-              'Quy chế SLA: khi số phiếu quá hạn vượt ngưỡng do quản trị cấu hình, '
-              'KTV tạm thời không nhận được việc mới. Vui lòng chuyển sang tab '
-              '"Việc của tôi" và hoàn tất các công việc tồn đọng.',
-              style: TextStyle(fontSize: 12.5, color: opsMutedText),
+            Text(
+              context.l10n.techHomeSlaRestrictedBody,
+              style: const TextStyle(fontSize: 12.5, color: opsMutedText),
             ),
           ],
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('Đã hiểu'),
+            child: Text(context.l10n.commonGotIt),
           ),
           ElevatedButton.icon(
             onPressed: () {
@@ -938,7 +937,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
             ),
             icon: const Icon(Icons.arrow_forward, size: 16),
-            label: const Text('Xem việc của tôi'),
+            label: Text(context.l10n.techHomeViewMyWork),
           ),
         ],
       ),
@@ -979,7 +978,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
         action: openReportId == null
             ? null
             : SnackBarAction(
-                label: 'Mở phiếu',
+                label: context.l10n.techHomeOpenTicket,
                 textColor: Colors.white,
                 onPressed: () => _resolveViaTicket(openReportId),
               ),
@@ -1015,8 +1014,8 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
   /// "KTV Nguyễn Văn A" (tên server trả) hoặc "KTV #12" khi chưa có tên.
   String _assigneeLabel(Map<String, dynamic> r) {
     final name = r['assignedToTechnicianName']?.toString().trim() ?? '';
-    if (name.isNotEmpty) return 'KTV $name';
-    return 'KTV #${r['assignedToUserId']}';
+    if (name.isNotEmpty) return context.l10n.techHomeTechName(name);
+    return context.l10n.techHomeTechNumber('${r['assignedToUserId']}');
   }
 
   Color _slaLevelColor(String? level) => switch (level) {
@@ -1062,7 +1061,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
     }
     try {
       await _service.clearFault(boxId);
-      _showInfo('Ô đã hoạt động lại');
+      _showInfo(L10n.current.techHomeBoxBackOnline);
       await _load();
     } catch (e) {
       _showError(e);
@@ -1082,12 +1081,12 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
     } catch (_) {}
     if (!mounted) return;
     if (ticket == null || ticket.isEmpty) {
-      _showInfo('Không tải được phiếu RPT-$reportId');
+      _showInfo(context.l10n.techHomeTicketLoadFailed(reportId));
       return;
     }
     final status = ticket['status']?.toString();
     if (isReportClosed(status)) {
-      _showInfo('Phiếu RPT-$reportId đã được đóng.');
+      _showInfo(context.l10n.techHomeTicketAlreadyClosed(reportId));
       await _load();
       return;
     }
@@ -1097,8 +1096,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
     }
     if (status != 'OPEN') {
       _showInfo(
-        'Phiếu RPT-$reportId đang do ${_assigneeLabel(ticket)} xử lý — '
-        'chỉ người được giao mới hoàn tất được.',
+        context.l10n.techHomeTicketHandledByOther(reportId, _assigneeLabel(ticket)),
       );
       return;
     }
@@ -1106,15 +1104,14 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text('Phiếu RPT-$reportId chưa có người nhận'),
-        content: const Text(
-          'Ô/bãi đáp này đang có phiếu sự cố mở. Nhận phiếu rồi nghiệm thu '
-          '(chụp ảnh sau khi sửa) để đưa về hoạt động.',
+        title: Text(context.l10n.techHomeTicketUnassignedTitle(reportId)),
+        content: Text(
+          context.l10n.techHomeTicketUnassignedBody,
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Hủy'),
+            child: Text(context.l10n.commonCancel),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
@@ -1125,7 +1122,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
               ),
             ),
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Nhận & nghiệm thu'),
+            child: Text(context.l10n.techHomeClaimAndAccept),
           ),
         ],
       ),
@@ -1163,17 +1160,17 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
     );
     if (!opened && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Tủ này chưa có vị trí để chỉ đường.')),
+        SnackBar(content: Text(context.l10n.techHomeLockerNoLocation)),
       );
     }
   }
 
   String _greeting() {
     final hour = DateTime.now().hour;
-    if (hour < 12) return '☀️ Chào buổi sáng';
-    if (hour < 14) return '🌤️ Chào buổi trưa';
-    if (hour < 18) return '🌅 Chào buổi chiều';
-    return '🌙 Chào ca tối';
+    if (hour < 12) return context.l10n.techHomeGreetingMorning;
+    if (hour < 14) return context.l10n.techHomeGreetingNoon;
+    if (hour < 18) return context.l10n.techHomeGreetingAfternoon;
+    return context.l10n.techHomeGreetingEvening;
   }
 
   String _getResolvedTechnicianName(BuildContext context) {
@@ -1190,7 +1187,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
     if (_jwtUserEmail != null && _jwtUserEmail!.trim().isNotEmpty) {
       return _jwtUserEmail!.trim();
     }
-    return 'Kỹ thuật viên tủ';
+    return context.l10n.techHomeLockerTechnician;
   }
 
   Widget _avatarFallback(String name) {
@@ -1349,33 +1346,33 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
       case 'SUSPENDED':
         slaIcon = Icons.cancel;
         slaColor = const Color(0xFFEF4444);
-        slaText = 'SLA: Đình chỉ ($overdueCount phiếu trễ hạn)';
+        slaText = context.l10n.techHomeSlaSuspended(overdueCount);
         slaTextColor = const Color(0xFFFCA5A5);
       case 'RESTRICTED':
         slaIcon = Icons.block;
         slaColor = const Color(0xFFF87171);
-        slaText = 'SLA: Hạn chế nhận việc ($overdueCount phiếu trễ hạn)';
+        slaText = context.l10n.techHomeSlaRestricted(overdueCount);
         slaTextColor = const Color(0xFFFCA5A5);
       case 'WARNING':
         slaIcon = Icons.warning_amber_rounded;
         slaColor = const Color(0xFFFBBF24);
-        slaText = 'SLA: Cảnh báo ($overdueCount phiếu trễ hạn)';
+        slaText = context.l10n.techHomeSlaWarning(overdueCount);
         slaTextColor = const Color(0xFFFDE68A);
       case 'NORMAL':
         slaIcon = Icons.verified_rounded;
         slaColor = const Color(0xFF34D399);
         slaTextColor = const Color(0xFFA7F3D0);
         slaText = inProgressCount > 0
-            ? 'SLA: Bình thường ($inProgressCount phiếu đang xử lý)'
-            : 'SLA: Bình thường';
+            ? context.l10n.techHomeSlaNormalWithCount(inProgressCount)
+            : context.l10n.techHomeSlaNormal;
       default:
         // Chưa tải được trạng thái từ server ⇒ chỉ nêu số liệu thật đang có.
         slaIcon = Icons.help_outline;
         slaColor = const Color(0xFF94A3B8);
         slaTextColor = const Color(0xFFCBD5E1);
         slaText = overdueCount > 0
-            ? 'SLA: $overdueCount phiếu trễ hạn · chưa tải được mức chế tài'
-            : 'SLA: chưa tải được trạng thái';
+            ? context.l10n.techHomeSlaUnknownWithOverdue(overdueCount)
+            : context.l10n.techHomeSlaUnknown;
     }
 
     return Container(
@@ -1591,7 +1588,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                                 padding: const EdgeInsets.only(right: 6),
                                 child: _headerActionButton(
                                   icon: Icons.support_agent_rounded,
-                                  tooltip: 'Trợ lý hỏi đáp',
+                                  tooltip: context.l10n.aiTitle,
                                   onTap: () =>
                                       context.push(AppRouter.assistant),
                                 ),
@@ -1606,7 +1603,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                                   children: [
                                     _headerActionButton(
                                       icon: Icons.notifications_none_rounded,
-                                      tooltip: 'Thông báo',
+                                      tooltip: context.l10n.commonNotifications,
                                       onTap: () =>
                                           context.push(AppRouter.notifications),
                                     ),
@@ -1651,7 +1648,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                             const SizedBox(width: 6),
                             _headerActionButton(
                               icon: Icons.person_outline_rounded,
-                              tooltip: 'Hồ sơ & Chỉnh sửa',
+                              tooltip: context.l10n.techHomeProfileAndEdit,
                               onTap: () {
                                 Navigator.of(context).push(
                                   MaterialPageRoute(
@@ -1663,7 +1660,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                             const SizedBox(width: 6),
                             _headerActionButton(
                               icon: Icons.logout_rounded,
-                              tooltip: 'Đăng xuất',
+                              tooltip: context.l10n.commonLogout,
                               onTap: _logout,
                             ),
                           ],
@@ -1687,7 +1684,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                           _buildHudChip(
                             icon: Icons.report_problem_outlined,
                             value: '${openReports.length}',
-                            label: 'Chờ xử lý',
+                            label: context.l10n.enumPending,
                             accentColor: openReports.isNotEmpty
                                 ? const Color(0xFFEF4444)
                                 : const Color(0xFF10B981),
@@ -1698,7 +1695,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                           _buildHudChip(
                             icon: Icons.handyman_outlined,
                             value: '$mineInProgress',
-                            label: 'Đang làm',
+                            label: context.l10n.techHomeStatInProgress,
                             accentColor: const Color(0xFF38BDF8),
                             onTap: () => _tabs.animateTo(2),
                           ),
@@ -1706,7 +1703,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                           _buildHudChip(
                             icon: Icons.event_repeat_outlined,
                             value: '${kioskSchedules.length}',
-                            label: 'Định kỳ',
+                            label: context.l10n.techHomeHudRoutine,
                             accentColor: const Color(0xFFA78BFA),
                             onTap: () => _tabs.animateTo(3),
                           ),
@@ -1714,7 +1711,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                           _buildHudChip(
                             icon: Icons.meeting_room_outlined,
                             value: '${_lockers.length}',
-                            label: 'Trạm tủ',
+                            label: context.l10n.techHomeHudStations,
                             accentColor: const Color(0xFF34D399),
                             onTap: () => _tabs.animateTo(0),
                           ),
@@ -1781,12 +1778,12 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
               unselectedLabelColor: const Color(0xFF64748B),
               unselectedLabelStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
               tabs: [
-                const Tab(text: 'Kiểm tra tủ'),
-                Tab(text: 'Sự cố ($openCount)'),
-                Tab(text: 'Việc của tôi ($mineCount)'),
-                Tab(text: 'Định kỳ (${kioskSchedules.length})'),
-                Tab(text: 'Thiết bị IoT (${_devices.length})'),
-                Tab(text: 'Thu hồi kiện ($_pendingRecoveryCount)'),
+                Tab(text: context.l10n.techHomeTabInspect),
+                Tab(text: context.l10n.techHomeTabIncidents(openCount)),
+                Tab(text: context.l10n.techHomeTabMyWork(mineCount)),
+                Tab(text: context.l10n.techHomeTabRoutine(kioskSchedules.length)),
+                Tab(text: context.l10n.techHomeTabIotDevices(_devices.length)),
+                Tab(text: context.l10n.techHomeTabParcelRecovery(_pendingRecoveryCount)),
               ],
             ),
           ),
@@ -1856,19 +1853,19 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
               child: OpsBanner(
                 tone: OpsBannerTone.warning,
                 icon: Icons.inventory_2_outlined,
-                title: 'Có $_pendingRecoveryCount nhiệm vụ thu hồi kiện rơi',
-                text: 'Chạm để mở tab "Thu hồi kiện".',
+                title: context.l10n.techHomeRecoveryBannerTitle(_pendingRecoveryCount),
+                text: context.l10n.techHomeRecoveryBannerHint,
               ),
             ),
             const SizedBox(height: 12),
           ],
-          const OpsSectionLabel('Chọn tủ để kiểm tra', icon: Icons.warehouse_outlined),
+          OpsSectionLabel(context.l10n.techHomePickLockerToInspect, icon: Icons.warehouse_outlined),
           if (lockerOptions.isEmpty)
             OpsEmptyState(
               icon: Icons.warehouse_outlined,
               title: _hasError(const [_Section.lockers])
-                  ? 'Chưa tải được danh sách tủ'
-                  : 'Chưa có tủ nào',
+                  ? context.l10n.techHomeLockersLoadFailed
+                  : context.l10n.techHomeNoLockers,
             )
           else
             LockerPickerField(
@@ -1891,7 +1888,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
             )
           else if (_layoutError != null && _selectedLockerId != null)
             _RetryBanner(
-              message: 'Không tải được sơ đồ tủ: $_layoutError',
+              message: context.l10n.techHomeLayoutLoadFailed(_layoutError!),
               onRetry: () => _selectLocker(_selectedLockerId!),
             )
           else if (_layout != null) ...[
@@ -1903,15 +1900,15 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Padding(
-                    padding: EdgeInsets.only(bottom: 8),
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
                     child: Row(
                       children: [
-                        Icon(Icons.grid_view_rounded, size: 16, color: opsPrimary),
-                        SizedBox(width: 6),
+                        const Icon(Icons.grid_view_rounded, size: 16, color: opsPrimary),
+                        const SizedBox(width: 6),
                         Text(
-                          'Sơ đồ vật lý trạm Kiosk',
-                          style: TextStyle(
+                          context.l10n.techHomeKioskPhysicalLayout,
+                          style: const TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.w700,
                             color: opsDark,
@@ -1922,10 +1919,10 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                   ),
                   _buildPhysicalCabinet(cells),
                   const SizedBox(height: 10),
-                  const OpsBanner(
+                  OpsBanner(
                     tone: OpsBannerTone.info,
                     icon: Icons.touch_app_outlined,
-                    text: 'Chạm vào một ô để báo hỏng, mở khẩn cấp hoặc mở lại ô sau khi sửa.',
+                    text: context.l10n.techHomeTapBoxHint,
                   ),
                 ],
               ),
@@ -1945,9 +1942,9 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
   static const _landingPadStatuses = ['OK', 'FAULT', 'MAINTENANCE'];
 
   String _landingPadLabel(String status) => switch (status) {
-    'OK' => 'Hoạt động tốt',
-    'FAULT' => 'Hỏng',
-    'MAINTENANCE' => 'Đang bảo trì',
+    'OK' => context.l10n.techHomeWorkingWell,
+    'FAULT' => context.l10n.commonBroken,
+    'MAINTENANCE' => context.l10n.lockerStatusMaintenance,
     _ => status,
   };
 
@@ -1983,10 +1980,10 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
             children: [
               const Icon(Icons.flight_land, size: 18, color: opsPrimary),
               const SizedBox(width: 8),
-              const Expanded(
+              Expanded(
                 child: Text(
-                  'Bãi đáp drone',
-                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800),
+                  context.l10n.techHomeDroneLandingPad,
+                  style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800),
                 ),
               ),
               _MiniPill(
@@ -2010,7 +2007,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
               borderRadius: BorderRadius.circular(999),
               child: _MiniPill(
                 icon: Icons.pending_actions,
-                text: 'Phiếu RPT-${openTicket['id']} đang mở',
+                text: context.l10n.techHomeTicketOpenPill('${openTicket['id']}'),
                 color: const Color(0xFFEA580C),
               ),
             ),
@@ -2032,10 +2029,9 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
             ],
           ),
           const SizedBox(height: 8),
-          const Text(
-            'Báo Hỏng/Bảo trì ⇒ mở phiếu bãi đáp giao cho bạn. Về "Hoạt động tốt" '
-            'khi còn phiếu ⇒ nghiệm thu phiếu (ảnh sau khi sửa).',
-            style: TextStyle(fontSize: 11.5, color: opsMutedText),
+          Text(
+            context.l10n.techHomeLandingPadHint,
+            style: const TextStyle(fontSize: 11.5, color: opsMutedText),
           ),
         ],
       ),
@@ -2063,9 +2059,10 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
       await _service.updateLandingPadStatus(lockerId, status, reason: reason);
       _showInfo(
         status == 'OK'
-            ? 'Bãi đáp đã hoạt động lại'
-            : 'Bãi đáp: ${_landingPadLabel(status)}'
-                  '${ticketId == null ? ' — đã mở phiếu sự cố giao cho bạn' : ''}',
+            ? L10n.current.techHomeLandingPadBackOnline
+            : ticketId == null
+                ? L10n.current.techHomeLandingPadStatusTicketOpened(_landingPadLabel(status))
+                : L10n.current.techHomeLandingPadStatus(_landingPadLabel(status)),
       );
       await _load();
     } catch (e) {
@@ -2084,24 +2081,24 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
         child: StatefulBuilder(
           builder: (ctx, setLocal) => AlertDialog(
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-            title: Text('Bãi đáp: ${_landingPadLabel(status)}'),
+            title: Text(context.l10n.techHomeLandingPadStatus(_landingPadLabel(status))),
             content: TextField(
               controller: ctrl,
               autofocus: true,
               minLines: 1,
               maxLines: 3,
               decoration: InputDecoration(
-                labelText: 'Lý do',
+                labelText: context.l10n.techHomeReasonLabel,
                 hintText: status == 'FAULT'
-                    ? 'VD: Marker bong tróc, mặt đáp nứt...'
-                    : 'VD: Vệ sinh, sơn lại marker...',
+                    ? context.l10n.techHomeLandingPadFaultHint
+                    : context.l10n.techHomeLandingPadMaintenanceHint,
                 errorText: error,
               ),
             ),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(ctx),
-                child: const Text('Hủy'),
+                child: Text(context.l10n.commonCancel),
               ),
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
@@ -2114,12 +2111,12 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                 onPressed: () {
                   final text = ctrl.text.trim();
                   if (text.isEmpty) {
-                    setLocal(() => error = 'Vui lòng nhập lý do.');
+                    setLocal(() => error = context.l10n.techHomeReasonRequired);
                     return;
                   }
                   Navigator.pop(ctx, text);
                 },
-                child: const Text('Xác nhận'),
+                child: Text(context.l10n.commonConfirm),
               ),
             ],
           ),
@@ -2135,12 +2132,12 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
   /// Bất cứ ô nào Admin thêm mới vào hàng/cột đều tự động render đúng vị trí!
   Widget _buildPhysicalCabinet(List<Map<String, dynamic>> cells) {
     if (cells.isEmpty) {
-      return const Padding(
-        padding: EdgeInsets.all(16),
+      return Padding(
+        padding: const EdgeInsets.all(16),
         child: Center(
           child: Text(
-            'Chưa có ô tủ nào được cấu hình.',
-            style: TextStyle(color: opsMutedText),
+            context.l10n.techHomeNoBoxesConfigured,
+            style: const TextStyle(color: opsMutedText),
           ),
         ),
       );
@@ -2173,7 +2170,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
               child: Row(
                 children: [
                   Text(
-                    'Hàng $r',
+                    context.l10n.techHomeRowLabel(r),
                     style: const TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w700,
@@ -2208,11 +2205,11 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 4),
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 4),
                   child: Text(
-                    'Cột vali XL',
-                    style: TextStyle(
+                    context.l10n.techHomeXlColumn,
+                    style: const TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.w700,
                       color: opsMutedText,
@@ -2242,7 +2239,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                     child: Row(
                       children: [
                         Text(
-                          'Hàng $r',
+                          context.l10n.techHomeRowLabel(r),
                           style: const TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.w700,
@@ -2283,27 +2280,27 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
             children: [
               const Icon(Icons.sensor_door_outlined, size: 18, color: opsPrimary),
               const SizedBox(width: 8),
-              const Expanded(
+              Expanded(
                 child: Text(
-                  'Tình trạng phần cứng ô',
-                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800),
+                  context.l10n.techHomeBoxHardwareTitle,
+                  style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800),
                 ),
               ),
               if (attention.isNotEmpty)
                 _MiniPill(
                   icon: Icons.warning_amber_rounded,
-                  text: '${attention.length} cần chú ý',
+                  text: context.l10n.techHomeNeedsAttentionCount(attention.length),
                   color: const Color(0xFFDC2626),
                 ),
             ],
           ),
           const SizedBox(height: 10),
           if (health.isEmpty)
-            const OpsBanner(
+            OpsBanner(
               tone: OpsBannerTone.info,
               icon: Icons.info_outline,
               text:
-                  'Chưa có dữ liệu cảm biến cửa cho tủ này (cabinet chưa báo hoặc dịch vụ IoT chưa bật).',
+                  context.l10n.techHomeNoDoorSensorData,
             )
           else ...[
             if (attention.isNotEmpty) ...[
@@ -2311,7 +2308,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                 tone: OpsBannerTone.danger,
                 icon: Icons.error_outline,
                 text:
-                    '${attention.length} ô có cửa đang MỞ nhưng không ở trạng thái "có đồ" — nên kiểm tra (cửa kẹt/quên đóng).',
+                    context.l10n.techHomeDoorOpenNotOccupied(attention.length),
               ),
               const SizedBox(height: 10),
             ],
@@ -2337,10 +2334,10 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                 ? const Color(0xFFD97706)
                 : const Color(0xFF16A34A);
     final String doorText = hw == null
-        ? 'Chưa có tín hiệu cửa'
+        ? context.l10n.techHomeNoDoorSignal
         : doorOpen
-            ? 'Cửa đang MỞ'
-            : 'Cửa đóng';
+            ? context.l10n.techHomeDoorOpenCaps
+            : context.l10n.lockerDoorClosed;
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
@@ -2395,7 +2392,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                   Padding(
                     padding: const EdgeInsets.only(top: 2),
                     child: Text(
-                      'Báo lúc ${fmtDateTime(reported)}',
+                      context.l10n.techHomeReportedAt(fmtDateTime(reported)),
                       style: const TextStyle(fontSize: 11, color: opsMutedText),
                     ),
                   ),
@@ -2459,7 +2456,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '${locker['name'] ?? 'Tủ'} · ${locker['code'] ?? 'N/A'}',
+                      '${locker['name'] ?? context.l10n.commonLocker} · ${locker['code'] ?? 'N/A'}',
                       style: const TextStyle(
                         fontWeight: FontWeight.w900,
                         fontSize: 15.5,
@@ -2504,20 +2501,20 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                 _MiniPill(
                   icon: online ? Icons.wifi : Icons.wifi_off,
                   text: online
-                      ? 'Bộ điều khiển: trực tuyến'
-                      : 'Bộ điều khiển: mất kết nối',
+                      ? context.l10n.techHomeControllerOnline
+                      : context.l10n.techHomeControllerOffline,
                   color: online
                       ? const Color(0xFF16A34A)
                       : const Color(0xFFDC2626),
                 ),
               _MiniPill(
                 icon: Icons.event_available_outlined,
-                text: 'Đã giữ chỗ: $reserved',
+                text: context.l10n.techHomeReservedCount(reserved),
                 color: statusColor('RESERVED'),
               ),
               _MiniPill(
                 icon: Icons.inventory_outlined,
-                text: 'Có đồ: $occupied',
+                text: context.l10n.techHomeOccupiedCount(occupied),
                 color: statusColor('OCCUPIED'),
               ),
               _MiniPill(
@@ -2530,10 +2527,10 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                 text: 'XL ${_countCells(cells, 'XL', field: 'cellType')}',
               ),
               if (_myLockerIds.contains(_asInt(locker['id'])))
-                const _MiniPill(
+                _MiniPill(
                   icon: Icons.assignment_ind_outlined,
-                  text: 'Tủ bạn phụ trách',
-                  color: Color(0xFFD97706),
+                  text: context.l10n.techHomeYourLocker,
+                  color: const Color(0xFFD97706),
                 ),
             ],
           ),
@@ -2542,17 +2539,17 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
           const SizedBox(height: 10),
           Row(
             children: [
-              const Expanded(
+              Expanded(
                 child: Text(
-                  'Kiểm tra trực quan từng ô rồi chỉ báo hỏng khi xác nhận lỗi vật lý tại tủ.',
-                  style: TextStyle(fontSize: 11.5, color: opsMutedText),
+                  context.l10n.techHomeVisualCheckHint,
+                  style: const TextStyle(fontSize: 11.5, color: opsMutedText),
                 ),
               ),
               const SizedBox(width: 8),
               OutlinedButton.icon(
                 onPressed: hasLocation ? () => _openDirections(locker) : null,
                 icon: const Icon(Icons.near_me_outlined, size: 14),
-                label: const Text('Chỉ đường'),
+                label: Text(context.l10n.commonDirections),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: opsPrimary,
                   side: BorderSide(color: opsPrimary.withValues(alpha: 0.3)),
@@ -2574,7 +2571,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                   ? null
                   : () => _reportLockerFlow(locker),
               icon: const Icon(Icons.report_gmailerrorred_outlined, size: 16),
-              label: const Text('Báo sự cố cả tủ'),
+              label: Text(context.l10n.techHomeReportWholeLocker),
               style: OutlinedButton.styleFrom(
                 foregroundColor: const Color(0xFFDC2626),
                 side: const BorderSide(color: Color(0xFFFCA5A5)),
@@ -2604,7 +2601,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
     var blocking = false;
     var submitting = false;
     String? dialogError;
-    final lockerLabel = '${locker['name'] ?? 'Tủ'} · ${locker['code'] ?? '#$lockerId'}';
+    final lockerLabel = '${locker['name'] ?? context.l10n.commonLocker} · ${locker['code'] ?? '#$lockerId'}';
 
     final created = await showDialog<Map<String, dynamic>>(
       context: context,
@@ -2615,7 +2612,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
         child: StatefulBuilder(
           builder: (ctx, setLocal) => AlertDialog(
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-            title: const Text('Báo sự cố cả tủ'),
+            title: Text(context.l10n.techHomeReportWholeLocker),
             content: SingleChildScrollView(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -2629,9 +2626,9 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                   TextField(
                     controller: titleCtrl,
                     enabled: !submitting,
-                    decoration: const InputDecoration(
-                      labelText: 'Tiêu đề',
-                      hintText: 'VD: Màn hình kiosk không lên, mất nguồn...',
+                    decoration: InputDecoration(
+                      labelText: context.l10n.crTitleField,
+                      hintText: context.l10n.techHomeLockerIncidentTitleHint,
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -2640,11 +2637,11 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                     enabled: !submitting,
                     minLines: 2,
                     maxLines: 4,
-                    decoration: const InputDecoration(labelText: 'Mô tả chi tiết'),
+                    decoration: InputDecoration(labelText: context.l10n.crDescriptionField),
                   ),
                   const SizedBox(height: 12),
                   Text(
-                    'Ảnh hiện trường (tuỳ chọn, tối đa ${photos.maxPhotos})',
+                    context.l10n.techHomeScenePhotosOptional(photos.maxPhotos),
                     style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 8),
@@ -2661,13 +2658,13 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                     onChanged: submitting
                         ? null
                         : (v) => setLocal(() => blocking = v),
-                    title: const Text(
-                      'Chặn cả tủ (ngưng nhận đơn)',
-                      style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                    title: Text(
+                      context.l10n.techHomeBlockWholeLocker,
+                      style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
                     ),
-                    subtitle: const Text(
-                      'Tủ chuyển sang bảo trì cho tới khi phiếu được hoàn tất.',
-                      style: TextStyle(fontSize: 11.5),
+                    subtitle: Text(
+                      context.l10n.techHomeBlockWholeLockerHint,
+                      style: const TextStyle(fontSize: 11.5),
                     ),
                   ),
                   if (dialogError != null) ...[
@@ -2683,7 +2680,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
             actions: [
               TextButton(
                 onPressed: submitting ? null : () => Navigator.pop(ctx),
-                child: const Text('Hủy'),
+                child: Text(context.l10n.commonCancel),
               ),
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
@@ -2697,7 +2694,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                         final title = titleCtrl.text.trim();
                         final desc = descCtrl.text.trim();
                         if (title.isEmpty || desc.isEmpty) {
-                          setLocal(() => dialogError = 'Vui lòng nhập tiêu đề và mô tả.');
+                          setLocal(() => dialogError = context.l10n.techHomeTitleAndDescRequired);
                           return;
                         }
                         setLocal(() {
@@ -2723,7 +2720,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                           }
                         }
                       },
-                child: Text(submitting ? 'Đang gửi...' : 'Gửi báo cáo'),
+                child: Text(submitting ? context.l10n.commonSending : context.l10n.crSubmit),
               ),
             ],
           ),
@@ -2734,8 +2731,10 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
     final id = created['id'];
     _showInfo(
       id != null
-          ? 'Đã tạo phiếu RPT-$id cho $lockerLabel${blocking ? ' — tủ tạm ngưng nhận đơn' : ''}.'
-          : 'Đã gửi báo sự cố cho $lockerLabel.',
+          ? (blocking
+              ? context.l10n.techHomeLockerTicketCreatedBlocked('$id', lockerLabel)
+              : context.l10n.techHomeLockerTicketCreated('$id', lockerLabel))
+          : context.l10n.techHomeLockerIncidentSent(lockerLabel),
     );
     await _load();
   }
@@ -2748,7 +2747,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
       children: [
         Expanded(
           child: _MetricCard(
-            label: 'Tổng ô',
+            label: context.l10n.techHomeTotalBoxes,
             value: '$total',
             icon: Icons.grid_view_rounded,
             color: const Color(0xFF2563EB),
@@ -2757,7 +2756,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
         const SizedBox(width: 8),
         Expanded(
           child: _MetricCard(
-            label: 'Sẵn sàng',
+            label: context.l10n.enumReady,
             value: '$available',
             icon: Icons.check_circle_outline,
             color: const Color(0xFF16A34A),
@@ -2766,7 +2765,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
         const SizedBox(width: 8),
         Expanded(
           child: _MetricCard(
-            label: 'Ô lỗi',
+            label: context.l10n.techHomeFaultyBoxes,
             value: '$fault',
             icon: Icons.error_outline,
             color: const Color(0xFFDC2626),
@@ -2921,9 +2920,9 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                       color: color.withValues(alpha: 0.16),
                       borderRadius: BorderRadius.circular(6),
                     ),
-                    child: const Text(
-                      'Khoang đứng XL',
-                      style: TextStyle(
+                    child: Text(
+                      context.l10n.techHomeXlTallBay,
+                      style: const TextStyle(
                         fontSize: 9,
                         fontWeight: FontWeight.w800,
                         color: opsDark,
@@ -2978,8 +2977,8 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
             actions.add(tile(
               Icons.check_circle,
               openReportId != null
-                  ? 'Đã sửa xong — nghiệm thu phiếu RPT-$openReportId'
-                  : 'Đã sửa xong — mở lại ô',
+                  ? context.l10n.techHomeFixedAcceptTicket(openReportId)
+                  : context.l10n.techHomeFixedReopenBox,
               const Color(0xFF16A34A),
               () => _markFaultFixed(boxId, openReportId: openReportId),
             ));
@@ -2989,14 +2988,14 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
             // đóng phiếu nếu không đúng mô tả.
             actions.add(tile(
               Icons.report_problem,
-              'Xác nhận ô hỏng (khoá ô)',
+              context.l10n.techHomeConfirmBoxFaulty,
               const Color(0xFFDC2626),
               () => _reportFaultFlow(cell),
             ));
             if (openReportId != null) {
               actions.add(tile(
                 Icons.assignment_outlined,
-                'Xem phiếu RPT-$openReportId để kiểm tra',
+                context.l10n.techHomeViewTicketToCheck(openReportId),
                 const Color(0xFF0284C7),
                 () => _openReportById(openReportId),
               ));
@@ -3006,11 +3005,11 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
           case 'CLEANING':
             actions.add(tile(
               Icons.restart_alt,
-              status == 'CLEANING' ? 'Hoàn tất vệ sinh' : 'Khôi phục ô',
+              status == 'CLEANING' ? context.l10n.techHomeFinishCleaning : context.l10n.techHomeRestoreBox,
               const Color(0xFF16A34A),
               () => _runCellAction(
                 () => _service.returnToService(boxId),
-                'Ô đã hoạt động lại',
+                context.l10n.techHomeBoxBackOnline,
               ),
             ));
             break;
@@ -3018,7 +3017,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
           case 'RESERVED':
             actions.add(tile(
               Icons.report_problem,
-              'Báo hỏng ô',
+              context.l10n.techHomeReportBoxFault,
               const Color(0xFFDC2626),
               () => _reportFaultFlow(cell),
             ));
@@ -3026,23 +3025,23 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
           default: // AVAILABLE và các trạng thái khác
             actions.add(tile(
               Icons.report_problem,
-              'Báo hỏng ô',
+              context.l10n.techHomeReportBoxFault,
               const Color(0xFFDC2626),
               () => _reportFaultFlow(cell),
             ));
             actions.add(tile(
               Icons.do_not_disturb_on,
-              'Ngưng dùng ô',
+              context.l10n.techHomeTakeBoxOutOfService,
               const Color(0xFF6B7280),
               () => _outOfServiceFlow(cell),
             ));
             actions.add(tile(
               Icons.cleaning_services,
-              'Đánh dấu đang vệ sinh',
+              context.l10n.techHomeMarkCleaning,
               const Color(0xFF0891B2),
               () => _runCellAction(
                 () => _service.cleaning(boxId),
-                'Ô đang vệ sinh',
+                context.l10n.techHomeBoxCleaning,
               ),
             ));
         }
@@ -3050,7 +3049,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
         // Luôn có sẵn bất kể trạng thái — override khẩn cấp, luôn ghi audit log.
         actions.add(tile(
           Icons.lock_open,
-          'Mở tủ khẩn cấp',
+          context.l10n.techHomeEmergencyOpen,
           const Color(0xFFEA580C),
           () => _forceOpenFlow(boxId, boxNumber: cell['boxNumber']),
         ));
@@ -3088,7 +3087,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Ô #${cell['boxNumber']} · ${_cellTypeLabel(cell['cellType'] as String?)}',
+                            context.l10n.techHomeBoxNumberWithType('${cell['boxNumber']}', _cellTypeLabel(cell['cellType'] as String?)),
                             style: const TextStyle(
                               fontWeight: FontWeight.w800,
                               fontSize: 15,
@@ -3096,7 +3095,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                             ),
                           ),
                           Text(
-                            'Trạng thái: ${statusLabel(status)}'
+                            '${context.l10n.techHomeStatusLine(statusLabel(status))}'
                             '${(reason != null && reason.isNotEmpty) ? ' · $reason' : ''}',
                             style: const TextStyle(fontSize: 12, color: opsMutedText),
                           ),
@@ -3123,7 +3122,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
     final openReport = openReportId == null ? null : _findReport(openReportId);
     final reportId =
         openReport != null && _isAssignedToMe(openReport) ? openReportId : null;
-    final boxLabel = 'Ô #${boxNumber ?? boxId}';
+    final boxLabel = context.l10n.boxHash('${boxNumber ?? boxId}');
     final input = await _promptForceOpen(
       context,
       boxLabel: boxLabel,
@@ -3172,7 +3171,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
   Future<void> _reportFaultFlow(Map<String, dynamic> cell) async {
     final boxId = _asInt(cell['id']);
     if (boxId == null) return;
-    final reasonCtrl = TextEditingController(text: 'Hỏng khóa');
+    final reasonCtrl = TextEditingController(text: context.l10n.techHomeDefaultFaultReason);
     // Ảnh stage REPORT ⇒ giới hạn mỗi lần của người báo (admin cấu hình).
     final photos = PhotoPickerController(
       maxPhotos:
@@ -3192,7 +3191,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(20),
             ),
-            title: Text('Báo hỏng ô #${cell['boxNumber']}'),
+            title: Text(context.l10n.techHomeReportBoxFaultTitle('${cell['boxNumber']}')),
             content: SingleChildScrollView(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -3201,13 +3200,13 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                   TextField(
                     controller: reasonCtrl,
                     enabled: !uploading,
-                    decoration: const InputDecoration(labelText: 'Lý do hỏng'),
+                    decoration: InputDecoration(labelText: context.l10n.techHomeFaultReasonLabel),
                     minLines: 1,
                     maxLines: 3,
                   ),
                   const SizedBox(height: 14),
                   Text(
-                    'Ảnh hiện trường (tuỳ chọn, tối đa ${photos.maxPhotos})',
+                    context.l10n.techHomeScenePhotosOptional(photos.maxPhotos),
                     style: const TextStyle(
                       fontSize: 12.5,
                       fontWeight: FontWeight.bold,
@@ -3236,7 +3235,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
             actions: [
               TextButton(
                 onPressed: uploading ? null : () => Navigator.pop(ctx, false),
-                child: const Text('Hủy'),
+                child: Text(context.l10n.commonCancel),
               ),
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
@@ -3251,7 +3250,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                     : () async {
                         if (reasonCtrl.text.trim().isEmpty) {
                           setLocal(
-                            () => dialogError = 'Vui lòng nhập lý do hỏng.',
+                            () => dialogError = context.l10n.techHomeFaultReasonRequired,
                           );
                           return;
                         }
@@ -3271,7 +3270,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                           }
                         }
                       },
-                child: Text(uploading ? 'Đang tải ảnh...' : 'Báo hỏng'),
+                child: Text(uploading ? context.l10n.ordUploadingPhotos : context.l10n.techHomeReportFaultAction),
               ),
             ],
           ),
@@ -3283,8 +3282,8 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
     await _runCellAction(
       () => _service.reportFault(boxId, reason, attachments: attachments),
       attachments.isEmpty
-          ? 'Đã báo hỏng ô'
-          : 'Đã báo hỏng ô kèm ${attachments.length} ảnh',
+          ? L10n.current.techHomeBoxFaultReported
+          : L10n.current.techHomeBoxFaultReportedWithPhotos(attachments.length),
     );
   }
 
@@ -3300,19 +3299,19 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
         controllers: [reasonCtrl],
         child: AlertDialog(
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          title: Text('Ngưng dùng ô #${cell['boxNumber']}'),
+          title: Text(context.l10n.techHomeOutOfServiceTitle('${cell['boxNumber']}')),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'Ô sẽ bị loại khỏi phân phối cho khách tới khi được khôi phục.',
-                style: TextStyle(fontSize: 12, color: opsMutedText),
+              Text(
+                context.l10n.techHomeOutOfServiceHint,
+                style: const TextStyle(fontSize: 12, color: opsMutedText),
               ),
               const SizedBox(height: 8),
               TextField(
                 controller: reasonCtrl,
-                decoration: const InputDecoration(labelText: 'Lý do (tùy chọn)'),
+                decoration: InputDecoration(labelText: context.l10n.techHomeReasonOptionalLabel),
                 minLines: 1,
                 maxLines: 3,
               ),
@@ -3321,7 +3320,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('Hủy'),
+              child: Text(context.l10n.commonCancel),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
@@ -3330,7 +3329,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               ),
               onPressed: () => Navigator.pop(ctx, true),
-              child: const Text('Ngưng dùng'),
+              child: Text(context.l10n.cellOutOfService),
             ),
           ],
         ),
@@ -3340,7 +3339,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
     if (ok != true) return;
     await _runCellAction(
       () => _service.outOfService(boxId, reason: reason.isEmpty ? null : reason),
-      'Đã ngưng dùng ô',
+      L10n.current.techHomeBoxOutOfServiceDone,
     );
   }
 
@@ -3353,15 +3352,15 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const OpsSectionLabel(
-          'Cảnh báo phần cứng (cửa mở bất thường)',
+        OpsSectionLabel(
+          context.l10n.techHomeHardwareAlertsTitle,
           icon: Icons.sensor_door_outlined,
         ),
         OpsBanner(
           tone: OpsBannerTone.danger,
           icon: Icons.error_outline,
           text:
-              '${anomalies.length} ô có cửa đang MỞ nhưng không có đồ — nên kiểm tra (cửa kẹt/quên đóng).',
+              context.l10n.techHomeDoorOpenEmpty(anomalies.length),
         ),
         const SizedBox(height: 10),
         for (final a in anomalies)
@@ -3377,7 +3376,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
-                          '${a['lockerName'] ?? 'Chưa tra được tên tủ'} · Ô #${a['boxNumber']} (${a['cellType']})',
+                          context.l10n.techHomeAnomalyBoxTitle('${a['lockerName'] ?? context.l10n.ordLockerNameUnknown}', '${a['boxNumber']}', '${a['cellType']}'),
                           style: const TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 14,
@@ -3396,8 +3395,8 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                       Expanded(
                         child: Text(
                           a['lastReportedAt'] != null
-                              ? 'Cửa MỞ · báo lúc ${fmtDateTime(a['lastReportedAt'])}'
-                              : 'Cửa MỞ',
+                              ? context.l10n.techHomeDoorOpenReportedAt(fmtDateTime(a['lastReportedAt']))
+                              : context.l10n.techHomeDoorOpenShort,
                           style: const TextStyle(
                               fontSize: 12.5, color: opsMutedText),
                         ),
@@ -3413,8 +3412,8 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                         onPressed: () => _openDirections(a),
                         icon: const Icon(Icons.directions_outlined,
                             size: 16, color: opsPrimary),
-                        label: const Text('Chỉ đường',
-                            style: TextStyle(color: opsPrimary)),
+                        label: Text(context.l10n.commonDirections,
+                            style: const TextStyle(color: opsPrimary)),
                       ),
                     ),
                   ],
@@ -3472,14 +3471,14 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
             child: Row(
               children: [
                 _buildScheduleChip(
-                  label: 'Tất cả (${_reports.length})',
+                  label: context.l10n.techHomeAllWithCount(_reports.length),
                   selected: !routedView,
                   icon: Icons.public,
                   onTap: () => setState(() => _queueView = 'ALL'),
                 ),
                 const SizedBox(width: 8),
                 _buildScheduleChip(
-                  label: 'Tủ tôi phụ trách (${_routedReports.length})',
+                  label: context.l10n.techHomeMyLockersWithCount(_routedReports.length),
                   selected: routedView,
                   icon: Icons.assignment_ind_outlined,
                   activeColor: const Color(0xFFD97706),
@@ -3494,11 +3493,11 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
               scrollDirection: Axis.horizontal,
               child: Row(
                 children: [
-                  for (final option in const [
-                    ('ALL', 'Mọi trạng thái', Icons.filter_list),
-                    ('OPEN', 'Chờ nhận', Icons.fiber_new_rounded),
-                    ('IN_PROGRESS', 'Đang xử lý', Icons.build_circle_outlined),
-                    ('RESOLVED', 'Hoàn tất', Icons.check_circle_outline),
+                  for (final option in [
+                    ('ALL', context.l10n.techHomeFilterAllStatuses, Icons.filter_list),
+                    ('OPEN', context.l10n.techHomeFilterUnclaimed, Icons.fiber_new_rounded),
+                    ('IN_PROGRESS', context.l10n.techHomeFilterInProgress, Icons.build_circle_outlined),
+                    ('RESOLVED', context.l10n.commonDone, Icons.check_circle_outline),
                   ]) ...[
                     _buildScheduleChip(
                       label: option.$1 == 'ALL'
@@ -3529,15 +3528,16 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
               tone: OpsBannerTone.info,
               icon: Icons.assignment_ind_outlined,
               text: _myLockers.isEmpty
-                  ? 'Bạn chưa được giao phụ trách tủ nào — phiếu mới được báo tới mọi KTV tủ.'
-                  : 'Bạn phụ trách ${_myLockers.length} tủ: '
-                        '${_myLockers.map((l) => l['name'] ?? l['code'] ?? '#${l['id']}').join(', ')}. '
-                        'Phiếu mới ở các tủ này được chuyển thẳng cho bạn.',
+                  ? context.l10n.techHomeNoAssignedLockers
+                  : context.l10n.techHomeAssignedLockersBanner(
+                      _myLockers.length,
+                      _myLockers.map((l) => l['name'] ?? l['code'] ?? '#${l['id']}').join(', '),
+                    ),
             ),
             const SizedBox(height: 10),
           ],
           if (faults.isNotEmpty) ...[
-            const OpsSectionLabel('Ô đang lỗi vật lý tại trạm', icon: Icons.warning_amber_rounded),
+            OpsSectionLabel(context.l10n.techHomePhysicalFaultsTitle, icon: Icons.warning_amber_rounded),
             for (final f in faults)
               Padding(
                 padding: const EdgeInsets.only(bottom: 10),
@@ -3554,7 +3554,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
-                              '${f['lockerName'] ?? 'Chưa tra được tên tủ'} · Ô #${f['boxNumber']}',
+                              context.l10n.techHomeLockerBoxTitle('${f['lockerName'] ?? context.l10n.ordLockerNameUnknown}', '${f['boxNumber']}'),
                               style: const TextStyle(
                                 fontWeight: FontWeight.bold,
                                 fontSize: 14,
@@ -3567,7 +3567,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        f['faultReason'] as String? ?? 'Không rõ lý do',
+                        f['faultReason'] as String? ?? context.l10n.techHomeUnknownReason,
                         style: const TextStyle(fontSize: 12, color: opsMutedText),
                       ),
                       if ((f['lockerAddress'] ?? '').toString().isNotEmpty)
@@ -3602,7 +3602,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                           TextButton.icon(
                             onPressed: () => _openDirections(f),
                             icon: const Icon(Icons.map_outlined, size: 16, color: opsPrimary),
-                            label: const Text('Chỉ đường', style: TextStyle(color: opsPrimary)),
+                            label: Text(context.l10n.commonDirections, style: const TextStyle(color: opsPrimary)),
                           ),
                           // Ô còn phiếu mở ⇒ "Đã sửa" mở luồng nghiệm thu của phiếu.
                           TextButton(
@@ -3614,8 +3614,8 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                                     ),
                             child: Text(
                               _asInt(f['openReportId']) != null
-                                  ? 'Đã sửa · phiếu RPT-${f['openReportId']}'
-                                  : 'Đã sửa',
+                                  ? context.l10n.techHomeFixedWithTicket('${f['openReportId']}')
+                                  : context.l10n.techHomeFixed,
                               style: const TextStyle(color: Color(0xFF16A34A)),
                             ),
                           ),
@@ -3632,16 +3632,16 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
           if (routedView) ...[
             if (_routedReports.isNotEmpty) ...[
               OpsSectionLabel(
-                'Phiếu chờ bạn nhận (${_routedReports.length})',
+                context.l10n.techHomeRoutedTicketsTitle(_routedReports.length),
                 icon: Icons.assignment_late_outlined,
               ),
               for (final r in _routedReports) _reportCard(r, isQueueView: true),
             ] else if (faults.isEmpty &&
                 !_hasError(const [_Section.routed, _Section.faults]))
-              const OpsEmptyState(
+              OpsEmptyState(
                 icon: Icons.check_circle_outline,
-                title: 'Không có phiếu nào chờ bạn',
-                subtitle: 'Các tủ bạn phụ trách chưa có sự cố mới.',
+                title: context.l10n.techHomeNoRoutedTickets,
+                subtitle: context.l10n.techHomeNoRoutedTicketsHint,
               ),
           ],
 
@@ -3681,7 +3681,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'TOÀN HỆ THỐNG: ${_reports.length} PHIẾU SỰ CỐ KIOSK',
+                          context.l10n.techHomeSystemWideTickets(_reports.length),
                           style: const TextStyle(
                             fontSize: 12.5,
                             fontWeight: FontWeight.w800,
@@ -3696,18 +3696,18 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                           children: [
                             if (openReports.isNotEmpty)
                               _QueueStatChip(
-                                label: '${openReports.length} chờ nhận',
+                                label: context.l10n.techHomeCountUnclaimed(openReports.length),
                                 color: const Color(0xFFF59E0B),
                                 isSolid: true,
                               ),
                             if (inProgressReports.isNotEmpty)
                               _QueueStatChip(
-                                label: '${inProgressReports.length} đang xử lý',
+                                label: context.l10n.techHomeCountInProgress(inProgressReports.length),
                                 color: Colors.white,
                               ),
                             if (resolvedReports.isNotEmpty)
                               _QueueStatChip(
-                                label: '${resolvedReports.length} hoàn tất',
+                                label: context.l10n.techHomeCountDone(resolvedReports.length),
                                 color: const Color(0xFF16A34A),
                                 isSolid: true,
                               ),
@@ -3752,7 +3752,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                     const SizedBox(width: 10),
                     Expanded(
                       child: Text(
-                        '${openReports.length} sự cố đang chờ KTV tiếp nhận xử lý',
+                        context.l10n.techHomeIncidentsAwaitingTech(openReports.length),
                         style: const TextStyle(
                           fontSize: 12.5,
                           fontWeight: FontWeight.w700,
@@ -3763,21 +3763,21 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                   ],
                 ),
               ),
-            const OpsSectionLabel('Sự cố chờ tiếp nhận', icon: Icons.fiber_new_rounded),
+            OpsSectionLabel(context.l10n.techHomeIncidentsAwaitingTitle, icon: Icons.fiber_new_rounded),
             for (final r in openReports) _reportCard(r, isQueueView: true),
             const SizedBox(height: 8),
           ],
 
           // --- Phiếu IN_PROGRESS: KTV khác đang xử lý (tham khảo) ---
           if (!routedView && inProgressReports.isNotEmpty) ...[
-            const OpsSectionLabel('Đang được xử lý', icon: Icons.engineering_outlined),
+            OpsSectionLabel(context.l10n.techHomeBeingHandledTitle, icon: Icons.engineering_outlined),
             for (final r in inProgressReports) _reportCard(r, isQueueView: false),
             const SizedBox(height: 8),
           ],
 
           // --- Phiếu RESOLVED: đã hoàn tất (lịch sử hệ thống) ---
           if (!routedView && resolvedReports.isNotEmpty) ...[
-            const OpsSectionLabel('Đã hoàn tất gần đây', icon: Icons.check_circle_outline),
+            OpsSectionLabel(context.l10n.techHomeRecentlyDoneTitle, icon: Icons.check_circle_outline),
             for (final r in resolvedReports) _reportCard(r, isQueueView: false),
             const SizedBox(height: 8),
           ],
@@ -3787,10 +3787,10 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
               _reports.isEmpty &&
               _faults.isEmpty &&
               !_hasError(const [_Section.reports, _Section.faults]))
-            const OpsEmptyState(
+            OpsEmptyState(
               icon: Icons.check_circle_outline,
-              title: 'Không có sự cố nào',
-              subtitle: 'Chưa có phiếu sự cố hay ô lỗi nào trên hệ thống.',
+              title: context.l10n.techHomeNoIncidents,
+              subtitle: context.l10n.techHomeNoIncidentsHint,
             ),
         ],
       ),
@@ -3810,12 +3810,12 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const OpsSectionLabel('Tổng quan ca trực', icon: Icons.dashboard_outlined),
+        OpsSectionLabel(context.l10n.techHomeShiftOverview, icon: Icons.dashboard_outlined),
         Row(
           children: [
             Expanded(
               child: _MetricCard(
-                label: 'Phiếu\nđã nhận',
+                label: context.l10n.techHomeMetricReceived,
                 value: '$totalAssigned',
                 icon: Icons.inventory_2_outlined,
                 color: const Color(0xFF475569),
@@ -3824,7 +3824,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
             const SizedBox(width: 6),
             Expanded(
               child: _MetricCard(
-                label: 'Đang\nxử lý',
+                label: context.l10n.techHomeMetricInProgress,
                 value: '$inProgress',
                 icon: Icons.access_time_rounded,
                 color: const Color(0xFF2563EB),
@@ -3834,7 +3834,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
             const SizedBox(width: 6),
             Expanded(
               child: _MetricCard(
-                label: 'Đã\nhoàn tất',
+                label: context.l10n.techHomeMetricDone,
                 value: '$resolved',
                 icon: Icons.check_circle_outline,
                 color: const Color(0xFF059669),
@@ -3843,7 +3843,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
             const SizedBox(width: 6),
             Expanded(
               child: _MetricCard(
-                label: 'Trễ hạn\nSLA',
+                label: context.l10n.techHomeMetricSlaOverdue,
                 value: '$overdue',
                 icon: Icons.warning_amber_rounded,
                 color: const Color(0xFFDC2626),
@@ -3855,17 +3855,17 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
         const SizedBox(height: 8),
         OpsBanner(
           text: rating != null
-              ? 'Điểm đánh giá của bạn: $rating'
-              : 'Chưa có đánh giá nào từ khách cho các phiếu bạn xử lý.',
+              ? context.l10n.techHomeYourRating(rating)
+              : context.l10n.techHomeNoCustomerRatings,
           icon: Icons.star_rate_rounded,
           tone: rating != null ? OpsBannerTone.success : OpsBannerTone.info,
         ),
         const SizedBox(height: 10),
         _buildSlaPenaltyCard(),
         const SizedBox(height: 10),
-        const OpsBanner(
+        OpsBanner(
           text:
-              'Quy trình chuẩn: kiểm tra vị trí tủ, nhận phiếu, tới đúng ô, chụp ảnh nghiệm thu rồi hoàn tất để clear fault.',
+              context.l10n.techHomeStandardProcedure,
           icon: Icons.engineering,
           tone: OpsBannerTone.info,
         ),
@@ -3898,34 +3898,34 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
         border = const Color(0xFFFCA5A5);
         textColor = const Color(0xFF991B1B);
         icon = Icons.block;
-        title = 'Đang bị hạn chế nhận việc mới';
+        title = context.l10n.techHomeSlaCardRestricted;
       case 'WARNING':
         bg = const Color(0xFFFFFBEB);
         border = const Color(0xFFFDE68A);
         textColor = const Color(0xFF92400E);
         icon = Icons.warning_amber_rounded;
-        title = 'Cảnh báo vi phạm thời gian SLA';
+        title = context.l10n.techHomeSlaCardWarning;
       case 'SUSPENDED':
         bg = const Color(0xFF450A0A);
         border = const Color(0xFFDC2626);
         textColor = Colors.white;
         icon = Icons.cancel;
-        title = 'Tài khoản trong diện đình chỉ';
+        title = context.l10n.techHomeSlaCardSuspended;
       case 'NORMAL':
         bg = const Color(0xFFF0FDF4);
         border = const Color(0xFFBBF7D0);
         textColor = const Color(0xFF166534);
         icon = Icons.verified_user_outlined;
-        title = 'Hồ sơ kỹ thuật viên tốt';
+        title = context.l10n.techHomeSlaCardNormal;
       default:
         bg = const Color(0xFFF8FAFC);
         border = const Color(0xFFE2E8F0);
         textColor = const Color(0xFF475569);
         icon = Icons.help_outline;
-        title = 'Chưa tải được trạng thái SLA';
+        title = context.l10n.techHomeSlaCardUnknown;
     }
     final reason = sla.reason ??
-        (sla.known ? null : 'Kéo xuống để tải lại trạng thái chế tài từ máy chủ.');
+        (sla.known ? null : context.l10n.techHomeSlaPullToReload);
 
     return Container(
       width: double.infinity,
@@ -4006,7 +4006,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
-                  'Đã hoàn thành: $resolved',
+                  context.l10n.techHomeCompletedCount(resolved),
                   style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: textColor),
                 ),
               ),
@@ -4017,7 +4017,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
-                  'Đang làm: $inProgress',
+                  context.l10n.techHomeInProgressCount(inProgress),
                   style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: textColor),
                 ),
               ),
@@ -4031,7 +4031,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                   border: overdue > 0 ? Border.all(color: const Color(0xFFDC2626).withValues(alpha: 0.4)) : null,
                 ),
                 child: Text(
-                  'Quá hạn SLA: $overdue',
+                  context.l10n.techHomeSlaOverdueCount(overdue),
                   style: TextStyle(
                     fontSize: 11,
                     fontWeight: overdue > 0 ? FontWeight.w800 : FontWeight.w600,
@@ -4066,22 +4066,22 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
           const SizedBox(height: 14),
 
           if (active.isEmpty && done.isEmpty && !_hasError(const [_Section.mine]))
-            const OpsEmptyState(
+            OpsEmptyState(
               icon: Icons.engineering_outlined,
-              title: 'Bạn chưa nhận việc nào',
-              subtitle: 'Chuyển sang tab "Sự cố" để duyệt và nhận việc mới.',
+              title: context.l10n.techHomeNoWorkYet,
+              subtitle: context.l10n.techHomeNoWorkYetHint,
             ),
 
           // 2. Danh sách các phiếu sự cố KTV đang trực tiếp xử lý
           if (active.isNotEmpty) ...[
-            OpsSectionLabel('Sự cố đang xử lý (${active.length})', icon: Icons.pending_actions_outlined),
+            OpsSectionLabel(context.l10n.techHomeActiveIncidentsTitle(active.length), icon: Icons.pending_actions_outlined),
             for (final r in active) _reportCard(r, isQueueView: false),
             const SizedBox(height: 12),
           ],
 
           // 3. Lịch sử các sự cố đã hoàn thành
           if (done.isNotEmpty) ...[
-            OpsSectionLabel('Lịch sử đã hoàn thành (${done.length})', icon: Icons.check_circle_outline),
+            OpsSectionLabel(context.l10n.techHomeCompletedHistoryTitle(done.length), icon: Icons.check_circle_outline),
             for (final r in done) _reportCard(r, isQueueView: false),
           ],
         ],
@@ -4132,13 +4132,10 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
         padding: const EdgeInsets.all(12),
         children: [
           _sectionErrorBanner(const [_Section.schedules]),
-          const OpsBanner(
+          OpsBanner(
             tone: OpsBannerTone.info,
             icon: Icons.event_repeat,
-            text: 'Lịch kiểm tra định kỳ Kiosk do quản trị tạo và giao KTV phụ trách. '
-                'Khi đến hạn, bấm "Kiểm tra" và đánh giá từng hạng mục: tất cả đạt ⇒ dời '
-                'sang chu kỳ kế tiếp; có mục không đạt ⇒ hệ thống mở phiếu giao cho bạn, '
-                'hạn chỉ dời khi phiếu được hoàn tất.',
+            text: context.l10n.techHomeScheduleIntro,
           ),
           const SizedBox(height: 10),
 
@@ -4146,14 +4143,14 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
           Row(
             children: [
               _buildScheduleChip(
-                label: 'Của tôi (${myKioskList.length})',
+                label: context.l10n.techHomeMineWithCount(myKioskList.length),
                 selected: _mySchedulesOnly,
                 icon: Icons.person_outline,
                 onTap: () => setState(() => _mySchedulesOnly = true),
               ),
               const SizedBox(width: 8),
               _buildScheduleChip(
-                label: 'Tất cả (${allKioskList.length})',
+                label: context.l10n.techHomeAllWithCount(allKioskList.length),
                 selected: !_mySchedulesOnly,
                 icon: Icons.groups_outlined,
                 onTap: () => setState(() => _mySchedulesOnly = false),
@@ -4168,13 +4165,13 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
             child: Row(
               children: [
                 _buildScheduleChip(
-                  label: 'Mọi hạn (${kioskList.length})',
+                  label: context.l10n.techHomeAnyDueWithCount(kioskList.length),
                   selected: _scheduleFilter == 'ALL',
                   onTap: () => setState(() => _scheduleFilter = 'ALL'),
                 ),
                 const SizedBox(width: 8),
                 _buildScheduleChip(
-                  label: 'Đến hạn (${dueList.length})',
+                  label: context.l10n.techHomeDueWithCount(dueList.length),
                   selected: _scheduleFilter == 'DUE',
                   icon: Icons.warning_amber_rounded,
                   activeColor: const Color(0xFFDC2626),
@@ -4182,7 +4179,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                 ),
                 const SizedBox(width: 8),
                 _buildScheduleChip(
-                  label: 'Sắp tới (${upcomingList.length})',
+                  label: context.l10n.techHomeUpcomingWithCount(upcomingList.length),
                   selected: _scheduleFilter == 'UPCOMING',
                   icon: Icons.schedule_outlined,
                   activeColor: const Color(0xFF2563EB),
@@ -4197,24 +4194,24 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
             OpsEmptyState(
               icon: Icons.event_available_outlined,
               title: _scheduleFilter == 'DUE'
-                  ? 'Không có lịch kiểm tra Kiosk nào đến hạn'
+                  ? context.l10n.techHomeNoDueSchedules
                   : _scheduleFilter == 'UPCOMING'
-                      ? 'Không có lịch kiểm tra Kiosk nào sắp tới'
+                      ? context.l10n.techHomeNoUpcomingSchedules
                       : _mySchedulesOnly
-                          ? 'Bạn chưa được giao lịch kiểm tra nào'
-                          : 'Chưa có kế hoạch kiểm tra định kỳ Kiosk nào',
+                          ? context.l10n.techHomeNoAssignedSchedules
+                          : context.l10n.techHomeNoSchedulesAtAll,
               subtitle: _mySchedulesOnly
-                  ? 'Chọn "Tất cả" để xem lịch của các KTV khác.'
-                  : 'Mọi thiết bị Kiosk đều đang trong chu kỳ bảo trì bình thường.',
+                  ? context.l10n.techHomeNoAssignedSchedulesHint
+                  : context.l10n.techHomeNoSchedulesHint,
             ),
           if (_scheduleFilter == 'ALL') ...[
             if (due.isNotEmpty) ...[
-              OpsSectionLabel('Đến hạn (${due.length})', icon: Icons.warning_amber_rounded),
+              OpsSectionLabel(context.l10n.techHomeDueWithCount(due.length), icon: Icons.warning_amber_rounded),
               for (final s in due) _scheduleCard(s, due: true),
               const SizedBox(height: 8),
             ],
             if (upcoming.isNotEmpty) ...[
-              OpsSectionLabel('Sắp tới (${upcoming.length})', icon: Icons.schedule_outlined),
+              OpsSectionLabel(context.l10n.techHomeUpcomingWithCount(upcoming.length), icon: Icons.schedule_outlined),
               for (final s in upcoming) _scheduleCard(s, due: false),
             ],
           ] else ...[
@@ -4292,13 +4289,13 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
     final dayDiff = targetDate.difference(today).inDays;
 
     if (dayDiff < 0) {
-      return ('Quá hạn ${-dayDiff} ngày', true);
+      return (context.l10n.techHomeOverdueByDays(-dayDiff), true);
     } else if (dayDiff == 0) {
-      return ('Đến hạn hôm nay', true);
+      return (context.l10n.techHomeDueToday, true);
     } else if (dayDiff == 1) {
-      return ('Còn 1 ngày nữa đến hạn', false);
+      return (context.l10n.techHomeDueInDays(1), false);
     } else {
-      return ('Còn $dayDiff ngày nữa đến hạn', false);
+      return (context.l10n.techHomeDueInDays(dayDiff), false);
     }
   }
 
@@ -4306,7 +4303,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
     final lockerCode = s['lockerCode'];
     final lockerName = s['lockerName'];
     final targetLabel =
-        '${lockerName ?? "Trạm Kiosk"}${lockerCode != null ? " ($lockerCode)" : ""}';
+        '${lockerName ?? context.l10n.urdKioskStation}${lockerCode != null ? " ($lockerCode)" : ""}';
     final nextDue = _fmtDateTime(s['nextDueAt']) ?? _fmtDate(s['nextDueAt']);
     final id = _asInt(s['id']);
     final rem = _remainingDaysInfo(s['nextDueAt']);
@@ -4315,9 +4312,9 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
     final assignedToMe = _isScheduleMine(s);
     // Server chặn: lịch đang chờ phiếu KHÔNG ĐẠT (409) hoặc giao cho KTV khác (403).
     final blockedReason = pendingReportId != null
-        ? 'Lần trước không đạt — hoàn tất phiếu RPT-$pendingReportId trước khi kiểm tra lại.'
+        ? context.l10n.techHomeLastFailedCompleteTicket(pendingReportId)
         : assignedId != null && !assignedToMe
-            ? 'Lịch do KTV khác phụ trách.'
+            ? context.l10n.techHomeScheduleOwnedByOther
             : null;
 
     return Padding(
@@ -4385,7 +4382,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        '${s['title'] ?? 'Lịch kiểm tra định kỳ'}',
+                        '${s['title'] ?? context.l10n.techHomeRoutineScheduleDefault}',
                         style: const TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 15,
@@ -4405,14 +4402,14 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                           borderRadius: BorderRadius.circular(20),
                           border: Border.all(color: const Color(0xFFFCA5A5)),
                         ),
-                        child: const Row(
+                        child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(Icons.warning_amber_rounded, size: 13, color: Color(0xFFDC2626)),
-                            SizedBox(width: 4),
+                            const Icon(Icons.warning_amber_rounded, size: 13, color: Color(0xFFDC2626)),
+                            const SizedBox(width: 4),
                             Text(
-                              'Đến hạn',
-                              style: TextStyle(
+                              context.l10n.techHomeDueBadge,
+                              style: const TextStyle(
                                 fontSize: 11,
                                 fontWeight: FontWeight.w800,
                                 color: Color(0xFFDC2626),
@@ -4486,19 +4483,19 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                     if (nextDue != null)
                       _MiniPill(
                         icon: Icons.event_outlined,
-                        text: 'Hạn: $nextDue',
+                        text: context.l10n.techHomeDueAt(nextDue),
                         color: due ? const Color(0xFFDC2626) : const Color(0xFF16A34A),
                       ),
                     _MiniPill(
                       icon: Icons.sync_rounded,
-                      text: 'Chu kỳ: Mỗi ${s['intervalDays']} ngày',
+                      text: context.l10n.techHomeCycleEveryDays('${s['intervalDays']}'),
                       color: const Color(0xFF475569),
                     ),
                     if (assignedToMe)
-                      const _MiniPill(
+                      _MiniPill(
                         icon: Icons.assignment_ind_outlined,
-                        text: 'Phụ trách',
-                        color: Color(0xFFD97706),
+                        text: context.l10n.techHomeAssignedBadge,
+                        color: const Color(0xFFD97706),
                       ),
                   ],
                 ),
@@ -4519,7 +4516,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                         const SizedBox(width: 7),
                         Expanded(
                           child: Text(
-                            'Lần trước KHÔNG ĐẠT · Chờ hoàn tất phiếu RPT-$pendingReportId trước khi kiểm tra lại',
+                            context.l10n.techHomeLastFailedBanner(pendingReportId),
                             style: const TextStyle(
                               fontSize: 11.5,
                               fontWeight: FontWeight.w600,
@@ -4544,7 +4541,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                     OutlinedButton.icon(
                       onPressed: () => _showScheduleDetailModal(s),
                       icon: const Icon(Icons.info_outline, size: 14),
-                      label: const Text('Chi tiết'),
+                      label: Text(context.l10n.commonDetails),
                       style: OutlinedButton.styleFrom(
                         foregroundColor: const Color(0xFF475569),
                         side: const BorderSide(color: Color(0xFFCBD5E1)),
@@ -4561,7 +4558,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                       ElevatedButton.icon(
                         onPressed: () => _openReportById(pendingReportId),
                         icon: const Icon(Icons.assignment_turned_in_outlined, size: 15),
-                        label: Text('Xử lý phiếu RPT-$pendingReportId'),
+                        label: Text(context.l10n.techHomeHandleTicket(pendingReportId)),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFFEA580C),
                           foregroundColor: Colors.white,
@@ -4580,7 +4577,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                             ? null
                             : () => _showCompleteInspectionSheet(s),
                         icon: const Icon(Icons.fact_check_outlined, size: 15),
-                        label: const Text('Kiểm tra'),
+                        label: Text(context.l10n.techHomeInspectAction),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFF16A34A),
                           foregroundColor: Colors.white,
@@ -4663,17 +4660,17 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
         duration: Duration(seconds: pendingReportId != null ? 6 : 4),
         content: Text(
           pendingReportId != null
-              ? 'Kiểm tra KHÔNG ĐẠT — đã mở phiếu RPT-$pendingReportId giao cho bạn. '
-                    'Hạn kế tiếp chỉ dời khi phiếu được hoàn tất.'
+              ? context.l10n.techHomeInspectionFailedTicket(pendingReportId)
               : failed
-                  ? 'Đã ghi nhận KHÔNG ĐẠT cho "${s['title'] ?? 'Tủ Kiosk'}".'
-                  : 'Đã ghi nhận ĐẠT cho "${s['title'] ?? 'Tủ Kiosk'}"'
-                        '${nextDue != null ? ' — hạn kế tiếp $nextDue' : ''}.',
+                  ? context.l10n.techHomeInspectionFailedRecorded('${s['title'] ?? context.l10n.techHomeKioskLocker}')
+                  : nextDue != null
+                      ? context.l10n.techHomeInspectionPassedNextDue('${s['title'] ?? context.l10n.techHomeKioskLocker}', nextDue)
+                      : context.l10n.techHomeInspectionPassedRecorded('${s['title'] ?? context.l10n.techHomeKioskLocker}'),
         ),
         action: pendingReportId == null
             ? null
             : SnackBarAction(
-                label: 'Xem việc',
+                label: context.l10n.techHomeViewWork,
                 textColor: Colors.white,
                 onPressed: () => _tabs.animateTo(2),
               ),
@@ -4807,12 +4804,12 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
     if (reportId == null) return;
     final policy = _slaPolicy(r);
     if (!policy.visible) {
-      _showInfo('Chỉ KTV đang được giao phiếu mới gia hạn được SLA.');
+      _showInfo(context.l10n.techHomeSlaExtendAssigneeOnly);
       return;
     }
     if (policy.limitReached) {
       _showErrorText(
-        'Phiếu RPT-$reportId đã gia hạn ${policy.used}/${policy.max} lần — liên hệ admin nếu cần thêm thời gian.',
+        context.l10n.techHomeSlaExtendLimitReached(reportId, '${policy.used}', '${policy.max}'),
       );
       return;
     }
@@ -4838,8 +4835,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
       SnackBar(
         backgroundColor: const Color(0xFF059669),
         content: Text(
-          'Đã gia hạn SLA phiếu RPT-$reportId'
-          '${newDue != null ? ' — hạn mới ${_formatFullDateTime(newDue)}' : ''}'
+          '${newDue != null ? context.l10n.techHomeSlaExtendedNewDue(reportId, _formatFullDateTime(newDue)) : context.l10n.techHomeSlaExtended(reportId)}'
           '${usage != null ? ' ($usage)' : ''}.',
         ),
       ),
@@ -4863,14 +4859,14 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
         child: StatefulBuilder(
           builder: (ctx, setLocal) => AlertDialog(
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-            title: Text('Trả lại phiếu RPT-$reportId'),
+            title: Text(context.l10n.techHomeReleaseTicketTitle(reportId)),
             content: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Phiếu về lại hàng chờ để KTV khác nhận; lý do được ghi vào nhật ký phiếu.',
-                  style: TextStyle(fontSize: 12.5, color: opsMutedText),
+                Text(
+                  context.l10n.techHomeReleaseTicketHint,
+                  style: const TextStyle(fontSize: 12.5, color: opsMutedText),
                 ),
                 const SizedBox(height: 10),
                 TextField(
@@ -4881,8 +4877,8 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                   maxLines: 3,
                   maxLength: 1000,
                   decoration: InputDecoration(
-                    labelText: 'Lý do trả phiếu (bắt buộc)',
-                    hintText: 'VD: Cần linh kiện không có sẵn, đổi ca trực...',
+                    labelText: context.l10n.techHomeReleaseReasonLabel,
+                    hintText: context.l10n.techHomeReleaseReasonHint,
                     errorText: error,
                   ),
                 ),
@@ -4891,7 +4887,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
             actions: [
               TextButton(
                 onPressed: sending ? null : () => Navigator.pop(ctx, false),
-                child: const Text('Hủy'),
+                child: Text(context.l10n.commonCancel),
               ),
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
@@ -4904,7 +4900,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                     : () async {
                         final reason = reasonCtrl.text.trim();
                         if (reason.isEmpty) {
-                          setLocal(() => error = 'Vui lòng nhập lý do trả phiếu.');
+                          setLocal(() => error = context.l10n.techHomeReleaseReasonRequired);
                           return;
                         }
                         setLocal(() {
@@ -4923,7 +4919,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                           }
                         }
                       },
-                child: Text(sending ? 'Đang gửi...' : 'Trả lại phiếu'),
+                child: Text(sending ? context.l10n.commonSending : context.l10n.techHomeReleaseTicketAction),
               ),
             ],
           ),
@@ -4931,7 +4927,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
       ),
     );
     if (released != true || !mounted) return;
-    _showInfo('Đã trả phiếu RPT-$reportId về hàng chờ.');
+    _showInfo(context.l10n.techHomeTicketReleased(reportId));
     AppEventBus.instance.emit(ReportUpdatedEvent(reportId: reportId.toString()));
     await _load();
   }
@@ -4952,15 +4948,14 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
         child: StatefulBuilder(
           builder: (ctx, setLocal) => AlertDialog(
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-            title: Text('Không xác nhận sự cố RPT-$reportId'),
+            title: Text(context.l10n.techHomeRejectIncidentTitle(reportId)),
             content: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Dùng khi đã kiểm tra tại tủ và ô hoạt động bình thường. Phiếu được '
-                  'đóng, ô trở lại hoạt động và phản hồi dưới đây được gửi cho người báo.',
-                  style: TextStyle(fontSize: 12.5, color: opsMutedText),
+                Text(
+                  context.l10n.techHomeRejectIncidentHint,
+                  style: const TextStyle(fontSize: 12.5, color: opsMutedText),
                 ),
                 const SizedBox(height: 10),
                 TextField(
@@ -4971,8 +4966,8 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                   maxLines: 4,
                   maxLength: 1000,
                   decoration: InputDecoration(
-                    labelText: 'Phản hồi cho người báo (bắt buộc)',
-                    hintText: 'VD: Đã thử đóng/mở ô 3 lần, cửa và khoá hoạt động bình thường.',
+                    labelText: context.l10n.techHomeReporterFeedbackLabel,
+                    hintText: context.l10n.techHomeReporterFeedbackHint,
                     errorText: error,
                   ),
                 ),
@@ -4981,7 +4976,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
             actions: [
               TextButton(
                 onPressed: sending ? null : () => Navigator.pop(ctx, false),
-                child: const Text('Hủy'),
+                child: Text(context.l10n.commonCancel),
               ),
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
@@ -4994,7 +4989,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                     : () async {
                         final feedback = feedbackCtrl.text.trim();
                         if (feedback.isEmpty) {
-                          setLocal(() => error = 'Vui lòng ghi phản hồi cho người báo.');
+                          setLocal(() => error = context.l10n.techHomeReporterFeedbackRequired);
                           return;
                         }
                         setLocal(() {
@@ -5013,7 +5008,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                           }
                         }
                       },
-                child: Text(sending ? 'Đang gửi...' : 'Đóng phiếu & phản hồi'),
+                child: Text(sending ? context.l10n.commonSending : context.l10n.techHomeCloseAndReply),
               ),
             ],
           ),
@@ -5021,7 +5016,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
       ),
     );
     if (rejected != true || !mounted) return;
-    _showInfo('Đã đóng phiếu RPT-$reportId và gửi phản hồi cho người báo.');
+    _showInfo(context.l10n.techHomeTicketRejectedDone(reportId));
     AppEventBus.instance.emit(ReportUpdatedEvent(reportId: reportId.toString()));
     final lockerId = _asInt(r['lockerId']);
     if (lockerId != null) {
@@ -5042,19 +5037,19 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
             Padding(
               padding: const EdgeInsets.only(bottom: 12),
               child: _RetryBanner(
-                message: 'Không tải được danh sách thiết bị: $error',
+                message: context.l10n.techHomeDevicesLoadFailed(error),
                 onRetry: _loading ? null : _load,
               ),
             ),
-          const OpsSectionLabel(
-            'Thiết bị IoT',
+          OpsSectionLabel(
+            context.l10n.techHomeIotDevices,
             icon: Icons.device_hub_outlined,
           ),
           if (_devices.isEmpty && error == null)
-            const OpsEmptyState(
+            OpsEmptyState(
               icon: Icons.device_hub_outlined,
-              title: 'Không có thiết bị nào',
-              subtitle: 'Chưa có bộ điều khiển nào gắn với tủ bạn phụ trách.',
+              title: context.l10n.techHomeNoDevices,
+              subtitle: context.l10n.techHomeNoDevicesHint,
             )
           else
             for (final device in _devices)
@@ -5083,7 +5078,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              '${device['deviceId'] ?? device['name'] ?? 'Thiết bị #${device['id']}'}',
+                              '${device['deviceId'] ?? device['name'] ?? context.l10n.techHomeDeviceNumber('${device['id']}')}',
                               style: const TextStyle(
                                 fontWeight: FontWeight.w800,
                                 fontSize: 14,
@@ -5100,8 +5095,8 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                               ),
                             Text(
                               device['lastSeenAt'] != null
-                                  ? 'Tín hiệu cuối: ${fmtDateTime(device['lastSeenAt'])}'
-                                  : 'Chưa nhận tín hiệu nào',
+                                  ? context.l10n.techHomeLastSignal(fmtDateTime(device['lastSeenAt']))
+                                  : context.l10n.techHomeNoSignalYet,
                               style: const TextStyle(
                                 fontSize: 11.5,
                                 color: opsMutedText,
@@ -5116,12 +5111,11 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                 ),
               ),
           const SizedBox(height: 8),
-          const OpsBanner(
+          OpsBanner(
             tone: OpsBannerTone.info,
             icon: Icons.touch_app_outlined,
             text:
-                'Trạng thái do máy chủ tính theo tín hiệu gần nhất của thiết bị. '
-                'Chạm vào thiết bị để xem nhật ký hoặc khởi động lại bộ điều khiển.',
+                context.l10n.techHomeDevicesHint,
           ),
         ],
       ),
@@ -5197,34 +5191,34 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
         r['routedToUserId']?.toString() == _myUserId;
     return [
       if (category == 'LANDING_PAD')
-        const _MiniPill(
+        _MiniPill(
           icon: Icons.flight_land,
-          text: 'Bãi đáp',
-          color: Color(0xFF7C3AED),
+          text: context.l10n.techHomeLandingPadPill,
+          color: const Color(0xFF7C3AED),
         ),
       if (category == 'LOCKER')
-        const _MiniPill(
+        _MiniPill(
           icon: Icons.warehouse_outlined,
-          text: 'Cấp tủ',
-          color: Color(0xFF0369A1),
+          text: context.l10n.techHomeLockerLevelPill,
+          color: const Color(0xFF0369A1),
         ),
       if (r['blocksLocker'] == true)
-        const _MiniPill(
+        _MiniPill(
           icon: Icons.block,
-          text: 'Ngưng cả tủ',
-          color: Color(0xFFDC2626),
+          text: context.l10n.techHomeBlocksLockerPill,
+          color: const Color(0xFFDC2626),
         ),
       if (scheduleId != null)
         _MiniPill(
           icon: Icons.event_repeat,
-          text: 'Từ kiểm tra định kỳ #$scheduleId',
+          text: context.l10n.techHomeFromRoutineInspection(scheduleId),
           color: const Color(0xFF7C3AED),
         ),
       if (routedToMe)
-        const _MiniPill(
+        _MiniPill(
           icon: Icons.assignment_ind_outlined,
-          text: 'Tủ bạn phụ trách',
-          color: Color(0xFFD97706),
+          text: context.l10n.techHomeYourLocker,
+          color: const Color(0xFFD97706),
         ),
     ];
   }
@@ -5233,7 +5227,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
     final status = r['status'] as String? ?? '';
     // Kiểm tra phiếu có đang được assign cho chính KTV này không
     final isAssignedToMe = _isAssignedToMe(r);
-    final lockerLabel = r['lockerName'] ?? 'Chưa tra được tên tủ';
+    final lockerLabel = r['lockerName'] ?? context.l10n.ordLockerNameUnknown;
     final boxLabel = r['boxNumber'] ?? r['boxId'];
     final createdAt = _parseDate(r['createdAt']);
     final (_, userPhotos) = _extractUserPhotosAndClean(
@@ -5336,9 +5330,9 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                             ),
                           ],
                         ),
-                        child: const Text(
-                          'MỚI',
-                          style: TextStyle(
+                        child: Text(
+                          context.l10n.techHomeNewBadge,
+                          style: const TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.w800,
                             fontSize: 9.5,
@@ -5395,7 +5389,9 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                           const Icon(Icons.warehouse_outlined, size: 13.5, color: opsPrimary),
                           const SizedBox(width: 5),
                           Text(
-                            '$lockerLabel${boxLabel != null ? ' · Ô $boxLabel' : ''}',
+                            boxLabel != null
+                                ? context.l10n.techHomeLockerBoxShort('$lockerLabel', '$boxLabel')
+                                : '$lockerLabel',
                             style: const TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w700,
@@ -5432,7 +5428,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                             const Icon(Icons.photo_library_outlined, size: 12, color: Color(0xFF64748B)),
                             const SizedBox(width: 3.5),
                             Text(
-                              '${attachments.length} ảnh',
+                              context.l10n.crPhotoCount(attachments.length),
                               style: const TextStyle(
                                 fontSize: 10.5,
                                 fontWeight: FontWeight.w600,
@@ -5487,14 +5483,14 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                           color: opsPrimary.withValues(alpha: 0.08),
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        child: const Row(
+                        child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(Icons.near_me_outlined, size: 13.5, color: opsPrimary),
-                            SizedBox(width: 4),
+                            const Icon(Icons.near_me_outlined, size: 13.5, color: opsPrimary),
+                            const SizedBox(width: 4),
                             Text(
-                              'Chỉ đường',
-                              style: TextStyle(
+                              context.l10n.commonDirections,
+                              style: const TextStyle(
                                 fontSize: 11.5,
                                 fontWeight: FontWeight.w700,
                                 color: opsPrimary,
@@ -5517,7 +5513,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                             onPressed: () async {
                               final success = await _run(
                                 () => _service.claimReport(r['id'] as int),
-                                'Đã nhận việc thành công',
+                                context.l10n.techHomeClaimSuccess,
                               );
                               if (success && mounted) {
                                 _tabs.animateTo(2);
@@ -5535,9 +5531,9 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                               ),
                             ),
                             icon: const Icon(Icons.pan_tool_alt_rounded, size: 13.5),
-                            label: const Text(
-                              'Nhận việc',
-                              style: TextStyle(fontWeight: FontWeight.w800, fontSize: 11.5),
+                            label: Text(
+                              context.l10n.techHomeClaimAction,
+                              style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 11.5),
                             ),
                           ),
                         // Nút gia hạn, nghiệm thu & hoàn tất nếu IN_PROGRESS của KTV
@@ -5574,7 +5570,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                                     ),
                                     const SizedBox(width: 3.5),
                                     Text(
-                                      slaPolicy.canExtend ? 'Gia hạn' : 'Hết lượt gia hạn',
+                                      slaPolicy.canExtend ? context.l10n.ordExtend : context.l10n.techHomeNoExtensionsLeft,
                                       style: TextStyle(
                                         fontSize: 10.5,
                                         fontWeight: FontWeight.w700,
@@ -5607,7 +5603,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                                   ),
                                   const SizedBox(width: 3.5),
                                   Text(
-                                    hasInspection ? 'Ảnh (+)' : 'Nghiệm thu',
+                                    hasInspection ? context.l10n.techHomeAddPhotosShort : context.l10n.techHomeAcceptanceAction,
                                     style: const TextStyle(
                                       fontSize: 10.5,
                                       fontWeight: FontWeight.w700,
@@ -5621,9 +5617,9 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                           ElevatedButton.icon(
                             onPressed: () => _confirmResolveReport(r),
                             icon: const Icon(Icons.check, size: 13.5),
-                            label: const Text(
-                              'Hoàn tất',
-                              style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w800),
+                            label: Text(
+                              context.l10n.commonDone,
+                              style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.w800),
                             ),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: const Color(0xFF16A34A),
@@ -5704,14 +5700,14 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
       ..showSnackBar(
-        SnackBar(content: Text('Phiếu RPT-$id vừa được cập nhật.')),
+        SnackBar(content: Text(context.l10n.techHomeTicketJustUpdated('$id'))),
       );
   }
 
   void _showReportDetailModal(Map<String, dynamic> r) {
     final status = r['status'] as String? ?? '';
     final assignedToMe = _isAssignedToMe(r);
-    final lockerLabel = r['lockerName'] ?? 'Chưa tra được tên tủ';
+    final lockerLabel = r['lockerName'] ?? context.l10n.ordLockerNameUnknown;
     final boxLabel = r['boxNumber'] ?? r['boxId'];
     final createdAt = _parseDate(r['createdAt']);
     final ageLabel = createdAt == null ? null : _ageLabel(createdAt);
@@ -5797,7 +5793,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                             ),
                             const SizedBox(height: 3),
                             Text(
-                              'Hồ sơ chi tiết phiếu sự cố kỹ thuật',
+                              context.l10n.urdRecordTitle,
                               style: TextStyle(
                                 fontSize: 12,
                                 color: Colors.grey.shade600,
@@ -5837,21 +5833,21 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                             if (isExtended && !overdue)
                               _MiniPill(
                                 icon: Icons.more_time,
-                                text: 'Đã gia hạn SLA (+$extHours h)'
+                                text: '${context.l10n.techHomeSlaExtendedHours(extHours)}'
                                     '${slaPolicy.usageLabel != null ? ' · ${slaPolicy.usageLabel}' : ''}',
                                 color: const Color(0xFFD97706),
                               ),
                             if (isExtended && overdue)
                               _MiniPill(
                                 icon: Icons.warning_amber_rounded,
-                                text: 'Quá hạn (sau gia hạn +$extHours h)',
+                                text: context.l10n.techHomeOverdueAfterExtension(extHours),
                                 color: const Color(0xFFDC2626),
                               ),
                             if (!isExtended && overdue)
-                              const _MiniPill(
+                              _MiniPill(
                                 icon: Icons.warning_amber_rounded,
-                                text: 'Quá hạn SLA',
-                                color: Color(0xFFDC2626),
+                                text: context.l10n.techHomeSlaOverdueBadge,
+                                color: const Color(0xFFDC2626),
                               ),
                             if (ageLabel != null)
                               _MiniPill(
@@ -5864,23 +5860,25 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                             if (r['assignedToUserId'] != null)
                               _MiniPill(
                                 icon: Icons.engineering_outlined,
-                                text: '${_assigneeLabel(r)}${assignedToMe ? ' (bạn)' : ''}',
+                                text: assignedToMe
+                                    ? context.l10n.techHomeAssigneeYou(_assigneeLabel(r))
+                                    : _assigneeLabel(r),
                               ),
                             if (createdAt != null)
                               _MiniPill(
                                 icon: Icons.access_time,
-                                text: 'Tạo lúc: ${_formatFullDateTime(createdAt)}',
+                                text: context.l10n.urdCreatedAt(_formatFullDateTime(createdAt)),
                               ),
                             if (effectiveDue != null)
                               _MiniPill(
                                 icon: Icons.timelapse,
-                                text: 'Hạn SLA: ${_formatFullDateTime(effectiveDue)}',
+                                text: context.l10n.techHomeSlaDueAt(_formatFullDateTime(effectiveDue)),
                                 color: overdue ? const Color(0xFFDC2626) : const Color(0xFF2563EB),
                               ),
                             if (isExtended && (r['slaExtensionReason'] ?? '').toString().trim().isNotEmpty)
                               _MiniPill(
                                 icon: Icons.comment_outlined,
-                                text: 'Lý do gia hạn: ${r['slaExtensionReason']}',
+                                text: context.l10n.techHomeExtensionReason('${r['slaExtensionReason']}'),
                                 color: const Color(0xFF92400E),
                               ),
                             ..._ticketBadges(r),
@@ -5906,7 +5904,9 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                                   const SizedBox(width: 6),
                                   Expanded(
                                     child: Text(
-                                      '$lockerLabel${boxLabel != null ? ' · Ô #$boxLabel' : ''}',
+                                      boxLabel != null
+                                          ? context.l10n.techHomeLockerBoxTitle('$lockerLabel', '$boxLabel')
+                                          : '$lockerLabel',
                                       style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: opsDark),
                                     ),
                                   ),
@@ -5937,9 +5937,9 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                                   _openDirections(r);
                                 },
                                 icon: const Icon(Icons.near_me_outlined, size: 14, color: opsPrimary),
-                                label: const Text(
-                                  'Chỉ đường tới tủ',
-                                  style: TextStyle(fontSize: 12, color: opsPrimary, fontWeight: FontWeight.w600),
+                                label: Text(
+                                  context.l10n.ordDirectionsToLocker,
+                                  style: const TextStyle(fontSize: 12, color: opsPrimary, fontWeight: FontWeight.w600),
                                 ),
                                 style: OutlinedButton.styleFrom(
                                   visualDensity: VisualDensity.compact,
@@ -5979,7 +5979,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      reporterName.isNotEmpty ? reporterName : 'Khách hàng',
+                                      reporterName.isNotEmpty ? reporterName : context.l10n.storeCustomer,
                                       style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: opsDark),
                                     ),
                                     if (reporterPhone.isNotEmpty)
@@ -5993,11 +5993,11 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                               if (reporterPhone.isNotEmpty)
                                 IconButton(
                                   icon: const Icon(Icons.copy, size: 18, color: opsPrimary),
-                                  tooltip: 'Sao chép SĐT',
+                                  tooltip: context.l10n.urdCopyPhone,
                                   onPressed: () {
                                     Clipboard.setData(ClipboardData(text: reporterPhone));
                                     ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(content: Text('Đã sao chép số điện thoại')),
+                                      SnackBar(content: Text(context.l10n.urdPhoneCopied)),
                                     );
                                   },
                                 ),
@@ -6009,9 +6009,9 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
 
                       // Description & Ảnh người báo gửi
                       if (cleanedDesc.isNotEmpty || userReportPhotos.isNotEmpty) ...[
-                        const Text(
-                          'Nội dung khách phản ánh:',
-                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: opsDark),
+                        Text(
+                          context.l10n.techHomeCustomerComplaint,
+                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: opsDark),
                         ),
                         const SizedBox(height: 6),
                         if (cleanedDesc.isNotEmpty)
@@ -6031,7 +6031,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                           const SizedBox(height: 8),
                           AttachmentStrip(
                             attachments: userReportPhotos,
-                            viewerTitle: 'Ảnh hiện trường do khách gửi',
+                            viewerTitle: context.l10n.techHomeCustomerScenePhotos,
                           ),
                         ],
                         const SizedBox(height: 16),
@@ -6089,7 +6089,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                               Navigator.pop(ctx);
                               await _run(
                                 () => _service.claimReport(r['id'] as int),
-                                'Đã nhận việc thành công',
+                                context.l10n.techHomeClaimSuccess,
                               );
                               if (mounted) {
                                 _tabs.animateTo(2);
@@ -6104,9 +6104,9 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                               ),
                             ),
                             icon: const Icon(Icons.pan_tool_alt, size: 16),
-                            label: const Text(
-                              'Nhận việc ngay',
-                              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13.5),
+                            label: Text(
+                              context.l10n.techHomeClaimNow,
+                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13.5),
                             ),
                           ),
                         ),
@@ -6131,9 +6131,9 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                               ),
                             ),
                             icon: const Icon(Icons.handyman_outlined, size: 16),
-                            label: const Text(
-                              'Kiểm tra ô & Khóa sự cố tại Kiosk',
-                              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                            label: Text(
+                              context.l10n.techHomeInspectAndLockBox,
+                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
                             ),
                           ),
                         ),
@@ -6155,9 +6155,9 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                               ),
                             ),
                             icon: const Icon(Icons.check_circle_outline, size: 16),
-                            label: const Text(
-                              'Nghiệm thu & Hoàn tất xử lý',
-                              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                            label: Text(
+                              context.l10n.techHomeAcceptAndComplete,
+                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
                             ),
                           ),
                         ),
@@ -6178,9 +6178,9 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                               ),
                             ),
                             icon: const Icon(Icons.block_outlined, size: 16),
-                            label: const Text(
-                              'Không đúng mô tả — đóng phiếu & phản hồi',
-                              style: TextStyle(fontWeight: FontWeight.w700, fontSize: 12.5),
+                            label: Text(
+                              context.l10n.techHomeNotAsDescribed,
+                              style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 12.5),
                             ),
                           ),
                         ),
@@ -6194,9 +6194,9 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                               _releaseReportFlow(r);
                             },
                             icon: const Icon(Icons.undo_rounded, size: 15),
-                            label: const Text(
-                              'Trả lại phiếu về hàng chờ',
-                              style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600),
+                            label: Text(
+                              context.l10n.techHomeReleaseToQueue,
+                              style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600),
                             ),
                             style: TextButton.styleFrom(foregroundColor: const Color(0xFF64748B)),
                           ),
@@ -6208,8 +6208,8 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                           tone: OpsBannerTone.info,
                           icon: Icons.engineering_outlined,
                           text: r['assignedToUserId'] != null
-                              ? 'Phiếu đang do ${_assigneeLabel(r)} xử lý — chỉ người được giao mới hoàn tất được.'
-                              : 'Phiếu đang được xử lý.',
+                              ? context.l10n.techHomeTicketHandledByName(_assigneeLabel(r))
+                              : context.l10n.techHomeTicketBeingHandled,
                         ),
                         const SizedBox(height: 6),
                       ],
@@ -6226,9 +6226,9 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                                   _openDirections(r);
                                 },
                                 icon: const Icon(Icons.near_me_outlined, size: 14),
-                                label: const Text(
-                                  'Chỉ đường tới tủ',
-                                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+                                label: Text(
+                                  context.l10n.ordDirectionsToLocker,
+                                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                 ),
@@ -6297,7 +6297,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
     final reportId = _asInt(report['id']);
     final lockerId = _asInt(report['lockerId']);
     if (reportId == null || lockerId == null) {
-      _showInfo('Phiếu sự cố không gắn với trạm Kiosk nào.');
+      _showInfo(context.l10n.techHomeTicketNoKiosk);
       return;
     }
 
@@ -6329,9 +6329,9 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
 
     if (done == true && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Đã cập nhật trạng thái ô tủ và xử lý sự cố thành công!'),
-          backgroundColor: Color(0xFF16A34A),
+        SnackBar(
+          content: Text(context.l10n.techHomeBoxIncidentResolved),
+          backgroundColor: const Color(0xFF16A34A),
         ),
       );
       AppEventBus.instance.emit(ReportUpdatedEvent(reportId: reportId.toString()));
@@ -6359,7 +6359,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
     );
     if (done == true && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Đã lưu ảnh xác nhận hiện trường')),
+        SnackBar(content: Text(context.l10n.techHomeScenePhotosSaved)),
       );
       await _load();
     }
@@ -6482,10 +6482,10 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
 
   String _ageLabel(DateTime createdAt) {
     final age = DateTime.now().difference(createdAt);
-    if (age.inDays > 0) return 'Mở ${age.inDays} ngày';
-    if (age.inHours > 0) return 'Mở ${age.inHours} giờ';
-    if (age.inMinutes > 0) return 'Mở ${age.inMinutes} phút';
-    return 'Vừa mở';
+    if (age.inDays > 0) return context.l10n.techHomeOpenForDays(age.inDays);
+    if (age.inHours > 0) return context.l10n.techHomeOpenForHours(age.inHours);
+    if (age.inMinutes > 0) return context.l10n.techHomeOpenForMinutes(age.inMinutes);
+    return context.l10n.techHomeJustOpened;
   }
 
   /// Màu theo thời gian còn lại tới hạn SLA server trả (không dùng ngưỡng cố định).
@@ -6604,7 +6604,7 @@ class _IotDeviceSheetState extends State<_IotDeviceSheet> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Hủy'),
+            child: Text(context.l10n.commonCancel),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
@@ -6623,12 +6623,15 @@ class _IotDeviceSheetState extends State<_IotDeviceSheet> {
 
   /// Đánh dấu tay OFFLINE / ERROR (vd. đã rút điện bộ điều khiển).
   Future<void> _markStatus(String status) async {
-    final label = status == 'ERROR' ? 'lỗi' : 'mất kết nối';
+    final isError = status == 'ERROR';
     final ok = await _confirm(
-      'Đánh dấu thiết bị $label',
-      'Thiết bị "$_deviceLabel" sẽ được đánh dấu $label cho tới khi bộ điều khiển '
-          'gửi tín hiệu trở lại. Tiếp tục?',
-      'Đánh dấu',
+      isError
+          ? context.l10n.techHomeMarkDeviceErrorTitle
+          : context.l10n.techHomeMarkDeviceOfflineTitle,
+      isError
+          ? context.l10n.techHomeMarkDeviceErrorBody(_deviceLabel)
+          : context.l10n.techHomeMarkDeviceOfflineBody(_deviceLabel),
+      context.l10n.techHomeMarkAction,
     );
     if (!ok || !mounted) return;
     setState(() => _busy = true);
@@ -6636,7 +6639,13 @@ class _IotDeviceSheetState extends State<_IotDeviceSheet> {
       await widget.service.techUpdateStatus(widget.deviceId, status);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Đã đánh dấu thiết bị $label.')),
+          SnackBar(
+            content: Text(
+              isError
+                  ? context.l10n.techHomeDeviceMarkedError
+                  : context.l10n.techHomeDeviceMarkedOffline,
+            ),
+          ),
         );
       }
       await _load();
@@ -6658,10 +6667,9 @@ class _IotDeviceSheetState extends State<_IotDeviceSheet> {
   /// ACCEPTED / TIMEOUT / FAILED.
   Future<void> _restart() async {
     final ok = await _confirm(
-      'Khởi động lại bộ điều khiển',
-      'Bộ điều khiển "$_deviceLabel" sẽ khởi động lại tiến trình điều khiển tủ '
-          '(không khởi động lại máy). Trong lúc đó tủ tạm không mở ô được. Tiếp tục?',
-      'Khởi động lại',
+      context.l10n.techHomeRestartControllerTitle,
+      context.l10n.techHomeRestartControllerBody(_deviceLabel),
+      context.l10n.techHomeRestartAction,
     );
     if (!ok || !mounted) return;
     setState(() {
@@ -6692,16 +6700,16 @@ class _IotDeviceSheetState extends State<_IotDeviceSheet> {
     final device = _device;
     final lockerLabel = device == null ? null : deviceLockerLabel(device);
     final rows = <(String, String)>[
-      if (device?['deviceId'] != null) ('Mã thiết bị', '${device!['deviceId']}'),
-      if (lockerLabel != null) ('Tủ', lockerLabel),
+      if (device?['deviceId'] != null) (context.l10n.techHomeDeviceIdLabel, '${device!['deviceId']}'),
+      if (lockerLabel != null) (context.l10n.commonLocker, lockerLabel),
       (
-        'Tín hiệu cuối',
+        context.l10n.techHomeLastSignalLabel,
         device?['lastSeenAt'] != null
             ? fmtDateTime(device!['lastSeenAt'])
-            : 'Chưa nhận tín hiệu',
+            : context.l10n.techHomeNoSignalShort,
       ),
       if (device?['online'] is bool)
-        ('Kết nối', device!['online'] == true ? 'Trực tuyến' : 'Mất kết nối'),
+        (context.l10n.techHomeConnectionLabel, device!['online'] == true ? context.l10n.commonOnline : context.l10n.commonDisconnected),
     ];
     final restart = _restartResult;
     return SafeArea(
@@ -6717,7 +6725,7 @@ class _IotDeviceSheetState extends State<_IotDeviceSheet> {
               )
             : _error != null
                 ? _RetryBanner(
-                    message: 'Không tải được thiết bị: $_error',
+                    message: context.l10n.techHomeDeviceLoadFailed(_error!),
                     onRetry: () {
                       setState(() => _loading = true);
                       _load();
@@ -6775,10 +6783,9 @@ class _IotDeviceSheetState extends State<_IotDeviceSheet> {
                             ),
                           ),
                         const SizedBox(height: 6),
-                        const Text(
-                          'Trạng thái do máy chủ tính theo tín hiệu gần nhất; '
-                          'chỉ đánh dấu tay khi biết chắc thiết bị đã mất kết nối hoặc hỏng.',
-                          style: TextStyle(fontSize: 11.5, color: opsMutedText),
+                        Text(
+                          context.l10n.techHomeDeviceStatusHint,
+                          style: const TextStyle(fontSize: 11.5, color: opsMutedText),
                         ),
                         const SizedBox(height: 12),
                         if (restart != null) ...[
@@ -6810,7 +6817,7 @@ class _IotDeviceSheetState extends State<_IotDeviceSheet> {
                                   )
                                 : const Icon(Icons.restart_alt, size: 18),
                             label: Text(
-                              _busy ? 'Đang chờ tủ phản hồi...' : 'Khởi động lại bộ điều khiển',
+                              _busy ? context.l10n.techHomeWaitingForLocker : context.l10n.techHomeRestartControllerTitle,
                             ),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: const Color(0xFFDC2626),
@@ -6830,10 +6837,10 @@ class _IotDeviceSheetState extends State<_IotDeviceSheet> {
                                 onPressed: _busy || device?['status'] == 'OFFLINE'
                                     ? null
                                     : () => _markStatus('OFFLINE'),
-                                child: const Text(
-                                  'Đánh dấu mất kết nối',
+                                child: Text(
+                                  context.l10n.techHomeMarkOffline,
                                   textAlign: TextAlign.center,
-                                  style: TextStyle(fontSize: 12),
+                                  style: const TextStyle(fontSize: 12),
                                 ),
                               ),
                             ),
@@ -6846,34 +6853,34 @@ class _IotDeviceSheetState extends State<_IotDeviceSheet> {
                                 style: OutlinedButton.styleFrom(
                                   foregroundColor: const Color(0xFFEA580C),
                                 ),
-                                child: const Text(
-                                  'Đánh dấu lỗi',
+                                child: Text(
+                                  context.l10n.techHomeMarkError,
                                   textAlign: TextAlign.center,
-                                  style: TextStyle(fontSize: 12),
+                                  style: const TextStyle(fontSize: 12),
                                 ),
                               ),
                             ),
                           ],
                         ),
                         const SizedBox(height: 12),
-                        const OpsSectionLabel(
-                          'Nhật ký hoạt động',
+                        OpsSectionLabel(
+                          context.l10n.techHomeActivityLog,
                           icon: Icons.history_edu_outlined,
                         ),
                         if (_logsError != null)
                           Text(
-                            'Không tải được nhật ký: $_logsError',
+                            context.l10n.techHomeLogLoadFailed(_logsError!),
                             style: const TextStyle(
                               fontSize: 12,
                               color: Color(0xFFDC2626),
                             ),
                           )
                         else if (_logs.isEmpty)
-                          const Padding(
-                            padding: EdgeInsets.only(bottom: 8),
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 8),
                             child: Text(
-                              'Chưa có nhật ký.',
-                              style: TextStyle(
+                              context.l10n.techHomeNoLogsYet,
+                              style: const TextStyle(
                                 fontSize: 12,
                                 color: opsMutedText,
                               ),
@@ -6966,12 +6973,12 @@ class _ReportLogsSectionState extends State<_ReportLogsSection> {
   bool _showInput = false;
   StreamSubscription<AppEvent>? _eventSub;
 
-  final _quickChips = const [
-    '📸 Kiểm tra hiện trường',
-    '🔧 Thay thế linh kiện',
-    '⚡ Kiểm tra bo mạch nguồn',
-    '🧹 Vệ sinh ô tủ sạch sẽ',
-    '🚪 Cân chỉnh chốt & then',
+  List<String> get _quickChips => [
+    context.l10n.techHomeQuickChipInspectScene,
+    context.l10n.techHomeQuickChipReplacePart,
+    context.l10n.techHomeQuickChipCheckPowerBoard,
+    context.l10n.techHomeQuickChipCleanBox,
+    context.l10n.techHomeQuickChipAdjustLatch,
   ];
 
   @override
@@ -7141,10 +7148,10 @@ class _ReportLogsSectionState extends State<_ReportLogsSection> {
             Expanded(
               child: Row(
                 children: [
-                  const Flexible(
+                  Flexible(
                     child: Text(
-                      'Nhật ký & Lịch sử xử lý của KTV:',
-                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12.5, color: opsDark),
+                      context.l10n.techHomeTechLogTitle,
+                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12.5, color: opsDark),
                     ),
                   ),
                   if (_logs.isNotEmpty) ...[
@@ -7183,7 +7190,7 @@ class _ReportLogsSectionState extends State<_ReportLogsSection> {
           )
         else if (_loadError != null && _logs.isEmpty)
           _RetryBanner(
-            message: 'Không tải được nhật ký xử lý: $_loadError',
+            message: context.l10n.techHomeTechLogLoadFailed(_loadError!),
             onRetry: _load,
           )
         else if (_logs.isEmpty)
@@ -7195,14 +7202,14 @@ class _ReportLogsSectionState extends State<_ReportLogsSection> {
               borderRadius: BorderRadius.circular(12),
               border: Border.all(color: const Color(0xFFE2E8F0)),
             ),
-            child: const Row(
+            child: Row(
               children: [
-                Icon(Icons.info_outline, size: 16, color: opsMutedText),
-                SizedBox(width: 8),
+                const Icon(Icons.info_outline, size: 16, color: opsMutedText),
+                const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    'Chưa có ghi chú xử lý nào. Thao tác "Kiểm tra ô & Khóa sự cố" hoặc "Nghiệm thu" sẽ tự động lưu lại đầy đủ tại đây.',
-                    style: TextStyle(fontSize: 12, color: opsMutedText),
+                    context.l10n.techHomeNoTechLogsHint,
+                    style: const TextStyle(fontSize: 12, color: opsMutedText),
                   ),
                 ),
               ],
@@ -7240,8 +7247,8 @@ class _ReportLogsSectionState extends State<_ReportLogsSection> {
                                   (log['actorName'] ?? '').toString().trim().isNotEmpty
                                       ? '${log['actorName']}'
                                       : log['actorUserId'] != null
-                                          ? 'KTV #${log['actorUserId']}'
-                                          : 'Kỹ thuật viên',
+                                          ? context.l10n.techHomeTechNumber('${log['actorUserId']}')
+                                          : context.l10n.ddTechnician,
                                   style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFF0369A1)),
                                 ),
                               ),
@@ -7259,7 +7266,7 @@ class _ReportLogsSectionState extends State<_ReportLogsSection> {
                             AttachmentStrip(
                               attachments: logPhotos,
                               size: 58,
-                              viewerTitle: 'Nhật ký · ${_fmt(log['createdAt'])}',
+                              viewerTitle: context.l10n.techHomeLogViewerTitle(_fmt(log['createdAt'])),
                             ),
                           ],
                         ],
@@ -7278,7 +7285,7 @@ class _ReportLogsSectionState extends State<_ReportLogsSection> {
               child: TextButton.icon(
                 onPressed: () => setState(() => _showInput = true),
                 icon: const Icon(Icons.add_comment_outlined, size: 14),
-                label: const Text('Thêm bước xử lý / ghi chú nhanh...', style: TextStyle(fontSize: 12)),
+                label: Text(context.l10n.techHomeAddLogStep, style: const TextStyle(fontSize: 12)),
                 style: TextButton.styleFrom(
                   foregroundColor: opsPrimary,
                   visualDensity: VisualDensity.compact,
@@ -7339,7 +7346,7 @@ class _ReportLogsSectionState extends State<_ReportLogsSection> {
                           maxLines: 2,
                           style: const TextStyle(fontSize: 12.5),
                           decoration: InputDecoration(
-                            hintText: 'Nhập ghi chú xử lý...',
+                            hintText: context.l10n.techHomeLogNoteHint,
                             isDense: true,
                             contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                             border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
@@ -7481,11 +7488,11 @@ class _ResolveVerificationSheetState extends State<_ResolveVerificationSheet> {
   String? _testOpenBlockedReason;
   String? _error;
 
-  final _quickNotes = const [
-    'Đã thay thế linh kiện khóa điện tử',
-    'Đã cân chỉnh then & bản lề cửa ô tủ',
-    'Đã kiểm tra bo mạch điều khiển & nguồn',
-    'Đã vệ sinh sạch sẽ, test đóng mở 3 lần',
+  List<String> get _quickNotes => [
+    context.l10n.techHomeQuickNoteReplacedLock,
+    context.l10n.techHomeQuickNoteAdjustedHinge,
+    context.l10n.techHomeQuickNoteCheckedBoard,
+    context.l10n.techHomeQuickNoteCleanedTested,
   ];
 
   @override
@@ -7520,15 +7527,15 @@ class _ResolveVerificationSheetState extends State<_ResolveVerificationSheet> {
         }
       }
       if (cellStatus == null) {
-        blocked = 'Không tìm thấy ô trong sơ đồ tủ.';
+        blocked = L10n.current.techHomeBoxNotInLayout;
       } else {
         final order = await widget.service.getActiveOrderByBox(boxId);
         if (cellHoldsOrder(cellStatus: cellStatus, hasActiveOrder: order != null)) {
-          blocked = 'Ô đang giữ đồ/đơn của khách — không mở thử.';
+          blocked = L10n.current.techHomeBoxHoldsOrderNoTest;
         }
       }
     } catch (e) {
-      blocked = 'Không kiểm tra được ô (${LockerOpsService.errorMessage(e)}).';
+      blocked = L10n.current.techHomeBoxCheckFailed(LockerOpsService.errorMessage(e));
     }
     if (!mounted) return;
     setState(() {
@@ -7619,7 +7626,7 @@ class _ResolveVerificationSheetState extends State<_ResolveVerificationSheet> {
     if (requirePhoto && !_hasAfterPhoto) {
       setState(
         () => _error =
-            'Vui lòng chụp ít nhất 1 ảnh sau khi sửa xong để nghiệm thu.',
+            context.l10n.techHomeAfterPhotoRequired,
       );
       return;
     }
@@ -7671,7 +7678,7 @@ class _ResolveVerificationSheetState extends State<_ResolveVerificationSheet> {
       // trên — server tự trả ô về hoạt động, không cần clear-fault thêm.
       final boxId = _asInt(widget.report['boxId']);
       final lockerId = _asInt(widget.report['lockerId']);
-      final boxLabel = 'ô #${widget.report['boxNumber'] ?? boxId}';
+      final boxLabel = L10n.current.techHomeBoxLabelLower('${widget.report['boxNumber'] ?? boxId}');
       // Lý do ô chưa mở được (null = đã mở / không yêu cầu mở): vẫn hoàn tất
       // phiếu nhưng không được báo là đã mở ô.
       String? openError;
@@ -7703,24 +7710,24 @@ class _ResolveVerificationSheetState extends State<_ResolveVerificationSheet> {
       if (mounted) {
         // Đóng phiếu ⇒ server trả tài sản của phiếu về hoạt động.
         final restored = switch (widget.report['category']) {
-          'LANDING_PAD' => 'Bãi đáp đã hoạt động lại.',
-          'LOCKER' => 'Tủ đã hoạt động lại.',
+          'LANDING_PAD' => context.l10n.techHomeLandingPadRestored,
+          'LOCKER' => context.l10n.techHomeLockerRestored,
           _ => opened
-              ? 'Ô đã hoạt động lại, đã gửi lệnh mở thử $boxLabel.'
-              : 'Ô tủ đã hoạt động lại.',
+              ? context.l10n.techHomeBoxRestoredTestOpened(boxLabel)
+              : context.l10n.techHomeBoxRestored,
         };
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
           openError == null
               ? SnackBar(
                   backgroundColor: const Color(0xFF16A34A),
-                  content: Text('Đã nghiệm thu và hoàn tất sự cố! $restored'),
+                  content: Text(context.l10n.techHomeResolvedWithRestored(restored)),
                 )
               : SnackBar(
                   backgroundColor: const Color(0xFFDC2626),
                   duration: const Duration(seconds: 6),
                   content: Text(
-                    'Đã nghiệm thu và hoàn tất sự cố, nhưng chưa mở thử được $boxLabel: $openError',
+                    context.l10n.techHomeResolvedTestOpenFailed(boxLabel, openError),
                   ),
                 ),
         );
@@ -7775,9 +7782,9 @@ class _ResolveVerificationSheetState extends State<_ResolveVerificationSheet> {
                 ),
               ),
               if (required && !satisfied)
-                const Text(
-                  'Bắt buộc',
-                  style: TextStyle(
+                Text(
+                  context.l10n.techHomeRequiredBadge,
+                  style: const TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w700,
                     color: Color(0xFFDC2626),
@@ -7800,9 +7807,9 @@ class _ResolveVerificationSheetState extends State<_ResolveVerificationSheet> {
   @override
   Widget build(BuildContext context) {
     final reportTitle =
-        widget.report['title'] ?? 'Sự cố RPT-${widget.report['id']}';
+        widget.report['title'] ?? context.l10n.techHomeIncidentRpt('${widget.report['id']}');
     final lockerLabel =
-        widget.report['lockerName'] ?? 'Tủ #${widget.report['lockerId']}';
+        widget.report['lockerName'] ?? context.l10n.lockerHash('${widget.report['lockerId']}');
     final boxLabel = widget.report['boxNumber'] ?? widget.report['boxId'];
     final uploading = _beforePhotos.isUploading || _afterPhotos.isUploading;
     final hasBefore = _existingInspection.isNotEmpty ||
@@ -7847,13 +7854,15 @@ class _ResolveVerificationSheetState extends State<_ResolveVerificationSheet> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
-                          'Nghiệm thu hoàn tất sửa chữa',
-                          style: TextStyle(
+                        Text(
+                          context.l10n.techHomeResolveSheetTitle,
+                          style: const TextStyle(
                               fontWeight: FontWeight.bold, fontSize: 16),
                         ),
                         Text(
-                          '$lockerLabel${boxLabel != null ? ' · Ô $boxLabel' : ''} · RPT-${widget.report['id']} · $reportTitle',
+                          boxLabel != null
+                              ? context.l10n.techHomeResolveSheetSubtitleWithBox('$lockerLabel', '$boxLabel', '${widget.report['id']}', '$reportTitle')
+                              : '$lockerLabel · RPT-${widget.report['id']} · $reportTitle',
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
@@ -7865,16 +7874,16 @@ class _ResolveVerificationSheetState extends State<_ResolveVerificationSheet> {
                 ],
               ),
               const SizedBox(height: 16),
-              const Text(
-                'Hình ảnh hiện trường (Trước & Sau khi sửa)',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+              Text(
+                context.l10n.techHomeScenePhotosBeforeAfter,
+                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
               ),
               const SizedBox(height: 8),
               _buildPhotoSection(
-                title: 'Trước khi sửa',
+                title: context.l10n.techHomeBeforeRepair,
                 subtitle: _existingInspection.isNotEmpty
-                    ? 'Đã có ${_existingInspection.length} ảnh hiện trường / người báo đối chứng'
-                    : 'Tuỳ chọn · lưu thành ảnh xác nhận hiện trường',
+                    ? context.l10n.techHomeExistingScenePhotos(_existingInspection.length)
+                    : context.l10n.techHomeBeforeRepairOptional,
                 satisfied: hasBefore,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -7882,7 +7891,7 @@ class _ResolveVerificationSheetState extends State<_ResolveVerificationSheet> {
                     if (_existingInspection.isNotEmpty) ...[
                       AttachmentStrip(
                         attachments: _existingInspection,
-                        viewerTitle: 'Ảnh hiện trường trước khi sửa',
+                        viewerTitle: context.l10n.techHomeScenePhotosBeforeRepair,
                       ),
                       const SizedBox(height: 8),
                     ],
@@ -7891,16 +7900,16 @@ class _ResolveVerificationSheetState extends State<_ResolveVerificationSheet> {
                       enabled: !_submitting && !_inspectionSaved,
                       accentColor: opsPrimary,
                       addLabel: _existingInspection.isNotEmpty
-                          ? 'Chụp thêm ảnh'
-                          : 'Chụp ảnh',
+                          ? context.l10n.techHomeTakeMorePhotos
+                          : context.l10n.rfTakePhoto,
                     ),
                   ],
                 ),
               ),
               const SizedBox(height: 10),
               _buildPhotoSection(
-                title: 'Trong quá trình sửa',
-                subtitle: 'Ảnh thao tác kỹ thuật, thay thế linh kiện (tuỳ chọn)',
+                title: context.l10n.techHomeDuringRepair,
+                subtitle: context.l10n.techHomeDuringRepairHint,
                 satisfied: _existingProgress.isNotEmpty || _progressPhotos.isNotEmpty,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -7917,19 +7926,19 @@ class _ResolveVerificationSheetState extends State<_ResolveVerificationSheet> {
                       enabled: !_submitting,
                       accentColor: const Color(0xFF2563EB),
                       addLabel: _existingProgress.isNotEmpty
-                          ? 'Chụp thêm ảnh'
-                          : 'Chụp ảnh quá trình sửa',
+                          ? context.l10n.techHomeTakeMorePhotos
+                          : context.l10n.techHomeTakeRepairPhotos,
                     ),
                   ],
                 ),
               ),
               const SizedBox(height: 10),
               _buildPhotoSection(
-                title: 'Sau khi xong',
+                title: context.l10n.techHomeAfterRepair,
                 subtitle: BusinessConfigService
                         .instance.current.requireResolutionPhoto
-                    ? 'Ảnh nghiệm thu — cần ít nhất 1 ảnh'
-                    : 'Ảnh nghiệm thu (tuỳ chọn)',
+                    ? context.l10n.techHomeAcceptancePhotoRequired
+                    : context.l10n.techHomeAcceptancePhotoOptional,
                 satisfied: _hasAfterPhoto,
                 required: BusinessConfigService
                     .instance.current.requireResolutionPhoto,
@@ -7947,15 +7956,15 @@ class _ResolveVerificationSheetState extends State<_ResolveVerificationSheet> {
                       controller: _afterPhotos,
                       enabled: !_submitting,
                       accentColor: const Color(0xFF16A34A),
-                      addLabel: 'Chụp ảnh',
+                      addLabel: context.l10n.rfTakePhoto,
                     ),
                   ],
                 ),
               ),
               const SizedBox(height: 16),
-              const Text(
-                'Ghi chú kỹ thuật & linh kiện',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+              Text(
+                context.l10n.techHomeTechNotesTitle,
+                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
               ),
               const SizedBox(height: 6),
               TextField(
@@ -7964,7 +7973,7 @@ class _ResolveVerificationSheetState extends State<_ResolveVerificationSheet> {
                 maxLines: 4,
                 decoration: InputDecoration(
                   hintText:
-                      'Mô tả chi tiết linh kiện thay thế, các bước xử lý...',
+                      context.l10n.techHomeTechNotesHint,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                     borderSide: const BorderSide(color: opsBorder),
@@ -7994,11 +8003,11 @@ class _ResolveVerificationSheetState extends State<_ResolveVerificationSheet> {
 
               // "Mở thử ô sau sửa": chỉ hiện khi ô không giữ đơn; mặc định TẮT.
               if (_checkingTestOpen)
-                const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 4),
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 4),
                   child: Text(
-                    'Đang kiểm tra ô trước khi cho phép mở thử...',
-                    style: TextStyle(fontSize: 11.5, color: opsMutedText),
+                    context.l10n.techHomeCheckingTestOpen,
+                    style: const TextStyle(fontSize: 11.5, color: opsMutedText),
                   ),
                 )
               else if (_testOpenAllowed)
@@ -8033,9 +8042,9 @@ class _ResolveVerificationSheetState extends State<_ResolveVerificationSheet> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
-                              'Mở thử ô sau sửa',
-                              style: TextStyle(
+                            Text(
+                              context.l10n.techHomeTestOpenAfterRepair,
+                              style: const TextStyle(
                                 fontWeight: FontWeight.bold,
                                 fontSize: 13,
                                 color: Color(0xFF166534),
@@ -8044,8 +8053,8 @@ class _ResolveVerificationSheetState extends State<_ResolveVerificationSheet> {
                             const SizedBox(height: 2),
                             Text(
                               boxLabel != null
-                                  ? 'Sau khi hoàn tất phiếu, gửi lệnh mở ô #$boxLabel để kiểm tra chốt khoá.'
-                                  : 'Sau khi hoàn tất phiếu, gửi lệnh mở ô để kiểm tra chốt khoá.',
+                                  ? context.l10n.techHomeTestOpenHintWithBox('$boxLabel')
+                                  : context.l10n.techHomeTestOpenHint,
                               style: TextStyle(
                                 fontSize: 11,
                                 color: _quickFixAndUnlock ? const Color(0xFF15803D) : opsMutedText,
@@ -8066,7 +8075,7 @@ class _ResolveVerificationSheetState extends State<_ResolveVerificationSheet> {
                 )
               else if (_testOpenBlockedReason != null)
                 Text(
-                  'Không đề nghị mở thử ô: $_testOpenBlockedReason',
+                  context.l10n.techHomeTestOpenNotSuggested(_testOpenBlockedReason!),
                   style: const TextStyle(fontSize: 11.5, color: opsMutedText),
                 ),
 
@@ -8102,9 +8111,9 @@ class _ResolveVerificationSheetState extends State<_ResolveVerificationSheet> {
                   label: Text(
                     _submitting
                         ? (uploading
-                            ? 'Đang tải ảnh...'
-                            : 'Đang lưu nghiệm thu...')
-                        : 'Xác nhận & Hoàn tất sửa chữa',
+                            ? context.l10n.ordUploadingPhotos
+                            : context.l10n.techHomeSavingAcceptance)
+                        : context.l10n.techHomeConfirmAndCompleteRepair,
                     style: const TextStyle(
                         fontWeight: FontWeight.bold, fontSize: 14),
                   ),
@@ -8152,7 +8161,7 @@ class _InspectionSheetState extends State<_InspectionSheet> {
 
   Future<void> _submit() async {
     if (_photos.isEmpty) {
-      setState(() => _error = 'Vui lòng chụp ít nhất 1 ảnh hiện trường.');
+      setState(() => _error = context.l10n.techHomeScenePhotoRequired);
       return;
     }
     setState(() {
@@ -8215,9 +8224,9 @@ class _InspectionSheetState extends State<_InspectionSheet> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
-                          'Xác nhận hiện trường',
-                          style: TextStyle(
+                        Text(
+                          context.l10n.techHomeSceneConfirmTitle,
+                          style: const TextStyle(
                               fontWeight: FontWeight.bold, fontSize: 16),
                         ),
                         Text(
@@ -8233,10 +8242,9 @@ class _InspectionSheetState extends State<_InspectionSheet> {
                 ],
               ),
               const SizedBox(height: 12),
-              const Text(
-                'Chụp hiện trạng ô tủ ngay khi tới nơi (cửa, khoá, bo mạch...). '
-                'Ảnh được lưu vào phiếu làm bằng chứng trước khi sửa.',
-                style: TextStyle(fontSize: 12, color: opsMutedText),
+              Text(
+                context.l10n.techHomeSceneConfirmHint,
+                style: const TextStyle(fontSize: 12, color: opsMutedText),
               ),
               const SizedBox(height: 12),
               PhotoPickerField(
@@ -8244,8 +8252,8 @@ class _InspectionSheetState extends State<_InspectionSheet> {
                 enabled: !_submitting,
                 thumbSize: 80,
                 accentColor: _accent,
-                addLabel: 'Chụp ảnh',
-                helperText: 'Tối đa ${_photos.maxPhotos} ảnh',
+                addLabel: context.l10n.rfTakePhoto,
+                helperText: context.l10n.photoMax(_photos.maxPhotos),
               ),
               const SizedBox(height: 14),
               TextField(
@@ -8254,7 +8262,7 @@ class _InspectionSheetState extends State<_InspectionSheet> {
                 minLines: 1,
                 maxLines: 3,
                 decoration: InputDecoration(
-                  hintText: 'Ghi chú hiện trạng (tuỳ chọn)...',
+                  hintText: context.l10n.techHomeSceneNoteHint,
                   isDense: true,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
@@ -8292,7 +8300,7 @@ class _InspectionSheetState extends State<_InspectionSheet> {
                         )
                       : const Icon(Icons.cloud_upload_outlined),
                   label: Text(
-                    _submitting ? 'Đang tải ảnh...' : 'Lưu ảnh hiện trường',
+                    _submitting ? context.l10n.ordUploadingPhotos : context.l10n.techHomeSaveScenePhotos,
                     style: const TextStyle(
                         fontWeight: FontWeight.bold, fontSize: 14),
                   ),
@@ -8458,7 +8466,7 @@ class _BoxIncidentResolutionSheetState
 
     final name = pick('receiverName', 'reporterName');
     final phone = pick('receiverPhone', 'reporterPhone');
-    final who = name.isNotEmpty ? name : 'Khách';
+    final who = name.isNotEmpty ? name : context.l10n.techHomeCustomerShort;
     return phone.isNotEmpty ? '$who ($phone)' : who;
   }
 
@@ -8511,7 +8519,7 @@ class _BoxIncidentResolutionSheetState
     final reportId = _asInt(widget.report['id']);
     final input = await _promptForceOpen(
       context,
-      boxLabel: 'Ô #$boxNum',
+      boxLabel: context.l10n.boxHash('$boxNum'),
       reportId: reportId,
     );
     if (input == null || !mounted) return;
@@ -8529,14 +8537,14 @@ class _BoxIncidentResolutionSheetState
       _showForceOpenSnack(
         success: result.accepted,
         message: result.accepted
-            ? _forceOpenSuccessText(result, 'ô #$boxNum')
-            : 'Lỗi mở ô: ${result.failureMessage}',
+            ? _forceOpenSuccessText(result, context.l10n.techHomeBoxLabelLower('$boxNum'))
+            : context.l10n.techHomeOpenBoxError(result.failureMessage),
       );
     } catch (e) {
       if (mounted) {
         _showForceOpenSnack(
           success: false,
-          message: 'Lỗi mở ô: ${LockerOpsService.errorMessage(e)}',
+          message: context.l10n.techHomeOpenBoxError(LockerOpsService.errorMessage(e)),
         );
       }
     } finally {
@@ -8569,7 +8577,7 @@ class _BoxIncidentResolutionSheetState
   Future<void> _submit() async {
     final repId = _asInt(widget.report['id']);
     final invalid = repId == null
-        ? 'Phiếu không hợp lệ.'
+        ? context.l10n.techHomeInvalidTicket
         : validateBoxIncidentInput(
             action: _action,
             selectedBoxId: _selectedBoxId,
@@ -8724,9 +8732,9 @@ class _BoxIncidentResolutionSheetState
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
-                          'Kiểm tra ô & Xử lý sự cố',
-                          style: TextStyle(
+                        Text(
+                          context.l10n.techHomeBoxIncidentSheetTitle,
+                          style: const TextStyle(
                               fontWeight: FontWeight.bold, fontSize: 16),
                         ),
                         Text(
@@ -8748,13 +8756,13 @@ class _BoxIncidentResolutionSheetState
               const Divider(height: 24),
 
               // BƯỚC 1: CHỌN Ô TẠI KIOSK
-              const Text(
-                '1. Chọn ô gặp sự cố tại Kiosk:',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13.5),
+              Text(
+                context.l10n.techHomeStep1PickBox,
+                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13.5),
               ),
               const SizedBox(height: 8),
               if (widget.cells.isEmpty)
-                const Text('Kiosk này chưa có danh sách ô.')
+                Text(context.l10n.techHomeKioskNoBoxes)
               else
                 Wrap(
                   spacing: 8,
@@ -8811,9 +8819,9 @@ class _BoxIncidentResolutionSheetState
                                 color: const Color(0xFFFEF08A),
                                 borderRadius: BorderRadius.circular(3),
                               ),
-                              child: const Text(
-                                'Mở',
-                                style: TextStyle(
+                              child: Text(
+                                context.l10n.crOpen,
+                                style: const TextStyle(
                                   fontSize: 8,
                                   fontWeight: FontWeight.bold,
                                   color: Color(0xFF854D0E),
@@ -8841,8 +8849,7 @@ class _BoxIncidentResolutionSheetState
                 if (_orderLookupError != null) ...[
                   _RetryBanner(
                     message:
-                        'Không tra được đơn trong ô ($_orderLookupError). Kiểm tra thực tế '
-                        '(mở khẩn cấp) trước khi chọn phương án — tạm thời chỉ khoá ô.',
+                        context.l10n.techHomeOrderLookupFailed(_orderLookupError!),
                     onRetry: _selectedBoxId == null
                         ? null
                         : () => _checkActiveOrder(_selectedBoxId!),
@@ -8853,7 +8860,7 @@ class _BoxIncidentResolutionSheetState
                     child: OutlinedButton.icon(
                       onPressed: _openingBox ? null : _forceOpenBox,
                       icon: const Icon(Icons.lock_open, size: 14),
-                      label: Text(_openingBox ? 'Đang mở...' : 'Mở khẩn cấp'),
+                      label: Text(_openingBox ? context.l10n.enumOpening : context.l10n.techHomeEmergencyOpenShort),
                       style: OutlinedButton.styleFrom(
                         foregroundColor: const Color(0xFFEA580C),
                         side: const BorderSide(color: Color(0xFFEA580C)),
@@ -8876,10 +8883,10 @@ class _BoxIncidentResolutionSheetState
                             const Icon(Icons.warning_amber_rounded,
                                 color: Color(0xFFD97706), size: 20),
                             const SizedBox(width: 8),
-                            const Expanded(
+                            Expanded(
                               child: Text(
-                                'Ô ĐANG CHỨA ĐỒ CỦA KHÁCH!',
-                                style: TextStyle(
+                                context.l10n.techHomeBoxHasCustomerItems,
+                                style: const TextStyle(
                                   fontWeight: FontWeight.bold,
                                   color: Color(0xFF92400E),
                                   fontSize: 13,
@@ -8906,7 +8913,7 @@ class _BoxIncidentResolutionSheetState
                                     )
                                   : const Icon(Icons.lock_open, size: 14),
                               label: Text(
-                                _openingBox ? 'Đang mở...' : 'Mở khẩn cấp',
+                                _openingBox ? context.l10n.enumOpening : context.l10n.techHomeEmergencyOpenShort,
                                 style: const TextStyle(
                                     fontSize: 11.5, fontWeight: FontWeight.bold),
                               ),
@@ -8915,7 +8922,7 @@ class _BoxIncidentResolutionSheetState
                         ),
                         const SizedBox(height: 6),
                         Text(
-                          'Đơn hàng: ${_activeOrder!['orderCode']} · Khách: $_activeOrderCustomerLabel',
+                          context.l10n.techHomeActiveOrderLine('${_activeOrder!['orderCode']}', _activeOrderCustomerLabel),
                           style: const TextStyle(
                               fontSize: 12,
                               color: Color(0xFF78350F),
@@ -8941,10 +8948,10 @@ class _BoxIncidentResolutionSheetState
                             const Icon(Icons.info_outline,
                                 color: Color(0xFF2563EB), size: 20),
                             const SizedBox(width: 8),
-                            const Expanded(
+                            Expanded(
                               child: Text(
-                                'Ô KHÔNG CÓ ĐƠN HÀNG HOẠT ĐỘNG',
-                                style: TextStyle(
+                                context.l10n.techHomeBoxNoActiveOrder,
+                                style: const TextStyle(
                                   fontWeight: FontWeight.bold,
                                   color: Color(0xFF1E40AF),
                                   fontSize: 13,
@@ -8971,7 +8978,7 @@ class _BoxIncidentResolutionSheetState
                                     )
                                   : const Icon(Icons.lock_open, size: 14),
                               label: Text(
-                                _openingBox ? 'Đang mở...' : 'Mở khẩn cấp',
+                                _openingBox ? context.l10n.enumOpening : context.l10n.techHomeEmergencyOpenShort,
                                 style: const TextStyle(
                                     fontSize: 11.5, fontWeight: FontWeight.bold),
                               ),
@@ -8979,9 +8986,9 @@ class _BoxIncidentResolutionSheetState
                           ],
                         ),
                         const SizedBox(height: 6),
-                        const Text(
-                          'Hệ thống không tìm thấy đơn hàng trong ô này. Có thể khách đã lấy đồ, kẹt cảm biến hoặc báo nhầm ô. KTV hãy mở khẩn cấp để kiểm tra thực tế.',
-                          style: TextStyle(
+                        Text(
+                          context.l10n.techHomeBoxNoActiveOrderHint,
+                          style: const TextStyle(
                             fontSize: 12,
                             color: Color(0xFF1E3A8A),
                           ),
@@ -9003,10 +9010,10 @@ class _BoxIncidentResolutionSheetState
                         const Icon(Icons.check_circle_outline,
                             color: Color(0xFF16A34A), size: 20),
                         const SizedBox(width: 8),
-                        const Expanded(
+                        Expanded(
                           child: Text(
-                            'Ô hiện tại đang trống (Không có đồ bên trong)',
-                            style: TextStyle(
+                            context.l10n.techHomeBoxCurrentlyEmpty,
+                            style: const TextStyle(
                               fontWeight: FontWeight.w600,
                               color: Color(0xFF166534),
                               fontSize: 12.5,
@@ -9033,7 +9040,7 @@ class _BoxIncidentResolutionSheetState
                                 )
                               : const Icon(Icons.lock_open, size: 14),
                           label: Text(
-                            _openingBox ? 'Đang mở...' : 'Mở khẩn cấp',
+                            _openingBox ? context.l10n.enumOpening : context.l10n.techHomeEmergencyOpenShort,
                             style: const TextStyle(
                                 fontSize: 11.5, fontWeight: FontWeight.bold),
                           ),
@@ -9046,8 +9053,8 @@ class _BoxIncidentResolutionSheetState
 
                 Text(
                   _activeOrder != null
-                      ? '2. Chọn phương án xử lý hàng trong ô:'
-                      : '2. Chọn phương án xử lý:',
+                      ? context.l10n.techHomeStep2PickGoodsOption
+                      : context.l10n.techHomeStep2PickOption,
                   style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13.5),
                 ),
                 const SizedBox(height: 6),
@@ -9061,13 +9068,13 @@ class _BoxIncidentResolutionSheetState
                       _action = v!;
                       _lockBox = true;
                     }),
-                    title: const Text(
-                      'Điều chuyển sang ô trống mới (Khuyến nghị)',
-                      style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                    title: Text(
+                      context.l10n.techHomeOptionRelocateTitle,
+                      style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
                     ),
-                    subtitle: const Text(
-                      'Dọn đồ sang ô trống khác cùng Kiosk, cấp mã PIN mới cho khách & Khóa ô cũ.',
-                      style: TextStyle(fontSize: 11.5, color: opsMutedText),
+                    subtitle: Text(
+                      context.l10n.techHomeOptionRelocateHint,
+                      style: const TextStyle(fontSize: 11.5, color: opsMutedText),
                     ),
                     activeColor: _brandColor,
                     contentPadding: EdgeInsets.zero,
@@ -9076,15 +9083,15 @@ class _BoxIncidentResolutionSheetState
                     Padding(
                       padding: const EdgeInsets.only(left: 36, bottom: 8),
                       child: avTargets.isEmpty
-                          ? const Text(
-                              '⚠️ Trạm Kiosk không còn ô trống nào! Hãy chọn phương án giao trực tiếp hoặc niêm phong.',
-                              style: TextStyle(
+                          ? Text(
+                              context.l10n.techHomeNoFreeBoxes,
+                              style: const TextStyle(
                                   color: Color(0xFFDC2626), fontSize: 12),
                             )
                           : DropdownButtonFormField<int>(
                               value: _targetBoxId,
                               decoration: InputDecoration(
-                                labelText: 'Chọn ô trống đích',
+                                labelText: context.l10n.techHomePickTargetBox,
                                 isDense: true,
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(10),
@@ -9094,7 +9101,7 @@ class _BoxIncidentResolutionSheetState
                                 return DropdownMenuItem<int>(
                                   value: _asInt(t['id']),
                                   child: Text(
-                                      'Ô #${t['boxNumber']} (${t['cellType'] ?? 'STANDARD'})'),
+                                      context.l10n.techHomeTargetBoxOption('${t['boxNumber']}', '${t['cellType'] ?? 'STANDARD'}')),
                                 );
                               }).toList(),
                               onChanged: (val) =>
@@ -9111,13 +9118,13 @@ class _BoxIncidentResolutionSheetState
                       _action = v!;
                       _lockBox = true;
                     }),
-                    title: const Text(
-                      'Khách hàng có mặt - Bàn giao trực tiếp',
-                      style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                    title: Text(
+                      context.l10n.techHomeOptionHandoverTitle,
+                      style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
                     ),
-                    subtitle: const Text(
-                      'Khách đang ở tại trạm nhận đồ trực tiếp, hoàn tất đơn & Khóa ô cũ.',
-                      style: TextStyle(fontSize: 11.5, color: opsMutedText),
+                    subtitle: Text(
+                      context.l10n.techHomeOptionHandoverHint,
+                      style: const TextStyle(fontSize: 11.5, color: opsMutedText),
                     ),
                     activeColor: _brandColor,
                     contentPadding: EdgeInsets.zero,
@@ -9128,8 +9135,8 @@ class _BoxIncidentResolutionSheetState
                       child: TextField(
                         controller: _otpCtrl,
                         decoration: InputDecoration(
-                          labelText: 'Mã PIN 6 số hoặc mã QR của đơn (bắt buộc)',
-                          hintText: 'Khách đọc/đưa mã lấy hàng để xác nhận bàn giao',
+                          labelText: context.l10n.techHomeHandoverCodeLabel,
+                          hintText: context.l10n.techHomeHandoverCodeHint,
                           isDense: true,
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(10),
@@ -9147,13 +9154,13 @@ class _BoxIncidentResolutionSheetState
                       _action = v!;
                       _lockBox = true;
                     }),
-                    title: const Text(
-                      'Kiosk hết ô trống - Niêm phong đưa về Hub',
-                      style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                    title: Text(
+                      context.l10n.techHomeOptionHubTitle,
+                      style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
                     ),
-                    subtitle: const Text(
-                      'Đóng túi niêm phong an toàn, quét mã Seal đưa về Hub lưu trữ & Khóa ô cũ.',
-                      style: TextStyle(fontSize: 11.5, color: opsMutedText),
+                    subtitle: Text(
+                      context.l10n.techHomeOptionHubHint,
+                      style: const TextStyle(fontSize: 11.5, color: opsMutedText),
                     ),
                     activeColor: _brandColor,
                     contentPadding: EdgeInsets.zero,
@@ -9164,8 +9171,8 @@ class _BoxIncidentResolutionSheetState
                       child: TextField(
                         controller: _sealCtrl,
                         decoration: InputDecoration(
-                          labelText: 'Mã Seal niêm phong (bắt buộc)',
-                          hintText: 'Nhập đúng mã in trên túi niêm phong',
+                          labelText: context.l10n.techHomeSealCodeLabel,
+                          hintText: context.l10n.techHomeSealCodeHint,
                           isDense: true,
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(10),
@@ -9183,13 +9190,13 @@ class _BoxIncidentResolutionSheetState
                       _action = v!;
                       _lockBox = false;
                     }),
-                    title: const Text(
-                      'Kiểm tra & Xử lý tại chỗ (Không chuyển dọn đồ)',
-                      style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                    title: Text(
+                      context.l10n.techHomeOptionQuickFixKeepTitle,
+                      style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
                     ),
-                    subtitle: const Text(
-                      'Kiểm tra cảm biến, đóng chặt cửa hoặc hỗ trợ khách tại chỗ mà không cần dọn đồ.',
-                      style: TextStyle(fontSize: 11.5, color: opsMutedText),
+                    subtitle: Text(
+                      context.l10n.techHomeOptionQuickFixKeepHint,
+                      style: const TextStyle(fontSize: 11.5, color: opsMutedText),
                     ),
                     activeColor: _brandColor,
                     contentPadding: EdgeInsets.zero,
@@ -9203,13 +9210,13 @@ class _BoxIncidentResolutionSheetState
                       _action = v!;
                       _lockBox = false;
                     }),
-                    title: const Text(
-                      'Kiểm tra & Xử lý tại chỗ (Khuyến nghị)',
-                      style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                    title: Text(
+                      context.l10n.techHomeOptionQuickFixTitle,
+                      style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
                     ),
-                    subtitle: const Text(
-                      'Kiểm tra vật lý (cảm biến, chốt khóa, vệ sinh). Nếu user báo nhầm hoặc lỗi nhẹ đã khắc phục xong, không cần khóa ô.',
-                      style: TextStyle(fontSize: 11.5, color: opsMutedText),
+                    subtitle: Text(
+                      context.l10n.techHomeOptionQuickFixHint,
+                      style: const TextStyle(fontSize: 11.5, color: opsMutedText),
                     ),
                     activeColor: _brandColor,
                     contentPadding: EdgeInsets.zero,
@@ -9221,13 +9228,13 @@ class _BoxIncidentResolutionSheetState
                       _action = v!;
                       _lockBox = true;
                     }),
-                    title: const Text(
-                      'Xác nhận lỗi phần cứng & Khóa ô bảo trì (FAULT)',
-                      style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                    title: Text(
+                      context.l10n.techHomeOptionLockFaultTitle,
+                      style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
                     ),
-                    subtitle: const Text(
-                      'Cần linh kiện thay thế hoặc bảo dưỡng sâu. Tạm ngưng hoạt động ô tủ để kỹ thuật viên sửa chữa.',
-                      style: TextStyle(fontSize: 11.5, color: opsMutedText),
+                    subtitle: Text(
+                      context.l10n.techHomeOptionLockFaultHint,
+                      style: const TextStyle(fontSize: 11.5, color: opsMutedText),
                     ),
                     activeColor: _brandColor,
                     contentPadding: EdgeInsets.zero,
@@ -9268,10 +9275,10 @@ class _BoxIncidentResolutionSheetState
                               children: [
                                 Text(
                                   effectiveLockBox
-                                      ? 'Khóa ô tủ để bảo trì (Trạng thái: FAULT)'
+                                      ? context.l10n.techHomeLockForMaintenance
                                       : (hasGoods
-                                          ? 'Giữ ô tủ hoạt động (Đang giữ hàng của khách)'
-                                          : 'Giữ ô tủ hoạt động bình thường (AVAILABLE)'),
+                                          ? context.l10n.techHomeKeepActiveWithGoods
+                                          : context.l10n.techHomeKeepActiveNormal),
                                   style: TextStyle(
                                     fontWeight: FontWeight.bold,
                                     fontSize: 13,
@@ -9283,12 +9290,12 @@ class _BoxIncidentResolutionSheetState
                                 const SizedBox(height: 2),
                                 Text(
                                   isLockOnly
-                                      ? 'Kịch bản Khóa ô bảo trì (FAULT) luôn khóa ô để bảo dưỡng. Nếu không cần khóa ô, vui lòng chọn kịch bản "Kiểm tra & Xử lý tại chỗ".'
+                                      ? context.l10n.techHomeLockOnlyHint
                                       : (effectiveLockBox
-                                          ? 'Ô tủ sẽ bị tạm ngưng và không nhận đơn mới cho đến khi hoàn tất sửa chữa.'
+                                          ? context.l10n.techHomeLockedHint
                                           : (hasGoods
-                                              ? 'Không khóa ô tủ. Đồ của khách vẫn được giữ an toàn trong ô và không bị trả về ô trống.'
-                                              : 'Không khóa ô tủ. Phù hợp khi khách hàng báo nhầm hoặc sự cố đã được xử lý ngay tại chỗ.')),
+                                              ? context.l10n.techHomeNotLockedWithGoodsHint
+                                              : context.l10n.techHomeNotLockedHint)),
                                   style: TextStyle(
                                     fontSize: 11.5,
                                     color: effectiveLockBox
@@ -9319,9 +9326,9 @@ class _BoxIncidentResolutionSheetState
               const SizedBox(height: 14),
 
               // BƯỚC 3: LÝ DO & GHI CHÚ
-              const Text(
-                '3. Lý do & Ghi chú xử lý:',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13.5),
+              Text(
+                context.l10n.techHomeStep3ReasonNotes,
+                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13.5),
               ),
               const SizedBox(height: 8),
 
@@ -9332,7 +9339,7 @@ class _BoxIncidentResolutionSheetState
                   final rawTitle = (widget.report['title'] as String?)?.trim();
                   final reportedReason = (rawDesc != null && rawDesc.isNotEmpty)
                       ? rawDesc
-                      : ((rawTitle != null && rawTitle.isNotEmpty) ? rawTitle : 'Sự cố ô tủ ghi nhận từ hệ thống');
+                      : ((rawTitle != null && rawTitle.isNotEmpty) ? rawTitle : context.l10n.techHomeSystemRecordedIncident);
                   final isFromInspection = widget.report['periodicInspectionId'] != null ||
                       (widget.report['title'] as String? ?? '').toLowerCase().contains('định kỳ');
 
@@ -9358,8 +9365,8 @@ class _BoxIncidentResolutionSheetState
                             Expanded(
                               child: Text(
                                 isFromInspection
-                                    ? 'Nội dung kiểm tra định kỳ không đạt:'
-                                    : 'Lý do khách hàng phản ánh:',
+                                    ? context.l10n.techHomeFailedInspectionContent
+                                    : context.l10n.techHomeCustomerReportedReason,
                                 style: const TextStyle(
                                   fontSize: 11.5,
                                   fontWeight: FontWeight.bold,
@@ -9387,9 +9394,9 @@ class _BoxIncidentResolutionSheetState
               const SizedBox(height: 10),
 
               // 3.2: Ghi chú xử lý KTV ghi riêng
-              const Text(
-                'Ghi chú hiện trường của KTV (Ghi riêng):',
-                style: TextStyle(
+              Text(
+                context.l10n.techHomeTechFieldNotesLabel,
+                style: const TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
                   color: Color(0xFF475569),
@@ -9400,7 +9407,7 @@ class _BoxIncidentResolutionSheetState
                 controller: _ktvNotesCtrl,
                 maxLines: 2,
                 decoration: InputDecoration(
-                  hintText: 'Nhập hiện trạng kiểm tra, nhận định của KTV...',
+                  hintText: context.l10n.techHomeTechFieldNotesHint,
                   hintStyle: const TextStyle(fontSize: 12.5, color: opsMutedText),
                   isDense: true,
                   border: OutlineInputBorder(
@@ -9412,9 +9419,9 @@ class _BoxIncidentResolutionSheetState
               const SizedBox(height: 14),
 
               // BƯỚC 4: ẢNH HIỆN TRƯỜNG
-              const Text(
-                '4. Ảnh hiện trường / Đối chứng (KTV kiểm tra):',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13.5),
+              Text(
+                context.l10n.techHomeStep4ScenePhotos,
+                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13.5),
               ),
               const SizedBox(height: 6),
               if (_existingInspection.isNotEmpty) ...[
@@ -9435,7 +9442,7 @@ class _BoxIncidentResolutionSheetState
                           const SizedBox(width: 6),
                           Expanded(
                             child: Text(
-                              'Đã có ${_existingInspection.length} ảnh hiện trường / người báo đối chứng:',
+                              context.l10n.techHomeExistingScenePhotosColon(_existingInspection.length),
                               style: const TextStyle(
                                 fontSize: 12,
                                 fontWeight: FontWeight.bold,
@@ -9448,14 +9455,14 @@ class _BoxIncidentResolutionSheetState
                       const SizedBox(height: 8),
                       AttachmentStrip(
                         attachments: _existingInspection,
-                        viewerTitle: 'Ảnh hiện trường đối chứng',
+                        viewerTitle: context.l10n.techHomeComparisonScenePhotos,
                       ),
                     ],
                   ),
                 ),
-                const Text(
-                  'Chụp thêm ảnh hiện trường mới (tuỳ chọn):',
-                  style: TextStyle(fontSize: 11.5, color: opsMutedText),
+                Text(
+                  context.l10n.techHomeTakeMoreScenePhotos,
+                  style: const TextStyle(fontSize: 11.5, color: opsMutedText),
                 ),
                 const SizedBox(height: 4),
               ],
@@ -9466,14 +9473,14 @@ class _BoxIncidentResolutionSheetState
               const SizedBox(height: 14),
 
               // BƯỚC 5: ẢNH TRONG QUÁ TRÌNH SỬA
-              const Text(
-                '5. Ảnh trong quá trình sửa:',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13.5),
+              Text(
+                context.l10n.techHomeStep5RepairPhotos,
+                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13.5),
               ),
               const SizedBox(height: 4),
-              const Text(
-                'Chụp ảnh tháo lắp linh kiện, thao tác kỹ thuật, kiểm tra cảm biến hoặc xử lý đồ:',
-                style: TextStyle(fontSize: 12, color: opsMutedText),
+              Text(
+                context.l10n.techHomeStep5RepairPhotosHint,
+                style: const TextStyle(fontSize: 12, color: opsMutedText),
               ),
               const SizedBox(height: 6),
               if (_existingProgress.isNotEmpty) ...[
@@ -9494,7 +9501,7 @@ class _BoxIncidentResolutionSheetState
                           const SizedBox(width: 6),
                           Expanded(
                             child: Text(
-                              'Đã có ${_existingProgress.length} ảnh trong quá trình sửa:',
+                              context.l10n.techHomeExistingRepairPhotos(_existingProgress.length),
                               style: const TextStyle(
                                 fontSize: 12,
                                 fontWeight: FontWeight.bold,
@@ -9507,14 +9514,14 @@ class _BoxIncidentResolutionSheetState
                       const SizedBox(height: 8),
                       AttachmentStrip(
                         attachments: _existingProgress,
-                        viewerTitle: 'Ảnh trong quá trình sửa',
+                        viewerTitle: context.l10n.attachmentProgress,
                       ),
                     ],
                   ),
                 ),
-                const Text(
-                  'Chụp thêm ảnh quá trình sửa mới (tuỳ chọn):',
-                  style: TextStyle(fontSize: 11.5, color: opsMutedText),
+                Text(
+                  context.l10n.techHomeTakeMoreRepairPhotos,
+                  style: const TextStyle(fontSize: 11.5, color: opsMutedText),
                 ),
                 const SizedBox(height: 4),
               ],
@@ -9555,8 +9562,8 @@ class _BoxIncidentResolutionSheetState
                       : const Icon(Icons.check_circle),
                   label: Text(
                     _submitting
-                        ? 'Đang cập nhật...'
-                        : 'Xác nhận & Cập nhật hệ thống',
+                        ? context.l10n.techHomeUpdating
+                        : context.l10n.techHomeConfirmAndUpdate,
                     style: const TextStyle(
                         fontWeight: FontWeight.bold, fontSize: 14),
                   ),
@@ -9586,7 +9593,7 @@ class _DeviceStatusBadge extends StatelessWidget {
     final label = switch (status) {
       'ONLINE' => 'Online',
       'OFFLINE' => 'Offline',
-      'ERROR' => 'Lỗi',
+      'ERROR' => context.l10n.commonError,
       _ => status ?? '',
     };
     return Container(
@@ -9651,22 +9658,22 @@ int _countCells(
     .length;
 
 String _cellTypeLabel(String? type) => switch (type) {
-  'DRONE' => 'Ô drone',
+  'DRONE' => L10n.current.groupDrone,
   'XL' => 'XL',
-  'STANDARD' => 'Chuẩn',
-  null => 'Chuẩn',
+  'STANDARD' => L10n.current.techHomeCellTypeStandard,
+  null => L10n.current.techHomeCellTypeStandard,
   _ => type,
 };
 
 /// Lý do mở khẩn cấp hay gặp; mục cuối cho phép nhập lý do khác.
-const _forceOpenReasons = [
-  'Khách quên mã PIN / không liên lạc được',
-  'Cửa ô bị kẹt cơ học / lỗi chốt từ',
-  'Kiểm tra ô khi xử lý phiếu sự cố',
-  'Kiểm tra theo yêu cầu ban quản lý',
-  'Sự cố khẩn cấp / nghi rò rỉ hoặc dị vật',
+List<String> get _forceOpenReasons => [
+  L10n.current.techHomeForceOpenReasonForgotPin,
+  L10n.current.techHomeForceOpenReasonJammed,
+  L10n.current.techHomeForceOpenReasonTicketCheck,
+  L10n.current.techHomeForceOpenReasonManagement,
+  L10n.current.techHomeForceOpenReasonEmergency,
 ];
-const _forceOpenOtherReason = 'Lý do khác…';
+String get _forceOpenOtherReason => L10n.current.techHomeForceOpenReasonOther;
 
 /// Dữ liệu KTV nhập trước khi mở ô khẩn cấp (CONTRACTS §2).
 class _ForceOpenInput {
@@ -9685,8 +9692,8 @@ class _ForceOpenInput {
 
 /// Câu báo khi tủ nhận lệnh mở. Máy chủ cũ không trả `status` ⇒ chỉ nói "đã gửi lệnh".
 String _forceOpenSuccessText(ForceOpenResult result, String boxLabel) {
-  if (result.status == null) return 'Đã gửi lệnh mở khẩn cấp $boxLabel.';
-  return result.message ?? 'Tủ xác nhận đã mở $boxLabel.';
+  if (result.status == null) return L10n.current.techHomeForceOpenSent(boxLabel);
+  return result.message ?? L10n.current.techHomeForceOpenConfirmed(boxLabel);
 }
 
 /// Dialog nhập lý do mở khẩn cấp (bắt buộc), ghi chú và — khi gắn với phiếu
@@ -9719,7 +9726,7 @@ Future<_ForceOpenInput?> _promptForceOpen(
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  'Mở khẩn cấp $boxLabel',
+                  context.l10n.techHomeForceOpenTitle(boxLabel),
                   style: const TextStyle(fontSize: 16),
                 ),
               ),
@@ -9732,15 +9739,14 @@ Future<_ForceOpenInput?> _promptForceOpen(
               children: [
                 Text(
                   reportId != null
-                      ? 'Ô được mở bằng lệnh Master và ghi vào nhật ký truy cập. '
-                            'Lý do, ghi chú và ảnh được lưu vào nhật ký phiếu RPT-$reportId.'
-                      : 'Ô được mở bằng lệnh Master và ghi vào nhật ký truy cập kèm lý do.',
+                      ? context.l10n.techHomeForceOpenHintWithTicket(reportId)
+                      : context.l10n.techHomeForceOpenHint,
                   style: const TextStyle(fontSize: 12.5, color: opsMutedText),
                 ),
                 const SizedBox(height: 12),
-                const Text(
-                  'Lý do can thiệp (bắt buộc):',
-                  style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.bold),
+                Text(
+                  context.l10n.techHomeForceOpenReasonLabel,
+                  style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 4),
                 DropdownButtonFormField<String>(
@@ -9770,8 +9776,8 @@ Future<_ForceOpenInput?> _promptForceOpen(
                     controller: otherCtrl,
                     enabled: !uploading,
                     maxLength: 255,
-                    decoration: const InputDecoration(
-                      labelText: 'Nhập lý do',
+                    decoration: InputDecoration(
+                      labelText: context.l10n.techHomeEnterReason,
                       isDense: true,
                     ),
                   ),
@@ -9783,15 +9789,15 @@ Future<_ForceOpenInput?> _promptForceOpen(
                   minLines: 1,
                   maxLines: 3,
                   maxLength: 1000,
-                  decoration: const InputDecoration(
-                    labelText: 'Ghi chú (tuỳ chọn)',
+                  decoration: InputDecoration(
+                    labelText: context.l10n.techHomeNoteOptional,
                     isDense: true,
                   ),
                 ),
                 if (reportId != null) ...[
                   const SizedBox(height: 4),
                   Text(
-                    'Ảnh hiện trường (tuỳ chọn, tối đa ${photos.maxPhotos})',
+                    context.l10n.techHomeScenePhotosOptional(photos.maxPhotos),
                     style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 8),
@@ -9815,7 +9821,7 @@ Future<_ForceOpenInput?> _promptForceOpen(
           actions: [
             TextButton(
               onPressed: uploading ? null : () => Navigator.pop(ctx),
-              child: const Text('Hủy'),
+              child: Text(context.l10n.commonCancel),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
@@ -9830,7 +9836,7 @@ Future<_ForceOpenInput?> _promptForceOpen(
                           ? otherCtrl.text.trim()
                           : selected;
                       if (reason.isEmpty) {
-                        setLocal(() => error = 'Vui lòng nhập lý do mở khẩn cấp.');
+                        setLocal(() => error = context.l10n.techHomeForceOpenReasonRequired);
                         return;
                       }
                       setLocal(() {
@@ -9861,7 +9867,7 @@ Future<_ForceOpenInput?> _promptForceOpen(
                         }
                       }
                     },
-              child: Text(uploading ? 'Đang tải ảnh...' : 'Xác nhận mở'),
+              child: Text(uploading ? context.l10n.ordUploadingPhotos : context.l10n.techHomeConfirmOpen),
             ),
           ],
         ),
@@ -9891,11 +9897,11 @@ class _ExtendSlaSheet extends StatefulWidget {
 }
 
 class _ExtendSlaSheetState extends State<_ExtendSlaSheet> {
-  static const _presetReasons = [
-    'Chờ linh kiện thay thế',
-    'Cần kiểm tra sâu mạch điện',
-    'Tủ khó tiếp cận',
-    'Phối hợp bên vận hành tòa nhà',
+  List<String> get _presetReasons => [
+    context.l10n.techHomeSlaReasonWaitingParts,
+    context.l10n.techHomeSlaReasonDeepCircuitCheck,
+    context.l10n.techHomeSlaReasonHardToReach,
+    context.l10n.techHomeSlaReasonBuildingOps,
   ];
 
   final _reasonCtrl = TextEditingController();
@@ -9940,7 +9946,7 @@ class _ExtendSlaSheetState extends State<_ExtendSlaSheet> {
     if (reportId == null) return;
     final reason = _reasonCtrl.text.trim();
     if (reason.isEmpty) {
-      setState(() => _error = 'Vui lòng nhập lý do gia hạn SLA.');
+      setState(() => _error = context.l10n.techHomeSlaReasonRequired);
       return;
     }
     setState(() {
@@ -9978,11 +9984,9 @@ class _ExtendSlaSheetState extends State<_ExtendSlaSheet> {
     final options = _limits.hourOptions();
     final usage = widget.policy.usageLabel ??
         (_limits.maxExtensions != null
-            ? 'Tối đa ${_limits.maxExtensions} lần mỗi phiếu'
+            ? context.l10n.techHomeMaxExtensionsPerTicket('${_limits.maxExtensions}')
             : null);
-    final capText = _limits.maxHoursPerExtension != null
-        ? ' (tối đa ${_limits.maxHoursPerExtension} giờ/lần)'
-        : '';
+    final maxHoursPerExtension = _limits.maxHoursPerExtension;
 
     return SafeArea(
       top: false,
@@ -10026,7 +10030,7 @@ class _ExtendSlaSheetState extends State<_ExtendSlaSheet> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Gia hạn SLA phiếu RPT-${widget.report['id']}',
+                          context.l10n.techHomeExtendSlaTitle('${widget.report['id']}'),
                           style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
@@ -10066,10 +10070,10 @@ class _ExtendSlaSheetState extends State<_ExtendSlaSheet> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text('Hạn hiện tại:',
-                            style: TextStyle(fontSize: 12.5, color: Color(0xFF92400E))),
+                        Text(context.l10n.techHomeCurrentDueLabel,
+                            style: const TextStyle(fontSize: 12.5, color: Color(0xFF92400E))),
                         Text(
-                          current != null ? _fmt(current) : 'Chưa xác định',
+                          current != null ? _fmt(current) : context.l10n.commonUndetermined,
                           style: const TextStyle(
                             fontSize: 12.5,
                             fontWeight: FontWeight.w600,
@@ -10082,8 +10086,8 @@ class _ExtendSlaSheetState extends State<_ExtendSlaSheet> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text('Hạn mới (dự kiến):',
-                            style: TextStyle(
+                        Text(context.l10n.techHomeNewDueLabel,
+                            style: const TextStyle(
                                 fontSize: 12.5,
                                 fontWeight: FontWeight.bold,
                                 color: Color(0xFFB45309))),
@@ -10102,7 +10106,9 @@ class _ExtendSlaSheetState extends State<_ExtendSlaSheet> {
               ),
               const SizedBox(height: 14),
               Text(
-                'Chọn thời gian gia hạn$capText:',
+                maxHoursPerExtension != null
+                    ? context.l10n.techHomePickExtensionHoursCapped('$maxHoursPerExtension')
+                    : context.l10n.techHomePickExtensionHours,
                 style: const TextStyle(
                     fontSize: 13, fontWeight: FontWeight.bold, color: opsDark),
               ),
@@ -10113,7 +10119,7 @@ class _ExtendSlaSheetState extends State<_ExtendSlaSheet> {
                 children: [
                   for (final h in options)
                     ChoiceChip(
-                      label: Text('+$h giờ'),
+                      label: Text(context.l10n.techHomePlusHours(h)),
                       selected: _hours == h,
                       selectedColor: const Color(0xFFFDE68A),
                       onSelected: _submitting
@@ -10123,8 +10129,8 @@ class _ExtendSlaSheetState extends State<_ExtendSlaSheet> {
                 ],
               ),
               const SizedBox(height: 14),
-              const Text('Lý do gia hạn (bắt buộc):',
-                  style: TextStyle(
+              Text(context.l10n.techHomeExtensionReasonLabel,
+                  style: const TextStyle(
                       fontSize: 13, fontWeight: FontWeight.bold, color: opsDark)),
               const SizedBox(height: 6),
               TextField(
@@ -10134,7 +10140,7 @@ class _ExtendSlaSheetState extends State<_ExtendSlaSheet> {
                 maxLength: 1000,
                 style: const TextStyle(fontSize: 13),
                 decoration: InputDecoration(
-                  hintText: 'Nhập lý do cần thêm thời gian xử lý...',
+                  hintText: context.l10n.techHomeExtensionReasonHint,
                   hintStyle: const TextStyle(fontSize: 12.5, color: opsMutedText),
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                   contentPadding: const EdgeInsets.all(10),
@@ -10181,7 +10187,7 @@ class _ExtendSlaSheetState extends State<_ExtendSlaSheet> {
                         )
                       : const Icon(Icons.check_circle_outline, size: 18),
                   label: Text(
-                    _submitting ? 'Đang gửi...' : 'Xác nhận gia hạn SLA',
+                    _submitting ? context.l10n.commonSending : context.l10n.techHomeConfirmExtendSla,
                     style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
                   ),
                 ),
@@ -10254,14 +10260,14 @@ class _MyReportPhotosSectionState extends State<_MyReportPhotosSection> {
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('Xoá ảnh này?'),
+        title: Text(context.l10n.techHomeDeletePhotoTitle),
         content: Text(
-          '${ReportStage.label(photo.stage)} sẽ bị gỡ khỏi phiếu RPT-${widget.reportId}.',
+          context.l10n.techHomeDeletePhotoBody(ReportStage.label(photo.stage), widget.reportId),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Hủy'),
+            child: Text(context.l10n.commonCancel),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
@@ -10269,7 +10275,7 @@ class _MyReportPhotosSectionState extends State<_MyReportPhotosSection> {
               foregroundColor: Colors.white,
             ),
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Xoá'),
+            child: Text(context.l10n.commonDelete),
           ),
         ],
       ),
@@ -10282,7 +10288,7 @@ class _MyReportPhotosSectionState extends State<_MyReportPhotosSection> {
           ?.removeWhere((a) => a.id == id || a.url == photo.url);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Đã xoá ảnh khỏi phiếu.')),
+          SnackBar(content: Text(context.l10n.techHomePhotoDeleted)),
         );
       }
       await _load();
@@ -10305,7 +10311,7 @@ class _MyReportPhotosSectionState extends State<_MyReportPhotosSection> {
     if (_loading) return const SizedBox.shrink();
     if (_error != null) {
       return _RetryBanner(
-        message: 'Không tải được ảnh của phiếu: $_error',
+        message: context.l10n.techHomeTicketPhotosLoadFailed(_error!),
         onRetry: () {
           setState(() => _loading = true);
           _load();
@@ -10322,7 +10328,7 @@ class _MyReportPhotosSectionState extends State<_MyReportPhotosSection> {
             const SizedBox(width: 6),
             Expanded(
               child: Text(
-                'Ảnh bạn đã gắn (${_photos.length}) — chạm ✕ để xoá ảnh tải nhầm',
+                context.l10n.techHomeYourAttachedPhotos(_photos.length),
                 style: const TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 12.5,
@@ -10368,10 +10374,10 @@ class _MyReportPhotosSectionState extends State<_MyReportPhotosSection> {
                       ),
                       child: Text(
                         switch (p.stage) {
-                          ReportStage.inspection => 'Hiện trường',
-                          ReportStage.progress => 'Đang sửa',
-                          ReportStage.resolution => 'Nghiệm thu',
-                          _ => 'Ảnh',
+                          ReportStage.inspection => context.l10n.techHomeStageOnSite,
+                          ReportStage.progress => context.l10n.techHomeStageRepairing,
+                          ReportStage.resolution => context.l10n.techHomeAcceptanceAction,
+                          _ => context.l10n.attachmentPhoto,
                         },
                         style: const TextStyle(fontSize: 9, color: Colors.white),
                       ),
@@ -10437,7 +10443,7 @@ class _RetryBanner extends StatelessWidget {
           ),
           TextButton(
             onPressed: onRetry,
-            child: const Text('Thử lại'),
+            child: Text(context.l10n.commonRetry),
           ),
         ],
       ),
@@ -10682,8 +10688,8 @@ class _SlaCountdownBadgeState extends State<_SlaCountdownBadge> {
             const SizedBox(width: 3.5),
             Text(
               isExt
-                  ? 'Còn ${pad(h)}:${pad(m)}:${pad(s)} (+${widget.extendedHours}h)'
-                  : 'Còn ${pad(h)}:${pad(m)}:${pad(s)}',
+                  ? context.l10n.techHomeSlaRemainingExtended('${pad(h)}:${pad(m)}:${pad(s)}', '${widget.extendedHours}')
+                  : context.l10n.techHomeSlaRemaining('${pad(h)}:${pad(m)}:${pad(s)}'),
               style: TextStyle(
                 fontFamily: 'monospace',
                 fontSize: 11,
@@ -10715,8 +10721,8 @@ class _SlaCountdownBadgeState extends State<_SlaCountdownBadge> {
             const SizedBox(width: 3.5),
             Text(
               isExt
-                  ? 'Quá hạn ${pad(h)}:${pad(m)}:${pad(s)} (+${widget.extendedHours}h)'
-                  : 'Quá hạn ${pad(h)}:${pad(m)}:${pad(s)}',
+                  ? context.l10n.techHomeSlaOverdueByExtended('${pad(h)}:${pad(m)}:${pad(s)}', '${widget.extendedHours}')
+                  : context.l10n.techHomeSlaOverdueBy('${pad(h)}:${pad(m)}:${pad(s)}'),
               style: const TextStyle(
                 fontFamily: 'monospace',
                 fontSize: 11,

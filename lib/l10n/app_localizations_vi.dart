@@ -9035,4 +9035,2807 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get holderNameHint => 'NGUYEN VAN A';
+
+  @override
+  String techHomeScheduleNotFound(Object id) {
+    return 'Không tìm thấy lịch kiểm tra #$id (có thể đã bị xoá hoặc không thuộc tủ bạn xem được).';
+  }
+
+  @override
+  String techHomeLoadPartialFailed(Object details) {
+    return 'Không tải được đầy đủ dữ liệu: $details';
+  }
+
+  @override
+  String get techHomeLogoutShiftTitle => 'Đăng xuất ca trực';
+
+  @override
+  String get techHomeLogoutShiftConfirm =>
+      'Bạn có chắc chắn muốn kết thúc ca trực và đăng xuất khỏi tài khoản KTV tủ không?';
+
+  @override
+  String get techHomeLockerTechnician => 'Kỹ thuật viên tủ';
+
+  @override
+  String get techHomePhoneNotSet => 'Chưa cập nhật SĐT';
+
+  @override
+  String get techHomeLockerTechnicianRole =>
+      'Kỹ thuật viên tủ (ô tủ & phần cứng)';
+
+  @override
+  String get techHomeStatReceived => 'Phiếu đã nhận';
+
+  @override
+  String get techHomeStatInProgress => 'Đang làm';
+
+  @override
+  String get techHomeQualityRatingLabel => 'Đánh giá chất lượng: ';
+
+  @override
+  String get techHomeNoRatingYet => 'Chưa có đánh giá';
+
+  @override
+  String get techHomeSlaPolicyLabel => 'Quy chế SLA: ';
+
+  @override
+  String get techHomeTechPhoneLabel => 'SĐT kỹ thuật: ';
+
+  @override
+  String get techHomeViewEditProfile => 'Xem & Chỉnh sửa hồ sơ';
+
+  @override
+  String get techHomeSlaRestrictedTitle => 'Hạn chế nhận việc mới';
+
+  @override
+  String get techHomeSlaRestrictedBody =>
+      'Quy chế SLA: khi số phiếu quá hạn vượt ngưỡng do quản trị cấu hình, KTV tạm thời không nhận được việc mới. Vui lòng chuyển sang tab \"Việc của tôi\" và hoàn tất các công việc tồn đọng.';
+
+  @override
+  String get techHomeViewMyWork => 'Xem việc của tôi';
+
+  @override
+  String get techHomeOpenTicket => 'Mở phiếu';
+
+  @override
+  String get techHomeBoxBackOnline => 'Ô đã hoạt động lại';
+
+  @override
+  String techHomeTicketLoadFailed(Object id) {
+    return 'Không tải được phiếu RPT-$id';
+  }
+
+  @override
+  String techHomeTicketAlreadyClosed(Object id) {
+    return 'Phiếu RPT-$id đã được đóng.';
+  }
+
+  @override
+  String techHomeTicketHandledByOther(Object id, Object assignee) {
+    return 'Phiếu RPT-$id đang do $assignee xử lý — chỉ người được giao mới hoàn tất được.';
+  }
+
+  @override
+  String techHomeTicketUnassignedTitle(Object id) {
+    return 'Phiếu RPT-$id chưa có người nhận';
+  }
+
+  @override
+  String get techHomeTicketUnassignedBody =>
+      'Ô/bãi đáp này đang có phiếu sự cố mở. Nhận phiếu rồi nghiệm thu (chụp ảnh sau khi sửa) để đưa về hoạt động.';
+
+  @override
+  String get techHomeClaimAndAccept => 'Nhận & nghiệm thu';
+
+  @override
+  String get techHomeLockerNoLocation => 'Tủ này chưa có vị trí để chỉ đường.';
+
+  @override
+  String get techHomeGreetingMorning => '☀️ Chào buổi sáng';
+
+  @override
+  String get techHomeGreetingNoon => '🌤️ Chào buổi trưa';
+
+  @override
+  String get techHomeGreetingAfternoon => '🌅 Chào buổi chiều';
+
+  @override
+  String get techHomeGreetingEvening => '🌙 Chào ca tối';
+
+  @override
+  String techHomeSlaSuspended(Object count) {
+    return 'SLA: Đình chỉ ($count phiếu trễ hạn)';
+  }
+
+  @override
+  String techHomeSlaRestricted(Object count) {
+    return 'SLA: Hạn chế nhận việc ($count phiếu trễ hạn)';
+  }
+
+  @override
+  String techHomeSlaWarning(Object count) {
+    return 'SLA: Cảnh báo ($count phiếu trễ hạn)';
+  }
+
+  @override
+  String techHomeSlaNormalWithCount(Object count) {
+    return 'SLA: Bình thường ($count phiếu đang xử lý)';
+  }
+
+  @override
+  String get techHomeSlaNormal => 'SLA: Bình thường';
+
+  @override
+  String techHomeSlaUnknownWithOverdue(Object count) {
+    return 'SLA: $count phiếu trễ hạn · chưa tải được mức chế tài';
+  }
+
+  @override
+  String get techHomeSlaUnknown => 'SLA: chưa tải được trạng thái';
+
+  @override
+  String get techHomeProfileAndEdit => 'Hồ sơ & Chỉnh sửa';
+
+  @override
+  String get techHomeHudRoutine => 'Định kỳ';
+
+  @override
+  String get techHomeHudStations => 'Trạm tủ';
+
+  @override
+  String get techHomeTabInspect => 'Kiểm tra tủ';
+
+  @override
+  String techHomeTabIncidents(Object count) {
+    return 'Sự cố ($count)';
+  }
+
+  @override
+  String techHomeTabMyWork(Object count) {
+    return 'Việc của tôi ($count)';
+  }
+
+  @override
+  String techHomeTabRoutine(Object count) {
+    return 'Định kỳ ($count)';
+  }
+
+  @override
+  String techHomeTabIotDevices(Object count) {
+    return 'Thiết bị IoT ($count)';
+  }
+
+  @override
+  String techHomeTabParcelRecovery(Object count) {
+    return 'Thu hồi kiện ($count)';
+  }
+
+  @override
+  String techHomeRecoveryBannerTitle(int count) {
+    return 'Có $count nhiệm vụ thu hồi kiện rơi';
+  }
+
+  @override
+  String get techHomeRecoveryBannerHint => 'Chạm để mở tab \"Thu hồi kiện\".';
+
+  @override
+  String get techHomePickLockerToInspect => 'Chọn tủ để kiểm tra';
+
+  @override
+  String get techHomeLockersLoadFailed => 'Chưa tải được danh sách tủ';
+
+  @override
+  String get techHomeNoLockers => 'Chưa có tủ nào';
+
+  @override
+  String techHomeLayoutLoadFailed(Object error) {
+    return 'Không tải được sơ đồ tủ: $error';
+  }
+
+  @override
+  String get techHomeKioskPhysicalLayout => 'Sơ đồ vật lý trạm Kiosk';
+
+  @override
+  String get techHomeTapBoxHint =>
+      'Chạm vào một ô để báo hỏng, mở khẩn cấp hoặc mở lại ô sau khi sửa.';
+
+  @override
+  String get techHomeWorkingWell => 'Hoạt động tốt';
+
+  @override
+  String get techHomeDroneLandingPad => 'Bãi đáp drone';
+
+  @override
+  String techHomeTicketOpenPill(Object id) {
+    return 'Phiếu RPT-$id đang mở';
+  }
+
+  @override
+  String get techHomeLandingPadHint =>
+      'Báo Hỏng/Bảo trì ⇒ mở phiếu bãi đáp giao cho bạn. Về \"Hoạt động tốt\" khi còn phiếu ⇒ nghiệm thu phiếu (ảnh sau khi sửa).';
+
+  @override
+  String get techHomeLandingPadBackOnline => 'Bãi đáp đã hoạt động lại';
+
+  @override
+  String techHomeLandingPadStatus(Object status) {
+    return 'Bãi đáp: $status';
+  }
+
+  @override
+  String techHomeLandingPadStatusTicketOpened(Object status) {
+    return 'Bãi đáp: $status — đã mở phiếu sự cố giao cho bạn';
+  }
+
+  @override
+  String get techHomeReasonLabel => 'Lý do';
+
+  @override
+  String get techHomeLandingPadFaultHint =>
+      'VD: Marker bong tróc, mặt đáp nứt...';
+
+  @override
+  String get techHomeLandingPadMaintenanceHint =>
+      'VD: Vệ sinh, sơn lại marker...';
+
+  @override
+  String get techHomeReasonRequired => 'Vui lòng nhập lý do.';
+
+  @override
+  String get techHomeNoBoxesConfigured => 'Chưa có ô tủ nào được cấu hình.';
+
+  @override
+  String get techHomeXlColumn => 'Cột vali XL';
+
+  @override
+  String techHomeRowLabel(Object row) {
+    return 'Hàng $row';
+  }
+
+  @override
+  String get techHomeBoxHardwareTitle => 'Tình trạng phần cứng ô';
+
+  @override
+  String techHomeNeedsAttentionCount(Object count) {
+    return '$count cần chú ý';
+  }
+
+  @override
+  String get techHomeNoDoorSensorData =>
+      'Chưa có dữ liệu cảm biến cửa cho tủ này (cabinet chưa báo hoặc dịch vụ IoT chưa bật).';
+
+  @override
+  String techHomeDoorOpenNotOccupied(int count) {
+    return '$count ô có cửa đang MỞ nhưng không ở trạng thái \"có đồ\" — nên kiểm tra (cửa kẹt/quên đóng).';
+  }
+
+  @override
+  String get techHomeNoDoorSignal => 'Chưa có tín hiệu cửa';
+
+  @override
+  String get techHomeDoorOpenCaps => 'Cửa đang MỞ';
+
+  @override
+  String techHomeReportedAt(Object time) {
+    return 'Báo lúc $time';
+  }
+
+  @override
+  String get techHomeControllerOnline => 'Bộ điều khiển: trực tuyến';
+
+  @override
+  String get techHomeControllerOffline => 'Bộ điều khiển: mất kết nối';
+
+  @override
+  String techHomeReservedCount(Object count) {
+    return 'Đã giữ chỗ: $count';
+  }
+
+  @override
+  String techHomeOccupiedCount(Object count) {
+    return 'Có đồ: $count';
+  }
+
+  @override
+  String get techHomeYourLocker => 'Tủ bạn phụ trách';
+
+  @override
+  String get techHomeVisualCheckHint =>
+      'Kiểm tra trực quan từng ô rồi chỉ báo hỏng khi xác nhận lỗi vật lý tại tủ.';
+
+  @override
+  String get techHomeReportWholeLocker => 'Báo sự cố cả tủ';
+
+  @override
+  String get techHomeLockerIncidentTitleHint =>
+      'VD: Màn hình kiosk không lên, mất nguồn...';
+
+  @override
+  String techHomeScenePhotosOptional(Object max) {
+    return 'Ảnh hiện trường (tuỳ chọn, tối đa $max)';
+  }
+
+  @override
+  String get techHomeBlockWholeLocker => 'Chặn cả tủ (ngưng nhận đơn)';
+
+  @override
+  String get techHomeBlockWholeLockerHint =>
+      'Tủ chuyển sang bảo trì cho tới khi phiếu được hoàn tất.';
+
+  @override
+  String get techHomeTitleAndDescRequired => 'Vui lòng nhập tiêu đề và mô tả.';
+
+  @override
+  String techHomeLockerTicketCreated(Object id, Object locker) {
+    return 'Đã tạo phiếu RPT-$id cho $locker.';
+  }
+
+  @override
+  String techHomeLockerTicketCreatedBlocked(Object id, Object locker) {
+    return 'Đã tạo phiếu RPT-$id cho $locker — tủ tạm ngưng nhận đơn.';
+  }
+
+  @override
+  String techHomeLockerIncidentSent(Object locker) {
+    return 'Đã gửi báo sự cố cho $locker.';
+  }
+
+  @override
+  String get techHomeTotalBoxes => 'Tổng ô';
+
+  @override
+  String get techHomeFaultyBoxes => 'Ô lỗi';
+
+  @override
+  String get techHomeXlTallBay => 'Khoang đứng XL';
+
+  @override
+  String techHomeFixedAcceptTicket(Object id) {
+    return 'Đã sửa xong — nghiệm thu phiếu RPT-$id';
+  }
+
+  @override
+  String get techHomeFixedReopenBox => 'Đã sửa xong — mở lại ô';
+
+  @override
+  String get techHomeConfirmBoxFaulty => 'Xác nhận ô hỏng (khoá ô)';
+
+  @override
+  String techHomeViewTicketToCheck(Object id) {
+    return 'Xem phiếu RPT-$id để kiểm tra';
+  }
+
+  @override
+  String get techHomeFinishCleaning => 'Hoàn tất vệ sinh';
+
+  @override
+  String get techHomeRestoreBox => 'Khôi phục ô';
+
+  @override
+  String get techHomeReportBoxFault => 'Báo hỏng ô';
+
+  @override
+  String get techHomeTakeBoxOutOfService => 'Ngưng dùng ô';
+
+  @override
+  String get techHomeMarkCleaning => 'Đánh dấu đang vệ sinh';
+
+  @override
+  String get techHomeBoxCleaning => 'Ô đang vệ sinh';
+
+  @override
+  String get techHomeEmergencyOpen => 'Mở tủ khẩn cấp';
+
+  @override
+  String techHomeBoxNumberWithType(Object number, Object type) {
+    return 'Ô #$number · $type';
+  }
+
+  @override
+  String techHomeStatusLine(Object status) {
+    return 'Trạng thái: $status';
+  }
+
+  @override
+  String get techHomeDefaultFaultReason => 'Hỏng khóa';
+
+  @override
+  String techHomeReportBoxFaultTitle(Object number) {
+    return 'Báo hỏng ô #$number';
+  }
+
+  @override
+  String get techHomeFaultReasonLabel => 'Lý do hỏng';
+
+  @override
+  String get techHomeFaultReasonRequired => 'Vui lòng nhập lý do hỏng.';
+
+  @override
+  String get techHomeReportFaultAction => 'Báo hỏng';
+
+  @override
+  String get techHomeBoxFaultReported => 'Đã báo hỏng ô';
+
+  @override
+  String techHomeBoxFaultReportedWithPhotos(int count) {
+    return 'Đã báo hỏng ô kèm $count ảnh';
+  }
+
+  @override
+  String techHomeOutOfServiceTitle(Object number) {
+    return 'Ngưng dùng ô #$number';
+  }
+
+  @override
+  String get techHomeOutOfServiceHint =>
+      'Ô sẽ bị loại khỏi phân phối cho khách tới khi được khôi phục.';
+
+  @override
+  String get techHomeReasonOptionalLabel => 'Lý do (tùy chọn)';
+
+  @override
+  String get techHomeBoxOutOfServiceDone => 'Đã ngưng dùng ô';
+
+  @override
+  String get techHomeHardwareAlertsTitle =>
+      'Cảnh báo phần cứng (cửa mở bất thường)';
+
+  @override
+  String techHomeDoorOpenEmpty(int count) {
+    return '$count ô có cửa đang MỞ nhưng không có đồ — nên kiểm tra (cửa kẹt/quên đóng).';
+  }
+
+  @override
+  String techHomeAnomalyBoxTitle(Object locker, Object number, Object type) {
+    return '$locker · Ô #$number ($type)';
+  }
+
+  @override
+  String techHomeDoorOpenReportedAt(Object time) {
+    return 'Cửa MỞ · báo lúc $time';
+  }
+
+  @override
+  String get techHomeDoorOpenShort => 'Cửa MỞ';
+
+  @override
+  String techHomeAllWithCount(Object count) {
+    return 'Tất cả ($count)';
+  }
+
+  @override
+  String techHomeMyLockersWithCount(Object count) {
+    return 'Tủ tôi phụ trách ($count)';
+  }
+
+  @override
+  String get techHomeFilterAllStatuses => 'Mọi trạng thái';
+
+  @override
+  String get techHomeFilterUnclaimed => 'Chờ nhận';
+
+  @override
+  String get techHomeFilterInProgress => 'Đang xử lý';
+
+  @override
+  String get techHomeNoAssignedLockers =>
+      'Bạn chưa được giao phụ trách tủ nào — phiếu mới được báo tới mọi KTV tủ.';
+
+  @override
+  String techHomeAssignedLockersBanner(int count, Object names) {
+    return 'Bạn phụ trách $count tủ: $names. Phiếu mới ở các tủ này được chuyển thẳng cho bạn.';
+  }
+
+  @override
+  String get techHomePhysicalFaultsTitle => 'Ô đang lỗi vật lý tại trạm';
+
+  @override
+  String techHomeLockerBoxTitle(Object locker, Object number) {
+    return '$locker · Ô #$number';
+  }
+
+  @override
+  String get techHomeUnknownReason => 'Không rõ lý do';
+
+  @override
+  String techHomeFixedWithTicket(Object id) {
+    return 'Đã sửa · phiếu RPT-$id';
+  }
+
+  @override
+  String get techHomeFixed => 'Đã sửa';
+
+  @override
+  String techHomeRoutedTicketsTitle(Object count) {
+    return 'Phiếu chờ bạn nhận ($count)';
+  }
+
+  @override
+  String get techHomeNoRoutedTickets => 'Không có phiếu nào chờ bạn';
+
+  @override
+  String get techHomeNoRoutedTicketsHint =>
+      'Các tủ bạn phụ trách chưa có sự cố mới.';
+
+  @override
+  String techHomeSystemWideTickets(int count) {
+    return 'TOÀN HỆ THỐNG: $count PHIẾU SỰ CỐ KIOSK';
+  }
+
+  @override
+  String techHomeCountUnclaimed(Object count) {
+    return '$count chờ nhận';
+  }
+
+  @override
+  String techHomeCountInProgress(Object count) {
+    return '$count đang xử lý';
+  }
+
+  @override
+  String techHomeCountDone(Object count) {
+    return '$count hoàn tất';
+  }
+
+  @override
+  String techHomeIncidentsAwaitingTech(int count) {
+    return '$count sự cố đang chờ KTV tiếp nhận xử lý';
+  }
+
+  @override
+  String get techHomeIncidentsAwaitingTitle => 'Sự cố chờ tiếp nhận';
+
+  @override
+  String get techHomeBeingHandledTitle => 'Đang được xử lý';
+
+  @override
+  String get techHomeRecentlyDoneTitle => 'Đã hoàn tất gần đây';
+
+  @override
+  String get techHomeNoIncidents => 'Không có sự cố nào';
+
+  @override
+  String get techHomeNoIncidentsHint =>
+      'Chưa có phiếu sự cố hay ô lỗi nào trên hệ thống.';
+
+  @override
+  String get techHomeShiftOverview => 'Tổng quan ca trực';
+
+  @override
+  String get techHomeMetricReceived => 'Phiếu\nđã nhận';
+
+  @override
+  String get techHomeMetricInProgress => 'Đang\nxử lý';
+
+  @override
+  String get techHomeMetricDone => 'Đã\nhoàn tất';
+
+  @override
+  String get techHomeMetricSlaOverdue => 'Trễ hạn\nSLA';
+
+  @override
+  String techHomeYourRating(Object rating) {
+    return 'Điểm đánh giá của bạn: $rating';
+  }
+
+  @override
+  String get techHomeNoCustomerRatings =>
+      'Chưa có đánh giá nào từ khách cho các phiếu bạn xử lý.';
+
+  @override
+  String get techHomeStandardProcedure =>
+      'Quy trình chuẩn: kiểm tra vị trí tủ, nhận phiếu, tới đúng ô, chụp ảnh nghiệm thu rồi hoàn tất để clear fault.';
+
+  @override
+  String get techHomeSlaCardRestricted => 'Đang bị hạn chế nhận việc mới';
+
+  @override
+  String get techHomeSlaCardWarning => 'Cảnh báo vi phạm thời gian SLA';
+
+  @override
+  String get techHomeSlaCardSuspended => 'Tài khoản trong diện đình chỉ';
+
+  @override
+  String get techHomeSlaCardNormal => 'Hồ sơ kỹ thuật viên tốt';
+
+  @override
+  String get techHomeSlaCardUnknown => 'Chưa tải được trạng thái SLA';
+
+  @override
+  String get techHomeSlaPullToReload =>
+      'Kéo xuống để tải lại trạng thái chế tài từ máy chủ.';
+
+  @override
+  String techHomeCompletedCount(Object count) {
+    return 'Đã hoàn thành: $count';
+  }
+
+  @override
+  String techHomeInProgressCount(Object count) {
+    return 'Đang làm: $count';
+  }
+
+  @override
+  String techHomeSlaOverdueCount(Object count) {
+    return 'Quá hạn SLA: $count';
+  }
+
+  @override
+  String get techHomeNoWorkYet => 'Bạn chưa nhận việc nào';
+
+  @override
+  String get techHomeNoWorkYetHint =>
+      'Chuyển sang tab \"Sự cố\" để duyệt và nhận việc mới.';
+
+  @override
+  String techHomeActiveIncidentsTitle(Object count) {
+    return 'Sự cố đang xử lý ($count)';
+  }
+
+  @override
+  String techHomeCompletedHistoryTitle(Object count) {
+    return 'Lịch sử đã hoàn thành ($count)';
+  }
+
+  @override
+  String get techHomeScheduleIntro =>
+      'Lịch kiểm tra định kỳ Kiosk do quản trị tạo và giao KTV phụ trách. Khi đến hạn, bấm \"Kiểm tra\" và đánh giá từng hạng mục: tất cả đạt ⇒ dời sang chu kỳ kế tiếp; có mục không đạt ⇒ hệ thống mở phiếu giao cho bạn, hạn chỉ dời khi phiếu được hoàn tất.';
+
+  @override
+  String techHomeMineWithCount(Object count) {
+    return 'Của tôi ($count)';
+  }
+
+  @override
+  String techHomeAnyDueWithCount(Object count) {
+    return 'Mọi hạn ($count)';
+  }
+
+  @override
+  String techHomeDueWithCount(Object count) {
+    return 'Đến hạn ($count)';
+  }
+
+  @override
+  String techHomeUpcomingWithCount(Object count) {
+    return 'Sắp tới ($count)';
+  }
+
+  @override
+  String get techHomeNoDueSchedules =>
+      'Không có lịch kiểm tra Kiosk nào đến hạn';
+
+  @override
+  String get techHomeNoUpcomingSchedules =>
+      'Không có lịch kiểm tra Kiosk nào sắp tới';
+
+  @override
+  String get techHomeNoAssignedSchedules =>
+      'Bạn chưa được giao lịch kiểm tra nào';
+
+  @override
+  String get techHomeNoSchedulesAtAll =>
+      'Chưa có kế hoạch kiểm tra định kỳ Kiosk nào';
+
+  @override
+  String get techHomeNoAssignedSchedulesHint =>
+      'Chọn \"Tất cả\" để xem lịch của các KTV khác.';
+
+  @override
+  String get techHomeNoSchedulesHint =>
+      'Mọi thiết bị Kiosk đều đang trong chu kỳ bảo trì bình thường.';
+
+  @override
+  String techHomeOverdueByDays(int days) {
+    return 'Quá hạn $days ngày';
+  }
+
+  @override
+  String get techHomeDueToday => 'Đến hạn hôm nay';
+
+  @override
+  String techHomeDueInDays(int days) {
+    return 'Còn $days ngày nữa đến hạn';
+  }
+
+  @override
+  String techHomeLastFailedCompleteTicket(Object id) {
+    return 'Lần trước không đạt — hoàn tất phiếu RPT-$id trước khi kiểm tra lại.';
+  }
+
+  @override
+  String get techHomeScheduleOwnedByOther => 'Lịch do KTV khác phụ trách.';
+
+  @override
+  String get techHomeRoutineScheduleDefault => 'Lịch kiểm tra định kỳ';
+
+  @override
+  String get techHomeDueBadge => 'Đến hạn';
+
+  @override
+  String techHomeDueAt(Object date) {
+    return 'Hạn: $date';
+  }
+
+  @override
+  String techHomeCycleEveryDays(Object days) {
+    return 'Chu kỳ: Mỗi $days ngày';
+  }
+
+  @override
+  String get techHomeAssignedBadge => 'Phụ trách';
+
+  @override
+  String techHomeLastFailedBanner(Object id) {
+    return 'Lần trước KHÔNG ĐẠT · Chờ hoàn tất phiếu RPT-$id trước khi kiểm tra lại';
+  }
+
+  @override
+  String techHomeHandleTicket(Object id) {
+    return 'Xử lý phiếu RPT-$id';
+  }
+
+  @override
+  String get techHomeInspectAction => 'Kiểm tra';
+
+  @override
+  String techHomeInspectionFailedTicket(Object id) {
+    return 'Kiểm tra KHÔNG ĐẠT — đã mở phiếu RPT-$id giao cho bạn. Hạn kế tiếp chỉ dời khi phiếu được hoàn tất.';
+  }
+
+  @override
+  String get techHomeKioskLocker => 'Tủ Kiosk';
+
+  @override
+  String techHomeInspectionFailedRecorded(Object title) {
+    return 'Đã ghi nhận KHÔNG ĐẠT cho \"$title\".';
+  }
+
+  @override
+  String techHomeInspectionPassedRecorded(Object title) {
+    return 'Đã ghi nhận ĐẠT cho \"$title\".';
+  }
+
+  @override
+  String techHomeInspectionPassedNextDue(Object title, Object date) {
+    return 'Đã ghi nhận ĐẠT cho \"$title\" — hạn kế tiếp $date.';
+  }
+
+  @override
+  String get techHomeViewWork => 'Xem việc';
+
+  @override
+  String get techHomeSlaExtendAssigneeOnly =>
+      'Chỉ KTV đang được giao phiếu mới gia hạn được SLA.';
+
+  @override
+  String techHomeSlaExtendLimitReached(Object id, Object used, Object max) {
+    return 'Phiếu RPT-$id đã gia hạn $used/$max lần — liên hệ admin nếu cần thêm thời gian.';
+  }
+
+  @override
+  String techHomeSlaExtended(Object id) {
+    return 'Đã gia hạn SLA phiếu RPT-$id';
+  }
+
+  @override
+  String techHomeSlaExtendedNewDue(Object id, Object due) {
+    return 'Đã gia hạn SLA phiếu RPT-$id — hạn mới $due';
+  }
+
+  @override
+  String techHomeReleaseTicketTitle(Object id) {
+    return 'Trả lại phiếu RPT-$id';
+  }
+
+  @override
+  String get techHomeReleaseTicketHint =>
+      'Phiếu về lại hàng chờ để KTV khác nhận; lý do được ghi vào nhật ký phiếu.';
+
+  @override
+  String get techHomeReleaseReasonLabel => 'Lý do trả phiếu (bắt buộc)';
+
+  @override
+  String get techHomeReleaseReasonHint =>
+      'VD: Cần linh kiện không có sẵn, đổi ca trực...';
+
+  @override
+  String get techHomeReleaseReasonRequired => 'Vui lòng nhập lý do trả phiếu.';
+
+  @override
+  String get techHomeReleaseTicketAction => 'Trả lại phiếu';
+
+  @override
+  String techHomeTicketReleased(Object id) {
+    return 'Đã trả phiếu RPT-$id về hàng chờ.';
+  }
+
+  @override
+  String techHomeRejectIncidentTitle(Object id) {
+    return 'Không xác nhận sự cố RPT-$id';
+  }
+
+  @override
+  String get techHomeRejectIncidentHint =>
+      'Dùng khi đã kiểm tra tại tủ và ô hoạt động bình thường. Phiếu được đóng, ô trở lại hoạt động và phản hồi dưới đây được gửi cho người báo.';
+
+  @override
+  String get techHomeReporterFeedbackLabel =>
+      'Phản hồi cho người báo (bắt buộc)';
+
+  @override
+  String get techHomeReporterFeedbackHint =>
+      'VD: Đã thử đóng/mở ô 3 lần, cửa và khoá hoạt động bình thường.';
+
+  @override
+  String get techHomeReporterFeedbackRequired =>
+      'Vui lòng ghi phản hồi cho người báo.';
+
+  @override
+  String get techHomeCloseAndReply => 'Đóng phiếu & phản hồi';
+
+  @override
+  String techHomeTicketRejectedDone(Object id) {
+    return 'Đã đóng phiếu RPT-$id và gửi phản hồi cho người báo.';
+  }
+
+  @override
+  String techHomeDevicesLoadFailed(Object error) {
+    return 'Không tải được danh sách thiết bị: $error';
+  }
+
+  @override
+  String get techHomeIotDevices => 'Thiết bị IoT';
+
+  @override
+  String get techHomeNoDevices => 'Không có thiết bị nào';
+
+  @override
+  String get techHomeNoDevicesHint =>
+      'Chưa có bộ điều khiển nào gắn với tủ bạn phụ trách.';
+
+  @override
+  String techHomeDeviceNumber(Object id) {
+    return 'Thiết bị #$id';
+  }
+
+  @override
+  String techHomeLastSignal(Object time) {
+    return 'Tín hiệu cuối: $time';
+  }
+
+  @override
+  String get techHomeNoSignalYet => 'Chưa nhận tín hiệu nào';
+
+  @override
+  String get techHomeDevicesHint =>
+      'Trạng thái do máy chủ tính theo tín hiệu gần nhất của thiết bị. Chạm vào thiết bị để xem nhật ký hoặc khởi động lại bộ điều khiển.';
+
+  @override
+  String get techHomeLandingPadPill => 'Bãi đáp';
+
+  @override
+  String get techHomeLockerLevelPill => 'Cấp tủ';
+
+  @override
+  String get techHomeBlocksLockerPill => 'Ngưng cả tủ';
+
+  @override
+  String techHomeFromRoutineInspection(Object id) {
+    return 'Từ kiểm tra định kỳ #$id';
+  }
+
+  @override
+  String get techHomeNewBadge => 'MỚI';
+
+  @override
+  String techHomeLockerBoxShort(Object locker, Object box) {
+    return '$locker · Ô $box';
+  }
+
+  @override
+  String get techHomeClaimSuccess => 'Đã nhận việc thành công';
+
+  @override
+  String get techHomeClaimAction => 'Nhận việc';
+
+  @override
+  String get techHomeNoExtensionsLeft => 'Hết lượt gia hạn';
+
+  @override
+  String get techHomeAddPhotosShort => 'Ảnh (+)';
+
+  @override
+  String get techHomeAcceptanceAction => 'Nghiệm thu';
+
+  @override
+  String techHomeTicketJustUpdated(Object id) {
+    return 'Phiếu RPT-$id vừa được cập nhật.';
+  }
+
+  @override
+  String techHomeSlaExtendedHours(Object hours) {
+    return 'Đã gia hạn SLA (+$hours h)';
+  }
+
+  @override
+  String techHomeOverdueAfterExtension(Object hours) {
+    return 'Quá hạn (sau gia hạn +$hours h)';
+  }
+
+  @override
+  String get techHomeSlaOverdueBadge => 'Quá hạn SLA';
+
+  @override
+  String techHomeAssigneeYou(Object name) {
+    return '$name (bạn)';
+  }
+
+  @override
+  String techHomeSlaDueAt(Object time) {
+    return 'Hạn SLA: $time';
+  }
+
+  @override
+  String techHomeExtensionReason(Object reason) {
+    return 'Lý do gia hạn: $reason';
+  }
+
+  @override
+  String get techHomeCustomerComplaint => 'Nội dung khách phản ánh:';
+
+  @override
+  String get techHomeCustomerScenePhotos => 'Ảnh hiện trường do khách gửi';
+
+  @override
+  String get techHomeClaimNow => 'Nhận việc ngay';
+
+  @override
+  String get techHomeInspectAndLockBox => 'Kiểm tra ô & Khóa sự cố tại Kiosk';
+
+  @override
+  String get techHomeAcceptAndComplete => 'Nghiệm thu & Hoàn tất xử lý';
+
+  @override
+  String get techHomeNotAsDescribed =>
+      'Không đúng mô tả — đóng phiếu & phản hồi';
+
+  @override
+  String get techHomeReleaseToQueue => 'Trả lại phiếu về hàng chờ';
+
+  @override
+  String techHomeTicketHandledByName(Object assignee) {
+    return 'Phiếu đang do $assignee xử lý — chỉ người được giao mới hoàn tất được.';
+  }
+
+  @override
+  String get techHomeTicketBeingHandled => 'Phiếu đang được xử lý.';
+
+  @override
+  String get techHomeTicketNoKiosk =>
+      'Phiếu sự cố không gắn với trạm Kiosk nào.';
+
+  @override
+  String get techHomeBoxIncidentResolved =>
+      'Đã cập nhật trạng thái ô tủ và xử lý sự cố thành công!';
+
+  @override
+  String get techHomeScenePhotosSaved => 'Đã lưu ảnh xác nhận hiện trường';
+
+  @override
+  String techHomeOpenForDays(Object count) {
+    return 'Mở $count ngày';
+  }
+
+  @override
+  String techHomeOpenForHours(Object count) {
+    return 'Mở $count giờ';
+  }
+
+  @override
+  String techHomeOpenForMinutes(Object count) {
+    return 'Mở $count phút';
+  }
+
+  @override
+  String get techHomeJustOpened => 'Vừa mở';
+
+  @override
+  String get techHomeMarkDeviceErrorTitle => 'Đánh dấu thiết bị lỗi';
+
+  @override
+  String get techHomeMarkDeviceOfflineTitle => 'Đánh dấu thiết bị mất kết nối';
+
+  @override
+  String techHomeMarkDeviceErrorBody(Object device) {
+    return 'Thiết bị \"$device\" sẽ được đánh dấu lỗi cho tới khi bộ điều khiển gửi tín hiệu trở lại. Tiếp tục?';
+  }
+
+  @override
+  String techHomeMarkDeviceOfflineBody(Object device) {
+    return 'Thiết bị \"$device\" sẽ được đánh dấu mất kết nối cho tới khi bộ điều khiển gửi tín hiệu trở lại. Tiếp tục?';
+  }
+
+  @override
+  String get techHomeMarkAction => 'Đánh dấu';
+
+  @override
+  String get techHomeDeviceMarkedError => 'Đã đánh dấu thiết bị lỗi.';
+
+  @override
+  String get techHomeDeviceMarkedOffline => 'Đã đánh dấu thiết bị mất kết nối.';
+
+  @override
+  String get techHomeRestartControllerTitle => 'Khởi động lại bộ điều khiển';
+
+  @override
+  String techHomeRestartControllerBody(Object device) {
+    return 'Bộ điều khiển \"$device\" sẽ khởi động lại tiến trình điều khiển tủ (không khởi động lại máy). Trong lúc đó tủ tạm không mở ô được. Tiếp tục?';
+  }
+
+  @override
+  String get techHomeRestartAction => 'Khởi động lại';
+
+  @override
+  String get techHomeDeviceIdLabel => 'Mã thiết bị';
+
+  @override
+  String get techHomeLastSignalLabel => 'Tín hiệu cuối';
+
+  @override
+  String get techHomeNoSignalShort => 'Chưa nhận tín hiệu';
+
+  @override
+  String get techHomeConnectionLabel => 'Kết nối';
+
+  @override
+  String techHomeDeviceLoadFailed(Object error) {
+    return 'Không tải được thiết bị: $error';
+  }
+
+  @override
+  String get techHomeDeviceStatusHint =>
+      'Trạng thái do máy chủ tính theo tín hiệu gần nhất; chỉ đánh dấu tay khi biết chắc thiết bị đã mất kết nối hoặc hỏng.';
+
+  @override
+  String get techHomeWaitingForLocker => 'Đang chờ tủ phản hồi...';
+
+  @override
+  String get techHomeMarkOffline => 'Đánh dấu mất kết nối';
+
+  @override
+  String get techHomeMarkError => 'Đánh dấu lỗi';
+
+  @override
+  String get techHomeActivityLog => 'Nhật ký hoạt động';
+
+  @override
+  String techHomeLogLoadFailed(Object error) {
+    return 'Không tải được nhật ký: $error';
+  }
+
+  @override
+  String get techHomeNoLogsYet => 'Chưa có nhật ký.';
+
+  @override
+  String get techHomeQuickChipInspectScene => '📸 Kiểm tra hiện trường';
+
+  @override
+  String get techHomeQuickChipReplacePart => '🔧 Thay thế linh kiện';
+
+  @override
+  String get techHomeQuickChipCheckPowerBoard => '⚡ Kiểm tra bo mạch nguồn';
+
+  @override
+  String get techHomeQuickChipCleanBox => '🧹 Vệ sinh ô tủ sạch sẽ';
+
+  @override
+  String get techHomeQuickChipAdjustLatch => '🚪 Cân chỉnh chốt & then';
+
+  @override
+  String get techHomeTechLogTitle => 'Nhật ký & Lịch sử xử lý của KTV:';
+
+  @override
+  String techHomeTechLogLoadFailed(Object error) {
+    return 'Không tải được nhật ký xử lý: $error';
+  }
+
+  @override
+  String get techHomeNoTechLogsHint =>
+      'Chưa có ghi chú xử lý nào. Thao tác \"Kiểm tra ô & Khóa sự cố\" hoặc \"Nghiệm thu\" sẽ tự động lưu lại đầy đủ tại đây.';
+
+  @override
+  String techHomeTechNumber(Object id) {
+    return 'KTV #$id';
+  }
+
+  @override
+  String techHomeLogViewerTitle(Object time) {
+    return 'Nhật ký · $time';
+  }
+
+  @override
+  String get techHomeAddLogStep => 'Thêm bước xử lý / ghi chú nhanh...';
+
+  @override
+  String get techHomeLogNoteHint => 'Nhập ghi chú xử lý...';
+
+  @override
+  String get techHomeQuickNoteReplacedLock =>
+      'Đã thay thế linh kiện khóa điện tử';
+
+  @override
+  String get techHomeQuickNoteAdjustedHinge =>
+      'Đã cân chỉnh then & bản lề cửa ô tủ';
+
+  @override
+  String get techHomeQuickNoteCheckedBoard =>
+      'Đã kiểm tra bo mạch điều khiển & nguồn';
+
+  @override
+  String get techHomeQuickNoteCleanedTested =>
+      'Đã vệ sinh sạch sẽ, test đóng mở 3 lần';
+
+  @override
+  String get techHomeBoxNotInLayout => 'Không tìm thấy ô trong sơ đồ tủ.';
+
+  @override
+  String get techHomeBoxHoldsOrderNoTest =>
+      'Ô đang giữ đồ/đơn của khách — không mở thử.';
+
+  @override
+  String techHomeBoxCheckFailed(Object error) {
+    return 'Không kiểm tra được ô ($error).';
+  }
+
+  @override
+  String get techHomeAfterPhotoRequired =>
+      'Vui lòng chụp ít nhất 1 ảnh sau khi sửa xong để nghiệm thu.';
+
+  @override
+  String techHomeBoxLabelLower(Object number) {
+    return 'ô #$number';
+  }
+
+  @override
+  String get techHomeLandingPadRestored => 'Bãi đáp đã hoạt động lại.';
+
+  @override
+  String get techHomeLockerRestored => 'Tủ đã hoạt động lại.';
+
+  @override
+  String techHomeBoxRestoredTestOpened(Object box) {
+    return 'Ô đã hoạt động lại, đã gửi lệnh mở thử $box.';
+  }
+
+  @override
+  String get techHomeBoxRestored => 'Ô tủ đã hoạt động lại.';
+
+  @override
+  String techHomeResolvedWithRestored(Object restored) {
+    return 'Đã nghiệm thu và hoàn tất sự cố! $restored';
+  }
+
+  @override
+  String techHomeResolvedTestOpenFailed(Object box, Object error) {
+    return 'Đã nghiệm thu và hoàn tất sự cố, nhưng chưa mở thử được $box: $error';
+  }
+
+  @override
+  String get techHomeRequiredBadge => 'Bắt buộc';
+
+  @override
+  String techHomeIncidentRpt(Object id) {
+    return 'Sự cố RPT-$id';
+  }
+
+  @override
+  String get techHomeResolveSheetTitle => 'Nghiệm thu hoàn tất sửa chữa';
+
+  @override
+  String techHomeResolveSheetSubtitleWithBox(
+    Object locker,
+    Object box,
+    Object id,
+    Object title,
+  ) {
+    return '$locker · Ô $box · RPT-$id · $title';
+  }
+
+  @override
+  String get techHomeScenePhotosBeforeAfter =>
+      'Hình ảnh hiện trường (Trước & Sau khi sửa)';
+
+  @override
+  String get techHomeBeforeRepair => 'Trước khi sửa';
+
+  @override
+  String techHomeExistingScenePhotos(int count) {
+    return 'Đã có $count ảnh hiện trường / người báo đối chứng';
+  }
+
+  @override
+  String get techHomeBeforeRepairOptional =>
+      'Tuỳ chọn · lưu thành ảnh xác nhận hiện trường';
+
+  @override
+  String get techHomeScenePhotosBeforeRepair => 'Ảnh hiện trường trước khi sửa';
+
+  @override
+  String get techHomeTakeMorePhotos => 'Chụp thêm ảnh';
+
+  @override
+  String get techHomeDuringRepair => 'Trong quá trình sửa';
+
+  @override
+  String get techHomeDuringRepairHint =>
+      'Ảnh thao tác kỹ thuật, thay thế linh kiện (tuỳ chọn)';
+
+  @override
+  String get techHomeTakeRepairPhotos => 'Chụp ảnh quá trình sửa';
+
+  @override
+  String get techHomeAfterRepair => 'Sau khi xong';
+
+  @override
+  String get techHomeAcceptancePhotoRequired =>
+      'Ảnh nghiệm thu — cần ít nhất 1 ảnh';
+
+  @override
+  String get techHomeAcceptancePhotoOptional => 'Ảnh nghiệm thu (tuỳ chọn)';
+
+  @override
+  String get techHomeTechNotesTitle => 'Ghi chú kỹ thuật & linh kiện';
+
+  @override
+  String get techHomeTechNotesHint =>
+      'Mô tả chi tiết linh kiện thay thế, các bước xử lý...';
+
+  @override
+  String get techHomeCheckingTestOpen =>
+      'Đang kiểm tra ô trước khi cho phép mở thử...';
+
+  @override
+  String get techHomeTestOpenAfterRepair => 'Mở thử ô sau sửa';
+
+  @override
+  String techHomeTestOpenHintWithBox(Object box) {
+    return 'Sau khi hoàn tất phiếu, gửi lệnh mở ô #$box để kiểm tra chốt khoá.';
+  }
+
+  @override
+  String get techHomeTestOpenHint =>
+      'Sau khi hoàn tất phiếu, gửi lệnh mở ô để kiểm tra chốt khoá.';
+
+  @override
+  String techHomeTestOpenNotSuggested(Object reason) {
+    return 'Không đề nghị mở thử ô: $reason';
+  }
+
+  @override
+  String get techHomeSavingAcceptance => 'Đang lưu nghiệm thu...';
+
+  @override
+  String get techHomeConfirmAndCompleteRepair => 'Xác nhận & Hoàn tất sửa chữa';
+
+  @override
+  String get techHomeScenePhotoRequired =>
+      'Vui lòng chụp ít nhất 1 ảnh hiện trường.';
+
+  @override
+  String get techHomeSceneConfirmTitle => 'Xác nhận hiện trường';
+
+  @override
+  String get techHomeSceneConfirmHint =>
+      'Chụp hiện trạng ô tủ ngay khi tới nơi (cửa, khoá, bo mạch...). Ảnh được lưu vào phiếu làm bằng chứng trước khi sửa.';
+
+  @override
+  String get techHomeSceneNoteHint => 'Ghi chú hiện trạng (tuỳ chọn)...';
+
+  @override
+  String get techHomeSaveScenePhotos => 'Lưu ảnh hiện trường';
+
+  @override
+  String get techHomeCustomerShort => 'Khách';
+
+  @override
+  String techHomeOpenBoxError(Object error) {
+    return 'Lỗi mở ô: $error';
+  }
+
+  @override
+  String get techHomeInvalidTicket => 'Phiếu không hợp lệ.';
+
+  @override
+  String get techHomeBoxIncidentSheetTitle => 'Kiểm tra ô & Xử lý sự cố';
+
+  @override
+  String get techHomeStep1PickBox => '1. Chọn ô gặp sự cố tại Kiosk:';
+
+  @override
+  String get techHomeKioskNoBoxes => 'Kiosk này chưa có danh sách ô.';
+
+  @override
+  String techHomeOrderLookupFailed(Object error) {
+    return 'Không tra được đơn trong ô ($error). Kiểm tra thực tế (mở khẩn cấp) trước khi chọn phương án — tạm thời chỉ khoá ô.';
+  }
+
+  @override
+  String get techHomeEmergencyOpenShort => 'Mở khẩn cấp';
+
+  @override
+  String get techHomeBoxHasCustomerItems => 'Ô ĐANG CHỨA ĐỒ CỦA KHÁCH!';
+
+  @override
+  String techHomeActiveOrderLine(Object code, Object customer) {
+    return 'Đơn hàng: $code · Khách: $customer';
+  }
+
+  @override
+  String get techHomeBoxNoActiveOrder => 'Ô KHÔNG CÓ ĐƠN HÀNG HOẠT ĐỘNG';
+
+  @override
+  String get techHomeBoxNoActiveOrderHint =>
+      'Hệ thống không tìm thấy đơn hàng trong ô này. Có thể khách đã lấy đồ, kẹt cảm biến hoặc báo nhầm ô. KTV hãy mở khẩn cấp để kiểm tra thực tế.';
+
+  @override
+  String get techHomeBoxCurrentlyEmpty =>
+      'Ô hiện tại đang trống (Không có đồ bên trong)';
+
+  @override
+  String get techHomeStep2PickGoodsOption =>
+      '2. Chọn phương án xử lý hàng trong ô:';
+
+  @override
+  String get techHomeStep2PickOption => '2. Chọn phương án xử lý:';
+
+  @override
+  String get techHomeOptionRelocateTitle =>
+      'Điều chuyển sang ô trống mới (Khuyến nghị)';
+
+  @override
+  String get techHomeOptionRelocateHint =>
+      'Dọn đồ sang ô trống khác cùng Kiosk, cấp mã PIN mới cho khách & Khóa ô cũ.';
+
+  @override
+  String get techHomeNoFreeBoxes =>
+      '⚠️ Trạm Kiosk không còn ô trống nào! Hãy chọn phương án giao trực tiếp hoặc niêm phong.';
+
+  @override
+  String get techHomePickTargetBox => 'Chọn ô trống đích';
+
+  @override
+  String techHomeTargetBoxOption(Object number, Object type) {
+    return 'Ô #$number ($type)';
+  }
+
+  @override
+  String get techHomeOptionHandoverTitle =>
+      'Khách hàng có mặt - Bàn giao trực tiếp';
+
+  @override
+  String get techHomeOptionHandoverHint =>
+      'Khách đang ở tại trạm nhận đồ trực tiếp, hoàn tất đơn & Khóa ô cũ.';
+
+  @override
+  String get techHomeHandoverCodeLabel =>
+      'Mã PIN 6 số hoặc mã QR của đơn (bắt buộc)';
+
+  @override
+  String get techHomeHandoverCodeHint =>
+      'Khách đọc/đưa mã lấy hàng để xác nhận bàn giao';
+
+  @override
+  String get techHomeOptionHubTitle =>
+      'Kiosk hết ô trống - Niêm phong đưa về Hub';
+
+  @override
+  String get techHomeOptionHubHint =>
+      'Đóng túi niêm phong an toàn, quét mã Seal đưa về Hub lưu trữ & Khóa ô cũ.';
+
+  @override
+  String get techHomeSealCodeLabel => 'Mã Seal niêm phong (bắt buộc)';
+
+  @override
+  String get techHomeSealCodeHint => 'Nhập đúng mã in trên túi niêm phong';
+
+  @override
+  String get techHomeOptionQuickFixKeepTitle =>
+      'Kiểm tra & Xử lý tại chỗ (Không chuyển dọn đồ)';
+
+  @override
+  String get techHomeOptionQuickFixKeepHint =>
+      'Kiểm tra cảm biến, đóng chặt cửa hoặc hỗ trợ khách tại chỗ mà không cần dọn đồ.';
+
+  @override
+  String get techHomeOptionQuickFixTitle =>
+      'Kiểm tra & Xử lý tại chỗ (Khuyến nghị)';
+
+  @override
+  String get techHomeOptionQuickFixHint =>
+      'Kiểm tra vật lý (cảm biến, chốt khóa, vệ sinh). Nếu user báo nhầm hoặc lỗi nhẹ đã khắc phục xong, không cần khóa ô.';
+
+  @override
+  String get techHomeOptionLockFaultTitle =>
+      'Xác nhận lỗi phần cứng & Khóa ô bảo trì (FAULT)';
+
+  @override
+  String get techHomeOptionLockFaultHint =>
+      'Cần linh kiện thay thế hoặc bảo dưỡng sâu. Tạm ngưng hoạt động ô tủ để kỹ thuật viên sửa chữa.';
+
+  @override
+  String get techHomeLockForMaintenance =>
+      'Khóa ô tủ để bảo trì (Trạng thái: FAULT)';
+
+  @override
+  String get techHomeKeepActiveWithGoods =>
+      'Giữ ô tủ hoạt động (Đang giữ hàng của khách)';
+
+  @override
+  String get techHomeKeepActiveNormal =>
+      'Giữ ô tủ hoạt động bình thường (AVAILABLE)';
+
+  @override
+  String get techHomeLockOnlyHint =>
+      'Kịch bản Khóa ô bảo trì (FAULT) luôn khóa ô để bảo dưỡng. Nếu không cần khóa ô, vui lòng chọn kịch bản \"Kiểm tra & Xử lý tại chỗ\".';
+
+  @override
+  String get techHomeLockedHint =>
+      'Ô tủ sẽ bị tạm ngưng và không nhận đơn mới cho đến khi hoàn tất sửa chữa.';
+
+  @override
+  String get techHomeNotLockedWithGoodsHint =>
+      'Không khóa ô tủ. Đồ của khách vẫn được giữ an toàn trong ô và không bị trả về ô trống.';
+
+  @override
+  String get techHomeNotLockedHint =>
+      'Không khóa ô tủ. Phù hợp khi khách hàng báo nhầm hoặc sự cố đã được xử lý ngay tại chỗ.';
+
+  @override
+  String get techHomeStep3ReasonNotes => '3. Lý do & Ghi chú xử lý:';
+
+  @override
+  String get techHomeSystemRecordedIncident =>
+      'Sự cố ô tủ ghi nhận từ hệ thống';
+
+  @override
+  String get techHomeFailedInspectionContent =>
+      'Nội dung kiểm tra định kỳ không đạt:';
+
+  @override
+  String get techHomeCustomerReportedReason => 'Lý do khách hàng phản ánh:';
+
+  @override
+  String get techHomeTechFieldNotesLabel =>
+      'Ghi chú hiện trường của KTV (Ghi riêng):';
+
+  @override
+  String get techHomeTechFieldNotesHint =>
+      'Nhập hiện trạng kiểm tra, nhận định của KTV...';
+
+  @override
+  String get techHomeStep4ScenePhotos =>
+      '4. Ảnh hiện trường / Đối chứng (KTV kiểm tra):';
+
+  @override
+  String techHomeExistingScenePhotosColon(int count) {
+    return 'Đã có $count ảnh hiện trường / người báo đối chứng:';
+  }
+
+  @override
+  String get techHomeComparisonScenePhotos => 'Ảnh hiện trường đối chứng';
+
+  @override
+  String get techHomeTakeMoreScenePhotos =>
+      'Chụp thêm ảnh hiện trường mới (tuỳ chọn):';
+
+  @override
+  String get techHomeStep5RepairPhotos => '5. Ảnh trong quá trình sửa:';
+
+  @override
+  String get techHomeStep5RepairPhotosHint =>
+      'Chụp ảnh tháo lắp linh kiện, thao tác kỹ thuật, kiểm tra cảm biến hoặc xử lý đồ:';
+
+  @override
+  String techHomeExistingRepairPhotos(int count) {
+    return 'Đã có $count ảnh trong quá trình sửa:';
+  }
+
+  @override
+  String get techHomeTakeMoreRepairPhotos =>
+      'Chụp thêm ảnh quá trình sửa mới (tuỳ chọn):';
+
+  @override
+  String get techHomeUpdating => 'Đang cập nhật...';
+
+  @override
+  String get techHomeConfirmAndUpdate => 'Xác nhận & Cập nhật hệ thống';
+
+  @override
+  String get techHomeCellTypeStandard => 'Chuẩn';
+
+  @override
+  String get techHomeForceOpenReasonForgotPin =>
+      'Khách quên mã PIN / không liên lạc được';
+
+  @override
+  String get techHomeForceOpenReasonJammed =>
+      'Cửa ô bị kẹt cơ học / lỗi chốt từ';
+
+  @override
+  String get techHomeForceOpenReasonTicketCheck =>
+      'Kiểm tra ô khi xử lý phiếu sự cố';
+
+  @override
+  String get techHomeForceOpenReasonManagement =>
+      'Kiểm tra theo yêu cầu ban quản lý';
+
+  @override
+  String get techHomeForceOpenReasonEmergency =>
+      'Sự cố khẩn cấp / nghi rò rỉ hoặc dị vật';
+
+  @override
+  String get techHomeForceOpenReasonOther => 'Lý do khác…';
+
+  @override
+  String techHomeForceOpenSent(Object box) {
+    return 'Đã gửi lệnh mở khẩn cấp $box.';
+  }
+
+  @override
+  String techHomeForceOpenConfirmed(Object box) {
+    return 'Tủ xác nhận đã mở $box.';
+  }
+
+  @override
+  String techHomeForceOpenTitle(Object box) {
+    return 'Mở khẩn cấp $box';
+  }
+
+  @override
+  String techHomeForceOpenHintWithTicket(Object id) {
+    return 'Ô được mở bằng lệnh Master và ghi vào nhật ký truy cập. Lý do, ghi chú và ảnh được lưu vào nhật ký phiếu RPT-$id.';
+  }
+
+  @override
+  String get techHomeForceOpenHint =>
+      'Ô được mở bằng lệnh Master và ghi vào nhật ký truy cập kèm lý do.';
+
+  @override
+  String get techHomeForceOpenReasonLabel => 'Lý do can thiệp (bắt buộc):';
+
+  @override
+  String get techHomeEnterReason => 'Nhập lý do';
+
+  @override
+  String get techHomeNoteOptional => 'Ghi chú (tuỳ chọn)';
+
+  @override
+  String get techHomeForceOpenReasonRequired =>
+      'Vui lòng nhập lý do mở khẩn cấp.';
+
+  @override
+  String get techHomeConfirmOpen => 'Xác nhận mở';
+
+  @override
+  String get techHomeSlaReasonWaitingParts => 'Chờ linh kiện thay thế';
+
+  @override
+  String get techHomeSlaReasonDeepCircuitCheck => 'Cần kiểm tra sâu mạch điện';
+
+  @override
+  String get techHomeSlaReasonHardToReach => 'Tủ khó tiếp cận';
+
+  @override
+  String get techHomeSlaReasonBuildingOps => 'Phối hợp bên vận hành tòa nhà';
+
+  @override
+  String get techHomeSlaReasonRequired => 'Vui lòng nhập lý do gia hạn SLA.';
+
+  @override
+  String techHomeMaxExtensionsPerTicket(Object count) {
+    return 'Tối đa $count lần mỗi phiếu';
+  }
+
+  @override
+  String techHomeExtendSlaTitle(Object id) {
+    return 'Gia hạn SLA phiếu RPT-$id';
+  }
+
+  @override
+  String get techHomeCurrentDueLabel => 'Hạn hiện tại:';
+
+  @override
+  String get techHomeNewDueLabel => 'Hạn mới (dự kiến):';
+
+  @override
+  String get techHomePickExtensionHours => 'Chọn thời gian gia hạn:';
+
+  @override
+  String techHomePickExtensionHoursCapped(Object hours) {
+    return 'Chọn thời gian gia hạn (tối đa $hours giờ/lần):';
+  }
+
+  @override
+  String techHomePlusHours(Object hours) {
+    return '+$hours giờ';
+  }
+
+  @override
+  String get techHomeExtensionReasonLabel => 'Lý do gia hạn (bắt buộc):';
+
+  @override
+  String get techHomeExtensionReasonHint =>
+      'Nhập lý do cần thêm thời gian xử lý...';
+
+  @override
+  String get techHomeConfirmExtendSla => 'Xác nhận gia hạn SLA';
+
+  @override
+  String get techHomeDeletePhotoTitle => 'Xoá ảnh này?';
+
+  @override
+  String techHomeDeletePhotoBody(Object stage, Object id) {
+    return '$stage sẽ bị gỡ khỏi phiếu RPT-$id.';
+  }
+
+  @override
+  String get techHomePhotoDeleted => 'Đã xoá ảnh khỏi phiếu.';
+
+  @override
+  String techHomeTicketPhotosLoadFailed(Object error) {
+    return 'Không tải được ảnh của phiếu: $error';
+  }
+
+  @override
+  String techHomeYourAttachedPhotos(Object count) {
+    return 'Ảnh bạn đã gắn ($count) — chạm ✕ để xoá ảnh tải nhầm';
+  }
+
+  @override
+  String get techHomeStageOnSite => 'Hiện trường';
+
+  @override
+  String get techHomeStageRepairing => 'Đang sửa';
+
+  @override
+  String techHomeSlaRemainingExtended(Object time, Object hours) {
+    return 'Còn $time (+${hours}h)';
+  }
+
+  @override
+  String techHomeSlaRemaining(Object time) {
+    return 'Còn $time';
+  }
+
+  @override
+  String techHomeSlaOverdueByExtended(Object time, Object hours) {
+    return 'Quá hạn $time (+${hours}h)';
+  }
+
+  @override
+  String techHomeSlaOverdueBy(Object time) {
+    return 'Quá hạn $time';
+  }
+
+  @override
+  String techHomeTechName(Object name) {
+    return 'KTV $name';
+  }
+
+  @override
+  String get techUiRestartUnconfirmed =>
+      'Đã gửi lệnh khởi động lại nhưng máy chủ chưa trả kết quả xác nhận — kiểm tra trạng thái thiết bị sau ít phút.';
+
+  @override
+  String get techUiRestartAccepted =>
+      'Bộ điều khiển tủ đã nhận lệnh và đang khởi động lại.';
+
+  @override
+  String get techUiRestartTimeout =>
+      'Tủ không phản hồi lệnh khởi động lại — kiểm tra kết nối của tủ.';
+
+  @override
+  String get techUiRestartFailed =>
+      'Khởi động lại thất bại — vui lòng thử lại.';
+
+  @override
+  String get techUiAdminAccountTitle => 'Tài khoản quản trị';
+
+  @override
+  String get techUiAdminWebOnly =>
+      'Trang quản trị (dashboard, thống kê, quản lý người dùng, đơn hàng, khuyến mãi...) chỉ có trên bản web.\nVui lòng đăng nhập bằng trình duyệt để tiếp tục.';
+
+  @override
+  String get techUiRoleDrone => 'KTV drone';
+
+  @override
+  String get techUiRoleLocker => 'KTV tủ';
+
+  @override
+  String techUiSlaExtensionUsage(int used, int max) {
+    return 'Đã gia hạn $used/$max';
+  }
+
+  @override
+  String techUiSlaExtensionLimit(int used, int max) {
+    return 'Hết lượt gia hạn ($used/$max)';
+  }
+
+  @override
+  String get techUiExtendSla => 'Gia hạn SLA';
+
+  @override
+  String get techUiSlaSuspended => 'Đình chỉ';
+
+  @override
+  String get techUiSlaRestricted => 'Hạn chế nhận việc';
+
+  @override
+  String get techUiSlaWarning => 'Cảnh báo';
+
+  @override
+  String get techUiSlaNormal => 'Bình thường';
+
+  @override
+  String get techUiSlaNotLoaded => 'Chưa tải được';
+
+  @override
+  String techUiRatingSummary(String average, int count) {
+    return '$average/5 ($count lượt)';
+  }
+
+  @override
+  String get techUiSelectIncidentBox => 'Vui lòng chọn ô sự cố.';
+
+  @override
+  String get techUiSelectTargetBox =>
+      'Vui lòng chọn ô trống để chuyển hàng sang.';
+
+  @override
+  String get techUiEnterHandoverCode =>
+      'Nhập mã PIN 6 số hoặc mã QR của đơn để xác nhận bàn giao.';
+
+  @override
+  String get techUiPinSixDigits => 'Mã PIN lấy hàng gồm đúng 6 chữ số.';
+
+  @override
+  String get techUiEnterSealCode => 'Nhập mã Seal in trên túi niêm phong.';
+
+  @override
+  String get techUiLocationDeniedForever =>
+      'Quyền vị trí bị từ chối vĩnh viễn. Vui lòng mở Cài đặt để bật vị trí.';
+
+  @override
+  String get techUiLocationAccessTitle => 'Quyền truy cập vị trí';
+
+  @override
+  String get techUiForTechnicianAccounts => 'Dành cho tài khoản Kỹ thuật viên';
+
+  @override
+  String get techUiLocationRationale =>
+      'Để hệ thống điều phối chính xác sự cố trạm tủ và nhiệm vụ drone gần bạn nhất, ứng dụng cần truy cập vị trí thiết bị khi bạn đang trong ca làm việc.';
+
+  @override
+  String get techUiBenefitDispatchTitle => 'Điều phối & Phân công theo vị trí';
+
+  @override
+  String get techUiBenefitDispatchBody =>
+      'Tự động gán phiếu xử lý, kiểm tra định kỳ và cứu hộ drone tại các tủ quanh bạn.';
+
+  @override
+  String get techUiBenefitAutoOffTitle => 'Tự động tắt khi hết ca trực';
+
+  @override
+  String get techUiBenefitAutoOffBody =>
+      'Vị trí chỉ được truy cập khi bạn bật Vào ca. Khi Hết ca, định vị tự động tắt hoàn toàn để bảo vệ quyền riêng tư.';
+
+  @override
+  String get techUiBenefitBatteryTitle => 'Tối ưu pin & dữ liệu nền';
+
+  @override
+  String get techUiBenefitBatteryBody =>
+      'Tần suất định vị tự động tối ưu theo khoảng cách di chuyển để không hao pin điện thoại.';
+
+  @override
+  String get techUiAllowLocation => 'Cho phép truy cập vị trí';
+
+  @override
+  String get techUiGpsServiceOff =>
+      'Dịch vụ định vị GPS đang tắt. Vui lòng bật GPS trên thiết bị.';
+
+  @override
+  String get techUiLocationBlockedForever =>
+      'Quyền truy cập vị trí bị chặn vĩnh viễn. Vui lòng mở Cài đặt để cấp quyền.';
+
+  @override
+  String get techUiGpsUpdated => 'Đã cập nhật vị trí GPS thành công.';
+
+  @override
+  String techUiLocationUpdateFailed(String error) {
+    return 'Không thể cập nhật vị trí: $error';
+  }
+
+  @override
+  String get techUiEndShiftQuestion => 'Kết thúc ca trực?';
+
+  @override
+  String get techUiEndShiftBody =>
+      'Hệ thống sẽ ngừng điều phối sự cố mới và ngắt hoàn toàn quyền truy cập vị trí của bạn.';
+
+  @override
+  String get techUiEndShift => 'Kết thúc ca';
+
+  @override
+  String get techUiShiftStarted =>
+      'Đã vào ca làm việc và kích hoạt định vị GPS.';
+
+  @override
+  String get techUiShiftEnded => 'Đã kết thúc ca và tắt định vị GPS.';
+
+  @override
+  String techUiShiftUpdateFailed(String error) {
+    return 'Lỗi cập nhật ca trực: $error';
+  }
+
+  @override
+  String get techUiNoLocationYet => 'Chưa có vị trí';
+
+  @override
+  String get techUiOnShift => 'Đang trong ca làm việc';
+
+  @override
+  String get techUiOffShift => 'Ngoài ca làm việc';
+
+  @override
+  String get techUiOnShiftLocationNote =>
+      'Vị trí được truy cập để điều phối công việc gần bạn nhất';
+
+  @override
+  String get techUiOffShiftLocationNote =>
+      'Định vị GPS đã ngắt kết nối hoàn toàn';
+
+  @override
+  String get techUiDeviceGpsInfo => 'THÔNG TIN GPS THIẾT BỊ';
+
+  @override
+  String get techUiGpsCoordinates => 'Tọa độ GPS';
+
+  @override
+  String get techUiGpsAccuracy => 'Độ chính xác GPS';
+
+  @override
+  String techUiAccuracyMeters(String meters) {
+    return '±$meters mét';
+  }
+
+  @override
+  String get techUiNotYet => 'Chưa có';
+
+  @override
+  String get techUiOpenGoogleMaps => 'Mở Google Maps';
+
+  @override
+  String get techUiUpdateGps => 'Cập nhật GPS';
+
+  @override
+  String get techUiNoGpsYet =>
+      'Chưa ghi nhận tọa độ GPS. Hãy bật ca trực hoặc nhấn Cập nhật vị trí.';
+
+  @override
+  String get techUiGetCurrentLocation => 'Lấy vị trí hiện tại';
+
+  @override
+  String get techUiPrivacyCommitment =>
+      'Cam kết quyền riêng tư: Hệ thống chỉ truy cập vị trí khi bạn trong ca. Khi hết ca, định vị tự động tắt hoàn toàn.';
+
+  @override
+  String get techUiLoadingShift => 'Đang tải trạng thái ca trực...';
+
+  @override
+  String get techUiOnShiftBadge => 'ĐANG TRONG CA';
+
+  @override
+  String get techUiOffShiftBadge => 'NGOÀI CA';
+
+  @override
+  String techUiGpsActive(String accuracy, String time) {
+    return 'GPS: Hoạt động$accuracy · $time';
+  }
+
+  @override
+  String get techUiGpsSearching => 'Đang dò tìm tín hiệu GPS...';
+
+  @override
+  String get techUiGpsOffHint => 'GPS đã tắt · Vào ca để kích hoạt vị trí';
+
+  @override
+  String get techUiRefreshGps => 'Cập nhật lại GPS';
+
+  @override
+  String get techUiEndShiftShort => 'Hết ca';
+
+  @override
+  String get techUiStartShift => 'Vào ca';
+
+  @override
+  String get techUiNotApplicable => 'Không áp dụng';
+
+  @override
+  String get techUiInvalidScheduleId => 'Mã lịch kiểm tra không hợp lệ.';
+
+  @override
+  String get techUiDroneRoutineMaintenance => 'Bảo trì định kỳ Drone';
+
+  @override
+  String get techUiKioskRoutineInspection => 'Kiểm tra định kỳ Kiosk';
+
+  @override
+  String get techUiKioskLocker => 'Tủ Kiosk';
+
+  @override
+  String get techUiConfirmRoutineInspection => 'Xác nhận kiểm tra định kỳ';
+
+  @override
+  String techUiCycleDays(int days) {
+    return 'Chu kỳ: $days ngày';
+  }
+
+  @override
+  String techUiChecklistProgress(int answered, int total) {
+    return 'Hạng mục kiểm tra ($answered/$total)';
+  }
+
+  @override
+  String get techUiNoChecklistPickOverall =>
+      'Lịch này chưa có checklist — chọn kết quả chung:';
+
+  @override
+  String get techUiInspectionNoteLabel =>
+      'Ghi chú biên bản kiểm tra (tuỳ chọn)';
+
+  @override
+  String get techUiInspectionNoteHintDrone =>
+      'Tình trạng pin, động cơ, cánh quạt, cảm biến hoặc linh kiện đã thay...';
+
+  @override
+  String get techUiInspectionNoteHintKiosk =>
+      'Tình trạng chung, vệ sinh ô tủ, linh kiện đã thay nếu có...';
+
+  @override
+  String get techUiFieldPhotosOptional =>
+      'Ảnh minh chứng hiện trường (tuỳ chọn):';
+
+  @override
+  String get techUiFieldPhotosHintDrone =>
+      'Chụp ảnh Drone, pin hoặc linh kiện vừa kiểm tra để lưu hồ sơ đối soát.';
+
+  @override
+  String get techUiFieldPhotosHintKiosk =>
+      'Chụp ảnh toàn cảnh tủ, ổ khóa hoặc linh kiện vừa kiểm tra để lưu hồ sơ đối soát.';
+
+  @override
+  String get techUiUpdating => 'Đang cập nhật...';
+
+  @override
+  String get techUiConfirmComplete => 'Xác nhận hoàn thành';
+
+  @override
+  String get techUiFaultDescOptional => 'Mô tả lỗi phát hiện (tuỳ chọn)';
+
+  @override
+  String get techUiNoteOptional => 'Ghi chú (tuỳ chọn)';
+
+  @override
+  String techUiItemsRemaining(int remaining, int total) {
+    return 'Còn $remaining/$total hạng mục chưa đánh giá.';
+  }
+
+  @override
+  String get techUiPickPassOrFail =>
+      'Chọn Đạt hoặc Không đạt cho lần kiểm tra này.';
+
+  @override
+  String get techUiResultFailWithTicket =>
+      'Kết quả: KHÔNG ĐẠT — hệ thống sẽ mở phiếu sự cố giao cho bạn. Hạn kiểm tra kế tiếp chỉ dời khi phiếu được hoàn tất.';
+
+  @override
+  String get techUiResultFail => 'Kết quả: KHÔNG ĐẠT.';
+
+  @override
+  String techUiResultPass(int days) {
+    return 'Kết quả: ĐẠT — hạn kiểm tra kế tiếp dời sang $days ngày sau.';
+  }
+
+  @override
+  String get techUiFaultyBoxOptional => 'Ô bị hỏng (tuỳ chọn)';
+
+  @override
+  String get techUiFaultyBoxHint =>
+      'Chọn ô ⇒ ô chuyển Hỏng và phiếu gắn với ô đó; không chọn ⇒ phiếu cấp tủ.';
+
+  @override
+  String get techUiNoBoxLockerLevel => 'Không gắn ô — sự cố cấp tủ';
+
+  @override
+  String techUiBoxWithStatus(String number, String status) {
+    return 'Ô #$number · $status';
+  }
+
+  @override
+  String get techUiIncidentDescOptional => 'Mô tả sự cố (tuỳ chọn)';
+
+  @override
+  String get techUiIncidentDescHint =>
+      'Để trống ⇒ phiếu liệt kê các mục không đạt';
+
+  @override
+  String techUiOverdueDays(int days) {
+    return 'Quá hạn $days ngày';
+  }
+
+  @override
+  String get techUiDueToday => 'Đến hạn hôm nay';
+
+  @override
+  String techUiDueInDays(int days) {
+    return 'Còn $days ngày nữa đến hạn';
+  }
+
+  @override
+  String techUiPrevFailedFinishTicket(Object id) {
+    return 'Lần trước không đạt — hoàn tất phiếu RPT-$id trước khi kiểm tra lại.';
+  }
+
+  @override
+  String get techUiScheduleOtherTech => 'Lịch do KTV khác phụ trách.';
+
+  @override
+  String get techUiPriorityUrgent => 'Khẩn cấp';
+
+  @override
+  String get techUiPriorityHigh => 'Cao';
+
+  @override
+  String get techUiPriorityLow => 'Thấp';
+
+  @override
+  String get techUiPriorityNormalDrone => 'Bình thường (Drone tiêu chuẩn)';
+
+  @override
+  String get techUiPriorityNormalStation => 'Bình thường (Trạm tiêu chuẩn)';
+
+  @override
+  String get techUiRoutineSchedule => 'Lịch kiểm tra định kỳ';
+
+  @override
+  String get techUiDroneRoutine => 'Định kỳ Drone';
+
+  @override
+  String get techUiKioskRoutine => 'Định kỳ Kiosk';
+
+  @override
+  String get techUiSchedulePlanRecord =>
+      'Hồ sơ chi tiết kế hoạch kiểm tra bảo trì định kỳ';
+
+  @override
+  String get techUiDroneMaintenancePlan => 'Kế hoạch bảo trì định kỳ Drone';
+
+  @override
+  String get techUiKioskInspectionPlan =>
+      'Kế hoạch kiểm tra bảo trì định kỳ Kiosk';
+
+  @override
+  String get techUiDronePlanNote =>
+      'Đây là lịch bảo trì Drone theo chu kỳ do Quản trị viên thiết lập; kết quả checklist được lưu vào hồ sơ vận hành.';
+
+  @override
+  String get techUiKioskPlanNote =>
+      'Đây là lịch kiểm tra bảo dưỡng định kỳ tự động theo chu kỳ cho trạm Kiosk do Quản trị viên thiết lập (không phải là phiếu báo hỏng sự cố).';
+
+  @override
+  String get techUiInspectionDue => 'Đến hạn kiểm tra';
+
+  @override
+  String techUiPriorityLabel(String priority) {
+    return 'Ưu tiên: $priority';
+  }
+
+  @override
+  String techUiCycleEveryDays(String days) {
+    return 'Chu kỳ: Mỗi $days ngày';
+  }
+
+  @override
+  String techUiShiftSlot(String slot) {
+    return 'Ca: $slot';
+  }
+
+  @override
+  String get techUiNoTechAssigned => 'Chưa giao KTV';
+
+  @override
+  String get techUiTechInChargeYou => 'KTV phụ trách: Bạn';
+
+  @override
+  String techUiPlacementInBuilding(String note) {
+    return 'Vị trí đặt trong toà nhà: $note';
+  }
+
+  @override
+  String get techUiDirectionsDroneStation => 'Chỉ đường tới trạm Drone';
+
+  @override
+  String get techUiPlanAndDeadline => 'Kế hoạch & Thời hạn kiểm tra:';
+
+  @override
+  String get techUiDueDateLabel => 'Hạn kiểm tra tới (Ngày hẹn):';
+
+  @override
+  String get techUiStartTimeLabel => 'Giờ hẹn bắt đầu cụ thể:';
+
+  @override
+  String get techUiTimeSlotLabel => 'Khung giờ / Ca kiểm tra:';
+
+  @override
+  String get techUiFlexibleSlot => 'Khung giờ linh hoạt';
+
+  @override
+  String get techUiRepeatCycleLabel => 'Chu kỳ lặp lại:';
+
+  @override
+  String techUiEveryDaysOnce(String days) {
+    return 'Mỗi $days ngày thực hiện 1 lần';
+  }
+
+  @override
+  String get techUiPriorityLevelLabel => 'Mức độ ưu tiên:';
+
+  @override
+  String get techUiTechnicianLabel => 'Kỹ thuật viên phụ trách:';
+
+  @override
+  String get techUiUnassignedWaiting => 'Chưa phân công (Chờ nhận)';
+
+  @override
+  String get techUiYouAssigned => 'Bạn (Được giao cho tôi)';
+
+  @override
+  String get techUiLastInspectionLabel => 'Lần kiểm tra trước:';
+
+  @override
+  String get techUiNoInspectionHistory => 'Chưa có lịch sử kiểm tra';
+
+  @override
+  String techUiChecklistCriteria(int count) {
+    return 'Bộ tiêu chí kiểm định ($count mục KTV cần thực hiện):';
+  }
+
+  @override
+  String get techUiDroneFullCheck =>
+      'Kiểm tra toàn diện tình trạng vận hành của Drone.';
+
+  @override
+  String get techUiKioskFullCheck =>
+      'Kiểm tra toàn diện hoạt động của trạm tủ Kiosk.';
+
+  @override
+  String get techUiSopGuide =>
+      'Hướng dẫn nghiệp vụ (Ghi chú SOP từ Quản trị viên):';
+
+  @override
+  String get techUiPrevResultLabel => 'Kết quả kiểm tra lần trước:';
+
+  @override
+  String techUiInspectionLogsFailed(String error) {
+    return 'Không tải được nhật ký kiểm tra: $error';
+  }
+
+  @override
+  String get techUiCheckedNoOverall =>
+      'Đã kiểm tra — không có kết quả chung trong nhật ký';
+
+  @override
+  String get techUiPassedAllCriteria => 'ĐẠT — Toàn bộ tiêu chí đạt yêu cầu';
+
+  @override
+  String get techUiFailedHasIssues =>
+      'KHÔNG ĐẠT — Có hạng mục bị lỗi cần xử lý';
+
+  @override
+  String techUiLogTime(String time) {
+    return 'Thời gian: $time';
+  }
+
+  @override
+  String techUiLogTimeWithTech(String time, String name) {
+    return 'Thời gian: $time · KTV: $name';
+  }
+
+  @override
+  String techUiItemDetails(int count) {
+    return 'Chi tiết đánh giá từng hạng mục ($count mục):';
+  }
+
+  @override
+  String techUiTechNote(String note) {
+    return 'Ghi chú KTV: $note';
+  }
+
+  @override
+  String get techUiNoItemResultsInLog =>
+      'Nhật ký lần trước không lưu kết quả từng hạng mục — chỉ có kết quả chung ở trên.';
+
+  @override
+  String techUiTechNoteQuoted(String note) {
+    return 'Ghi chú KTV: \"$note\"';
+  }
+
+  @override
+  String techUiFieldPhotosCount(int count) {
+    return 'Ảnh hiện trường KTV đã chụp ($count ảnh):';
+  }
+
+  @override
+  String get techUiPrevInspectionPhotos => 'Ảnh kiểm tra định kỳ lần trước';
+
+  @override
+  String techUiRelatedTicket(Object id) {
+    return 'Phiếu sự cố kỹ thuật liên quan: RPT-$id';
+  }
+
+  @override
+  String get techUiFailedTicketOpenedNote =>
+      'Do lần kiểm tra trước không đạt, hệ thống đã mở phiếu sự cố kỹ thuật. Bạn cần xử lý và nghiệm thu hoàn tất phiếu này để lịch định kỳ mở lại cho lần kiểm tra tiếp theo.';
+
+  @override
+  String techUiOpenTicketToHandle(Object id) {
+    return 'Mở phiếu sự cố RPT-$id để xử lý';
+  }
+
+  @override
+  String get techUiNoPrevInspection =>
+      'Chưa có dữ liệu kiểm tra lần trước (Lịch kiểm tra mới được thiết lập).';
+
+  @override
+  String techUiHandleTicket(Object id) {
+    return 'Xử lý phiếu sự cố RPT-$id';
+  }
+
+  @override
+  String get techUiScheduleOtherTechShort => 'Lịch do KTV khác phụ trách';
+
+  @override
+  String get techUiStartInspectionDue => 'Bắt đầu kiểm tra ngay (Đến hạn)';
+
+  @override
+  String get techUiInspectNow => 'Kiểm tra ngay';
+
+  @override
+  String get techUiIncidentReport => 'Báo cáo sự cố';
+
+  @override
+  String get techUiSavingChanges => 'Đang lưu thay đổi...';
+
+  @override
+  String get techUiProfileUpdated => 'Cập nhật thông tin hồ sơ thành công!';
+
+  @override
+  String get techUiAvatar => 'Ảnh đại diện';
+
+  @override
+  String get techUiTakeNewPhoto => 'Chụp ảnh mới';
+
+  @override
+  String get techUiChooseFromGallery => 'Chọn từ bộ sưu tập';
+
+  @override
+  String get techUiDeleteAvatar => 'Xóa ảnh đại diện';
+
+  @override
+  String get techUiUploadingAvatar => 'Đang tải lên ảnh đại diện...';
+
+  @override
+  String get techUiAccountIdUnknown => 'Không xác định được ID tài khoản';
+
+  @override
+  String techUiPhotoUploadFailed(String error) {
+    return 'Tải ảnh thất bại: $error';
+  }
+
+  @override
+  String get techUiAvatarUpdated => 'Đã cập nhật ảnh đại diện thành công';
+
+  @override
+  String techUiPhotoUploadError(String error) {
+    return 'Lỗi tải ảnh: $error';
+  }
+
+  @override
+  String get techUiDeleteAvatarQuestion => 'Xóa ảnh đại diện?';
+
+  @override
+  String get techUiDeleteAvatarBody =>
+      'Bạn có chắc chắn muốn gỡ ảnh đại diện hiện tại?';
+
+  @override
+  String get techUiDelete => 'Xóa';
+
+  @override
+  String get techUiDeletingPhoto => 'Đang xóa ảnh...';
+
+  @override
+  String techUiPhotoDeleteFailed(String error) {
+    return 'Xóa ảnh thất bại: $error';
+  }
+
+  @override
+  String get techUiAvatarDeleted => 'Đã xóa ảnh đại diện';
+
+  @override
+  String techUiPhotoDeleteError(String error) {
+    return 'Lỗi xóa ảnh: $error';
+  }
+
+  @override
+  String get techUiLogoutShift => 'Đăng xuất ca trực';
+
+  @override
+  String techUiLogoutConfirm(String role) {
+    return 'Bạn có chắc chắn muốn kết thúc ca trực và đăng xuất khỏi tài khoản $role không?';
+  }
+
+  @override
+  String get techUiLockerTechnician => 'Kỹ thuật viên tủ';
+
+  @override
+  String get techUiSaving => 'Đang lưu...';
+
+  @override
+  String get techUiSaveProfileChanges => 'Lưu thay đổi thông tin';
+
+  @override
+  String get techUiLogoutAccount => 'Đăng xuất tài khoản';
+
+  @override
+  String get techUiTechnicianProfile => 'Hồ sơ kỹ thuật viên';
+
+  @override
+  String get techUiRoleBadgeDrone => 'DRONE · Kỹ thuật viên drone';
+
+  @override
+  String get techUiRoleBadgeLocker => 'KIOSK · Kỹ thuật viên tủ';
+
+  @override
+  String techUiStatsLoadFailed(String error) {
+    return 'Không tải được đầy đủ chỉ số: $error';
+  }
+
+  @override
+  String get techUiShiftMetrics => 'Chỉ số vận hành ca trực';
+
+  @override
+  String get techUiMetricReceived => 'Phiếu đã nhận';
+
+  @override
+  String get techUiMetricInProgress => 'Đang làm';
+
+  @override
+  String get techUiQualityRating => 'Đánh giá chất lượng: ';
+
+  @override
+  String get techUiNoRatingYet => 'Chưa có đánh giá';
+
+  @override
+  String get techUiEditPersonalInfo => 'Chỉnh sửa thông tin cá nhân';
+
+  @override
+  String get techUiFullNameLabel => 'Họ và tên kỹ thuật viên *';
+
+  @override
+  String get techUiFullNameHint => 'Nhập họ và tên đầy đủ';
+
+  @override
+  String get techUiFullNameMin => 'Họ và tên phải có ít nhất 2 ký tự';
+
+  @override
+  String get techUiContactPhone => 'Số điện thoại liên hệ';
+
+  @override
+  String get techUiPhoneHint => 'Ví dụ: 0912345678';
+
+  @override
+  String get techUiPhoneMin => 'Số điện thoại phải có ít nhất 9 chữ số';
+
+  @override
+  String get techUiAccountEmailFixed => 'Email tài khoản (Cố định)';
+
+  @override
+  String get techUiIdentity => 'Định danh';
+
+  @override
+  String get techUiRoleDroneLong => 'Kỹ thuật viên drone (đội bay)';
+
+  @override
+  String get techUiRoleLockerLong => 'Kỹ thuật viên tủ (ô tủ & phần cứng)';
+
+  @override
+  String get techUiRoleDroneDesc =>
+      'Điều phối, bảo trì drone và xử lý phiếu sự cố drone.';
+
+  @override
+  String get techUiRoleLockerDesc =>
+      'Bảo trì ô tủ, thiết bị IoT và xử lý phiếu sự cố tại tủ.';
+
+  @override
+  String techRecLoadError(Object error) {
+    return 'Không tải được nhiệm vụ thu hồi: $error';
+  }
+
+  @override
+  String get techRecEmptyTitle => 'Chưa có nhiệm vụ thu hồi kiện';
+
+  @override
+  String get techRecEmptyHint =>
+      'Nhiệm vụ được phân công sẽ xuất hiện tại đây.';
+
+  @override
+  String get techRecBanner =>
+      'Thu hồi kiện theo vị trí rơi đã xác minh. Phải chụp ảnh thật, ghi GPS và tình trạng kiện trước khi gửi Admin duyệt.';
+
+  @override
+  String get techRecUrgentTag => 'Nhiệm vụ tìm kiếm khẩn cấp · Drone rơi';
+
+  @override
+  String techRecIncidentHash(Object id) {
+    return 'Sự cố #$id';
+  }
+
+  @override
+  String get techRecNoGps => 'Không có GPS · kiểm tra bằng chứng trước khi đi';
+
+  @override
+  String get techRecSituation => 'Tình huống';
+
+  @override
+  String get techRecDataAccuracy => 'Độ chính xác dữ liệu';
+
+  @override
+  String techRecAccuracyLine(Object source, Object accuracy, Object telemetry) {
+    return 'Nguồn vị trí: $source · sai số $accuracy · telemetry $telemetry';
+  }
+
+  @override
+  String get techRecUnknown => 'không rõ';
+
+  @override
+  String get techRecTelemetryStale => 'đã cũ';
+
+  @override
+  String get techRecTelemetryLive => 'trực tuyến';
+
+  @override
+  String get techRecGpsSourceDrone => 'GPS drone';
+
+  @override
+  String get techRecGpsSourceFlightPath => 'ước theo tuyến bay';
+
+  @override
+  String get techRecGpsSourceNone => 'chưa có';
+
+  @override
+  String get techRecDirectionsToDrop => 'Mở chỉ đường tới vị trí rơi';
+
+  @override
+  String get techRecEvidence => 'Bằng chứng hiện có';
+
+  @override
+  String get techRecImageLoadError => 'Lỗi tải ảnh';
+
+  @override
+  String get techRecAccept => 'Nhận nhiệm vụ';
+
+  @override
+  String get techRecStartSearch => 'Bắt đầu tìm kiếm';
+
+  @override
+  String get techRecRecordResult => 'Ghi nhận kết quả tìm kiếm';
+
+  @override
+  String get techRecConfirmHubHandover => 'Xác nhận bàn giao kiện về Hub / kho';
+
+  @override
+  String techRecConfirmStationHandover(Object station) {
+    return 'Xác nhận đã giao kiện tại trạm $station';
+  }
+
+  @override
+  String get techRecSubmittedTitle => 'Kết quả đã gửi';
+
+  @override
+  String get techRecSubmittedBody =>
+      'Admin sẽ xác minh bằng chứng và quyết định bước tiếp theo.';
+
+  @override
+  String get techRecClosedTitle => 'Đã hoàn tất thu hồi';
+
+  @override
+  String get techRecClosedHubBody =>
+      'Admin đã xác minh và kiện đã về Hub / kho. Bạn không cần làm gì thêm.';
+
+  @override
+  String techRecClosedStationBody(Object station) {
+    return 'Kiện đã giao tại trạm $station. Bạn không cần làm gì thêm.';
+  }
+
+  @override
+  String get techRecNoGpsTitle => 'Không lấy được vị trí GPS';
+
+  @override
+  String get techRecNoGpsBody =>
+      'Kết quả thu hồi cần toạ độ nơi chụp để Admin đối chiếu. Hãy bật định vị và cấp quyền vị trí rồi thử lại. Chỉ gửi không kèm GPS khi thật sự không thể định vị — Admin sẽ thấy bằng chứng thiếu toạ độ.';
+
+  @override
+  String get techRecRetryLater => 'Thử lại sau';
+
+  @override
+  String get techRecSendWithoutGps => 'Vẫn gửi không kèm GPS';
+
+  @override
+  String techRecStationTitle(Object station) {
+    return 'Trạm $station';
+  }
+
+  @override
+  String get techRecHandoverHubTitle => 'Bàn giao kiện về Hub / kho?';
+
+  @override
+  String techRecHandoverStationTitle(Object station) {
+    return 'Đã giao kiện tại trạm $station?';
+  }
+
+  @override
+  String get techRecHandoverHubBody =>
+      'Chỉ xác nhận khi kiện đã nằm ở Hub / kho và đã có người nhận bàn giao. Sau bước này kiện thuộc trách nhiệm của Hub.';
+
+  @override
+  String techRecHandoverStationBody(Object station) {
+    return 'Chỉ xác nhận khi kiện đã nằm ở trạm $station và đã có người nhận bàn giao. Sau bước này kiện chờ drone bay giao lại cho khách.';
+  }
+
+  @override
+  String get techRecHandedOver => 'Đã bàn giao';
+
+  @override
+  String get techRecHubHandoverDone => 'Đã xác nhận kiện về Hub / kho.';
+
+  @override
+  String techRecStationHandoverDone(Object station) {
+    return 'Đã xác nhận giao kiện tại trạm $station.';
+  }
+
+  @override
+  String get techRecTagIntact => 'Kiện còn nguyên vẹn, niêm phong tốt';
+
+  @override
+  String get techRecTagPackagingDamaged => 'Bao bì rách/móp nhẹ do va đập';
+
+  @override
+  String get techRecTagDroneStuck => 'Drone gãy cánh, kẹt cành cây';
+
+  @override
+  String get techRecTagNotFound => 'Đã tìm khắp khu vực không thấy kiện';
+
+  @override
+  String get techRecTagUnsafe => 'Khu vực không an toàn, không tiếp cận được';
+
+  @override
+  String get techRecSheetTitle => 'Báo cáo hiện trường & Kết quả thu hồi';
+
+  @override
+  String get techRecSheetHint =>
+      'KTV kiosk phải bấm xác nhận tọa độ thực tế tại điểm tìm kiếm, nhập ghi chú tình trạng và chụp ảnh bằng chứng.';
+
+  @override
+  String get techRecGpsConfirmed => 'Đã xác nhận tọa độ hiện trường';
+
+  @override
+  String get techRecConfirmGpsTitle => 'Xác nhận tọa độ GPS tại hiện trường';
+
+  @override
+  String get techRecConfirmGpsHint =>
+      'Bấm nút bên dưới để lấy toạ độ GPS chính xác nơi bạn đang đứng đối chiếu với điểm drone rơi.';
+
+  @override
+  String get techRecGpsUnavailable =>
+      'Không lấy được toạ độ GPS. Vui lòng bật định vị và cấp quyền vị trí.';
+
+  @override
+  String get techRecReadingGps => 'Đang đọc tín hiệu GPS...';
+
+  @override
+  String get techRecConfirmGpsButton => 'Bấm xác nhận tọa độ hiện trường';
+
+  @override
+  String techRecCoordinates(Object lat, Object lng, Object accuracy) {
+    return 'Tọa độ: $lat, $lng (Sai số: ±$accuracy m)';
+  }
+
+  @override
+  String techRecWithinRange(Object meters) {
+    return '✓ Trong phạm vi hiện trường (~$meters m từ điểm rơi)';
+  }
+
+  @override
+  String techRecOutOfRange(Object meters) {
+    return '⚠️ Cách điểm rơi ~$meters m (Tiến lại gần hơn nếu có thể)';
+  }
+
+  @override
+  String get techRecRefreshGps => 'Cập nhật lại GPS';
+
+  @override
+  String get techRecSearchResult => 'Kết quả tìm kiếm';
+
+  @override
+  String get techRecOutcomeFound => 'Đã tìm thấy kiện hàng';
+
+  @override
+  String get techRecOutcomeNotFound => 'Không tìm thấy kiện hàng';
+
+  @override
+  String get techRecOutcomeUnsafe => 'Khu vực không an toàn để tìm';
+
+  @override
+  String get techRecCondIntact => 'Nguyên vẹn';
+
+  @override
+  String get techRecCondMinor => 'Hư hại nhẹ';
+
+  @override
+  String get techRecCondMajor => 'Hư hại nặng';
+
+  @override
+  String get techRecCondUnusable => 'Không thể sử dụng';
+
+  @override
+  String get techRecNoteLabel => 'Ghi chú hiện trường (Bắt buộc nhập mô tả)';
+
+  @override
+  String get techRecNoteHint =>
+      'Mô tả vị trí phát hiện, hiện trạng drone, tình trạng kiện, nơi lưu trữ tạm...';
+
+  @override
+  String get techRecPhotoHelper =>
+      'Bắt buộc ít nhất 1 ảnh chụp trực tiếp tại hiện trường (kèm toạ độ).';
+
+  @override
+  String get techRecPhotoRequired => 'Vui lòng chụp ít nhất 1 ảnh hiện trường.';
+
+  @override
+  String get techRecNoteRequired => 'Vui lòng nhập ghi chú hiện trường.';
+
+  @override
+  String get techRecSubmit => 'Gửi Admin xác minh';
+
+  @override
+  String techRecBringToStation(Object name) {
+    return 'Mang kiện tới trạm $name';
+  }
+
+  @override
+  String techRecDistanceFromFound(Object km) {
+    return 'Cách nơi tìm thấy ~$km km';
+  }
+
+  @override
+  String get techRecStationNoDrone =>
+      'Trạm đang hết drone — kiện chờ drone tại trạm';
+
+  @override
+  String get techRecStationHasDrone => 'Trạm còn drone sẵn sàng giao lại';
+
+  @override
+  String get techRecDirectionsToStation => 'Chỉ đường tới trạm';
+
+  @override
+  String get techRecErrHandoverFailed =>
+      'Bàn giao trực tiếp thất bại — kiểm tra lại mã PIN 6 số hoặc mã QR của đơn rồi thử lại.';
+
+  @override
+  String get techRecErrInvalidOtp => 'Mã PIN/QR của đơn không đúng.';
+
+  @override
+  String get techRecErrRelocateFailed =>
+      'Không chuyển được đơn sang ô mới. Hàng vẫn ở ô cũ — thử lại hoặc chọn phương án khác.';
+
+  @override
+  String get techRecErrSlaNotAssignee =>
+      'Chỉ KTV đang được giao phiếu mới gia hạn được SLA.';
+
+  @override
+  String get techRecErrSlaLimitReached =>
+      'Phiếu đã hết lượt tự gia hạn SLA — liên hệ admin nếu cần thêm thời gian.';
+
+  @override
+  String get techRecErrSlaHoursExceeded =>
+      'Số giờ gia hạn vượt mức cho phép mỗi lần.';
+
+  @override
+  String get techRecErrSlaReasonRequired => 'Cần nêu lý do gia hạn SLA.';
+
+  @override
+  String get techRecErrInvalidExtensionHours =>
+      'Thời gian gia hạn phải từ 1 giờ trở lên.';
+
+  @override
+  String get techRecErrSlaRestricted =>
+      'Bạn đang có quá nhiều phiếu trễ hạn SLA nên tạm thời không nhận được việc mới.';
+
+  @override
+  String get techRecErrReleaseReasonRequired =>
+      'Cần nêu lý do trả phiếu về hàng chờ.';
+
+  @override
+  String get techRecErrReportNotClaimed =>
+      'Phiếu đang ở hàng chờ, chưa có KTV nhận.';
+
+  @override
+  String get techRecErrReportResolved => 'Phiếu đã được hoàn tất.';
+
+  @override
+  String get techRecErrReportOpen =>
+      'Ô/bãi đáp đang có phiếu sự cố mở — hoàn tất phiếu đó trước.';
+
+  @override
+  String get techRecErrTargetBoxRequired =>
+      'Cần chọn ô trống đích để điều chuyển hàng.';
+
+  @override
+  String get techRecErrTargetBoxUnavailable =>
+      'Ô đích không còn trống — tải lại sơ đồ và chọn ô khác.';
+
+  @override
+  String get techRecErrBoxNotFault => 'Ô không còn ở trạng thái lỗi.';
+
+  @override
+  String get techRecErrHandoverOtpRequired =>
+      'Cần mã PIN 6 số hoặc mã QR của đơn để bàn giao.';
+
+  @override
+  String get techRecErrHandoverOtpUnavailable =>
+      'Đơn chưa có mã lấy hàng nên chưa bàn giao trực tiếp được.';
+
+  @override
+  String get techRecErrSealRequired => 'Nhập mã Seal in trên túi niêm phong.';
+
+  @override
+  String get techRecErrIncidentActionInvalid => 'Phương án xử lý không hợp lệ.';
+
+  @override
+  String get techRecErrIncidentBoxNotInLocker =>
+      'Ô đã chọn không thuộc tủ của phiếu.';
+
+  @override
+  String get techRecErrForceOpenReportRequired =>
+      'Ảnh khi mở khẩn cấp chỉ lưu được khi mở từ một phiếu sự cố.';
+
+  @override
+  String get techRecErrForceOpenReportMismatch =>
+      'Phiếu sự cố không thuộc tủ của ô này.';
+
+  @override
+  String get techRecErrDroneReportRequired =>
+      'Phiếu này không phải phiếu drone.';
+
+  @override
+  String get techRecErrDeviceNotPaired => 'Thiết bị chưa được gắn với tủ nào.';
+
+  @override
+  String get techRecErrDeviceNotInScope =>
+      'Thiết bị không thuộc tủ bạn phụ trách.';
+
+  @override
+  String get techRecErrDeviceOnlineNotAllowed =>
+      'Trạng thái trực tuyến do máy chủ tự tính, không đặt tay được.';
 }

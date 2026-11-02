@@ -15775,6 +15775,4511 @@ abstract class AppLocalizations {
   /// In vi, this message translates to:
   /// **'NGUYEN VAN A'**
   String get holderNameHint;
+
+  /// No description provided for @techHomeScheduleNotFound.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không tìm thấy lịch kiểm tra #{id} (có thể đã bị xoá hoặc không thuộc tủ bạn xem được).'**
+  String techHomeScheduleNotFound(Object id);
+
+  /// No description provided for @techHomeLoadPartialFailed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không tải được đầy đủ dữ liệu: {details}'**
+  String techHomeLoadPartialFailed(Object details);
+
+  /// No description provided for @techHomeLogoutShiftTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đăng xuất ca trực'**
+  String get techHomeLogoutShiftTitle;
+
+  /// No description provided for @techHomeLogoutShiftConfirm.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bạn có chắc chắn muốn kết thúc ca trực và đăng xuất khỏi tài khoản KTV tủ không?'**
+  String get techHomeLogoutShiftConfirm;
+
+  /// No description provided for @techHomeLockerTechnician.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kỹ thuật viên tủ'**
+  String get techHomeLockerTechnician;
+
+  /// No description provided for @techHomePhoneNotSet.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa cập nhật SĐT'**
+  String get techHomePhoneNotSet;
+
+  /// No description provided for @techHomeLockerTechnicianRole.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kỹ thuật viên tủ (ô tủ & phần cứng)'**
+  String get techHomeLockerTechnicianRole;
+
+  /// No description provided for @techHomeStatReceived.
+  ///
+  /// In vi, this message translates to:
+  /// **'Phiếu đã nhận'**
+  String get techHomeStatReceived;
+
+  /// No description provided for @techHomeStatInProgress.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang làm'**
+  String get techHomeStatInProgress;
+
+  /// No description provided for @techHomeQualityRatingLabel.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đánh giá chất lượng: '**
+  String get techHomeQualityRatingLabel;
+
+  /// No description provided for @techHomeNoRatingYet.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa có đánh giá'**
+  String get techHomeNoRatingYet;
+
+  /// No description provided for @techHomeSlaPolicyLabel.
+  ///
+  /// In vi, this message translates to:
+  /// **'Quy chế SLA: '**
+  String get techHomeSlaPolicyLabel;
+
+  /// No description provided for @techHomeTechPhoneLabel.
+  ///
+  /// In vi, this message translates to:
+  /// **'SĐT kỹ thuật: '**
+  String get techHomeTechPhoneLabel;
+
+  /// No description provided for @techHomeViewEditProfile.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xem & Chỉnh sửa hồ sơ'**
+  String get techHomeViewEditProfile;
+
+  /// No description provided for @techHomeSlaRestrictedTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hạn chế nhận việc mới'**
+  String get techHomeSlaRestrictedTitle;
+
+  /// No description provided for @techHomeSlaRestrictedBody.
+  ///
+  /// In vi, this message translates to:
+  /// **'Quy chế SLA: khi số phiếu quá hạn vượt ngưỡng do quản trị cấu hình, KTV tạm thời không nhận được việc mới. Vui lòng chuyển sang tab \"Việc của tôi\" và hoàn tất các công việc tồn đọng.'**
+  String get techHomeSlaRestrictedBody;
+
+  /// No description provided for @techHomeViewMyWork.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xem việc của tôi'**
+  String get techHomeViewMyWork;
+
+  /// No description provided for @techHomeOpenTicket.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mở phiếu'**
+  String get techHomeOpenTicket;
+
+  /// No description provided for @techHomeBoxBackOnline.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ô đã hoạt động lại'**
+  String get techHomeBoxBackOnline;
+
+  /// No description provided for @techHomeTicketLoadFailed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không tải được phiếu RPT-{id}'**
+  String techHomeTicketLoadFailed(Object id);
+
+  /// No description provided for @techHomeTicketAlreadyClosed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Phiếu RPT-{id} đã được đóng.'**
+  String techHomeTicketAlreadyClosed(Object id);
+
+  /// No description provided for @techHomeTicketHandledByOther.
+  ///
+  /// In vi, this message translates to:
+  /// **'Phiếu RPT-{id} đang do {assignee} xử lý — chỉ người được giao mới hoàn tất được.'**
+  String techHomeTicketHandledByOther(Object id, Object assignee);
+
+  /// No description provided for @techHomeTicketUnassignedTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Phiếu RPT-{id} chưa có người nhận'**
+  String techHomeTicketUnassignedTitle(Object id);
+
+  /// No description provided for @techHomeTicketUnassignedBody.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ô/bãi đáp này đang có phiếu sự cố mở. Nhận phiếu rồi nghiệm thu (chụp ảnh sau khi sửa) để đưa về hoạt động.'**
+  String get techHomeTicketUnassignedBody;
+
+  /// No description provided for @techHomeClaimAndAccept.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhận & nghiệm thu'**
+  String get techHomeClaimAndAccept;
+
+  /// No description provided for @techHomeLockerNoLocation.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tủ này chưa có vị trí để chỉ đường.'**
+  String get techHomeLockerNoLocation;
+
+  /// No description provided for @techHomeGreetingMorning.
+  ///
+  /// In vi, this message translates to:
+  /// **'☀️ Chào buổi sáng'**
+  String get techHomeGreetingMorning;
+
+  /// No description provided for @techHomeGreetingNoon.
+  ///
+  /// In vi, this message translates to:
+  /// **'🌤️ Chào buổi trưa'**
+  String get techHomeGreetingNoon;
+
+  /// No description provided for @techHomeGreetingAfternoon.
+  ///
+  /// In vi, this message translates to:
+  /// **'🌅 Chào buổi chiều'**
+  String get techHomeGreetingAfternoon;
+
+  /// No description provided for @techHomeGreetingEvening.
+  ///
+  /// In vi, this message translates to:
+  /// **'🌙 Chào ca tối'**
+  String get techHomeGreetingEvening;
+
+  /// No description provided for @techHomeSlaSuspended.
+  ///
+  /// In vi, this message translates to:
+  /// **'SLA: Đình chỉ ({count} phiếu trễ hạn)'**
+  String techHomeSlaSuspended(Object count);
+
+  /// No description provided for @techHomeSlaRestricted.
+  ///
+  /// In vi, this message translates to:
+  /// **'SLA: Hạn chế nhận việc ({count} phiếu trễ hạn)'**
+  String techHomeSlaRestricted(Object count);
+
+  /// No description provided for @techHomeSlaWarning.
+  ///
+  /// In vi, this message translates to:
+  /// **'SLA: Cảnh báo ({count} phiếu trễ hạn)'**
+  String techHomeSlaWarning(Object count);
+
+  /// No description provided for @techHomeSlaNormalWithCount.
+  ///
+  /// In vi, this message translates to:
+  /// **'SLA: Bình thường ({count} phiếu đang xử lý)'**
+  String techHomeSlaNormalWithCount(Object count);
+
+  /// No description provided for @techHomeSlaNormal.
+  ///
+  /// In vi, this message translates to:
+  /// **'SLA: Bình thường'**
+  String get techHomeSlaNormal;
+
+  /// No description provided for @techHomeSlaUnknownWithOverdue.
+  ///
+  /// In vi, this message translates to:
+  /// **'SLA: {count} phiếu trễ hạn · chưa tải được mức chế tài'**
+  String techHomeSlaUnknownWithOverdue(Object count);
+
+  /// No description provided for @techHomeSlaUnknown.
+  ///
+  /// In vi, this message translates to:
+  /// **'SLA: chưa tải được trạng thái'**
+  String get techHomeSlaUnknown;
+
+  /// No description provided for @techHomeProfileAndEdit.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hồ sơ & Chỉnh sửa'**
+  String get techHomeProfileAndEdit;
+
+  /// No description provided for @techHomeHudRoutine.
+  ///
+  /// In vi, this message translates to:
+  /// **'Định kỳ'**
+  String get techHomeHudRoutine;
+
+  /// No description provided for @techHomeHudStations.
+  ///
+  /// In vi, this message translates to:
+  /// **'Trạm tủ'**
+  String get techHomeHudStations;
+
+  /// No description provided for @techHomeTabInspect.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kiểm tra tủ'**
+  String get techHomeTabInspect;
+
+  /// No description provided for @techHomeTabIncidents.
+  ///
+  /// In vi, this message translates to:
+  /// **'Sự cố ({count})'**
+  String techHomeTabIncidents(Object count);
+
+  /// No description provided for @techHomeTabMyWork.
+  ///
+  /// In vi, this message translates to:
+  /// **'Việc của tôi ({count})'**
+  String techHomeTabMyWork(Object count);
+
+  /// No description provided for @techHomeTabRoutine.
+  ///
+  /// In vi, this message translates to:
+  /// **'Định kỳ ({count})'**
+  String techHomeTabRoutine(Object count);
+
+  /// No description provided for @techHomeTabIotDevices.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thiết bị IoT ({count})'**
+  String techHomeTabIotDevices(Object count);
+
+  /// No description provided for @techHomeTabParcelRecovery.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thu hồi kiện ({count})'**
+  String techHomeTabParcelRecovery(Object count);
+
+  /// No description provided for @techHomeRecoveryBannerTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Có {count} nhiệm vụ thu hồi kiện rơi'**
+  String techHomeRecoveryBannerTitle(int count);
+
+  /// No description provided for @techHomeRecoveryBannerHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chạm để mở tab \"Thu hồi kiện\".'**
+  String get techHomeRecoveryBannerHint;
+
+  /// No description provided for @techHomePickLockerToInspect.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chọn tủ để kiểm tra'**
+  String get techHomePickLockerToInspect;
+
+  /// No description provided for @techHomeLockersLoadFailed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa tải được danh sách tủ'**
+  String get techHomeLockersLoadFailed;
+
+  /// No description provided for @techHomeNoLockers.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa có tủ nào'**
+  String get techHomeNoLockers;
+
+  /// No description provided for @techHomeLayoutLoadFailed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không tải được sơ đồ tủ: {error}'**
+  String techHomeLayoutLoadFailed(Object error);
+
+  /// No description provided for @techHomeKioskPhysicalLayout.
+  ///
+  /// In vi, this message translates to:
+  /// **'Sơ đồ vật lý trạm Kiosk'**
+  String get techHomeKioskPhysicalLayout;
+
+  /// No description provided for @techHomeTapBoxHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chạm vào một ô để báo hỏng, mở khẩn cấp hoặc mở lại ô sau khi sửa.'**
+  String get techHomeTapBoxHint;
+
+  /// No description provided for @techHomeWorkingWell.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hoạt động tốt'**
+  String get techHomeWorkingWell;
+
+  /// No description provided for @techHomeDroneLandingPad.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bãi đáp drone'**
+  String get techHomeDroneLandingPad;
+
+  /// No description provided for @techHomeTicketOpenPill.
+  ///
+  /// In vi, this message translates to:
+  /// **'Phiếu RPT-{id} đang mở'**
+  String techHomeTicketOpenPill(Object id);
+
+  /// No description provided for @techHomeLandingPadHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Báo Hỏng/Bảo trì ⇒ mở phiếu bãi đáp giao cho bạn. Về \"Hoạt động tốt\" khi còn phiếu ⇒ nghiệm thu phiếu (ảnh sau khi sửa).'**
+  String get techHomeLandingPadHint;
+
+  /// No description provided for @techHomeLandingPadBackOnline.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bãi đáp đã hoạt động lại'**
+  String get techHomeLandingPadBackOnline;
+
+  /// No description provided for @techHomeLandingPadStatus.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bãi đáp: {status}'**
+  String techHomeLandingPadStatus(Object status);
+
+  /// No description provided for @techHomeLandingPadStatusTicketOpened.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bãi đáp: {status} — đã mở phiếu sự cố giao cho bạn'**
+  String techHomeLandingPadStatusTicketOpened(Object status);
+
+  /// No description provided for @techHomeReasonLabel.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lý do'**
+  String get techHomeReasonLabel;
+
+  /// No description provided for @techHomeLandingPadFaultHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'VD: Marker bong tróc, mặt đáp nứt...'**
+  String get techHomeLandingPadFaultHint;
+
+  /// No description provided for @techHomeLandingPadMaintenanceHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'VD: Vệ sinh, sơn lại marker...'**
+  String get techHomeLandingPadMaintenanceHint;
+
+  /// No description provided for @techHomeReasonRequired.
+  ///
+  /// In vi, this message translates to:
+  /// **'Vui lòng nhập lý do.'**
+  String get techHomeReasonRequired;
+
+  /// No description provided for @techHomeNoBoxesConfigured.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa có ô tủ nào được cấu hình.'**
+  String get techHomeNoBoxesConfigured;
+
+  /// No description provided for @techHomeXlColumn.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cột vali XL'**
+  String get techHomeXlColumn;
+
+  /// No description provided for @techHomeRowLabel.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hàng {row}'**
+  String techHomeRowLabel(Object row);
+
+  /// No description provided for @techHomeBoxHardwareTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tình trạng phần cứng ô'**
+  String get techHomeBoxHardwareTitle;
+
+  /// No description provided for @techHomeNeedsAttentionCount.
+  ///
+  /// In vi, this message translates to:
+  /// **'{count} cần chú ý'**
+  String techHomeNeedsAttentionCount(Object count);
+
+  /// No description provided for @techHomeNoDoorSensorData.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa có dữ liệu cảm biến cửa cho tủ này (cabinet chưa báo hoặc dịch vụ IoT chưa bật).'**
+  String get techHomeNoDoorSensorData;
+
+  /// No description provided for @techHomeDoorOpenNotOccupied.
+  ///
+  /// In vi, this message translates to:
+  /// **'{count} ô có cửa đang MỞ nhưng không ở trạng thái \"có đồ\" — nên kiểm tra (cửa kẹt/quên đóng).'**
+  String techHomeDoorOpenNotOccupied(int count);
+
+  /// No description provided for @techHomeNoDoorSignal.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa có tín hiệu cửa'**
+  String get techHomeNoDoorSignal;
+
+  /// No description provided for @techHomeDoorOpenCaps.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cửa đang MỞ'**
+  String get techHomeDoorOpenCaps;
+
+  /// No description provided for @techHomeReportedAt.
+  ///
+  /// In vi, this message translates to:
+  /// **'Báo lúc {time}'**
+  String techHomeReportedAt(Object time);
+
+  /// No description provided for @techHomeControllerOnline.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bộ điều khiển: trực tuyến'**
+  String get techHomeControllerOnline;
+
+  /// No description provided for @techHomeControllerOffline.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bộ điều khiển: mất kết nối'**
+  String get techHomeControllerOffline;
+
+  /// No description provided for @techHomeReservedCount.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã giữ chỗ: {count}'**
+  String techHomeReservedCount(Object count);
+
+  /// No description provided for @techHomeOccupiedCount.
+  ///
+  /// In vi, this message translates to:
+  /// **'Có đồ: {count}'**
+  String techHomeOccupiedCount(Object count);
+
+  /// No description provided for @techHomeYourLocker.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tủ bạn phụ trách'**
+  String get techHomeYourLocker;
+
+  /// No description provided for @techHomeVisualCheckHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kiểm tra trực quan từng ô rồi chỉ báo hỏng khi xác nhận lỗi vật lý tại tủ.'**
+  String get techHomeVisualCheckHint;
+
+  /// No description provided for @techHomeReportWholeLocker.
+  ///
+  /// In vi, this message translates to:
+  /// **'Báo sự cố cả tủ'**
+  String get techHomeReportWholeLocker;
+
+  /// No description provided for @techHomeLockerIncidentTitleHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'VD: Màn hình kiosk không lên, mất nguồn...'**
+  String get techHomeLockerIncidentTitleHint;
+
+  /// No description provided for @techHomeScenePhotosOptional.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ảnh hiện trường (tuỳ chọn, tối đa {max})'**
+  String techHomeScenePhotosOptional(Object max);
+
+  /// No description provided for @techHomeBlockWholeLocker.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chặn cả tủ (ngưng nhận đơn)'**
+  String get techHomeBlockWholeLocker;
+
+  /// No description provided for @techHomeBlockWholeLockerHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tủ chuyển sang bảo trì cho tới khi phiếu được hoàn tất.'**
+  String get techHomeBlockWholeLockerHint;
+
+  /// No description provided for @techHomeTitleAndDescRequired.
+  ///
+  /// In vi, this message translates to:
+  /// **'Vui lòng nhập tiêu đề và mô tả.'**
+  String get techHomeTitleAndDescRequired;
+
+  /// No description provided for @techHomeLockerTicketCreated.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã tạo phiếu RPT-{id} cho {locker}.'**
+  String techHomeLockerTicketCreated(Object id, Object locker);
+
+  /// No description provided for @techHomeLockerTicketCreatedBlocked.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã tạo phiếu RPT-{id} cho {locker} — tủ tạm ngưng nhận đơn.'**
+  String techHomeLockerTicketCreatedBlocked(Object id, Object locker);
+
+  /// No description provided for @techHomeLockerIncidentSent.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã gửi báo sự cố cho {locker}.'**
+  String techHomeLockerIncidentSent(Object locker);
+
+  /// No description provided for @techHomeTotalBoxes.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tổng ô'**
+  String get techHomeTotalBoxes;
+
+  /// No description provided for @techHomeFaultyBoxes.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ô lỗi'**
+  String get techHomeFaultyBoxes;
+
+  /// No description provided for @techHomeXlTallBay.
+  ///
+  /// In vi, this message translates to:
+  /// **'Khoang đứng XL'**
+  String get techHomeXlTallBay;
+
+  /// No description provided for @techHomeFixedAcceptTicket.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã sửa xong — nghiệm thu phiếu RPT-{id}'**
+  String techHomeFixedAcceptTicket(Object id);
+
+  /// No description provided for @techHomeFixedReopenBox.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã sửa xong — mở lại ô'**
+  String get techHomeFixedReopenBox;
+
+  /// No description provided for @techHomeConfirmBoxFaulty.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xác nhận ô hỏng (khoá ô)'**
+  String get techHomeConfirmBoxFaulty;
+
+  /// No description provided for @techHomeViewTicketToCheck.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xem phiếu RPT-{id} để kiểm tra'**
+  String techHomeViewTicketToCheck(Object id);
+
+  /// No description provided for @techHomeFinishCleaning.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hoàn tất vệ sinh'**
+  String get techHomeFinishCleaning;
+
+  /// No description provided for @techHomeRestoreBox.
+  ///
+  /// In vi, this message translates to:
+  /// **'Khôi phục ô'**
+  String get techHomeRestoreBox;
+
+  /// No description provided for @techHomeReportBoxFault.
+  ///
+  /// In vi, this message translates to:
+  /// **'Báo hỏng ô'**
+  String get techHomeReportBoxFault;
+
+  /// No description provided for @techHomeTakeBoxOutOfService.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ngưng dùng ô'**
+  String get techHomeTakeBoxOutOfService;
+
+  /// No description provided for @techHomeMarkCleaning.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đánh dấu đang vệ sinh'**
+  String get techHomeMarkCleaning;
+
+  /// No description provided for @techHomeBoxCleaning.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ô đang vệ sinh'**
+  String get techHomeBoxCleaning;
+
+  /// No description provided for @techHomeEmergencyOpen.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mở tủ khẩn cấp'**
+  String get techHomeEmergencyOpen;
+
+  /// No description provided for @techHomeBoxNumberWithType.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ô #{number} · {type}'**
+  String techHomeBoxNumberWithType(Object number, Object type);
+
+  /// No description provided for @techHomeStatusLine.
+  ///
+  /// In vi, this message translates to:
+  /// **'Trạng thái: {status}'**
+  String techHomeStatusLine(Object status);
+
+  /// No description provided for @techHomeDefaultFaultReason.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hỏng khóa'**
+  String get techHomeDefaultFaultReason;
+
+  /// No description provided for @techHomeReportBoxFaultTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Báo hỏng ô #{number}'**
+  String techHomeReportBoxFaultTitle(Object number);
+
+  /// No description provided for @techHomeFaultReasonLabel.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lý do hỏng'**
+  String get techHomeFaultReasonLabel;
+
+  /// No description provided for @techHomeFaultReasonRequired.
+  ///
+  /// In vi, this message translates to:
+  /// **'Vui lòng nhập lý do hỏng.'**
+  String get techHomeFaultReasonRequired;
+
+  /// No description provided for @techHomeReportFaultAction.
+  ///
+  /// In vi, this message translates to:
+  /// **'Báo hỏng'**
+  String get techHomeReportFaultAction;
+
+  /// No description provided for @techHomeBoxFaultReported.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã báo hỏng ô'**
+  String get techHomeBoxFaultReported;
+
+  /// No description provided for @techHomeBoxFaultReportedWithPhotos.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã báo hỏng ô kèm {count} ảnh'**
+  String techHomeBoxFaultReportedWithPhotos(int count);
+
+  /// No description provided for @techHomeOutOfServiceTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ngưng dùng ô #{number}'**
+  String techHomeOutOfServiceTitle(Object number);
+
+  /// No description provided for @techHomeOutOfServiceHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ô sẽ bị loại khỏi phân phối cho khách tới khi được khôi phục.'**
+  String get techHomeOutOfServiceHint;
+
+  /// No description provided for @techHomeReasonOptionalLabel.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lý do (tùy chọn)'**
+  String get techHomeReasonOptionalLabel;
+
+  /// No description provided for @techHomeBoxOutOfServiceDone.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã ngưng dùng ô'**
+  String get techHomeBoxOutOfServiceDone;
+
+  /// No description provided for @techHomeHardwareAlertsTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cảnh báo phần cứng (cửa mở bất thường)'**
+  String get techHomeHardwareAlertsTitle;
+
+  /// No description provided for @techHomeDoorOpenEmpty.
+  ///
+  /// In vi, this message translates to:
+  /// **'{count} ô có cửa đang MỞ nhưng không có đồ — nên kiểm tra (cửa kẹt/quên đóng).'**
+  String techHomeDoorOpenEmpty(int count);
+
+  /// No description provided for @techHomeAnomalyBoxTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'{locker} · Ô #{number} ({type})'**
+  String techHomeAnomalyBoxTitle(Object locker, Object number, Object type);
+
+  /// No description provided for @techHomeDoorOpenReportedAt.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cửa MỞ · báo lúc {time}'**
+  String techHomeDoorOpenReportedAt(Object time);
+
+  /// No description provided for @techHomeDoorOpenShort.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cửa MỞ'**
+  String get techHomeDoorOpenShort;
+
+  /// No description provided for @techHomeAllWithCount.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tất cả ({count})'**
+  String techHomeAllWithCount(Object count);
+
+  /// No description provided for @techHomeMyLockersWithCount.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tủ tôi phụ trách ({count})'**
+  String techHomeMyLockersWithCount(Object count);
+
+  /// No description provided for @techHomeFilterAllStatuses.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mọi trạng thái'**
+  String get techHomeFilterAllStatuses;
+
+  /// No description provided for @techHomeFilterUnclaimed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chờ nhận'**
+  String get techHomeFilterUnclaimed;
+
+  /// No description provided for @techHomeFilterInProgress.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang xử lý'**
+  String get techHomeFilterInProgress;
+
+  /// No description provided for @techHomeNoAssignedLockers.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bạn chưa được giao phụ trách tủ nào — phiếu mới được báo tới mọi KTV tủ.'**
+  String get techHomeNoAssignedLockers;
+
+  /// No description provided for @techHomeAssignedLockersBanner.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bạn phụ trách {count} tủ: {names}. Phiếu mới ở các tủ này được chuyển thẳng cho bạn.'**
+  String techHomeAssignedLockersBanner(int count, Object names);
+
+  /// No description provided for @techHomePhysicalFaultsTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ô đang lỗi vật lý tại trạm'**
+  String get techHomePhysicalFaultsTitle;
+
+  /// No description provided for @techHomeLockerBoxTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'{locker} · Ô #{number}'**
+  String techHomeLockerBoxTitle(Object locker, Object number);
+
+  /// No description provided for @techHomeUnknownReason.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không rõ lý do'**
+  String get techHomeUnknownReason;
+
+  /// No description provided for @techHomeFixedWithTicket.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã sửa · phiếu RPT-{id}'**
+  String techHomeFixedWithTicket(Object id);
+
+  /// No description provided for @techHomeFixed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã sửa'**
+  String get techHomeFixed;
+
+  /// No description provided for @techHomeRoutedTicketsTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Phiếu chờ bạn nhận ({count})'**
+  String techHomeRoutedTicketsTitle(Object count);
+
+  /// No description provided for @techHomeNoRoutedTickets.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không có phiếu nào chờ bạn'**
+  String get techHomeNoRoutedTickets;
+
+  /// No description provided for @techHomeNoRoutedTicketsHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Các tủ bạn phụ trách chưa có sự cố mới.'**
+  String get techHomeNoRoutedTicketsHint;
+
+  /// No description provided for @techHomeSystemWideTickets.
+  ///
+  /// In vi, this message translates to:
+  /// **'TOÀN HỆ THỐNG: {count} PHIẾU SỰ CỐ KIOSK'**
+  String techHomeSystemWideTickets(int count);
+
+  /// No description provided for @techHomeCountUnclaimed.
+  ///
+  /// In vi, this message translates to:
+  /// **'{count} chờ nhận'**
+  String techHomeCountUnclaimed(Object count);
+
+  /// No description provided for @techHomeCountInProgress.
+  ///
+  /// In vi, this message translates to:
+  /// **'{count} đang xử lý'**
+  String techHomeCountInProgress(Object count);
+
+  /// No description provided for @techHomeCountDone.
+  ///
+  /// In vi, this message translates to:
+  /// **'{count} hoàn tất'**
+  String techHomeCountDone(Object count);
+
+  /// No description provided for @techHomeIncidentsAwaitingTech.
+  ///
+  /// In vi, this message translates to:
+  /// **'{count} sự cố đang chờ KTV tiếp nhận xử lý'**
+  String techHomeIncidentsAwaitingTech(int count);
+
+  /// No description provided for @techHomeIncidentsAwaitingTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Sự cố chờ tiếp nhận'**
+  String get techHomeIncidentsAwaitingTitle;
+
+  /// No description provided for @techHomeBeingHandledTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang được xử lý'**
+  String get techHomeBeingHandledTitle;
+
+  /// No description provided for @techHomeRecentlyDoneTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã hoàn tất gần đây'**
+  String get techHomeRecentlyDoneTitle;
+
+  /// No description provided for @techHomeNoIncidents.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không có sự cố nào'**
+  String get techHomeNoIncidents;
+
+  /// No description provided for @techHomeNoIncidentsHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa có phiếu sự cố hay ô lỗi nào trên hệ thống.'**
+  String get techHomeNoIncidentsHint;
+
+  /// No description provided for @techHomeShiftOverview.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tổng quan ca trực'**
+  String get techHomeShiftOverview;
+
+  /// No description provided for @techHomeMetricReceived.
+  ///
+  /// In vi, this message translates to:
+  /// **'Phiếu\nđã nhận'**
+  String get techHomeMetricReceived;
+
+  /// No description provided for @techHomeMetricInProgress.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang\nxử lý'**
+  String get techHomeMetricInProgress;
+
+  /// No description provided for @techHomeMetricDone.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã\nhoàn tất'**
+  String get techHomeMetricDone;
+
+  /// No description provided for @techHomeMetricSlaOverdue.
+  ///
+  /// In vi, this message translates to:
+  /// **'Trễ hạn\nSLA'**
+  String get techHomeMetricSlaOverdue;
+
+  /// No description provided for @techHomeYourRating.
+  ///
+  /// In vi, this message translates to:
+  /// **'Điểm đánh giá của bạn: {rating}'**
+  String techHomeYourRating(Object rating);
+
+  /// No description provided for @techHomeNoCustomerRatings.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa có đánh giá nào từ khách cho các phiếu bạn xử lý.'**
+  String get techHomeNoCustomerRatings;
+
+  /// No description provided for @techHomeStandardProcedure.
+  ///
+  /// In vi, this message translates to:
+  /// **'Quy trình chuẩn: kiểm tra vị trí tủ, nhận phiếu, tới đúng ô, chụp ảnh nghiệm thu rồi hoàn tất để clear fault.'**
+  String get techHomeStandardProcedure;
+
+  /// No description provided for @techHomeSlaCardRestricted.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang bị hạn chế nhận việc mới'**
+  String get techHomeSlaCardRestricted;
+
+  /// No description provided for @techHomeSlaCardWarning.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cảnh báo vi phạm thời gian SLA'**
+  String get techHomeSlaCardWarning;
+
+  /// No description provided for @techHomeSlaCardSuspended.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tài khoản trong diện đình chỉ'**
+  String get techHomeSlaCardSuspended;
+
+  /// No description provided for @techHomeSlaCardNormal.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hồ sơ kỹ thuật viên tốt'**
+  String get techHomeSlaCardNormal;
+
+  /// No description provided for @techHomeSlaCardUnknown.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa tải được trạng thái SLA'**
+  String get techHomeSlaCardUnknown;
+
+  /// No description provided for @techHomeSlaPullToReload.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kéo xuống để tải lại trạng thái chế tài từ máy chủ.'**
+  String get techHomeSlaPullToReload;
+
+  /// No description provided for @techHomeCompletedCount.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã hoàn thành: {count}'**
+  String techHomeCompletedCount(Object count);
+
+  /// No description provided for @techHomeInProgressCount.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang làm: {count}'**
+  String techHomeInProgressCount(Object count);
+
+  /// No description provided for @techHomeSlaOverdueCount.
+  ///
+  /// In vi, this message translates to:
+  /// **'Quá hạn SLA: {count}'**
+  String techHomeSlaOverdueCount(Object count);
+
+  /// No description provided for @techHomeNoWorkYet.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bạn chưa nhận việc nào'**
+  String get techHomeNoWorkYet;
+
+  /// No description provided for @techHomeNoWorkYetHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chuyển sang tab \"Sự cố\" để duyệt và nhận việc mới.'**
+  String get techHomeNoWorkYetHint;
+
+  /// No description provided for @techHomeActiveIncidentsTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Sự cố đang xử lý ({count})'**
+  String techHomeActiveIncidentsTitle(Object count);
+
+  /// No description provided for @techHomeCompletedHistoryTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lịch sử đã hoàn thành ({count})'**
+  String techHomeCompletedHistoryTitle(Object count);
+
+  /// No description provided for @techHomeScheduleIntro.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lịch kiểm tra định kỳ Kiosk do quản trị tạo và giao KTV phụ trách. Khi đến hạn, bấm \"Kiểm tra\" và đánh giá từng hạng mục: tất cả đạt ⇒ dời sang chu kỳ kế tiếp; có mục không đạt ⇒ hệ thống mở phiếu giao cho bạn, hạn chỉ dời khi phiếu được hoàn tất.'**
+  String get techHomeScheduleIntro;
+
+  /// No description provided for @techHomeMineWithCount.
+  ///
+  /// In vi, this message translates to:
+  /// **'Của tôi ({count})'**
+  String techHomeMineWithCount(Object count);
+
+  /// No description provided for @techHomeAnyDueWithCount.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mọi hạn ({count})'**
+  String techHomeAnyDueWithCount(Object count);
+
+  /// No description provided for @techHomeDueWithCount.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đến hạn ({count})'**
+  String techHomeDueWithCount(Object count);
+
+  /// No description provided for @techHomeUpcomingWithCount.
+  ///
+  /// In vi, this message translates to:
+  /// **'Sắp tới ({count})'**
+  String techHomeUpcomingWithCount(Object count);
+
+  /// No description provided for @techHomeNoDueSchedules.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không có lịch kiểm tra Kiosk nào đến hạn'**
+  String get techHomeNoDueSchedules;
+
+  /// No description provided for @techHomeNoUpcomingSchedules.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không có lịch kiểm tra Kiosk nào sắp tới'**
+  String get techHomeNoUpcomingSchedules;
+
+  /// No description provided for @techHomeNoAssignedSchedules.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bạn chưa được giao lịch kiểm tra nào'**
+  String get techHomeNoAssignedSchedules;
+
+  /// No description provided for @techHomeNoSchedulesAtAll.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa có kế hoạch kiểm tra định kỳ Kiosk nào'**
+  String get techHomeNoSchedulesAtAll;
+
+  /// No description provided for @techHomeNoAssignedSchedulesHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chọn \"Tất cả\" để xem lịch của các KTV khác.'**
+  String get techHomeNoAssignedSchedulesHint;
+
+  /// No description provided for @techHomeNoSchedulesHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mọi thiết bị Kiosk đều đang trong chu kỳ bảo trì bình thường.'**
+  String get techHomeNoSchedulesHint;
+
+  /// No description provided for @techHomeOverdueByDays.
+  ///
+  /// In vi, this message translates to:
+  /// **'Quá hạn {days} ngày'**
+  String techHomeOverdueByDays(int days);
+
+  /// No description provided for @techHomeDueToday.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đến hạn hôm nay'**
+  String get techHomeDueToday;
+
+  /// No description provided for @techHomeDueInDays.
+  ///
+  /// In vi, this message translates to:
+  /// **'Còn {days} ngày nữa đến hạn'**
+  String techHomeDueInDays(int days);
+
+  /// No description provided for @techHomeLastFailedCompleteTicket.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lần trước không đạt — hoàn tất phiếu RPT-{id} trước khi kiểm tra lại.'**
+  String techHomeLastFailedCompleteTicket(Object id);
+
+  /// No description provided for @techHomeScheduleOwnedByOther.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lịch do KTV khác phụ trách.'**
+  String get techHomeScheduleOwnedByOther;
+
+  /// No description provided for @techHomeRoutineScheduleDefault.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lịch kiểm tra định kỳ'**
+  String get techHomeRoutineScheduleDefault;
+
+  /// No description provided for @techHomeDueBadge.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đến hạn'**
+  String get techHomeDueBadge;
+
+  /// No description provided for @techHomeDueAt.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hạn: {date}'**
+  String techHomeDueAt(Object date);
+
+  /// No description provided for @techHomeCycleEveryDays.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chu kỳ: Mỗi {days} ngày'**
+  String techHomeCycleEveryDays(Object days);
+
+  /// No description provided for @techHomeAssignedBadge.
+  ///
+  /// In vi, this message translates to:
+  /// **'Phụ trách'**
+  String get techHomeAssignedBadge;
+
+  /// No description provided for @techHomeLastFailedBanner.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lần trước KHÔNG ĐẠT · Chờ hoàn tất phiếu RPT-{id} trước khi kiểm tra lại'**
+  String techHomeLastFailedBanner(Object id);
+
+  /// No description provided for @techHomeHandleTicket.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xử lý phiếu RPT-{id}'**
+  String techHomeHandleTicket(Object id);
+
+  /// No description provided for @techHomeInspectAction.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kiểm tra'**
+  String get techHomeInspectAction;
+
+  /// No description provided for @techHomeInspectionFailedTicket.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kiểm tra KHÔNG ĐẠT — đã mở phiếu RPT-{id} giao cho bạn. Hạn kế tiếp chỉ dời khi phiếu được hoàn tất.'**
+  String techHomeInspectionFailedTicket(Object id);
+
+  /// No description provided for @techHomeKioskLocker.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tủ Kiosk'**
+  String get techHomeKioskLocker;
+
+  /// No description provided for @techHomeInspectionFailedRecorded.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã ghi nhận KHÔNG ĐẠT cho \"{title}\".'**
+  String techHomeInspectionFailedRecorded(Object title);
+
+  /// No description provided for @techHomeInspectionPassedRecorded.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã ghi nhận ĐẠT cho \"{title}\".'**
+  String techHomeInspectionPassedRecorded(Object title);
+
+  /// No description provided for @techHomeInspectionPassedNextDue.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã ghi nhận ĐẠT cho \"{title}\" — hạn kế tiếp {date}.'**
+  String techHomeInspectionPassedNextDue(Object title, Object date);
+
+  /// No description provided for @techHomeViewWork.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xem việc'**
+  String get techHomeViewWork;
+
+  /// No description provided for @techHomeSlaExtendAssigneeOnly.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chỉ KTV đang được giao phiếu mới gia hạn được SLA.'**
+  String get techHomeSlaExtendAssigneeOnly;
+
+  /// No description provided for @techHomeSlaExtendLimitReached.
+  ///
+  /// In vi, this message translates to:
+  /// **'Phiếu RPT-{id} đã gia hạn {used}/{max} lần — liên hệ admin nếu cần thêm thời gian.'**
+  String techHomeSlaExtendLimitReached(Object id, Object used, Object max);
+
+  /// No description provided for @techHomeSlaExtended.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã gia hạn SLA phiếu RPT-{id}'**
+  String techHomeSlaExtended(Object id);
+
+  /// No description provided for @techHomeSlaExtendedNewDue.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã gia hạn SLA phiếu RPT-{id} — hạn mới {due}'**
+  String techHomeSlaExtendedNewDue(Object id, Object due);
+
+  /// No description provided for @techHomeReleaseTicketTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Trả lại phiếu RPT-{id}'**
+  String techHomeReleaseTicketTitle(Object id);
+
+  /// No description provided for @techHomeReleaseTicketHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Phiếu về lại hàng chờ để KTV khác nhận; lý do được ghi vào nhật ký phiếu.'**
+  String get techHomeReleaseTicketHint;
+
+  /// No description provided for @techHomeReleaseReasonLabel.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lý do trả phiếu (bắt buộc)'**
+  String get techHomeReleaseReasonLabel;
+
+  /// No description provided for @techHomeReleaseReasonHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'VD: Cần linh kiện không có sẵn, đổi ca trực...'**
+  String get techHomeReleaseReasonHint;
+
+  /// No description provided for @techHomeReleaseReasonRequired.
+  ///
+  /// In vi, this message translates to:
+  /// **'Vui lòng nhập lý do trả phiếu.'**
+  String get techHomeReleaseReasonRequired;
+
+  /// No description provided for @techHomeReleaseTicketAction.
+  ///
+  /// In vi, this message translates to:
+  /// **'Trả lại phiếu'**
+  String get techHomeReleaseTicketAction;
+
+  /// No description provided for @techHomeTicketReleased.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã trả phiếu RPT-{id} về hàng chờ.'**
+  String techHomeTicketReleased(Object id);
+
+  /// No description provided for @techHomeRejectIncidentTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không xác nhận sự cố RPT-{id}'**
+  String techHomeRejectIncidentTitle(Object id);
+
+  /// No description provided for @techHomeRejectIncidentHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Dùng khi đã kiểm tra tại tủ và ô hoạt động bình thường. Phiếu được đóng, ô trở lại hoạt động và phản hồi dưới đây được gửi cho người báo.'**
+  String get techHomeRejectIncidentHint;
+
+  /// No description provided for @techHomeReporterFeedbackLabel.
+  ///
+  /// In vi, this message translates to:
+  /// **'Phản hồi cho người báo (bắt buộc)'**
+  String get techHomeReporterFeedbackLabel;
+
+  /// No description provided for @techHomeReporterFeedbackHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'VD: Đã thử đóng/mở ô 3 lần, cửa và khoá hoạt động bình thường.'**
+  String get techHomeReporterFeedbackHint;
+
+  /// No description provided for @techHomeReporterFeedbackRequired.
+  ///
+  /// In vi, this message translates to:
+  /// **'Vui lòng ghi phản hồi cho người báo.'**
+  String get techHomeReporterFeedbackRequired;
+
+  /// No description provided for @techHomeCloseAndReply.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đóng phiếu & phản hồi'**
+  String get techHomeCloseAndReply;
+
+  /// No description provided for @techHomeTicketRejectedDone.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã đóng phiếu RPT-{id} và gửi phản hồi cho người báo.'**
+  String techHomeTicketRejectedDone(Object id);
+
+  /// No description provided for @techHomeDevicesLoadFailed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không tải được danh sách thiết bị: {error}'**
+  String techHomeDevicesLoadFailed(Object error);
+
+  /// No description provided for @techHomeIotDevices.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thiết bị IoT'**
+  String get techHomeIotDevices;
+
+  /// No description provided for @techHomeNoDevices.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không có thiết bị nào'**
+  String get techHomeNoDevices;
+
+  /// No description provided for @techHomeNoDevicesHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa có bộ điều khiển nào gắn với tủ bạn phụ trách.'**
+  String get techHomeNoDevicesHint;
+
+  /// No description provided for @techHomeDeviceNumber.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thiết bị #{id}'**
+  String techHomeDeviceNumber(Object id);
+
+  /// No description provided for @techHomeLastSignal.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tín hiệu cuối: {time}'**
+  String techHomeLastSignal(Object time);
+
+  /// No description provided for @techHomeNoSignalYet.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa nhận tín hiệu nào'**
+  String get techHomeNoSignalYet;
+
+  /// No description provided for @techHomeDevicesHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Trạng thái do máy chủ tính theo tín hiệu gần nhất của thiết bị. Chạm vào thiết bị để xem nhật ký hoặc khởi động lại bộ điều khiển.'**
+  String get techHomeDevicesHint;
+
+  /// No description provided for @techHomeLandingPadPill.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bãi đáp'**
+  String get techHomeLandingPadPill;
+
+  /// No description provided for @techHomeLockerLevelPill.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cấp tủ'**
+  String get techHomeLockerLevelPill;
+
+  /// No description provided for @techHomeBlocksLockerPill.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ngưng cả tủ'**
+  String get techHomeBlocksLockerPill;
+
+  /// No description provided for @techHomeFromRoutineInspection.
+  ///
+  /// In vi, this message translates to:
+  /// **'Từ kiểm tra định kỳ #{id}'**
+  String techHomeFromRoutineInspection(Object id);
+
+  /// No description provided for @techHomeNewBadge.
+  ///
+  /// In vi, this message translates to:
+  /// **'MỚI'**
+  String get techHomeNewBadge;
+
+  /// No description provided for @techHomeLockerBoxShort.
+  ///
+  /// In vi, this message translates to:
+  /// **'{locker} · Ô {box}'**
+  String techHomeLockerBoxShort(Object locker, Object box);
+
+  /// No description provided for @techHomeClaimSuccess.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã nhận việc thành công'**
+  String get techHomeClaimSuccess;
+
+  /// No description provided for @techHomeClaimAction.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhận việc'**
+  String get techHomeClaimAction;
+
+  /// No description provided for @techHomeNoExtensionsLeft.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hết lượt gia hạn'**
+  String get techHomeNoExtensionsLeft;
+
+  /// No description provided for @techHomeAddPhotosShort.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ảnh (+)'**
+  String get techHomeAddPhotosShort;
+
+  /// No description provided for @techHomeAcceptanceAction.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nghiệm thu'**
+  String get techHomeAcceptanceAction;
+
+  /// No description provided for @techHomeTicketJustUpdated.
+  ///
+  /// In vi, this message translates to:
+  /// **'Phiếu RPT-{id} vừa được cập nhật.'**
+  String techHomeTicketJustUpdated(Object id);
+
+  /// No description provided for @techHomeSlaExtendedHours.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã gia hạn SLA (+{hours} h)'**
+  String techHomeSlaExtendedHours(Object hours);
+
+  /// No description provided for @techHomeOverdueAfterExtension.
+  ///
+  /// In vi, this message translates to:
+  /// **'Quá hạn (sau gia hạn +{hours} h)'**
+  String techHomeOverdueAfterExtension(Object hours);
+
+  /// No description provided for @techHomeSlaOverdueBadge.
+  ///
+  /// In vi, this message translates to:
+  /// **'Quá hạn SLA'**
+  String get techHomeSlaOverdueBadge;
+
+  /// No description provided for @techHomeAssigneeYou.
+  ///
+  /// In vi, this message translates to:
+  /// **'{name} (bạn)'**
+  String techHomeAssigneeYou(Object name);
+
+  /// No description provided for @techHomeSlaDueAt.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hạn SLA: {time}'**
+  String techHomeSlaDueAt(Object time);
+
+  /// No description provided for @techHomeExtensionReason.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lý do gia hạn: {reason}'**
+  String techHomeExtensionReason(Object reason);
+
+  /// No description provided for @techHomeCustomerComplaint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nội dung khách phản ánh:'**
+  String get techHomeCustomerComplaint;
+
+  /// No description provided for @techHomeCustomerScenePhotos.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ảnh hiện trường do khách gửi'**
+  String get techHomeCustomerScenePhotos;
+
+  /// No description provided for @techHomeClaimNow.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhận việc ngay'**
+  String get techHomeClaimNow;
+
+  /// No description provided for @techHomeInspectAndLockBox.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kiểm tra ô & Khóa sự cố tại Kiosk'**
+  String get techHomeInspectAndLockBox;
+
+  /// No description provided for @techHomeAcceptAndComplete.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nghiệm thu & Hoàn tất xử lý'**
+  String get techHomeAcceptAndComplete;
+
+  /// No description provided for @techHomeNotAsDescribed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không đúng mô tả — đóng phiếu & phản hồi'**
+  String get techHomeNotAsDescribed;
+
+  /// No description provided for @techHomeReleaseToQueue.
+  ///
+  /// In vi, this message translates to:
+  /// **'Trả lại phiếu về hàng chờ'**
+  String get techHomeReleaseToQueue;
+
+  /// No description provided for @techHomeTicketHandledByName.
+  ///
+  /// In vi, this message translates to:
+  /// **'Phiếu đang do {assignee} xử lý — chỉ người được giao mới hoàn tất được.'**
+  String techHomeTicketHandledByName(Object assignee);
+
+  /// No description provided for @techHomeTicketBeingHandled.
+  ///
+  /// In vi, this message translates to:
+  /// **'Phiếu đang được xử lý.'**
+  String get techHomeTicketBeingHandled;
+
+  /// No description provided for @techHomeTicketNoKiosk.
+  ///
+  /// In vi, this message translates to:
+  /// **'Phiếu sự cố không gắn với trạm Kiosk nào.'**
+  String get techHomeTicketNoKiosk;
+
+  /// No description provided for @techHomeBoxIncidentResolved.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã cập nhật trạng thái ô tủ và xử lý sự cố thành công!'**
+  String get techHomeBoxIncidentResolved;
+
+  /// No description provided for @techHomeScenePhotosSaved.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã lưu ảnh xác nhận hiện trường'**
+  String get techHomeScenePhotosSaved;
+
+  /// No description provided for @techHomeOpenForDays.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mở {count} ngày'**
+  String techHomeOpenForDays(Object count);
+
+  /// No description provided for @techHomeOpenForHours.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mở {count} giờ'**
+  String techHomeOpenForHours(Object count);
+
+  /// No description provided for @techHomeOpenForMinutes.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mở {count} phút'**
+  String techHomeOpenForMinutes(Object count);
+
+  /// No description provided for @techHomeJustOpened.
+  ///
+  /// In vi, this message translates to:
+  /// **'Vừa mở'**
+  String get techHomeJustOpened;
+
+  /// No description provided for @techHomeMarkDeviceErrorTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đánh dấu thiết bị lỗi'**
+  String get techHomeMarkDeviceErrorTitle;
+
+  /// No description provided for @techHomeMarkDeviceOfflineTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đánh dấu thiết bị mất kết nối'**
+  String get techHomeMarkDeviceOfflineTitle;
+
+  /// No description provided for @techHomeMarkDeviceErrorBody.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thiết bị \"{device}\" sẽ được đánh dấu lỗi cho tới khi bộ điều khiển gửi tín hiệu trở lại. Tiếp tục?'**
+  String techHomeMarkDeviceErrorBody(Object device);
+
+  /// No description provided for @techHomeMarkDeviceOfflineBody.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thiết bị \"{device}\" sẽ được đánh dấu mất kết nối cho tới khi bộ điều khiển gửi tín hiệu trở lại. Tiếp tục?'**
+  String techHomeMarkDeviceOfflineBody(Object device);
+
+  /// No description provided for @techHomeMarkAction.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đánh dấu'**
+  String get techHomeMarkAction;
+
+  /// No description provided for @techHomeDeviceMarkedError.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã đánh dấu thiết bị lỗi.'**
+  String get techHomeDeviceMarkedError;
+
+  /// No description provided for @techHomeDeviceMarkedOffline.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã đánh dấu thiết bị mất kết nối.'**
+  String get techHomeDeviceMarkedOffline;
+
+  /// No description provided for @techHomeRestartControllerTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Khởi động lại bộ điều khiển'**
+  String get techHomeRestartControllerTitle;
+
+  /// No description provided for @techHomeRestartControllerBody.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bộ điều khiển \"{device}\" sẽ khởi động lại tiến trình điều khiển tủ (không khởi động lại máy). Trong lúc đó tủ tạm không mở ô được. Tiếp tục?'**
+  String techHomeRestartControllerBody(Object device);
+
+  /// No description provided for @techHomeRestartAction.
+  ///
+  /// In vi, this message translates to:
+  /// **'Khởi động lại'**
+  String get techHomeRestartAction;
+
+  /// No description provided for @techHomeDeviceIdLabel.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mã thiết bị'**
+  String get techHomeDeviceIdLabel;
+
+  /// No description provided for @techHomeLastSignalLabel.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tín hiệu cuối'**
+  String get techHomeLastSignalLabel;
+
+  /// No description provided for @techHomeNoSignalShort.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa nhận tín hiệu'**
+  String get techHomeNoSignalShort;
+
+  /// No description provided for @techHomeConnectionLabel.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kết nối'**
+  String get techHomeConnectionLabel;
+
+  /// No description provided for @techHomeDeviceLoadFailed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không tải được thiết bị: {error}'**
+  String techHomeDeviceLoadFailed(Object error);
+
+  /// No description provided for @techHomeDeviceStatusHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Trạng thái do máy chủ tính theo tín hiệu gần nhất; chỉ đánh dấu tay khi biết chắc thiết bị đã mất kết nối hoặc hỏng.'**
+  String get techHomeDeviceStatusHint;
+
+  /// No description provided for @techHomeWaitingForLocker.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang chờ tủ phản hồi...'**
+  String get techHomeWaitingForLocker;
+
+  /// No description provided for @techHomeMarkOffline.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đánh dấu mất kết nối'**
+  String get techHomeMarkOffline;
+
+  /// No description provided for @techHomeMarkError.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đánh dấu lỗi'**
+  String get techHomeMarkError;
+
+  /// No description provided for @techHomeActivityLog.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhật ký hoạt động'**
+  String get techHomeActivityLog;
+
+  /// No description provided for @techHomeLogLoadFailed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không tải được nhật ký: {error}'**
+  String techHomeLogLoadFailed(Object error);
+
+  /// No description provided for @techHomeNoLogsYet.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa có nhật ký.'**
+  String get techHomeNoLogsYet;
+
+  /// No description provided for @techHomeQuickChipInspectScene.
+  ///
+  /// In vi, this message translates to:
+  /// **'📸 Kiểm tra hiện trường'**
+  String get techHomeQuickChipInspectScene;
+
+  /// No description provided for @techHomeQuickChipReplacePart.
+  ///
+  /// In vi, this message translates to:
+  /// **'🔧 Thay thế linh kiện'**
+  String get techHomeQuickChipReplacePart;
+
+  /// No description provided for @techHomeQuickChipCheckPowerBoard.
+  ///
+  /// In vi, this message translates to:
+  /// **'⚡ Kiểm tra bo mạch nguồn'**
+  String get techHomeQuickChipCheckPowerBoard;
+
+  /// No description provided for @techHomeQuickChipCleanBox.
+  ///
+  /// In vi, this message translates to:
+  /// **'🧹 Vệ sinh ô tủ sạch sẽ'**
+  String get techHomeQuickChipCleanBox;
+
+  /// No description provided for @techHomeQuickChipAdjustLatch.
+  ///
+  /// In vi, this message translates to:
+  /// **'🚪 Cân chỉnh chốt & then'**
+  String get techHomeQuickChipAdjustLatch;
+
+  /// No description provided for @techHomeTechLogTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhật ký & Lịch sử xử lý của KTV:'**
+  String get techHomeTechLogTitle;
+
+  /// No description provided for @techHomeTechLogLoadFailed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không tải được nhật ký xử lý: {error}'**
+  String techHomeTechLogLoadFailed(Object error);
+
+  /// No description provided for @techHomeNoTechLogsHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa có ghi chú xử lý nào. Thao tác \"Kiểm tra ô & Khóa sự cố\" hoặc \"Nghiệm thu\" sẽ tự động lưu lại đầy đủ tại đây.'**
+  String get techHomeNoTechLogsHint;
+
+  /// No description provided for @techHomeTechNumber.
+  ///
+  /// In vi, this message translates to:
+  /// **'KTV #{id}'**
+  String techHomeTechNumber(Object id);
+
+  /// No description provided for @techHomeLogViewerTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhật ký · {time}'**
+  String techHomeLogViewerTitle(Object time);
+
+  /// No description provided for @techHomeAddLogStep.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thêm bước xử lý / ghi chú nhanh...'**
+  String get techHomeAddLogStep;
+
+  /// No description provided for @techHomeLogNoteHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhập ghi chú xử lý...'**
+  String get techHomeLogNoteHint;
+
+  /// No description provided for @techHomeQuickNoteReplacedLock.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã thay thế linh kiện khóa điện tử'**
+  String get techHomeQuickNoteReplacedLock;
+
+  /// No description provided for @techHomeQuickNoteAdjustedHinge.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã cân chỉnh then & bản lề cửa ô tủ'**
+  String get techHomeQuickNoteAdjustedHinge;
+
+  /// No description provided for @techHomeQuickNoteCheckedBoard.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã kiểm tra bo mạch điều khiển & nguồn'**
+  String get techHomeQuickNoteCheckedBoard;
+
+  /// No description provided for @techHomeQuickNoteCleanedTested.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã vệ sinh sạch sẽ, test đóng mở 3 lần'**
+  String get techHomeQuickNoteCleanedTested;
+
+  /// No description provided for @techHomeBoxNotInLayout.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không tìm thấy ô trong sơ đồ tủ.'**
+  String get techHomeBoxNotInLayout;
+
+  /// No description provided for @techHomeBoxHoldsOrderNoTest.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ô đang giữ đồ/đơn của khách — không mở thử.'**
+  String get techHomeBoxHoldsOrderNoTest;
+
+  /// No description provided for @techHomeBoxCheckFailed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không kiểm tra được ô ({error}).'**
+  String techHomeBoxCheckFailed(Object error);
+
+  /// No description provided for @techHomeAfterPhotoRequired.
+  ///
+  /// In vi, this message translates to:
+  /// **'Vui lòng chụp ít nhất 1 ảnh sau khi sửa xong để nghiệm thu.'**
+  String get techHomeAfterPhotoRequired;
+
+  /// No description provided for @techHomeBoxLabelLower.
+  ///
+  /// In vi, this message translates to:
+  /// **'ô #{number}'**
+  String techHomeBoxLabelLower(Object number);
+
+  /// No description provided for @techHomeLandingPadRestored.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bãi đáp đã hoạt động lại.'**
+  String get techHomeLandingPadRestored;
+
+  /// No description provided for @techHomeLockerRestored.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tủ đã hoạt động lại.'**
+  String get techHomeLockerRestored;
+
+  /// No description provided for @techHomeBoxRestoredTestOpened.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ô đã hoạt động lại, đã gửi lệnh mở thử {box}.'**
+  String techHomeBoxRestoredTestOpened(Object box);
+
+  /// No description provided for @techHomeBoxRestored.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ô tủ đã hoạt động lại.'**
+  String get techHomeBoxRestored;
+
+  /// No description provided for @techHomeResolvedWithRestored.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã nghiệm thu và hoàn tất sự cố! {restored}'**
+  String techHomeResolvedWithRestored(Object restored);
+
+  /// No description provided for @techHomeResolvedTestOpenFailed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã nghiệm thu và hoàn tất sự cố, nhưng chưa mở thử được {box}: {error}'**
+  String techHomeResolvedTestOpenFailed(Object box, Object error);
+
+  /// No description provided for @techHomeRequiredBadge.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bắt buộc'**
+  String get techHomeRequiredBadge;
+
+  /// No description provided for @techHomeIncidentRpt.
+  ///
+  /// In vi, this message translates to:
+  /// **'Sự cố RPT-{id}'**
+  String techHomeIncidentRpt(Object id);
+
+  /// No description provided for @techHomeResolveSheetTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nghiệm thu hoàn tất sửa chữa'**
+  String get techHomeResolveSheetTitle;
+
+  /// No description provided for @techHomeResolveSheetSubtitleWithBox.
+  ///
+  /// In vi, this message translates to:
+  /// **'{locker} · Ô {box} · RPT-{id} · {title}'**
+  String techHomeResolveSheetSubtitleWithBox(
+    Object locker,
+    Object box,
+    Object id,
+    Object title,
+  );
+
+  /// No description provided for @techHomeScenePhotosBeforeAfter.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hình ảnh hiện trường (Trước & Sau khi sửa)'**
+  String get techHomeScenePhotosBeforeAfter;
+
+  /// No description provided for @techHomeBeforeRepair.
+  ///
+  /// In vi, this message translates to:
+  /// **'Trước khi sửa'**
+  String get techHomeBeforeRepair;
+
+  /// No description provided for @techHomeExistingScenePhotos.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã có {count} ảnh hiện trường / người báo đối chứng'**
+  String techHomeExistingScenePhotos(int count);
+
+  /// No description provided for @techHomeBeforeRepairOptional.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tuỳ chọn · lưu thành ảnh xác nhận hiện trường'**
+  String get techHomeBeforeRepairOptional;
+
+  /// No description provided for @techHomeScenePhotosBeforeRepair.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ảnh hiện trường trước khi sửa'**
+  String get techHomeScenePhotosBeforeRepair;
+
+  /// No description provided for @techHomeTakeMorePhotos.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chụp thêm ảnh'**
+  String get techHomeTakeMorePhotos;
+
+  /// No description provided for @techHomeDuringRepair.
+  ///
+  /// In vi, this message translates to:
+  /// **'Trong quá trình sửa'**
+  String get techHomeDuringRepair;
+
+  /// No description provided for @techHomeDuringRepairHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ảnh thao tác kỹ thuật, thay thế linh kiện (tuỳ chọn)'**
+  String get techHomeDuringRepairHint;
+
+  /// No description provided for @techHomeTakeRepairPhotos.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chụp ảnh quá trình sửa'**
+  String get techHomeTakeRepairPhotos;
+
+  /// No description provided for @techHomeAfterRepair.
+  ///
+  /// In vi, this message translates to:
+  /// **'Sau khi xong'**
+  String get techHomeAfterRepair;
+
+  /// No description provided for @techHomeAcceptancePhotoRequired.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ảnh nghiệm thu — cần ít nhất 1 ảnh'**
+  String get techHomeAcceptancePhotoRequired;
+
+  /// No description provided for @techHomeAcceptancePhotoOptional.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ảnh nghiệm thu (tuỳ chọn)'**
+  String get techHomeAcceptancePhotoOptional;
+
+  /// No description provided for @techHomeTechNotesTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ghi chú kỹ thuật & linh kiện'**
+  String get techHomeTechNotesTitle;
+
+  /// No description provided for @techHomeTechNotesHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mô tả chi tiết linh kiện thay thế, các bước xử lý...'**
+  String get techHomeTechNotesHint;
+
+  /// No description provided for @techHomeCheckingTestOpen.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang kiểm tra ô trước khi cho phép mở thử...'**
+  String get techHomeCheckingTestOpen;
+
+  /// No description provided for @techHomeTestOpenAfterRepair.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mở thử ô sau sửa'**
+  String get techHomeTestOpenAfterRepair;
+
+  /// No description provided for @techHomeTestOpenHintWithBox.
+  ///
+  /// In vi, this message translates to:
+  /// **'Sau khi hoàn tất phiếu, gửi lệnh mở ô #{box} để kiểm tra chốt khoá.'**
+  String techHomeTestOpenHintWithBox(Object box);
+
+  /// No description provided for @techHomeTestOpenHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Sau khi hoàn tất phiếu, gửi lệnh mở ô để kiểm tra chốt khoá.'**
+  String get techHomeTestOpenHint;
+
+  /// No description provided for @techHomeTestOpenNotSuggested.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không đề nghị mở thử ô: {reason}'**
+  String techHomeTestOpenNotSuggested(Object reason);
+
+  /// No description provided for @techHomeSavingAcceptance.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang lưu nghiệm thu...'**
+  String get techHomeSavingAcceptance;
+
+  /// No description provided for @techHomeConfirmAndCompleteRepair.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xác nhận & Hoàn tất sửa chữa'**
+  String get techHomeConfirmAndCompleteRepair;
+
+  /// No description provided for @techHomeScenePhotoRequired.
+  ///
+  /// In vi, this message translates to:
+  /// **'Vui lòng chụp ít nhất 1 ảnh hiện trường.'**
+  String get techHomeScenePhotoRequired;
+
+  /// No description provided for @techHomeSceneConfirmTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xác nhận hiện trường'**
+  String get techHomeSceneConfirmTitle;
+
+  /// No description provided for @techHomeSceneConfirmHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chụp hiện trạng ô tủ ngay khi tới nơi (cửa, khoá, bo mạch...). Ảnh được lưu vào phiếu làm bằng chứng trước khi sửa.'**
+  String get techHomeSceneConfirmHint;
+
+  /// No description provided for @techHomeSceneNoteHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ghi chú hiện trạng (tuỳ chọn)...'**
+  String get techHomeSceneNoteHint;
+
+  /// No description provided for @techHomeSaveScenePhotos.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lưu ảnh hiện trường'**
+  String get techHomeSaveScenePhotos;
+
+  /// No description provided for @techHomeCustomerShort.
+  ///
+  /// In vi, this message translates to:
+  /// **'Khách'**
+  String get techHomeCustomerShort;
+
+  /// No description provided for @techHomeOpenBoxError.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lỗi mở ô: {error}'**
+  String techHomeOpenBoxError(Object error);
+
+  /// No description provided for @techHomeInvalidTicket.
+  ///
+  /// In vi, this message translates to:
+  /// **'Phiếu không hợp lệ.'**
+  String get techHomeInvalidTicket;
+
+  /// No description provided for @techHomeBoxIncidentSheetTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kiểm tra ô & Xử lý sự cố'**
+  String get techHomeBoxIncidentSheetTitle;
+
+  /// No description provided for @techHomeStep1PickBox.
+  ///
+  /// In vi, this message translates to:
+  /// **'1. Chọn ô gặp sự cố tại Kiosk:'**
+  String get techHomeStep1PickBox;
+
+  /// No description provided for @techHomeKioskNoBoxes.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kiosk này chưa có danh sách ô.'**
+  String get techHomeKioskNoBoxes;
+
+  /// No description provided for @techHomeOrderLookupFailed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không tra được đơn trong ô ({error}). Kiểm tra thực tế (mở khẩn cấp) trước khi chọn phương án — tạm thời chỉ khoá ô.'**
+  String techHomeOrderLookupFailed(Object error);
+
+  /// No description provided for @techHomeEmergencyOpenShort.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mở khẩn cấp'**
+  String get techHomeEmergencyOpenShort;
+
+  /// No description provided for @techHomeBoxHasCustomerItems.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ô ĐANG CHỨA ĐỒ CỦA KHÁCH!'**
+  String get techHomeBoxHasCustomerItems;
+
+  /// No description provided for @techHomeActiveOrderLine.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đơn hàng: {code} · Khách: {customer}'**
+  String techHomeActiveOrderLine(Object code, Object customer);
+
+  /// No description provided for @techHomeBoxNoActiveOrder.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ô KHÔNG CÓ ĐƠN HÀNG HOẠT ĐỘNG'**
+  String get techHomeBoxNoActiveOrder;
+
+  /// No description provided for @techHomeBoxNoActiveOrderHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hệ thống không tìm thấy đơn hàng trong ô này. Có thể khách đã lấy đồ, kẹt cảm biến hoặc báo nhầm ô. KTV hãy mở khẩn cấp để kiểm tra thực tế.'**
+  String get techHomeBoxNoActiveOrderHint;
+
+  /// No description provided for @techHomeBoxCurrentlyEmpty.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ô hiện tại đang trống (Không có đồ bên trong)'**
+  String get techHomeBoxCurrentlyEmpty;
+
+  /// No description provided for @techHomeStep2PickGoodsOption.
+  ///
+  /// In vi, this message translates to:
+  /// **'2. Chọn phương án xử lý hàng trong ô:'**
+  String get techHomeStep2PickGoodsOption;
+
+  /// No description provided for @techHomeStep2PickOption.
+  ///
+  /// In vi, this message translates to:
+  /// **'2. Chọn phương án xử lý:'**
+  String get techHomeStep2PickOption;
+
+  /// No description provided for @techHomeOptionRelocateTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Điều chuyển sang ô trống mới (Khuyến nghị)'**
+  String get techHomeOptionRelocateTitle;
+
+  /// No description provided for @techHomeOptionRelocateHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Dọn đồ sang ô trống khác cùng Kiosk, cấp mã PIN mới cho khách & Khóa ô cũ.'**
+  String get techHomeOptionRelocateHint;
+
+  /// No description provided for @techHomeNoFreeBoxes.
+  ///
+  /// In vi, this message translates to:
+  /// **'⚠️ Trạm Kiosk không còn ô trống nào! Hãy chọn phương án giao trực tiếp hoặc niêm phong.'**
+  String get techHomeNoFreeBoxes;
+
+  /// No description provided for @techHomePickTargetBox.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chọn ô trống đích'**
+  String get techHomePickTargetBox;
+
+  /// No description provided for @techHomeTargetBoxOption.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ô #{number} ({type})'**
+  String techHomeTargetBoxOption(Object number, Object type);
+
+  /// No description provided for @techHomeOptionHandoverTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Khách hàng có mặt - Bàn giao trực tiếp'**
+  String get techHomeOptionHandoverTitle;
+
+  /// No description provided for @techHomeOptionHandoverHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Khách đang ở tại trạm nhận đồ trực tiếp, hoàn tất đơn & Khóa ô cũ.'**
+  String get techHomeOptionHandoverHint;
+
+  /// No description provided for @techHomeHandoverCodeLabel.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mã PIN 6 số hoặc mã QR của đơn (bắt buộc)'**
+  String get techHomeHandoverCodeLabel;
+
+  /// No description provided for @techHomeHandoverCodeHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Khách đọc/đưa mã lấy hàng để xác nhận bàn giao'**
+  String get techHomeHandoverCodeHint;
+
+  /// No description provided for @techHomeOptionHubTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kiosk hết ô trống - Niêm phong đưa về Hub'**
+  String get techHomeOptionHubTitle;
+
+  /// No description provided for @techHomeOptionHubHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đóng túi niêm phong an toàn, quét mã Seal đưa về Hub lưu trữ & Khóa ô cũ.'**
+  String get techHomeOptionHubHint;
+
+  /// No description provided for @techHomeSealCodeLabel.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mã Seal niêm phong (bắt buộc)'**
+  String get techHomeSealCodeLabel;
+
+  /// No description provided for @techHomeSealCodeHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhập đúng mã in trên túi niêm phong'**
+  String get techHomeSealCodeHint;
+
+  /// No description provided for @techHomeOptionQuickFixKeepTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kiểm tra & Xử lý tại chỗ (Không chuyển dọn đồ)'**
+  String get techHomeOptionQuickFixKeepTitle;
+
+  /// No description provided for @techHomeOptionQuickFixKeepHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kiểm tra cảm biến, đóng chặt cửa hoặc hỗ trợ khách tại chỗ mà không cần dọn đồ.'**
+  String get techHomeOptionQuickFixKeepHint;
+
+  /// No description provided for @techHomeOptionQuickFixTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kiểm tra & Xử lý tại chỗ (Khuyến nghị)'**
+  String get techHomeOptionQuickFixTitle;
+
+  /// No description provided for @techHomeOptionQuickFixHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kiểm tra vật lý (cảm biến, chốt khóa, vệ sinh). Nếu user báo nhầm hoặc lỗi nhẹ đã khắc phục xong, không cần khóa ô.'**
+  String get techHomeOptionQuickFixHint;
+
+  /// No description provided for @techHomeOptionLockFaultTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xác nhận lỗi phần cứng & Khóa ô bảo trì (FAULT)'**
+  String get techHomeOptionLockFaultTitle;
+
+  /// No description provided for @techHomeOptionLockFaultHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cần linh kiện thay thế hoặc bảo dưỡng sâu. Tạm ngưng hoạt động ô tủ để kỹ thuật viên sửa chữa.'**
+  String get techHomeOptionLockFaultHint;
+
+  /// No description provided for @techHomeLockForMaintenance.
+  ///
+  /// In vi, this message translates to:
+  /// **'Khóa ô tủ để bảo trì (Trạng thái: FAULT)'**
+  String get techHomeLockForMaintenance;
+
+  /// No description provided for @techHomeKeepActiveWithGoods.
+  ///
+  /// In vi, this message translates to:
+  /// **'Giữ ô tủ hoạt động (Đang giữ hàng của khách)'**
+  String get techHomeKeepActiveWithGoods;
+
+  /// No description provided for @techHomeKeepActiveNormal.
+  ///
+  /// In vi, this message translates to:
+  /// **'Giữ ô tủ hoạt động bình thường (AVAILABLE)'**
+  String get techHomeKeepActiveNormal;
+
+  /// No description provided for @techHomeLockOnlyHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kịch bản Khóa ô bảo trì (FAULT) luôn khóa ô để bảo dưỡng. Nếu không cần khóa ô, vui lòng chọn kịch bản \"Kiểm tra & Xử lý tại chỗ\".'**
+  String get techHomeLockOnlyHint;
+
+  /// No description provided for @techHomeLockedHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ô tủ sẽ bị tạm ngưng và không nhận đơn mới cho đến khi hoàn tất sửa chữa.'**
+  String get techHomeLockedHint;
+
+  /// No description provided for @techHomeNotLockedWithGoodsHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không khóa ô tủ. Đồ của khách vẫn được giữ an toàn trong ô và không bị trả về ô trống.'**
+  String get techHomeNotLockedWithGoodsHint;
+
+  /// No description provided for @techHomeNotLockedHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không khóa ô tủ. Phù hợp khi khách hàng báo nhầm hoặc sự cố đã được xử lý ngay tại chỗ.'**
+  String get techHomeNotLockedHint;
+
+  /// No description provided for @techHomeStep3ReasonNotes.
+  ///
+  /// In vi, this message translates to:
+  /// **'3. Lý do & Ghi chú xử lý:'**
+  String get techHomeStep3ReasonNotes;
+
+  /// No description provided for @techHomeSystemRecordedIncident.
+  ///
+  /// In vi, this message translates to:
+  /// **'Sự cố ô tủ ghi nhận từ hệ thống'**
+  String get techHomeSystemRecordedIncident;
+
+  /// No description provided for @techHomeFailedInspectionContent.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nội dung kiểm tra định kỳ không đạt:'**
+  String get techHomeFailedInspectionContent;
+
+  /// No description provided for @techHomeCustomerReportedReason.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lý do khách hàng phản ánh:'**
+  String get techHomeCustomerReportedReason;
+
+  /// No description provided for @techHomeTechFieldNotesLabel.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ghi chú hiện trường của KTV (Ghi riêng):'**
+  String get techHomeTechFieldNotesLabel;
+
+  /// No description provided for @techHomeTechFieldNotesHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhập hiện trạng kiểm tra, nhận định của KTV...'**
+  String get techHomeTechFieldNotesHint;
+
+  /// No description provided for @techHomeStep4ScenePhotos.
+  ///
+  /// In vi, this message translates to:
+  /// **'4. Ảnh hiện trường / Đối chứng (KTV kiểm tra):'**
+  String get techHomeStep4ScenePhotos;
+
+  /// No description provided for @techHomeExistingScenePhotosColon.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã có {count} ảnh hiện trường / người báo đối chứng:'**
+  String techHomeExistingScenePhotosColon(int count);
+
+  /// No description provided for @techHomeComparisonScenePhotos.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ảnh hiện trường đối chứng'**
+  String get techHomeComparisonScenePhotos;
+
+  /// No description provided for @techHomeTakeMoreScenePhotos.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chụp thêm ảnh hiện trường mới (tuỳ chọn):'**
+  String get techHomeTakeMoreScenePhotos;
+
+  /// No description provided for @techHomeStep5RepairPhotos.
+  ///
+  /// In vi, this message translates to:
+  /// **'5. Ảnh trong quá trình sửa:'**
+  String get techHomeStep5RepairPhotos;
+
+  /// No description provided for @techHomeStep5RepairPhotosHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chụp ảnh tháo lắp linh kiện, thao tác kỹ thuật, kiểm tra cảm biến hoặc xử lý đồ:'**
+  String get techHomeStep5RepairPhotosHint;
+
+  /// No description provided for @techHomeExistingRepairPhotos.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã có {count} ảnh trong quá trình sửa:'**
+  String techHomeExistingRepairPhotos(int count);
+
+  /// No description provided for @techHomeTakeMoreRepairPhotos.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chụp thêm ảnh quá trình sửa mới (tuỳ chọn):'**
+  String get techHomeTakeMoreRepairPhotos;
+
+  /// No description provided for @techHomeUpdating.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang cập nhật...'**
+  String get techHomeUpdating;
+
+  /// No description provided for @techHomeConfirmAndUpdate.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xác nhận & Cập nhật hệ thống'**
+  String get techHomeConfirmAndUpdate;
+
+  /// No description provided for @techHomeCellTypeStandard.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chuẩn'**
+  String get techHomeCellTypeStandard;
+
+  /// No description provided for @techHomeForceOpenReasonForgotPin.
+  ///
+  /// In vi, this message translates to:
+  /// **'Khách quên mã PIN / không liên lạc được'**
+  String get techHomeForceOpenReasonForgotPin;
+
+  /// No description provided for @techHomeForceOpenReasonJammed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cửa ô bị kẹt cơ học / lỗi chốt từ'**
+  String get techHomeForceOpenReasonJammed;
+
+  /// No description provided for @techHomeForceOpenReasonTicketCheck.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kiểm tra ô khi xử lý phiếu sự cố'**
+  String get techHomeForceOpenReasonTicketCheck;
+
+  /// No description provided for @techHomeForceOpenReasonManagement.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kiểm tra theo yêu cầu ban quản lý'**
+  String get techHomeForceOpenReasonManagement;
+
+  /// No description provided for @techHomeForceOpenReasonEmergency.
+  ///
+  /// In vi, this message translates to:
+  /// **'Sự cố khẩn cấp / nghi rò rỉ hoặc dị vật'**
+  String get techHomeForceOpenReasonEmergency;
+
+  /// No description provided for @techHomeForceOpenReasonOther.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lý do khác…'**
+  String get techHomeForceOpenReasonOther;
+
+  /// No description provided for @techHomeForceOpenSent.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã gửi lệnh mở khẩn cấp {box}.'**
+  String techHomeForceOpenSent(Object box);
+
+  /// No description provided for @techHomeForceOpenConfirmed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tủ xác nhận đã mở {box}.'**
+  String techHomeForceOpenConfirmed(Object box);
+
+  /// No description provided for @techHomeForceOpenTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mở khẩn cấp {box}'**
+  String techHomeForceOpenTitle(Object box);
+
+  /// No description provided for @techHomeForceOpenHintWithTicket.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ô được mở bằng lệnh Master và ghi vào nhật ký truy cập. Lý do, ghi chú và ảnh được lưu vào nhật ký phiếu RPT-{id}.'**
+  String techHomeForceOpenHintWithTicket(Object id);
+
+  /// No description provided for @techHomeForceOpenHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ô được mở bằng lệnh Master và ghi vào nhật ký truy cập kèm lý do.'**
+  String get techHomeForceOpenHint;
+
+  /// No description provided for @techHomeForceOpenReasonLabel.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lý do can thiệp (bắt buộc):'**
+  String get techHomeForceOpenReasonLabel;
+
+  /// No description provided for @techHomeEnterReason.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhập lý do'**
+  String get techHomeEnterReason;
+
+  /// No description provided for @techHomeNoteOptional.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ghi chú (tuỳ chọn)'**
+  String get techHomeNoteOptional;
+
+  /// No description provided for @techHomeForceOpenReasonRequired.
+  ///
+  /// In vi, this message translates to:
+  /// **'Vui lòng nhập lý do mở khẩn cấp.'**
+  String get techHomeForceOpenReasonRequired;
+
+  /// No description provided for @techHomeConfirmOpen.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xác nhận mở'**
+  String get techHomeConfirmOpen;
+
+  /// No description provided for @techHomeSlaReasonWaitingParts.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chờ linh kiện thay thế'**
+  String get techHomeSlaReasonWaitingParts;
+
+  /// No description provided for @techHomeSlaReasonDeepCircuitCheck.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cần kiểm tra sâu mạch điện'**
+  String get techHomeSlaReasonDeepCircuitCheck;
+
+  /// No description provided for @techHomeSlaReasonHardToReach.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tủ khó tiếp cận'**
+  String get techHomeSlaReasonHardToReach;
+
+  /// No description provided for @techHomeSlaReasonBuildingOps.
+  ///
+  /// In vi, this message translates to:
+  /// **'Phối hợp bên vận hành tòa nhà'**
+  String get techHomeSlaReasonBuildingOps;
+
+  /// No description provided for @techHomeSlaReasonRequired.
+  ///
+  /// In vi, this message translates to:
+  /// **'Vui lòng nhập lý do gia hạn SLA.'**
+  String get techHomeSlaReasonRequired;
+
+  /// No description provided for @techHomeMaxExtensionsPerTicket.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tối đa {count} lần mỗi phiếu'**
+  String techHomeMaxExtensionsPerTicket(Object count);
+
+  /// No description provided for @techHomeExtendSlaTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Gia hạn SLA phiếu RPT-{id}'**
+  String techHomeExtendSlaTitle(Object id);
+
+  /// No description provided for @techHomeCurrentDueLabel.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hạn hiện tại:'**
+  String get techHomeCurrentDueLabel;
+
+  /// No description provided for @techHomeNewDueLabel.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hạn mới (dự kiến):'**
+  String get techHomeNewDueLabel;
+
+  /// No description provided for @techHomePickExtensionHours.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chọn thời gian gia hạn:'**
+  String get techHomePickExtensionHours;
+
+  /// No description provided for @techHomePickExtensionHoursCapped.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chọn thời gian gia hạn (tối đa {hours} giờ/lần):'**
+  String techHomePickExtensionHoursCapped(Object hours);
+
+  /// No description provided for @techHomePlusHours.
+  ///
+  /// In vi, this message translates to:
+  /// **'+{hours} giờ'**
+  String techHomePlusHours(Object hours);
+
+  /// No description provided for @techHomeExtensionReasonLabel.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lý do gia hạn (bắt buộc):'**
+  String get techHomeExtensionReasonLabel;
+
+  /// No description provided for @techHomeExtensionReasonHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhập lý do cần thêm thời gian xử lý...'**
+  String get techHomeExtensionReasonHint;
+
+  /// No description provided for @techHomeConfirmExtendSla.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xác nhận gia hạn SLA'**
+  String get techHomeConfirmExtendSla;
+
+  /// No description provided for @techHomeDeletePhotoTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xoá ảnh này?'**
+  String get techHomeDeletePhotoTitle;
+
+  /// No description provided for @techHomeDeletePhotoBody.
+  ///
+  /// In vi, this message translates to:
+  /// **'{stage} sẽ bị gỡ khỏi phiếu RPT-{id}.'**
+  String techHomeDeletePhotoBody(Object stage, Object id);
+
+  /// No description provided for @techHomePhotoDeleted.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã xoá ảnh khỏi phiếu.'**
+  String get techHomePhotoDeleted;
+
+  /// No description provided for @techHomeTicketPhotosLoadFailed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không tải được ảnh của phiếu: {error}'**
+  String techHomeTicketPhotosLoadFailed(Object error);
+
+  /// No description provided for @techHomeYourAttachedPhotos.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ảnh bạn đã gắn ({count}) — chạm ✕ để xoá ảnh tải nhầm'**
+  String techHomeYourAttachedPhotos(Object count);
+
+  /// No description provided for @techHomeStageOnSite.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hiện trường'**
+  String get techHomeStageOnSite;
+
+  /// No description provided for @techHomeStageRepairing.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang sửa'**
+  String get techHomeStageRepairing;
+
+  /// No description provided for @techHomeSlaRemainingExtended.
+  ///
+  /// In vi, this message translates to:
+  /// **'Còn {time} (+{hours}h)'**
+  String techHomeSlaRemainingExtended(Object time, Object hours);
+
+  /// No description provided for @techHomeSlaRemaining.
+  ///
+  /// In vi, this message translates to:
+  /// **'Còn {time}'**
+  String techHomeSlaRemaining(Object time);
+
+  /// No description provided for @techHomeSlaOverdueByExtended.
+  ///
+  /// In vi, this message translates to:
+  /// **'Quá hạn {time} (+{hours}h)'**
+  String techHomeSlaOverdueByExtended(Object time, Object hours);
+
+  /// No description provided for @techHomeSlaOverdueBy.
+  ///
+  /// In vi, this message translates to:
+  /// **'Quá hạn {time}'**
+  String techHomeSlaOverdueBy(Object time);
+
+  /// No description provided for @techHomeTechName.
+  ///
+  /// In vi, this message translates to:
+  /// **'KTV {name}'**
+  String techHomeTechName(Object name);
+
+  /// No description provided for @techUiRestartUnconfirmed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã gửi lệnh khởi động lại nhưng máy chủ chưa trả kết quả xác nhận — kiểm tra trạng thái thiết bị sau ít phút.'**
+  String get techUiRestartUnconfirmed;
+
+  /// No description provided for @techUiRestartAccepted.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bộ điều khiển tủ đã nhận lệnh và đang khởi động lại.'**
+  String get techUiRestartAccepted;
+
+  /// No description provided for @techUiRestartTimeout.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tủ không phản hồi lệnh khởi động lại — kiểm tra kết nối của tủ.'**
+  String get techUiRestartTimeout;
+
+  /// No description provided for @techUiRestartFailed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Khởi động lại thất bại — vui lòng thử lại.'**
+  String get techUiRestartFailed;
+
+  /// No description provided for @techUiAdminAccountTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tài khoản quản trị'**
+  String get techUiAdminAccountTitle;
+
+  /// No description provided for @techUiAdminWebOnly.
+  ///
+  /// In vi, this message translates to:
+  /// **'Trang quản trị (dashboard, thống kê, quản lý người dùng, đơn hàng, khuyến mãi...) chỉ có trên bản web.\nVui lòng đăng nhập bằng trình duyệt để tiếp tục.'**
+  String get techUiAdminWebOnly;
+
+  /// No description provided for @techUiRoleDrone.
+  ///
+  /// In vi, this message translates to:
+  /// **'KTV drone'**
+  String get techUiRoleDrone;
+
+  /// No description provided for @techUiRoleLocker.
+  ///
+  /// In vi, this message translates to:
+  /// **'KTV tủ'**
+  String get techUiRoleLocker;
+
+  /// No description provided for @techUiSlaExtensionUsage.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã gia hạn {used}/{max}'**
+  String techUiSlaExtensionUsage(int used, int max);
+
+  /// No description provided for @techUiSlaExtensionLimit.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hết lượt gia hạn ({used}/{max})'**
+  String techUiSlaExtensionLimit(int used, int max);
+
+  /// No description provided for @techUiExtendSla.
+  ///
+  /// In vi, this message translates to:
+  /// **'Gia hạn SLA'**
+  String get techUiExtendSla;
+
+  /// No description provided for @techUiSlaSuspended.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đình chỉ'**
+  String get techUiSlaSuspended;
+
+  /// No description provided for @techUiSlaRestricted.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hạn chế nhận việc'**
+  String get techUiSlaRestricted;
+
+  /// No description provided for @techUiSlaWarning.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cảnh báo'**
+  String get techUiSlaWarning;
+
+  /// No description provided for @techUiSlaNormal.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bình thường'**
+  String get techUiSlaNormal;
+
+  /// No description provided for @techUiSlaNotLoaded.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa tải được'**
+  String get techUiSlaNotLoaded;
+
+  /// No description provided for @techUiRatingSummary.
+  ///
+  /// In vi, this message translates to:
+  /// **'{average}/5 ({count} lượt)'**
+  String techUiRatingSummary(String average, int count);
+
+  /// No description provided for @techUiSelectIncidentBox.
+  ///
+  /// In vi, this message translates to:
+  /// **'Vui lòng chọn ô sự cố.'**
+  String get techUiSelectIncidentBox;
+
+  /// No description provided for @techUiSelectTargetBox.
+  ///
+  /// In vi, this message translates to:
+  /// **'Vui lòng chọn ô trống để chuyển hàng sang.'**
+  String get techUiSelectTargetBox;
+
+  /// No description provided for @techUiEnterHandoverCode.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhập mã PIN 6 số hoặc mã QR của đơn để xác nhận bàn giao.'**
+  String get techUiEnterHandoverCode;
+
+  /// No description provided for @techUiPinSixDigits.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mã PIN lấy hàng gồm đúng 6 chữ số.'**
+  String get techUiPinSixDigits;
+
+  /// No description provided for @techUiEnterSealCode.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhập mã Seal in trên túi niêm phong.'**
+  String get techUiEnterSealCode;
+
+  /// No description provided for @techUiLocationDeniedForever.
+  ///
+  /// In vi, this message translates to:
+  /// **'Quyền vị trí bị từ chối vĩnh viễn. Vui lòng mở Cài đặt để bật vị trí.'**
+  String get techUiLocationDeniedForever;
+
+  /// No description provided for @techUiLocationAccessTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Quyền truy cập vị trí'**
+  String get techUiLocationAccessTitle;
+
+  /// No description provided for @techUiForTechnicianAccounts.
+  ///
+  /// In vi, this message translates to:
+  /// **'Dành cho tài khoản Kỹ thuật viên'**
+  String get techUiForTechnicianAccounts;
+
+  /// No description provided for @techUiLocationRationale.
+  ///
+  /// In vi, this message translates to:
+  /// **'Để hệ thống điều phối chính xác sự cố trạm tủ và nhiệm vụ drone gần bạn nhất, ứng dụng cần truy cập vị trí thiết bị khi bạn đang trong ca làm việc.'**
+  String get techUiLocationRationale;
+
+  /// No description provided for @techUiBenefitDispatchTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Điều phối & Phân công theo vị trí'**
+  String get techUiBenefitDispatchTitle;
+
+  /// No description provided for @techUiBenefitDispatchBody.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tự động gán phiếu xử lý, kiểm tra định kỳ và cứu hộ drone tại các tủ quanh bạn.'**
+  String get techUiBenefitDispatchBody;
+
+  /// No description provided for @techUiBenefitAutoOffTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tự động tắt khi hết ca trực'**
+  String get techUiBenefitAutoOffTitle;
+
+  /// No description provided for @techUiBenefitAutoOffBody.
+  ///
+  /// In vi, this message translates to:
+  /// **'Vị trí chỉ được truy cập khi bạn bật Vào ca. Khi Hết ca, định vị tự động tắt hoàn toàn để bảo vệ quyền riêng tư.'**
+  String get techUiBenefitAutoOffBody;
+
+  /// No description provided for @techUiBenefitBatteryTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tối ưu pin & dữ liệu nền'**
+  String get techUiBenefitBatteryTitle;
+
+  /// No description provided for @techUiBenefitBatteryBody.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tần suất định vị tự động tối ưu theo khoảng cách di chuyển để không hao pin điện thoại.'**
+  String get techUiBenefitBatteryBody;
+
+  /// No description provided for @techUiAllowLocation.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cho phép truy cập vị trí'**
+  String get techUiAllowLocation;
+
+  /// No description provided for @techUiGpsServiceOff.
+  ///
+  /// In vi, this message translates to:
+  /// **'Dịch vụ định vị GPS đang tắt. Vui lòng bật GPS trên thiết bị.'**
+  String get techUiGpsServiceOff;
+
+  /// No description provided for @techUiLocationBlockedForever.
+  ///
+  /// In vi, this message translates to:
+  /// **'Quyền truy cập vị trí bị chặn vĩnh viễn. Vui lòng mở Cài đặt để cấp quyền.'**
+  String get techUiLocationBlockedForever;
+
+  /// No description provided for @techUiGpsUpdated.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã cập nhật vị trí GPS thành công.'**
+  String get techUiGpsUpdated;
+
+  /// No description provided for @techUiLocationUpdateFailed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không thể cập nhật vị trí: {error}'**
+  String techUiLocationUpdateFailed(String error);
+
+  /// No description provided for @techUiEndShiftQuestion.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kết thúc ca trực?'**
+  String get techUiEndShiftQuestion;
+
+  /// No description provided for @techUiEndShiftBody.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hệ thống sẽ ngừng điều phối sự cố mới và ngắt hoàn toàn quyền truy cập vị trí của bạn.'**
+  String get techUiEndShiftBody;
+
+  /// No description provided for @techUiEndShift.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kết thúc ca'**
+  String get techUiEndShift;
+
+  /// No description provided for @techUiShiftStarted.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã vào ca làm việc và kích hoạt định vị GPS.'**
+  String get techUiShiftStarted;
+
+  /// No description provided for @techUiShiftEnded.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã kết thúc ca và tắt định vị GPS.'**
+  String get techUiShiftEnded;
+
+  /// No description provided for @techUiShiftUpdateFailed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lỗi cập nhật ca trực: {error}'**
+  String techUiShiftUpdateFailed(String error);
+
+  /// No description provided for @techUiNoLocationYet.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa có vị trí'**
+  String get techUiNoLocationYet;
+
+  /// No description provided for @techUiOnShift.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang trong ca làm việc'**
+  String get techUiOnShift;
+
+  /// No description provided for @techUiOffShift.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ngoài ca làm việc'**
+  String get techUiOffShift;
+
+  /// No description provided for @techUiOnShiftLocationNote.
+  ///
+  /// In vi, this message translates to:
+  /// **'Vị trí được truy cập để điều phối công việc gần bạn nhất'**
+  String get techUiOnShiftLocationNote;
+
+  /// No description provided for @techUiOffShiftLocationNote.
+  ///
+  /// In vi, this message translates to:
+  /// **'Định vị GPS đã ngắt kết nối hoàn toàn'**
+  String get techUiOffShiftLocationNote;
+
+  /// No description provided for @techUiDeviceGpsInfo.
+  ///
+  /// In vi, this message translates to:
+  /// **'THÔNG TIN GPS THIẾT BỊ'**
+  String get techUiDeviceGpsInfo;
+
+  /// No description provided for @techUiGpsCoordinates.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tọa độ GPS'**
+  String get techUiGpsCoordinates;
+
+  /// No description provided for @techUiGpsAccuracy.
+  ///
+  /// In vi, this message translates to:
+  /// **'Độ chính xác GPS'**
+  String get techUiGpsAccuracy;
+
+  /// No description provided for @techUiAccuracyMeters.
+  ///
+  /// In vi, this message translates to:
+  /// **'±{meters} mét'**
+  String techUiAccuracyMeters(String meters);
+
+  /// No description provided for @techUiNotYet.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa có'**
+  String get techUiNotYet;
+
+  /// No description provided for @techUiOpenGoogleMaps.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mở Google Maps'**
+  String get techUiOpenGoogleMaps;
+
+  /// No description provided for @techUiUpdateGps.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cập nhật GPS'**
+  String get techUiUpdateGps;
+
+  /// No description provided for @techUiNoGpsYet.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa ghi nhận tọa độ GPS. Hãy bật ca trực hoặc nhấn Cập nhật vị trí.'**
+  String get techUiNoGpsYet;
+
+  /// No description provided for @techUiGetCurrentLocation.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lấy vị trí hiện tại'**
+  String get techUiGetCurrentLocation;
+
+  /// No description provided for @techUiPrivacyCommitment.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cam kết quyền riêng tư: Hệ thống chỉ truy cập vị trí khi bạn trong ca. Khi hết ca, định vị tự động tắt hoàn toàn.'**
+  String get techUiPrivacyCommitment;
+
+  /// No description provided for @techUiLoadingShift.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang tải trạng thái ca trực...'**
+  String get techUiLoadingShift;
+
+  /// No description provided for @techUiOnShiftBadge.
+  ///
+  /// In vi, this message translates to:
+  /// **'ĐANG TRONG CA'**
+  String get techUiOnShiftBadge;
+
+  /// No description provided for @techUiOffShiftBadge.
+  ///
+  /// In vi, this message translates to:
+  /// **'NGOÀI CA'**
+  String get techUiOffShiftBadge;
+
+  /// No description provided for @techUiGpsActive.
+  ///
+  /// In vi, this message translates to:
+  /// **'GPS: Hoạt động{accuracy} · {time}'**
+  String techUiGpsActive(String accuracy, String time);
+
+  /// No description provided for @techUiGpsSearching.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang dò tìm tín hiệu GPS...'**
+  String get techUiGpsSearching;
+
+  /// No description provided for @techUiGpsOffHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'GPS đã tắt · Vào ca để kích hoạt vị trí'**
+  String get techUiGpsOffHint;
+
+  /// No description provided for @techUiRefreshGps.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cập nhật lại GPS'**
+  String get techUiRefreshGps;
+
+  /// No description provided for @techUiEndShiftShort.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hết ca'**
+  String get techUiEndShiftShort;
+
+  /// No description provided for @techUiStartShift.
+  ///
+  /// In vi, this message translates to:
+  /// **'Vào ca'**
+  String get techUiStartShift;
+
+  /// No description provided for @techUiNotApplicable.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không áp dụng'**
+  String get techUiNotApplicable;
+
+  /// No description provided for @techUiInvalidScheduleId.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mã lịch kiểm tra không hợp lệ.'**
+  String get techUiInvalidScheduleId;
+
+  /// No description provided for @techUiDroneRoutineMaintenance.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bảo trì định kỳ Drone'**
+  String get techUiDroneRoutineMaintenance;
+
+  /// No description provided for @techUiKioskRoutineInspection.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kiểm tra định kỳ Kiosk'**
+  String get techUiKioskRoutineInspection;
+
+  /// No description provided for @techUiKioskLocker.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tủ Kiosk'**
+  String get techUiKioskLocker;
+
+  /// No description provided for @techUiConfirmRoutineInspection.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xác nhận kiểm tra định kỳ'**
+  String get techUiConfirmRoutineInspection;
+
+  /// No description provided for @techUiCycleDays.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chu kỳ: {days} ngày'**
+  String techUiCycleDays(int days);
+
+  /// No description provided for @techUiChecklistProgress.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hạng mục kiểm tra ({answered}/{total})'**
+  String techUiChecklistProgress(int answered, int total);
+
+  /// No description provided for @techUiNoChecklistPickOverall.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lịch này chưa có checklist — chọn kết quả chung:'**
+  String get techUiNoChecklistPickOverall;
+
+  /// No description provided for @techUiInspectionNoteLabel.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ghi chú biên bản kiểm tra (tuỳ chọn)'**
+  String get techUiInspectionNoteLabel;
+
+  /// No description provided for @techUiInspectionNoteHintDrone.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tình trạng pin, động cơ, cánh quạt, cảm biến hoặc linh kiện đã thay...'**
+  String get techUiInspectionNoteHintDrone;
+
+  /// No description provided for @techUiInspectionNoteHintKiosk.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tình trạng chung, vệ sinh ô tủ, linh kiện đã thay nếu có...'**
+  String get techUiInspectionNoteHintKiosk;
+
+  /// No description provided for @techUiFieldPhotosOptional.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ảnh minh chứng hiện trường (tuỳ chọn):'**
+  String get techUiFieldPhotosOptional;
+
+  /// No description provided for @techUiFieldPhotosHintDrone.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chụp ảnh Drone, pin hoặc linh kiện vừa kiểm tra để lưu hồ sơ đối soát.'**
+  String get techUiFieldPhotosHintDrone;
+
+  /// No description provided for @techUiFieldPhotosHintKiosk.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chụp ảnh toàn cảnh tủ, ổ khóa hoặc linh kiện vừa kiểm tra để lưu hồ sơ đối soát.'**
+  String get techUiFieldPhotosHintKiosk;
+
+  /// No description provided for @techUiUpdating.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang cập nhật...'**
+  String get techUiUpdating;
+
+  /// No description provided for @techUiConfirmComplete.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xác nhận hoàn thành'**
+  String get techUiConfirmComplete;
+
+  /// No description provided for @techUiFaultDescOptional.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mô tả lỗi phát hiện (tuỳ chọn)'**
+  String get techUiFaultDescOptional;
+
+  /// No description provided for @techUiNoteOptional.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ghi chú (tuỳ chọn)'**
+  String get techUiNoteOptional;
+
+  /// No description provided for @techUiItemsRemaining.
+  ///
+  /// In vi, this message translates to:
+  /// **'Còn {remaining}/{total} hạng mục chưa đánh giá.'**
+  String techUiItemsRemaining(int remaining, int total);
+
+  /// No description provided for @techUiPickPassOrFail.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chọn Đạt hoặc Không đạt cho lần kiểm tra này.'**
+  String get techUiPickPassOrFail;
+
+  /// No description provided for @techUiResultFailWithTicket.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kết quả: KHÔNG ĐẠT — hệ thống sẽ mở phiếu sự cố giao cho bạn. Hạn kiểm tra kế tiếp chỉ dời khi phiếu được hoàn tất.'**
+  String get techUiResultFailWithTicket;
+
+  /// No description provided for @techUiResultFail.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kết quả: KHÔNG ĐẠT.'**
+  String get techUiResultFail;
+
+  /// No description provided for @techUiResultPass.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kết quả: ĐẠT — hạn kiểm tra kế tiếp dời sang {days} ngày sau.'**
+  String techUiResultPass(int days);
+
+  /// No description provided for @techUiFaultyBoxOptional.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ô bị hỏng (tuỳ chọn)'**
+  String get techUiFaultyBoxOptional;
+
+  /// No description provided for @techUiFaultyBoxHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chọn ô ⇒ ô chuyển Hỏng và phiếu gắn với ô đó; không chọn ⇒ phiếu cấp tủ.'**
+  String get techUiFaultyBoxHint;
+
+  /// No description provided for @techUiNoBoxLockerLevel.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không gắn ô — sự cố cấp tủ'**
+  String get techUiNoBoxLockerLevel;
+
+  /// No description provided for @techUiBoxWithStatus.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ô #{number} · {status}'**
+  String techUiBoxWithStatus(String number, String status);
+
+  /// No description provided for @techUiIncidentDescOptional.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mô tả sự cố (tuỳ chọn)'**
+  String get techUiIncidentDescOptional;
+
+  /// No description provided for @techUiIncidentDescHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Để trống ⇒ phiếu liệt kê các mục không đạt'**
+  String get techUiIncidentDescHint;
+
+  /// No description provided for @techUiOverdueDays.
+  ///
+  /// In vi, this message translates to:
+  /// **'Quá hạn {days} ngày'**
+  String techUiOverdueDays(int days);
+
+  /// No description provided for @techUiDueToday.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đến hạn hôm nay'**
+  String get techUiDueToday;
+
+  /// No description provided for @techUiDueInDays.
+  ///
+  /// In vi, this message translates to:
+  /// **'Còn {days} ngày nữa đến hạn'**
+  String techUiDueInDays(int days);
+
+  /// No description provided for @techUiPrevFailedFinishTicket.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lần trước không đạt — hoàn tất phiếu RPT-{id} trước khi kiểm tra lại.'**
+  String techUiPrevFailedFinishTicket(Object id);
+
+  /// No description provided for @techUiScheduleOtherTech.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lịch do KTV khác phụ trách.'**
+  String get techUiScheduleOtherTech;
+
+  /// No description provided for @techUiPriorityUrgent.
+  ///
+  /// In vi, this message translates to:
+  /// **'Khẩn cấp'**
+  String get techUiPriorityUrgent;
+
+  /// No description provided for @techUiPriorityHigh.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cao'**
+  String get techUiPriorityHigh;
+
+  /// No description provided for @techUiPriorityLow.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thấp'**
+  String get techUiPriorityLow;
+
+  /// No description provided for @techUiPriorityNormalDrone.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bình thường (Drone tiêu chuẩn)'**
+  String get techUiPriorityNormalDrone;
+
+  /// No description provided for @techUiPriorityNormalStation.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bình thường (Trạm tiêu chuẩn)'**
+  String get techUiPriorityNormalStation;
+
+  /// No description provided for @techUiRoutineSchedule.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lịch kiểm tra định kỳ'**
+  String get techUiRoutineSchedule;
+
+  /// No description provided for @techUiDroneRoutine.
+  ///
+  /// In vi, this message translates to:
+  /// **'Định kỳ Drone'**
+  String get techUiDroneRoutine;
+
+  /// No description provided for @techUiKioskRoutine.
+  ///
+  /// In vi, this message translates to:
+  /// **'Định kỳ Kiosk'**
+  String get techUiKioskRoutine;
+
+  /// No description provided for @techUiSchedulePlanRecord.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hồ sơ chi tiết kế hoạch kiểm tra bảo trì định kỳ'**
+  String get techUiSchedulePlanRecord;
+
+  /// No description provided for @techUiDroneMaintenancePlan.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kế hoạch bảo trì định kỳ Drone'**
+  String get techUiDroneMaintenancePlan;
+
+  /// No description provided for @techUiKioskInspectionPlan.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kế hoạch kiểm tra bảo trì định kỳ Kiosk'**
+  String get techUiKioskInspectionPlan;
+
+  /// No description provided for @techUiDronePlanNote.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đây là lịch bảo trì Drone theo chu kỳ do Quản trị viên thiết lập; kết quả checklist được lưu vào hồ sơ vận hành.'**
+  String get techUiDronePlanNote;
+
+  /// No description provided for @techUiKioskPlanNote.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đây là lịch kiểm tra bảo dưỡng định kỳ tự động theo chu kỳ cho trạm Kiosk do Quản trị viên thiết lập (không phải là phiếu báo hỏng sự cố).'**
+  String get techUiKioskPlanNote;
+
+  /// No description provided for @techUiInspectionDue.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đến hạn kiểm tra'**
+  String get techUiInspectionDue;
+
+  /// No description provided for @techUiPriorityLabel.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ưu tiên: {priority}'**
+  String techUiPriorityLabel(String priority);
+
+  /// No description provided for @techUiCycleEveryDays.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chu kỳ: Mỗi {days} ngày'**
+  String techUiCycleEveryDays(String days);
+
+  /// No description provided for @techUiShiftSlot.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ca: {slot}'**
+  String techUiShiftSlot(String slot);
+
+  /// No description provided for @techUiNoTechAssigned.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa giao KTV'**
+  String get techUiNoTechAssigned;
+
+  /// No description provided for @techUiTechInChargeYou.
+  ///
+  /// In vi, this message translates to:
+  /// **'KTV phụ trách: Bạn'**
+  String get techUiTechInChargeYou;
+
+  /// No description provided for @techUiPlacementInBuilding.
+  ///
+  /// In vi, this message translates to:
+  /// **'Vị trí đặt trong toà nhà: {note}'**
+  String techUiPlacementInBuilding(String note);
+
+  /// No description provided for @techUiDirectionsDroneStation.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chỉ đường tới trạm Drone'**
+  String get techUiDirectionsDroneStation;
+
+  /// No description provided for @techUiPlanAndDeadline.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kế hoạch & Thời hạn kiểm tra:'**
+  String get techUiPlanAndDeadline;
+
+  /// No description provided for @techUiDueDateLabel.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hạn kiểm tra tới (Ngày hẹn):'**
+  String get techUiDueDateLabel;
+
+  /// No description provided for @techUiStartTimeLabel.
+  ///
+  /// In vi, this message translates to:
+  /// **'Giờ hẹn bắt đầu cụ thể:'**
+  String get techUiStartTimeLabel;
+
+  /// No description provided for @techUiTimeSlotLabel.
+  ///
+  /// In vi, this message translates to:
+  /// **'Khung giờ / Ca kiểm tra:'**
+  String get techUiTimeSlotLabel;
+
+  /// No description provided for @techUiFlexibleSlot.
+  ///
+  /// In vi, this message translates to:
+  /// **'Khung giờ linh hoạt'**
+  String get techUiFlexibleSlot;
+
+  /// No description provided for @techUiRepeatCycleLabel.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chu kỳ lặp lại:'**
+  String get techUiRepeatCycleLabel;
+
+  /// No description provided for @techUiEveryDaysOnce.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mỗi {days} ngày thực hiện 1 lần'**
+  String techUiEveryDaysOnce(String days);
+
+  /// No description provided for @techUiPriorityLevelLabel.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mức độ ưu tiên:'**
+  String get techUiPriorityLevelLabel;
+
+  /// No description provided for @techUiTechnicianLabel.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kỹ thuật viên phụ trách:'**
+  String get techUiTechnicianLabel;
+
+  /// No description provided for @techUiUnassignedWaiting.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa phân công (Chờ nhận)'**
+  String get techUiUnassignedWaiting;
+
+  /// No description provided for @techUiYouAssigned.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bạn (Được giao cho tôi)'**
+  String get techUiYouAssigned;
+
+  /// No description provided for @techUiLastInspectionLabel.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lần kiểm tra trước:'**
+  String get techUiLastInspectionLabel;
+
+  /// No description provided for @techUiNoInspectionHistory.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa có lịch sử kiểm tra'**
+  String get techUiNoInspectionHistory;
+
+  /// No description provided for @techUiChecklistCriteria.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bộ tiêu chí kiểm định ({count} mục KTV cần thực hiện):'**
+  String techUiChecklistCriteria(int count);
+
+  /// No description provided for @techUiDroneFullCheck.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kiểm tra toàn diện tình trạng vận hành của Drone.'**
+  String get techUiDroneFullCheck;
+
+  /// No description provided for @techUiKioskFullCheck.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kiểm tra toàn diện hoạt động của trạm tủ Kiosk.'**
+  String get techUiKioskFullCheck;
+
+  /// No description provided for @techUiSopGuide.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hướng dẫn nghiệp vụ (Ghi chú SOP từ Quản trị viên):'**
+  String get techUiSopGuide;
+
+  /// No description provided for @techUiPrevResultLabel.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kết quả kiểm tra lần trước:'**
+  String get techUiPrevResultLabel;
+
+  /// No description provided for @techUiInspectionLogsFailed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không tải được nhật ký kiểm tra: {error}'**
+  String techUiInspectionLogsFailed(String error);
+
+  /// No description provided for @techUiCheckedNoOverall.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã kiểm tra — không có kết quả chung trong nhật ký'**
+  String get techUiCheckedNoOverall;
+
+  /// No description provided for @techUiPassedAllCriteria.
+  ///
+  /// In vi, this message translates to:
+  /// **'ĐẠT — Toàn bộ tiêu chí đạt yêu cầu'**
+  String get techUiPassedAllCriteria;
+
+  /// No description provided for @techUiFailedHasIssues.
+  ///
+  /// In vi, this message translates to:
+  /// **'KHÔNG ĐẠT — Có hạng mục bị lỗi cần xử lý'**
+  String get techUiFailedHasIssues;
+
+  /// No description provided for @techUiLogTime.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thời gian: {time}'**
+  String techUiLogTime(String time);
+
+  /// No description provided for @techUiLogTimeWithTech.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thời gian: {time} · KTV: {name}'**
+  String techUiLogTimeWithTech(String time, String name);
+
+  /// No description provided for @techUiItemDetails.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chi tiết đánh giá từng hạng mục ({count} mục):'**
+  String techUiItemDetails(int count);
+
+  /// No description provided for @techUiTechNote.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ghi chú KTV: {note}'**
+  String techUiTechNote(String note);
+
+  /// No description provided for @techUiNoItemResultsInLog.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhật ký lần trước không lưu kết quả từng hạng mục — chỉ có kết quả chung ở trên.'**
+  String get techUiNoItemResultsInLog;
+
+  /// No description provided for @techUiTechNoteQuoted.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ghi chú KTV: \"{note}\"'**
+  String techUiTechNoteQuoted(String note);
+
+  /// No description provided for @techUiFieldPhotosCount.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ảnh hiện trường KTV đã chụp ({count} ảnh):'**
+  String techUiFieldPhotosCount(int count);
+
+  /// No description provided for @techUiPrevInspectionPhotos.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ảnh kiểm tra định kỳ lần trước'**
+  String get techUiPrevInspectionPhotos;
+
+  /// No description provided for @techUiRelatedTicket.
+  ///
+  /// In vi, this message translates to:
+  /// **'Phiếu sự cố kỹ thuật liên quan: RPT-{id}'**
+  String techUiRelatedTicket(Object id);
+
+  /// No description provided for @techUiFailedTicketOpenedNote.
+  ///
+  /// In vi, this message translates to:
+  /// **'Do lần kiểm tra trước không đạt, hệ thống đã mở phiếu sự cố kỹ thuật. Bạn cần xử lý và nghiệm thu hoàn tất phiếu này để lịch định kỳ mở lại cho lần kiểm tra tiếp theo.'**
+  String get techUiFailedTicketOpenedNote;
+
+  /// No description provided for @techUiOpenTicketToHandle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mở phiếu sự cố RPT-{id} để xử lý'**
+  String techUiOpenTicketToHandle(Object id);
+
+  /// No description provided for @techUiNoPrevInspection.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa có dữ liệu kiểm tra lần trước (Lịch kiểm tra mới được thiết lập).'**
+  String get techUiNoPrevInspection;
+
+  /// No description provided for @techUiHandleTicket.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xử lý phiếu sự cố RPT-{id}'**
+  String techUiHandleTicket(Object id);
+
+  /// No description provided for @techUiScheduleOtherTechShort.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lịch do KTV khác phụ trách'**
+  String get techUiScheduleOtherTechShort;
+
+  /// No description provided for @techUiStartInspectionDue.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bắt đầu kiểm tra ngay (Đến hạn)'**
+  String get techUiStartInspectionDue;
+
+  /// No description provided for @techUiInspectNow.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kiểm tra ngay'**
+  String get techUiInspectNow;
+
+  /// No description provided for @techUiIncidentReport.
+  ///
+  /// In vi, this message translates to:
+  /// **'Báo cáo sự cố'**
+  String get techUiIncidentReport;
+
+  /// No description provided for @techUiSavingChanges.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang lưu thay đổi...'**
+  String get techUiSavingChanges;
+
+  /// No description provided for @techUiProfileUpdated.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cập nhật thông tin hồ sơ thành công!'**
+  String get techUiProfileUpdated;
+
+  /// No description provided for @techUiAvatar.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ảnh đại diện'**
+  String get techUiAvatar;
+
+  /// No description provided for @techUiTakeNewPhoto.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chụp ảnh mới'**
+  String get techUiTakeNewPhoto;
+
+  /// No description provided for @techUiChooseFromGallery.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chọn từ bộ sưu tập'**
+  String get techUiChooseFromGallery;
+
+  /// No description provided for @techUiDeleteAvatar.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xóa ảnh đại diện'**
+  String get techUiDeleteAvatar;
+
+  /// No description provided for @techUiUploadingAvatar.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang tải lên ảnh đại diện...'**
+  String get techUiUploadingAvatar;
+
+  /// No description provided for @techUiAccountIdUnknown.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không xác định được ID tài khoản'**
+  String get techUiAccountIdUnknown;
+
+  /// No description provided for @techUiPhotoUploadFailed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tải ảnh thất bại: {error}'**
+  String techUiPhotoUploadFailed(String error);
+
+  /// No description provided for @techUiAvatarUpdated.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã cập nhật ảnh đại diện thành công'**
+  String get techUiAvatarUpdated;
+
+  /// No description provided for @techUiPhotoUploadError.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lỗi tải ảnh: {error}'**
+  String techUiPhotoUploadError(String error);
+
+  /// No description provided for @techUiDeleteAvatarQuestion.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xóa ảnh đại diện?'**
+  String get techUiDeleteAvatarQuestion;
+
+  /// No description provided for @techUiDeleteAvatarBody.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bạn có chắc chắn muốn gỡ ảnh đại diện hiện tại?'**
+  String get techUiDeleteAvatarBody;
+
+  /// No description provided for @techUiDelete.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xóa'**
+  String get techUiDelete;
+
+  /// No description provided for @techUiDeletingPhoto.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang xóa ảnh...'**
+  String get techUiDeletingPhoto;
+
+  /// No description provided for @techUiPhotoDeleteFailed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xóa ảnh thất bại: {error}'**
+  String techUiPhotoDeleteFailed(String error);
+
+  /// No description provided for @techUiAvatarDeleted.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã xóa ảnh đại diện'**
+  String get techUiAvatarDeleted;
+
+  /// No description provided for @techUiPhotoDeleteError.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lỗi xóa ảnh: {error}'**
+  String techUiPhotoDeleteError(String error);
+
+  /// No description provided for @techUiLogoutShift.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đăng xuất ca trực'**
+  String get techUiLogoutShift;
+
+  /// No description provided for @techUiLogoutConfirm.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bạn có chắc chắn muốn kết thúc ca trực và đăng xuất khỏi tài khoản {role} không?'**
+  String techUiLogoutConfirm(String role);
+
+  /// No description provided for @techUiLockerTechnician.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kỹ thuật viên tủ'**
+  String get techUiLockerTechnician;
+
+  /// No description provided for @techUiSaving.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang lưu...'**
+  String get techUiSaving;
+
+  /// No description provided for @techUiSaveProfileChanges.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lưu thay đổi thông tin'**
+  String get techUiSaveProfileChanges;
+
+  /// No description provided for @techUiLogoutAccount.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đăng xuất tài khoản'**
+  String get techUiLogoutAccount;
+
+  /// No description provided for @techUiTechnicianProfile.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hồ sơ kỹ thuật viên'**
+  String get techUiTechnicianProfile;
+
+  /// No description provided for @techUiRoleBadgeDrone.
+  ///
+  /// In vi, this message translates to:
+  /// **'DRONE · Kỹ thuật viên drone'**
+  String get techUiRoleBadgeDrone;
+
+  /// No description provided for @techUiRoleBadgeLocker.
+  ///
+  /// In vi, this message translates to:
+  /// **'KIOSK · Kỹ thuật viên tủ'**
+  String get techUiRoleBadgeLocker;
+
+  /// No description provided for @techUiStatsLoadFailed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không tải được đầy đủ chỉ số: {error}'**
+  String techUiStatsLoadFailed(String error);
+
+  /// No description provided for @techUiShiftMetrics.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chỉ số vận hành ca trực'**
+  String get techUiShiftMetrics;
+
+  /// No description provided for @techUiMetricReceived.
+  ///
+  /// In vi, this message translates to:
+  /// **'Phiếu đã nhận'**
+  String get techUiMetricReceived;
+
+  /// No description provided for @techUiMetricInProgress.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang làm'**
+  String get techUiMetricInProgress;
+
+  /// No description provided for @techUiQualityRating.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đánh giá chất lượng: '**
+  String get techUiQualityRating;
+
+  /// No description provided for @techUiNoRatingYet.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa có đánh giá'**
+  String get techUiNoRatingYet;
+
+  /// No description provided for @techUiEditPersonalInfo.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chỉnh sửa thông tin cá nhân'**
+  String get techUiEditPersonalInfo;
+
+  /// No description provided for @techUiFullNameLabel.
+  ///
+  /// In vi, this message translates to:
+  /// **'Họ và tên kỹ thuật viên *'**
+  String get techUiFullNameLabel;
+
+  /// No description provided for @techUiFullNameHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhập họ và tên đầy đủ'**
+  String get techUiFullNameHint;
+
+  /// No description provided for @techUiFullNameMin.
+  ///
+  /// In vi, this message translates to:
+  /// **'Họ và tên phải có ít nhất 2 ký tự'**
+  String get techUiFullNameMin;
+
+  /// No description provided for @techUiContactPhone.
+  ///
+  /// In vi, this message translates to:
+  /// **'Số điện thoại liên hệ'**
+  String get techUiContactPhone;
+
+  /// No description provided for @techUiPhoneHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ví dụ: 0912345678'**
+  String get techUiPhoneHint;
+
+  /// No description provided for @techUiPhoneMin.
+  ///
+  /// In vi, this message translates to:
+  /// **'Số điện thoại phải có ít nhất 9 chữ số'**
+  String get techUiPhoneMin;
+
+  /// No description provided for @techUiAccountEmailFixed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Email tài khoản (Cố định)'**
+  String get techUiAccountEmailFixed;
+
+  /// No description provided for @techUiIdentity.
+  ///
+  /// In vi, this message translates to:
+  /// **'Định danh'**
+  String get techUiIdentity;
+
+  /// No description provided for @techUiRoleDroneLong.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kỹ thuật viên drone (đội bay)'**
+  String get techUiRoleDroneLong;
+
+  /// No description provided for @techUiRoleLockerLong.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kỹ thuật viên tủ (ô tủ & phần cứng)'**
+  String get techUiRoleLockerLong;
+
+  /// No description provided for @techUiRoleDroneDesc.
+  ///
+  /// In vi, this message translates to:
+  /// **'Điều phối, bảo trì drone và xử lý phiếu sự cố drone.'**
+  String get techUiRoleDroneDesc;
+
+  /// No description provided for @techUiRoleLockerDesc.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bảo trì ô tủ, thiết bị IoT và xử lý phiếu sự cố tại tủ.'**
+  String get techUiRoleLockerDesc;
+
+  /// No description provided for @techRecLoadError.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không tải được nhiệm vụ thu hồi: {error}'**
+  String techRecLoadError(Object error);
+
+  /// No description provided for @techRecEmptyTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa có nhiệm vụ thu hồi kiện'**
+  String get techRecEmptyTitle;
+
+  /// No description provided for @techRecEmptyHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhiệm vụ được phân công sẽ xuất hiện tại đây.'**
+  String get techRecEmptyHint;
+
+  /// No description provided for @techRecBanner.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thu hồi kiện theo vị trí rơi đã xác minh. Phải chụp ảnh thật, ghi GPS và tình trạng kiện trước khi gửi Admin duyệt.'**
+  String get techRecBanner;
+
+  /// No description provided for @techRecUrgentTag.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhiệm vụ tìm kiếm khẩn cấp · Drone rơi'**
+  String get techRecUrgentTag;
+
+  /// No description provided for @techRecIncidentHash.
+  ///
+  /// In vi, this message translates to:
+  /// **'Sự cố #{id}'**
+  String techRecIncidentHash(Object id);
+
+  /// No description provided for @techRecNoGps.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không có GPS · kiểm tra bằng chứng trước khi đi'**
+  String get techRecNoGps;
+
+  /// No description provided for @techRecSituation.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tình huống'**
+  String get techRecSituation;
+
+  /// No description provided for @techRecDataAccuracy.
+  ///
+  /// In vi, this message translates to:
+  /// **'Độ chính xác dữ liệu'**
+  String get techRecDataAccuracy;
+
+  /// No description provided for @techRecAccuracyLine.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nguồn vị trí: {source} · sai số {accuracy} · telemetry {telemetry}'**
+  String techRecAccuracyLine(Object source, Object accuracy, Object telemetry);
+
+  /// No description provided for @techRecUnknown.
+  ///
+  /// In vi, this message translates to:
+  /// **'không rõ'**
+  String get techRecUnknown;
+
+  /// No description provided for @techRecTelemetryStale.
+  ///
+  /// In vi, this message translates to:
+  /// **'đã cũ'**
+  String get techRecTelemetryStale;
+
+  /// No description provided for @techRecTelemetryLive.
+  ///
+  /// In vi, this message translates to:
+  /// **'trực tuyến'**
+  String get techRecTelemetryLive;
+
+  /// No description provided for @techRecGpsSourceDrone.
+  ///
+  /// In vi, this message translates to:
+  /// **'GPS drone'**
+  String get techRecGpsSourceDrone;
+
+  /// No description provided for @techRecGpsSourceFlightPath.
+  ///
+  /// In vi, this message translates to:
+  /// **'ước theo tuyến bay'**
+  String get techRecGpsSourceFlightPath;
+
+  /// No description provided for @techRecGpsSourceNone.
+  ///
+  /// In vi, this message translates to:
+  /// **'chưa có'**
+  String get techRecGpsSourceNone;
+
+  /// No description provided for @techRecDirectionsToDrop.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mở chỉ đường tới vị trí rơi'**
+  String get techRecDirectionsToDrop;
+
+  /// No description provided for @techRecEvidence.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bằng chứng hiện có'**
+  String get techRecEvidence;
+
+  /// No description provided for @techRecImageLoadError.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lỗi tải ảnh'**
+  String get techRecImageLoadError;
+
+  /// No description provided for @techRecAccept.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhận nhiệm vụ'**
+  String get techRecAccept;
+
+  /// No description provided for @techRecStartSearch.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bắt đầu tìm kiếm'**
+  String get techRecStartSearch;
+
+  /// No description provided for @techRecRecordResult.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ghi nhận kết quả tìm kiếm'**
+  String get techRecRecordResult;
+
+  /// No description provided for @techRecConfirmHubHandover.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xác nhận bàn giao kiện về Hub / kho'**
+  String get techRecConfirmHubHandover;
+
+  /// No description provided for @techRecConfirmStationHandover.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xác nhận đã giao kiện tại trạm {station}'**
+  String techRecConfirmStationHandover(Object station);
+
+  /// No description provided for @techRecSubmittedTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kết quả đã gửi'**
+  String get techRecSubmittedTitle;
+
+  /// No description provided for @techRecSubmittedBody.
+  ///
+  /// In vi, this message translates to:
+  /// **'Admin sẽ xác minh bằng chứng và quyết định bước tiếp theo.'**
+  String get techRecSubmittedBody;
+
+  /// No description provided for @techRecClosedTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã hoàn tất thu hồi'**
+  String get techRecClosedTitle;
+
+  /// No description provided for @techRecClosedHubBody.
+  ///
+  /// In vi, this message translates to:
+  /// **'Admin đã xác minh và kiện đã về Hub / kho. Bạn không cần làm gì thêm.'**
+  String get techRecClosedHubBody;
+
+  /// No description provided for @techRecClosedStationBody.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kiện đã giao tại trạm {station}. Bạn không cần làm gì thêm.'**
+  String techRecClosedStationBody(Object station);
+
+  /// No description provided for @techRecNoGpsTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không lấy được vị trí GPS'**
+  String get techRecNoGpsTitle;
+
+  /// No description provided for @techRecNoGpsBody.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kết quả thu hồi cần toạ độ nơi chụp để Admin đối chiếu. Hãy bật định vị và cấp quyền vị trí rồi thử lại. Chỉ gửi không kèm GPS khi thật sự không thể định vị — Admin sẽ thấy bằng chứng thiếu toạ độ.'**
+  String get techRecNoGpsBody;
+
+  /// No description provided for @techRecRetryLater.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thử lại sau'**
+  String get techRecRetryLater;
+
+  /// No description provided for @techRecSendWithoutGps.
+  ///
+  /// In vi, this message translates to:
+  /// **'Vẫn gửi không kèm GPS'**
+  String get techRecSendWithoutGps;
+
+  /// No description provided for @techRecStationTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Trạm {station}'**
+  String techRecStationTitle(Object station);
+
+  /// No description provided for @techRecHandoverHubTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bàn giao kiện về Hub / kho?'**
+  String get techRecHandoverHubTitle;
+
+  /// No description provided for @techRecHandoverStationTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã giao kiện tại trạm {station}?'**
+  String techRecHandoverStationTitle(Object station);
+
+  /// No description provided for @techRecHandoverHubBody.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chỉ xác nhận khi kiện đã nằm ở Hub / kho và đã có người nhận bàn giao. Sau bước này kiện thuộc trách nhiệm của Hub.'**
+  String get techRecHandoverHubBody;
+
+  /// No description provided for @techRecHandoverStationBody.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chỉ xác nhận khi kiện đã nằm ở trạm {station} và đã có người nhận bàn giao. Sau bước này kiện chờ drone bay giao lại cho khách.'**
+  String techRecHandoverStationBody(Object station);
+
+  /// No description provided for @techRecHandedOver.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã bàn giao'**
+  String get techRecHandedOver;
+
+  /// No description provided for @techRecHubHandoverDone.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã xác nhận kiện về Hub / kho.'**
+  String get techRecHubHandoverDone;
+
+  /// No description provided for @techRecStationHandoverDone.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã xác nhận giao kiện tại trạm {station}.'**
+  String techRecStationHandoverDone(Object station);
+
+  /// No description provided for @techRecTagIntact.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kiện còn nguyên vẹn, niêm phong tốt'**
+  String get techRecTagIntact;
+
+  /// No description provided for @techRecTagPackagingDamaged.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bao bì rách/móp nhẹ do va đập'**
+  String get techRecTagPackagingDamaged;
+
+  /// No description provided for @techRecTagDroneStuck.
+  ///
+  /// In vi, this message translates to:
+  /// **'Drone gãy cánh, kẹt cành cây'**
+  String get techRecTagDroneStuck;
+
+  /// No description provided for @techRecTagNotFound.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã tìm khắp khu vực không thấy kiện'**
+  String get techRecTagNotFound;
+
+  /// No description provided for @techRecTagUnsafe.
+  ///
+  /// In vi, this message translates to:
+  /// **'Khu vực không an toàn, không tiếp cận được'**
+  String get techRecTagUnsafe;
+
+  /// No description provided for @techRecSheetTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Báo cáo hiện trường & Kết quả thu hồi'**
+  String get techRecSheetTitle;
+
+  /// No description provided for @techRecSheetHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'KTV kiosk phải bấm xác nhận tọa độ thực tế tại điểm tìm kiếm, nhập ghi chú tình trạng và chụp ảnh bằng chứng.'**
+  String get techRecSheetHint;
+
+  /// No description provided for @techRecGpsConfirmed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã xác nhận tọa độ hiện trường'**
+  String get techRecGpsConfirmed;
+
+  /// No description provided for @techRecConfirmGpsTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xác nhận tọa độ GPS tại hiện trường'**
+  String get techRecConfirmGpsTitle;
+
+  /// No description provided for @techRecConfirmGpsHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bấm nút bên dưới để lấy toạ độ GPS chính xác nơi bạn đang đứng đối chiếu với điểm drone rơi.'**
+  String get techRecConfirmGpsHint;
+
+  /// No description provided for @techRecGpsUnavailable.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không lấy được toạ độ GPS. Vui lòng bật định vị và cấp quyền vị trí.'**
+  String get techRecGpsUnavailable;
+
+  /// No description provided for @techRecReadingGps.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang đọc tín hiệu GPS...'**
+  String get techRecReadingGps;
+
+  /// No description provided for @techRecConfirmGpsButton.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bấm xác nhận tọa độ hiện trường'**
+  String get techRecConfirmGpsButton;
+
+  /// No description provided for @techRecCoordinates.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tọa độ: {lat}, {lng} (Sai số: ±{accuracy} m)'**
+  String techRecCoordinates(Object lat, Object lng, Object accuracy);
+
+  /// No description provided for @techRecWithinRange.
+  ///
+  /// In vi, this message translates to:
+  /// **'✓ Trong phạm vi hiện trường (~{meters} m từ điểm rơi)'**
+  String techRecWithinRange(Object meters);
+
+  /// No description provided for @techRecOutOfRange.
+  ///
+  /// In vi, this message translates to:
+  /// **'⚠️ Cách điểm rơi ~{meters} m (Tiến lại gần hơn nếu có thể)'**
+  String techRecOutOfRange(Object meters);
+
+  /// No description provided for @techRecRefreshGps.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cập nhật lại GPS'**
+  String get techRecRefreshGps;
+
+  /// No description provided for @techRecSearchResult.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kết quả tìm kiếm'**
+  String get techRecSearchResult;
+
+  /// No description provided for @techRecOutcomeFound.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã tìm thấy kiện hàng'**
+  String get techRecOutcomeFound;
+
+  /// No description provided for @techRecOutcomeNotFound.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không tìm thấy kiện hàng'**
+  String get techRecOutcomeNotFound;
+
+  /// No description provided for @techRecOutcomeUnsafe.
+  ///
+  /// In vi, this message translates to:
+  /// **'Khu vực không an toàn để tìm'**
+  String get techRecOutcomeUnsafe;
+
+  /// No description provided for @techRecCondIntact.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nguyên vẹn'**
+  String get techRecCondIntact;
+
+  /// No description provided for @techRecCondMinor.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hư hại nhẹ'**
+  String get techRecCondMinor;
+
+  /// No description provided for @techRecCondMajor.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hư hại nặng'**
+  String get techRecCondMajor;
+
+  /// No description provided for @techRecCondUnusable.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không thể sử dụng'**
+  String get techRecCondUnusable;
+
+  /// No description provided for @techRecNoteLabel.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ghi chú hiện trường (Bắt buộc nhập mô tả)'**
+  String get techRecNoteLabel;
+
+  /// No description provided for @techRecNoteHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mô tả vị trí phát hiện, hiện trạng drone, tình trạng kiện, nơi lưu trữ tạm...'**
+  String get techRecNoteHint;
+
+  /// No description provided for @techRecPhotoHelper.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bắt buộc ít nhất 1 ảnh chụp trực tiếp tại hiện trường (kèm toạ độ).'**
+  String get techRecPhotoHelper;
+
+  /// No description provided for @techRecPhotoRequired.
+  ///
+  /// In vi, this message translates to:
+  /// **'Vui lòng chụp ít nhất 1 ảnh hiện trường.'**
+  String get techRecPhotoRequired;
+
+  /// No description provided for @techRecNoteRequired.
+  ///
+  /// In vi, this message translates to:
+  /// **'Vui lòng nhập ghi chú hiện trường.'**
+  String get techRecNoteRequired;
+
+  /// No description provided for @techRecSubmit.
+  ///
+  /// In vi, this message translates to:
+  /// **'Gửi Admin xác minh'**
+  String get techRecSubmit;
+
+  /// No description provided for @techRecBringToStation.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mang kiện tới trạm {name}'**
+  String techRecBringToStation(Object name);
+
+  /// No description provided for @techRecDistanceFromFound.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cách nơi tìm thấy ~{km} km'**
+  String techRecDistanceFromFound(Object km);
+
+  /// No description provided for @techRecStationNoDrone.
+  ///
+  /// In vi, this message translates to:
+  /// **'Trạm đang hết drone — kiện chờ drone tại trạm'**
+  String get techRecStationNoDrone;
+
+  /// No description provided for @techRecStationHasDrone.
+  ///
+  /// In vi, this message translates to:
+  /// **'Trạm còn drone sẵn sàng giao lại'**
+  String get techRecStationHasDrone;
+
+  /// No description provided for @techRecDirectionsToStation.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chỉ đường tới trạm'**
+  String get techRecDirectionsToStation;
+
+  /// No description provided for @techRecErrHandoverFailed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bàn giao trực tiếp thất bại — kiểm tra lại mã PIN 6 số hoặc mã QR của đơn rồi thử lại.'**
+  String get techRecErrHandoverFailed;
+
+  /// No description provided for @techRecErrInvalidOtp.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mã PIN/QR của đơn không đúng.'**
+  String get techRecErrInvalidOtp;
+
+  /// No description provided for @techRecErrRelocateFailed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không chuyển được đơn sang ô mới. Hàng vẫn ở ô cũ — thử lại hoặc chọn phương án khác.'**
+  String get techRecErrRelocateFailed;
+
+  /// No description provided for @techRecErrSlaNotAssignee.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chỉ KTV đang được giao phiếu mới gia hạn được SLA.'**
+  String get techRecErrSlaNotAssignee;
+
+  /// No description provided for @techRecErrSlaLimitReached.
+  ///
+  /// In vi, this message translates to:
+  /// **'Phiếu đã hết lượt tự gia hạn SLA — liên hệ admin nếu cần thêm thời gian.'**
+  String get techRecErrSlaLimitReached;
+
+  /// No description provided for @techRecErrSlaHoursExceeded.
+  ///
+  /// In vi, this message translates to:
+  /// **'Số giờ gia hạn vượt mức cho phép mỗi lần.'**
+  String get techRecErrSlaHoursExceeded;
+
+  /// No description provided for @techRecErrSlaReasonRequired.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cần nêu lý do gia hạn SLA.'**
+  String get techRecErrSlaReasonRequired;
+
+  /// No description provided for @techRecErrInvalidExtensionHours.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thời gian gia hạn phải từ 1 giờ trở lên.'**
+  String get techRecErrInvalidExtensionHours;
+
+  /// No description provided for @techRecErrSlaRestricted.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bạn đang có quá nhiều phiếu trễ hạn SLA nên tạm thời không nhận được việc mới.'**
+  String get techRecErrSlaRestricted;
+
+  /// No description provided for @techRecErrReleaseReasonRequired.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cần nêu lý do trả phiếu về hàng chờ.'**
+  String get techRecErrReleaseReasonRequired;
+
+  /// No description provided for @techRecErrReportNotClaimed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Phiếu đang ở hàng chờ, chưa có KTV nhận.'**
+  String get techRecErrReportNotClaimed;
+
+  /// No description provided for @techRecErrReportResolved.
+  ///
+  /// In vi, this message translates to:
+  /// **'Phiếu đã được hoàn tất.'**
+  String get techRecErrReportResolved;
+
+  /// No description provided for @techRecErrReportOpen.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ô/bãi đáp đang có phiếu sự cố mở — hoàn tất phiếu đó trước.'**
+  String get techRecErrReportOpen;
+
+  /// No description provided for @techRecErrTargetBoxRequired.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cần chọn ô trống đích để điều chuyển hàng.'**
+  String get techRecErrTargetBoxRequired;
+
+  /// No description provided for @techRecErrTargetBoxUnavailable.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ô đích không còn trống — tải lại sơ đồ và chọn ô khác.'**
+  String get techRecErrTargetBoxUnavailable;
+
+  /// No description provided for @techRecErrBoxNotFault.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ô không còn ở trạng thái lỗi.'**
+  String get techRecErrBoxNotFault;
+
+  /// No description provided for @techRecErrHandoverOtpRequired.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cần mã PIN 6 số hoặc mã QR của đơn để bàn giao.'**
+  String get techRecErrHandoverOtpRequired;
+
+  /// No description provided for @techRecErrHandoverOtpUnavailable.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đơn chưa có mã lấy hàng nên chưa bàn giao trực tiếp được.'**
+  String get techRecErrHandoverOtpUnavailable;
+
+  /// No description provided for @techRecErrSealRequired.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhập mã Seal in trên túi niêm phong.'**
+  String get techRecErrSealRequired;
+
+  /// No description provided for @techRecErrIncidentActionInvalid.
+  ///
+  /// In vi, this message translates to:
+  /// **'Phương án xử lý không hợp lệ.'**
+  String get techRecErrIncidentActionInvalid;
+
+  /// No description provided for @techRecErrIncidentBoxNotInLocker.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ô đã chọn không thuộc tủ của phiếu.'**
+  String get techRecErrIncidentBoxNotInLocker;
+
+  /// No description provided for @techRecErrForceOpenReportRequired.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ảnh khi mở khẩn cấp chỉ lưu được khi mở từ một phiếu sự cố.'**
+  String get techRecErrForceOpenReportRequired;
+
+  /// No description provided for @techRecErrForceOpenReportMismatch.
+  ///
+  /// In vi, this message translates to:
+  /// **'Phiếu sự cố không thuộc tủ của ô này.'**
+  String get techRecErrForceOpenReportMismatch;
+
+  /// No description provided for @techRecErrDroneReportRequired.
+  ///
+  /// In vi, this message translates to:
+  /// **'Phiếu này không phải phiếu drone.'**
+  String get techRecErrDroneReportRequired;
+
+  /// No description provided for @techRecErrDeviceNotPaired.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thiết bị chưa được gắn với tủ nào.'**
+  String get techRecErrDeviceNotPaired;
+
+  /// No description provided for @techRecErrDeviceNotInScope.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thiết bị không thuộc tủ bạn phụ trách.'**
+  String get techRecErrDeviceNotInScope;
+
+  /// No description provided for @techRecErrDeviceOnlineNotAllowed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Trạng thái trực tuyến do máy chủ tự tính, không đặt tay được.'**
+  String get techRecErrDeviceOnlineNotAllowed;
 }
 
 class _AppLocalizationsDelegate

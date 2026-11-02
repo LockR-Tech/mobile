@@ -9192,4 +9192,2943 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get holderNameHint => 'JOHN SMITH';
+
+  @override
+  String techHomeScheduleNotFound(Object id) {
+    return 'Inspection schedule #$id not found (it may have been deleted or belong to a locker you can\'t view).';
+  }
+
+  @override
+  String techHomeLoadPartialFailed(Object details) {
+    return 'Couldn\'t load all data: $details';
+  }
+
+  @override
+  String get techHomeLogoutShiftTitle => 'Log out of shift';
+
+  @override
+  String get techHomeLogoutShiftConfirm =>
+      'End your shift and log out of the locker technician account?';
+
+  @override
+  String get techHomeLockerTechnician => 'Locker technician';
+
+  @override
+  String get techHomePhoneNotSet => 'No phone number yet';
+
+  @override
+  String get techHomeLockerTechnicianRole =>
+      'Locker technician (compartments & hardware)';
+
+  @override
+  String get techHomeStatReceived => 'Tickets taken';
+
+  @override
+  String get techHomeStatInProgress => 'In progress';
+
+  @override
+  String get techHomeQualityRatingLabel => 'Quality rating: ';
+
+  @override
+  String get techHomeNoRatingYet => 'No ratings yet';
+
+  @override
+  String get techHomeSlaPolicyLabel => 'SLA status: ';
+
+  @override
+  String get techHomeTechPhoneLabel => 'Technician phone: ';
+
+  @override
+  String get techHomeViewEditProfile => 'View & edit profile';
+
+  @override
+  String get techHomeSlaRestrictedTitle => 'New work restricted';
+
+  @override
+  String get techHomeSlaRestrictedBody =>
+      'SLA policy: when your overdue tickets exceed the limit set by admins, you temporarily can\'t take new work. Go to the \"My work\" tab and finish your pending jobs.';
+
+  @override
+  String get techHomeViewMyWork => 'View my work';
+
+  @override
+  String get techHomeOpenTicket => 'Open ticket';
+
+  @override
+  String get techHomeBoxBackOnline => 'Compartment is back in service';
+
+  @override
+  String techHomeTicketLoadFailed(Object id) {
+    return 'Couldn\'t load ticket RPT-$id';
+  }
+
+  @override
+  String techHomeTicketAlreadyClosed(Object id) {
+    return 'Ticket RPT-$id has been closed.';
+  }
+
+  @override
+  String techHomeTicketHandledByOther(Object id, Object assignee) {
+    return 'Ticket RPT-$id is being handled by $assignee — only the assignee can complete it.';
+  }
+
+  @override
+  String techHomeTicketUnassignedTitle(Object id) {
+    return 'Ticket RPT-$id is unassigned';
+  }
+
+  @override
+  String get techHomeTicketUnassignedBody =>
+      'This compartment/landing pad has an open incident ticket. Take the ticket, then do the acceptance (photos after repair) to bring it back into service.';
+
+  @override
+  String get techHomeClaimAndAccept => 'Take & accept';
+
+  @override
+  String get techHomeLockerNoLocation =>
+      'This locker has no location for directions yet.';
+
+  @override
+  String get techHomeGreetingMorning => '☀️ Good morning';
+
+  @override
+  String get techHomeGreetingNoon => '🌤️ Good day';
+
+  @override
+  String get techHomeGreetingAfternoon => '🌅 Good afternoon';
+
+  @override
+  String get techHomeGreetingEvening => '🌙 Good evening';
+
+  @override
+  String techHomeSlaSuspended(Object count) {
+    return 'SLA: Suspended ($count overdue)';
+  }
+
+  @override
+  String techHomeSlaRestricted(Object count) {
+    return 'SLA: Restricted ($count overdue)';
+  }
+
+  @override
+  String techHomeSlaWarning(Object count) {
+    return 'SLA: Warning ($count overdue)';
+  }
+
+  @override
+  String techHomeSlaNormalWithCount(Object count) {
+    return 'SLA: Normal ($count in progress)';
+  }
+
+  @override
+  String get techHomeSlaNormal => 'SLA: Normal';
+
+  @override
+  String techHomeSlaUnknownWithOverdue(Object count) {
+    return 'SLA: $count overdue · penalty level not loaded';
+  }
+
+  @override
+  String get techHomeSlaUnknown => 'SLA: status not loaded';
+
+  @override
+  String get techHomeProfileAndEdit => 'Profile & edit';
+
+  @override
+  String get techHomeHudRoutine => 'Routine';
+
+  @override
+  String get techHomeHudStations => 'Stations';
+
+  @override
+  String get techHomeTabInspect => 'Inspect';
+
+  @override
+  String techHomeTabIncidents(Object count) {
+    return 'Incidents ($count)';
+  }
+
+  @override
+  String techHomeTabMyWork(Object count) {
+    return 'My work ($count)';
+  }
+
+  @override
+  String techHomeTabRoutine(Object count) {
+    return 'Routine ($count)';
+  }
+
+  @override
+  String techHomeTabIotDevices(Object count) {
+    return 'IoT devices ($count)';
+  }
+
+  @override
+  String techHomeTabParcelRecovery(Object count) {
+    return 'Parcel recovery ($count)';
+  }
+
+  @override
+  String techHomeRecoveryBannerTitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count dropped-parcel recovery tasks',
+      one: '1 dropped-parcel recovery task',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get techHomeRecoveryBannerHint =>
+      'Tap to open the \"Parcel recovery\" tab.';
+
+  @override
+  String get techHomePickLockerToInspect => 'Pick a locker to inspect';
+
+  @override
+  String get techHomeLockersLoadFailed => 'Couldn\'t load the locker list';
+
+  @override
+  String get techHomeNoLockers => 'No lockers yet';
+
+  @override
+  String techHomeLayoutLoadFailed(Object error) {
+    return 'Couldn\'t load the locker layout: $error';
+  }
+
+  @override
+  String get techHomeKioskPhysicalLayout => 'Kiosk station physical layout';
+
+  @override
+  String get techHomeTapBoxHint =>
+      'Tap a compartment to report a fault, emergency-open it, or reopen it after repair.';
+
+  @override
+  String get techHomeWorkingWell => 'Working';
+
+  @override
+  String get techHomeDroneLandingPad => 'Drone landing pad';
+
+  @override
+  String techHomeTicketOpenPill(Object id) {
+    return 'Ticket RPT-$id open';
+  }
+
+  @override
+  String get techHomeLandingPadHint =>
+      'Broken/Maintenance ⇒ opens a landing-pad ticket assigned to you. Back to \"Working\" with an open ticket ⇒ do the ticket acceptance (photos after repair).';
+
+  @override
+  String get techHomeLandingPadBackOnline => 'Landing pad is back in service';
+
+  @override
+  String techHomeLandingPadStatus(Object status) {
+    return 'Landing pad: $status';
+  }
+
+  @override
+  String techHomeLandingPadStatusTicketOpened(Object status) {
+    return 'Landing pad: $status — an incident ticket was opened and assigned to you';
+  }
+
+  @override
+  String get techHomeReasonLabel => 'Reason';
+
+  @override
+  String get techHomeLandingPadFaultHint =>
+      'E.g. marker peeling, cracked pad surface...';
+
+  @override
+  String get techHomeLandingPadMaintenanceHint =>
+      'E.g. cleaning, repainting the marker...';
+
+  @override
+  String get techHomeReasonRequired => 'Please enter a reason.';
+
+  @override
+  String get techHomeNoBoxesConfigured => 'No compartments configured yet.';
+
+  @override
+  String get techHomeXlColumn => 'XL suitcase column';
+
+  @override
+  String techHomeRowLabel(Object row) {
+    return 'Row $row';
+  }
+
+  @override
+  String get techHomeBoxHardwareTitle => 'Compartment hardware status';
+
+  @override
+  String techHomeNeedsAttentionCount(Object count) {
+    return '$count need attention';
+  }
+
+  @override
+  String get techHomeNoDoorSensorData =>
+      'No door sensor data for this locker yet (the cabinet hasn\'t reported or the IoT service is off).';
+
+  @override
+  String techHomeDoorOpenNotOccupied(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '$count compartments have their doors OPEN but aren\'t \"occupied\" — please check (stuck or left open).',
+      one:
+          '1 compartment has its door OPEN but isn\'t \"occupied\" — please check (stuck or left open).',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get techHomeNoDoorSignal => 'No door signal yet';
+
+  @override
+  String get techHomeDoorOpenCaps => 'Door OPEN';
+
+  @override
+  String techHomeReportedAt(Object time) {
+    return 'Reported at $time';
+  }
+
+  @override
+  String get techHomeControllerOnline => 'Controller: online';
+
+  @override
+  String get techHomeControllerOffline => 'Controller: disconnected';
+
+  @override
+  String techHomeReservedCount(Object count) {
+    return 'Reserved: $count';
+  }
+
+  @override
+  String techHomeOccupiedCount(Object count) {
+    return 'Occupied: $count';
+  }
+
+  @override
+  String get techHomeYourLocker => 'Your locker';
+
+  @override
+  String get techHomeVisualCheckHint =>
+      'Visually check each compartment and only report a fault once you\'ve confirmed a physical issue at the locker.';
+
+  @override
+  String get techHomeReportWholeLocker => 'Report whole-locker incident';
+
+  @override
+  String get techHomeLockerIncidentTitleHint =>
+      'E.g. kiosk screen won\'t turn on, power loss...';
+
+  @override
+  String techHomeScenePhotosOptional(Object max) {
+    return 'On-site photos (optional, up to $max)';
+  }
+
+  @override
+  String get techHomeBlockWholeLocker =>
+      'Block whole locker (stop taking orders)';
+
+  @override
+  String get techHomeBlockWholeLockerHint =>
+      'The locker goes into maintenance until the ticket is completed.';
+
+  @override
+  String get techHomeTitleAndDescRequired =>
+      'Please enter a title and description.';
+
+  @override
+  String techHomeLockerTicketCreated(Object id, Object locker) {
+    return 'Created ticket RPT-$id for $locker.';
+  }
+
+  @override
+  String techHomeLockerTicketCreatedBlocked(Object id, Object locker) {
+    return 'Created ticket RPT-$id for $locker — the locker has stopped taking orders.';
+  }
+
+  @override
+  String techHomeLockerIncidentSent(Object locker) {
+    return 'Incident report sent for $locker.';
+  }
+
+  @override
+  String get techHomeTotalBoxes => 'Total';
+
+  @override
+  String get techHomeFaultyBoxes => 'Faulty';
+
+  @override
+  String get techHomeXlTallBay => 'XL tall bay';
+
+  @override
+  String techHomeFixedAcceptTicket(Object id) {
+    return 'Fixed — accept ticket RPT-$id';
+  }
+
+  @override
+  String get techHomeFixedReopenBox => 'Fixed — reopen compartment';
+
+  @override
+  String get techHomeConfirmBoxFaulty => 'Confirm compartment faulty (lock it)';
+
+  @override
+  String techHomeViewTicketToCheck(Object id) {
+    return 'View ticket RPT-$id to check';
+  }
+
+  @override
+  String get techHomeFinishCleaning => 'Finish cleaning';
+
+  @override
+  String get techHomeRestoreBox => 'Restore compartment';
+
+  @override
+  String get techHomeReportBoxFault => 'Report compartment fault';
+
+  @override
+  String get techHomeTakeBoxOutOfService => 'Take compartment out of service';
+
+  @override
+  String get techHomeMarkCleaning => 'Mark as cleaning';
+
+  @override
+  String get techHomeBoxCleaning => 'Compartment is being cleaned';
+
+  @override
+  String get techHomeEmergencyOpen => 'Emergency open';
+
+  @override
+  String techHomeBoxNumberWithType(Object number, Object type) {
+    return 'Compartment #$number · $type';
+  }
+
+  @override
+  String techHomeStatusLine(Object status) {
+    return 'Status: $status';
+  }
+
+  @override
+  String get techHomeDefaultFaultReason => 'Broken lock';
+
+  @override
+  String techHomeReportBoxFaultTitle(Object number) {
+    return 'Report fault: compartment #$number';
+  }
+
+  @override
+  String get techHomeFaultReasonLabel => 'Fault reason';
+
+  @override
+  String get techHomeFaultReasonRequired => 'Please enter the fault reason.';
+
+  @override
+  String get techHomeReportFaultAction => 'Report fault';
+
+  @override
+  String get techHomeBoxFaultReported => 'Compartment fault reported';
+
+  @override
+  String techHomeBoxFaultReportedWithPhotos(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Compartment fault reported with $count photos',
+      one: 'Compartment fault reported with 1 photo',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String techHomeOutOfServiceTitle(Object number) {
+    return 'Take compartment #$number out of service';
+  }
+
+  @override
+  String get techHomeOutOfServiceHint =>
+      'The compartment won\'t be assigned to customers until it\'s restored.';
+
+  @override
+  String get techHomeReasonOptionalLabel => 'Reason (optional)';
+
+  @override
+  String get techHomeBoxOutOfServiceDone => 'Compartment taken out of service';
+
+  @override
+  String get techHomeHardwareAlertsTitle =>
+      'Hardware alerts (doors open unexpectedly)';
+
+  @override
+  String techHomeDoorOpenEmpty(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '$count compartments have their doors OPEN but are empty — please check (stuck or left open).',
+      one:
+          '1 compartment has its door OPEN but is empty — please check (stuck or left open).',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String techHomeAnomalyBoxTitle(Object locker, Object number, Object type) {
+    return '$locker · Compartment #$number ($type)';
+  }
+
+  @override
+  String techHomeDoorOpenReportedAt(Object time) {
+    return 'Door OPEN · reported at $time';
+  }
+
+  @override
+  String get techHomeDoorOpenShort => 'Door OPEN';
+
+  @override
+  String techHomeAllWithCount(Object count) {
+    return 'All ($count)';
+  }
+
+  @override
+  String techHomeMyLockersWithCount(Object count) {
+    return 'My lockers ($count)';
+  }
+
+  @override
+  String get techHomeFilterAllStatuses => 'All statuses';
+
+  @override
+  String get techHomeFilterUnclaimed => 'Unclaimed';
+
+  @override
+  String get techHomeFilterInProgress => 'In progress';
+
+  @override
+  String get techHomeNoAssignedLockers =>
+      'You haven\'t been assigned any lockers — new tickets go to all locker technicians.';
+
+  @override
+  String techHomeAssignedLockersBanner(int count, Object names) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'You\'re in charge of $count lockers: $names. New tickets at these lockers are routed straight to you.',
+      one:
+          'You\'re in charge of 1 locker: $names. New tickets there are routed straight to you.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get techHomePhysicalFaultsTitle => 'Compartments with physical faults';
+
+  @override
+  String techHomeLockerBoxTitle(Object locker, Object number) {
+    return '$locker · Compartment #$number';
+  }
+
+  @override
+  String get techHomeUnknownReason => 'Unknown reason';
+
+  @override
+  String techHomeFixedWithTicket(Object id) {
+    return 'Fixed · ticket RPT-$id';
+  }
+
+  @override
+  String get techHomeFixed => 'Fixed';
+
+  @override
+  String techHomeRoutedTicketsTitle(Object count) {
+    return 'Tickets waiting for you ($count)';
+  }
+
+  @override
+  String get techHomeNoRoutedTickets => 'No tickets waiting for you';
+
+  @override
+  String get techHomeNoRoutedTicketsHint =>
+      'Your lockers have no new incidents.';
+
+  @override
+  String techHomeSystemWideTickets(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'SYSTEM-WIDE: $count KIOSK INCIDENT TICKETS',
+      one: 'SYSTEM-WIDE: 1 KIOSK INCIDENT TICKET',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String techHomeCountUnclaimed(Object count) {
+    return '$count unclaimed';
+  }
+
+  @override
+  String techHomeCountInProgress(Object count) {
+    return '$count in progress';
+  }
+
+  @override
+  String techHomeCountDone(Object count) {
+    return '$count done';
+  }
+
+  @override
+  String techHomeIncidentsAwaitingTech(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count incidents waiting for a technician to take them',
+      one: '1 incident waiting for a technician to take it',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get techHomeIncidentsAwaitingTitle => 'Incidents awaiting pickup';
+
+  @override
+  String get techHomeBeingHandledTitle => 'Being handled';
+
+  @override
+  String get techHomeRecentlyDoneTitle => 'Recently completed';
+
+  @override
+  String get techHomeNoIncidents => 'No incidents';
+
+  @override
+  String get techHomeNoIncidentsHint =>
+      'No incident tickets or faulty compartments in the system.';
+
+  @override
+  String get techHomeShiftOverview => 'Shift overview';
+
+  @override
+  String get techHomeMetricReceived => 'Tickets\ntaken';
+
+  @override
+  String get techHomeMetricInProgress => 'In\nprogress';
+
+  @override
+  String get techHomeMetricDone => 'Tickets\ndone';
+
+  @override
+  String get techHomeMetricSlaOverdue => 'SLA\noverdue';
+
+  @override
+  String techHomeYourRating(Object rating) {
+    return 'Your rating: $rating';
+  }
+
+  @override
+  String get techHomeNoCustomerRatings =>
+      'No customer ratings yet for the tickets you\'ve handled.';
+
+  @override
+  String get techHomeStandardProcedure =>
+      'Standard procedure: check the locker location, take the ticket, go to the right compartment, take acceptance photos, then complete to clear the fault.';
+
+  @override
+  String get techHomeSlaCardRestricted => 'Restricted from taking new work';
+
+  @override
+  String get techHomeSlaCardWarning => 'SLA time violation warning';
+
+  @override
+  String get techHomeSlaCardSuspended => 'Account suspended';
+
+  @override
+  String get techHomeSlaCardNormal => 'Technician record in good standing';
+
+  @override
+  String get techHomeSlaCardUnknown => 'Couldn\'t load SLA status';
+
+  @override
+  String get techHomeSlaPullToReload =>
+      'Pull down to reload the penalty status from the server.';
+
+  @override
+  String techHomeCompletedCount(Object count) {
+    return 'Completed: $count';
+  }
+
+  @override
+  String techHomeInProgressCount(Object count) {
+    return 'In progress: $count';
+  }
+
+  @override
+  String techHomeSlaOverdueCount(Object count) {
+    return 'SLA overdue: $count';
+  }
+
+  @override
+  String get techHomeNoWorkYet => 'You haven\'t taken any work yet';
+
+  @override
+  String get techHomeNoWorkYetHint =>
+      'Go to the \"Incidents\" tab to browse and take new work.';
+
+  @override
+  String techHomeActiveIncidentsTitle(Object count) {
+    return 'Incidents in progress ($count)';
+  }
+
+  @override
+  String techHomeCompletedHistoryTitle(Object count) {
+    return 'Completed history ($count)';
+  }
+
+  @override
+  String get techHomeScheduleIntro =>
+      'Kiosk routine inspection schedules are created by admins and assigned to technicians. When one is due, tap \"Inspect\" and rate each item: all pass ⇒ moved to the next cycle; any fail ⇒ the system opens a ticket assigned to you and the due date only moves once the ticket is completed.';
+
+  @override
+  String techHomeMineWithCount(Object count) {
+    return 'Mine ($count)';
+  }
+
+  @override
+  String techHomeAnyDueWithCount(Object count) {
+    return 'Any due date ($count)';
+  }
+
+  @override
+  String techHomeDueWithCount(Object count) {
+    return 'Due ($count)';
+  }
+
+  @override
+  String techHomeUpcomingWithCount(Object count) {
+    return 'Upcoming ($count)';
+  }
+
+  @override
+  String get techHomeNoDueSchedules => 'No Kiosk inspections due';
+
+  @override
+  String get techHomeNoUpcomingSchedules => 'No upcoming Kiosk inspections';
+
+  @override
+  String get techHomeNoAssignedSchedules =>
+      'You haven\'t been assigned any inspection schedules';
+
+  @override
+  String get techHomeNoSchedulesAtAll =>
+      'No Kiosk routine inspection plans yet';
+
+  @override
+  String get techHomeNoAssignedSchedulesHint =>
+      'Choose \"All\" to see other technicians\' schedules.';
+
+  @override
+  String get techHomeNoSchedulesHint =>
+      'All Kiosk devices are within their normal maintenance cycle.';
+
+  @override
+  String techHomeOverdueByDays(int days) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: 'Overdue by $days days',
+      one: 'Overdue by 1 day',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get techHomeDueToday => 'Due today';
+
+  @override
+  String techHomeDueInDays(int days) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: 'Due in $days days',
+      one: 'Due in 1 day',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String techHomeLastFailedCompleteTicket(Object id) {
+    return 'Last inspection failed — complete ticket RPT-$id before inspecting again.';
+  }
+
+  @override
+  String get techHomeScheduleOwnedByOther =>
+      'This schedule belongs to another technician.';
+
+  @override
+  String get techHomeRoutineScheduleDefault => 'Routine inspection';
+
+  @override
+  String get techHomeDueBadge => 'Due';
+
+  @override
+  String techHomeDueAt(Object date) {
+    return 'Due: $date';
+  }
+
+  @override
+  String techHomeCycleEveryDays(Object days) {
+    return 'Cycle: every $days days';
+  }
+
+  @override
+  String get techHomeAssignedBadge => 'Assigned';
+
+  @override
+  String techHomeLastFailedBanner(Object id) {
+    return 'Last inspection FAILED · Complete ticket RPT-$id before inspecting again';
+  }
+
+  @override
+  String techHomeHandleTicket(Object id) {
+    return 'Handle ticket RPT-$id';
+  }
+
+  @override
+  String get techHomeInspectAction => 'Inspect';
+
+  @override
+  String techHomeInspectionFailedTicket(Object id) {
+    return 'Inspection FAILED — ticket RPT-$id was opened and assigned to you. The next due date only moves once the ticket is completed.';
+  }
+
+  @override
+  String get techHomeKioskLocker => 'Kiosk locker';
+
+  @override
+  String techHomeInspectionFailedRecorded(Object title) {
+    return 'Recorded FAIL for \"$title\".';
+  }
+
+  @override
+  String techHomeInspectionPassedRecorded(Object title) {
+    return 'Recorded PASS for \"$title\".';
+  }
+
+  @override
+  String techHomeInspectionPassedNextDue(Object title, Object date) {
+    return 'Recorded PASS for \"$title\" — next due $date.';
+  }
+
+  @override
+  String get techHomeViewWork => 'View work';
+
+  @override
+  String get techHomeSlaExtendAssigneeOnly =>
+      'Only the assigned technician can extend the SLA.';
+
+  @override
+  String techHomeSlaExtendLimitReached(Object id, Object used, Object max) {
+    return 'Ticket RPT-$id has been extended $used/$max times — contact an admin if you need more time.';
+  }
+
+  @override
+  String techHomeSlaExtended(Object id) {
+    return 'Extended the SLA of ticket RPT-$id';
+  }
+
+  @override
+  String techHomeSlaExtendedNewDue(Object id, Object due) {
+    return 'Extended the SLA of ticket RPT-$id — new due $due';
+  }
+
+  @override
+  String techHomeReleaseTicketTitle(Object id) {
+    return 'Release ticket RPT-$id';
+  }
+
+  @override
+  String get techHomeReleaseTicketHint =>
+      'The ticket goes back to the queue for another technician; the reason is written to the ticket log.';
+
+  @override
+  String get techHomeReleaseReasonLabel => 'Reason for releasing (required)';
+
+  @override
+  String get techHomeReleaseReasonHint =>
+      'E.g. parts not in stock, shift change...';
+
+  @override
+  String get techHomeReleaseReasonRequired =>
+      'Please enter the reason for releasing the ticket.';
+
+  @override
+  String get techHomeReleaseTicketAction => 'Release ticket';
+
+  @override
+  String techHomeTicketReleased(Object id) {
+    return 'Ticket RPT-$id returned to the queue.';
+  }
+
+  @override
+  String techHomeRejectIncidentTitle(Object id) {
+    return 'Reject incident RPT-$id';
+  }
+
+  @override
+  String get techHomeRejectIncidentHint =>
+      'Use this when you\'ve checked at the locker and the compartment works normally. The ticket is closed, the compartment goes back into service and the feedback below is sent to the reporter.';
+
+  @override
+  String get techHomeReporterFeedbackLabel =>
+      'Feedback to the reporter (required)';
+
+  @override
+  String get techHomeReporterFeedbackHint =>
+      'E.g. opened/closed the compartment 3 times, the door and lock work normally.';
+
+  @override
+  String get techHomeReporterFeedbackRequired =>
+      'Please write feedback for the reporter.';
+
+  @override
+  String get techHomeCloseAndReply => 'Close ticket & reply';
+
+  @override
+  String techHomeTicketRejectedDone(Object id) {
+    return 'Closed ticket RPT-$id and sent feedback to the reporter.';
+  }
+
+  @override
+  String techHomeDevicesLoadFailed(Object error) {
+    return 'Couldn\'t load the device list: $error';
+  }
+
+  @override
+  String get techHomeIotDevices => 'IoT devices';
+
+  @override
+  String get techHomeNoDevices => 'No devices';
+
+  @override
+  String get techHomeNoDevicesHint =>
+      'No controllers are attached to your lockers yet.';
+
+  @override
+  String techHomeDeviceNumber(Object id) {
+    return 'Device #$id';
+  }
+
+  @override
+  String techHomeLastSignal(Object time) {
+    return 'Last signal: $time';
+  }
+
+  @override
+  String get techHomeNoSignalYet => 'No signal received yet';
+
+  @override
+  String get techHomeDevicesHint =>
+      'Status is computed by the server from the device\'s latest signal. Tap a device to view its log or restart the controller.';
+
+  @override
+  String get techHomeLandingPadPill => 'Landing pad';
+
+  @override
+  String get techHomeLockerLevelPill => 'Locker-level';
+
+  @override
+  String get techHomeBlocksLockerPill => 'Whole locker blocked';
+
+  @override
+  String techHomeFromRoutineInspection(Object id) {
+    return 'From routine inspection #$id';
+  }
+
+  @override
+  String get techHomeNewBadge => 'NEW';
+
+  @override
+  String techHomeLockerBoxShort(Object locker, Object box) {
+    return '$locker · Compartment $box';
+  }
+
+  @override
+  String get techHomeClaimSuccess => 'Ticket taken';
+
+  @override
+  String get techHomeClaimAction => 'Take';
+
+  @override
+  String get techHomeNoExtensionsLeft => 'No extensions left';
+
+  @override
+  String get techHomeAddPhotosShort => 'Photos (+)';
+
+  @override
+  String get techHomeAcceptanceAction => 'Acceptance';
+
+  @override
+  String techHomeTicketJustUpdated(Object id) {
+    return 'Ticket RPT-$id was just updated.';
+  }
+
+  @override
+  String techHomeSlaExtendedHours(Object hours) {
+    return 'SLA extended (+$hours h)';
+  }
+
+  @override
+  String techHomeOverdueAfterExtension(Object hours) {
+    return 'Overdue (after +$hours h extension)';
+  }
+
+  @override
+  String get techHomeSlaOverdueBadge => 'SLA overdue';
+
+  @override
+  String techHomeAssigneeYou(Object name) {
+    return '$name (you)';
+  }
+
+  @override
+  String techHomeSlaDueAt(Object time) {
+    return 'SLA due: $time';
+  }
+
+  @override
+  String techHomeExtensionReason(Object reason) {
+    return 'Extension reason: $reason';
+  }
+
+  @override
+  String get techHomeCustomerComplaint => 'Customer\'s report:';
+
+  @override
+  String get techHomeCustomerScenePhotos => 'On-site photos from the customer';
+
+  @override
+  String get techHomeClaimNow => 'Take it now';
+
+  @override
+  String get techHomeInspectAndLockBox =>
+      'Check compartment & lock incident at Kiosk';
+
+  @override
+  String get techHomeAcceptAndComplete => 'Accept & complete';
+
+  @override
+  String get techHomeNotAsDescribed =>
+      'Not as described — close ticket & reply';
+
+  @override
+  String get techHomeReleaseToQueue => 'Return ticket to the queue';
+
+  @override
+  String techHomeTicketHandledByName(Object assignee) {
+    return 'This ticket is being handled by $assignee — only the assignee can complete it.';
+  }
+
+  @override
+  String get techHomeTicketBeingHandled => 'This ticket is being handled.';
+
+  @override
+  String get techHomeTicketNoKiosk =>
+      'This incident ticket isn\'t linked to any Kiosk station.';
+
+  @override
+  String get techHomeBoxIncidentResolved =>
+      'Compartment status updated and incident resolved!';
+
+  @override
+  String get techHomeScenePhotosSaved => 'On-site confirmation photos saved';
+
+  @override
+  String techHomeOpenForDays(Object count) {
+    return 'Open ${count}d';
+  }
+
+  @override
+  String techHomeOpenForHours(Object count) {
+    return 'Open ${count}h';
+  }
+
+  @override
+  String techHomeOpenForMinutes(Object count) {
+    return 'Open ${count}m';
+  }
+
+  @override
+  String get techHomeJustOpened => 'Just opened';
+
+  @override
+  String get techHomeMarkDeviceErrorTitle => 'Mark device as faulty';
+
+  @override
+  String get techHomeMarkDeviceOfflineTitle => 'Mark device as disconnected';
+
+  @override
+  String techHomeMarkDeviceErrorBody(Object device) {
+    return 'Device \"$device\" will be marked as faulty until the controller sends a signal again. Continue?';
+  }
+
+  @override
+  String techHomeMarkDeviceOfflineBody(Object device) {
+    return 'Device \"$device\" will be marked as disconnected until the controller sends a signal again. Continue?';
+  }
+
+  @override
+  String get techHomeMarkAction => 'Mark';
+
+  @override
+  String get techHomeDeviceMarkedError => 'Device marked as faulty.';
+
+  @override
+  String get techHomeDeviceMarkedOffline => 'Device marked as disconnected.';
+
+  @override
+  String get techHomeRestartControllerTitle => 'Restart controller';
+
+  @override
+  String techHomeRestartControllerBody(Object device) {
+    return 'Controller \"$device\" will restart the locker control process (not the machine). Compartments can\'t be opened in the meantime. Continue?';
+  }
+
+  @override
+  String get techHomeRestartAction => 'Restart';
+
+  @override
+  String get techHomeDeviceIdLabel => 'Device ID';
+
+  @override
+  String get techHomeLastSignalLabel => 'Last signal';
+
+  @override
+  String get techHomeNoSignalShort => 'No signal yet';
+
+  @override
+  String get techHomeConnectionLabel => 'Connection';
+
+  @override
+  String techHomeDeviceLoadFailed(Object error) {
+    return 'Couldn\'t load the device: $error';
+  }
+
+  @override
+  String get techHomeDeviceStatusHint =>
+      'Status is computed by the server from the latest signal; only mark it manually when you\'re sure the device is disconnected or broken.';
+
+  @override
+  String get techHomeWaitingForLocker => 'Waiting for the locker to respond...';
+
+  @override
+  String get techHomeMarkOffline => 'Mark disconnected';
+
+  @override
+  String get techHomeMarkError => 'Mark faulty';
+
+  @override
+  String get techHomeActivityLog => 'Activity log';
+
+  @override
+  String techHomeLogLoadFailed(Object error) {
+    return 'Couldn\'t load the log: $error';
+  }
+
+  @override
+  String get techHomeNoLogsYet => 'No log entries yet.';
+
+  @override
+  String get techHomeQuickChipInspectScene => '📸 Inspected the site';
+
+  @override
+  String get techHomeQuickChipReplacePart => '🔧 Replaced a part';
+
+  @override
+  String get techHomeQuickChipCheckPowerBoard => '⚡ Checked the power board';
+
+  @override
+  String get techHomeQuickChipCleanBox => '🧹 Cleaned the compartment';
+
+  @override
+  String get techHomeQuickChipAdjustLatch => '🚪 Adjusted latch & bolt';
+
+  @override
+  String get techHomeTechLogTitle => 'Technician log & history:';
+
+  @override
+  String techHomeTechLogLoadFailed(Object error) {
+    return 'Couldn\'t load the work log: $error';
+  }
+
+  @override
+  String get techHomeNoTechLogsHint =>
+      'No work notes yet. \"Check compartment & lock incident\" or \"Acceptance\" actions are saved here automatically.';
+
+  @override
+  String techHomeTechNumber(Object id) {
+    return 'Tech #$id';
+  }
+
+  @override
+  String techHomeLogViewerTitle(Object time) {
+    return 'Log · $time';
+  }
+
+  @override
+  String get techHomeAddLogStep => 'Add a work step / quick note...';
+
+  @override
+  String get techHomeLogNoteHint => 'Enter a work note...';
+
+  @override
+  String get techHomeQuickNoteReplacedLock =>
+      'Replaced the electronic lock part';
+
+  @override
+  String get techHomeQuickNoteAdjustedHinge =>
+      'Adjusted the compartment door bolt & hinge';
+
+  @override
+  String get techHomeQuickNoteCheckedBoard =>
+      'Checked the control board & power';
+
+  @override
+  String get techHomeQuickNoteCleanedTested =>
+      'Cleaned, tested open/close 3 times';
+
+  @override
+  String get techHomeBoxNotInLayout =>
+      'Compartment not found in the locker layout.';
+
+  @override
+  String get techHomeBoxHoldsOrderNoTest =>
+      'The compartment holds a customer\'s items/order — no test open.';
+
+  @override
+  String techHomeBoxCheckFailed(Object error) {
+    return 'Couldn\'t check the compartment ($error).';
+  }
+
+  @override
+  String get techHomeAfterPhotoRequired =>
+      'Please take at least 1 after-repair photo for the acceptance.';
+
+  @override
+  String techHomeBoxLabelLower(Object number) {
+    return 'compartment #$number';
+  }
+
+  @override
+  String get techHomeLandingPadRestored =>
+      'The landing pad is back in service.';
+
+  @override
+  String get techHomeLockerRestored => 'The locker is back in service.';
+
+  @override
+  String techHomeBoxRestoredTestOpened(Object box) {
+    return 'The compartment is back in service; test-open command sent to $box.';
+  }
+
+  @override
+  String get techHomeBoxRestored => 'The compartment is back in service.';
+
+  @override
+  String techHomeResolvedWithRestored(Object restored) {
+    return 'Incident accepted and completed! $restored';
+  }
+
+  @override
+  String techHomeResolvedTestOpenFailed(Object box, Object error) {
+    return 'Incident accepted and completed, but couldn\'t test-open $box: $error';
+  }
+
+  @override
+  String get techHomeRequiredBadge => 'Required';
+
+  @override
+  String techHomeIncidentRpt(Object id) {
+    return 'Incident RPT-$id';
+  }
+
+  @override
+  String get techHomeResolveSheetTitle => 'Repair acceptance';
+
+  @override
+  String techHomeResolveSheetSubtitleWithBox(
+    Object locker,
+    Object box,
+    Object id,
+    Object title,
+  ) {
+    return '$locker · Compartment $box · RPT-$id · $title';
+  }
+
+  @override
+  String get techHomeScenePhotosBeforeAfter =>
+      'On-site photos (before & after repair)';
+
+  @override
+  String get techHomeBeforeRepair => 'Before repair';
+
+  @override
+  String techHomeExistingScenePhotos(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count on-site / reporter photos for comparison',
+      one: '1 on-site / reporter photo for comparison',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get techHomeBeforeRepairOptional =>
+      'Optional · saved as on-site confirmation photos';
+
+  @override
+  String get techHomeScenePhotosBeforeRepair => 'On-site photos before repair';
+
+  @override
+  String get techHomeTakeMorePhotos => 'Take more photos';
+
+  @override
+  String get techHomeDuringRepair => 'During repair';
+
+  @override
+  String get techHomeDuringRepairHint =>
+      'Photos of the technical work, part replacement (optional)';
+
+  @override
+  String get techHomeTakeRepairPhotos => 'Take repair photos';
+
+  @override
+  String get techHomeAfterRepair => 'After repair';
+
+  @override
+  String get techHomeAcceptancePhotoRequired =>
+      'Acceptance photos — at least 1 required';
+
+  @override
+  String get techHomeAcceptancePhotoOptional => 'Acceptance photos (optional)';
+
+  @override
+  String get techHomeTechNotesTitle => 'Technical notes & parts';
+
+  @override
+  String get techHomeTechNotesHint =>
+      'Describe the replaced parts and the steps taken...';
+
+  @override
+  String get techHomeCheckingTestOpen =>
+      'Checking the compartment before allowing a test open...';
+
+  @override
+  String get techHomeTestOpenAfterRepair => 'Test-open after repair';
+
+  @override
+  String techHomeTestOpenHintWithBox(Object box) {
+    return 'After completing the ticket, send an open command to compartment #$box to check the latch.';
+  }
+
+  @override
+  String get techHomeTestOpenHint =>
+      'After completing the ticket, send an open command to the compartment to check the latch.';
+
+  @override
+  String techHomeTestOpenNotSuggested(Object reason) {
+    return 'Test open not suggested: $reason';
+  }
+
+  @override
+  String get techHomeSavingAcceptance => 'Saving acceptance...';
+
+  @override
+  String get techHomeConfirmAndCompleteRepair => 'Confirm & complete repair';
+
+  @override
+  String get techHomeScenePhotoRequired =>
+      'Please take at least 1 on-site photo.';
+
+  @override
+  String get techHomeSceneConfirmTitle => 'On-site confirmation';
+
+  @override
+  String get techHomeSceneConfirmHint =>
+      'Photograph the compartment\'s condition as soon as you arrive (door, lock, board...). Photos are saved to the ticket as pre-repair evidence.';
+
+  @override
+  String get techHomeSceneNoteHint => 'Condition note (optional)...';
+
+  @override
+  String get techHomeSaveScenePhotos => 'Save on-site photos';
+
+  @override
+  String get techHomeCustomerShort => 'Customer';
+
+  @override
+  String techHomeOpenBoxError(Object error) {
+    return 'Couldn\'t open the compartment: $error';
+  }
+
+  @override
+  String get techHomeInvalidTicket => 'Invalid ticket.';
+
+  @override
+  String get techHomeBoxIncidentSheetTitle =>
+      'Check compartment & resolve incident';
+
+  @override
+  String get techHomeStep1PickBox =>
+      '1. Pick the faulty compartment at the Kiosk:';
+
+  @override
+  String get techHomeKioskNoBoxes => 'This Kiosk has no compartment list yet.';
+
+  @override
+  String techHomeOrderLookupFailed(Object error) {
+    return 'Couldn\'t look up the order in this compartment ($error). Check it in person (emergency open) before choosing an option — for now you can only lock the compartment.';
+  }
+
+  @override
+  String get techHomeEmergencyOpenShort => 'Emergency open';
+
+  @override
+  String get techHomeBoxHasCustomerItems => 'COMPARTMENT HOLDS CUSTOMER ITEMS!';
+
+  @override
+  String techHomeActiveOrderLine(Object code, Object customer) {
+    return 'Order: $code · Customer: $customer';
+  }
+
+  @override
+  String get techHomeBoxNoActiveOrder => 'NO ACTIVE ORDER IN THIS COMPARTMENT';
+
+  @override
+  String get techHomeBoxNoActiveOrderHint =>
+      'No order was found in this compartment. The customer may have already collected the items, a sensor may be stuck, or the wrong compartment was reported. Emergency-open it to check in person.';
+
+  @override
+  String get techHomeBoxCurrentlyEmpty =>
+      'The compartment is empty (nothing inside)';
+
+  @override
+  String get techHomeStep2PickGoodsOption =>
+      '2. Choose how to handle the items in the compartment:';
+
+  @override
+  String get techHomeStep2PickOption => '2. Choose a resolution:';
+
+  @override
+  String get techHomeOptionRelocateTitle =>
+      'Move to a new empty compartment (Recommended)';
+
+  @override
+  String get techHomeOptionRelocateHint =>
+      'Move the items to another empty compartment at the same Kiosk, issue a new PIN to the customer & lock the old compartment.';
+
+  @override
+  String get techHomeNoFreeBoxes =>
+      '⚠️ This Kiosk has no empty compartments left! Choose direct handover or seal instead.';
+
+  @override
+  String get techHomePickTargetBox => 'Choose the target empty compartment';
+
+  @override
+  String techHomeTargetBoxOption(Object number, Object type) {
+    return 'Compartment #$number ($type)';
+  }
+
+  @override
+  String get techHomeOptionHandoverTitle =>
+      'Customer present - Hand over directly';
+
+  @override
+  String get techHomeOptionHandoverHint =>
+      'The customer is at the station and takes the items directly; complete the order & lock the old compartment.';
+
+  @override
+  String get techHomeHandoverCodeLabel =>
+      '6-digit PIN or order QR code (required)';
+
+  @override
+  String get techHomeHandoverCodeHint =>
+      'The customer reads/shows the pickup code to confirm the handover';
+
+  @override
+  String get techHomeOptionHubTitle => 'Kiosk full - Seal and take to Hub';
+
+  @override
+  String get techHomeOptionHubHint =>
+      'Pack the items in a seal bag, scan the seal code, take it to the Hub for storage & lock the old compartment.';
+
+  @override
+  String get techHomeSealCodeLabel => 'Seal code (required)';
+
+  @override
+  String get techHomeSealCodeHint =>
+      'Enter the code printed on the seal bag exactly';
+
+  @override
+  String get techHomeOptionQuickFixKeepTitle =>
+      'Check & fix on site (don\'t move items)';
+
+  @override
+  String get techHomeOptionQuickFixKeepHint =>
+      'Check the sensor, close the door firmly or help the customer on site without moving the items.';
+
+  @override
+  String get techHomeOptionQuickFixTitle => 'Check & fix on site (Recommended)';
+
+  @override
+  String get techHomeOptionQuickFixHint =>
+      'Physical check (sensor, latch, cleaning). If the user reported by mistake or a minor issue is already fixed, no need to lock the compartment.';
+
+  @override
+  String get techHomeOptionLockFaultTitle =>
+      'Confirm hardware fault & lock for maintenance (FAULT)';
+
+  @override
+  String get techHomeOptionLockFaultHint =>
+      'Needs replacement parts or deep maintenance. The compartment is suspended so a technician can repair it.';
+
+  @override
+  String get techHomeLockForMaintenance =>
+      'Lock compartment for maintenance (Status: FAULT)';
+
+  @override
+  String get techHomeKeepActiveWithGoods =>
+      'Keep compartment active (holding customer items)';
+
+  @override
+  String get techHomeKeepActiveNormal =>
+      'Keep compartment active as normal (AVAILABLE)';
+
+  @override
+  String get techHomeLockOnlyHint =>
+      'The maintenance lock (FAULT) option always locks the compartment for servicing. If you don\'t need to lock it, choose \"Check & fix on site\".';
+
+  @override
+  String get techHomeLockedHint =>
+      'The compartment will be suspended and won\'t take new orders until the repair is completed.';
+
+  @override
+  String get techHomeNotLockedWithGoodsHint =>
+      'The compartment isn\'t locked. The customer\'s items stay safely inside and it won\'t be returned to empty.';
+
+  @override
+  String get techHomeNotLockedHint =>
+      'The compartment isn\'t locked. Suitable when the customer reported by mistake or the issue was fixed on site.';
+
+  @override
+  String get techHomeStep3ReasonNotes => '3. Reason & work notes:';
+
+  @override
+  String get techHomeSystemRecordedIncident =>
+      'Compartment incident recorded by the system';
+
+  @override
+  String get techHomeFailedInspectionContent =>
+      'Failed routine inspection details:';
+
+  @override
+  String get techHomeCustomerReportedReason => 'Customer\'s reported reason:';
+
+  @override
+  String get techHomeTechFieldNotesLabel =>
+      'Technician\'s on-site notes (separate):';
+
+  @override
+  String get techHomeTechFieldNotesHint =>
+      'Enter what you found and your assessment...';
+
+  @override
+  String get techHomeStep4ScenePhotos =>
+      '4. On-site / comparison photos (technician check):';
+
+  @override
+  String techHomeExistingScenePhotosColon(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count on-site / reporter photos for comparison:',
+      one: '1 on-site / reporter photo for comparison:',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get techHomeComparisonScenePhotos => 'On-site comparison photos';
+
+  @override
+  String get techHomeTakeMoreScenePhotos =>
+      'Take more on-site photos (optional):';
+
+  @override
+  String get techHomeStep5RepairPhotos => '5. Repair progress photos:';
+
+  @override
+  String get techHomeStep5RepairPhotosHint =>
+      'Photograph part removal/installation, technical work, sensor checks or item handling:';
+
+  @override
+  String techHomeExistingRepairPhotos(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count repair progress photos:',
+      one: '1 repair progress photo:',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get techHomeTakeMoreRepairPhotos =>
+      'Take more repair photos (optional):';
+
+  @override
+  String get techHomeUpdating => 'Updating...';
+
+  @override
+  String get techHomeConfirmAndUpdate => 'Confirm & update system';
+
+  @override
+  String get techHomeCellTypeStandard => 'Standard';
+
+  @override
+  String get techHomeForceOpenReasonForgotPin =>
+      'Customer forgot the PIN / can\'t be reached';
+
+  @override
+  String get techHomeForceOpenReasonJammed =>
+      'Door mechanically stuck / magnetic latch fault';
+
+  @override
+  String get techHomeForceOpenReasonTicketCheck =>
+      'Compartment check while handling an incident ticket';
+
+  @override
+  String get techHomeForceOpenReasonManagement =>
+      'Check requested by management';
+
+  @override
+  String get techHomeForceOpenReasonEmergency =>
+      'Emergency / suspected leak or foreign object';
+
+  @override
+  String get techHomeForceOpenReasonOther => 'Other reason…';
+
+  @override
+  String techHomeForceOpenSent(Object box) {
+    return 'Emergency open command sent to $box.';
+  }
+
+  @override
+  String techHomeForceOpenConfirmed(Object box) {
+    return 'The locker confirmed $box is open.';
+  }
+
+  @override
+  String techHomeForceOpenTitle(Object box) {
+    return 'Emergency open $box';
+  }
+
+  @override
+  String techHomeForceOpenHintWithTicket(Object id) {
+    return 'The compartment is opened with a Master command and written to the access log. The reason, note and photos are saved to the log of ticket RPT-$id.';
+  }
+
+  @override
+  String get techHomeForceOpenHint =>
+      'The compartment is opened with a Master command and written to the access log with the reason.';
+
+  @override
+  String get techHomeForceOpenReasonLabel =>
+      'Reason for intervention (required):';
+
+  @override
+  String get techHomeEnterReason => 'Enter a reason';
+
+  @override
+  String get techHomeNoteOptional => 'Note (optional)';
+
+  @override
+  String get techHomeForceOpenReasonRequired =>
+      'Please enter the reason for the emergency open.';
+
+  @override
+  String get techHomeConfirmOpen => 'Confirm open';
+
+  @override
+  String get techHomeSlaReasonWaitingParts => 'Waiting for replacement parts';
+
+  @override
+  String get techHomeSlaReasonDeepCircuitCheck =>
+      'Circuit needs an in-depth check';
+
+  @override
+  String get techHomeSlaReasonHardToReach => 'Locker hard to access';
+
+  @override
+  String get techHomeSlaReasonBuildingOps =>
+      'Coordinating with building operations';
+
+  @override
+  String get techHomeSlaReasonRequired =>
+      'Please enter the reason for the SLA extension.';
+
+  @override
+  String techHomeMaxExtensionsPerTicket(Object count) {
+    return 'Max $count times per ticket';
+  }
+
+  @override
+  String techHomeExtendSlaTitle(Object id) {
+    return 'Extend SLA of ticket RPT-$id';
+  }
+
+  @override
+  String get techHomeCurrentDueLabel => 'Current due:';
+
+  @override
+  String get techHomeNewDueLabel => 'New due (estimated):';
+
+  @override
+  String get techHomePickExtensionHours => 'Choose extension time:';
+
+  @override
+  String techHomePickExtensionHoursCapped(Object hours) {
+    return 'Choose extension time (max $hours h each):';
+  }
+
+  @override
+  String techHomePlusHours(Object hours) {
+    return '+$hours h';
+  }
+
+  @override
+  String get techHomeExtensionReasonLabel => 'Extension reason (required):';
+
+  @override
+  String get techHomeExtensionReasonHint => 'Enter why you need more time...';
+
+  @override
+  String get techHomeConfirmExtendSla => 'Confirm SLA extension';
+
+  @override
+  String get techHomeDeletePhotoTitle => 'Delete this photo?';
+
+  @override
+  String techHomeDeletePhotoBody(Object stage, Object id) {
+    return '$stage will be removed from ticket RPT-$id.';
+  }
+
+  @override
+  String get techHomePhotoDeleted => 'Photo removed from the ticket.';
+
+  @override
+  String techHomeTicketPhotosLoadFailed(Object error) {
+    return 'Couldn\'t load the ticket photos: $error';
+  }
+
+  @override
+  String techHomeYourAttachedPhotos(Object count) {
+    return 'Your attached photos ($count) — tap ✕ to delete a wrong upload';
+  }
+
+  @override
+  String get techHomeStageOnSite => 'On site';
+
+  @override
+  String get techHomeStageRepairing => 'Repairing';
+
+  @override
+  String techHomeSlaRemainingExtended(Object time, Object hours) {
+    return '$time left (+${hours}h)';
+  }
+
+  @override
+  String techHomeSlaRemaining(Object time) {
+    return '$time left';
+  }
+
+  @override
+  String techHomeSlaOverdueByExtended(Object time, Object hours) {
+    return 'Overdue $time (+${hours}h)';
+  }
+
+  @override
+  String techHomeSlaOverdueBy(Object time) {
+    return 'Overdue $time';
+  }
+
+  @override
+  String techHomeTechName(Object name) {
+    return 'Tech $name';
+  }
+
+  @override
+  String get techUiRestartUnconfirmed =>
+      'Restart command sent, but the server hasn\'t confirmed it yet — check the device status in a few minutes.';
+
+  @override
+  String get techUiRestartAccepted =>
+      'The locker controller accepted the command and is restarting.';
+
+  @override
+  String get techUiRestartTimeout =>
+      'The locker didn\'t respond to the restart command — check its connection.';
+
+  @override
+  String get techUiRestartFailed => 'Restart failed — please try again.';
+
+  @override
+  String get techUiAdminAccountTitle => 'Admin account';
+
+  @override
+  String get techUiAdminWebOnly =>
+      'The admin console (dashboard, statistics, users, orders, promotions...) is only available on the web.\nPlease sign in from a browser to continue.';
+
+  @override
+  String get techUiRoleDrone => 'drone technician';
+
+  @override
+  String get techUiRoleLocker => 'locker technician';
+
+  @override
+  String techUiSlaExtensionUsage(int used, int max) {
+    return 'Extended $used/$max';
+  }
+
+  @override
+  String techUiSlaExtensionLimit(int used, int max) {
+    return 'No extensions left ($used/$max)';
+  }
+
+  @override
+  String get techUiExtendSla => 'Extend SLA';
+
+  @override
+  String get techUiSlaSuspended => 'Suspended';
+
+  @override
+  String get techUiSlaRestricted => 'Restricted';
+
+  @override
+  String get techUiSlaWarning => 'Warning';
+
+  @override
+  String get techUiSlaNormal => 'Normal';
+
+  @override
+  String get techUiSlaNotLoaded => 'Not loaded';
+
+  @override
+  String techUiRatingSummary(String average, int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count ratings',
+      one: '1 rating',
+    );
+    return '$average/5 ($_temp0)';
+  }
+
+  @override
+  String get techUiSelectIncidentBox => 'Please select the faulty compartment.';
+
+  @override
+  String get techUiSelectTargetBox =>
+      'Please select an empty compartment to move the items to.';
+
+  @override
+  String get techUiEnterHandoverCode =>
+      'Enter the order\'s 6-digit PIN or QR code to confirm the handover.';
+
+  @override
+  String get techUiPinSixDigits => 'The pickup PIN must be exactly 6 digits.';
+
+  @override
+  String get techUiEnterSealCode =>
+      'Enter the seal code printed on the sealed bag.';
+
+  @override
+  String get techUiLocationDeniedForever =>
+      'Location permission was permanently denied. Please open Settings to turn on location.';
+
+  @override
+  String get techUiLocationAccessTitle => 'Location access';
+
+  @override
+  String get techUiForTechnicianAccounts => 'For technician accounts';
+
+  @override
+  String get techUiLocationRationale =>
+      'To dispatch the nearest locker incidents and drone tasks to you accurately, the app needs your device location while you\'re on shift.';
+
+  @override
+  String get techUiBenefitDispatchTitle => 'Location-based dispatch';
+
+  @override
+  String get techUiBenefitDispatchBody =>
+      'Automatically assigns tickets, routine inspections and drone rescues at lockers near you.';
+
+  @override
+  String get techUiBenefitAutoOffTitle => 'Turns off when your shift ends';
+
+  @override
+  String get techUiBenefitAutoOffBody =>
+      'Location is only accessed after you start your shift. When you end it, location tracking turns off completely to protect your privacy.';
+
+  @override
+  String get techUiBenefitBatteryTitle => 'Battery & data friendly';
+
+  @override
+  String get techUiBenefitBatteryBody =>
+      'Location updates adapt to how far you move, so your battery isn\'t drained.';
+
+  @override
+  String get techUiAllowLocation => 'Allow location access';
+
+  @override
+  String get techUiGpsServiceOff =>
+      'GPS is turned off. Please turn on GPS on your device.';
+
+  @override
+  String get techUiLocationBlockedForever =>
+      'Location access is permanently blocked. Please open Settings to grant permission.';
+
+  @override
+  String get techUiGpsUpdated => 'GPS location updated.';
+
+  @override
+  String techUiLocationUpdateFailed(String error) {
+    return 'Couldn\'t update location: $error';
+  }
+
+  @override
+  String get techUiEndShiftQuestion => 'End your shift?';
+
+  @override
+  String get techUiEndShiftBody =>
+      'You\'ll stop receiving new incidents and location access will be turned off completely.';
+
+  @override
+  String get techUiEndShift => 'End shift';
+
+  @override
+  String get techUiShiftStarted => 'Shift started and GPS location turned on.';
+
+  @override
+  String get techUiShiftEnded => 'Shift ended and GPS location turned off.';
+
+  @override
+  String techUiShiftUpdateFailed(String error) {
+    return 'Couldn\'t update shift: $error';
+  }
+
+  @override
+  String get techUiNoLocationYet => 'No location yet';
+
+  @override
+  String get techUiOnShift => 'On shift';
+
+  @override
+  String get techUiOffShift => 'Off shift';
+
+  @override
+  String get techUiOnShiftLocationNote =>
+      'Your location is used to dispatch the nearest jobs to you';
+
+  @override
+  String get techUiOffShiftLocationNote => 'GPS location is fully turned off';
+
+  @override
+  String get techUiDeviceGpsInfo => 'DEVICE GPS INFO';
+
+  @override
+  String get techUiGpsCoordinates => 'GPS coordinates';
+
+  @override
+  String get techUiGpsAccuracy => 'GPS accuracy';
+
+  @override
+  String techUiAccuracyMeters(String meters) {
+    return '±$meters m';
+  }
+
+  @override
+  String get techUiNotYet => 'Not yet';
+
+  @override
+  String get techUiOpenGoogleMaps => 'Open Google Maps';
+
+  @override
+  String get techUiUpdateGps => 'Update GPS';
+
+  @override
+  String get techUiNoGpsYet =>
+      'No GPS coordinates yet. Start your shift or tap Update GPS.';
+
+  @override
+  String get techUiGetCurrentLocation => 'Get current location';
+
+  @override
+  String get techUiPrivacyCommitment =>
+      'Privacy promise: your location is only accessed while you\'re on shift. When your shift ends, location tracking turns off completely.';
+
+  @override
+  String get techUiLoadingShift => 'Loading shift status...';
+
+  @override
+  String get techUiOnShiftBadge => 'ON SHIFT';
+
+  @override
+  String get techUiOffShiftBadge => 'OFF SHIFT';
+
+  @override
+  String techUiGpsActive(String accuracy, String time) {
+    return 'GPS: Active$accuracy · $time';
+  }
+
+  @override
+  String get techUiGpsSearching => 'Searching for GPS signal...';
+
+  @override
+  String get techUiGpsOffHint =>
+      'GPS off · Start your shift to turn on location';
+
+  @override
+  String get techUiRefreshGps => 'Refresh GPS';
+
+  @override
+  String get techUiEndShiftShort => 'End shift';
+
+  @override
+  String get techUiStartShift => 'Start shift';
+
+  @override
+  String get techUiNotApplicable => 'N/A';
+
+  @override
+  String get techUiInvalidScheduleId => 'Invalid inspection schedule ID.';
+
+  @override
+  String get techUiDroneRoutineMaintenance => 'Drone routine maintenance';
+
+  @override
+  String get techUiKioskRoutineInspection => 'Kiosk routine inspection';
+
+  @override
+  String get techUiKioskLocker => 'Kiosk locker';
+
+  @override
+  String get techUiConfirmRoutineInspection => 'Confirm routine inspection';
+
+  @override
+  String techUiCycleDays(int days) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: '$days days',
+      one: '1 day',
+    );
+    return 'Cycle: $_temp0';
+  }
+
+  @override
+  String techUiChecklistProgress(int answered, int total) {
+    return 'Checklist items ($answered/$total)';
+  }
+
+  @override
+  String get techUiNoChecklistPickOverall =>
+      'This schedule has no checklist — choose an overall result:';
+
+  @override
+  String get techUiInspectionNoteLabel => 'Inspection notes (optional)';
+
+  @override
+  String get techUiInspectionNoteHintDrone =>
+      'Battery, motors, propellers, sensors or parts replaced...';
+
+  @override
+  String get techUiInspectionNoteHintKiosk =>
+      'General condition, compartment cleaning, parts replaced if any...';
+
+  @override
+  String get techUiFieldPhotosOptional => 'On-site photos (optional):';
+
+  @override
+  String get techUiFieldPhotosHintDrone =>
+      'Photograph the drone, battery or parts you checked for the record.';
+
+  @override
+  String get techUiFieldPhotosHintKiosk =>
+      'Photograph the whole locker, locks or parts you checked for the record.';
+
+  @override
+  String get techUiUpdating => 'Updating...';
+
+  @override
+  String get techUiConfirmComplete => 'Confirm completion';
+
+  @override
+  String get techUiFaultDescOptional => 'Describe the fault found (optional)';
+
+  @override
+  String get techUiNoteOptional => 'Note (optional)';
+
+  @override
+  String techUiItemsRemaining(int remaining, int total) {
+    return '$remaining/$total items not rated yet.';
+  }
+
+  @override
+  String get techUiPickPassOrFail =>
+      'Choose Passed or Failed for this inspection.';
+
+  @override
+  String get techUiResultFailWithTicket =>
+      'Result: FAILED — an incident ticket will be opened and assigned to you. The next inspection date only moves once the ticket is completed.';
+
+  @override
+  String get techUiResultFail => 'Result: FAILED.';
+
+  @override
+  String techUiResultPass(int days) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: '$days days',
+      one: '1 day',
+    );
+    return 'Result: PASSED — the next inspection is due in $_temp0.';
+  }
+
+  @override
+  String get techUiFaultyBoxOptional => 'Faulty compartment (optional)';
+
+  @override
+  String get techUiFaultyBoxHint =>
+      'Pick a compartment ⇒ it\'s marked Broken and the ticket is linked to it; none ⇒ locker-level ticket.';
+
+  @override
+  String get techUiNoBoxLockerLevel => 'No compartment — locker-level incident';
+
+  @override
+  String techUiBoxWithStatus(String number, String status) {
+    return 'Compartment #$number · $status';
+  }
+
+  @override
+  String get techUiIncidentDescOptional => 'Incident description (optional)';
+
+  @override
+  String get techUiIncidentDescHint =>
+      'Leave blank ⇒ the ticket lists the failed items';
+
+  @override
+  String techUiOverdueDays(int days) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: '$days days',
+      one: '1 day',
+    );
+    return 'Overdue by $_temp0';
+  }
+
+  @override
+  String get techUiDueToday => 'Due today';
+
+  @override
+  String techUiDueInDays(int days) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: '$days days',
+      one: '1 day',
+    );
+    return 'Due in $_temp0';
+  }
+
+  @override
+  String techUiPrevFailedFinishTicket(Object id) {
+    return 'Last inspection failed — complete ticket RPT-$id before re-inspecting.';
+  }
+
+  @override
+  String get techUiScheduleOtherTech =>
+      'This schedule is assigned to another technician.';
+
+  @override
+  String get techUiPriorityUrgent => 'Urgent';
+
+  @override
+  String get techUiPriorityHigh => 'High';
+
+  @override
+  String get techUiPriorityLow => 'Low';
+
+  @override
+  String get techUiPriorityNormalDrone => 'Normal (standard drone)';
+
+  @override
+  String get techUiPriorityNormalStation => 'Normal (standard station)';
+
+  @override
+  String get techUiRoutineSchedule => 'Routine inspection schedule';
+
+  @override
+  String get techUiDroneRoutine => 'Drone routine';
+
+  @override
+  String get techUiKioskRoutine => 'Kiosk routine';
+
+  @override
+  String get techUiSchedulePlanRecord => 'Routine maintenance plan details';
+
+  @override
+  String get techUiDroneMaintenancePlan => 'Drone routine maintenance plan';
+
+  @override
+  String get techUiKioskInspectionPlan => 'Kiosk routine inspection plan';
+
+  @override
+  String get techUiDronePlanNote =>
+      'This is a recurring drone maintenance schedule set by an admin; checklist results are saved to the operations record.';
+
+  @override
+  String get techUiKioskPlanNote =>
+      'This is a recurring routine inspection of the kiosk station set by an admin (not an incident ticket).';
+
+  @override
+  String get techUiInspectionDue => 'Inspection due';
+
+  @override
+  String techUiPriorityLabel(String priority) {
+    return 'Priority: $priority';
+  }
+
+  @override
+  String techUiCycleEveryDays(String days) {
+    return 'Cycle: every $days days';
+  }
+
+  @override
+  String techUiShiftSlot(String slot) {
+    return 'Slot: $slot';
+  }
+
+  @override
+  String get techUiNoTechAssigned => 'No technician assigned';
+
+  @override
+  String get techUiTechInChargeYou => 'Technician: You';
+
+  @override
+  String techUiPlacementInBuilding(String note) {
+    return 'Location in building: $note';
+  }
+
+  @override
+  String get techUiDirectionsDroneStation => 'Directions to drone station';
+
+  @override
+  String get techUiPlanAndDeadline => 'Plan & deadline:';
+
+  @override
+  String get techUiDueDateLabel => 'Next due date:';
+
+  @override
+  String get techUiStartTimeLabel => 'Scheduled start time:';
+
+  @override
+  String get techUiTimeSlotLabel => 'Time slot / shift:';
+
+  @override
+  String get techUiFlexibleSlot => 'Flexible time';
+
+  @override
+  String get techUiRepeatCycleLabel => 'Repeats:';
+
+  @override
+  String techUiEveryDaysOnce(String days) {
+    return 'Once every $days days';
+  }
+
+  @override
+  String get techUiPriorityLevelLabel => 'Priority:';
+
+  @override
+  String get techUiTechnicianLabel => 'Assigned technician:';
+
+  @override
+  String get techUiUnassignedWaiting => 'Unassigned (waiting)';
+
+  @override
+  String get techUiYouAssigned => 'You (assigned to me)';
+
+  @override
+  String get techUiLastInspectionLabel => 'Last inspection:';
+
+  @override
+  String get techUiNoInspectionHistory => 'No inspection history yet';
+
+  @override
+  String techUiChecklistCriteria(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count items',
+      one: '1 item',
+    );
+    return 'Inspection checklist ($_temp0 to complete):';
+  }
+
+  @override
+  String get techUiDroneFullCheck =>
+      'Full check of the drone\'s operating condition.';
+
+  @override
+  String get techUiKioskFullCheck => 'Full check of the kiosk locker station.';
+
+  @override
+  String get techUiSopGuide => 'Procedure (SOP notes from admin):';
+
+  @override
+  String get techUiPrevResultLabel => 'Previous inspection result:';
+
+  @override
+  String techUiInspectionLogsFailed(String error) {
+    return 'Couldn\'t load inspection logs: $error';
+  }
+
+  @override
+  String get techUiCheckedNoOverall =>
+      'Inspected — no overall result in the log';
+
+  @override
+  String get techUiPassedAllCriteria => 'PASSED — all criteria met';
+
+  @override
+  String get techUiFailedHasIssues => 'FAILED — some items need fixing';
+
+  @override
+  String techUiLogTime(String time) {
+    return 'Time: $time';
+  }
+
+  @override
+  String techUiLogTimeWithTech(String time, String name) {
+    return 'Time: $time · Technician: $name';
+  }
+
+  @override
+  String techUiItemDetails(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count items',
+      one: '1 item',
+    );
+    return 'Item-by-item results ($_temp0):';
+  }
+
+  @override
+  String techUiTechNote(String note) {
+    return 'Technician note: $note';
+  }
+
+  @override
+  String get techUiNoItemResultsInLog =>
+      'The last log has no per-item results — only the overall result above.';
+
+  @override
+  String techUiTechNoteQuoted(String note) {
+    return 'Technician note: \"$note\"';
+  }
+
+  @override
+  String techUiFieldPhotosCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count photos',
+      one: '1 photo',
+    );
+    return 'On-site photos by the technician ($_temp0):';
+  }
+
+  @override
+  String get techUiPrevInspectionPhotos => 'Previous inspection photos';
+
+  @override
+  String techUiRelatedTicket(Object id) {
+    return 'Related incident ticket: RPT-$id';
+  }
+
+  @override
+  String get techUiFailedTicketOpenedNote =>
+      'Because the last inspection failed, an incident ticket was opened. Resolve it and complete the acceptance to reopen this schedule for the next inspection.';
+
+  @override
+  String techUiOpenTicketToHandle(Object id) {
+    return 'Open ticket RPT-$id to resolve';
+  }
+
+  @override
+  String get techUiNoPrevInspection =>
+      'No previous inspection data (new schedule).';
+
+  @override
+  String techUiHandleTicket(Object id) {
+    return 'Resolve ticket RPT-$id';
+  }
+
+  @override
+  String get techUiScheduleOtherTechShort => 'Assigned to another technician';
+
+  @override
+  String get techUiStartInspectionDue => 'Start inspection now (due)';
+
+  @override
+  String get techUiInspectNow => 'Inspect now';
+
+  @override
+  String get techUiIncidentReport => 'Incident report';
+
+  @override
+  String get techUiSavingChanges => 'Saving changes...';
+
+  @override
+  String get techUiProfileUpdated => 'Profile updated!';
+
+  @override
+  String get techUiAvatar => 'Profile photo';
+
+  @override
+  String get techUiTakeNewPhoto => 'Take a new photo';
+
+  @override
+  String get techUiChooseFromGallery => 'Choose from gallery';
+
+  @override
+  String get techUiDeleteAvatar => 'Remove profile photo';
+
+  @override
+  String get techUiUploadingAvatar => 'Uploading profile photo...';
+
+  @override
+  String get techUiAccountIdUnknown => 'Couldn\'t determine your account ID';
+
+  @override
+  String techUiPhotoUploadFailed(String error) {
+    return 'Photo upload failed: $error';
+  }
+
+  @override
+  String get techUiAvatarUpdated => 'Profile photo updated';
+
+  @override
+  String techUiPhotoUploadError(String error) {
+    return 'Photo upload error: $error';
+  }
+
+  @override
+  String get techUiDeleteAvatarQuestion => 'Remove profile photo?';
+
+  @override
+  String get techUiDeleteAvatarBody =>
+      'Are you sure you want to remove your current profile photo?';
+
+  @override
+  String get techUiDelete => 'Remove';
+
+  @override
+  String get techUiDeletingPhoto => 'Removing photo...';
+
+  @override
+  String techUiPhotoDeleteFailed(String error) {
+    return 'Couldn\'t remove photo: $error';
+  }
+
+  @override
+  String get techUiAvatarDeleted => 'Profile photo removed';
+
+  @override
+  String techUiPhotoDeleteError(String error) {
+    return 'Error removing photo: $error';
+  }
+
+  @override
+  String get techUiLogoutShift => 'Log out of shift';
+
+  @override
+  String techUiLogoutConfirm(String role) {
+    return 'Are you sure you want to end your shift and log out of your $role account?';
+  }
+
+  @override
+  String get techUiLockerTechnician => 'Locker technician';
+
+  @override
+  String get techUiSaving => 'Saving...';
+
+  @override
+  String get techUiSaveProfileChanges => 'Save changes';
+
+  @override
+  String get techUiLogoutAccount => 'Log out of account';
+
+  @override
+  String get techUiTechnicianProfile => 'Technician profile';
+
+  @override
+  String get techUiRoleBadgeDrone => 'DRONE · Drone technician';
+
+  @override
+  String get techUiRoleBadgeLocker => 'KIOSK · Locker technician';
+
+  @override
+  String techUiStatsLoadFailed(String error) {
+    return 'Couldn\'t load all stats: $error';
+  }
+
+  @override
+  String get techUiShiftMetrics => 'Shift performance';
+
+  @override
+  String get techUiMetricReceived => 'Assigned';
+
+  @override
+  String get techUiMetricInProgress => 'In progress';
+
+  @override
+  String get techUiQualityRating => 'Quality rating: ';
+
+  @override
+  String get techUiNoRatingYet => 'No ratings yet';
+
+  @override
+  String get techUiEditPersonalInfo => 'Edit personal info';
+
+  @override
+  String get techUiFullNameLabel => 'Technician full name *';
+
+  @override
+  String get techUiFullNameHint => 'Enter your full name';
+
+  @override
+  String get techUiFullNameMin => 'Full name must be at least 2 characters';
+
+  @override
+  String get techUiContactPhone => 'Contact phone';
+
+  @override
+  String get techUiPhoneHint => 'e.g. 0912345678';
+
+  @override
+  String get techUiPhoneMin => 'Phone number must have at least 9 digits';
+
+  @override
+  String get techUiAccountEmailFixed => 'Account email (fixed)';
+
+  @override
+  String get techUiIdentity => 'ID';
+
+  @override
+  String get techUiRoleDroneLong => 'Drone technician (flight team)';
+
+  @override
+  String get techUiRoleLockerLong =>
+      'Locker technician (compartments & hardware)';
+
+  @override
+  String get techUiRoleDroneDesc =>
+      'Dispatches and maintains drones and resolves drone incident tickets.';
+
+  @override
+  String get techUiRoleLockerDesc =>
+      'Maintains compartments and IoT devices and resolves locker incident tickets.';
+
+  @override
+  String techRecLoadError(Object error) {
+    return 'Couldn\'t load recovery tasks: $error';
+  }
+
+  @override
+  String get techRecEmptyTitle => 'No parcel recovery tasks yet';
+
+  @override
+  String get techRecEmptyHint => 'Tasks assigned to you will appear here.';
+
+  @override
+  String get techRecBanner =>
+      'Recover parcels at the verified drop location. Take real photos and record GPS and parcel condition before sending to the admin for review.';
+
+  @override
+  String get techRecUrgentTag => 'Urgent search task · Drone down';
+
+  @override
+  String techRecIncidentHash(Object id) {
+    return 'Incident #$id';
+  }
+
+  @override
+  String get techRecNoGps => 'No GPS · check the evidence before heading out';
+
+  @override
+  String get techRecSituation => 'Situation';
+
+  @override
+  String get techRecDataAccuracy => 'Data accuracy';
+
+  @override
+  String techRecAccuracyLine(Object source, Object accuracy, Object telemetry) {
+    return 'Location source: $source · accuracy $accuracy · telemetry $telemetry';
+  }
+
+  @override
+  String get techRecUnknown => 'unknown';
+
+  @override
+  String get techRecTelemetryStale => 'stale';
+
+  @override
+  String get techRecTelemetryLive => 'live';
+
+  @override
+  String get techRecGpsSourceDrone => 'drone GPS';
+
+  @override
+  String get techRecGpsSourceFlightPath => 'estimated from flight path';
+
+  @override
+  String get techRecGpsSourceNone => 'none yet';
+
+  @override
+  String get techRecDirectionsToDrop => 'Directions to drop location';
+
+  @override
+  String get techRecEvidence => 'Existing evidence';
+
+  @override
+  String get techRecImageLoadError => 'Can\'t load image';
+
+  @override
+  String get techRecAccept => 'Accept task';
+
+  @override
+  String get techRecStartSearch => 'Start searching';
+
+  @override
+  String get techRecRecordResult => 'Record search result';
+
+  @override
+  String get techRecConfirmHubHandover => 'Confirm handover to Hub / warehouse';
+
+  @override
+  String techRecConfirmStationHandover(Object station) {
+    return 'Confirm parcel delivered to station $station';
+  }
+
+  @override
+  String get techRecSubmittedTitle => 'Result submitted';
+
+  @override
+  String get techRecSubmittedBody =>
+      'The admin will verify the evidence and decide the next step.';
+
+  @override
+  String get techRecClosedTitle => 'Recovery completed';
+
+  @override
+  String get techRecClosedHubBody =>
+      'The admin has verified it and the parcel is back at the Hub / warehouse. Nothing more for you to do.';
+
+  @override
+  String techRecClosedStationBody(Object station) {
+    return 'The parcel was delivered to station $station. Nothing more for you to do.';
+  }
+
+  @override
+  String get techRecNoGpsTitle => 'Couldn\'t get GPS location';
+
+  @override
+  String get techRecNoGpsBody =>
+      'Recovery results need the coordinates where photos were taken so the admin can cross-check. Turn on location and grant location permission, then try again. Only send without GPS if location is truly unavailable — the admin will see that the evidence has no coordinates.';
+
+  @override
+  String get techRecRetryLater => 'Try later';
+
+  @override
+  String get techRecSendWithoutGps => 'Send without GPS';
+
+  @override
+  String techRecStationTitle(Object station) {
+    return 'Station $station';
+  }
+
+  @override
+  String get techRecHandoverHubTitle =>
+      'Hand the parcel over to the Hub / warehouse?';
+
+  @override
+  String techRecHandoverStationTitle(Object station) {
+    return 'Parcel delivered to station $station?';
+  }
+
+  @override
+  String get techRecHandoverHubBody =>
+      'Only confirm once the parcel is at the Hub / warehouse and someone has received it. After this step the Hub is responsible for the parcel.';
+
+  @override
+  String techRecHandoverStationBody(Object station) {
+    return 'Only confirm once the parcel is at station $station and someone has received it. After this step the parcel waits for a drone to redeliver it to the customer.';
+  }
+
+  @override
+  String get techRecHandedOver => 'Handed over';
+
+  @override
+  String get techRecHubHandoverDone =>
+      'Parcel confirmed at the Hub / warehouse.';
+
+  @override
+  String techRecStationHandoverDone(Object station) {
+    return 'Delivery to station $station confirmed.';
+  }
+
+  @override
+  String get techRecTagIntact => 'Parcel intact, seal OK';
+
+  @override
+  String get techRecTagPackagingDamaged =>
+      'Packaging slightly torn/dented from impact';
+
+  @override
+  String get techRecTagDroneStuck => 'Drone arm broken, stuck in a tree';
+
+  @override
+  String get techRecTagNotFound => 'Searched the whole area, parcel not found';
+
+  @override
+  String get techRecTagUnsafe => 'Area unsafe, can\'t be reached';
+
+  @override
+  String get techRecSheetTitle => 'Field report & recovery result';
+
+  @override
+  String get techRecSheetHint =>
+      'Locker technicians must confirm their actual coordinates at the search point, add a condition note and take evidence photos.';
+
+  @override
+  String get techRecGpsConfirmed => 'Field coordinates confirmed';
+
+  @override
+  String get techRecConfirmGpsTitle => 'Confirm GPS coordinates on site';
+
+  @override
+  String get techRecConfirmGpsHint =>
+      'Tap the button below to get the exact GPS coordinates where you are standing, to compare with the drone drop point.';
+
+  @override
+  String get techRecGpsUnavailable =>
+      'Couldn\'t get GPS coordinates. Please turn on location and grant location permission.';
+
+  @override
+  String get techRecReadingGps => 'Reading GPS signal...';
+
+  @override
+  String get techRecConfirmGpsButton => 'Confirm field coordinates';
+
+  @override
+  String techRecCoordinates(Object lat, Object lng, Object accuracy) {
+    return 'Coordinates: $lat, $lng (accuracy: ±$accuracy m)';
+  }
+
+  @override
+  String techRecWithinRange(Object meters) {
+    return '✓ Within the site (~$meters m from the drop point)';
+  }
+
+  @override
+  String techRecOutOfRange(Object meters) {
+    return '⚠️ ~$meters m from the drop point (move closer if you can)';
+  }
+
+  @override
+  String get techRecRefreshGps => 'Refresh GPS';
+
+  @override
+  String get techRecSearchResult => 'Search result';
+
+  @override
+  String get techRecOutcomeFound => 'Parcel found';
+
+  @override
+  String get techRecOutcomeNotFound => 'Parcel not found';
+
+  @override
+  String get techRecOutcomeUnsafe => 'Area unsafe to search';
+
+  @override
+  String get techRecCondIntact => 'Intact';
+
+  @override
+  String get techRecCondMinor => 'Minor damage';
+
+  @override
+  String get techRecCondMajor => 'Major damage';
+
+  @override
+  String get techRecCondUnusable => 'Unusable';
+
+  @override
+  String get techRecNoteLabel => 'Field note (description required)';
+
+  @override
+  String get techRecNoteHint =>
+      'Where it was found, drone state, parcel condition, temporary storage...';
+
+  @override
+  String get techRecPhotoHelper =>
+      'At least 1 photo taken on site is required (with coordinates).';
+
+  @override
+  String get techRecPhotoRequired => 'Please take at least 1 photo on site.';
+
+  @override
+  String get techRecNoteRequired => 'Please enter a field note.';
+
+  @override
+  String get techRecSubmit => 'Send for admin verification';
+
+  @override
+  String techRecBringToStation(Object name) {
+    return 'Take the parcel to station $name';
+  }
+
+  @override
+  String techRecDistanceFromFound(Object km) {
+    return '~$km km from where it was found';
+  }
+
+  @override
+  String get techRecStationNoDrone =>
+      'Station is out of drones — the parcel waits there for one';
+
+  @override
+  String get techRecStationHasDrone => 'Station has a drone ready to redeliver';
+
+  @override
+  String get techRecDirectionsToStation => 'Directions to station';
+
+  @override
+  String get techRecErrHandoverFailed =>
+      'Direct handover failed — check the order\'s 6-digit PIN or QR code and try again.';
+
+  @override
+  String get techRecErrInvalidOtp => 'The order\'s PIN/QR code is incorrect.';
+
+  @override
+  String get techRecErrRelocateFailed =>
+      'Couldn\'t move the order to the new compartment. The items are still in the old one — try again or choose another option.';
+
+  @override
+  String get techRecErrSlaNotAssignee =>
+      'Only the technician assigned to the ticket can extend its SLA.';
+
+  @override
+  String get techRecErrSlaLimitReached =>
+      'This ticket has no SLA self-extensions left — contact an admin if you need more time.';
+
+  @override
+  String get techRecErrSlaHoursExceeded =>
+      'The extension exceeds the hours allowed per extension.';
+
+  @override
+  String get techRecErrSlaReasonRequired =>
+      'Please give a reason for the SLA extension.';
+
+  @override
+  String get techRecErrInvalidExtensionHours =>
+      'The extension must be at least 1 hour.';
+
+  @override
+  String get techRecErrSlaRestricted =>
+      'You have too many tickets past their SLA, so you can\'t take new jobs for now.';
+
+  @override
+  String get techRecErrReleaseReasonRequired =>
+      'Please give a reason for returning the ticket to the queue.';
+
+  @override
+  String get techRecErrReportNotClaimed =>
+      'The ticket is still in the queue — no technician has taken it.';
+
+  @override
+  String get techRecErrReportResolved => 'This ticket is already completed.';
+
+  @override
+  String get techRecErrReportOpen =>
+      'This compartment/landing pad has an open incident ticket — complete that ticket first.';
+
+  @override
+  String get techRecErrTargetBoxRequired =>
+      'Choose an empty target compartment to move the items to.';
+
+  @override
+  String get techRecErrTargetBoxUnavailable =>
+      'The target compartment is no longer empty — reload the layout and choose another.';
+
+  @override
+  String get techRecErrBoxNotFault =>
+      'The compartment is no longer in a fault state.';
+
+  @override
+  String get techRecErrHandoverOtpRequired =>
+      'The order\'s 6-digit PIN or QR code is required for handover.';
+
+  @override
+  String get techRecErrHandoverOtpUnavailable =>
+      'The order has no pickup code yet, so it can\'t be handed over directly.';
+
+  @override
+  String get techRecErrSealRequired =>
+      'Enter the seal number printed on the seal bag.';
+
+  @override
+  String get techRecErrIncidentActionInvalid => 'Invalid resolution option.';
+
+  @override
+  String get techRecErrIncidentBoxNotInLocker =>
+      'The selected compartment isn\'t in this ticket\'s locker.';
+
+  @override
+  String get techRecErrForceOpenReportRequired =>
+      'Emergency-open photos can only be saved when opening from an incident ticket.';
+
+  @override
+  String get techRecErrForceOpenReportMismatch =>
+      'The incident ticket doesn\'t belong to this compartment\'s locker.';
+
+  @override
+  String get techRecErrDroneReportRequired => 'This isn\'t a drone ticket.';
+
+  @override
+  String get techRecErrDeviceNotPaired =>
+      'The device isn\'t paired with any locker.';
+
+  @override
+  String get techRecErrDeviceNotInScope =>
+      'The device isn\'t in a locker you\'re responsible for.';
+
+  @override
+  String get techRecErrDeviceOnlineNotAllowed =>
+      'Online status is computed by the server and can\'t be set manually.';
 }

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 import 'package:smart_laundry_locker/core/utils/app_date_time.dart';
 import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/technician_location_permission_sheet.dart';
@@ -110,7 +111,7 @@ class _TechnicianShiftCardState extends State<TechnicianShiftCard> {
     if (!serviceEnabled) {
       if (mounted) {
         _showSnackBar(
-          'Dịch vụ định vị GPS đang tắt. Vui lòng bật GPS trên thiết bị.',
+          context.l10n.techUiGpsServiceOff,
           isError: true,
         );
       }
@@ -138,7 +139,7 @@ class _TechnicianShiftCardState extends State<TechnicianShiftCard> {
       if (permission == LocationPermission.denied) {
         if (mounted) {
           _showSnackBar(
-            'Quyền truy cập vị trí bị từ chối.',
+            context.l10n.lockerLocationDenied,
             isError: true,
           );
         }
@@ -149,7 +150,7 @@ class _TechnicianShiftCardState extends State<TechnicianShiftCard> {
     if (permission == LocationPermission.deniedForever) {
       if (mounted) {
         _showSnackBar(
-          'Quyền truy cập vị trí bị chặn vĩnh viễn. Vui lòng mở Cài đặt để cấp quyền.',
+          context.l10n.techUiLocationBlockedForever,
           isError: true,
         );
       }
@@ -209,7 +210,7 @@ class _TechnicianShiftCardState extends State<TechnicianShiftCard> {
           _updating = false;
         });
         if (!silent) {
-          _showSnackBar('Đã cập nhật vị trí GPS thành công.');
+          _showSnackBar(context.l10n.techUiGpsUpdated);
         }
       } else {
         if (mounted) setState(() => _updating = false);
@@ -219,7 +220,9 @@ class _TechnicianShiftCardState extends State<TechnicianShiftCard> {
       setState(() => _updating = false);
       if (!silent) {
         _showSnackBar(
-          'Không thể cập nhật vị trí: ${LockerOpsService.errorMessage(e)}',
+          context.l10n.techUiLocationUpdateFailed(
+            LockerOpsService.errorMessage(e),
+          ),
           isError: true,
         );
       }
@@ -236,18 +239,21 @@ class _TechnicianShiftCardState extends State<TechnicianShiftCard> {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
-          title: const Text(
-            'Kết thúc ca trực?',
-            style: TextStyle(fontWeight: FontWeight.w700, fontSize: 17),
+          title: Text(
+            context.l10n.techUiEndShiftQuestion,
+            style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 17),
           ),
-          content: const Text(
-            'Hệ thống sẽ ngừng điều phối sự cố mới và ngắt hoàn toàn quyền truy cập vị trí của bạn.',
-            style: TextStyle(fontSize: 14, color: Color(0xFF475569), height: 1.4),
+          content: Text(
+            context.l10n.techUiEndShiftBody,
+            style: const TextStyle(fontSize: 14, color: Color(0xFF475569), height: 1.4),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('Hủy', style: TextStyle(color: Color(0xFF64748B))),
+              child: Text(
+                context.l10n.commonCancel,
+                style: const TextStyle(color: Color(0xFF64748B)),
+              ),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
@@ -259,9 +265,9 @@ class _TechnicianShiftCardState extends State<TechnicianShiftCard> {
                 ),
               ),
               onPressed: () => Navigator.pop(ctx, true),
-              child: const Text(
-                'Kết thúc ca',
-                style: TextStyle(fontWeight: FontWeight.w700),
+              child: Text(
+                context.l10n.techUiEndShift,
+                style: const TextStyle(fontWeight: FontWeight.w700),
               ),
             ),
           ],
@@ -305,16 +311,16 @@ class _TechnicianShiftCardState extends State<TechnicianShiftCard> {
 
       if (nextOnDuty) {
         _startPeriodicLocationSync();
-        _showSnackBar('Đã vào ca làm việc và kích hoạt định vị GPS.');
+        _showSnackBar(context.l10n.techUiShiftStarted);
       } else {
         _stopPeriodicLocationSync();
-        _showSnackBar('Đã kết thúc ca và tắt định vị GPS.');
+        _showSnackBar(context.l10n.techUiShiftEnded);
       }
     } catch (e) {
       if (!mounted) return;
       setState(() => _updating = false);
       _showSnackBar(
-        'Lỗi cập nhật ca trực: ${LockerOpsService.errorMessage(e)}',
+        context.l10n.techUiShiftUpdateFailed(LockerOpsService.errorMessage(e)),
         isError: true,
       );
     }
@@ -335,11 +341,11 @@ class _TechnicianShiftCardState extends State<TechnicianShiftCard> {
   }
 
   String _formatLocationTime(DateTime? time) {
-    if (time == null) return 'Chưa có vị trí';
+    if (time == null) return context.l10n.techUiNoLocationYet;
     final diff = DateTime.now().difference(time);
-    if (diff.inSeconds < 60) return 'Vừa xong';
-    if (diff.inMinutes < 60) return '${diff.inMinutes} phút trước';
-    if (diff.inHours < 24) return '${diff.inHours} giờ trước';
+    if (diff.inSeconds < 60) return context.l10n.nlJustNow;
+    if (diff.inMinutes < 60) return context.l10n.nlMinutesAgo(diff.inMinutes);
+    if (diff.inHours < 24) return context.l10n.nlHoursAgo(diff.inHours);
     return formatDateTimeVn(time);
   }
 
@@ -397,8 +403,8 @@ class _TechnicianShiftCardState extends State<TechnicianShiftCard> {
                       children: [
                         Text(
                           _onDuty
-                              ? 'Đang trong ca làm việc'
-                              : 'Ngoài ca làm việc',
+                              ? context.l10n.techUiOnShift
+                              : context.l10n.techUiOffShift,
                           style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w700,
@@ -408,8 +414,8 @@ class _TechnicianShiftCardState extends State<TechnicianShiftCard> {
                         const SizedBox(height: 2),
                         Text(
                           _onDuty
-                              ? 'Vị trí được truy cập để điều phối công việc gần bạn nhất'
-                              : 'Định vị GPS đã ngắt kết nối hoàn toàn',
+                              ? context.l10n.techUiOnShiftLocationNote
+                              : context.l10n.techUiOffShiftLocationNote,
                           style: TextStyle(
                             fontSize: 12,
                             color: Colors.grey.shade600,
@@ -423,9 +429,9 @@ class _TechnicianShiftCardState extends State<TechnicianShiftCard> {
               const SizedBox(height: 16),
               const Divider(),
               const SizedBox(height: 12),
-              const Text(
-                'THÔNG TIN GPS THIẾT BỊ',
-                style: TextStyle(
+              Text(
+                context.l10n.techUiDeviceGpsInfo,
+                style: const TextStyle(
                   fontSize: 11,
                   fontWeight: FontWeight.w700,
                   letterSpacing: 0.6,
@@ -436,21 +442,23 @@ class _TechnicianShiftCardState extends State<TechnicianShiftCard> {
               if (_latitude != null && _longitude != null) ...[
                 _infoRow(
                   Icons.pin_drop_outlined,
-                  'Tọa độ GPS',
+                  context.l10n.techUiGpsCoordinates,
                   '${_latitude!.toStringAsFixed(6)}, ${_longitude!.toStringAsFixed(6)}',
                 ),
                 if (_accuracyM != null)
                   _infoRow(
                     Icons.gps_fixed_rounded,
-                    'Độ chính xác GPS',
-                    '±${_accuracyM!.toStringAsFixed(1)} mét',
+                    context.l10n.techUiGpsAccuracy,
+                    context.l10n.techUiAccuracyMeters(
+                      _accuracyM!.toStringAsFixed(1),
+                    ),
                   ),
                 _infoRow(
                   Icons.access_time_rounded,
-                  'Cập nhật lần cuối',
+                  context.l10n.recvUpdatedAt,
                   _lastLocatedAt != null
                       ? formatDateTimeVn(_lastLocatedAt)
-                      : 'Chưa có',
+                      : context.l10n.techUiNotYet,
                 ),
                 const SizedBox(height: 16),
                 Row(
@@ -458,7 +466,7 @@ class _TechnicianShiftCardState extends State<TechnicianShiftCard> {
                     Expanded(
                       child: OutlinedButton.icon(
                         icon: const Icon(Icons.map_outlined, size: 18),
-                        label: const Text('Mở Google Maps'),
+                        label: Text(context.l10n.techUiOpenGoogleMaps),
                         onPressed: () async {
                           final uri = Uri.parse(
                             'https://www.google.com/maps/search/?api=1&query=$_latitude,$_longitude',
@@ -476,7 +484,7 @@ class _TechnicianShiftCardState extends State<TechnicianShiftCard> {
                     Expanded(
                       child: ElevatedButton.icon(
                         icon: const Icon(Icons.refresh_rounded, size: 18),
-                        label: const Text('Cập nhật GPS'),
+                        label: Text(context.l10n.techUiUpdateGps),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFF0077B6),
                           foregroundColor: Colors.white,
@@ -497,14 +505,14 @@ class _TechnicianShiftCardState extends State<TechnicianShiftCard> {
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(color: const Color(0xFFE2E8F0)),
                   ),
-                  child: const Row(
+                  child: Row(
                     children: [
-                      Icon(Icons.location_off_outlined, color: Color(0xFF94A3B8)),
-                      SizedBox(width: 12),
+                      const Icon(Icons.location_off_outlined, color: Color(0xFF94A3B8)),
+                      const SizedBox(width: 12),
                       Expanded(
                         child: Text(
-                          'Chưa ghi nhận tọa độ GPS. Hãy bật ca trực hoặc nhấn Cập nhật vị trí.',
-                          style: TextStyle(
+                          context.l10n.techUiNoGpsYet,
+                          style: const TextStyle(
                             fontSize: 13,
                             color: Color(0xFF64748B),
                           ),
@@ -518,7 +526,7 @@ class _TechnicianShiftCardState extends State<TechnicianShiftCard> {
                   width: double.infinity,
                   child: ElevatedButton.icon(
                     icon: const Icon(Icons.my_location_rounded),
-                    label: const Text('Lấy vị trí hiện tại'),
+                    label: Text(context.l10n.techUiGetCurrentLocation),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF0077B6),
                       foregroundColor: Colors.white,
@@ -537,14 +545,14 @@ class _TechnicianShiftCardState extends State<TechnicianShiftCard> {
                   color: const Color(0xFFF1F5F9),
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: const Row(
+                child: Row(
                   children: [
-                    Icon(Icons.shield_outlined, size: 16, color: Color(0xFF64748B)),
-                    SizedBox(width: 8),
+                    const Icon(Icons.shield_outlined, size: 16, color: Color(0xFF64748B)),
+                    const SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        'Cam kết quyền riêng tư: Hệ thống chỉ truy cập vị trí khi bạn trong ca. Khi hết ca, định vị tự động tắt hoàn toàn.',
-                        style: TextStyle(
+                        context.l10n.techUiPrivacyCommitment,
+                        style: const TextStyle(
                           fontSize: 11.5,
                           color: Color(0xFF64748B),
                           height: 1.35,
@@ -599,10 +607,10 @@ class _TechnicianShiftCardState extends State<TechnicianShiftCard> {
           borderRadius: BorderRadius.circular(16),
           border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
         ),
-        child: const Row(
+        child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            SizedBox(
+            const SizedBox(
               width: 16,
               height: 16,
               child: CircularProgressIndicator(
@@ -610,13 +618,13 @@ class _TechnicianShiftCardState extends State<TechnicianShiftCard> {
                 color: Colors.white70,
               ),
             ),
-            SizedBox(width: 10),
+            const SizedBox(width: 10),
             Flexible(
               child: Text(
-                'Đang tải trạng thái ca trực...',
+                context.l10n.techUiLoadingShift,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: TextStyle(fontSize: 12, color: Colors.white70),
+                style: const TextStyle(fontSize: 12, color: Colors.white70),
               ),
             ),
           ],
@@ -734,7 +742,9 @@ class _TechnicianShiftCardState extends State<TechnicianShiftCard> {
                                   const SizedBox(width: 5),
                                   Flexible(
                                     child: Text(
-                                      _onDuty ? 'ĐANG TRONG CA' : 'NGOÀI CA',
+                                      _onDuty
+                                          ? context.l10n.techUiOnShiftBadge
+                                          : context.l10n.techUiOffShiftBadge,
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
                                       style: TextStyle(
@@ -758,9 +768,14 @@ class _TechnicianShiftCardState extends State<TechnicianShiftCard> {
                       Text(
                         _onDuty
                             ? (hasLocation
-                                ? 'GPS: Hoạt động${_accuracyM != null ? ' (±${_accuracyM!.toStringAsFixed(0)}m)' : ''} · ${_formatLocationTime(_lastLocatedAt)}'
-                                : 'Đang dò tìm tín hiệu GPS...')
-                            : 'GPS đã tắt · Vào ca để kích hoạt vị trí',
+                                ? context.l10n.techUiGpsActive(
+                                    _accuracyM != null
+                                        ? ' (±${_accuracyM!.toStringAsFixed(0)}m)'
+                                        : '',
+                                    _formatLocationTime(_lastLocatedAt),
+                                  )
+                                : context.l10n.techUiGpsSearching)
+                            : context.l10n.techUiGpsOffHint,
                         style: TextStyle(
                           fontSize: 11.5,
                           fontWeight: FontWeight.w500,
@@ -777,7 +792,7 @@ class _TechnicianShiftCardState extends State<TechnicianShiftCard> {
                 if (_onDuty) ...[
                   IconButton(
                     icon: const Icon(Icons.my_location_rounded, size: 19),
-                    tooltip: 'Cập nhật lại GPS',
+                    tooltip: context.l10n.techUiRefreshGps,
                     color: const Color(0xFF38BDF8),
                     padding: EdgeInsets.zero,
                     constraints:
@@ -804,7 +819,9 @@ class _TechnicianShiftCardState extends State<TechnicianShiftCard> {
                   ),
                   onPressed: _updating ? null : () => _toggleDuty(!_onDuty),
                   child: Text(
-                    _onDuty ? 'Hết ca' : 'Vào ca',
+                    _onDuty
+                        ? context.l10n.techUiEndShiftShort
+                        : context.l10n.techUiStartShift,
                     style: const TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w700,

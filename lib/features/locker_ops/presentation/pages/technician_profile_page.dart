@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
+import 'package:smart_laundry_locker/core/l10n/language_picker.dart';
 import 'package:smart_laundry_locker/core/network/api_client.dart';
 import 'package:smart_laundry_locker/core/services/app_event_bus.dart';
 import 'package:smart_laundry_locker/core/services/token_service.dart';
@@ -88,7 +90,9 @@ class _TechnicianProfilePageState extends State<TechnicianProfilePage> {
 
     if (p != null) {
       _fullNameController.text =
-          (p.fullName.isNotEmpty && p.fullName != 'Người dùng')
+          (p.fullName.isNotEmpty &&
+                  p.fullName != 'Người dùng' &&
+                  p.fullName != L10n.current.commonUser)
               ? p.fullName
               : (_jwtUserName ?? '');
       _phoneController.text = p.phoneNumber;
@@ -154,7 +158,7 @@ class _TechnicianProfilePageState extends State<TechnicianProfilePage> {
     if (!_formKey.currentState!.validate()) return;
 
     setState(() => _isSaving = true);
-    SmartDialog.showLoading(msg: 'Đang lưu thay đổi...');
+    SmartDialog.showLoading(msg: context.l10n.techUiSavingChanges);
 
     final profileProvider = context.read<ProfileProvider>();
     await profileProvider.updateProfile(
@@ -167,7 +171,7 @@ class _TechnicianProfilePageState extends State<TechnicianProfilePage> {
     setState(() => _isSaving = false);
 
     if (profileProvider.isSuccess) {
-      SmartDialog.showToast('Cập nhật thông tin hồ sơ thành công!');
+      SmartDialog.showToast(context.l10n.techUiProfileUpdated);
       // Reload profile to propagate changes globally
       await profileProvider.loadProfile();
     } else if (profileProvider.error != null) {
@@ -202,27 +206,27 @@ class _TechnicianProfilePageState extends State<TechnicianProfilePage> {
                 ),
               ),
               const SizedBox(height: 14),
-              const Text(
-                'Ảnh đại diện',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              Text(
+                context.l10n.techUiAvatar,
+                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
               ListTile(
                 leading: const Icon(Icons.photo_camera_outlined, color: opsPrimary),
-                title: const Text('Chụp ảnh mới'),
+                title: Text(context.l10n.techUiTakeNewPhoto),
                 onTap: () => Navigator.of(ctx).pop(ImageSource.camera),
               ),
               ListTile(
                 leading: const Icon(Icons.photo_library_outlined, color: opsPrimary),
-                title: const Text('Chọn từ bộ sưu tập'),
+                title: Text(context.l10n.techUiChooseFromGallery),
                 onTap: () => Navigator.of(ctx).pop(ImageSource.gallery),
               ),
               if (currentAvatar.isNotEmpty)
                 ListTile(
                   leading: const Icon(Icons.delete_outline, color: Color(0xFFDC2626)),
-                  title: const Text(
-                    'Xóa ảnh đại diện',
-                    style: TextStyle(color: Color(0xFFDC2626)),
+                  title: Text(
+                    context.l10n.techUiDeleteAvatar,
+                    style: const TextStyle(color: Color(0xFFDC2626)),
                   ),
                   onTap: () {
                     Navigator.of(ctx).pop();
@@ -251,7 +255,7 @@ class _TechnicianProfilePageState extends State<TechnicianProfilePage> {
         _localAvatarFile = File(picked.path);
         _isUploadingAvatar = true;
       });
-      SmartDialog.showLoading(msg: 'Đang tải lên ảnh đại diện...');
+      SmartDialog.showLoading(msg: context.l10n.techUiUploadingAvatar);
 
       final userId = profile?.id ?? await TokenService.getUserId();
       if (userId == null || userId.isEmpty) {
@@ -260,7 +264,7 @@ class _TechnicianProfilePageState extends State<TechnicianProfilePage> {
           _isUploadingAvatar = false;
           _localAvatarFile = null;
         });
-        SmartDialog.showToast('Không xác định được ID tài khoản');
+        SmartDialog.showToast(L10n.current.techUiAccountIdUnknown);
         return;
       }
 
@@ -277,7 +281,9 @@ class _TechnicianProfilePageState extends State<TechnicianProfilePage> {
 
       await result.fold(
         (failure) async {
-          SmartDialog.showToast('Tải ảnh thất bại: ${failure.message}');
+          SmartDialog.showToast(
+            L10n.current.techUiPhotoUploadFailed(failure.message),
+          );
           if (mounted) {
             setState(() {
               _localAvatarFile = null;
@@ -293,13 +299,13 @@ class _TechnicianProfilePageState extends State<TechnicianProfilePage> {
               _localAvatarFile = null;
             });
           }
-          SmartDialog.showToast('Đã cập nhật ảnh đại diện thành công');
+          SmartDialog.showToast(L10n.current.techUiAvatarUpdated);
         },
       );
     } catch (e) {
       if (!mounted) return;
       SmartDialog.dismiss();
-      SmartDialog.showToast('Lỗi tải ảnh: $e');
+      SmartDialog.showToast(L10n.current.techUiPhotoUploadError('$e'));
       if (mounted) {
         setState(() {
           _localAvatarFile = null;
@@ -318,12 +324,12 @@ class _TechnicianProfilePageState extends State<TechnicianProfilePage> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Xóa ảnh đại diện?'),
-        content: const Text('Bạn có chắc chắn muốn gỡ ảnh đại diện hiện tại?'),
+        title: Text(context.l10n.techUiDeleteAvatarQuestion),
+        content: Text(context.l10n.techUiDeleteAvatarBody),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Hủy'),
+            child: Text(context.l10n.commonCancel),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
@@ -331,7 +337,7 @@ class _TechnicianProfilePageState extends State<TechnicianProfilePage> {
               foregroundColor: Colors.white,
             ),
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Xóa'),
+            child: Text(context.l10n.techUiDelete),
           ),
         ],
       ),
@@ -340,7 +346,7 @@ class _TechnicianProfilePageState extends State<TechnicianProfilePage> {
     if (confirmed != true || !mounted) return;
 
     setState(() => _isUploadingAvatar = true);
-    SmartDialog.showLoading(msg: 'Đang xóa ảnh...');
+    SmartDialog.showLoading(msg: context.l10n.techUiDeletingPhoto);
 
     try {
       final repository = ProfileRepositoryImpl(
@@ -351,18 +357,20 @@ class _TechnicianProfilePageState extends State<TechnicianProfilePage> {
 
       if (!mounted) return;
       await result.fold(
-        (failure) async => SmartDialog.showToast('Xóa ảnh thất bại: ${failure.message}'),
+        (failure) async => SmartDialog.showToast(
+          L10n.current.techUiPhotoDeleteFailed(failure.message),
+        ),
         (_) async {
           PaintingBinding.instance.imageCache.clear();
           PaintingBinding.instance.imageCache.clearLiveImages();
           await context.read<ProfileProvider>().loadProfile();
-          SmartDialog.showToast('Đã xóa ảnh đại diện');
+          SmartDialog.showToast(L10n.current.techUiAvatarDeleted);
         },
       );
     } catch (e) {
       if (!mounted) return;
       SmartDialog.dismiss();
-      SmartDialog.showToast('Lỗi xóa ảnh: $e');
+      SmartDialog.showToast(L10n.current.techUiPhotoDeleteError('$e'));
     } finally {
       if (mounted) {
         setState(() => _isUploadingAvatar = false);
@@ -375,21 +383,25 @@ class _TechnicianProfilePageState extends State<TechnicianProfilePage> {
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Row(
+        title: Row(
           children: [
-            Icon(Icons.logout_rounded, color: Color(0xFFDC2626)),
-            SizedBox(width: 10),
-            Text('Đăng xuất ca trực'),
+            const Icon(Icons.logout_rounded, color: Color(0xFFDC2626)),
+            const SizedBox(width: 10),
+            Text(context.l10n.techUiLogoutShift),
           ],
         ),
         content: Text(
-          'Bạn có chắc chắn muốn kết thúc ca trực và đăng xuất khỏi tài khoản '
-          '${technicianRoleLabel(drone: _isDrone)} không?',
+          context.l10n.techUiLogoutConfirm(
+            technicianRoleLabel(drone: _isDrone),
+          ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text('Hủy', style: TextStyle(color: Colors.grey)),
+            child: Text(
+              context.l10n.commonCancel,
+              style: const TextStyle(color: Colors.grey),
+            ),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
@@ -397,7 +409,7 @@ class _TechnicianProfilePageState extends State<TechnicianProfilePage> {
               foregroundColor: Colors.white,
             ),
             onPressed: () => Navigator.of(ctx).pop(true),
-            child: const Text('Đăng xuất'),
+            child: Text(context.l10n.commonLogout),
           ),
         ],
       ),
@@ -413,7 +425,9 @@ class _TechnicianProfilePageState extends State<TechnicianProfilePage> {
     final displayName = (profile?.fullName.trim().isNotEmpty ?? false)
         ? profile!.fullName
         : (_jwtUserName ??
-            (_isDrone ? 'Kỹ thuật viên drone' : 'Kỹ thuật viên tủ'));
+            (_isDrone
+                ? context.l10n.ddDroneTech
+                : context.l10n.techUiLockerTechnician));
     final email = (profile?.email.trim().isNotEmpty ?? false)
         ? profile!.email
         : _jwtUserEmail;
@@ -494,10 +508,17 @@ class _TechnicianProfilePageState extends State<TechnicianProfilePage> {
                           )
                         : const Icon(Icons.check_circle_outline, size: 20),
                     label: Text(
-                      _isSaving ? 'Đang lưu...' : 'Lưu thay đổi thông tin',
+                      _isSaving
+                          ? context.l10n.techUiSaving
+                          : context.l10n.techUiSaveProfileChanges,
                       style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
                     ),
                   ),
+
+                  const SizedBox(height: 12),
+
+                  // Ngôn ngữ giao diện (dùng chung sheet với Hồ sơ khách hàng)
+                  _buildLanguageTile(),
 
                   const SizedBox(height: 12),
 
@@ -513,9 +534,9 @@ class _TechnicianProfilePageState extends State<TechnicianProfilePage> {
                       ),
                     ),
                     icon: const Icon(Icons.logout_rounded, size: 18),
-                    label: const Text(
-                      'Đăng xuất tài khoản',
-                      style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+                    label: Text(
+                      context.l10n.techUiLogoutAccount,
+                      style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
                     ),
                   ),
 
@@ -524,6 +545,54 @@ class _TechnicianProfilePageState extends State<TechnicianProfilePage> {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  /// Dòng "Ngôn ngữ" — mở sheet chọn ngôn ngữ dùng chung với Hồ sơ khách hàng.
+  Widget _buildLanguageTile() {
+    return Material(
+      key: const ValueKey('technician-language-tile'),
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(14),
+      child: InkWell(
+        onTap: () => pickAppLanguage(context),
+        borderRadius: BorderRadius.circular(14),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: const Color(0xFFE2E8F0)),
+          ),
+          child: Row(
+            children: [
+              const Icon(Icons.translate_rounded, size: 20, color: opsPrimary),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  context.l10n.profileLanguage,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: opsDark,
+                  ),
+                ),
+              ),
+              Text(
+                L10n.isEnglish
+                    ? context.l10n.languageEnglish
+                    : context.l10n.languageVietnamese,
+                style: const TextStyle(fontSize: 13, color: opsMutedText),
+              ),
+              const SizedBox(width: 4),
+              const Icon(
+                Icons.chevron_right_rounded,
+                size: 20,
+                color: opsMutedText,
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -575,9 +644,9 @@ class _TechnicianProfilePageState extends State<TechnicianProfilePage> {
                       ),
                     ),
                   ),
-                  const Text(
-                    'Hồ sơ kỹ thuật viên',
-                    style: TextStyle(
+                  Text(
+                    context.l10n.techUiTechnicianProfile,
+                    style: const TextStyle(
                       fontSize: 17,
                       fontWeight: FontWeight.w700,
                       color: Colors.white,
@@ -719,8 +788,8 @@ class _TechnicianProfilePageState extends State<TechnicianProfilePage> {
                         const SizedBox(width: 4),
                         Text(
                           _isDrone
-                              ? 'DRONE · Kỹ thuật viên drone'
-                              : 'KIOSK · Kỹ thuật viên tủ',
+                              ? context.l10n.techUiRoleBadgeDrone
+                              : context.l10n.techUiRoleBadgeLocker,
                           style: const TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.w700,
@@ -766,13 +835,13 @@ class _TechnicianProfilePageState extends State<TechnicianProfilePage> {
           const SizedBox(width: 8),
           Expanded(
             child: Text(
-              'Không tải được đầy đủ chỉ số: $_statsError',
+              context.l10n.techUiStatsLoadFailed('$_statsError'),
               style: const TextStyle(fontSize: 12.5, color: Color(0xFF991B1B)),
             ),
           ),
           TextButton(
             onPressed: _statsLoading ? null : _loadStats,
-            child: const Text('Thử lại'),
+            child: Text(context.l10n.commonRetry),
           ),
         ],
       ),
@@ -814,13 +883,13 @@ class _TechnicianProfilePageState extends State<TechnicianProfilePage> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Row(
+              Row(
                 children: [
-                  Icon(Icons.query_stats_rounded, size: 18, color: opsPrimary),
-                  SizedBox(width: 6),
+                  const Icon(Icons.query_stats_rounded, size: 18, color: opsPrimary),
+                  const SizedBox(width: 6),
                   Text(
-                    'Chỉ số vận hành ca trực',
-                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: opsDark),
+                    context.l10n.techUiShiftMetrics,
+                    style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: opsDark),
                   ),
                 ],
               ),
@@ -845,15 +914,15 @@ class _TechnicianProfilePageState extends State<TechnicianProfilePage> {
           const SizedBox(height: 12),
           Row(
             children: [
-              Expanded(child: _metricTile('Phiếu đã nhận', '$total', const Color(0xFF475569))),
+              Expanded(child: _metricTile(context.l10n.techUiMetricReceived, '$total', const Color(0xFF475569))),
               const SizedBox(width: 6),
-              Expanded(child: _metricTile('Đang làm', '$inProgress', const Color(0xFF2563EB))),
+              Expanded(child: _metricTile(context.l10n.techUiMetricInProgress, '$inProgress', const Color(0xFF2563EB))),
               const SizedBox(width: 6),
-              Expanded(child: _metricTile('Đã xong', '$resolved', const Color(0xFF059669))),
+              Expanded(child: _metricTile(context.l10n.stDone, '$resolved', const Color(0xFF059669))),
               const SizedBox(width: 6),
               Expanded(
                 child: _metricTile(
-                  'Quá hạn',
+                  context.l10n.enumOverdue,
                   '$overdue',
                   overdue > 0 ? const Color(0xFFDC2626) : const Color(0xFF059669),
                 ),
@@ -871,10 +940,13 @@ class _TechnicianProfilePageState extends State<TechnicianProfilePage> {
               children: [
                 const Icon(Icons.star_rounded, color: Color(0xFFF59E0B), size: 18),
                 const SizedBox(width: 6),
-                const Text('Đánh giá chất lượng: ', style: TextStyle(fontSize: 12.5, color: opsDark)),
+                Text(
+                  context.l10n.techUiQualityRating,
+                  style: const TextStyle(fontSize: 12.5, color: opsDark),
+                ),
                 Expanded(
                   child: Text(
-                    rating ?? 'Chưa có đánh giá',
+                    rating ?? context.l10n.techUiNoRatingYet,
                     style: TextStyle(
                       fontSize: 12.5,
                       fontWeight: rating == null ? FontWeight.w500 : FontWeight.bold,
@@ -940,28 +1012,28 @@ class _TechnicianProfilePageState extends State<TechnicianProfilePage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Row(
+            Row(
               children: [
-                Icon(Icons.edit_note_rounded, size: 20, color: opsPrimary),
-                SizedBox(width: 6),
+                const Icon(Icons.edit_note_rounded, size: 20, color: opsPrimary),
+                const SizedBox(width: 6),
                 Text(
-                  'Chỉnh sửa thông tin cá nhân',
-                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: opsDark),
+                  context.l10n.techUiEditPersonalInfo,
+                  style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: opsDark),
                 ),
               ],
             ),
             const SizedBox(height: 14),
 
             // Họ và tên
-            const Text(
-              'Họ và tên kỹ thuật viên *',
-              style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: opsDark),
+            Text(
+              context.l10n.techUiFullNameLabel,
+              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: opsDark),
             ),
             const SizedBox(height: 6),
             TextFormField(
               controller: _fullNameController,
               decoration: InputDecoration(
-                hintText: 'Nhập họ và tên đầy đủ',
+                hintText: context.l10n.techUiFullNameHint,
                 prefixIcon: const Icon(Icons.person_outline_rounded, size: 20, color: opsPrimary),
                 filled: true,
                 fillColor: const Color(0xFFF8FAFC),
@@ -981,8 +1053,8 @@ class _TechnicianProfilePageState extends State<TechnicianProfilePage> {
               ),
               validator: (v) {
                 final trimmed = (v ?? '').trim();
-                if (trimmed.isEmpty) return 'Vui lòng nhập họ và tên';
-                if (trimmed.length < 2) return 'Họ và tên phải có ít nhất 2 ký tự';
+                if (trimmed.isEmpty) return context.l10n.authEnterFullName;
+                if (trimmed.length < 2) return context.l10n.techUiFullNameMin;
                 return null;
               },
             ),
@@ -990,16 +1062,16 @@ class _TechnicianProfilePageState extends State<TechnicianProfilePage> {
             const SizedBox(height: 14),
 
             // Số điện thoại
-            const Text(
-              'Số điện thoại liên hệ',
-              style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: opsDark),
+            Text(
+              context.l10n.techUiContactPhone,
+              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: opsDark),
             ),
             const SizedBox(height: 6),
             TextFormField(
               controller: _phoneController,
               keyboardType: TextInputType.phone,
               decoration: InputDecoration(
-                hintText: 'Ví dụ: 0912345678',
+                hintText: context.l10n.techUiPhoneHint,
                 prefixIcon: const Icon(Icons.phone_outlined, size: 20, color: opsPrimary),
                 filled: true,
                 fillColor: const Color(0xFFF8FAFC),
@@ -1020,7 +1092,7 @@ class _TechnicianProfilePageState extends State<TechnicianProfilePage> {
               validator: (v) {
                 final trimmed = (v ?? '').trim();
                 if (trimmed.isNotEmpty && trimmed.length < 9) {
-                  return 'Số điện thoại phải có ít nhất 9 chữ số';
+                  return context.l10n.techUiPhoneMin;
                 }
                 return null;
               },
@@ -1029,9 +1101,9 @@ class _TechnicianProfilePageState extends State<TechnicianProfilePage> {
             const SizedBox(height: 14),
 
             // Email (Cố định định danh)
-            const Text(
-              'Email tài khoản (Cố định)',
-              style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: opsDark),
+            Text(
+              context.l10n.techUiAccountEmailFixed,
+              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: opsDark),
             ),
             const SizedBox(height: 6),
             Container(
@@ -1047,7 +1119,9 @@ class _TechnicianProfilePageState extends State<TechnicianProfilePage> {
                   const SizedBox(width: 10),
                   Expanded(
                     child: Text(
-                      email == null || email.isEmpty ? 'Chưa có email' : email,
+                      email == null || email.isEmpty
+                          ? context.l10n.recvNoEmail
+                          : email,
                       style: const TextStyle(fontSize: 14, color: Color(0xFF475569), fontWeight: FontWeight.w500),
                     ),
                   ),
@@ -1057,12 +1131,15 @@ class _TechnicianProfilePageState extends State<TechnicianProfilePage> {
                       color: const Color(0xFFE2E8F0),
                       borderRadius: BorderRadius.circular(6),
                     ),
-                    child: const Row(
+                    child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.lock_outline_rounded, size: 12, color: opsMutedText),
-                        SizedBox(width: 3),
-                        Text('Định danh', style: TextStyle(fontSize: 10, color: opsMutedText, fontWeight: FontWeight.bold)),
+                        const Icon(Icons.lock_outline_rounded, size: 12, color: opsMutedText),
+                        const SizedBox(width: 3),
+                        Text(
+                          context.l10n.techUiIdentity,
+                          style: const TextStyle(fontSize: 10, color: opsMutedText, fontWeight: FontWeight.bold),
+                        ),
                       ],
                     ),
                   ),
@@ -1090,15 +1167,15 @@ class _TechnicianProfilePageState extends State<TechnicianProfilePage> {
                       children: [
                         Text(
                           _isDrone
-                              ? 'Kỹ thuật viên drone (đội bay)'
-                              : 'Kỹ thuật viên tủ (ô tủ & phần cứng)',
+                              ? context.l10n.techUiRoleDroneLong
+                              : context.l10n.techUiRoleLockerLong,
                           style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF0369A1)),
                         ),
                         const SizedBox(height: 2),
                         Text(
                           _isDrone
-                              ? 'Điều phối, bảo trì drone và xử lý phiếu sự cố drone.'
-                              : 'Bảo trì ô tủ, thiết bị IoT và xử lý phiếu sự cố tại tủ.',
+                              ? context.l10n.techUiRoleDroneDesc
+                              : context.l10n.techUiRoleLockerDesc,
                           style: const TextStyle(fontSize: 11.5, color: Color(0xFF0284C7)),
                         ),
                       ],

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/technician_shift_card.dart';
 
@@ -99,4 +100,48 @@ void main() {
     expect(find.text('Hết ca'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets('tiếng Anh: thẻ ca trực hiện chữ tiếng Anh và không tràn ở 320px', (tester) async {
+    L10n.load(L10n.en);
+    addTearDown(() => L10n.load(L10n.vi));
+    tester.view.physicalSize = const Size(320, 800);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(() {
+      tester.view.resetPhysicalSize();
+      tester.view.resetDevicePixelRatio();
+    });
+
+    final fakeService = _FakePresenceService(
+      presenceData: {
+        'onDuty': true,
+        'latitude': 10.4315,
+        'longitude': 106.4029,
+        'accuracyM': 12.0,
+        'shiftStartedAt': DateTime.now().subtract(const Duration(hours: 3, minutes: 45)).toIso8601String(),
+        'lastLocatedAt': DateTime.now().subtract(const Duration(minutes: 1)).toIso8601String(),
+      },
+    );
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+            child: TechnicianShiftCard(
+              service: fakeService,
+              isDrone: false,
+              margin: EdgeInsets.zero,
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('ON SHIFT'), findsOneWidget);
+    expect(find.text('End shift'), findsOneWidget);
+    expect(find.text('ĐANG TRONG CA'), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
 }
+

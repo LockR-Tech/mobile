@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 import 'package:smart_laundry_locker/core/services/session_service.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/ops_widgets.dart';
 
@@ -40,21 +41,19 @@ class AdminWebNoticePage extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 20),
-                const Text(
-                  'Tài khoản quản trị',
-                  style: TextStyle(
+                Text(
+                  context.l10n.techUiAdminAccountTitle,
+                  style: const TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.w900,
                     color: opsDark,
                   ),
                 ),
                 const SizedBox(height: 8),
-                const Text(
-                  'Trang quản trị (dashboard, thống kê, quản lý người dùng, '
-                  'đơn hàng, khuyến mãi...) chỉ có trên bản web.\n'
-                  'Vui lòng đăng nhập bằng trình duyệt để tiếp tục.',
+                Text(
+                  context.l10n.techUiAdminWebOnly,
                   textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 14, color: opsMutedText),
+                  style: const TextStyle(fontSize: 14, color: opsMutedText),
                 ),
                 const SizedBox(height: 28),
                 SizedBox(
@@ -62,7 +61,7 @@ class AdminWebNoticePage extends StatelessWidget {
                   child: ElevatedButton.icon(
                     onPressed: () => _logout(context),
                     icon: const Icon(Icons.logout, size: 18),
-                    label: const Text('Đăng xuất'),
+                    label: Text(context.l10n.commonLogout),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: opsPrimary,
                       foregroundColor: Colors.white,

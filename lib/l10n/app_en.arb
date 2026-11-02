@@ -2612,5 +2612,1825 @@
   "commonView": "View",
   "ordFilterDrone": "Drone delivery",
   "recvDroneDelivery": "Drone delivery",
-  "holderNameHint": "JOHN SMITH"
+  "holderNameHint": "JOHN SMITH",
+  "techHomeScheduleNotFound": "Inspection schedule #{id} not found (it may have been deleted or belong to a locker you can't view).",
+  "@techHomeScheduleNotFound": {
+    "placeholders": {
+      "id": {}
+    }
+  },
+  "techHomeLoadPartialFailed": "Couldn't load all data: {details}",
+  "@techHomeLoadPartialFailed": {
+    "placeholders": {
+      "details": {}
+    }
+  },
+  "techHomeLogoutShiftTitle": "Log out of shift",
+  "techHomeLogoutShiftConfirm": "End your shift and log out of the locker technician account?",
+  "techHomeLockerTechnician": "Locker technician",
+  "techHomePhoneNotSet": "No phone number yet",
+  "techHomeLockerTechnicianRole": "Locker technician (compartments & hardware)",
+  "techHomeStatReceived": "Tickets taken",
+  "techHomeStatInProgress": "In progress",
+  "techHomeQualityRatingLabel": "Quality rating: ",
+  "techHomeNoRatingYet": "No ratings yet",
+  "techHomeSlaPolicyLabel": "SLA status: ",
+  "techHomeTechPhoneLabel": "Technician phone: ",
+  "techHomeViewEditProfile": "View & edit profile",
+  "techHomeSlaRestrictedTitle": "New work restricted",
+  "techHomeSlaRestrictedBody": "SLA policy: when your overdue tickets exceed the limit set by admins, you temporarily can't take new work. Go to the \"My work\" tab and finish your pending jobs.",
+  "techHomeViewMyWork": "View my work",
+  "techHomeOpenTicket": "Open ticket",
+  "techHomeBoxBackOnline": "Compartment is back in service",
+  "techHomeTicketLoadFailed": "Couldn't load ticket RPT-{id}",
+  "@techHomeTicketLoadFailed": {
+    "placeholders": {
+      "id": {}
+    }
+  },
+  "techHomeTicketAlreadyClosed": "Ticket RPT-{id} has been closed.",
+  "@techHomeTicketAlreadyClosed": {
+    "placeholders": {
+      "id": {}
+    }
+  },
+  "techHomeTicketHandledByOther": "Ticket RPT-{id} is being handled by {assignee} — only the assignee can complete it.",
+  "@techHomeTicketHandledByOther": {
+    "placeholders": {
+      "id": {},
+      "assignee": {}
+    }
+  },
+  "techHomeTicketUnassignedTitle": "Ticket RPT-{id} is unassigned",
+  "@techHomeTicketUnassignedTitle": {
+    "placeholders": {
+      "id": {}
+    }
+  },
+  "techHomeTicketUnassignedBody": "This compartment/landing pad has an open incident ticket. Take the ticket, then do the acceptance (photos after repair) to bring it back into service.",
+  "techHomeClaimAndAccept": "Take & accept",
+  "techHomeLockerNoLocation": "This locker has no location for directions yet.",
+  "techHomeGreetingMorning": "☀️ Good morning",
+  "techHomeGreetingNoon": "🌤️ Good day",
+  "techHomeGreetingAfternoon": "🌅 Good afternoon",
+  "techHomeGreetingEvening": "🌙 Good evening",
+  "techHomeSlaSuspended": "SLA: Suspended ({count} overdue)",
+  "@techHomeSlaSuspended": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "techHomeSlaRestricted": "SLA: Restricted ({count} overdue)",
+  "@techHomeSlaRestricted": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "techHomeSlaWarning": "SLA: Warning ({count} overdue)",
+  "@techHomeSlaWarning": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "techHomeSlaNormalWithCount": "SLA: Normal ({count} in progress)",
+  "@techHomeSlaNormalWithCount": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "techHomeSlaNormal": "SLA: Normal",
+  "techHomeSlaUnknownWithOverdue": "SLA: {count} overdue · penalty level not loaded",
+  "@techHomeSlaUnknownWithOverdue": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "techHomeSlaUnknown": "SLA: status not loaded",
+  "techHomeProfileAndEdit": "Profile & edit",
+  "techHomeHudRoutine": "Routine",
+  "techHomeHudStations": "Stations",
+  "techHomeTabInspect": "Inspect",
+  "techHomeTabIncidents": "Incidents ({count})",
+  "@techHomeTabIncidents": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "techHomeTabMyWork": "My work ({count})",
+  "@techHomeTabMyWork": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "techHomeTabRoutine": "Routine ({count})",
+  "@techHomeTabRoutine": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "techHomeTabIotDevices": "IoT devices ({count})",
+  "@techHomeTabIotDevices": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "techHomeTabParcelRecovery": "Parcel recovery ({count})",
+  "@techHomeTabParcelRecovery": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "techHomeRecoveryBannerTitle": "{count, plural, =1{1 dropped-parcel recovery task} other{{count} dropped-parcel recovery tasks}}",
+  "@techHomeRecoveryBannerTitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "techHomeRecoveryBannerHint": "Tap to open the \"Parcel recovery\" tab.",
+  "techHomePickLockerToInspect": "Pick a locker to inspect",
+  "techHomeLockersLoadFailed": "Couldn't load the locker list",
+  "techHomeNoLockers": "No lockers yet",
+  "techHomeLayoutLoadFailed": "Couldn't load the locker layout: {error}",
+  "@techHomeLayoutLoadFailed": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "techHomeKioskPhysicalLayout": "Kiosk station physical layout",
+  "techHomeTapBoxHint": "Tap a compartment to report a fault, emergency-open it, or reopen it after repair.",
+  "techHomeWorkingWell": "Working",
+  "techHomeDroneLandingPad": "Drone landing pad",
+  "techHomeTicketOpenPill": "Ticket RPT-{id} open",
+  "@techHomeTicketOpenPill": {
+    "placeholders": {
+      "id": {}
+    }
+  },
+  "techHomeLandingPadHint": "Broken/Maintenance ⇒ opens a landing-pad ticket assigned to you. Back to \"Working\" with an open ticket ⇒ do the ticket acceptance (photos after repair).",
+  "techHomeLandingPadBackOnline": "Landing pad is back in service",
+  "techHomeLandingPadStatus": "Landing pad: {status}",
+  "@techHomeLandingPadStatus": {
+    "placeholders": {
+      "status": {}
+    }
+  },
+  "techHomeLandingPadStatusTicketOpened": "Landing pad: {status} — an incident ticket was opened and assigned to you",
+  "@techHomeLandingPadStatusTicketOpened": {
+    "placeholders": {
+      "status": {}
+    }
+  },
+  "techHomeReasonLabel": "Reason",
+  "techHomeLandingPadFaultHint": "E.g. marker peeling, cracked pad surface...",
+  "techHomeLandingPadMaintenanceHint": "E.g. cleaning, repainting the marker...",
+  "techHomeReasonRequired": "Please enter a reason.",
+  "techHomeNoBoxesConfigured": "No compartments configured yet.",
+  "techHomeXlColumn": "XL suitcase column",
+  "techHomeRowLabel": "Row {row}",
+  "@techHomeRowLabel": {
+    "placeholders": {
+      "row": {}
+    }
+  },
+  "techHomeBoxHardwareTitle": "Compartment hardware status",
+  "techHomeNeedsAttentionCount": "{count} need attention",
+  "@techHomeNeedsAttentionCount": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "techHomeNoDoorSensorData": "No door sensor data for this locker yet (the cabinet hasn't reported or the IoT service is off).",
+  "techHomeDoorOpenNotOccupied": "{count, plural, =1{1 compartment has its door OPEN but isn't \"occupied\" — please check (stuck or left open).} other{{count} compartments have their doors OPEN but aren't \"occupied\" — please check (stuck or left open).}}",
+  "@techHomeDoorOpenNotOccupied": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "techHomeNoDoorSignal": "No door signal yet",
+  "techHomeDoorOpenCaps": "Door OPEN",
+  "techHomeReportedAt": "Reported at {time}",
+  "@techHomeReportedAt": {
+    "placeholders": {
+      "time": {}
+    }
+  },
+  "techHomeControllerOnline": "Controller: online",
+  "techHomeControllerOffline": "Controller: disconnected",
+  "techHomeReservedCount": "Reserved: {count}",
+  "@techHomeReservedCount": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "techHomeOccupiedCount": "Occupied: {count}",
+  "@techHomeOccupiedCount": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "techHomeYourLocker": "Your locker",
+  "techHomeVisualCheckHint": "Visually check each compartment and only report a fault once you've confirmed a physical issue at the locker.",
+  "techHomeReportWholeLocker": "Report whole-locker incident",
+  "techHomeLockerIncidentTitleHint": "E.g. kiosk screen won't turn on, power loss...",
+  "techHomeScenePhotosOptional": "On-site photos (optional, up to {max})",
+  "@techHomeScenePhotosOptional": {
+    "placeholders": {
+      "max": {}
+    }
+  },
+  "techHomeBlockWholeLocker": "Block whole locker (stop taking orders)",
+  "techHomeBlockWholeLockerHint": "The locker goes into maintenance until the ticket is completed.",
+  "techHomeTitleAndDescRequired": "Please enter a title and description.",
+  "techHomeLockerTicketCreated": "Created ticket RPT-{id} for {locker}.",
+  "@techHomeLockerTicketCreated": {
+    "placeholders": {
+      "id": {},
+      "locker": {}
+    }
+  },
+  "techHomeLockerTicketCreatedBlocked": "Created ticket RPT-{id} for {locker} — the locker has stopped taking orders.",
+  "@techHomeLockerTicketCreatedBlocked": {
+    "placeholders": {
+      "id": {},
+      "locker": {}
+    }
+  },
+  "techHomeLockerIncidentSent": "Incident report sent for {locker}.",
+  "@techHomeLockerIncidentSent": {
+    "placeholders": {
+      "locker": {}
+    }
+  },
+  "techHomeTotalBoxes": "Total",
+  "techHomeFaultyBoxes": "Faulty",
+  "techHomeXlTallBay": "XL tall bay",
+  "techHomeFixedAcceptTicket": "Fixed — accept ticket RPT-{id}",
+  "@techHomeFixedAcceptTicket": {
+    "placeholders": {
+      "id": {}
+    }
+  },
+  "techHomeFixedReopenBox": "Fixed — reopen compartment",
+  "techHomeConfirmBoxFaulty": "Confirm compartment faulty (lock it)",
+  "techHomeViewTicketToCheck": "View ticket RPT-{id} to check",
+  "@techHomeViewTicketToCheck": {
+    "placeholders": {
+      "id": {}
+    }
+  },
+  "techHomeFinishCleaning": "Finish cleaning",
+  "techHomeRestoreBox": "Restore compartment",
+  "techHomeReportBoxFault": "Report compartment fault",
+  "techHomeTakeBoxOutOfService": "Take compartment out of service",
+  "techHomeMarkCleaning": "Mark as cleaning",
+  "techHomeBoxCleaning": "Compartment is being cleaned",
+  "techHomeEmergencyOpen": "Emergency open",
+  "techHomeBoxNumberWithType": "Compartment #{number} · {type}",
+  "@techHomeBoxNumberWithType": {
+    "placeholders": {
+      "number": {},
+      "type": {}
+    }
+  },
+  "techHomeStatusLine": "Status: {status}",
+  "@techHomeStatusLine": {
+    "placeholders": {
+      "status": {}
+    }
+  },
+  "techHomeDefaultFaultReason": "Broken lock",
+  "techHomeReportBoxFaultTitle": "Report fault: compartment #{number}",
+  "@techHomeReportBoxFaultTitle": {
+    "placeholders": {
+      "number": {}
+    }
+  },
+  "techHomeFaultReasonLabel": "Fault reason",
+  "techHomeFaultReasonRequired": "Please enter the fault reason.",
+  "techHomeReportFaultAction": "Report fault",
+  "techHomeBoxFaultReported": "Compartment fault reported",
+  "techHomeBoxFaultReportedWithPhotos": "{count, plural, =1{Compartment fault reported with 1 photo} other{Compartment fault reported with {count} photos}}",
+  "@techHomeBoxFaultReportedWithPhotos": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "techHomeOutOfServiceTitle": "Take compartment #{number} out of service",
+  "@techHomeOutOfServiceTitle": {
+    "placeholders": {
+      "number": {}
+    }
+  },
+  "techHomeOutOfServiceHint": "The compartment won't be assigned to customers until it's restored.",
+  "techHomeReasonOptionalLabel": "Reason (optional)",
+  "techHomeBoxOutOfServiceDone": "Compartment taken out of service",
+  "techHomeHardwareAlertsTitle": "Hardware alerts (doors open unexpectedly)",
+  "techHomeDoorOpenEmpty": "{count, plural, =1{1 compartment has its door OPEN but is empty — please check (stuck or left open).} other{{count} compartments have their doors OPEN but are empty — please check (stuck or left open).}}",
+  "@techHomeDoorOpenEmpty": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "techHomeAnomalyBoxTitle": "{locker} · Compartment #{number} ({type})",
+  "@techHomeAnomalyBoxTitle": {
+    "placeholders": {
+      "locker": {},
+      "number": {},
+      "type": {}
+    }
+  },
+  "techHomeDoorOpenReportedAt": "Door OPEN · reported at {time}",
+  "@techHomeDoorOpenReportedAt": {
+    "placeholders": {
+      "time": {}
+    }
+  },
+  "techHomeDoorOpenShort": "Door OPEN",
+  "techHomeAllWithCount": "All ({count})",
+  "@techHomeAllWithCount": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "techHomeMyLockersWithCount": "My lockers ({count})",
+  "@techHomeMyLockersWithCount": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "techHomeFilterAllStatuses": "All statuses",
+  "techHomeFilterUnclaimed": "Unclaimed",
+  "techHomeFilterInProgress": "In progress",
+  "techHomeNoAssignedLockers": "You haven't been assigned any lockers — new tickets go to all locker technicians.",
+  "techHomeAssignedLockersBanner": "{count, plural, =1{You're in charge of 1 locker: {names}. New tickets there are routed straight to you.} other{You're in charge of {count} lockers: {names}. New tickets at these lockers are routed straight to you.}}",
+  "@techHomeAssignedLockersBanner": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "names": {}
+    }
+  },
+  "techHomePhysicalFaultsTitle": "Compartments with physical faults",
+  "techHomeLockerBoxTitle": "{locker} · Compartment #{number}",
+  "@techHomeLockerBoxTitle": {
+    "placeholders": {
+      "locker": {},
+      "number": {}
+    }
+  },
+  "techHomeUnknownReason": "Unknown reason",
+  "techHomeFixedWithTicket": "Fixed · ticket RPT-{id}",
+  "@techHomeFixedWithTicket": {
+    "placeholders": {
+      "id": {}
+    }
+  },
+  "techHomeFixed": "Fixed",
+  "techHomeRoutedTicketsTitle": "Tickets waiting for you ({count})",
+  "@techHomeRoutedTicketsTitle": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "techHomeNoRoutedTickets": "No tickets waiting for you",
+  "techHomeNoRoutedTicketsHint": "Your lockers have no new incidents.",
+  "techHomeSystemWideTickets": "{count, plural, =1{SYSTEM-WIDE: 1 KIOSK INCIDENT TICKET} other{SYSTEM-WIDE: {count} KIOSK INCIDENT TICKETS}}",
+  "@techHomeSystemWideTickets": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "techHomeCountUnclaimed": "{count} unclaimed",
+  "@techHomeCountUnclaimed": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "techHomeCountInProgress": "{count} in progress",
+  "@techHomeCountInProgress": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "techHomeCountDone": "{count} done",
+  "@techHomeCountDone": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "techHomeIncidentsAwaitingTech": "{count, plural, =1{1 incident waiting for a technician to take it} other{{count} incidents waiting for a technician to take them}}",
+  "@techHomeIncidentsAwaitingTech": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "techHomeIncidentsAwaitingTitle": "Incidents awaiting pickup",
+  "techHomeBeingHandledTitle": "Being handled",
+  "techHomeRecentlyDoneTitle": "Recently completed",
+  "techHomeNoIncidents": "No incidents",
+  "techHomeNoIncidentsHint": "No incident tickets or faulty compartments in the system.",
+  "techHomeShiftOverview": "Shift overview",
+  "techHomeMetricReceived": "Tickets\ntaken",
+  "techHomeMetricInProgress": "In\nprogress",
+  "techHomeMetricDone": "Tickets\ndone",
+  "techHomeMetricSlaOverdue": "SLA\noverdue",
+  "techHomeYourRating": "Your rating: {rating}",
+  "@techHomeYourRating": {
+    "placeholders": {
+      "rating": {}
+    }
+  },
+  "techHomeNoCustomerRatings": "No customer ratings yet for the tickets you've handled.",
+  "techHomeStandardProcedure": "Standard procedure: check the locker location, take the ticket, go to the right compartment, take acceptance photos, then complete to clear the fault.",
+  "techHomeSlaCardRestricted": "Restricted from taking new work",
+  "techHomeSlaCardWarning": "SLA time violation warning",
+  "techHomeSlaCardSuspended": "Account suspended",
+  "techHomeSlaCardNormal": "Technician record in good standing",
+  "techHomeSlaCardUnknown": "Couldn't load SLA status",
+  "techHomeSlaPullToReload": "Pull down to reload the penalty status from the server.",
+  "techHomeCompletedCount": "Completed: {count}",
+  "@techHomeCompletedCount": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "techHomeInProgressCount": "In progress: {count}",
+  "@techHomeInProgressCount": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "techHomeSlaOverdueCount": "SLA overdue: {count}",
+  "@techHomeSlaOverdueCount": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "techHomeNoWorkYet": "You haven't taken any work yet",
+  "techHomeNoWorkYetHint": "Go to the \"Incidents\" tab to browse and take new work.",
+  "techHomeActiveIncidentsTitle": "Incidents in progress ({count})",
+  "@techHomeActiveIncidentsTitle": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "techHomeCompletedHistoryTitle": "Completed history ({count})",
+  "@techHomeCompletedHistoryTitle": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "techHomeScheduleIntro": "Kiosk routine inspection schedules are created by admins and assigned to technicians. When one is due, tap \"Inspect\" and rate each item: all pass ⇒ moved to the next cycle; any fail ⇒ the system opens a ticket assigned to you and the due date only moves once the ticket is completed.",
+  "techHomeMineWithCount": "Mine ({count})",
+  "@techHomeMineWithCount": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "techHomeAnyDueWithCount": "Any due date ({count})",
+  "@techHomeAnyDueWithCount": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "techHomeDueWithCount": "Due ({count})",
+  "@techHomeDueWithCount": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "techHomeUpcomingWithCount": "Upcoming ({count})",
+  "@techHomeUpcomingWithCount": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "techHomeNoDueSchedules": "No Kiosk inspections due",
+  "techHomeNoUpcomingSchedules": "No upcoming Kiosk inspections",
+  "techHomeNoAssignedSchedules": "You haven't been assigned any inspection schedules",
+  "techHomeNoSchedulesAtAll": "No Kiosk routine inspection plans yet",
+  "techHomeNoAssignedSchedulesHint": "Choose \"All\" to see other technicians' schedules.",
+  "techHomeNoSchedulesHint": "All Kiosk devices are within their normal maintenance cycle.",
+  "techHomeOverdueByDays": "{days, plural, =1{Overdue by 1 day} other{Overdue by {days} days}}",
+  "@techHomeOverdueByDays": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "techHomeDueToday": "Due today",
+  "techHomeDueInDays": "{days, plural, =1{Due in 1 day} other{Due in {days} days}}",
+  "@techHomeDueInDays": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "techHomeLastFailedCompleteTicket": "Last inspection failed — complete ticket RPT-{id} before inspecting again.",
+  "@techHomeLastFailedCompleteTicket": {
+    "placeholders": {
+      "id": {}
+    }
+  },
+  "techHomeScheduleOwnedByOther": "This schedule belongs to another technician.",
+  "techHomeRoutineScheduleDefault": "Routine inspection",
+  "techHomeDueBadge": "Due",
+  "techHomeDueAt": "Due: {date}",
+  "@techHomeDueAt": {
+    "placeholders": {
+      "date": {}
+    }
+  },
+  "techHomeCycleEveryDays": "Cycle: every {days} days",
+  "@techHomeCycleEveryDays": {
+    "placeholders": {
+      "days": {}
+    }
+  },
+  "techHomeAssignedBadge": "Assigned",
+  "techHomeLastFailedBanner": "Last inspection FAILED · Complete ticket RPT-{id} before inspecting again",
+  "@techHomeLastFailedBanner": {
+    "placeholders": {
+      "id": {}
+    }
+  },
+  "techHomeHandleTicket": "Handle ticket RPT-{id}",
+  "@techHomeHandleTicket": {
+    "placeholders": {
+      "id": {}
+    }
+  },
+  "techHomeInspectAction": "Inspect",
+  "techHomeInspectionFailedTicket": "Inspection FAILED — ticket RPT-{id} was opened and assigned to you. The next due date only moves once the ticket is completed.",
+  "@techHomeInspectionFailedTicket": {
+    "placeholders": {
+      "id": {}
+    }
+  },
+  "techHomeKioskLocker": "Kiosk locker",
+  "techHomeInspectionFailedRecorded": "Recorded FAIL for \"{title}\".",
+  "@techHomeInspectionFailedRecorded": {
+    "placeholders": {
+      "title": {}
+    }
+  },
+  "techHomeInspectionPassedRecorded": "Recorded PASS for \"{title}\".",
+  "@techHomeInspectionPassedRecorded": {
+    "placeholders": {
+      "title": {}
+    }
+  },
+  "techHomeInspectionPassedNextDue": "Recorded PASS for \"{title}\" — next due {date}.",
+  "@techHomeInspectionPassedNextDue": {
+    "placeholders": {
+      "title": {},
+      "date": {}
+    }
+  },
+  "techHomeViewWork": "View work",
+  "techHomeSlaExtendAssigneeOnly": "Only the assigned technician can extend the SLA.",
+  "techHomeSlaExtendLimitReached": "Ticket RPT-{id} has been extended {used}/{max} times — contact an admin if you need more time.",
+  "@techHomeSlaExtendLimitReached": {
+    "placeholders": {
+      "id": {},
+      "used": {},
+      "max": {}
+    }
+  },
+  "techHomeSlaExtended": "Extended the SLA of ticket RPT-{id}",
+  "@techHomeSlaExtended": {
+    "placeholders": {
+      "id": {}
+    }
+  },
+  "techHomeSlaExtendedNewDue": "Extended the SLA of ticket RPT-{id} — new due {due}",
+  "@techHomeSlaExtendedNewDue": {
+    "placeholders": {
+      "id": {},
+      "due": {}
+    }
+  },
+  "techHomeReleaseTicketTitle": "Release ticket RPT-{id}",
+  "@techHomeReleaseTicketTitle": {
+    "placeholders": {
+      "id": {}
+    }
+  },
+  "techHomeReleaseTicketHint": "The ticket goes back to the queue for another technician; the reason is written to the ticket log.",
+  "techHomeReleaseReasonLabel": "Reason for releasing (required)",
+  "techHomeReleaseReasonHint": "E.g. parts not in stock, shift change...",
+  "techHomeReleaseReasonRequired": "Please enter the reason for releasing the ticket.",
+  "techHomeReleaseTicketAction": "Release ticket",
+  "techHomeTicketReleased": "Ticket RPT-{id} returned to the queue.",
+  "@techHomeTicketReleased": {
+    "placeholders": {
+      "id": {}
+    }
+  },
+  "techHomeRejectIncidentTitle": "Reject incident RPT-{id}",
+  "@techHomeRejectIncidentTitle": {
+    "placeholders": {
+      "id": {}
+    }
+  },
+  "techHomeRejectIncidentHint": "Use this when you've checked at the locker and the compartment works normally. The ticket is closed, the compartment goes back into service and the feedback below is sent to the reporter.",
+  "techHomeReporterFeedbackLabel": "Feedback to the reporter (required)",
+  "techHomeReporterFeedbackHint": "E.g. opened/closed the compartment 3 times, the door and lock work normally.",
+  "techHomeReporterFeedbackRequired": "Please write feedback for the reporter.",
+  "techHomeCloseAndReply": "Close ticket & reply",
+  "techHomeTicketRejectedDone": "Closed ticket RPT-{id} and sent feedback to the reporter.",
+  "@techHomeTicketRejectedDone": {
+    "placeholders": {
+      "id": {}
+    }
+  },
+  "techHomeDevicesLoadFailed": "Couldn't load the device list: {error}",
+  "@techHomeDevicesLoadFailed": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "techHomeIotDevices": "IoT devices",
+  "techHomeNoDevices": "No devices",
+  "techHomeNoDevicesHint": "No controllers are attached to your lockers yet.",
+  "techHomeDeviceNumber": "Device #{id}",
+  "@techHomeDeviceNumber": {
+    "placeholders": {
+      "id": {}
+    }
+  },
+  "techHomeLastSignal": "Last signal: {time}",
+  "@techHomeLastSignal": {
+    "placeholders": {
+      "time": {}
+    }
+  },
+  "techHomeNoSignalYet": "No signal received yet",
+  "techHomeDevicesHint": "Status is computed by the server from the device's latest signal. Tap a device to view its log or restart the controller.",
+  "techHomeLandingPadPill": "Landing pad",
+  "techHomeLockerLevelPill": "Locker-level",
+  "techHomeBlocksLockerPill": "Whole locker blocked",
+  "techHomeFromRoutineInspection": "From routine inspection #{id}",
+  "@techHomeFromRoutineInspection": {
+    "placeholders": {
+      "id": {}
+    }
+  },
+  "techHomeNewBadge": "NEW",
+  "techHomeLockerBoxShort": "{locker} · Compartment {box}",
+  "@techHomeLockerBoxShort": {
+    "placeholders": {
+      "locker": {},
+      "box": {}
+    }
+  },
+  "techHomeClaimSuccess": "Ticket taken",
+  "techHomeClaimAction": "Take",
+  "techHomeNoExtensionsLeft": "No extensions left",
+  "techHomeAddPhotosShort": "Photos (+)",
+  "techHomeAcceptanceAction": "Acceptance",
+  "techHomeTicketJustUpdated": "Ticket RPT-{id} was just updated.",
+  "@techHomeTicketJustUpdated": {
+    "placeholders": {
+      "id": {}
+    }
+  },
+  "techHomeSlaExtendedHours": "SLA extended (+{hours} h)",
+  "@techHomeSlaExtendedHours": {
+    "placeholders": {
+      "hours": {}
+    }
+  },
+  "techHomeOverdueAfterExtension": "Overdue (after +{hours} h extension)",
+  "@techHomeOverdueAfterExtension": {
+    "placeholders": {
+      "hours": {}
+    }
+  },
+  "techHomeSlaOverdueBadge": "SLA overdue",
+  "techHomeAssigneeYou": "{name} (you)",
+  "@techHomeAssigneeYou": {
+    "placeholders": {
+      "name": {}
+    }
+  },
+  "techHomeSlaDueAt": "SLA due: {time}",
+  "@techHomeSlaDueAt": {
+    "placeholders": {
+      "time": {}
+    }
+  },
+  "techHomeExtensionReason": "Extension reason: {reason}",
+  "@techHomeExtensionReason": {
+    "placeholders": {
+      "reason": {}
+    }
+  },
+  "techHomeCustomerComplaint": "Customer's report:",
+  "techHomeCustomerScenePhotos": "On-site photos from the customer",
+  "techHomeClaimNow": "Take it now",
+  "techHomeInspectAndLockBox": "Check compartment & lock incident at Kiosk",
+  "techHomeAcceptAndComplete": "Accept & complete",
+  "techHomeNotAsDescribed": "Not as described — close ticket & reply",
+  "techHomeReleaseToQueue": "Return ticket to the queue",
+  "techHomeTicketHandledByName": "This ticket is being handled by {assignee} — only the assignee can complete it.",
+  "@techHomeTicketHandledByName": {
+    "placeholders": {
+      "assignee": {}
+    }
+  },
+  "techHomeTicketBeingHandled": "This ticket is being handled.",
+  "techHomeTicketNoKiosk": "This incident ticket isn't linked to any Kiosk station.",
+  "techHomeBoxIncidentResolved": "Compartment status updated and incident resolved!",
+  "techHomeScenePhotosSaved": "On-site confirmation photos saved",
+  "techHomeOpenForDays": "Open {count}d",
+  "@techHomeOpenForDays": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "techHomeOpenForHours": "Open {count}h",
+  "@techHomeOpenForHours": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "techHomeOpenForMinutes": "Open {count}m",
+  "@techHomeOpenForMinutes": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "techHomeJustOpened": "Just opened",
+  "techHomeMarkDeviceErrorTitle": "Mark device as faulty",
+  "techHomeMarkDeviceOfflineTitle": "Mark device as disconnected",
+  "techHomeMarkDeviceErrorBody": "Device \"{device}\" will be marked as faulty until the controller sends a signal again. Continue?",
+  "@techHomeMarkDeviceErrorBody": {
+    "placeholders": {
+      "device": {}
+    }
+  },
+  "techHomeMarkDeviceOfflineBody": "Device \"{device}\" will be marked as disconnected until the controller sends a signal again. Continue?",
+  "@techHomeMarkDeviceOfflineBody": {
+    "placeholders": {
+      "device": {}
+    }
+  },
+  "techHomeMarkAction": "Mark",
+  "techHomeDeviceMarkedError": "Device marked as faulty.",
+  "techHomeDeviceMarkedOffline": "Device marked as disconnected.",
+  "techHomeRestartControllerTitle": "Restart controller",
+  "techHomeRestartControllerBody": "Controller \"{device}\" will restart the locker control process (not the machine). Compartments can't be opened in the meantime. Continue?",
+  "@techHomeRestartControllerBody": {
+    "placeholders": {
+      "device": {}
+    }
+  },
+  "techHomeRestartAction": "Restart",
+  "techHomeDeviceIdLabel": "Device ID",
+  "techHomeLastSignalLabel": "Last signal",
+  "techHomeNoSignalShort": "No signal yet",
+  "techHomeConnectionLabel": "Connection",
+  "techHomeDeviceLoadFailed": "Couldn't load the device: {error}",
+  "@techHomeDeviceLoadFailed": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "techHomeDeviceStatusHint": "Status is computed by the server from the latest signal; only mark it manually when you're sure the device is disconnected or broken.",
+  "techHomeWaitingForLocker": "Waiting for the locker to respond...",
+  "techHomeMarkOffline": "Mark disconnected",
+  "techHomeMarkError": "Mark faulty",
+  "techHomeActivityLog": "Activity log",
+  "techHomeLogLoadFailed": "Couldn't load the log: {error}",
+  "@techHomeLogLoadFailed": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "techHomeNoLogsYet": "No log entries yet.",
+  "techHomeQuickChipInspectScene": "📸 Inspected the site",
+  "techHomeQuickChipReplacePart": "🔧 Replaced a part",
+  "techHomeQuickChipCheckPowerBoard": "⚡ Checked the power board",
+  "techHomeQuickChipCleanBox": "🧹 Cleaned the compartment",
+  "techHomeQuickChipAdjustLatch": "🚪 Adjusted latch & bolt",
+  "techHomeTechLogTitle": "Technician log & history:",
+  "techHomeTechLogLoadFailed": "Couldn't load the work log: {error}",
+  "@techHomeTechLogLoadFailed": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "techHomeNoTechLogsHint": "No work notes yet. \"Check compartment & lock incident\" or \"Acceptance\" actions are saved here automatically.",
+  "techHomeTechNumber": "Tech #{id}",
+  "@techHomeTechNumber": {
+    "placeholders": {
+      "id": {}
+    }
+  },
+  "techHomeLogViewerTitle": "Log · {time}",
+  "@techHomeLogViewerTitle": {
+    "placeholders": {
+      "time": {}
+    }
+  },
+  "techHomeAddLogStep": "Add a work step / quick note...",
+  "techHomeLogNoteHint": "Enter a work note...",
+  "techHomeQuickNoteReplacedLock": "Replaced the electronic lock part",
+  "techHomeQuickNoteAdjustedHinge": "Adjusted the compartment door bolt & hinge",
+  "techHomeQuickNoteCheckedBoard": "Checked the control board & power",
+  "techHomeQuickNoteCleanedTested": "Cleaned, tested open/close 3 times",
+  "techHomeBoxNotInLayout": "Compartment not found in the locker layout.",
+  "techHomeBoxHoldsOrderNoTest": "The compartment holds a customer's items/order — no test open.",
+  "techHomeBoxCheckFailed": "Couldn't check the compartment ({error}).",
+  "@techHomeBoxCheckFailed": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "techHomeAfterPhotoRequired": "Please take at least 1 after-repair photo for the acceptance.",
+  "techHomeBoxLabelLower": "compartment #{number}",
+  "@techHomeBoxLabelLower": {
+    "placeholders": {
+      "number": {}
+    }
+  },
+  "techHomeLandingPadRestored": "The landing pad is back in service.",
+  "techHomeLockerRestored": "The locker is back in service.",
+  "techHomeBoxRestoredTestOpened": "The compartment is back in service; test-open command sent to {box}.",
+  "@techHomeBoxRestoredTestOpened": {
+    "placeholders": {
+      "box": {}
+    }
+  },
+  "techHomeBoxRestored": "The compartment is back in service.",
+  "techHomeResolvedWithRestored": "Incident accepted and completed! {restored}",
+  "@techHomeResolvedWithRestored": {
+    "placeholders": {
+      "restored": {}
+    }
+  },
+  "techHomeResolvedTestOpenFailed": "Incident accepted and completed, but couldn't test-open {box}: {error}",
+  "@techHomeResolvedTestOpenFailed": {
+    "placeholders": {
+      "box": {},
+      "error": {}
+    }
+  },
+  "techHomeRequiredBadge": "Required",
+  "techHomeIncidentRpt": "Incident RPT-{id}",
+  "@techHomeIncidentRpt": {
+    "placeholders": {
+      "id": {}
+    }
+  },
+  "techHomeResolveSheetTitle": "Repair acceptance",
+  "techHomeResolveSheetSubtitleWithBox": "{locker} · Compartment {box} · RPT-{id} · {title}",
+  "@techHomeResolveSheetSubtitleWithBox": {
+    "placeholders": {
+      "locker": {},
+      "box": {},
+      "id": {},
+      "title": {}
+    }
+  },
+  "techHomeScenePhotosBeforeAfter": "On-site photos (before & after repair)",
+  "techHomeBeforeRepair": "Before repair",
+  "techHomeExistingScenePhotos": "{count, plural, =1{1 on-site / reporter photo for comparison} other{{count} on-site / reporter photos for comparison}}",
+  "@techHomeExistingScenePhotos": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "techHomeBeforeRepairOptional": "Optional · saved as on-site confirmation photos",
+  "techHomeScenePhotosBeforeRepair": "On-site photos before repair",
+  "techHomeTakeMorePhotos": "Take more photos",
+  "techHomeDuringRepair": "During repair",
+  "techHomeDuringRepairHint": "Photos of the technical work, part replacement (optional)",
+  "techHomeTakeRepairPhotos": "Take repair photos",
+  "techHomeAfterRepair": "After repair",
+  "techHomeAcceptancePhotoRequired": "Acceptance photos — at least 1 required",
+  "techHomeAcceptancePhotoOptional": "Acceptance photos (optional)",
+  "techHomeTechNotesTitle": "Technical notes & parts",
+  "techHomeTechNotesHint": "Describe the replaced parts and the steps taken...",
+  "techHomeCheckingTestOpen": "Checking the compartment before allowing a test open...",
+  "techHomeTestOpenAfterRepair": "Test-open after repair",
+  "techHomeTestOpenHintWithBox": "After completing the ticket, send an open command to compartment #{box} to check the latch.",
+  "@techHomeTestOpenHintWithBox": {
+    "placeholders": {
+      "box": {}
+    }
+  },
+  "techHomeTestOpenHint": "After completing the ticket, send an open command to the compartment to check the latch.",
+  "techHomeTestOpenNotSuggested": "Test open not suggested: {reason}",
+  "@techHomeTestOpenNotSuggested": {
+    "placeholders": {
+      "reason": {}
+    }
+  },
+  "techHomeSavingAcceptance": "Saving acceptance...",
+  "techHomeConfirmAndCompleteRepair": "Confirm & complete repair",
+  "techHomeScenePhotoRequired": "Please take at least 1 on-site photo.",
+  "techHomeSceneConfirmTitle": "On-site confirmation",
+  "techHomeSceneConfirmHint": "Photograph the compartment's condition as soon as you arrive (door, lock, board...). Photos are saved to the ticket as pre-repair evidence.",
+  "techHomeSceneNoteHint": "Condition note (optional)...",
+  "techHomeSaveScenePhotos": "Save on-site photos",
+  "techHomeCustomerShort": "Customer",
+  "techHomeOpenBoxError": "Couldn't open the compartment: {error}",
+  "@techHomeOpenBoxError": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "techHomeInvalidTicket": "Invalid ticket.",
+  "techHomeBoxIncidentSheetTitle": "Check compartment & resolve incident",
+  "techHomeStep1PickBox": "1. Pick the faulty compartment at the Kiosk:",
+  "techHomeKioskNoBoxes": "This Kiosk has no compartment list yet.",
+  "techHomeOrderLookupFailed": "Couldn't look up the order in this compartment ({error}). Check it in person (emergency open) before choosing an option — for now you can only lock the compartment.",
+  "@techHomeOrderLookupFailed": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "techHomeEmergencyOpenShort": "Emergency open",
+  "techHomeBoxHasCustomerItems": "COMPARTMENT HOLDS CUSTOMER ITEMS!",
+  "techHomeActiveOrderLine": "Order: {code} · Customer: {customer}",
+  "@techHomeActiveOrderLine": {
+    "placeholders": {
+      "code": {},
+      "customer": {}
+    }
+  },
+  "techHomeBoxNoActiveOrder": "NO ACTIVE ORDER IN THIS COMPARTMENT",
+  "techHomeBoxNoActiveOrderHint": "No order was found in this compartment. The customer may have already collected the items, a sensor may be stuck, or the wrong compartment was reported. Emergency-open it to check in person.",
+  "techHomeBoxCurrentlyEmpty": "The compartment is empty (nothing inside)",
+  "techHomeStep2PickGoodsOption": "2. Choose how to handle the items in the compartment:",
+  "techHomeStep2PickOption": "2. Choose a resolution:",
+  "techHomeOptionRelocateTitle": "Move to a new empty compartment (Recommended)",
+  "techHomeOptionRelocateHint": "Move the items to another empty compartment at the same Kiosk, issue a new PIN to the customer & lock the old compartment.",
+  "techHomeNoFreeBoxes": "⚠️ This Kiosk has no empty compartments left! Choose direct handover or seal instead.",
+  "techHomePickTargetBox": "Choose the target empty compartment",
+  "techHomeTargetBoxOption": "Compartment #{number} ({type})",
+  "@techHomeTargetBoxOption": {
+    "placeholders": {
+      "number": {},
+      "type": {}
+    }
+  },
+  "techHomeOptionHandoverTitle": "Customer present - Hand over directly",
+  "techHomeOptionHandoverHint": "The customer is at the station and takes the items directly; complete the order & lock the old compartment.",
+  "techHomeHandoverCodeLabel": "6-digit PIN or order QR code (required)",
+  "techHomeHandoverCodeHint": "The customer reads/shows the pickup code to confirm the handover",
+  "techHomeOptionHubTitle": "Kiosk full - Seal and take to Hub",
+  "techHomeOptionHubHint": "Pack the items in a seal bag, scan the seal code, take it to the Hub for storage & lock the old compartment.",
+  "techHomeSealCodeLabel": "Seal code (required)",
+  "techHomeSealCodeHint": "Enter the code printed on the seal bag exactly",
+  "techHomeOptionQuickFixKeepTitle": "Check & fix on site (don't move items)",
+  "techHomeOptionQuickFixKeepHint": "Check the sensor, close the door firmly or help the customer on site without moving the items.",
+  "techHomeOptionQuickFixTitle": "Check & fix on site (Recommended)",
+  "techHomeOptionQuickFixHint": "Physical check (sensor, latch, cleaning). If the user reported by mistake or a minor issue is already fixed, no need to lock the compartment.",
+  "techHomeOptionLockFaultTitle": "Confirm hardware fault & lock for maintenance (FAULT)",
+  "techHomeOptionLockFaultHint": "Needs replacement parts or deep maintenance. The compartment is suspended so a technician can repair it.",
+  "techHomeLockForMaintenance": "Lock compartment for maintenance (Status: FAULT)",
+  "techHomeKeepActiveWithGoods": "Keep compartment active (holding customer items)",
+  "techHomeKeepActiveNormal": "Keep compartment active as normal (AVAILABLE)",
+  "techHomeLockOnlyHint": "The maintenance lock (FAULT) option always locks the compartment for servicing. If you don't need to lock it, choose \"Check & fix on site\".",
+  "techHomeLockedHint": "The compartment will be suspended and won't take new orders until the repair is completed.",
+  "techHomeNotLockedWithGoodsHint": "The compartment isn't locked. The customer's items stay safely inside and it won't be returned to empty.",
+  "techHomeNotLockedHint": "The compartment isn't locked. Suitable when the customer reported by mistake or the issue was fixed on site.",
+  "techHomeStep3ReasonNotes": "3. Reason & work notes:",
+  "techHomeSystemRecordedIncident": "Compartment incident recorded by the system",
+  "techHomeFailedInspectionContent": "Failed routine inspection details:",
+  "techHomeCustomerReportedReason": "Customer's reported reason:",
+  "techHomeTechFieldNotesLabel": "Technician's on-site notes (separate):",
+  "techHomeTechFieldNotesHint": "Enter what you found and your assessment...",
+  "techHomeStep4ScenePhotos": "4. On-site / comparison photos (technician check):",
+  "techHomeExistingScenePhotosColon": "{count, plural, =1{1 on-site / reporter photo for comparison:} other{{count} on-site / reporter photos for comparison:}}",
+  "@techHomeExistingScenePhotosColon": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "techHomeComparisonScenePhotos": "On-site comparison photos",
+  "techHomeTakeMoreScenePhotos": "Take more on-site photos (optional):",
+  "techHomeStep5RepairPhotos": "5. Repair progress photos:",
+  "techHomeStep5RepairPhotosHint": "Photograph part removal/installation, technical work, sensor checks or item handling:",
+  "techHomeExistingRepairPhotos": "{count, plural, =1{1 repair progress photo:} other{{count} repair progress photos:}}",
+  "@techHomeExistingRepairPhotos": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "techHomeTakeMoreRepairPhotos": "Take more repair photos (optional):",
+  "techHomeUpdating": "Updating...",
+  "techHomeConfirmAndUpdate": "Confirm & update system",
+  "techHomeCellTypeStandard": "Standard",
+  "techHomeForceOpenReasonForgotPin": "Customer forgot the PIN / can't be reached",
+  "techHomeForceOpenReasonJammed": "Door mechanically stuck / magnetic latch fault",
+  "techHomeForceOpenReasonTicketCheck": "Compartment check while handling an incident ticket",
+  "techHomeForceOpenReasonManagement": "Check requested by management",
+  "techHomeForceOpenReasonEmergency": "Emergency / suspected leak or foreign object",
+  "techHomeForceOpenReasonOther": "Other reason…",
+  "techHomeForceOpenSent": "Emergency open command sent to {box}.",
+  "@techHomeForceOpenSent": {
+    "placeholders": {
+      "box": {}
+    }
+  },
+  "techHomeForceOpenConfirmed": "The locker confirmed {box} is open.",
+  "@techHomeForceOpenConfirmed": {
+    "placeholders": {
+      "box": {}
+    }
+  },
+  "techHomeForceOpenTitle": "Emergency open {box}",
+  "@techHomeForceOpenTitle": {
+    "placeholders": {
+      "box": {}
+    }
+  },
+  "techHomeForceOpenHintWithTicket": "The compartment is opened with a Master command and written to the access log. The reason, note and photos are saved to the log of ticket RPT-{id}.",
+  "@techHomeForceOpenHintWithTicket": {
+    "placeholders": {
+      "id": {}
+    }
+  },
+  "techHomeForceOpenHint": "The compartment is opened with a Master command and written to the access log with the reason.",
+  "techHomeForceOpenReasonLabel": "Reason for intervention (required):",
+  "techHomeEnterReason": "Enter a reason",
+  "techHomeNoteOptional": "Note (optional)",
+  "techHomeForceOpenReasonRequired": "Please enter the reason for the emergency open.",
+  "techHomeConfirmOpen": "Confirm open",
+  "techHomeSlaReasonWaitingParts": "Waiting for replacement parts",
+  "techHomeSlaReasonDeepCircuitCheck": "Circuit needs an in-depth check",
+  "techHomeSlaReasonHardToReach": "Locker hard to access",
+  "techHomeSlaReasonBuildingOps": "Coordinating with building operations",
+  "techHomeSlaReasonRequired": "Please enter the reason for the SLA extension.",
+  "techHomeMaxExtensionsPerTicket": "Max {count} times per ticket",
+  "@techHomeMaxExtensionsPerTicket": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "techHomeExtendSlaTitle": "Extend SLA of ticket RPT-{id}",
+  "@techHomeExtendSlaTitle": {
+    "placeholders": {
+      "id": {}
+    }
+  },
+  "techHomeCurrentDueLabel": "Current due:",
+  "techHomeNewDueLabel": "New due (estimated):",
+  "techHomePickExtensionHours": "Choose extension time:",
+  "techHomePickExtensionHoursCapped": "Choose extension time (max {hours} h each):",
+  "@techHomePickExtensionHoursCapped": {
+    "placeholders": {
+      "hours": {}
+    }
+  },
+  "techHomePlusHours": "+{hours} h",
+  "@techHomePlusHours": {
+    "placeholders": {
+      "hours": {}
+    }
+  },
+  "techHomeExtensionReasonLabel": "Extension reason (required):",
+  "techHomeExtensionReasonHint": "Enter why you need more time...",
+  "techHomeConfirmExtendSla": "Confirm SLA extension",
+  "techHomeDeletePhotoTitle": "Delete this photo?",
+  "techHomeDeletePhotoBody": "{stage} will be removed from ticket RPT-{id}.",
+  "@techHomeDeletePhotoBody": {
+    "placeholders": {
+      "stage": {},
+      "id": {}
+    }
+  },
+  "techHomePhotoDeleted": "Photo removed from the ticket.",
+  "techHomeTicketPhotosLoadFailed": "Couldn't load the ticket photos: {error}",
+  "@techHomeTicketPhotosLoadFailed": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "techHomeYourAttachedPhotos": "Your attached photos ({count}) — tap ✕ to delete a wrong upload",
+  "@techHomeYourAttachedPhotos": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "techHomeStageOnSite": "On site",
+  "techHomeStageRepairing": "Repairing",
+  "techHomeSlaRemainingExtended": "{time} left (+{hours}h)",
+  "@techHomeSlaRemainingExtended": {
+    "placeholders": {
+      "time": {},
+      "hours": {}
+    }
+  },
+  "techHomeSlaRemaining": "{time} left",
+  "@techHomeSlaRemaining": {
+    "placeholders": {
+      "time": {}
+    }
+  },
+  "techHomeSlaOverdueByExtended": "Overdue {time} (+{hours}h)",
+  "@techHomeSlaOverdueByExtended": {
+    "placeholders": {
+      "time": {},
+      "hours": {}
+    }
+  },
+  "techHomeSlaOverdueBy": "Overdue {time}",
+  "@techHomeSlaOverdueBy": {
+    "placeholders": {
+      "time": {}
+    }
+  },
+  "techHomeTechName": "Tech {name}",
+  "@techHomeTechName": {
+    "placeholders": {
+      "name": {}
+    }
+  },
+  "techUiRestartUnconfirmed": "Restart command sent, but the server hasn't confirmed it yet — check the device status in a few minutes.",
+  "techUiRestartAccepted": "The locker controller accepted the command and is restarting.",
+  "techUiRestartTimeout": "The locker didn't respond to the restart command — check its connection.",
+  "techUiRestartFailed": "Restart failed — please try again.",
+  "techUiAdminAccountTitle": "Admin account",
+  "techUiAdminWebOnly": "The admin console (dashboard, statistics, users, orders, promotions...) is only available on the web.\nPlease sign in from a browser to continue.",
+  "techUiRoleDrone": "drone technician",
+  "techUiRoleLocker": "locker technician",
+  "techUiSlaExtensionUsage": "Extended {used}/{max}",
+  "@techUiSlaExtensionUsage": {
+    "placeholders": {
+      "used": {
+        "type": "int"
+      },
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "techUiSlaExtensionLimit": "No extensions left ({used}/{max})",
+  "@techUiSlaExtensionLimit": {
+    "placeholders": {
+      "used": {
+        "type": "int"
+      },
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "techUiExtendSla": "Extend SLA",
+  "techUiSlaSuspended": "Suspended",
+  "techUiSlaRestricted": "Restricted",
+  "techUiSlaWarning": "Warning",
+  "techUiSlaNormal": "Normal",
+  "techUiSlaNotLoaded": "Not loaded",
+  "techUiRatingSummary": "{average}/5 ({count, plural, =1{1 rating} other{{count} ratings}})",
+  "@techUiRatingSummary": {
+    "placeholders": {
+      "average": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "techUiSelectIncidentBox": "Please select the faulty compartment.",
+  "techUiSelectTargetBox": "Please select an empty compartment to move the items to.",
+  "techUiEnterHandoverCode": "Enter the order's 6-digit PIN or QR code to confirm the handover.",
+  "techUiPinSixDigits": "The pickup PIN must be exactly 6 digits.",
+  "techUiEnterSealCode": "Enter the seal code printed on the sealed bag.",
+  "techUiLocationDeniedForever": "Location permission was permanently denied. Please open Settings to turn on location.",
+  "techUiLocationAccessTitle": "Location access",
+  "techUiForTechnicianAccounts": "For technician accounts",
+  "techUiLocationRationale": "To dispatch the nearest locker incidents and drone tasks to you accurately, the app needs your device location while you're on shift.",
+  "techUiBenefitDispatchTitle": "Location-based dispatch",
+  "techUiBenefitDispatchBody": "Automatically assigns tickets, routine inspections and drone rescues at lockers near you.",
+  "techUiBenefitAutoOffTitle": "Turns off when your shift ends",
+  "techUiBenefitAutoOffBody": "Location is only accessed after you start your shift. When you end it, location tracking turns off completely to protect your privacy.",
+  "techUiBenefitBatteryTitle": "Battery & data friendly",
+  "techUiBenefitBatteryBody": "Location updates adapt to how far you move, so your battery isn't drained.",
+  "techUiAllowLocation": "Allow location access",
+  "techUiGpsServiceOff": "GPS is turned off. Please turn on GPS on your device.",
+  "techUiLocationBlockedForever": "Location access is permanently blocked. Please open Settings to grant permission.",
+  "techUiGpsUpdated": "GPS location updated.",
+  "techUiLocationUpdateFailed": "Couldn't update location: {error}",
+  "@techUiLocationUpdateFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "techUiEndShiftQuestion": "End your shift?",
+  "techUiEndShiftBody": "You'll stop receiving new incidents and location access will be turned off completely.",
+  "techUiEndShift": "End shift",
+  "techUiShiftStarted": "Shift started and GPS location turned on.",
+  "techUiShiftEnded": "Shift ended and GPS location turned off.",
+  "techUiShiftUpdateFailed": "Couldn't update shift: {error}",
+  "@techUiShiftUpdateFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "techUiNoLocationYet": "No location yet",
+  "techUiOnShift": "On shift",
+  "techUiOffShift": "Off shift",
+  "techUiOnShiftLocationNote": "Your location is used to dispatch the nearest jobs to you",
+  "techUiOffShiftLocationNote": "GPS location is fully turned off",
+  "techUiDeviceGpsInfo": "DEVICE GPS INFO",
+  "techUiGpsCoordinates": "GPS coordinates",
+  "techUiGpsAccuracy": "GPS accuracy",
+  "techUiAccuracyMeters": "±{meters} m",
+  "@techUiAccuracyMeters": {
+    "placeholders": {
+      "meters": {
+        "type": "String"
+      }
+    }
+  },
+  "techUiNotYet": "Not yet",
+  "techUiOpenGoogleMaps": "Open Google Maps",
+  "techUiUpdateGps": "Update GPS",
+  "techUiNoGpsYet": "No GPS coordinates yet. Start your shift or tap Update GPS.",
+  "techUiGetCurrentLocation": "Get current location",
+  "techUiPrivacyCommitment": "Privacy promise: your location is only accessed while you're on shift. When your shift ends, location tracking turns off completely.",
+  "techUiLoadingShift": "Loading shift status...",
+  "techUiOnShiftBadge": "ON SHIFT",
+  "techUiOffShiftBadge": "OFF SHIFT",
+  "techUiGpsActive": "GPS: Active{accuracy} · {time}",
+  "@techUiGpsActive": {
+    "placeholders": {
+      "accuracy": {
+        "type": "String"
+      },
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "techUiGpsSearching": "Searching for GPS signal...",
+  "techUiGpsOffHint": "GPS off · Start your shift to turn on location",
+  "techUiRefreshGps": "Refresh GPS",
+  "techUiEndShiftShort": "End shift",
+  "techUiStartShift": "Start shift",
+  "techUiNotApplicable": "N/A",
+  "techUiInvalidScheduleId": "Invalid inspection schedule ID.",
+  "techUiDroneRoutineMaintenance": "Drone routine maintenance",
+  "techUiKioskRoutineInspection": "Kiosk routine inspection",
+  "techUiKioskLocker": "Kiosk locker",
+  "techUiConfirmRoutineInspection": "Confirm routine inspection",
+  "techUiCycleDays": "Cycle: {days, plural, =1{1 day} other{{days} days}}",
+  "@techUiCycleDays": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "techUiChecklistProgress": "Checklist items ({answered}/{total})",
+  "@techUiChecklistProgress": {
+    "placeholders": {
+      "answered": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "techUiNoChecklistPickOverall": "This schedule has no checklist — choose an overall result:",
+  "techUiInspectionNoteLabel": "Inspection notes (optional)",
+  "techUiInspectionNoteHintDrone": "Battery, motors, propellers, sensors or parts replaced...",
+  "techUiInspectionNoteHintKiosk": "General condition, compartment cleaning, parts replaced if any...",
+  "techUiFieldPhotosOptional": "On-site photos (optional):",
+  "techUiFieldPhotosHintDrone": "Photograph the drone, battery or parts you checked for the record.",
+  "techUiFieldPhotosHintKiosk": "Photograph the whole locker, locks or parts you checked for the record.",
+  "techUiUpdating": "Updating...",
+  "techUiConfirmComplete": "Confirm completion",
+  "techUiFaultDescOptional": "Describe the fault found (optional)",
+  "techUiNoteOptional": "Note (optional)",
+  "techUiItemsRemaining": "{remaining}/{total} items not rated yet.",
+  "@techUiItemsRemaining": {
+    "placeholders": {
+      "remaining": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "techUiPickPassOrFail": "Choose Passed or Failed for this inspection.",
+  "techUiResultFailWithTicket": "Result: FAILED — an incident ticket will be opened and assigned to you. The next inspection date only moves once the ticket is completed.",
+  "techUiResultFail": "Result: FAILED.",
+  "techUiResultPass": "Result: PASSED — the next inspection is due in {days, plural, =1{1 day} other{{days} days}}.",
+  "@techUiResultPass": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "techUiFaultyBoxOptional": "Faulty compartment (optional)",
+  "techUiFaultyBoxHint": "Pick a compartment ⇒ it's marked Broken and the ticket is linked to it; none ⇒ locker-level ticket.",
+  "techUiNoBoxLockerLevel": "No compartment — locker-level incident",
+  "techUiBoxWithStatus": "Compartment #{number} · {status}",
+  "@techUiBoxWithStatus": {
+    "placeholders": {
+      "number": {
+        "type": "String"
+      },
+      "status": {
+        "type": "String"
+      }
+    }
+  },
+  "techUiIncidentDescOptional": "Incident description (optional)",
+  "techUiIncidentDescHint": "Leave blank ⇒ the ticket lists the failed items",
+  "techUiOverdueDays": "Overdue by {days, plural, =1{1 day} other{{days} days}}",
+  "@techUiOverdueDays": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "techUiDueToday": "Due today",
+  "techUiDueInDays": "Due in {days, plural, =1{1 day} other{{days} days}}",
+  "@techUiDueInDays": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "techUiPrevFailedFinishTicket": "Last inspection failed — complete ticket RPT-{id} before re-inspecting.",
+  "@techUiPrevFailedFinishTicket": {
+    "placeholders": {
+      "id": {}
+    }
+  },
+  "techUiScheduleOtherTech": "This schedule is assigned to another technician.",
+  "techUiPriorityUrgent": "Urgent",
+  "techUiPriorityHigh": "High",
+  "techUiPriorityLow": "Low",
+  "techUiPriorityNormalDrone": "Normal (standard drone)",
+  "techUiPriorityNormalStation": "Normal (standard station)",
+  "techUiRoutineSchedule": "Routine inspection schedule",
+  "techUiDroneRoutine": "Drone routine",
+  "techUiKioskRoutine": "Kiosk routine",
+  "techUiSchedulePlanRecord": "Routine maintenance plan details",
+  "techUiDroneMaintenancePlan": "Drone routine maintenance plan",
+  "techUiKioskInspectionPlan": "Kiosk routine inspection plan",
+  "techUiDronePlanNote": "This is a recurring drone maintenance schedule set by an admin; checklist results are saved to the operations record.",
+  "techUiKioskPlanNote": "This is a recurring routine inspection of the kiosk station set by an admin (not an incident ticket).",
+  "techUiInspectionDue": "Inspection due",
+  "techUiPriorityLabel": "Priority: {priority}",
+  "@techUiPriorityLabel": {
+    "placeholders": {
+      "priority": {
+        "type": "String"
+      }
+    }
+  },
+  "techUiCycleEveryDays": "Cycle: every {days} days",
+  "@techUiCycleEveryDays": {
+    "placeholders": {
+      "days": {
+        "type": "String"
+      }
+    }
+  },
+  "techUiShiftSlot": "Slot: {slot}",
+  "@techUiShiftSlot": {
+    "placeholders": {
+      "slot": {
+        "type": "String"
+      }
+    }
+  },
+  "techUiNoTechAssigned": "No technician assigned",
+  "techUiTechInChargeYou": "Technician: You",
+  "techUiPlacementInBuilding": "Location in building: {note}",
+  "@techUiPlacementInBuilding": {
+    "placeholders": {
+      "note": {
+        "type": "String"
+      }
+    }
+  },
+  "techUiDirectionsDroneStation": "Directions to drone station",
+  "techUiPlanAndDeadline": "Plan & deadline:",
+  "techUiDueDateLabel": "Next due date:",
+  "techUiStartTimeLabel": "Scheduled start time:",
+  "techUiTimeSlotLabel": "Time slot / shift:",
+  "techUiFlexibleSlot": "Flexible time",
+  "techUiRepeatCycleLabel": "Repeats:",
+  "techUiEveryDaysOnce": "Once every {days} days",
+  "@techUiEveryDaysOnce": {
+    "placeholders": {
+      "days": {
+        "type": "String"
+      }
+    }
+  },
+  "techUiPriorityLevelLabel": "Priority:",
+  "techUiTechnicianLabel": "Assigned technician:",
+  "techUiUnassignedWaiting": "Unassigned (waiting)",
+  "techUiYouAssigned": "You (assigned to me)",
+  "techUiLastInspectionLabel": "Last inspection:",
+  "techUiNoInspectionHistory": "No inspection history yet",
+  "techUiChecklistCriteria": "Inspection checklist ({count, plural, =1{1 item} other{{count} items}} to complete):",
+  "@techUiChecklistCriteria": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "techUiDroneFullCheck": "Full check of the drone's operating condition.",
+  "techUiKioskFullCheck": "Full check of the kiosk locker station.",
+  "techUiSopGuide": "Procedure (SOP notes from admin):",
+  "techUiPrevResultLabel": "Previous inspection result:",
+  "techUiInspectionLogsFailed": "Couldn't load inspection logs: {error}",
+  "@techUiInspectionLogsFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "techUiCheckedNoOverall": "Inspected — no overall result in the log",
+  "techUiPassedAllCriteria": "PASSED — all criteria met",
+  "techUiFailedHasIssues": "FAILED — some items need fixing",
+  "techUiLogTime": "Time: {time}",
+  "@techUiLogTime": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "techUiLogTimeWithTech": "Time: {time} · Technician: {name}",
+  "@techUiLogTimeWithTech": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "techUiItemDetails": "Item-by-item results ({count, plural, =1{1 item} other{{count} items}}):",
+  "@techUiItemDetails": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "techUiTechNote": "Technician note: {note}",
+  "@techUiTechNote": {
+    "placeholders": {
+      "note": {
+        "type": "String"
+      }
+    }
+  },
+  "techUiNoItemResultsInLog": "The last log has no per-item results — only the overall result above.",
+  "techUiTechNoteQuoted": "Technician note: \"{note}\"",
+  "@techUiTechNoteQuoted": {
+    "placeholders": {
+      "note": {
+        "type": "String"
+      }
+    }
+  },
+  "techUiFieldPhotosCount": "On-site photos by the technician ({count, plural, =1{1 photo} other{{count} photos}}):",
+  "@techUiFieldPhotosCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "techUiPrevInspectionPhotos": "Previous inspection photos",
+  "techUiRelatedTicket": "Related incident ticket: RPT-{id}",
+  "@techUiRelatedTicket": {
+    "placeholders": {
+      "id": {}
+    }
+  },
+  "techUiFailedTicketOpenedNote": "Because the last inspection failed, an incident ticket was opened. Resolve it and complete the acceptance to reopen this schedule for the next inspection.",
+  "techUiOpenTicketToHandle": "Open ticket RPT-{id} to resolve",
+  "@techUiOpenTicketToHandle": {
+    "placeholders": {
+      "id": {}
+    }
+  },
+  "techUiNoPrevInspection": "No previous inspection data (new schedule).",
+  "techUiHandleTicket": "Resolve ticket RPT-{id}",
+  "@techUiHandleTicket": {
+    "placeholders": {
+      "id": {}
+    }
+  },
+  "techUiScheduleOtherTechShort": "Assigned to another technician",
+  "techUiStartInspectionDue": "Start inspection now (due)",
+  "techUiInspectNow": "Inspect now",
+  "techUiIncidentReport": "Incident report",
+  "techUiSavingChanges": "Saving changes...",
+  "techUiProfileUpdated": "Profile updated!",
+  "techUiAvatar": "Profile photo",
+  "techUiTakeNewPhoto": "Take a new photo",
+  "techUiChooseFromGallery": "Choose from gallery",
+  "techUiDeleteAvatar": "Remove profile photo",
+  "techUiUploadingAvatar": "Uploading profile photo...",
+  "techUiAccountIdUnknown": "Couldn't determine your account ID",
+  "techUiPhotoUploadFailed": "Photo upload failed: {error}",
+  "@techUiPhotoUploadFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "techUiAvatarUpdated": "Profile photo updated",
+  "techUiPhotoUploadError": "Photo upload error: {error}",
+  "@techUiPhotoUploadError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "techUiDeleteAvatarQuestion": "Remove profile photo?",
+  "techUiDeleteAvatarBody": "Are you sure you want to remove your current profile photo?",
+  "techUiDelete": "Remove",
+  "techUiDeletingPhoto": "Removing photo...",
+  "techUiPhotoDeleteFailed": "Couldn't remove photo: {error}",
+  "@techUiPhotoDeleteFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "techUiAvatarDeleted": "Profile photo removed",
+  "techUiPhotoDeleteError": "Error removing photo: {error}",
+  "@techUiPhotoDeleteError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "techUiLogoutShift": "Log out of shift",
+  "techUiLogoutConfirm": "Are you sure you want to end your shift and log out of your {role} account?",
+  "@techUiLogoutConfirm": {
+    "placeholders": {
+      "role": {
+        "type": "String"
+      }
+    }
+  },
+  "techUiLockerTechnician": "Locker technician",
+  "techUiSaving": "Saving...",
+  "techUiSaveProfileChanges": "Save changes",
+  "techUiLogoutAccount": "Log out of account",
+  "techUiTechnicianProfile": "Technician profile",
+  "techUiRoleBadgeDrone": "DRONE · Drone technician",
+  "techUiRoleBadgeLocker": "KIOSK · Locker technician",
+  "techUiStatsLoadFailed": "Couldn't load all stats: {error}",
+  "@techUiStatsLoadFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "techUiShiftMetrics": "Shift performance",
+  "techUiMetricReceived": "Assigned",
+  "techUiMetricInProgress": "In progress",
+  "techUiQualityRating": "Quality rating: ",
+  "techUiNoRatingYet": "No ratings yet",
+  "techUiEditPersonalInfo": "Edit personal info",
+  "techUiFullNameLabel": "Technician full name *",
+  "techUiFullNameHint": "Enter your full name",
+  "techUiFullNameMin": "Full name must be at least 2 characters",
+  "techUiContactPhone": "Contact phone",
+  "techUiPhoneHint": "e.g. 0912345678",
+  "techUiPhoneMin": "Phone number must have at least 9 digits",
+  "techUiAccountEmailFixed": "Account email (fixed)",
+  "techUiIdentity": "ID",
+  "techUiRoleDroneLong": "Drone technician (flight team)",
+  "techUiRoleLockerLong": "Locker technician (compartments & hardware)",
+  "techUiRoleDroneDesc": "Dispatches and maintains drones and resolves drone incident tickets.",
+  "techUiRoleLockerDesc": "Maintains compartments and IoT devices and resolves locker incident tickets.",
+  "techRecLoadError": "Couldn't load recovery tasks: {error}",
+  "@techRecLoadError": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "techRecEmptyTitle": "No parcel recovery tasks yet",
+  "techRecEmptyHint": "Tasks assigned to you will appear here.",
+  "techRecBanner": "Recover parcels at the verified drop location. Take real photos and record GPS and parcel condition before sending to the admin for review.",
+  "techRecUrgentTag": "Urgent search task · Drone down",
+  "techRecIncidentHash": "Incident #{id}",
+  "@techRecIncidentHash": {
+    "placeholders": {
+      "id": {}
+    }
+  },
+  "techRecNoGps": "No GPS · check the evidence before heading out",
+  "techRecSituation": "Situation",
+  "techRecDataAccuracy": "Data accuracy",
+  "techRecAccuracyLine": "Location source: {source} · accuracy {accuracy} · telemetry {telemetry}",
+  "@techRecAccuracyLine": {
+    "placeholders": {
+      "source": {},
+      "accuracy": {},
+      "telemetry": {}
+    }
+  },
+  "techRecUnknown": "unknown",
+  "techRecTelemetryStale": "stale",
+  "techRecTelemetryLive": "live",
+  "techRecGpsSourceDrone": "drone GPS",
+  "techRecGpsSourceFlightPath": "estimated from flight path",
+  "techRecGpsSourceNone": "none yet",
+  "techRecDirectionsToDrop": "Directions to drop location",
+  "techRecEvidence": "Existing evidence",
+  "techRecImageLoadError": "Can't load image",
+  "techRecAccept": "Accept task",
+  "techRecStartSearch": "Start searching",
+  "techRecRecordResult": "Record search result",
+  "techRecConfirmHubHandover": "Confirm handover to Hub / warehouse",
+  "techRecConfirmStationHandover": "Confirm parcel delivered to station {station}",
+  "@techRecConfirmStationHandover": {
+    "placeholders": {
+      "station": {}
+    }
+  },
+  "techRecSubmittedTitle": "Result submitted",
+  "techRecSubmittedBody": "The admin will verify the evidence and decide the next step.",
+  "techRecClosedTitle": "Recovery completed",
+  "techRecClosedHubBody": "The admin has verified it and the parcel is back at the Hub / warehouse. Nothing more for you to do.",
+  "techRecClosedStationBody": "The parcel was delivered to station {station}. Nothing more for you to do.",
+  "@techRecClosedStationBody": {
+    "placeholders": {
+      "station": {}
+    }
+  },
+  "techRecNoGpsTitle": "Couldn't get GPS location",
+  "techRecNoGpsBody": "Recovery results need the coordinates where photos were taken so the admin can cross-check. Turn on location and grant location permission, then try again. Only send without GPS if location is truly unavailable — the admin will see that the evidence has no coordinates.",
+  "techRecRetryLater": "Try later",
+  "techRecSendWithoutGps": "Send without GPS",
+  "techRecStationTitle": "Station {station}",
+  "@techRecStationTitle": {
+    "placeholders": {
+      "station": {}
+    }
+  },
+  "techRecHandoverHubTitle": "Hand the parcel over to the Hub / warehouse?",
+  "techRecHandoverStationTitle": "Parcel delivered to station {station}?",
+  "@techRecHandoverStationTitle": {
+    "placeholders": {
+      "station": {}
+    }
+  },
+  "techRecHandoverHubBody": "Only confirm once the parcel is at the Hub / warehouse and someone has received it. After this step the Hub is responsible for the parcel.",
+  "techRecHandoverStationBody": "Only confirm once the parcel is at station {station} and someone has received it. After this step the parcel waits for a drone to redeliver it to the customer.",
+  "@techRecHandoverStationBody": {
+    "placeholders": {
+      "station": {}
+    }
+  },
+  "techRecHandedOver": "Handed over",
+  "techRecHubHandoverDone": "Parcel confirmed at the Hub / warehouse.",
+  "techRecStationHandoverDone": "Delivery to station {station} confirmed.",
+  "@techRecStationHandoverDone": {
+    "placeholders": {
+      "station": {}
+    }
+  },
+  "techRecTagIntact": "Parcel intact, seal OK",
+  "techRecTagPackagingDamaged": "Packaging slightly torn/dented from impact",
+  "techRecTagDroneStuck": "Drone arm broken, stuck in a tree",
+  "techRecTagNotFound": "Searched the whole area, parcel not found",
+  "techRecTagUnsafe": "Area unsafe, can't be reached",
+  "techRecSheetTitle": "Field report & recovery result",
+  "techRecSheetHint": "Locker technicians must confirm their actual coordinates at the search point, add a condition note and take evidence photos.",
+  "techRecGpsConfirmed": "Field coordinates confirmed",
+  "techRecConfirmGpsTitle": "Confirm GPS coordinates on site",
+  "techRecConfirmGpsHint": "Tap the button below to get the exact GPS coordinates where you are standing, to compare with the drone drop point.",
+  "techRecGpsUnavailable": "Couldn't get GPS coordinates. Please turn on location and grant location permission.",
+  "techRecReadingGps": "Reading GPS signal...",
+  "techRecConfirmGpsButton": "Confirm field coordinates",
+  "techRecCoordinates": "Coordinates: {lat}, {lng} (accuracy: ±{accuracy} m)",
+  "@techRecCoordinates": {
+    "placeholders": {
+      "lat": {},
+      "lng": {},
+      "accuracy": {}
+    }
+  },
+  "techRecWithinRange": "✓ Within the site (~{meters} m from the drop point)",
+  "@techRecWithinRange": {
+    "placeholders": {
+      "meters": {}
+    }
+  },
+  "techRecOutOfRange": "⚠️ ~{meters} m from the drop point (move closer if you can)",
+  "@techRecOutOfRange": {
+    "placeholders": {
+      "meters": {}
+    }
+  },
+  "techRecRefreshGps": "Refresh GPS",
+  "techRecSearchResult": "Search result",
+  "techRecOutcomeFound": "Parcel found",
+  "techRecOutcomeNotFound": "Parcel not found",
+  "techRecOutcomeUnsafe": "Area unsafe to search",
+  "techRecCondIntact": "Intact",
+  "techRecCondMinor": "Minor damage",
+  "techRecCondMajor": "Major damage",
+  "techRecCondUnusable": "Unusable",
+  "techRecNoteLabel": "Field note (description required)",
+  "techRecNoteHint": "Where it was found, drone state, parcel condition, temporary storage...",
+  "techRecPhotoHelper": "At least 1 photo taken on site is required (with coordinates).",
+  "techRecPhotoRequired": "Please take at least 1 photo on site.",
+  "techRecNoteRequired": "Please enter a field note.",
+  "techRecSubmit": "Send for admin verification",
+  "techRecBringToStation": "Take the parcel to station {name}",
+  "@techRecBringToStation": {
+    "placeholders": {
+      "name": {}
+    }
+  },
+  "techRecDistanceFromFound": "~{km} km from where it was found",
+  "@techRecDistanceFromFound": {
+    "placeholders": {
+      "km": {}
+    }
+  },
+  "techRecStationNoDrone": "Station is out of drones — the parcel waits there for one",
+  "techRecStationHasDrone": "Station has a drone ready to redeliver",
+  "techRecDirectionsToStation": "Directions to station",
+  "techRecErrHandoverFailed": "Direct handover failed — check the order's 6-digit PIN or QR code and try again.",
+  "techRecErrInvalidOtp": "The order's PIN/QR code is incorrect.",
+  "techRecErrRelocateFailed": "Couldn't move the order to the new compartment. The items are still in the old one — try again or choose another option.",
+  "techRecErrSlaNotAssignee": "Only the technician assigned to the ticket can extend its SLA.",
+  "techRecErrSlaLimitReached": "This ticket has no SLA self-extensions left — contact an admin if you need more time.",
+  "techRecErrSlaHoursExceeded": "The extension exceeds the hours allowed per extension.",
+  "techRecErrSlaReasonRequired": "Please give a reason for the SLA extension.",
+  "techRecErrInvalidExtensionHours": "The extension must be at least 1 hour.",
+  "techRecErrSlaRestricted": "You have too many tickets past their SLA, so you can't take new jobs for now.",
+  "techRecErrReleaseReasonRequired": "Please give a reason for returning the ticket to the queue.",
+  "techRecErrReportNotClaimed": "The ticket is still in the queue — no technician has taken it.",
+  "techRecErrReportResolved": "This ticket is already completed.",
+  "techRecErrReportOpen": "This compartment/landing pad has an open incident ticket — complete that ticket first.",
+  "techRecErrTargetBoxRequired": "Choose an empty target compartment to move the items to.",
+  "techRecErrTargetBoxUnavailable": "The target compartment is no longer empty — reload the layout and choose another.",
+  "techRecErrBoxNotFault": "The compartment is no longer in a fault state.",
+  "techRecErrHandoverOtpRequired": "The order's 6-digit PIN or QR code is required for handover.",
+  "techRecErrHandoverOtpUnavailable": "The order has no pickup code yet, so it can't be handed over directly.",
+  "techRecErrSealRequired": "Enter the seal number printed on the seal bag.",
+  "techRecErrIncidentActionInvalid": "Invalid resolution option.",
+  "techRecErrIncidentBoxNotInLocker": "The selected compartment isn't in this ticket's locker.",
+  "techRecErrForceOpenReportRequired": "Emergency-open photos can only be saved when opening from an incident ticket.",
+  "techRecErrForceOpenReportMismatch": "The incident ticket doesn't belong to this compartment's locker.",
+  "techRecErrDroneReportRequired": "This isn't a drone ticket.",
+  "techRecErrDeviceNotPaired": "The device isn't paired with any locker.",
+  "techRecErrDeviceNotInScope": "The device isn't in a locker you're responsible for.",
+  "techRecErrDeviceOnlineNotAllowed": "Online status is computed by the server and can't be set manually."
 }
