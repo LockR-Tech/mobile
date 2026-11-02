@@ -77,6 +77,7 @@ class AppLottie extends StatelessWidget {
     this.animate = false,
     this.repeat,
     this.fallback,
+    this.onLoaded,
   });
 
   final String asset;
@@ -87,6 +88,9 @@ class AppLottie extends StatelessWidget {
   final bool animate;
   final bool? repeat;
   final WidgetBuilder? fallback;
+
+  /// Gọi khi đã tải và dựng xong animation (splash chờ cái này mới tính giờ).
+  final VoidCallback? onLoaded;
 
   @override
   Widget build(BuildContext context) {
@@ -109,6 +113,7 @@ class AppLottie extends StatelessWidget {
         alignment: alignment,
         animate: animate,
         repeat: repeat,
+        onLoaded: onLoaded == null ? null : (_) => onLoaded!(),
         errorBuilder: (context, error, stackTrace) =>
             fallback?.call(context) ?? const SizedBox.shrink(),
       ),
