@@ -1,3 +1,4 @@
+import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'dart:async';
 import 'package:smart_laundry_locker/core/services/app_event_bus.dart';
 import 'package:flutter/services.dart';
@@ -1887,15 +1888,7 @@ class _PromotionCard extends StatelessWidget {
   void _copyCode(BuildContext context) {
     Clipboard.setData(ClipboardData(text: promo.code));
     if (PlatformInfo.systemShowsCopyConfirmation) return; // Android 13+ đã tự báo "Đã sao chép".
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(context.l10n.commonCopiedValue(promo.code)),
-        backgroundColor: AislBrand.navy,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-        duration: const Duration(seconds: 2),
-      ),
-    );
+    SmartDialog.showToast(context.l10n.commonCopiedValue(promo.code));
   }
 
   Widget _gradientBg() => DecoratedBox(

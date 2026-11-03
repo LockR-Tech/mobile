@@ -1,3 +1,4 @@
+import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
@@ -86,7 +87,6 @@ class PointsExchangeTab extends StatelessWidget {
     ExchangeableVoucherModel voucher,
   ) async {
     final provider = context.read<VoucherProvider>();
-    final messenger = ScaffoldMessenger.of(context);
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -112,12 +112,8 @@ class PointsExchangeTab extends StatelessWidget {
     );
     if (ok != true) return;
     final error = await provider.exchange(voucher);
-    messenger.showSnackBar(
-      SnackBar(
-        content: Text(
-          error ?? L10n.current.voucherExchanged(voucher.code),
-        ),
-      ),
+    SmartDialog.showToast(
+      error ?? L10n.current.voucherExchanged(voucher.code),
     );
     if (error == null) onExchanged?.call();
   }

@@ -1,3 +1,4 @@
+import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -248,7 +249,6 @@ class _DroneDeliveryTrackingPageState
   Future<void> _cancel(DroneDeliveryStatus status) async {
     final orderId = int.tryParse(widget.orderId);
     if (_canceling || orderId == null) return;
-    final messenger = ScaffoldMessenger.of(context);
     _canceling = true;
     final String? message;
     try {
@@ -264,7 +264,7 @@ class _DroneDeliveryTrackingPageState
     }
     if (message == null || !mounted) return;
     ref.invalidate(droneDeliveryStatusProvider(widget.orderId));
-    messenger.showSnackBar(SnackBar(content: Text(message)));
+    SmartDialog.showToast(message);
   }
 
   /// Người gửi xác nhận đã bỏ kiện vào ô gửi — điều kiện để đội bay tiếp nhận.
@@ -305,7 +305,6 @@ class _DroneDeliveryTrackingPageState
   }) async {
     final orderId = int.tryParse(widget.orderId);
     if (_confirming || orderId == null) return;
-    final messenger = ScaffoldMessenger.of(context);
     _confirming = true;
     String? message;
     try {
@@ -336,7 +335,7 @@ class _DroneDeliveryTrackingPageState
     }
     if (!mounted) return;
     ref.invalidate(droneDeliveryStatusProvider(widget.orderId));
-    messenger.showSnackBar(SnackBar(content: Text(message)));
+    SmartDialog.showToast(message);
   }
 
   /// Thanh toán ngay trên màn theo dõi, không bắt khách sang danh sách đơn.
@@ -344,7 +343,6 @@ class _DroneDeliveryTrackingPageState
     final orderId = int.tryParse(widget.orderId);
     if (_paying || orderId == null) return;
     _paying = true;
-    final messenger = ScaffoldMessenger.of(context);
     String message;
     try {
       final outcome = await payDroneOrder(
@@ -362,7 +360,7 @@ class _DroneDeliveryTrackingPageState
     }
     if (!mounted) return;
     ref.invalidate(droneDeliveryStatusProvider(widget.orderId));
-    messenger.showSnackBar(SnackBar(content: Text(message)));
+    SmartDialog.showToast(message);
   }
 
   /// "Nhận hàng" ở chặng sẵn sàng nhận: người đặt ⇒ chi tiết đơn trong "Đơn

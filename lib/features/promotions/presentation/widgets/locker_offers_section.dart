@@ -1,3 +1,4 @@
+import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:smart_laundry_locker/core/utils/user_error_message.dart';
@@ -74,7 +75,6 @@ class _LockerOffersSectionState extends State<LockerOffersSection> {
   }
 
   Future<void> _claim(PromotionModel promo) async {
-    final messenger = ScaffoldMessenger.of(context);
     try {
       final claim =
           widget.claimPromotion ??
@@ -82,23 +82,13 @@ class _LockerOffersSectionState extends State<LockerOffersSection> {
       await claim(promo.id);
       if (!mounted) return;
       setState(() => _claimed.add(promo.id));
-      messenger.showSnackBar(
-        SnackBar(
-          content: Text(context.l10n.promoSavedToMine(promo.code)),
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
+      SmartDialog.showToast(context.l10n.promoSavedToMine(promo.code));
     } catch (e) {
-      messenger.showSnackBar(
-        SnackBar(
-          content: Text(
-            userErrorMessage(
-              e,
-              notFound: context.l10n.promoSaveNotSupported,
-              fallback: context.l10n.promoSaveFailed,
-            ),
-          ),
-          behavior: SnackBarBehavior.floating,
+      SmartDialog.showToast(
+        userErrorMessage(
+          e,
+          notFound: context.l10n.promoSaveNotSupported,
+          fallback: context.l10n.promoSaveFailed,
         ),
       );
     }

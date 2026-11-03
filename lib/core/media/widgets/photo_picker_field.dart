@@ -1,3 +1,4 @@
+import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
@@ -108,9 +109,7 @@ class PhotoPickerField extends StatelessWidget {
   }
 
   static void _snack(BuildContext context, String message) {
-    ScaffoldMessenger.maybeOf(
-      context,
-    )?.showSnackBar(SnackBar(content: Text(message)));
+    SmartDialog.showToast(message);
   }
 
   @override

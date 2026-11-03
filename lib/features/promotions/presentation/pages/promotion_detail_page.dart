@@ -1,3 +1,4 @@
+import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -272,24 +273,7 @@ class _CodeSection extends StatelessWidget {
   void _copy(BuildContext context) {
     Clipboard.setData(ClipboardData(text: code));
     if (PlatformInfo.systemShowsCopyConfirmation) return; // Android 13+ đã tự báo "Đã sao chép".
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        SnackBar(
-          content: Row(
-            children: [
-              const Icon(LucideIcons.check, color: Colors.white, size: 16),
-              const SizedBox(width: 8),
-              Text(context.l10n.commonCopiedValue(code)),
-            ],
-          ),
-          backgroundColor: AislBrand.navy,
-          behavior: SnackBarBehavior.floating,
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-          duration: const Duration(seconds: 2),
-        ),
-      );
+    SmartDialog.showToast(context.l10n.commonCopiedValue(code));
   }
 
   @override

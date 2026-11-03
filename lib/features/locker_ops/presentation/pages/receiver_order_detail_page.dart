@@ -1,3 +1,4 @@
+import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -126,7 +127,6 @@ class _ReceiverOrderDetailPageState extends State<ReceiverOrderDetailPage> {
   Future<void> _resendEmail() async {
     if (_sendingEmail) return;
     setState(() => _sendingEmail = true);
-    final messenger = ScaffoldMessenger.maybeOf(context);
     try {
       final result = await _service.resendReceiverEmail(
         _detail.order.id,
@@ -134,26 +134,18 @@ class _ReceiverOrderDetailPageState extends State<ReceiverOrderDetailPage> {
       );
       final masked = result['maskedEmail']?.toString();
       final withCode = result['includesPickupCode'] == true;
-      messenger
-        ?..hideCurrentSnackBar()
-        ..showSnackBar(
-          SnackBar(
-            content: Text(
-              L10n.current.recvEmailSent(
-                withCode ? L10n.current.recvWithCode : '',
-                masked ?? L10n.current.recvYourEmail,
-              ),
-            ),
-          ),
-        );
+      SmartDialog.showToast(
+        L10n.current.recvEmailSent(
+          withCode ? L10n.current.recvWithCode : '',
+          masked ?? L10n.current.recvYourEmail,
+        ),
+      );
     } catch (e) {
       if (!mounted) return;
       if (LockerOpsService.errorCode(e) == 'RECEIVER_EMAIL_MISSING') {
         await _askAddEmail();
       } else {
-        messenger
-          ?..hideCurrentSnackBar()
-          ..showSnackBar(SnackBar(content: Text(LockerOpsService.errorMessage(e))));
+        SmartDialog.showToast(LockerOpsService.errorMessage(e));
       }
     } finally {
       if (mounted) setState(() => _sendingEmail = false);
@@ -752,11 +744,7 @@ class _Header extends StatelessWidget {
                     onTap: () {
                       Clipboard.setData(ClipboardData(text: code));
                       if (PlatformInfo.systemShowsCopyConfirmation) return; // Android 13+ đã tự báo "Đã sao chép".
-                      ScaffoldMessenger.maybeOf(context)
-                        ?..hideCurrentSnackBar()
-                        ..showSnackBar(
-                          SnackBar(content: Text(context.l10n.recvOrderCodeCopied)),
-                        );
+                      SmartDialog.showToast(context.l10n.recvOrderCodeCopied);
                     },
                     child: Row(
                       mainAxisSize: MainAxisSize.min,

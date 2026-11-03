@@ -1,3 +1,4 @@
+import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -174,10 +175,7 @@ class _StoresPageState extends State<StoresPage> {
   }
 
   void _toast(String message) {
-    if (!mounted) return;
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text(message)));
+    SmartDialog.showToast(message);
   }
 
   String _messageFor(Object error) {

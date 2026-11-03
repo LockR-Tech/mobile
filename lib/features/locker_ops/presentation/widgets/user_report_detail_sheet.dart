@@ -1,3 +1,4 @@
+import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'dart:async';
 import 'dart:math' as math;
 
@@ -350,9 +351,7 @@ class _UserReportDetailSheetState extends State<UserReportDetailSheet> {
       address: _report['lockerAddress']?.toString(),
     );
     if (!opened && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(context.l10n.urdKioskNoLocation)),
-      );
+      SmartDialog.showToast(context.l10n.urdKioskNoLocation);
     }
   }
 
@@ -375,12 +374,7 @@ class _UserReportDetailSheetState extends State<UserReportDetailSheet> {
       ),
     );
     if (added == true && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(context.l10n.urdPhotosAdded),
-          backgroundColor: Color(0xFF16A34A),
-        ),
-      );
+      SmartDialog.showToast(context.l10n.urdPhotosAdded);
       if (widget.onChanged != null) {
         await widget.onChanged!();
       }
@@ -691,9 +685,7 @@ class _UserReportDetailSheetState extends State<UserReportDetailSheet> {
                               onPressed: () {
                                 Clipboard.setData(ClipboardData(text: reporterPhone));
                                 if (PlatformInfo.systemShowsCopyConfirmation) return; // Android 13+ đã tự báo "Đã sao chép".
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(content: Text(context.l10n.urdPhoneCopied)),
-                                );
+                                SmartDialog.showToast(context.l10n.urdPhoneCopied);
                               },
                             ),
                         ],
@@ -1658,21 +1650,11 @@ class _ReportRatingSectionState extends State<_ReportRatingSection> {
       );
       if (mounted) {
         setState(() => _rating = res);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(context.l10n.urdThanksRating),
-            backgroundColor: Color(0xFF16A34A),
-          ),
-        );
+        SmartDialog.showToast(context.l10n.urdThanksRating);
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(context.l10n.urdRatingError(LockerOpsService.errorMessage(e))),
-            backgroundColor: const Color(0xFFDC2626),
-          ),
-        );
+        SmartDialog.showToast(context.l10n.urdRatingError(LockerOpsService.errorMessage(e)));
       }
     } finally {
       if (mounted) setState(() => _submitting = false);

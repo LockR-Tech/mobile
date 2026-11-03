@@ -1,3 +1,4 @@
+import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'dart:async';
 import 'dart:convert';
 
@@ -186,9 +187,7 @@ class _DirectionsMapPageState extends State<DirectionsMapPage> {
     } else if (await canLaunchUrl(appleMaps)) {
       await launchUrl(appleMaps, mode: LaunchMode.externalApplication);
     } else if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(context.l10n.mapCantOpenMaps)),
-      );
+      SmartDialog.showToast(context.l10n.mapCantOpenMaps);
     }
   }
 

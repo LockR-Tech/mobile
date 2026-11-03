@@ -1,3 +1,4 @@
+import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'dart:async';
 
@@ -161,10 +162,7 @@ class _StoreDetailPageState extends State<StoreDetailPage> {
   }
 
   void _toast(String message) {
-    if (!mounted) return;
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text(message)));
+    SmartDialog.showToast(message);
   }
 
   @override
