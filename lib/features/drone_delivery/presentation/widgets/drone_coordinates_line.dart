@@ -5,6 +5,7 @@ import 'package:smart_laundry_locker/core/theme/shadcn_theme.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/domain/entities/drone_route_geometry.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:smart_laundry_locker/core/l10n/l10n.dart';
+import 'package:smart_laundry_locker/core/services/platform_info.dart';
 
 /// Google Maps ghim đúng điểm toạ độ (có địa chỉ thực tế bên dưới).
 Uri droneGoogleMapsUri(double latitude, double longitude) => Uri.parse(
@@ -40,6 +41,7 @@ class DroneCoordinatesLine extends StatelessWidget {
 
   Future<void> _copy(BuildContext context, String text) async {
     await Clipboard.setData(ClipboardData(text: text));
+    if (PlatformInfo.systemShowsCopyConfirmation) return; // Android 13+ đã tự báo "Đã sao chép".
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(context.l10n.clCopied(text))),
@@ -147,6 +149,7 @@ class JourneyLocationLine extends StatelessWidget {
         },
         onLongPress: () async {
           await Clipboard.setData(ClipboardData(text: text));
+          if (PlatformInfo.systemShowsCopyConfirmation) return; // Android 13+ đã tự báo "Đã sao chép".
           if (context.mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text(context.l10n.clCopied(text))),

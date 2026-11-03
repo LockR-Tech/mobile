@@ -7,6 +7,7 @@ import 'package:smart_laundry_locker/core/network/dio_client.dart';
 import 'package:smart_laundry_locker/core/routing/app_router.dart';
 import 'package:smart_laundry_locker/core/routing/app_back_navigation.dart';
 import 'package:smart_laundry_locker/core/services/app_messenger_service.dart';
+import 'package:smart_laundry_locker/core/services/platform_info.dart';
 import 'package:smart_laundry_locker/core/services/app_restart_service.dart';
 import 'package:smart_laundry_locker/core/services/token_service.dart';
 import 'package:smart_laundry_locker/core/theme/shadcn_theme.dart';
@@ -150,6 +151,7 @@ void main() async {
   AppBackNavigation.instance.attach(AppRouter.router);
 
   AppMessengerService.configureToasts();
+  await PlatformInfo.init();
   runApp(const ProviderScope(child: RestartableApp(child: AislApp())));
 }
 

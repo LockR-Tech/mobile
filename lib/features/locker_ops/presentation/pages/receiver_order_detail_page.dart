@@ -15,6 +15,7 @@ import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/or
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/receiver_order_card.dart';
 import 'package:smart_laundry_locker/shared/widgets/app_lottie.dart';
 import 'package:smart_laundry_locker/core/l10n/l10n.dart';
+import 'package:smart_laundry_locker/core/services/platform_info.dart';
 
 /// Chi tiết một đơn phía người nhận ("Hàng chờ nhận") hoặc người lấy hộ ("Đơn
 /// ủy quyền"): mã lấy hàng, người gửi, người nhận/ủy quyền, tủ & ô, kiện hàng,
@@ -748,6 +749,7 @@ class _Header extends StatelessWidget {
                     borderRadius: BorderRadius.circular(6),
                     onTap: () {
                       Clipboard.setData(ClipboardData(text: code));
+                      if (PlatformInfo.systemShowsCopyConfirmation) return; // Android 13+ đã tự báo "Đã sao chép".
                       ScaffoldMessenger.maybeOf(context)
                         ?..hideCurrentSnackBar()
                         ..showSnackBar(

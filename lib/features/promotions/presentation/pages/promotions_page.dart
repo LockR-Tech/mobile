@@ -13,6 +13,7 @@ import 'package:smart_laundry_locker/features/vouchers/data/repositories/voucher
 import 'package:smart_laundry_locker/shared/shared.dart';
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
 import 'package:smart_laundry_locker/core/l10n/l10n.dart';
+import 'package:smart_laundry_locker/core/services/platform_info.dart';
 
 class PromotionsPage extends ConsumerStatefulWidget {
   const PromotionsPage({super.key});
@@ -413,6 +414,7 @@ class _PromotionsPageState extends ConsumerState<PromotionsPage> {
 
   void _copyCode(BuildContext context, String code) {
     Clipboard.setData(ClipboardData(text: code));
+    if (PlatformInfo.systemShowsCopyConfirmation) return; // Android 13+ đã tự báo "Đã sao chép".
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Row(

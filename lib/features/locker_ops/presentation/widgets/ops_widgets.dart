@@ -7,6 +7,7 @@ import 'package:qr_flutter/qr_flutter.dart';
 import 'package:smart_laundry_locker/core/theme/shadcn_theme.dart';
 import 'package:smart_laundry_locker/core/utils/app_date_time.dart';
 import 'package:smart_laundry_locker/core/l10n/l10n.dart';
+import 'package:smart_laundry_locker/core/services/platform_info.dart';
 
 /// Shared design kit for the locker customer flows (SEND / RENTAL / orders).
 /// Everything here is aligned to [AISLShadcnTheme] (navy + Roboto, 16px radius,
@@ -750,6 +751,7 @@ class AccessCredentials extends StatelessWidget {
         GestureDetector(
           onTap: () {
             Clipboard.setData(ClipboardData(text: pin!));
+            if (PlatformInfo.systemShowsCopyConfirmation) return; // Android 13+ đã tự báo "Đã sao chép".
             ScaffoldMessenger.of(context)
               ..hideCurrentSnackBar()
               ..showSnackBar(
