@@ -237,6 +237,20 @@ class _StoresPageState extends State<StoresPage> {
               decoration: InputDecoration(
                 hintText: context.l10n.storeSearchHint,
                 prefixIcon: const Icon(LucideIcons.search, size: 18),
+                suffixIcon: ValueListenableBuilder<TextEditingValue>(
+                  valueListenable: _searchCtrl,
+                  builder: (context, value, _) {
+                    if (value.text.isEmpty) return const SizedBox.shrink();
+                    return IconButton(
+                      tooltip: context.l10n.commonCancel,
+                      icon: const Icon(LucideIcons.x, size: 18),
+                      onPressed: () {
+                        _searchCtrl.clear();
+                        _applyFilter();
+                      },
+                    );
+                  },
+                ),
                 filled: true,
                 fillColor: Colors.white,
                 contentPadding: const EdgeInsets.symmetric(vertical: 0),
@@ -322,7 +336,13 @@ class _StoresPageState extends State<StoresPage> {
             onToggleFavorite: () => _toggleFavorite(store),
             onTap: () async {
               await context.push(AppRouter.storeDetail, extra: store);
-              if (mounted) _loadFavorites();
+              if (mounted) {
+                _loadFavorites();
+                if (_searchCtrl.text.isNotEmpty) {
+                  _searchCtrl.clear();
+                  _applyFilter();
+                }
+              }
             },
           );
         },
