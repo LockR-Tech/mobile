@@ -40,7 +40,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get commonWebsite => 'Website';
 
   @override
-  String get commonTermsOfUse => 'Terms of use';
+  String get commonTermsOfUse => 'Terms of service';
 
   @override
   String get commonPrivacyPolicy => 'Privacy policy';
@@ -158,7 +158,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get profileContact => 'Contact';
 
   @override
-  String get profileTerms => 'Terms';
+  String get profileTerms => 'Terms of service';
 
   @override
   String get profileHelpSendTitle => 'Send a parcel';
@@ -269,7 +269,8 @@ class AppLocalizationsEn extends AppLocalizations {
       'Enter your email/phone and password';
 
   @override
-  String get authPleaseAcceptTerms => 'Please accept the Terms of use';
+  String get authPleaseAcceptTerms =>
+      'Please accept the Terms of service and Privacy policy';
 
   @override
   String get authTagline => 'Smart lockers • 24/7 pick-up & drop-off';
@@ -302,7 +303,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get authPasswordMin6 => 'Password must be at least 6 characters';
 
   @override
-  String get authAgreePrefix => 'I agree to the ';
+  String get authAgreePrefix => 'I have read and agree to the ';
 
   @override
   String get authOrContinueWith => 'Or continue with';
@@ -675,9 +676,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get navProfile => 'Profile';
-
-  @override
-  String get routerPolicy => 'Policy';
 
   @override
   String get routerMissingDestination => 'Destination coordinates are missing.';
@@ -6757,7 +6755,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get clDroneSim => 'Drone position (simulated)';
 
   @override
-  String get clEstimatedRoute => 'Estimated from the stage (older order, no GPS)';
+  String get clEstimatedRoute =>
+      'Estimated from the stage (older order, no GPS)';
 
   @override
   String get clDestination => 'At the receiving locker';
@@ -7878,9 +7877,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get polLoadFailed => 'Couldn\'t load the content';
 
   @override
-  String get polAgree => 'I agree to the terms of use';
-
-  @override
   String get pdTitle => 'Personal information';
 
   @override
@@ -8009,6 +8005,52 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tcAgreeContinue => 'Agree and continue';
+
+  @override
+  String get legalTermsSubtitle =>
+      'Rules for renting lockers, sending parcels and drone delivery';
+
+  @override
+  String get legalPrivacySubtitle =>
+      'What data we collect and how we protect it';
+
+  @override
+  String get legalContents => 'Contents';
+
+  @override
+  String get legalStatusAccepted => 'You have agreed';
+
+  @override
+  String get legalStatusPending => 'You haven\'t agreed yet';
+
+  @override
+  String legalConsentAcceptedAt(Object time) {
+    return 'At $time. Covers both the Terms of service and the Privacy policy.';
+  }
+
+  @override
+  String get legalConsentAcceptedBoth =>
+      'Covers both the Terms of service and the Privacy policy.';
+
+  @override
+  String get legalConsentPendingBody =>
+      'Read the Terms of service and the Privacy policy, then tick the box at the bottom of the page.';
+
+  @override
+  String get legalBadgeAccepted => 'Agreed';
+
+  @override
+  String get legalBadgePending => 'Not agreed';
+
+  @override
+  String get legalAgreeButton => 'Agree';
+
+  @override
+  String get legalAcceptedToast =>
+      'You have agreed to the Terms of service and Privacy policy';
+
+  @override
+  String get authAgreeAnd => ' and the ';
 
   @override
   String get qlNotConfirmed =>

@@ -25,6 +25,8 @@ import 'package:smart_laundry_locker/features/profile/presentation/widgets/profi
 import 'package:smart_laundry_locker/features/profile/presentation/widgets/profile_menu_item.dart';
 import 'package:smart_laundry_locker/shared/shared.dart';
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
+import 'package:smart_laundry_locker/core/routing/role_routes.dart';
+import 'package:smart_laundry_locker/features/profile/domain/legal_document.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:provider/provider.dart';
@@ -650,14 +652,18 @@ class _ProfilePageState extends State<ProfilePage>
               onTap: _handleContact,
             ),
             ProfileMenuItem(
+              key: const ValueKey('profile-legal-terms'),
               icon: LucideIcons.fileText,
               title: l10n.profileTerms,
-              onTap: _handleTerms,
+              trailing: _legalConsentTrailing(),
+              onTap: () => LegalDocument.terms.open(context),
             ),
             ProfileMenuItem(
+              key: const ValueKey('profile-legal-privacy'),
               icon: LucideIcons.shieldCheck,
               title: l10n.commonPrivacyPolicy,
-              onTap: _handlePrivacy,
+              trailing: _legalConsentTrailing(),
+              onTap: () => LegalDocument.privacy.open(context),
             ),
           ],
         ),
@@ -905,24 +911,30 @@ class _ProfilePageState extends State<ProfilePage>
     );
   }
 
-  void _handleTerms() {
-    if (!mounted) return;
-    context.push(
-      AppRouter.policy,
-      extra: {
-        'title': context.l10n.commonTermsOfUse,
-        'assetPath': 'assets/markdown/terms_of_service.md',
-      },
-    );
-  }
-
-  void _handlePrivacy() {
-    if (!mounted) return;
-    context.push(
-      AppRouter.policy,
-      extra: {
-        'title': context.l10n.commonPrivacyPolicy,
-        'assetPath': 'assets/markdown/privacy_policy.md',
+  /// Nhãn "Đã đồng ý" / "Chưa đồng ý" cạnh hai mục văn bản pháp lý (chỉ khách). Khách có tài khoản từ trước
+  /// khi có bước đồng ý mở mục để đọc và bấm "Đồng ý" ở cuối trang.
+  Widget? _legalConsentTrailing() {
+    final roles = (_userData?['roles'] as List?)?.cast<String>() ?? const <String>[];
+    if (primaryRole(roles) != AppRole.customer) return null;
+    return ListenableBuilder(
+      listenable: _profileProvider,
+      builder: (context, _) {
+        final profile = _profileProvider.profile;
+        final chevron = Icon(LucideIcons.chevronRight, size: 18, color: context.textMuted);
+        if (!_profileProvider.hasServerProfile || profile == null) return chevron;
+        final accepted = profile.termsAccepted;
+        return Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            BrandStatusBadge(
+              label: accepted ? context.l10n.legalBadgeAccepted : context.l10n.legalBadgePending,
+              dotColor: accepted ? AislBrand.statusGreen : const Color(0xFFF59E0B),
+              textColor: accepted ? AislBrand.statusGreenText : const Color(0xFFB45309),
+            ),
+            const SizedBox(width: 6),
+            chevron,
+          ],
+        );
       },
     );
   }

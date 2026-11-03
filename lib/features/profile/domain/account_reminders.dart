@@ -10,7 +10,7 @@ import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 /// Phiên bản Điều khoản dịch vụ đang áp dụng (`assets/markdown/terms_of_service.md`). Đổi điều khoản thì
 /// tăng số này; backend lưu phiên bản người dùng đã đồng ý.
-const String currentTermsVersion = '2026-10-31';
+const String currentTermsVersion = '2026-11-03';
 
 const Duration reminderSnooze = Duration(days: 7);
 const Duration reminderSnoozeAfterOpen = Duration(days: 1);

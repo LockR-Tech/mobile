@@ -20,6 +20,7 @@ UserProfileModel _$UserProfileModelFromJson(Map<String, dynamic> json) =>
       isActive: json['isActive'] as bool?,
       hasPassword: json['hasPassword'] as bool?,
       termsAccepted: json['termsAccepted'] as bool?,
+      termsAcceptedAt: json['termsAcceptedAt'] as String?,
     );
 
 Map<String, dynamic> _$UserProfileModelToJson(UserProfileModel instance) =>
@@ -36,4 +37,5 @@ Map<String, dynamic> _$UserProfileModelToJson(UserProfileModel instance) =>
       'isActive': instance.isActive,
       'hasPassword': instance.hasPassword,
       'termsAccepted': instance.termsAccepted,
+      'termsAcceptedAt': instance.termsAcceptedAt,
     };
