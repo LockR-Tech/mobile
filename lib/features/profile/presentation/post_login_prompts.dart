@@ -13,7 +13,8 @@ import 'package:smart_laundry_locker/features/profile/presentation/widgets/profi
 import 'package:smart_laundry_locker/features/profile/presentation/widgets/terms_consent_dialog.dart';
 
 /// Lời nhắc của khách sau khi đăng nhập (và khi mở app đã đăng nhập sẵn), lần lượt:
-/// 1. chưa đồng ý Điều khoản dịch vụ ⇒ hộp thoại bắt buộc ([TermsConsentDialog]);
+/// 1. chưa đồng ý Điều khoản dịch vụ ⇒ hộp thoại bắt buộc ([TermsConsentDialog]); vừa tích đồng ý ở form
+///    đăng ký ([acceptedTermsAtSignUp]) thì ghi nhận luôn, không hỏi lại;
 /// 2. tên còn mặc định "User" (đăng nhập SĐT lần đầu) ⇒ "Hoàn tất đăng ký" ([CompleteProfileDialog]);
 /// 3. còn thiếu email / số điện thoại ⇒ nhắc bổ sung, "Để sau" nhắc lại theo hạn ([ProfileReminderSheet]).
 ///
@@ -23,12 +24,18 @@ class PostLoginPrompts {
 
   static bool _running = false;
   static String? _doneForUser;
+  static bool _termsAcceptedAtSignUp = false;
 
   @visibleForTesting
   static void resetForTest() {
     _running = false;
     _doneForUser = null;
+    _termsAcceptedAtSignUp = false;
   }
+
+  /// Form đăng ký bắt tích "Tôi đã đọc và đồng ý…" trước khi gửi ⇒ đăng ký xong gọi hàm này để lần chạy
+  /// kế tiếp lưu sự đồng ý lên máy chủ thay vì hiện lại hộp thoại.
+  static void acceptedTermsAtSignUp() => _termsAcceptedAtSignUp = true;
 
   static String _snoozeKey(String userId) => 'profile_reminder_until_$userId';
 
@@ -48,7 +55,14 @@ class PostLoginPrompts {
       // Chờ trang chủ dựng xong để hộp thoại không bám vào route đăng nhập cũ.
       await WidgetsBinding.instance.endOfFrame;
 
-      if (needsTermsConsent(profile)) {
+      final fromSignUp = _termsAcceptedAtSignUp;
+      _termsAcceptedAtSignUp = false;
+      if (needsTermsConsent(profile) && fromSignUp) {
+        // Lưu không được (mất mạng…) ⇒ rơi xuống hộp thoại bên dưới như bình thường.
+        await profileProvider.acceptTerms(currentTermsVersion);
+      }
+
+      if (needsTermsConsent(profileProvider.profile)) {
         final ctx = AppRouter.navigatorKey.currentContext;
         if (ctx == null || !ctx.mounted) return;
         final accepted = await TermsConsentDialog.show(
@@ -106,6 +120,7 @@ class PostLoginPrompts {
     await SessionService.logout();
     profileProvider.reset();
     _doneForUser = null;
+    _termsAcceptedAtSignUp = false;
     final c = AppRouter.navigatorKey.currentContext;
     if (c != null && c.mounted) c.go(AppRouter.onboarding);
   }

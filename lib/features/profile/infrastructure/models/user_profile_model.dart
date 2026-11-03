@@ -17,6 +17,7 @@ class UserProfileModel {
   final bool? isActive;
   final bool? hasPassword;
   final bool? termsAccepted;
+  final String? termsAcceptedAt;
 
   const UserProfileModel({
     this.id,
@@ -31,6 +32,7 @@ class UserProfileModel {
     this.isActive,
     this.hasPassword,
     this.termsAccepted,
+    this.termsAcceptedAt,
   });
 
   factory UserProfileModel.fromJson(Map<String, dynamic> json) {
@@ -51,6 +53,8 @@ class UserProfileModel {
         json['username'] != null) {
       normalized['fullName'] = json['username'].toString();
     }
+    // Thời điểm đồng ý điều khoản: chỉ nhận chuỗi ISO, dạng khác (mảng số) coi như không có.
+    if (normalized['termsAcceptedAt'] is! String) normalized.remove('termsAcceptedAt');
     return _$UserProfileModelFromJson(normalized);
   }
 
@@ -70,6 +74,7 @@ class UserProfileModel {
       isActive: isActive ?? (status?.toUpperCase() != 'INACTIVE' && status?.toUpperCase() != 'BLOCKED'),
       hasPassword: hasPassword ?? true,
       termsAccepted: termsAccepted ?? true,
+      termsAcceptedAt: termsAcceptedAt == null ? null : DateTime.tryParse(termsAcceptedAt!),
     );
   }
 

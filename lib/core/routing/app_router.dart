@@ -17,6 +17,7 @@ import 'package:smart_laundry_locker/features/maintenance/presentation/pages/rep
 import 'package:smart_laundry_locker/core/network/api_client.dart';
 import 'package:provider/provider.dart';
 import 'package:smart_laundry_locker/features/profile/domain/entities/user_profile.dart';
+import 'package:smart_laundry_locker/features/profile/domain/legal_document.dart';
 import 'package:smart_laundry_locker/features/profile/presentation/pages/policy_page.dart';
 import 'package:smart_laundry_locker/features/profile/presentation/pages/profile_page.dart';
 import 'package:smart_laundry_locker/features/profile/presentation/pages/profile_detail_page.dart';
@@ -327,22 +328,8 @@ class AppRouter {
       ),
       GoRoute(
         path: policy,
-        builder: (context, state) {
-          final Map<String, dynamic>? params =
-              state.extra as Map<String, dynamic>?;
-          if (params == null ||
-              !params.containsKey('title') ||
-              !params.containsKey('assetPath')) {
-            return PolicyPage(
-              title: context.l10n.routerPolicy,
-              assetPath: 'assets/markdown/privacy_policy.md',
-            );
-          }
-          return PolicyPage(
-            title: params['title'] as String,
-            assetPath: params['assetPath'] as String,
-          );
-        },
+        builder: (context, state) =>
+            PolicyPage(document: LegalDocument.fromRouteExtra(state.extra)),
       ),
       GoRoute(
         path: createReport,

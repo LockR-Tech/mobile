@@ -22,6 +22,9 @@ class UserProfile {
   /// trước khi dùng tiếp. Backend chưa có field này ⇒ coi như đã đồng ý để không chặn nhầm.
   final bool termsAccepted;
 
+  /// Lúc bấm "Đồng ý" (giờ máy chủ); `null` khi chưa đồng ý hoặc backend cũ không trả.
+  final DateTime? termsAcceptedAt;
+
   const UserProfile({
     required this.id,
     required this.fullName,
@@ -35,9 +38,10 @@ class UserProfile {
     required this.isActive,
     this.hasPassword = true,
     this.termsAccepted = true,
+    this.termsAcceptedAt,
   });
 
-  UserProfile copyWith({bool? termsAccepted}) => UserProfile(
+  UserProfile copyWith({bool? termsAccepted, DateTime? termsAcceptedAt}) => UserProfile(
     id: id,
     fullName: fullName,
     firstName: firstName,
@@ -50,6 +54,7 @@ class UserProfile {
     isActive: isActive,
     hasPassword: hasPassword,
     termsAccepted: termsAccepted ?? this.termsAccepted,
+    termsAcceptedAt: termsAcceptedAt ?? this.termsAcceptedAt,
   );
 
   bool get canEdit => status != UserStatus.BLOCKED;
