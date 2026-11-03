@@ -149,6 +149,7 @@ void main() async {
   // Nút quay lại của điện thoại đi theo lịch sử trang (tab trước, trang trước), không thoát app.
   AppBackNavigation.instance.attach(AppRouter.router);
 
+  AppMessengerService.configureToasts();
   runApp(const ProviderScope(child: RestartableApp(child: AislApp())));
 }
 
@@ -194,11 +195,11 @@ class AislApp extends StatelessWidget {
               // Toast/loading/dialog của SmartDialog nằm ngoài AdaptiveViewport:
               // nó tính chỗ tránh bàn phím bằng toạ độ màn hình thật.
               return AdaptiveViewport.clampTextScale(
-                child: ScaffoldMessenger(
+                child: AppScaffoldMessenger(
                   key: AppMessengerService.scaffoldMessengerKey,
                   child:
                       FlutterSmartDialog.init(
-                        toastBuilder: (String msg) => AppToast(message: msg),
+                        toastBuilder: (String msg) => AppToastSlot(child: AppToast(message: msg)),
                         loadingBuilder: (String msg) =>
                             _AislLoadingWidget(msg: msg),
                         notifyStyle: FlutterSmartNotifyStyle(
