@@ -12,6 +12,7 @@ import 'package:smart_laundry_locker/features/payment/presentation/widgets/bank_
 import 'package:smart_laundry_locker/features/payment/presentation/widgets/payment_simulation_button.dart';
 import 'package:smart_laundry_locker/shared/shared.dart';
 import 'package:smart_laundry_locker/core/l10n/l10n.dart';
+import 'package:smart_laundry_locker/core/services/platform_info.dart';
 
 /// Một lần thanh toán SePay (VietQR) cho một đơn — dùng chung cho thuê tủ, gửi
 /// hàng, gia hạn, phí quá hạn, đơn drone.
@@ -479,6 +480,7 @@ class InlineVietQrCard extends StatelessWidget {
                   TextButton.icon(
                     onPressed: () {
                       Clipboard.setData(ClipboardData(text: content));
+                      if (PlatformInfo.systemShowsCopyConfirmation) return; // Android 13+ đã tự báo "Đã sao chép".
                       ScaffoldMessenger.maybeOf(context)?.showSnackBar(
                         SnackBar(
                           content: Text(context.l10n.sepayContentCopied),

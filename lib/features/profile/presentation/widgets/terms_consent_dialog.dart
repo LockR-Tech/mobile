@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
-import 'package:smart_laundry_locker/core/routing/app_router.dart';
 import 'package:smart_laundry_locker/features/profile/domain/account_reminders.dart';
+import 'package:smart_laundry_locker/features/profile/domain/legal_document.dart';
 import 'package:smart_laundry_locker/features/profile/presentation/providers/profile_provider.dart';
 import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
@@ -19,13 +18,21 @@ class TermsConsentDialog extends StatefulWidget {
     required ProfileProvider profileProvider,
     required Future<void> Function() onSignOut,
   }) async {
-    final accepted = await showDialog<bool>(
-      context: context,
-      barrierDismissible: false,
-      builder: (_) => TermsConsentDialog(profileProvider: profileProvider, onSignOut: onSignOut),
-    );
-    return accepted ?? false;
+    isShowing = true;
+    try {
+      final accepted = await showDialog<bool>(
+        context: context,
+        barrierDismissible: false,
+        builder: (_) => TermsConsentDialog(profileProvider: profileProvider, onSignOut: onSignOut),
+      );
+      return accepted ?? false;
+    } finally {
+      isShowing = false;
+    }
   }
+
+  /// Hộp thoại đang mở ⇒ trang đọc văn bản mở từ nó không hiện thanh "Đồng ý" riêng (tránh hai nơi đồng ý).
+  static bool isShowing = false;
 
   @override
   State<TermsConsentDialog> createState() => _TermsConsentDialogState();
@@ -59,11 +66,6 @@ class _TermsConsentDialogState extends State<TermsConsentDialog> {
     await widget.onSignOut();
   }
 
-  void _openTerms(String title, String asset) => context.push(
-    AppRouter.policy,
-    extra: {'title': title, 'assetPath': asset},
-  );
-
   @override
   Widget build(BuildContext context) {
     final muted = Theme.of(context).colorScheme.onSurfaceVariant;
@@ -89,13 +91,13 @@ class _TermsConsentDialogState extends State<TermsConsentDialog> {
                   TextButton(
                     onPressed: _saving
                         ? null
-                        : () => _openTerms(context.l10n.commonTermsOfUse, 'assets/markdown/terms_of_service.md'),
+                        : () => LegalDocument.terms.open(context),
                     child: Text(context.l10n.tcReadTerms),
                   ),
                   TextButton(
                     onPressed: _saving
                         ? null
-                        : () => _openTerms(context.l10n.commonPrivacyPolicy, 'assets/markdown/privacy_policy.md'),
+                        : () => LegalDocument.privacy.open(context),
                     child: Text(context.l10n.tcReadPrivacy),
                   ),
                 ],

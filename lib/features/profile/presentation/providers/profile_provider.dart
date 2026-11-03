@@ -186,7 +186,7 @@ class ProfileProvider extends ChangeNotifier {
       await _apiClient.post<dynamic>('/api/user/terms', data: {'version': version});
       final current = _profile;
       if (current != null) {
-        _profile = current.copyWith(termsAccepted: true);
+        _profile = current.copyWith(termsAccepted: true, termsAcceptedAt: DateTime.now());
         notifyListeners();
       }
       return null;

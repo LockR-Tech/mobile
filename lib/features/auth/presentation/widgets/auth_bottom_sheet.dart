@@ -10,6 +10,7 @@ import 'package:smart_laundry_locker/core/services/token_service.dart';
 import 'package:smart_laundry_locker/features/auth/presentation/providers/auth_injection.dart';
 import 'package:smart_laundry_locker/features/auth/presentation/providers/login_provider.dart';
 import 'package:smart_laundry_locker/features/auth/presentation/providers/register_provider.dart';
+import 'package:smart_laundry_locker/features/profile/domain/legal_document.dart';
 import 'package:smart_laundry_locker/features/profile/presentation/post_login_prompts.dart';
 import 'package:smart_laundry_locker/features/auth/presentation/widgets/phone_otp_dialog.dart';
 import 'package:smart_laundry_locker/features/auth/presentation/widgets/social_login_options.dart';
@@ -61,13 +62,9 @@ class _AuthBottomSheetState extends State<AuthBottomSheet> {
   late RegisterProvider _registerProvider;
 
   late final TapGestureRecognizer _termsRecognizer = TapGestureRecognizer()
-    ..onTap = () => context.push(
-      AppRouter.policy,
-      extra: {
-        'title': context.l10n.commonTermsOfUse,
-        'assetPath': 'assets/markdown/terms_of_service.md',
-      },
-    );
+    ..onTap = () => LegalDocument.terms.open(context);
+  late final TapGestureRecognizer _privacyRecognizer = TapGestureRecognizer()
+    ..onTap = () => LegalDocument.privacy.open(context);
 
   @override
   void initState() {
@@ -118,6 +115,7 @@ class _AuthBottomSheetState extends State<AuthBottomSheet> {
         _registerProvider.signedIn &&
         !_hasNavigated) {
       _hasNavigated = true;
+      PostLoginPrompts.acceptedTermsAtSignUp();
       SmartDialog.showToast(context.l10n.authRegisterSuccess);
       _registerProvider.reset();
       _navigateAfterLogin();
@@ -129,6 +127,7 @@ class _AuthBottomSheetState extends State<AuthBottomSheet> {
       // move the user to the Login tab with their email prefilled.
       if (mounted) {
         final email = _registerEmailController.text.trim();
+        PostLoginPrompts.acceptedTermsAtSignUp();
         SmartDialog.showToast(context.l10n.authRegisterSuccessPleaseLogin);
         setState(() {
           _isLoginTab = true;
@@ -142,6 +141,7 @@ class _AuthBottomSheetState extends State<AuthBottomSheet> {
   @override
   void dispose() {
     _termsRecognizer.dispose();
+    _privacyRecognizer.dispose();
     _loginProvider.removeListener(_onLoginStateChanged);
     _registerProvider.removeListener(_onRegisterStateChanged);
     _loginEmailController.dispose();
@@ -636,6 +636,12 @@ class _AuthBottomSheetState extends State<AuthBottomSheet> {
     );
   }
 
+  static const _linkStyle = TextStyle(
+    fontWeight: FontWeight.w600,
+    color: AppColors.success,
+    decoration: TextDecoration.underline,
+  );
+
   Widget _buildTermsCheckbox() {
     return Row(
       children: [
@@ -664,14 +670,16 @@ class _AuthBottomSheetState extends State<AuthBottomSheet> {
                   ),
                   TextSpan(
                     text: context.l10n.commonTermsOfUse,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.success,
-                      decoration: TextDecoration.underline,
-                    ),
+                    style: _linkStyle,
                     recognizer: _termsRecognizer,
                   ),
-                  TextSpan(text: '.'),
+                  TextSpan(text: context.l10n.authAgreeAnd),
+                  TextSpan(
+                    text: context.l10n.commonPrivacyPolicy,
+                    style: _linkStyle,
+                    recognizer: _privacyRecognizer,
+                  ),
+                  const TextSpan(text: '.'),
                 ],
               ),
             ),

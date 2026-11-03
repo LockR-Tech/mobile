@@ -40,7 +40,7 @@ class AppLocalizationsVi extends AppLocalizations {
   String get commonWebsite => 'Website';
 
   @override
-  String get commonTermsOfUse => 'Điều khoản sử dụng';
+  String get commonTermsOfUse => 'Điều khoản dịch vụ';
 
   @override
   String get commonPrivacyPolicy => 'Chính sách bảo mật';
@@ -160,7 +160,7 @@ class AppLocalizationsVi extends AppLocalizations {
   String get profileContact => 'Liên hệ';
 
   @override
-  String get profileTerms => 'Điều khoản';
+  String get profileTerms => 'Điều khoản dịch vụ';
 
   @override
   String get profileHelpSendTitle => 'Gửi hàng';
@@ -270,7 +270,8 @@ class AppLocalizationsVi extends AppLocalizations {
   String get authEnterIdentifierAndPassword => 'Nhập email/SĐT và mật khẩu';
 
   @override
-  String get authPleaseAcceptTerms => 'Vui lòng đồng ý với Điều khoản sử dụng';
+  String get authPleaseAcceptTerms =>
+      'Vui lòng đồng ý với Điều khoản dịch vụ và Chính sách bảo mật';
 
   @override
   String get authTagline => 'Tủ thông minh • Giao nhận 24/7';
@@ -303,7 +304,7 @@ class AppLocalizationsVi extends AppLocalizations {
   String get authPasswordMin6 => 'Mật khẩu phải có ít nhất 6 ký tự';
 
   @override
-  String get authAgreePrefix => 'Tôi đồng ý với ';
+  String get authAgreePrefix => 'Tôi đã đọc và đồng ý với ';
 
   @override
   String get authOrContinueWith => 'Hoặc tiếp tục với';
@@ -669,9 +670,6 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get navProfile => 'Hồ sơ';
-
-  @override
-  String get routerPolicy => 'Chính sách';
 
   @override
   String get routerMissingDestination => 'Thiếu toạ độ điểm đến.';
@@ -7766,9 +7764,6 @@ class AppLocalizationsVi extends AppLocalizations {
   String get polLoadFailed => 'Không thể tải nội dung';
 
   @override
-  String get polAgree => 'Tôi đồng ý với điều khoản sử dụng';
-
-  @override
   String get pdTitle => 'Thông tin cá nhân';
 
   @override
@@ -7895,6 +7890,52 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get tcAgreeContinue => 'Đồng ý và tiếp tục';
+
+  @override
+  String get legalTermsSubtitle =>
+      'Quy định khi thuê tủ, gửi hàng và giao bằng drone';
+
+  @override
+  String get legalPrivacySubtitle =>
+      'Dữ liệu nào được thu thập và được bảo vệ ra sao';
+
+  @override
+  String get legalContents => 'Mục lục';
+
+  @override
+  String get legalStatusAccepted => 'Bạn đã đồng ý';
+
+  @override
+  String get legalStatusPending => 'Bạn chưa đồng ý';
+
+  @override
+  String legalConsentAcceptedAt(Object time) {
+    return 'Lúc $time. Áp dụng cho cả Điều khoản dịch vụ và Chính sách bảo mật.';
+  }
+
+  @override
+  String get legalConsentAcceptedBoth =>
+      'Áp dụng cho cả Điều khoản dịch vụ và Chính sách bảo mật.';
+
+  @override
+  String get legalConsentPendingBody =>
+      'Đọc Điều khoản dịch vụ và Chính sách bảo mật, rồi đánh dấu đồng ý ở cuối trang.';
+
+  @override
+  String get legalBadgeAccepted => 'Đã đồng ý';
+
+  @override
+  String get legalBadgePending => 'Chưa đồng ý';
+
+  @override
+  String get legalAgreeButton => 'Đồng ý';
+
+  @override
+  String get legalAcceptedToast =>
+      'Đã ghi nhận bạn đồng ý Điều khoản dịch vụ và Chính sách bảo mật';
+
+  @override
+  String get authAgreeAnd => ' và ';
 
   @override
   String get qlNotConfirmed =>

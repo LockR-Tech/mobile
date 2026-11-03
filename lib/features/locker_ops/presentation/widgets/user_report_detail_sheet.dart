@@ -14,6 +14,7 @@ import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service
 import 'package:smart_laundry_locker/features/locker_ops/presentation/utils/locker_maps.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/ops_widgets.dart';
 import 'package:smart_laundry_locker/core/l10n/l10n.dart';
+import 'package:smart_laundry_locker/core/services/platform_info.dart';
 
 const _maxReportPhotosPerReport = 10;
 int get _maxReportPhotosPerRequest =>
@@ -689,6 +690,7 @@ class _UserReportDetailSheetState extends State<UserReportDetailSheet> {
                               tooltip: context.l10n.urdCopyPhone,
                               onPressed: () {
                                 Clipboard.setData(ClipboardData(text: reporterPhone));
+                                if (PlatformInfo.systemShowsCopyConfirmation) return; // Android 13+ đã tự báo "Đã sao chép".
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(content: Text(context.l10n.urdPhoneCopied)),
                                 );

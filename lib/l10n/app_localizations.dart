@@ -161,7 +161,7 @@ abstract class AppLocalizations {
   /// No description provided for @commonTermsOfUse.
   ///
   /// In vi, this message translates to:
-  /// **'Điều khoản sử dụng'**
+  /// **'Điều khoản dịch vụ'**
   String get commonTermsOfUse;
 
   /// No description provided for @commonPrivacyPolicy.
@@ -389,7 +389,7 @@ abstract class AppLocalizations {
   /// No description provided for @profileTerms.
   ///
   /// In vi, this message translates to:
-  /// **'Điều khoản'**
+  /// **'Điều khoản dịch vụ'**
   String get profileTerms;
 
   /// No description provided for @profileHelpSendTitle.
@@ -599,7 +599,7 @@ abstract class AppLocalizations {
   /// No description provided for @authPleaseAcceptTerms.
   ///
   /// In vi, this message translates to:
-  /// **'Vui lòng đồng ý với Điều khoản sử dụng'**
+  /// **'Vui lòng đồng ý với Điều khoản dịch vụ và Chính sách bảo mật'**
   String get authPleaseAcceptTerms;
 
   /// No description provided for @authTagline.
@@ -665,7 +665,7 @@ abstract class AppLocalizations {
   /// No description provided for @authAgreePrefix.
   ///
   /// In vi, this message translates to:
-  /// **'Tôi đồng ý với '**
+  /// **'Tôi đã đọc và đồng ý với '**
   String get authAgreePrefix;
 
   /// No description provided for @authOrContinueWith.
@@ -1309,12 +1309,6 @@ abstract class AppLocalizations {
   /// In vi, this message translates to:
   /// **'Hồ sơ'**
   String get navProfile;
-
-  /// No description provided for @routerPolicy.
-  ///
-  /// In vi, this message translates to:
-  /// **'Chính sách'**
-  String get routerPolicy;
 
   /// No description provided for @routerMissingDestination.
   ///
@@ -13550,12 +13544,6 @@ abstract class AppLocalizations {
   /// **'Không thể tải nội dung'**
   String get polLoadFailed;
 
-  /// No description provided for @polAgree.
-  ///
-  /// In vi, this message translates to:
-  /// **'Tôi đồng ý với điều khoản sử dụng'**
-  String get polAgree;
-
   /// No description provided for @pdTitle.
   ///
   /// In vi, this message translates to:
@@ -13789,6 +13777,84 @@ abstract class AppLocalizations {
   /// In vi, this message translates to:
   /// **'Đồng ý và tiếp tục'**
   String get tcAgreeContinue;
+
+  /// No description provided for @legalTermsSubtitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Quy định khi thuê tủ, gửi hàng và giao bằng drone'**
+  String get legalTermsSubtitle;
+
+  /// No description provided for @legalPrivacySubtitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Dữ liệu nào được thu thập và được bảo vệ ra sao'**
+  String get legalPrivacySubtitle;
+
+  /// No description provided for @legalContents.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mục lục'**
+  String get legalContents;
+
+  /// No description provided for @legalStatusAccepted.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bạn đã đồng ý'**
+  String get legalStatusAccepted;
+
+  /// No description provided for @legalStatusPending.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bạn chưa đồng ý'**
+  String get legalStatusPending;
+
+  /// No description provided for @legalConsentAcceptedAt.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lúc {time}. Áp dụng cho cả Điều khoản dịch vụ và Chính sách bảo mật.'**
+  String legalConsentAcceptedAt(Object time);
+
+  /// No description provided for @legalConsentAcceptedBoth.
+  ///
+  /// In vi, this message translates to:
+  /// **'Áp dụng cho cả Điều khoản dịch vụ và Chính sách bảo mật.'**
+  String get legalConsentAcceptedBoth;
+
+  /// No description provided for @legalConsentPendingBody.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đọc Điều khoản dịch vụ và Chính sách bảo mật, rồi đánh dấu đồng ý ở cuối trang.'**
+  String get legalConsentPendingBody;
+
+  /// No description provided for @legalBadgeAccepted.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã đồng ý'**
+  String get legalBadgeAccepted;
+
+  /// No description provided for @legalBadgePending.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa đồng ý'**
+  String get legalBadgePending;
+
+  /// No description provided for @legalAgreeButton.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đồng ý'**
+  String get legalAgreeButton;
+
+  /// No description provided for @legalAcceptedToast.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã ghi nhận bạn đồng ý Điều khoản dịch vụ và Chính sách bảo mật'**
+  String get legalAcceptedToast;
+
+  /// No description provided for @authAgreeAnd.
+  ///
+  /// In vi, this message translates to:
+  /// **' và '**
+  String get authAgreeAnd;
 
   /// No description provided for @qlNotConfirmed.
   ///

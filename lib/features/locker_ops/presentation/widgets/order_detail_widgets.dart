@@ -8,6 +8,7 @@ import 'package:smart_laundry_locker/features/drone_delivery/presentation/widget
 import 'package:smart_laundry_locker/features/locker_ops/data/order_milestone.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/ops_widgets.dart';
 import 'package:smart_laundry_locker/core/l10n/l10n.dart';
+import 'package:smart_laundry_locker/core/services/platform_info.dart';
 
 /// Khối dựng dùng chung cho hai màn chi tiết đơn: "Đơn của tôi" (người gửi) và
 /// "Hàng chờ nhận" / "Đơn ủy quyền" (người nhận, người lấy hộ) — để hai màn
@@ -157,6 +158,7 @@ class OrderContactRow extends StatelessWidget {
 
   void _copy(BuildContext context) {
     Clipboard.setData(ClipboardData(text: value));
+    if (PlatformInfo.systemShowsCopyConfirmation) return; // Android 13+ đã tự báo "Đã sao chép".
     ScaffoldMessenger.maybeOf(context)
       ?..hideCurrentSnackBar()
       ..showSnackBar(SnackBar(content: Text(context.l10n.detailCopiedLabel(label))));

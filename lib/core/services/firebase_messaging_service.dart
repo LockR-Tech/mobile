@@ -260,22 +260,28 @@ class FirebaseMessagingService {
 
     // Always show a local notification banner (handles both notification+data
     // messages and pure data-only messages from the backend)
-    _showLocalNotification(message);
-
-    if (!_isDroneDeliveryType(type) &&
-        !_isMaintenanceDroneType(type) &&
-        delivery == null) {
-      // Noti giao hàng (kể cả drone_*) đã hiển thị banner local ở trên rồi ->
-      // không toast trùng. Các noti khác: fallback toast tiêu đề.
-      final title =
-          message.notification?.title ??
-          message.data['title'] as String? ??
-          L10n.current.notifNew;
-      SmartDialog.showToast(title);
-    }
+    unawaited(
+      _showLocalNotification(message).then((shown) {
+        // Đã có banner hệ thống thì không toast trùng (trước đây mỗi noti vừa banner vừa toast, toast
+        // chồng lên thông báo của chính thao tác vừa bấm). Chỉ toast khi banner không hiện được
+        // (tắt quyền thông báo…), và không toast cho noti giao hàng.
+        if (shown ||
+            _isDroneDeliveryType(type) ||
+            _isMaintenanceDroneType(type) ||
+            delivery != null) {
+          return;
+        }
+        final title =
+            message.notification?.title ??
+            message.data['title'] as String? ??
+            L10n.current.notifNew;
+        SmartDialog.showToast(title);
+      }),
+    );
   }
 
-  Future<void> _showLocalNotification(RemoteMessage message) async {
+  /// `true` khi banner hệ thống đã hiện.
+  Future<bool> _showLocalNotification(RemoteMessage message) async {
     // Với noti giao hàng (data-only), lấy title/body theo status nếu thiếu.
     final delivery = DeliveryNotification.fromData(message.data);
 
@@ -293,7 +299,7 @@ class FirebaseMessagingService {
         delivery?.displayBody ??
         '';
 
-    if (title.isEmpty && body.isEmpty) return;
+    if (title.isEmpty && body.isEmpty) return false;
 
     const AndroidNotificationDetails androidDetails =
         AndroidNotificationDetails(
@@ -320,15 +326,27 @@ class FirebaseMessagingService {
       iOS: iosDetails,
     );
 
-    await _localNotificationsPlugin.show(
-      id: message.hashCode,
-      title: title,
-      body: body,
-      notificationDetails: platformDetails,
-      // Payload dạng JSON để khi bấm vào banner foreground có thể parse lại
-      // data (orderId/status...) và deep-link đúng màn.
-      payload: jsonEncode(message.data),
-    );
+    try {
+      final enabled = await _localNotificationsPlugin
+          .resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin
+          >()
+          ?.areNotificationsEnabled();
+      if (enabled == false) return false;
+      await _localNotificationsPlugin.show(
+        id: message.hashCode,
+        title: title,
+        body: body,
+        notificationDetails: platformDetails,
+        // Payload dạng JSON để khi bấm vào banner foreground có thể parse lại
+        // data (orderId/status...) và deep-link đúng màn.
+        payload: jsonEncode(message.data),
+      );
+      return true;
+    } catch (e) {
+      debugPrint('Local notification failed: $e');
+      return false;
+    }
   }
 
   void _handleMessageOpenedApp(RemoteMessage message) {

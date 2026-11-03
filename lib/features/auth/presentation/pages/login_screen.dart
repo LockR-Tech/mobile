@@ -16,6 +16,7 @@ import 'package:smart_laundry_locker/core/services/token_service.dart';
 import 'package:smart_laundry_locker/features/auth/presentation/providers/auth_injection.dart';
 import 'package:smart_laundry_locker/features/auth/presentation/providers/login_provider.dart';
 import 'package:smart_laundry_locker/features/auth/presentation/providers/register_provider.dart';
+import 'package:smart_laundry_locker/features/profile/domain/legal_document.dart';
 import 'package:smart_laundry_locker/features/profile/presentation/post_login_prompts.dart';
 import 'package:smart_laundry_locker/features/auth/presentation/widgets/phone_otp_dialog.dart';
 import 'package:smart_laundry_locker/features/auth/presentation/widgets/social_login_options.dart';
@@ -67,15 +68,11 @@ class _LoginScreenState extends State<LoginScreen>
   late final LoginProvider _loginProvider;
   late final RegisterProvider _registerProvider;
 
-  /// "Điều khoản sử dụng" mở trang điều khoản (trước đây chỉ là chữ tô màu).
+  /// Hai link trong ô đồng ý mở đúng văn bản tương ứng.
   late final TapGestureRecognizer _termsRecognizer = TapGestureRecognizer()
-    ..onTap = () => context.push(
-      AppRouter.policy,
-      extra: {
-        'title': context.l10n.commonTermsOfUse,
-        'assetPath': 'assets/markdown/terms_of_service.md',
-      },
-    );
+    ..onTap = () => LegalDocument.terms.open(context);
+  late final TapGestureRecognizer _privacyRecognizer = TapGestureRecognizer()
+    ..onTap = () => LegalDocument.privacy.open(context);
   bool _hasNavigated = false;
 
   late final AnimationController _animationController;
@@ -123,6 +120,7 @@ class _LoginScreenState extends State<LoginScreen>
     _loginProvider.removeListener(_onAuthChanged);
     _registerProvider.removeListener(_onAuthChanged);
     _termsRecognizer.dispose();
+    _privacyRecognizer.dispose();
     _animationController.dispose();
     _identifierController.dispose();
     _loginPasswordController.dispose();
@@ -149,6 +147,7 @@ class _LoginScreenState extends State<LoginScreen>
         _registerProvider.signedIn &&
         !_hasNavigated) {
       _hasNavigated = true;
+      PostLoginPrompts.acceptedTermsAtSignUp();
       SmartDialog.showToast(context.l10n.authRegisterSuccess);
       _registerProvider.reset();
       _navigateAfterLogin();
@@ -160,6 +159,7 @@ class _LoginScreenState extends State<LoginScreen>
       final identifier = _emailController.text.trim().isNotEmpty
           ? _emailController.text.trim()
           : _phoneController.text.trim();
+      PostLoginPrompts.acceptedTermsAtSignUp();
       SmartDialog.showToast(context.l10n.authRegisterSuccessPleaseLogin);
       _registerProvider.reset();
       setState(() {
@@ -644,6 +644,12 @@ class _LoginScreenState extends State<LoginScreen>
     );
   }
 
+  static const _linkStyle = TextStyle(
+    color: _kBlue,
+    fontWeight: FontWeight.w600,
+    decoration: TextDecoration.underline,
+  );
+
   Widget _buildTermsCheckbox() {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
@@ -671,13 +677,16 @@ class _LoginScreenState extends State<LoginScreen>
                   TextSpan(text: context.l10n.authAgreePrefix),
                   TextSpan(
                     text: context.l10n.commonTermsOfUse,
-                    style: const TextStyle(
-                      color: _kBlue,
-                      fontWeight: FontWeight.w600,
-                      decoration: TextDecoration.underline,
-                    ),
+                    style: _linkStyle,
                     recognizer: _termsRecognizer,
                   ),
+                  TextSpan(text: context.l10n.authAgreeAnd),
+                  TextSpan(
+                    text: context.l10n.commonPrivacyPolicy,
+                    style: _linkStyle,
+                    recognizer: _privacyRecognizer,
+                  ),
+                  const TextSpan(text: '.'),
                 ],
               ),
             ),

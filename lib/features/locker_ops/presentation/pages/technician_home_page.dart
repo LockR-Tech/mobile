@@ -31,6 +31,7 @@ import 'package:smart_laundry_locker/features/locker/domain/utils/locker_layout_
 import 'package:smart_laundry_locker/features/maintenance/presentation/widgets/drone_recovery_queue.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/technician_shift_card.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/technician_location_permission_sheet.dart';
+import 'package:smart_laundry_locker/core/services/platform_info.dart';
 
 /// Home for the LOCKER_TECHNICIAN role (kỹ thuật viên tủ): physical locker
 /// maintenance (fault cells, work queue, preventive schedules, landing pad)
@@ -6002,6 +6003,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                                   tooltip: context.l10n.urdCopyPhone,
                                   onPressed: () {
                                     Clipboard.setData(ClipboardData(text: reporterPhone));
+                                    if (PlatformInfo.systemShowsCopyConfirmation) return; // Android 13+ đã tự báo "Đã sao chép".
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       SnackBar(content: Text(context.l10n.urdPhoneCopied)),
                                     );
