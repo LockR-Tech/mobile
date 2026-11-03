@@ -7,6 +7,7 @@ import 'package:smart_laundry_locker/core/network/dio_client.dart';
 import 'package:smart_laundry_locker/core/routing/app_router.dart';
 import 'package:smart_laundry_locker/core/routing/app_back_navigation.dart';
 import 'package:smart_laundry_locker/core/services/app_messenger_service.dart';
+import 'package:smart_laundry_locker/core/services/platform_info.dart';
 import 'package:smart_laundry_locker/core/services/app_restart_service.dart';
 import 'package:smart_laundry_locker/core/services/token_service.dart';
 import 'package:smart_laundry_locker/core/theme/shadcn_theme.dart';
@@ -149,6 +150,8 @@ void main() async {
   // Nút quay lại của điện thoại đi theo lịch sử trang (tab trước, trang trước), không thoát app.
   AppBackNavigation.instance.attach(AppRouter.router);
 
+  AppMessengerService.configureToasts();
+  await PlatformInfo.init();
   runApp(const ProviderScope(child: RestartableApp(child: AislApp())));
 }
 
@@ -194,11 +197,11 @@ class AislApp extends StatelessWidget {
               // Toast/loading/dialog của SmartDialog nằm ngoài AdaptiveViewport:
               // nó tính chỗ tránh bàn phím bằng toạ độ màn hình thật.
               return AdaptiveViewport.clampTextScale(
-                child: ScaffoldMessenger(
+                child: AppScaffoldMessenger(
                   key: AppMessengerService.scaffoldMessengerKey,
                   child:
                       FlutterSmartDialog.init(
-                        toastBuilder: (String msg) => AppToast(message: msg),
+                        toastBuilder: (String msg) => AppToastSlot(child: AppToast(message: msg)),
                         loadingBuilder: (String msg) =>
                             _AislLoadingWidget(msg: msg),
                         notifyStyle: FlutterSmartNotifyStyle(

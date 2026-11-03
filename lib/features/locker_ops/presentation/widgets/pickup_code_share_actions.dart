@@ -7,6 +7,7 @@ import 'package:smart_laundry_locker/features/locker_ops/domain/pickup_code_shar
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/ops_widgets.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:smart_laundry_locker/core/l10n/l10n.dart';
+import 'package:smart_laundry_locker/core/services/platform_info.dart';
 
 /// Mở bảng chia sẻ của máy với [text]; [origin] là vị trí nút (iPad cần để
 /// neo popover).
@@ -60,6 +61,7 @@ class PickupCodeShareActions extends StatelessWidget {
 
   Future<void> _copyMessage(BuildContext context, {String? reason}) async {
     await Clipboard.setData(ClipboardData(text: share.message));
+    if (reason == null && PlatformInfo.systemShowsCopyConfirmation) return; // Android 13+ đã tự báo "Đã sao chép".
     if (!context.mounted) return;
     _snack(
       context,

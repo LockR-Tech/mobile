@@ -25,8 +25,10 @@ import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/ops_widgets.dart'
     show statusLabel, typeLabel, statusColor, fmtDateTime;
 import 'package:smart_laundry_locker/shared/widgets/app_lottie.dart';
+import 'package:smart_laundry_locker/shared/widgets/home_motion.dart';
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
 import 'package:smart_laundry_locker/core/l10n/l10n.dart';
+import 'package:smart_laundry_locker/core/services/platform_info.dart';
 
 class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key});
@@ -443,24 +445,29 @@ class _HomePageState extends ConsumerState<HomePage>
               button: true,
               child: SizedBox.fromSize(
                 size: size,
-                child: Material(
-                  color: const Color(0xFF040B17),
+                child: ShineSweep(
                   borderRadius: BorderRadius.circular(
                     (size.height * 0.13).clamp(18.0, 26.0),
                   ),
-                  clipBehavior: Clip.antiAlias,
-                  child: Ink.image(
-                    // Giải nén vừa khung trên màn này cho nhẹ bộ nhớ.
-                    image: ResizeImage(
-                      const AssetImage(
-                        'assets/images/poster_drone_delivery.webp',
-                      ),
-                      height: (size.height * dpr).ceil().clamp(1, 1331),
+                  child: Material(
+                    color: const Color(0xFF040B17),
+                    borderRadius: BorderRadius.circular(
+                      (size.height * 0.13).clamp(18.0, 26.0),
                     ),
-                    fit: BoxFit.contain,
-                    child: InkWell(
-                      key: const ValueKey('home-drone-entry'),
-                      onTap: () => showDroneLockerPicker(context),
+                    clipBehavior: Clip.antiAlias,
+                    child: Ink.image(
+                      // Giải nén vừa khung trên màn này cho nhẹ bộ nhớ.
+                      image: ResizeImage(
+                        const AssetImage(
+                          'assets/images/poster_drone_delivery.webp',
+                        ),
+                        height: (size.height * dpr).ceil().clamp(1, 1331),
+                      ),
+                      fit: BoxFit.contain,
+                      child: InkWell(
+                        key: const ValueKey('home-drone-entry'),
+                        onTap: () => showDroneLockerPicker(context),
+                      ),
                     ),
                   ),
                 ),
@@ -1376,13 +1383,7 @@ class _HomePageState extends ConsumerState<HomePage>
           padding: const EdgeInsets.symmetric(horizontal: 20),
           itemCount: 3,
           separatorBuilder: (_, __) => const SizedBox(width: 14),
-          itemBuilder: (_, __) => Container(
-            width: 250,
-            decoration: BoxDecoration(
-              color: Colors.grey.shade800,
-              borderRadius: BorderRadius.circular(20),
-            ),
-          ),
+          itemBuilder: (_, __) => const ShimmerBox(width: 250, height: 158),
         ),
       );
     }
@@ -1406,16 +1407,13 @@ class _HomePageState extends ConsumerState<HomePage>
         ),
       );
     }
-    return SizedBox(
+    // Dãy thẻ tự trôi liên tục; chạm vào thì dừng cho người dùng tự lướt.
+    return AutoScrollStrip(
       height: 158,
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 20),
-        itemCount: state.locations.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 14),
-        itemBuilder: (_, index) =>
-            _buildLockerHorizontalCard(context, state.locations[index]),
-      ),
+      itemWidth: 250,
+      itemCount: state.locations.length,
+      itemBuilder: (_, index) =>
+          _buildLockerHorizontalCard(context, state.locations[index]),
     );
   }
 
@@ -1425,7 +1423,7 @@ class _HomePageState extends ConsumerState<HomePage>
   ) {
     final colors = _gradientForLocation(location.id);
     final initials = _initialsForName(location.name);
-    return RepaintBoundary(
+    return PressScale(
       child: GestureDetector(
         onTap: () => Navigator.of(context, rootNavigator: true).push<void>(
           MaterialPageRoute(
@@ -1651,10 +1649,7 @@ class _HomePageState extends ConsumerState<HomePage>
         2,
         (_) => Padding(
           padding: const EdgeInsets.only(bottom: 14),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(20),
-            child: Container(height: 200, color: const Color(0xFFE2E8F0)),
-          ),
+          child: const ShimmerBox(height: 200),
         ),
       ),
     );
@@ -1891,6 +1886,7 @@ class _PromotionCard extends StatelessWidget {
 
   void _copyCode(BuildContext context) {
     Clipboard.setData(ClipboardData(text: promo.code));
+    if (PlatformInfo.systemShowsCopyConfirmation) return; // Android 13+ đã tự báo "Đã sao chép".
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(context.l10n.commonCopiedValue(promo.code)),

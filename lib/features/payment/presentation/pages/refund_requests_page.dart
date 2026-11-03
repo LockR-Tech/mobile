@@ -21,6 +21,7 @@ import 'package:smart_laundry_locker/features/payment/data/vietnamese_banks.dart
 import 'package:smart_laundry_locker/shared/widgets/app_cached_image.dart';
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
 import 'package:smart_laundry_locker/core/l10n/l10n.dart';
+import 'package:smart_laundry_locker/core/services/platform_info.dart';
 
 class RefundRequestsPage extends StatefulWidget {
   const RefundRequestsPage({
@@ -1254,6 +1255,7 @@ class _RefundRequestsPageState extends State<RefundRequestsPage> {
                                   value: orderCode,
                                   onCopy: () {
                                     Clipboard.setData(ClipboardData(text: orderCode));
+                                    if (PlatformInfo.systemShowsCopyConfirmation) return; // Android 13+ đã tự báo "Đã sao chép".
                                     SmartDialog.showToast(context.l10n.rfOrderCodeCopied);
                                   },
                                 ),
@@ -1286,6 +1288,7 @@ class _RefundRequestsPageState extends State<RefundRequestsPage> {
                                     Clipboard.setData(
                                       ClipboardData(text: _cleanTransferRef(rf['bankTransferRef'])),
                                     );
+                                    if (PlatformInfo.systemShowsCopyConfirmation) return; // Android 13+ đã tự báo "Đã sao chép".
                                     SmartDialog.showToast(context.l10n.rfTransferIdCopied);
                                   },
                                 ),
