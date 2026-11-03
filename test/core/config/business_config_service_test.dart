@@ -70,6 +70,7 @@ void main() {
     });
     _replyOk(adapter, 'loyalty', {'app.loyalty.tier-gold-points': 3000});
     _replyOk(adapter, 'store', {'app.store.nearby-default-radius-km': 3});
+    _replyOk(adapter, 'auth', {'app.auth.splash-duration-ms': 2500});
 
     var notified = 0;
     service.listenable.addListener(() => notified++);
@@ -82,6 +83,7 @@ void main() {
     expect(config.cellDimensionsXl, '50 × 90 × 50 cm');
     expect(config.tierGoldPoints, 3000);
     expect(config.nearbyDefaultRadiusKm, 3);
+    expect(config.splashDurationMs, 2500);
     expect(service.current, same(config));
     expect(service.isFresh, isTrue);
     expect(notified, 1);
@@ -176,6 +178,7 @@ void main() {
       'scopes': {
         'order': {'app.order.rental-rate-standard': 7000},
         'locker': {'app.locker.cell-dimensions-standard': '1 × 2 × 3 cm'},
+        'auth': {'app.auth.splash-duration-ms': 3000},
       },
     });
 
@@ -183,6 +186,7 @@ void main() {
 
     expect(service.current.rentalRateStandard, 7000);
     expect(service.current.cellDimensionsStandard, '1 × 2 × 3 cm');
+    expect(service.current.splashDurationMs, 3000);
     // Giá trị khôi phục không được coi là "mới" ⇒ vẫn làm mới khi mở màn.
     expect(service.isFresh, isFalse);
   });
