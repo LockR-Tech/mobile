@@ -26,6 +26,8 @@ class BusinessConfig {
     required this.pickupMaxOvertimeFee,
     required this.pickupMaxOvertimePercent,
     required this.sendPickupHoursLimit,
+    required this.sendStorageMaxHours,
+    required this.sendStorageQuickHours,
     required this.dronePickupHoursLimit,
     required this.rentalMinHours,
     required this.rentalMaxHours,
@@ -110,8 +112,15 @@ class BusinessConfig {
   /// Trần phí quá hạn theo % tổng tiền đơn.
   final int pickupMaxOvertimePercent;
 
-  /// Số giờ người nhận có để lấy hàng gửi (tính từ lúc bỏ hàng).
+  /// Số giờ người nhận có để lấy hàng gửi (tính từ lúc bỏ hàng) — cũng là số giờ
+  /// giữ hàng đã gồm trong [sendBaseFee].
   final int sendPickupHoursLimit;
+
+  /// Tổng số giờ giữ hàng gửi tối đa người gửi được chọn (kể cả gia hạn), ≥ [sendPickupHoursLimit].
+  final int sendStorageMaxHours;
+
+  /// Nút chọn nhanh số giờ giữ hàng gửi, trong [sendPickupHoursLimit, sendStorageMaxHours].
+  final List<int> sendStorageQuickHours;
 
   /// Số giờ người nhận có để lấy hàng drone (tính từ lúc drone thả hàng).
   final int dronePickupHoursLimit;
@@ -253,6 +262,8 @@ class BusinessConfig {
     pickupMaxOvertimeFee: 50000,
     pickupMaxOvertimePercent: 50,
     sendPickupHoursLimit: 48,
+    sendStorageMaxHours: 168,
+    sendStorageQuickHours: [48, 72, 96, 168],
     dronePickupHoursLimit: 24,
     rentalMinHours: 1,
     rentalMaxHours: 72,
@@ -320,6 +331,23 @@ class BusinessConfig {
     ).where((h) => h >= rentalMin && h <= rentalMax).toList(growable: false);
     if (quickHours.isEmpty) quickHours = [rentalDefault];
 
+    // Gửi hàng: số giờ giữ ≥ số giờ đã gồm trong phí gửi, nút nhanh nằm trong [đã gồm, tối đa].
+    final sendIncluded = _int(
+      o['app.order.send-pickup-hours-limit'],
+      d.sendPickupHoursLimit,
+      min: 1,
+    );
+    final sendMax = _int(
+      o['app.order.send-storage-max-hours'],
+      d.sendStorageMaxHours,
+      min: 1,
+    ).clamp(sendIncluded, 1 << 20);
+    var sendQuick = _intList(
+      o['app.order.send-storage-quick-hours'],
+      d.sendStorageQuickHours,
+    ).where((h) => h >= sendIncluded && h <= sendMax).toList(growable: false);
+    if (sendQuick.isEmpty) sendQuick = [sendIncluded];
+
     final extendMax = _int(o['app.order.extend-max-hours'], d.extendMaxHours, min: 1);
     final extendDefault = _int(
       o['app.order.extend-default-hours'],
@@ -358,11 +386,9 @@ class BusinessConfig {
         o['app.order.pickup-max-overtime-percent'],
         d.pickupMaxOvertimePercent,
       ),
-      sendPickupHoursLimit: _int(
-        o['app.order.send-pickup-hours-limit'],
-        d.sendPickupHoursLimit,
-        min: 1,
-      ),
+      sendPickupHoursLimit: sendIncluded,
+      sendStorageMaxHours: sendMax,
+      sendStorageQuickHours: List.unmodifiable(sendQuick),
       dronePickupHoursLimit: _int(
         o['app.order.drone-pickup-hours-limit'],
         d.dronePickupHoursLimit,
@@ -578,6 +604,15 @@ class BusinessConfig {
   bool isPaymentMethodEnabled(String method) =>
       enabledPaymentMethods.contains(method.toUpperCase());
 
+  /// Giá đơn gửi hàng giữ [hours] giờ — cùng công thức `OrderRules.sendStoragePrice` ở server: phí gửi
+  /// đã gồm [sendPickupHoursLimit] giờ, giờ vượt tính như thuê ô STANDARD.
+  int sendStoragePriceFor(int hours) =>
+      sendBaseFee + rentalPriceFor('STANDARD', hours - sendPickupHoursLimit);
+
+  /// Kéo số giờ giữ hàng gửi về trong [sendPickupHoursLimit, sendStorageMaxHours].
+  int clampSendStorageHours(num hours) =>
+      hours.round().clamp(sendPickupHoursLimit, sendStorageMaxHours);
+
   /// Kéo số giờ thuê về trong [rentalMinHours, rentalMaxHours].
   int clampRentalHours(num hours) =>
       hours.round().clamp(rentalMinHours, rentalMaxHours);
@@ -601,6 +636,8 @@ class BusinessConfig {
       'app.order.pickup-max-overtime-fee': pickupMaxOvertimeFee,
       'app.order.pickup-max-overtime-percent': pickupMaxOvertimePercent,
       'app.order.send-pickup-hours-limit': sendPickupHoursLimit,
+      'app.order.send-storage-max-hours': sendStorageMaxHours,
+      'app.order.send-storage-quick-hours': sendStorageQuickHours,
       'app.order.drone-pickup-hours-limit': dronePickupHoursLimit,
       'app.order.rental-min-hours': rentalMinHours,
       'app.order.rental-max-hours': rentalMaxHours,

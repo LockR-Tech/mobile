@@ -662,7 +662,8 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
   /// không tự hoàn tiền, nên đơn đã trả được nhắc gửi yêu cầu hoàn tiền sau đó.
   Future<bool> _confirmCancelOrder(Map<String, dynamic> order) async {
     final code = order['orderCode']?.toString();
-    final isPaid = '${order['paymentStatus']}'.toUpperCase() == 'PAID';
+    final isPaid = '${order['paymentStatus']}'.toUpperCase() == 'PAID' ||
+        (_asDouble(order['paidAmount']) ?? 0) > 0;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
@@ -750,6 +751,92 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
         () => _service.extendRental(orderId, hours.round()),
         L10n.current.ordExtended(hours.round()),
       );
+    }
+  }
+
+  /// Người gửi gia hạn giữ hàng của đơn gửi: chọn số giờ (thanh kéo như gia hạn thuê), xem phí thêm.
+  /// Đơn đã trả ⇒ server ghi gia hạn chờ thanh toán; mở thanh toán ngay, trả xong mới dời hạn lấy hàng.
+  Future<void> _extendSendDialog(Map<String, dynamic> order) async {
+    final orderId = _asInt(order['id']);
+    if (orderId == null) return;
+    businessConfigService.refresh();
+    final config = businessConfig;
+    final current = _asInt(order['rentalDurationHours']) ?? config.sendPickupHoursLimit;
+    final room = config.sendStorageMaxHours - current;
+    if (room <= 0) {
+      _snack(L10n.current.ordSendStorageMaxed(config.sendStorageMaxHours));
+      return;
+    }
+    final maxHours = room < config.extendMaxHours ? room : config.extendMaxHours;
+    final paid = (_asDouble(order['paidAmount']) ?? 0) > 0 ||
+        '${order['paymentStatus']}'.toUpperCase() == 'PAID';
+    var hours = config.extendDefaultHours.clamp(1, maxHours).toDouble();
+    int feeFor(double h) =>
+        config.sendStoragePriceFor(current + h.round()) - config.sendStoragePriceFor(current);
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setSheet) => AlertDialog(
+          key: const ValueKey('send-extend-dialog'),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: Text(context.l10n.ordExtendSend),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                context.l10n.ordAddHours(hours.round()),
+                style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 18, color: opsDark),
+              ),
+              if (maxHours > 1)
+                Slider(
+                  value: hours,
+                  min: 1,
+                  max: maxHours.toDouble(),
+                  divisions: maxHours - 1,
+                  activeColor: opsPrimary,
+                  label: '${hours.round()}h',
+                  onChanged: (v) => setSheet(() => hours = v),
+                ),
+              Text(
+                context.l10n.ordSendExtendFee(fmtPrice(feeFor(hours))),
+                style: const TextStyle(fontWeight: FontWeight.w700, color: opsPrimary),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                paid ? context.l10n.ordSendExtendPaidNote : context.l10n.ordMaxHoursPerExtension(maxHours),
+                textAlign: TextAlign.center,
+                style: const TextStyle(fontSize: 12, color: opsMutedText, height: 1.4),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: Text(context.l10n.commonCancel),
+            ),
+            FilledButton(
+              key: const ValueKey('send-extend-confirm'),
+              onPressed: () => Navigator.pop(ctx, true),
+              child: Text(context.l10n.ordExtend),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+    try {
+      final res = await _service.extendSend(orderId, hours.round());
+      if (!mounted) return;
+      if ((_asInt(res['pendingExtensionHours']) ?? 0) > 0) {
+        await _load();
+        if (!mounted) return;
+        await _payDialog({...order, ...res});
+      } else {
+        _snack(L10n.current.ordExtended(hours.round()));
+        await _load();
+      }
+    } catch (e) {
+      _snack(LockerOpsService.errorMessage(e));
     }
   }
 
@@ -1027,7 +1114,9 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
 
     final isRental = ('${order['type']}'.toUpperCase() == 'RENTAL');
     final paidAmount = _asDouble(order['paidAmount']) ?? 0;
-    final isRentalExtension = isRental && paidAmount > 0;
+    final isRentalExtension = (isRental ||
+            (_asInt(order['pendingExtensionHours']) ?? 0) > 0) &&
+        paidAmount > 0;
     final description = isRentalExtension
         ? context.l10n.ordExtensionPaymentFor(orderId)
         : null;
@@ -1611,7 +1700,11 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
           },
           onExtend: (id) async {
             Navigator.pop(ctx);
-            await _extendDialog(id);
+            if ('${order['type']}'.toUpperCase() == 'SEND') {
+              await _extendSendDialog(order);
+            } else {
+              await _extendDialog(id);
+            }
           },
           // Báo lỗi / ủy quyền / đổi PIN làm ngay trên trang chi tiết (hộp thoại mở
           // chồng lên), trang chi tiết tự tải lại sau đó — không đóng về danh sách.
@@ -4357,9 +4450,12 @@ class _DetailSheet extends StatelessWidget {
         overtimeFee > 0;
     final needsPayOvertime = overdue && !isOvertimePaid && overtimeFee > 0;
 
+    // Gia hạn giữ hàng chờ trả không chặn bỏ hàng (server bỏ qua phần đó khi kiểm đã thanh toán).
+    final pendingExtensionHours = _asInt(order['pendingExtensionHours']) ?? 0;
     final canDrop =
         rawStatus == 'INITIALIZED' &&
         (paymentStatus == 'PAID' ||
+            pendingExtensionHours > 0 ||
             totalNum <= 0 ||
             order['paymentRequired'] == false) &&
         boxId != null;
@@ -4380,7 +4476,12 @@ class _DetailSheet extends StatelessWidget {
           !(rawStatus == 'STORING' && needsPayOvertime) &&
           !(rawStatus == 'RETURNED' && needsPayOvertime))
         OpsSheetAction(
-          label: context.l10n.ordPayAmount(fmtPrice(orderAmountDue(order))),
+          label: pendingExtensionHours > 0
+              ? context.l10n.ordPaySendExtension(
+                  pendingExtensionHours,
+                  fmtPrice(orderAmountDue(order)),
+                )
+              : context.l10n.ordPayAmount(fmtPrice(orderAmountDue(order))),
           icon: LucideIcons.creditCard,
           primary: true,
           onTap: () => onPay(id),
@@ -4526,6 +4627,18 @@ class _DetailSheet extends StatelessWidget {
           label: context.l10n.ordChangePin,
           icon: LucideIcons.keyRound,
           onTap: onResetPin!,
+        ),
+      // Đơn gửi hàng: người gửi gia hạn giữ hàng (đang chờ trả lần trước thì nút thanh toán ở trên thay thế).
+      if (type == 'SEND' &&
+          !boxIncident &&
+          !feePaused &&
+          pendingExtensionHours == 0 &&
+          (rawStatus == 'INITIALIZED' || rawStatus == 'STORING'))
+        OpsSheetAction(
+          key: const ValueKey('send-extend-action'),
+          label: context.l10n.ordExtendSend,
+          icon: LucideIcons.timer,
+          onTap: () => onExtend(id),
         ),
       // Đơn gửi hàng: gửi lại mã cho người nhận qua email (hoặc thêm / đổi email khi chưa bỏ hàng).
       if (onReceiverEmail != null &&
@@ -4695,7 +4808,7 @@ class _DetailSheet extends StatelessWidget {
                   : context.l10n.ordOverdueNeedPay(overtimePolicyText(config)),
             ),
           )
-        else if (rawStatus == 'INITIALIZED' && canPay)
+        else if (rawStatus == 'INITIALIZED' && canPay && pendingExtensionHours == 0)
           Padding(
             padding: const EdgeInsets.only(bottom: 12),
             child: OpsBanner(
@@ -4793,6 +4906,17 @@ class _DetailSheet extends StatelessWidget {
                   icon: LucideIcons.timer,
                   label: context.l10n.ordRentalDuration,
                   value: context.l10n.hoursValue(rentalHours),
+                ),
+              if (type == 'SEND' && rentalHours != null)
+                OpsInfoRow(
+                  icon: LucideIcons.timer,
+                  label: context.l10n.sendStorageTime,
+                  value: (_asInt(order['pendingExtensionHours']) ?? 0) > 0
+                      ? context.l10n.ordSendStoragePending(
+                          rentalHours,
+                          _asInt(order['pendingExtensionHours'])!,
+                        )
+                      : context.l10n.hoursValue(rentalHours),
                 ),
               if (deadline != null)
                 OpsInfoRow(
@@ -6079,7 +6203,8 @@ _ReceiverEmailMode _receiverEmailMode(Map<String, dynamic> order) {
   if (status == 'STORING' || status == 'RETURNED') return _ReceiverEmailMode.withCode;
   final total = order['totalPrice'];
   final totalNum = total is num ? total : num.tryParse('$total') ?? 0;
-  final paid = (order['paymentStatus'] as String? ?? '').toUpperCase() == 'PAID';
+  final paid = (order['paymentStatus'] as String? ?? '').toUpperCase() == 'PAID' ||
+      (_asInt(order['pendingExtensionHours']) ?? 0) > 0;
   return paid || totalNum <= 0 ? _ReceiverEmailMode.orderInfo : _ReceiverEmailMode.saveOnly;
 }
 

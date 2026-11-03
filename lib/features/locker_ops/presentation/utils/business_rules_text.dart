@@ -64,9 +64,10 @@ String overtimePolicyText(BusinessConfig config) {
 }
 
 /// Hạn lấy hàng của đơn gửi qua tủ + chính sách phí quá giờ.
-String sendPickupPolicyText(BusinessConfig config) =>
+/// [hours]: số giờ giữ hàng người gửi đã chọn; mặc định là số giờ đã gồm trong phí gửi.
+String sendPickupPolicyText(BusinessConfig config, {int? hours}) =>
     L10n.current.rulesSendPickup(
-      config.sendPickupHoursLimit,
+      hours ?? config.sendPickupHoursLimit,
       overtimePolicyText(config),
     );
 

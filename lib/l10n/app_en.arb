@@ -5127,5 +5127,15 @@
   "dtWxStationSuspended": "Station flights paused: {reason}",
   "dtObtTitle": "Drone orders affected by this ticket ({count})",
   "dtObtFailed": "Delivery not completed · {reason}",
-  "dtObtBlocked": "Blocked ({stage}) · {reason}"
+  "dtObtBlocked": "Blocked ({stage}) · {reason}",
+  "sendStorageTime": "Storage time",
+  "sendStorageExtra": "Sending fee covers {included} h · {extra} extra h: +{price}",
+  "sendStorageIncluded": "Included in the {price} sending fee ({hours} h). Longer storage adds the extra hours at the compartment rental rate.",
+  "sendStorageHoursDays": "{hours} h ({days} days)",
+  "ordSendStorageMaxed": "This order is already at the {hours}-hour storage limit and can't be extended.",
+  "ordExtendSend": "Extend storage",
+  "ordSendExtendFee": "Extra fee: {price}",
+  "ordSendExtendPaidNote": "This order is already paid: you'll pay for the extension next, and the pickup deadline moves once it's paid.",
+  "ordPaySendExtension": "Pay for {hours} h extension · {price}",
+  "ordSendStoragePending": "{hours} h (+{pending} h awaiting payment)"
 }

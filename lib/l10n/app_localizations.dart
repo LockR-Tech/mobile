@@ -24420,6 +24420,66 @@ abstract class AppLocalizations {
   /// In vi, this message translates to:
   /// **'Đang bị chặn ({stage}) · {reason}'**
   String dtObtBlocked(Object stage, Object reason);
+
+  /// No description provided for @sendStorageTime.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thời gian giữ hàng'**
+  String get sendStorageTime;
+
+  /// No description provided for @sendStorageExtra.
+  ///
+  /// In vi, this message translates to:
+  /// **'Phí gửi đã gồm {included} giờ · giữ thêm {extra} giờ: +{price}'**
+  String sendStorageExtra(int included, int extra, String price);
+
+  /// No description provided for @sendStorageIncluded.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã gồm trong phí gửi {price} ({hours} giờ). Chọn lâu hơn thì trả thêm phần giờ vượt theo giá thuê ô.'**
+  String sendStorageIncluded(int hours, String price);
+
+  /// No description provided for @sendStorageHoursDays.
+  ///
+  /// In vi, this message translates to:
+  /// **'{hours} giờ ({days} ngày)'**
+  String sendStorageHoursDays(int hours, int days);
+
+  /// No description provided for @ordSendStorageMaxed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đơn đã giữ tối đa {hours} giờ, không gia hạn thêm được.'**
+  String ordSendStorageMaxed(int hours);
+
+  /// No description provided for @ordExtendSend.
+  ///
+  /// In vi, this message translates to:
+  /// **'Gia hạn giữ hàng'**
+  String get ordExtendSend;
+
+  /// No description provided for @ordSendExtendFee.
+  ///
+  /// In vi, this message translates to:
+  /// **'Phí thêm: {price}'**
+  String ordSendExtendFee(String price);
+
+  /// No description provided for @ordSendExtendPaidNote.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đơn đã thanh toán: bạn trả phần gia hạn ngay sau bước này, trả xong hạn lấy hàng mới được dời.'**
+  String get ordSendExtendPaidNote;
+
+  /// No description provided for @ordPaySendExtension.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thanh toán gia hạn {hours} giờ · {price}'**
+  String ordPaySendExtension(int hours, String price);
+
+  /// No description provided for @ordSendStoragePending.
+  ///
+  /// In vi, this message translates to:
+  /// **'{hours} giờ (+{pending} giờ chờ thanh toán)'**
+  String ordSendStoragePending(int hours, int pending);
 }
 
 class _AppLocalizationsDelegate
