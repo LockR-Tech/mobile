@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:smart_laundry_locker/core/constants/payment_methods.dart';
 import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
@@ -481,12 +482,7 @@ class InlineVietQrCard extends StatelessWidget {
                     onPressed: () {
                       Clipboard.setData(ClipboardData(text: content));
                       if (PlatformInfo.systemShowsCopyConfirmation) return; // Android 13+ đã tự báo "Đã sao chép".
-                      ScaffoldMessenger.maybeOf(context)?.showSnackBar(
-                        SnackBar(
-                          content: Text(context.l10n.sepayContentCopied),
-                          duration: Duration(seconds: 2),
-                        ),
-                      );
+                      SmartDialog.showToast(context.l10n.sepayContentCopied);
                     },
                     icon: const Icon(LucideIcons.copy, size: 14),
                     label: Text(context.l10n.commonCopy),

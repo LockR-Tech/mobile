@@ -1,3 +1,4 @@
+import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -602,9 +603,7 @@ class _DroneBookingPageState extends State<DroneBookingPage>
       showMessage(message);
       return;
     }
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text(message)));
+    SmartDialog.showToast(message);
   }
 
   DroneContact? _readContact(

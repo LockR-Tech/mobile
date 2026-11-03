@@ -1,3 +1,4 @@
+import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
@@ -1200,13 +1201,8 @@ class _RoutePoint extends StatelessWidget {
   /// im lặng (nút bị khoá trước đây trông như không bấm được).
   Future<void> _openDirections(BuildContext context) async {
     final target = point;
-    final messenger = ScaffoldMessenger.of(context);
     if (target == null || !target.canNavigate) {
-      messenger.showSnackBar(
-        SnackBar(
-          content: Text(context.l10n.ddLockerNoAddress),
-        ),
-      );
+      SmartDialog.showToast(context.l10n.ddLockerNoAddress);
       return;
     }
     if (target.hasCoordinates) {
@@ -1223,11 +1219,7 @@ class _RoutePoint extends StatelessWidget {
     }
     final result = await openLockerDirectionsResult(address: target.address);
     if (result != DirectionsResult.opened) {
-      messenger.showSnackBar(
-        SnackBar(
-          content: Text(L10n.current.ddCantOpenMaps),
-        ),
-      );
+      SmartDialog.showToast(L10n.current.ddCantOpenMaps);
     }
   }
 

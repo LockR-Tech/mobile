@@ -942,33 +942,7 @@ class _ProfilePageState extends State<ProfilePage>
   /// Show snackbar with white background and dark text for profile page
   void _showProfileSnackBar(String message) {
     if (!mounted) return;
-    SmartDialog.showToast(
-      '',
-      alignment: Alignment.center,
-      builder: (context) => Container(
-        margin: const EdgeInsets.symmetric(horizontal: 40),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(24),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.1),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Text(
-          message,
-          style: const TextStyle(
-            color: Colors.black87,
-            fontSize: 15,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-      ),
-    );
+    SmartDialog.showToast(message);
   }
 
   void _handleLogout() {

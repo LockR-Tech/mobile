@@ -1,3 +1,4 @@
+import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
@@ -1121,9 +1122,7 @@ class _LockerCardState extends State<_LockerCard> {
   }
 
   void _showBlocked(BuildContext ctx, String reason) {
-    ScaffoldMessenger.of(ctx)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text(reason)));
+    SmartDialog.showToast(reason);
   }
 
   void _showFaultHint(BuildContext ctx, Map<String, dynamic> cell) {
@@ -1139,34 +1138,7 @@ class _LockerCardState extends State<_LockerCard> {
         ? context.l10n.lockerBoxUnavailable(boxLabel, state)
         : context.l10n.lockerBoxUnavailableReason(boxLabel, state, reason);
 
-    ScaffoldMessenger.of(ctx)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        SnackBar(
-          content: Text(message),
-          action: SnackBarAction(
-            label: context.l10n.commonReportIssue,
-            textColor: Colors.amberAccent,
-            onPressed: () {
-              Navigator.of(ctx, rootNavigator: true).push<void>(
-                MaterialPageRoute(
-                  builder: (_) => CreateReportPage(
-                    cabinetId: '$_lockerId',
-                    lockerId: '$_lockerId',
-                    cabinetName: _lockerName,
-                    lockerName: _lockerName,
-                    locationName: widget.storeName,
-                    initialBoxId: (cell['id'] as num?)?.toInt(),
-                    initialLayout: _layout,
-                    initialCells: (_layout?['cells'] as List?)
-                        ?.cast<Map<String, dynamic>>(),
-                  ),
-                ),
-              );
-            },
-          ),
-        ),
-      );
+    SmartDialog.showToast(message);
   }
 
   String _boxLabel(Map<String, dynamic> cell) {

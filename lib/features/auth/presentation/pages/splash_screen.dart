@@ -7,6 +7,7 @@ import 'package:smart_laundry_locker/core/routing/app_router.dart';
 import 'package:smart_laundry_locker/core/routing/role_routes.dart';
 import 'package:smart_laundry_locker/core/services/biometric_service.dart';
 import 'package:smart_laundry_locker/core/services/session_service.dart';
+import 'package:smart_laundry_locker/core/config/business_config_service.dart';
 import 'package:smart_laundry_locker/core/services/token_service.dart';
 import 'package:smart_laundry_locker/shared/shared.dart';
 import 'package:smart_laundry_locker/shared/widgets/app_lottie.dart';
@@ -14,9 +15,6 @@ import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 const String _kFastDeliveryLottie =
     'assets/animations/fast_shopping_delivery.json';
-
-/// Thời gian tối thiểu người dùng thấy animation splash, tính từ lúc nó dựng xong.
-const Duration _kSplashVisible = Duration(milliseconds: 1200);
 
 /// Máy chậm / lỗi tải animation: không giữ người dùng ở splash quá mức này.
 const Duration _kSplashAnimationWait = Duration(milliseconds: 2500);
@@ -70,10 +68,14 @@ class _SplashScreenState extends State<SplashScreen>
   Future<void> _checkAuthAndNavigate() async {
     // Đọc token song song với lúc chờ animation.
     final hasTokenFuture = TokenService.hasToken();
+    await BusinessConfigService.instance.restore();
+    final splashDuration = Duration(
+      milliseconds: BusinessConfigService.instance.current.splashDurationMs,
+    );
     // Đếm giờ từ khi animation đã hiện, không phải từ initState: trước đây máy
     // chậm còn đang phân tích Lottie thì đã hết 0,9 s và chuyển trang.
     await _lottieReady.future.timeout(_kSplashAnimationWait, onTimeout: () {});
-    await Future<void>.delayed(_kSplashVisible);
+    await Future<void>.delayed(splashDuration);
     if (!mounted) return;
 
     final hasToken = await hasTokenFuture;

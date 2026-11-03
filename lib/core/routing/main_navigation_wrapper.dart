@@ -5,6 +5,7 @@ import 'package:smart_laundry_locker/core/routing/app_router.dart';
 import 'package:smart_laundry_locker/features/profile/presentation/post_login_prompts.dart';
 import 'package:smart_laundry_locker/features/profile/presentation/providers/profile_provider.dart';
 import 'package:smart_laundry_locker/core/services/app_initial_tab_service.dart';
+import 'package:smart_laundry_locker/core/services/app_event_bus.dart';
 
 import 'package:smart_laundry_locker/shared/icons/custom_icon.dart'
     show CustomIcons;
@@ -59,6 +60,27 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper> {
   void dispose() {
     _navVisibleNotifier.dispose();
     super.dispose();
+  }
+
+  @override
+  void didUpdateWidget(MainNavigationWrapper oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final oldBranch = oldWidget.navigationShell?.currentIndex;
+    final newBranch = widget.navigationShell?.currentIndex;
+    if (oldBranch != null && newBranch != null && oldBranch != newBranch) {
+      AppEventBus.instance.emit(
+        NavigationTabSelectedEvent(
+          tabIndex: switch (newBranch) {
+            0 => 0,
+            1 => 1,
+            2 => 3,
+            3 => 4,
+            _ => 0,
+          },
+          branchIndex: newBranch,
+        ),
+      );
+    }
   }
 
   @override
@@ -158,6 +180,12 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper> {
         AppRouter.shellBranchNavigatorKeys[branch].currentState
             ?.popUntil((route) => route.isFirst);
       }
+      AppEventBus.instance.emit(
+        NavigationTabSelectedEvent(
+          tabIndex: index,
+          branchIndex: branch,
+        ),
+      );
       switch (index) {
         case 0:
           widget.navigationShell!.goBranch(

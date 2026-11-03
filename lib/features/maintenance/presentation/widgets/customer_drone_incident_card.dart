@@ -1,3 +1,4 @@
+import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -509,22 +510,16 @@ class _CustomerDroneIncidentCardState extends State<CustomerDroneIncidentCard> {
         note: note.text,
       );
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              accept
-                  ? context.l10n.cdiAccepted
-                  : context.l10n.cdiReviewSent,
-            ),
-          ),
+        SmartDialog.showToast(
+          accept
+              ? context.l10n.cdiAccepted
+              : context.l10n.cdiReviewSent,
         );
       }
       await _load(quiet: true);
     } catch (error) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(droneCustomerErrorMessage(error))),
-        );
+        SmartDialog.showToast(droneCustomerErrorMessage(error));
       }
     } finally {
       note.dispose();

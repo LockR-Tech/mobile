@@ -1,3 +1,4 @@
+import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
@@ -33,9 +34,7 @@ class DroneCoordinatesLine extends StatelessWidget {
       mode: LaunchMode.externalApplication,
     );
     if (!opened && context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(context.l10n.clCantOpenMaps)),
-      );
+      SmartDialog.showToast(context.l10n.clCantOpenMaps);
     }
   }
 
@@ -43,9 +42,7 @@ class DroneCoordinatesLine extends StatelessWidget {
     await Clipboard.setData(ClipboardData(text: text));
     if (PlatformInfo.systemShowsCopyConfirmation) return; // Android 13+ đã tự báo "Đã sao chép".
     if (context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(context.l10n.clCopied(text))),
-      );
+      SmartDialog.showToast(context.l10n.clCopied(text));
     }
   }
 
@@ -142,18 +139,14 @@ class JourneyLocationLine extends StatelessWidget {
             mode: LaunchMode.externalApplication,
           );
           if (!opened && context.mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(context.l10n.clCantOpenMaps)),
-            );
+            SmartDialog.showToast(context.l10n.clCantOpenMaps);
           }
         },
         onLongPress: () async {
           await Clipboard.setData(ClipboardData(text: text));
           if (PlatformInfo.systemShowsCopyConfirmation) return; // Android 13+ đã tự báo "Đã sao chép".
           if (context.mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(context.l10n.clCopied(text))),
-            );
+            SmartDialog.showToast(context.l10n.clCopied(text));
           }
         },
         child: Row(

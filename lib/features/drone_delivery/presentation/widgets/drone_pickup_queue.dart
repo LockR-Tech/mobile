@@ -1,3 +1,4 @@
+import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'dart:io';
 
 import 'dart:async';
@@ -302,10 +303,7 @@ class _DronePickupQueueState extends State<DronePickupQueue>
   }
 
   void _toast(String message) {
-    if (!mounted) return;
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text(message)));
+    SmartDialog.showToast(message);
   }
 
   Future<void> _act(Future<Object?> Function() action, String done) async {

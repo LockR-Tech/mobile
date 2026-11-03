@@ -12,6 +12,8 @@ import 'package:smart_laundry_locker/core/services/token_service.dart';
 import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
 import 'package:smart_laundry_locker/shared/widgets/unauthenticated_placeholder.dart';
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
+import 'dart:async';
+import 'package:smart_laundry_locker/core/services/app_event_bus.dart';
 import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 class LockerPage extends ConsumerStatefulWidget {
@@ -29,6 +31,7 @@ class _LockerPageState extends ConsumerState<LockerPage> {
   String? _mostUsedLocationName;
   Position? _userPosition;
   String _selectedKiosk = 'ALL';
+  StreamSubscription<AppEvent>? _eventSub;
 
   @override
   void initState() {
@@ -39,6 +42,23 @@ class _LockerPageState extends ConsumerState<LockerPage> {
     _onAuthStateChanged();
     _loadMostUsedLocation();
     _fetchUserPosition();
+    _eventSub = AppEventBus.instance.events.listen((event) {
+      if (!mounted) return;
+      if (event is NavigationTabSelectedEvent) {
+        _clearSearch();
+      }
+    });
+  }
+
+  void _clearSearch() {
+    if (_searchController.text.isNotEmpty) {
+      _searchController.clear();
+    }
+    if (_selectedKiosk != 'ALL') {
+      setState(() {
+        _selectedKiosk = 'ALL';
+      });
+    }
   }
 
   static String _kioskNameOf(LockerLocation loc) {
@@ -190,6 +210,7 @@ class _LockerPageState extends ConsumerState<LockerPage> {
 
   @override
   void dispose() {
+    _eventSub?.cancel();
     TokenService.authState.removeListener(_onAuthStateChanged);
     _searchController.removeListener(_onSearchChanged);
     _searchController.dispose();
@@ -218,13 +239,27 @@ class _LockerPageState extends ConsumerState<LockerPage> {
     }
   }
 
-  void _navigateToMap(LockerLocation location) {
-    Navigator.of(context, rootNavigator: true).push<void>(
+  Future<void> _navigateToMap(LockerLocation location) async {
+    await Navigator.of(context, rootNavigator: true).push<void>(
       MaterialPageRoute(
         // `location.id` là id tủ — mở đúng tủ đó, không coi là id cửa hàng.
         builder: (_) => StoreLockerGridPage.forLocation(location),
       ),
     );
+    if (mounted) {
+      _clearSearch();
+    }
+  }
+
+  Future<void> _openMap() async {
+    await Navigator.of(context, rootNavigator: true).push<void>(
+      MaterialPageRoute(
+        builder: (context) => const LockerMapPage(),
+      ),
+    );
+    if (mounted) {
+      _clearSearch();
+    }
   }
 
   Widget _buildKioskHeader(String kioskName, int count) {
@@ -375,13 +410,7 @@ class _LockerPageState extends ConsumerState<LockerPage> {
                 subtitle: context.l10n.lockerPickLocation,
                 trailing: BrandCircleIconButton(
                   icon: LucideIcons.mapPin,
-                  onTap: () {
-                    Navigator.of(context, rootNavigator: true).push<void>(
-                      MaterialPageRoute(
-                        builder: (context) => const LockerMapPage(),
-                      ),
-                    );
-                  },
+                  onTap: _openMap,
                 ),
               ),
               Padding(
@@ -392,6 +421,24 @@ class _LockerPageState extends ConsumerState<LockerPage> {
                     hintText: context.l10n.lockerSearchLocation,
                     prefixIcon: Icon(LucideIcons.search,
                         size: 18, color: context.textMuted),
+                    suffixIcon: ValueListenableBuilder<TextEditingValue>(
+                      valueListenable: _searchController,
+                      builder: (context, value, _) {
+                        if (value.text.isEmpty) {
+                          return const SizedBox.shrink();
+                        }
+                        return IconButton(
+                          key: const ValueKey('locker_search_clear_button'),
+                          tooltip: context.l10n.commonCancel,
+                          icon: Icon(
+                            LucideIcons.x,
+                            size: 18,
+                            color: context.textMuted,
+                          ),
+                          onPressed: _clearSearch,
+                        );
+                      },
+                    ),
                     filled: true,
                     fillColor: context.cardBg,
                     contentPadding: const EdgeInsets.symmetric(vertical: 0),

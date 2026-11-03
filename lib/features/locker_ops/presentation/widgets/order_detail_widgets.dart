@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -148,20 +149,14 @@ class OrderContactRow extends StatelessWidget {
       opened = false;
     }
     if (!opened && context.mounted) {
-      ScaffoldMessenger.maybeOf(context)
-        ?..hideCurrentSnackBar()
-        ..showSnackBar(
-          SnackBar(content: Text(context.l10n.detailCantCall)),
-        );
+      SmartDialog.showToast(context.l10n.detailCantCall);
     }
   }
 
   void _copy(BuildContext context) {
     Clipboard.setData(ClipboardData(text: value));
     if (PlatformInfo.systemShowsCopyConfirmation) return; // Android 13+ đã tự báo "Đã sao chép".
-    ScaffoldMessenger.maybeOf(context)
-      ?..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text(context.l10n.detailCopiedLabel(label))));
+    SmartDialog.showToast(context.l10n.detailCopiedLabel(label));
   }
 
   @override

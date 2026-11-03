@@ -1,3 +1,4 @@
+import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -82,11 +83,7 @@ class _MyReportsPageState extends State<MyReportsPage> {
       setState(() => _reports = reports);
     } catch (e) {
       if (!mounted || silent) return;
-      ScaffoldMessenger.of(context)
-        ..hideCurrentSnackBar()
-        ..showSnackBar(
-          SnackBar(content: Text(LockerOpsService.errorMessage(e))),
-        );
+      SmartDialog.showToast(LockerOpsService.errorMessage(e));
     } finally {
       if (mounted) setState(() => _loading = false);
     }
