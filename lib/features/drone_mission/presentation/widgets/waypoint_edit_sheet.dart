@@ -6,6 +6,7 @@ import '../../../../core/theme/shadcn_theme.dart';
 import '../../../locker_ops/presentation/widgets/ops_widgets.dart';
 import '../../domain/mav_command.dart';
 import '../../domain/mission_item.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 /// Result of editing a waypoint via [WaypointEditSheet].
 enum WaypointEditAction { save, delete, move }
@@ -125,7 +126,7 @@ class _WaypointEditSheetState extends State<WaypointEditSheet> {
               ),
               const SizedBox(width: 10),
               Text(
-                'Điểm bay ${widget.index}/${widget.total}',
+                context.l10n.dtWpTitle(widget.index, widget.total),
                 style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w800,
@@ -135,9 +136,9 @@ class _WaypointEditSheetState extends State<WaypointEditSheet> {
             ],
           ),
           const SizedBox(height: 16),
-          const Text(
-            'Lệnh (MAVLink)',
-            style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
+          Text(
+            context.l10n.dtWpCommand,
+            style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
           ),
           const SizedBox(height: 6),
           DropdownButtonFormField<MavCommand>(
@@ -156,7 +157,7 @@ class _WaypointEditSheetState extends State<WaypointEditSheet> {
           if (_command.hasAltitude) ...[
             const SizedBox(height: 14),
             _numberField(
-              label: 'Độ cao (m, so với điểm xuất phát)',
+              label: context.l10n.dtWpAltitude,
               controller: _altCtrl,
               icon: LucideIcons.arrowUp,
             ),
@@ -171,17 +172,16 @@ class _WaypointEditSheetState extends State<WaypointEditSheet> {
           ],
           if (!_command.hasPosition) ...[
             const SizedBox(height: 14),
-            const OpsBanner(
+            OpsBanner(
               tone: OpsBannerTone.info,
               icon: Icons.info_outline,
-              text: 'Lệnh này không gắn toạ độ — nó áp dụng tại vị trí của điểm '
-                  'bay liền trước trong danh sách.',
+              text: context.l10n.dtWpNoPositionHint,
             ),
           ],
           const SizedBox(height: 18),
           if (_command.hasPosition)
             OpsSheetAction(
-              label: 'Di chuyển điểm này trên bản đồ',
+              label: context.l10n.dtWpMoveOnMap,
               icon: LucideIcons.move,
               onTap: () => Navigator.pop(
                 context,
@@ -190,7 +190,7 @@ class _WaypointEditSheetState extends State<WaypointEditSheet> {
             ),
           const SizedBox(height: 6),
           OpsSheetAction(
-            label: 'Xoá điểm bay',
+            label: context.l10n.dtWpDelete,
             icon: LucideIcons.trash2,
             danger: true,
             onTap: () => Navigator.pop(
@@ -200,7 +200,7 @@ class _WaypointEditSheetState extends State<WaypointEditSheet> {
           ),
           const SizedBox(height: 10),
           OpsPrimaryButton(
-            label: 'Lưu thay đổi',
+            label: context.l10n.dtWpSave,
             icon: LucideIcons.check,
             onPressed: () => Navigator.pop(
               context,

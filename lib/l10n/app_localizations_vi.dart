@@ -11866,4 +11866,2431 @@ class AppLocalizationsVi extends AppLocalizations {
   @override
   String get techRecErrDeviceOnlineNotAllowed =>
       'Trạng thái trực tuyến do máy chủ tự tính, không đặt tay được.';
+
+  @override
+  String dtLoadDronesFailed(Object error) {
+    return 'Không tải được đội drone: $error';
+  }
+
+  @override
+  String dtLoadDeliveriesFailed(Object error) {
+    return 'Không tải được hàng đợi đơn drone: $error';
+  }
+
+  @override
+  String dtLoadSchedulesFailed(Object error) {
+    return 'Không tải được lịch bảo trì Drone: $error';
+  }
+
+  @override
+  String dtLoadIncidentsFailed(Object error) {
+    return 'Không tải được sự cố rơi kiện: $error';
+  }
+
+  @override
+  String get dtPerformanceUnsupported =>
+      'Máy chủ chưa có thống kê hiệu suất cho KTV drone.';
+
+  @override
+  String get dtSharedQueueFailedShowingMine =>
+      'Không tải được hàng đợi sự cố chung — đang hiện phiếu giao cho bạn.';
+
+  @override
+  String get dtLoadReportsFailedPull =>
+      'Không tải được phiếu sự cố Drone. Kéo xuống để thử lại.';
+
+  @override
+  String dtScheduleNotFound(Object id) {
+    return 'Không tìm thấy lịch bảo trì #$id trong danh sách lịch Drone.';
+  }
+
+  @override
+  String get dtLogoutShiftTitle => 'Đăng xuất ca trực';
+
+  @override
+  String get dtLogoutShiftConfirm =>
+      'Bạn có chắc chắn muốn kết thúc ca trực và đăng xuất khỏi tài khoản KTV Drone không?';
+
+  @override
+  String get dtGreetingMorning => '☀️ Chào buổi sáng';
+
+  @override
+  String get dtGreetingNoon => '🌤️ Chào buổi trưa';
+
+  @override
+  String get dtGreetingAfternoon => '🌅 Chào buổi chiều';
+
+  @override
+  String get dtGreetingEvening => '🌙 Chào buổi tối';
+
+  @override
+  String get dtDefaultName => 'Kỹ thuật viên drone';
+
+  @override
+  String get dtRoleFlightTeam => 'KTV Drone (Đội bay)';
+
+  @override
+  String get dtStatReceived => 'Phiếu đã nhận';
+
+  @override
+  String get dtStatInProgress => 'Đang xử lý';
+
+  @override
+  String get dtStatDone => 'Đã hoàn tất';
+
+  @override
+  String get dtStatOverdue => 'Trễ SLA';
+
+  @override
+  String get dtQualityRatingLabel => 'Đánh giá chất lượng: ';
+
+  @override
+  String get dtSlaPolicyLabel => 'Quy chế SLA: ';
+
+  @override
+  String get dtNoData => 'Chưa có dữ liệu';
+
+  @override
+  String get dtTechPhoneLabel => 'SĐT kỹ thuật: ';
+
+  @override
+  String get dtViewEditProfile => 'Xem & Chỉnh sửa hồ sơ';
+
+  @override
+  String get dtRatingLoadFailed => 'Chưa tải được đánh giá';
+
+  @override
+  String get dtNoRatingYet => 'Chưa có đánh giá';
+
+  @override
+  String dtRatingValue(Object value, int count) {
+    return '$value/5 ($count lượt)';
+  }
+
+  @override
+  String get dtSlaNormal => 'Bình thường';
+
+  @override
+  String get dtSlaWarning => 'Cảnh báo SLA';
+
+  @override
+  String get dtSlaRestricted => 'Hạn chế nhận việc';
+
+  @override
+  String get dtSlaSuspended => 'Đình chỉ';
+
+  @override
+  String dtHeaderSla(Object level) {
+    return 'SLA: $level';
+  }
+
+  @override
+  String dtHeaderWorking(int count) {
+    return '$count phiếu đang xử lý';
+  }
+
+  @override
+  String get dtHeaderNoWorking => 'Chưa có phiếu đang xử lý';
+
+  @override
+  String get dtAssistant => 'Trợ lý hỏi đáp';
+
+  @override
+  String get dtProfileAndEdit => 'Hồ sơ & Chỉnh sửa';
+
+  @override
+  String get dtHudWaiting => 'Chờ xử lý';
+
+  @override
+  String get dtHudWorking => 'Đang làm';
+
+  @override
+  String get dtHudRoutine => 'Định kỳ';
+
+  @override
+  String get dtHudFleet => 'Đội bay';
+
+  @override
+  String dtDronesInFlight(int count) {
+    return '$count drone đang bay';
+  }
+
+  @override
+  String dtTabDispatch(Object count) {
+    return 'Điều phối ($count)';
+  }
+
+  @override
+  String dtTabFleet(Object count) {
+    return 'Đội bay ($count)';
+  }
+
+  @override
+  String dtTabIncidents(Object count) {
+    return 'Sự cố ($count)';
+  }
+
+  @override
+  String dtTabMyWork(Object count) {
+    return 'Việc của tôi ($count)';
+  }
+
+  @override
+  String dtTabRoutine(Object count) {
+    return 'Định kỳ ($count)';
+  }
+
+  @override
+  String get dtTabFlightTools => 'Công cụ bay';
+
+  @override
+  String dtSecParcelReturns(Object count) {
+    return 'Chờ trả kiện cho người gửi ($count)';
+  }
+
+  @override
+  String dtSecAwaitingDispatch(Object count) {
+    return 'Chờ tiếp nhận ($count)';
+  }
+
+  @override
+  String dtSecAwaitingLoading(Object count) {
+    return 'Chờ nạp hàng ($count)';
+  }
+
+  @override
+  String dtSecReadyToLaunch(Object count) {
+    return 'Sẵn sàng phóng ($count)';
+  }
+
+  @override
+  String dtSecLaunching(Object count) {
+    return 'Đang khởi phóng ($count)';
+  }
+
+  @override
+  String dtSecInFlight(Object count) {
+    return 'Đang bay ($count)';
+  }
+
+  @override
+  String dtSecDelivered(Object count) {
+    return 'Đã giao · chờ khách nhận ($count)';
+  }
+
+  @override
+  String dtSecOtherAssigned(Object count) {
+    return 'Công việc đang phụ trách ($count)';
+  }
+
+  @override
+  String dtSecCanceled(Object count) {
+    return 'Đã hủy ($count)';
+  }
+
+  @override
+  String get dtDispatchEmptyTitle => 'Không có đơn drone đang chờ';
+
+  @override
+  String get dtDispatchEmptySubtitle => 'Đơn mới sẽ xuất hiện ở tab Điều phối.';
+
+  @override
+  String get dtFilterAllStatuses => 'Mọi trạng thái';
+
+  @override
+  String get dtFilterWaiting => 'Chờ nhận';
+
+  @override
+  String get dtFilterWorking => 'Đang xử lý';
+
+  @override
+  String get dtFilterFlying => 'Đang bay';
+
+  @override
+  String get dtFilterDelivered => 'Đã giao';
+
+  @override
+  String get dtFilterCanceled => 'Đã hủy';
+
+  @override
+  String dtFilterWithCount(Object label, Object count) {
+    return '$label ($count)';
+  }
+
+  @override
+  String dtIncidentsWaitingBanner(int count) {
+    return 'Có $count sự cố Drone đang chờ tiếp nhận xử lý.';
+  }
+
+  @override
+  String get dtIncidentsQueueBanner =>
+      'Hàng đợi sự cố Drone. Phiếu mới được ưu tiên hiển thị để đội bay tiếp nhận kịp thời.';
+
+  @override
+  String get dtReportSearchHint => 'Tìm mã phiếu, tiêu đề, drone, người báo...';
+
+  @override
+  String get dtFilterResolved => 'Hoàn tất';
+
+  @override
+  String dtSecParcelDrop(Object count) {
+    return 'Sự cố rơi kiện ($count)';
+  }
+
+  @override
+  String dtSecRoutedToYou(Object count) {
+    return 'Gửi trực tiếp cho bạn ($count)';
+  }
+
+  @override
+  String get dtSecSharedQueue => 'Hàng đợi kỹ thuật chung';
+
+  @override
+  String dtSecDroneTechnical(Object count) {
+    return 'Sự cố kỹ thuật Drone ($count)';
+  }
+
+  @override
+  String get dtReportsEmptyTitle => 'Không có phiếu sự cố Drone';
+
+  @override
+  String get dtReportsEmptySubtitle =>
+      'Đội bay hiện không có sự cố phù hợp bộ lọc.';
+
+  @override
+  String get dtNoOtherInSharedQueue =>
+      'Không có phiếu khác trong hàng đợi chung.';
+
+  @override
+  String dtSeeMore(Object count) {
+    return 'Xem thêm ($count)';
+  }
+
+  @override
+  String get dtMyWorkBanner =>
+      'Công việc được giao gồm phiếu sự cố và lịch bảo trì Drone. Mọi thay đổi chỉ được ghi nhận sau khi Backend xác nhận.';
+
+  @override
+  String get dtMetricPending => 'Chưa làm';
+
+  @override
+  String get dtMetricWorking => 'Đang làm';
+
+  @override
+  String get dtMetricDone => 'Hoàn tất';
+
+  @override
+  String get dtMyWorkSearchHint => 'Tìm công việc, drone, mã phiếu...';
+
+  @override
+  String get dtTypeAll => 'Mọi loại';
+
+  @override
+  String get dtTypeIncident => 'Sự cố';
+
+  @override
+  String get dtTypeMaintenance => 'Bảo trì';
+
+  @override
+  String get dtStatusActive => 'Cần thực hiện';
+
+  @override
+  String get dtStatusDone => 'Đã hoàn tất';
+
+  @override
+  String get dtSortDue => 'Hạn gần nhất';
+
+  @override
+  String get dtSortNewest => 'Mới nhất';
+
+  @override
+  String get dtMyWorkEmptyTitle => 'Không có công việc phù hợp';
+
+  @override
+  String get dtTryOtherFilters =>
+      'Thử đổi bộ lọc hoặc kéo xuống để tải lại dữ liệu.';
+
+  @override
+  String get dtClearSearch => 'Xóa tìm kiếm';
+
+  @override
+  String get dtAssignAll => 'Mọi phân công';
+
+  @override
+  String get dtAssignMine => 'Giao cho tôi';
+
+  @override
+  String get dtAssignNone => 'Chưa phân công';
+
+  @override
+  String get dtAllDrones => 'Mọi drone';
+
+  @override
+  String get dtTimeAll => 'Mọi thời gian';
+
+  @override
+  String get dtTime7d => '7 ngày';
+
+  @override
+  String get dtTime30d => '30 ngày';
+
+  @override
+  String get dtSortOldest => 'Cũ nhất';
+
+  @override
+  String get dtSortSla => 'Hạn SLA';
+
+  @override
+  String get dtReset => 'Đặt lại';
+
+  @override
+  String get dtSort => 'Sắp xếp';
+
+  @override
+  String get dtDroneIncidentFallback => 'Sự cố Drone';
+
+  @override
+  String get dtSlaOverdue => 'Quá hạn SLA';
+
+  @override
+  String get dtClaim => 'Nhận xử lý';
+
+  @override
+  String get dtUpdateProgress => 'Cập nhật xử lý';
+
+  @override
+  String get dtClaimReportTitle => 'Nhận xử lý sự cố Drone?';
+
+  @override
+  String dtClaimReportBody(Object id, Object drone) {
+    return 'Bạn sẽ trở thành KTV phụ trách phiếu RPT-$id của Drone $drone.';
+  }
+
+  @override
+  String get dtConfirmClaim => 'Xác nhận nhận việc';
+
+  @override
+  String dtClaimedReport(Object id) {
+    return 'Đã nhận xử lý phiếu Drone RPT-$id';
+  }
+
+  @override
+  String get dtFleetBanner =>
+      'Pin tự cập nhật khi drone gửi telemetry; drone chưa kết nối thì hiện lần cập nhật gần nhất (có thể do KTV nhập tay). Telemetry trực tiếp của chuyến bay xem trong chi tiết nhiệm vụ.';
+
+  @override
+  String get dtFleetEmptyTitle => 'Chưa phụ trách drone nào';
+
+  @override
+  String get dtFleetEmptyAssigned =>
+      'Các drone bạn được phân công phụ trách sẽ hiển thị ở đây.';
+
+  @override
+  String get dtFleetEmptyPickBelow =>
+      'Chọn một drone chưa có người phụ trách bên dưới để nhận xử lý.';
+
+  @override
+  String dtUnassignedDrones(Object count) {
+    return 'Drone chưa có KTV phụ trách ($count)';
+  }
+
+  @override
+  String get dtScheduleBanner =>
+      'Lịch bảo trì Drone do quản trị tạo. Đánh giá đủ từng mục checklist; nếu có mục không đạt, Drone chuyển sang trạng thái lỗi và hệ thống mở phiếu sự cố.';
+
+  @override
+  String get dtScheduleSearchHint => 'Tìm lịch, mã Drone, KTV phụ trách...';
+
+  @override
+  String dtAllWithCount(Object count) {
+    return 'Tất cả ($count)';
+  }
+
+  @override
+  String dtDueWithCount(Object count) {
+    return 'Đến hạn ($count)';
+  }
+
+  @override
+  String dtUpcomingWithCount(Object count) {
+    return 'Sắp tới ($count)';
+  }
+
+  @override
+  String get dtPriorityAll => 'Mọi ưu tiên';
+
+  @override
+  String get dtPriorityUrgent => 'Khẩn cấp';
+
+  @override
+  String get dtPriorityHighShort => 'Cao';
+
+  @override
+  String get dtPriorityNormal => 'Bình thường';
+
+  @override
+  String get dtPriorityLowShort => 'Thấp';
+
+  @override
+  String get dtSortPriority => 'Ưu tiên';
+
+  @override
+  String get dtSortNewlyCreated => 'Mới tạo';
+
+  @override
+  String get dtSchedulesEmptyTitle => 'Chưa có lịch bảo trì định kỳ nào';
+
+  @override
+  String get dtSchedulesNoMatch => 'Không có lịch bảo trì Drone phù hợp';
+
+  @override
+  String get dtSchedulesEmptySubtitle =>
+      'Các lịch bảo trì Drone bạn được phân công phụ trách sẽ hiển thị ở đây.';
+
+  @override
+  String get dtToolMissionTitle => 'Lập kế hoạch bay (Mission Planner)';
+
+  @override
+  String get dtToolMissionSubtitle =>
+      'Vẽ waypoint, đặt độ cao/lệnh, xuất file mission';
+
+  @override
+  String get dtToolFlightTitle => 'Telemetry & điều khiển (Flight Data)';
+
+  @override
+  String get dtToolFlightSubtitle =>
+      'Kết nối MAVLink, xem vị trí/HUD live, gửi lệnh bay — chỉ dùng với SITL hoặc kênh điều khiển riêng';
+
+  @override
+  String get dtDueBadge => 'Đến hạn';
+
+  @override
+  String dtEveryDays(Object days) {
+    return 'Mỗi $days ngày';
+  }
+
+  @override
+  String dtDueAt(Object date) {
+    return 'Hạn: $date';
+  }
+
+  @override
+  String dtLastDone(Object date) {
+    return 'Lần trước: $date';
+  }
+
+  @override
+  String dtFinishTicketBeforeNext(Object id) {
+    return 'Cần hoàn tất phiếu RPT-$id trước lần kiểm tra tiếp theo.';
+  }
+
+  @override
+  String get dtInspectNow => 'Kiểm tra ngay';
+
+  @override
+  String get dtInspect => 'Kiểm tra';
+
+  @override
+  String get dtPriorityHigh => 'Ưu tiên cao';
+
+  @override
+  String get dtPriorityLow => 'Ưu tiên thấp';
+
+  @override
+  String get dtInspectionFailedSnack =>
+      'Đã ghi nhận bảo trì KHÔNG ĐẠT. Drone đã chuyển sang lỗi và phiếu sự cố được mở theo phản hồi Backend.';
+
+  @override
+  String get dtInspectionPassedSnack =>
+      'Đã ghi nhận bảo trì ĐẠT và cập nhật chu kỳ tiếp theo.';
+
+  @override
+  String get dtScheduleNoAddress => 'Lịch này chưa có địa chỉ trạm Drone.';
+
+  @override
+  String get dtCannotOpenMaps => 'Không thể mở ứng dụng bản đồ.';
+
+  @override
+  String get dtSourceLocker => 'Tủ nguồn';
+
+  @override
+  String get dtDestinationLocker => 'Tủ đích';
+
+  @override
+  String dtReceiveBoxNumber(Object number) {
+    return 'Ô nhận số $number';
+  }
+
+  @override
+  String get dtReceiveBoxHeld => 'Đã giữ ô nhận';
+
+  @override
+  String get dtActionAccept => 'Tiếp nhận';
+
+  @override
+  String get dtActionLoad => 'Xác nhận nạp';
+
+  @override
+  String get dtActionLaunch => 'Phóng';
+
+  @override
+  String get dtActionLaunching => 'Đang phóng';
+
+  @override
+  String get dtActionTrack => 'Theo dõi';
+
+  @override
+  String get dtCancelBeforeFlight => 'Hủy trước khi bay';
+
+  @override
+  String dtRouteGroundedCantAccept(Object reason) {
+    return '$reason — chưa tiếp nhận được đơn này.';
+  }
+
+  @override
+  String dtRouteGroundedCantLaunch(Object reason) {
+    return '$reason — chưa phóng được đơn này.';
+  }
+
+  @override
+  String dtGoods(Object description) {
+    return 'Hàng: $description';
+  }
+
+  @override
+  String dtParcel(Object summary) {
+    return 'Kiện: $summary';
+  }
+
+  @override
+  String get dtLiveTrackingPill =>
+      'Drone đang gửi tín hiệu · chặng bay tự cập nhật';
+
+  @override
+  String dtConfirmStage(Object label) {
+    return 'Xác nhận $label';
+  }
+
+  @override
+  String dtBlockedBy(Object reason) {
+    return 'Đang gặp sự cố: $reason';
+  }
+
+  @override
+  String dtBlockedTicket(Object id) {
+    return ' · phiếu #$id';
+  }
+
+  @override
+  String get dtChangeDrone => 'Đổi drone';
+
+  @override
+  String get dtFailDelivery => 'Giao không hoàn tất';
+
+  @override
+  String get dtReportFlightFailure => 'Báo chuyến bay thất bại';
+
+  @override
+  String get dtUnpaidCantAccept => 'Chưa thanh toán · chưa thể tiếp nhận';
+
+  @override
+  String get dtNotDroppedCantAccept =>
+      'Người gửi chưa bỏ kiện vào ô gửi · chưa thể tiếp nhận';
+
+  @override
+  String get dtOverweightAwaitingPayment =>
+      'Kiện nặng hơn khai báo · chờ khách trả thêm phí';
+
+  @override
+  String dtStageLine(Object stage) {
+    return 'Chặng: $stage';
+  }
+
+  @override
+  String dtMissionLine(Object status) {
+    return 'Nhiệm vụ: $status';
+  }
+
+  @override
+  String dtUpdatedTapDetail(Object time) {
+    return 'Cập nhật $time · chạm để xem chi tiết';
+  }
+
+  @override
+  String dtGroundedPaused(Object reason) {
+    return 'đang tạm dừng bay ($reason)';
+  }
+
+  @override
+  String get dtGroundedPausedByAdmin => 'admin dừng';
+
+  @override
+  String get dtGroundedNoForecast => 'chưa có dự báo thời tiết';
+
+  @override
+  String get dtGroundedWeather => 'thời tiết không cho phép bay';
+
+  @override
+  String dtGroundedTakeoffStation(Object status) {
+    return 'Trạm cất cánh $status';
+  }
+
+  @override
+  String dtGroundedReceivingLocker(Object status) {
+    return 'Tủ nhận $status';
+  }
+
+  @override
+  String get dtNextStageLaunching => 'drone đã rời trạm';
+
+  @override
+  String get dtNextStageDeparted => 'drone đang trên đường';
+
+  @override
+  String get dtNextStageEnRoute => 'drone sắp tới tủ nhận';
+
+  @override
+  String get dtNextStageApproaching => 'drone đã tới tủ nhận';
+
+  @override
+  String get dtNextStageArrived => 'hàng đã vào ô tủ nhận';
+
+  @override
+  String get dtStageDropReported => 'Đã báo rơi kiện';
+
+  @override
+  String get dtStageReadyToLaunch => 'Sẵn sàng phóng';
+
+  @override
+  String get dtNoOtherIdleDrone =>
+      'Tủ gửi không còn drone nào khác đang sẵn sàng. Hãy xác nhận giao không hoàn tất nếu không khắc phục được.';
+
+  @override
+  String get dtChangeDroneHint =>
+      'Chọn drone khác đang sẵn sàng tại tủ gửi. Kiện phải được nạp và kiểm lại trên drone mới.';
+
+  @override
+  String get dtChangedDrone => 'Đã đổi drone · nạp lại kiện rồi phóng';
+
+  @override
+  String get dtFailDeliveryIntro =>
+      'Đơn sẽ đóng lại, người gửi được hoàn tiền và bạn mang kiện trả lại người gửi. Không hoàn tác được.';
+
+  @override
+  String get dtFailedDeliveryDone =>
+      'Đã đóng đơn · mang kiện trả lại người gửi';
+
+  @override
+  String get dtConfirmStageTitle => 'Xác nhận chặng bay';
+
+  @override
+  String dtConfirmStageBody(Object label) {
+    return 'Xác nhận $label?\n\nKhách sẽ thấy chặng mới ngay và không hoàn tác được.';
+  }
+
+  @override
+  String dtConfirmedStage(Object label) {
+    return 'Đã xác nhận: $label';
+  }
+
+  @override
+  String dtDeclaredValue(Object price) {
+    return 'khai báo $price';
+  }
+
+  @override
+  String get dtFragileUpper => 'DỄ VỠ';
+
+  @override
+  String dtOrderNumber(Object id) {
+    return 'Đơn #$id';
+  }
+
+  @override
+  String get dtFlightFailedLower => 'chuyến bay thất bại';
+
+  @override
+  String get dtDeliveryNotCompletedLower => 'giao không hoàn tất';
+
+  @override
+  String get dtCanceledLower => 'đã huỷ';
+
+  @override
+  String dtParcelInSourceBox(Object locker) {
+    return 'Kiện còn trong ô gửi · $locker';
+  }
+
+  @override
+  String dtParcelInSourceBoxNumber(Object box, Object locker) {
+    return 'Kiện còn trong ô gửi số $box · $locker';
+  }
+
+  @override
+  String get dtSendingLocker => 'Tủ gửi';
+
+  @override
+  String get dtParcelHeldByTeam => 'Kiện đang do đội bay giữ';
+
+  @override
+  String dtSender(Object sender) {
+    return 'Người gửi: $sender';
+  }
+
+  @override
+  String get dtConfirmParcelReturned => 'Xác nhận đã trả kiện';
+
+  @override
+  String get dtParcelReturnHint =>
+      'Chỉ xác nhận khi kiện đã về tay người gửi. Đơn cũ còn giữ ô ở tủ gửi thì ô đó được nhả.';
+
+  @override
+  String get dtNoteOptional => 'Ghi chú (tùy chọn)';
+
+  @override
+  String get dtParcelReturned => 'Đã trả kiện';
+
+  @override
+  String get dtParcelReturnRecorded => 'Đã ghi nhận trả kiện cho người gửi';
+
+  @override
+  String get dtReceivingLocker => 'Tủ nhận';
+
+  @override
+  String get dtLaunchCommandSent => 'Đã phát lệnh phóng nhiệm vụ';
+
+  @override
+  String get dtConfirmLoadingTitle => 'Xác nhận nạp hàng';
+
+  @override
+  String get dtConfirmLoadingIntro =>
+      'Cân kiện và hoàn tất toàn bộ checklist trước khi cho phép phóng.';
+
+  @override
+  String get dtActualWeightLabel => 'Khối lượng cân thực tế (gram) *';
+
+  @override
+  String get dtActualWeightHint => 'Nhập số gram đọc trên cân';
+
+  @override
+  String get dtActualWeightInvalid =>
+      'Vui lòng nhập khối lượng thực tế lớn hơn 0';
+
+  @override
+  String get dtNoDeclaredWeight => 'Khách chưa khai báo khối lượng.';
+
+  @override
+  String dtDeclaredWeight(Object weight) {
+    return 'Khách khai báo $weight.';
+  }
+
+  @override
+  String dtDeclaredWeightWithFee(Object weight, Object price) {
+    return 'Khách khai báo $weight · phí đã tính $price.';
+  }
+
+  @override
+  String dtOverweightSurcharge(Object price) {
+    return 'Nặng hơn khai báo: khách phải trả thêm $price. Drone chỉ phóng được sau khi khách thanh toán.';
+  }
+
+  @override
+  String get dtSealCode => 'Mã niêm phong';
+
+  @override
+  String get dtSealCodeHint =>
+      'Hệ thống cấp mã sau khi xác nhận nạp — ghi mã đó lên niêm phong của kiện.';
+
+  @override
+  String get dtCheckParcelMatched => 'Đúng kiện hàng và đúng đơn';
+
+  @override
+  String get dtCheckPayloadSecured => 'Kiện hàng đã được cố định';
+
+  @override
+  String get dtCheckCompartmentLocked => 'Khoang hàng đã khóa';
+
+  @override
+  String get dtChecklistIncomplete => 'Vui lòng hoàn tất toàn bộ checklist';
+
+  @override
+  String get dtConfirmLoaded => 'Xác nhận đã nạp';
+
+  @override
+  String dtSealSuffix(Object seal) {
+    return ' (niêm phong $seal)';
+  }
+
+  @override
+  String dtLoadedOverweight(Object seal, Object price) {
+    return 'Đã nạp hàng$seal. Kiện nặng hơn khai báo — chờ khách trả thêm $price rồi mới phóng.';
+  }
+
+  @override
+  String dtLoadedReady(Object seal) {
+    return 'Đã xác nhận nạp hàng$seal — nhiệm vụ sẵn sàng phóng';
+  }
+
+  @override
+  String get dtCancelMissionBeforeFlight => 'Hủy nhiệm vụ trước khi bay';
+
+  @override
+  String get dtFlightFailureIntro =>
+      'Đơn sẽ đóng lại và khách được hoàn tiền; drone chuyển sang trạng thái lỗi cho tới khi bạn kiểm tra xong. Không hoàn tác được.';
+
+  @override
+  String get dtCancelMissionIntro =>
+      'Đơn sẽ đóng lại, người gửi được hoàn tiền và bạn mang kiện trả lại người gửi. Chọn \"Drone lỗi\" thì drone chuyển sang trạng thái lỗi, không nhận đơn mới cho tới khi kiểm tra xong.';
+
+  @override
+  String get dtNoteRequired => 'Ghi chú (bắt buộc)';
+
+  @override
+  String get dtPickReason => 'Chọn một lý do';
+
+  @override
+  String get dtNoteRequiredForOther => 'Cần nhập ghi chú khi chọn Khác';
+
+  @override
+  String get dtConfirmFailure => 'Xác nhận thất bại';
+
+  @override
+  String get dtConfirmCancel => 'Xác nhận hủy';
+
+  @override
+  String get dtFlightFailureReported =>
+      'Đã báo chuyến bay thất bại · khách được hoàn tiền';
+
+  @override
+  String get dtMissionCanceled => 'Đã hủy nhiệm vụ drone';
+
+  @override
+  String get dtIneligibleInactive => 'ngưng hoạt động';
+
+  @override
+  String get dtIneligibleUnknownBattery => 'chưa biết mức pin';
+
+  @override
+  String dtIneligibleLowBattery(Object battery, Object min) {
+    return 'pin $battery% (cần trên $min%)';
+  }
+
+  @override
+  String get dtNoDroneAtSource => 'Tủ gửi của đơn không có drone nào.';
+
+  @override
+  String dtNoEligibleDroneAtSource(Object list) {
+    return 'Không có drone đủ điều kiện tại tủ gửi: $list.';
+  }
+
+  @override
+  String get dtAssignDroneTitle => 'Gán drone cho đơn';
+
+  @override
+  String dtAssignDroneRoute(Object route) {
+    return 'Tuyến $route.';
+  }
+
+  @override
+  String dtAssignDroneRouteBox(Object route, Object box) {
+    return 'Tuyến $route · ô nhận số $box.';
+  }
+
+  @override
+  String get dtAssignDronePick => 'Chọn drone đang sẵn sàng tại tủ gửi:';
+
+  @override
+  String dtIneligibleDronesHint(Object min) {
+    return 'Drone bị mờ không nhận được đơn (ngưng hoạt động, không ở trạng thái Sẵn sàng, chưa biết pin hoặc pin ≤ $min%).';
+  }
+
+  @override
+  String get dtAssignDrone => 'Gán drone';
+
+  @override
+  String get dtAcceptedAndAssigned => 'Đã tiếp nhận và gán drone cho nhiệm vụ';
+
+  @override
+  String dtLockerNumber(Object id) {
+    return 'Tủ $id';
+  }
+
+  @override
+  String get dtNoBatteryData => 'Chưa có số pin';
+
+  @override
+  String dtBatteryPercentPin(Object battery) {
+    return '$battery% pin';
+  }
+
+  @override
+  String get dtNotClaimed => 'Chưa nhận';
+
+  @override
+  String dtBatteryPercent(Object battery) {
+    return 'Pin $battery%';
+  }
+
+  @override
+  String get dtYouAreInCharge => ' · bạn đang phụ trách';
+
+  @override
+  String get dtClaimDrone => 'Nhận xử lý';
+
+  @override
+  String get dtClaimedDrone => 'Đã nhận phụ trách drone';
+
+  @override
+  String get dtReleaseDrone => 'Nhả phụ trách';
+
+  @override
+  String get dtReleasedDrone => 'Đã nhả phụ trách drone';
+
+  @override
+  String get dtChangeStatus => 'Đổi trạng thái';
+
+  @override
+  String get dtUpdateBattery => 'Cập nhật pin %';
+
+  @override
+  String get dtMaintenanceLog => 'Nhật ký bảo trì';
+
+  @override
+  String get dtDroneInFlightTitle => 'Drone đang bay';
+
+  @override
+  String get dtDroneInFlightBody =>
+      'Không đổi trạng thái drone khi đang bay. Nếu chuyến bay gặp sự cố, dùng \"Báo chuyến bay thất bại\" trên nhiệm vụ: đơn được đóng, khách được hoàn tiền và drone chuyển sang Lỗi.';
+
+  @override
+  String get dtViewInFlightMission => 'Xem nhiệm vụ đang bay';
+
+  @override
+  String get dtChangeDroneStatusTitle => 'Đổi trạng thái drone';
+
+  @override
+  String dtDroneHasOpenReports(Object tickets) {
+    return 'Drone còn phiếu $tickets chưa hoàn tất: hoàn tất phiếu trước khi chuyển về Sẵn sàng hoặc Đang sạc.';
+  }
+
+  @override
+  String get dtReasonRequired => 'Lý do (bắt buộc)';
+
+  @override
+  String get dtStatusUnchanged => 'Trạng thái không thay đổi';
+
+  @override
+  String get dtFaultReasonRequired => 'Cần nhập lý do khi chuyển sang FAULT';
+
+  @override
+  String get dtStatusChanged => 'Đã đổi trạng thái drone';
+
+  @override
+  String get dtBatteryRemaining => 'Pin còn lại (0-100)';
+
+  @override
+  String get dtBatteryRange => 'Pin phải trong khoảng 0-100';
+
+  @override
+  String get dtBatteryUpdated => 'Đã cập nhật pin drone';
+
+  @override
+  String dtTechnicianNumber(Object id) {
+    return ' · KTV #$id';
+  }
+
+  @override
+  String dtMaintenanceLogTitle(Object drone) {
+    return 'Nhật ký bảo trì · $drone';
+  }
+
+  @override
+  String dtLogLoadFailed(Object error) {
+    return 'Không tải được nhật ký: $error';
+  }
+
+  @override
+  String get dtLogEmptyTitle => 'Chưa có ghi chú nào';
+
+  @override
+  String get dtLogEmptyCanWrite => 'Thêm bước xử lý đầu tiên bên dưới.';
+
+  @override
+  String get dtLogEmptyReadOnly => 'Drone này chưa có nhật ký bảo trì.';
+
+  @override
+  String get dtLogReadOnlyHint =>
+      'Chỉ KTV đang phụ trách drone mới thêm được nhật ký. Nhận phụ trách drone để ghi bước xử lý.';
+
+  @override
+  String get dtLogInputHint => 'Thêm bước xử lý / ghi chú...';
+
+  @override
+  String get dtMissionDetailTitle => 'Chi tiết nhiệm vụ drone';
+
+  @override
+  String get dtRealtimeUpdates => 'Tự cập nhật theo thời gian thực';
+
+  @override
+  String get dtDropReportedBanner =>
+      'Đơn đã báo rơi kiện và dừng giao. Theo dõi tiến trình xử lý ở mục \"Sự cố rơi kiện\" trong tab Điều phối.';
+
+  @override
+  String get dtCancelReasonWeather => 'Thời tiết xấu';
+
+  @override
+  String get dtCancelReasonDroneFault => 'Drone lỗi';
+
+  @override
+  String get dtCancelReasonLandingPad => 'Bãi đáp không sẵn sàng';
+
+  @override
+  String get dtCancelReasonOperational => 'Lý do vận hành';
+
+  @override
+  String get dtCancelReasonOther => 'Khác';
+
+  @override
+  String get dtDroneStatusIdle => 'Sẵn sàng';
+
+  @override
+  String get dtDroneStatusReserved => 'Đã giữ cho nhiệm vụ';
+
+  @override
+  String get dtDroneStatusCharging => 'Đang sạc';
+
+  @override
+  String get dtDroneStatusInFlight => 'Đang bay';
+
+  @override
+  String get dtDroneStatusMaintenance => 'Đang bảo trì';
+
+  @override
+  String get dtDroneStatusFault => 'Lỗi';
+
+  @override
+  String get dtErrDroneHasOpenReport =>
+      'Drone còn phiếu sự cố chưa hoàn tất. Hoàn tất phiếu trước khi đưa drone về Sẵn sàng hoặc Đang sạc.';
+
+  @override
+  String get dtErrDroneInFlightUseFail =>
+      'Drone đang bay: dùng \"Báo chuyến bay thất bại\" trên nhiệm vụ đang bay thay vì đổi trạng thái.';
+
+  @override
+  String get dtErrStageChanged =>
+      'Chặng bay vừa thay đổi (drone tự cập nhật hoặc đã có người xác nhận). Danh sách đã được tải lại, hãy kiểm tra rồi xác nhận lại.';
+
+  @override
+  String get dtErrSlaNotAssignee =>
+      'Chỉ KTV đang được giao phiếu mới gia hạn được SLA.';
+
+  @override
+  String get dtErrSlaLimitReached =>
+      'Phiếu đã dùng hết số lần gia hạn SLA. Liên hệ quản trị nếu cần thêm thời gian.';
+
+  @override
+  String get dtErrSlaHoursExceeded =>
+      'Số giờ gia hạn vượt mức tối đa cho mỗi lần.';
+
+  @override
+  String get dtErrSlaReasonRequired => 'Cần nhập lý do gia hạn SLA.';
+
+  @override
+  String get dtErrInvalidExtensionHours =>
+      'Thời gian gia hạn phải từ 1 giờ trở lên.';
+
+  @override
+  String get dtErrReportNotAssigned =>
+      'Chỉ KTV đang giữ phiếu mới trả được phiếu.';
+
+  @override
+  String get dtErrReportNotClaimed =>
+      'Phiếu đang ở hàng chờ, chưa có KTV nhận.';
+
+  @override
+  String get dtErrReleaseReasonRequired => 'Cần nhập lý do trả phiếu.';
+
+  @override
+  String get dtErrReportAlreadyResolved =>
+      'Phiếu đã hoàn tất, không thao tác được nữa.';
+
+  @override
+  String get dtErrDroneReportRequired =>
+      'Phiếu này không phải phiếu sự cố drone.';
+
+  @override
+  String get dtErrJourneyForbidden =>
+      'Chỉ KTV đã tiếp nhận nhiệm vụ mới xem được camera của chuyến bay.';
+
+  @override
+  String get dtErrMissionNotFound => 'Đơn này chưa có nhiệm vụ bay.';
+
+  @override
+  String get dtErrIncidentNotFound => 'Không tìm thấy sự cố.';
+
+  @override
+  String get dtErrTechnicianRequired => 'Chức năng này chỉ dành cho KTV drone.';
+
+  @override
+  String get dtErrIncidentForbidden => 'Bạn không có quyền xem sự cố này.';
+
+  @override
+  String get dtErrServerUnsupported => 'Máy chủ chưa hỗ trợ chức năng này.';
+
+  @override
+  String dtRdClaimBody(Object id) {
+    return 'Xác nhận nhận phiếu RPT-$id và chịu trách nhiệm cập nhật nhật ký xử lý.';
+  }
+
+  @override
+  String get dtRdTakeJob => 'Nhận việc';
+
+  @override
+  String get dtRdLogUpdated => 'Đã cập nhật nhật ký xử lý';
+
+  @override
+  String get dtRdResolved => 'Đã nghiệm thu và hoàn tất sự cố Drone';
+
+  @override
+  String dtRdSlaExtended(Object hours) {
+    return 'Đã gia hạn SLA thêm $hours giờ.';
+  }
+
+  @override
+  String dtRdSlaExtendedUsed(Object hours, Object used, Object max) {
+    return 'Đã gia hạn SLA thêm $hours giờ (đã dùng $used/$max lần).';
+  }
+
+  @override
+  String dtRdReleased(Object id) {
+    return 'Đã trả phiếu RPT-$id về hàng chờ.';
+  }
+
+  @override
+  String get dtRdSubtitle => 'Hồ sơ chi tiết phiếu sự cố kỹ thuật Drone';
+
+  @override
+  String dtRdLoadPartial(Object error) {
+    return 'Không tải đủ hồ sơ: $error';
+  }
+
+  @override
+  String get dtRdInfoSection => 'Thông tin sự cố';
+
+  @override
+  String get dtRdStation => 'Trạm/Kiosk';
+
+  @override
+  String get dtRdReporter => 'Người báo';
+
+  @override
+  String dtRdUserNumber(Object id) {
+    return 'Người dùng #$id';
+  }
+
+  @override
+  String get dtRdAssignee => 'KTV phụ trách';
+
+  @override
+  String dtRdYouSuffix(Object name) {
+    return '$name (bạn)';
+  }
+
+  @override
+  String get dtRdNoAssignee => 'Chưa có KTV nhận việc';
+
+  @override
+  String get dtRdYou => 'Bạn';
+
+  @override
+  String dtRdTechNumber(Object id) {
+    return 'KTV #$id';
+  }
+
+  @override
+  String get dtRdSlaDue => 'Hạn SLA';
+
+  @override
+  String dtRdSlaOverdueSuffix(Object date) {
+    return '$date · đã quá hạn';
+  }
+
+  @override
+  String get dtRdSlaExtensions => 'Gia hạn SLA';
+
+  @override
+  String dtRdExtendedCount(Object used) {
+    return 'Đã gia hạn $used lần';
+  }
+
+  @override
+  String dtRdExtendedCountMax(Object used, Object max) {
+    return 'Đã gia hạn $used/$max lần';
+  }
+
+  @override
+  String get dtRdCreatedAt => 'Tạo lúc';
+
+  @override
+  String get dtRdDescriptionSection => 'Mô tả hiện trường';
+
+  @override
+  String get dtRdNoDescription => 'Chưa có mô tả chi tiết.';
+
+  @override
+  String get dtRdPhotosSection => 'Ảnh hồ sơ theo giai đoạn';
+
+  @override
+  String get dtRdLogsSection => 'Nhật ký & lịch sử xử lý của KTV';
+
+  @override
+  String get dtRdResolveButton => 'Nghiệm thu & hoàn tất sự cố';
+
+  @override
+  String dtRdExtendSlaCount(Object used, Object max) {
+    return 'Gia hạn SLA ($used/$max)';
+  }
+
+  @override
+  String get dtRdExtendSla => 'Gia hạn SLA';
+
+  @override
+  String get dtRdReleaseTicket => 'Trả lại phiếu';
+
+  @override
+  String get dtRdNoLogs =>
+      'Chưa có ghi chú xử lý. Mỗi bước kiểm tra hoặc sửa chữa sẽ được lưu tại đây.';
+
+  @override
+  String dtRdLogViewerTitle(Object date) {
+    return 'Nhật ký Drone · $date';
+  }
+
+  @override
+  String get dtRdTechnician => 'Kỹ thuật viên';
+
+  @override
+  String get dtRdAddStep => 'Thêm bước xử lý / ảnh tiến độ';
+
+  @override
+  String get dtRdAddPhoto => 'Thêm ảnh';
+
+  @override
+  String get dtRdPhotoHelper => 'Ảnh kiểm tra hoặc tiến độ sửa chữa';
+
+  @override
+  String get dtRdNoteHint => 'Nhập việc đã kiểm tra hoặc sửa chữa...';
+
+  @override
+  String get dtRdSaveLog => 'Lưu nhật ký';
+
+  @override
+  String get dtRdSlaUnsupported =>
+      'Máy chủ chưa hỗ trợ gia hạn SLA cho phiếu drone.';
+
+  @override
+  String dtRdExtendTitle(Object id) {
+    return 'Gia hạn SLA · RPT-$id';
+  }
+
+  @override
+  String dtRdExtendIntroUsed(Object used, Object max) {
+    return 'Đã gia hạn $used/$max lần. Mỗi lần gia hạn được ghi vào nhật ký phiếu.';
+  }
+
+  @override
+  String get dtRdExtendIntro =>
+      'Mỗi lần gia hạn được ghi vào nhật ký phiếu; số lần và số giờ tối đa theo cấu hình.';
+
+  @override
+  String get dtRdAddTime => 'Thêm thời gian';
+
+  @override
+  String dtRdHours(int hours) {
+    return '$hours giờ';
+  }
+
+  @override
+  String get dtRdExtendReason => 'Lý do gia hạn *';
+
+  @override
+  String get dtRdExtend => 'Gia hạn';
+
+  @override
+  String get dtRdReleaseUnsupported => 'Máy chủ chưa hỗ trợ trả phiếu drone.';
+
+  @override
+  String dtRdReleaseTitle(Object id) {
+    return 'Trả lại phiếu RPT-$id?';
+  }
+
+  @override
+  String get dtRdReleaseIntro =>
+      'Phiếu quay về hàng chờ để KTV khác nhận; bạn không còn phụ trách phiếu này.';
+
+  @override
+  String get dtRdReleaseReason => 'Lý do trả phiếu *';
+
+  @override
+  String get dtRdRelease => 'Trả phiếu';
+
+  @override
+  String get dtRdNeedResolutionPhoto =>
+      'Vui lòng chụp ít nhất 1 ảnh sau khi sửa xong để nghiệm thu.';
+
+  @override
+  String get dtRdResolveTitle => 'Nghiệm thu sự cố Drone';
+
+  @override
+  String get dtRdResolveIntro =>
+      'Lưu ảnh tiến độ và ảnh sau khi khắc phục giống quy trình nghiệm thu sự cố tủ.';
+
+  @override
+  String get dtRdResolutionResult => 'Kết quả khắc phục';
+
+  @override
+  String get dtRdResolutionHint => 'Mô tả linh kiện hoặc thao tác đã xử lý...';
+
+  @override
+  String get dtRdProgressPhotos => 'Ảnh trong quá trình sửa';
+
+  @override
+  String get dtRdProgressPhotosHint =>
+      'Không bắt buộc, dùng để ghi nhận thao tác kỹ thuật.';
+
+  @override
+  String get dtRdResolutionPhotosRequired => 'Ảnh sau khi sửa xong *';
+
+  @override
+  String get dtRdResolutionPhotos => 'Ảnh sau khi sửa xong';
+
+  @override
+  String get dtRdResolutionPhotosRequiredHint =>
+      'Bắt buộc ít nhất 1 ảnh để nghiệm thu.';
+
+  @override
+  String get dtRdResolutionPhotosOptionalHint =>
+      'Không bắt buộc, dùng để lưu ảnh nghiệm thu.';
+
+  @override
+  String get dtRdConfirmResolve => 'Xác nhận hoàn tất';
+
+  @override
+  String get dtPqNoteRequiredForReason => 'Cần nhập ghi chú cho lý do này';
+
+  @override
+  String get dtPqNeedLocation =>
+      'Cần vị trí hiện tại để vào ca nhận việc lấy hàng.';
+
+  @override
+  String get dtPqOnDuty => 'Đã vào ca. Bạn sẽ được mời khi có đơn gần bạn.';
+
+  @override
+  String get dtPqOffDuty => 'Đã ra ca. Bạn sẽ không được mời lấy hàng.';
+
+  @override
+  String get dtPqDeclineTitle => 'Từ chối lời mời lấy hàng?';
+
+  @override
+  String dtPqDeclineBody(Object order) {
+    return 'Đơn $order sẽ được mời người khác và bạn không được mời lại đơn này trong một thời gian.';
+  }
+
+  @override
+  String get dtPqDecline => 'Từ chối';
+
+  @override
+  String get dtPqDeclined => 'Đã từ chối · hệ thống mời người khác';
+
+  @override
+  String get dtPqConfirmPickupTitle => 'Xác nhận đã lấy hàng';
+
+  @override
+  String dtPqDeclaredParcelAsk(Object summary) {
+    return 'Kiện khai báo: $summary.\nNhờ người gửi đọc mã lấy hàng trong đơn của họ.';
+  }
+
+  @override
+  String get dtPqPickupCode => 'Mã lấy hàng (6 số)';
+
+  @override
+  String get dtPqParcelMatches =>
+      'Kiện đúng khai báo (loại hàng, kích thước, khối lượng) và không có hàng cấm bay.';
+
+  @override
+  String get dtPqPhotoRequired => 'Ảnh kiện tại điểm lấy là bắt buộc.';
+
+  @override
+  String get dtPqCameraFailed =>
+      'Không mở được máy ảnh. Kiểm tra quyền camera.';
+
+  @override
+  String get dtPqTakePhoto => 'Chụp ảnh kiện';
+
+  @override
+  String get dtPqPhotoHint => 'Chụp rõ toàn bộ kiện trước khi xác nhận đã lấy.';
+
+  @override
+  String get dtPqEnterSixDigits => 'Nhập đủ 6 chữ số';
+
+  @override
+  String get dtPqConfirmMatchOrFail =>
+      'Cần xác nhận kiện đúng khai báo, hoặc báo không lấy được';
+
+  @override
+  String get dtPqNeedPhoto => 'Cần chụp ảnh kiện trước khi xác nhận';
+
+  @override
+  String get dtPqUploadFailed => 'Chưa tải được ảnh kiện lên. Thử lại.';
+
+  @override
+  String get dtPqNoGps =>
+      'Chưa lấy được vị trí GPS hiện tại. Bật định vị rồi thử lại.';
+
+  @override
+  String get dtPqPickedUp => 'Đã lấy hàng';
+
+  @override
+  String get dtPqPickedUpDone =>
+      'Đã lấy hàng và lưu ảnh kiện. Mang kiện tới drone được phân công và nạp trực tiếp; không bỏ vào ô tủ bay.';
+
+  @override
+  String get dtPqFailPickupTitle => 'Không lấy được hàng';
+
+  @override
+  String get dtPqFailPickupIntro =>
+      'Đơn sẽ kết thúc \"giao không hoàn tất\" và người gửi được hoàn tiền. Không hoàn tác được.';
+
+  @override
+  String get dtPqFailPickupDone =>
+      'Đã báo không lấy được hàng · người gửi được hoàn tiền';
+
+  @override
+  String get dtPqExpired => 'đã hết hạn';
+
+  @override
+  String dtPqTimeLeft(Object time) {
+    return 'còn $time';
+  }
+
+  @override
+  String dtPqSecOffers(Object count) {
+    return 'Lời mời lấy hàng ($count)';
+  }
+
+  @override
+  String dtPqSecAccepted(Object count) {
+    return 'Đang đi lấy hàng ($count)';
+  }
+
+  @override
+  String dtPqSecCarrying(Object count) {
+    return 'Đã lấy hàng · chờ nạp trực tiếp lên drone ($count)';
+  }
+
+  @override
+  String dtPqOffersWaiting(int count) {
+    return 'Có $count lời mời đang chờ bạn trả lời.';
+  }
+
+  @override
+  String dtPqOffersWaitingDirect(int count) {
+    return 'Có $count lời mời đang chờ bạn trả lời (điều phối viên giao trực tiếp).';
+  }
+
+  @override
+  String get dtPqTurnOnHint => 'Bật để nhận lời mời lấy hàng tận nhà gần bạn.';
+
+  @override
+  String get dtPqBusy =>
+      'Đang trong ca · đang bận một việc nên chưa được mời thêm.';
+
+  @override
+  String get dtPqFree =>
+      'Đang trong ca · rảnh, sẽ được mời khi có đơn gần bạn.';
+
+  @override
+  String dtPqFreeWithLocation(Object time) {
+    return 'Đang trong ca · rảnh, sẽ được mời khi có đơn gần bạn · vị trí lúc $time.';
+  }
+
+  @override
+  String get dtPqOnDutyTitle => 'Đang nhận việc lấy hàng';
+
+  @override
+  String get dtPqOffDutyTitle => 'Chưa vào ca lấy hàng';
+
+  @override
+  String dtPqPickupAt(Object address) {
+    return 'Lấy tại: $address';
+  }
+
+  @override
+  String dtPqDistanceParcel(Object distance, Object summary) {
+    return 'Cách bạn $distance · kiện $summary';
+  }
+
+  @override
+  String dtPqReplyIn(Object countdown) {
+    return 'Trả lời $countdown';
+  }
+
+  @override
+  String get dtPqAccepted =>
+      'Đã nhận. Tới điểm lấy hàng và hỏi mã lấy hàng của người gửi.';
+
+  @override
+  String get dtPqAcceptPickup => 'Nhận lấy hàng';
+
+  @override
+  String dtPqInstructions(Object note) {
+    return 'Chỉ dẫn: $note';
+  }
+
+  @override
+  String dtPqDeclaredParcel(Object summary) {
+    return 'Kiện khai báo: $summary';
+  }
+
+  @override
+  String get dtPqDirections => 'Chỉ đường';
+
+  @override
+  String get dtPqCantPickUp => 'Không lấy được';
+
+  @override
+  String dtPqSendingLockerNumber(Object id) {
+    return 'Tủ gửi #$id';
+  }
+
+  @override
+  String dtPqBringToDrone(Object locker) {
+    return 'Mang kiện tới drone tại: $locker';
+  }
+
+  @override
+  String get dtPqDirectionsToDrone => 'Chỉ đường tới drone';
+
+  @override
+  String get dtRtlRequested => 'Đã yêu cầu drone quay về (RTL)';
+
+  @override
+  String get dtRtlAccepted => 'Drone đã nhận lệnh RTL';
+
+  @override
+  String get dtRtlReturning => 'Drone đang bay về trạm';
+
+  @override
+  String get dtRtlCompleted => 'Drone đã về trạm';
+
+  @override
+  String get dtRtlFailed => 'RTL thất bại';
+
+  @override
+  String get dtRtlManual => 'Cần can thiệp tay / RTL thủ công';
+
+  @override
+  String get dtManualReturnBanner =>
+      'Cần can thiệp tay / RTL thủ công: hệ thống không đưa drone về được. Điều khiển drone về trạm bằng kênh điều khiển riêng của đội bay rồi báo quản trị.';
+
+  @override
+  String dtIncidentNumber(Object id) {
+    return 'Sự cố #$id';
+  }
+
+  @override
+  String dtIncDroneStatus(Object drone, Object status) {
+    return 'Drone $drone · $status';
+  }
+
+  @override
+  String dtIncReturn(Object status) {
+    return 'Quay về: $status';
+  }
+
+  @override
+  String dtIncReportedAt(Object time) {
+    return 'Báo lúc $time';
+  }
+
+  @override
+  String get dtIncDetailUnsupported =>
+      'Máy chủ chưa hỗ trợ xem chi tiết sự cố.';
+
+  @override
+  String dtIncSheetTitle(Object code) {
+    return 'Sự cố rơi kiện $code';
+  }
+
+  @override
+  String get dtIncStatusRow => 'Trạng thái';
+
+  @override
+  String get dtIncReturnRow => 'Quay về';
+
+  @override
+  String get dtIncParcelRow => 'Kiện hàng';
+
+  @override
+  String get dtIncRecoveryRow => 'Thu hồi kiện';
+
+  @override
+  String get dtIncDescriptionRow => 'Mô tả';
+
+  @override
+  String get dtIncDropLocationRow => 'Vị trí báo rơi';
+
+  @override
+  String get dtIncTelemetryStale => ' (telemetry cũ)';
+
+  @override
+  String get dtIncNoCoordinates => 'Không có toạ độ';
+
+  @override
+  String get dtIncRecoveryStationRow => 'Trạm nhận kiện';
+
+  @override
+  String get dtIncWaitingDrone => ' (đang chờ drone)';
+
+  @override
+  String dtIncRecoveryTitle(Object code) {
+    return 'Thu hồi sự cố $code';
+  }
+
+  @override
+  String get dtIncOpenRecovery => 'Mở nhiệm vụ tìm kiếm & thu hồi kiện';
+
+  @override
+  String get dtIncTimeline => 'Dòng thời gian';
+
+  @override
+  String get dtCamTitle => 'Giám sát camera trực tiếp';
+
+  @override
+  String get dtCamGatewayUnavailable =>
+      'Camera gateway chưa khả dụng. Có thể báo sự cố thủ công và chụp ảnh thật.';
+
+  @override
+  String get dtCamBattery => 'Pin';
+
+  @override
+  String get dtCamFlightMode => 'Chế độ bay';
+
+  @override
+  String get dtCamAltitude => 'Độ cao';
+
+  @override
+  String get dtCamSpeed => 'Tốc độ';
+
+  @override
+  String get dtCamHeading => 'Hướng';
+
+  @override
+  String get dtCamMeasuredAt => 'Số đo lúc';
+
+  @override
+  String get dtCamReportDrop => 'Báo rơi kiện';
+
+  @override
+  String get dtCamNoData => 'Không có dữ liệu';
+
+  @override
+  String get dtCamNoTelemetry => 'Chưa nhận telemetry';
+
+  @override
+  String get dtCamOnline => 'Trực tuyến';
+
+  @override
+  String get dtCamStale => 'Cũ / mất kết nối';
+
+  @override
+  String dtCamSatellites(Object count) {
+    return '$count vệ tinh';
+  }
+
+  @override
+  String get dtCamNoFix => 'chưa có fix';
+
+  @override
+  String get dtCamConfirmDropTitle => 'Xác nhận báo rơi kiện';
+
+  @override
+  String get dtCamDropWarning =>
+      'Thao tác này dừng luồng giao hiện tại. RTL chỉ được yêu cầu khi telemetry và điều kiện an toàn hợp lệ.';
+
+  @override
+  String get dtCamObservation => 'Mô tả quan sát *';
+
+  @override
+  String get dtCamPhotoLabel => 'Ảnh camera / hiện trường';
+
+  @override
+  String get dtCamPhotoHelper =>
+      'Không bắt buộc khi camera mất kết nối; không dùng ảnh giả.';
+
+  @override
+  String get dtCamEnterObservation => 'Nhập mô tả điều bạn quan sát được.';
+
+  @override
+  String get dtCamHandledElsewhere =>
+      'Chuyến bay này đã được báo rơi kiện (hoặc đã dừng) từ nơi khác. Theo dõi ở mục \"Sự cố rơi kiện\" trong tab Điều phối.';
+
+  @override
+  String get dtCamDropCreated =>
+      'Đã tạo sự cố rơi kiện và dừng luồng giao. Theo dõi tiếp ở mục \"Sự cố rơi kiện\" trong tab Điều phối.';
+
+  @override
+  String get dtCamOrder => 'Đơn';
+
+  @override
+  String get dtCamNoDataYet => 'Chưa có dữ liệu';
+
+  @override
+  String get dtCamJourneyStage => 'Chặng bay';
+
+  @override
+  String get dtCamStaleNotConnected => 'Cũ / chưa kết nối';
+
+  @override
+  String get dtCamSavedLocation => 'Vị trí lưu vào phiếu';
+
+  @override
+  String get dtCamSimulated => ' · Mô phỏng FPT HCM';
+
+  @override
+  String get dtCamEstimatedLocation =>
+      'Ước theo tuyến bay (chưa có GPS tin cậy)';
+
+  @override
+  String get dtCamAutoRecorded => 'Dữ liệu tự ghi vào phiếu';
+
+  @override
+  String get dtCamOfflineHint =>
+      'Telemetry không trực tuyến: phiếu lưu vị trí ước theo tuyến bay, KTV thu hồi xác nhận toạ độ thật tại hiện trường.';
+
+  @override
+  String get dtCamLive => 'Đang trực tiếp';
+
+  @override
+  String get dtCamUnavailable => 'Chưa khả dụng';
+
+  @override
+  String get dtCamError => 'Lỗi kết nối';
+
+  @override
+  String get dtCamConnecting => 'Đang kết nối';
+
+  @override
+  String get dtCamStageLaunching => 'Đang khởi phóng';
+
+  @override
+  String get dtCamStageDeparted => 'Đã rời trạm';
+
+  @override
+  String get dtCamStageEnRoute => 'Đang bay tới tủ nhận';
+
+  @override
+  String get dtCamStageApproaching => 'Đang tiếp cận tủ nhận';
+
+  @override
+  String get dtCamStageArrived => 'Đã đến tủ nhận';
+
+  @override
+  String get dtMavTakeoff => 'Cất cánh';
+
+  @override
+  String get dtMavWaypoint => 'Bay tới điểm';
+
+  @override
+  String get dtMavLoiterTime => 'Bay vòng (thời gian)';
+
+  @override
+  String get dtMavLoiterTurns => 'Bay vòng (số vòng)';
+
+  @override
+  String get dtMavLoiterUnlim => 'Bay vòng vô hạn';
+
+  @override
+  String get dtMavRtl => 'Về điểm xuất phát (RTL)';
+
+  @override
+  String get dtMavLand => 'Hạ cánh';
+
+  @override
+  String get dtMavChangeSpeed => 'Đổi tốc độ bay';
+
+  @override
+  String get dtMavHoldAtPoint => 'Giữ tại điểm';
+
+  @override
+  String get dtMavDuration => 'Thời gian';
+
+  @override
+  String get dtMavTurns => 'Số vòng';
+
+  @override
+  String get dtMavSpeed => 'Tốc độ';
+
+  @override
+  String get dtMavSeconds => 'giây';
+
+  @override
+  String get dtMavTurnsUnit => 'vòng';
+
+  @override
+  String get dtFcConfirmArm => 'Arm động cơ? Cánh quạt sẽ quay.';
+
+  @override
+  String get dtFcConfirmDisarm =>
+      'Disarm động cơ? Nếu drone đang bay, drone sẽ rơi.';
+
+  @override
+  String get dtFcConfirmRtl =>
+      'Chuyển sang RTL: drone tự bay về điểm xuất phát?';
+
+  @override
+  String get dtFcConfirmLoiter =>
+      'Chuyển sang LOITER: drone giữ nguyên vị trí?';
+
+  @override
+  String get dtFcConfirmGuided =>
+      'Chuyển sang GUIDED: drone nhận lệnh điều khiển từ ứng dụng?';
+
+  @override
+  String get dtFcConfirmAuto => 'Chuyển sang AUTO: drone chạy mission đã nạp?';
+
+  @override
+  String get dtFcConfirmTakeoff => 'Cất cánh tới độ cao đã nhập?';
+
+  @override
+  String get dtFcNotConnected => 'Chưa kết nối flight controller.';
+
+  @override
+  String get dtFcPeerUnknown =>
+      'Chưa biết địa chỉ drone — chờ drone gửi gói tin đầu tiên.';
+
+  @override
+  String get dtFcNoHeartbeat => 'Chưa nhận heartbeat từ drone.';
+
+  @override
+  String get dtFcHeartbeatLost => 'Mất heartbeat từ drone (quá 3 giây).';
+
+  @override
+  String get dtFcMissionLocked =>
+      'Drone bạn phụ trách đang có nhiệm vụ giao hàng — lệnh tay đang bị khoá.';
+
+  @override
+  String get dtFcPending => 'Đang chờ drone phản hồi lệnh trước.';
+
+  @override
+  String get dtFcAlreadyArmed => 'Drone đã ARM.';
+
+  @override
+  String get dtFcNotArmed => 'Drone chưa ARM.';
+
+  @override
+  String get dtFcTakeoffNeedsArm => 'Chỉ cất cánh khi drone đã ARM.';
+
+  @override
+  String dtFcTakeoffNeedsGuided(Object mode) {
+    return 'Chỉ cất cánh ở chế độ GUIDED (hiện tại: $mode).';
+  }
+
+  @override
+  String get dtFcEnterAltitude => 'Nhập độ cao (m).';
+
+  @override
+  String dtFcMinAltitude(Object value) {
+    return 'Độ cao tối thiểu $value m.';
+  }
+
+  @override
+  String dtFcMaxAltitude(Object value) {
+    return 'Độ cao tối đa $value m.';
+  }
+
+  @override
+  String get dtFcResultAccepted => 'Đã nhận (ACCEPTED)';
+
+  @override
+  String get dtFcResultTempRejected => 'Tạm từ chối (TEMPORARILY_REJECTED)';
+
+  @override
+  String get dtFcResultDenied => 'Từ chối (DENIED)';
+
+  @override
+  String get dtFcResultUnsupported => 'Không hỗ trợ (UNSUPPORTED)';
+
+  @override
+  String get dtFcResultFailed => 'Thất bại (FAILED)';
+
+  @override
+  String get dtFcResultInProgress => 'Đang thực hiện (IN_PROGRESS)';
+
+  @override
+  String get dtFcResultCancelled => 'Đã huỷ (CANCELLED)';
+
+  @override
+  String dtFcResultCode(Object code) {
+    return 'Mã kết quả $code';
+  }
+
+  @override
+  String get dtFcLinkClosed => 'Link đã đóng.';
+
+  @override
+  String dtFcDone(Object command) {
+    return '$command: drone đã thực hiện';
+  }
+
+  @override
+  String dtFcSwitched(Object command, Object mode) {
+    return '$command: drone đã chuyển sang $mode';
+  }
+
+  @override
+  String dtFcTimeout(Object command) {
+    return '$command: hết giờ — không nhận được phản hồi từ drone';
+  }
+
+  @override
+  String dtFcSent(Object command) {
+    return '$command: đã gửi, đang chờ drone phản hồi…';
+  }
+
+  @override
+  String dtFdBusyDrone(Object drone, Object order) {
+    return '$drone (đơn $order)';
+  }
+
+  @override
+  String dtFdMissionCheckFailed(Object error) {
+    return 'Không kiểm tra được nhiệm vụ của drone bạn phụ trách ($error). Chỉ gửi lệnh khi chắc chắn kết nối này không phải drone đang giao hàng.';
+  }
+
+  @override
+  String get dtFdUnlockTitle => 'Mở khoá lệnh tay?';
+
+  @override
+  String dtFdUnlockBody(Object drones) {
+    return 'Drone bạn phụ trách đang có nhiệm vụ giao hàng: $drones.\n\nChỉ mở khoá khi chắc chắn kết nối hiện tại là SITL hoặc một drone khác, KHÔNG phải drone đang giao hàng.';
+  }
+
+  @override
+  String get dtFdKeepLocked => 'Giữ khoá';
+
+  @override
+  String get dtFdConfirmUnlock => 'Tôi xác nhận, mở khoá';
+
+  @override
+  String get dtFdConnectTitle => 'Kết nối flight controller';
+
+  @override
+  String get dtFdConnectSubtitle =>
+      'MAVLink qua UDP/TCP — tương thích ArduPilot/PX4 thật và SITL.';
+
+  @override
+  String get dtFdDroneAddressUdp =>
+      'Địa chỉ drone (để trống = chờ drone gửi tới)';
+
+  @override
+  String get dtFdDroneAddress => 'Địa chỉ drone';
+
+  @override
+  String get dtFdAddressHintUdp => '192.168.4.1 hoặc trống';
+
+  @override
+  String get dtFdPort => 'Cổng';
+
+  @override
+  String get dtFdLocalPort => 'Cổng local';
+
+  @override
+  String get dtFdConnect => 'Kết nối';
+
+  @override
+  String get dtFdReceiving => 'Đang nhận telemetry';
+
+  @override
+  String get dtFdLinkedWaiting => 'Đã nối · chờ dữ liệu';
+
+  @override
+  String get dtFdConnecting => 'Đang kết nối...';
+
+  @override
+  String get dtFdConnectionError => 'Lỗi kết nối';
+
+  @override
+  String get dtFdDisconnected => 'Chưa kết nối';
+
+  @override
+  String get dtFdSitlOnlyBanner =>
+      'Chỉ dùng với SITL hoặc kênh điều khiển riêng — hệ thống không điều khiển drone';
+
+  @override
+  String get dtFdAltRel => 'Cao (rel)';
+
+  @override
+  String get dtFdGroundSpeed => 'Tốc độ đất';
+
+  @override
+  String get dtFdClimb => 'Leo/xuống';
+
+  @override
+  String get dtFdHeading => 'Hướng';
+
+  @override
+  String get dtFdBattery => 'Pin';
+
+  @override
+  String dtFdConflictAcknowledged(Object drones) {
+    return 'Cảnh báo: drone bạn phụ trách đang giao hàng ($drones). Bạn đã xác nhận kết nối này không phải drone đó.';
+  }
+
+  @override
+  String dtFdConflictLocked(Object drones) {
+    return 'Drone bạn phụ trách đang có nhiệm vụ giao hàng ($drones). Lệnh tay bị khoá để không can thiệp chuyến bay.';
+  }
+
+  @override
+  String get dtFdNotThatDrone => 'Kết nối này không phải drone đó';
+
+  @override
+  String dtFdSendCommandTitle(Object command) {
+    return 'Gửi lệnh $command?';
+  }
+
+  @override
+  String dtFdSendCommandBody(Object message) {
+    return '$message\n\nChỉ gửi khi đang kết nối SITL hoặc kênh điều khiển riêng của đội bay.';
+  }
+
+  @override
+  String get dtFdSendCommand => 'Gửi lệnh';
+
+  @override
+  String dtFdNotSent(Object command, Object reason) {
+    return 'Chưa gửi $command: $reason';
+  }
+
+  @override
+  String get dtFdTakeoffTitle => 'Xác nhận cất cánh (GUIDED)';
+
+  @override
+  String dtFdTakeoffBody(Object min, Object max) {
+    return 'Drone đã ARM và ở chế độ GUIDED. Nhập độ cao cất cánh ($min–$max m):';
+  }
+
+  @override
+  String get dtFdTakeoff => 'Cất cánh';
+
+  @override
+  String dtMpTapToMovePoint(Object index) {
+    return 'Chạm lên bản đồ để đặt lại vị trí điểm $index.';
+  }
+
+  @override
+  String get dtMpRenameTitle => 'Tên kế hoạch bay';
+
+  @override
+  String get dtMpRenameHint => 'VD: Tuần tra khu A';
+
+  @override
+  String get dtMpSettingsTitle => 'Cài đặt kế hoạch';
+
+  @override
+  String get dtMpDefaultAltitude => 'Độ cao mặc định cho điểm mới (m)';
+
+  @override
+  String get dtMpCruiseSpeed => 'Tốc độ bay ước tính (m/s)';
+
+  @override
+  String get dtMpApply => 'Áp dụng';
+
+  @override
+  String dtMpSavedToLibrary(Object name) {
+    return 'Đã lưu \"$name\" vào thư viện.';
+  }
+
+  @override
+  String get dtMpLibraryTitle => 'Thư viện kế hoạch bay';
+
+  @override
+  String get dtMpLibraryEmptyTitle => 'Chưa có kế hoạch đã lưu';
+
+  @override
+  String get dtMpLibraryEmptySubtitle => 'Lưu kế hoạch hiện tại để mở lại sau.';
+
+  @override
+  String dtMpOpened(Object name) {
+    return 'Đã mở \"$name\".';
+  }
+
+  @override
+  String dtMpPointsDistance(int count, Object distance) {
+    return '$count điểm · $distance';
+  }
+
+  @override
+  String dtMpDeleted(Object name) {
+    return 'Đã xoá \"$name\".';
+  }
+
+  @override
+  String dtMpImported(Object name, int count) {
+    return 'Đã nhập \"$name\" ($count điểm).';
+  }
+
+  @override
+  String get dtMpNothingToExport => 'Chưa có điểm bay nào để xuất.';
+
+  @override
+  String dtMpExported(Object path) {
+    return 'Đã xuất file: $path';
+  }
+
+  @override
+  String dtMpExportFailed(Object error) {
+    return 'Không xuất được file: $error';
+  }
+
+  @override
+  String get dtMpHomeSet => 'Đã đặt điểm xuất phát (HOME) tại tâm bản đồ.';
+
+  @override
+  String get dtMpConfirmClearAll =>
+      'Xoá tất cả điểm bay của kế hoạch hiện tại?';
+
+  @override
+  String get dtMpConfirmNew => 'Tạo kế hoạch mới? Thay đổi chưa lưu sẽ mất.';
+
+  @override
+  String get dtMpActionRename => 'Đổi tên kế hoạch';
+
+  @override
+  String get dtMpActionSettings => 'Cài đặt (độ cao/tốc độ)';
+
+  @override
+  String get dtMpActionSetHome => 'Đặt HOME tại tâm bản đồ';
+
+  @override
+  String get dtMpActionSave => 'Lưu vào thư viện';
+
+  @override
+  String get dtMpActionOpen => 'Mở từ thư viện';
+
+  @override
+  String get dtMpActionExportWaypoints => 'Xuất file .waypoints (QGC)';
+
+  @override
+  String get dtMpActionExportJson => 'Xuất file JSON';
+
+  @override
+  String get dtMpActionImport => 'Nhập từ file';
+
+  @override
+  String get dtMpActionNew => 'Tạo kế hoạch mới';
+
+  @override
+  String get dtMpActionClearAll => 'Xoá tất cả điểm';
+
+  @override
+  String dtMpWaypointList(Object count) {
+    return 'Danh sách điểm bay ($count)';
+  }
+
+  @override
+  String get dtMpNoWaypointsTitle => 'Chưa có điểm bay';
+
+  @override
+  String get dtMpNoWaypointsSubtitle => 'Chạm lên bản đồ để thêm điểm.';
+
+  @override
+  String get dtMpHomeTooltip => 'Điểm xuất phát (HOME)';
+
+  @override
+  String get dtMpTapToMove => 'Chạm lên bản đồ để đặt lại vị trí điểm bay.';
+
+  @override
+  String get dtMpStatPoints => 'điểm';
+
+  @override
+  String get dtMpStatDistance => 'quãng đường';
+
+  @override
+  String get dtMpStatEstimate => 'ước tính';
+
+  @override
+  String get dtMpList => 'Danh sách';
+
+  @override
+  String get dtMpExportMission => 'Xuất mission';
+
+  @override
+  String get dtMpAgree => 'Đồng ý';
+
+  @override
+  String get dtMpZeroMinutes => '0 phút';
+
+  @override
+  String get dtMpUnderOneMinute => '<1 phút';
+
+  @override
+  String dtMpMinutes(Object minutes) {
+    return '$minutes phút';
+  }
+
+  @override
+  String dtWpTitle(Object index, Object total) {
+    return 'Điểm bay $index/$total';
+  }
+
+  @override
+  String get dtWpCommand => 'Lệnh (MAVLink)';
+
+  @override
+  String get dtWpAltitude => 'Độ cao (m, so với điểm xuất phát)';
+
+  @override
+  String get dtWpNoPositionHint =>
+      'Lệnh này không gắn toạ độ — nó áp dụng tại vị trí của điểm bay liền trước trong danh sách.';
+
+  @override
+  String get dtWpMoveOnMap => 'Di chuyển điểm này trên bản đồ';
+
+  @override
+  String get dtWpDelete => 'Xoá điểm bay';
+
+  @override
+  String get dtWpSave => 'Lưu thay đổi';
+
+  @override
+  String get dtMcImportedPlan => 'Kế hoạch nhập';
+
+  @override
+  String get dtMcMissingHeader =>
+      'Thiếu header \"QGC WPL 110\" — không phải file mission hợp lệ.';
+
+  @override
+  String dtMcMissingColumns(Object line, Object count) {
+    return 'Dòng $line thiếu cột (cần 12, có $count).';
+  }
+
+  @override
+  String dtMcInvalidJson(Object error) {
+    return 'JSON không hợp lệ: $error';
+  }
+
+  @override
+  String get dtMcBadJsonStructure => 'Cấu trúc JSON mission không đúng.';
+
+  @override
+  String get dtMcCantReadFile => 'Không đọc được nội dung file đã chọn.';
+
+  @override
+  String get dtMcUnknownFormat =>
+      'Định dạng không nhận diện được (cần QGC WPL hoặc JSON mission).';
+
+  @override
+  String get dtMcSaveDialogTitle => 'Lưu file mission';
+
+  @override
+  String get dtMcNewPlan => 'Kế hoạch bay mới';
+
+  @override
+  String get dtMcPlan => 'Kế hoạch bay';
+
+  @override
+  String get dtWxCantConfirm => 'Không thể xác nhận thời tiết tuyến bay.';
+
+  @override
+  String get dtWxFlyable => 'Bay được';
+
+  @override
+  String get dtWxNoForecast => 'Chưa có dự báo';
+
+  @override
+  String get dtWxUnsafe => 'Không an toàn để bay';
+
+  @override
+  String dtWxWind(Object value) {
+    return 'Gió $value km/h';
+  }
+
+  @override
+  String dtWxGust(Object value) {
+    return 'Giật $value km/h';
+  }
+
+  @override
+  String dtWxRain(Object value) {
+    return 'Mưa $value mm';
+  }
+
+  @override
+  String dtWxForecastWindow(Object minutes) {
+    return 'Dự báo $minutes phút tới';
+  }
+
+  @override
+  String dtWxUpdated(Object time) {
+    return 'cập nhật $time';
+  }
+
+  @override
+  String dtWxSource(Object provider) {
+    return 'nguồn $provider';
+  }
+
+  @override
+  String get dtWxRouteTitle => 'Thời tiết tuyến bay';
+
+  @override
+  String get dtWxReload => 'Tải lại';
+
+  @override
+  String get dtWxFromLocker => 'Tủ bay';
+
+  @override
+  String get dtWxToLocker => 'Tủ nhận';
+
+  @override
+  String get dtWxLoadingLockers => 'Đang tải thời tiết các tủ…';
+
+  @override
+  String dtWxAllFlyable(Object count, Object minutes) {
+    return 'Cả $count tủ đều bay được trong $minutes phút tới';
+  }
+
+  @override
+  String dtWxSomeGrounded(Object unsafe, Object count) {
+    return '$unsafe/$count tủ đang không bay được hoặc chưa có dự báo';
+  }
+
+  @override
+  String get dtWxLockersTitle => 'Thời tiết tại các tủ drone';
+
+  @override
+  String dtWxLockerNumber(Object id) {
+    return 'Tủ #$id';
+  }
+
+  @override
+  String dtWxStationSuspended(Object reason) {
+    return 'Trạm đang tạm dừng bay: $reason';
+  }
+
+  @override
+  String dtObtTitle(Object count) {
+    return 'Đơn drone bị phiếu này ảnh hưởng ($count)';
+  }
+
+  @override
+  String dtObtFailed(Object reason) {
+    return 'Đã giao không hoàn tất · $reason';
+  }
+
+  @override
+  String dtObtBlocked(Object stage, Object reason) {
+    return 'Đang bị chặn ($stage) · $reason';
+  }
 }

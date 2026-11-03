@@ -20322,6 +20322,4038 @@ abstract class AppLocalizations {
   /// In vi, this message translates to:
   /// **'Trạng thái trực tuyến do máy chủ tự tính, không đặt tay được.'**
   String get techRecErrDeviceOnlineNotAllowed;
+
+  /// No description provided for @dtLoadDronesFailed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không tải được đội drone: {error}'**
+  String dtLoadDronesFailed(Object error);
+
+  /// No description provided for @dtLoadDeliveriesFailed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không tải được hàng đợi đơn drone: {error}'**
+  String dtLoadDeliveriesFailed(Object error);
+
+  /// No description provided for @dtLoadSchedulesFailed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không tải được lịch bảo trì Drone: {error}'**
+  String dtLoadSchedulesFailed(Object error);
+
+  /// No description provided for @dtLoadIncidentsFailed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không tải được sự cố rơi kiện: {error}'**
+  String dtLoadIncidentsFailed(Object error);
+
+  /// No description provided for @dtPerformanceUnsupported.
+  ///
+  /// In vi, this message translates to:
+  /// **'Máy chủ chưa có thống kê hiệu suất cho KTV drone.'**
+  String get dtPerformanceUnsupported;
+
+  /// No description provided for @dtSharedQueueFailedShowingMine.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không tải được hàng đợi sự cố chung — đang hiện phiếu giao cho bạn.'**
+  String get dtSharedQueueFailedShowingMine;
+
+  /// No description provided for @dtLoadReportsFailedPull.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không tải được phiếu sự cố Drone. Kéo xuống để thử lại.'**
+  String get dtLoadReportsFailedPull;
+
+  /// No description provided for @dtScheduleNotFound.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không tìm thấy lịch bảo trì #{id} trong danh sách lịch Drone.'**
+  String dtScheduleNotFound(Object id);
+
+  /// No description provided for @dtLogoutShiftTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đăng xuất ca trực'**
+  String get dtLogoutShiftTitle;
+
+  /// No description provided for @dtLogoutShiftConfirm.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bạn có chắc chắn muốn kết thúc ca trực và đăng xuất khỏi tài khoản KTV Drone không?'**
+  String get dtLogoutShiftConfirm;
+
+  /// No description provided for @dtGreetingMorning.
+  ///
+  /// In vi, this message translates to:
+  /// **'☀️ Chào buổi sáng'**
+  String get dtGreetingMorning;
+
+  /// No description provided for @dtGreetingNoon.
+  ///
+  /// In vi, this message translates to:
+  /// **'🌤️ Chào buổi trưa'**
+  String get dtGreetingNoon;
+
+  /// No description provided for @dtGreetingAfternoon.
+  ///
+  /// In vi, this message translates to:
+  /// **'🌅 Chào buổi chiều'**
+  String get dtGreetingAfternoon;
+
+  /// No description provided for @dtGreetingEvening.
+  ///
+  /// In vi, this message translates to:
+  /// **'🌙 Chào buổi tối'**
+  String get dtGreetingEvening;
+
+  /// No description provided for @dtDefaultName.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kỹ thuật viên drone'**
+  String get dtDefaultName;
+
+  /// No description provided for @dtRoleFlightTeam.
+  ///
+  /// In vi, this message translates to:
+  /// **'KTV Drone (Đội bay)'**
+  String get dtRoleFlightTeam;
+
+  /// No description provided for @dtStatReceived.
+  ///
+  /// In vi, this message translates to:
+  /// **'Phiếu đã nhận'**
+  String get dtStatReceived;
+
+  /// No description provided for @dtStatInProgress.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang xử lý'**
+  String get dtStatInProgress;
+
+  /// No description provided for @dtStatDone.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã hoàn tất'**
+  String get dtStatDone;
+
+  /// No description provided for @dtStatOverdue.
+  ///
+  /// In vi, this message translates to:
+  /// **'Trễ SLA'**
+  String get dtStatOverdue;
+
+  /// No description provided for @dtQualityRatingLabel.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đánh giá chất lượng: '**
+  String get dtQualityRatingLabel;
+
+  /// No description provided for @dtSlaPolicyLabel.
+  ///
+  /// In vi, this message translates to:
+  /// **'Quy chế SLA: '**
+  String get dtSlaPolicyLabel;
+
+  /// No description provided for @dtNoData.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa có dữ liệu'**
+  String get dtNoData;
+
+  /// No description provided for @dtTechPhoneLabel.
+  ///
+  /// In vi, this message translates to:
+  /// **'SĐT kỹ thuật: '**
+  String get dtTechPhoneLabel;
+
+  /// No description provided for @dtViewEditProfile.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xem & Chỉnh sửa hồ sơ'**
+  String get dtViewEditProfile;
+
+  /// No description provided for @dtRatingLoadFailed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa tải được đánh giá'**
+  String get dtRatingLoadFailed;
+
+  /// No description provided for @dtNoRatingYet.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa có đánh giá'**
+  String get dtNoRatingYet;
+
+  /// No description provided for @dtRatingValue.
+  ///
+  /// In vi, this message translates to:
+  /// **'{value}/5 ({count} lượt)'**
+  String dtRatingValue(Object value, int count);
+
+  /// No description provided for @dtSlaNormal.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bình thường'**
+  String get dtSlaNormal;
+
+  /// No description provided for @dtSlaWarning.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cảnh báo SLA'**
+  String get dtSlaWarning;
+
+  /// No description provided for @dtSlaRestricted.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hạn chế nhận việc'**
+  String get dtSlaRestricted;
+
+  /// No description provided for @dtSlaSuspended.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đình chỉ'**
+  String get dtSlaSuspended;
+
+  /// No description provided for @dtHeaderSla.
+  ///
+  /// In vi, this message translates to:
+  /// **'SLA: {level}'**
+  String dtHeaderSla(Object level);
+
+  /// No description provided for @dtHeaderWorking.
+  ///
+  /// In vi, this message translates to:
+  /// **'{count} phiếu đang xử lý'**
+  String dtHeaderWorking(int count);
+
+  /// No description provided for @dtHeaderNoWorking.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa có phiếu đang xử lý'**
+  String get dtHeaderNoWorking;
+
+  /// No description provided for @dtAssistant.
+  ///
+  /// In vi, this message translates to:
+  /// **'Trợ lý hỏi đáp'**
+  String get dtAssistant;
+
+  /// No description provided for @dtProfileAndEdit.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hồ sơ & Chỉnh sửa'**
+  String get dtProfileAndEdit;
+
+  /// No description provided for @dtHudWaiting.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chờ xử lý'**
+  String get dtHudWaiting;
+
+  /// No description provided for @dtHudWorking.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang làm'**
+  String get dtHudWorking;
+
+  /// No description provided for @dtHudRoutine.
+  ///
+  /// In vi, this message translates to:
+  /// **'Định kỳ'**
+  String get dtHudRoutine;
+
+  /// No description provided for @dtHudFleet.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đội bay'**
+  String get dtHudFleet;
+
+  /// No description provided for @dtDronesInFlight.
+  ///
+  /// In vi, this message translates to:
+  /// **'{count} drone đang bay'**
+  String dtDronesInFlight(int count);
+
+  /// No description provided for @dtTabDispatch.
+  ///
+  /// In vi, this message translates to:
+  /// **'Điều phối ({count})'**
+  String dtTabDispatch(Object count);
+
+  /// No description provided for @dtTabFleet.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đội bay ({count})'**
+  String dtTabFleet(Object count);
+
+  /// No description provided for @dtTabIncidents.
+  ///
+  /// In vi, this message translates to:
+  /// **'Sự cố ({count})'**
+  String dtTabIncidents(Object count);
+
+  /// No description provided for @dtTabMyWork.
+  ///
+  /// In vi, this message translates to:
+  /// **'Việc của tôi ({count})'**
+  String dtTabMyWork(Object count);
+
+  /// No description provided for @dtTabRoutine.
+  ///
+  /// In vi, this message translates to:
+  /// **'Định kỳ ({count})'**
+  String dtTabRoutine(Object count);
+
+  /// No description provided for @dtTabFlightTools.
+  ///
+  /// In vi, this message translates to:
+  /// **'Công cụ bay'**
+  String get dtTabFlightTools;
+
+  /// No description provided for @dtSecParcelReturns.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chờ trả kiện cho người gửi ({count})'**
+  String dtSecParcelReturns(Object count);
+
+  /// No description provided for @dtSecAwaitingDispatch.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chờ tiếp nhận ({count})'**
+  String dtSecAwaitingDispatch(Object count);
+
+  /// No description provided for @dtSecAwaitingLoading.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chờ nạp hàng ({count})'**
+  String dtSecAwaitingLoading(Object count);
+
+  /// No description provided for @dtSecReadyToLaunch.
+  ///
+  /// In vi, this message translates to:
+  /// **'Sẵn sàng phóng ({count})'**
+  String dtSecReadyToLaunch(Object count);
+
+  /// No description provided for @dtSecLaunching.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang khởi phóng ({count})'**
+  String dtSecLaunching(Object count);
+
+  /// No description provided for @dtSecInFlight.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang bay ({count})'**
+  String dtSecInFlight(Object count);
+
+  /// No description provided for @dtSecDelivered.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã giao · chờ khách nhận ({count})'**
+  String dtSecDelivered(Object count);
+
+  /// No description provided for @dtSecOtherAssigned.
+  ///
+  /// In vi, this message translates to:
+  /// **'Công việc đang phụ trách ({count})'**
+  String dtSecOtherAssigned(Object count);
+
+  /// No description provided for @dtSecCanceled.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã hủy ({count})'**
+  String dtSecCanceled(Object count);
+
+  /// No description provided for @dtDispatchEmptyTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không có đơn drone đang chờ'**
+  String get dtDispatchEmptyTitle;
+
+  /// No description provided for @dtDispatchEmptySubtitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đơn mới sẽ xuất hiện ở tab Điều phối.'**
+  String get dtDispatchEmptySubtitle;
+
+  /// No description provided for @dtFilterAllStatuses.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mọi trạng thái'**
+  String get dtFilterAllStatuses;
+
+  /// No description provided for @dtFilterWaiting.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chờ nhận'**
+  String get dtFilterWaiting;
+
+  /// No description provided for @dtFilterWorking.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang xử lý'**
+  String get dtFilterWorking;
+
+  /// No description provided for @dtFilterFlying.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang bay'**
+  String get dtFilterFlying;
+
+  /// No description provided for @dtFilterDelivered.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã giao'**
+  String get dtFilterDelivered;
+
+  /// No description provided for @dtFilterCanceled.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã hủy'**
+  String get dtFilterCanceled;
+
+  /// No description provided for @dtFilterWithCount.
+  ///
+  /// In vi, this message translates to:
+  /// **'{label} ({count})'**
+  String dtFilterWithCount(Object label, Object count);
+
+  /// No description provided for @dtIncidentsWaitingBanner.
+  ///
+  /// In vi, this message translates to:
+  /// **'Có {count} sự cố Drone đang chờ tiếp nhận xử lý.'**
+  String dtIncidentsWaitingBanner(int count);
+
+  /// No description provided for @dtIncidentsQueueBanner.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hàng đợi sự cố Drone. Phiếu mới được ưu tiên hiển thị để đội bay tiếp nhận kịp thời.'**
+  String get dtIncidentsQueueBanner;
+
+  /// No description provided for @dtReportSearchHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tìm mã phiếu, tiêu đề, drone, người báo...'**
+  String get dtReportSearchHint;
+
+  /// No description provided for @dtFilterResolved.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hoàn tất'**
+  String get dtFilterResolved;
+
+  /// No description provided for @dtSecParcelDrop.
+  ///
+  /// In vi, this message translates to:
+  /// **'Sự cố rơi kiện ({count})'**
+  String dtSecParcelDrop(Object count);
+
+  /// No description provided for @dtSecRoutedToYou.
+  ///
+  /// In vi, this message translates to:
+  /// **'Gửi trực tiếp cho bạn ({count})'**
+  String dtSecRoutedToYou(Object count);
+
+  /// No description provided for @dtSecSharedQueue.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hàng đợi kỹ thuật chung'**
+  String get dtSecSharedQueue;
+
+  /// No description provided for @dtSecDroneTechnical.
+  ///
+  /// In vi, this message translates to:
+  /// **'Sự cố kỹ thuật Drone ({count})'**
+  String dtSecDroneTechnical(Object count);
+
+  /// No description provided for @dtReportsEmptyTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không có phiếu sự cố Drone'**
+  String get dtReportsEmptyTitle;
+
+  /// No description provided for @dtReportsEmptySubtitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đội bay hiện không có sự cố phù hợp bộ lọc.'**
+  String get dtReportsEmptySubtitle;
+
+  /// No description provided for @dtNoOtherInSharedQueue.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không có phiếu khác trong hàng đợi chung.'**
+  String get dtNoOtherInSharedQueue;
+
+  /// No description provided for @dtSeeMore.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xem thêm ({count})'**
+  String dtSeeMore(Object count);
+
+  /// No description provided for @dtMyWorkBanner.
+  ///
+  /// In vi, this message translates to:
+  /// **'Công việc được giao gồm phiếu sự cố và lịch bảo trì Drone. Mọi thay đổi chỉ được ghi nhận sau khi Backend xác nhận.'**
+  String get dtMyWorkBanner;
+
+  /// No description provided for @dtMetricPending.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa làm'**
+  String get dtMetricPending;
+
+  /// No description provided for @dtMetricWorking.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang làm'**
+  String get dtMetricWorking;
+
+  /// No description provided for @dtMetricDone.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hoàn tất'**
+  String get dtMetricDone;
+
+  /// No description provided for @dtMyWorkSearchHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tìm công việc, drone, mã phiếu...'**
+  String get dtMyWorkSearchHint;
+
+  /// No description provided for @dtTypeAll.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mọi loại'**
+  String get dtTypeAll;
+
+  /// No description provided for @dtTypeIncident.
+  ///
+  /// In vi, this message translates to:
+  /// **'Sự cố'**
+  String get dtTypeIncident;
+
+  /// No description provided for @dtTypeMaintenance.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bảo trì'**
+  String get dtTypeMaintenance;
+
+  /// No description provided for @dtStatusActive.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cần thực hiện'**
+  String get dtStatusActive;
+
+  /// No description provided for @dtStatusDone.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã hoàn tất'**
+  String get dtStatusDone;
+
+  /// No description provided for @dtSortDue.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hạn gần nhất'**
+  String get dtSortDue;
+
+  /// No description provided for @dtSortNewest.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mới nhất'**
+  String get dtSortNewest;
+
+  /// No description provided for @dtMyWorkEmptyTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không có công việc phù hợp'**
+  String get dtMyWorkEmptyTitle;
+
+  /// No description provided for @dtTryOtherFilters.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thử đổi bộ lọc hoặc kéo xuống để tải lại dữ liệu.'**
+  String get dtTryOtherFilters;
+
+  /// No description provided for @dtClearSearch.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xóa tìm kiếm'**
+  String get dtClearSearch;
+
+  /// No description provided for @dtAssignAll.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mọi phân công'**
+  String get dtAssignAll;
+
+  /// No description provided for @dtAssignMine.
+  ///
+  /// In vi, this message translates to:
+  /// **'Giao cho tôi'**
+  String get dtAssignMine;
+
+  /// No description provided for @dtAssignNone.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa phân công'**
+  String get dtAssignNone;
+
+  /// No description provided for @dtAllDrones.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mọi drone'**
+  String get dtAllDrones;
+
+  /// No description provided for @dtTimeAll.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mọi thời gian'**
+  String get dtTimeAll;
+
+  /// No description provided for @dtTime7d.
+  ///
+  /// In vi, this message translates to:
+  /// **'7 ngày'**
+  String get dtTime7d;
+
+  /// No description provided for @dtTime30d.
+  ///
+  /// In vi, this message translates to:
+  /// **'30 ngày'**
+  String get dtTime30d;
+
+  /// No description provided for @dtSortOldest.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cũ nhất'**
+  String get dtSortOldest;
+
+  /// No description provided for @dtSortSla.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hạn SLA'**
+  String get dtSortSla;
+
+  /// No description provided for @dtReset.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đặt lại'**
+  String get dtReset;
+
+  /// No description provided for @dtSort.
+  ///
+  /// In vi, this message translates to:
+  /// **'Sắp xếp'**
+  String get dtSort;
+
+  /// No description provided for @dtDroneIncidentFallback.
+  ///
+  /// In vi, this message translates to:
+  /// **'Sự cố Drone'**
+  String get dtDroneIncidentFallback;
+
+  /// No description provided for @dtSlaOverdue.
+  ///
+  /// In vi, this message translates to:
+  /// **'Quá hạn SLA'**
+  String get dtSlaOverdue;
+
+  /// No description provided for @dtClaim.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhận xử lý'**
+  String get dtClaim;
+
+  /// No description provided for @dtUpdateProgress.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cập nhật xử lý'**
+  String get dtUpdateProgress;
+
+  /// No description provided for @dtClaimReportTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhận xử lý sự cố Drone?'**
+  String get dtClaimReportTitle;
+
+  /// No description provided for @dtClaimReportBody.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bạn sẽ trở thành KTV phụ trách phiếu RPT-{id} của Drone {drone}.'**
+  String dtClaimReportBody(Object id, Object drone);
+
+  /// No description provided for @dtConfirmClaim.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xác nhận nhận việc'**
+  String get dtConfirmClaim;
+
+  /// No description provided for @dtClaimedReport.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã nhận xử lý phiếu Drone RPT-{id}'**
+  String dtClaimedReport(Object id);
+
+  /// No description provided for @dtFleetBanner.
+  ///
+  /// In vi, this message translates to:
+  /// **'Pin tự cập nhật khi drone gửi telemetry; drone chưa kết nối thì hiện lần cập nhật gần nhất (có thể do KTV nhập tay). Telemetry trực tiếp của chuyến bay xem trong chi tiết nhiệm vụ.'**
+  String get dtFleetBanner;
+
+  /// No description provided for @dtFleetEmptyTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa phụ trách drone nào'**
+  String get dtFleetEmptyTitle;
+
+  /// No description provided for @dtFleetEmptyAssigned.
+  ///
+  /// In vi, this message translates to:
+  /// **'Các drone bạn được phân công phụ trách sẽ hiển thị ở đây.'**
+  String get dtFleetEmptyAssigned;
+
+  /// No description provided for @dtFleetEmptyPickBelow.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chọn một drone chưa có người phụ trách bên dưới để nhận xử lý.'**
+  String get dtFleetEmptyPickBelow;
+
+  /// No description provided for @dtUnassignedDrones.
+  ///
+  /// In vi, this message translates to:
+  /// **'Drone chưa có KTV phụ trách ({count})'**
+  String dtUnassignedDrones(Object count);
+
+  /// No description provided for @dtScheduleBanner.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lịch bảo trì Drone do quản trị tạo. Đánh giá đủ từng mục checklist; nếu có mục không đạt, Drone chuyển sang trạng thái lỗi và hệ thống mở phiếu sự cố.'**
+  String get dtScheduleBanner;
+
+  /// No description provided for @dtScheduleSearchHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tìm lịch, mã Drone, KTV phụ trách...'**
+  String get dtScheduleSearchHint;
+
+  /// No description provided for @dtAllWithCount.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tất cả ({count})'**
+  String dtAllWithCount(Object count);
+
+  /// No description provided for @dtDueWithCount.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đến hạn ({count})'**
+  String dtDueWithCount(Object count);
+
+  /// No description provided for @dtUpcomingWithCount.
+  ///
+  /// In vi, this message translates to:
+  /// **'Sắp tới ({count})'**
+  String dtUpcomingWithCount(Object count);
+
+  /// No description provided for @dtPriorityAll.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mọi ưu tiên'**
+  String get dtPriorityAll;
+
+  /// No description provided for @dtPriorityUrgent.
+  ///
+  /// In vi, this message translates to:
+  /// **'Khẩn cấp'**
+  String get dtPriorityUrgent;
+
+  /// No description provided for @dtPriorityHighShort.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cao'**
+  String get dtPriorityHighShort;
+
+  /// No description provided for @dtPriorityNormal.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bình thường'**
+  String get dtPriorityNormal;
+
+  /// No description provided for @dtPriorityLowShort.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thấp'**
+  String get dtPriorityLowShort;
+
+  /// No description provided for @dtSortPriority.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ưu tiên'**
+  String get dtSortPriority;
+
+  /// No description provided for @dtSortNewlyCreated.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mới tạo'**
+  String get dtSortNewlyCreated;
+
+  /// No description provided for @dtSchedulesEmptyTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa có lịch bảo trì định kỳ nào'**
+  String get dtSchedulesEmptyTitle;
+
+  /// No description provided for @dtSchedulesNoMatch.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không có lịch bảo trì Drone phù hợp'**
+  String get dtSchedulesNoMatch;
+
+  /// No description provided for @dtSchedulesEmptySubtitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Các lịch bảo trì Drone bạn được phân công phụ trách sẽ hiển thị ở đây.'**
+  String get dtSchedulesEmptySubtitle;
+
+  /// No description provided for @dtToolMissionTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lập kế hoạch bay (Mission Planner)'**
+  String get dtToolMissionTitle;
+
+  /// No description provided for @dtToolMissionSubtitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Vẽ waypoint, đặt độ cao/lệnh, xuất file mission'**
+  String get dtToolMissionSubtitle;
+
+  /// No description provided for @dtToolFlightTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Telemetry & điều khiển (Flight Data)'**
+  String get dtToolFlightTitle;
+
+  /// No description provided for @dtToolFlightSubtitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kết nối MAVLink, xem vị trí/HUD live, gửi lệnh bay — chỉ dùng với SITL hoặc kênh điều khiển riêng'**
+  String get dtToolFlightSubtitle;
+
+  /// No description provided for @dtDueBadge.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đến hạn'**
+  String get dtDueBadge;
+
+  /// No description provided for @dtEveryDays.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mỗi {days} ngày'**
+  String dtEveryDays(Object days);
+
+  /// No description provided for @dtDueAt.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hạn: {date}'**
+  String dtDueAt(Object date);
+
+  /// No description provided for @dtLastDone.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lần trước: {date}'**
+  String dtLastDone(Object date);
+
+  /// No description provided for @dtFinishTicketBeforeNext.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cần hoàn tất phiếu RPT-{id} trước lần kiểm tra tiếp theo.'**
+  String dtFinishTicketBeforeNext(Object id);
+
+  /// No description provided for @dtInspectNow.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kiểm tra ngay'**
+  String get dtInspectNow;
+
+  /// No description provided for @dtInspect.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kiểm tra'**
+  String get dtInspect;
+
+  /// No description provided for @dtPriorityHigh.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ưu tiên cao'**
+  String get dtPriorityHigh;
+
+  /// No description provided for @dtPriorityLow.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ưu tiên thấp'**
+  String get dtPriorityLow;
+
+  /// No description provided for @dtInspectionFailedSnack.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã ghi nhận bảo trì KHÔNG ĐẠT. Drone đã chuyển sang lỗi và phiếu sự cố được mở theo phản hồi Backend.'**
+  String get dtInspectionFailedSnack;
+
+  /// No description provided for @dtInspectionPassedSnack.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã ghi nhận bảo trì ĐẠT và cập nhật chu kỳ tiếp theo.'**
+  String get dtInspectionPassedSnack;
+
+  /// No description provided for @dtScheduleNoAddress.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lịch này chưa có địa chỉ trạm Drone.'**
+  String get dtScheduleNoAddress;
+
+  /// No description provided for @dtCannotOpenMaps.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không thể mở ứng dụng bản đồ.'**
+  String get dtCannotOpenMaps;
+
+  /// No description provided for @dtSourceLocker.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tủ nguồn'**
+  String get dtSourceLocker;
+
+  /// No description provided for @dtDestinationLocker.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tủ đích'**
+  String get dtDestinationLocker;
+
+  /// No description provided for @dtReceiveBoxNumber.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ô nhận số {number}'**
+  String dtReceiveBoxNumber(Object number);
+
+  /// No description provided for @dtReceiveBoxHeld.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã giữ ô nhận'**
+  String get dtReceiveBoxHeld;
+
+  /// No description provided for @dtActionAccept.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tiếp nhận'**
+  String get dtActionAccept;
+
+  /// No description provided for @dtActionLoad.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xác nhận nạp'**
+  String get dtActionLoad;
+
+  /// No description provided for @dtActionLaunch.
+  ///
+  /// In vi, this message translates to:
+  /// **'Phóng'**
+  String get dtActionLaunch;
+
+  /// No description provided for @dtActionLaunching.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang phóng'**
+  String get dtActionLaunching;
+
+  /// No description provided for @dtActionTrack.
+  ///
+  /// In vi, this message translates to:
+  /// **'Theo dõi'**
+  String get dtActionTrack;
+
+  /// No description provided for @dtCancelBeforeFlight.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hủy trước khi bay'**
+  String get dtCancelBeforeFlight;
+
+  /// No description provided for @dtRouteGroundedCantAccept.
+  ///
+  /// In vi, this message translates to:
+  /// **'{reason} — chưa tiếp nhận được đơn này.'**
+  String dtRouteGroundedCantAccept(Object reason);
+
+  /// No description provided for @dtRouteGroundedCantLaunch.
+  ///
+  /// In vi, this message translates to:
+  /// **'{reason} — chưa phóng được đơn này.'**
+  String dtRouteGroundedCantLaunch(Object reason);
+
+  /// No description provided for @dtGoods.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hàng: {description}'**
+  String dtGoods(Object description);
+
+  /// No description provided for @dtParcel.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kiện: {summary}'**
+  String dtParcel(Object summary);
+
+  /// No description provided for @dtLiveTrackingPill.
+  ///
+  /// In vi, this message translates to:
+  /// **'Drone đang gửi tín hiệu · chặng bay tự cập nhật'**
+  String get dtLiveTrackingPill;
+
+  /// No description provided for @dtConfirmStage.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xác nhận {label}'**
+  String dtConfirmStage(Object label);
+
+  /// No description provided for @dtBlockedBy.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang gặp sự cố: {reason}'**
+  String dtBlockedBy(Object reason);
+
+  /// No description provided for @dtBlockedTicket.
+  ///
+  /// In vi, this message translates to:
+  /// **' · phiếu #{id}'**
+  String dtBlockedTicket(Object id);
+
+  /// No description provided for @dtChangeDrone.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đổi drone'**
+  String get dtChangeDrone;
+
+  /// No description provided for @dtFailDelivery.
+  ///
+  /// In vi, this message translates to:
+  /// **'Giao không hoàn tất'**
+  String get dtFailDelivery;
+
+  /// No description provided for @dtReportFlightFailure.
+  ///
+  /// In vi, this message translates to:
+  /// **'Báo chuyến bay thất bại'**
+  String get dtReportFlightFailure;
+
+  /// No description provided for @dtUnpaidCantAccept.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa thanh toán · chưa thể tiếp nhận'**
+  String get dtUnpaidCantAccept;
+
+  /// No description provided for @dtNotDroppedCantAccept.
+  ///
+  /// In vi, this message translates to:
+  /// **'Người gửi chưa bỏ kiện vào ô gửi · chưa thể tiếp nhận'**
+  String get dtNotDroppedCantAccept;
+
+  /// No description provided for @dtOverweightAwaitingPayment.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kiện nặng hơn khai báo · chờ khách trả thêm phí'**
+  String get dtOverweightAwaitingPayment;
+
+  /// No description provided for @dtStageLine.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chặng: {stage}'**
+  String dtStageLine(Object stage);
+
+  /// No description provided for @dtMissionLine.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhiệm vụ: {status}'**
+  String dtMissionLine(Object status);
+
+  /// No description provided for @dtUpdatedTapDetail.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cập nhật {time} · chạm để xem chi tiết'**
+  String dtUpdatedTapDetail(Object time);
+
+  /// No description provided for @dtGroundedPaused.
+  ///
+  /// In vi, this message translates to:
+  /// **'đang tạm dừng bay ({reason})'**
+  String dtGroundedPaused(Object reason);
+
+  /// No description provided for @dtGroundedPausedByAdmin.
+  ///
+  /// In vi, this message translates to:
+  /// **'admin dừng'**
+  String get dtGroundedPausedByAdmin;
+
+  /// No description provided for @dtGroundedNoForecast.
+  ///
+  /// In vi, this message translates to:
+  /// **'chưa có dự báo thời tiết'**
+  String get dtGroundedNoForecast;
+
+  /// No description provided for @dtGroundedWeather.
+  ///
+  /// In vi, this message translates to:
+  /// **'thời tiết không cho phép bay'**
+  String get dtGroundedWeather;
+
+  /// No description provided for @dtGroundedTakeoffStation.
+  ///
+  /// In vi, this message translates to:
+  /// **'Trạm cất cánh {status}'**
+  String dtGroundedTakeoffStation(Object status);
+
+  /// No description provided for @dtGroundedReceivingLocker.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tủ nhận {status}'**
+  String dtGroundedReceivingLocker(Object status);
+
+  /// No description provided for @dtNextStageLaunching.
+  ///
+  /// In vi, this message translates to:
+  /// **'drone đã rời trạm'**
+  String get dtNextStageLaunching;
+
+  /// No description provided for @dtNextStageDeparted.
+  ///
+  /// In vi, this message translates to:
+  /// **'drone đang trên đường'**
+  String get dtNextStageDeparted;
+
+  /// No description provided for @dtNextStageEnRoute.
+  ///
+  /// In vi, this message translates to:
+  /// **'drone sắp tới tủ nhận'**
+  String get dtNextStageEnRoute;
+
+  /// No description provided for @dtNextStageApproaching.
+  ///
+  /// In vi, this message translates to:
+  /// **'drone đã tới tủ nhận'**
+  String get dtNextStageApproaching;
+
+  /// No description provided for @dtNextStageArrived.
+  ///
+  /// In vi, this message translates to:
+  /// **'hàng đã vào ô tủ nhận'**
+  String get dtNextStageArrived;
+
+  /// No description provided for @dtStageDropReported.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã báo rơi kiện'**
+  String get dtStageDropReported;
+
+  /// No description provided for @dtStageReadyToLaunch.
+  ///
+  /// In vi, this message translates to:
+  /// **'Sẵn sàng phóng'**
+  String get dtStageReadyToLaunch;
+
+  /// No description provided for @dtNoOtherIdleDrone.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tủ gửi không còn drone nào khác đang sẵn sàng. Hãy xác nhận giao không hoàn tất nếu không khắc phục được.'**
+  String get dtNoOtherIdleDrone;
+
+  /// No description provided for @dtChangeDroneHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chọn drone khác đang sẵn sàng tại tủ gửi. Kiện phải được nạp và kiểm lại trên drone mới.'**
+  String get dtChangeDroneHint;
+
+  /// No description provided for @dtChangedDrone.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã đổi drone · nạp lại kiện rồi phóng'**
+  String get dtChangedDrone;
+
+  /// No description provided for @dtFailDeliveryIntro.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đơn sẽ đóng lại, người gửi được hoàn tiền và bạn mang kiện trả lại người gửi. Không hoàn tác được.'**
+  String get dtFailDeliveryIntro;
+
+  /// No description provided for @dtFailedDeliveryDone.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã đóng đơn · mang kiện trả lại người gửi'**
+  String get dtFailedDeliveryDone;
+
+  /// No description provided for @dtConfirmStageTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xác nhận chặng bay'**
+  String get dtConfirmStageTitle;
+
+  /// No description provided for @dtConfirmStageBody.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xác nhận {label}?\n\nKhách sẽ thấy chặng mới ngay và không hoàn tác được.'**
+  String dtConfirmStageBody(Object label);
+
+  /// No description provided for @dtConfirmedStage.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã xác nhận: {label}'**
+  String dtConfirmedStage(Object label);
+
+  /// No description provided for @dtDeclaredValue.
+  ///
+  /// In vi, this message translates to:
+  /// **'khai báo {price}'**
+  String dtDeclaredValue(Object price);
+
+  /// No description provided for @dtFragileUpper.
+  ///
+  /// In vi, this message translates to:
+  /// **'DỄ VỠ'**
+  String get dtFragileUpper;
+
+  /// No description provided for @dtOrderNumber.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đơn #{id}'**
+  String dtOrderNumber(Object id);
+
+  /// No description provided for @dtFlightFailedLower.
+  ///
+  /// In vi, this message translates to:
+  /// **'chuyến bay thất bại'**
+  String get dtFlightFailedLower;
+
+  /// No description provided for @dtDeliveryNotCompletedLower.
+  ///
+  /// In vi, this message translates to:
+  /// **'giao không hoàn tất'**
+  String get dtDeliveryNotCompletedLower;
+
+  /// No description provided for @dtCanceledLower.
+  ///
+  /// In vi, this message translates to:
+  /// **'đã huỷ'**
+  String get dtCanceledLower;
+
+  /// No description provided for @dtParcelInSourceBox.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kiện còn trong ô gửi · {locker}'**
+  String dtParcelInSourceBox(Object locker);
+
+  /// No description provided for @dtParcelInSourceBoxNumber.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kiện còn trong ô gửi số {box} · {locker}'**
+  String dtParcelInSourceBoxNumber(Object box, Object locker);
+
+  /// No description provided for @dtSendingLocker.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tủ gửi'**
+  String get dtSendingLocker;
+
+  /// No description provided for @dtParcelHeldByTeam.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kiện đang do đội bay giữ'**
+  String get dtParcelHeldByTeam;
+
+  /// No description provided for @dtSender.
+  ///
+  /// In vi, this message translates to:
+  /// **'Người gửi: {sender}'**
+  String dtSender(Object sender);
+
+  /// No description provided for @dtConfirmParcelReturned.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xác nhận đã trả kiện'**
+  String get dtConfirmParcelReturned;
+
+  /// No description provided for @dtParcelReturnHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chỉ xác nhận khi kiện đã về tay người gửi. Đơn cũ còn giữ ô ở tủ gửi thì ô đó được nhả.'**
+  String get dtParcelReturnHint;
+
+  /// No description provided for @dtNoteOptional.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ghi chú (tùy chọn)'**
+  String get dtNoteOptional;
+
+  /// No description provided for @dtParcelReturned.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã trả kiện'**
+  String get dtParcelReturned;
+
+  /// No description provided for @dtParcelReturnRecorded.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã ghi nhận trả kiện cho người gửi'**
+  String get dtParcelReturnRecorded;
+
+  /// No description provided for @dtReceivingLocker.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tủ nhận'**
+  String get dtReceivingLocker;
+
+  /// No description provided for @dtLaunchCommandSent.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã phát lệnh phóng nhiệm vụ'**
+  String get dtLaunchCommandSent;
+
+  /// No description provided for @dtConfirmLoadingTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xác nhận nạp hàng'**
+  String get dtConfirmLoadingTitle;
+
+  /// No description provided for @dtConfirmLoadingIntro.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cân kiện và hoàn tất toàn bộ checklist trước khi cho phép phóng.'**
+  String get dtConfirmLoadingIntro;
+
+  /// No description provided for @dtActualWeightLabel.
+  ///
+  /// In vi, this message translates to:
+  /// **'Khối lượng cân thực tế (gram) *'**
+  String get dtActualWeightLabel;
+
+  /// No description provided for @dtActualWeightHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhập số gram đọc trên cân'**
+  String get dtActualWeightHint;
+
+  /// No description provided for @dtActualWeightInvalid.
+  ///
+  /// In vi, this message translates to:
+  /// **'Vui lòng nhập khối lượng thực tế lớn hơn 0'**
+  String get dtActualWeightInvalid;
+
+  /// No description provided for @dtNoDeclaredWeight.
+  ///
+  /// In vi, this message translates to:
+  /// **'Khách chưa khai báo khối lượng.'**
+  String get dtNoDeclaredWeight;
+
+  /// No description provided for @dtDeclaredWeight.
+  ///
+  /// In vi, this message translates to:
+  /// **'Khách khai báo {weight}.'**
+  String dtDeclaredWeight(Object weight);
+
+  /// No description provided for @dtDeclaredWeightWithFee.
+  ///
+  /// In vi, this message translates to:
+  /// **'Khách khai báo {weight} · phí đã tính {price}.'**
+  String dtDeclaredWeightWithFee(Object weight, Object price);
+
+  /// No description provided for @dtOverweightSurcharge.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nặng hơn khai báo: khách phải trả thêm {price}. Drone chỉ phóng được sau khi khách thanh toán.'**
+  String dtOverweightSurcharge(Object price);
+
+  /// No description provided for @dtSealCode.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mã niêm phong'**
+  String get dtSealCode;
+
+  /// No description provided for @dtSealCodeHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hệ thống cấp mã sau khi xác nhận nạp — ghi mã đó lên niêm phong của kiện.'**
+  String get dtSealCodeHint;
+
+  /// No description provided for @dtCheckParcelMatched.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đúng kiện hàng và đúng đơn'**
+  String get dtCheckParcelMatched;
+
+  /// No description provided for @dtCheckPayloadSecured.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kiện hàng đã được cố định'**
+  String get dtCheckPayloadSecured;
+
+  /// No description provided for @dtCheckCompartmentLocked.
+  ///
+  /// In vi, this message translates to:
+  /// **'Khoang hàng đã khóa'**
+  String get dtCheckCompartmentLocked;
+
+  /// No description provided for @dtChecklistIncomplete.
+  ///
+  /// In vi, this message translates to:
+  /// **'Vui lòng hoàn tất toàn bộ checklist'**
+  String get dtChecklistIncomplete;
+
+  /// No description provided for @dtConfirmLoaded.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xác nhận đã nạp'**
+  String get dtConfirmLoaded;
+
+  /// No description provided for @dtSealSuffix.
+  ///
+  /// In vi, this message translates to:
+  /// **' (niêm phong {seal})'**
+  String dtSealSuffix(Object seal);
+
+  /// No description provided for @dtLoadedOverweight.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã nạp hàng{seal}. Kiện nặng hơn khai báo — chờ khách trả thêm {price} rồi mới phóng.'**
+  String dtLoadedOverweight(Object seal, Object price);
+
+  /// No description provided for @dtLoadedReady.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã xác nhận nạp hàng{seal} — nhiệm vụ sẵn sàng phóng'**
+  String dtLoadedReady(Object seal);
+
+  /// No description provided for @dtCancelMissionBeforeFlight.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hủy nhiệm vụ trước khi bay'**
+  String get dtCancelMissionBeforeFlight;
+
+  /// No description provided for @dtFlightFailureIntro.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đơn sẽ đóng lại và khách được hoàn tiền; drone chuyển sang trạng thái lỗi cho tới khi bạn kiểm tra xong. Không hoàn tác được.'**
+  String get dtFlightFailureIntro;
+
+  /// No description provided for @dtCancelMissionIntro.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đơn sẽ đóng lại, người gửi được hoàn tiền và bạn mang kiện trả lại người gửi. Chọn \"Drone lỗi\" thì drone chuyển sang trạng thái lỗi, không nhận đơn mới cho tới khi kiểm tra xong.'**
+  String get dtCancelMissionIntro;
+
+  /// No description provided for @dtNoteRequired.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ghi chú (bắt buộc)'**
+  String get dtNoteRequired;
+
+  /// No description provided for @dtPickReason.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chọn một lý do'**
+  String get dtPickReason;
+
+  /// No description provided for @dtNoteRequiredForOther.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cần nhập ghi chú khi chọn Khác'**
+  String get dtNoteRequiredForOther;
+
+  /// No description provided for @dtConfirmFailure.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xác nhận thất bại'**
+  String get dtConfirmFailure;
+
+  /// No description provided for @dtConfirmCancel.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xác nhận hủy'**
+  String get dtConfirmCancel;
+
+  /// No description provided for @dtFlightFailureReported.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã báo chuyến bay thất bại · khách được hoàn tiền'**
+  String get dtFlightFailureReported;
+
+  /// No description provided for @dtMissionCanceled.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã hủy nhiệm vụ drone'**
+  String get dtMissionCanceled;
+
+  /// No description provided for @dtIneligibleInactive.
+  ///
+  /// In vi, this message translates to:
+  /// **'ngưng hoạt động'**
+  String get dtIneligibleInactive;
+
+  /// No description provided for @dtIneligibleUnknownBattery.
+  ///
+  /// In vi, this message translates to:
+  /// **'chưa biết mức pin'**
+  String get dtIneligibleUnknownBattery;
+
+  /// No description provided for @dtIneligibleLowBattery.
+  ///
+  /// In vi, this message translates to:
+  /// **'pin {battery}% (cần trên {min}%)'**
+  String dtIneligibleLowBattery(Object battery, Object min);
+
+  /// No description provided for @dtNoDroneAtSource.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tủ gửi của đơn không có drone nào.'**
+  String get dtNoDroneAtSource;
+
+  /// No description provided for @dtNoEligibleDroneAtSource.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không có drone đủ điều kiện tại tủ gửi: {list}.'**
+  String dtNoEligibleDroneAtSource(Object list);
+
+  /// No description provided for @dtAssignDroneTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Gán drone cho đơn'**
+  String get dtAssignDroneTitle;
+
+  /// No description provided for @dtAssignDroneRoute.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tuyến {route}.'**
+  String dtAssignDroneRoute(Object route);
+
+  /// No description provided for @dtAssignDroneRouteBox.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tuyến {route} · ô nhận số {box}.'**
+  String dtAssignDroneRouteBox(Object route, Object box);
+
+  /// No description provided for @dtAssignDronePick.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chọn drone đang sẵn sàng tại tủ gửi:'**
+  String get dtAssignDronePick;
+
+  /// No description provided for @dtIneligibleDronesHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Drone bị mờ không nhận được đơn (ngưng hoạt động, không ở trạng thái Sẵn sàng, chưa biết pin hoặc pin ≤ {min}%).'**
+  String dtIneligibleDronesHint(Object min);
+
+  /// No description provided for @dtAssignDrone.
+  ///
+  /// In vi, this message translates to:
+  /// **'Gán drone'**
+  String get dtAssignDrone;
+
+  /// No description provided for @dtAcceptedAndAssigned.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã tiếp nhận và gán drone cho nhiệm vụ'**
+  String get dtAcceptedAndAssigned;
+
+  /// No description provided for @dtLockerNumber.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tủ {id}'**
+  String dtLockerNumber(Object id);
+
+  /// No description provided for @dtNoBatteryData.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa có số pin'**
+  String get dtNoBatteryData;
+
+  /// No description provided for @dtBatteryPercentPin.
+  ///
+  /// In vi, this message translates to:
+  /// **'{battery}% pin'**
+  String dtBatteryPercentPin(Object battery);
+
+  /// No description provided for @dtNotClaimed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa nhận'**
+  String get dtNotClaimed;
+
+  /// No description provided for @dtBatteryPercent.
+  ///
+  /// In vi, this message translates to:
+  /// **'Pin {battery}%'**
+  String dtBatteryPercent(Object battery);
+
+  /// No description provided for @dtYouAreInCharge.
+  ///
+  /// In vi, this message translates to:
+  /// **' · bạn đang phụ trách'**
+  String get dtYouAreInCharge;
+
+  /// No description provided for @dtClaimDrone.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhận xử lý'**
+  String get dtClaimDrone;
+
+  /// No description provided for @dtClaimedDrone.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã nhận phụ trách drone'**
+  String get dtClaimedDrone;
+
+  /// No description provided for @dtReleaseDrone.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhả phụ trách'**
+  String get dtReleaseDrone;
+
+  /// No description provided for @dtReleasedDrone.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã nhả phụ trách drone'**
+  String get dtReleasedDrone;
+
+  /// No description provided for @dtChangeStatus.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đổi trạng thái'**
+  String get dtChangeStatus;
+
+  /// No description provided for @dtUpdateBattery.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cập nhật pin %'**
+  String get dtUpdateBattery;
+
+  /// No description provided for @dtMaintenanceLog.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhật ký bảo trì'**
+  String get dtMaintenanceLog;
+
+  /// No description provided for @dtDroneInFlightTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Drone đang bay'**
+  String get dtDroneInFlightTitle;
+
+  /// No description provided for @dtDroneInFlightBody.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không đổi trạng thái drone khi đang bay. Nếu chuyến bay gặp sự cố, dùng \"Báo chuyến bay thất bại\" trên nhiệm vụ: đơn được đóng, khách được hoàn tiền và drone chuyển sang Lỗi.'**
+  String get dtDroneInFlightBody;
+
+  /// No description provided for @dtViewInFlightMission.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xem nhiệm vụ đang bay'**
+  String get dtViewInFlightMission;
+
+  /// No description provided for @dtChangeDroneStatusTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đổi trạng thái drone'**
+  String get dtChangeDroneStatusTitle;
+
+  /// No description provided for @dtDroneHasOpenReports.
+  ///
+  /// In vi, this message translates to:
+  /// **'Drone còn phiếu {tickets} chưa hoàn tất: hoàn tất phiếu trước khi chuyển về Sẵn sàng hoặc Đang sạc.'**
+  String dtDroneHasOpenReports(Object tickets);
+
+  /// No description provided for @dtReasonRequired.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lý do (bắt buộc)'**
+  String get dtReasonRequired;
+
+  /// No description provided for @dtStatusUnchanged.
+  ///
+  /// In vi, this message translates to:
+  /// **'Trạng thái không thay đổi'**
+  String get dtStatusUnchanged;
+
+  /// No description provided for @dtFaultReasonRequired.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cần nhập lý do khi chuyển sang FAULT'**
+  String get dtFaultReasonRequired;
+
+  /// No description provided for @dtStatusChanged.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã đổi trạng thái drone'**
+  String get dtStatusChanged;
+
+  /// No description provided for @dtBatteryRemaining.
+  ///
+  /// In vi, this message translates to:
+  /// **'Pin còn lại (0-100)'**
+  String get dtBatteryRemaining;
+
+  /// No description provided for @dtBatteryRange.
+  ///
+  /// In vi, this message translates to:
+  /// **'Pin phải trong khoảng 0-100'**
+  String get dtBatteryRange;
+
+  /// No description provided for @dtBatteryUpdated.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã cập nhật pin drone'**
+  String get dtBatteryUpdated;
+
+  /// No description provided for @dtTechnicianNumber.
+  ///
+  /// In vi, this message translates to:
+  /// **' · KTV #{id}'**
+  String dtTechnicianNumber(Object id);
+
+  /// No description provided for @dtMaintenanceLogTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhật ký bảo trì · {drone}'**
+  String dtMaintenanceLogTitle(Object drone);
+
+  /// No description provided for @dtLogLoadFailed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không tải được nhật ký: {error}'**
+  String dtLogLoadFailed(Object error);
+
+  /// No description provided for @dtLogEmptyTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa có ghi chú nào'**
+  String get dtLogEmptyTitle;
+
+  /// No description provided for @dtLogEmptyCanWrite.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thêm bước xử lý đầu tiên bên dưới.'**
+  String get dtLogEmptyCanWrite;
+
+  /// No description provided for @dtLogEmptyReadOnly.
+  ///
+  /// In vi, this message translates to:
+  /// **'Drone này chưa có nhật ký bảo trì.'**
+  String get dtLogEmptyReadOnly;
+
+  /// No description provided for @dtLogReadOnlyHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chỉ KTV đang phụ trách drone mới thêm được nhật ký. Nhận phụ trách drone để ghi bước xử lý.'**
+  String get dtLogReadOnlyHint;
+
+  /// No description provided for @dtLogInputHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thêm bước xử lý / ghi chú...'**
+  String get dtLogInputHint;
+
+  /// No description provided for @dtMissionDetailTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chi tiết nhiệm vụ drone'**
+  String get dtMissionDetailTitle;
+
+  /// No description provided for @dtRealtimeUpdates.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tự cập nhật theo thời gian thực'**
+  String get dtRealtimeUpdates;
+
+  /// No description provided for @dtDropReportedBanner.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đơn đã báo rơi kiện và dừng giao. Theo dõi tiến trình xử lý ở mục \"Sự cố rơi kiện\" trong tab Điều phối.'**
+  String get dtDropReportedBanner;
+
+  /// No description provided for @dtCancelReasonWeather.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thời tiết xấu'**
+  String get dtCancelReasonWeather;
+
+  /// No description provided for @dtCancelReasonDroneFault.
+  ///
+  /// In vi, this message translates to:
+  /// **'Drone lỗi'**
+  String get dtCancelReasonDroneFault;
+
+  /// No description provided for @dtCancelReasonLandingPad.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bãi đáp không sẵn sàng'**
+  String get dtCancelReasonLandingPad;
+
+  /// No description provided for @dtCancelReasonOperational.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lý do vận hành'**
+  String get dtCancelReasonOperational;
+
+  /// No description provided for @dtCancelReasonOther.
+  ///
+  /// In vi, this message translates to:
+  /// **'Khác'**
+  String get dtCancelReasonOther;
+
+  /// No description provided for @dtDroneStatusIdle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Sẵn sàng'**
+  String get dtDroneStatusIdle;
+
+  /// No description provided for @dtDroneStatusReserved.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã giữ cho nhiệm vụ'**
+  String get dtDroneStatusReserved;
+
+  /// No description provided for @dtDroneStatusCharging.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang sạc'**
+  String get dtDroneStatusCharging;
+
+  /// No description provided for @dtDroneStatusInFlight.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang bay'**
+  String get dtDroneStatusInFlight;
+
+  /// No description provided for @dtDroneStatusMaintenance.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang bảo trì'**
+  String get dtDroneStatusMaintenance;
+
+  /// No description provided for @dtDroneStatusFault.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lỗi'**
+  String get dtDroneStatusFault;
+
+  /// No description provided for @dtErrDroneHasOpenReport.
+  ///
+  /// In vi, this message translates to:
+  /// **'Drone còn phiếu sự cố chưa hoàn tất. Hoàn tất phiếu trước khi đưa drone về Sẵn sàng hoặc Đang sạc.'**
+  String get dtErrDroneHasOpenReport;
+
+  /// No description provided for @dtErrDroneInFlightUseFail.
+  ///
+  /// In vi, this message translates to:
+  /// **'Drone đang bay: dùng \"Báo chuyến bay thất bại\" trên nhiệm vụ đang bay thay vì đổi trạng thái.'**
+  String get dtErrDroneInFlightUseFail;
+
+  /// No description provided for @dtErrStageChanged.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chặng bay vừa thay đổi (drone tự cập nhật hoặc đã có người xác nhận). Danh sách đã được tải lại, hãy kiểm tra rồi xác nhận lại.'**
+  String get dtErrStageChanged;
+
+  /// No description provided for @dtErrSlaNotAssignee.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chỉ KTV đang được giao phiếu mới gia hạn được SLA.'**
+  String get dtErrSlaNotAssignee;
+
+  /// No description provided for @dtErrSlaLimitReached.
+  ///
+  /// In vi, this message translates to:
+  /// **'Phiếu đã dùng hết số lần gia hạn SLA. Liên hệ quản trị nếu cần thêm thời gian.'**
+  String get dtErrSlaLimitReached;
+
+  /// No description provided for @dtErrSlaHoursExceeded.
+  ///
+  /// In vi, this message translates to:
+  /// **'Số giờ gia hạn vượt mức tối đa cho mỗi lần.'**
+  String get dtErrSlaHoursExceeded;
+
+  /// No description provided for @dtErrSlaReasonRequired.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cần nhập lý do gia hạn SLA.'**
+  String get dtErrSlaReasonRequired;
+
+  /// No description provided for @dtErrInvalidExtensionHours.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thời gian gia hạn phải từ 1 giờ trở lên.'**
+  String get dtErrInvalidExtensionHours;
+
+  /// No description provided for @dtErrReportNotAssigned.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chỉ KTV đang giữ phiếu mới trả được phiếu.'**
+  String get dtErrReportNotAssigned;
+
+  /// No description provided for @dtErrReportNotClaimed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Phiếu đang ở hàng chờ, chưa có KTV nhận.'**
+  String get dtErrReportNotClaimed;
+
+  /// No description provided for @dtErrReleaseReasonRequired.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cần nhập lý do trả phiếu.'**
+  String get dtErrReleaseReasonRequired;
+
+  /// No description provided for @dtErrReportAlreadyResolved.
+  ///
+  /// In vi, this message translates to:
+  /// **'Phiếu đã hoàn tất, không thao tác được nữa.'**
+  String get dtErrReportAlreadyResolved;
+
+  /// No description provided for @dtErrDroneReportRequired.
+  ///
+  /// In vi, this message translates to:
+  /// **'Phiếu này không phải phiếu sự cố drone.'**
+  String get dtErrDroneReportRequired;
+
+  /// No description provided for @dtErrJourneyForbidden.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chỉ KTV đã tiếp nhận nhiệm vụ mới xem được camera của chuyến bay.'**
+  String get dtErrJourneyForbidden;
+
+  /// No description provided for @dtErrMissionNotFound.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đơn này chưa có nhiệm vụ bay.'**
+  String get dtErrMissionNotFound;
+
+  /// No description provided for @dtErrIncidentNotFound.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không tìm thấy sự cố.'**
+  String get dtErrIncidentNotFound;
+
+  /// No description provided for @dtErrTechnicianRequired.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chức năng này chỉ dành cho KTV drone.'**
+  String get dtErrTechnicianRequired;
+
+  /// No description provided for @dtErrIncidentForbidden.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bạn không có quyền xem sự cố này.'**
+  String get dtErrIncidentForbidden;
+
+  /// No description provided for @dtErrServerUnsupported.
+  ///
+  /// In vi, this message translates to:
+  /// **'Máy chủ chưa hỗ trợ chức năng này.'**
+  String get dtErrServerUnsupported;
+
+  /// No description provided for @dtRdClaimBody.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xác nhận nhận phiếu RPT-{id} và chịu trách nhiệm cập nhật nhật ký xử lý.'**
+  String dtRdClaimBody(Object id);
+
+  /// No description provided for @dtRdTakeJob.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhận việc'**
+  String get dtRdTakeJob;
+
+  /// No description provided for @dtRdLogUpdated.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã cập nhật nhật ký xử lý'**
+  String get dtRdLogUpdated;
+
+  /// No description provided for @dtRdResolved.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã nghiệm thu và hoàn tất sự cố Drone'**
+  String get dtRdResolved;
+
+  /// No description provided for @dtRdSlaExtended.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã gia hạn SLA thêm {hours} giờ.'**
+  String dtRdSlaExtended(Object hours);
+
+  /// No description provided for @dtRdSlaExtendedUsed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã gia hạn SLA thêm {hours} giờ (đã dùng {used}/{max} lần).'**
+  String dtRdSlaExtendedUsed(Object hours, Object used, Object max);
+
+  /// No description provided for @dtRdReleased.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã trả phiếu RPT-{id} về hàng chờ.'**
+  String dtRdReleased(Object id);
+
+  /// No description provided for @dtRdSubtitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hồ sơ chi tiết phiếu sự cố kỹ thuật Drone'**
+  String get dtRdSubtitle;
+
+  /// No description provided for @dtRdLoadPartial.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không tải đủ hồ sơ: {error}'**
+  String dtRdLoadPartial(Object error);
+
+  /// No description provided for @dtRdInfoSection.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thông tin sự cố'**
+  String get dtRdInfoSection;
+
+  /// No description provided for @dtRdStation.
+  ///
+  /// In vi, this message translates to:
+  /// **'Trạm/Kiosk'**
+  String get dtRdStation;
+
+  /// No description provided for @dtRdReporter.
+  ///
+  /// In vi, this message translates to:
+  /// **'Người báo'**
+  String get dtRdReporter;
+
+  /// No description provided for @dtRdUserNumber.
+  ///
+  /// In vi, this message translates to:
+  /// **'Người dùng #{id}'**
+  String dtRdUserNumber(Object id);
+
+  /// No description provided for @dtRdAssignee.
+  ///
+  /// In vi, this message translates to:
+  /// **'KTV phụ trách'**
+  String get dtRdAssignee;
+
+  /// No description provided for @dtRdYouSuffix.
+  ///
+  /// In vi, this message translates to:
+  /// **'{name} (bạn)'**
+  String dtRdYouSuffix(Object name);
+
+  /// No description provided for @dtRdNoAssignee.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa có KTV nhận việc'**
+  String get dtRdNoAssignee;
+
+  /// No description provided for @dtRdYou.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bạn'**
+  String get dtRdYou;
+
+  /// No description provided for @dtRdTechNumber.
+  ///
+  /// In vi, this message translates to:
+  /// **'KTV #{id}'**
+  String dtRdTechNumber(Object id);
+
+  /// No description provided for @dtRdSlaDue.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hạn SLA'**
+  String get dtRdSlaDue;
+
+  /// No description provided for @dtRdSlaOverdueSuffix.
+  ///
+  /// In vi, this message translates to:
+  /// **'{date} · đã quá hạn'**
+  String dtRdSlaOverdueSuffix(Object date);
+
+  /// No description provided for @dtRdSlaExtensions.
+  ///
+  /// In vi, this message translates to:
+  /// **'Gia hạn SLA'**
+  String get dtRdSlaExtensions;
+
+  /// No description provided for @dtRdExtendedCount.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã gia hạn {used} lần'**
+  String dtRdExtendedCount(Object used);
+
+  /// No description provided for @dtRdExtendedCountMax.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã gia hạn {used}/{max} lần'**
+  String dtRdExtendedCountMax(Object used, Object max);
+
+  /// No description provided for @dtRdCreatedAt.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tạo lúc'**
+  String get dtRdCreatedAt;
+
+  /// No description provided for @dtRdDescriptionSection.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mô tả hiện trường'**
+  String get dtRdDescriptionSection;
+
+  /// No description provided for @dtRdNoDescription.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa có mô tả chi tiết.'**
+  String get dtRdNoDescription;
+
+  /// No description provided for @dtRdPhotosSection.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ảnh hồ sơ theo giai đoạn'**
+  String get dtRdPhotosSection;
+
+  /// No description provided for @dtRdLogsSection.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhật ký & lịch sử xử lý của KTV'**
+  String get dtRdLogsSection;
+
+  /// No description provided for @dtRdResolveButton.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nghiệm thu & hoàn tất sự cố'**
+  String get dtRdResolveButton;
+
+  /// No description provided for @dtRdExtendSlaCount.
+  ///
+  /// In vi, this message translates to:
+  /// **'Gia hạn SLA ({used}/{max})'**
+  String dtRdExtendSlaCount(Object used, Object max);
+
+  /// No description provided for @dtRdExtendSla.
+  ///
+  /// In vi, this message translates to:
+  /// **'Gia hạn SLA'**
+  String get dtRdExtendSla;
+
+  /// No description provided for @dtRdReleaseTicket.
+  ///
+  /// In vi, this message translates to:
+  /// **'Trả lại phiếu'**
+  String get dtRdReleaseTicket;
+
+  /// No description provided for @dtRdNoLogs.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa có ghi chú xử lý. Mỗi bước kiểm tra hoặc sửa chữa sẽ được lưu tại đây.'**
+  String get dtRdNoLogs;
+
+  /// No description provided for @dtRdLogViewerTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhật ký Drone · {date}'**
+  String dtRdLogViewerTitle(Object date);
+
+  /// No description provided for @dtRdTechnician.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kỹ thuật viên'**
+  String get dtRdTechnician;
+
+  /// No description provided for @dtRdAddStep.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thêm bước xử lý / ảnh tiến độ'**
+  String get dtRdAddStep;
+
+  /// No description provided for @dtRdAddPhoto.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thêm ảnh'**
+  String get dtRdAddPhoto;
+
+  /// No description provided for @dtRdPhotoHelper.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ảnh kiểm tra hoặc tiến độ sửa chữa'**
+  String get dtRdPhotoHelper;
+
+  /// No description provided for @dtRdNoteHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhập việc đã kiểm tra hoặc sửa chữa...'**
+  String get dtRdNoteHint;
+
+  /// No description provided for @dtRdSaveLog.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lưu nhật ký'**
+  String get dtRdSaveLog;
+
+  /// No description provided for @dtRdSlaUnsupported.
+  ///
+  /// In vi, this message translates to:
+  /// **'Máy chủ chưa hỗ trợ gia hạn SLA cho phiếu drone.'**
+  String get dtRdSlaUnsupported;
+
+  /// No description provided for @dtRdExtendTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Gia hạn SLA · RPT-{id}'**
+  String dtRdExtendTitle(Object id);
+
+  /// No description provided for @dtRdExtendIntroUsed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã gia hạn {used}/{max} lần. Mỗi lần gia hạn được ghi vào nhật ký phiếu.'**
+  String dtRdExtendIntroUsed(Object used, Object max);
+
+  /// No description provided for @dtRdExtendIntro.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mỗi lần gia hạn được ghi vào nhật ký phiếu; số lần và số giờ tối đa theo cấu hình.'**
+  String get dtRdExtendIntro;
+
+  /// No description provided for @dtRdAddTime.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thêm thời gian'**
+  String get dtRdAddTime;
+
+  /// No description provided for @dtRdHours.
+  ///
+  /// In vi, this message translates to:
+  /// **'{hours} giờ'**
+  String dtRdHours(int hours);
+
+  /// No description provided for @dtRdExtendReason.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lý do gia hạn *'**
+  String get dtRdExtendReason;
+
+  /// No description provided for @dtRdExtend.
+  ///
+  /// In vi, this message translates to:
+  /// **'Gia hạn'**
+  String get dtRdExtend;
+
+  /// No description provided for @dtRdReleaseUnsupported.
+  ///
+  /// In vi, this message translates to:
+  /// **'Máy chủ chưa hỗ trợ trả phiếu drone.'**
+  String get dtRdReleaseUnsupported;
+
+  /// No description provided for @dtRdReleaseTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Trả lại phiếu RPT-{id}?'**
+  String dtRdReleaseTitle(Object id);
+
+  /// No description provided for @dtRdReleaseIntro.
+  ///
+  /// In vi, this message translates to:
+  /// **'Phiếu quay về hàng chờ để KTV khác nhận; bạn không còn phụ trách phiếu này.'**
+  String get dtRdReleaseIntro;
+
+  /// No description provided for @dtRdReleaseReason.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lý do trả phiếu *'**
+  String get dtRdReleaseReason;
+
+  /// No description provided for @dtRdRelease.
+  ///
+  /// In vi, this message translates to:
+  /// **'Trả phiếu'**
+  String get dtRdRelease;
+
+  /// No description provided for @dtRdNeedResolutionPhoto.
+  ///
+  /// In vi, this message translates to:
+  /// **'Vui lòng chụp ít nhất 1 ảnh sau khi sửa xong để nghiệm thu.'**
+  String get dtRdNeedResolutionPhoto;
+
+  /// No description provided for @dtRdResolveTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nghiệm thu sự cố Drone'**
+  String get dtRdResolveTitle;
+
+  /// No description provided for @dtRdResolveIntro.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lưu ảnh tiến độ và ảnh sau khi khắc phục giống quy trình nghiệm thu sự cố tủ.'**
+  String get dtRdResolveIntro;
+
+  /// No description provided for @dtRdResolutionResult.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kết quả khắc phục'**
+  String get dtRdResolutionResult;
+
+  /// No description provided for @dtRdResolutionHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mô tả linh kiện hoặc thao tác đã xử lý...'**
+  String get dtRdResolutionHint;
+
+  /// No description provided for @dtRdProgressPhotos.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ảnh trong quá trình sửa'**
+  String get dtRdProgressPhotos;
+
+  /// No description provided for @dtRdProgressPhotosHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không bắt buộc, dùng để ghi nhận thao tác kỹ thuật.'**
+  String get dtRdProgressPhotosHint;
+
+  /// No description provided for @dtRdResolutionPhotosRequired.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ảnh sau khi sửa xong *'**
+  String get dtRdResolutionPhotosRequired;
+
+  /// No description provided for @dtRdResolutionPhotos.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ảnh sau khi sửa xong'**
+  String get dtRdResolutionPhotos;
+
+  /// No description provided for @dtRdResolutionPhotosRequiredHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bắt buộc ít nhất 1 ảnh để nghiệm thu.'**
+  String get dtRdResolutionPhotosRequiredHint;
+
+  /// No description provided for @dtRdResolutionPhotosOptionalHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không bắt buộc, dùng để lưu ảnh nghiệm thu.'**
+  String get dtRdResolutionPhotosOptionalHint;
+
+  /// No description provided for @dtRdConfirmResolve.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xác nhận hoàn tất'**
+  String get dtRdConfirmResolve;
+
+  /// No description provided for @dtPqNoteRequiredForReason.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cần nhập ghi chú cho lý do này'**
+  String get dtPqNoteRequiredForReason;
+
+  /// No description provided for @dtPqNeedLocation.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cần vị trí hiện tại để vào ca nhận việc lấy hàng.'**
+  String get dtPqNeedLocation;
+
+  /// No description provided for @dtPqOnDuty.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã vào ca. Bạn sẽ được mời khi có đơn gần bạn.'**
+  String get dtPqOnDuty;
+
+  /// No description provided for @dtPqOffDuty.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã ra ca. Bạn sẽ không được mời lấy hàng.'**
+  String get dtPqOffDuty;
+
+  /// No description provided for @dtPqDeclineTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Từ chối lời mời lấy hàng?'**
+  String get dtPqDeclineTitle;
+
+  /// No description provided for @dtPqDeclineBody.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đơn {order} sẽ được mời người khác và bạn không được mời lại đơn này trong một thời gian.'**
+  String dtPqDeclineBody(Object order);
+
+  /// No description provided for @dtPqDecline.
+  ///
+  /// In vi, this message translates to:
+  /// **'Từ chối'**
+  String get dtPqDecline;
+
+  /// No description provided for @dtPqDeclined.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã từ chối · hệ thống mời người khác'**
+  String get dtPqDeclined;
+
+  /// No description provided for @dtPqConfirmPickupTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xác nhận đã lấy hàng'**
+  String get dtPqConfirmPickupTitle;
+
+  /// No description provided for @dtPqDeclaredParcelAsk.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kiện khai báo: {summary}.\nNhờ người gửi đọc mã lấy hàng trong đơn của họ.'**
+  String dtPqDeclaredParcelAsk(Object summary);
+
+  /// No description provided for @dtPqPickupCode.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mã lấy hàng (6 số)'**
+  String get dtPqPickupCode;
+
+  /// No description provided for @dtPqParcelMatches.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kiện đúng khai báo (loại hàng, kích thước, khối lượng) và không có hàng cấm bay.'**
+  String get dtPqParcelMatches;
+
+  /// No description provided for @dtPqPhotoRequired.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ảnh kiện tại điểm lấy là bắt buộc.'**
+  String get dtPqPhotoRequired;
+
+  /// No description provided for @dtPqCameraFailed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không mở được máy ảnh. Kiểm tra quyền camera.'**
+  String get dtPqCameraFailed;
+
+  /// No description provided for @dtPqTakePhoto.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chụp ảnh kiện'**
+  String get dtPqTakePhoto;
+
+  /// No description provided for @dtPqPhotoHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chụp rõ toàn bộ kiện trước khi xác nhận đã lấy.'**
+  String get dtPqPhotoHint;
+
+  /// No description provided for @dtPqEnterSixDigits.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhập đủ 6 chữ số'**
+  String get dtPqEnterSixDigits;
+
+  /// No description provided for @dtPqConfirmMatchOrFail.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cần xác nhận kiện đúng khai báo, hoặc báo không lấy được'**
+  String get dtPqConfirmMatchOrFail;
+
+  /// No description provided for @dtPqNeedPhoto.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cần chụp ảnh kiện trước khi xác nhận'**
+  String get dtPqNeedPhoto;
+
+  /// No description provided for @dtPqUploadFailed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa tải được ảnh kiện lên. Thử lại.'**
+  String get dtPqUploadFailed;
+
+  /// No description provided for @dtPqNoGps.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa lấy được vị trí GPS hiện tại. Bật định vị rồi thử lại.'**
+  String get dtPqNoGps;
+
+  /// No description provided for @dtPqPickedUp.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã lấy hàng'**
+  String get dtPqPickedUp;
+
+  /// No description provided for @dtPqPickedUpDone.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã lấy hàng và lưu ảnh kiện. Mang kiện tới drone được phân công và nạp trực tiếp; không bỏ vào ô tủ bay.'**
+  String get dtPqPickedUpDone;
+
+  /// No description provided for @dtPqFailPickupTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không lấy được hàng'**
+  String get dtPqFailPickupTitle;
+
+  /// No description provided for @dtPqFailPickupIntro.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đơn sẽ kết thúc \"giao không hoàn tất\" và người gửi được hoàn tiền. Không hoàn tác được.'**
+  String get dtPqFailPickupIntro;
+
+  /// No description provided for @dtPqFailPickupDone.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã báo không lấy được hàng · người gửi được hoàn tiền'**
+  String get dtPqFailPickupDone;
+
+  /// No description provided for @dtPqExpired.
+  ///
+  /// In vi, this message translates to:
+  /// **'đã hết hạn'**
+  String get dtPqExpired;
+
+  /// No description provided for @dtPqTimeLeft.
+  ///
+  /// In vi, this message translates to:
+  /// **'còn {time}'**
+  String dtPqTimeLeft(Object time);
+
+  /// No description provided for @dtPqSecOffers.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lời mời lấy hàng ({count})'**
+  String dtPqSecOffers(Object count);
+
+  /// No description provided for @dtPqSecAccepted.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang đi lấy hàng ({count})'**
+  String dtPqSecAccepted(Object count);
+
+  /// No description provided for @dtPqSecCarrying.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã lấy hàng · chờ nạp trực tiếp lên drone ({count})'**
+  String dtPqSecCarrying(Object count);
+
+  /// No description provided for @dtPqOffersWaiting.
+  ///
+  /// In vi, this message translates to:
+  /// **'Có {count} lời mời đang chờ bạn trả lời.'**
+  String dtPqOffersWaiting(int count);
+
+  /// No description provided for @dtPqOffersWaitingDirect.
+  ///
+  /// In vi, this message translates to:
+  /// **'Có {count} lời mời đang chờ bạn trả lời (điều phối viên giao trực tiếp).'**
+  String dtPqOffersWaitingDirect(int count);
+
+  /// No description provided for @dtPqTurnOnHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bật để nhận lời mời lấy hàng tận nhà gần bạn.'**
+  String get dtPqTurnOnHint;
+
+  /// No description provided for @dtPqBusy.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang trong ca · đang bận một việc nên chưa được mời thêm.'**
+  String get dtPqBusy;
+
+  /// No description provided for @dtPqFree.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang trong ca · rảnh, sẽ được mời khi có đơn gần bạn.'**
+  String get dtPqFree;
+
+  /// No description provided for @dtPqFreeWithLocation.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang trong ca · rảnh, sẽ được mời khi có đơn gần bạn · vị trí lúc {time}.'**
+  String dtPqFreeWithLocation(Object time);
+
+  /// No description provided for @dtPqOnDutyTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang nhận việc lấy hàng'**
+  String get dtPqOnDutyTitle;
+
+  /// No description provided for @dtPqOffDutyTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa vào ca lấy hàng'**
+  String get dtPqOffDutyTitle;
+
+  /// No description provided for @dtPqPickupAt.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lấy tại: {address}'**
+  String dtPqPickupAt(Object address);
+
+  /// No description provided for @dtPqDistanceParcel.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cách bạn {distance} · kiện {summary}'**
+  String dtPqDistanceParcel(Object distance, Object summary);
+
+  /// No description provided for @dtPqReplyIn.
+  ///
+  /// In vi, this message translates to:
+  /// **'Trả lời {countdown}'**
+  String dtPqReplyIn(Object countdown);
+
+  /// No description provided for @dtPqAccepted.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã nhận. Tới điểm lấy hàng và hỏi mã lấy hàng của người gửi.'**
+  String get dtPqAccepted;
+
+  /// No description provided for @dtPqAcceptPickup.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhận lấy hàng'**
+  String get dtPqAcceptPickup;
+
+  /// No description provided for @dtPqInstructions.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chỉ dẫn: {note}'**
+  String dtPqInstructions(Object note);
+
+  /// No description provided for @dtPqDeclaredParcel.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kiện khai báo: {summary}'**
+  String dtPqDeclaredParcel(Object summary);
+
+  /// No description provided for @dtPqDirections.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chỉ đường'**
+  String get dtPqDirections;
+
+  /// No description provided for @dtPqCantPickUp.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không lấy được'**
+  String get dtPqCantPickUp;
+
+  /// No description provided for @dtPqSendingLockerNumber.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tủ gửi #{id}'**
+  String dtPqSendingLockerNumber(Object id);
+
+  /// No description provided for @dtPqBringToDrone.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mang kiện tới drone tại: {locker}'**
+  String dtPqBringToDrone(Object locker);
+
+  /// No description provided for @dtPqDirectionsToDrone.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chỉ đường tới drone'**
+  String get dtPqDirectionsToDrone;
+
+  /// No description provided for @dtRtlRequested.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã yêu cầu drone quay về (RTL)'**
+  String get dtRtlRequested;
+
+  /// No description provided for @dtRtlAccepted.
+  ///
+  /// In vi, this message translates to:
+  /// **'Drone đã nhận lệnh RTL'**
+  String get dtRtlAccepted;
+
+  /// No description provided for @dtRtlReturning.
+  ///
+  /// In vi, this message translates to:
+  /// **'Drone đang bay về trạm'**
+  String get dtRtlReturning;
+
+  /// No description provided for @dtRtlCompleted.
+  ///
+  /// In vi, this message translates to:
+  /// **'Drone đã về trạm'**
+  String get dtRtlCompleted;
+
+  /// No description provided for @dtRtlFailed.
+  ///
+  /// In vi, this message translates to:
+  /// **'RTL thất bại'**
+  String get dtRtlFailed;
+
+  /// No description provided for @dtRtlManual.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cần can thiệp tay / RTL thủ công'**
+  String get dtRtlManual;
+
+  /// No description provided for @dtManualReturnBanner.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cần can thiệp tay / RTL thủ công: hệ thống không đưa drone về được. Điều khiển drone về trạm bằng kênh điều khiển riêng của đội bay rồi báo quản trị.'**
+  String get dtManualReturnBanner;
+
+  /// No description provided for @dtIncidentNumber.
+  ///
+  /// In vi, this message translates to:
+  /// **'Sự cố #{id}'**
+  String dtIncidentNumber(Object id);
+
+  /// No description provided for @dtIncDroneStatus.
+  ///
+  /// In vi, this message translates to:
+  /// **'Drone {drone} · {status}'**
+  String dtIncDroneStatus(Object drone, Object status);
+
+  /// No description provided for @dtIncReturn.
+  ///
+  /// In vi, this message translates to:
+  /// **'Quay về: {status}'**
+  String dtIncReturn(Object status);
+
+  /// No description provided for @dtIncReportedAt.
+  ///
+  /// In vi, this message translates to:
+  /// **'Báo lúc {time}'**
+  String dtIncReportedAt(Object time);
+
+  /// No description provided for @dtIncDetailUnsupported.
+  ///
+  /// In vi, this message translates to:
+  /// **'Máy chủ chưa hỗ trợ xem chi tiết sự cố.'**
+  String get dtIncDetailUnsupported;
+
+  /// No description provided for @dtIncSheetTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Sự cố rơi kiện {code}'**
+  String dtIncSheetTitle(Object code);
+
+  /// No description provided for @dtIncStatusRow.
+  ///
+  /// In vi, this message translates to:
+  /// **'Trạng thái'**
+  String get dtIncStatusRow;
+
+  /// No description provided for @dtIncReturnRow.
+  ///
+  /// In vi, this message translates to:
+  /// **'Quay về'**
+  String get dtIncReturnRow;
+
+  /// No description provided for @dtIncParcelRow.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kiện hàng'**
+  String get dtIncParcelRow;
+
+  /// No description provided for @dtIncRecoveryRow.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thu hồi kiện'**
+  String get dtIncRecoveryRow;
+
+  /// No description provided for @dtIncDescriptionRow.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mô tả'**
+  String get dtIncDescriptionRow;
+
+  /// No description provided for @dtIncDropLocationRow.
+  ///
+  /// In vi, this message translates to:
+  /// **'Vị trí báo rơi'**
+  String get dtIncDropLocationRow;
+
+  /// No description provided for @dtIncTelemetryStale.
+  ///
+  /// In vi, this message translates to:
+  /// **' (telemetry cũ)'**
+  String get dtIncTelemetryStale;
+
+  /// No description provided for @dtIncNoCoordinates.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không có toạ độ'**
+  String get dtIncNoCoordinates;
+
+  /// No description provided for @dtIncRecoveryStationRow.
+  ///
+  /// In vi, this message translates to:
+  /// **'Trạm nhận kiện'**
+  String get dtIncRecoveryStationRow;
+
+  /// No description provided for @dtIncWaitingDrone.
+  ///
+  /// In vi, this message translates to:
+  /// **' (đang chờ drone)'**
+  String get dtIncWaitingDrone;
+
+  /// No description provided for @dtIncRecoveryTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thu hồi sự cố {code}'**
+  String dtIncRecoveryTitle(Object code);
+
+  /// No description provided for @dtIncOpenRecovery.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mở nhiệm vụ tìm kiếm & thu hồi kiện'**
+  String get dtIncOpenRecovery;
+
+  /// No description provided for @dtIncTimeline.
+  ///
+  /// In vi, this message translates to:
+  /// **'Dòng thời gian'**
+  String get dtIncTimeline;
+
+  /// No description provided for @dtCamTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Giám sát camera trực tiếp'**
+  String get dtCamTitle;
+
+  /// No description provided for @dtCamGatewayUnavailable.
+  ///
+  /// In vi, this message translates to:
+  /// **'Camera gateway chưa khả dụng. Có thể báo sự cố thủ công và chụp ảnh thật.'**
+  String get dtCamGatewayUnavailable;
+
+  /// No description provided for @dtCamBattery.
+  ///
+  /// In vi, this message translates to:
+  /// **'Pin'**
+  String get dtCamBattery;
+
+  /// No description provided for @dtCamFlightMode.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chế độ bay'**
+  String get dtCamFlightMode;
+
+  /// No description provided for @dtCamAltitude.
+  ///
+  /// In vi, this message translates to:
+  /// **'Độ cao'**
+  String get dtCamAltitude;
+
+  /// No description provided for @dtCamSpeed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tốc độ'**
+  String get dtCamSpeed;
+
+  /// No description provided for @dtCamHeading.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hướng'**
+  String get dtCamHeading;
+
+  /// No description provided for @dtCamMeasuredAt.
+  ///
+  /// In vi, this message translates to:
+  /// **'Số đo lúc'**
+  String get dtCamMeasuredAt;
+
+  /// No description provided for @dtCamReportDrop.
+  ///
+  /// In vi, this message translates to:
+  /// **'Báo rơi kiện'**
+  String get dtCamReportDrop;
+
+  /// No description provided for @dtCamNoData.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không có dữ liệu'**
+  String get dtCamNoData;
+
+  /// No description provided for @dtCamNoTelemetry.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa nhận telemetry'**
+  String get dtCamNoTelemetry;
+
+  /// No description provided for @dtCamOnline.
+  ///
+  /// In vi, this message translates to:
+  /// **'Trực tuyến'**
+  String get dtCamOnline;
+
+  /// No description provided for @dtCamStale.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cũ / mất kết nối'**
+  String get dtCamStale;
+
+  /// No description provided for @dtCamSatellites.
+  ///
+  /// In vi, this message translates to:
+  /// **'{count} vệ tinh'**
+  String dtCamSatellites(Object count);
+
+  /// No description provided for @dtCamNoFix.
+  ///
+  /// In vi, this message translates to:
+  /// **'chưa có fix'**
+  String get dtCamNoFix;
+
+  /// No description provided for @dtCamConfirmDropTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xác nhận báo rơi kiện'**
+  String get dtCamConfirmDropTitle;
+
+  /// No description provided for @dtCamDropWarning.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thao tác này dừng luồng giao hiện tại. RTL chỉ được yêu cầu khi telemetry và điều kiện an toàn hợp lệ.'**
+  String get dtCamDropWarning;
+
+  /// No description provided for @dtCamObservation.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mô tả quan sát *'**
+  String get dtCamObservation;
+
+  /// No description provided for @dtCamPhotoLabel.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ảnh camera / hiện trường'**
+  String get dtCamPhotoLabel;
+
+  /// No description provided for @dtCamPhotoHelper.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không bắt buộc khi camera mất kết nối; không dùng ảnh giả.'**
+  String get dtCamPhotoHelper;
+
+  /// No description provided for @dtCamEnterObservation.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhập mô tả điều bạn quan sát được.'**
+  String get dtCamEnterObservation;
+
+  /// No description provided for @dtCamHandledElsewhere.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chuyến bay này đã được báo rơi kiện (hoặc đã dừng) từ nơi khác. Theo dõi ở mục \"Sự cố rơi kiện\" trong tab Điều phối.'**
+  String get dtCamHandledElsewhere;
+
+  /// No description provided for @dtCamDropCreated.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã tạo sự cố rơi kiện và dừng luồng giao. Theo dõi tiếp ở mục \"Sự cố rơi kiện\" trong tab Điều phối.'**
+  String get dtCamDropCreated;
+
+  /// No description provided for @dtCamOrder.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đơn'**
+  String get dtCamOrder;
+
+  /// No description provided for @dtCamNoDataYet.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa có dữ liệu'**
+  String get dtCamNoDataYet;
+
+  /// No description provided for @dtCamJourneyStage.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chặng bay'**
+  String get dtCamJourneyStage;
+
+  /// No description provided for @dtCamStaleNotConnected.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cũ / chưa kết nối'**
+  String get dtCamStaleNotConnected;
+
+  /// No description provided for @dtCamSavedLocation.
+  ///
+  /// In vi, this message translates to:
+  /// **'Vị trí lưu vào phiếu'**
+  String get dtCamSavedLocation;
+
+  /// No description provided for @dtCamSimulated.
+  ///
+  /// In vi, this message translates to:
+  /// **' · Mô phỏng FPT HCM'**
+  String get dtCamSimulated;
+
+  /// No description provided for @dtCamEstimatedLocation.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ước theo tuyến bay (chưa có GPS tin cậy)'**
+  String get dtCamEstimatedLocation;
+
+  /// No description provided for @dtCamAutoRecorded.
+  ///
+  /// In vi, this message translates to:
+  /// **'Dữ liệu tự ghi vào phiếu'**
+  String get dtCamAutoRecorded;
+
+  /// No description provided for @dtCamOfflineHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Telemetry không trực tuyến: phiếu lưu vị trí ước theo tuyến bay, KTV thu hồi xác nhận toạ độ thật tại hiện trường.'**
+  String get dtCamOfflineHint;
+
+  /// No description provided for @dtCamLive.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang trực tiếp'**
+  String get dtCamLive;
+
+  /// No description provided for @dtCamUnavailable.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa khả dụng'**
+  String get dtCamUnavailable;
+
+  /// No description provided for @dtCamError.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lỗi kết nối'**
+  String get dtCamError;
+
+  /// No description provided for @dtCamConnecting.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang kết nối'**
+  String get dtCamConnecting;
+
+  /// No description provided for @dtCamStageLaunching.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang khởi phóng'**
+  String get dtCamStageLaunching;
+
+  /// No description provided for @dtCamStageDeparted.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã rời trạm'**
+  String get dtCamStageDeparted;
+
+  /// No description provided for @dtCamStageEnRoute.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang bay tới tủ nhận'**
+  String get dtCamStageEnRoute;
+
+  /// No description provided for @dtCamStageApproaching.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang tiếp cận tủ nhận'**
+  String get dtCamStageApproaching;
+
+  /// No description provided for @dtCamStageArrived.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã đến tủ nhận'**
+  String get dtCamStageArrived;
+
+  /// No description provided for @dtMavTakeoff.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cất cánh'**
+  String get dtMavTakeoff;
+
+  /// No description provided for @dtMavWaypoint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bay tới điểm'**
+  String get dtMavWaypoint;
+
+  /// No description provided for @dtMavLoiterTime.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bay vòng (thời gian)'**
+  String get dtMavLoiterTime;
+
+  /// No description provided for @dtMavLoiterTurns.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bay vòng (số vòng)'**
+  String get dtMavLoiterTurns;
+
+  /// No description provided for @dtMavLoiterUnlim.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bay vòng vô hạn'**
+  String get dtMavLoiterUnlim;
+
+  /// No description provided for @dtMavRtl.
+  ///
+  /// In vi, this message translates to:
+  /// **'Về điểm xuất phát (RTL)'**
+  String get dtMavRtl;
+
+  /// No description provided for @dtMavLand.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hạ cánh'**
+  String get dtMavLand;
+
+  /// No description provided for @dtMavChangeSpeed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đổi tốc độ bay'**
+  String get dtMavChangeSpeed;
+
+  /// No description provided for @dtMavHoldAtPoint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Giữ tại điểm'**
+  String get dtMavHoldAtPoint;
+
+  /// No description provided for @dtMavDuration.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thời gian'**
+  String get dtMavDuration;
+
+  /// No description provided for @dtMavTurns.
+  ///
+  /// In vi, this message translates to:
+  /// **'Số vòng'**
+  String get dtMavTurns;
+
+  /// No description provided for @dtMavSpeed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tốc độ'**
+  String get dtMavSpeed;
+
+  /// No description provided for @dtMavSeconds.
+  ///
+  /// In vi, this message translates to:
+  /// **'giây'**
+  String get dtMavSeconds;
+
+  /// No description provided for @dtMavTurnsUnit.
+  ///
+  /// In vi, this message translates to:
+  /// **'vòng'**
+  String get dtMavTurnsUnit;
+
+  /// No description provided for @dtFcConfirmArm.
+  ///
+  /// In vi, this message translates to:
+  /// **'Arm động cơ? Cánh quạt sẽ quay.'**
+  String get dtFcConfirmArm;
+
+  /// No description provided for @dtFcConfirmDisarm.
+  ///
+  /// In vi, this message translates to:
+  /// **'Disarm động cơ? Nếu drone đang bay, drone sẽ rơi.'**
+  String get dtFcConfirmDisarm;
+
+  /// No description provided for @dtFcConfirmRtl.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chuyển sang RTL: drone tự bay về điểm xuất phát?'**
+  String get dtFcConfirmRtl;
+
+  /// No description provided for @dtFcConfirmLoiter.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chuyển sang LOITER: drone giữ nguyên vị trí?'**
+  String get dtFcConfirmLoiter;
+
+  /// No description provided for @dtFcConfirmGuided.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chuyển sang GUIDED: drone nhận lệnh điều khiển từ ứng dụng?'**
+  String get dtFcConfirmGuided;
+
+  /// No description provided for @dtFcConfirmAuto.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chuyển sang AUTO: drone chạy mission đã nạp?'**
+  String get dtFcConfirmAuto;
+
+  /// No description provided for @dtFcConfirmTakeoff.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cất cánh tới độ cao đã nhập?'**
+  String get dtFcConfirmTakeoff;
+
+  /// No description provided for @dtFcNotConnected.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa kết nối flight controller.'**
+  String get dtFcNotConnected;
+
+  /// No description provided for @dtFcPeerUnknown.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa biết địa chỉ drone — chờ drone gửi gói tin đầu tiên.'**
+  String get dtFcPeerUnknown;
+
+  /// No description provided for @dtFcNoHeartbeat.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa nhận heartbeat từ drone.'**
+  String get dtFcNoHeartbeat;
+
+  /// No description provided for @dtFcHeartbeatLost.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mất heartbeat từ drone (quá 3 giây).'**
+  String get dtFcHeartbeatLost;
+
+  /// No description provided for @dtFcMissionLocked.
+  ///
+  /// In vi, this message translates to:
+  /// **'Drone bạn phụ trách đang có nhiệm vụ giao hàng — lệnh tay đang bị khoá.'**
+  String get dtFcMissionLocked;
+
+  /// No description provided for @dtFcPending.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang chờ drone phản hồi lệnh trước.'**
+  String get dtFcPending;
+
+  /// No description provided for @dtFcAlreadyArmed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Drone đã ARM.'**
+  String get dtFcAlreadyArmed;
+
+  /// No description provided for @dtFcNotArmed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Drone chưa ARM.'**
+  String get dtFcNotArmed;
+
+  /// No description provided for @dtFcTakeoffNeedsArm.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chỉ cất cánh khi drone đã ARM.'**
+  String get dtFcTakeoffNeedsArm;
+
+  /// No description provided for @dtFcTakeoffNeedsGuided.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chỉ cất cánh ở chế độ GUIDED (hiện tại: {mode}).'**
+  String dtFcTakeoffNeedsGuided(Object mode);
+
+  /// No description provided for @dtFcEnterAltitude.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhập độ cao (m).'**
+  String get dtFcEnterAltitude;
+
+  /// No description provided for @dtFcMinAltitude.
+  ///
+  /// In vi, this message translates to:
+  /// **'Độ cao tối thiểu {value} m.'**
+  String dtFcMinAltitude(Object value);
+
+  /// No description provided for @dtFcMaxAltitude.
+  ///
+  /// In vi, this message translates to:
+  /// **'Độ cao tối đa {value} m.'**
+  String dtFcMaxAltitude(Object value);
+
+  /// No description provided for @dtFcResultAccepted.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã nhận (ACCEPTED)'**
+  String get dtFcResultAccepted;
+
+  /// No description provided for @dtFcResultTempRejected.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tạm từ chối (TEMPORARILY_REJECTED)'**
+  String get dtFcResultTempRejected;
+
+  /// No description provided for @dtFcResultDenied.
+  ///
+  /// In vi, this message translates to:
+  /// **'Từ chối (DENIED)'**
+  String get dtFcResultDenied;
+
+  /// No description provided for @dtFcResultUnsupported.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không hỗ trợ (UNSUPPORTED)'**
+  String get dtFcResultUnsupported;
+
+  /// No description provided for @dtFcResultFailed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thất bại (FAILED)'**
+  String get dtFcResultFailed;
+
+  /// No description provided for @dtFcResultInProgress.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang thực hiện (IN_PROGRESS)'**
+  String get dtFcResultInProgress;
+
+  /// No description provided for @dtFcResultCancelled.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã huỷ (CANCELLED)'**
+  String get dtFcResultCancelled;
+
+  /// No description provided for @dtFcResultCode.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mã kết quả {code}'**
+  String dtFcResultCode(Object code);
+
+  /// No description provided for @dtFcLinkClosed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Link đã đóng.'**
+  String get dtFcLinkClosed;
+
+  /// No description provided for @dtFcDone.
+  ///
+  /// In vi, this message translates to:
+  /// **'{command}: drone đã thực hiện'**
+  String dtFcDone(Object command);
+
+  /// No description provided for @dtFcSwitched.
+  ///
+  /// In vi, this message translates to:
+  /// **'{command}: drone đã chuyển sang {mode}'**
+  String dtFcSwitched(Object command, Object mode);
+
+  /// No description provided for @dtFcTimeout.
+  ///
+  /// In vi, this message translates to:
+  /// **'{command}: hết giờ — không nhận được phản hồi từ drone'**
+  String dtFcTimeout(Object command);
+
+  /// No description provided for @dtFcSent.
+  ///
+  /// In vi, this message translates to:
+  /// **'{command}: đã gửi, đang chờ drone phản hồi…'**
+  String dtFcSent(Object command);
+
+  /// No description provided for @dtFdBusyDrone.
+  ///
+  /// In vi, this message translates to:
+  /// **'{drone} (đơn {order})'**
+  String dtFdBusyDrone(Object drone, Object order);
+
+  /// No description provided for @dtFdMissionCheckFailed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không kiểm tra được nhiệm vụ của drone bạn phụ trách ({error}). Chỉ gửi lệnh khi chắc chắn kết nối này không phải drone đang giao hàng.'**
+  String dtFdMissionCheckFailed(Object error);
+
+  /// No description provided for @dtFdUnlockTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mở khoá lệnh tay?'**
+  String get dtFdUnlockTitle;
+
+  /// No description provided for @dtFdUnlockBody.
+  ///
+  /// In vi, this message translates to:
+  /// **'Drone bạn phụ trách đang có nhiệm vụ giao hàng: {drones}.\n\nChỉ mở khoá khi chắc chắn kết nối hiện tại là SITL hoặc một drone khác, KHÔNG phải drone đang giao hàng.'**
+  String dtFdUnlockBody(Object drones);
+
+  /// No description provided for @dtFdKeepLocked.
+  ///
+  /// In vi, this message translates to:
+  /// **'Giữ khoá'**
+  String get dtFdKeepLocked;
+
+  /// No description provided for @dtFdConfirmUnlock.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tôi xác nhận, mở khoá'**
+  String get dtFdConfirmUnlock;
+
+  /// No description provided for @dtFdConnectTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kết nối flight controller'**
+  String get dtFdConnectTitle;
+
+  /// No description provided for @dtFdConnectSubtitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'MAVLink qua UDP/TCP — tương thích ArduPilot/PX4 thật và SITL.'**
+  String get dtFdConnectSubtitle;
+
+  /// No description provided for @dtFdDroneAddressUdp.
+  ///
+  /// In vi, this message translates to:
+  /// **'Địa chỉ drone (để trống = chờ drone gửi tới)'**
+  String get dtFdDroneAddressUdp;
+
+  /// No description provided for @dtFdDroneAddress.
+  ///
+  /// In vi, this message translates to:
+  /// **'Địa chỉ drone'**
+  String get dtFdDroneAddress;
+
+  /// No description provided for @dtFdAddressHintUdp.
+  ///
+  /// In vi, this message translates to:
+  /// **'192.168.4.1 hoặc trống'**
+  String get dtFdAddressHintUdp;
+
+  /// No description provided for @dtFdPort.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cổng'**
+  String get dtFdPort;
+
+  /// No description provided for @dtFdLocalPort.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cổng local'**
+  String get dtFdLocalPort;
+
+  /// No description provided for @dtFdConnect.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kết nối'**
+  String get dtFdConnect;
+
+  /// No description provided for @dtFdReceiving.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang nhận telemetry'**
+  String get dtFdReceiving;
+
+  /// No description provided for @dtFdLinkedWaiting.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã nối · chờ dữ liệu'**
+  String get dtFdLinkedWaiting;
+
+  /// No description provided for @dtFdConnecting.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang kết nối...'**
+  String get dtFdConnecting;
+
+  /// No description provided for @dtFdConnectionError.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lỗi kết nối'**
+  String get dtFdConnectionError;
+
+  /// No description provided for @dtFdDisconnected.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa kết nối'**
+  String get dtFdDisconnected;
+
+  /// No description provided for @dtFdSitlOnlyBanner.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chỉ dùng với SITL hoặc kênh điều khiển riêng — hệ thống không điều khiển drone'**
+  String get dtFdSitlOnlyBanner;
+
+  /// No description provided for @dtFdAltRel.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cao (rel)'**
+  String get dtFdAltRel;
+
+  /// No description provided for @dtFdGroundSpeed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tốc độ đất'**
+  String get dtFdGroundSpeed;
+
+  /// No description provided for @dtFdClimb.
+  ///
+  /// In vi, this message translates to:
+  /// **'Leo/xuống'**
+  String get dtFdClimb;
+
+  /// No description provided for @dtFdHeading.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hướng'**
+  String get dtFdHeading;
+
+  /// No description provided for @dtFdBattery.
+  ///
+  /// In vi, this message translates to:
+  /// **'Pin'**
+  String get dtFdBattery;
+
+  /// No description provided for @dtFdConflictAcknowledged.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cảnh báo: drone bạn phụ trách đang giao hàng ({drones}). Bạn đã xác nhận kết nối này không phải drone đó.'**
+  String dtFdConflictAcknowledged(Object drones);
+
+  /// No description provided for @dtFdConflictLocked.
+  ///
+  /// In vi, this message translates to:
+  /// **'Drone bạn phụ trách đang có nhiệm vụ giao hàng ({drones}). Lệnh tay bị khoá để không can thiệp chuyến bay.'**
+  String dtFdConflictLocked(Object drones);
+
+  /// No description provided for @dtFdNotThatDrone.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kết nối này không phải drone đó'**
+  String get dtFdNotThatDrone;
+
+  /// No description provided for @dtFdSendCommandTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Gửi lệnh {command}?'**
+  String dtFdSendCommandTitle(Object command);
+
+  /// No description provided for @dtFdSendCommandBody.
+  ///
+  /// In vi, this message translates to:
+  /// **'{message}\n\nChỉ gửi khi đang kết nối SITL hoặc kênh điều khiển riêng của đội bay.'**
+  String dtFdSendCommandBody(Object message);
+
+  /// No description provided for @dtFdSendCommand.
+  ///
+  /// In vi, this message translates to:
+  /// **'Gửi lệnh'**
+  String get dtFdSendCommand;
+
+  /// No description provided for @dtFdNotSent.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa gửi {command}: {reason}'**
+  String dtFdNotSent(Object command, Object reason);
+
+  /// No description provided for @dtFdTakeoffTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xác nhận cất cánh (GUIDED)'**
+  String get dtFdTakeoffTitle;
+
+  /// No description provided for @dtFdTakeoffBody.
+  ///
+  /// In vi, this message translates to:
+  /// **'Drone đã ARM và ở chế độ GUIDED. Nhập độ cao cất cánh ({min}–{max} m):'**
+  String dtFdTakeoffBody(Object min, Object max);
+
+  /// No description provided for @dtFdTakeoff.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cất cánh'**
+  String get dtFdTakeoff;
+
+  /// No description provided for @dtMpTapToMovePoint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chạm lên bản đồ để đặt lại vị trí điểm {index}.'**
+  String dtMpTapToMovePoint(Object index);
+
+  /// No description provided for @dtMpRenameTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tên kế hoạch bay'**
+  String get dtMpRenameTitle;
+
+  /// No description provided for @dtMpRenameHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'VD: Tuần tra khu A'**
+  String get dtMpRenameHint;
+
+  /// No description provided for @dtMpSettingsTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cài đặt kế hoạch'**
+  String get dtMpSettingsTitle;
+
+  /// No description provided for @dtMpDefaultAltitude.
+  ///
+  /// In vi, this message translates to:
+  /// **'Độ cao mặc định cho điểm mới (m)'**
+  String get dtMpDefaultAltitude;
+
+  /// No description provided for @dtMpCruiseSpeed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tốc độ bay ước tính (m/s)'**
+  String get dtMpCruiseSpeed;
+
+  /// No description provided for @dtMpApply.
+  ///
+  /// In vi, this message translates to:
+  /// **'Áp dụng'**
+  String get dtMpApply;
+
+  /// No description provided for @dtMpSavedToLibrary.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã lưu \"{name}\" vào thư viện.'**
+  String dtMpSavedToLibrary(Object name);
+
+  /// No description provided for @dtMpLibraryTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thư viện kế hoạch bay'**
+  String get dtMpLibraryTitle;
+
+  /// No description provided for @dtMpLibraryEmptyTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa có kế hoạch đã lưu'**
+  String get dtMpLibraryEmptyTitle;
+
+  /// No description provided for @dtMpLibraryEmptySubtitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lưu kế hoạch hiện tại để mở lại sau.'**
+  String get dtMpLibraryEmptySubtitle;
+
+  /// No description provided for @dtMpOpened.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã mở \"{name}\".'**
+  String dtMpOpened(Object name);
+
+  /// No description provided for @dtMpPointsDistance.
+  ///
+  /// In vi, this message translates to:
+  /// **'{count} điểm · {distance}'**
+  String dtMpPointsDistance(int count, Object distance);
+
+  /// No description provided for @dtMpDeleted.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã xoá \"{name}\".'**
+  String dtMpDeleted(Object name);
+
+  /// No description provided for @dtMpImported.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã nhập \"{name}\" ({count} điểm).'**
+  String dtMpImported(Object name, int count);
+
+  /// No description provided for @dtMpNothingToExport.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa có điểm bay nào để xuất.'**
+  String get dtMpNothingToExport;
+
+  /// No description provided for @dtMpExported.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã xuất file: {path}'**
+  String dtMpExported(Object path);
+
+  /// No description provided for @dtMpExportFailed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không xuất được file: {error}'**
+  String dtMpExportFailed(Object error);
+
+  /// No description provided for @dtMpHomeSet.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã đặt điểm xuất phát (HOME) tại tâm bản đồ.'**
+  String get dtMpHomeSet;
+
+  /// No description provided for @dtMpConfirmClearAll.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xoá tất cả điểm bay của kế hoạch hiện tại?'**
+  String get dtMpConfirmClearAll;
+
+  /// No description provided for @dtMpConfirmNew.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tạo kế hoạch mới? Thay đổi chưa lưu sẽ mất.'**
+  String get dtMpConfirmNew;
+
+  /// No description provided for @dtMpActionRename.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đổi tên kế hoạch'**
+  String get dtMpActionRename;
+
+  /// No description provided for @dtMpActionSettings.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cài đặt (độ cao/tốc độ)'**
+  String get dtMpActionSettings;
+
+  /// No description provided for @dtMpActionSetHome.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đặt HOME tại tâm bản đồ'**
+  String get dtMpActionSetHome;
+
+  /// No description provided for @dtMpActionSave.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lưu vào thư viện'**
+  String get dtMpActionSave;
+
+  /// No description provided for @dtMpActionOpen.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mở từ thư viện'**
+  String get dtMpActionOpen;
+
+  /// No description provided for @dtMpActionExportWaypoints.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xuất file .waypoints (QGC)'**
+  String get dtMpActionExportWaypoints;
+
+  /// No description provided for @dtMpActionExportJson.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xuất file JSON'**
+  String get dtMpActionExportJson;
+
+  /// No description provided for @dtMpActionImport.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhập từ file'**
+  String get dtMpActionImport;
+
+  /// No description provided for @dtMpActionNew.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tạo kế hoạch mới'**
+  String get dtMpActionNew;
+
+  /// No description provided for @dtMpActionClearAll.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xoá tất cả điểm'**
+  String get dtMpActionClearAll;
+
+  /// No description provided for @dtMpWaypointList.
+  ///
+  /// In vi, this message translates to:
+  /// **'Danh sách điểm bay ({count})'**
+  String dtMpWaypointList(Object count);
+
+  /// No description provided for @dtMpNoWaypointsTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa có điểm bay'**
+  String get dtMpNoWaypointsTitle;
+
+  /// No description provided for @dtMpNoWaypointsSubtitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chạm lên bản đồ để thêm điểm.'**
+  String get dtMpNoWaypointsSubtitle;
+
+  /// No description provided for @dtMpHomeTooltip.
+  ///
+  /// In vi, this message translates to:
+  /// **'Điểm xuất phát (HOME)'**
+  String get dtMpHomeTooltip;
+
+  /// No description provided for @dtMpTapToMove.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chạm lên bản đồ để đặt lại vị trí điểm bay.'**
+  String get dtMpTapToMove;
+
+  /// No description provided for @dtMpStatPoints.
+  ///
+  /// In vi, this message translates to:
+  /// **'điểm'**
+  String get dtMpStatPoints;
+
+  /// No description provided for @dtMpStatDistance.
+  ///
+  /// In vi, this message translates to:
+  /// **'quãng đường'**
+  String get dtMpStatDistance;
+
+  /// No description provided for @dtMpStatEstimate.
+  ///
+  /// In vi, this message translates to:
+  /// **'ước tính'**
+  String get dtMpStatEstimate;
+
+  /// No description provided for @dtMpList.
+  ///
+  /// In vi, this message translates to:
+  /// **'Danh sách'**
+  String get dtMpList;
+
+  /// No description provided for @dtMpExportMission.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xuất mission'**
+  String get dtMpExportMission;
+
+  /// No description provided for @dtMpAgree.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đồng ý'**
+  String get dtMpAgree;
+
+  /// No description provided for @dtMpZeroMinutes.
+  ///
+  /// In vi, this message translates to:
+  /// **'0 phút'**
+  String get dtMpZeroMinutes;
+
+  /// No description provided for @dtMpUnderOneMinute.
+  ///
+  /// In vi, this message translates to:
+  /// **'<1 phút'**
+  String get dtMpUnderOneMinute;
+
+  /// No description provided for @dtMpMinutes.
+  ///
+  /// In vi, this message translates to:
+  /// **'{minutes} phút'**
+  String dtMpMinutes(Object minutes);
+
+  /// No description provided for @dtWpTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Điểm bay {index}/{total}'**
+  String dtWpTitle(Object index, Object total);
+
+  /// No description provided for @dtWpCommand.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lệnh (MAVLink)'**
+  String get dtWpCommand;
+
+  /// No description provided for @dtWpAltitude.
+  ///
+  /// In vi, this message translates to:
+  /// **'Độ cao (m, so với điểm xuất phát)'**
+  String get dtWpAltitude;
+
+  /// No description provided for @dtWpNoPositionHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lệnh này không gắn toạ độ — nó áp dụng tại vị trí của điểm bay liền trước trong danh sách.'**
+  String get dtWpNoPositionHint;
+
+  /// No description provided for @dtWpMoveOnMap.
+  ///
+  /// In vi, this message translates to:
+  /// **'Di chuyển điểm này trên bản đồ'**
+  String get dtWpMoveOnMap;
+
+  /// No description provided for @dtWpDelete.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xoá điểm bay'**
+  String get dtWpDelete;
+
+  /// No description provided for @dtWpSave.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lưu thay đổi'**
+  String get dtWpSave;
+
+  /// No description provided for @dtMcImportedPlan.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kế hoạch nhập'**
+  String get dtMcImportedPlan;
+
+  /// No description provided for @dtMcMissingHeader.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thiếu header \"QGC WPL 110\" — không phải file mission hợp lệ.'**
+  String get dtMcMissingHeader;
+
+  /// No description provided for @dtMcMissingColumns.
+  ///
+  /// In vi, this message translates to:
+  /// **'Dòng {line} thiếu cột (cần 12, có {count}).'**
+  String dtMcMissingColumns(Object line, Object count);
+
+  /// No description provided for @dtMcInvalidJson.
+  ///
+  /// In vi, this message translates to:
+  /// **'JSON không hợp lệ: {error}'**
+  String dtMcInvalidJson(Object error);
+
+  /// No description provided for @dtMcBadJsonStructure.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cấu trúc JSON mission không đúng.'**
+  String get dtMcBadJsonStructure;
+
+  /// No description provided for @dtMcCantReadFile.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không đọc được nội dung file đã chọn.'**
+  String get dtMcCantReadFile;
+
+  /// No description provided for @dtMcUnknownFormat.
+  ///
+  /// In vi, this message translates to:
+  /// **'Định dạng không nhận diện được (cần QGC WPL hoặc JSON mission).'**
+  String get dtMcUnknownFormat;
+
+  /// No description provided for @dtMcSaveDialogTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lưu file mission'**
+  String get dtMcSaveDialogTitle;
+
+  /// No description provided for @dtMcNewPlan.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kế hoạch bay mới'**
+  String get dtMcNewPlan;
+
+  /// No description provided for @dtMcPlan.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kế hoạch bay'**
+  String get dtMcPlan;
+
+  /// No description provided for @dtWxCantConfirm.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không thể xác nhận thời tiết tuyến bay.'**
+  String get dtWxCantConfirm;
+
+  /// No description provided for @dtWxFlyable.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bay được'**
+  String get dtWxFlyable;
+
+  /// No description provided for @dtWxNoForecast.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa có dự báo'**
+  String get dtWxNoForecast;
+
+  /// No description provided for @dtWxUnsafe.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không an toàn để bay'**
+  String get dtWxUnsafe;
+
+  /// No description provided for @dtWxWind.
+  ///
+  /// In vi, this message translates to:
+  /// **'Gió {value} km/h'**
+  String dtWxWind(Object value);
+
+  /// No description provided for @dtWxGust.
+  ///
+  /// In vi, this message translates to:
+  /// **'Giật {value} km/h'**
+  String dtWxGust(Object value);
+
+  /// No description provided for @dtWxRain.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mưa {value} mm'**
+  String dtWxRain(Object value);
+
+  /// No description provided for @dtWxForecastWindow.
+  ///
+  /// In vi, this message translates to:
+  /// **'Dự báo {minutes} phút tới'**
+  String dtWxForecastWindow(Object minutes);
+
+  /// No description provided for @dtWxUpdated.
+  ///
+  /// In vi, this message translates to:
+  /// **'cập nhật {time}'**
+  String dtWxUpdated(Object time);
+
+  /// No description provided for @dtWxSource.
+  ///
+  /// In vi, this message translates to:
+  /// **'nguồn {provider}'**
+  String dtWxSource(Object provider);
+
+  /// No description provided for @dtWxRouteTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thời tiết tuyến bay'**
+  String get dtWxRouteTitle;
+
+  /// No description provided for @dtWxReload.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tải lại'**
+  String get dtWxReload;
+
+  /// No description provided for @dtWxFromLocker.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tủ bay'**
+  String get dtWxFromLocker;
+
+  /// No description provided for @dtWxToLocker.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tủ nhận'**
+  String get dtWxToLocker;
+
+  /// No description provided for @dtWxLoadingLockers.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang tải thời tiết các tủ…'**
+  String get dtWxLoadingLockers;
+
+  /// No description provided for @dtWxAllFlyable.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cả {count} tủ đều bay được trong {minutes} phút tới'**
+  String dtWxAllFlyable(Object count, Object minutes);
+
+  /// No description provided for @dtWxSomeGrounded.
+  ///
+  /// In vi, this message translates to:
+  /// **'{unsafe}/{count} tủ đang không bay được hoặc chưa có dự báo'**
+  String dtWxSomeGrounded(Object unsafe, Object count);
+
+  /// No description provided for @dtWxLockersTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thời tiết tại các tủ drone'**
+  String get dtWxLockersTitle;
+
+  /// No description provided for @dtWxLockerNumber.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tủ #{id}'**
+  String dtWxLockerNumber(Object id);
+
+  /// No description provided for @dtWxStationSuspended.
+  ///
+  /// In vi, this message translates to:
+  /// **'Trạm đang tạm dừng bay: {reason}'**
+  String dtWxStationSuspended(Object reason);
+
+  /// No description provided for @dtObtTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đơn drone bị phiếu này ảnh hưởng ({count})'**
+  String dtObtTitle(Object count);
+
+  /// No description provided for @dtObtFailed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã giao không hoàn tất · {reason}'**
+  String dtObtFailed(Object reason);
+
+  /// No description provided for @dtObtBlocked.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang bị chặn ({stage}) · {reason}'**
+  String dtObtBlocked(Object stage, Object reason);
 }
 
 class _AppLocalizationsDelegate

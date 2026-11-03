@@ -15,6 +15,7 @@ import '../domain/flight_command_policy.dart';
 import 'flight_data_controller.dart';
 import 'widgets/attitude_indicator.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/presentation/widgets/drone_base_tile_layer.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 /// Flight Data — live MAVLink telemetry & control (Mảng 2). Connects to a real
 /// ArduPilot/PX4 flight controller (or SITL) over UDP/TCP, shows the drone live
@@ -101,7 +102,7 @@ class _FlightDataPageState extends State<FlightDataPage> {
         final status = '${drone['status']}';
         if (activeOrder != null) {
           busy.add(
-            '$code (đơn ${activeOrder['orderCode'] ?? '#${activeOrder['orderId']}'})',
+            L10n.current.dtFdBusyDrone(code, '${activeOrder['orderCode'] ?? '#${activeOrder['orderId']}'}'),
           );
         } else if (status == 'RESERVED' || status == 'IN_FLIGHT') {
           busy.add(code);
@@ -116,9 +117,7 @@ class _FlightDataPageState extends State<FlightDataPage> {
       if (!mounted) return;
       setState(
         () => _missionCheckError =
-            'Không kiểm tra được nhiệm vụ của drone bạn phụ trách '
-            '(${droneTechnicianErrorMessage(error)}). Chỉ gửi lệnh khi chắc chắn '
-            'kết nối này không phải drone đang giao hàng.',
+            L10n.current.dtFdMissionCheckFailed(droneTechnicianErrorMessage(error)),
       );
     }
   }
@@ -127,23 +126,21 @@ class _FlightDataPageState extends State<FlightDataPage> {
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Mở khoá lệnh tay?'),
+        title: Text(context.l10n.dtFdUnlockTitle),
         content: Text(
-          'Drone bạn phụ trách đang có nhiệm vụ giao hàng: $_missionConflict.\n\n'
-          'Chỉ mở khoá khi chắc chắn kết nối hiện tại là SITL hoặc một drone khác, '
-          'KHÔNG phải drone đang giao hàng.',
+          context.l10n.dtFdUnlockBody('$_missionConflict'),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Giữ khoá'),
+            child: Text(context.l10n.dtFdKeepLocked),
           ),
           FilledButton(
             style: FilledButton.styleFrom(
               backgroundColor: const Color(0xFFDC2626),
             ),
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Tôi xác nhận, mở khoá'),
+            child: Text(context.l10n.dtFdConfirmUnlock),
           ),
         ],
       ),
@@ -196,18 +193,18 @@ class _FlightDataPageState extends State<FlightDataPage> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'Kết nối flight controller',
-                    style: TextStyle(
+                  Text(
+                    context.l10n.dtFdConnectTitle,
+                    style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w800,
                       color: AISLShadcnTheme.navyPrimary,
                     ),
                   ),
                   const SizedBox(height: 4),
-                  const Text(
-                    'MAVLink qua UDP/TCP — tương thích ArduPilot/PX4 thật và SITL.',
-                    style: TextStyle(fontSize: 12, color: Colors.grey),
+                  Text(
+                    context.l10n.dtFdConnectSubtitle,
+                    style: const TextStyle(fontSize: 12, color: Colors.grey),
                   ),
                   const SizedBox(height: 14),
                   SegmentedButton<MavTransport>(
@@ -229,17 +226,17 @@ class _FlightDataPageState extends State<FlightDataPage> {
                   const SizedBox(height: 14),
                   _field(
                     label: isUdp
-                        ? 'Địa chỉ drone (để trống = chờ drone gửi tới)'
-                        : 'Địa chỉ drone',
+                        ? context.l10n.dtFdDroneAddressUdp
+                        : context.l10n.dtFdDroneAddress,
                     controller: hostCtrl,
-                    hint: isUdp ? '192.168.4.1 hoặc trống' : '127.0.0.1',
+                    hint: isUdp ? context.l10n.dtFdAddressHintUdp : '127.0.0.1',
                   ),
                   const SizedBox(height: 12),
                   Row(
                     children: [
                       Expanded(
                         child: _field(
-                          label: 'Cổng',
+                          label: context.l10n.dtFdPort,
                           controller: portCtrl,
                           number: true,
                         ),
@@ -248,7 +245,7 @@ class _FlightDataPageState extends State<FlightDataPage> {
                         const SizedBox(width: 12),
                         Expanded(
                           child: _field(
-                            label: 'Cổng local',
+                            label: context.l10n.dtFdLocalPort,
                             controller: localCtrl,
                             number: true,
                           ),
@@ -265,7 +262,7 @@ class _FlightDataPageState extends State<FlightDataPage> {
                         padding: const EdgeInsets.symmetric(vertical: 14),
                       ),
                       icon: const Icon(LucideIcons.plugZap, size: 18),
-                      label: const Text('Kết nối'),
+                      label: Text(context.l10n.dtFdConnect),
                       onPressed: () {
                         Navigator.pop(ctx);
                         _checkClaimedDroneMissions();
@@ -362,10 +359,10 @@ class _FlightDataPageState extends State<FlightDataPage> {
     final status = _controller.status;
     final (label, color) = switch (status) {
       LinkStatus.connected =>
-        t.linkAlive ? ('Đang nhận telemetry', const Color(0xFF16A34A)) : ('Đã nối · chờ dữ liệu', const Color(0xFFF59E0B)),
-      LinkStatus.connecting => ('Đang kết nối...', const Color(0xFFF59E0B)),
-      LinkStatus.error => (_controller.error ?? 'Lỗi kết nối', const Color(0xFFEF4444)),
-      LinkStatus.disconnected => ('Chưa kết nối', const Color(0xFF64748B)),
+        t.linkAlive ? (context.l10n.dtFdReceiving, const Color(0xFF16A34A)) : (context.l10n.dtFdLinkedWaiting, const Color(0xFFF59E0B)),
+      LinkStatus.connecting => (context.l10n.dtFdConnecting, const Color(0xFFF59E0B)),
+      LinkStatus.error => (_controller.error ?? context.l10n.dtFdConnectionError, const Color(0xFFEF4444)),
+      LinkStatus.disconnected => (context.l10n.dtFdDisconnected, const Color(0xFF64748B)),
     };
     return Positioned(
       top: topPad + 10,
@@ -422,13 +419,13 @@ class _FlightDataPageState extends State<FlightDataPage> {
           color: const Color(0xE6B45309),
           borderRadius: BorderRadius.circular(12),
         ),
-        child: const Row(
+        child: Row(
           children: [
             Icon(Icons.warning_amber_rounded, color: Colors.white, size: 18),
             SizedBox(width: 8),
             Expanded(
               child: Text(
-                'Chỉ dùng với SITL hoặc kênh điều khiển riêng — hệ thống không điều khiển drone',
+                context.l10n.dtFdSitlOnlyBanner,
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 11.5,
@@ -471,11 +468,11 @@ class _FlightDataPageState extends State<FlightDataPage> {
               ],
             ),
             const SizedBox(height: 8),
-            _readout('Cao (rel)', _fmt(t.altRelative, 'm')),
-            _readout('Tốc độ đất', _fmt(t.groundspeed, 'm/s')),
-            _readout('Leo/xuống', _fmt(t.climb, 'm/s')),
-            _readout('Hướng', t.headingDeg == null ? '—' : '${t.headingDeg!.round()}°'),
-            _readout('Pin', t.batteryVolts == null
+            _readout(context.l10n.dtFdAltRel, _fmt(t.altRelative, 'm')),
+            _readout(context.l10n.dtFdGroundSpeed, _fmt(t.groundspeed, 'm/s')),
+            _readout(context.l10n.dtFdClimb, _fmt(t.climb, 'm/s')),
+            _readout(context.l10n.dtFdHeading, t.headingDeg == null ? '—' : '${t.headingDeg!.round()}°'),
+            _readout(context.l10n.dtFdBattery, t.batteryVolts == null
                 ? '—'
                 : '${t.batteryVolts!.toStringAsFixed(1)}V'
                     '${t.batteryPercent == null ? '' : ' · ${t.batteryPercent}%'}'),
@@ -572,10 +569,8 @@ class _FlightDataPageState extends State<FlightDataPage> {
         children: [
           Text(
             _conflictAcknowledged
-                ? 'Cảnh báo: drone bạn phụ trách đang giao hàng ($_missionConflict). '
-                      'Bạn đã xác nhận kết nối này không phải drone đó.'
-                : 'Drone bạn phụ trách đang có nhiệm vụ giao hàng ($_missionConflict). '
-                      'Lệnh tay bị khoá để không can thiệp chuyến bay.',
+                ? context.l10n.dtFdConflictAcknowledged('$_missionConflict')
+                : context.l10n.dtFdConflictLocked('$_missionConflict'),
             style: const TextStyle(
               color: Color(0xFFFCA5A5),
               fontSize: 12,
@@ -587,7 +582,7 @@ class _FlightDataPageState extends State<FlightDataPage> {
               alignment: Alignment.centerRight,
               child: TextButton(
                 onPressed: _acknowledgeConflict,
-                child: const Text('Kết nối này không phải drone đó'),
+                child: Text(context.l10n.dtFdNotThatDrone),
               ),
             ),
         ],
@@ -640,14 +635,13 @@ class _FlightDataPageState extends State<FlightDataPage> {
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text('Gửi lệnh ${command.label}?'),
+        title: Text(context.l10n.dtFdSendCommandTitle(command.label)),
         content: Text(
-          '${command.confirmMessage}\n\nChỉ gửi khi đang kết nối SITL hoặc kênh '
-          'điều khiển riêng của đội bay.',
+          context.l10n.dtFdSendCommandBody(command.confirmMessage),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Huỷ')),
-          FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Gửi lệnh')),
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(context.l10n.commonCancel)),
+          FilledButton(onPressed: () => Navigator.pop(ctx, true), child: Text(context.l10n.dtFdSendCommand)),
         ],
       ),
     );
@@ -663,7 +657,7 @@ class _FlightDataPageState extends State<FlightDataPage> {
     );
     if (blocked != null && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Chưa gửi ${command.label}: $blocked')),
+        SnackBar(content: Text(context.l10n.dtFdNotSent(command.label, blocked))),
       );
     }
   }
@@ -676,14 +670,16 @@ class _FlightDataPageState extends State<FlightDataPage> {
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setLocal) => AlertDialog(
-          title: const Text('Xác nhận cất cánh (GUIDED)'),
+          title: Text(context.l10n.dtFdTakeoffTitle),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Drone đã ARM và ở chế độ GUIDED. Nhập độ cao cất cánh '
-                '(${kMinTakeoffAltitudeM.toStringAsFixed(0)}–${kMaxTakeoffAltitudeM.toStringAsFixed(0)} m):',
+                context.l10n.dtFdTakeoffBody(
+                  kMinTakeoffAltitudeM.toStringAsFixed(0),
+                  kMaxTakeoffAltitudeM.toStringAsFixed(0),
+                ),
               ),
               const SizedBox(height: 10),
               TextField(
@@ -696,7 +692,7 @@ class _FlightDataPageState extends State<FlightDataPage> {
             ],
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Huỷ')),
+            TextButton(onPressed: () => Navigator.pop(ctx), child: Text(context.l10n.commonCancel)),
             FilledButton(
               onPressed: () {
                 final value = double.tryParse(ctrl.text.trim());
@@ -707,7 +703,7 @@ class _FlightDataPageState extends State<FlightDataPage> {
                 }
                 Navigator.pop(ctx, value);
               },
-              child: const Text('Cất cánh'),
+              child: Text(context.l10n.dtFdTakeoff),
             ),
           ],
         ),

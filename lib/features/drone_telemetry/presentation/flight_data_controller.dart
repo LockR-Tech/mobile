@@ -9,6 +9,7 @@ import '../domain/drone_telemetry.dart';
 import '../domain/flight_command_policy.dart';
 import '../domain/flight_modes.dart';
 import '../domain/mav_messages.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 enum LinkStatus { disconnected, connecting, connected, error }
 
@@ -135,7 +136,7 @@ class FlightDataController extends ChangeNotifier {
         _onBytes,
         onError: (Object e) => _fail('$e'),
         onDone: () {
-          if (_status == LinkStatus.connected) _fail('Link đã đóng.');
+          if (_status == LinkStatus.connected) _fail(L10n.current.dtFcLinkClosed);
         },
       );
       _status = LinkStatus.connected;
@@ -237,8 +238,8 @@ class FlightDataController extends ChangeNotifier {
     _finish(
       CommandOutcome.accepted,
       targetMode == null
-          ? '${command.label}: drone đã thực hiện'
-          : '${command.label}: drone đã chuyển sang ${ArduCopterMode.names[targetMode] ?? command.label}',
+          ? L10n.current.dtFcDone(command.label)
+          : L10n.current.dtFcSwitched(command.label, ArduCopterMode.names[targetMode] ?? command.label),
     );
   }
 
@@ -294,7 +295,7 @@ class FlightDataController extends ChangeNotifier {
       if (altitudeError != null) return altitudeError;
     }
     final connection = _connection;
-    if (connection == null) return 'Chưa kết nối flight controller.';
+    if (connection == null) return L10n.current.dtFcNotConnected;
 
     final (bytes, ackId) = switch (command) {
       FlightCommand.arm => (
@@ -325,7 +326,7 @@ class FlightDataController extends ChangeNotifier {
         if (_pending?.command != command) return;
         _finish(
           CommandOutcome.timeout,
-          '${command.label}: hết giờ — không nhận được phản hồi từ drone',
+          L10n.current.dtFcTimeout(command.label),
         );
         notifyListeners();
       }),
@@ -333,7 +334,7 @@ class FlightDataController extends ChangeNotifier {
     _lastFeedback = CommandFeedback(
       command: command,
       outcome: CommandOutcome.pending,
-      message: '${command.label}: đã gửi, đang chờ drone phản hồi…',
+      message: L10n.current.dtFcSent(command.label),
     );
     notifyListeners();
     return null;

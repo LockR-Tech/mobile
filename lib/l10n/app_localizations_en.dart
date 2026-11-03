@@ -6757,7 +6757,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get clDroneSim => 'Drone position (simulated)';
 
   @override
-  String get clEstimatedRoute => 'Estimated from the stage (older order, no GPS)';
+  String get clEstimatedRoute =>
+      'Estimated from the stage (older order, no GPS)';
 
   @override
   String get clDestination => 'At the receiving locker';
@@ -12159,4 +12160,2507 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get techRecErrDeviceOnlineNotAllowed =>
       'Online status is computed by the server and can\'t be set manually.';
+
+  @override
+  String dtLoadDronesFailed(Object error) {
+    return 'Couldn\'t load the drone fleet: $error';
+  }
+
+  @override
+  String dtLoadDeliveriesFailed(Object error) {
+    return 'Couldn\'t load the drone order queue: $error';
+  }
+
+  @override
+  String dtLoadSchedulesFailed(Object error) {
+    return 'Couldn\'t load drone maintenance schedules: $error';
+  }
+
+  @override
+  String dtLoadIncidentsFailed(Object error) {
+    return 'Couldn\'t load parcel drop incidents: $error';
+  }
+
+  @override
+  String get dtPerformanceUnsupported =>
+      'The server doesn\'t provide performance stats for drone technicians yet.';
+
+  @override
+  String get dtSharedQueueFailedShowingMine =>
+      'Couldn\'t load the shared incident queue — showing tickets assigned to you.';
+
+  @override
+  String get dtLoadReportsFailedPull =>
+      'Couldn\'t load drone incident tickets. Pull down to try again.';
+
+  @override
+  String dtScheduleNotFound(Object id) {
+    return 'Maintenance schedule #$id isn\'t in the drone schedule list.';
+  }
+
+  @override
+  String get dtLogoutShiftTitle => 'End shift & sign out';
+
+  @override
+  String get dtLogoutShiftConfirm =>
+      'Are you sure you want to end your shift and sign out of your drone technician account?';
+
+  @override
+  String get dtGreetingMorning => '☀️ Good morning';
+
+  @override
+  String get dtGreetingNoon => '🌤️ Good afternoon';
+
+  @override
+  String get dtGreetingAfternoon => '🌅 Good afternoon';
+
+  @override
+  String get dtGreetingEvening => '🌙 Good evening';
+
+  @override
+  String get dtDefaultName => 'Drone technician';
+
+  @override
+  String get dtRoleFlightTeam => 'Drone technician (Flight team)';
+
+  @override
+  String get dtStatReceived => 'Tickets received';
+
+  @override
+  String get dtStatInProgress => 'In progress';
+
+  @override
+  String get dtStatDone => 'Completed';
+
+  @override
+  String get dtStatOverdue => 'SLA overdue';
+
+  @override
+  String get dtQualityRatingLabel => 'Quality rating:';
+
+  @override
+  String get dtSlaPolicyLabel => 'SLA policy:';
+
+  @override
+  String get dtNoData => 'No data yet';
+
+  @override
+  String get dtTechPhoneLabel => 'Technician phone:';
+
+  @override
+  String get dtViewEditProfile => 'View & edit profile';
+
+  @override
+  String get dtRatingLoadFailed => 'Couldn\'t load rating';
+
+  @override
+  String get dtNoRatingYet => 'No ratings yet';
+
+  @override
+  String dtRatingValue(Object value, int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count ratings',
+      one: '1 rating',
+    );
+    return '$value/5 ($_temp0)';
+  }
+
+  @override
+  String get dtSlaNormal => 'Normal';
+
+  @override
+  String get dtSlaWarning => 'SLA warning';
+
+  @override
+  String get dtSlaRestricted => 'Restricted from new jobs';
+
+  @override
+  String get dtSlaSuspended => 'Suspended';
+
+  @override
+  String dtHeaderSla(Object level) {
+    return 'SLA: $level';
+  }
+
+  @override
+  String dtHeaderWorking(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count tickets in progress',
+      one: '1 ticket in progress',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get dtHeaderNoWorking => 'No tickets in progress';
+
+  @override
+  String get dtAssistant => 'Q&A assistant';
+
+  @override
+  String get dtProfileAndEdit => 'Profile & edit';
+
+  @override
+  String get dtHudWaiting => 'Pending';
+
+  @override
+  String get dtHudWorking => 'Working';
+
+  @override
+  String get dtHudRoutine => 'Routine';
+
+  @override
+  String get dtHudFleet => 'Fleet';
+
+  @override
+  String dtDronesInFlight(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count drones in flight',
+      one: '1 drone in flight',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String dtTabDispatch(Object count) {
+    return 'Dispatch ($count)';
+  }
+
+  @override
+  String dtTabFleet(Object count) {
+    return 'Fleet ($count)';
+  }
+
+  @override
+  String dtTabIncidents(Object count) {
+    return 'Incidents ($count)';
+  }
+
+  @override
+  String dtTabMyWork(Object count) {
+    return 'My work ($count)';
+  }
+
+  @override
+  String dtTabRoutine(Object count) {
+    return 'Routine ($count)';
+  }
+
+  @override
+  String get dtTabFlightTools => 'Flight tools';
+
+  @override
+  String dtSecParcelReturns(Object count) {
+    return 'Awaiting return to sender ($count)';
+  }
+
+  @override
+  String dtSecAwaitingDispatch(Object count) {
+    return 'Awaiting acceptance ($count)';
+  }
+
+  @override
+  String dtSecAwaitingLoading(Object count) {
+    return 'Awaiting loading ($count)';
+  }
+
+  @override
+  String dtSecReadyToLaunch(Object count) {
+    return 'Ready to launch ($count)';
+  }
+
+  @override
+  String dtSecLaunching(Object count) {
+    return 'Launching ($count)';
+  }
+
+  @override
+  String dtSecInFlight(Object count) {
+    return 'In flight ($count)';
+  }
+
+  @override
+  String dtSecDelivered(Object count) {
+    return 'Delivered · awaiting pickup ($count)';
+  }
+
+  @override
+  String dtSecOtherAssigned(Object count) {
+    return 'Assigned work ($count)';
+  }
+
+  @override
+  String dtSecCanceled(Object count) {
+    return 'Canceled ($count)';
+  }
+
+  @override
+  String get dtDispatchEmptyTitle => 'No drone orders waiting';
+
+  @override
+  String get dtDispatchEmptySubtitle =>
+      'New orders will appear in the Dispatch tab.';
+
+  @override
+  String get dtFilterAllStatuses => 'All statuses';
+
+  @override
+  String get dtFilterWaiting => 'Unclaimed';
+
+  @override
+  String get dtFilterWorking => 'In progress';
+
+  @override
+  String get dtFilterFlying => 'In flight';
+
+  @override
+  String get dtFilterDelivered => 'Delivered';
+
+  @override
+  String get dtFilterCanceled => 'Canceled';
+
+  @override
+  String dtFilterWithCount(Object label, Object count) {
+    return '$label ($count)';
+  }
+
+  @override
+  String dtIncidentsWaitingBanner(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count drone incidents are waiting to be claimed.',
+      one: '1 drone incident is waiting to be claimed.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get dtIncidentsQueueBanner =>
+      'Drone incident queue. New tickets are shown first so the flight team can claim them quickly.';
+
+  @override
+  String get dtReportSearchHint =>
+      'Search ticket ID, title, drone, reporter...';
+
+  @override
+  String get dtFilterResolved => 'Resolved';
+
+  @override
+  String dtSecParcelDrop(Object count) {
+    return 'Parcel drop incidents ($count)';
+  }
+
+  @override
+  String dtSecRoutedToYou(Object count) {
+    return 'Sent directly to you ($count)';
+  }
+
+  @override
+  String get dtSecSharedQueue => 'Shared technical queue';
+
+  @override
+  String dtSecDroneTechnical(Object count) {
+    return 'Drone technical incidents ($count)';
+  }
+
+  @override
+  String get dtReportsEmptyTitle => 'No drone incident tickets';
+
+  @override
+  String get dtReportsEmptySubtitle =>
+      'The flight team has no incidents matching the filters.';
+
+  @override
+  String get dtNoOtherInSharedQueue => 'No other tickets in the shared queue.';
+
+  @override
+  String dtSeeMore(Object count) {
+    return 'Show more ($count)';
+  }
+
+  @override
+  String get dtMyWorkBanner =>
+      'Assigned work includes incident tickets and drone maintenance schedules. Changes are only recorded once the server confirms them.';
+
+  @override
+  String get dtMetricPending => 'To do';
+
+  @override
+  String get dtMetricWorking => 'Working';
+
+  @override
+  String get dtMetricDone => 'Done';
+
+  @override
+  String get dtMyWorkSearchHint => 'Search jobs, drones, ticket IDs...';
+
+  @override
+  String get dtTypeAll => 'All types';
+
+  @override
+  String get dtTypeIncident => 'Incident';
+
+  @override
+  String get dtTypeMaintenance => 'Maintenance';
+
+  @override
+  String get dtStatusActive => 'To do';
+
+  @override
+  String get dtStatusDone => 'Completed';
+
+  @override
+  String get dtSortDue => 'Due soonest';
+
+  @override
+  String get dtSortNewest => 'Newest';
+
+  @override
+  String get dtMyWorkEmptyTitle => 'No matching jobs';
+
+  @override
+  String get dtTryOtherFilters => 'Try other filters or pull down to reload.';
+
+  @override
+  String get dtClearSearch => 'Clear search';
+
+  @override
+  String get dtAssignAll => 'Any assignee';
+
+  @override
+  String get dtAssignMine => 'Assigned to me';
+
+  @override
+  String get dtAssignNone => 'Unassigned';
+
+  @override
+  String get dtAllDrones => 'All drones';
+
+  @override
+  String get dtTimeAll => 'Any time';
+
+  @override
+  String get dtTime7d => '7 days';
+
+  @override
+  String get dtTime30d => '30 days';
+
+  @override
+  String get dtSortOldest => 'Oldest';
+
+  @override
+  String get dtSortSla => 'SLA due';
+
+  @override
+  String get dtReset => 'Reset';
+
+  @override
+  String get dtSort => 'Sort';
+
+  @override
+  String get dtDroneIncidentFallback => 'Drone incident';
+
+  @override
+  String get dtSlaOverdue => 'SLA overdue';
+
+  @override
+  String get dtClaim => 'Claim';
+
+  @override
+  String get dtUpdateProgress => 'Update progress';
+
+  @override
+  String get dtClaimReportTitle => 'Claim this drone incident?';
+
+  @override
+  String dtClaimReportBody(Object id, Object drone) {
+    return 'You will become the technician in charge of ticket RPT-$id for drone $drone.';
+  }
+
+  @override
+  String get dtConfirmClaim => 'Confirm claim';
+
+  @override
+  String dtClaimedReport(Object id) {
+    return 'Claimed drone ticket RPT-$id';
+  }
+
+  @override
+  String get dtFleetBanner =>
+      'Battery updates automatically when the drone sends telemetry; for drones that aren\'t connected, the latest update is shown (it may have been entered by a technician). Live flight telemetry is in the mission details.';
+
+  @override
+  String get dtFleetEmptyTitle => 'You\'re not in charge of any drone yet';
+
+  @override
+  String get dtFleetEmptyAssigned => 'Drones assigned to you will appear here.';
+
+  @override
+  String get dtFleetEmptyPickBelow =>
+      'Pick an unassigned drone below to take charge of it.';
+
+  @override
+  String dtUnassignedDrones(Object count) {
+    return 'Drones without a technician ($count)';
+  }
+
+  @override
+  String get dtScheduleBanner =>
+      'Drone maintenance schedules are created by admins. Rate every checklist item; if any item fails, the drone switches to fault and the system opens an incident ticket.';
+
+  @override
+  String get dtScheduleSearchHint =>
+      'Search schedules, drone codes, technicians...';
+
+  @override
+  String dtAllWithCount(Object count) {
+    return 'All ($count)';
+  }
+
+  @override
+  String dtDueWithCount(Object count) {
+    return 'Due ($count)';
+  }
+
+  @override
+  String dtUpcomingWithCount(Object count) {
+    return 'Upcoming ($count)';
+  }
+
+  @override
+  String get dtPriorityAll => 'Any priority';
+
+  @override
+  String get dtPriorityUrgent => 'Urgent';
+
+  @override
+  String get dtPriorityHighShort => 'High';
+
+  @override
+  String get dtPriorityNormal => 'Normal';
+
+  @override
+  String get dtPriorityLowShort => 'Low';
+
+  @override
+  String get dtSortPriority => 'Priority';
+
+  @override
+  String get dtSortNewlyCreated => 'Newly created';
+
+  @override
+  String get dtSchedulesEmptyTitle => 'No routine maintenance schedules yet';
+
+  @override
+  String get dtSchedulesNoMatch => 'No matching drone maintenance schedules';
+
+  @override
+  String get dtSchedulesEmptySubtitle =>
+      'Drone maintenance schedules assigned to you will appear here.';
+
+  @override
+  String get dtToolMissionTitle => 'Flight planning (Mission Planner)';
+
+  @override
+  String get dtToolMissionSubtitle =>
+      'Draw waypoints, set altitude/commands, export mission files';
+
+  @override
+  String get dtToolFlightTitle => 'Telemetry & control (Flight Data)';
+
+  @override
+  String get dtToolFlightSubtitle =>
+      'Connect via MAVLink, view live position/HUD, send flight commands — only with SITL or a dedicated control link';
+
+  @override
+  String get dtDueBadge => 'Due';
+
+  @override
+  String dtEveryDays(Object days) {
+    return 'Every $days days';
+  }
+
+  @override
+  String dtDueAt(Object date) {
+    return 'Due: $date';
+  }
+
+  @override
+  String dtLastDone(Object date) {
+    return 'Last done: $date';
+  }
+
+  @override
+  String dtFinishTicketBeforeNext(Object id) {
+    return 'Ticket RPT-$id must be completed before the next inspection.';
+  }
+
+  @override
+  String get dtInspectNow => 'Inspect now';
+
+  @override
+  String get dtInspect => 'Inspect';
+
+  @override
+  String get dtPriorityHigh => 'High priority';
+
+  @override
+  String get dtPriorityLow => 'Low priority';
+
+  @override
+  String get dtInspectionFailedSnack =>
+      'Maintenance recorded as FAILED. The drone has been switched to fault and an incident ticket was opened per the server response.';
+
+  @override
+  String get dtInspectionPassedSnack =>
+      'Maintenance recorded as PASSED and the next cycle has been scheduled.';
+
+  @override
+  String get dtScheduleNoAddress =>
+      'This schedule has no drone station address.';
+
+  @override
+  String get dtCannotOpenMaps => 'Couldn\'t open the maps app.';
+
+  @override
+  String get dtSourceLocker => 'Source locker';
+
+  @override
+  String get dtDestinationLocker => 'Destination locker';
+
+  @override
+  String dtReceiveBoxNumber(Object number) {
+    return 'Receiving box #$number';
+  }
+
+  @override
+  String get dtReceiveBoxHeld => 'Receiving box reserved';
+
+  @override
+  String get dtActionAccept => 'Accept';
+
+  @override
+  String get dtActionLoad => 'Confirm loading';
+
+  @override
+  String get dtActionLaunch => 'Launch';
+
+  @override
+  String get dtActionLaunching => 'Launching';
+
+  @override
+  String get dtActionTrack => 'Track';
+
+  @override
+  String get dtCancelBeforeFlight => 'Cancel before flight';
+
+  @override
+  String dtRouteGroundedCantAccept(Object reason) {
+    return '$reason — this order can\'t be accepted yet.';
+  }
+
+  @override
+  String dtRouteGroundedCantLaunch(Object reason) {
+    return '$reason — this order can\'t be launched yet.';
+  }
+
+  @override
+  String dtGoods(Object description) {
+    return 'Goods: $description';
+  }
+
+  @override
+  String dtParcel(Object summary) {
+    return 'Parcel: $summary';
+  }
+
+  @override
+  String get dtLiveTrackingPill =>
+      'Drone is sending signal · flight stages update automatically';
+
+  @override
+  String dtConfirmStage(Object label) {
+    return 'Confirm: $label';
+  }
+
+  @override
+  String dtBlockedBy(Object reason) {
+    return 'Issue: $reason';
+  }
+
+  @override
+  String dtBlockedTicket(Object id) {
+    return ' · ticket #$id';
+  }
+
+  @override
+  String get dtChangeDrone => 'Change drone';
+
+  @override
+  String get dtFailDelivery => 'Delivery not completed';
+
+  @override
+  String get dtReportFlightFailure => 'Report flight failure';
+
+  @override
+  String get dtUnpaidCantAccept => 'Unpaid · can\'t accept yet';
+
+  @override
+  String get dtNotDroppedCantAccept =>
+      'Sender hasn\'t put the parcel in the box · can\'t accept yet';
+
+  @override
+  String get dtOverweightAwaitingPayment =>
+      'Parcel heavier than declared · awaiting extra payment';
+
+  @override
+  String dtStageLine(Object stage) {
+    return 'Stage: $stage';
+  }
+
+  @override
+  String dtMissionLine(Object status) {
+    return 'Mission: $status';
+  }
+
+  @override
+  String dtUpdatedTapDetail(Object time) {
+    return 'Updated $time · tap for details';
+  }
+
+  @override
+  String dtGroundedPaused(Object reason) {
+    return 'flights paused ($reason)';
+  }
+
+  @override
+  String get dtGroundedPausedByAdmin => 'stopped by admin';
+
+  @override
+  String get dtGroundedNoForecast => 'no weather forecast yet';
+
+  @override
+  String get dtGroundedWeather => 'weather doesn\'t allow flying';
+
+  @override
+  String dtGroundedTakeoffStation(Object status) {
+    return 'Takeoff station: $status';
+  }
+
+  @override
+  String dtGroundedReceivingLocker(Object status) {
+    return 'Receiving locker: $status';
+  }
+
+  @override
+  String get dtNextStageLaunching => 'drone has left the station';
+
+  @override
+  String get dtNextStageDeparted => 'drone is on its way';
+
+  @override
+  String get dtNextStageEnRoute => 'drone is approaching the receiving locker';
+
+  @override
+  String get dtNextStageApproaching => 'drone has reached the receiving locker';
+
+  @override
+  String get dtNextStageArrived => 'parcel is in the receiving box';
+
+  @override
+  String get dtStageDropReported => 'Parcel drop reported';
+
+  @override
+  String get dtStageReadyToLaunch => 'Ready to launch';
+
+  @override
+  String get dtNoOtherIdleDrone =>
+      'No other drone is ready at the sending locker. Confirm the delivery as not completed if it can\'t be fixed.';
+
+  @override
+  String get dtChangeDroneHint =>
+      'Pick another drone that\'s ready at the sending locker. The parcel must be loaded and checked again on the new drone.';
+
+  @override
+  String get dtChangedDrone => 'Drone changed · reload the parcel, then launch';
+
+  @override
+  String get dtFailDeliveryIntro =>
+      'The order will be closed, the sender refunded, and you\'ll return the parcel to the sender. This can\'t be undone.';
+
+  @override
+  String get dtFailedDeliveryDone =>
+      'Order closed · return the parcel to the sender';
+
+  @override
+  String get dtConfirmStageTitle => 'Confirm flight stage';
+
+  @override
+  String dtConfirmStageBody(Object label) {
+    return 'Confirm: $label?\n\nThe customer will see the new stage right away and this can\'t be undone.';
+  }
+
+  @override
+  String dtConfirmedStage(Object label) {
+    return 'Confirmed: $label';
+  }
+
+  @override
+  String dtDeclaredValue(Object price) {
+    return 'declared $price';
+  }
+
+  @override
+  String get dtFragileUpper => 'FRAGILE';
+
+  @override
+  String dtOrderNumber(Object id) {
+    return 'Order #$id';
+  }
+
+  @override
+  String get dtFlightFailedLower => 'flight failed';
+
+  @override
+  String get dtDeliveryNotCompletedLower => 'delivery not completed';
+
+  @override
+  String get dtCanceledLower => 'canceled';
+
+  @override
+  String dtParcelInSourceBox(Object locker) {
+    return 'Parcel is still in the sending box · $locker';
+  }
+
+  @override
+  String dtParcelInSourceBoxNumber(Object box, Object locker) {
+    return 'Parcel is still in sending box #$box · $locker';
+  }
+
+  @override
+  String get dtSendingLocker => 'Sending locker';
+
+  @override
+  String get dtParcelHeldByTeam => 'The flight team is holding the parcel';
+
+  @override
+  String dtSender(Object sender) {
+    return 'Sender: $sender';
+  }
+
+  @override
+  String get dtConfirmParcelReturned => 'Confirm parcel returned';
+
+  @override
+  String get dtParcelReturnHint =>
+      'Only confirm once the parcel is back with the sender. If the old order still holds a box at the sending locker, that box is released.';
+
+  @override
+  String get dtNoteOptional => 'Note (optional)';
+
+  @override
+  String get dtParcelReturned => 'Parcel returned';
+
+  @override
+  String get dtParcelReturnRecorded => 'Parcel return to sender recorded';
+
+  @override
+  String get dtReceivingLocker => 'Receiving locker';
+
+  @override
+  String get dtLaunchCommandSent => 'Mission launch command sent';
+
+  @override
+  String get dtConfirmLoadingTitle => 'Confirm loading';
+
+  @override
+  String get dtConfirmLoadingIntro =>
+      'Weigh the parcel and complete the whole checklist before launch is allowed.';
+
+  @override
+  String get dtActualWeightLabel => 'Actual weighed weight (grams) *';
+
+  @override
+  String get dtActualWeightHint => 'Enter the grams shown on the scale';
+
+  @override
+  String get dtActualWeightInvalid =>
+      'Please enter an actual weight greater than 0';
+
+  @override
+  String get dtNoDeclaredWeight => 'The customer didn\'t declare a weight.';
+
+  @override
+  String dtDeclaredWeight(Object weight) {
+    return 'Customer declared $weight.';
+  }
+
+  @override
+  String dtDeclaredWeightWithFee(Object weight, Object price) {
+    return 'Customer declared $weight · fee charged $price.';
+  }
+
+  @override
+  String dtOverweightSurcharge(Object price) {
+    return 'Heavier than declared: the customer must pay an extra $price. The drone can only launch after the customer pays.';
+  }
+
+  @override
+  String get dtSealCode => 'Seal code';
+
+  @override
+  String get dtSealCodeHint =>
+      'The system issues a code after loading is confirmed — write that code on the parcel\'s seal.';
+
+  @override
+  String get dtCheckParcelMatched => 'Correct parcel for the correct order';
+
+  @override
+  String get dtCheckPayloadSecured => 'Parcel is secured';
+
+  @override
+  String get dtCheckCompartmentLocked => 'Cargo compartment is locked';
+
+  @override
+  String get dtChecklistIncomplete => 'Please complete the whole checklist';
+
+  @override
+  String get dtConfirmLoaded => 'Confirm loaded';
+
+  @override
+  String dtSealSuffix(Object seal) {
+    return ' (seal $seal)';
+  }
+
+  @override
+  String dtLoadedOverweight(Object seal, Object price) {
+    return 'Parcel loaded$seal. It\'s heavier than declared — wait for the customer to pay an extra $price before launching.';
+  }
+
+  @override
+  String dtLoadedReady(Object seal) {
+    return 'Loading confirmed$seal — mission ready to launch';
+  }
+
+  @override
+  String get dtCancelMissionBeforeFlight => 'Cancel mission before flight';
+
+  @override
+  String get dtFlightFailureIntro =>
+      'The order will be closed and the customer refunded; the drone switches to fault until you finish checking it. This can\'t be undone.';
+
+  @override
+  String get dtCancelMissionIntro =>
+      'The order will be closed, the sender refunded, and you\'ll return the parcel to the sender. Choosing \"Drone fault\" switches the drone to fault so it takes no new orders until it\'s checked.';
+
+  @override
+  String get dtNoteRequired => 'Note (required)';
+
+  @override
+  String get dtPickReason => 'Pick a reason';
+
+  @override
+  String get dtNoteRequiredForOther => 'A note is required when choosing Other';
+
+  @override
+  String get dtConfirmFailure => 'Confirm failure';
+
+  @override
+  String get dtConfirmCancel => 'Confirm cancel';
+
+  @override
+  String get dtFlightFailureReported =>
+      'Flight failure reported · customer refunded';
+
+  @override
+  String get dtMissionCanceled => 'Drone mission canceled';
+
+  @override
+  String get dtIneligibleInactive => 'inactive';
+
+  @override
+  String get dtIneligibleUnknownBattery => 'battery level unknown';
+
+  @override
+  String dtIneligibleLowBattery(Object battery, Object min) {
+    return 'battery $battery% (needs above $min%)';
+  }
+
+  @override
+  String get dtNoDroneAtSource => 'The order\'s sending locker has no drones.';
+
+  @override
+  String dtNoEligibleDroneAtSource(Object list) {
+    return 'No eligible drone at the sending locker: $list.';
+  }
+
+  @override
+  String get dtAssignDroneTitle => 'Assign a drone to the order';
+
+  @override
+  String dtAssignDroneRoute(Object route) {
+    return 'Route $route.';
+  }
+
+  @override
+  String dtAssignDroneRouteBox(Object route, Object box) {
+    return 'Route $route · receiving box #$box.';
+  }
+
+  @override
+  String get dtAssignDronePick =>
+      'Pick a drone that\'s ready at the sending locker:';
+
+  @override
+  String dtIneligibleDronesHint(Object min) {
+    return 'Greyed-out drones can\'t take the order (inactive, not Ready, battery unknown or battery ≤ $min%).';
+  }
+
+  @override
+  String get dtAssignDrone => 'Assign drone';
+
+  @override
+  String get dtAcceptedAndAssigned =>
+      'Accepted and assigned a drone to the mission';
+
+  @override
+  String dtLockerNumber(Object id) {
+    return 'Locker $id';
+  }
+
+  @override
+  String get dtNoBatteryData => 'No battery data';
+
+  @override
+  String dtBatteryPercentPin(Object battery) {
+    return '$battery% battery';
+  }
+
+  @override
+  String get dtNotClaimed => 'Unclaimed';
+
+  @override
+  String dtBatteryPercent(Object battery) {
+    return 'Battery $battery%';
+  }
+
+  @override
+  String get dtYouAreInCharge => ' · you\'re in charge';
+
+  @override
+  String get dtClaimDrone => 'Take charge';
+
+  @override
+  String get dtClaimedDrone => 'You\'re now in charge of the drone';
+
+  @override
+  String get dtReleaseDrone => 'Release';
+
+  @override
+  String get dtReleasedDrone => 'Released the drone';
+
+  @override
+  String get dtChangeStatus => 'Change status';
+
+  @override
+  String get dtUpdateBattery => 'Update battery %';
+
+  @override
+  String get dtMaintenanceLog => 'Maintenance log';
+
+  @override
+  String get dtDroneInFlightTitle => 'Drone in flight';
+
+  @override
+  String get dtDroneInFlightBody =>
+      'A drone\'s status can\'t be changed while it\'s flying. If the flight has a problem, use \"Report flight failure\" on the mission: the order is closed, the customer refunded and the drone switched to Fault.';
+
+  @override
+  String get dtViewInFlightMission => 'View in-flight mission';
+
+  @override
+  String get dtChangeDroneStatusTitle => 'Change drone status';
+
+  @override
+  String dtDroneHasOpenReports(Object tickets) {
+    return 'The drone still has open tickets $tickets: complete them before switching to Ready or Charging.';
+  }
+
+  @override
+  String get dtReasonRequired => 'Reason (required)';
+
+  @override
+  String get dtStatusUnchanged => 'Status unchanged';
+
+  @override
+  String get dtFaultReasonRequired =>
+      'A reason is required when switching to FAULT';
+
+  @override
+  String get dtStatusChanged => 'Drone status changed';
+
+  @override
+  String get dtBatteryRemaining => 'Battery remaining (0-100)';
+
+  @override
+  String get dtBatteryRange => 'Battery must be between 0 and 100';
+
+  @override
+  String get dtBatteryUpdated => 'Drone battery updated';
+
+  @override
+  String dtTechnicianNumber(Object id) {
+    return ' · Technician #$id';
+  }
+
+  @override
+  String dtMaintenanceLogTitle(Object drone) {
+    return 'Maintenance log · $drone';
+  }
+
+  @override
+  String dtLogLoadFailed(Object error) {
+    return 'Couldn\'t load the log: $error';
+  }
+
+  @override
+  String get dtLogEmptyTitle => 'No notes yet';
+
+  @override
+  String get dtLogEmptyCanWrite => 'Add the first step below.';
+
+  @override
+  String get dtLogEmptyReadOnly => 'This drone has no maintenance log yet.';
+
+  @override
+  String get dtLogReadOnlyHint =>
+      'Only the technician in charge of the drone can add log entries. Take charge of the drone to record steps.';
+
+  @override
+  String get dtLogInputHint => 'Add a step / note...';
+
+  @override
+  String get dtMissionDetailTitle => 'Drone mission details';
+
+  @override
+  String get dtRealtimeUpdates => 'Updates in real time';
+
+  @override
+  String get dtDropReportedBanner =>
+      'A parcel drop was reported for this order and delivery has stopped. Follow progress under \"Parcel drop incidents\" in the Dispatch tab.';
+
+  @override
+  String get dtCancelReasonWeather => 'Bad weather';
+
+  @override
+  String get dtCancelReasonDroneFault => 'Drone fault';
+
+  @override
+  String get dtCancelReasonLandingPad => 'Landing pad not ready';
+
+  @override
+  String get dtCancelReasonOperational => 'Operational reason';
+
+  @override
+  String get dtCancelReasonOther => 'Other';
+
+  @override
+  String get dtDroneStatusIdle => 'Ready';
+
+  @override
+  String get dtDroneStatusReserved => 'Reserved for mission';
+
+  @override
+  String get dtDroneStatusCharging => 'Charging';
+
+  @override
+  String get dtDroneStatusInFlight => 'In flight';
+
+  @override
+  String get dtDroneStatusMaintenance => 'Under maintenance';
+
+  @override
+  String get dtDroneStatusFault => 'Fault';
+
+  @override
+  String get dtErrDroneHasOpenReport =>
+      'The drone still has open incident tickets. Complete them before switching the drone to Ready or Charging.';
+
+  @override
+  String get dtErrDroneInFlightUseFail =>
+      'The drone is flying: use \"Report flight failure\" on the in-flight mission instead of changing its status.';
+
+  @override
+  String get dtErrStageChanged =>
+      'The flight stage just changed (the drone updated it or someone already confirmed). The list has been reloaded — check it and confirm again.';
+
+  @override
+  String get dtErrSlaNotAssignee =>
+      'Only the technician assigned to the ticket can extend its SLA.';
+
+  @override
+  String get dtErrSlaLimitReached =>
+      'This ticket has used all its SLA extensions. Contact an admin if you need more time.';
+
+  @override
+  String get dtErrSlaHoursExceeded =>
+      'The extension exceeds the maximum hours allowed per extension.';
+
+  @override
+  String get dtErrSlaReasonRequired =>
+      'Please enter a reason for the SLA extension.';
+
+  @override
+  String get dtErrInvalidExtensionHours =>
+      'The extension must be at least 1 hour.';
+
+  @override
+  String get dtErrReportNotAssigned =>
+      'Only the technician holding the ticket can release it.';
+
+  @override
+  String get dtErrReportNotClaimed =>
+      'The ticket is in the queue and hasn\'t been claimed yet.';
+
+  @override
+  String get dtErrReleaseReasonRequired =>
+      'Please enter a reason for releasing the ticket.';
+
+  @override
+  String get dtErrReportAlreadyResolved =>
+      'The ticket is already resolved and can\'t be changed.';
+
+  @override
+  String get dtErrDroneReportRequired =>
+      'This ticket isn\'t a drone incident ticket.';
+
+  @override
+  String get dtErrJourneyForbidden =>
+      'Only the technician who accepted the mission can view the flight camera.';
+
+  @override
+  String get dtErrMissionNotFound => 'This order has no flight mission yet.';
+
+  @override
+  String get dtErrIncidentNotFound => 'Incident not found.';
+
+  @override
+  String get dtErrTechnicianRequired =>
+      'This feature is only for drone technicians.';
+
+  @override
+  String get dtErrIncidentForbidden =>
+      'You don\'t have permission to view this incident.';
+
+  @override
+  String get dtErrServerUnsupported =>
+      'The server doesn\'t support this feature yet.';
+
+  @override
+  String dtRdClaimBody(Object id) {
+    return 'Confirm claiming ticket RPT-$id and taking responsibility for updating its work log.';
+  }
+
+  @override
+  String get dtRdTakeJob => 'Take job';
+
+  @override
+  String get dtRdLogUpdated => 'Work log updated';
+
+  @override
+  String get dtRdResolved => 'Drone incident signed off and resolved';
+
+  @override
+  String dtRdSlaExtended(Object hours) {
+    return 'SLA extended by $hours h.';
+  }
+
+  @override
+  String dtRdSlaExtendedUsed(Object hours, Object used, Object max) {
+    return 'SLA extended by $hours h ($used/$max extensions used).';
+  }
+
+  @override
+  String dtRdReleased(Object id) {
+    return 'Ticket RPT-$id returned to the queue.';
+  }
+
+  @override
+  String get dtRdSubtitle => 'Drone technical incident ticket details';
+
+  @override
+  String dtRdLoadPartial(Object error) {
+    return 'Couldn\'t load the full record: $error';
+  }
+
+  @override
+  String get dtRdInfoSection => 'Incident information';
+
+  @override
+  String get dtRdStation => 'Station/Kiosk';
+
+  @override
+  String get dtRdReporter => 'Reporter';
+
+  @override
+  String dtRdUserNumber(Object id) {
+    return 'User #$id';
+  }
+
+  @override
+  String get dtRdAssignee => 'Technician in charge';
+
+  @override
+  String dtRdYouSuffix(Object name) {
+    return '$name (you)';
+  }
+
+  @override
+  String get dtRdNoAssignee => 'No technician has claimed it yet';
+
+  @override
+  String get dtRdYou => 'You';
+
+  @override
+  String dtRdTechNumber(Object id) {
+    return 'Technician #$id';
+  }
+
+  @override
+  String get dtRdSlaDue => 'SLA due';
+
+  @override
+  String dtRdSlaOverdueSuffix(Object date) {
+    return '$date · overdue';
+  }
+
+  @override
+  String get dtRdSlaExtensions => 'SLA extensions';
+
+  @override
+  String dtRdExtendedCount(Object used) {
+    return 'Extended $used times';
+  }
+
+  @override
+  String dtRdExtendedCountMax(Object used, Object max) {
+    return 'Extended $used/$max times';
+  }
+
+  @override
+  String get dtRdCreatedAt => 'Created at';
+
+  @override
+  String get dtRdDescriptionSection => 'Scene description';
+
+  @override
+  String get dtRdNoDescription => 'No detailed description yet.';
+
+  @override
+  String get dtRdPhotosSection => 'Photos by stage';
+
+  @override
+  String get dtRdLogsSection => 'Technician work log & history';
+
+  @override
+  String get dtRdResolveButton => 'Sign off & resolve incident';
+
+  @override
+  String dtRdExtendSlaCount(Object used, Object max) {
+    return 'Extend SLA ($used/$max)';
+  }
+
+  @override
+  String get dtRdExtendSla => 'Extend SLA';
+
+  @override
+  String get dtRdReleaseTicket => 'Release ticket';
+
+  @override
+  String get dtRdNoLogs =>
+      'No work notes yet. Each inspection or repair step will be saved here.';
+
+  @override
+  String dtRdLogViewerTitle(Object date) {
+    return 'Drone log · $date';
+  }
+
+  @override
+  String get dtRdTechnician => 'Technician';
+
+  @override
+  String get dtRdAddStep => 'Add a step / progress photo';
+
+  @override
+  String get dtRdAddPhoto => 'Add photo';
+
+  @override
+  String get dtRdPhotoHelper => 'Inspection or repair progress photos';
+
+  @override
+  String get dtRdNoteHint => 'Enter what you inspected or repaired...';
+
+  @override
+  String get dtRdSaveLog => 'Save log';
+
+  @override
+  String get dtRdSlaUnsupported =>
+      'The server doesn\'t support SLA extensions for drone tickets yet.';
+
+  @override
+  String dtRdExtendTitle(Object id) {
+    return 'Extend SLA · RPT-$id';
+  }
+
+  @override
+  String dtRdExtendIntroUsed(Object used, Object max) {
+    return 'Extended $used/$max times. Each extension is recorded in the ticket log.';
+  }
+
+  @override
+  String get dtRdExtendIntro =>
+      'Each extension is recorded in the ticket log; the maximum count and hours follow the configuration.';
+
+  @override
+  String get dtRdAddTime => 'Add time';
+
+  @override
+  String dtRdHours(int hours) {
+    String _temp0 = intl.Intl.pluralLogic(
+      hours,
+      locale: localeName,
+      other: '$hours hours',
+      one: '1 hour',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get dtRdExtendReason => 'Extension reason *';
+
+  @override
+  String get dtRdExtend => 'Extend';
+
+  @override
+  String get dtRdReleaseUnsupported =>
+      'The server doesn\'t support releasing drone tickets yet.';
+
+  @override
+  String dtRdReleaseTitle(Object id) {
+    return 'Release ticket RPT-$id?';
+  }
+
+  @override
+  String get dtRdReleaseIntro =>
+      'The ticket goes back to the queue for another technician; you\'ll no longer be in charge of it.';
+
+  @override
+  String get dtRdReleaseReason => 'Release reason *';
+
+  @override
+  String get dtRdRelease => 'Release';
+
+  @override
+  String get dtRdNeedResolutionPhoto =>
+      'Please take at least 1 photo after the repair to sign off.';
+
+  @override
+  String get dtRdResolveTitle => 'Sign off drone incident';
+
+  @override
+  String get dtRdResolveIntro =>
+      'Save progress photos and after-repair photos, same as the locker incident sign-off process.';
+
+  @override
+  String get dtRdResolutionResult => 'Repair result';
+
+  @override
+  String get dtRdResolutionHint => 'Describe the parts or actions handled...';
+
+  @override
+  String get dtRdProgressPhotos => 'Photos during repair';
+
+  @override
+  String get dtRdProgressPhotosHint =>
+      'Optional, used to record technical work.';
+
+  @override
+  String get dtRdResolutionPhotosRequired => 'After-repair photos *';
+
+  @override
+  String get dtRdResolutionPhotos => 'After-repair photos';
+
+  @override
+  String get dtRdResolutionPhotosRequiredHint =>
+      'At least 1 photo is required to sign off.';
+
+  @override
+  String get dtRdResolutionPhotosOptionalHint =>
+      'Optional, used to keep sign-off photos.';
+
+  @override
+  String get dtRdConfirmResolve => 'Confirm resolved';
+
+  @override
+  String get dtPqNoteRequiredForReason => 'A note is required for this reason';
+
+  @override
+  String get dtPqNeedLocation =>
+      'Your current location is needed to start a pickup shift.';
+
+  @override
+  String get dtPqOnDuty =>
+      'Shift started. You\'ll be invited when there\'s an order near you.';
+
+  @override
+  String get dtPqOffDuty =>
+      'Shift ended. You won\'t receive pickup invitations.';
+
+  @override
+  String get dtPqDeclineTitle => 'Decline this pickup invitation?';
+
+  @override
+  String dtPqDeclineBody(Object order) {
+    return 'Order $order will be offered to someone else and you won\'t be invited to it again for a while.';
+  }
+
+  @override
+  String get dtPqDecline => 'Decline';
+
+  @override
+  String get dtPqDeclined => 'Declined · the system is inviting someone else';
+
+  @override
+  String get dtPqConfirmPickupTitle => 'Confirm pickup';
+
+  @override
+  String dtPqDeclaredParcelAsk(Object summary) {
+    return 'Declared parcel: $summary.\nAsk the sender to read out the pickup code from their order.';
+  }
+
+  @override
+  String get dtPqPickupCode => 'Pickup code (6 digits)';
+
+  @override
+  String get dtPqParcelMatches =>
+      'The parcel matches the declaration (category, size, weight) and contains no items banned from flight.';
+
+  @override
+  String get dtPqPhotoRequired =>
+      'A photo of the parcel at the pickup point is required.';
+
+  @override
+  String get dtPqCameraFailed =>
+      'Couldn\'t open the camera. Check the camera permission.';
+
+  @override
+  String get dtPqTakePhoto => 'Take parcel photo';
+
+  @override
+  String get dtPqPhotoHint =>
+      'Take a clear photo of the whole parcel before confirming pickup.';
+
+  @override
+  String get dtPqEnterSixDigits => 'Enter all 6 digits';
+
+  @override
+  String get dtPqConfirmMatchOrFail =>
+      'Confirm the parcel matches the declaration, or report that it couldn\'t be picked up';
+
+  @override
+  String get dtPqNeedPhoto => 'Take a parcel photo before confirming';
+
+  @override
+  String get dtPqUploadFailed =>
+      'Couldn\'t upload the parcel photo. Try again.';
+
+  @override
+  String get dtPqNoGps =>
+      'Couldn\'t get your current GPS location. Turn on location and try again.';
+
+  @override
+  String get dtPqPickedUp => 'Picked up';
+
+  @override
+  String get dtPqPickedUpDone =>
+      'Picked up and parcel photo saved. Take the parcel to the assigned drone and load it directly; don\'t put it in a flight locker box.';
+
+  @override
+  String get dtPqFailPickupTitle => 'Couldn\'t pick up';
+
+  @override
+  String get dtPqFailPickupIntro =>
+      'The order will end as \"delivery not completed\" and the sender refunded. This can\'t be undone.';
+
+  @override
+  String get dtPqFailPickupDone => 'Reported pickup failure · sender refunded';
+
+  @override
+  String get dtPqExpired => 'expired';
+
+  @override
+  String dtPqTimeLeft(Object time) {
+    return '$time left';
+  }
+
+  @override
+  String dtPqSecOffers(Object count) {
+    return 'Pickup invitations ($count)';
+  }
+
+  @override
+  String dtPqSecAccepted(Object count) {
+    return 'Going to pick up ($count)';
+  }
+
+  @override
+  String dtPqSecCarrying(Object count) {
+    return 'Picked up · awaiting direct loading onto drone ($count)';
+  }
+
+  @override
+  String dtPqOffersWaiting(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count invitations are waiting for your reply.',
+      one: '1 invitation is waiting for your reply.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String dtPqOffersWaitingDirect(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '$count invitations are waiting for your reply (assigned directly by a dispatcher).',
+      one:
+          '1 invitation is waiting for your reply (assigned directly by a dispatcher).',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get dtPqTurnOnHint =>
+      'Turn on to receive home pickup invitations near you.';
+
+  @override
+  String get dtPqBusy =>
+      'On shift · busy with a job, so no more invitations for now.';
+
+  @override
+  String get dtPqFree =>
+      'On shift · free, you\'ll be invited when there\'s an order near you.';
+
+  @override
+  String dtPqFreeWithLocation(Object time) {
+    return 'On shift · free, you\'ll be invited when there\'s an order near you · location at $time.';
+  }
+
+  @override
+  String get dtPqOnDutyTitle => 'Taking pickup jobs';
+
+  @override
+  String get dtPqOffDutyTitle => 'Not on a pickup shift';
+
+  @override
+  String dtPqPickupAt(Object address) {
+    return 'Pick up at: $address';
+  }
+
+  @override
+  String dtPqDistanceParcel(Object distance, Object summary) {
+    return '$distance away · parcel $summary';
+  }
+
+  @override
+  String dtPqReplyIn(Object countdown) {
+    return 'Reply: $countdown';
+  }
+
+  @override
+  String get dtPqAccepted =>
+      'Accepted. Go to the pickup point and ask the sender for the pickup code.';
+
+  @override
+  String get dtPqAcceptPickup => 'Accept pickup';
+
+  @override
+  String dtPqInstructions(Object note) {
+    return 'Instructions: $note';
+  }
+
+  @override
+  String dtPqDeclaredParcel(Object summary) {
+    return 'Declared parcel: $summary';
+  }
+
+  @override
+  String get dtPqDirections => 'Directions';
+
+  @override
+  String get dtPqCantPickUp => 'Can\'t pick up';
+
+  @override
+  String dtPqSendingLockerNumber(Object id) {
+    return 'Sending locker #$id';
+  }
+
+  @override
+  String dtPqBringToDrone(Object locker) {
+    return 'Take the parcel to the drone at: $locker';
+  }
+
+  @override
+  String get dtPqDirectionsToDrone => 'Directions to drone';
+
+  @override
+  String get dtRtlRequested => 'Drone return requested (RTL)';
+
+  @override
+  String get dtRtlAccepted => 'Drone accepted the RTL command';
+
+  @override
+  String get dtRtlReturning => 'Drone is flying back to the station';
+
+  @override
+  String get dtRtlCompleted => 'Drone is back at the station';
+
+  @override
+  String get dtRtlFailed => 'RTL failed';
+
+  @override
+  String get dtRtlManual => 'Manual intervention / manual RTL needed';
+
+  @override
+  String get dtManualReturnBanner =>
+      'Manual intervention / manual RTL needed: the system couldn\'t bring the drone back. Fly the drone back to the station over the flight team\'s dedicated control link, then notify an admin.';
+
+  @override
+  String dtIncidentNumber(Object id) {
+    return 'Incident #$id';
+  }
+
+  @override
+  String dtIncDroneStatus(Object drone, Object status) {
+    return 'Drone $drone · $status';
+  }
+
+  @override
+  String dtIncReturn(Object status) {
+    return 'Return: $status';
+  }
+
+  @override
+  String dtIncReportedAt(Object time) {
+    return 'Reported at $time';
+  }
+
+  @override
+  String get dtIncDetailUnsupported =>
+      'The server doesn\'t support incident details yet.';
+
+  @override
+  String dtIncSheetTitle(Object code) {
+    return 'Parcel drop incident $code';
+  }
+
+  @override
+  String get dtIncStatusRow => 'Status';
+
+  @override
+  String get dtIncReturnRow => 'Return';
+
+  @override
+  String get dtIncParcelRow => 'Parcel';
+
+  @override
+  String get dtIncRecoveryRow => 'Parcel recovery';
+
+  @override
+  String get dtIncDescriptionRow => 'Description';
+
+  @override
+  String get dtIncDropLocationRow => 'Reported drop location';
+
+  @override
+  String get dtIncTelemetryStale => ' (stale telemetry)';
+
+  @override
+  String get dtIncNoCoordinates => 'No coordinates';
+
+  @override
+  String get dtIncRecoveryStationRow => 'Recovery station';
+
+  @override
+  String get dtIncWaitingDrone => ' (waiting for drone)';
+
+  @override
+  String dtIncRecoveryTitle(Object code) {
+    return 'Recover incident $code';
+  }
+
+  @override
+  String get dtIncOpenRecovery => 'Open search & recovery task';
+
+  @override
+  String get dtIncTimeline => 'Timeline';
+
+  @override
+  String get dtCamTitle => 'Live camera monitoring';
+
+  @override
+  String get dtCamGatewayUnavailable =>
+      'The camera gateway isn\'t available. You can still report an incident manually and take real photos.';
+
+  @override
+  String get dtCamBattery => 'Battery';
+
+  @override
+  String get dtCamFlightMode => 'Flight mode';
+
+  @override
+  String get dtCamAltitude => 'Altitude';
+
+  @override
+  String get dtCamSpeed => 'Speed';
+
+  @override
+  String get dtCamHeading => 'Heading';
+
+  @override
+  String get dtCamMeasuredAt => 'Measured at';
+
+  @override
+  String get dtCamReportDrop => 'Report parcel drop';
+
+  @override
+  String get dtCamNoData => 'No data';
+
+  @override
+  String get dtCamNoTelemetry => 'No telemetry received';
+
+  @override
+  String get dtCamOnline => 'Online';
+
+  @override
+  String get dtCamStale => 'Stale / disconnected';
+
+  @override
+  String dtCamSatellites(Object count) {
+    return '$count satellites';
+  }
+
+  @override
+  String get dtCamNoFix => 'no fix';
+
+  @override
+  String get dtCamConfirmDropTitle => 'Confirm parcel drop report';
+
+  @override
+  String get dtCamDropWarning =>
+      'This stops the current delivery. RTL is only requested when telemetry and safety conditions are valid.';
+
+  @override
+  String get dtCamObservation => 'Observation *';
+
+  @override
+  String get dtCamPhotoLabel => 'Camera / scene photo';
+
+  @override
+  String get dtCamPhotoHelper =>
+      'Optional when the camera is disconnected; don\'t use fake photos.';
+
+  @override
+  String get dtCamEnterObservation => 'Describe what you observed.';
+
+  @override
+  String get dtCamHandledElsewhere =>
+      'This flight was already reported as a parcel drop (or stopped) elsewhere. Follow it under \"Parcel drop incidents\" in the Dispatch tab.';
+
+  @override
+  String get dtCamDropCreated =>
+      'Parcel drop incident created and delivery stopped. Follow it under \"Parcel drop incidents\" in the Dispatch tab.';
+
+  @override
+  String get dtCamOrder => 'Order';
+
+  @override
+  String get dtCamNoDataYet => 'No data yet';
+
+  @override
+  String get dtCamJourneyStage => 'Flight stage';
+
+  @override
+  String get dtCamStaleNotConnected => 'Stale / not connected';
+
+  @override
+  String get dtCamSavedLocation => 'Location saved to ticket';
+
+  @override
+  String get dtCamSimulated => ' · FPT HCM simulation';
+
+  @override
+  String get dtCamEstimatedLocation =>
+      'Estimated from the flight route (no reliable GPS yet)';
+
+  @override
+  String get dtCamAutoRecorded => 'Data recorded on the ticket automatically';
+
+  @override
+  String get dtCamOfflineHint =>
+      'Telemetry is offline: the ticket stores a location estimated from the flight route, and the recovery technician confirms the real coordinates on site.';
+
+  @override
+  String get dtCamLive => 'Live';
+
+  @override
+  String get dtCamUnavailable => 'Unavailable';
+
+  @override
+  String get dtCamError => 'Connection error';
+
+  @override
+  String get dtCamConnecting => 'Connecting';
+
+  @override
+  String get dtCamStageLaunching => 'Launching';
+
+  @override
+  String get dtCamStageDeparted => 'Left the station';
+
+  @override
+  String get dtCamStageEnRoute => 'Flying to the receiving locker';
+
+  @override
+  String get dtCamStageApproaching => 'Approaching the receiving locker';
+
+  @override
+  String get dtCamStageArrived => 'Arrived at the receiving locker';
+
+  @override
+  String get dtMavTakeoff => 'Takeoff';
+
+  @override
+  String get dtMavWaypoint => 'Fly to point';
+
+  @override
+  String get dtMavLoiterTime => 'Loiter (time)';
+
+  @override
+  String get dtMavLoiterTurns => 'Loiter (turns)';
+
+  @override
+  String get dtMavLoiterUnlim => 'Loiter indefinitely';
+
+  @override
+  String get dtMavRtl => 'Return to launch (RTL)';
+
+  @override
+  String get dtMavLand => 'Land';
+
+  @override
+  String get dtMavChangeSpeed => 'Change speed';
+
+  @override
+  String get dtMavHoldAtPoint => 'Hold at point';
+
+  @override
+  String get dtMavDuration => 'Duration';
+
+  @override
+  String get dtMavTurns => 'Turns';
+
+  @override
+  String get dtMavSpeed => 'Speed';
+
+  @override
+  String get dtMavSeconds => 's';
+
+  @override
+  String get dtMavTurnsUnit => 'turns';
+
+  @override
+  String get dtFcConfirmArm => 'Arm the motors? The propellers will spin.';
+
+  @override
+  String get dtFcConfirmDisarm =>
+      'Disarm the motors? If the drone is flying, it will fall.';
+
+  @override
+  String get dtFcConfirmRtl =>
+      'Switch to RTL: the drone flies back to the launch point?';
+
+  @override
+  String get dtFcConfirmLoiter =>
+      'Switch to LOITER: the drone holds its position?';
+
+  @override
+  String get dtFcConfirmGuided =>
+      'Switch to GUIDED: the drone takes control commands from the app?';
+
+  @override
+  String get dtFcConfirmAuto =>
+      'Switch to AUTO: the drone runs the loaded mission?';
+
+  @override
+  String get dtFcConfirmTakeoff => 'Take off to the entered altitude?';
+
+  @override
+  String get dtFcNotConnected => 'Not connected to a flight controller.';
+
+  @override
+  String get dtFcPeerUnknown =>
+      'Drone address unknown — waiting for the drone\'s first packet.';
+
+  @override
+  String get dtFcNoHeartbeat => 'No heartbeat received from the drone yet.';
+
+  @override
+  String get dtFcHeartbeatLost =>
+      'Lost heartbeat from the drone (over 3 seconds).';
+
+  @override
+  String get dtFcMissionLocked =>
+      'The drone you\'re in charge of is on a delivery mission — manual commands are locked.';
+
+  @override
+  String get dtFcPending =>
+      'Waiting for the drone to respond to the previous command.';
+
+  @override
+  String get dtFcAlreadyArmed => 'The drone is already armed.';
+
+  @override
+  String get dtFcNotArmed => 'The drone isn\'t armed.';
+
+  @override
+  String get dtFcTakeoffNeedsArm => 'Take off only when the drone is armed.';
+
+  @override
+  String dtFcTakeoffNeedsGuided(Object mode) {
+    return 'Take off only in GUIDED mode (current: $mode).';
+  }
+
+  @override
+  String get dtFcEnterAltitude => 'Enter an altitude (m).';
+
+  @override
+  String dtFcMinAltitude(Object value) {
+    return 'Minimum altitude is $value m.';
+  }
+
+  @override
+  String dtFcMaxAltitude(Object value) {
+    return 'Maximum altitude is $value m.';
+  }
+
+  @override
+  String get dtFcResultAccepted => 'Accepted (ACCEPTED)';
+
+  @override
+  String get dtFcResultTempRejected =>
+      'Temporarily rejected (TEMPORARILY_REJECTED)';
+
+  @override
+  String get dtFcResultDenied => 'Denied (DENIED)';
+
+  @override
+  String get dtFcResultUnsupported => 'Unsupported (UNSUPPORTED)';
+
+  @override
+  String get dtFcResultFailed => 'Failed (FAILED)';
+
+  @override
+  String get dtFcResultInProgress => 'In progress (IN_PROGRESS)';
+
+  @override
+  String get dtFcResultCancelled => 'Cancelled (CANCELLED)';
+
+  @override
+  String dtFcResultCode(Object code) {
+    return 'Result code $code';
+  }
+
+  @override
+  String get dtFcLinkClosed => 'Link closed.';
+
+  @override
+  String dtFcDone(Object command) {
+    return '$command: the drone carried it out';
+  }
+
+  @override
+  String dtFcSwitched(Object command, Object mode) {
+    return '$command: the drone switched to $mode';
+  }
+
+  @override
+  String dtFcTimeout(Object command) {
+    return '$command: timed out — no response from the drone';
+  }
+
+  @override
+  String dtFcSent(Object command) {
+    return '$command: sent, waiting for the drone to respond…';
+  }
+
+  @override
+  String dtFdBusyDrone(Object drone, Object order) {
+    return '$drone (order $order)';
+  }
+
+  @override
+  String dtFdMissionCheckFailed(Object error) {
+    return 'Couldn\'t check the missions of the drone you\'re in charge of ($error). Only send commands if you\'re sure this connection isn\'t a drone that\'s delivering.';
+  }
+
+  @override
+  String get dtFdUnlockTitle => 'Unlock manual commands?';
+
+  @override
+  String dtFdUnlockBody(Object drones) {
+    return 'The drone you\'re in charge of is on a delivery mission: $drones.\n\nOnly unlock if you\'re sure the current connection is SITL or a different drone, NOT the drone that\'s delivering.';
+  }
+
+  @override
+  String get dtFdKeepLocked => 'Keep locked';
+
+  @override
+  String get dtFdConfirmUnlock => 'I confirm, unlock';
+
+  @override
+  String get dtFdConnectTitle => 'Connect flight controller';
+
+  @override
+  String get dtFdConnectSubtitle =>
+      'MAVLink over UDP/TCP — works with real ArduPilot/PX4 and SITL.';
+
+  @override
+  String get dtFdDroneAddressUdp =>
+      'Drone address (leave empty = wait for the drone to send)';
+
+  @override
+  String get dtFdDroneAddress => 'Drone address';
+
+  @override
+  String get dtFdAddressHintUdp => '192.168.4.1 or empty';
+
+  @override
+  String get dtFdPort => 'Port';
+
+  @override
+  String get dtFdLocalPort => 'Local port';
+
+  @override
+  String get dtFdConnect => 'Connect';
+
+  @override
+  String get dtFdReceiving => 'Receiving telemetry';
+
+  @override
+  String get dtFdLinkedWaiting => 'Linked · waiting for data';
+
+  @override
+  String get dtFdConnecting => 'Connecting...';
+
+  @override
+  String get dtFdConnectionError => 'Connection error';
+
+  @override
+  String get dtFdDisconnected => 'Not connected';
+
+  @override
+  String get dtFdSitlOnlyBanner =>
+      'Only use with SITL or a dedicated control link — the system doesn\'t control drones';
+
+  @override
+  String get dtFdAltRel => 'Alt (rel)';
+
+  @override
+  String get dtFdGroundSpeed => 'Ground speed';
+
+  @override
+  String get dtFdClimb => 'Climb';
+
+  @override
+  String get dtFdHeading => 'Heading';
+
+  @override
+  String get dtFdBattery => 'Battery';
+
+  @override
+  String dtFdConflictAcknowledged(Object drones) {
+    return 'Warning: the drone you\'re in charge of is delivering ($drones). You confirmed this connection isn\'t that drone.';
+  }
+
+  @override
+  String dtFdConflictLocked(Object drones) {
+    return 'The drone you\'re in charge of is on a delivery mission ($drones). Manual commands are locked so the flight isn\'t disturbed.';
+  }
+
+  @override
+  String get dtFdNotThatDrone => 'This connection isn\'t that drone';
+
+  @override
+  String dtFdSendCommandTitle(Object command) {
+    return 'Send $command command?';
+  }
+
+  @override
+  String dtFdSendCommandBody(Object message) {
+    return '$message\n\nOnly send while connected to SITL or the flight team\'s dedicated control link.';
+  }
+
+  @override
+  String get dtFdSendCommand => 'Send command';
+
+  @override
+  String dtFdNotSent(Object command, Object reason) {
+    return '$command not sent: $reason';
+  }
+
+  @override
+  String get dtFdTakeoffTitle => 'Confirm takeoff (GUIDED)';
+
+  @override
+  String dtFdTakeoffBody(Object min, Object max) {
+    return 'The drone is armed and in GUIDED mode. Enter the takeoff altitude ($min–$max m):';
+  }
+
+  @override
+  String get dtFdTakeoff => 'Take off';
+
+  @override
+  String dtMpTapToMovePoint(Object index) {
+    return 'Tap the map to reposition point $index.';
+  }
+
+  @override
+  String get dtMpRenameTitle => 'Flight plan name';
+
+  @override
+  String get dtMpRenameHint => 'E.g. Patrol zone A';
+
+  @override
+  String get dtMpSettingsTitle => 'Plan settings';
+
+  @override
+  String get dtMpDefaultAltitude => 'Default altitude for new points (m)';
+
+  @override
+  String get dtMpCruiseSpeed => 'Estimated cruise speed (m/s)';
+
+  @override
+  String get dtMpApply => 'Apply';
+
+  @override
+  String dtMpSavedToLibrary(Object name) {
+    return 'Saved \"$name\" to the library.';
+  }
+
+  @override
+  String get dtMpLibraryTitle => 'Flight plan library';
+
+  @override
+  String get dtMpLibraryEmptyTitle => 'No saved plans yet';
+
+  @override
+  String get dtMpLibraryEmptySubtitle =>
+      'Save the current plan to reopen it later.';
+
+  @override
+  String dtMpOpened(Object name) {
+    return 'Opened \"$name\".';
+  }
+
+  @override
+  String dtMpPointsDistance(int count, Object distance) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count points',
+      one: '1 point',
+    );
+    return '$_temp0 · $distance';
+  }
+
+  @override
+  String dtMpDeleted(Object name) {
+    return 'Deleted \"$name\".';
+  }
+
+  @override
+  String dtMpImported(Object name, int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count points',
+      one: '1 point',
+    );
+    return 'Imported \"$name\" ($_temp0).';
+  }
+
+  @override
+  String get dtMpNothingToExport => 'There are no waypoints to export.';
+
+  @override
+  String dtMpExported(Object path) {
+    return 'File exported: $path';
+  }
+
+  @override
+  String dtMpExportFailed(Object error) {
+    return 'Couldn\'t export the file: $error';
+  }
+
+  @override
+  String get dtMpHomeSet => 'Launch point (HOME) set at the map center.';
+
+  @override
+  String get dtMpConfirmClearAll => 'Delete all waypoints of the current plan?';
+
+  @override
+  String get dtMpConfirmNew =>
+      'Create a new plan? Unsaved changes will be lost.';
+
+  @override
+  String get dtMpActionRename => 'Rename plan';
+
+  @override
+  String get dtMpActionSettings => 'Settings (altitude/speed)';
+
+  @override
+  String get dtMpActionSetHome => 'Set HOME at map center';
+
+  @override
+  String get dtMpActionSave => 'Save to library';
+
+  @override
+  String get dtMpActionOpen => 'Open from library';
+
+  @override
+  String get dtMpActionExportWaypoints => 'Export .waypoints file (QGC)';
+
+  @override
+  String get dtMpActionExportJson => 'Export JSON file';
+
+  @override
+  String get dtMpActionImport => 'Import from file';
+
+  @override
+  String get dtMpActionNew => 'New plan';
+
+  @override
+  String get dtMpActionClearAll => 'Delete all points';
+
+  @override
+  String dtMpWaypointList(Object count) {
+    return 'Waypoint list ($count)';
+  }
+
+  @override
+  String get dtMpNoWaypointsTitle => 'No waypoints yet';
+
+  @override
+  String get dtMpNoWaypointsSubtitle => 'Tap the map to add a point.';
+
+  @override
+  String get dtMpHomeTooltip => 'Launch point (HOME)';
+
+  @override
+  String get dtMpTapToMove => 'Tap the map to reposition the waypoint.';
+
+  @override
+  String get dtMpStatPoints => 'points';
+
+  @override
+  String get dtMpStatDistance => 'distance';
+
+  @override
+  String get dtMpStatEstimate => 'estimated';
+
+  @override
+  String get dtMpList => 'List';
+
+  @override
+  String get dtMpExportMission => 'Export mission';
+
+  @override
+  String get dtMpAgree => 'OK';
+
+  @override
+  String get dtMpZeroMinutes => '0 min';
+
+  @override
+  String get dtMpUnderOneMinute => '<1 min';
+
+  @override
+  String dtMpMinutes(Object minutes) {
+    return '$minutes min';
+  }
+
+  @override
+  String dtWpTitle(Object index, Object total) {
+    return 'Waypoint $index/$total';
+  }
+
+  @override
+  String get dtWpCommand => 'Command (MAVLink)';
+
+  @override
+  String get dtWpAltitude => 'Altitude (m, relative to launch point)';
+
+  @override
+  String get dtWpNoPositionHint =>
+      'This command has no coordinates — it applies at the position of the previous waypoint in the list.';
+
+  @override
+  String get dtWpMoveOnMap => 'Move this point on the map';
+
+  @override
+  String get dtWpDelete => 'Delete waypoint';
+
+  @override
+  String get dtWpSave => 'Save changes';
+
+  @override
+  String get dtMcImportedPlan => 'Imported plan';
+
+  @override
+  String get dtMcMissingHeader =>
+      'Missing \"QGC WPL 110\" header — not a valid mission file.';
+
+  @override
+  String dtMcMissingColumns(Object line, Object count) {
+    return 'Line $line is missing columns (needs 12, has $count).';
+  }
+
+  @override
+  String dtMcInvalidJson(Object error) {
+    return 'Invalid JSON: $error';
+  }
+
+  @override
+  String get dtMcBadJsonStructure => 'Invalid mission JSON structure.';
+
+  @override
+  String get dtMcCantReadFile => 'Couldn\'t read the selected file.';
+
+  @override
+  String get dtMcUnknownFormat =>
+      'Unrecognized format (QGC WPL or mission JSON required).';
+
+  @override
+  String get dtMcSaveDialogTitle => 'Save mission file';
+
+  @override
+  String get dtMcNewPlan => 'New flight plan';
+
+  @override
+  String get dtMcPlan => 'Flight plan';
+
+  @override
+  String get dtWxCantConfirm => 'Couldn\'t confirm the route weather.';
+
+  @override
+  String get dtWxFlyable => 'OK to fly';
+
+  @override
+  String get dtWxNoForecast => 'No forecast yet';
+
+  @override
+  String get dtWxUnsafe => 'Not safe to fly';
+
+  @override
+  String dtWxWind(Object value) {
+    return 'Wind $value km/h';
+  }
+
+  @override
+  String dtWxGust(Object value) {
+    return 'Gusts $value km/h';
+  }
+
+  @override
+  String dtWxRain(Object value) {
+    return 'Rain $value mm';
+  }
+
+  @override
+  String dtWxForecastWindow(Object minutes) {
+    return 'Forecast for the next $minutes min';
+  }
+
+  @override
+  String dtWxUpdated(Object time) {
+    return 'updated $time';
+  }
+
+  @override
+  String dtWxSource(Object provider) {
+    return 'source $provider';
+  }
+
+  @override
+  String get dtWxRouteTitle => 'Route weather';
+
+  @override
+  String get dtWxReload => 'Reload';
+
+  @override
+  String get dtWxFromLocker => 'Departure locker';
+
+  @override
+  String get dtWxToLocker => 'Receiving locker';
+
+  @override
+  String get dtWxLoadingLockers => 'Loading locker weather…';
+
+  @override
+  String dtWxAllFlyable(Object count, Object minutes) {
+    return 'All $count lockers can fly in the next $minutes min';
+  }
+
+  @override
+  String dtWxSomeGrounded(Object unsafe, Object count) {
+    return '$unsafe/$count lockers can\'t fly or have no forecast yet';
+  }
+
+  @override
+  String get dtWxLockersTitle => 'Weather at drone lockers';
+
+  @override
+  String dtWxLockerNumber(Object id) {
+    return 'Locker #$id';
+  }
+
+  @override
+  String dtWxStationSuspended(Object reason) {
+    return 'Station flights paused: $reason';
+  }
+
+  @override
+  String dtObtTitle(Object count) {
+    return 'Drone orders affected by this ticket ($count)';
+  }
+
+  @override
+  String dtObtFailed(Object reason) {
+    return 'Delivery not completed · $reason';
+  }
+
+  @override
+  String dtObtBlocked(Object stage, Object reason) {
+    return 'Blocked ($stage) · $reason';
+  }
 }

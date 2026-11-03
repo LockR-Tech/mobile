@@ -5,6 +5,7 @@ import 'package:latlong2/latlong.dart';
 import '../domain/flight_mission.dart';
 import '../domain/mav_command.dart';
 import '../domain/mission_item.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 /// Thrown when a `.waypoints` / mission file cannot be parsed.
 class MissionParseException implements Exception {
@@ -79,7 +80,7 @@ class MissionCodec {
   FlightMission decodeWaypoints(
     String content, {
     required String id,
-    String name = 'Kế hoạch nhập',
+    String? name,
   }) {
     final lines = const LineSplitter()
         .convert(content)
@@ -89,7 +90,7 @@ class MissionCodec {
 
     if (lines.isEmpty || !lines.first.startsWith('QGC WPL')) {
       throw MissionParseException(
-        'Thiếu header "QGC WPL 110" — không phải file mission hợp lệ.',
+        L10n.current.dtMcMissingHeader,
       );
     }
 
@@ -101,7 +102,7 @@ class MissionCodec {
       final cols = lines[i].split(RegExp(r'\s+'));
       if (cols.length < 12) {
         throw MissionParseException(
-          'Dòng ${i + 1} thiếu cột (cần 12, có ${cols.length}).',
+          L10n.current.dtMcMissingColumns(i + 1, cols.length),
         );
       }
       final index = int.tryParse(cols[0]) ?? -1;
@@ -140,7 +141,7 @@ class MissionCodec {
 
     return FlightMission(
       id: id,
-      name: name,
+      name: name ?? L10n.current.dtMcImportedPlan,
       home: home,
       homeAltitude: homeAlt,
       items: items,
@@ -159,9 +160,9 @@ class MissionCodec {
       final map = json.decode(content) as Map<String, dynamic>;
       return FlightMission.fromJson(map);
     } on FormatException catch (e) {
-      throw MissionParseException('JSON không hợp lệ: ${e.message}');
+      throw MissionParseException(L10n.current.dtMcInvalidJson(e.message));
     } on TypeError {
-      throw MissionParseException('Cấu trúc JSON mission không đúng.');
+      throw MissionParseException(L10n.current.dtMcBadJsonStructure);
     }
   }
 

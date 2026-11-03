@@ -1,6 +1,7 @@
 import 'package:latlong2/latlong.dart';
 
 import 'mission_item.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 /// A complete drone flight plan: an ordered list of [MissionItem]s plus a home
 /// (launch) point and planning defaults. Pure data + geometry — no drone or
@@ -20,12 +21,12 @@ class FlightMission {
   /// A fresh, empty mission centred on [home].
   factory FlightMission.empty({
     required String id,
-    String name = 'Kế hoạch bay mới',
+    String? name,
     LatLng? home,
   }) {
     return FlightMission(
       id: id,
-      name: name,
+      name: name ?? L10n.current.dtMcNewPlan,
       home: home ?? const LatLng(10.762622, 106.660172), // TP.HCM mặc định
       homeAltitude: 0,
       items: const [],
@@ -154,7 +155,7 @@ class FlightMission {
     final rawItems = (json['items'] as List?) ?? const [];
     return FlightMission(
       id: json['id'] as String? ?? DateTime.now().millisecondsSinceEpoch.toString(),
-      name: json['name'] as String? ?? 'Kế hoạch bay',
+      name: json['name'] as String? ?? L10n.current.dtMcPlan,
       home: LatLng(
         (json['homeLat'] as num?)?.toDouble() ?? 0,
         (json['homeLng'] as num?)?.toDouble() ?? 0,

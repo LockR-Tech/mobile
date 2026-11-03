@@ -7,6 +7,7 @@ import 'package:smart_laundry_locker/core/utils/app_date_time.dart';
 import 'package:smart_laundry_locker/features/locker_ops/data/drone_technician_errors.dart';
 import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
 import 'package:video_player/video_player.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 /// Camera thật của Journey. Khi backend không có camera gateway, widget thể hiện
 /// UNAVAILABLE và vẫn cho phép báo thủ công; không dựng video/evidence giả.
@@ -99,10 +100,10 @@ class _DroneJourneyCameraPanelState extends State<DroneJourneyCameraPanel> {
               children: [
                 const Icon(Icons.videocam_outlined, color: Color(0xFF0369A1)),
                 const SizedBox(width: 8),
-                const Expanded(
+                Expanded(
                   child: Text(
-                    'Giám sát camera trực tiếp',
-                    style: TextStyle(fontWeight: FontWeight.w800),
+                    context.l10n.dtCamTitle,
+                    style: const TextStyle(fontWeight: FontWeight.w800),
                   ),
                 ),
                 _StatePill(state: _state),
@@ -140,7 +141,7 @@ class _DroneJourneyCameraPanelState extends State<DroneJourneyCameraPanel> {
                             const SizedBox(height: 10),
                             Text(
                               _error ??
-                                  'Camera gateway chưa khả dụng. Có thể báo sự cố thủ công và chụp ảnh thật.',
+                                  context.l10n.dtCamGatewayUnavailable,
                               textAlign: TextAlign.center,
                               style: const TextStyle(
                                 color: Colors.white70,
@@ -149,7 +150,7 @@ class _DroneJourneyCameraPanelState extends State<DroneJourneyCameraPanel> {
                             ),
                             TextButton(
                               onPressed: _load,
-                              child: const Text('Thử lại'),
+                              child: Text(context.l10n.commonRetry),
                             ),
                           ],
                         ),
@@ -163,24 +164,24 @@ class _DroneJourneyCameraPanelState extends State<DroneJourneyCameraPanel> {
                 runSpacing: 7,
                 children: [
                   _Metric('Telemetry', _telemetryState(camera)),
-                  _Metric('Pin', _battery(camera)),
-                  _Metric('Chế độ bay', _flightMode(camera)),
+                  _Metric(context.l10n.dtCamBattery, _battery(camera)),
+                  _Metric(context.l10n.dtCamFlightMode, _flightMode(camera)),
                   _Metric('GPS', _gps(camera)),
                   if (_num(camera['altitudeM']) != null)
                     _Metric(
-                      'Độ cao',
+                      context.l10n.dtCamAltitude,
                       '${_num(camera['altitudeM'])!.toStringAsFixed(1)} m',
                     ),
                   if (_num(camera['groundSpeedMs']) != null)
                     _Metric(
-                      'Tốc độ',
+                      context.l10n.dtCamSpeed,
                       '${_num(camera['groundSpeedMs'])!.toStringAsFixed(1)} m/s',
                     ),
                   if (_num(camera['headingDeg']) != null)
-                    _Metric('Hướng', '${_num(camera['headingDeg'])!.round()}°'),
+                    _Metric(context.l10n.dtCamHeading, '${_num(camera['headingDeg'])!.round()}°'),
                   if (parseServerDateTime(camera['observedAt']) != null)
                     _Metric(
-                      'Số đo lúc',
+                      context.l10n.dtCamMeasuredAt,
                       formatDateTimeVn(
                         parseServerDateTime(camera['observedAt']),
                       ),
@@ -195,7 +196,7 @@ class _DroneJourneyCameraPanelState extends State<DroneJourneyCameraPanel> {
               ),
               onPressed: () => _showReportDialog(camera),
               icon: const Icon(Icons.warning_amber_rounded),
-              label: const Text('Báo rơi kiện'),
+              label: Text(context.l10n.dtCamReportDrop),
             ),
           ],
         ),
@@ -209,18 +210,18 @@ class _DroneJourneyCameraPanelState extends State<DroneJourneyCameraPanel> {
     final battery = value['batteryPercent'];
     return battery is num && battery >= 0
         ? '${battery.toInt()}%'
-        : 'Không có dữ liệu';
+        : context.l10n.dtCamNoData;
   }
 
   String _telemetryState(Map<String, dynamic> value) {
-    if (value['telemetryAvailable'] == false) return 'Chưa nhận telemetry';
-    return value['telemetryLive'] == true ? 'Trực tuyến' : 'Cũ / mất kết nối';
+    if (value['telemetryAvailable'] == false) return context.l10n.dtCamNoTelemetry;
+    return value['telemetryLive'] == true ? context.l10n.dtCamOnline : context.l10n.dtCamStale;
   }
 
   String _flightMode(Map<String, dynamic> value) {
     final mode = '${value['flightMode'] ?? ''}'.trim();
     return mode.isEmpty || mode.toUpperCase() == 'UNKNOWN'
-        ? 'Không có dữ liệu'
+        ? context.l10n.dtCamNoData
         : mode;
   }
 
@@ -228,19 +229,19 @@ class _DroneJourneyCameraPanelState extends State<DroneJourneyCameraPanel> {
     final lat = value['latitude'];
     final lng = value['longitude'];
     if (lat is! num || lng is! num || (lat == 0 && lng == 0)) {
-      return 'Không có dữ liệu';
+      return context.l10n.dtCamNoData;
     }
     final fix = _num(value['gpsFixType'])?.toInt();
     final satellites = _num(value['satellites'])?.toInt();
     return [
       '${lat.toStringAsFixed(5)}, ${lng.toStringAsFixed(5)}',
       if (fix != null) _fixLabel(fix),
-      if (satellites != null) '$satellites vệ tinh',
+      if (satellites != null) context.l10n.dtCamSatellites(satellites),
     ].join(' · ');
   }
 
   static String _fixLabel(int fixType) => switch (fixType) {
-    0 || 1 => 'chưa có fix',
+    0 || 1 => L10n.current.dtCamNoFix,
     2 => 'fix 2D',
     3 => 'fix 3D',
     4 => 'DGPS',
@@ -297,15 +298,15 @@ class _DroneJourneyCameraPanelState extends State<DroneJourneyCameraPanel> {
         builder: (context, setDialogState) {
           openDialog = dialogContext;
           return AlertDialog(
-          title: const Text('Xác nhận báo rơi kiện'),
+          title: Text(context.l10n.dtCamConfirmDropTitle),
           content: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const Text(
-                  'Thao tác này dừng luồng giao hiện tại. RTL chỉ được yêu cầu khi telemetry và điều kiện an toàn hợp lệ.',
-                  style: TextStyle(color: Color(0xFF92400E), fontSize: 12),
+                Text(
+                  context.l10n.dtCamDropWarning,
+                  style: const TextStyle(color: Color(0xFF92400E), fontSize: 12),
                 ),
                 const SizedBox(height: 12),
                 _DropIncidentSnapshot(
@@ -318,8 +319,8 @@ class _DroneJourneyCameraPanelState extends State<DroneJourneyCameraPanel> {
                   controller: reason,
                   maxLength: 1000,
                   maxLines: 4,
-                  decoration: const InputDecoration(
-                    labelText: 'Mô tả quan sát *',
+                  decoration: InputDecoration(
+                    labelText: context.l10n.dtCamObservation,
                     border: OutlineInputBorder(),
                   ),
                 ),
@@ -329,9 +330,8 @@ class _DroneJourneyCameraPanelState extends State<DroneJourneyCameraPanel> {
                   builder: (_, __) => PhotoPickerField(
                     controller: photos,
                     enabled: !sending,
-                    addLabel: 'Ảnh camera / hiện trường',
-                    helperText:
-                        'Không bắt buộc khi camera mất kết nối; không dùng ảnh giả.',
+                    addLabel: context.l10n.dtCamPhotoLabel,
+                    helperText: context.l10n.dtCamPhotoHelper,
                   ),
                 ),
                 if (dialogError != null) ...[
@@ -348,7 +348,7 @@ class _DroneJourneyCameraPanelState extends State<DroneJourneyCameraPanel> {
           actions: [
             TextButton(
               onPressed: sending ? null : () => Navigator.pop(context, false),
-              child: const Text('Hủy'),
+              child: Text(context.l10n.commonCancel),
             ),
             FilledButton(
               onPressed: sending
@@ -356,7 +356,7 @@ class _DroneJourneyCameraPanelState extends State<DroneJourneyCameraPanel> {
                   : () async {
                       if (reason.text.trim().isEmpty) {
                         setDialogState(
-                          () => dialogError = 'Nhập mô tả điều bạn quan sát được.',
+                          () => dialogError = context.l10n.dtCamEnterObservation,
                         );
                         return;
                       }
@@ -415,7 +415,7 @@ class _DroneJourneyCameraPanelState extends State<DroneJourneyCameraPanel> {
                       dimension: 18,
                       child: CircularProgressIndicator(strokeWidth: 2),
                     )
-                  : const Text('Xác nhận'),
+                  : Text(context.l10n.commonConfirm),
             ),
           ],
         );
@@ -432,24 +432,14 @@ class _DroneJourneyCameraPanelState extends State<DroneJourneyCameraPanel> {
     });
     if (closedElsewhere && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Chuyến bay này đã được báo rơi kiện (hoặc đã dừng) từ nơi khác. '
-            'Theo dõi ở mục "Sự cố rơi kiện" trong tab Điều phối.',
-          ),
-        ),
+        SnackBar(content: Text(L10n.current.dtCamHandledElsewhere)),
       );
       await widget.onIncidentReported();
       return;
     }
     if (reported == true && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Đã tạo sự cố rơi kiện và dừng luồng giao. Theo dõi tiếp ở mục '
-            '"Sự cố rơi kiện" trong tab Điều phối.',
-          ),
-        ),
+        SnackBar(content: Text(L10n.current.dtCamDropCreated)),
       );
       await widget.onIncidentReported();
     }
@@ -514,34 +504,34 @@ class _DropIncidentSnapshot extends StatelessWidget {
     final flightMode = '${camera?['flightMode'] ?? ''}'.trim();
 
     final rows = <_SnapshotValue>[
-      _SnapshotValue('Đơn', '#$orderId'),
-      _SnapshotValue('Drone', '${camera?['droneCode'] ?? 'Chưa có dữ liệu'}'),
+      _SnapshotValue(context.l10n.dtCamOrder, '#$orderId'),
+      _SnapshotValue('Drone', '${camera?['droneCode'] ?? context.l10n.dtCamNoDataYet}'),
       _SnapshotValue(
-        'Chặng bay',
+        context.l10n.dtCamJourneyStage,
         _journeyLabel(camera?['journeyStatus']?.toString()),
       ),
       _SnapshotValue(
         'Telemetry',
-        telemetryLive ? 'Trực tuyến' : 'Cũ / chưa kết nối',
+        telemetryLive ? context.l10n.dtCamOnline : context.l10n.dtCamStaleNotConnected,
       ),
       _SnapshotValue(
-        'Vị trí lưu vào phiếu',
+        context.l10n.dtCamSavedLocation,
         hasLocation
             ? '${lat.toStringAsFixed(5)}, ${lng.toStringAsFixed(5)}'
-                  '${simulatedLocation ? ' · Mô phỏng FPT HCM' : ''}'
-            : 'Ước theo tuyến bay (chưa có GPS tin cậy)',
+                  '${simulatedLocation ? context.l10n.dtCamSimulated : ''}'
+            : context.l10n.dtCamEstimatedLocation,
         warning: !hasLocation,
       ),
       if (observedAt != null)
-        _SnapshotValue('Số đo lúc', formatDateTimeVn(observedAt)),
+        _SnapshotValue(context.l10n.dtCamMeasuredAt, formatDateTimeVn(observedAt)),
       if (battery != null && battery >= 0)
-        _SnapshotValue('Pin', '${battery.toInt()}%'),
+        _SnapshotValue(context.l10n.dtCamBattery, '${battery.toInt()}%'),
       if (flightMode.isNotEmpty && flightMode.toUpperCase() != 'UNKNOWN')
-        _SnapshotValue('Chế độ bay', flightMode),
+        _SnapshotValue(context.l10n.dtCamFlightMode, flightMode),
       if (altitude != null)
-        _SnapshotValue('Độ cao', '${altitude.toStringAsFixed(1)} m'),
+        _SnapshotValue(context.l10n.dtCamAltitude, '${altitude.toStringAsFixed(1)} m'),
       if (speed != null)
-        _SnapshotValue('Tốc độ', '${speed.toStringAsFixed(1)} m/s'),
+        _SnapshotValue(context.l10n.dtCamSpeed, '${speed.toStringAsFixed(1)} m/s'),
       _SnapshotValue('Camera', _cameraLabel(cameraState)),
     ];
 
@@ -555,17 +545,17 @@ class _DropIncidentSnapshot extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Row(
+          Row(
             children: [
-              Icon(
+              const Icon(
                 Icons.location_searching,
                 size: 17,
                 color: Color(0xFF9A3412),
               ),
-              SizedBox(width: 7),
+              const SizedBox(width: 7),
               Text(
-                'Dữ liệu tự ghi vào phiếu',
-                style: TextStyle(
+                context.l10n.dtCamAutoRecorded,
+                style: const TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w800,
                   color: Color(0xFF7C2D12),
@@ -580,10 +570,9 @@ class _DropIncidentSnapshot extends StatelessWidget {
           ],
           if (!hasLocation) ...[
             const SizedBox(height: 7),
-            const Text(
-              'Telemetry không trực tuyến: phiếu lưu vị trí ước theo tuyến bay, KTV thu '
-              'hồi xác nhận toạ độ thật tại hiện trường.',
-              style: TextStyle(fontSize: 11, color: Color(0xFF9A3412)),
+            Text(
+              context.l10n.dtCamOfflineHint,
+              style: const TextStyle(fontSize: 11, color: Color(0xFF9A3412)),
             ),
           ],
         ],
@@ -592,20 +581,20 @@ class _DropIncidentSnapshot extends StatelessWidget {
   }
 
   static String _cameraLabel(String state) => switch (state) {
-    'LIVE' => 'Đang trực tiếp',
-    'UNAVAILABLE' => 'Chưa khả dụng',
-    'ERROR' => 'Lỗi kết nối',
-    _ => 'Đang kết nối',
+    'LIVE' => L10n.current.dtCamLive,
+    'UNAVAILABLE' => L10n.current.dtCamUnavailable,
+    'ERROR' => L10n.current.dtCamError,
+    _ => L10n.current.dtCamConnecting,
   };
 
   static String _journeyLabel(String? status) =>
       switch ((status ?? '').toUpperCase()) {
-        'LAUNCHING' => 'Đang khởi phóng',
-        'DEPARTED' => 'Đã rời trạm',
-        'EN_ROUTE' => 'Đang bay tới tủ nhận',
-        'APPROACHING' => 'Đang tiếp cận tủ nhận',
-        'ARRIVED' => 'Đã đến tủ nhận',
-        _ => status?.trim().isNotEmpty == true ? status! : 'Chưa có dữ liệu',
+        'LAUNCHING' => L10n.current.dtCamStageLaunching,
+        'DEPARTED' => L10n.current.dtCamStageDeparted,
+        'EN_ROUTE' => L10n.current.dtCamStageEnRoute,
+        'APPROACHING' => L10n.current.dtCamStageApproaching,
+        'ARRIVED' => L10n.current.dtCamStageArrived,
+        _ => status?.trim().isNotEmpty == true ? status! : L10n.current.dtCamNoDataYet,
       };
 }
 

@@ -13,6 +13,7 @@ import '../domain/flight_mission.dart';
 import '../domain/mission_item.dart';
 import 'widgets/waypoint_edit_sheet.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/presentation/widgets/drone_base_tile_layer.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 /// Mission Planner — Flight Plan editor (Mảng 1). Draw waypoints on a map, set
 /// altitude/command per point, chain them into a route, then save/export to a
@@ -108,7 +109,7 @@ class _MissionPlannerPageState extends State<MissionPlannerPage> {
         setState(() => _mission = _mission.removeItem(index));
       case WaypointEditAction.move:
         setState(() => _moveIndex = index);
-        _toast('Chạm lên bản đồ để đặt lại vị trí điểm ${index + 1}.');
+        _toast(context.l10n.dtMpTapToMovePoint(index + 1));
     }
   }
 
@@ -143,17 +144,17 @@ class _MissionPlannerPageState extends State<MissionPlannerPage> {
     final name = await showDialog<String>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Tên kế hoạch bay'),
+        title: Text(context.l10n.dtMpRenameTitle),
         content: TextField(
           controller: ctrl,
           autofocus: true,
-          decoration: const InputDecoration(hintText: 'VD: Tuần tra khu A'),
+          decoration: InputDecoration(hintText: context.l10n.dtMpRenameHint),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Huỷ')),
+          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(context.l10n.commonCancel)),
           FilledButton(
             onPressed: () => Navigator.pop(ctx, ctrl.text.trim()),
-            child: const Text('Lưu'),
+            child: Text(context.l10n.commonSave),
           ),
         ],
       ),
@@ -182,21 +183,21 @@ class _MissionPlannerPageState extends State<MissionPlannerPage> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'Cài đặt kế hoạch',
-                style: TextStyle(
+              Text(
+                context.l10n.dtMpSettingsTitle,
+                style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w800,
                   color: AISLShadcnTheme.navyPrimary,
                 ),
               ),
               const SizedBox(height: 16),
-              _settingField('Độ cao mặc định cho điểm mới (m)', altCtrl),
+              _settingField(context.l10n.dtMpDefaultAltitude, altCtrl),
               const SizedBox(height: 14),
-              _settingField('Tốc độ bay ước tính (m/s)', spdCtrl),
+              _settingField(context.l10n.dtMpCruiseSpeed, spdCtrl),
               const SizedBox(height: 18),
               OpsPrimaryButton(
-                label: 'Áp dụng',
+                label: context.l10n.dtMpApply,
                 icon: LucideIcons.check,
                 onPressed: () {
                   setState(() {
@@ -221,7 +222,7 @@ class _MissionPlannerPageState extends State<MissionPlannerPage> {
   Future<void> _saveToLibrary() async {
     setState(() => _mission = _mission.copyWith(updatedAt: DateTime.now()));
     await _repo.saveToLibrary(_mission);
-    _toast('Đã lưu "${_mission.name}" vào thư viện.');
+    _toast(L10n.current.dtMpSavedToLibrary(_mission.name));
   }
 
   Future<void> _openLibrary() async {
@@ -243,9 +244,9 @@ class _MissionPlannerPageState extends State<MissionPlannerPage> {
             return Column(
               children: [
                 const SizedBox(height: 12),
-                const Text(
-                  'Thư viện kế hoạch bay',
-                  style: TextStyle(
+                Text(
+                  context.l10n.dtMpLibraryTitle,
+                  style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w800,
                     color: AISLShadcnTheme.navyPrimary,
@@ -254,11 +255,11 @@ class _MissionPlannerPageState extends State<MissionPlannerPage> {
                 const SizedBox(height: 8),
                 Expanded(
                   child: missions.isEmpty
-                      ? const Center(
+                      ? Center(
                           child: OpsEmptyState(
                             icon: Icons.map_outlined,
-                            title: 'Chưa có kế hoạch đã lưu',
-                            subtitle: 'Lưu kế hoạch hiện tại để mở lại sau.',
+                            title: context.l10n.dtMpLibraryEmptyTitle,
+                            subtitle: context.l10n.dtMpLibraryEmptySubtitle,
                           ),
                         )
                       : ListView.builder(
@@ -282,7 +283,7 @@ class _MissionPlannerPageState extends State<MissionPlannerPage> {
         Navigator.pop(sheetCtx);
         setState(() => _mission = m);
         _fitToMission();
-        _toast('Đã mở "${m.name}".');
+        _toast(context.l10n.dtMpOpened(m.name));
       },
       child: Row(
         children: [
@@ -300,7 +301,7 @@ class _MissionPlannerPageState extends State<MissionPlannerPage> {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  '${m.waypointCount} điểm · ${_km(m.totalDistanceMeters)}',
+                  context.l10n.dtMpPointsDistance(m.waypointCount, _km(m.totalDistanceMeters)),
                   style: const TextStyle(fontSize: 12, color: Colors.grey),
                 ),
               ],
@@ -311,7 +312,7 @@ class _MissionPlannerPageState extends State<MissionPlannerPage> {
             onPressed: () async {
               await _repo.deleteFromLibrary(m.id);
               if (sheetCtx.mounted) Navigator.pop(sheetCtx);
-              _toast('Đã xoá "${m.name}".');
+              _toast(L10n.current.dtMpDeleted(m.name));
             },
           ),
         ],
@@ -325,7 +326,7 @@ class _MissionPlannerPageState extends State<MissionPlannerPage> {
       if (mission == null || !mounted) return;
       setState(() => _mission = mission);
       _fitToMission();
-      _toast('Đã nhập "${mission.name}" (${mission.waypointCount} điểm).');
+      _toast(L10n.current.dtMpImported(mission.name, mission.waypointCount));
     } on MissionParseException catch (e) {
       _toast(e.message, error: true);
     }
@@ -333,7 +334,7 @@ class _MissionPlannerPageState extends State<MissionPlannerPage> {
 
   Future<void> _export({required bool waypoints}) async {
     if (_mission.items.isEmpty) {
-      _toast('Chưa có điểm bay nào để xuất.', error: true);
+      _toast(context.l10n.dtMpNothingToExport, error: true);
       return;
     }
     try {
@@ -341,25 +342,25 @@ class _MissionPlannerPageState extends State<MissionPlannerPage> {
           ? await _repo.exportWaypointsFile(_mission)
           : await _repo.exportJsonFile(_mission);
       if (path == null) return; // cancelled
-      _toast('Đã xuất file: $path');
+      _toast(L10n.current.dtMpExported(path));
     } catch (e) {
-      _toast('Không xuất được file: $e', error: true);
+      _toast(L10n.current.dtMpExportFailed('$e'), error: true);
     }
   }
 
   void _setHomeAtCenter() {
     setState(() => _mission = _mission.copyWith(home: _map.camera.center));
-    _toast('Đã đặt điểm xuất phát (HOME) tại tâm bản đồ.');
+    _toast(context.l10n.dtMpHomeSet);
   }
 
   Future<void> _clearAll() async {
     if (_mission.items.isEmpty) return;
-    final ok = await _confirm('Xoá tất cả điểm bay của kế hoạch hiện tại?');
+    final ok = await _confirm(context.l10n.dtMpConfirmClearAll);
     if (ok) setState(() => _mission = _mission.copyWith(items: const []));
   }
 
   Future<void> _newMission() async {
-    final ok = await _confirm('Tạo kế hoạch mới? Thay đổi chưa lưu sẽ mất.');
+    final ok = await _confirm(context.l10n.dtMpConfirmNew);
     if (!ok) return;
     setState(() {
       _mission = FlightMission.empty(id: _repo.newId(), home: _map.camera.center);
@@ -399,20 +400,20 @@ class _MissionPlannerPageState extends State<MissionPlannerPage> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 const SizedBox(height: 8),
-                action(LucideIcons.pencil, 'Đổi tên kế hoạch', _rename),
-                action(LucideIcons.settings2, 'Cài đặt (độ cao/tốc độ)', _openSettings),
-                action(LucideIcons.house, 'Đặt HOME tại tâm bản đồ', _setHomeAtCenter),
+                action(LucideIcons.pencil, context.l10n.dtMpActionRename, _rename),
+                action(LucideIcons.settings2, context.l10n.dtMpActionSettings, _openSettings),
+                action(LucideIcons.house, context.l10n.dtMpActionSetHome, _setHomeAtCenter),
                 const Divider(height: 1),
-                action(LucideIcons.save, 'Lưu vào thư viện', _saveToLibrary),
-                action(LucideIcons.folderOpen, 'Mở từ thư viện', _openLibrary),
-                action(LucideIcons.fileDown, 'Xuất file .waypoints (QGC)',
+                action(LucideIcons.save, context.l10n.dtMpActionSave, _saveToLibrary),
+                action(LucideIcons.folderOpen, context.l10n.dtMpActionOpen, _openLibrary),
+                action(LucideIcons.fileDown, context.l10n.dtMpActionExportWaypoints,
                     () => _export(waypoints: true)),
-                action(LucideIcons.fileJson, 'Xuất file JSON',
+                action(LucideIcons.fileJson, context.l10n.dtMpActionExportJson,
                     () => _export(waypoints: false)),
-                action(LucideIcons.fileUp, 'Nhập từ file', _importFile),
+                action(LucideIcons.fileUp, context.l10n.dtMpActionImport, _importFile),
                 const Divider(height: 1),
-                action(LucideIcons.filePlus, 'Tạo kế hoạch mới', _newMission),
-                action(LucideIcons.eraser, 'Xoá tất cả điểm', _clearAll, danger: true),
+                action(LucideIcons.filePlus, context.l10n.dtMpActionNew, _newMission),
+                action(LucideIcons.eraser, context.l10n.dtMpActionClearAll, _clearAll, danger: true),
                 const SizedBox(height: 8),
               ],
             ),
@@ -449,7 +450,7 @@ class _MissionPlannerPageState extends State<MissionPlannerPage> {
                             size: 18, color: AISLShadcnTheme.navyPrimary),
                         const SizedBox(width: 8),
                         Text(
-                          'Danh sách điểm bay (${items.length})',
+                          context.l10n.dtMpWaypointList(items.length),
                           style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w800,
@@ -461,11 +462,11 @@ class _MissionPlannerPageState extends State<MissionPlannerPage> {
                     const SizedBox(height: 6),
                     Expanded(
                       child: items.isEmpty
-                          ? const Center(
+                          ? Center(
                               child: OpsEmptyState(
                                 icon: Icons.add_location_alt_outlined,
-                                title: 'Chưa có điểm bay',
-                                subtitle: 'Chạm lên bản đồ để thêm điểm.',
+                                title: context.l10n.dtMpNoWaypointsTitle,
+                                subtitle: context.l10n.dtMpNoWaypointsSubtitle,
                               ),
                             )
                           : ReorderableListView.builder(
@@ -604,7 +605,7 @@ class _MissionPlannerPageState extends State<MissionPlannerPage> {
         width: 44,
         height: 44,
         child: Tooltip(
-          message: 'Điểm xuất phát (HOME)',
+          message: context.l10n.dtMpHomeTooltip,
           child: Container(
             decoration: const BoxDecoration(
               color: Color(0xFF16A34A),
@@ -722,16 +723,16 @@ class _MissionPlannerPageState extends State<MissionPlannerPage> {
           children: [
             const Icon(LucideIcons.move, color: Colors.white, size: 16),
             const SizedBox(width: 8),
-            const Expanded(
+            Expanded(
               child: Text(
-                'Chạm lên bản đồ để đặt lại vị trí điểm bay.',
-                style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 12.5),
+                context.l10n.dtMpTapToMove,
+                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 12.5),
               ),
             ),
             GestureDetector(
               onTap: () => setState(() => _moveIndex = null),
-              child: const Text('Huỷ',
-                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800)),
+              child: Text(context.l10n.commonCancel,
+                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800)),
             ),
           ],
         ),
@@ -760,11 +761,11 @@ class _MissionPlannerPageState extends State<MissionPlannerPage> {
         children: [
           Row(
             children: [
-              _stat(LucideIcons.mapPin, '${_mission.waypointCount}', 'điểm'),
+              _stat(LucideIcons.mapPin, '${_mission.waypointCount}', context.l10n.dtMpStatPoints),
               _statDivider(),
-              _stat(LucideIcons.route, _km(_mission.totalDistanceMeters), 'quãng đường'),
+              _stat(LucideIcons.route, _km(_mission.totalDistanceMeters), context.l10n.dtMpStatDistance),
               _statDivider(),
-              _stat(LucideIcons.clock, _duration(_mission.estimatedSeconds), 'ước tính'),
+              _stat(LucideIcons.clock, _duration(_mission.estimatedSeconds), context.l10n.dtMpStatEstimate),
             ],
           ),
           const SizedBox(height: 12),
@@ -780,7 +781,7 @@ class _MissionPlannerPageState extends State<MissionPlannerPage> {
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
                   icon: const Icon(LucideIcons.listOrdered, size: 16),
-                  label: const Text('Danh sách'),
+                  label: Text(context.l10n.dtMpList),
                 ),
               ),
               const SizedBox(width: 10),
@@ -793,7 +794,7 @@ class _MissionPlannerPageState extends State<MissionPlannerPage> {
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
                   icon: const Icon(LucideIcons.fileDown, size: 16),
-                  label: const Text('Xuất mission'),
+                  label: Text(context.l10n.dtMpExportMission),
                 ),
               ),
             ],
@@ -848,8 +849,8 @@ class _MissionPlannerPageState extends State<MissionPlannerPage> {
       builder: (ctx) => AlertDialog(
         content: Text(message),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Huỷ')),
-          FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Đồng ý')),
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(context.l10n.commonCancel)),
+          FilledButton(onPressed: () => Navigator.pop(ctx, true), child: Text(context.l10n.dtMpAgree)),
         ],
       ),
     );
@@ -877,10 +878,10 @@ class _MissionPlannerPageState extends State<MissionPlannerPage> {
       : '${meters.round()} m';
 
   String _duration(double seconds) {
-    if (seconds <= 0) return '0 phút';
+    if (seconds <= 0) return context.l10n.dtMpZeroMinutes;
     final mins = seconds / 60;
-    if (mins < 1) return '<1 phút';
-    if (mins < 60) return '${mins.round()} phút';
+    if (mins < 1) return context.l10n.dtMpUnderOneMinute;
+    if (mins < 60) return context.l10n.dtMpMinutes(mins.round());
     final h = mins ~/ 60;
     final m = (mins % 60).round();
     return '${h}h ${m}m';

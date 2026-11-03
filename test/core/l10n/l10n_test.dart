@@ -5,6 +5,9 @@ import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 import 'package:smart_laundry_locker/core/l10n/language_toggle.dart';
 import 'package:smart_laundry_locker/core/l10n/locale_provider.dart';
 import 'package:smart_laundry_locker/core/services/app_restart_service.dart';
+import 'package:smart_laundry_locker/features/drone_mission/domain/mav_command.dart';
+import 'package:smart_laundry_locker/features/drone_telemetry/domain/flight_command_policy.dart';
+import 'package:smart_laundry_locker/features/locker_ops/data/drone_technician_errors.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -61,6 +64,45 @@ void main() {
     expect(en.techRecEmptyTitle, 'No parcel recovery tasks yet');
     // Số ít / số nhiều của các bộ đếm trên màn KTV.
     expect(en.hoursValue(1), '1 hour');
+  });
+
+  test('màn KTV drone có bản tiếng Anh', () {
+    final vi = lookupAppLocalizations(L10n.vi);
+    final en = lookupAppLocalizations(L10n.en);
+
+    expect(vi.dtTabFlightTools, 'Công cụ bay');
+    expect(en.dtTabFlightTools, 'Flight tools');
+    expect(en.dtTabDispatch(3), 'Dispatch (3)');
+    expect(en.dtReportFlightFailure, 'Report flight failure');
+    // Số ít / số nhiều của các bộ đếm trên màn KTV drone.
+    expect(en.dtDronesInFlight(1), '1 drone in flight');
+    expect(en.dtDronesInFlight(2), '2 drones in flight');
+    expect(vi.dtDronesInFlight(2), '2 drone đang bay');
+  });
+
+  test('nhãn KTV drone dựng ngoài widget đổi theo ngôn ngữ', () {
+    expect(droneTechnicianErrorMessages['DRONE_STAGE_CHANGED'],
+        startsWith('Chặng bay vừa thay đổi'));
+    expect(MavCommand.takeoff.label, 'Cất cánh');
+    expect(flightCommandBlockReason(
+      FlightCommand.arm,
+      const FlightCommandState(
+        connected: false,
+        peerKnown: false,
+        heartbeatSeen: false,
+        linkAlive: false,
+        armed: false,
+        modeName: '',
+      ),
+    ), 'Chưa kết nối flight controller.');
+
+    L10n.load(L10n.en);
+
+    expect(droneTechnicianErrorMessages['DRONE_STAGE_CHANGED'],
+        startsWith('The flight stage just changed'));
+    expect(MavCommand.takeoff.label, 'Takeoff');
+    expect(MavCommand.waypoint.extraUnit, 's');
+    expect(mavResultLabel(2), 'Denied (DENIED)');
   });
 
   testWidgets('nút VI | EN đổi ngôn ngữ và dựng lại app', (tester) async {

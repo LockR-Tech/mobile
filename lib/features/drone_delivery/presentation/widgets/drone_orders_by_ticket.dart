@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/domain/entities/drone_booking.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/domain/entities/drone_delivery_stage.dart';
 import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 /// Các đơn drone mà một phiếu sự cố đang chặn hoặc đã làm "giao không hoàn tất" — để kỹ
 /// thuật viên xử lý phiếu biết sự cố này đang giữ chân đơn nào và cần gấp tới đâu.
@@ -62,7 +63,7 @@ class _DroneOrdersByTicketState extends State<DroneOrdersByTicket> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Đơn drone bị phiếu này ảnh hưởng (${_orders.length})',
+            context.l10n.dtObtTitle(_orders.length),
             style: const TextStyle(
               fontWeight: FontWeight.w800,
               color: Color(0xFFB45309),
@@ -86,20 +87,21 @@ class _DroneOrdersByTicketState extends State<DroneOrdersByTicket> {
     );
     final String state;
     if (failure is Map) {
-      state =
-          'Đã giao không hoàn tất · '
-          '${failure['reasonLabel'] ?? droneFailureReasonLabel('${failure['reason']}')}';
+      state = context.l10n.dtObtFailed(
+        '${failure['reasonLabel'] ?? droneFailureReasonLabel('${failure['reason']}')}',
+      );
     } else if (block is Map) {
-      state =
-          'Đang bị chặn (${stage.title.toLowerCase()}) · '
-          '${block['reasonLabel'] ?? droneFailureReasonLabel('${block['reason']}')}';
+      state = context.l10n.dtObtBlocked(
+        stage.title.toLowerCase(),
+        '${block['reasonLabel'] ?? droneFailureReasonLabel('${block['reason']}')}',
+      );
     } else {
       state = stage.title;
     }
     return Padding(
       padding: const EdgeInsets.only(top: 4),
       child: Text(
-        '${order['orderCode'] ?? 'Đơn #${order['orderId']}'} — $state',
+        '${order['orderCode'] ?? context.l10n.dtOrderNumber('${order['orderId']}')} — $state',
         style: const TextStyle(fontSize: 12.5, color: Color(0xFF7C2D12)),
       ),
     );

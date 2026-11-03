@@ -6437,5 +6437,1526 @@
   "techRecErrDroneReportRequired": "Phiếu này không phải phiếu drone.",
   "techRecErrDeviceNotPaired": "Thiết bị chưa được gắn với tủ nào.",
   "techRecErrDeviceNotInScope": "Thiết bị không thuộc tủ bạn phụ trách.",
-  "techRecErrDeviceOnlineNotAllowed": "Trạng thái trực tuyến do máy chủ tự tính, không đặt tay được."
+  "techRecErrDeviceOnlineNotAllowed": "Trạng thái trực tuyến do máy chủ tự tính, không đặt tay được.",
+  "dtLoadDronesFailed": "Không tải được đội drone: {error}",
+  "@dtLoadDronesFailed": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "dtLoadDeliveriesFailed": "Không tải được hàng đợi đơn drone: {error}",
+  "@dtLoadDeliveriesFailed": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "dtLoadSchedulesFailed": "Không tải được lịch bảo trì Drone: {error}",
+  "@dtLoadSchedulesFailed": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "dtLoadIncidentsFailed": "Không tải được sự cố rơi kiện: {error}",
+  "@dtLoadIncidentsFailed": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "dtPerformanceUnsupported": "Máy chủ chưa có thống kê hiệu suất cho KTV drone.",
+  "dtSharedQueueFailedShowingMine": "Không tải được hàng đợi sự cố chung — đang hiện phiếu giao cho bạn.",
+  "dtLoadReportsFailedPull": "Không tải được phiếu sự cố Drone. Kéo xuống để thử lại.",
+  "dtScheduleNotFound": "Không tìm thấy lịch bảo trì #{id} trong danh sách lịch Drone.",
+  "@dtScheduleNotFound": {
+    "placeholders": {
+      "id": {}
+    }
+  },
+  "dtLogoutShiftTitle": "Đăng xuất ca trực",
+  "dtLogoutShiftConfirm": "Bạn có chắc chắn muốn kết thúc ca trực và đăng xuất khỏi tài khoản KTV Drone không?",
+  "dtGreetingMorning": "☀️ Chào buổi sáng",
+  "dtGreetingNoon": "🌤️ Chào buổi trưa",
+  "dtGreetingAfternoon": "🌅 Chào buổi chiều",
+  "dtGreetingEvening": "🌙 Chào buổi tối",
+  "dtDefaultName": "Kỹ thuật viên drone",
+  "dtRoleFlightTeam": "KTV Drone (Đội bay)",
+  "dtStatReceived": "Phiếu đã nhận",
+  "dtStatInProgress": "Đang xử lý",
+  "dtStatDone": "Đã hoàn tất",
+  "dtStatOverdue": "Trễ SLA",
+  "dtQualityRatingLabel": "Đánh giá chất lượng: ",
+  "dtSlaPolicyLabel": "Quy chế SLA: ",
+  "dtNoData": "Chưa có dữ liệu",
+  "dtTechPhoneLabel": "SĐT kỹ thuật: ",
+  "dtViewEditProfile": "Xem & Chỉnh sửa hồ sơ",
+  "dtRatingLoadFailed": "Chưa tải được đánh giá",
+  "dtNoRatingYet": "Chưa có đánh giá",
+  "dtRatingValue": "{value}/5 ({count} lượt)",
+  "@dtRatingValue": {
+    "placeholders": {
+      "value": {},
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "dtSlaNormal": "Bình thường",
+  "dtSlaWarning": "Cảnh báo SLA",
+  "dtSlaRestricted": "Hạn chế nhận việc",
+  "dtSlaSuspended": "Đình chỉ",
+  "dtHeaderSla": "SLA: {level}",
+  "@dtHeaderSla": {
+    "placeholders": {
+      "level": {}
+    }
+  },
+  "dtHeaderWorking": "{count} phiếu đang xử lý",
+  "@dtHeaderWorking": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "dtHeaderNoWorking": "Chưa có phiếu đang xử lý",
+  "dtAssistant": "Trợ lý hỏi đáp",
+  "dtProfileAndEdit": "Hồ sơ & Chỉnh sửa",
+  "dtHudWaiting": "Chờ xử lý",
+  "dtHudWorking": "Đang làm",
+  "dtHudRoutine": "Định kỳ",
+  "dtHudFleet": "Đội bay",
+  "dtDronesInFlight": "{count} drone đang bay",
+  "@dtDronesInFlight": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "dtTabDispatch": "Điều phối ({count})",
+  "@dtTabDispatch": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "dtTabFleet": "Đội bay ({count})",
+  "@dtTabFleet": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "dtTabIncidents": "Sự cố ({count})",
+  "@dtTabIncidents": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "dtTabMyWork": "Việc của tôi ({count})",
+  "@dtTabMyWork": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "dtTabRoutine": "Định kỳ ({count})",
+  "@dtTabRoutine": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "dtTabFlightTools": "Công cụ bay",
+  "dtSecParcelReturns": "Chờ trả kiện cho người gửi ({count})",
+  "@dtSecParcelReturns": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "dtSecAwaitingDispatch": "Chờ tiếp nhận ({count})",
+  "@dtSecAwaitingDispatch": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "dtSecAwaitingLoading": "Chờ nạp hàng ({count})",
+  "@dtSecAwaitingLoading": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "dtSecReadyToLaunch": "Sẵn sàng phóng ({count})",
+  "@dtSecReadyToLaunch": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "dtSecLaunching": "Đang khởi phóng ({count})",
+  "@dtSecLaunching": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "dtSecInFlight": "Đang bay ({count})",
+  "@dtSecInFlight": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "dtSecDelivered": "Đã giao · chờ khách nhận ({count})",
+  "@dtSecDelivered": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "dtSecOtherAssigned": "Công việc đang phụ trách ({count})",
+  "@dtSecOtherAssigned": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "dtSecCanceled": "Đã hủy ({count})",
+  "@dtSecCanceled": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "dtDispatchEmptyTitle": "Không có đơn drone đang chờ",
+  "dtDispatchEmptySubtitle": "Đơn mới sẽ xuất hiện ở tab Điều phối.",
+  "dtFilterAllStatuses": "Mọi trạng thái",
+  "dtFilterWaiting": "Chờ nhận",
+  "dtFilterWorking": "Đang xử lý",
+  "dtFilterFlying": "Đang bay",
+  "dtFilterDelivered": "Đã giao",
+  "dtFilterCanceled": "Đã hủy",
+  "dtFilterWithCount": "{label} ({count})",
+  "@dtFilterWithCount": {
+    "placeholders": {
+      "label": {},
+      "count": {}
+    }
+  },
+  "dtIncidentsWaitingBanner": "Có {count} sự cố Drone đang chờ tiếp nhận xử lý.",
+  "@dtIncidentsWaitingBanner": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "dtIncidentsQueueBanner": "Hàng đợi sự cố Drone. Phiếu mới được ưu tiên hiển thị để đội bay tiếp nhận kịp thời.",
+  "dtReportSearchHint": "Tìm mã phiếu, tiêu đề, drone, người báo...",
+  "dtFilterResolved": "Hoàn tất",
+  "dtSecParcelDrop": "Sự cố rơi kiện ({count})",
+  "@dtSecParcelDrop": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "dtSecRoutedToYou": "Gửi trực tiếp cho bạn ({count})",
+  "@dtSecRoutedToYou": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "dtSecSharedQueue": "Hàng đợi kỹ thuật chung",
+  "dtSecDroneTechnical": "Sự cố kỹ thuật Drone ({count})",
+  "@dtSecDroneTechnical": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "dtReportsEmptyTitle": "Không có phiếu sự cố Drone",
+  "dtReportsEmptySubtitle": "Đội bay hiện không có sự cố phù hợp bộ lọc.",
+  "dtNoOtherInSharedQueue": "Không có phiếu khác trong hàng đợi chung.",
+  "dtSeeMore": "Xem thêm ({count})",
+  "@dtSeeMore": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "dtMyWorkBanner": "Công việc được giao gồm phiếu sự cố và lịch bảo trì Drone. Mọi thay đổi chỉ được ghi nhận sau khi Backend xác nhận.",
+  "dtMetricPending": "Chưa làm",
+  "dtMetricWorking": "Đang làm",
+  "dtMetricDone": "Hoàn tất",
+  "dtMyWorkSearchHint": "Tìm công việc, drone, mã phiếu...",
+  "dtTypeAll": "Mọi loại",
+  "dtTypeIncident": "Sự cố",
+  "dtTypeMaintenance": "Bảo trì",
+  "dtStatusActive": "Cần thực hiện",
+  "dtStatusDone": "Đã hoàn tất",
+  "dtSortDue": "Hạn gần nhất",
+  "dtSortNewest": "Mới nhất",
+  "dtMyWorkEmptyTitle": "Không có công việc phù hợp",
+  "dtTryOtherFilters": "Thử đổi bộ lọc hoặc kéo xuống để tải lại dữ liệu.",
+  "dtClearSearch": "Xóa tìm kiếm",
+  "dtAssignAll": "Mọi phân công",
+  "dtAssignMine": "Giao cho tôi",
+  "dtAssignNone": "Chưa phân công",
+  "dtAllDrones": "Mọi drone",
+  "dtTimeAll": "Mọi thời gian",
+  "dtTime7d": "7 ngày",
+  "dtTime30d": "30 ngày",
+  "dtSortOldest": "Cũ nhất",
+  "dtSortSla": "Hạn SLA",
+  "dtReset": "Đặt lại",
+  "dtSort": "Sắp xếp",
+  "dtDroneIncidentFallback": "Sự cố Drone",
+  "dtSlaOverdue": "Quá hạn SLA",
+  "dtClaim": "Nhận xử lý",
+  "dtUpdateProgress": "Cập nhật xử lý",
+  "dtClaimReportTitle": "Nhận xử lý sự cố Drone?",
+  "dtClaimReportBody": "Bạn sẽ trở thành KTV phụ trách phiếu RPT-{id} của Drone {drone}.",
+  "@dtClaimReportBody": {
+    "placeholders": {
+      "id": {},
+      "drone": {}
+    }
+  },
+  "dtConfirmClaim": "Xác nhận nhận việc",
+  "dtClaimedReport": "Đã nhận xử lý phiếu Drone RPT-{id}",
+  "@dtClaimedReport": {
+    "placeholders": {
+      "id": {}
+    }
+  },
+  "dtFleetBanner": "Pin tự cập nhật khi drone gửi telemetry; drone chưa kết nối thì hiện lần cập nhật gần nhất (có thể do KTV nhập tay). Telemetry trực tiếp của chuyến bay xem trong chi tiết nhiệm vụ.",
+  "dtFleetEmptyTitle": "Chưa phụ trách drone nào",
+  "dtFleetEmptyAssigned": "Các drone bạn được phân công phụ trách sẽ hiển thị ở đây.",
+  "dtFleetEmptyPickBelow": "Chọn một drone chưa có người phụ trách bên dưới để nhận xử lý.",
+  "dtUnassignedDrones": "Drone chưa có KTV phụ trách ({count})",
+  "@dtUnassignedDrones": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "dtScheduleBanner": "Lịch bảo trì Drone do quản trị tạo. Đánh giá đủ từng mục checklist; nếu có mục không đạt, Drone chuyển sang trạng thái lỗi và hệ thống mở phiếu sự cố.",
+  "dtScheduleSearchHint": "Tìm lịch, mã Drone, KTV phụ trách...",
+  "dtAllWithCount": "Tất cả ({count})",
+  "@dtAllWithCount": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "dtDueWithCount": "Đến hạn ({count})",
+  "@dtDueWithCount": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "dtUpcomingWithCount": "Sắp tới ({count})",
+  "@dtUpcomingWithCount": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "dtPriorityAll": "Mọi ưu tiên",
+  "dtPriorityUrgent": "Khẩn cấp",
+  "dtPriorityHighShort": "Cao",
+  "dtPriorityNormal": "Bình thường",
+  "dtPriorityLowShort": "Thấp",
+  "dtSortPriority": "Ưu tiên",
+  "dtSortNewlyCreated": "Mới tạo",
+  "dtSchedulesEmptyTitle": "Chưa có lịch bảo trì định kỳ nào",
+  "dtSchedulesNoMatch": "Không có lịch bảo trì Drone phù hợp",
+  "dtSchedulesEmptySubtitle": "Các lịch bảo trì Drone bạn được phân công phụ trách sẽ hiển thị ở đây.",
+  "dtToolMissionTitle": "Lập kế hoạch bay (Mission Planner)",
+  "dtToolMissionSubtitle": "Vẽ waypoint, đặt độ cao/lệnh, xuất file mission",
+  "dtToolFlightTitle": "Telemetry & điều khiển (Flight Data)",
+  "dtToolFlightSubtitle": "Kết nối MAVLink, xem vị trí/HUD live, gửi lệnh bay — chỉ dùng với SITL hoặc kênh điều khiển riêng",
+  "dtDueBadge": "Đến hạn",
+  "dtEveryDays": "Mỗi {days} ngày",
+  "@dtEveryDays": {
+    "placeholders": {
+      "days": {}
+    }
+  },
+  "dtDueAt": "Hạn: {date}",
+  "@dtDueAt": {
+    "placeholders": {
+      "date": {}
+    }
+  },
+  "dtLastDone": "Lần trước: {date}",
+  "@dtLastDone": {
+    "placeholders": {
+      "date": {}
+    }
+  },
+  "dtFinishTicketBeforeNext": "Cần hoàn tất phiếu RPT-{id} trước lần kiểm tra tiếp theo.",
+  "@dtFinishTicketBeforeNext": {
+    "placeholders": {
+      "id": {}
+    }
+  },
+  "dtInspectNow": "Kiểm tra ngay",
+  "dtInspect": "Kiểm tra",
+  "dtPriorityHigh": "Ưu tiên cao",
+  "dtPriorityLow": "Ưu tiên thấp",
+  "dtInspectionFailedSnack": "Đã ghi nhận bảo trì KHÔNG ĐẠT. Drone đã chuyển sang lỗi và phiếu sự cố được mở theo phản hồi Backend.",
+  "dtInspectionPassedSnack": "Đã ghi nhận bảo trì ĐẠT và cập nhật chu kỳ tiếp theo.",
+  "dtScheduleNoAddress": "Lịch này chưa có địa chỉ trạm Drone.",
+  "dtCannotOpenMaps": "Không thể mở ứng dụng bản đồ.",
+  "dtSourceLocker": "Tủ nguồn",
+  "dtDestinationLocker": "Tủ đích",
+  "dtReceiveBoxNumber": "Ô nhận số {number}",
+  "@dtReceiveBoxNumber": {
+    "placeholders": {
+      "number": {}
+    }
+  },
+  "dtReceiveBoxHeld": "Đã giữ ô nhận",
+  "dtActionAccept": "Tiếp nhận",
+  "dtActionLoad": "Xác nhận nạp",
+  "dtActionLaunch": "Phóng",
+  "dtActionLaunching": "Đang phóng",
+  "dtActionTrack": "Theo dõi",
+  "dtCancelBeforeFlight": "Hủy trước khi bay",
+  "dtRouteGroundedCantAccept": "{reason} — chưa tiếp nhận được đơn này.",
+  "@dtRouteGroundedCantAccept": {
+    "placeholders": {
+      "reason": {}
+    }
+  },
+  "dtRouteGroundedCantLaunch": "{reason} — chưa phóng được đơn này.",
+  "@dtRouteGroundedCantLaunch": {
+    "placeholders": {
+      "reason": {}
+    }
+  },
+  "dtGoods": "Hàng: {description}",
+  "@dtGoods": {
+    "placeholders": {
+      "description": {}
+    }
+  },
+  "dtParcel": "Kiện: {summary}",
+  "@dtParcel": {
+    "placeholders": {
+      "summary": {}
+    }
+  },
+  "dtLiveTrackingPill": "Drone đang gửi tín hiệu · chặng bay tự cập nhật",
+  "dtConfirmStage": "Xác nhận {label}",
+  "@dtConfirmStage": {
+    "placeholders": {
+      "label": {}
+    }
+  },
+  "dtBlockedBy": "Đang gặp sự cố: {reason}",
+  "@dtBlockedBy": {
+    "placeholders": {
+      "reason": {}
+    }
+  },
+  "dtBlockedTicket": " · phiếu #{id}",
+  "@dtBlockedTicket": {
+    "placeholders": {
+      "id": {}
+    }
+  },
+  "dtChangeDrone": "Đổi drone",
+  "dtFailDelivery": "Giao không hoàn tất",
+  "dtReportFlightFailure": "Báo chuyến bay thất bại",
+  "dtUnpaidCantAccept": "Chưa thanh toán · chưa thể tiếp nhận",
+  "dtNotDroppedCantAccept": "Người gửi chưa bỏ kiện vào ô gửi · chưa thể tiếp nhận",
+  "dtOverweightAwaitingPayment": "Kiện nặng hơn khai báo · chờ khách trả thêm phí",
+  "dtStageLine": "Chặng: {stage}",
+  "@dtStageLine": {
+    "placeholders": {
+      "stage": {}
+    }
+  },
+  "dtMissionLine": "Nhiệm vụ: {status}",
+  "@dtMissionLine": {
+    "placeholders": {
+      "status": {}
+    }
+  },
+  "dtUpdatedTapDetail": "Cập nhật {time} · chạm để xem chi tiết",
+  "@dtUpdatedTapDetail": {
+    "placeholders": {
+      "time": {}
+    }
+  },
+  "dtGroundedPaused": "đang tạm dừng bay ({reason})",
+  "@dtGroundedPaused": {
+    "placeholders": {
+      "reason": {}
+    }
+  },
+  "dtGroundedPausedByAdmin": "admin dừng",
+  "dtGroundedNoForecast": "chưa có dự báo thời tiết",
+  "dtGroundedWeather": "thời tiết không cho phép bay",
+  "dtGroundedTakeoffStation": "Trạm cất cánh {status}",
+  "@dtGroundedTakeoffStation": {
+    "placeholders": {
+      "status": {}
+    }
+  },
+  "dtGroundedReceivingLocker": "Tủ nhận {status}",
+  "@dtGroundedReceivingLocker": {
+    "placeholders": {
+      "status": {}
+    }
+  },
+  "dtNextStageLaunching": "drone đã rời trạm",
+  "dtNextStageDeparted": "drone đang trên đường",
+  "dtNextStageEnRoute": "drone sắp tới tủ nhận",
+  "dtNextStageApproaching": "drone đã tới tủ nhận",
+  "dtNextStageArrived": "hàng đã vào ô tủ nhận",
+  "dtStageDropReported": "Đã báo rơi kiện",
+  "dtStageReadyToLaunch": "Sẵn sàng phóng",
+  "dtNoOtherIdleDrone": "Tủ gửi không còn drone nào khác đang sẵn sàng. Hãy xác nhận giao không hoàn tất nếu không khắc phục được.",
+  "dtChangeDroneHint": "Chọn drone khác đang sẵn sàng tại tủ gửi. Kiện phải được nạp và kiểm lại trên drone mới.",
+  "dtChangedDrone": "Đã đổi drone · nạp lại kiện rồi phóng",
+  "dtFailDeliveryIntro": "Đơn sẽ đóng lại, người gửi được hoàn tiền và bạn mang kiện trả lại người gửi. Không hoàn tác được.",
+  "dtFailedDeliveryDone": "Đã đóng đơn · mang kiện trả lại người gửi",
+  "dtConfirmStageTitle": "Xác nhận chặng bay",
+  "dtConfirmStageBody": "Xác nhận {label}?\n\nKhách sẽ thấy chặng mới ngay và không hoàn tác được.",
+  "@dtConfirmStageBody": {
+    "placeholders": {
+      "label": {}
+    }
+  },
+  "dtConfirmedStage": "Đã xác nhận: {label}",
+  "@dtConfirmedStage": {
+    "placeholders": {
+      "label": {}
+    }
+  },
+  "dtDeclaredValue": "khai báo {price}",
+  "@dtDeclaredValue": {
+    "placeholders": {
+      "price": {}
+    }
+  },
+  "dtFragileUpper": "DỄ VỠ",
+  "dtOrderNumber": "Đơn #{id}",
+  "@dtOrderNumber": {
+    "placeholders": {
+      "id": {}
+    }
+  },
+  "dtFlightFailedLower": "chuyến bay thất bại",
+  "dtDeliveryNotCompletedLower": "giao không hoàn tất",
+  "dtCanceledLower": "đã huỷ",
+  "dtParcelInSourceBox": "Kiện còn trong ô gửi · {locker}",
+  "@dtParcelInSourceBox": {
+    "placeholders": {
+      "locker": {}
+    }
+  },
+  "dtParcelInSourceBoxNumber": "Kiện còn trong ô gửi số {box} · {locker}",
+  "@dtParcelInSourceBoxNumber": {
+    "placeholders": {
+      "box": {},
+      "locker": {}
+    }
+  },
+  "dtSendingLocker": "Tủ gửi",
+  "dtParcelHeldByTeam": "Kiện đang do đội bay giữ",
+  "dtSender": "Người gửi: {sender}",
+  "@dtSender": {
+    "placeholders": {
+      "sender": {}
+    }
+  },
+  "dtConfirmParcelReturned": "Xác nhận đã trả kiện",
+  "dtParcelReturnHint": "Chỉ xác nhận khi kiện đã về tay người gửi. Đơn cũ còn giữ ô ở tủ gửi thì ô đó được nhả.",
+  "dtNoteOptional": "Ghi chú (tùy chọn)",
+  "dtParcelReturned": "Đã trả kiện",
+  "dtParcelReturnRecorded": "Đã ghi nhận trả kiện cho người gửi",
+  "dtReceivingLocker": "Tủ nhận",
+  "dtLaunchCommandSent": "Đã phát lệnh phóng nhiệm vụ",
+  "dtConfirmLoadingTitle": "Xác nhận nạp hàng",
+  "dtConfirmLoadingIntro": "Cân kiện và hoàn tất toàn bộ checklist trước khi cho phép phóng.",
+  "dtActualWeightLabel": "Khối lượng cân thực tế (gram) *",
+  "dtActualWeightHint": "Nhập số gram đọc trên cân",
+  "dtActualWeightInvalid": "Vui lòng nhập khối lượng thực tế lớn hơn 0",
+  "dtNoDeclaredWeight": "Khách chưa khai báo khối lượng.",
+  "dtDeclaredWeight": "Khách khai báo {weight}.",
+  "@dtDeclaredWeight": {
+    "placeholders": {
+      "weight": {}
+    }
+  },
+  "dtDeclaredWeightWithFee": "Khách khai báo {weight} · phí đã tính {price}.",
+  "@dtDeclaredWeightWithFee": {
+    "placeholders": {
+      "weight": {},
+      "price": {}
+    }
+  },
+  "dtOverweightSurcharge": "Nặng hơn khai báo: khách phải trả thêm {price}. Drone chỉ phóng được sau khi khách thanh toán.",
+  "@dtOverweightSurcharge": {
+    "placeholders": {
+      "price": {}
+    }
+  },
+  "dtSealCode": "Mã niêm phong",
+  "dtSealCodeHint": "Hệ thống cấp mã sau khi xác nhận nạp — ghi mã đó lên niêm phong của kiện.",
+  "dtCheckParcelMatched": "Đúng kiện hàng và đúng đơn",
+  "dtCheckPayloadSecured": "Kiện hàng đã được cố định",
+  "dtCheckCompartmentLocked": "Khoang hàng đã khóa",
+  "dtChecklistIncomplete": "Vui lòng hoàn tất toàn bộ checklist",
+  "dtConfirmLoaded": "Xác nhận đã nạp",
+  "dtSealSuffix": " (niêm phong {seal})",
+  "@dtSealSuffix": {
+    "placeholders": {
+      "seal": {}
+    }
+  },
+  "dtLoadedOverweight": "Đã nạp hàng{seal}. Kiện nặng hơn khai báo — chờ khách trả thêm {price} rồi mới phóng.",
+  "@dtLoadedOverweight": {
+    "placeholders": {
+      "seal": {},
+      "price": {}
+    }
+  },
+  "dtLoadedReady": "Đã xác nhận nạp hàng{seal} — nhiệm vụ sẵn sàng phóng",
+  "@dtLoadedReady": {
+    "placeholders": {
+      "seal": {}
+    }
+  },
+  "dtCancelMissionBeforeFlight": "Hủy nhiệm vụ trước khi bay",
+  "dtFlightFailureIntro": "Đơn sẽ đóng lại và khách được hoàn tiền; drone chuyển sang trạng thái lỗi cho tới khi bạn kiểm tra xong. Không hoàn tác được.",
+  "dtCancelMissionIntro": "Đơn sẽ đóng lại, người gửi được hoàn tiền và bạn mang kiện trả lại người gửi. Chọn \"Drone lỗi\" thì drone chuyển sang trạng thái lỗi, không nhận đơn mới cho tới khi kiểm tra xong.",
+  "dtNoteRequired": "Ghi chú (bắt buộc)",
+  "dtPickReason": "Chọn một lý do",
+  "dtNoteRequiredForOther": "Cần nhập ghi chú khi chọn Khác",
+  "dtConfirmFailure": "Xác nhận thất bại",
+  "dtConfirmCancel": "Xác nhận hủy",
+  "dtFlightFailureReported": "Đã báo chuyến bay thất bại · khách được hoàn tiền",
+  "dtMissionCanceled": "Đã hủy nhiệm vụ drone",
+  "dtIneligibleInactive": "ngưng hoạt động",
+  "dtIneligibleUnknownBattery": "chưa biết mức pin",
+  "dtIneligibleLowBattery": "pin {battery}% (cần trên {min}%)",
+  "@dtIneligibleLowBattery": {
+    "placeholders": {
+      "battery": {},
+      "min": {}
+    }
+  },
+  "dtNoDroneAtSource": "Tủ gửi của đơn không có drone nào.",
+  "dtNoEligibleDroneAtSource": "Không có drone đủ điều kiện tại tủ gửi: {list}.",
+  "@dtNoEligibleDroneAtSource": {
+    "placeholders": {
+      "list": {}
+    }
+  },
+  "dtAssignDroneTitle": "Gán drone cho đơn",
+  "dtAssignDroneRoute": "Tuyến {route}.",
+  "@dtAssignDroneRoute": {
+    "placeholders": {
+      "route": {}
+    }
+  },
+  "dtAssignDroneRouteBox": "Tuyến {route} · ô nhận số {box}.",
+  "@dtAssignDroneRouteBox": {
+    "placeholders": {
+      "route": {},
+      "box": {}
+    }
+  },
+  "dtAssignDronePick": "Chọn drone đang sẵn sàng tại tủ gửi:",
+  "dtIneligibleDronesHint": "Drone bị mờ không nhận được đơn (ngưng hoạt động, không ở trạng thái Sẵn sàng, chưa biết pin hoặc pin ≤ {min}%).",
+  "@dtIneligibleDronesHint": {
+    "placeholders": {
+      "min": {}
+    }
+  },
+  "dtAssignDrone": "Gán drone",
+  "dtAcceptedAndAssigned": "Đã tiếp nhận và gán drone cho nhiệm vụ",
+  "dtLockerNumber": "Tủ {id}",
+  "@dtLockerNumber": {
+    "placeholders": {
+      "id": {}
+    }
+  },
+  "dtNoBatteryData": "Chưa có số pin",
+  "dtBatteryPercentPin": "{battery}% pin",
+  "@dtBatteryPercentPin": {
+    "placeholders": {
+      "battery": {}
+    }
+  },
+  "dtNotClaimed": "Chưa nhận",
+  "dtBatteryPercent": "Pin {battery}%",
+  "@dtBatteryPercent": {
+    "placeholders": {
+      "battery": {}
+    }
+  },
+  "dtYouAreInCharge": " · bạn đang phụ trách",
+  "dtClaimDrone": "Nhận xử lý",
+  "dtClaimedDrone": "Đã nhận phụ trách drone",
+  "dtReleaseDrone": "Nhả phụ trách",
+  "dtReleasedDrone": "Đã nhả phụ trách drone",
+  "dtChangeStatus": "Đổi trạng thái",
+  "dtUpdateBattery": "Cập nhật pin %",
+  "dtMaintenanceLog": "Nhật ký bảo trì",
+  "dtDroneInFlightTitle": "Drone đang bay",
+  "dtDroneInFlightBody": "Không đổi trạng thái drone khi đang bay. Nếu chuyến bay gặp sự cố, dùng \"Báo chuyến bay thất bại\" trên nhiệm vụ: đơn được đóng, khách được hoàn tiền và drone chuyển sang Lỗi.",
+  "dtViewInFlightMission": "Xem nhiệm vụ đang bay",
+  "dtChangeDroneStatusTitle": "Đổi trạng thái drone",
+  "dtDroneHasOpenReports": "Drone còn phiếu {tickets} chưa hoàn tất: hoàn tất phiếu trước khi chuyển về Sẵn sàng hoặc Đang sạc.",
+  "@dtDroneHasOpenReports": {
+    "placeholders": {
+      "tickets": {}
+    }
+  },
+  "dtReasonRequired": "Lý do (bắt buộc)",
+  "dtStatusUnchanged": "Trạng thái không thay đổi",
+  "dtFaultReasonRequired": "Cần nhập lý do khi chuyển sang FAULT",
+  "dtStatusChanged": "Đã đổi trạng thái drone",
+  "dtBatteryRemaining": "Pin còn lại (0-100)",
+  "dtBatteryRange": "Pin phải trong khoảng 0-100",
+  "dtBatteryUpdated": "Đã cập nhật pin drone",
+  "dtTechnicianNumber": " · KTV #{id}",
+  "@dtTechnicianNumber": {
+    "placeholders": {
+      "id": {}
+    }
+  },
+  "dtMaintenanceLogTitle": "Nhật ký bảo trì · {drone}",
+  "@dtMaintenanceLogTitle": {
+    "placeholders": {
+      "drone": {}
+    }
+  },
+  "dtLogLoadFailed": "Không tải được nhật ký: {error}",
+  "@dtLogLoadFailed": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "dtLogEmptyTitle": "Chưa có ghi chú nào",
+  "dtLogEmptyCanWrite": "Thêm bước xử lý đầu tiên bên dưới.",
+  "dtLogEmptyReadOnly": "Drone này chưa có nhật ký bảo trì.",
+  "dtLogReadOnlyHint": "Chỉ KTV đang phụ trách drone mới thêm được nhật ký. Nhận phụ trách drone để ghi bước xử lý.",
+  "dtLogInputHint": "Thêm bước xử lý / ghi chú...",
+  "dtMissionDetailTitle": "Chi tiết nhiệm vụ drone",
+  "dtRealtimeUpdates": "Tự cập nhật theo thời gian thực",
+  "dtDropReportedBanner": "Đơn đã báo rơi kiện và dừng giao. Theo dõi tiến trình xử lý ở mục \"Sự cố rơi kiện\" trong tab Điều phối.",
+  "dtCancelReasonWeather": "Thời tiết xấu",
+  "dtCancelReasonDroneFault": "Drone lỗi",
+  "dtCancelReasonLandingPad": "Bãi đáp không sẵn sàng",
+  "dtCancelReasonOperational": "Lý do vận hành",
+  "dtCancelReasonOther": "Khác",
+  "dtDroneStatusIdle": "Sẵn sàng",
+  "dtDroneStatusReserved": "Đã giữ cho nhiệm vụ",
+  "dtDroneStatusCharging": "Đang sạc",
+  "dtDroneStatusInFlight": "Đang bay",
+  "dtDroneStatusMaintenance": "Đang bảo trì",
+  "dtDroneStatusFault": "Lỗi",
+  "dtErrDroneHasOpenReport": "Drone còn phiếu sự cố chưa hoàn tất. Hoàn tất phiếu trước khi đưa drone về Sẵn sàng hoặc Đang sạc.",
+  "dtErrDroneInFlightUseFail": "Drone đang bay: dùng \"Báo chuyến bay thất bại\" trên nhiệm vụ đang bay thay vì đổi trạng thái.",
+  "dtErrStageChanged": "Chặng bay vừa thay đổi (drone tự cập nhật hoặc đã có người xác nhận). Danh sách đã được tải lại, hãy kiểm tra rồi xác nhận lại.",
+  "dtErrSlaNotAssignee": "Chỉ KTV đang được giao phiếu mới gia hạn được SLA.",
+  "dtErrSlaLimitReached": "Phiếu đã dùng hết số lần gia hạn SLA. Liên hệ quản trị nếu cần thêm thời gian.",
+  "dtErrSlaHoursExceeded": "Số giờ gia hạn vượt mức tối đa cho mỗi lần.",
+  "dtErrSlaReasonRequired": "Cần nhập lý do gia hạn SLA.",
+  "dtErrInvalidExtensionHours": "Thời gian gia hạn phải từ 1 giờ trở lên.",
+  "dtErrReportNotAssigned": "Chỉ KTV đang giữ phiếu mới trả được phiếu.",
+  "dtErrReportNotClaimed": "Phiếu đang ở hàng chờ, chưa có KTV nhận.",
+  "dtErrReleaseReasonRequired": "Cần nhập lý do trả phiếu.",
+  "dtErrReportAlreadyResolved": "Phiếu đã hoàn tất, không thao tác được nữa.",
+  "dtErrDroneReportRequired": "Phiếu này không phải phiếu sự cố drone.",
+  "dtErrJourneyForbidden": "Chỉ KTV đã tiếp nhận nhiệm vụ mới xem được camera của chuyến bay.",
+  "dtErrMissionNotFound": "Đơn này chưa có nhiệm vụ bay.",
+  "dtErrIncidentNotFound": "Không tìm thấy sự cố.",
+  "dtErrTechnicianRequired": "Chức năng này chỉ dành cho KTV drone.",
+  "dtErrIncidentForbidden": "Bạn không có quyền xem sự cố này.",
+  "dtErrServerUnsupported": "Máy chủ chưa hỗ trợ chức năng này.",
+  "dtRdClaimBody": "Xác nhận nhận phiếu RPT-{id} và chịu trách nhiệm cập nhật nhật ký xử lý.",
+  "@dtRdClaimBody": {
+    "placeholders": {
+      "id": {}
+    }
+  },
+  "dtRdTakeJob": "Nhận việc",
+  "dtRdLogUpdated": "Đã cập nhật nhật ký xử lý",
+  "dtRdResolved": "Đã nghiệm thu và hoàn tất sự cố Drone",
+  "dtRdSlaExtended": "Đã gia hạn SLA thêm {hours} giờ.",
+  "@dtRdSlaExtended": {
+    "placeholders": {
+      "hours": {}
+    }
+  },
+  "dtRdSlaExtendedUsed": "Đã gia hạn SLA thêm {hours} giờ (đã dùng {used}/{max} lần).",
+  "@dtRdSlaExtendedUsed": {
+    "placeholders": {
+      "hours": {},
+      "used": {},
+      "max": {}
+    }
+  },
+  "dtRdReleased": "Đã trả phiếu RPT-{id} về hàng chờ.",
+  "@dtRdReleased": {
+    "placeholders": {
+      "id": {}
+    }
+  },
+  "dtRdSubtitle": "Hồ sơ chi tiết phiếu sự cố kỹ thuật Drone",
+  "dtRdLoadPartial": "Không tải đủ hồ sơ: {error}",
+  "@dtRdLoadPartial": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "dtRdInfoSection": "Thông tin sự cố",
+  "dtRdStation": "Trạm/Kiosk",
+  "dtRdReporter": "Người báo",
+  "dtRdUserNumber": "Người dùng #{id}",
+  "@dtRdUserNumber": {
+    "placeholders": {
+      "id": {}
+    }
+  },
+  "dtRdAssignee": "KTV phụ trách",
+  "dtRdYouSuffix": "{name} (bạn)",
+  "@dtRdYouSuffix": {
+    "placeholders": {
+      "name": {}
+    }
+  },
+  "dtRdNoAssignee": "Chưa có KTV nhận việc",
+  "dtRdYou": "Bạn",
+  "dtRdTechNumber": "KTV #{id}",
+  "@dtRdTechNumber": {
+    "placeholders": {
+      "id": {}
+    }
+  },
+  "dtRdSlaDue": "Hạn SLA",
+  "dtRdSlaOverdueSuffix": "{date} · đã quá hạn",
+  "@dtRdSlaOverdueSuffix": {
+    "placeholders": {
+      "date": {}
+    }
+  },
+  "dtRdSlaExtensions": "Gia hạn SLA",
+  "dtRdExtendedCount": "Đã gia hạn {used} lần",
+  "@dtRdExtendedCount": {
+    "placeholders": {
+      "used": {}
+    }
+  },
+  "dtRdExtendedCountMax": "Đã gia hạn {used}/{max} lần",
+  "@dtRdExtendedCountMax": {
+    "placeholders": {
+      "used": {},
+      "max": {}
+    }
+  },
+  "dtRdCreatedAt": "Tạo lúc",
+  "dtRdDescriptionSection": "Mô tả hiện trường",
+  "dtRdNoDescription": "Chưa có mô tả chi tiết.",
+  "dtRdPhotosSection": "Ảnh hồ sơ theo giai đoạn",
+  "dtRdLogsSection": "Nhật ký & lịch sử xử lý của KTV",
+  "dtRdResolveButton": "Nghiệm thu & hoàn tất sự cố",
+  "dtRdExtendSlaCount": "Gia hạn SLA ({used}/{max})",
+  "@dtRdExtendSlaCount": {
+    "placeholders": {
+      "used": {},
+      "max": {}
+    }
+  },
+  "dtRdExtendSla": "Gia hạn SLA",
+  "dtRdReleaseTicket": "Trả lại phiếu",
+  "dtRdNoLogs": "Chưa có ghi chú xử lý. Mỗi bước kiểm tra hoặc sửa chữa sẽ được lưu tại đây.",
+  "dtRdLogViewerTitle": "Nhật ký Drone · {date}",
+  "@dtRdLogViewerTitle": {
+    "placeholders": {
+      "date": {}
+    }
+  },
+  "dtRdTechnician": "Kỹ thuật viên",
+  "dtRdAddStep": "Thêm bước xử lý / ảnh tiến độ",
+  "dtRdAddPhoto": "Thêm ảnh",
+  "dtRdPhotoHelper": "Ảnh kiểm tra hoặc tiến độ sửa chữa",
+  "dtRdNoteHint": "Nhập việc đã kiểm tra hoặc sửa chữa...",
+  "dtRdSaveLog": "Lưu nhật ký",
+  "dtRdSlaUnsupported": "Máy chủ chưa hỗ trợ gia hạn SLA cho phiếu drone.",
+  "dtRdExtendTitle": "Gia hạn SLA · RPT-{id}",
+  "@dtRdExtendTitle": {
+    "placeholders": {
+      "id": {}
+    }
+  },
+  "dtRdExtendIntroUsed": "Đã gia hạn {used}/{max} lần. Mỗi lần gia hạn được ghi vào nhật ký phiếu.",
+  "@dtRdExtendIntroUsed": {
+    "placeholders": {
+      "used": {},
+      "max": {}
+    }
+  },
+  "dtRdExtendIntro": "Mỗi lần gia hạn được ghi vào nhật ký phiếu; số lần và số giờ tối đa theo cấu hình.",
+  "dtRdAddTime": "Thêm thời gian",
+  "dtRdHours": "{hours} giờ",
+  "@dtRdHours": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      }
+    }
+  },
+  "dtRdExtendReason": "Lý do gia hạn *",
+  "dtRdExtend": "Gia hạn",
+  "dtRdReleaseUnsupported": "Máy chủ chưa hỗ trợ trả phiếu drone.",
+  "dtRdReleaseTitle": "Trả lại phiếu RPT-{id}?",
+  "@dtRdReleaseTitle": {
+    "placeholders": {
+      "id": {}
+    }
+  },
+  "dtRdReleaseIntro": "Phiếu quay về hàng chờ để KTV khác nhận; bạn không còn phụ trách phiếu này.",
+  "dtRdReleaseReason": "Lý do trả phiếu *",
+  "dtRdRelease": "Trả phiếu",
+  "dtRdNeedResolutionPhoto": "Vui lòng chụp ít nhất 1 ảnh sau khi sửa xong để nghiệm thu.",
+  "dtRdResolveTitle": "Nghiệm thu sự cố Drone",
+  "dtRdResolveIntro": "Lưu ảnh tiến độ và ảnh sau khi khắc phục giống quy trình nghiệm thu sự cố tủ.",
+  "dtRdResolutionResult": "Kết quả khắc phục",
+  "dtRdResolutionHint": "Mô tả linh kiện hoặc thao tác đã xử lý...",
+  "dtRdProgressPhotos": "Ảnh trong quá trình sửa",
+  "dtRdProgressPhotosHint": "Không bắt buộc, dùng để ghi nhận thao tác kỹ thuật.",
+  "dtRdResolutionPhotosRequired": "Ảnh sau khi sửa xong *",
+  "dtRdResolutionPhotos": "Ảnh sau khi sửa xong",
+  "dtRdResolutionPhotosRequiredHint": "Bắt buộc ít nhất 1 ảnh để nghiệm thu.",
+  "dtRdResolutionPhotosOptionalHint": "Không bắt buộc, dùng để lưu ảnh nghiệm thu.",
+  "dtRdConfirmResolve": "Xác nhận hoàn tất",
+  "dtPqNoteRequiredForReason": "Cần nhập ghi chú cho lý do này",
+  "dtPqNeedLocation": "Cần vị trí hiện tại để vào ca nhận việc lấy hàng.",
+  "dtPqOnDuty": "Đã vào ca. Bạn sẽ được mời khi có đơn gần bạn.",
+  "dtPqOffDuty": "Đã ra ca. Bạn sẽ không được mời lấy hàng.",
+  "dtPqDeclineTitle": "Từ chối lời mời lấy hàng?",
+  "dtPqDeclineBody": "Đơn {order} sẽ được mời người khác và bạn không được mời lại đơn này trong một thời gian.",
+  "@dtPqDeclineBody": {
+    "placeholders": {
+      "order": {}
+    }
+  },
+  "dtPqDecline": "Từ chối",
+  "dtPqDeclined": "Đã từ chối · hệ thống mời người khác",
+  "dtPqConfirmPickupTitle": "Xác nhận đã lấy hàng",
+  "dtPqDeclaredParcelAsk": "Kiện khai báo: {summary}.\nNhờ người gửi đọc mã lấy hàng trong đơn của họ.",
+  "@dtPqDeclaredParcelAsk": {
+    "placeholders": {
+      "summary": {}
+    }
+  },
+  "dtPqPickupCode": "Mã lấy hàng (6 số)",
+  "dtPqParcelMatches": "Kiện đúng khai báo (loại hàng, kích thước, khối lượng) và không có hàng cấm bay.",
+  "dtPqPhotoRequired": "Ảnh kiện tại điểm lấy là bắt buộc.",
+  "dtPqCameraFailed": "Không mở được máy ảnh. Kiểm tra quyền camera.",
+  "dtPqTakePhoto": "Chụp ảnh kiện",
+  "dtPqPhotoHint": "Chụp rõ toàn bộ kiện trước khi xác nhận đã lấy.",
+  "dtPqEnterSixDigits": "Nhập đủ 6 chữ số",
+  "dtPqConfirmMatchOrFail": "Cần xác nhận kiện đúng khai báo, hoặc báo không lấy được",
+  "dtPqNeedPhoto": "Cần chụp ảnh kiện trước khi xác nhận",
+  "dtPqUploadFailed": "Chưa tải được ảnh kiện lên. Thử lại.",
+  "dtPqNoGps": "Chưa lấy được vị trí GPS hiện tại. Bật định vị rồi thử lại.",
+  "dtPqPickedUp": "Đã lấy hàng",
+  "dtPqPickedUpDone": "Đã lấy hàng và lưu ảnh kiện. Mang kiện tới drone được phân công và nạp trực tiếp; không bỏ vào ô tủ bay.",
+  "dtPqFailPickupTitle": "Không lấy được hàng",
+  "dtPqFailPickupIntro": "Đơn sẽ kết thúc \"giao không hoàn tất\" và người gửi được hoàn tiền. Không hoàn tác được.",
+  "dtPqFailPickupDone": "Đã báo không lấy được hàng · người gửi được hoàn tiền",
+  "dtPqExpired": "đã hết hạn",
+  "dtPqTimeLeft": "còn {time}",
+  "@dtPqTimeLeft": {
+    "placeholders": {
+      "time": {}
+    }
+  },
+  "dtPqSecOffers": "Lời mời lấy hàng ({count})",
+  "@dtPqSecOffers": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "dtPqSecAccepted": "Đang đi lấy hàng ({count})",
+  "@dtPqSecAccepted": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "dtPqSecCarrying": "Đã lấy hàng · chờ nạp trực tiếp lên drone ({count})",
+  "@dtPqSecCarrying": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "dtPqOffersWaiting": "Có {count} lời mời đang chờ bạn trả lời.",
+  "@dtPqOffersWaiting": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "dtPqOffersWaitingDirect": "Có {count} lời mời đang chờ bạn trả lời (điều phối viên giao trực tiếp).",
+  "@dtPqOffersWaitingDirect": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "dtPqTurnOnHint": "Bật để nhận lời mời lấy hàng tận nhà gần bạn.",
+  "dtPqBusy": "Đang trong ca · đang bận một việc nên chưa được mời thêm.",
+  "dtPqFree": "Đang trong ca · rảnh, sẽ được mời khi có đơn gần bạn.",
+  "dtPqFreeWithLocation": "Đang trong ca · rảnh, sẽ được mời khi có đơn gần bạn · vị trí lúc {time}.",
+  "@dtPqFreeWithLocation": {
+    "placeholders": {
+      "time": {}
+    }
+  },
+  "dtPqOnDutyTitle": "Đang nhận việc lấy hàng",
+  "dtPqOffDutyTitle": "Chưa vào ca lấy hàng",
+  "dtPqPickupAt": "Lấy tại: {address}",
+  "@dtPqPickupAt": {
+    "placeholders": {
+      "address": {}
+    }
+  },
+  "dtPqDistanceParcel": "Cách bạn {distance} · kiện {summary}",
+  "@dtPqDistanceParcel": {
+    "placeholders": {
+      "distance": {},
+      "summary": {}
+    }
+  },
+  "dtPqReplyIn": "Trả lời {countdown}",
+  "@dtPqReplyIn": {
+    "placeholders": {
+      "countdown": {}
+    }
+  },
+  "dtPqAccepted": "Đã nhận. Tới điểm lấy hàng và hỏi mã lấy hàng của người gửi.",
+  "dtPqAcceptPickup": "Nhận lấy hàng",
+  "dtPqInstructions": "Chỉ dẫn: {note}",
+  "@dtPqInstructions": {
+    "placeholders": {
+      "note": {}
+    }
+  },
+  "dtPqDeclaredParcel": "Kiện khai báo: {summary}",
+  "@dtPqDeclaredParcel": {
+    "placeholders": {
+      "summary": {}
+    }
+  },
+  "dtPqDirections": "Chỉ đường",
+  "dtPqCantPickUp": "Không lấy được",
+  "dtPqSendingLockerNumber": "Tủ gửi #{id}",
+  "@dtPqSendingLockerNumber": {
+    "placeholders": {
+      "id": {}
+    }
+  },
+  "dtPqBringToDrone": "Mang kiện tới drone tại: {locker}",
+  "@dtPqBringToDrone": {
+    "placeholders": {
+      "locker": {}
+    }
+  },
+  "dtPqDirectionsToDrone": "Chỉ đường tới drone",
+  "dtRtlRequested": "Đã yêu cầu drone quay về (RTL)",
+  "dtRtlAccepted": "Drone đã nhận lệnh RTL",
+  "dtRtlReturning": "Drone đang bay về trạm",
+  "dtRtlCompleted": "Drone đã về trạm",
+  "dtRtlFailed": "RTL thất bại",
+  "dtRtlManual": "Cần can thiệp tay / RTL thủ công",
+  "dtManualReturnBanner": "Cần can thiệp tay / RTL thủ công: hệ thống không đưa drone về được. Điều khiển drone về trạm bằng kênh điều khiển riêng của đội bay rồi báo quản trị.",
+  "dtIncidentNumber": "Sự cố #{id}",
+  "@dtIncidentNumber": {
+    "placeholders": {
+      "id": {}
+    }
+  },
+  "dtIncDroneStatus": "Drone {drone} · {status}",
+  "@dtIncDroneStatus": {
+    "placeholders": {
+      "drone": {},
+      "status": {}
+    }
+  },
+  "dtIncReturn": "Quay về: {status}",
+  "@dtIncReturn": {
+    "placeholders": {
+      "status": {}
+    }
+  },
+  "dtIncReportedAt": "Báo lúc {time}",
+  "@dtIncReportedAt": {
+    "placeholders": {
+      "time": {}
+    }
+  },
+  "dtIncDetailUnsupported": "Máy chủ chưa hỗ trợ xem chi tiết sự cố.",
+  "dtIncSheetTitle": "Sự cố rơi kiện {code}",
+  "@dtIncSheetTitle": {
+    "placeholders": {
+      "code": {}
+    }
+  },
+  "dtIncStatusRow": "Trạng thái",
+  "dtIncReturnRow": "Quay về",
+  "dtIncParcelRow": "Kiện hàng",
+  "dtIncRecoveryRow": "Thu hồi kiện",
+  "dtIncDescriptionRow": "Mô tả",
+  "dtIncDropLocationRow": "Vị trí báo rơi",
+  "dtIncTelemetryStale": " (telemetry cũ)",
+  "dtIncNoCoordinates": "Không có toạ độ",
+  "dtIncRecoveryStationRow": "Trạm nhận kiện",
+  "dtIncWaitingDrone": " (đang chờ drone)",
+  "dtIncRecoveryTitle": "Thu hồi sự cố {code}",
+  "@dtIncRecoveryTitle": {
+    "placeholders": {
+      "code": {}
+    }
+  },
+  "dtIncOpenRecovery": "Mở nhiệm vụ tìm kiếm & thu hồi kiện",
+  "dtIncTimeline": "Dòng thời gian",
+  "dtCamTitle": "Giám sát camera trực tiếp",
+  "dtCamGatewayUnavailable": "Camera gateway chưa khả dụng. Có thể báo sự cố thủ công và chụp ảnh thật.",
+  "dtCamBattery": "Pin",
+  "dtCamFlightMode": "Chế độ bay",
+  "dtCamAltitude": "Độ cao",
+  "dtCamSpeed": "Tốc độ",
+  "dtCamHeading": "Hướng",
+  "dtCamMeasuredAt": "Số đo lúc",
+  "dtCamReportDrop": "Báo rơi kiện",
+  "dtCamNoData": "Không có dữ liệu",
+  "dtCamNoTelemetry": "Chưa nhận telemetry",
+  "dtCamOnline": "Trực tuyến",
+  "dtCamStale": "Cũ / mất kết nối",
+  "dtCamSatellites": "{count} vệ tinh",
+  "@dtCamSatellites": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "dtCamNoFix": "chưa có fix",
+  "dtCamConfirmDropTitle": "Xác nhận báo rơi kiện",
+  "dtCamDropWarning": "Thao tác này dừng luồng giao hiện tại. RTL chỉ được yêu cầu khi telemetry và điều kiện an toàn hợp lệ.",
+  "dtCamObservation": "Mô tả quan sát *",
+  "dtCamPhotoLabel": "Ảnh camera / hiện trường",
+  "dtCamPhotoHelper": "Không bắt buộc khi camera mất kết nối; không dùng ảnh giả.",
+  "dtCamEnterObservation": "Nhập mô tả điều bạn quan sát được.",
+  "dtCamHandledElsewhere": "Chuyến bay này đã được báo rơi kiện (hoặc đã dừng) từ nơi khác. Theo dõi ở mục \"Sự cố rơi kiện\" trong tab Điều phối.",
+  "dtCamDropCreated": "Đã tạo sự cố rơi kiện và dừng luồng giao. Theo dõi tiếp ở mục \"Sự cố rơi kiện\" trong tab Điều phối.",
+  "dtCamOrder": "Đơn",
+  "dtCamNoDataYet": "Chưa có dữ liệu",
+  "dtCamJourneyStage": "Chặng bay",
+  "dtCamStaleNotConnected": "Cũ / chưa kết nối",
+  "dtCamSavedLocation": "Vị trí lưu vào phiếu",
+  "dtCamSimulated": " · Mô phỏng FPT HCM",
+  "dtCamEstimatedLocation": "Ước theo tuyến bay (chưa có GPS tin cậy)",
+  "dtCamAutoRecorded": "Dữ liệu tự ghi vào phiếu",
+  "dtCamOfflineHint": "Telemetry không trực tuyến: phiếu lưu vị trí ước theo tuyến bay, KTV thu hồi xác nhận toạ độ thật tại hiện trường.",
+  "dtCamLive": "Đang trực tiếp",
+  "dtCamUnavailable": "Chưa khả dụng",
+  "dtCamError": "Lỗi kết nối",
+  "dtCamConnecting": "Đang kết nối",
+  "dtCamStageLaunching": "Đang khởi phóng",
+  "dtCamStageDeparted": "Đã rời trạm",
+  "dtCamStageEnRoute": "Đang bay tới tủ nhận",
+  "dtCamStageApproaching": "Đang tiếp cận tủ nhận",
+  "dtCamStageArrived": "Đã đến tủ nhận",
+  "dtMavTakeoff": "Cất cánh",
+  "dtMavWaypoint": "Bay tới điểm",
+  "dtMavLoiterTime": "Bay vòng (thời gian)",
+  "dtMavLoiterTurns": "Bay vòng (số vòng)",
+  "dtMavLoiterUnlim": "Bay vòng vô hạn",
+  "dtMavRtl": "Về điểm xuất phát (RTL)",
+  "dtMavLand": "Hạ cánh",
+  "dtMavChangeSpeed": "Đổi tốc độ bay",
+  "dtMavHoldAtPoint": "Giữ tại điểm",
+  "dtMavDuration": "Thời gian",
+  "dtMavTurns": "Số vòng",
+  "dtMavSpeed": "Tốc độ",
+  "dtMavSeconds": "giây",
+  "dtMavTurnsUnit": "vòng",
+  "dtFcConfirmArm": "Arm động cơ? Cánh quạt sẽ quay.",
+  "dtFcConfirmDisarm": "Disarm động cơ? Nếu drone đang bay, drone sẽ rơi.",
+  "dtFcConfirmRtl": "Chuyển sang RTL: drone tự bay về điểm xuất phát?",
+  "dtFcConfirmLoiter": "Chuyển sang LOITER: drone giữ nguyên vị trí?",
+  "dtFcConfirmGuided": "Chuyển sang GUIDED: drone nhận lệnh điều khiển từ ứng dụng?",
+  "dtFcConfirmAuto": "Chuyển sang AUTO: drone chạy mission đã nạp?",
+  "dtFcConfirmTakeoff": "Cất cánh tới độ cao đã nhập?",
+  "dtFcNotConnected": "Chưa kết nối flight controller.",
+  "dtFcPeerUnknown": "Chưa biết địa chỉ drone — chờ drone gửi gói tin đầu tiên.",
+  "dtFcNoHeartbeat": "Chưa nhận heartbeat từ drone.",
+  "dtFcHeartbeatLost": "Mất heartbeat từ drone (quá 3 giây).",
+  "dtFcMissionLocked": "Drone bạn phụ trách đang có nhiệm vụ giao hàng — lệnh tay đang bị khoá.",
+  "dtFcPending": "Đang chờ drone phản hồi lệnh trước.",
+  "dtFcAlreadyArmed": "Drone đã ARM.",
+  "dtFcNotArmed": "Drone chưa ARM.",
+  "dtFcTakeoffNeedsArm": "Chỉ cất cánh khi drone đã ARM.",
+  "dtFcTakeoffNeedsGuided": "Chỉ cất cánh ở chế độ GUIDED (hiện tại: {mode}).",
+  "@dtFcTakeoffNeedsGuided": {
+    "placeholders": {
+      "mode": {}
+    }
+  },
+  "dtFcEnterAltitude": "Nhập độ cao (m).",
+  "dtFcMinAltitude": "Độ cao tối thiểu {value} m.",
+  "@dtFcMinAltitude": {
+    "placeholders": {
+      "value": {}
+    }
+  },
+  "dtFcMaxAltitude": "Độ cao tối đa {value} m.",
+  "@dtFcMaxAltitude": {
+    "placeholders": {
+      "value": {}
+    }
+  },
+  "dtFcResultAccepted": "Đã nhận (ACCEPTED)",
+  "dtFcResultTempRejected": "Tạm từ chối (TEMPORARILY_REJECTED)",
+  "dtFcResultDenied": "Từ chối (DENIED)",
+  "dtFcResultUnsupported": "Không hỗ trợ (UNSUPPORTED)",
+  "dtFcResultFailed": "Thất bại (FAILED)",
+  "dtFcResultInProgress": "Đang thực hiện (IN_PROGRESS)",
+  "dtFcResultCancelled": "Đã huỷ (CANCELLED)",
+  "dtFcResultCode": "Mã kết quả {code}",
+  "@dtFcResultCode": {
+    "placeholders": {
+      "code": {}
+    }
+  },
+  "dtFcLinkClosed": "Link đã đóng.",
+  "dtFcDone": "{command}: drone đã thực hiện",
+  "@dtFcDone": {
+    "placeholders": {
+      "command": {}
+    }
+  },
+  "dtFcSwitched": "{command}: drone đã chuyển sang {mode}",
+  "@dtFcSwitched": {
+    "placeholders": {
+      "command": {},
+      "mode": {}
+    }
+  },
+  "dtFcTimeout": "{command}: hết giờ — không nhận được phản hồi từ drone",
+  "@dtFcTimeout": {
+    "placeholders": {
+      "command": {}
+    }
+  },
+  "dtFcSent": "{command}: đã gửi, đang chờ drone phản hồi…",
+  "@dtFcSent": {
+    "placeholders": {
+      "command": {}
+    }
+  },
+  "dtFdBusyDrone": "{drone} (đơn {order})",
+  "@dtFdBusyDrone": {
+    "placeholders": {
+      "drone": {},
+      "order": {}
+    }
+  },
+  "dtFdMissionCheckFailed": "Không kiểm tra được nhiệm vụ của drone bạn phụ trách ({error}). Chỉ gửi lệnh khi chắc chắn kết nối này không phải drone đang giao hàng.",
+  "@dtFdMissionCheckFailed": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "dtFdUnlockTitle": "Mở khoá lệnh tay?",
+  "dtFdUnlockBody": "Drone bạn phụ trách đang có nhiệm vụ giao hàng: {drones}.\n\nChỉ mở khoá khi chắc chắn kết nối hiện tại là SITL hoặc một drone khác, KHÔNG phải drone đang giao hàng.",
+  "@dtFdUnlockBody": {
+    "placeholders": {
+      "drones": {}
+    }
+  },
+  "dtFdKeepLocked": "Giữ khoá",
+  "dtFdConfirmUnlock": "Tôi xác nhận, mở khoá",
+  "dtFdConnectTitle": "Kết nối flight controller",
+  "dtFdConnectSubtitle": "MAVLink qua UDP/TCP — tương thích ArduPilot/PX4 thật và SITL.",
+  "dtFdDroneAddressUdp": "Địa chỉ drone (để trống = chờ drone gửi tới)",
+  "dtFdDroneAddress": "Địa chỉ drone",
+  "dtFdAddressHintUdp": "192.168.4.1 hoặc trống",
+  "dtFdPort": "Cổng",
+  "dtFdLocalPort": "Cổng local",
+  "dtFdConnect": "Kết nối",
+  "dtFdReceiving": "Đang nhận telemetry",
+  "dtFdLinkedWaiting": "Đã nối · chờ dữ liệu",
+  "dtFdConnecting": "Đang kết nối...",
+  "dtFdConnectionError": "Lỗi kết nối",
+  "dtFdDisconnected": "Chưa kết nối",
+  "dtFdSitlOnlyBanner": "Chỉ dùng với SITL hoặc kênh điều khiển riêng — hệ thống không điều khiển drone",
+  "dtFdAltRel": "Cao (rel)",
+  "dtFdGroundSpeed": "Tốc độ đất",
+  "dtFdClimb": "Leo/xuống",
+  "dtFdHeading": "Hướng",
+  "dtFdBattery": "Pin",
+  "dtFdConflictAcknowledged": "Cảnh báo: drone bạn phụ trách đang giao hàng ({drones}). Bạn đã xác nhận kết nối này không phải drone đó.",
+  "@dtFdConflictAcknowledged": {
+    "placeholders": {
+      "drones": {}
+    }
+  },
+  "dtFdConflictLocked": "Drone bạn phụ trách đang có nhiệm vụ giao hàng ({drones}). Lệnh tay bị khoá để không can thiệp chuyến bay.",
+  "@dtFdConflictLocked": {
+    "placeholders": {
+      "drones": {}
+    }
+  },
+  "dtFdNotThatDrone": "Kết nối này không phải drone đó",
+  "dtFdSendCommandTitle": "Gửi lệnh {command}?",
+  "@dtFdSendCommandTitle": {
+    "placeholders": {
+      "command": {}
+    }
+  },
+  "dtFdSendCommandBody": "{message}\n\nChỉ gửi khi đang kết nối SITL hoặc kênh điều khiển riêng của đội bay.",
+  "@dtFdSendCommandBody": {
+    "placeholders": {
+      "message": {}
+    }
+  },
+  "dtFdSendCommand": "Gửi lệnh",
+  "dtFdNotSent": "Chưa gửi {command}: {reason}",
+  "@dtFdNotSent": {
+    "placeholders": {
+      "command": {},
+      "reason": {}
+    }
+  },
+  "dtFdTakeoffTitle": "Xác nhận cất cánh (GUIDED)",
+  "dtFdTakeoffBody": "Drone đã ARM và ở chế độ GUIDED. Nhập độ cao cất cánh ({min}–{max} m):",
+  "@dtFdTakeoffBody": {
+    "placeholders": {
+      "min": {},
+      "max": {}
+    }
+  },
+  "dtFdTakeoff": "Cất cánh",
+  "dtMpTapToMovePoint": "Chạm lên bản đồ để đặt lại vị trí điểm {index}.",
+  "@dtMpTapToMovePoint": {
+    "placeholders": {
+      "index": {}
+    }
+  },
+  "dtMpRenameTitle": "Tên kế hoạch bay",
+  "dtMpRenameHint": "VD: Tuần tra khu A",
+  "dtMpSettingsTitle": "Cài đặt kế hoạch",
+  "dtMpDefaultAltitude": "Độ cao mặc định cho điểm mới (m)",
+  "dtMpCruiseSpeed": "Tốc độ bay ước tính (m/s)",
+  "dtMpApply": "Áp dụng",
+  "dtMpSavedToLibrary": "Đã lưu \"{name}\" vào thư viện.",
+  "@dtMpSavedToLibrary": {
+    "placeholders": {
+      "name": {}
+    }
+  },
+  "dtMpLibraryTitle": "Thư viện kế hoạch bay",
+  "dtMpLibraryEmptyTitle": "Chưa có kế hoạch đã lưu",
+  "dtMpLibraryEmptySubtitle": "Lưu kế hoạch hiện tại để mở lại sau.",
+  "dtMpOpened": "Đã mở \"{name}\".",
+  "@dtMpOpened": {
+    "placeholders": {
+      "name": {}
+    }
+  },
+  "dtMpPointsDistance": "{count} điểm · {distance}",
+  "@dtMpPointsDistance": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "distance": {}
+    }
+  },
+  "dtMpDeleted": "Đã xoá \"{name}\".",
+  "@dtMpDeleted": {
+    "placeholders": {
+      "name": {}
+    }
+  },
+  "dtMpImported": "Đã nhập \"{name}\" ({count} điểm).",
+  "@dtMpImported": {
+    "placeholders": {
+      "name": {},
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "dtMpNothingToExport": "Chưa có điểm bay nào để xuất.",
+  "dtMpExported": "Đã xuất file: {path}",
+  "@dtMpExported": {
+    "placeholders": {
+      "path": {}
+    }
+  },
+  "dtMpExportFailed": "Không xuất được file: {error}",
+  "@dtMpExportFailed": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "dtMpHomeSet": "Đã đặt điểm xuất phát (HOME) tại tâm bản đồ.",
+  "dtMpConfirmClearAll": "Xoá tất cả điểm bay của kế hoạch hiện tại?",
+  "dtMpConfirmNew": "Tạo kế hoạch mới? Thay đổi chưa lưu sẽ mất.",
+  "dtMpActionRename": "Đổi tên kế hoạch",
+  "dtMpActionSettings": "Cài đặt (độ cao/tốc độ)",
+  "dtMpActionSetHome": "Đặt HOME tại tâm bản đồ",
+  "dtMpActionSave": "Lưu vào thư viện",
+  "dtMpActionOpen": "Mở từ thư viện",
+  "dtMpActionExportWaypoints": "Xuất file .waypoints (QGC)",
+  "dtMpActionExportJson": "Xuất file JSON",
+  "dtMpActionImport": "Nhập từ file",
+  "dtMpActionNew": "Tạo kế hoạch mới",
+  "dtMpActionClearAll": "Xoá tất cả điểm",
+  "dtMpWaypointList": "Danh sách điểm bay ({count})",
+  "@dtMpWaypointList": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "dtMpNoWaypointsTitle": "Chưa có điểm bay",
+  "dtMpNoWaypointsSubtitle": "Chạm lên bản đồ để thêm điểm.",
+  "dtMpHomeTooltip": "Điểm xuất phát (HOME)",
+  "dtMpTapToMove": "Chạm lên bản đồ để đặt lại vị trí điểm bay.",
+  "dtMpStatPoints": "điểm",
+  "dtMpStatDistance": "quãng đường",
+  "dtMpStatEstimate": "ước tính",
+  "dtMpList": "Danh sách",
+  "dtMpExportMission": "Xuất mission",
+  "dtMpAgree": "Đồng ý",
+  "dtMpZeroMinutes": "0 phút",
+  "dtMpUnderOneMinute": "<1 phút",
+  "dtMpMinutes": "{minutes} phút",
+  "@dtMpMinutes": {
+    "placeholders": {
+      "minutes": {}
+    }
+  },
+  "dtWpTitle": "Điểm bay {index}/{total}",
+  "@dtWpTitle": {
+    "placeholders": {
+      "index": {},
+      "total": {}
+    }
+  },
+  "dtWpCommand": "Lệnh (MAVLink)",
+  "dtWpAltitude": "Độ cao (m, so với điểm xuất phát)",
+  "dtWpNoPositionHint": "Lệnh này không gắn toạ độ — nó áp dụng tại vị trí của điểm bay liền trước trong danh sách.",
+  "dtWpMoveOnMap": "Di chuyển điểm này trên bản đồ",
+  "dtWpDelete": "Xoá điểm bay",
+  "dtWpSave": "Lưu thay đổi",
+  "dtMcImportedPlan": "Kế hoạch nhập",
+  "dtMcMissingHeader": "Thiếu header \"QGC WPL 110\" — không phải file mission hợp lệ.",
+  "dtMcMissingColumns": "Dòng {line} thiếu cột (cần 12, có {count}).",
+  "@dtMcMissingColumns": {
+    "placeholders": {
+      "line": {},
+      "count": {}
+    }
+  },
+  "dtMcInvalidJson": "JSON không hợp lệ: {error}",
+  "@dtMcInvalidJson": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "dtMcBadJsonStructure": "Cấu trúc JSON mission không đúng.",
+  "dtMcCantReadFile": "Không đọc được nội dung file đã chọn.",
+  "dtMcUnknownFormat": "Định dạng không nhận diện được (cần QGC WPL hoặc JSON mission).",
+  "dtMcSaveDialogTitle": "Lưu file mission",
+  "dtMcNewPlan": "Kế hoạch bay mới",
+  "dtMcPlan": "Kế hoạch bay",
+  "dtWxCantConfirm": "Không thể xác nhận thời tiết tuyến bay.",
+  "dtWxFlyable": "Bay được",
+  "dtWxNoForecast": "Chưa có dự báo",
+  "dtWxUnsafe": "Không an toàn để bay",
+  "dtWxWind": "Gió {value} km/h",
+  "@dtWxWind": {
+    "placeholders": {
+      "value": {}
+    }
+  },
+  "dtWxGust": "Giật {value} km/h",
+  "@dtWxGust": {
+    "placeholders": {
+      "value": {}
+    }
+  },
+  "dtWxRain": "Mưa {value} mm",
+  "@dtWxRain": {
+    "placeholders": {
+      "value": {}
+    }
+  },
+  "dtWxForecastWindow": "Dự báo {minutes} phút tới",
+  "@dtWxForecastWindow": {
+    "placeholders": {
+      "minutes": {}
+    }
+  },
+  "dtWxUpdated": "cập nhật {time}",
+  "@dtWxUpdated": {
+    "placeholders": {
+      "time": {}
+    }
+  },
+  "dtWxSource": "nguồn {provider}",
+  "@dtWxSource": {
+    "placeholders": {
+      "provider": {}
+    }
+  },
+  "dtWxRouteTitle": "Thời tiết tuyến bay",
+  "dtWxReload": "Tải lại",
+  "dtWxFromLocker": "Tủ bay",
+  "dtWxToLocker": "Tủ nhận",
+  "dtWxLoadingLockers": "Đang tải thời tiết các tủ…",
+  "dtWxAllFlyable": "Cả {count} tủ đều bay được trong {minutes} phút tới",
+  "@dtWxAllFlyable": {
+    "placeholders": {
+      "count": {},
+      "minutes": {}
+    }
+  },
+  "dtWxSomeGrounded": "{unsafe}/{count} tủ đang không bay được hoặc chưa có dự báo",
+  "@dtWxSomeGrounded": {
+    "placeholders": {
+      "unsafe": {},
+      "count": {}
+    }
+  },
+  "dtWxLockersTitle": "Thời tiết tại các tủ drone",
+  "dtWxLockerNumber": "Tủ #{id}",
+  "@dtWxLockerNumber": {
+    "placeholders": {
+      "id": {}
+    }
+  },
+  "dtWxStationSuspended": "Trạm đang tạm dừng bay: {reason}",
+  "@dtWxStationSuspended": {
+    "placeholders": {
+      "reason": {}
+    }
+  },
+  "dtObtTitle": "Đơn drone bị phiếu này ảnh hưởng ({count})",
+  "@dtObtTitle": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "dtObtFailed": "Đã giao không hoàn tất · {reason}",
+  "@dtObtFailed": {
+    "placeholders": {
+      "reason": {}
+    }
+  },
+  "dtObtBlocked": "Đang bị chặn ({stage}) · {reason}",
+  "@dtObtBlocked": {
+    "placeholders": {
+      "stage": {},
+      "reason": {}
+    }
+  }
 }

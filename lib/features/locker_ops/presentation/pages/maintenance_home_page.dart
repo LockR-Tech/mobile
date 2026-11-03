@@ -35,6 +35,7 @@ import 'package:provider/provider.dart';
 import 'package:smart_laundry_locker/shared/widgets/controller_disposer.dart';
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 /// Home for the DRONE_TECHNICIAN role (kỹ thuật viên drone): drone fleet only
 /// (delivery dispatch queue from the backend, fleet status/battery, mission
@@ -338,7 +339,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
       if (!mounted) return;
       setState(
         () => _dronesLoadError =
-            'Không tải được đội drone: ${droneTechnicianErrorMessage(e)}',
+            context.l10n.dtLoadDronesFailed(droneTechnicianErrorMessage(e)),
       );
     }
   }
@@ -355,7 +356,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
       if (!mounted) return;
       setState(
         () => _deliveriesLoadError =
-            'Không tải được hàng đợi đơn drone: ${droneTechnicianErrorMessage(e)}',
+            context.l10n.dtLoadDeliveriesFailed(droneTechnicianErrorMessage(e)),
       );
     }
   }
@@ -377,7 +378,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
       if (!mounted) return;
       setState(
         () => _scheduleLoadError =
-            'Không tải được lịch bảo trì Drone: ${LockerOpsService.errorMessage(e)}',
+            context.l10n.dtLoadSchedulesFailed(LockerOpsService.errorMessage(e)),
       );
     }
   }
@@ -417,7 +418,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
     if (!mounted) return;
     setState(
       () => _incidentsLoadError =
-          'Không tải được sự cố rơi kiện: ${droneTechnicianErrorMessage(failure)}',
+          context.l10n.dtLoadIncidentsFailed(droneTechnicianErrorMessage(failure)),
     );
   }
 
@@ -429,7 +430,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
     } catch (e) {
       error = droneTechnicianErrorMessage(
         e,
-        unsupported: 'Máy chủ chưa có thống kê hiệu suất cho KTV drone.',
+        unsupported: L10n.current.dtPerformanceUnsupported,
       );
     }
     Map<String, dynamic>? rating;
@@ -610,13 +611,13 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
           _droneReports = visibleMine;
           _routedDroneReports = const [];
           _droneReportLoadError =
-              'Không tải được hàng đợi sự cố chung — đang hiện phiếu giao cho bạn.';
+              context.l10n.dtSharedQueueFailedShowingMine;
         });
       } catch (_) {
         if (!mounted) return;
         setState(() {
           _droneReportLoadError =
-              'Không tải được phiếu sự cố Drone. Kéo xuống để thử lại.';
+              context.l10n.dtLoadReportsFailedPull;
         });
       }
     }
@@ -651,7 +652,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
       }
     }
     _showSnack(
-      'Không tìm thấy lịch bảo trì #$scheduleId trong danh sách lịch Drone.',
+      context.l10n.dtScheduleNotFound(scheduleId),
     );
   }
 
@@ -668,20 +669,18 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Row(
+        title: Row(
           children: [
             Icon(Icons.logout_rounded, color: Color(0xFFDC2626)),
             SizedBox(width: 10),
-            Text('Đăng xuất ca trực'),
+            Text(context.l10n.dtLogoutShiftTitle),
           ],
         ),
-        content: const Text(
-          'Bạn có chắc chắn muốn kết thúc ca trực và đăng xuất khỏi tài khoản KTV Drone không?',
-        ),
+        content: Text(context.l10n.dtLogoutShiftConfirm),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text('Hủy', style: TextStyle(color: Colors.grey)),
+            child: Text(context.l10n.commonCancel, style: const TextStyle(color: Colors.grey)),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
@@ -692,7 +691,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
               ),
             ),
             onPressed: () => Navigator.of(ctx).pop(true),
-            child: const Text('Đăng xuất'),
+            child: Text(context.l10n.commonLogout),
           ),
         ],
       ),
@@ -769,10 +768,10 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
 
   String _greeting() {
     final hour = DateTime.now().hour;
-    if (hour < 12) return '☀️ Chào buổi sáng';
-    if (hour < 14) return '🌤️ Chào buổi trưa';
-    if (hour < 18) return '🌅 Chào buổi chiều';
-    return '🌙 Chào buổi tối';
+    if (hour < 12) return context.l10n.dtGreetingMorning;
+    if (hour < 14) return context.l10n.dtGreetingNoon;
+    if (hour < 18) return context.l10n.dtGreetingAfternoon;
+    return context.l10n.dtGreetingEvening;
   }
 
   String _resolvedTechnicianName(BuildContext context) {
@@ -786,7 +785,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
     if (_myUserEmail != null && _myUserEmail!.trim().isNotEmpty) {
       return _myUserEmail!.trim();
     }
-    return 'Kỹ thuật viên drone';
+    return context.l10n.dtDefaultName;
   }
 
   Widget _avatarFallback(String name) => Center(
@@ -824,10 +823,10 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
     } catch (_) {}
 
     final techName =
-        resolvedName ?? profileName ?? _myUserName ?? 'Kỹ thuật viên drone';
+        resolvedName ?? profileName ?? _myUserName ?? context.l10n.dtDefaultName;
     // Chỉ hiện email thật của tài khoản; không có thì ẩn dòng email.
     final techEmail = profileEmail ?? _myUserEmail;
-    final techPhone = profilePhone ?? 'Chưa cập nhật SĐT';
+    final techPhone = profilePhone ?? context.l10n.techHomePhoneNotSet;
     // Số liệu lấy từ `my-performance` của KTV drone; chưa tải được thì hiện "—".
     final performance = _performance;
     String stat(String key) {
@@ -908,8 +907,8 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                           ),
                         ),
                         const SizedBox(height: 4),
-                        const Text(
-                          'KTV Drone (Đội bay)',
+                        Text(
+                          context.l10n.dtRoleFlightTeam,
                           style: TextStyle(
                             fontSize: 12.5,
                             color: opsMutedText,
@@ -938,7 +937,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                 children: [
                   Expanded(
                     child: _profileStatTile(
-                      'Phiếu đã nhận',
+                      context.l10n.dtStatReceived,
                       stat('totalAssigned'),
                       const Color(0xFF4F46E5),
                     ),
@@ -946,7 +945,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                   const SizedBox(width: 8),
                   Expanded(
                     child: _profileStatTile(
-                      'Đang xử lý',
+                      context.l10n.dtStatInProgress,
                       stat('inProgress'),
                       const Color(0xFF2563EB),
                     ),
@@ -954,7 +953,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                   const SizedBox(width: 8),
                   Expanded(
                     child: _profileStatTile(
-                      'Đã hoàn tất',
+                      context.l10n.dtStatDone,
                       stat('resolved'),
                       const Color(0xFF16A34A),
                     ),
@@ -962,7 +961,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                   const SizedBox(width: 8),
                   Expanded(
                     child: _profileStatTile(
-                      'Trễ SLA',
+                      context.l10n.dtStatOverdue,
                       stat('overdue'),
                       const Color(0xFFDC2626),
                     ),
@@ -994,8 +993,8 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                           size: 20,
                         ),
                         const SizedBox(width: 8),
-                        const Text(
-                          'Đánh giá chất lượng: ',
+                        Text(
+                          context.l10n.dtQualityRatingLabel,
                           style: TextStyle(fontSize: 13, color: opsDark),
                         ),
                         Flexible(
@@ -1019,15 +1018,15 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                           size: 20,
                         ),
                         const SizedBox(width: 8),
-                        const Text(
-                          'Quy chế SLA: ',
+                        Text(
+                          context.l10n.dtSlaPolicyLabel,
                           style: TextStyle(fontSize: 13, color: opsDark),
                         ),
                         if (penalty != null)
                           _PenaltyBadge(label: penalty.$1, color: penalty.$2)
                         else
-                          const Text(
-                            'Chưa có dữ liệu',
+                          Text(
+                            context.l10n.dtNoData,
                             style: TextStyle(fontSize: 12, color: opsMutedText),
                           ),
                       ],
@@ -1054,8 +1053,8 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                           size: 18,
                         ),
                         const SizedBox(width: 8),
-                        const Text(
-                          'SĐT kỹ thuật: ',
+                        Text(
+                          context.l10n.dtTechPhoneLabel,
                           style: TextStyle(fontSize: 13, color: opsDark),
                         ),
                         Expanded(
@@ -1097,8 +1096,8 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                         ),
                       ),
                       icon: const Icon(Icons.edit_note_rounded, size: 20),
-                      label: const Text(
-                        'Xem & Chỉnh sửa hồ sơ',
+                      label: Text(
+                        context.l10n.dtViewEditProfile,
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 13.5,
@@ -1124,8 +1123,8 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                       ),
                     ),
                     icon: const Icon(Icons.logout, size: 18),
-                    label: const Text(
-                      'Đăng xuất',
+                    label: Text(
+                      context.l10n.commonLogout,
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 13.5,
@@ -1145,21 +1144,21 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
   /// "4.5/5 (12 lượt)" | "Chưa có đánh giá" | "Chưa tải được đánh giá".
   String _ratingText() {
     final source = _ratingAverage ?? _performance;
-    if (source == null) return 'Chưa tải được đánh giá';
+    if (source == null) return context.l10n.dtRatingLoadFailed;
     final count = _asInt(source['count'] ?? source['ratingCount']) ?? 0;
-    if (count <= 0) return 'Chưa có đánh giá';
+    if (count <= 0) return context.l10n.dtNoRatingYet;
     final average = source['average'] ?? source['averageRating'];
     final value = average is num ? average.toStringAsFixed(1) : '$average';
-    return '$value/5 ($count lượt)';
+    return context.l10n.dtRatingValue(value, count);
   }
 
   /// Bậc chế tài SLA do server tính (`penaltyLevel` của my-performance).
   (String, Color)? _penaltyInfo(dynamic level) =>
       switch ('${level ?? ''}'.toUpperCase()) {
-        'NORMAL' => ('Bình thường', const Color(0xFF16A34A)),
-        'WARNING' => ('Cảnh báo SLA', const Color(0xFFD97706)),
-        'RESTRICTED' => ('Hạn chế nhận việc', const Color(0xFFDC2626)),
-        'SUSPENDED' => ('Đình chỉ', const Color(0xFF991B1B)),
+        'NORMAL' => (context.l10n.dtSlaNormal, const Color(0xFF16A34A)),
+        'WARNING' => (context.l10n.dtSlaWarning, const Color(0xFFD97706)),
+        'RESTRICTED' => (context.l10n.dtSlaRestricted, const Color(0xFFDC2626)),
+        'SUSPENDED' => (context.l10n.dtSlaSuspended, const Color(0xFF991B1B)),
         _ => null,
       };
 
@@ -1355,10 +1354,10 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                               child: Text(
                                 [
                                   if (headerPenalty != null)
-                                    'SLA: ${headerPenalty.$1}',
+                                    context.l10n.dtHeaderSla(headerPenalty.$1),
                                   working > 0
-                                      ? '$working phiếu đang xử lý'
-                                      : 'Chưa có phiếu đang xử lý',
+                                      ? context.l10n.dtHeaderWorking(working)
+                                      : context.l10n.dtHeaderNoWorking,
                                 ].join(' · '),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
@@ -1380,7 +1379,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                   if (ModalRoute.of(context)?.impliesAppBarDismissal ?? false)
                     _droneHeaderAction(
                       Icons.arrow_back_rounded,
-                      'Quay lại',
+                      context.l10n.commonBack,
                       () => Navigator.of(context).maybePop(),
                     )
                   else ...[
@@ -1389,14 +1388,14 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                         padding: const EdgeInsets.only(right: 6),
                         child: _droneHeaderAction(
                           Icons.support_agent_rounded,
-                          'Trợ lý hỏi đáp',
+                          context.l10n.dtAssistant,
                           () => context.push(AppRouter.assistant),
                         ),
                       ),
                     ),
                     _droneHeaderAction(
                       Icons.person_outline_rounded,
-                      'Hồ sơ & Chỉnh sửa',
+                      context.l10n.dtProfileAndEdit,
                       () => Navigator.of(context).push(
                         MaterialPageRoute(
                           builder: (_) => const TechnicianProfilePage(),
@@ -1406,7 +1405,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                     const SizedBox(width: 6),
                     _droneHeaderAction(
                       Icons.logout_rounded,
-                      'Đăng xuất',
+                      context.l10n.commonLogout,
                       _logout,
                     ),
                   ],
@@ -1427,7 +1426,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                     _droneHudChip(
                       Icons.warning_amber_rounded,
                       '$waiting',
-                      'Chờ xử lý',
+                      context.l10n.dtHudWaiting,
                       const Color(0xFFEF4444),
                       waiting > 0,
                       () => _selectDroneReportFilter('OPEN'),
@@ -1436,7 +1435,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                     _droneHudChip(
                       Icons.handyman_outlined,
                       '$working',
-                      'Đang làm',
+                      context.l10n.dtHudWorking,
                       const Color(0xFF38BDF8),
                       false,
                       () => _tabs.animateTo(3),
@@ -1445,7 +1444,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                     _droneHudChip(
                       Icons.event_repeat_outlined,
                       '${_schedules.length}',
-                      'Định kỳ',
+                      context.l10n.dtHudRoutine,
                       const Color(0xFFA78BFA),
                       false,
                       () => _tabs.animateTo(4),
@@ -1454,7 +1453,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                     _droneHudChip(
                       Icons.flight_outlined,
                       '${_myDrones.length}',
-                      'Đội bay',
+                      context.l10n.dtHudFleet,
                       const Color(0xFF34D399),
                       false,
                       () => _tabs.animateTo(1),
@@ -1467,7 +1466,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                 Align(
                   alignment: Alignment.centerLeft,
                   child: Text(
-                    '$inFlight drone đang bay',
+                    context.l10n.dtDronesInFlight(inFlight),
                     style: const TextStyle(
                       color: Color(0xFFBAE6FD),
                       fontSize: 11.5,
@@ -1629,12 +1628,12 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                 fontWeight: FontWeight.w500,
               ),
               tabs: [
-                Tab(text: 'Điều phối ($_dispatchCount)'),
-                Tab(text: 'Đội bay (${_myDrones.length})'),
-                Tab(text: 'Sự cố ($_activeDroneReportCount)'),
-                Tab(text: 'Việc của tôi ($_activeMyWorkCount)'),
-                Tab(text: 'Định kỳ (${_schedules.length})'),
-                const Tab(text: 'Công cụ bay'),
+                Tab(text: context.l10n.dtTabDispatch(_dispatchCount)),
+                Tab(text: context.l10n.dtTabFleet(_myDrones.length)),
+                Tab(text: context.l10n.dtTabIncidents(_activeDroneReportCount)),
+                Tab(text: context.l10n.dtTabMyWork(_activeMyWorkCount)),
+                Tab(text: context.l10n.dtTabRoutine(_schedules.length)),
+                Tab(text: context.l10n.dtTabFlightTools),
               ],
             ),
           ),
@@ -1819,7 +1818,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
           // ── Đơn hàng drone order-based cho đội bay ───────────────────────
           if (parcelReturns.isNotEmpty) ...[
             OpsSectionLabel(
-              'Chờ trả kiện cho người gửi (${parcelReturns.length})',
+              context.l10n.dtSecParcelReturns(parcelReturns.length),
               icon: Icons.assignment_return_outlined,
             ),
             const SizedBox(height: 8),
@@ -1828,7 +1827,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
           ],
           if (awaiting.isNotEmpty) ...[
             OpsSectionLabel(
-              'Chờ tiếp nhận (${awaiting.length})',
+              context.l10n.dtSecAwaitingDispatch(awaiting.length),
               icon: Icons.inbox_rounded,
             ),
             const SizedBox(height: 8),
@@ -1838,7 +1837,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
           ],
           if (awaitingLoading.isNotEmpty) ...[
             OpsSectionLabel(
-              'Chờ nạp hàng (${awaitingLoading.length})',
+              context.l10n.dtSecAwaitingLoading(awaitingLoading.length),
               icon: Icons.inventory_2_outlined,
             ),
             const SizedBox(height: 8),
@@ -1852,7 +1851,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
           ],
           if (readyToLaunch.isNotEmpty) ...[
             OpsSectionLabel(
-              'Sẵn sàng phóng (${readyToLaunch.length})',
+              context.l10n.dtSecReadyToLaunch(readyToLaunch.length),
               icon: Icons.rocket_launch,
             ),
             const SizedBox(height: 8),
@@ -1866,7 +1865,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
           ],
           if (launching.isNotEmpty) ...[
             OpsSectionLabel(
-              'Đang khởi phóng (${launching.length})',
+              context.l10n.dtSecLaunching(launching.length),
               icon: Icons.flight_takeoff,
             ),
             const SizedBox(height: 8),
@@ -1876,7 +1875,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
           ],
           if (inFlight.isNotEmpty) ...[
             OpsSectionLabel(
-              'Đang bay (${inFlight.length})',
+              context.l10n.dtSecInFlight(inFlight.length),
               icon: Icons.flight,
             ),
             const SizedBox(height: 8),
@@ -1886,7 +1885,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
           ],
           if (delivered.isNotEmpty) ...[
             OpsSectionLabel(
-              'Đã giao · chờ khách nhận (${delivered.length})',
+              context.l10n.dtSecDelivered(delivered.length),
               icon: Icons.inventory_outlined,
             ),
             const SizedBox(height: 8),
@@ -1896,7 +1895,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
           ],
           if (otherAssignedWork.isNotEmpty) ...[
             OpsSectionLabel(
-              'Công việc đang phụ trách (${otherAssignedWork.length})',
+              context.l10n.dtSecOtherAssigned(otherAssignedWork.length),
               icon: Icons.assignment_ind_outlined,
             ),
             const SizedBox(height: 8),
@@ -1906,7 +1905,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
           ],
           if (canceled.isNotEmpty) ...[
             OpsSectionLabel(
-              'Đã hủy (${canceled.length})',
+              context.l10n.dtSecCanceled(canceled.length),
               icon: Icons.cancel_outlined,
             ),
             const SizedBox(height: 8),
@@ -1938,10 +1937,10 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
               delivered.isEmpty &&
               otherAssignedWork.isEmpty &&
               canceled.isEmpty)
-            const OpsEmptyState(
+            OpsEmptyState(
               icon: Icons.inbox_outlined,
-              title: 'Không có đơn drone đang chờ',
-              subtitle: 'Đơn mới sẽ xuất hiện ở tab Điều phối.',
+              title: context.l10n.dtDispatchEmptyTitle,
+              subtitle: context.l10n.dtDispatchEmptySubtitle,
             ),
         ],
       ),
@@ -2069,17 +2068,17 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
     }
 
     final options = [
-      ('ALL', 'Mọi trạng thái', Icons.filter_list_rounded, opsPrimary),
-      ('WAITING', 'Chờ nhận', Icons.fiber_new_rounded, const Color(0xFFDC2626)),
+      ('ALL', context.l10n.dtFilterAllStatuses, Icons.filter_list_rounded, opsPrimary),
+      ('WAITING', context.l10n.dtFilterWaiting, Icons.fiber_new_rounded, const Color(0xFFDC2626)),
       (
         'WORKING',
-        'Đang xử lý',
+        context.l10n.dtFilterWorking,
         Icons.build_circle_outlined,
         const Color(0xFFD97706),
       ),
-      ('FLYING', 'Đang bay', Icons.flight_outlined, const Color(0xFF2563EB)),
-      ('DONE', 'Đã giao', Icons.check_circle_outline, const Color(0xFF16A34A)),
-      ('CANCELED', 'Đã hủy', Icons.cancel_outlined, const Color(0xFF64748B)),
+      ('FLYING', context.l10n.dtFilterFlying, Icons.flight_outlined, const Color(0xFF2563EB)),
+      ('DONE', context.l10n.dtFilterDelivered, Icons.check_circle_outline, const Color(0xFF16A34A)),
+      ('CANCELED', context.l10n.dtFilterCanceled, Icons.cancel_outlined, const Color(0xFF64748B)),
     ];
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
@@ -2087,7 +2086,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
         children: [
           for (final option in options) ...[
             _droneFilterChip(
-              label: '${option.$2} (${count(option.$1)})',
+              label: context.l10n.dtFilterWithCount(option.$2, count(option.$1)),
               selected: _dispatchFilter == option.$1,
               icon: option.$3,
               activeColor: option.$4,
@@ -2313,13 +2312,13 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                   ? Icons.warning_amber_rounded
                   : Icons.flight_outlined,
               text: openCount > 0
-                  ? 'Có $openCount sự cố Drone đang chờ tiếp nhận xử lý.'
-                  : 'Hàng đợi sự cố Drone. Phiếu mới được ưu tiên hiển thị để đội bay tiếp nhận kịp thời.',
+                  ? context.l10n.dtIncidentsWaitingBanner(openCount)
+                  : context.l10n.dtIncidentsQueueBanner,
             ),
           const SizedBox(height: 10),
           _buildSearchField(
             controller: _droneReportSearchController,
-            hint: 'Tìm mã phiếu, tiêu đề, drone, người báo...',
+            hint: context.l10n.dtReportSearchHint,
             onChanged: (_) => setState(() => _droneReportVisibleCount = 20),
           ),
           const SizedBox(height: 10),
@@ -2328,17 +2327,17 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
             child: Row(
               children: [
                 for (final option in [
-                  ('ALL', 'Tất cả', totalCount, Icons.filter_list),
-                  ('OPEN', 'Chờ nhận', openCount, Icons.fiber_new_rounded),
+                  ('ALL', context.l10n.commonAll, totalCount, Icons.filter_list),
+                  ('OPEN', context.l10n.dtFilterWaiting, openCount, Icons.fiber_new_rounded),
                   (
                     'IN_PROGRESS',
-                    'Đang xử lý',
+                    context.l10n.dtFilterWorking,
                     inProgressCount,
                     Icons.build_circle_outlined,
                   ),
                   (
                     'RESOLVED',
-                    'Hoàn tất',
+                    context.l10n.dtFilterResolved,
                     resolvedCount,
                     Icons.check_circle_outline,
                   ),
@@ -2350,7 +2349,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                       _droneReportVisibleCount = 20;
                     }),
                     avatar: Icon(option.$4, size: 16),
-                    label: Text('${option.$2} (${option.$3})'),
+                    label: Text(context.l10n.dtFilterWithCount(option.$2, option.$3)),
                     showCheckmark: false,
                     selectedColor: const Color(
                       0xFF0284C7,
@@ -2375,7 +2374,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
           ],
           if (visibleIncidents.isNotEmpty) ...[
             OpsSectionLabel(
-              'Sự cố rơi kiện (${visibleIncidents.length})',
+              context.l10n.dtSecParcelDrop(visibleIncidents.length),
               icon: Icons.report_gmailerrorred_outlined,
             ),
             const SizedBox(height: 8),
@@ -2392,7 +2391,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
           ],
           if (visibleDropOrders.isNotEmpty) ...[
             OpsSectionLabel(
-              'Sự cố rơi kiện (${visibleDropOrders.length})',
+              context.l10n.dtSecParcelDrop(visibleDropOrders.length),
               icon: Icons.report_gmailerrorred_outlined,
             ),
             const SizedBox(height: 8),
@@ -2402,18 +2401,18 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
           ],
           if (showRouted) ...[
             OpsSectionLabel(
-              'Gửi trực tiếp cho bạn (${_routedDroneReports.length})',
+              context.l10n.dtSecRoutedToYou(_routedDroneReports.length),
               icon: Icons.assignment_ind_outlined,
             ),
             const SizedBox(height: 8),
             for (final report in _routedDroneReports) _droneReportCard(report),
             const SizedBox(height: 4),
-            const OpsSectionLabel('Hàng đợi kỹ thuật chung', icon: Icons.inbox_outlined),
+            OpsSectionLabel(context.l10n.dtSecSharedQueue, icon: Icons.inbox_outlined),
             const SizedBox(height: 8),
           ] else if (visibleIncidents.isNotEmpty || visibleDropOrders.isNotEmpty) ...[
             if (reports.isNotEmpty) ...[
               OpsSectionLabel(
-                'Sự cố kỹ thuật Drone (${reports.length})',
+                context.l10n.dtSecDroneTechnical(reports.length),
                 icon: Icons.build_circle_outlined,
               ),
               const SizedBox(height: 8),
@@ -2424,17 +2423,17 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
               !showRouted &&
               visibleIncidents.isEmpty &&
               visibleDropOrders.isEmpty)
-            const OpsEmptyState(
+            OpsEmptyState(
               icon: Icons.check_circle_outline,
-              title: 'Không có phiếu sự cố Drone',
-              subtitle: 'Đội bay hiện không có sự cố phù hợp bộ lọc.',
+              title: context.l10n.dtReportsEmptyTitle,
+              subtitle: context.l10n.dtReportsEmptySubtitle,
             )
           else if (showRouted && reports.isEmpty)
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: 8),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8),
               child: Text(
-                'Không có phiếu khác trong hàng đợi chung.',
-                style: TextStyle(fontSize: 12, color: opsMutedText),
+                context.l10n.dtNoOtherInSharedQueue,
+                style: const TextStyle(fontSize: 12, color: opsMutedText),
               ),
             )
           else
@@ -2445,7 +2444,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                 onPressed: () => setState(() => _droneReportVisibleCount += 20),
                 icon: const Icon(Icons.expand_more_rounded),
                 label: Text(
-                  'Xem thêm (${reports.length - visibleReports.length})',
+                  context.l10n.dtSeeMore(reports.length - visibleReports.length),
                 ),
               ),
             ),
@@ -2523,14 +2522,14 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                   ? Icons.engineering_outlined
                   : Icons.check_circle_outline,
               text:
-                  'Công việc được giao gồm phiếu sự cố và lịch bảo trì Drone. Mọi thay đổi chỉ được ghi nhận sau khi Backend xác nhận.',
+                  context.l10n.dtMyWorkBanner,
             ),
           const SizedBox(height: 12),
           Row(
             children: [
               Expanded(
                 child: _workMetric(
-                  'Chưa làm',
+                  context.l10n.dtMetricPending,
                   pendingCount,
                   const Color(0xFFEA580C),
                 ),
@@ -2538,7 +2537,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
               const SizedBox(width: 7),
               Expanded(
                 child: _workMetric(
-                  'Đang làm',
+                  context.l10n.dtMetricWorking,
                   progressCount,
                   const Color(0xFF0284C7),
                 ),
@@ -2546,7 +2545,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
               const SizedBox(width: 7),
               Expanded(
                 child: _workMetric(
-                  'Hoàn tất',
+                  context.l10n.dtMetricDone,
                   completedCount,
                   const Color(0xFF16A34A),
                 ),
@@ -2556,7 +2555,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
           const SizedBox(height: 10),
           _buildSearchField(
             controller: _myWorkSearchController,
-            hint: 'Tìm công việc, drone, mã phiếu...',
+            hint: context.l10n.dtMyWorkSearchHint,
             onChanged: (_) => setState(() {}),
           ),
           const SizedBox(height: 8),
@@ -2564,10 +2563,10 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
             scrollDirection: Axis.horizontal,
             child: Row(
               children: [
-                for (final option in const [
-                  ('ALL', 'Mọi loại'),
-                  ('INCIDENT', 'Sự cố'),
-                  ('MAINTENANCE', 'Bảo trì'),
+                for (final option in [
+                  ('ALL', context.l10n.dtTypeAll),
+                  ('INCIDENT', context.l10n.dtTypeIncident),
+                  ('MAINTENANCE', context.l10n.dtTypeMaintenance),
                 ]) ...[
                   _droneFilterChip(
                     label: option.$2,
@@ -2590,10 +2589,10 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
             scrollDirection: Axis.horizontal,
             child: Row(
               children: [
-                for (final option in const [
-                  ('ACTIVE', 'Cần thực hiện'),
-                  ('DONE', 'Đã hoàn tất'),
-                  ('ALL', 'Tất cả'),
+                for (final option in [
+                  ('ACTIVE', context.l10n.dtStatusActive),
+                  ('DONE', context.l10n.dtStatusDone),
+                  ('ALL', context.l10n.commonAll),
                 ]) ...[
                   _droneFilterChip(
                     label: option.$2,
@@ -2611,7 +2610,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                 ],
                 _sortMenu(
                   value: _myWorkSort,
-                  values: const {'DUE': 'Hạn gần nhất', 'NEWEST': 'Mới nhất'},
+                  values: {'DUE': context.l10n.dtSortDue, 'NEWEST': context.l10n.dtSortNewest},
                   onSelected: (value) => setState(() => _myWorkSort = value),
                 ),
               ],
@@ -2619,10 +2618,10 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
           ),
           const SizedBox(height: 12),
           if (filtered.isEmpty)
-            const OpsEmptyState(
+            OpsEmptyState(
               icon: Icons.engineering_outlined,
-              title: 'Không có công việc phù hợp',
-              subtitle: 'Thử đổi bộ lọc hoặc kéo xuống để tải lại dữ liệu.',
+              title: context.l10n.dtMyWorkEmptyTitle,
+              subtitle: context.l10n.dtTryOtherFilters,
             )
           else
             for (final task in filtered)
@@ -2681,7 +2680,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
       suffixIcon: controller.text.isEmpty
           ? null
           : IconButton(
-              tooltip: 'Xóa tìm kiếm',
+              tooltip: context.l10n.dtClearSearch,
               onPressed: () {
                 controller.clear();
                 onChanged('');
@@ -2723,35 +2722,35 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
       children: [
         _compactDropdown(
           value: _droneReportAssignmentFilter,
-          items: const {
-            'ALL': 'Mọi phân công',
-            'MINE': 'Giao cho tôi',
-            'UNASSIGNED': 'Chưa phân công',
+          items: {
+            'ALL': context.l10n.dtAssignAll,
+            'MINE': context.l10n.dtAssignMine,
+            'UNASSIGNED': context.l10n.dtAssignNone,
           },
           onChanged: (value) =>
               setState(() => _droneReportAssignmentFilter = value),
         ),
         _compactDropdown(
           value: _droneReportDroneFilter,
-          items: {'ALL': 'Mọi drone', for (final drone in drones) drone: drone},
+          items: {'ALL': context.l10n.dtAllDrones, for (final drone in drones) drone: drone},
           onChanged: (value) => setState(() => _droneReportDroneFilter = value),
         ),
         _compactDropdown(
           value: _droneReportTimeFilter,
-          items: const {
-            'ALL': 'Mọi thời gian',
-            'TODAY': 'Hôm nay',
-            '7D': '7 ngày',
-            '30D': '30 ngày',
+          items: {
+            'ALL': context.l10n.dtTimeAll,
+            'TODAY': context.l10n.commonToday,
+            '7D': context.l10n.dtTime7d,
+            '30D': context.l10n.dtTime30d,
           },
           onChanged: (value) => setState(() => _droneReportTimeFilter = value),
         ),
         _sortMenu(
           value: _droneReportSort,
-          values: const {
-            'NEWEST': 'Mới nhất',
-            'OLDEST': 'Cũ nhất',
-            'SLA': 'Hạn SLA',
+          values: {
+            'NEWEST': context.l10n.dtSortNewest,
+            'OLDEST': context.l10n.dtSortOldest,
+            'SLA': context.l10n.dtSortSla,
           },
           onSelected: (value) => setState(() => _droneReportSort = value),
         ),
@@ -2759,7 +2758,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
           TextButton.icon(
             onPressed: _resetDroneReportFilters,
             icon: const Icon(Icons.restart_alt_rounded, size: 17),
-            label: const Text('Đặt lại'),
+            label: Text(context.l10n.dtReset),
           ),
       ],
     );
@@ -2810,7 +2809,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
     ],
     child: Chip(
       avatar: const Icon(Icons.sort_rounded, size: 16),
-      label: Text(values[value] ?? 'Sắp xếp'),
+      label: Text(values[value] ?? context.l10n.dtSort),
       backgroundColor: Colors.white,
       side: const BorderSide(color: Color(0xFFE2E8F0)),
     ),
@@ -2875,7 +2874,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    '${report['title'] ?? 'Sự cố Drone'}',
+                    '${report['title'] ?? context.l10n.dtDroneIncidentFallback}',
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
@@ -2903,9 +2902,9 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                 if (created != null)
                   _MiniPill(icon: Icons.schedule_outlined, text: created),
                 if (isOverdue)
-                  const _MiniPill(
+                  _MiniPill(
                     icon: Icons.timer_off_outlined,
-                    text: 'Quá hạn SLA',
+                    text: context.l10n.dtSlaOverdue,
                     color: Color(0xFFDC2626),
                   ),
               ],
@@ -2933,7 +2932,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                           Icons.assignment_turned_in_outlined,
                           size: 17,
                         ),
-                        label: const Text('Nhận xử lý'),
+                        label: Text(context.l10n.dtClaim),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFF0284C7),
                           foregroundColor: Colors.white,
@@ -2942,7 +2941,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                     : TextButton.icon(
                         onPressed: () => _showDroneReportDetail(report),
                         icon: const Icon(Icons.build_outlined, size: 17),
-                        label: const Text('Cập nhật xử lý'),
+                        label: Text(context.l10n.dtUpdateProgress),
                       ),
               ),
             ],
@@ -2973,19 +2972,21 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: const Text('Nhận xử lý sự cố Drone?'),
+        title: Text(context.l10n.dtClaimReportTitle),
         content: Text(
-          'Bạn sẽ trở thành KTV phụ trách phiếu RPT-$reportId của '
-          'Drone ${report['droneCode'] ?? report['droneUnitId'] ?? '—'}.',
+          context.l10n.dtClaimReportBody(
+            reportId,
+            '${report['droneCode'] ?? report['droneUnitId'] ?? '—'}',
+          ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext, false),
-            child: const Text('Hủy'),
+            child: Text(context.l10n.commonCancel),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(dialogContext, true),
-            child: const Text('Xác nhận nhận việc'),
+            child: Text(context.l10n.dtConfirmClaim),
           ),
         ],
       ),
@@ -2993,7 +2994,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
     if (confirmed != true || !mounted) return;
     await _runCellAction(
       () => _service.claimDroneReport(reportId),
-      'Đã nhận xử lý phiếu Drone RPT-$reportId',
+      context.l10n.dtClaimedReport(reportId),
     );
   }
 
@@ -3026,13 +3027,10 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
       child: ListView(
         padding: const EdgeInsets.all(12),
         children: [
-          const OpsBanner(
+          OpsBanner(
             tone: OpsBannerTone.info,
             icon: Icons.flight_outlined,
-            text:
-                'Pin tự cập nhật khi drone gửi telemetry; drone chưa kết nối thì hiện '
-                'lần cập nhật gần nhất (có thể do KTV nhập tay). Telemetry trực tiếp '
-                'của chuyến bay xem trong chi tiết nhiệm vụ.',
+            text: context.l10n.dtFleetBanner,
           ),
           if (_dronesLoadError != null) ...[
             const SizedBox(height: 8),
@@ -3047,10 +3045,10 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
           if (_myDrones.isEmpty && _dronesLoadError == null)
             OpsEmptyState(
               icon: Icons.flight_outlined,
-              title: 'Chưa phụ trách drone nào',
+              title: context.l10n.dtFleetEmptyTitle,
               subtitle: _unassignedDrones.isEmpty
-                  ? 'Các drone bạn được phân công phụ trách sẽ hiển thị ở đây.'
-                  : 'Chọn một drone chưa có người phụ trách bên dưới để nhận xử lý.',
+                  ? context.l10n.dtFleetEmptyAssigned
+                  : context.l10n.dtFleetEmptyPickBelow,
             )
           else
             for (final d in _myDrones) _droneCard(d),
@@ -3059,7 +3057,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
           if (_unassignedDrones.isNotEmpty) ...[
             const SizedBox(height: 8),
             Text(
-              'Drone chưa có KTV phụ trách (${_unassignedDrones.length})',
+              context.l10n.dtUnassignedDrones(_unassignedDrones.length),
               key: const ValueKey('drone-unassigned-title'),
               style: const TextStyle(
                 fontWeight: FontWeight.w800,
@@ -3118,12 +3116,10 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
       child: ListView(
         padding: const EdgeInsets.all(12),
         children: [
-          const OpsBanner(
+          OpsBanner(
             tone: OpsBannerTone.info,
             icon: Icons.event_repeat,
-            text:
-                'Lịch bảo trì Drone do quản trị tạo. Đánh giá đủ từng mục checklist; '
-                'nếu có mục không đạt, Drone chuyển sang trạng thái lỗi và hệ thống mở phiếu sự cố.',
+            text: context.l10n.dtScheduleBanner,
           ),
           if (_scheduleLoadError != null) ...[
             const SizedBox(height: 8),
@@ -3137,7 +3133,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
           const SizedBox(height: 10),
           _buildSearchField(
             controller: _scheduleSearchController,
-            hint: 'Tìm lịch, mã Drone, KTV phụ trách...',
+            hint: context.l10n.dtScheduleSearchHint,
             onChanged: (_) => setState(() {}),
           ),
           const SizedBox(height: 8),
@@ -3148,13 +3144,13 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                 for (final option in [
                   (
                     'ALL',
-                    'Tất cả (${_schedules.length})',
+                    context.l10n.dtAllWithCount(_schedules.length),
                     Icons.event_note_outlined,
                   ),
-                  ('DUE', 'Đến hạn ($dueCount)', Icons.warning_amber_rounded),
+                  ('DUE', context.l10n.dtDueWithCount(dueCount), Icons.warning_amber_rounded),
                   (
                     'UPCOMING',
-                    'Sắp tới ($upcomingCount)',
+                    context.l10n.dtUpcomingWithCount(upcomingCount),
                     Icons.schedule_outlined,
                   ),
                 ]) ...[
@@ -3180,22 +3176,22 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
             children: [
               _compactDropdown(
                 value: _schedulePriorityFilter,
-                items: const {
-                  'ALL': 'Mọi ưu tiên',
-                  'URGENT': 'Khẩn cấp',
-                  'HIGH': 'Cao',
-                  'NORMAL': 'Bình thường',
-                  'LOW': 'Thấp',
+                items: {
+                  'ALL': context.l10n.dtPriorityAll,
+                  'URGENT': context.l10n.dtPriorityUrgent,
+                  'HIGH': context.l10n.dtPriorityHighShort,
+                  'NORMAL': context.l10n.dtPriorityNormal,
+                  'LOW': context.l10n.dtPriorityLowShort,
                 },
                 onChanged: (value) =>
                     setState(() => _schedulePriorityFilter = value),
               ),
               _sortMenu(
                 value: _scheduleSort,
-                values: const {
-                  'DUE': 'Hạn gần nhất',
-                  'PRIORITY': 'Ưu tiên',
-                  'NEWEST': 'Mới tạo',
+                values: {
+                  'DUE': context.l10n.dtSortDue,
+                  'PRIORITY': context.l10n.dtSortPriority,
+                  'NEWEST': context.l10n.dtSortNewlyCreated,
                 },
                 onSelected: (value) => setState(() => _scheduleSort = value),
               ),
@@ -3205,7 +3201,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                 TextButton.icon(
                   onPressed: _resetScheduleFilters,
                   icon: const Icon(Icons.restart_alt_rounded, size: 17),
-                  label: const Text('Đặt lại'),
+                  label: Text(context.l10n.dtReset),
                 ),
             ],
           ),
@@ -3214,11 +3210,11 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
             OpsEmptyState(
               icon: Icons.event_available_outlined,
               title: _schedules.isEmpty
-                  ? 'Chưa có lịch bảo trì định kỳ nào'
-                  : 'Không có lịch bảo trì Drone phù hợp',
+                  ? context.l10n.dtSchedulesEmptyTitle
+                  : context.l10n.dtSchedulesNoMatch,
               subtitle: _schedules.isEmpty
-                  ? 'Các lịch bảo trì Drone bạn được phân công phụ trách sẽ hiển thị ở đây.'
-                  : 'Thử đổi bộ lọc hoặc kéo xuống để tải lại dữ liệu.',
+                  ? context.l10n.dtSchedulesEmptySubtitle
+                  : context.l10n.dtTryOtherFilters,
             )
           else
             for (final s in schedules)
@@ -3237,17 +3233,15 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
         children: [
           _droneToolCard(
             icon: Icons.map_outlined,
-            title: 'Lập kế hoạch bay (Mission Planner)',
-            subtitle: 'Vẽ waypoint, đặt độ cao/lệnh, xuất file mission',
+            title: context.l10n.dtToolMissionTitle,
+            subtitle: context.l10n.dtToolMissionSubtitle,
             onTap: () => context.push(AppRouter.droneMissionPlanner),
           ),
           const SizedBox(height: 10),
           _droneToolCard(
             icon: Icons.flight_takeoff,
-            title: 'Telemetry & điều khiển (Flight Data)',
-            subtitle:
-                'Kết nối MAVLink, xem vị trí/HUD live, gửi lệnh bay — chỉ dùng với '
-                'SITL hoặc kênh điều khiển riêng',
+            title: context.l10n.dtToolFlightTitle,
+            subtitle: context.l10n.dtToolFlightSubtitle,
             onTap: () => context.push(AppRouter.droneFlightData),
           ),
         ],
@@ -3287,9 +3281,9 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                   ),
                 ),
                 if (due)
-                  const _MiniPill(
+                  _MiniPill(
                     icon: Icons.warning_amber_rounded,
-                    text: 'Đến hạn',
+                    text: context.l10n.dtDueBadge,
                     color: Color(0xFFDC2626),
                   ),
                 const SizedBox(width: 6),
@@ -3308,12 +3302,12 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                 _MiniPill(icon: Icons.flight_takeoff, text: droneLabel),
                 _MiniPill(
                   icon: Icons.repeat,
-                  text: 'Mỗi ${s['intervalDays']} ngày',
+                  text: context.l10n.dtEveryDays('${s['intervalDays']}'),
                 ),
                 if (nextDue != null)
-                  _MiniPill(icon: Icons.event, text: 'Hạn: $nextDue'),
+                  _MiniPill(icon: Icons.event, text: context.l10n.dtDueAt(nextDue)),
                 if (lastDone != null)
-                  _MiniPill(icon: Icons.history, text: 'Lần trước: $lastDone'),
+                  _MiniPill(icon: Icons.history, text: context.l10n.dtLastDone(lastDone)),
                 if (s['assignedTechnicianName'] != null)
                   _MiniPill(
                     icon: Icons.engineering_outlined,
@@ -3329,25 +3323,28 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
               OpsBanner(
                 tone: OpsBannerTone.warning,
                 icon: Icons.report_problem_outlined,
-                text:
-                    'Cần hoàn tất phiếu RPT-$pendingReportId trước lần kiểm tra tiếp theo.',
+                text: context.l10n.dtFinishTicketBeforeNext(pendingReportId),
               ),
             ],
             const SizedBox(height: 10),
-            Row(
+            // Wrap: máy hẹp / cỡ chữ lớn thì nút xuống dòng thay vì tràn phải.
+            Wrap(
+              alignment: WrapAlignment.spaceBetween,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              spacing: 8,
+              runSpacing: 8,
               children: [
                 OutlinedButton.icon(
                   onPressed: () => _showDroneScheduleDetail(s),
                   icon: const Icon(Icons.info_outline, size: 16),
-                  label: const Text('Chi tiết'),
+                  label: Text(context.l10n.commonDetails),
                 ),
-                const Spacer(),
                 ElevatedButton.icon(
                   onPressed: id == null || blocked
                       ? null
                       : () => _showDroneInspectionSheet(s),
                   icon: const Icon(Icons.fact_check_outlined, size: 16),
-                  label: Text(due ? 'Kiểm tra ngay' : 'Kiểm tra'),
+                  label: Text(due ? context.l10n.dtInspectNow : context.l10n.dtInspect),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF16A34A),
                     foregroundColor: Colors.white,
@@ -3373,7 +3370,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
     child: TextButton.icon(
       onPressed: _load,
       icon: const Icon(Icons.refresh_rounded, size: 18),
-      label: const Text('Thử lại'),
+      label: Text(context.l10n.commonRetry),
     ),
   );
 
@@ -3387,10 +3384,10 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
       };
 
   (String, Color) _priorityInfo(String priority) => switch (priority) {
-    'URGENT' => ('Khẩn cấp', const Color(0xFFDC2626)),
-    'HIGH' => ('Ưu tiên cao', const Color(0xFFEA580C)),
-    'LOW' => ('Ưu tiên thấp', const Color(0xFF64748B)),
-    _ => ('Bình thường', const Color(0xFF0284C7)),
+    'URGENT' => (context.l10n.dtPriorityUrgent, const Color(0xFFDC2626)),
+    'HIGH' => (context.l10n.dtPriorityHigh, const Color(0xFFEA580C)),
+    'LOW' => (context.l10n.dtPriorityLow, const Color(0xFF64748B)),
+    _ => (context.l10n.dtPriorityNormal, const Color(0xFF0284C7)),
   };
 
   void _resetScheduleFilters() {
@@ -3441,8 +3438,8 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
             : const Color(0xFF16A34A),
         content: Text(
           failed
-              ? 'Đã ghi nhận bảo trì KHÔNG ĐẠT. Drone đã chuyển sang lỗi và phiếu sự cố được mở theo phản hồi Backend.'
-              : 'Đã ghi nhận bảo trì ĐẠT và cập nhật chu kỳ tiếp theo.',
+              ? context.l10n.dtInspectionFailedSnack
+              : context.l10n.dtInspectionPassedSnack,
         ),
       ),
     );
@@ -3480,7 +3477,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
     if (address.isEmpty) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Lịch này chưa có địa chỉ trạm Drone.')),
+          SnackBar(content: Text(context.l10n.dtScheduleNoAddress)),
         );
       }
       return;
@@ -3492,7 +3489,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
     if (!await launchUrl(uri, mode: LaunchMode.externalApplication) &&
         mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Không thể mở ứng dụng bản đồ.')),
+        SnackBar(content: Text(context.l10n.dtCannotOpenMaps)),
       );
     }
   }
@@ -3566,8 +3563,8 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          '${_lockerPointName(order['sourceLocker'], order['sourceLockerId'], 'Tủ nguồn')} '
-                          '→ ${_lockerPointName(order['destinationLocker'], lockerId, 'Tủ đích')}',
+                          '${_lockerPointName(order['sourceLocker'], order['sourceLockerId'], context.l10n.dtSourceLocker)} '
+                          '→ ${_lockerPointName(order['destinationLocker'], lockerId, context.l10n.dtDestinationLocker)}',
                           style: const TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 14,
@@ -3579,9 +3576,9 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                             if (orderCode != null && orderCode.isNotEmpty)
                               orderCode,
                             if (boxNumber != null)
-                              'Ô nhận số $boxNumber'
+                              context.l10n.dtReceiveBoxNumber(boxNumber)
                             else if (reservedBoxId != null)
-                              'Đã giữ ô nhận',
+                              context.l10n.dtReceiveBoxHeld,
                             if (droneCode != null) droneCode,
                           ].join(' · '),
                           style: const TextStyle(
@@ -3632,11 +3629,11 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                       }, size: 15),
                       label: Text(
                         switch (action) {
-                          _DeliveryAction.accept => 'Tiếp nhận',
-                          _DeliveryAction.load => 'Xác nhận nạp',
-                          _DeliveryAction.launch => 'Phóng',
-                          _DeliveryAction.launching => 'Đang phóng',
-                          _DeliveryAction.track => 'Theo dõi',
+                          _DeliveryAction.accept => context.l10n.dtActionAccept,
+                          _DeliveryAction.load => context.l10n.dtActionLoad,
+                          _DeliveryAction.launch => context.l10n.dtActionLaunch,
+                          _DeliveryAction.launching => context.l10n.dtActionLaunching,
+                          _DeliveryAction.track => context.l10n.dtActionTrack,
                         },
                         style: const TextStyle(
                           fontSize: 13,
@@ -3671,9 +3668,9 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                           ),
                         ),
                         icon: const Icon(Icons.inventory_2_outlined, size: 15),
-                        label: const Text(
-                          'Xác nhận nạp',
-                          style: TextStyle(
+                        label: Text(
+                          context.l10n.dtActionLoad,
+                          style: const TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.w700,
                           ),
@@ -3695,9 +3692,9 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                           ),
                         ),
                         icon: const Icon(Icons.rocket_launch, size: 15),
-                        label: const Text(
-                          'Phóng',
-                          style: TextStyle(
+                        label: Text(
+                          context.l10n.dtActionLaunch,
+                          style: const TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.w700,
                           ),
@@ -3719,9 +3716,9 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                         ),
                       ),
                       icon: const Icon(Icons.close_rounded, size: 15),
-                      label: const Text(
-                        'Hủy trước khi bay',
-                        style: TextStyle(
+                      label: Text(
+                        context.l10n.dtCancelBeforeFlight,
+                        style: const TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w700,
                         ),
@@ -3746,7 +3743,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                     const SizedBox(width: 6),
                     Expanded(
                       child: Text(
-                        '${_routeGrounded(order)} — chưa ${action == _DeliveryAction.accept ? 'tiếp nhận' : 'phóng'} được đơn này.',
+                        action == _DeliveryAction.accept ? context.l10n.dtRouteGroundedCantAccept('${_routeGrounded(order)}') : context.l10n.dtRouteGroundedCantLaunch('${_routeGrounded(order)}'),
                         style: const TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
@@ -3760,14 +3757,14 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
               if (description != null && description.isNotEmpty) ...[
                 const SizedBox(height: 8),
                 Text(
-                  'Hàng: $description',
+                  context.l10n.dtGoods(description),
                   style: const TextStyle(fontSize: 12, color: Colors.black54),
                 ),
               ],
               if (_parcelSummary(order) != null) ...[
                 const SizedBox(height: 4),
                 Text(
-                  'Kiện: ${_parcelSummary(order)}',
+                  context.l10n.dtParcel('${_parcelSummary(order)}'),
                   style: TextStyle(
                     fontSize: 12,
                     color: order['fragile'] == true
@@ -3784,9 +3781,9 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
               if (_advanceLabel(order) != null &&
                   order['liveTracking'] == true) ...[
                 const SizedBox(height: 8),
-                const _MiniPill(
+                _MiniPill(
                   icon: Icons.sensors,
-                  text: 'Drone đang gửi tín hiệu · chặng bay tự cập nhật',
+                  text: context.l10n.dtLiveTrackingPill,
                   color: Color(0xFF0F766E),
                 ),
               ] else if (_advanceLabel(order) != null) ...[
@@ -3805,7 +3802,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                     ),
                     icon: const Icon(Icons.check_circle_outline, size: 16),
                     label: Text(
-                      'Xác nhận ${_advanceLabel(order)}',
+                      context.l10n.dtConfirmStage('${_advanceLabel(order)}'),
                       style: const TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w700,
@@ -3819,9 +3816,14 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                 _MiniPill(
                   icon: Icons.warning_amber_rounded,
                   text:
-                      'Đang gặp sự cố: '
-                      '${(order['block'] as Map)['reasonLabel'] ?? droneFailureReasonLabel('${(order['block'] as Map)['reason']}')}'
-                      '${(order['block'] as Map)['ticketId'] == null ? '' : ' · phiếu #${(order['block'] as Map)['ticketId']}'}',
+                      context.l10n.dtBlockedBy(
+                        '${(order['block'] as Map)['reasonLabel'] ?? droneFailureReasonLabel('${(order['block'] as Map)['reason']}')}',
+                      ) +
+                      ((order['block'] as Map)['ticketId'] == null
+                          ? ''
+                          : context.l10n.dtBlockedTicket(
+                              '${(order['block'] as Map)['ticketId']}',
+                            )),
                   color: const Color(0xFFB45309),
                 ),
               ],
@@ -3835,7 +3837,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                       key: const ValueKey('drone-change-drone'),
                       onPressed: () => _changeDroneFlow(order),
                       icon: const Icon(Icons.swap_horiz, size: 16),
-                      label: const Text('Đổi drone'),
+                      label: Text(context.l10n.dtChangeDrone),
                     ),
                     OutlinedButton.icon(
                       key: const ValueKey('drone-fail-blocked'),
@@ -3845,7 +3847,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                       ),
                       onPressed: () => _failDeliveryFlow(order),
                       icon: const Icon(Icons.report_problem_outlined, size: 16),
-                      label: const Text('Giao không hoàn tất'),
+                      label: Text(context.l10n.dtFailDelivery),
                     ),
                   ],
                 ),
@@ -3867,9 +3869,9 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                       ),
                     ),
                     icon: const Icon(Icons.report_problem_outlined, size: 16),
-                    label: const Text(
-                      'Báo chuyến bay thất bại',
-                      style: TextStyle(
+                    label: Text(
+                      context.l10n.dtReportFlightFailure,
+                      style: const TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w700,
                       ),
@@ -3879,9 +3881,9 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
               ],
               if (action == _DeliveryAction.accept && !_isPaid(order)) ...[
                 const SizedBox(height: 8),
-                const _MiniPill(
+                _MiniPill(
                   icon: Icons.payments_outlined,
-                  text: 'Chưa thanh toán · chưa thể tiếp nhận',
+                  text: context.l10n.dtUnpaidCantAccept,
                   color: Color(0xFFB45309),
                 ),
               ],
@@ -3889,37 +3891,37 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                   _isPaid(order) &&
                   !_parcelDropped(order)) ...[
                 const SizedBox(height: 8),
-                const _MiniPill(
+                _MiniPill(
                   icon: Icons.inventory_2_outlined,
-                  text: 'Người gửi chưa bỏ kiện vào ô gửi · chưa thể tiếp nhận',
+                  text: context.l10n.dtNotDroppedCantAccept,
                   color: Color(0xFFB45309),
                 ),
               ],
               if (action == _DeliveryAction.launch && !_isPaid(order)) ...[
                 const SizedBox(height: 8),
-                const _MiniPill(
+                _MiniPill(
                   icon: Icons.scale_outlined,
-                  text: 'Kiện nặng hơn khai báo · chờ khách trả thêm phí',
+                  text: context.l10n.dtOverweightAwaitingPayment,
                   color: Color(0xFFB45309),
                 ),
               ],
               const SizedBox(height: 8),
               Text(
                 [
-                  'Chặng: ${_stageTitle(order['deliveryStage'], stage, missionStatus)}',
+                  context.l10n.dtStageLine(_stageTitle(order['deliveryStage'], stage, missionStatus)),
                   // Đã nạp xong thì chặng nói luôn "Sẵn sàng phóng"; không ghép thêm
                   // nhãn nhiệm vụ trùng / mâu thuẫn (test 2026-10-29).
                   if (missionStatus != null &&
                       missionStatus.isNotEmpty &&
                       missionStatus.toUpperCase() != 'READY_TO_LAUNCH')
-                    'Nhiệm vụ: ${droneMissionStatusLabel(missionStatus)}',
+                    context.l10n.dtMissionLine(droneMissionStatusLabel(missionStatus)),
                 ].join(' · '),
                 style: const TextStyle(fontSize: 12, color: Colors.black54),
               ),
               if (updatedAt != null) ...[
                 const SizedBox(height: 4),
                 Text(
-                  'Cập nhật ${formatDateTimeVn(updatedAt)} · chạm để xem chi tiết',
+                  context.l10n.dtUpdatedTapDetail(formatDateTimeVn(updatedAt)),
                   style: const TextStyle(fontSize: 11, color: Colors.black45),
                 ),
               ],
@@ -3966,12 +3968,13 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
       if (id == null) continue;
       final weather = DroneWeather.fromJson(locker['weather']);
       if (locker['suspension'] case final Map stop) {
-        grounded[id] =
-            'đang tạm dừng bay (${stop['reasonLabel'] ?? stop['reason'] ?? 'admin dừng'})';
+        grounded[id] = context.l10n.dtGroundedPaused(
+          '${stop['reasonLabel'] ?? stop['reason'] ?? context.l10n.dtGroundedPausedByAdmin}',
+        );
       } else if (weather != null && !weather.canFly) {
         grounded[id] = weather.unavailable
-            ? 'chưa có dự báo thời tiết'
-            : 'thời tiết không cho phép bay';
+            ? context.l10n.dtGroundedNoForecast
+            : context.l10n.dtGroundedWeather;
       }
     }
     if (mounted) setState(() => _groundedStations = grounded);
@@ -3982,10 +3985,10 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
     final source = _asInt(order['sourceLockerId']);
     final destination = _asInt(order['destinationLockerId']);
     if (source != null && _groundedStations[source] != null) {
-      return 'Trạm cất cánh ${_groundedStations[source]}';
+      return context.l10n.dtGroundedTakeoffStation('${_groundedStations[source]}');
     }
     if (destination != null && _groundedStations[destination] != null) {
-      return 'Tủ nhận ${_groundedStations[destination]}';
+      return context.l10n.dtGroundedReceivingLocker('${_groundedStations[destination]}');
     }
     return null;
   }
@@ -4016,12 +4019,13 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
     return _ownsMission(order);
   }
 
-  static const _nextStageLabels = <String, String>{
-    'LAUNCHING': 'drone đã rời trạm',
-    'DEPARTED': 'drone đang trên đường',
-    'EN_ROUTE': 'drone sắp tới tủ nhận',
-    'APPROACHING': 'drone đã tới tủ nhận',
-    'ARRIVED': 'hàng đã vào ô tủ nhận',
+  String? _nextStageLabel(String stage) => switch (stage) {
+    'LAUNCHING' => context.l10n.dtNextStageLaunching,
+    'DEPARTED' => context.l10n.dtNextStageDeparted,
+    'EN_ROUTE' => context.l10n.dtNextStageEnRoute,
+    'APPROACHING' => context.l10n.dtNextStageApproaching,
+    'ARRIVED' => context.l10n.dtNextStageArrived,
+    _ => null,
   };
 
   /// Nhãn chặng kế tiếp nếu điều phối viên này được xác nhận tay; null nếu không.
@@ -4032,7 +4036,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
       return null;
     }
     if (order['assignedByUserId'] == null || !_ownsMission(order)) return null;
-    return _nextStageLabels['${order['deliveryStage']}'];
+    return _nextStageLabel('${order['deliveryStage']}');
   }
 
   /// Chuyến bay đã phóng (kể cả đơn DEMO) mà không giao được: chỉ điều phối viên
@@ -4060,10 +4064,10 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
     String? missionStatus,
   ]) {
     if ('${raw ?? ''}'.toUpperCase() == _dropReportedStage) {
-      return 'Đã báo rơi kiện';
+      return context.l10n.dtStageDropReported;
     }
     if ((missionStatus ?? '').toUpperCase() == 'READY_TO_LAUNCH') {
-      return 'Sẵn sàng phóng';
+      return context.l10n.dtStageReadyToLaunch;
     }
     return stage.title;
   }
@@ -4090,12 +4094,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
     if (candidates.isEmpty) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-              'Tủ gửi không còn drone nào khác đang sẵn sàng. Hãy xác nhận giao '
-              'không hoàn tất nếu không khắc phục được.',
-            ),
-          ),
+          SnackBar(content: Text(context.l10n.dtNoOtherIdleDrone)),
         );
       }
       return;
@@ -4108,15 +4107,12 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
           ),
-          title: const Text('Đổi drone'),
+          title: Text(context.l10n.dtChangeDrone),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'Chọn drone khác đang sẵn sàng tại tủ gửi. Kiện phải được nạp và '
-                'kiểm lại trên drone mới.',
-              ),
+              Text(context.l10n.dtChangeDroneHint),
               const SizedBox(height: 12),
               Wrap(
                 spacing: 8,
@@ -4138,11 +4134,11 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('Hủy'),
+              child: Text(context.l10n.commonCancel),
             ),
             FilledButton(
               onPressed: () => Navigator.pop(ctx, true),
-              child: const Text('Đổi drone'),
+              child: Text(context.l10n.dtChangeDrone),
             ),
           ],
         ),
@@ -4153,7 +4149,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
       id,
       'change-drone',
       () => _service.changeDroneOfOrder(id, droneUnitId: selected!),
-      success: 'Đã đổi drone · nạp lại kiện rồi phóng',
+      success: L10n.current.dtChangedDrone,
     );
   }
 
@@ -4164,12 +4160,10 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
     final block = order['block'];
     final result = await showDroneReasonDialog(
       context,
-      title: 'Giao không hoàn tất',
-      intro:
-          'Đơn sẽ đóng lại, người gửi được hoàn tiền và bạn mang kiện trả lại '
-          'người gửi. Không hoàn tác được.',
+      title: context.l10n.dtFailDelivery,
+      intro: context.l10n.dtFailDeliveryIntro,
       reasons: droneDeliveryFailureReasons,
-      confirmLabel: 'Xác nhận',
+      confirmLabel: context.l10n.commonConfirm,
       initialReason: block is Map ? '${block['reason']}' : null,
     );
     if (result == null) return;
@@ -4177,7 +4171,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
       id,
       'fail-delivery',
       () => _service.failDroneOrder(id, reason: result.$1, note: result.$2),
-      success: 'Đã đóng đơn · mang kiện trả lại người gửi',
+      success: L10n.current.dtFailedDeliveryDone,
     );
   }
 
@@ -4189,18 +4183,16 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('Xác nhận chặng bay'),
-        content: Text(
-          'Xác nhận $label?\n\nKhách sẽ thấy chặng mới ngay và không hoàn tác được.',
-        ),
+        title: Text(context.l10n.dtConfirmStageTitle),
+        content: Text(context.l10n.dtConfirmStageBody(label)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Chưa'),
+            child: Text(context.l10n.commonNotYet),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Xác nhận'),
+            child: Text(context.l10n.commonConfirm),
           ),
         ],
       ),
@@ -4213,7 +4205,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
       orderId,
       'advance',
       () => _service.advanceDroneOrder(orderId, expectedStage: expectedStage),
-      success: 'Đã xác nhận: $label',
+      success: L10n.current.dtConfirmedStage(label),
       reloadOnError: true,
     );
   }
@@ -4236,8 +4228,8 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
         droneParcelCategoryLabel(category),
       ?size,
       if (order['declaredValue'] != null)
-        'khai báo ${fmtPrice(order['declaredValue'])}',
-      if (order['fragile'] == true) 'DỄ VỠ',
+        context.l10n.dtDeclaredValue(fmtPrice(order['declaredValue'])),
+      if (order['fragile'] == true) context.l10n.dtFragileUpper,
     ];
     return parts.isEmpty ? null : parts.join(' · ');
   }
@@ -4270,8 +4262,8 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                '${order['orderCode'] ?? 'Đơn #$orderId'} · '
-                '${DroneDeliveryStage.fromRaw(order['deliveryStage']?.toString()) == DroneDeliveryStage.failed ? (order['launchingAt'] != null ? 'chuyến bay thất bại' : 'giao không hoàn tất') : 'đã huỷ'}',
+                '${order['orderCode'] ?? context.l10n.dtOrderNumber('$orderId')} · '
+                '${DroneDeliveryStage.fromRaw(order['deliveryStage']?.toString()) == DroneDeliveryStage.failed ? (order['launchingAt'] != null ? context.l10n.dtFlightFailedLower : context.l10n.dtDeliveryNotCompletedLower) : context.l10n.dtCanceledLower}',
                 style: const TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 14,
@@ -4281,15 +4273,21 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
               const SizedBox(height: 4),
               Text(
                 inSourceBox
-                    ? 'Kiện còn trong ô gửi${sourceBox == null ? '' : ' số $sourceBox'} · '
-                          '${_lockerPointName(order['sourceLocker'], order['sourceLockerId'], 'Tủ gửi')}'
-                    : 'Kiện đang do đội bay giữ',
+                    ? (sourceBox == null
+                          ? context.l10n.dtParcelInSourceBox(
+                              _lockerPointName(order['sourceLocker'], order['sourceLockerId'], context.l10n.dtSendingLocker),
+                            )
+                          : context.l10n.dtParcelInSourceBoxNumber(
+                              sourceBox,
+                              _lockerPointName(order['sourceLocker'], order['sourceLockerId'], context.l10n.dtSendingLocker),
+                            ))
+                    : context.l10n.dtParcelHeldByTeam,
                 style: const TextStyle(fontSize: 12, color: Colors.black54),
               ),
               if (sender.isNotEmpty) ...[
                 const SizedBox(height: 4),
                 Text(
-                  'Người gửi: $sender',
+                  context.l10n.dtSender(sender),
                   style: const TextStyle(fontSize: 12, color: Colors.black54),
                 ),
               ],
@@ -4314,9 +4312,9 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                     Icons.assignment_turned_in_outlined,
                     size: 16,
                   ),
-                  label: const Text(
-                    'Xác nhận đã trả kiện',
-                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+                  label: Text(
+                    context.l10n.dtConfirmParcelReturned,
+                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
                   ),
                 ),
               ),
@@ -4335,23 +4333,22 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('Xác nhận đã trả kiện'),
+        title: Text(context.l10n.dtConfirmParcelReturned),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Chỉ xác nhận khi kiện đã về tay người gửi. Đơn cũ còn giữ ô ở tủ '
-              'gửi thì ô đó được nhả.',
-              style: TextStyle(fontSize: 13),
+            Text(
+              context.l10n.dtParcelReturnHint,
+              style: const TextStyle(fontSize: 13),
             ),
             const SizedBox(height: 12),
             TextField(
               controller: noteCtrl,
               minLines: 1,
               maxLines: 3,
-              decoration: const InputDecoration(
-                labelText: 'Ghi chú (tùy chọn)',
+              decoration: InputDecoration(
+                labelText: context.l10n.dtNoteOptional,
                 isDense: true,
               ),
             ),
@@ -4360,11 +4357,11 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Chưa'),
+            child: Text(context.l10n.commonNotYet),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Đã trả kiện'),
+            child: Text(context.l10n.dtParcelReturned),
           ),
         ],
       ),
@@ -4376,7 +4373,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
       orderId,
       'parcel-return',
       () => _service.confirmDroneParcelReturn(orderId, note: note),
-      success: 'Đã ghi nhận trả kiện cho người gửi',
+      success: L10n.current.dtParcelReturnRecorded,
     );
   }
 
@@ -4384,8 +4381,8 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
       '${order['paymentStatus']}'.toUpperCase() == 'PAID';
 
   String _routeLabel(Map<String, dynamic> order) =>
-      '${_lockerPointName(order['sourceLocker'], order['sourceLockerId'], 'Tủ gửi')} '
-      '→ ${_lockerPointName(order['destinationLocker'], order['destinationLockerId'], 'Tủ nhận')}';
+      '${_lockerPointName(order['sourceLocker'], order['sourceLockerId'], context.l10n.dtSendingLocker)} '
+      '→ ${_lockerPointName(order['destinationLocker'], order['destinationLockerId'], context.l10n.dtReceivingLocker)}';
 
   bool _ownsMission(Map<String, dynamic> order) {
     final assignedBy = order['assignedByUserId'];
@@ -4412,7 +4409,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
             orderId,
             idempotencyKey: _idempotencyKey('launch', orderId),
           ),
-          success: 'Đã phát lệnh phóng nhiệm vụ',
+          success: context.l10n.dtLaunchCommandSent,
         );
       case _DeliveryAction.launching:
         return;
@@ -4463,15 +4460,13 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
           ),
-          title: const Text('Xác nhận nạp hàng'),
+          title: Text(context.l10n.dtConfirmLoadingTitle),
           content: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Cân kiện và hoàn tất toàn bộ checklist trước khi cho phép phóng.',
-                ),
+                Text(context.l10n.dtConfirmLoadingIntro),
                 const SizedBox(height: 12),
                 TextField(
                   key: const ValueKey('drone-loading-weight'),
@@ -4479,10 +4474,10 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                   keyboardType: TextInputType.number,
                   onChanged: (_) => setLocal(() => weightInvalid = false),
                   decoration: InputDecoration(
-                    labelText: 'Khối lượng cân thực tế (gram) *',
-                    hintText: 'Nhập số gram đọc trên cân',
+                    labelText: context.l10n.dtActualWeightLabel,
+                    hintText: context.l10n.dtActualWeightHint,
                     errorText: weightInvalid
-                        ? 'Vui lòng nhập khối lượng thực tế lớn hơn 0'
+                        ? context.l10n.dtActualWeightInvalid
                         : null,
                     isDense: true,
                   ),
@@ -4490,17 +4485,21 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                 const SizedBox(height: 6),
                 Text(
                   declaredGrams == null
-                      ? 'Khách chưa khai báo khối lượng.'
-                      : 'Khách khai báo ${droneWeightLabel(declaredGrams)}'
-                            '${currentTotal == null ? '' : ' · phí đã tính ${fmtPrice(currentTotal)}'}.',
+                      ? context.l10n.dtNoDeclaredWeight
+                      : currentTotal == null
+                      ? context.l10n.dtDeclaredWeight(droneWeightLabel(declaredGrams))
+                      : context.l10n.dtDeclaredWeightWithFee(
+                          droneWeightLabel(declaredGrams),
+                          fmtPrice(currentTotal),
+                        ),
                   style: const TextStyle(fontSize: 12, color: Colors.black54),
                 ),
                 if (surchargeFor(weightCtrl.text) > 0) ...[
                   const SizedBox(height: 6),
                   Text(
-                    'Nặng hơn khai báo: khách phải trả thêm '
-                    '${fmtPrice(surchargeFor(weightCtrl.text))}. Drone chỉ phóng được '
-                    'sau khi khách thanh toán.',
+                    context.l10n.dtOverweightSurcharge(
+                      fmtPrice(surchargeFor(weightCtrl.text)),
+                    ),
                     key: const ValueKey('drone-loading-surcharge'),
                     style: const TextStyle(
                       fontSize: 12,
@@ -4512,15 +4511,15 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                 const SizedBox(height: 12),
                 // Mã niêm phong do server sinh khi xác nhận nạp; app chỉ hiện
                 // mã server trả về.
-                const InputDecorator(
-                  key: ValueKey('drone-loading-seal'),
+                InputDecorator(
+                  key: const ValueKey('drone-loading-seal'),
                   decoration: InputDecoration(
-                    labelText: 'Mã niêm phong',
+                    labelText: context.l10n.dtSealCode,
                     isDense: true,
                   ),
                   child: Text(
-                    'Hệ thống cấp mã sau khi xác nhận nạp — ghi mã đó lên niêm phong của kiện.',
-                    style: TextStyle(fontSize: 12, color: Colors.black54),
+                    context.l10n.dtSealCodeHint,
+                    style: const TextStyle(fontSize: 12, color: Colors.black54),
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -4532,7 +4531,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                     parcelMatched = value ?? false;
                     checklistIncomplete = false;
                   }),
-                  title: const Text('Đúng kiện hàng và đúng đơn'),
+                  title: Text(context.l10n.dtCheckParcelMatched),
                 ),
                 CheckboxListTile(
                   dense: true,
@@ -4542,7 +4541,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                     payloadSecured = value ?? false;
                     checklistIncomplete = false;
                   }),
-                  title: const Text('Kiện hàng đã được cố định'),
+                  title: Text(context.l10n.dtCheckPayloadSecured),
                 ),
                 CheckboxListTile(
                   dense: true,
@@ -4552,15 +4551,15 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                     compartmentLocked = value ?? false;
                     checklistIncomplete = false;
                   }),
-                  title: const Text('Khoang hàng đã khóa'),
+                  title: Text(context.l10n.dtCheckCompartmentLocked),
                 ),
                 if (checklistIncomplete)
-                  const Padding(
-                    padding: EdgeInsets.only(bottom: 8),
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
                     child: Text(
-                      'Vui lòng hoàn tất toàn bộ checklist',
-                      key: ValueKey('drone-loading-checklist-error'),
-                      style: TextStyle(
+                      context.l10n.dtChecklistIncomplete,
+                      key: const ValueKey('drone-loading-checklist-error'),
+                      style: const TextStyle(
                         color: Colors.red,
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
@@ -4571,8 +4570,8 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                   controller: noteCtrl,
                   minLines: 1,
                   maxLines: 3,
-                  decoration: const InputDecoration(
-                    labelText: 'Ghi chú (tùy chọn)',
+                  decoration: InputDecoration(
+                    labelText: context.l10n.dtNoteOptional,
                     isDense: true,
                   ),
                 ),
@@ -4582,7 +4581,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('Đóng'),
+              child: Text(context.l10n.commonClose),
             ),
             FilledButton(
               onPressed: () {
@@ -4599,7 +4598,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                 }
                 Navigator.pop(ctx, true);
               },
-              child: const Text('Xác nhận đã nạp'),
+              child: Text(context.l10n.dtConfirmLoaded),
             ),
           ],
         ),
@@ -4654,11 +4653,10 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
           : num.tryParse('$surchargeRaw') ?? 0;
       // Mã niêm phong do server cấp; không có thì không bịa mã.
       final seal = '${result['sealCode'] ?? ''}'.trim();
-      final sealText = seal.isEmpty ? '' : ' (niêm phong $seal)';
+      final sealText = seal.isEmpty ? '' : L10n.current.dtSealSuffix(seal);
       message = surcharge > 0
-          ? 'Đã nạp hàng$sealText. Kiện nặng hơn khai báo — chờ khách '
-                'trả thêm ${fmtPrice(surcharge)} rồi mới phóng.'
-          : 'Đã xác nhận nạp hàng$sealText — nhiệm vụ sẵn sàng phóng';
+          ? L10n.current.dtLoadedOverweight(sealText, fmtPrice(surcharge))
+          : L10n.current.dtLoadedReady(sealText);
     } catch (e) {
       message = droneTechnicianErrorMessage(e);
     } finally {
@@ -4693,7 +4691,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
             borderRadius: BorderRadius.circular(20),
           ),
           title: Text(
-            inFlight ? 'Báo chuyến bay thất bại' : 'Hủy nhiệm vụ trước khi bay',
+            inFlight ? context.l10n.dtReportFlightFailure : context.l10n.dtCancelMissionBeforeFlight,
           ),
           content: Column(
             mainAxisSize: MainAxisSize.min,
@@ -4701,11 +4699,8 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
             children: [
               Text(
                 inFlight
-                    ? 'Đơn sẽ đóng lại và khách được hoàn tiền; drone chuyển sang '
-                          'trạng thái lỗi cho tới khi bạn kiểm tra xong. Không hoàn tác được.'
-                    : 'Đơn sẽ đóng lại, người gửi được hoàn tiền và bạn mang kiện trả '
-                          'lại người gửi. Chọn "Drone lỗi" thì drone chuyển sang trạng thái '
-                          'lỗi, không nhận đơn mới cho tới khi kiểm tra xong.',
+                    ? context.l10n.dtFlightFailureIntro
+                    : context.l10n.dtCancelMissionIntro,
                 style: const TextStyle(fontSize: 13, color: Colors.black87),
               ),
               const SizedBox(height: 12),
@@ -4741,8 +4736,8 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                 maxLines: 4,
                 decoration: InputDecoration(
                   labelText: selectedReason?.requiresNote == true
-                      ? 'Ghi chú (bắt buộc)'
-                      : 'Ghi chú (tùy chọn)',
+                      ? context.l10n.dtNoteRequired
+                      : context.l10n.dtNoteOptional,
                   errorText: noteProblem,
                   isDense: true,
                 ),
@@ -4753,7 +4748,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
             // "Quay lại" chứ không "Hủy": đặt cạnh "Xác nhận hủy" dễ bấm nhầm.
             TextButton(
               onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('Quay lại'),
+              child: Text(context.l10n.commonBack),
             ),
             FilledButton(
               style: FilledButton.styleFrom(
@@ -4765,17 +4760,17 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
               onPressed: () {
                 // Báo lỗi ngay trong hộp thoại: SnackBar nằm sau lớp phủ, KTV không thấy.
                 if (selectedReason == null) {
-                  setLocal(() => reasonProblem = 'Chọn một lý do');
+                  setLocal(() => reasonProblem = context.l10n.dtPickReason);
                   return;
                 }
                 if (selectedReason!.requiresNote &&
                     noteCtrl.text.trim().isEmpty) {
-                  setLocal(() => noteProblem = 'Cần nhập ghi chú khi chọn Khác');
+                  setLocal(() => noteProblem = context.l10n.dtNoteRequiredForOther);
                   return;
                 }
                 Navigator.pop(ctx, true);
               },
-              child: Text(inFlight ? 'Xác nhận thất bại' : 'Xác nhận hủy'),
+              child: Text(inFlight ? context.l10n.dtConfirmFailure : context.l10n.dtConfirmCancel),
             ),
           ],
         ),
@@ -4812,8 +4807,8 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
               note: note,
             ),
       success: inFlight
-          ? 'Đã báo chuyến bay thất bại · khách được hoàn tiền'
-          : 'Đã hủy nhiệm vụ drone',
+          ? L10n.current.dtFlightFailureReported
+          : L10n.current.dtMissionCanceled,
       reloadOnError: true,
     );
   }
@@ -4822,13 +4817,13 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
   /// (drone còn hoạt động, đang Sẵn sàng, biết mức pin, pin trên ngưỡng);
   /// `null` = đủ điều kiện. Server vẫn kiểm lại.
   String? _droneIneligibleReason(Map<String, dynamic> drone) {
-    if (drone['active'] == false) return 'ngưng hoạt động';
+    if (drone['active'] == false) return context.l10n.dtIneligibleInactive;
     final status = '${drone['status'] ?? ''}';
     if (status != 'IDLE') return _droneStatusLabel(status).toLowerCase();
     final battery = _asInt(drone['batteryPercent']);
-    if (battery == null) return 'chưa biết mức pin';
+    if (battery == null) return context.l10n.dtIneligibleUnknownBattery;
     if (battery <= _minPreflightBatteryPercent) {
-      return 'pin $battery% (cần trên $_minPreflightBatteryPercent%)';
+      return context.l10n.dtIneligibleLowBattery(battery, _minPreflightBatteryPercent);
     }
     return null;
   }
@@ -4850,9 +4845,12 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
     if (candidates.isEmpty) {
       _showSnack(
         atSource.isEmpty
-            ? 'Tủ gửi của đơn không có drone nào.'
-            : 'Không có drone đủ điều kiện tại tủ gửi: '
-                  '${atSource.map((d) => '${d['code']} (${_droneIneligibleReason(d)})').join(', ')}.',
+            ? context.l10n.dtNoDroneAtSource
+            : context.l10n.dtNoEligibleDroneAtSource(
+                atSource
+                    .map((d) => '${d['code']} (${_droneIneligibleReason(d)})')
+                    .join(', '),
+              ),
       );
       return;
     }
@@ -4866,11 +4864,11 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
           ),
-          title: const Row(
+          title: Row(
             children: [
               Icon(Icons.flight, color: Color(0xFF6366F1)),
               SizedBox(width: 8),
-              Text('Gán drone cho đơn'),
+              Text(context.l10n.dtAssignDroneTitle),
             ],
           ),
           content: Column(
@@ -4878,9 +4876,8 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Tuyến ${_routeLabel(order)}'
-                '${order['reservedBoxNumber'] != null ? ' · ô nhận số ${order['reservedBoxNumber']}' : ''}.\n'
-                'Chọn drone đang sẵn sàng tại tủ gửi:',
+                '${order['reservedBoxNumber'] != null ? context.l10n.dtAssignDroneRouteBox(_routeLabel(order), '${order['reservedBoxNumber']}') : context.l10n.dtAssignDroneRoute(_routeLabel(order))}\n'
+                '${context.l10n.dtAssignDronePick}',
               ),
               const SizedBox(height: 12),
               Wrap(
@@ -4906,8 +4903,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
               if (hasIneligible) ...[
                 const SizedBox(height: 8),
                 Text(
-                  'Drone bị mờ không nhận được đơn (ngưng hoạt động, không ở trạng '
-                  'thái Sẵn sàng, chưa biết pin hoặc pin ≤ $_minPreflightBatteryPercent%).',
+                  context.l10n.dtIneligibleDronesHint(_minPreflightBatteryPercent),
                   style: const TextStyle(fontSize: 12, color: Colors.black54),
                 ),
               ],
@@ -4916,7 +4912,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('Hủy'),
+              child: Text(context.l10n.commonCancel),
             ),
             FilledButton(
               style: FilledButton.styleFrom(
@@ -4926,7 +4922,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                 ),
               ),
               onPressed: () => Navigator.pop(ctx, true),
-              child: const Text('Gán drone'),
+              child: Text(context.l10n.dtAssignDrone),
             ),
           ],
         ),
@@ -4943,7 +4939,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
         droneUnitId: droneId,
         idempotencyKey: _idempotencyKey('accept', id),
       ),
-      success: 'Đã tiếp nhận và gán drone cho nhiệm vụ',
+      success: L10n.current.dtAcceptedAndAssigned,
       reloadOnError: true,
     );
   }
@@ -4951,7 +4947,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
   Widget _droneCard(Map<String, dynamic> drone) {
     final status = drone['status'] as String? ?? 'IDLE';
     final battery = _asInt(drone['batteryPercent']);
-    final lockerLabel = drone['lockerName'] ?? 'Tủ ${drone['lockerId']}';
+    final lockerLabel = drone['lockerName'] ?? context.l10n.dtLockerNumber('${drone['lockerId']}');
     final technicianName = (drone['assignedTechnicianName'] as String?)?.trim();
     final faultReason = drone['faultReason'] as String?;
     return Padding(
@@ -4986,7 +4982,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                   icon: battery == null
                       ? Icons.battery_unknown
                       : _droneBatteryIcon(battery),
-                  text: battery == null ? 'Chưa có số pin' : '$battery% pin',
+                  text: battery == null ? context.l10n.dtNoBatteryData : context.l10n.dtBatteryPercentPin(battery),
                   color: battery == null
                       ? opsMutedText
                       : _droneBatteryColor(battery),
@@ -4995,7 +4991,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                   icon: Icons.person_outline,
                   text: technicianName?.isNotEmpty == true
                       ? technicianName!
-                      : 'Chưa nhận',
+                      : context.l10n.dtNotClaimed,
                 ),
               ],
             ),
@@ -5087,35 +5083,35 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  '${battery == null ? 'Chưa có số pin' : 'Pin $battery%'}'
-                  '${assignedToMe ? ' · bạn đang phụ trách' : ''}',
+                  '${battery == null ? context.l10n.dtNoBatteryData : context.l10n.dtBatteryPercent(battery)}'
+                  '${assignedToMe ? context.l10n.dtYouAreInCharge : ''}',
                   style: const TextStyle(fontSize: 12, color: opsMutedText),
                 ),
                 const SizedBox(height: 16),
                 if (!assignedToMe)
                   tile(
                     Icons.assignment_ind_outlined,
-                    'Nhận xử lý',
+                    context.l10n.dtClaimDrone,
                     opsPrimary,
                     () => _runCellAction(
                       () => _service.claimDrone(droneId),
-                      'Đã nhận phụ trách drone',
+                      context.l10n.dtClaimedDrone,
                     ),
                   ),
                 if (assignedToMe)
                   tile(
                     Icons.assignment_return_outlined,
-                    'Nhả phụ trách',
+                    context.l10n.dtReleaseDrone,
                     const Color(0xFF6B7280),
                     () => _runCellAction(
                       () => _service.releaseDrone(droneId),
-                      'Đã nhả phụ trách drone',
+                      context.l10n.dtReleasedDrone,
                     ),
                   ),
                 if (assignedToMe) ...[
                   tile(
                     Icons.sync_alt,
-                    'Đổi trạng thái',
+                    context.l10n.dtChangeStatus,
                     const Color(0xFF7C3AED),
                     // Drone đang bay: không đổi trạng thái tay, dẫn sang báo
                     // chuyến bay thất bại (server trả DRONE_IN_FLIGHT_USE_FAIL).
@@ -5125,14 +5121,14 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                   ),
                   tile(
                     Icons.battery_charging_full,
-                    'Cập nhật pin %',
+                    context.l10n.dtUpdateBattery,
                     const Color(0xFF0891B2),
                     () => _updateDroneBatteryFlow(drone),
                   ),
                 ],
                 tile(
                   Icons.history_edu_outlined,
-                  'Nhật ký bảo trì',
+                  context.l10n.dtMaintenanceLog,
                   opsMutedText,
                   () => _droneLogSheet(drone, canWrite: assignedToMe),
                 ),
@@ -5174,21 +5170,17 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('Drone đang bay'),
-        content: const Text(
-          'Không đổi trạng thái drone khi đang bay. Nếu chuyến bay gặp sự cố, '
-          'dùng "Báo chuyến bay thất bại" trên nhiệm vụ: đơn được đóng, khách được '
-          'hoàn tiền và drone chuyển sang Lỗi.',
-        ),
+        title: Text(context.l10n.dtDroneInFlightTitle),
+        content: Text(context.l10n.dtDroneInFlightBody),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Đóng'),
+            child: Text(context.l10n.commonClose),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(ctx, true),
             child: Text(
-              canFail ? 'Báo chuyến bay thất bại' : 'Xem nhiệm vụ đang bay',
+              canFail ? context.l10n.dtReportFlightFailure : context.l10n.dtViewInFlightMission,
             ),
           ),
         ],
@@ -5222,7 +5214,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(20),
             ),
-            title: const Text('Đổi trạng thái drone'),
+            title: Text(context.l10n.dtChangeDroneStatusTitle),
             content: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -5247,9 +5239,9 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                 if (openReports.isNotEmpty) ...[
                   const SizedBox(height: 10),
                   Text(
-                    'Drone còn phiếu '
-                    '${openReports.map((r) => 'RPT-${r['id']}').join(', ')} chưa '
-                    'hoàn tất: hoàn tất phiếu trước khi chuyển về Sẵn sàng hoặc Đang sạc.',
+                    context.l10n.dtDroneHasOpenReports(
+                      openReports.map((r) => 'RPT-${r['id']}').join(', '),
+                    ),
                     style: const TextStyle(
                       fontSize: 12,
                       color: Color(0xFFB45309),
@@ -5260,8 +5252,8 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                   const SizedBox(height: 12),
                   TextField(
                     controller: reasonCtrl,
-                    decoration: const InputDecoration(
-                      labelText: 'Lý do (bắt buộc)',
+                    decoration: InputDecoration(
+                      labelText: context.l10n.dtReasonRequired,
                       isDense: true,
                     ),
                   ),
@@ -5271,7 +5263,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(ctx),
-                child: const Text('Hủy'),
+                child: Text(context.l10n.commonCancel),
               ),
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
@@ -5282,7 +5274,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                   ),
                 ),
                 onPressed: () => Navigator.pop(ctx, selected),
-                child: const Text('Xác nhận'),
+                child: Text(context.l10n.commonConfirm),
               ),
             ],
           ),
@@ -5297,7 +5289,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
     if (result == (drone['status'] as String?) && !isFault) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Trạng thái không thay đổi')),
+          SnackBar(content: Text(context.l10n.dtStatusUnchanged)),
         );
       }
       return;
@@ -5305,7 +5297,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
     if (isFault && reason.isEmpty) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Cần nhập lý do khi chuyển sang FAULT')),
+          SnackBar(content: Text(context.l10n.dtFaultReasonRequired)),
         );
       }
       return;
@@ -5316,7 +5308,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
         result,
         reason: reason.isEmpty ? null : reason,
       ),
-      'Đã đổi trạng thái drone',
+      L10n.current.dtStatusChanged,
     );
   }
 
@@ -5336,17 +5328,17 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
           ),
-          title: const Text('Cập nhật pin %'),
+          title: Text(context.l10n.dtUpdateBattery),
           content: TextField(
             controller: ctrl,
             autofocus: true,
             keyboardType: TextInputType.number,
-            decoration: const InputDecoration(labelText: 'Pin còn lại (0-100)'),
+            decoration: InputDecoration(labelText: context.l10n.dtBatteryRemaining),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('Hủy'),
+              child: Text(context.l10n.commonCancel),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
@@ -5357,7 +5349,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                 ),
               ),
               onPressed: () => Navigator.pop(ctx, true),
-              child: const Text('Lưu'),
+              child: Text(context.l10n.commonSave),
             ),
           ],
         ),
@@ -5368,14 +5360,14 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
     if (percent < 0 || percent > 100) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Pin phải trong khoảng 0-100')),
+          SnackBar(content: Text(context.l10n.dtBatteryRange)),
         );
       }
       return;
     }
     await _runCellAction(
       () => _service.updateDroneBattery(droneId, percent),
-      'Đã cập nhật pin drone',
+      L10n.current.dtBatteryUpdated,
     );
   }
 
@@ -5507,7 +5499,7 @@ class _DroneLogSheetState extends State<_DroneLogSheet> {
   String _actorLabel(Map<String, dynamic> log) {
     final name = '${log['actorName'] ?? ''}'.trim();
     if (name.isNotEmpty) return ' · $name';
-    return log['actorUserId'] != null ? ' · KTV #${log['actorUserId']}' : '';
+    return log['actorUserId'] != null ? context.l10n.dtTechnicianNumber('${log['actorUserId']}') : '';
   }
 
   @override
@@ -5542,7 +5534,7 @@ class _DroneLogSheetState extends State<_DroneLogSheet> {
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      'Nhật ký bảo trì · ${widget.title}',
+                      context.l10n.dtMaintenanceLogTitle(widget.title),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(fontWeight: FontWeight.w800),
@@ -5565,7 +5557,7 @@ class _DroneLogSheetState extends State<_DroneLogSheet> {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Text(
-                            'Không tải được nhật ký: $_loadError',
+                            context.l10n.dtLogLoadFailed('$_loadError'),
                             textAlign: TextAlign.center,
                             style: const TextStyle(
                               fontSize: 12.5,
@@ -5575,7 +5567,7 @@ class _DroneLogSheetState extends State<_DroneLogSheet> {
                           TextButton.icon(
                             onPressed: _load,
                             icon: const Icon(Icons.refresh_rounded, size: 18),
-                            label: const Text('Thử lại'),
+                            label: Text(context.l10n.commonRetry),
                           ),
                         ],
                       ),
@@ -5583,10 +5575,10 @@ class _DroneLogSheetState extends State<_DroneLogSheet> {
                   : _logs.isEmpty
                   ? OpsEmptyState(
                       icon: Icons.history_edu_outlined,
-                      title: 'Chưa có ghi chú nào',
+                      title: context.l10n.dtLogEmptyTitle,
                       subtitle: widget.canWrite
-                          ? 'Thêm bước xử lý đầu tiên bên dưới.'
-                          : 'Drone này chưa có nhật ký bảo trì.',
+                          ? context.l10n.dtLogEmptyCanWrite
+                          : context.l10n.dtLogEmptyReadOnly,
                     )
                   : ListView.separated(
                       shrinkWrap: true,
@@ -5627,12 +5619,11 @@ class _DroneLogSheetState extends State<_DroneLogSheet> {
             ),
             const Divider(height: 1),
             if (!widget.canWrite)
-              const Padding(
-                padding: EdgeInsets.fromLTRB(20, 10, 20, 14),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 10, 20, 14),
                 child: Text(
-                  'Chỉ KTV đang phụ trách drone mới thêm được nhật ký. '
-                  'Nhận phụ trách drone để ghi bước xử lý.',
-                  style: TextStyle(fontSize: 12, color: opsMutedText),
+                  context.l10n.dtLogReadOnlyHint,
+                  style: const TextStyle(fontSize: 12, color: opsMutedText),
                 ),
               )
             else
@@ -5646,7 +5637,7 @@ class _DroneLogSheetState extends State<_DroneLogSheet> {
                         minLines: 1,
                         maxLines: 3,
                         decoration: InputDecoration(
-                          hintText: 'Thêm bước xử lý / ghi chú...',
+                          hintText: context.l10n.dtLogInputHint,
                           isDense: true,
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
@@ -5767,24 +5758,22 @@ class _DroneOrderDetailSheetState extends State<_DroneOrderDetailSheet> {
       controller: widget.scrollController,
       padding: const EdgeInsets.fromLTRB(16, 4, 16, 28),
       children: [
-        const Text(
-          'Chi tiết nhiệm vụ drone',
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
+        Text(
+          context.l10n.dtMissionDetailTitle,
+          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
         ),
         const SizedBox(height: 4),
-        const Text(
-          'Tự cập nhật theo thời gian thực',
-          style: TextStyle(fontSize: 12, color: opsMutedText),
+        Text(
+          context.l10n.dtRealtimeUpdates,
+          style: const TextStyle(fontSize: 12, color: opsMutedText),
         ),
         const SizedBox(height: 14),
         if (status != null) ...[
           if (status.status.toUpperCase() == _dropReportedStage) ...[
-            const OpsBanner(
+            OpsBanner(
               tone: OpsBannerTone.danger,
               icon: Icons.report_gmailerrorred_outlined,
-              text:
-                  'Đơn đã báo rơi kiện và dừng giao. Theo dõi tiến trình xử lý ở mục '
-                  '"Sự cố rơi kiện" trong tab Điều phối.',
+              text: context.l10n.dtDropReportedBanner,
             ),
             const SizedBox(height: 14),
           ],
@@ -5819,7 +5808,7 @@ class _DroneOrderDetailSheetState extends State<_DroneOrderDetailSheet> {
                 const SizedBox(height: 12),
                 OutlinedButton(
                   onPressed: _refresh,
-                  child: const Text('Thử lại'),
+                  child: Text(context.l10n.commonRetry),
                 ),
               ],
             ),
@@ -5844,12 +5833,12 @@ class _DroneCancelReason {
   final bool requiresNote;
 }
 
-const _cancelReasons = [
-  _DroneCancelReason(1, 'Thời tiết xấu'),
-  _DroneCancelReason(2, 'Drone lỗi'),
-  _DroneCancelReason(3, 'Bãi đáp không sẵn sàng'),
-  _DroneCancelReason(4, 'Lý do vận hành'),
-  _DroneCancelReason(5, 'Khác', requiresNote: true),
+List<_DroneCancelReason> get _cancelReasons => [
+  _DroneCancelReason(1, L10n.current.dtCancelReasonWeather),
+  _DroneCancelReason(2, L10n.current.dtCancelReasonDroneFault),
+  _DroneCancelReason(3, L10n.current.dtCancelReasonLandingPad),
+  _DroneCancelReason(4, L10n.current.dtCancelReasonOperational),
+  _DroneCancelReason(5, L10n.current.dtCancelReasonOther, requiresNote: true),
 ];
 
 /// Trạng thái của 1 con drone vật lý (drone_units.status) — khác trạng thái
@@ -5876,12 +5865,12 @@ List<String> _manualDroneStatuses(String current) {
 }
 
 String _droneStatusLabel(String? status) => switch (status) {
-  'IDLE' => 'Sẵn sàng',
-  'RESERVED' => 'Đã giữ cho nhiệm vụ',
-  'CHARGING' => 'Đang sạc',
-  'IN_FLIGHT' => 'Đang bay',
-  'MAINTENANCE' => 'Đang bảo trì',
-  'FAULT' => 'Lỗi',
+  'IDLE' => L10n.current.dtDroneStatusIdle,
+  'RESERVED' => L10n.current.dtDroneStatusReserved,
+  'CHARGING' => L10n.current.dtDroneStatusCharging,
+  'IN_FLIGHT' => L10n.current.dtDroneStatusInFlight,
+  'MAINTENANCE' => L10n.current.dtDroneStatusMaintenance,
+  'FAULT' => L10n.current.dtDroneStatusFault,
   _ => status ?? '',
 };
 

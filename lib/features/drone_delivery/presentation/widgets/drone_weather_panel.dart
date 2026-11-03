@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:smart_laundry_locker/core/utils/app_date_time.dart';
 import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 /// Kết quả kiểm tra thời tiết của server (`DroneWeatherAssessment`): cùng một
 /// nguồn với bước chặn đặt đơn / phóng drone, nên khách, KTV và admin thấy như nhau.
@@ -55,7 +56,7 @@ class DroneWeather {
     final condition = raw['condition']?.toString();
     return DroneWeather(
       status: '${raw['status'] ?? 'UNAVAILABLE'}'.toUpperCase(),
-      message: '${raw['message'] ?? 'Không thể xác nhận thời tiết tuyến bay.'}',
+      message: '${raw['message'] ?? L10n.current.dtWxCantConfirm}',
       checkedAt: DateTime.tryParse('${raw['checkedAt'] ?? ''}'),
       maxWindKmh: num0(raw['maxWindSpeedKmh']),
       maxGustKmh: num0(raw['maxWindGustKmh']),
@@ -92,29 +93,29 @@ class DroneWeatherSummary extends StatelessWidget {
             const Color(0xFF15803D),
             const Color(0xFFF0FDF4),
             Icons.wb_sunny_outlined,
-            'Bay được',
+            context.l10n.dtWxFlyable,
           )
         : weather.unavailable
         ? (
             const Color(0xFF64748B),
             const Color(0xFFF1F5F9),
             Icons.cloud_off_outlined,
-            'Chưa có dự báo',
+            context.l10n.dtWxNoForecast,
           )
         : (
             const Color(0xFFB91C1C),
             const Color(0xFFFEF2F2),
             Icons.thunderstorm_outlined,
-            'Không an toàn để bay',
+            context.l10n.dtWxUnsafe,
           );
     final facts = <String>[
       if (weather.condition != null) weather.condition!,
       if (weather.temperatureC != null)
         '${weather.temperatureC!.toStringAsFixed(0)}°C',
       if (!weather.unavailable) ...[
-        'Gió ${weather.maxWindKmh.toStringAsFixed(0)} km/h',
-        'Giật ${weather.maxGustKmh.toStringAsFixed(0)} km/h',
-        'Mưa ${weather.maxPrecipitationMm.toStringAsFixed(1)} mm',
+        context.l10n.dtWxWind(weather.maxWindKmh.toStringAsFixed(0)),
+        context.l10n.dtWxGust(weather.maxGustKmh.toStringAsFixed(0)),
+        context.l10n.dtWxRain(weather.maxPrecipitationMm.toStringAsFixed(1)),
       ],
     ];
     return Container(
@@ -162,11 +163,11 @@ class DroneWeatherSummary extends StatelessWidget {
                   padding: const EdgeInsets.only(top: 4),
                   child: Text(
                     [
-                      'Dự báo ${weather.windowMinutes} phút tới',
+                      context.l10n.dtWxForecastWindow(weather.windowMinutes),
                       if (weather.checkedAt != null)
-                        'cập nhật ${formatDateTimeVn(weather.checkedAt!.toLocal())}',
+                        context.l10n.dtWxUpdated(formatDateTimeVn(weather.checkedAt!.toLocal())),
                       if (weather.providerLabel != null)
-                        'nguồn ${weather.providerLabel}',
+                        context.l10n.dtWxSource('${weather.providerLabel}'),
                     ].join(' · '),
                     style: const TextStyle(
                       fontSize: 11,
@@ -274,15 +275,15 @@ class _DroneRouteWeatherCardState extends State<DroneRouteWeatherCard> {
             children: [
               const Icon(Icons.air_rounded, size: 18),
               const SizedBox(width: 8),
-              const Expanded(
+              Expanded(
                 child: Text(
-                  'Thời tiết tuyến bay',
-                  style: TextStyle(fontWeight: FontWeight.w800, fontSize: 15),
+                  context.l10n.dtWxRouteTitle,
+                  style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 15),
                 ),
               ),
               IconButton(
                 key: const ValueKey('drone-route-weather-refresh'),
-                tooltip: 'Tải lại',
+                tooltip: context.l10n.dtWxReload,
                 visualDensity: VisualDensity.compact,
                 onPressed: _loading ? null : _fetch,
                 icon: const Icon(Icons.refresh, size: 20),
@@ -293,7 +294,7 @@ class _DroneRouteWeatherCardState extends State<DroneRouteWeatherCard> {
             Padding(
               padding: const EdgeInsets.only(bottom: 8),
               child: Text(
-                '${from ?? 'Tủ bay'} → ${to ?? 'Tủ nhận'}',
+                '${from ?? context.l10n.dtWxFromLocker} → ${to ?? context.l10n.dtWxToLocker}',
                 style: const TextStyle(
                   fontSize: 12.5,
                   color: Color(0xFF475569),
@@ -407,12 +408,12 @@ class _DroneLockerWeatherListState extends State<DroneLockerWeatherList> {
             .firstOrNull ??
         30;
     final headline = _loading
-        ? 'Đang tải thời tiết các tủ…'
+        ? context.l10n.dtWxLoadingLockers
         : _error != null
         ? _error!
         : unsafe == 0
-        ? 'Cả ${weathers.length} tủ đều bay được trong $windowMinutes phút tới'
-        : '$unsafe/${weathers.length} tủ đang không bay được hoặc chưa có dự báo';
+        ? context.l10n.dtWxAllFlyable(weathers.length, windowMinutes)
+        : context.l10n.dtWxSomeGrounded(unsafe, weathers.length);
     // Material (không phải Container có màu) để ListTile vẽ được nền và hiệu ứng chạm.
     return Padding(
       key: const ValueKey('drone-locker-weather'),
@@ -435,16 +436,16 @@ class _DroneLockerWeatherListState extends State<DroneLockerWeatherList> {
                     ? const Color(0xFF15803D)
                     : const Color(0xFFB91C1C),
               ),
-              title: const Text(
-                'Thời tiết tại các tủ drone',
-                style: TextStyle(fontWeight: FontWeight.w800),
+              title: Text(
+                context.l10n.dtWxLockersTitle,
+                style: const TextStyle(fontWeight: FontWeight.w800),
               ),
               subtitle: Text(headline, style: const TextStyle(fontSize: 12.5)),
               trailing: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   IconButton(
-                    tooltip: 'Tải lại',
+                    tooltip: context.l10n.dtWxReload,
                     onPressed: _loading ? null : _fetch,
                     icon: const Icon(Icons.refresh),
                   ),
@@ -468,15 +469,16 @@ class _DroneLockerWeatherListState extends State<DroneLockerWeatherList> {
                               DroneWeatherSummary(
                                 weather: weather,
                                 title:
-                                    '${locker['name'] ?? locker['code'] ?? 'Tủ #${locker['lockerId']}'}',
+                                    '${locker['name'] ?? locker['code'] ?? context.l10n.dtWxLockerNumber('${locker['lockerId']}')}',
                               ),
                               if (locker['suspension'] case final Map stop)
                                 Padding(
                                   padding: const EdgeInsets.only(top: 4),
                                   child: Text(
-                                    'Trạm đang tạm dừng bay: '
-                                    '${stop['reasonLabel'] ?? stop['reason'] ?? ''}'
-                                    '${stop['note'] == null ? '' : ' — ${stop['note']}'}',
+                                    context.l10n.dtWxStationSuspended(
+                                      '${stop['reasonLabel'] ?? stop['reason'] ?? ''}'
+                                      '${stop['note'] == null ? '' : ' — ${stop['note']}'}',
+                                    ),
                                     key: ValueKey('drone-station-suspended-${locker['lockerId']}'),
                                     style: const TextStyle(
                                       fontSize: 12,

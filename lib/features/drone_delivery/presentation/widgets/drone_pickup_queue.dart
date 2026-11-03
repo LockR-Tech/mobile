@@ -16,6 +16,7 @@ import 'package:smart_laundry_locker/features/drone_delivery/presentation/pages/
 import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/utils/locker_maps.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/ops_widgets.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 /// Hỏi lý do (và ghi chú) cho một thao tác đóng việc: KTV không lấy được hàng, hoặc
 /// điều phối viên xác nhận đơn giao không hoàn tất. [reasons] là (mã, nhãn, bắt buộc ghi chú).
@@ -87,8 +88,8 @@ Future<(String reason, String? note)?> showDroneReasonDialog(
                 maxLines: 4,
                 decoration: InputDecoration(
                   labelText: selected?.$3 == true
-                      ? 'Ghi chú (bắt buộc)'
-                      : 'Ghi chú (tùy chọn)',
+                      ? context.l10n.dtNoteRequired
+                      : context.l10n.dtNoteOptional,
                   errorText: problem,
                   isDense: true,
                 ),
@@ -99,7 +100,7 @@ Future<(String reason, String? note)?> showDroneReasonDialog(
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Quay lại'),
+            child: Text(context.l10n.commonBack),
           ),
           FilledButton(
             key: const ValueKey('drone-reason-confirm'),
@@ -110,11 +111,11 @@ Future<(String reason, String? note)?> showDroneReasonDialog(
               final note = noteController.text.trim();
               final reason = selected;
               if (reason == null) {
-                setLocal(() => reasonProblem = 'Chọn một lý do');
+                setLocal(() => reasonProblem = context.l10n.dtPickReason);
                 return;
               }
               if (reason.$3 && note.isEmpty) {
-                setLocal(() => problem = 'Cần nhập ghi chú cho lý do này');
+                setLocal(() => problem = context.l10n.dtPqNoteRequiredForReason);
                 return;
               }
               Navigator.pop(ctx, (reason.$1, note.isEmpty ? null : note));
@@ -274,7 +275,7 @@ class _DronePickupQueueState extends State<DronePickupQueue>
         final (read, problem) = await widget.readPosition();
         if (read == null) {
           _toast(
-            problem ?? 'Cần vị trí hiện tại để vào ca nhận việc lấy hàng.',
+            problem ?? L10n.current.dtPqNeedLocation,
           );
           return;
         }
@@ -289,8 +290,8 @@ class _DronePickupQueueState extends State<DronePickupQueue>
       );
       _toast(
         onDuty
-            ? 'Đã vào ca. Bạn sẽ được mời khi có đơn gần bạn.'
-            : 'Đã ra ca. Bạn sẽ không được mời lấy hàng.',
+            ? L10n.current.dtPqOnDuty
+            : L10n.current.dtPqOffDuty,
       );
       await widget.onChanged();
     } catch (error) {
@@ -328,15 +329,14 @@ class _DronePickupQueueState extends State<DronePickupQueue>
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Từ chối lời mời lấy hàng?'),
+        title: Text(context.l10n.dtPqDeclineTitle),
         content: Text(
-          'Đơn ${order['orderCode'] ?? '#$orderId'} sẽ được mời người khác và bạn '
-          'không được mời lại đơn này trong một thời gian.',
+          context.l10n.dtPqDeclineBody('${order['orderCode'] ?? '#$orderId'}'),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Quay lại'),
+            child: Text(context.l10n.commonBack),
           ),
           FilledButton(
             key: const ValueKey('drone-pickup-decline-confirm'),
@@ -344,7 +344,7 @@ class _DronePickupQueueState extends State<DronePickupQueue>
               backgroundColor: const Color(0xFFDC2626),
             ),
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Từ chối'),
+            child: Text(context.l10n.dtPqDecline),
           ),
         ],
       ),
@@ -352,7 +352,7 @@ class _DronePickupQueueState extends State<DronePickupQueue>
     if (confirmed != true || !mounted) return;
     await _act(
       () => widget.service.declineDronePickup(orderId),
-      'Đã từ chối · hệ thống mời người khác',
+      L10n.current.dtPqDeclined,
     );
   }
 
@@ -382,7 +382,7 @@ class _DronePickupQueueState extends State<DronePickupQueue>
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
           ),
-          title: const Text('Xác nhận đã lấy hàng'),
+          title: Text(context.l10n.dtPqConfirmPickupTitle),
           content: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -395,8 +395,7 @@ class _DronePickupQueueState extends State<DronePickupQueue>
                   const SizedBox(height: 8),
                 ],
                 Text(
-                  'Kiện khai báo: ${_parcelSummary(order)}.\n'
-                  'Nhờ người gửi đọc mã lấy hàng trong đơn của họ.',
+                  context.l10n.dtPqDeclaredParcelAsk(_parcelSummary(order)),
                   style: const TextStyle(fontSize: 13),
                 ),
                 const SizedBox(height: 12),
@@ -406,7 +405,7 @@ class _DronePickupQueueState extends State<DronePickupQueue>
                   keyboardType: TextInputType.number,
                   maxLength: 6,
                   decoration: InputDecoration(
-                    labelText: 'Mã lấy hàng (6 số)',
+                    labelText: context.l10n.dtPqPickupCode,
                     errorText: codeProblem,
                     isDense: true,
                     border: const OutlineInputBorder(),
@@ -435,12 +434,11 @@ class _DronePickupQueueState extends State<DronePickupQueue>
                                 matched = !matched;
                                 matchProblem = null;
                               }),
-                        child: const Padding(
-                          padding: EdgeInsets.only(top: 12),
+                        child: Padding(
+                          padding: const EdgeInsets.only(top: 12),
                           child: Text(
-                            'Kiện đúng khai báo (loại hàng, kích thước, khối lượng) và '
-                            'không có hàng cấm bay.',
-                            style: TextStyle(fontSize: 12.5),
+                            context.l10n.dtPqParcelMatches,
+                            style: const TextStyle(fontSize: 12.5),
                           ),
                         ),
                       ),
@@ -452,7 +450,7 @@ class _DronePickupQueueState extends State<DronePickupQueue>
                 PhotoPickerField(
                   controller: photos,
                   showAddTile: false,
-                  helperText: 'Ảnh kiện tại điểm lấy là bắt buộc.',
+                  helperText: context.l10n.dtPqPhotoRequired,
                   onPhotoTap: (photo) => showDialog<void>(
                     context: ctx,
                     builder: (dialogContext) => Dialog(
@@ -487,24 +485,24 @@ class _DronePickupQueueState extends State<DronePickupQueue>
                       } catch (_) {
                         setLocal(
                           () => photoProblem =
-                              'Không mở được máy ảnh. Kiểm tra quyền camera.',
+                              L10n.current.dtPqCameraFailed,
                         );
                       }
                     },
                     icon: const Icon(Icons.camera_alt_outlined),
-                    label: const Text('Chụp ảnh kiện'),
+                    label: Text(context.l10n.dtPqTakePhoto),
                   ),
                 if (photoProblem != null)
                   _DialogError(photoProblem!)
                 else if (photos.isEmpty)
-                  const Text(
-                    'Chụp rõ toàn bộ kiện trước khi xác nhận đã lấy.',
-                    style: TextStyle(fontSize: 12, color: Colors.black54),
+                  Text(
+                    context.l10n.dtPqPhotoHint,
+                    style: const TextStyle(fontSize: 12, color: Colors.black54),
                   ),
                 TextField(
                   controller: noteController,
-                  decoration: const InputDecoration(
-                    labelText: 'Ghi chú (tùy chọn)',
+                  decoration: InputDecoration(
+                    labelText: context.l10n.dtNoteOptional,
                     isDense: true,
                   ),
                 ),
@@ -514,7 +512,7 @@ class _DronePickupQueueState extends State<DronePickupQueue>
           actions: [
             TextButton(
               onPressed: submitting ? null : () => Navigator.pop(ctx, false),
-              child: const Text('Chưa'),
+              child: Text(context.l10n.commonNotYet),
             ),
             FilledButton(
               key: const ValueKey('drone-pickup-confirm'),
@@ -525,12 +523,12 @@ class _DronePickupQueueState extends State<DronePickupQueue>
                       setLocal(() {
                         codeProblem = RegExp(r'^\d{6}$').hasMatch(code)
                             ? null
-                            : 'Nhập đủ 6 chữ số';
+                            : context.l10n.dtPqEnterSixDigits;
                         matchProblem = matched
                             ? null
-                            : 'Cần xác nhận kiện đúng khai báo, hoặc báo không lấy được';
+                            : context.l10n.dtPqConfirmMatchOrFail;
                         photoProblem = photos.isEmpty
-                            ? 'Cần chụp ảnh kiện trước khi xác nhận'
+                            ? context.l10n.dtPqNeedPhoto
                             : null;
                         submitProblem = null;
                       });
@@ -548,7 +546,7 @@ class _DronePickupQueueState extends State<DronePickupQueue>
                         if (uploadedPhoto == null) {
                           setLocal(
                             () => photoProblem =
-                                'Chưa tải được ảnh kiện lên. Thử lại.',
+                                L10n.current.dtPqUploadFailed,
                           );
                           return;
                         }
@@ -571,7 +569,7 @@ class _DronePickupQueueState extends State<DronePickupQueue>
                           final (position, problem) = await widget.readPosition();
                           if (position == null) {
                             throw problem ??
-                                'Chưa lấy được vị trí GPS hiện tại. Bật định vị rồi thử lại.';
+                                L10n.current.dtPqNoGps;
                           }
                           _applyPresence(
                             await widget.service.updateDroneTechnicianPresence(
@@ -613,7 +611,7 @@ class _DronePickupQueueState extends State<DronePickupQueue>
                         color: Colors.white,
                       ),
                     )
-                  : const Text('Đã lấy hàng'),
+                  : Text(context.l10n.dtPqPickedUp),
             ),
           ],
         ),
@@ -628,7 +626,7 @@ class _DronePickupQueueState extends State<DronePickupQueue>
     // Server đã nhận trong hộp thoại; chỉ còn báo và tải lại.
     await _act(
       () async => null,
-      'Đã lấy hàng và lưu ảnh kiện. Mang kiện tới drone được phân công và nạp trực tiếp; không bỏ vào ô tủ bay.',
+      L10n.current.dtPqPickedUpDone,
     );
   }
 
@@ -637,12 +635,10 @@ class _DronePickupQueueState extends State<DronePickupQueue>
     if (orderId == null) return;
     final result = await showDroneReasonDialog(
       context,
-      title: 'Không lấy được hàng',
-      intro:
-          'Đơn sẽ kết thúc "giao không hoàn tất" và người gửi được hoàn tiền. '
-          'Không hoàn tác được.',
+      title: context.l10n.dtPqFailPickupTitle,
+      intro: context.l10n.dtPqFailPickupIntro,
       reasons: dronePickupFailureReasons,
-      confirmLabel: 'Xác nhận',
+      confirmLabel: context.l10n.commonConfirm,
     );
     if (result == null) return;
     await _act(
@@ -651,7 +647,7 @@ class _DronePickupQueueState extends State<DronePickupQueue>
         reason: result.$1,
         note: result.$2,
       ),
-      'Đã báo không lấy được hàng · người gửi được hoàn tiền',
+      L10n.current.dtPqFailPickupDone,
     );
   }
 
@@ -661,12 +657,10 @@ class _DronePickupQueueState extends State<DronePickupQueue>
     final block = order['block'];
     final result = await showDroneReasonDialog(
       context,
-      title: 'Giao không hoàn tất',
-      intro:
-          'Đơn sẽ đóng lại, người gửi được hoàn tiền và bạn mang kiện trả lại '
-          'người gửi. Không hoàn tác được.',
+      title: context.l10n.dtFailDelivery,
+      intro: context.l10n.dtFailDeliveryIntro,
       reasons: droneDeliveryFailureReasons,
-      confirmLabel: 'Xác nhận',
+      confirmLabel: context.l10n.commonConfirm,
       initialReason: block is Map ? '${block['reason']}' : null,
     );
     if (result == null) return;
@@ -676,7 +670,7 @@ class _DronePickupQueueState extends State<DronePickupQueue>
         reason: result.$1,
         note: result.$2,
       ),
-      'Đã đóng đơn · mang kiện trả lại người gửi',
+      L10n.current.dtFailedDeliveryDone,
     );
   }
 
@@ -691,7 +685,7 @@ class _DronePickupQueueState extends State<DronePickupQueue>
         droneParcelCategoryLabel('${order['parcelCategory']}'),
       droneWeightLabel(_asInt(order['parcelWeightGrams'])),
       ?size,
-      if (order['fragile'] == true) 'DỄ VỠ',
+      if (order['fragile'] == true) L10n.current.dtFragileUpper,
     ];
     return parts.join(' · ');
   }
@@ -700,10 +694,10 @@ class _DronePickupQueueState extends State<DronePickupQueue>
     final expiresAt = parseServerDateTime(pickup['offerExpiresAt']);
     if (expiresAt == null) return '';
     final left = expiresAt.difference(DateTime.now());
-    if (left.isNegative) return 'đã hết hạn';
+    if (left.isNegative) return context.l10n.dtPqExpired;
     final minutes = left.inMinutes;
     final seconds = left.inSeconds % 60;
-    return 'còn $minutes:${seconds.toString().padLeft(2, '0')}';
+    return context.l10n.dtPqTimeLeft('$minutes:${seconds.toString().padLeft(2, '0')}');
   }
 
   // ------------------------------------------------------------------ UI
@@ -728,7 +722,7 @@ class _DronePickupQueueState extends State<DronePickupQueue>
         if (offered.isNotEmpty) ...[
           const SizedBox(height: 12),
           OpsSectionLabel(
-            'Lời mời lấy hàng (${offered.length})',
+            context.l10n.dtPqSecOffers(offered.length),
             icon: Icons.notifications_active_outlined,
           ),
           for (final order in offered) _offerCard(order),
@@ -736,7 +730,7 @@ class _DronePickupQueueState extends State<DronePickupQueue>
         if (accepted.isNotEmpty) ...[
           const SizedBox(height: 12),
           OpsSectionLabel(
-            'Đang đi lấy hàng (${accepted.length})',
+            context.l10n.dtPqSecAccepted(accepted.length),
             icon: Icons.directions_bike_outlined,
           ),
           for (final order in accepted) _acceptedCard(order),
@@ -744,7 +738,7 @@ class _DronePickupQueueState extends State<DronePickupQueue>
         if (carrying.isNotEmpty) ...[
           const SizedBox(height: 12),
           OpsSectionLabel(
-            'Đã lấy hàng · chờ nạp trực tiếp lên drone (${carrying.length})',
+            context.l10n.dtPqSecCarrying(carrying.length),
             icon: Icons.inventory_2_outlined,
           ),
           for (final order in carrying) _carryingCard(order),
@@ -760,14 +754,16 @@ class _DronePickupQueueState extends State<DronePickupQueue>
     // phối viên giao thẳng.
     final offers = _offered.length;
     final subtitle = offers > 0
-        ? 'Có $offers lời mời đang chờ bạn trả lời'
-              '${_onDuty ? '' : ' (điều phối viên giao trực tiếp)'}.'
+        ? (_onDuty
+              ? context.l10n.dtPqOffersWaiting(offers)
+              : context.l10n.dtPqOffersWaitingDirect(offers))
         : !_onDuty
-        ? 'Bật để nhận lời mời lấy hàng tận nhà gần bạn.'
+        ? context.l10n.dtPqTurnOnHint
         : _busy
-        ? 'Đang trong ca · đang bận một việc nên chưa được mời thêm.'
-        : 'Đang trong ca · rảnh, sẽ được mời khi có đơn gần bạn'
-              '${_locationAt == null ? '' : ' · vị trí lúc ${formatDateTimeVn(_locationAt)}'}.';
+        ? context.l10n.dtPqBusy
+        : _locationAt == null
+        ? context.l10n.dtPqFree
+        : context.l10n.dtPqFreeWithLocation(formatDateTimeVn(_locationAt));
     return Container(
       padding: const EdgeInsets.fromLTRB(14, 8, 8, 8),
       decoration: BoxDecoration(
@@ -789,7 +785,7 @@ class _DronePickupQueueState extends State<DronePickupQueue>
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  _onDuty ? 'Đang nhận việc lấy hàng' : 'Chưa vào ca lấy hàng',
+                  _onDuty ? context.l10n.dtPqOnDutyTitle : context.l10n.dtPqOffDutyTitle,
                   style: const TextStyle(fontWeight: FontWeight.w800),
                 ),
                 const SizedBox(height: 2),
@@ -833,7 +829,7 @@ class _DronePickupQueueState extends State<DronePickupQueue>
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                '${order['orderCode'] ?? 'Đơn #$orderId'}',
+                '${order['orderCode'] ?? context.l10n.dtOrderNumber('$orderId')}',
                 style: const TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 14,
@@ -845,9 +841,12 @@ class _DronePickupQueueState extends State<DronePickupQueue>
               if (block is Map) ...[
                 const SizedBox(height: 8),
                 Text(
-                  'Đang gặp sự cố: '
-                  '${block['reasonLabel'] ?? droneFailureReasonLabel('${block['reason']}')}'
-                  '${block['ticketId'] == null ? '' : ' · phiếu #${block['ticketId']}'}',
+                  context.l10n.dtBlockedBy(
+                        '${block['reasonLabel'] ?? droneFailureReasonLabel('${block['reason']}')}',
+                      ) +
+                      (block['ticketId'] == null
+                          ? ''
+                          : context.l10n.dtBlockedTicket('${block['ticketId']}')),
                   style: const TextStyle(
                     fontSize: 12.5,
                     color: Color(0xFFB45309),
@@ -877,12 +876,14 @@ class _DronePickupQueueState extends State<DronePickupQueue>
       order: order,
       accent: const Color(0xFF6366F1),
       children: [
-        _line('Lấy tại: ${pickup['address'] ?? '—'}'),
+        _line(context.l10n.dtPqPickupAt('${pickup['address'] ?? '—'}')),
         _line(
-          'Cách bạn ${droneDistanceLabel(_asInt(pickup['technicianDistanceMeters']))}'
-          ' · kiện ${_parcelSummary(order)}',
+          context.l10n.dtPqDistanceParcel(
+            droneDistanceLabel(_asInt(pickup['technicianDistanceMeters'])),
+            _parcelSummary(order),
+          ),
         ),
-        _line('Trả lời ${_countdown(pickup)}'),
+        _line(context.l10n.dtPqReplyIn(_countdown(pickup))),
         const SizedBox(height: 10),
         Row(
           children: [
@@ -892,7 +893,7 @@ class _DronePickupQueueState extends State<DronePickupQueue>
                 onPressed: _acting || orderId == null
                     ? null
                     : () => _declineOffer(order, orderId),
-                child: const Text('Từ chối'),
+                child: Text(context.l10n.dtPqDecline),
               ),
             ),
             const SizedBox(width: 8),
@@ -903,9 +904,9 @@ class _DronePickupQueueState extends State<DronePickupQueue>
                     ? null
                     : () => _act(
                         () => widget.service.acceptDronePickup(orderId),
-                        'Đã nhận. Tới điểm lấy hàng và hỏi mã lấy hàng của người gửi.',
+                        context.l10n.dtPqAccepted,
                       ),
-                child: const Text('Nhận lấy hàng'),
+                child: Text(context.l10n.dtPqAcceptPickup),
               ),
             ),
           ],
@@ -927,10 +928,10 @@ class _DronePickupQueueState extends State<DronePickupQueue>
       order: order,
       accent: const Color(0xFFF59E0B),
       children: [
-        _line('Lấy tại: ${pickup['address'] ?? '—'}'),
-        if (senderLine.isNotEmpty) _line('Người gửi: $senderLine'),
-        if (pickup['note'] != null) _line('Chỉ dẫn: ${pickup['note']}'),
-        _line('Kiện khai báo: ${_parcelSummary(order)}'),
+        _line(context.l10n.dtPqPickupAt('${pickup['address'] ?? '—'}')),
+        if (senderLine.isNotEmpty) _line(context.l10n.dtSender(senderLine)),
+        if (pickup['note'] != null) _line(context.l10n.dtPqInstructions('${pickup['note']}')),
+        _line(context.l10n.dtPqDeclaredParcel(_parcelSummary(order))),
         const SizedBox(height: 10),
         Wrap(
           spacing: 8,
@@ -943,13 +944,13 @@ class _DronePickupQueueState extends State<DronePickupQueue>
                 address: pickup['address']?.toString(),
               ),
               icon: const Icon(Icons.directions, size: 16),
-              label: const Text('Chỉ đường'),
+              label: Text(context.l10n.dtPqDirections),
             ),
             FilledButton.icon(
               key: ValueKey('drone-pickup-done-$orderId'),
               onPressed: _acting ? null : () => _confirmPickup(order),
               icon: const Icon(Icons.inventory_2_outlined, size: 16),
-              label: const Text('Đã lấy hàng'),
+              label: Text(context.l10n.dtPqPickedUp),
             ),
             OutlinedButton(
               key: ValueKey('drone-pickup-fail-$orderId'),
@@ -957,7 +958,7 @@ class _DronePickupQueueState extends State<DronePickupQueue>
                 foregroundColor: const Color(0xFFDC2626),
               ),
               onPressed: _acting ? null : () => _failPickup(order),
-              child: const Text('Không lấy được'),
+              child: Text(context.l10n.dtPqCantPickUp),
             ),
           ],
         ),
@@ -969,17 +970,17 @@ class _DronePickupQueueState extends State<DronePickupQueue>
     final orderId = _asInt(order['orderId']);
     final source = order['sourceLocker'];
     final sourceName = source is Map
-        ? '${source['name'] ?? source['code'] ?? 'Tủ gửi'}'
-        : 'Tủ gửi #${order['sourceLockerId'] ?? '?'}';
+        ? '${source['name'] ?? source['code'] ?? context.l10n.dtSendingLocker}'
+        : context.l10n.dtPqSendingLockerNumber('${order['sourceLockerId'] ?? '?'}');
     final sourceAddress = source is Map ? source['address']?.toString() : null;
     return _card(
       order: order,
       accent: const Color(0xFF16A34A),
       children: [
-        _line('Mang kiện tới drone tại: $sourceName'),
+        _line(context.l10n.dtPqBringToDrone(sourceName)),
         if (sourceAddress != null && sourceAddress.isNotEmpty)
           _line(sourceAddress),
-        _line('Kiện: ${_parcelSummary(order)}'),
+        _line(context.l10n.dtParcel(_parcelSummary(order))),
         const SizedBox(height: 10),
         Wrap(
           spacing: 8,
@@ -993,13 +994,13 @@ class _DronePickupQueueState extends State<DronePickupQueue>
                   address: sourceAddress,
                 ),
                 icon: const Icon(Icons.directions, size: 16),
-                label: const Text('Chỉ đường tới drone'),
+                label: Text(context.l10n.dtPqDirectionsToDrone),
               ),
             FilledButton.icon(
               key: ValueKey('drone-assign-drone-$orderId'),
               onPressed: _acting ? null : () => widget.onAssignDrone(order),
               icon: const Icon(Icons.flight, size: 16),
-              label: const Text('Gán drone'),
+              label: Text(context.l10n.dtAssignDrone),
             ),
             OutlinedButton(
               key: ValueKey('drone-delivery-fail-$orderId'),
@@ -1007,7 +1008,7 @@ class _DronePickupQueueState extends State<DronePickupQueue>
                 foregroundColor: const Color(0xFFDC2626),
               ),
               onPressed: _acting ? null : () => _failDelivery(order),
-              child: const Text('Giao không hoàn tất'),
+              child: Text(context.l10n.dtFailDelivery),
             ),
           ],
         ),

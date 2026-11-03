@@ -10,6 +10,7 @@ import 'package:smart_laundry_locker/features/drone_delivery/presentation/widget
 import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/utils/technician_rules.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/ops_widgets.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 /// Hồ sơ xử lý sự cố dành riêng cho KTV Drone.
 ///
@@ -180,18 +181,18 @@ class _DroneReportDetailSheetState extends State<DroneReportDetailSheet> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: const Text('Nhận xử lý sự cố Drone?'),
+        title: Text(context.l10n.dtClaimReportTitle),
         content: Text(
-          'Xác nhận nhận phiếu RPT-$id và chịu trách nhiệm cập nhật nhật ký xử lý.',
+          context.l10n.dtRdClaimBody(id),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext, false),
-            child: const Text('Hủy'),
+            child: Text(context.l10n.commonCancel),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(dialogContext, true),
-            child: const Text('Nhận việc'),
+            child: Text(context.l10n.dtRdTakeJob),
           ),
         ],
       ),
@@ -202,7 +203,7 @@ class _DroneReportDetailSheetState extends State<DroneReportDetailSheet> {
       final claimed = await widget.service.claimDroneReport(id);
       if (!mounted) return;
       setState(() => _report = claimed);
-      _showMessage('Đã nhận xử lý phiếu Drone RPT-$id');
+      _showMessage(L10n.current.dtClaimedReport(id));
       await widget.onChanged();
       await _load();
     } catch (error) {
@@ -228,7 +229,7 @@ class _DroneReportDetailSheetState extends State<DroneReportDetailSheet> {
       _logPhotos.clear();
       if (!mounted) return;
       setState(() => _showLogEditor = false);
-      _showMessage('Đã cập nhật nhật ký xử lý');
+      _showMessage(L10n.current.dtRdLogUpdated);
       await widget.onChanged();
       await _load();
     } catch (error) {
@@ -255,7 +256,7 @@ class _DroneReportDetailSheetState extends State<DroneReportDetailSheet> {
       ),
     );
     if (resolved != true || !mounted) return;
-    _showMessage('Đã nghiệm thu và hoàn tất sự cố Drone');
+    _showMessage(L10n.current.dtRdResolved);
     await widget.onChanged();
     await _load();
   }
@@ -282,8 +283,9 @@ class _DroneReportDetailSheetState extends State<DroneReportDetailSheet> {
     final used = _slaExtensionsUsed;
     final max = _slaExtensionsMax;
     _showMessage(
-      'Đã gia hạn SLA thêm ${result.hours} giờ'
-      '${used != null && max != null ? ' (đã dùng $used/$max lần)' : ''}.',
+      used != null && max != null
+          ? L10n.current.dtRdSlaExtendedUsed(result.hours, used, max)
+          : L10n.current.dtRdSlaExtended(result.hours),
     );
     await widget.onChanged();
     await _load();
@@ -299,7 +301,7 @@ class _DroneReportDetailSheetState extends State<DroneReportDetailSheet> {
       builder: (_) => _ReleaseReportDialog(reportId: id, service: widget.service),
     );
     if (released != true || !mounted) return;
-    _showMessage('Đã trả phiếu RPT-$id về hàng chờ.');
+    _showMessage(L10n.current.dtRdReleased(id));
     await widget.onChanged();
     await _load();
   }
@@ -358,7 +360,7 @@ class _DroneReportDetailSheetState extends State<DroneReportDetailSheet> {
                           children: [
                             Flexible(
                               child: Text(
-                                'RPT-${id ?? '—'} · ${_report['title'] ?? 'Sự cố Drone'}',
+                                'RPT-${id ?? '—'} · ${_report['title'] ?? context.l10n.dtDroneIncidentFallback}',
                                 maxLines: 2,
                                 overflow: TextOverflow.ellipsis,
                                 style: const TextStyle(
@@ -373,9 +375,9 @@ class _DroneReportDetailSheetState extends State<DroneReportDetailSheet> {
                           ],
                         ),
                         const SizedBox(height: 3),
-                        const Text(
-                          'Hồ sơ chi tiết phiếu sự cố kỹ thuật Drone',
-                          style: TextStyle(fontSize: 12, color: _muted),
+                        Text(
+                          context.l10n.dtRdSubtitle,
+                          style: const TextStyle(fontSize: 12, color: _muted),
                         ),
                       ],
                     ),
@@ -413,9 +415,9 @@ class _DroneReportDetailSheetState extends State<DroneReportDetailSheet> {
                             label: createdAt,
                           ),
                         if (overdue)
-                          const _Badge(
+                          _Badge(
                             icon: Icons.timer_off_outlined,
-                            label: 'Quá hạn SLA',
+                            label: context.l10n.dtSlaOverdue,
                             color: Color(0xFFDC2626),
                           ),
                       ],
@@ -424,14 +426,14 @@ class _DroneReportDetailSheetState extends State<DroneReportDetailSheet> {
                       const SizedBox(height: 12),
                       _InfoBox(
                         icon: Icons.cloud_off_outlined,
-                        text: 'Không tải đủ hồ sơ: $_loadError',
+                        text: context.l10n.dtRdLoadPartial('$_loadError'),
                         color: const Color(0xFFDC2626),
                       ),
                     ],
                     const SizedBox(height: 14),
                     _Section(
                       icon: Icons.info_outline,
-                      title: 'Thông tin sự cố',
+                      title: context.l10n.dtRdInfoSection,
                       child: Column(
                         children: [
                           _DetailRow(
@@ -441,43 +443,43 @@ class _DroneReportDetailSheetState extends State<DroneReportDetailSheet> {
                                 : '#${_report['droneUnitId'] ?? '—'}',
                           ),
                           _DetailRow(
-                            label: 'Trạm/Kiosk',
+                            label: context.l10n.dtRdStation,
                             value: _text(_report['lockerName']).isNotEmpty
                                 ? _text(_report['lockerName'])
                                 : '#${_report['lockerId'] ?? '—'}',
                           ),
                           _DetailRow(
-                            label: 'Người báo',
+                            label: context.l10n.dtRdReporter,
                             value: reporterName.isEmpty
-                                ? 'Người dùng #${_report['userId'] ?? '—'}'
+                                ? context.l10n.dtRdUserNumber('${_report['userId'] ?? '—'}')
                                 : reporterName,
                           ),
                           _DetailRow(
-                            label: 'KTV phụ trách',
+                            label: context.l10n.dtRdAssignee,
                             value: assignedName.isNotEmpty
                                 ? (_assignedToMe
-                                      ? '$assignedName (bạn)'
+                                      ? context.l10n.dtRdYouSuffix(assignedName)
                                       : assignedName)
                                 : _report['assignedToUserId'] == null
-                                ? 'Chưa có KTV nhận việc'
+                                ? context.l10n.dtRdNoAssignee
                                 : _assignedToMe
-                                ? 'Bạn'
-                                : 'KTV #${_report['assignedToUserId']}',
+                                ? context.l10n.dtRdYou
+                                : context.l10n.dtRdTechNumber('${_report['assignedToUserId']}'),
                           ),
                           if (slaDue.isNotEmpty)
                             _DetailRow(
-                              label: 'Hạn SLA',
-                              value: overdue ? '$slaDue · đã quá hạn' : slaDue,
+                              label: context.l10n.dtRdSlaDue,
+                              value: overdue ? context.l10n.dtRdSlaOverdueSuffix(slaDue) : slaDue,
                             ),
                           if (_slaExtensionsUsed != null)
                             _DetailRow(
-                              label: 'Gia hạn SLA',
+                              label: context.l10n.dtRdSlaExtensions,
                               value: _slaExtensionsMax == null
-                                  ? 'Đã gia hạn $_slaExtensionsUsed lần'
-                                  : 'Đã gia hạn $_slaExtensionsUsed/$_slaExtensionsMax lần',
+                                  ? context.l10n.dtRdExtendedCount('$_slaExtensionsUsed')
+                                  : context.l10n.dtRdExtendedCountMax('$_slaExtensionsUsed', '$_slaExtensionsMax'),
                             ),
                           _DetailRow(
-                            label: 'Tạo lúc',
+                            label: context.l10n.dtRdCreatedAt,
                             value: createdAt.isEmpty ? '—' : createdAt,
                             last: true,
                           ),
@@ -493,10 +495,10 @@ class _DroneReportDetailSheetState extends State<DroneReportDetailSheet> {
                       ),
                     _Section(
                       icon: Icons.description_outlined,
-                      title: 'Mô tả hiện trường',
+                      title: context.l10n.dtRdDescriptionSection,
                       child: Text(
                         description.isEmpty
-                            ? 'Chưa có mô tả chi tiết.'
+                            ? context.l10n.dtRdNoDescription
                             : description,
                         style: const TextStyle(
                           fontSize: 13,
@@ -508,7 +510,7 @@ class _DroneReportDetailSheetState extends State<DroneReportDetailSheet> {
                     const SizedBox(height: 12),
                     _Section(
                       icon: Icons.photo_library_outlined,
-                      title: 'Ảnh hồ sơ theo giai đoạn',
+                      title: context.l10n.dtRdPhotosSection,
                       count: _attachments.length,
                       child: _loading
                           ? const Center(
@@ -529,7 +531,7 @@ class _DroneReportDetailSheetState extends State<DroneReportDetailSheet> {
                     const SizedBox(height: 12),
                     _Section(
                       icon: Icons.history_edu_outlined,
-                      title: 'Nhật ký & lịch sử xử lý của KTV',
+                      title: context.l10n.dtRdLogsSection,
                       count: _logs.length,
                       child: _buildLogs(),
                     ),
@@ -553,7 +555,7 @@ class _DroneReportDetailSheetState extends State<DroneReportDetailSheet> {
                                   ),
                                 )
                               : const Icon(Icons.assignment_turned_in_outlined),
-                          label: const Text('Nhận xử lý'),
+                          label: Text(context.l10n.dtClaim),
                           style: FilledButton.styleFrom(
                             backgroundColor: _accent,
                             padding: const EdgeInsets.symmetric(vertical: 13),
@@ -566,7 +568,7 @@ class _DroneReportDetailSheetState extends State<DroneReportDetailSheet> {
                         child: FilledButton.icon(
                           onPressed: _resolve,
                           icon: const Icon(Icons.verified_outlined),
-                          label: const Text('Nghiệm thu & hoàn tất sự cố'),
+                          label: Text(context.l10n.dtRdResolveButton),
                           style: FilledButton.styleFrom(
                             backgroundColor: const Color(0xFF16A34A),
                             padding: const EdgeInsets.symmetric(vertical: 13),
@@ -586,8 +588,8 @@ class _DroneReportDetailSheetState extends State<DroneReportDetailSheet> {
                               label: Text(
                                 _slaExtensionsUsed != null &&
                                         _slaExtensionsMax != null
-                                    ? 'Gia hạn SLA ($_slaExtensionsUsed/$_slaExtensionsMax)'
-                                    : 'Gia hạn SLA',
+                                    ? context.l10n.dtRdExtendSlaCount('$_slaExtensionsUsed', '$_slaExtensionsMax')
+                                    : context.l10n.dtRdExtendSla,
                               ),
                             ),
                           ),
@@ -600,7 +602,7 @@ class _DroneReportDetailSheetState extends State<DroneReportDetailSheet> {
                                 Icons.assignment_return_outlined,
                                 size: 18,
                               ),
-                              label: const Text('Trả lại phiếu'),
+                              label: Text(context.l10n.dtRdReleaseTicket),
                               style: OutlinedButton.styleFrom(
                                 foregroundColor: const Color(0xFFDC2626),
                                 side: const BorderSide(color: Color(0xFFFCA5A5)),
@@ -631,10 +633,9 @@ class _DroneReportDetailSheetState extends State<DroneReportDetailSheet> {
       );
     }
     if (_logs.isEmpty) {
-      return const _InfoBox(
+      return _InfoBox(
         icon: Icons.info_outline,
-        text:
-            'Chưa có ghi chú xử lý. Mỗi bước kiểm tra hoặc sửa chữa sẽ được lưu tại đây.',
+        text: context.l10n.dtRdNoLogs,
       );
     }
     return Column(
@@ -684,7 +685,7 @@ class _DroneReportDetailSheetState extends State<DroneReportDetailSheet> {
                         attachments: photos,
                         size: 58,
                         viewerTitle:
-                            'Nhật ký Drone · ${_formatDate(log['createdAt'])}',
+                            context.l10n.dtRdLogViewerTitle(_formatDate(log['createdAt'])),
                       ),
                     ],
                   ],
@@ -702,9 +703,9 @@ class _DroneReportDetailSheetState extends State<DroneReportDetailSheet> {
     final name = _text(log['actorName']);
     if (name.isNotEmpty) return name;
     final actorId = log['actorUserId'];
-    if (actorId == null) return 'Kỹ thuật viên';
-    if ('$actorId' == widget.currentUserId) return 'Bạn';
-    return 'KTV #$actorId';
+    if (actorId == null) return context.l10n.dtRdTechnician;
+    if ('$actorId' == widget.currentUserId) return context.l10n.dtRdYou;
+    return context.l10n.dtRdTechNumber('$actorId');
   }
 
   Widget _buildLogEditor() {
@@ -714,7 +715,7 @@ class _DroneReportDetailSheetState extends State<DroneReportDetailSheet> {
         child: TextButton.icon(
           onPressed: () => setState(() => _showLogEditor = true),
           icon: const Icon(Icons.add_comment_outlined),
-          label: const Text('Thêm bước xử lý / ảnh tiến độ'),
+          label: Text(context.l10n.dtRdAddStep),
         ),
       );
     }
@@ -733,8 +734,8 @@ class _DroneReportDetailSheetState extends State<DroneReportDetailSheet> {
             enabled: !_saving,
             thumbSize: 58,
             accentColor: _accent,
-            addLabel: 'Thêm ảnh',
-            helperText: 'Ảnh kiểm tra hoặc tiến độ sửa chữa',
+            addLabel: context.l10n.dtRdAddPhoto,
+            helperText: context.l10n.dtRdPhotoHelper,
           ),
           const SizedBox(height: 8),
           TextField(
@@ -742,8 +743,8 @@ class _DroneReportDetailSheetState extends State<DroneReportDetailSheet> {
             minLines: 2,
             maxLines: 4,
             enabled: !_saving,
-            decoration: const InputDecoration(
-              hintText: 'Nhập việc đã kiểm tra hoặc sửa chữa...',
+            decoration: InputDecoration(
+              hintText: context.l10n.dtRdNoteHint,
               border: OutlineInputBorder(),
             ),
           ),
@@ -755,13 +756,13 @@ class _DroneReportDetailSheetState extends State<DroneReportDetailSheet> {
                 onPressed: _saving
                     ? null
                     : () => setState(() => _showLogEditor = false),
-                child: const Text('Hủy'),
+                child: Text(context.l10n.commonCancel),
               ),
               const SizedBox(width: 8),
               FilledButton.icon(
                 onPressed: _saving ? null : _addLog,
                 icon: const Icon(Icons.send, size: 17),
-                label: const Text('Lưu nhật ký'),
+                label: Text(context.l10n.dtRdSaveLog),
               ),
             ],
           ),
@@ -815,7 +816,7 @@ class _ExtendSlaDialogState extends State<_ExtendSlaDialog> {
   Future<void> _submit() async {
     final reason = _reason.text.trim();
     if (reason.isEmpty) {
-      setState(() => _error = 'Cần nhập lý do gia hạn SLA.');
+      setState(() => _error = context.l10n.dtErrSlaReasonRequired);
       return;
     }
     setState(() {
@@ -835,7 +836,7 @@ class _ExtendSlaDialogState extends State<_ExtendSlaDialog> {
         _sending = false;
         _error = droneTechnicianErrorMessage(
           error,
-          unsupported: 'Máy chủ chưa hỗ trợ gia hạn SLA cho phiếu drone.',
+          unsupported: L10n.current.dtRdSlaUnsupported,
         );
       });
     }
@@ -846,7 +847,7 @@ class _ExtendSlaDialogState extends State<_ExtendSlaDialog> {
     final used = widget.used;
     final max = widget.max;
     return AlertDialog(
-      title: Text('Gia hạn SLA · RPT-${widget.reportId}'),
+      title: Text(context.l10n.dtRdExtendTitle(widget.reportId)),
       content: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -854,14 +855,14 @@ class _ExtendSlaDialogState extends State<_ExtendSlaDialog> {
           children: [
             Text(
               used != null && max != null
-                  ? 'Đã gia hạn $used/$max lần. Mỗi lần gia hạn được ghi vào nhật ký phiếu.'
-                  : 'Mỗi lần gia hạn được ghi vào nhật ký phiếu; số lần và số giờ tối đa theo cấu hình.',
+                  ? context.l10n.dtRdExtendIntroUsed(used, max)
+                  : context.l10n.dtRdExtendIntro,
               style: const TextStyle(fontSize: 12.5),
             ),
             const SizedBox(height: 12),
-            const Text(
-              'Thêm thời gian',
-              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
+            Text(
+              context.l10n.dtRdAddTime,
+              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
             ),
             const SizedBox(height: 6),
             Wrap(
@@ -870,7 +871,7 @@ class _ExtendSlaDialogState extends State<_ExtendSlaDialog> {
               children: [
                 for (final hours in _hourOptions)
                   ChoiceChip(
-                    label: Text('$hours giờ'),
+                    label: Text(context.l10n.dtRdHours(hours)),
                     selected: _hours == hours,
                     onSelected: _sending
                         ? null
@@ -885,8 +886,8 @@ class _ExtendSlaDialogState extends State<_ExtendSlaDialog> {
               minLines: 2,
               maxLines: 4,
               maxLength: 1000,
-              decoration: const InputDecoration(
-                labelText: 'Lý do gia hạn *',
+              decoration: InputDecoration(
+                labelText: context.l10n.dtRdExtendReason,
                 border: OutlineInputBorder(),
               ),
             ),
@@ -901,7 +902,7 @@ class _ExtendSlaDialogState extends State<_ExtendSlaDialog> {
       actions: [
         TextButton(
           onPressed: _sending ? null : () => Navigator.pop(context),
-          child: const Text('Hủy'),
+          child: Text(context.l10n.commonCancel),
         ),
         FilledButton(
           onPressed: _sending ? null : _submit,
@@ -910,7 +911,7 @@ class _ExtendSlaDialogState extends State<_ExtendSlaDialog> {
                   dimension: 18,
                   child: CircularProgressIndicator(strokeWidth: 2),
                 )
-              : const Text('Gia hạn'),
+              : Text(context.l10n.dtRdExtend),
         ),
       ],
     );
@@ -941,7 +942,7 @@ class _ReleaseReportDialogState extends State<_ReleaseReportDialog> {
   Future<void> _submit() async {
     final reason = _reason.text.trim();
     if (reason.isEmpty) {
-      setState(() => _error = 'Cần nhập lý do trả phiếu.');
+      setState(() => _error = context.l10n.dtErrReleaseReasonRequired);
       return;
     }
     setState(() {
@@ -957,7 +958,7 @@ class _ReleaseReportDialogState extends State<_ReleaseReportDialog> {
         _sending = false;
         _error = droneTechnicianErrorMessage(
           error,
-          unsupported: 'Máy chủ chưa hỗ trợ trả phiếu drone.',
+          unsupported: L10n.current.dtRdReleaseUnsupported,
         );
       });
     }
@@ -966,15 +967,15 @@ class _ReleaseReportDialogState extends State<_ReleaseReportDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text('Trả lại phiếu RPT-${widget.reportId}?'),
+      title: Text(context.l10n.dtRdReleaseTitle(widget.reportId)),
       content: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Phiếu quay về hàng chờ để KTV khác nhận; bạn không còn phụ trách phiếu này.',
-              style: TextStyle(fontSize: 12.5),
+            Text(
+              context.l10n.dtRdReleaseIntro,
+              style: const TextStyle(fontSize: 12.5),
             ),
             const SizedBox(height: 12),
             TextField(
@@ -983,8 +984,8 @@ class _ReleaseReportDialogState extends State<_ReleaseReportDialog> {
               minLines: 2,
               maxLines: 4,
               maxLength: 1000,
-              decoration: const InputDecoration(
-                labelText: 'Lý do trả phiếu *',
+              decoration: InputDecoration(
+                labelText: context.l10n.dtRdReleaseReason,
                 border: OutlineInputBorder(),
               ),
             ),
@@ -999,7 +1000,7 @@ class _ReleaseReportDialogState extends State<_ReleaseReportDialog> {
       actions: [
         TextButton(
           onPressed: _sending ? null : () => Navigator.pop(context, false),
-          child: const Text('Hủy'),
+          child: Text(context.l10n.commonCancel),
         ),
         FilledButton(
           style: FilledButton.styleFrom(
@@ -1014,7 +1015,7 @@ class _ReleaseReportDialogState extends State<_ReleaseReportDialog> {
                     color: Colors.white,
                   ),
                 )
-              : const Text('Trả phiếu'),
+              : Text(context.l10n.dtRdRelease),
         ),
       ],
     );
@@ -1069,7 +1070,7 @@ class _DroneResolveSheetState extends State<_DroneResolveSheet> {
     if (requirePhoto && !_hasResolution) {
       setState(
         () => _error =
-            'Vui lòng chụp ít nhất 1 ảnh sau khi sửa xong để nghiệm thu.',
+            context.l10n.dtRdNeedResolutionPhoto,
       );
       return;
     }
@@ -1136,14 +1137,14 @@ class _DroneResolveSheetState extends State<_DroneResolveSheet> {
                 ),
               ),
               const SizedBox(height: 16),
-              const Text(
-                'Nghiệm thu sự cố Drone',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+              Text(
+                context.l10n.dtRdResolveTitle,
+                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
               ),
               const SizedBox(height: 4),
-              const Text(
-                'Lưu ảnh tiến độ và ảnh sau khi khắc phục giống quy trình nghiệm thu sự cố tủ.',
-                style: TextStyle(fontSize: 12, color: Color(0xFF64748B)),
+              Text(
+                context.l10n.dtRdResolveIntro,
+                style: const TextStyle(fontSize: 12, color: Color(0xFF64748B)),
               ),
               const SizedBox(height: 16),
               TextField(
@@ -1151,16 +1152,16 @@ class _DroneResolveSheetState extends State<_DroneResolveSheet> {
                 minLines: 3,
                 maxLines: 5,
                 enabled: !_submitting,
-                decoration: const InputDecoration(
-                  labelText: 'Kết quả khắc phục',
-                  hintText: 'Mô tả linh kiện hoặc thao tác đã xử lý...',
+                decoration: InputDecoration(
+                  labelText: context.l10n.dtRdResolutionResult,
+                  hintText: context.l10n.dtRdResolutionHint,
                   border: OutlineInputBorder(),
                 ),
               ),
               const SizedBox(height: 16),
               _PhotoStageBox(
-                title: 'Ảnh trong quá trình sửa',
-                subtitle: 'Không bắt buộc, dùng để ghi nhận thao tác kỹ thuật.',
+                title: context.l10n.dtRdProgressPhotos,
+                subtitle: context.l10n.dtRdProgressPhotosHint,
                 controller: _progressPhotos,
                 enabled: !_submitting,
                 color: const Color(0xFF2563EB),
@@ -1169,12 +1170,12 @@ class _DroneResolveSheetState extends State<_DroneResolveSheet> {
               _PhotoStageBox(
                 title: BusinessConfigService
                         .instance.current.requireResolutionPhoto
-                    ? 'Ảnh sau khi sửa xong *'
-                    : 'Ảnh sau khi sửa xong',
+                    ? context.l10n.dtRdResolutionPhotosRequired
+                    : context.l10n.dtRdResolutionPhotos,
                 subtitle: BusinessConfigService
                         .instance.current.requireResolutionPhoto
-                    ? 'Bắt buộc ít nhất 1 ảnh để nghiệm thu.'
-                    : 'Không bắt buộc, dùng để lưu ảnh nghiệm thu.',
+                    ? context.l10n.dtRdResolutionPhotosRequiredHint
+                    : context.l10n.dtRdResolutionPhotosOptionalHint,
                 controller: _resolutionPhotos,
                 enabled: !_submitting,
                 color: const Color(0xFF16A34A),
@@ -1198,7 +1199,7 @@ class _DroneResolveSheetState extends State<_DroneResolveSheet> {
                       onPressed: _submitting
                           ? null
                           : () => Navigator.pop(context, false),
-                      child: const Text('Hủy'),
+                      child: Text(context.l10n.commonCancel),
                     ),
                   ),
                   const SizedBox(width: 10),
@@ -1216,7 +1217,7 @@ class _DroneResolveSheetState extends State<_DroneResolveSheet> {
                               ),
                             )
                           : const Icon(Icons.verified_outlined),
-                      label: const Text('Xác nhận hoàn tất'),
+                      label: Text(context.l10n.dtRdConfirmResolve),
                       style: FilledButton.styleFrom(
                         backgroundColor: const Color(0xFF16A34A),
                       ),
@@ -1280,7 +1281,7 @@ class _PhotoStageBox extends StatelessWidget {
             enabled: enabled,
             thumbSize: 62,
             accentColor: color,
-            addLabel: 'Thêm ảnh',
+            addLabel: context.l10n.dtRdAddPhoto,
           ),
         ],
       ),

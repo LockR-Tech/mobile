@@ -1,36 +1,33 @@
 import 'package:dio/dio.dart';
 import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
-/// Thông báo tiếng Việt cho các mã lỗi của luồng KTV drone (đổi trạng thái
-/// drone, xác nhận chặng, gia hạn SLA, trả phiếu, sự cố rơi kiện). Mã không có
-/// ở đây dùng bảng chung của [LockerOpsService.errorMessage].
-const droneTechnicianErrorMessages = <String, String>{
-  'DRONE_HAS_OPEN_REPORT':
-      'Drone còn phiếu sự cố chưa hoàn tất. Hoàn tất phiếu trước khi đưa drone về Sẵn sàng hoặc Đang sạc.',
-  'DRONE_IN_FLIGHT_USE_FAIL':
-      'Drone đang bay: dùng "Báo chuyến bay thất bại" trên nhiệm vụ đang bay thay vì đổi trạng thái.',
-  'DRONE_STAGE_CHANGED':
-      'Chặng bay vừa thay đổi (drone tự cập nhật hoặc đã có người xác nhận). Danh sách đã được tải lại, hãy kiểm tra rồi xác nhận lại.',
-  'SLA_EXTENSION_NOT_ASSIGNEE':
-      'Chỉ KTV đang được giao phiếu mới gia hạn được SLA.',
-  'SLA_EXTENSION_LIMIT_REACHED':
-      'Phiếu đã dùng hết số lần gia hạn SLA. Liên hệ quản trị nếu cần thêm thời gian.',
-  'SLA_EXTENSION_HOURS_EXCEEDED':
-      'Số giờ gia hạn vượt mức tối đa cho mỗi lần.',
-  'SLA_EXTENSION_REASON_REQUIRED': 'Cần nhập lý do gia hạn SLA.',
-  'INVALID_EXTENSION_HOURS': 'Thời gian gia hạn phải từ 1 giờ trở lên.',
-  'REPORT_NOT_ASSIGNED': 'Chỉ KTV đang giữ phiếu mới trả được phiếu.',
-  'REPORT_NOT_CLAIMED': 'Phiếu đang ở hàng chờ, chưa có KTV nhận.',
-  'REPORT_RELEASE_REASON_REQUIRED': 'Cần nhập lý do trả phiếu.',
-  'REPORT_ALREADY_RESOLVED': 'Phiếu đã hoàn tất, không thao tác được nữa.',
-  'DRONE_REPORT_REQUIRED': 'Phiếu này không phải phiếu sự cố drone.',
-  'DRONE_JOURNEY_FORBIDDEN':
-      'Chỉ KTV đã tiếp nhận nhiệm vụ mới xem được camera của chuyến bay.',
-  'DRONE_MISSION_NOT_FOUND': 'Đơn này chưa có nhiệm vụ bay.',
-  'DRONE_INCIDENT_NOT_FOUND': 'Không tìm thấy sự cố.',
-  'DRONE_TECHNICIAN_REQUIRED': 'Chức năng này chỉ dành cho KTV drone.',
-  'INCIDENT_FORBIDDEN': 'Bạn không có quyền xem sự cố này.',
-};
+/// Thông báo cho các mã lỗi của luồng KTV drone (đổi trạng thái drone, xác
+/// nhận chặng, gia hạn SLA, trả phiếu, sự cố rơi kiện) theo ngôn ngữ app. Mã
+/// không có ở đây dùng bảng chung của [LockerOpsService.errorMessage].
+Map<String, String> get droneTechnicianErrorMessages {
+  final l10n = L10n.current;
+  return {
+    'DRONE_HAS_OPEN_REPORT': l10n.dtErrDroneHasOpenReport,
+    'DRONE_IN_FLIGHT_USE_FAIL': l10n.dtErrDroneInFlightUseFail,
+    'DRONE_STAGE_CHANGED': l10n.dtErrStageChanged,
+    'SLA_EXTENSION_NOT_ASSIGNEE': l10n.dtErrSlaNotAssignee,
+    'SLA_EXTENSION_LIMIT_REACHED': l10n.dtErrSlaLimitReached,
+    'SLA_EXTENSION_HOURS_EXCEEDED': l10n.dtErrSlaHoursExceeded,
+    'SLA_EXTENSION_REASON_REQUIRED': l10n.dtErrSlaReasonRequired,
+    'INVALID_EXTENSION_HOURS': l10n.dtErrInvalidExtensionHours,
+    'REPORT_NOT_ASSIGNED': l10n.dtErrReportNotAssigned,
+    'REPORT_NOT_CLAIMED': l10n.dtErrReportNotClaimed,
+    'REPORT_RELEASE_REASON_REQUIRED': l10n.dtErrReleaseReasonRequired,
+    'REPORT_ALREADY_RESOLVED': l10n.dtErrReportAlreadyResolved,
+    'DRONE_REPORT_REQUIRED': l10n.dtErrDroneReportRequired,
+    'DRONE_JOURNEY_FORBIDDEN': l10n.dtErrJourneyForbidden,
+    'DRONE_MISSION_NOT_FOUND': l10n.dtErrMissionNotFound,
+    'DRONE_INCIDENT_NOT_FOUND': l10n.dtErrIncidentNotFound,
+    'DRONE_TECHNICIAN_REQUIRED': l10n.dtErrTechnicianRequired,
+    'INCIDENT_FORBIDDEN': l10n.dtErrIncidentForbidden,
+  };
+}
 
 /// Mã lỗi nghiệp vụ của response (vd. `DRONE_STAGE_CHANGED`).
 String? droneTechnicianErrorCode(Object error) =>
@@ -56,7 +53,7 @@ String droneTechnicianErrorMessage(Object error, {String? unsupported}) {
   final mapped = code == null ? null : droneTechnicianErrorMessages[code];
   if (mapped != null) return mapped;
   if (isEndpointMissing(error)) {
-    return unsupported ?? 'Máy chủ chưa hỗ trợ chức năng này.';
+    return unsupported ?? L10n.current.dtErrServerUnsupported;
   }
   return LockerOpsService.errorMessage(error);
 }

@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:smart_laundry_locker/core/config/business_config.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/pages/maintenance_home_page.dart';
+import 'package:smart_laundry_locker/shared/widgets/adaptive_viewport.dart';
 
 import '../../helpers/test_helpers.dart';
 
@@ -417,6 +419,71 @@ void main() {
 
     expect(find.text('Onboarding'), findsOneWidget);
   });
+
+  for (final locale in L10n.supportedLocales) {
+    testWidgets(
+      'mọi tab KTV drone không tràn trên máy 360dp (${locale.languageCode})',
+      (tester) async {
+        L10n.load(locale);
+        addTearDown(() => L10n.load(L10n.vi));
+        // Giống máy thật: 360dp, cỡ chữ hệ thống lớn, app bọc AdaptiveViewport.
+        tester.view.physicalSize = const Size(720, 1612);
+        tester.view.devicePixelRatio = 2;
+        tester.platformDispatcher.textScaleFactorTestValue = 1.3;
+        addTearDown(tester.view.reset);
+        addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+        final service = _FakeMaintenanceService();
+        final router = GoRouter(
+          routes: [
+            GoRoute(
+              path: '/',
+              builder: (context, state) =>
+                  MaintenanceHomePage(service: service),
+            ),
+          ],
+        );
+
+        await tester.pumpWidget(
+          MaterialApp.router(
+            routerConfig: router,
+            builder: (context, child) => AdaptiveViewport(child: child!),
+          ),
+        );
+        await tester.pumpAndSettle();
+        expect(tester.takeException(), isNull);
+
+        final en = locale == L10n.en;
+        expect(
+          find.text(en ? 'Flight tools' : 'Công cụ bay', skipOffstage: false),
+          findsOneWidget,
+        );
+        expect(
+          find.text(en ? 'Accept' : 'Tiếp nhận', skipOffstage: false),
+          findsOneWidget,
+        );
+
+        final tabs = en
+            ? ['Fleet (', 'Incidents (', 'My work (', 'Routine (', 'Flight tools']
+            : ['Đội bay (', 'Sự cố (', 'Việc của tôi (', 'Định kỳ (', 'Công cụ bay'];
+        for (final tab in tabs) {
+          final tabLabel = find.textContaining(tab).first;
+          await tester.ensureVisible(tabLabel);
+          await tester.pumpAndSettle();
+          await tester.tap(tabLabel);
+          await tester.pumpAndSettle();
+          expect(tester.takeException(), isNull, reason: 'tab $tab');
+        }
+        expect(
+          find.text(
+            en
+                ? 'Flight planning (Mission Planner)'
+                : 'Lập kế hoạch bay (Mission Planner)',
+          ),
+          findsOneWidget,
+        );
+      },
+    );
+  }
 
   testWidgets('renders order-based drone queue and accepts awaiting order', (
     tester,

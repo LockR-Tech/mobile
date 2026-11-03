@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../domain/flight_mission.dart';
 import 'mission_codec.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 /// Persists flight missions on-device and exchanges them with real ground
 /// stations via files.
@@ -101,7 +102,7 @@ class MissionRepository {
     final file = result.files.first;
     final bytes = file.bytes;
     if (bytes == null) {
-      throw MissionParseException('Không đọc được nội dung file đã chọn.');
+      throw MissionParseException(L10n.current.dtMcCantReadFile);
     }
     final content = utf8.decode(bytes, allowMalformed: true).trim();
     final id = newId();
@@ -115,7 +116,7 @@ class MissionRepository {
       return _codec.decodeJson(content).withId(id);
     }
     throw MissionParseException(
-      'Định dạng không nhận diện được (cần QGC WPL hoặc JSON mission).',
+      L10n.current.dtMcUnknownFormat,
     );
   }
 
@@ -127,7 +128,7 @@ class MissionRepository {
   }) async {
     final bytes = Uint8List.fromList(utf8.encode(content));
     return FilePicker.platform.saveFile(
-      dialogTitle: 'Lưu file mission',
+      dialogTitle: L10n.current.dtMcSaveDialogTitle,
       fileName: fileName,
       bytes: bytes,
     );

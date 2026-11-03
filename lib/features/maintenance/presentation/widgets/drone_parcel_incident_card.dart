@@ -5,6 +5,7 @@ import 'package:smart_laundry_locker/features/drone_delivery/domain/entities/dro
 import 'package:smart_laundry_locker/features/locker_ops/data/drone_technician_errors.dart';
 import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
 import 'package:smart_laundry_locker/features/maintenance/presentation/widgets/drone_recovery_queue.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 // Sự cố rơi kiện phía KTV drone: thẻ trong tab Điều phối và sheet chi tiết
 // (`GET /api/drone-technician/drone-incidents[/{id}]`).
@@ -13,57 +14,57 @@ const _danger = Color(0xFFDC2626);
 const _dark = Color(0xFF0F172A);
 const _muted = Color(0xFF64748B);
 
-const _incidentStatusLabels = <String, String>{
-  'REPORTED': 'Đã báo sự cố',
-  'EVIDENCE_PENDING': 'Chờ bổ sung bằng chứng',
-  'INVESTIGATING': 'Đang xác minh',
-  'RECOVERY_IN_PROGRESS': 'Đang thu hồi kiện',
-  'AWAITING_ADMIN_REVIEW': 'Chờ quản trị xem xét',
-  'RESOLUTION_PROPOSED': 'Đã đề xuất cách xử lý',
-  'AWAITING_CUSTOMER_RESPONSE': 'Chờ khách phản hồi',
-  'RESOLUTION_IN_PROGRESS': 'Đang thực hiện xử lý',
-  'DISPUTED': 'Khách yêu cầu xem xét lại',
-  'RESOLVED': 'Đã giải quyết',
-  'CLOSED': 'Đã đóng',
-  'MANUAL_INTERVENTION_REQUIRED': 'Cần can thiệp tay',
+Map<String, String> get _incidentStatusLabels => <String, String>{
+  'REPORTED': L10n.current.incStReported,
+  'EVIDENCE_PENDING': L10n.current.incStEvidencePending,
+  'INVESTIGATING': L10n.current.incStInvestigating,
+  'RECOVERY_IN_PROGRESS': L10n.current.incStRecoveryInProgress,
+  'AWAITING_ADMIN_REVIEW': L10n.current.incStAwaitingAdmin,
+  'RESOLUTION_PROPOSED': L10n.current.incStResolutionProposed,
+  'AWAITING_CUSTOMER_RESPONSE': L10n.current.incStAwaitingCustomer,
+  'RESOLUTION_IN_PROGRESS': L10n.current.incStResolutionInProgress,
+  'DISPUTED': L10n.current.incStDisputed,
+  'RESOLVED': L10n.current.incStResolved,
+  'CLOSED': L10n.current.incStClosed,
+  'MANUAL_INTERVENTION_REQUIRED': L10n.current.incStManual,
 };
 
-const _returnFlightLabels = <String, String>{
-  'RETURN_REQUESTED': 'Đã yêu cầu drone quay về (RTL)',
-  'COMMAND_ACCEPTED': 'Drone đã nhận lệnh RTL',
-  'RETURNING': 'Drone đang bay về trạm',
-  'COMPLETED': 'Drone đã về trạm',
-  'FAILED': 'RTL thất bại',
-  'MANUAL_INTERVENTION_REQUIRED': 'Cần can thiệp tay / RTL thủ công',
+Map<String, String> get _returnFlightLabels => <String, String>{
+  'RETURN_REQUESTED': L10n.current.dtRtlRequested,
+  'COMMAND_ACCEPTED': L10n.current.dtRtlAccepted,
+  'RETURNING': L10n.current.dtRtlReturning,
+  'COMPLETED': L10n.current.dtRtlCompleted,
+  'FAILED': L10n.current.dtRtlFailed,
+  'MANUAL_INTERVENTION_REQUIRED': L10n.current.dtRtlManual,
 };
 
-const _parcelStatusLabels = <String, String>{
-  'IN_TRANSIT': 'Đang vận chuyển',
-  'DROP_REPORTED': 'Đã báo rơi kiện',
-  'RECOVERY_PENDING': 'Chờ thu hồi',
-  'FOUND': 'Đã tìm thấy',
-  'RECOVERED': 'Đã thu hồi',
-  'DAMAGED': 'Hư hỏng',
-  'LOST': 'Thất lạc',
-  'RETURNED_TO_HUB': 'Đã về kho',
-  'REDELIVERY_PENDING': 'Chờ giao lại',
-  'REDELIVERED': 'Đã giao lại',
-  'COMPENSATED': 'Đã bồi thường',
+Map<String, String> get _parcelStatusLabels => <String, String>{
+  'IN_TRANSIT': L10n.current.parStInTransit,
+  'DROP_REPORTED': L10n.current.parStDropReported,
+  'RECOVERY_PENDING': L10n.current.parStRecoveryPending,
+  'FOUND': L10n.current.parStFound,
+  'RECOVERED': L10n.current.parStRecovered,
+  'DAMAGED': L10n.current.parStDamaged,
+  'LOST': L10n.current.parStLost,
+  'RETURNED_TO_HUB': L10n.current.parStReturnedToHub,
+  'REDELIVERY_PENDING': L10n.current.parStRedeliveryPending,
+  'REDELIVERED': L10n.current.parStRedelivered,
+  'COMPENSATED': L10n.current.parStCompensated,
 };
 
-const _recoveryStatusLabels = <String, String>{
-  'OPEN': 'Chờ xử lý',
-  'AWAITING_ASSIGNMENT': 'Chờ phân công KTV tủ',
-  'ASSIGNED': 'Đã phân công',
-  'ACCEPTED': 'KTV đã nhận',
-  'SEARCHING': 'Đang tìm kiện',
-  'PARCEL_FOUND': 'Đã tìm thấy kiện',
-  'PARCEL_NOT_FOUND': 'Không tìm thấy kiện',
-  'RECOVERED': 'Đã thu hồi',
-  'SUBMITTED': 'Đã nộp kết quả',
-  'VERIFIED': 'Đã xác minh',
-  'CLOSED': 'Đã đóng',
-  'CANCELLED': 'Đã huỷ',
+Map<String, String> get _recoveryStatusLabels => <String, String>{
+  'OPEN': L10n.current.recStOpen,
+  'AWAITING_ASSIGNMENT': L10n.current.recStAwaitingAssignment,
+  'ASSIGNED': L10n.current.recStAssigned,
+  'ACCEPTED': L10n.current.recStAccepted,
+  'SEARCHING': L10n.current.recStSearching,
+  'PARCEL_FOUND': L10n.current.recStFound,
+  'PARCEL_NOT_FOUND': L10n.current.recStNotFound,
+  'RECOVERED': L10n.current.recStRecovered,
+  'SUBMITTED': L10n.current.recStSubmitted,
+  'VERIFIED': L10n.current.recStVerified,
+  'CLOSED': L10n.current.recStClosed,
+  'CANCELLED': L10n.current.recStCancelled,
 };
 
 String _label(Map<String, String> labels, dynamic raw) {
@@ -101,17 +102,15 @@ class DroneManualReturnBanner extends StatelessWidget {
       borderRadius: BorderRadius.circular(12),
       border: Border.all(color: _danger.withValues(alpha: 0.4)),
     ),
-    child: const Row(
+    child: Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(Icons.pan_tool_alt_outlined, color: _danger, size: 18),
-        SizedBox(width: 8),
+        const Icon(Icons.pan_tool_alt_outlined, color: _danger, size: 18),
+        const SizedBox(width: 8),
         Expanded(
           child: Text(
-            'Cần can thiệp tay / RTL thủ công: hệ thống không đưa drone về được. '
-            'Điều khiển drone về trạm bằng kênh điều khiển riêng của đội bay rồi '
-            'báo quản trị.',
-            style: TextStyle(
+            context.l10n.dtManualReturnBanner,
+            style: const TextStyle(
               fontSize: 12,
               color: _danger,
               fontWeight: FontWeight.w700,
@@ -135,8 +134,8 @@ class DroneParcelIncidentCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final code = '${incident['incidentCode'] ?? 'Sự cố #${incident['id']}'}';
-    final orderCode = incident['orderCode'] ?? 'Đơn #${incident['orderId']}';
+    final code = '${incident['incidentCode'] ?? context.l10n.dtIncidentNumber('${incident['id']}')}';
+    final orderCode = incident['orderCode'] ?? context.l10n.dtOrderNumber('${incident['orderId']}');
     final drone = incident['droneCode'] ?? '—';
     final createdAt = parseServerDateTime(incident['createdAt']);
     final manual = droneIncidentNeedsManualReturn(incident);
@@ -181,20 +180,20 @@ class DroneParcelIncidentCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  'Drone $drone · ${droneIncidentStatusLabel(incident['status'])}',
+                  context.l10n.dtIncDroneStatus('$drone', droneIncidentStatusLabel(incident['status'])),
                   style: const TextStyle(fontSize: 12, color: _muted),
                 ),
                 if (incident['returnFlightStatus'] != null) ...[
                   const SizedBox(height: 2),
                   Text(
-                    'Quay về: ${droneReturnFlightLabel(incident['returnFlightStatus'])}',
+                    context.l10n.dtIncReturn(droneReturnFlightLabel(incident['returnFlightStatus'])),
                     style: const TextStyle(fontSize: 12, color: _muted),
                   ),
                 ],
                 if (createdAt != null) ...[
                   const SizedBox(height: 2),
                   Text(
-                    'Báo lúc ${formatDateTimeVn(createdAt)}',
+                    context.l10n.dtIncReportedAt(formatDateTimeVn(createdAt)),
                     style: const TextStyle(fontSize: 11, color: _muted),
                   ),
                 ],
@@ -278,7 +277,7 @@ class _DroneParcelIncidentSheetState extends State<DroneParcelIncidentSheet> {
         _loading = false;
         _error = droneTechnicianErrorMessage(
           error,
-          unsupported: 'Máy chủ chưa hỗ trợ xem chi tiết sự cố.',
+          unsupported: L10n.current.dtIncDetailUnsupported,
         );
       });
     }
@@ -304,12 +303,12 @@ class _DroneParcelIncidentSheetState extends State<DroneParcelIncidentSheet> {
         padding: const EdgeInsets.fromLTRB(18, 0, 18, 24),
         children: [
           Text(
-            'Sự cố rơi kiện ${incident['incidentCode'] ?? ''}'.trim(),
+            context.l10n.dtIncSheetTitle('${incident['incidentCode'] ?? ''}').trim(),
             style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
           ),
           const SizedBox(height: 4),
           Text(
-            '${incident['orderCode'] ?? 'Đơn #${incident['orderId']}'} · '
+            '${incident['orderCode'] ?? context.l10n.dtOrderNumber('${incident['orderId']}')} · '
             'Drone ${incident['droneCode'] ?? '—'}',
             style: const TextStyle(fontSize: 12, color: _muted),
           ),
@@ -325,7 +324,7 @@ class _DroneParcelIncidentSheetState extends State<DroneParcelIncidentSheet> {
               child: TextButton.icon(
                 onPressed: _load,
                 icon: const Icon(Icons.refresh_rounded, size: 18),
-                label: const Text('Thử lại'),
+                label: Text(context.l10n.commonRetry),
               ),
             ),
           ],
@@ -334,10 +333,10 @@ class _DroneParcelIncidentSheetState extends State<DroneParcelIncidentSheet> {
             const DroneManualReturnBanner(),
           ],
           const SizedBox(height: 14),
-          _row('Trạng thái', droneIncidentStatusLabel(incident['status'])),
-          _row('Quay về', droneReturnFlightLabel(incident['returnFlightStatus'])),
+          _row(context.l10n.dtIncStatusRow, droneIncidentStatusLabel(incident['status'])),
+          _row(context.l10n.dtIncReturnRow, droneReturnFlightLabel(incident['returnFlightStatus'])),
           _row(
-            'Kiện hàng',
+            context.l10n.dtIncParcelRow,
             incident['parcelCondition'] != null
                 ? droneParcelStateLabel(
                     incident['parcelStatus'],
@@ -346,24 +345,24 @@ class _DroneParcelIncidentSheetState extends State<DroneParcelIncidentSheet> {
                 : _label(_parcelStatusLabels, incident['parcelStatus']),
           ),
           _row(
-            'Thu hồi kiện',
+            context.l10n.dtIncRecoveryRow,
             _label(_recoveryStatusLabels, incident['recoveryStatus']),
           ),
-          _row('Mô tả', '${incident['reason'] ?? '—'}'),
+          _row(context.l10n.dtIncDescriptionRow, '${incident['reason'] ?? '—'}'),
           _row(
-            'Vị trí báo rơi',
+            context.l10n.dtIncDropLocationRow,
             lat is num && lng is num && (lat != 0 || lng != 0)
                 ? '${lat.toStringAsFixed(5)}, ${lng.toStringAsFixed(5)}'
-                      '${incident['telemetryStale'] == true ? ' (telemetry cũ)' : ''}'
-                : 'Không có toạ độ',
+                      '${incident['telemetryStale'] == true ? context.l10n.dtIncTelemetryStale : ''}'
+                : context.l10n.dtIncNoCoordinates,
           ),
           _row('Camera', '${incident['cameraStatus'] ?? '—'}'),
           if ('${incident['recoveryStationName'] ?? ''}'.trim().isNotEmpty &&
               '${incident['recoveryStationName']}' != 'null')
             _row(
-              'Trạm nhận kiện',
+              context.l10n.dtIncRecoveryStationRow,
               '${incident['recoveryStationName']}'
-                  '${incident['recoveryStationDroneAvailable'] == false ? ' (đang chờ drone)' : ''}',
+                  '${incident['recoveryStationDroneAvailable'] == false ? context.l10n.dtIncWaitingDrone : ''}',
             ),
           // Chỉ KTV được giao thu hồi mới thao tác được nhiệm vụ (server trả 403 cho người khác).
           if (incident['id'] != null &&
@@ -385,7 +384,7 @@ class _DroneParcelIncidentSheetState extends State<DroneParcelIncidentSheet> {
                     builder: (_) => Scaffold(
                       appBar: AppBar(
                         title: Text(
-                          'Thu hồi sự cố ${incident['incidentCode'] ?? '#$id'}',
+                          context.l10n.dtIncRecoveryTitle('${incident['incidentCode'] ?? '#$id'}'),
                         ),
                       ),
                       body: SafeArea(
@@ -399,17 +398,17 @@ class _DroneParcelIncidentSheetState extends State<DroneParcelIncidentSheet> {
                 );
               },
               icon: const Icon(Icons.travel_explore_outlined),
-              label: const Text(
-                'Mở nhiệm vụ tìm kiếm & thu hồi kiện',
-                style: TextStyle(fontWeight: FontWeight.w700),
+              label: Text(
+                context.l10n.dtIncOpenRecovery,
+                style: const TextStyle(fontWeight: FontWeight.w700),
               ),
             ),
           ],
           if (timeline.isNotEmpty) ...[
             const SizedBox(height: 14),
-            const Text(
-              'Dòng thời gian',
-              style: TextStyle(fontWeight: FontWeight.w800),
+            Text(
+              context.l10n.dtIncTimeline,
+              style: const TextStyle(fontWeight: FontWeight.w800),
             ),
             const SizedBox(height: 8),
             for (final event in timeline) _timelineRow(event),
