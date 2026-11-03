@@ -14334,4 +14334,49 @@ class AppLocalizationsVi extends AppLocalizations {
   String dtObtBlocked(Object stage, Object reason) {
     return 'Đang bị chặn ($stage) · $reason';
   }
+
+  @override
+  String get sendStorageTime => 'Thời gian giữ hàng';
+
+  @override
+  String sendStorageExtra(int included, int extra, String price) {
+    return 'Phí gửi đã gồm $included giờ · giữ thêm $extra giờ: +$price';
+  }
+
+  @override
+  String sendStorageIncluded(int hours, String price) {
+    return 'Đã gồm trong phí gửi $price ($hours giờ). Chọn lâu hơn thì trả thêm phần giờ vượt theo giá thuê ô.';
+  }
+
+  @override
+  String sendStorageHoursDays(int hours, int days) {
+    return '$hours giờ ($days ngày)';
+  }
+
+  @override
+  String ordSendStorageMaxed(int hours) {
+    return 'Đơn đã giữ tối đa $hours giờ, không gia hạn thêm được.';
+  }
+
+  @override
+  String get ordExtendSend => 'Gia hạn giữ hàng';
+
+  @override
+  String ordSendExtendFee(String price) {
+    return 'Phí thêm: $price';
+  }
+
+  @override
+  String get ordSendExtendPaidNote =>
+      'Đơn đã thanh toán: bạn trả phần gia hạn ngay sau bước này, trả xong hạn lấy hàng mới được dời.';
+
+  @override
+  String ordPaySendExtension(int hours, String price) {
+    return 'Thanh toán gia hạn $hours giờ · $price';
+  }
+
+  @override
+  String ordSendStoragePending(int hours, int pending) {
+    return '$hours giờ (+$pending giờ chờ thanh toán)';
+  }
 }

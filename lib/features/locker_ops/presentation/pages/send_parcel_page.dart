@@ -76,7 +76,18 @@ class _SendParcelPageState extends State<SendParcelPage>
   final _noteCtrl = TextEditingController();
 
   /// Phí gửi hiển thị (admin cấu hình) — server tự tính tiền thật.
-  int get _fee => businessConfig.sendBaseFee;
+  /// Số giờ giữ hàng tính từ lúc bỏ hàng; phí gửi đã gồm [BusinessConfig.sendPickupHoursLimit] giờ.
+  late int _storageHours = businessConfig.sendPickupHoursLimit;
+  bool _storageHoursTouched = false;
+
+  @override
+  void onBusinessConfigChanged(BusinessConfig config) {
+    _storageHours = _storageHoursTouched
+        ? config.clampSendStorageHours(_storageHours)
+        : config.sendPickupHoursLimit;
+  }
+
+  int get _fee => businessConfig.sendStoragePriceFor(_storageHours);
 
   static const _sizes = ['SMALL', 'MEDIUM', 'LARGE'];
 
@@ -414,6 +425,7 @@ class _SendParcelPageState extends State<SendParcelPage>
         promotionCode: _promoCode,
         size: _size,
         pointsToUse: _pointsToUse > 0 ? _pointsToUse : null,
+        storageHours: _storageHours,
       );
       if (!mounted) return;
       setState(() => _order = order);
@@ -724,7 +736,7 @@ class _SendParcelPageState extends State<SendParcelPage>
                       widget.initialBoxId != null &&
                               _normalizeSize(widget.initialBoxSize) == null
                           ? typeLabel('SEND')
-                          : '${typeLabel('SEND')} · ${_sizeTitle(_size)}',
+                          : '${typeLabel('SEND')} · ${_sizeTitle(_size)} · ${_storageLabel(_storageHours)}',
                       style: const TextStyle(color: Colors.white, fontSize: 12),
                     ),
                   ],
@@ -804,6 +816,92 @@ class _SendParcelPageState extends State<SendParcelPage>
   }
 
   // ---- Stage 1: form ----
+  /// Thời gian giữ hàng: nút chọn nhanh + thanh kéo từ số giờ đã gồm trong phí gửi tới tối đa admin đặt.
+  /// Giống chọn giờ ở thuê tủ; giờ vượt phần đã gồm tính theo giá thuê ô.
+  Widget _storagePicker() {
+    final config = businessConfig;
+    final included = config.sendPickupHoursLimit;
+    final maxHours = config.sendStorageMaxHours;
+    final currentHours = config.clampSendStorageHours(_storageHours);
+    final extraHours = currentHours - included;
+    final extraFee = config.sendStoragePriceFor(currentHours) - config.sendBaseFee;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Wrap(
+          spacing: 8,
+          runSpacing: 4,
+          children: [
+            for (final h in config.sendStorageQuickHours)
+              ChoiceChip(
+                key: ValueKey('send-storage-$h'),
+                label: Text(_storageLabel(h)),
+                selected: currentHours == h,
+                showCheckmark: false,
+                backgroundColor: Colors.white,
+                selectedColor: opsPrimary,
+                side: BorderSide(color: currentHours == h ? opsPrimary : opsBorder),
+                labelStyle: TextStyle(
+                  color: currentHours == h ? Colors.white : opsDark,
+                  fontWeight: FontWeight.w700,
+                ),
+                onSelected: (_) => setState(() {
+                  _storageHoursTouched = true;
+                  _storageHours = h;
+                }),
+              ),
+          ],
+        ),
+        Row(
+          children: [
+            Expanded(
+              child: maxHours > included
+                  ? Slider(
+                      value: currentHours.toDouble(),
+                      min: included.toDouble(),
+                      max: maxHours.toDouble(),
+                      divisions: maxHours - included,
+                      activeColor: opsPrimary,
+                      label: _storageLabel(currentHours),
+                      onChanged: (v) => setState(() {
+                        _storageHoursTouched = true;
+                        _storageHours = config.clampSendStorageHours(v);
+                      }),
+                    )
+                  : const SizedBox.shrink(),
+            ),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              decoration: BoxDecoration(
+                color: opsPrimary.withValues(alpha: 0.10),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                _storageLabel(currentHours),
+                style: const TextStyle(fontWeight: FontWeight.w800, color: opsPrimary),
+              ),
+            ),
+          ],
+        ),
+        Text(
+          extraHours > 0
+              ? context.l10n.sendStorageExtra(
+                  included,
+                  extraHours,
+                  fmtPrice(extraFee),
+                )
+              : context.l10n.sendStorageIncluded(included, fmtPrice(config.sendBaseFee)),
+          style: const TextStyle(fontSize: 12, color: opsMutedText, height: 1.4),
+        ),
+      ],
+    );
+  }
+
+  /// `48 giờ` · `72 giờ (3 ngày)`.
+  String _storageLabel(int hours) => hours % 24 == 0 && hours >= 72
+      ? context.l10n.sendStorageHoursDays(hours, hours ~/ 24)
+      : context.l10n.hoursValue(hours);
+
   Widget _buildForm() {
     if (_loadingLockers) {
       return Center(
@@ -909,11 +1007,14 @@ class _SendParcelPageState extends State<SendParcelPage>
             maxLines: 2,
             maxLength: _noteMaxLength,
           ),
+          const SizedBox(height: 20),
+          OpsSectionLabel(context.l10n.sendStorageTime, icon: LucideIcons.clock),
+          _storagePicker(),
           const SizedBox(height: 12),
           OpsBanner(
             tone: OpsBannerTone.info,
             icon: LucideIcons.clock,
-            text: sendPickupPolicyText(businessConfig),
+            text: sendPickupPolicyText(businessConfig, hours: _storageHours),
           ),
           // Admin đặt 0 mã mỗi đơn ⇒ tắt nhập mã.
           if (businessConfig.maxVouchersPerOrder > 0) ...[
@@ -1126,7 +1227,7 @@ class _SendParcelPageState extends State<SendParcelPage>
                   children: [
                     Flexible(
                       child: Text(
-                        context.l10n.sendFeePerParcel(fmtPrice(_fee)),
+                        context.l10n.sendFeePerParcel(fmtPrice(businessConfig.sendBaseFee)),
                         style: const TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w700,

@@ -14704,4 +14704,49 @@ class AppLocalizationsEn extends AppLocalizations {
   String dtObtBlocked(Object stage, Object reason) {
     return 'Blocked ($stage) · $reason';
   }
+
+  @override
+  String get sendStorageTime => 'Storage time';
+
+  @override
+  String sendStorageExtra(int included, int extra, String price) {
+    return 'Sending fee covers $included h · $extra extra h: +$price';
+  }
+
+  @override
+  String sendStorageIncluded(int hours, String price) {
+    return 'Included in the $price sending fee ($hours h). Longer storage adds the extra hours at the compartment rental rate.';
+  }
+
+  @override
+  String sendStorageHoursDays(int hours, int days) {
+    return '$hours h ($days days)';
+  }
+
+  @override
+  String ordSendStorageMaxed(int hours) {
+    return 'This order is already at the $hours-hour storage limit and can\'t be extended.';
+  }
+
+  @override
+  String get ordExtendSend => 'Extend storage';
+
+  @override
+  String ordSendExtendFee(String price) {
+    return 'Extra fee: $price';
+  }
+
+  @override
+  String get ordSendExtendPaidNote =>
+      'This order is already paid: you\'ll pay for the extension next, and the pickup deadline moves once it\'s paid.';
+
+  @override
+  String ordPaySendExtension(int hours, String price) {
+    return 'Pay for $hours h extension · $price';
+  }
+
+  @override
+  String ordSendStoragePending(int hours, int pending) {
+    return '$hours h (+$pending h awaiting payment)';
+  }
 }

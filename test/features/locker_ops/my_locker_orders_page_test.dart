@@ -99,6 +99,58 @@ class _FakeRentalExtendLockerOpsService extends LockerOpsService {
   Future<List<Map<String, dynamic>>> myReports() async => const [];
 }
 
+/// Đơn gửi hàng của người gửi: chưa bỏ hàng, chưa trả, đang giữ 48 giờ.
+class _FakeSendExtendLockerOpsService extends LockerOpsService {
+  _FakeSendExtendLockerOpsService([Map<String, dynamic>? extra])
+    : super(dio: createMockDio().dio) {
+    if (extra != null) _order.addAll(extra);
+  }
+
+  final Map<String, dynamic> _order = {
+    'id': 61,
+    'type': 'SEND',
+    'status': 'INITIALIZED',
+    'paymentStatus': 'UNPAID',
+    'totalPrice': 15000,
+    'rentalDurationHours': 48,
+    'lockerId': 5,
+    'sendBoxId': 5001,
+    'pinCode': '112233',
+    'orderCode': 'ORD-61',
+    'receiverPhone': '0909000000',
+    'receiverEmail': 'nhan@example.com',
+    'createdAt': '2026-07-15T09:00:00',
+  };
+
+  int? lastExtendHours;
+
+  @override
+  Future<List<Map<String, dynamic>>> myOrders() async => [Map.of(_order)];
+
+  @override
+  Future<Map<String, dynamic>> locker(int lockerId) async => {
+    'id': lockerId,
+    'name': 'Tủ gửi',
+  };
+
+  @override
+  Future<Map<String, dynamic>> layout(int lockerId) async => {
+    'cells': [
+      {'id': 5001, 'boxNumber': 3},
+    ],
+  };
+
+  @override
+  Future<Map<String, dynamic>> extendSend(int orderId, int hours) async {
+    lastExtendHours = hours;
+    _order['rentalDurationHours'] = (_order['rentalDurationHours'] as int) + hours;
+    return Map.of(_order);
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> myReports() async => const [];
+}
+
 /// Đơn thuê đã trả, được giảm bằng mã và điểm thưởng.
 class _FakeDiscountedOrderService extends LockerOpsService {
   _FakeDiscountedOrderService() : super(dio: createMockDio().dio);
@@ -470,6 +522,97 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(service.lastExtendHours, 3);
+  });
+
+  testWidgets('đơn gửi: chi tiết có nút gia hạn giữ hàng, tự chọn số giờ và xem phí thêm', (
+    tester,
+  ) async {
+    final config = useBusinessConfig(
+      BusinessConfig.fromPublicMaps(
+        order: {
+          'app.order.send-base-fee': 15000,
+          'app.order.send-pickup-hours-limit': 48,
+          'app.order.send-storage-max-hours': 72,
+          'app.order.extend-default-hours': 12,
+          'app.order.extend-max-hours': 48,
+        },
+      ),
+    ).current;
+    final service = _FakeSendExtendLockerOpsService();
+
+    await tester.binding.setSurfaceSize(const Size(390, 844));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: MediaQuery(
+          data: const MediaQueryData(size: Size(390, 844)),
+          child: MyLockerOrdersPage(service: service),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Tủ gửi'));
+    await tester.pumpAndSettle();
+    expect(find.text('Thời gian giữ hàng'), findsOneWidget);
+    final action = find.byKey(const ValueKey('send-extend-action'));
+    await tester.ensureVisible(action);
+    await tester.tap(action);
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const ValueKey('send-extend-dialog')), findsOneWidget);
+    expect(find.text('Thêm 12 giờ'), findsOneWidget);
+    // Còn 72 − 48 = 24 giờ được giữ thêm (nhỏ hơn tối đa mỗi lần gia hạn).
+    final slider = tester.widget<Slider>(find.byType(Slider));
+    expect(slider.min, 1);
+    expect(slider.max, 24);
+    final fee = config.sendStoragePriceFor(60) - config.sendStoragePriceFor(48);
+    expect(find.text('Phí thêm: ${fmtPrice(fee)}'), findsOneWidget);
+
+    await tester.tap(find.byKey(const ValueKey('send-extend-confirm')));
+    await tester.pumpAndSettle();
+    expect(service.lastExtendHours, 12);
+  });
+
+  testWidgets('đơn gửi có gia hạn chờ trả: nút thanh toán gia hạn, ẩn nút gia hạn', (
+    tester,
+  ) async {
+    final service = _FakeSendExtendLockerOpsService({
+      'status': 'STORING',
+      'paymentStatus': 'UNPAID',
+      'paidAmount': 15000,
+      'totalPrice': 20000,
+      'amountDue': 5000,
+      'pendingExtensionHours': 24,
+      'pendingExtensionFee': 5000,
+      'pickupDeadline': DateTime.now()
+          .toUtc()
+          .add(const Duration(hours: 20))
+          .toIso8601String()
+          .split('.')
+          .first,
+    });
+
+    await tester.binding.setSurfaceSize(const Size(390, 844));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: MediaQuery(
+          data: const MediaQueryData(size: Size(390, 844)),
+          child: MyLockerOrdersPage(service: service),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Tủ gửi'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('48 giờ (+24 giờ chờ thanh toán)'), findsOneWidget);
+    expect(find.text('Thanh toán gia hạn 24 giờ · 5.000đ'), findsOneWidget);
+    expect(find.byKey(const ValueKey('send-extend-action')), findsNothing);
   });
 
   testWidgets('drone order header fits a narrow screen and hides unpaid credentials', (

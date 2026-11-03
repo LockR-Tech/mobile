@@ -30,6 +30,9 @@ class _FakeSendLockerOpsService extends LockerOpsService {
   /// Email người nhận app gửi khi tạo đơn.
   String? sentReceiverEmail;
 
+  /// Số giờ giữ hàng app gửi khi tạo đơn.
+  int? sentStorageHours;
+
   /// Ô trên sơ đồ tủ: ô thường S/M/L, ô vali XL (không dùng cho gửi hàng).
   List<Map<String, dynamic>> cells = [
     {'id': 901, 'boxNumber': 4, 'size': 'SMALL', 'cellType': 'STANDARD', 'status': 'AVAILABLE'},
@@ -75,8 +78,10 @@ class _FakeSendLockerOpsService extends LockerOpsService {
     String? size,
     int? boxId,
     int? pointsToUse,
+    int? storageHours,
   }) async {
     sentPointsToUse = pointsToUse;
+    sentStorageHours = storageHours;
     sentReceiverEmail = receiverEmail;
     final created = createdOverride;
     if (created != null) {
@@ -265,7 +270,7 @@ void main() {
     // Ô vali XL không tính cho gửi hàng; cỡ vừa (mặc định) hết ⇒ chuyển sang nhỏ.
     expect(find.text('Còn 1 ô trống'), findsOneWidget);
     expect(find.text('Hết ô'), findsNWidgets(2));
-    expect(find.text('Gửi hàng · Ô nhỏ (S)'), findsOneWidget);
+    expect(find.text('Gửi hàng · Ô nhỏ (S) · 48 giờ'), findsOneWidget);
 
     await tester.pumpWidget(const SizedBox());
     service.cells = [
@@ -435,6 +440,58 @@ void main() {
       expect(find.text('Đã thanh toán'), findsOneWidget);
     },
   );
+
+  testWidgets('chọn thời gian giữ hàng: giá đổi theo giờ vượt, gửi storageHours', (
+    tester,
+  ) async {
+    final config = useBusinessConfig(
+      BusinessConfig.fromPublicMaps(
+        order: {
+          'app.order.send-base-fee': 15000,
+          'app.order.send-pickup-hours-limit': 48,
+          'app.order.send-storage-max-hours': 168,
+          'app.order.send-storage-quick-hours': '48,72,168',
+        },
+      ),
+    ).current;
+    await tester.binding.setSurfaceSize(const Size(800, 2400));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    final service = _FakeSendLockerOpsService();
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: SendParcelPage(
+          initialLockerId: 5,
+          initialLockerName: 'Tủ demo',
+          service: service,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Thời gian giữ hàng'), findsOneWidget);
+    expect(find.byKey(const ValueKey('send-storage-48')), findsOneWidget);
+    expect(find.byKey(const ValueKey('send-storage-72')), findsOneWidget);
+    expect(find.byKey(const ValueKey('send-storage-168')), findsOneWidget);
+    expect(find.byType(Slider), findsOneWidget);
+
+    await tester.tap(find.byKey(const ValueKey('send-storage-72')));
+    await tester.pumpAndSettle();
+    final price72 = config.sendStoragePriceFor(72);
+    expect(price72, greaterThan(15000));
+    expect(find.text(fmtPrice(price72)), findsWidgets);
+    expect(
+      find.textContaining('Người nhận có 72 giờ để lấy hàng'),
+      findsOneWidget,
+    );
+
+    await tester.enterText(find.byType(TextFormField).first, '0909000000');
+    await tester.enterText(find.byKey(const ValueKey('send-receiver-email')), 'nhan@example.com');
+    await tester.tap(find.text('Tạo đơn & lấy PIN bỏ hàng'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 600));
+    expect(service.sentStorageHours, 72);
+  });
 
   testWidgets('máy chủ chưa hỗ trợ dùng điểm ⇒ không gửi pointsToUse', (
     tester,

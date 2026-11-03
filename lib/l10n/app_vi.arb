@@ -7974,5 +7974,82 @@
       "stage": {},
       "reason": {}
     }
+  },
+  "sendStorageTime": "Thời gian giữ hàng",
+  "sendStorageExtra": "Phí gửi đã gồm {included} giờ · giữ thêm {extra} giờ: +{price}",
+  "@sendStorageExtra": {
+    "placeholders": {
+      "included": {
+        "type": "int"
+      },
+      "extra": {
+        "type": "int"
+      },
+      "price": {
+        "type": "String"
+      }
+    }
+  },
+  "sendStorageIncluded": "Đã gồm trong phí gửi {price} ({hours} giờ). Chọn lâu hơn thì trả thêm phần giờ vượt theo giá thuê ô.",
+  "@sendStorageIncluded": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      },
+      "price": {
+        "type": "String"
+      }
+    }
+  },
+  "sendStorageHoursDays": "{hours} giờ ({days} ngày)",
+  "@sendStorageHoursDays": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      },
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "ordSendStorageMaxed": "Đơn đã giữ tối đa {hours} giờ, không gia hạn thêm được.",
+  "@ordSendStorageMaxed": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      }
+    }
+  },
+  "ordExtendSend": "Gia hạn giữ hàng",
+  "ordSendExtendFee": "Phí thêm: {price}",
+  "@ordSendExtendFee": {
+    "placeholders": {
+      "price": {
+        "type": "String"
+      }
+    }
+  },
+  "ordSendExtendPaidNote": "Đơn đã thanh toán: bạn trả phần gia hạn ngay sau bước này, trả xong hạn lấy hàng mới được dời.",
+  "ordPaySendExtension": "Thanh toán gia hạn {hours} giờ · {price}",
+  "@ordPaySendExtension": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      },
+      "price": {
+        "type": "String"
+      }
+    }
+  },
+  "ordSendStoragePending": "{hours} giờ (+{pending} giờ chờ thanh toán)",
+  "@ordSendStoragePending": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      },
+      "pending": {
+        "type": "int"
+      }
+    }
   }
 }

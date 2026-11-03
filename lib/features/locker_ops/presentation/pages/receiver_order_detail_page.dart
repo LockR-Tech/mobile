@@ -487,7 +487,9 @@ class _ReceiverOrderDetailPageState extends State<ReceiverOrderDetailPage> {
           if (d.rentalDurationHours != null)
             OpsInfoRow(
               icon: LucideIcons.timer,
-              label: context.l10n.ordRentalDuration,
+              label: (o.type ?? '').toUpperCase() == 'SEND'
+                  ? context.l10n.sendStorageTime
+                  : context.l10n.ordRentalDuration,
               value: context.l10n.hoursValue(d.rentalDurationHours!),
             ),
           if (o.createdAt != null)

@@ -137,6 +137,9 @@ class LockerOpsService {
     /// Số điểm thưởng muốn dùng (`maxPoints` của redeem-preview). Server tự
     /// kẹp lại theo quy tắc và trả `pointsUsed`/`pointsDiscount` thật.
     int? pointsToUse,
+
+    /// Số giờ giữ hàng tính từ lúc bỏ hàng (≥ số giờ đã gồm trong phí gửi). Server cũ bỏ qua.
+    int? storageHours,
   }) => _map(
     'POST',
     '/api/orders/send',
@@ -150,6 +153,7 @@ class LockerOpsService {
       if (size != null) 'size': size,
       if (promotionCode != null) 'promotionCode': promotionCode,
       if (pointsToUse != null && pointsToUse > 0) 'pointsToUse': pointsToUse,
+      if (storageHours != null) 'storageHours': storageHours,
     },
   );
 
@@ -365,6 +369,14 @@ class LockerOpsService {
 
   Future<Map<String, dynamic>> endRental(int orderId) =>
       _map('POST', '/api/orders/$orderId/pickup-storage');
+
+  /// Người gửi gia hạn giữ hàng của đơn gửi hàng qua tủ. Đơn đã trả ⇒ server trả `pendingExtensionHours`
+  /// (chờ thanh toán `amountDue`, trả xong mới dời hạn lấy hàng).
+  Future<Map<String, dynamic>> extendSend(int orderId, int hours) => _map(
+    'POST',
+    '/api/orders/$orderId/extend-send',
+    body: {'hours': hours},
+  );
 
   Future<Map<String, dynamic>> extendRental(int orderId, int hours) => _map(
     'POST',
