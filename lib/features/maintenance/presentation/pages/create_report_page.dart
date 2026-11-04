@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:async';
 import 'dart:math' as math;
 
+import 'package:smart_laundry_locker/core/media/media.dart';
 import 'package:smart_laundry_locker/core/network/api_client.dart';
 import 'package:smart_laundry_locker/core/theme/shadcn_theme.dart';
 import 'package:smart_laundry_locker/core/services/app_event_bus.dart';
@@ -35,6 +36,16 @@ class CreateReportPage extends StatefulWidget {
   final VoidCallback? onSuccess;
   final VoidCallback? onCancel;
 
+  /// Báo cáo sự cố từ trong một đơn hàng cụ thể:
+  /// Thông tin tủ và ô được khoá cố định theo đơn, không thể thay đổi.
+  final bool isFromOrder;
+  final int? orderId;
+  final String? orderCode;
+  final int? boxNumber;
+  final String? boxLabel;
+  final LockerOpsService? service;
+  final MediaUploadService? mediaUploadService;
+
   const CreateReportPage({
     super.key,
     required this.lockerId,
@@ -48,6 +59,13 @@ class CreateReportPage extends StatefulWidget {
     this.isEmbedded = false,
     this.onSuccess,
     this.onCancel,
+    this.isFromOrder = false,
+    this.orderId,
+    this.orderCode,
+    this.boxNumber,
+    this.boxLabel,
+    this.service,
+    this.mediaUploadService,
   });
 
   @override
@@ -59,8 +77,10 @@ class _CreateReportPageState extends State<CreateReportPage> {
   final _descriptionController = TextEditingController();
   final List<File> _capturedPhotos = [];
   final ImagePicker _picker = ImagePicker();
-  late MaintenanceProvider _provider;
-  final LockerOpsService _service = LockerOpsService();
+  MaintenanceProvider? _provider;
+  late final LockerOpsService _service = widget.service ?? LockerOpsService();
+  late final MediaUploadService _mediaUploadService =
+      widget.mediaUploadService ?? MediaUploadService();
 
   /// Tủ chọn từ `GET /api/lockers` (id số). Không có tủ truyền vào thì khách
   /// phải tự chọn — không bao giờ mặc định một tủ nào.
@@ -98,9 +118,23 @@ class _CreateReportPageState extends State<CreateReportPage> {
       _boxes = LockerLayoutHelper.enrichCells(widget.initialCells!);
     }
 
-    _provider = MaintenanceInjection.provideMaintenanceProvider(ApiClient());
-    _selectedLockerId = _presetLockerId;
-    _loadLockerAddressOptions();
+    if (widget.isFromOrder) {
+      _selectedLockerId = _presetLockerId;
+      final code = widget.orderCode ?? (widget.orderId != null ? '${widget.orderId}' : '');
+      final bLabel = widget.boxLabel ?? (widget.boxNumber != null ? 'ô số ${widget.boxNumber}' : '');
+      if (bLabel.isNotEmpty && code.isNotEmpty) {
+        _titleController.text = 'Báo sự cố $bLabel - Đơn #$code';
+      } else if (code.isNotEmpty) {
+        _titleController.text = 'Báo sự cố đơn hàng #$code';
+      } else if (bLabel.isNotEmpty) {
+        _titleController.text = 'Báo sự cố $bLabel';
+      }
+      _isLoadingLockerOptions = false;
+    } else {
+      _provider = MaintenanceInjection.provideMaintenanceProvider(ApiClient());
+      _selectedLockerId = _presetLockerId;
+      _loadLockerAddressOptions();
+    }
 
     // Lắng nghe sự kiện đồng bộ thời gian thực từ EventBus
     _busSub = AppEventBus.instance.events.listen((event) {
@@ -121,7 +155,7 @@ class _CreateReportPageState extends State<CreateReportPage> {
     _busSub?.cancel();
     _titleController.dispose();
     _descriptionController.dispose();
-    _provider.dispose();
+    _provider?.dispose();
     super.dispose();
   }
 
@@ -240,28 +274,116 @@ class _CreateReportPageState extends State<CreateReportPage> {
     return message;
   }
 
+  bool get _isSmartDialogReady {
+    try {
+      return FlutterSmartDialog.observer.navigator != null;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  void _safeShowLoading(String msg) {
+    if (!_isSmartDialogReady) return;
+    try {
+      SmartDialog.showLoading<void>(msg: msg);
+    } catch (_) {}
+  }
+
+  void _safeDismiss() {
+    if (!_isSmartDialogReady) return;
+    try {
+      SmartDialog.dismiss<void>();
+    } catch (_) {}
+  }
+
+  void _safeShowToast(String msg) {
+    if (!_isSmartDialogReady) return;
+    try {
+      SmartDialog.showToast(msg);
+    } catch (_) {}
+  }
+
   Future<void> _submitReport() async {
     if (_titleController.text.trim().isEmpty) {
-      SmartDialog.showToast(context.l10n.crEnterTitle);
+      _safeShowToast(context.l10n.crEnterTitle);
       return;
     }
     if (_descriptionController.text.trim().isEmpty) {
-      SmartDialog.showToast(context.l10n.crEnterDescription);
+      _safeShowToast(context.l10n.crEnterDescription);
       return;
     }
-    final lockerId = _selectedLockerId;
-    if (lockerId == null) {
-      SmartDialog.showToast(context.l10n.crChooseLocker);
+    final lockerId = _selectedLockerId ?? _presetLockerId;
+    if (lockerId == null && !widget.isFromOrder) {
+      _safeShowToast(context.l10n.crChooseLocker);
       return;
     }
-    if (_capturedPhotos.isEmpty) {
-      SmartDialog.showToast(context.l10n.crAttachPhoto);
+    if (!widget.isFromOrder && _capturedPhotos.isEmpty) {
+      _safeShowToast(context.l10n.crAttachPhoto);
       return;
     }
 
-    SmartDialog.showLoading<void>(msg: context.l10n.crSending);
+    _safeShowLoading(context.l10n.crSending);
 
-    final result = await _provider.createReport(
+    if (widget.isFromOrder && widget.orderId != null) {
+      try {
+        List<Map<String, dynamic>> attachments = const [];
+        if (_capturedPhotos.isNotEmpty) {
+          final uploads = await _mediaUploadService.uploadImages(
+            _capturedPhotos
+                .take(_maxPhotos)
+                .map((p) => XFile(p.path))
+                .toList(growable: false),
+            MediaPurpose.reportEvidence,
+          );
+          final capturedAt = DateTime.now();
+          attachments = uploads
+              .map((u) => u.toAttachmentJson(capturedAt: capturedAt))
+              .toList();
+        }
+
+        final title = _titleController.text.trim();
+        final desc = _descriptionController.text.trim();
+        final reason = (title.isNotEmpty && title != desc) ? '$title\n$desc' : desc;
+
+        await _service.reportOrderFault(
+          widget.orderId!,
+          reason.isNotEmpty ? reason : L10n.current.ordBoxFaultDefault,
+          attachments: attachments.isNotEmpty ? attachments : null,
+        );
+
+        _safeDismiss();
+        _safeShowToast(L10n.current.crSent);
+        AppEventBus.instance.emit(ReportUpdatedEvent(reportId: '${widget.orderId}'));
+        AppEventBus.instance.emit(OrderChangedEvent(orderId: '${widget.orderId}'));
+        if (lockerId != null) {
+          AppEventBus.instance.emit(LockerLayoutUpdatedEvent(
+            lockerId: '$lockerId',
+            boxId: _selectedBoxId?.toString(),
+          ));
+        }
+
+        if (widget.onSuccess != null) {
+          widget.onSuccess!();
+        }
+        if (!widget.isEmbedded && mounted) {
+          Navigator.of(context).pop(true);
+        }
+        return;
+      } catch (e) {
+        _safeDismiss();
+        final friendlyError = _friendlyErrorMessage(LockerOpsService.errorMessage(e));
+        _safeShowToast(L10n.current.crSendFailed(friendlyError));
+        return;
+      }
+    }
+
+    final provider = _provider;
+    if (provider == null) {
+      _safeDismiss();
+      return;
+    }
+
+    final result = await provider.createReport(
       lockerId: '$lockerId',
       cabinetId: '$lockerId',
       title: _titleController.text,
@@ -270,10 +392,10 @@ class _CreateReportPageState extends State<CreateReportPage> {
       boxId: _selectedBoxId,
     );
 
-    SmartDialog.dismiss<void>();
+    _safeDismiss();
 
     if (result != null) {
-      SmartDialog.showToast(L10n.current.crSent);
+      _safeShowToast(L10n.current.crSent);
       AppEventBus.instance.emit(ReportUpdatedEvent(reportId: result.id.toString()));
       AppEventBus.instance.emit(LockerLayoutUpdatedEvent(
         lockerId: '$lockerId',
@@ -288,12 +410,13 @@ class _CreateReportPageState extends State<CreateReportPage> {
       }
       if (widget.onSuccess != null) {
         widget.onSuccess!();
-      } else if (mounted) {
-        Navigator.of(context).pop();
+      }
+      if (!widget.isEmbedded && mounted) {
+        Navigator.of(context).pop(true);
       }
     } else {
-      final friendlyError = _friendlyErrorMessage(_provider.error);
-      SmartDialog.showToast(L10n.current.crSendFailed(friendlyError));
+      final friendlyError = _friendlyErrorMessage(provider.error);
+      _safeShowToast(L10n.current.crSendFailed(friendlyError));
     }
   }
 
@@ -368,6 +491,10 @@ class _CreateReportPageState extends State<CreateReportPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            if (widget.isFromOrder && (widget.orderCode != null || widget.orderId != null)) ...[
+              _buildOrderInfoBanner(),
+              const SizedBox(height: 16),
+            ],
             _buildTextField(
               controller: _titleController,
               label: context.l10n.crTitleField,
@@ -498,7 +625,165 @@ class _CreateReportPageState extends State<CreateReportPage> {
     );
   }
 
+  Widget _buildOrderInfoBanner() {
+    final code = widget.orderCode ?? (widget.orderId != null ? '${widget.orderId}' : '');
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF0FDF4),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFBBF7D0)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: const Color(0xFFDCFCE7),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: const Icon(LucideIcons.receipt, size: 18, color: Color(0xFF16A34A)),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Đơn hàng cần báo cáo',
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF15803D),
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  '#$code',
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w800,
+                    color: Color(0xFF166534),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildLockerAddressDropdown() {
+    if (widget.isFromOrder) {
+      final name = widget.cabinetName ?? widget.lockerName ?? _selectedLockerLabel;
+      final address = widget.locationName;
+      final displayLocker = name.isNotEmpty
+          ? name
+          : (widget.lockerId.isNotEmpty ? 'Tủ #${widget.lockerId}' : 'Tủ của đơn hàng');
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  context.l10n.crFaultyLocker,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.black87,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF1F5F9),
+                  borderRadius: BorderRadius.circular(6),
+                  border: Border.all(color: const Color(0xFFCBD5E1), width: 0.8),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: const [
+                    Icon(LucideIcons.lock, size: 11, color: Color(0xFF64748B)),
+                    SizedBox(width: 4),
+                    Text(
+                      'Cố định theo đơn',
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF64748B),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF8FAFC),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.grey.shade300),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: Colors.blue.shade50,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Icon(
+                    LucideIcons.archive,
+                    size: 20,
+                    color: Colors.blue.shade700,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        displayLocker,
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.black87,
+                        ),
+                      ),
+                      if (address != null && address.isNotEmpty) ...[
+                        const SizedBox(height: 3),
+                        Text(
+                          address,
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey.shade600,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      );
+    }
+
     final presetOnly =
         _presetLockerId != null && _lockers.every((l) => l['id'] != _presetLockerId);
     return Column(
@@ -577,6 +862,113 @@ class _CreateReportPageState extends State<CreateReportPage> {
   }
 
   Widget _buildBoxSelectionSection() {
+    if (widget.isFromOrder) {
+      final boxNum = widget.boxNumber;
+      final label = widget.boxLabel ??
+          (boxNum != null ? 'Ô số $boxNum' : (widget.initialBoxId != null ? 'Ô #${widget.initialBoxId}' : 'Ô của đơn hàng'));
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  context.l10n.crChooseBox,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.black87,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF1F5F9),
+                  borderRadius: BorderRadius.circular(6),
+                  border: Border.all(color: const Color(0xFFCBD5E1), width: 0.8),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: const [
+                    Icon(LucideIcons.lock, size: 11, color: Color(0xFF64748B)),
+                    SizedBox(width: 4),
+                    Text(
+                      'Cố định theo đơn',
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF64748B),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF8FAFC),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.grey.shade300),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFEFF6FF),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Icon(
+                    LucideIcons.box,
+                    size: 20,
+                    color: Color(0xFF2563EB),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        label,
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.black87,
+                        ),
+                      ),
+                      const SizedBox(height: 3),
+                      Text(
+                        'Ô đang được sử dụng bởi đơn hàng này',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey.shade600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const Icon(
+                  Icons.check_circle_rounded,
+                  color: Color(0xFF059669),
+                  size: 20,
+                ),
+              ],
+            ),
+          ),
+        ],
+      );
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -1643,12 +2035,16 @@ class _CreateReportPageState extends State<CreateReportPage> {
       children: [
         Row(
           children: [
-            Text(
-              context.l10n.crPhotos,
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: Colors.black87,
+            Expanded(
+              child: Text(
+                context.l10n.crPhotos,
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.black87,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
             ),
             const SizedBox(width: 8),
