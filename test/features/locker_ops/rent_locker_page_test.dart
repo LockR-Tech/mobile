@@ -194,6 +194,8 @@ void main() {
 
     await tester.pumpWidget(
       MaterialApp(
+        builder: smartDialogBuilder(),
+        navigatorObservers: smartDialogObservers,
         home: RentLockerPage(
           initialLockerId: 5,
           initialLockerName: 'Tủ demo',
@@ -254,6 +256,8 @@ void main() {
 
     await tester.pumpWidget(
       MaterialApp(
+        builder: smartDialogBuilder(),
+        navigatorObservers: smartDialogObservers,
         home: RentLockerPage(
           initialLockerId: 5,
           initialLockerName: 'Tủ demo',
@@ -298,6 +302,8 @@ void main() {
 
     await tester.pumpWidget(
       MaterialApp(
+        builder: smartDialogBuilder(),
+        navigatorObservers: smartDialogObservers,
         home: RentLockerPage(
           initialLockerId: 5,
           initialLockerName: 'Tủ demo',
@@ -368,6 +374,7 @@ void main() {
     expect(service.confirmDropCalls, 1);
     expect(service.lastConfirmOrderId, 81);
     expect(find.text('Tôi đã bỏ đồ — bắt đầu kỳ thuê'), findsNothing);
+    await drainToasts(tester);
   });
 
   testWidgets(
@@ -391,6 +398,8 @@ void main() {
 
       await tester.pumpWidget(
         MaterialApp(
+        builder: smartDialogBuilder(),
+        navigatorObservers: smartDialogObservers,
           home: RentLockerPage(
             initialLockerId: 5,
             initialLockerName: 'Tủ demo',

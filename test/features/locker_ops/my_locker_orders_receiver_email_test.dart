@@ -76,6 +76,8 @@ void main() {
     final service = _FakeSendEmailService();
     await tester.pumpWidget(
       MaterialApp(
+        builder: smartDialogBuilder(),
+        navigatorObservers: smartDialogObservers,
         home: MediaQuery(
           data: const MediaQueryData(size: Size(390, 844)),
           child: MyLockerOrdersPage(service: service),
@@ -100,12 +102,15 @@ void main() {
     expect(service.emailCalls, 1);
     expect(service.sentEmail, isNull); // email không đổi ⇒ không gửi email mới
     expect(find.text('Đã gửi mã mở tủ tới nh***@example.com.'), findsOneWidget);
+    await drainToasts(tester);
   });
 
   testWidgets('đơn cũ chưa có email: phải nhập email hợp lệ rồi mới gửi', (tester) async {
     final service = _FakeSendEmailService(email: null);
     await tester.pumpWidget(
       MaterialApp(
+        builder: smartDialogBuilder(),
+        navigatorObservers: smartDialogObservers,
         home: MediaQuery(
           data: const MediaQueryData(size: Size(390, 844)),
           child: MyLockerOrdersPage(service: service),
@@ -132,11 +137,14 @@ void main() {
     await tester.pumpAndSettle();
     expect(service.emailCalls, 1);
     expect(service.sentEmail, 'moi@example.com');
+    await drainToasts(tester);
   });
 
   Future<void> openDetail(WidgetTester tester, _FakeSendEmailService service) async {
     await tester.pumpWidget(
       MaterialApp(
+        builder: smartDialogBuilder(),
+        navigatorObservers: smartDialogObservers,
         home: MediaQuery(
           data: const MediaQueryData(size: Size(390, 844)),
           child: MyLockerOrdersPage(service: service),
@@ -163,6 +171,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(service.emailCalls, 1);
     expect(find.text('Đã gửi lại thông tin đơn tới nh***@example.com.'), findsOneWidget);
+    await drainToasts(tester);
   });
 
   testWidgets('chưa thanh toán: chỉ đổi email, người nhận được báo khi đơn được thanh toán', (tester) async {
@@ -181,5 +190,6 @@ void main() {
       find.text('Đã lưu email người nhận nh***@example.com. Lock.R báo người nhận khi đơn được thanh toán.'),
       findsOneWidget,
     );
+    await drainToasts(tester);
   });
 }

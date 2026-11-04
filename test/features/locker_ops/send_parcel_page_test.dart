@@ -184,7 +184,9 @@ void main() {
     addTearDown(() => tester.binding.setSurfaceSize(null));
 
     await tester.pumpWidget(
-      const MaterialApp(
+      MaterialApp(
+        builder: smartDialogBuilder(),
+        navigatorObservers: smartDialogObservers,
         home: SendParcelPage(initialLockerId: 5, initialLockerName: 'Tủ demo'),
       ),
     );
@@ -210,6 +212,8 @@ void main() {
 
     await tester.pumpWidget(
       MaterialApp(
+        builder: smartDialogBuilder(),
+        navigatorObservers: smartDialogObservers,
         home: SendParcelPage(
           initialLockerId: 5,
           initialLockerName: 'Tủ demo',
@@ -258,6 +262,8 @@ void main() {
 
     await tester.pumpWidget(
       MaterialApp(
+        builder: smartDialogBuilder(),
+        navigatorObservers: smartDialogObservers,
         home: SendParcelPage(
           initialLockerId: 5,
           initialLockerName: 'Tủ demo',
@@ -278,6 +284,8 @@ void main() {
     ];
     await tester.pumpWidget(
       MaterialApp(
+        builder: smartDialogBuilder(),
+        navigatorObservers: smartDialogObservers,
         home: SendParcelPage(
           initialLockerId: 5,
           initialLockerName: 'Tủ demo',
@@ -304,6 +312,8 @@ void main() {
 
     await tester.pumpWidget(
       MaterialApp(
+        builder: smartDialogBuilder(),
+        navigatorObservers: smartDialogObservers,
         home: SendParcelPage(
           initialLockerId: 5,
           initialLockerName: 'Tủ demo',
@@ -369,6 +379,7 @@ void main() {
     expect(share.receiverPhone, '0909000000');
     expect(share.message, contains('gửi tới tủ Tủ demo, Toà Thử Nghiệm.'));
     expect(share.message, contains('Mã lấy hàng: 222222.'));
+    await drainToasts(tester);
   });
 
   testWidgets(
@@ -402,6 +413,8 @@ void main() {
 
       await tester.pumpWidget(
         MaterialApp(
+        builder: smartDialogBuilder(),
+        navigatorObservers: smartDialogObservers,
           home: SendParcelPage(
             initialLockerId: 5,
             initialLockerName: 'Tủ demo',
@@ -460,6 +473,8 @@ void main() {
 
     await tester.pumpWidget(
       MaterialApp(
+        builder: smartDialogBuilder(),
+        navigatorObservers: smartDialogObservers,
         home: SendParcelPage(
           initialLockerId: 5,
           initialLockerName: 'Tủ demo',
@@ -503,6 +518,8 @@ void main() {
 
     await tester.pumpWidget(
       MaterialApp(
+        builder: smartDialogBuilder(),
+        navigatorObservers: smartDialogObservers,
         home: SendParcelPage(
           initialLockerId: 5,
           initialLockerName: 'Tủ demo',

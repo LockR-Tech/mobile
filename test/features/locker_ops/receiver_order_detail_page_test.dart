@@ -125,6 +125,8 @@ Future<void> _pump(
   addTearDown(() => tester.binding.setSurfaceSize(null));
   await tester.pumpWidget(
     MaterialApp(
+        builder: smartDialogBuilder(),
+        navigatorObservers: smartDialogObservers,
       home: ReceiverOrderDetailPage(
         order: ReceiverOrder.tryParse(listItem)!,
         service: service,
@@ -376,6 +378,7 @@ void main() {
     expect(service.emailCalls, 1);
     expect(service.emailDelegated, isFalse);
     expect(find.text('Đã gửi thông tin đơn kèm mã mở tủ tới bi***@example.com.'), findsOneWidget);
+    await drainToasts(tester);
   });
 
   testWidgets('tài khoản chưa có email ⇒ hỏi bổ sung email', (tester) async {

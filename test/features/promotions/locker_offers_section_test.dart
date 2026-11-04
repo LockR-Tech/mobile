@@ -20,7 +20,9 @@ class _FakePromotionsService extends LockerOpsService {
 
 void main() {
   Future<void> pump(WidgetTester tester, Widget child) async {
-    await tester.pumpWidget(MaterialApp(home: Scaffold(body: child)));
+    await tester.pumpWidget(MaterialApp(
+        builder: smartDialogBuilder(),
+        navigatorObservers: smartDialogObservers,home: Scaffold(body: child)));
     await tester.pumpAndSettle();
   }
 
@@ -74,6 +76,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(claimed, [2]);
     expect(find.text('Đã lưu'), findsOneWidget);
+    await drainToasts(tester);
   });
 
   testWidgets('tủ không có mã riêng ⇒ ẩn hẳn mục ưu đãi', (tester) async {

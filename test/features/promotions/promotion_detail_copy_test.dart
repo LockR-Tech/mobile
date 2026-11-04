@@ -8,6 +8,8 @@ import 'package:smart_laundry_locker/core/services/platform_info.dart';
 import 'package:smart_laundry_locker/features/promotions/data/models/promotion_model.dart';
 import 'package:smart_laundry_locker/features/promotions/presentation/pages/promotion_detail_page.dart';
 
+import '../../helpers/test_helpers.dart';
+
 void main() {
   const promo = PromotionModel(
     id: 1,
@@ -39,10 +41,11 @@ void main() {
     addTearDown(tester.view.reset);
     await tester.pumpWidget(
       MaterialApp(
+        navigatorObservers: smartDialogObservers,
         locale: L10n.vi,
         supportedLocales: L10n.supportedLocales,
         localizationsDelegates: AppLocalizations.localizationsDelegates,
-        builder: (context, child) => AppScaffoldMessenger(child: child!),
+        builder: smartDialogBuilder((context, child) => AppScaffoldMessenger(child: child!)),
         home: const PromotionDetailPage(promo: promo),
       ),
     );
@@ -56,22 +59,24 @@ void main() {
     await tester.pump(const Duration(milliseconds: 400));
   }
 
-  testWidgets('Android 13+: chỉ ô "Đã sao chép" của hệ thống, app không hiện thêm SnackBar', (
+  testWidgets('Android 13+: chỉ ô "Đã sao chép" của hệ thống, app không hiện thêm toast', (
     tester,
   ) async {
     PlatformInfo.androidSdk = 34;
     await copyTwice(tester);
     expect(copied, 'GIAM20');
-    expect(find.byType(SnackBar), findsNothing);
+    expect(find.text(L10n.current.commonCopiedValue('GIAM20')), findsNothing);
   });
 
-  testWidgets('Android cũ / iOS: bấm sao chép hai lần chỉ còn một SnackBar', (
+  testWidgets('Android cũ / iOS: bấm sao chép hai lần chỉ còn một toast', (
     tester,
   ) async {
     PlatformInfo.androidSdk = 30;
     await copyTwice(tester);
+    await pumpToast(tester);
     expect(copied, 'GIAM20');
-    expect(find.byType(SnackBar), findsOneWidget);
+    // Toast mới thay toast cũ (AppMessengerService.configureToasts), không xếp hàng.
+    expect(find.text(L10n.current.commonCopiedValue('GIAM20')), findsOneWidget);
     await tester.pump(const Duration(seconds: 5));
     await tester.pumpAndSettle();
   });

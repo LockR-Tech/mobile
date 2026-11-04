@@ -164,6 +164,8 @@ Future<void> _pump(WidgetTester tester, LockerOpsService service) async {
   addTearDown(() => tester.binding.setSurfaceSize(null));
   await tester.pumpWidget(
     MaterialApp(
+        builder: smartDialogBuilder(),
+        navigatorObservers: smartDialogObservers,
       home: MediaQuery(
         data: const MediaQueryData(size: Size(390, 844)),
         child: MyLockerOrdersPage(service: service),
@@ -282,6 +284,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(service.delegateCalls, 1);
     expect(service.delegatedPhone, '0909123456');
+    await drainToasts(tester);
   });
 
   testWidgets('đổi mã PIN hỏi xác nhận rồi gọi POST /reset-pin', (
@@ -301,6 +304,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(service.resetPinCalls, 1);
     expect(find.text('Đã đổi mã PIN mới: 111222'), findsOneWidget);
+    await drainToasts(tester);
   });
 
   testWidgets('đơn đã ủy quyền lấy hộ ⇒ không có nút gửi lại cho người nhận', (

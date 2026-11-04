@@ -43,6 +43,8 @@ void main() {
   ) async {
     await tester.pumpWidget(
       MaterialApp(
+        builder: smartDialogBuilder(),
+        navigatorObservers: smartDialogObservers,
         home: StoreLockerGridPage(
           store: const Store(id: 1, name: 'Cửa hàng A', active: true),
           service: _FakeStoreLockerService(),
@@ -61,6 +63,7 @@ void main() {
 
     expect(find.textContaining('Ô số 3 đang hỏng'), findsOneWidget);
     expect(find.textContaining('Kẹt cửa'), findsOneWidget);
+    await drainToasts(tester);
   });
 
   _tests();
@@ -117,6 +120,8 @@ void _tests() {
     final service = _SingleLockerService(online: true);
     await tester.pumpWidget(
       MaterialApp(
+        builder: smartDialogBuilder(),
+        navigatorObservers: smartDialogObservers,
         home: StoreLockerGridPage(
           store: const Store(id: 3, name: 'Cửa hàng B'),
           lockerId: 7,
@@ -143,6 +148,8 @@ void _tests() {
   ) async {
     await tester.pumpWidget(
       MaterialApp(
+        builder: smartDialogBuilder(),
+        navigatorObservers: smartDialogObservers,
         home: StoreLockerGridPage(
           store: const Store(id: 3, name: 'Cửa hàng B'),
           lockerId: 7,

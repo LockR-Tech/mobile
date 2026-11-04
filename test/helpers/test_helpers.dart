@@ -1,13 +1,17 @@
 import 'dart:convert';
 
 import 'package:dio/dio.dart';
+import 'package:flutter/widgets.dart';
+import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:flutter_test/flutter_test.dart';
 import 'package:http_mock_adapter/http_mock_adapter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:smart_laundry_locker/core/config/business_config.dart';
 import 'package:smart_laundry_locker/core/config/business_config_service.dart';
 import 'package:smart_laundry_locker/core/network/api_client.dart';
 import 'package:smart_laundry_locker/core/network/dio_client.dart';
+import 'package:smart_laundry_locker/core/services/app_messenger_service.dart';
 
 export 'package:http_mock_adapter/http_mock_adapter.dart';
 
@@ -130,3 +134,27 @@ Map<String, dynamic> apiError(String message, {int code = 400}) => {
   'data': null,
   'errors': [message],
 };
+
+// ── Toast SmartDialog ───────────────────────────────────────────────────────
+
+/// Thông báo của app đi qua `SmartDialog.showToast`: app trong test phải dựng SmartDialog như `main.dart`
+/// (`builder` + `navigatorObservers`) thì chữ toast mới hiện ra để kiểm.
+/// Cấu hình toast như app (toast mới thay toast cũ, không xếp hàng).
+TransitionBuilder smartDialogBuilder([TransitionBuilder? builder]) {
+  AppMessengerService.configureToasts();
+  return FlutterSmartDialog.init(builder: builder);
+}
+
+final List<NavigatorObserver> smartDialogObservers = [FlutterSmartDialog.observer];
+
+/// Toast hiện sau vài khung hình kể từ lúc gọi `showToast`.
+Future<void> pumpToast(WidgetTester tester) async {
+  await tester.pump();
+  await tester.pump(const Duration(milliseconds: 300));
+}
+
+/// Toast có hẹn giờ tự tắt: chờ hết trước khi test kết thúc để không còn timer treo.
+Future<void> drainToasts(WidgetTester tester) async {
+  await tester.pump(const Duration(seconds: 10));
+  await tester.pumpAndSettle();
+}

@@ -445,6 +445,8 @@ void main() {
 
     await tester.pumpWidget(
       MaterialApp(
+        builder: smartDialogBuilder(),
+        navigatorObservers: smartDialogObservers,
         home: MediaQuery(
           data: const MediaQueryData(size: Size(390, 844)),
           child: MyLockerOrdersPage(service: service),
@@ -498,6 +500,8 @@ void main() {
 
     await tester.pumpWidget(
       MaterialApp(
+        builder: smartDialogBuilder(),
+        navigatorObservers: smartDialogObservers,
         home: MediaQuery(
           data: const MediaQueryData(size: Size(390, 844)),
           child: MyLockerOrdersPage(service: service),
@@ -522,6 +526,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(service.lastExtendHours, 3);
+    await drainToasts(tester);
   });
 
   testWidgets('đơn gửi: chi tiết có nút gia hạn giữ hàng, tự chọn số giờ và xem phí thêm', (
@@ -545,6 +550,8 @@ void main() {
 
     await tester.pumpWidget(
       MaterialApp(
+        builder: smartDialogBuilder(),
+        navigatorObservers: smartDialogObservers,
         home: MediaQuery(
           data: const MediaQueryData(size: Size(390, 844)),
           child: MyLockerOrdersPage(service: service),
@@ -573,6 +580,7 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('send-extend-confirm')));
     await tester.pumpAndSettle();
     expect(service.lastExtendHours, 12);
+    await drainToasts(tester);
   });
 
   testWidgets('đơn gửi có gia hạn chờ trả: nút thanh toán gia hạn, ẩn nút gia hạn', (
@@ -599,6 +607,8 @@ void main() {
 
     await tester.pumpWidget(
       MaterialApp(
+        builder: smartDialogBuilder(),
+        navigatorObservers: smartDialogObservers,
         home: MediaQuery(
           data: const MediaQueryData(size: Size(390, 844)),
           child: MyLockerOrdersPage(service: service),
@@ -620,6 +630,8 @@ void main() {
   ) async {
     await tester.pumpWidget(
       MaterialApp(
+        builder: smartDialogBuilder(),
+        navigatorObservers: smartDialogObservers,
         home: MediaQuery(
           data: const MediaQueryData(size: Size(320, 640)),
           child: MyLockerOrdersPage(service: _FakeLockerOpsService()),
@@ -646,6 +658,8 @@ void main() {
   ) async {
     await tester.pumpWidget(
       MaterialApp(
+        builder: smartDialogBuilder(),
+        navigatorObservers: smartDialogObservers,
         home: MediaQuery(
           data: const MediaQueryData(size: Size(390, 844)),
           child: MyLockerOrdersPage(
@@ -687,6 +701,7 @@ void main() {
       ),
       findsOneWidget,
     );
+    await drainToasts(tester);
   });
 
   testWidgets(
@@ -694,6 +709,8 @@ void main() {
     (tester) async {
       await tester.pumpWidget(
         MaterialApp(
+        builder: smartDialogBuilder(),
+        navigatorObservers: smartDialogObservers,
           home: MediaQuery(
             data: const MediaQueryData(size: Size(390, 844)),
             child: MyLockerOrdersPage(
@@ -717,6 +734,8 @@ void main() {
     (tester) async {
       await tester.pumpWidget(
         MaterialApp(
+        builder: smartDialogBuilder(),
+        navigatorObservers: smartDialogObservers,
           home: MediaQuery(
             data: const MediaQueryData(size: Size(390, 844)),
             child: MyLockerOrdersPage(
@@ -741,6 +760,8 @@ void main() {
     (tester) async {
       await tester.pumpWidget(
         MaterialApp(
+        builder: smartDialogBuilder(),
+        navigatorObservers: smartDialogObservers,
           home: MediaQuery(
             data: const MediaQueryData(size: Size(390, 844)),
             child: MyLockerOrdersPage(
@@ -761,6 +782,8 @@ void main() {
     (tester) async {
       await tester.pumpWidget(
         MaterialApp(
+        builder: smartDialogBuilder(),
+        navigatorObservers: smartDialogObservers,
           home: MediaQuery(
             data: const MediaQueryData(size: Size(390, 844)),
             child: MyLockerOrdersPage(
@@ -788,6 +811,8 @@ void main() {
   ) async {
     await tester.pumpWidget(
       MaterialApp(
+        builder: smartDialogBuilder(),
+        navigatorObservers: smartDialogObservers,
         home: MediaQuery(
           data: const MediaQueryData(size: Size(390, 844)),
           child: MyLockerOrdersPage(service: _FakeDiscountedOrderService()),
@@ -824,6 +849,8 @@ void main() {
 
     await tester.pumpWidget(
       MaterialApp(
+        builder: smartDialogBuilder(),
+        navigatorObservers: smartDialogObservers,
         home: MediaQuery(
           data: const MediaQueryData(size: Size(390, 844)),
           child: MyLockerOrdersPage(service: service),
@@ -851,6 +878,7 @@ void main() {
 
     expect(service.reportOrderFaultCalls, 1);
     expect(service.reportFaultCalls, 0);
+    await drainToasts(tester);
   });
 
   testWidgets('hides direct open action and stages rental completion', (
@@ -863,6 +891,8 @@ void main() {
 
     await tester.pumpWidget(
       MaterialApp(
+        builder: smartDialogBuilder(),
+        navigatorObservers: smartDialogObservers,
         home: MediaQuery(
           data: const MediaQueryData(size: Size(390, 844)),
           child: MyLockerOrdersPage(service: service),
@@ -893,6 +923,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(service.endRentalCalls, 1);
+    await drainToasts(tester);
   });
 
   testWidgets(
@@ -902,6 +933,8 @@ void main() {
 
       await tester.pumpWidget(
         MaterialApp(
+        builder: smartDialogBuilder(),
+        navigatorObservers: smartDialogObservers,
           home: MediaQuery(
             data: const MediaQueryData(size: Size(390, 844)),
             child: MyLockerOrdersPage(service: service),
@@ -940,6 +973,8 @@ void main() {
 
     await tester.pumpWidget(
       MaterialApp(
+        builder: smartDialogBuilder(),
+        navigatorObservers: smartDialogObservers,
         home: MediaQuery(
           data: const MediaQueryData(size: Size(390, 844)),
           child: MyLockerOrdersPage(service: service),
@@ -966,6 +1001,8 @@ void main() {
 
       await tester.pumpWidget(
         MaterialApp(
+        builder: smartDialogBuilder(),
+        navigatorObservers: smartDialogObservers,
           home: MediaQuery(
             data: const MediaQueryData(size: Size(390, 844)),
             child: MyLockerOrdersPage(service: service),
@@ -989,6 +1026,8 @@ void main() {
 
       await tester.pumpWidget(
         MaterialApp(
+        builder: smartDialogBuilder(),
+        navigatorObservers: smartDialogObservers,
           home: MediaQuery(
             data: const MediaQueryData(size: Size(390, 844)),
             child: MyLockerOrdersPage(service: service),
@@ -1011,6 +1050,8 @@ void main() {
 
       await tester.pumpWidget(
         MaterialApp(
+        builder: smartDialogBuilder(),
+        navigatorObservers: smartDialogObservers,
           home: MediaQuery(
             data: const MediaQueryData(size: Size(390, 844)),
             child: MyLockerOrdersPage(service: service),
@@ -1108,6 +1149,8 @@ void main() {
 
       await tester.pumpWidget(
         MaterialApp(
+        builder: smartDialogBuilder(),
+        navigatorObservers: smartDialogObservers,
           home: MediaQuery(
             data: const MediaQueryData(size: Size(390, 844)),
             child: MyLockerOrdersPage(service: service),
@@ -1175,6 +1218,8 @@ void main() {
 
       await tester.pumpWidget(
         MaterialApp(
+        builder: smartDialogBuilder(),
+        navigatorObservers: smartDialogObservers,
           home: MediaQuery(
             data: const MediaQueryData(size: Size(390, 844)),
             child: MyLockerOrdersPage(service: service),
@@ -1199,6 +1244,8 @@ void main() {
     final service = _FakeFaultyOrderLockerOpsService();
     await tester.pumpWidget(
       MaterialApp(
+        builder: smartDialogBuilder(),
+        navigatorObservers: smartDialogObservers,
         home: MediaQuery(
           data: const MediaQueryData(size: Size(390, 844)),
           child: MyLockerOrdersPage(
@@ -1216,6 +1263,8 @@ void main() {
     final service = _FakeFaultyOrderLockerOpsService();
     await tester.pumpWidget(
       MaterialApp(
+        builder: smartDialogBuilder(),
+        navigatorObservers: smartDialogObservers,
         home: MediaQuery(
           data: const MediaQueryData(size: Size(390, 844)),
           child: MyLockerOrdersPage(service: service),
@@ -1228,6 +1277,8 @@ void main() {
     // Now update widget with initialOrderId: 41 and openToken
     await tester.pumpWidget(
       MaterialApp(
+        builder: smartDialogBuilder(),
+        navigatorObservers: smartDialogObservers,
         home: MediaQuery(
           data: const MediaQueryData(size: Size(390, 844)),
           child: MyLockerOrdersPage(

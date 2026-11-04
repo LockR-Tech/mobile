@@ -4,6 +4,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:smart_laundry_locker/features/locker_ops/domain/pickup_code_share.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/pickup_code_share_actions.dart';
 
+import '../../helpers/test_helpers.dart';
+
 const _share = PickupCodeShare(
   code: '654321',
   lockerName: 'Tủ A',
@@ -14,6 +16,8 @@ const _share = PickupCodeShare(
 
 Future<void> _pump(WidgetTester tester, Widget child) => tester.pumpWidget(
   MaterialApp(
+    builder: smartDialogBuilder(),
+    navigatorObservers: smartDialogObservers,
     home: Scaffold(
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -127,10 +131,11 @@ void main() {
     );
 
     await tester.tap(find.text('Sao chép tin nhắn'));
-    await tester.pump();
+    await pumpToast(tester);
 
     expect(copied, _share.message);
     expect(find.textContaining('Đã sao chép tin nhắn'), findsOneWidget);
+    await drainToasts(tester);
   });
 
   testWidgets('bảng chia sẻ lỗi thì chép tin nhắn và báo cho người dùng', (
@@ -163,17 +168,20 @@ void main() {
     );
 
     await tester.tap(find.text('Chia sẻ mã cho người nhận'));
-    await tester.pump();
+    await pumpToast(tester);
     expect(copied, _share.message);
     expect(find.textContaining('Không mở được bảng chia sẻ'), findsOneWidget);
 
+    await drainToasts(tester);
+
     copied = null;
     await tester.tap(find.text('Nhắn SMS'));
-    await tester.pump();
+    await pumpToast(tester);
     expect(copied, _share.message);
     expect(
       find.textContaining('Không mở được ứng dụng tin nhắn'),
       findsOneWidget,
     );
+    await drainToasts(tester);
   });
 }

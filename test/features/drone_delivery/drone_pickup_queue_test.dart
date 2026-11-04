@@ -139,6 +139,8 @@ void main() {
     addTearDown(tester.view.reset);
     await tester.pumpWidget(
       MaterialApp(
+        builder: smartDialogBuilder(),
+        navigatorObservers: smartDialogObservers,
         home: Scaffold(
           body: SingleChildScrollView(
             child: DronePickupQueue(
@@ -171,11 +173,13 @@ void main() {
 
     expect(service.calls, ['presence onDuty=true lat=10.7001 lng=106.7001']);
     expect(find.text('Đang nhận việc lấy hàng'), findsOneWidget);
+    await drainToasts(tester);
 
     await tester.tap(find.byKey(const ValueKey('drone-duty-switch')));
     await tester.pump();
     await tester.pump();
     expect(service.calls.last, 'presence onDuty=false lat=null lng=null');
+    await drainToasts(tester);
   });
 
   testWidgets('không có GPS thì không vào ca được', (tester) async {
@@ -195,6 +199,7 @@ void main() {
       findsOneWidget,
     );
     expect(find.text('Chưa vào ca lấy hàng'), findsOneWidget);
+    await drainToasts(tester);
   });
 
   testWidgets(
@@ -232,6 +237,7 @@ void main() {
       );
       await tester.pumpAndSettle();
       expect(service.calls.last, 'decline 22');
+      await drainToasts(tester);
     },
   );
 
@@ -306,6 +312,7 @@ void main() {
       expect(service.calls, [
         'pickup-fail 21 PICKUP_CUSTOMER_ABSENT note=Gọi 3 lần không nghe',
       ]);
+      await drainToasts(tester);
     },
   );
 
@@ -346,6 +353,7 @@ void main() {
       await tester.tap(find.byKey(const ValueKey('drone-reason-confirm')));
       await tester.pumpAndSettle();
       expect(service.calls, ['fail 21 WEATHER note=null']);
+      await drainToasts(tester);
     },
   );
 
@@ -361,6 +369,8 @@ void main() {
 
     expect(service.calls, isEmpty);
     expect(reloads, 1);
-    expect(find.byType(SnackBar), findsOneWidget);
+    // Lỗi server hiện qua toast SmartDialog của app.
+    expect(find.text(LockerOpsService.errorMessage(StateError('expired'))), findsOneWidget);
+    await drainToasts(tester);
   });
 }

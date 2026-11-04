@@ -8,6 +8,8 @@ import 'package:smart_laundry_locker/features/assistant/presentation/pages/assis
 
 import 'assistant_fakes.dart';
 
+import '../../helpers/test_helpers.dart';
+
 Finder _text(String text) => find.textContaining(text, findRichText: true);
 
 /// Nút "Xoá" của hộp thoại xác nhận (nền vuốt của Dismissible cũng có chữ "Xoá").
@@ -76,7 +78,8 @@ Future<void> _pumpChatWithHistory(
       ),
     ],
   );
-  await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+  await tester.pumpWidget(MaterialApp.router(
+        builder: smartDialogBuilder(),routerConfig: router));
   await tester.pumpAndSettle();
 }
 
@@ -137,6 +140,7 @@ void main() {
     expect(service.deletedIds, [8]);
     expect(find.text('Hết giờ thuê ô thì làm sao?'), findsNothing);
     expect(find.text('Đã xoá cuộc hội thoại'), findsOneWidget);
+    await drainToasts(tester);
   });
 
   testWidgets('vuốt trái ⇒ xác nhận ⇒ xoá hội thoại', (tester) async {
@@ -156,6 +160,7 @@ void main() {
 
     expect(service.deletedIds, [9]);
     expect(find.text('Làm sao để gửi hàng qua tủ?'), findsNothing);
+    await drainToasts(tester);
   });
 
   testWidgets('xoá hội thoại đang mở ⇒ màn chat về hội thoại mới', (
@@ -189,5 +194,6 @@ void main() {
     expect(find.text('Nguồn (2)'), findsNothing);
     // Về màn giới thiệu với câu hỏi gợi ý.
     expect(find.text('Làm sao để gửi hàng qua tủ?'), findsOneWidget);
+    await drainToasts(tester);
   });
 }
