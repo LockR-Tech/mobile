@@ -8051,5 +8051,139 @@
         "type": "int"
       }
     }
-  }
+  },
+  "custOrderMinutes": "{totalMinutes} phút",
+  "@custOrderMinutes": {
+    "placeholders": {
+      "totalMinutes": {}
+    }
+  },
+  "custOrderHours": "{hours} giờ",
+  "@custOrderHours": {
+    "placeholders": {
+      "hours": {}
+    }
+  },
+  "custOrderHoursMinutes": "{hours} giờ {minutes} phút",
+  "@custOrderHoursMinutes": {
+    "placeholders": {
+      "hours": {},
+      "minutes": {}
+    }
+  },
+  "custOrderTitle": "Chi tiết đơn hàng",
+  "custOrderLoading": "Đang tải chi tiết đơn hàng...",
+  "custOrderUpdated": "Đã cập nhật thông tin",
+  "custOrderCode": "Đơn hàng #{orderCode}",
+  "@custOrderCode": {
+    "placeholders": {
+      "orderCode": {}
+    }
+  },
+  "custOrderCreatedAt": "Thời gian tạo đơn: {toLocal}",
+  "@custOrderCreatedAt": {
+    "placeholders": {
+      "toLocal": {}
+    }
+  },
+  "custOrderOtpTitle": "Mã mở tủ (OTP)",
+  "custOrderOtpHint": "Dùng mã này để mở tủ tại Kiosk",
+  "custOrderLockerInfo": "Thông tin tủ locker",
+  "custOrderLockerId": "ID Tủ",
+  "custOrderBox": "Ngăn tủ",
+  "custOrderLockerStatus": "Trạng thái tủ",
+  "custOrderItemType": "Loại mặt hàng",
+  "custOrderItemFood": "Đồ ăn",
+  "custOrderItemOther": "Hàng hóa khác",
+  "custOrderBoxList": "Danh sách ngăn",
+  "custOrderBoxCode": "Mã: {code}",
+  "@custOrderBoxCode": {
+    "placeholders": {
+      "code": {}
+    }
+  },
+  "custOrderCostTitle": "Chi phí & Thanh toán",
+  "custOrderRentalTitle": "Chi tiết thuê",
+  "custOrderStart": "Bắt đầu",
+  "custOrderExpectedEnd": "Kết thúc dự kiến",
+  "custOrderCurrentRate": "Giá thuê hiện tại",
+  "custOrderAccruedFee": "Phí tích lũy",
+  "custOrderTotalCollected": "Tổng đã thu",
+  "custOrderVoucher": "Voucher áp dụng",
+  "custOrderRentedTime": "Thời gian đã thuê",
+  "custOrderPayDebt": "Thanh toán nợ phí",
+  "custOrderPaying": "Đang xử lý thanh toán...",
+  "custOrderPaySuccess": "Thanh toán thành công!",
+  "custOrderPaySuccessMsg": "Phí quá hạn đã được thanh toán. Bạn có thể mở tủ để lấy đồ.",
+  "custOrderPayFailed": "Thanh toán thất bại",
+  "custOrderPayFailedMsg": "Thanh toán phí quá hạn không thành công. Vui lòng kiểm tra lại.",
+  "custOrderJamWarning": "CẢNH BÁO: Cửa tủ bị kẹt!",
+  "custOrderJamWarningMsg": "Hệ thống ghi nhận ngăn tủ đang bị kẹt. Vui lòng liên hệ hỗ trợ kỹ thuật ngay hoặc kiểm tra lại ngăn tủ.",
+  "custOrderAutoCancelNote": "Lưu ý: Hệ thống sẽ tự động hủy đơn hàng nếu tài xế phải chờ quá lâu tại điểm lấy hàng.",
+  "custOrderTempOpen": "Mở tủ tạm thời",
+  "custOrderReturn": "Trả tủ",
+  "custOrderNewCode": "Tạo mã mở tủ mới",
+  "custOrderCancel": "Hủy đơn hàng",
+  "custOrderCancelConfirmTitle": "Xác nhận hủy đơn",
+  "custOrderCancelConfirmMsg": "Bạn có chắc chắn muốn hủy đơn hàng này không? Hệ thống sẽ thu một khoản phí hủy và hoàn trả lại phần còn lại.",
+  "custOrderNo": "Không",
+  "custOrderConfirm": "Xác nhận",
+  "custOrderInvalidCode": "Mã đơn không hợp lệ",
+  "custOrderCanceling": "Đang hủy đơn hàng...",
+  "custOrderCanceled": "Đã hủy đơn hàng thành công",
+  "custOrderCreatingCode": "Đang tạo mã mới...",
+  "custOrderCodeCreated": "Tạo mã thành công!",
+  "custOrderLockerNotFound": "Không tìm thấy thông tin tủ",
+  "custOrderNoStation": "Không có thông tin trạm tủ",
+  "custOrderLoadingLocker": "Đang lấy thông tin tủ...",
+  "custOrderLockerDetailFallback": "Không lấy được thông tin chi tiết tủ, sử dụng ID",
+  "custOrderLockedForDebt": "Tủ đang bị khóa do nợ phí. Vui lòng thanh toán để tiếp tục sử dụng.",
+  "custOrderPayToOpen": "Thanh toán để mở tủ",
+  "custOrderReturnConfirmTitle": "Xác nhận trả tủ",
+  "custOrderReturnConfirmMsg": "Bạn có chắc chắn muốn trả tủ ngay bây giờ? Sau khi xác nhận, ngăn tủ sẽ được mở và phiên thuê sẽ kết thúc.",
+  "custOrderCancelAction": "Hủy",
+  "custOrderOpening": "Đang mở tủ...",
+  "custOrderError": "Lỗi: {message}",
+  "@custOrderError": {
+    "placeholders": {
+      "message": {}
+    }
+  },
+  "custOrderTempOpenSent": "Đã gửi lệnh mở tủ tạm thời!",
+  "custOrderReturning": "Đang xử lý trả tủ...",
+  "custOrderReturned": "Trả tủ thành công!",
+  "custOrderPickupAddress": "Địa chỉ lấy hàng",
+  "custOrderOriginLocker": "Tủ gửi (Origin)",
+  "custOrderLoadingShort": "Đang tải...",
+  "custOrderDestinationLocker": "Tủ nhận (Destination)",
+  "custOrderRouteInfo": "Thông tin lộ trình",
+  "custOrderPickedUpAt": "Đã lấy: {toLocal}",
+  "@custOrderPickedUpAt": {
+    "placeholders": {
+      "toLocal": {}
+    }
+  },
+  "custOrderNotPickedUp": "Đã lấy: Chưa lấy hàng",
+  "custOrderReceivedAt": "Đã nhận: {toLocal}",
+  "@custOrderReceivedAt": {
+    "placeholders": {
+      "toLocal": {}
+    }
+  },
+  "custOrderNotReceived": "Đã nhận: Chưa nhận hàng",
+  "custOrderReceiverInfo": "Thông tin người nhận",
+  "custOrderFullName": "Họ tên",
+  "custOrderPhone": "Số điện thoại",
+  "custOrderReceiverAddress": "Địa chỉ nhận",
+  "custOrderPickupPhotos": "Hình ảnh lấy hàng",
+  "custOrderMap": "Bản đồ",
+  "custOrderMapFailed": "Không mở được bản đồ.",
+  "custOrderAutoCancelling": "Đơn hàng đang được xử lý tự động hủy do quá hạn.",
+  "custOrderStoreWaitTime": "Thời gian chờ cất hàng",
+  "custOrderAutoCancelIn": "Đơn hàng sẽ tự động hủy sau:",
+  "custOrderCodeFailed": "Không thể tạo mã mới",
+  "dbLockerInactive": "Chưa hoạt động",
+  "dbPadMaintenance": "Bãi đáp đang bảo trì",
+  "dbPadFault": "Bãi đáp đang lỗi",
+  "forceOpenUnconfirmed": "Tủ chưa xác nhận đã mở ô — ô có thể chưa mở, vui lòng kiểm tra tại tủ rồi thử lại."
 }

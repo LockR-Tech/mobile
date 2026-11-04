@@ -1,3 +1,4 @@
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 import 'dart:async';
 import 'package:smart_laundry_locker/core/services/app_event_bus.dart';
 import 'package:smart_laundry_locker/features/orders/domain/entities/order.dart';
@@ -134,14 +135,14 @@ class _CustomerOrderDetailPageState extends State<CustomerOrderDetailPage> {
 
   String _formatRentalDuration(int totalMinutes) {
     if (totalMinutes < 60) {
-      return '$totalMinutes phút';
+      return L10n.current.custOrderMinutes(totalMinutes);
     }
     final int hours = totalMinutes ~/ 60;
     final int minutes = totalMinutes % 60;
     if (minutes == 0) {
-      return '$hours giờ';
+      return L10n.current.custOrderHours(hours);
     }
-    return '$hours giờ $minutes phút';
+    return L10n.current.custOrderHoursMinutes(hours, minutes);
   }
 
   @override
@@ -164,14 +165,14 @@ class _CustomerOrderDetailPageState extends State<CustomerOrderDetailPage> {
               final profile = profileProvider.profile;
 
               if (order == null) {
-                return const Scaffold(
+                return Scaffold(
                   appBar: CustomAppBar(
-                    title: 'Chi tiết đơn hàng',
+                    title: L10n.current.custOrderTitle,
                     showBackButton: true,
                   ),
                   body: AppLoadingIndicator(
                     fullScreen: true,
-                    message: 'Đang tải chi tiết đơn hàng...',
+                    message: L10n.current.custOrderLoading,
                   ),
                 );
               }
@@ -219,7 +220,7 @@ class _CustomerOrderDetailPageState extends State<CustomerOrderDetailPage> {
               return Scaffold(
                 backgroundColor: Colors.grey[50],
                 appBar: CustomAppBar(
-                  title: 'Chi tiết đơn hàng',
+                  title: L10n.current.custOrderTitle,
                   showBackButton: true,
                   actions: [
                     IconButton(
@@ -232,7 +233,7 @@ class _CustomerOrderDetailPageState extends State<CustomerOrderDetailPage> {
                         final String currentId =
                             widget.order?.id ?? widget.orderId;
                         await _provider.fetchOrderDetail(currentId);
-                        SmartDialog.showToast('Đã cập nhật thông tin');
+                        SmartDialog.showToast(L10n.current.custOrderUpdated);
                       },
                     ),
                     if (order.status == 'ACTIVE')
@@ -323,7 +324,7 @@ class _CustomerOrderDetailPageState extends State<CustomerOrderDetailPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Đơn hàng #${order.orderCode}',
+                      L10n.current.custOrderCode(order.orderCode),
                       style: const TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 18,
@@ -332,7 +333,7 @@ class _CustomerOrderDetailPageState extends State<CustomerOrderDetailPage> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'Thời gian tạo đơn: ${DateFormat('dd/MM/yyyy HH:mm').format(order.createdAt.toLocal())}',
+                      L10n.current.custOrderCreatedAt(DateFormat('dd/MM/yyyy HH:mm').format(order.createdAt.toLocal())),
                       style: const TextStyle(
                         color: Colors.black,
                         fontSize: 14,
@@ -378,7 +379,7 @@ class _CustomerOrderDetailPageState extends State<CustomerOrderDetailPage> {
       ),
       child: Column(
         children: [
-          const Row(
+          Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(
@@ -388,7 +389,7 @@ class _CustomerOrderDetailPageState extends State<CustomerOrderDetailPage> {
               ),
               SizedBox(width: 8),
               Text(
-                'Mã mở tủ (OTP)',
+                L10n.current.custOrderOtpTitle,
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 16,
@@ -418,8 +419,8 @@ class _CustomerOrderDetailPageState extends State<CustomerOrderDetailPage> {
             ),
           ),
           const SizedBox(height: 8),
-          const Text(
-            'Dùng mã này để mở tủ tại Kiosk',
+          Text(
+            L10n.current.custOrderOtpHint,
             style: TextStyle(
               fontSize: 12,
               color: Colors.black54,
@@ -448,7 +449,7 @@ class _CustomerOrderDetailPageState extends State<CustomerOrderDetailPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Row(
+          Row(
             children: [
               Icon(
                 LucideIcons.package,
@@ -457,7 +458,7 @@ class _CustomerOrderDetailPageState extends State<CustomerOrderDetailPage> {
               ),
               SizedBox(width: 10),
               Text(
-                'Thông tin tủ locker',
+                L10n.current.custOrderLockerInfo,
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 16,
@@ -469,24 +470,24 @@ class _CustomerOrderDetailPageState extends State<CustomerOrderDetailPage> {
           const SizedBox(height: 16),
           // Note: Order entity in domain doesn't have location/cabinet names yet,
           // usually these are fetched or passed from summary page.
-          _buildInfoRow('ID Tủ', order.rentalCabinetId ?? 'N/A'),
+          _buildInfoRow(L10n.current.custOrderLockerId, order.rentalCabinetId ?? 'N/A'),
           const Divider(height: 24),
           _buildInfoRow(
-            'Ngăn tủ',
+            L10n.current.custOrderBox,
             _fetchedLockerName ?? detail?.formattedLockerLabel ?? 'N/A',
           ),
           if (detail?.hwStatus != null && detail!.hwStatus!.isNotEmpty) ...[
             const Divider(height: 24),
             _buildInfoRow(
-              'Trạng thái tủ',
+              L10n.current.custOrderLockerStatus,
               EnumTranslator.translateHwStatus(detail.hwStatus!),
             ),
           ],
           if (detail?.itemType != null && detail!.itemType!.isNotEmpty) ...[
             const Divider(height: 24),
             _buildInfoRow(
-              'Loại mặt hàng',
-              detail.itemType == 'FOOD' ? 'Đồ ăn' : 'Hàng hóa khác',
+              L10n.current.custOrderItemType,
+              detail.itemType == 'FOOD' ? L10n.current.custOrderItemFood : L10n.current.custOrderItemOther,
             ),
           ],
           // if (detail?.accessCode != null && detail!.accessCode!.isNotEmpty) ...[
@@ -520,12 +521,12 @@ class _CustomerOrderDetailPageState extends State<CustomerOrderDetailPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Row(
+          Row(
             children: [
               Icon(LucideIcons.list, size: 20, color: const Color(0xFF0A2342)),
               SizedBox(width: 10),
               Text(
-                'Danh sách ngăn',
+                L10n.current.custOrderBoxList,
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 16,
@@ -574,7 +575,7 @@ class _CustomerOrderDetailPageState extends State<CustomerOrderDetailPage> {
                           ),
                         ),
                         Text(
-                          'Mã: ${d.code}',
+                          L10n.current.custOrderBoxCode(d.code),
                           style: const TextStyle(
                             color: Colors.black54,
                             fontSize: 12,
@@ -621,7 +622,7 @@ class _CustomerOrderDetailPageState extends State<CustomerOrderDetailPage> {
               ),
               const SizedBox(width: 10),
               Text(
-                order.isLogistics ? 'Chi phí & Thanh toán' : 'Chi tiết thuê',
+                order.isLogistics ? L10n.current.custOrderCostTitle : L10n.current.custOrderRentalTitle,
                 style: const TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 16,
@@ -632,12 +633,12 @@ class _CustomerOrderDetailPageState extends State<CustomerOrderDetailPage> {
           ),
           const SizedBox(height: 16),
           _buildInfoRow(
-            'Bắt đầu',
+            L10n.current.custOrderStart,
             DateFormat('dd/MM/yyyy HH:mm').format(order.createdAt.toLocal()),
           ),
           const Divider(height: 24),
           _buildInfoRow(
-            'Kết thúc dự kiến',
+            L10n.current.custOrderExpectedEnd,
             order.plannedEndTime != null
                 ? DateFormat(
                     'dd/MM/yyyy HH:mm',
@@ -651,17 +652,17 @@ class _CustomerOrderDetailPageState extends State<CustomerOrderDetailPage> {
           // ),
           // const Divider(height: 24),
           _buildInfoRow(
-            'Giá thuê hiện tại',
+            L10n.current.custOrderCurrentRate,
             currencyFormat.format(order.currentRate),
           ),
           const Divider(height: 24),
           _buildInfoRow(
-            'Phí tích lũy',
+            L10n.current.custOrderAccruedFee,
             currencyFormat.format(order.accumulatedFee),
           ),
           const Divider(height: 24),
           _buildInfoRow(
-            'Tổng đã thu',
+            L10n.current.custOrderTotalCollected,
             currencyFormat.format(order.totalCollected),
             valueColor: const Color(0xFF0A2342),
             valueFontWeight: FontWeight.bold,
@@ -669,7 +670,7 @@ class _CustomerOrderDetailPageState extends State<CustomerOrderDetailPage> {
           if (order.voucherName != null && order.voucherName!.isNotEmpty) ...[
             const Divider(height: 24),
             _buildInfoRow(
-              'Voucher áp dụng',
+              L10n.current.custOrderVoucher,
               order.voucherName!,
               valueColor: Colors.green,
               valueFontWeight: FontWeight.bold,
@@ -678,7 +679,7 @@ class _CustomerOrderDetailPageState extends State<CustomerOrderDetailPage> {
           if (order.isPersonalRental) ...[
             const Divider(height: 24),
             _buildInfoRow(
-              'Thời gian đã thuê',
+              L10n.current.custOrderRentedTime,
               _formatRentalDuration(order.totalTimeRent),
               valueColor: Colors.blue,
               valueFontWeight: FontWeight.bold,
@@ -699,7 +700,7 @@ class _CustomerOrderDetailPageState extends State<CustomerOrderDetailPage> {
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-                child: const Text('Thanh toán nợ phí'),
+                child: Text(L10n.current.custOrderPayDebt),
               ),
             ),
           ],
@@ -709,7 +710,7 @@ class _CustomerOrderDetailPageState extends State<CustomerOrderDetailPage> {
   }
 
   Future<void> _handlePayDebt(BuildContext context, Order order) async {
-    SmartDialog.showLoading<void>(msg: 'Đang xử lý thanh toán...');
+    SmartDialog.showLoading<void>(msg: L10n.current.custOrderPaying);
     final success = await _provider.payOverdueFee(order.id);
     SmartDialog.dismiss<void>();
 
@@ -718,8 +719,8 @@ class _CustomerOrderDetailPageState extends State<CustomerOrderDetailPage> {
       showPaymentResultDialog<void>(
         context,
         type: PaymentStatusType.success,
-        title: 'Thanh toán thành công!',
-        message: 'Phí quá hạn đã được thanh toán. Bạn có thể mở tủ để lấy đồ.',
+        title: L10n.current.custOrderPaySuccess,
+        message: L10n.current.custOrderPaySuccessMsg,
       );
       // Refresh to update status and show regular buttons
       await _provider.fetchOrderDetail(order.id);
@@ -727,8 +728,8 @@ class _CustomerOrderDetailPageState extends State<CustomerOrderDetailPage> {
       showPaymentResultDialog<void>(
         context,
         type: PaymentStatusType.failure,
-        title: 'Thanh toán thất bại',
-        message: _provider.error ?? 'Thanh toán phí quá hạn không thành công. Vui lòng kiểm tra lại.',
+        title: L10n.current.custOrderPayFailed,
+        message: _provider.error ?? L10n.current.custOrderPayFailedMsg,
       );
     }
   }
@@ -788,7 +789,7 @@ class _CustomerOrderDetailPageState extends State<CustomerOrderDetailPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'CẢNH BÁO: Cửa tủ bị kẹt!',
+                  L10n.current.custOrderJamWarning,
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
@@ -796,8 +797,8 @@ class _CustomerOrderDetailPageState extends State<CustomerOrderDetailPage> {
                   ),
                 ),
                 const SizedBox(height: 4),
-                const Text(
-                  'Hệ thống ghi nhận ngăn tủ đang bị kẹt. Vui lòng liên hệ hỗ trợ kỹ thuật ngay hoặc kiểm tra lại ngăn tủ.',
+                Text(
+                  L10n.current.custOrderJamWarningMsg,
                   style: TextStyle(fontSize: 13, color: Colors.black87),
                 ),
               ],
@@ -828,13 +829,13 @@ class _CustomerOrderDetailPageState extends State<CustomerOrderDetailPage> {
           borderRadius: BorderRadius.circular(12),
           border: Border.all(color: Colors.blue.shade200),
         ),
-        child: const Row(
+        child: Row(
           children: [
             Icon(LucideIcons.info, color: Colors.blue),
             SizedBox(width: 12),
             Expanded(
               child: Text(
-                'Lưu ý: Hệ thống sẽ tự động hủy đơn hàng nếu tài xế phải chờ quá lâu tại điểm lấy hàng.',
+                L10n.current.custOrderAutoCancelNote,
                 style: TextStyle(
                   color: Colors.blue,
                   fontSize: 14,
@@ -877,12 +878,12 @@ class _CustomerOrderDetailPageState extends State<CustomerOrderDetailPage> {
                         borderRadius: BorderRadius.circular(12),
                       ),
                     ),
-                    child: const Row(
+                    child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Icon(LucideIcons.lockOpen, size: 18),
                         SizedBox(width: 8),
-                        Text('Mở tủ tạm thời'),
+                        Text(L10n.current.custOrderTempOpen),
                       ],
                     ),
                   ),
@@ -900,7 +901,7 @@ class _CustomerOrderDetailPageState extends State<CustomerOrderDetailPage> {
                         borderRadius: BorderRadius.circular(12),
                       ),
                     ),
-                    child: const Row(
+                    child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Icon(
@@ -909,7 +910,7 @@ class _CustomerOrderDetailPageState extends State<CustomerOrderDetailPage> {
                           color: Colors.white,
                         ),
                         SizedBox(width: 8),
-                        Text('Trả tủ', style: TextStyle(color: Colors.white)),
+                        Text(L10n.current.custOrderReturn, style: TextStyle(color: Colors.white)),
                       ],
                     ),
                   ),
@@ -934,12 +935,12 @@ class _CustomerOrderDetailPageState extends State<CustomerOrderDetailPage> {
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-                child: const Row(
+                child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Icon(LucideIcons.refreshCcw, size: 18),
                     SizedBox(width: 8),
-                    Text('Tạo mã mở tủ mới'),
+                    Text(L10n.current.custOrderNewCode),
                   ],
                 ),
               ),
@@ -962,13 +963,13 @@ class _CustomerOrderDetailPageState extends State<CustomerOrderDetailPage> {
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-                child: const Row(
+                child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Icon(LucideIcons.circleX, size: 18, color: Colors.white),
                     SizedBox(width: 8),
                     Text(
-                      'Hủy đơn hàng',
+                      L10n.current.custOrderCancel,
                       style: TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.bold,
@@ -1009,13 +1010,13 @@ class _CustomerOrderDetailPageState extends State<CustomerOrderDetailPage> {
               ),
             ),
             const SizedBox(height: 16),
-            const Text(
-              'Xác nhận hủy đơn',
+            Text(
+              L10n.current.custOrderCancelConfirmTitle,
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12),
-            const Text(
-              'Bạn có chắc chắn muốn hủy đơn hàng này không? Hệ thống sẽ thu một khoản phí hủy và hoàn trả lại phần còn lại.',
+            Text(
+              L10n.current.custOrderCancelConfirmMsg,
               textAlign: TextAlign.center,
               style: TextStyle(color: Colors.black54, fontSize: 14),
             ),
@@ -1025,8 +1026,8 @@ class _CustomerOrderDetailPageState extends State<CustomerOrderDetailPage> {
                 Expanded(
                   child: TextButton(
                     onPressed: () => SmartDialog.dismiss<void>(),
-                    child: const Text(
-                      'Không',
+                    child: Text(
+                      L10n.current.custOrderNo,
                       style: TextStyle(color: Colors.grey),
                     ),
                   ),
@@ -1042,8 +1043,8 @@ class _CustomerOrderDetailPageState extends State<CustomerOrderDetailPage> {
                       backgroundColor: Colors.red,
                       shape: const StadiumBorder(),
                     ),
-                    child: const Text(
-                      'Xác nhận',
+                    child: Text(
+                      L10n.current.custOrderConfirm,
                       style: TextStyle(color: Colors.white),
                     ),
                   ),
@@ -1061,14 +1062,14 @@ class _CustomerOrderDetailPageState extends State<CustomerOrderDetailPage> {
     // logistics/courier cũ đã gỡ khỏi dự án.
     final id = int.tryParse(orderId);
     if (id == null) {
-      SmartDialog.showToast('Mã đơn không hợp lệ');
+      SmartDialog.showToast(L10n.current.custOrderInvalidCode);
       return;
     }
-    SmartDialog.showLoading<void>(msg: 'Đang hủy đơn hàng...');
+    SmartDialog.showLoading<void>(msg: L10n.current.custOrderCanceling);
     try {
       await LockerOpsService().cancelOrder(id);
       SmartDialog.dismiss<void>();
-      SmartDialog.showToast('Đã hủy đơn hàng thành công');
+      SmartDialog.showToast(L10n.current.custOrderCanceled);
       await _provider.fetchOrderDetail(orderId);
     } catch (e) {
       SmartDialog.dismiss<void>();
@@ -1079,17 +1080,17 @@ class _CustomerOrderDetailPageState extends State<CustomerOrderDetailPage> {
   Future<void> _handleRecreateAccessCode(OrderDetail detail) async {
     if (detail.id.isEmpty) return;
 
-    SmartDialog.showLoading<void>(msg: 'Đang tạo mã mới...');
+    SmartDialog.showLoading<void>(msg: L10n.current.custOrderCreatingCode);
     final result = await _provider.recreateAccessCode(detail.id);
     SmartDialog.dismiss<void>();
 
     if (result) {
-      SmartDialog.showToast('Tạo mã thành công!');
+      SmartDialog.showToast(L10n.current.custOrderCodeCreated);
       // Refresh order detail to show the new code
       await _provider.fetchOrderDetail(widget.order?.id ?? widget.orderId);
     } else {
       SmartDialog.showToast(
-        'Lỗi: ${_provider.error ?? "Không thể tạo mã mới"}',
+        L10n.current.custOrderError(_provider.error ?? L10n.current.custOrderCodeFailed),
       );
     }
   }
@@ -1104,17 +1105,17 @@ class _CustomerOrderDetailPageState extends State<CustomerOrderDetailPage> {
         displayDetail ?? (details.isNotEmpty ? details.first : null);
 
     if (activeDetail == null || activeDetail.lockerId == null) {
-      SmartDialog.showToast('Không tìm thấy thông tin tủ');
+      SmartDialog.showToast(L10n.current.custOrderLockerNotFound);
       return;
     }
 
     final cabinetId = order.rentalCabinetId ?? '';
     if (cabinetId.isEmpty) {
-      SmartDialog.showToast('Không có thông tin trạm tủ');
+      SmartDialog.showToast(L10n.current.custOrderNoStation);
       return;
     }
 
-    SmartDialog.showLoading<void>(msg: 'Đang lấy thông tin tủ...');
+    SmartDialog.showLoading<void>(msg: L10n.current.custOrderLoadingLocker);
     final lockerId = activeDetail.lockerId!;
     final cabinet = await _lockerProvider.getCabinetById(cabinetId);
     final locker = await _lockerProvider.getLockerById(lockerId);
@@ -1122,7 +1123,7 @@ class _CustomerOrderDetailPageState extends State<CustomerOrderDetailPage> {
 
     if (cabinet == null || locker == null) {
       // Fallback in case fetch fails
-      SmartDialog.showToast('Không lấy được thông tin chi tiết tủ, sử dụng ID');
+      SmartDialog.showToast(L10n.current.custOrderLockerDetailFallback);
     }
 
     if (!context.mounted) return;
@@ -1166,7 +1167,7 @@ class _CustomerOrderDetailPageState extends State<CustomerOrderDetailPage> {
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
-                    'Tủ đang bị khóa do nợ phí. Vui lòng thanh toán để tiếp tục sử dụng.',
+                    L10n.current.custOrderLockedForDebt,
                     style: TextStyle(
                       color: Colors.red[700],
                       fontSize: 13,
@@ -1190,8 +1191,8 @@ class _CustomerOrderDetailPageState extends State<CustomerOrderDetailPage> {
                 ),
                 elevation: 0,
               ),
-              child: const Text(
-                'Thanh toán để mở tủ',
+              child: Text(
+                L10n.current.custOrderPayToOpen,
                 style: TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
@@ -1231,8 +1232,8 @@ class _CustomerOrderDetailPageState extends State<CustomerOrderDetailPage> {
               ),
             ),
             const SizedBox(height: 16),
-            const Text(
-              'Xác nhận trả tủ',
+            Text(
+              L10n.current.custOrderReturnConfirmTitle,
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
@@ -1241,7 +1242,7 @@ class _CustomerOrderDetailPageState extends State<CustomerOrderDetailPage> {
             ),
             const SizedBox(height: 12),
             Text(
-              'Bạn có chắc chắn muốn trả tủ ngay bây giờ? Sau khi xác nhận, ngăn tủ sẽ được mở và phiên thuê sẽ kết thúc.',
+              L10n.current.custOrderReturnConfirmMsg,
               textAlign: TextAlign.center,
               style: const TextStyle(color: Colors.black54, fontSize: 14),
             ),
@@ -1251,8 +1252,8 @@ class _CustomerOrderDetailPageState extends State<CustomerOrderDetailPage> {
                 Expanded(
                   child: TextButton(
                     onPressed: () => SmartDialog.dismiss<void>(),
-                    child: const Text(
-                      'Hủy',
+                    child: Text(
+                      L10n.current.custOrderCancelAction,
                       style: TextStyle(color: Colors.grey),
                     ),
                   ),
@@ -1268,8 +1269,8 @@ class _CustomerOrderDetailPageState extends State<CustomerOrderDetailPage> {
                       backgroundColor: AISLShadcnTheme.navyPrimary,
                       shape: const StadiumBorder(),
                     ),
-                    child: const Text(
-                      'Xác nhận',
+                    child: Text(
+                      L10n.current.custOrderConfirm,
                       style: TextStyle(color: Colors.white),
                     ),
                   ),
@@ -1285,41 +1286,41 @@ class _CustomerOrderDetailPageState extends State<CustomerOrderDetailPage> {
   Future<void> _handleTemporaryOpen(BuildContext context) async {
     final details = _getDetails(_provider);
     if (details.isEmpty || details.first.lockerId == null) {
-      SmartDialog.showToast('Không tìm thấy thông tin tủ');
+      SmartDialog.showToast(L10n.current.custOrderLockerNotFound);
       return;
     }
 
     final lockerId = details.first.lockerId!;
-    SmartDialog.showLoading<void>(msg: 'Đang mở tủ...');
+    SmartDialog.showLoading<void>(msg: L10n.current.custOrderOpening);
 
     final result = await _lockerProvider.openLockerTemporarily(lockerId);
 
     SmartDialog.dismiss<void>();
 
     result.fold(
-      (failure) => SmartDialog.showToast('Lỗi: ${failure.message}'),
-      (success) => SmartDialog.showToast('Đã gửi lệnh mở tủ tạm thời!'),
+      (failure) => SmartDialog.showToast(L10n.current.custOrderError(failure.message)),
+      (success) => SmartDialog.showToast(L10n.current.custOrderTempOpenSent),
     );
   }
 
   Future<void> _handleReturnLocker(BuildContext context) async {
     final details = _getDetails(_provider);
     if (details.isEmpty || details.first.lockerId == null) {
-      SmartDialog.showToast('Không tìm thấy thông tin tủ');
+      SmartDialog.showToast(L10n.current.custOrderLockerNotFound);
       return;
     }
 
     final lockerId = details.first.lockerId!;
-    SmartDialog.showLoading<void>(msg: 'Đang xử lý trả tủ...');
+    SmartDialog.showLoading<void>(msg: L10n.current.custOrderReturning);
 
     final result = await _lockerProvider.finishRental(lockerId);
 
     SmartDialog.dismiss<void>();
 
-    result.fold((failure) => SmartDialog.showToast('Lỗi: ${failure.message}'), (
+    result.fold((failure) => SmartDialog.showToast(L10n.current.custOrderError(failure.message)), (
       success,
     ) {
-      SmartDialog.showToast('Trả tủ thành công!');
+      SmartDialog.showToast(L10n.current.custOrderReturned);
       _provider.fetchOrderDetail(widget.order!.id).then((_) {
         setState(() {});
       });
@@ -1347,19 +1348,19 @@ class _CustomerOrderDetailPageState extends State<CustomerOrderDetailPage> {
     double? originLng;
 
     if (order.logisticsType == 'HOME_TO_LOCKER') {
-      originLabel = 'Địa chỉ lấy hàng';
+      originLabel = L10n.current.custOrderPickupAddress;
       originName = order.pickupAddress ?? 'N/A';
       originLat = order.pickupLatitude;
       originLng = order.pickupLongitude;
     } else {
-      originLabel = 'Tủ gửi (Origin)';
+      originLabel = L10n.current.custOrderOriginLocker;
       final parts = [
         originDetail?.locationSendName ?? _originCabinet?.locationName,
         _originCabinet?.name,
         originDetail?.formattedPosition,
       ].whereType<String>().toList();
       originName = parts.isEmpty
-          ? (order.originCabinetId != null ? 'Đang tải...' : 'N/A')
+          ? (order.originCabinetId != null ? L10n.current.custOrderLoadingShort : 'N/A')
           : parts.join(' - ');
       originLat =
           originDetail?.locationSendLatitude ?? _originCabinet?.latitude;
@@ -1367,14 +1368,14 @@ class _CustomerOrderDetailPageState extends State<CustomerOrderDetailPage> {
           originDetail?.locationSendLongitude ?? _originCabinet?.longitude;
     }
 
-    final String destLabel = 'Tủ nhận (Destination)';
+    final String destLabel = L10n.current.custOrderDestinationLocker;
     final List<String> destParts = [
       _destinationCabinet?.locationName,
       _destinationCabinet?.name,
       (destDetail ?? originDetail)?.formattedPosition,
     ].whereType<String>().toList();
     final String destName = destParts.isEmpty
-        ? (order.destinationCabinetId != null ? 'Đang tải...' : 'N/A')
+        ? (order.destinationCabinetId != null ? L10n.current.custOrderLoadingShort : 'N/A')
         : destParts.join(' - ');
     final double? destLat = _destinationCabinet?.latitude;
     final double? destLng = _destinationCabinet?.longitude;
@@ -1400,8 +1401,8 @@ class _CustomerOrderDetailPageState extends State<CustomerOrderDetailPage> {
             children: [
               const Icon(LucideIcons.route, size: 20, color: Colors.blue),
               const SizedBox(width: 10),
-              const Text(
-                'Thông tin lộ trình',
+              Text(
+                L10n.current.custOrderRouteInfo,
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 16,
@@ -1425,8 +1426,8 @@ class _CustomerOrderDetailPageState extends State<CustomerOrderDetailPage> {
             name: originName,
             color: const Color(0xFF0369A1),
             timestamp: originDetail?.pickedUpAt != null
-                ? 'Đã lấy: ${DateFormat('HH:mm dd/MM').format(originDetail!.pickedUpAt!.toLocal())}'
-                : 'Đã lấy: Chưa lấy hàng',
+                ? L10n.current.custOrderPickedUpAt(DateFormat('HH:mm dd/MM').format(originDetail!.pickedUpAt!.toLocal()))
+                : L10n.current.custOrderNotPickedUp,
             onMapTap: originLat != null && originLng != null
                 ? () => _launchMap(originLat!, originLng!, originName)
                 : null,
@@ -1448,8 +1449,8 @@ class _CustomerOrderDetailPageState extends State<CustomerOrderDetailPage> {
             name: destName,
             color: const Color(0xFFC2410C),
             timestamp: destDetail?.pickedUpAt != null
-                ? 'Đã nhận: ${DateFormat('HH:mm dd/MM').format(destDetail!.pickedUpAt!.toLocal())}'
-                : 'Đã nhận: Chưa nhận hàng',
+                ? L10n.current.custOrderReceivedAt(DateFormat('HH:mm dd/MM').format(destDetail!.pickedUpAt!.toLocal()))
+                : L10n.current.custOrderNotReceived,
             onMapTap: destLat != null && destLng != null
                 ? () => _launchMap(destLat, destLng, destName)
                 : null,
@@ -1476,12 +1477,12 @@ class _CustomerOrderDetailPageState extends State<CustomerOrderDetailPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Row(
+          Row(
             children: [
               Icon(LucideIcons.user, size: 20, color: Colors.blue),
               SizedBox(width: 10),
               Text(
-                'Thông tin người nhận',
+                L10n.current.custOrderReceiverInfo,
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 16,
@@ -1491,16 +1492,16 @@ class _CustomerOrderDetailPageState extends State<CustomerOrderDetailPage> {
             ],
           ),
           const SizedBox(height: 16),
-          _buildInfoRow('Họ tên', detail.receiverName ?? 'N/A'),
+          _buildInfoRow(L10n.current.custOrderFullName, detail.receiverName ?? 'N/A'),
           const Divider(height: 24),
-          _buildInfoRow('Số điện thoại', detail.receiverPhone ?? 'N/A'),
+          _buildInfoRow(L10n.current.custOrderPhone, detail.receiverPhone ?? 'N/A'),
           const Divider(height: 24),
-          _buildInfoRow('Địa chỉ nhận', detail.receiverAddress ?? 'N/A'),
+          _buildInfoRow(L10n.current.custOrderReceiverAddress, detail.receiverAddress ?? 'N/A'),
           if (detail.itemType != null && detail.itemType!.isNotEmpty) ...[
             const Divider(height: 24),
             _buildInfoRow(
-              'Loại mặt hàng',
-              detail.itemType == 'FOOD' ? 'Đồ ăn' : 'Hàng hóa khác',
+              L10n.current.custOrderItemType,
+              detail.itemType == 'FOOD' ? L10n.current.custOrderItemFood : L10n.current.custOrderItemOther,
             ),
           ],
         ],
@@ -1527,12 +1528,12 @@ class _CustomerOrderDetailPageState extends State<CustomerOrderDetailPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Row(
+          Row(
             children: [
               Icon(LucideIcons.camera, size: 20, color: Colors.blue),
               SizedBox(width: 10),
               Text(
-                'Hình ảnh lấy hàng',
+                L10n.current.custOrderPickupPhotos,
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 16,
@@ -1632,7 +1633,7 @@ class _CustomerOrderDetailPageState extends State<CustomerOrderDetailPage> {
                             Icon(LucideIcons.map, size: 14, color: color),
                             const SizedBox(width: 4),
                             Text(
-                              'Bản đồ',
+                              L10n.current.custOrderMap,
                               style: TextStyle(
                                 fontSize: 11,
                                 fontWeight: FontWeight.bold,
@@ -1679,7 +1680,7 @@ class _CustomerOrderDetailPageState extends State<CustomerOrderDetailPage> {
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
     } else {
-      SmartDialog.showToast('Không mở được bản đồ.');
+      SmartDialog.showToast(L10n.current.custOrderMapFailed);
     }
   }
 }
@@ -1742,13 +1743,13 @@ class _LogisticsTimerBannerState extends State<LogisticsTimerBanner> {
           borderRadius: BorderRadius.circular(12),
           border: Border.all(color: Colors.red.shade200),
         ),
-        child: const Row(
+        child: Row(
           children: [
             Icon(LucideIcons.timer, color: Colors.red),
             SizedBox(width: 12),
             Expanded(
               child: Text(
-                'Đơn hàng đang được xử lý tự động hủy do quá hạn.',
+                L10n.current.custOrderAutoCancelling,
                 style: TextStyle(
                   color: Colors.red,
                   fontWeight: FontWeight.w600,
@@ -1786,7 +1787,7 @@ class _LogisticsTimerBannerState extends State<LogisticsTimerBanner> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Thời gian chờ cất hàng',
+                  L10n.current.custOrderStoreWaitTime,
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     color: isUrgent ? Colors.red : const Color(0xFF061A30),
@@ -1794,7 +1795,7 @@ class _LogisticsTimerBannerState extends State<LogisticsTimerBanner> {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'Đơn hàng sẽ tự động hủy sau:',
+                  L10n.current.custOrderAutoCancelIn,
                   style: TextStyle(
                     fontSize: 13,
                     color: isUrgent

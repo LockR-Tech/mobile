@@ -485,14 +485,14 @@ class _DroneBookingPageState extends State<DroneBookingPage>
     }
     final status = '${locker['status']}'.toUpperCase();
     if (status != 'ACTIVE') {
-      return '$distPrefix${status == 'MAINTENANCE' ? 'Đang bảo trì' : 'Chưa hoạt động'}';
+      return '$distPrefix${status == 'MAINTENANCE' ? context.l10n.lockerStatusMaintenance : context.l10n.dbLockerInactive}';
     }
     if (locker['landingPad'] != true) {
       return '$distPrefix${context.l10n.dbNoPad}';
     }
     final padStatus = '${locker['landingPadStatus'] ?? 'OK'}'.trim().toUpperCase();
     if (padStatus.isNotEmpty && padStatus != 'OK') {
-      return '$distPrefix${padStatus == 'MAINTENANCE' ? 'Bãi đáp đang bảo trì' : 'Bãi đáp đang lỗi'}';
+      return '$distPrefix${padStatus == 'MAINTENANCE' ? context.l10n.dbPadMaintenance : context.l10n.dbPadFault}';
     }
     if (!_hasCoordinates(locker)) return context.l10n.dbNoCoordinates;
     final slots = _availableDroneSlots[_asInt(locker['id'])];
@@ -910,7 +910,7 @@ class _DroneBookingPageState extends State<DroneBookingPage>
                         _canReceiveDrone(locker) &&
                         (_availableDroneSlots[_asInt(locker['id'])] ?? 0) > 0,
                     child: Text(
-                      '${locker['name'] ?? locker['code'] ?? 'Tủ #${locker['id']}'} · '
+                      '${locker['name'] ?? locker['code'] ?? context.l10n.lockerHash('${locker['id']}')} · '
                       '${_destinationUnavailableReason(locker)}',
                       overflow: TextOverflow.ellipsis,
                     ),
