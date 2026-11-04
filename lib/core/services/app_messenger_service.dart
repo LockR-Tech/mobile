@@ -43,10 +43,40 @@ class _AppScaffoldMessengerState extends ScaffoldMessengerState {
     // Mọi SnackBar đều qua đây nên hàng đợi tối đa một cái: bỏ nó là sạch hàng đợi.
     removeCurrentSnackBar();
     return super.showSnackBar(
-      snackBar,
+      autoDismissing(snackBar),
       snackBarAnimationStyle: snackBarAnimationStyle,
     );
   }
+}
+
+/// Flutter 3.32+ mặc định giữ SnackBar có nút hành động tới khi người dùng bấm nút (`persist = action != null`):
+/// "Ô số 2 đang hỏng … [Báo sự cố]" nằm mãi, theo sang cả trang khác. App không có SnackBar nào cần giữ như vậy
+/// ⇒ dựng lại với `persist: false` để tắt sau [SnackBar.duration] như mọi thông báo khác.
+@visibleForTesting
+SnackBar autoDismissing(SnackBar s) {
+  if (!s.persist) return s;
+  return SnackBar(
+    key: s.key,
+    content: s.content,
+    backgroundColor: s.backgroundColor,
+    elevation: s.elevation,
+    margin: s.margin,
+    padding: s.padding,
+    width: s.width,
+    shape: s.shape,
+    hitTestBehavior: s.hitTestBehavior,
+    behavior: s.behavior,
+    action: s.action,
+    actionOverflowThreshold: s.actionOverflowThreshold,
+    showCloseIcon: s.showCloseIcon,
+    closeIconColor: s.closeIconColor,
+    duration: s.duration,
+    persist: false,
+    animation: s.animation,
+    onVisible: s.onVisible,
+    dismissDirection: s.dismissDirection,
+    clipBehavior: s.clipBehavior,
+  );
 }
 
 /// Bọc widget toast (`toastBuilder` của SmartDialog) để báo [AppMessengerService.onToastShown].

@@ -1108,6 +1108,8 @@ class _LockerCardState extends State<_LockerCard> {
             lockerCode: widget.locker['code']?.toString(),
             storeName: widget.storeName,
             onCellTap: (cell) {
+              // Bấm sang ô khác ⇒ bỏ ngay thông báo của ô trước (vd. "Ô số 2 đang hỏng").
+              ScaffoldMessenger.of(context).removeCurrentSnackBar();
               // Tủ mất kết nối / bảo trì / tạm ngưng: không mở đặt ô, báo lý do.
               if (blockReason != null) {
                 _showBlocked(context, blockReason);
@@ -1363,14 +1365,17 @@ class _CellGrid extends StatelessWidget {
               showScreen
                   ? _ScreenTile(
                       isOnline: isOnline,
-                      onTap: () => _showScreenDetailSheet(
-                        context,
-                        isOnline: isOnline,
-                        lockerId: lockerId,
-                        lockerName: lockerName,
-                        lockerCode: lockerCode,
-                        storeName: storeName,
-                      ),
+                      onTap: () {
+                        ScaffoldMessenger.of(context).removeCurrentSnackBar();
+                        _showScreenDetailSheet(
+                          context,
+                          isOnline: isOnline,
+                          lockerId: lockerId,
+                          lockerName: lockerName,
+                          lockerCode: lockerCode,
+                          storeName: storeName,
+                        );
+                      },
                     )
                   : null,
             ),
