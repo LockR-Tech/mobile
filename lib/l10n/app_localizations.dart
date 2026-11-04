@@ -24480,6 +24480,534 @@ abstract class AppLocalizations {
   /// In vi, this message translates to:
   /// **'{hours} giờ (+{pending} giờ chờ thanh toán)'**
   String ordSendStoragePending(int hours, int pending);
+
+  /// No description provided for @custOrderMinutes.
+  ///
+  /// In vi, this message translates to:
+  /// **'{totalMinutes} phút'**
+  String custOrderMinutes(Object totalMinutes);
+
+  /// No description provided for @custOrderHours.
+  ///
+  /// In vi, this message translates to:
+  /// **'{hours} giờ'**
+  String custOrderHours(Object hours);
+
+  /// No description provided for @custOrderHoursMinutes.
+  ///
+  /// In vi, this message translates to:
+  /// **'{hours} giờ {minutes} phút'**
+  String custOrderHoursMinutes(Object hours, Object minutes);
+
+  /// No description provided for @custOrderTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chi tiết đơn hàng'**
+  String get custOrderTitle;
+
+  /// No description provided for @custOrderLoading.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang tải chi tiết đơn hàng...'**
+  String get custOrderLoading;
+
+  /// No description provided for @custOrderUpdated.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã cập nhật thông tin'**
+  String get custOrderUpdated;
+
+  /// No description provided for @custOrderCode.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đơn hàng #{orderCode}'**
+  String custOrderCode(Object orderCode);
+
+  /// No description provided for @custOrderCreatedAt.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thời gian tạo đơn: {toLocal}'**
+  String custOrderCreatedAt(Object toLocal);
+
+  /// No description provided for @custOrderOtpTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mã mở tủ (OTP)'**
+  String get custOrderOtpTitle;
+
+  /// No description provided for @custOrderOtpHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Dùng mã này để mở tủ tại Kiosk'**
+  String get custOrderOtpHint;
+
+  /// No description provided for @custOrderLockerInfo.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thông tin tủ locker'**
+  String get custOrderLockerInfo;
+
+  /// No description provided for @custOrderLockerId.
+  ///
+  /// In vi, this message translates to:
+  /// **'ID Tủ'**
+  String get custOrderLockerId;
+
+  /// No description provided for @custOrderBox.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ngăn tủ'**
+  String get custOrderBox;
+
+  /// No description provided for @custOrderLockerStatus.
+  ///
+  /// In vi, this message translates to:
+  /// **'Trạng thái tủ'**
+  String get custOrderLockerStatus;
+
+  /// No description provided for @custOrderItemType.
+  ///
+  /// In vi, this message translates to:
+  /// **'Loại mặt hàng'**
+  String get custOrderItemType;
+
+  /// No description provided for @custOrderItemFood.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đồ ăn'**
+  String get custOrderItemFood;
+
+  /// No description provided for @custOrderItemOther.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hàng hóa khác'**
+  String get custOrderItemOther;
+
+  /// No description provided for @custOrderBoxList.
+  ///
+  /// In vi, this message translates to:
+  /// **'Danh sách ngăn'**
+  String get custOrderBoxList;
+
+  /// No description provided for @custOrderBoxCode.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mã: {code}'**
+  String custOrderBoxCode(Object code);
+
+  /// No description provided for @custOrderCostTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chi phí & Thanh toán'**
+  String get custOrderCostTitle;
+
+  /// No description provided for @custOrderRentalTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chi tiết thuê'**
+  String get custOrderRentalTitle;
+
+  /// No description provided for @custOrderStart.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bắt đầu'**
+  String get custOrderStart;
+
+  /// No description provided for @custOrderExpectedEnd.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kết thúc dự kiến'**
+  String get custOrderExpectedEnd;
+
+  /// No description provided for @custOrderCurrentRate.
+  ///
+  /// In vi, this message translates to:
+  /// **'Giá thuê hiện tại'**
+  String get custOrderCurrentRate;
+
+  /// No description provided for @custOrderAccruedFee.
+  ///
+  /// In vi, this message translates to:
+  /// **'Phí tích lũy'**
+  String get custOrderAccruedFee;
+
+  /// No description provided for @custOrderTotalCollected.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tổng đã thu'**
+  String get custOrderTotalCollected;
+
+  /// No description provided for @custOrderVoucher.
+  ///
+  /// In vi, this message translates to:
+  /// **'Voucher áp dụng'**
+  String get custOrderVoucher;
+
+  /// No description provided for @custOrderRentedTime.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thời gian đã thuê'**
+  String get custOrderRentedTime;
+
+  /// No description provided for @custOrderPayDebt.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thanh toán nợ phí'**
+  String get custOrderPayDebt;
+
+  /// No description provided for @custOrderPaying.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang xử lý thanh toán...'**
+  String get custOrderPaying;
+
+  /// No description provided for @custOrderPaySuccess.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thanh toán thành công!'**
+  String get custOrderPaySuccess;
+
+  /// No description provided for @custOrderPaySuccessMsg.
+  ///
+  /// In vi, this message translates to:
+  /// **'Phí quá hạn đã được thanh toán. Bạn có thể mở tủ để lấy đồ.'**
+  String get custOrderPaySuccessMsg;
+
+  /// No description provided for @custOrderPayFailed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thanh toán thất bại'**
+  String get custOrderPayFailed;
+
+  /// No description provided for @custOrderPayFailedMsg.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thanh toán phí quá hạn không thành công. Vui lòng kiểm tra lại.'**
+  String get custOrderPayFailedMsg;
+
+  /// No description provided for @custOrderJamWarning.
+  ///
+  /// In vi, this message translates to:
+  /// **'CẢNH BÁO: Cửa tủ bị kẹt!'**
+  String get custOrderJamWarning;
+
+  /// No description provided for @custOrderJamWarningMsg.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hệ thống ghi nhận ngăn tủ đang bị kẹt. Vui lòng liên hệ hỗ trợ kỹ thuật ngay hoặc kiểm tra lại ngăn tủ.'**
+  String get custOrderJamWarningMsg;
+
+  /// No description provided for @custOrderAutoCancelNote.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lưu ý: Hệ thống sẽ tự động hủy đơn hàng nếu tài xế phải chờ quá lâu tại điểm lấy hàng.'**
+  String get custOrderAutoCancelNote;
+
+  /// No description provided for @custOrderTempOpen.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mở tủ tạm thời'**
+  String get custOrderTempOpen;
+
+  /// No description provided for @custOrderReturn.
+  ///
+  /// In vi, this message translates to:
+  /// **'Trả tủ'**
+  String get custOrderReturn;
+
+  /// No description provided for @custOrderNewCode.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tạo mã mở tủ mới'**
+  String get custOrderNewCode;
+
+  /// No description provided for @custOrderCancel.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hủy đơn hàng'**
+  String get custOrderCancel;
+
+  /// No description provided for @custOrderCancelConfirmTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xác nhận hủy đơn'**
+  String get custOrderCancelConfirmTitle;
+
+  /// No description provided for @custOrderCancelConfirmMsg.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bạn có chắc chắn muốn hủy đơn hàng này không? Hệ thống sẽ thu một khoản phí hủy và hoàn trả lại phần còn lại.'**
+  String get custOrderCancelConfirmMsg;
+
+  /// No description provided for @custOrderNo.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không'**
+  String get custOrderNo;
+
+  /// No description provided for @custOrderConfirm.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xác nhận'**
+  String get custOrderConfirm;
+
+  /// No description provided for @custOrderInvalidCode.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mã đơn không hợp lệ'**
+  String get custOrderInvalidCode;
+
+  /// No description provided for @custOrderCanceling.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang hủy đơn hàng...'**
+  String get custOrderCanceling;
+
+  /// No description provided for @custOrderCanceled.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã hủy đơn hàng thành công'**
+  String get custOrderCanceled;
+
+  /// No description provided for @custOrderCreatingCode.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang tạo mã mới...'**
+  String get custOrderCreatingCode;
+
+  /// No description provided for @custOrderCodeCreated.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tạo mã thành công!'**
+  String get custOrderCodeCreated;
+
+  /// No description provided for @custOrderLockerNotFound.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không tìm thấy thông tin tủ'**
+  String get custOrderLockerNotFound;
+
+  /// No description provided for @custOrderNoStation.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không có thông tin trạm tủ'**
+  String get custOrderNoStation;
+
+  /// No description provided for @custOrderLoadingLocker.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang lấy thông tin tủ...'**
+  String get custOrderLoadingLocker;
+
+  /// No description provided for @custOrderLockerDetailFallback.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không lấy được thông tin chi tiết tủ, sử dụng ID'**
+  String get custOrderLockerDetailFallback;
+
+  /// No description provided for @custOrderLockedForDebt.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tủ đang bị khóa do nợ phí. Vui lòng thanh toán để tiếp tục sử dụng.'**
+  String get custOrderLockedForDebt;
+
+  /// No description provided for @custOrderPayToOpen.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thanh toán để mở tủ'**
+  String get custOrderPayToOpen;
+
+  /// No description provided for @custOrderReturnConfirmTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xác nhận trả tủ'**
+  String get custOrderReturnConfirmTitle;
+
+  /// No description provided for @custOrderReturnConfirmMsg.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bạn có chắc chắn muốn trả tủ ngay bây giờ? Sau khi xác nhận, ngăn tủ sẽ được mở và phiên thuê sẽ kết thúc.'**
+  String get custOrderReturnConfirmMsg;
+
+  /// No description provided for @custOrderCancelAction.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hủy'**
+  String get custOrderCancelAction;
+
+  /// No description provided for @custOrderOpening.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang mở tủ...'**
+  String get custOrderOpening;
+
+  /// No description provided for @custOrderError.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lỗi: {message}'**
+  String custOrderError(Object message);
+
+  /// No description provided for @custOrderTempOpenSent.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã gửi lệnh mở tủ tạm thời!'**
+  String get custOrderTempOpenSent;
+
+  /// No description provided for @custOrderReturning.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang xử lý trả tủ...'**
+  String get custOrderReturning;
+
+  /// No description provided for @custOrderReturned.
+  ///
+  /// In vi, this message translates to:
+  /// **'Trả tủ thành công!'**
+  String get custOrderReturned;
+
+  /// No description provided for @custOrderPickupAddress.
+  ///
+  /// In vi, this message translates to:
+  /// **'Địa chỉ lấy hàng'**
+  String get custOrderPickupAddress;
+
+  /// No description provided for @custOrderOriginLocker.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tủ gửi (Origin)'**
+  String get custOrderOriginLocker;
+
+  /// No description provided for @custOrderLoadingShort.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang tải...'**
+  String get custOrderLoadingShort;
+
+  /// No description provided for @custOrderDestinationLocker.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tủ nhận (Destination)'**
+  String get custOrderDestinationLocker;
+
+  /// No description provided for @custOrderRouteInfo.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thông tin lộ trình'**
+  String get custOrderRouteInfo;
+
+  /// No description provided for @custOrderPickedUpAt.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã lấy: {toLocal}'**
+  String custOrderPickedUpAt(Object toLocal);
+
+  /// No description provided for @custOrderNotPickedUp.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã lấy: Chưa lấy hàng'**
+  String get custOrderNotPickedUp;
+
+  /// No description provided for @custOrderReceivedAt.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã nhận: {toLocal}'**
+  String custOrderReceivedAt(Object toLocal);
+
+  /// No description provided for @custOrderNotReceived.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã nhận: Chưa nhận hàng'**
+  String get custOrderNotReceived;
+
+  /// No description provided for @custOrderReceiverInfo.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thông tin người nhận'**
+  String get custOrderReceiverInfo;
+
+  /// No description provided for @custOrderFullName.
+  ///
+  /// In vi, this message translates to:
+  /// **'Họ tên'**
+  String get custOrderFullName;
+
+  /// No description provided for @custOrderPhone.
+  ///
+  /// In vi, this message translates to:
+  /// **'Số điện thoại'**
+  String get custOrderPhone;
+
+  /// No description provided for @custOrderReceiverAddress.
+  ///
+  /// In vi, this message translates to:
+  /// **'Địa chỉ nhận'**
+  String get custOrderReceiverAddress;
+
+  /// No description provided for @custOrderPickupPhotos.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hình ảnh lấy hàng'**
+  String get custOrderPickupPhotos;
+
+  /// No description provided for @custOrderMap.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bản đồ'**
+  String get custOrderMap;
+
+  /// No description provided for @custOrderMapFailed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không mở được bản đồ.'**
+  String get custOrderMapFailed;
+
+  /// No description provided for @custOrderAutoCancelling.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đơn hàng đang được xử lý tự động hủy do quá hạn.'**
+  String get custOrderAutoCancelling;
+
+  /// No description provided for @custOrderStoreWaitTime.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thời gian chờ cất hàng'**
+  String get custOrderStoreWaitTime;
+
+  /// No description provided for @custOrderAutoCancelIn.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đơn hàng sẽ tự động hủy sau:'**
+  String get custOrderAutoCancelIn;
+
+  /// No description provided for @custOrderCodeFailed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không thể tạo mã mới'**
+  String get custOrderCodeFailed;
+
+  /// No description provided for @dbLockerInactive.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa hoạt động'**
+  String get dbLockerInactive;
+
+  /// No description provided for @dbPadMaintenance.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bãi đáp đang bảo trì'**
+  String get dbPadMaintenance;
+
+  /// No description provided for @dbPadFault.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bãi đáp đang lỗi'**
+  String get dbPadFault;
+
+  /// No description provided for @forceOpenUnconfirmed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tủ chưa xác nhận đã mở ô — ô có thể chưa mở, vui lòng kiểm tra tại tủ rồi thử lại.'**
+  String get forceOpenUnconfirmed;
 }
 
 class _AppLocalizationsDelegate

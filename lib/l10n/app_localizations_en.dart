@@ -14749,4 +14749,298 @@ class AppLocalizationsEn extends AppLocalizations {
   String ordSendStoragePending(int hours, int pending) {
     return '$hours h (+$pending h awaiting payment)';
   }
+
+  @override
+  String custOrderMinutes(Object totalMinutes) {
+    return '$totalMinutes min';
+  }
+
+  @override
+  String custOrderHours(Object hours) {
+    return '$hours h';
+  }
+
+  @override
+  String custOrderHoursMinutes(Object hours, Object minutes) {
+    return '$hours h $minutes min';
+  }
+
+  @override
+  String get custOrderTitle => 'Order details';
+
+  @override
+  String get custOrderLoading => 'Loading order details...';
+
+  @override
+  String get custOrderUpdated => 'Information updated';
+
+  @override
+  String custOrderCode(Object orderCode) {
+    return 'Order #$orderCode';
+  }
+
+  @override
+  String custOrderCreatedAt(Object toLocal) {
+    return 'Created at: $toLocal';
+  }
+
+  @override
+  String get custOrderOtpTitle => 'Locker code (OTP)';
+
+  @override
+  String get custOrderOtpHint =>
+      'Use this code to open the locker at the kiosk';
+
+  @override
+  String get custOrderLockerInfo => 'Locker information';
+
+  @override
+  String get custOrderLockerId => 'Locker ID';
+
+  @override
+  String get custOrderBox => 'Box';
+
+  @override
+  String get custOrderLockerStatus => 'Locker status';
+
+  @override
+  String get custOrderItemType => 'Item type';
+
+  @override
+  String get custOrderItemFood => 'Food';
+
+  @override
+  String get custOrderItemOther => 'Other goods';
+
+  @override
+  String get custOrderBoxList => 'Boxes';
+
+  @override
+  String custOrderBoxCode(Object code) {
+    return 'Code: $code';
+  }
+
+  @override
+  String get custOrderCostTitle => 'Cost & payment';
+
+  @override
+  String get custOrderRentalTitle => 'Rental details';
+
+  @override
+  String get custOrderStart => 'Start';
+
+  @override
+  String get custOrderExpectedEnd => 'Expected end';
+
+  @override
+  String get custOrderCurrentRate => 'Current rental rate';
+
+  @override
+  String get custOrderAccruedFee => 'Accrued fee';
+
+  @override
+  String get custOrderTotalCollected => 'Total collected';
+
+  @override
+  String get custOrderVoucher => 'Voucher applied';
+
+  @override
+  String get custOrderRentedTime => 'Time rented';
+
+  @override
+  String get custOrderPayDebt => 'Pay outstanding fees';
+
+  @override
+  String get custOrderPaying => 'Processing payment...';
+
+  @override
+  String get custOrderPaySuccess => 'Payment successful!';
+
+  @override
+  String get custOrderPaySuccessMsg =>
+      'The overdue fee has been paid. You can now open the locker to collect your items.';
+
+  @override
+  String get custOrderPayFailed => 'Payment failed';
+
+  @override
+  String get custOrderPayFailedMsg =>
+      'The overdue fee payment did not go through. Please check and try again.';
+
+  @override
+  String get custOrderJamWarning => 'WARNING: The locker door is jammed!';
+
+  @override
+  String get custOrderJamWarningMsg =>
+      'The system detected that the box is jammed. Please contact technical support right away or check the box again.';
+
+  @override
+  String get custOrderAutoCancelNote =>
+      'Note: the system will cancel the order automatically if the driver waits too long at the pickup point.';
+
+  @override
+  String get custOrderTempOpen => 'Open locker temporarily';
+
+  @override
+  String get custOrderReturn => 'Return locker';
+
+  @override
+  String get custOrderNewCode => 'Create a new unlock code';
+
+  @override
+  String get custOrderCancel => 'Cancel order';
+
+  @override
+  String get custOrderCancelConfirmTitle => 'Confirm cancellation';
+
+  @override
+  String get custOrderCancelConfirmMsg =>
+      'Are you sure you want to cancel this order? A cancellation fee will be charged and the rest refunded.';
+
+  @override
+  String get custOrderNo => 'No';
+
+  @override
+  String get custOrderConfirm => 'Confirm';
+
+  @override
+  String get custOrderInvalidCode => 'Invalid order code';
+
+  @override
+  String get custOrderCanceling => 'Cancelling order...';
+
+  @override
+  String get custOrderCanceled => 'Order cancelled';
+
+  @override
+  String get custOrderCreatingCode => 'Creating a new code...';
+
+  @override
+  String get custOrderCodeCreated => 'Code created!';
+
+  @override
+  String get custOrderLockerNotFound => 'Locker information not found';
+
+  @override
+  String get custOrderNoStation => 'No locker station information';
+
+  @override
+  String get custOrderLoadingLocker => 'Loading locker information...';
+
+  @override
+  String get custOrderLockerDetailFallback =>
+      'Could not load locker details, using the ID instead';
+
+  @override
+  String get custOrderLockedForDebt =>
+      'The locker is locked because of unpaid fees. Please pay to keep using it.';
+
+  @override
+  String get custOrderPayToOpen => 'Pay to open the locker';
+
+  @override
+  String get custOrderReturnConfirmTitle => 'Confirm locker return';
+
+  @override
+  String get custOrderReturnConfirmMsg =>
+      'Are you sure you want to return the locker now? Once confirmed, the box opens and the rental ends.';
+
+  @override
+  String get custOrderCancelAction => 'Cancel';
+
+  @override
+  String get custOrderOpening => 'Opening locker...';
+
+  @override
+  String custOrderError(Object message) {
+    return 'Error: $message';
+  }
+
+  @override
+  String get custOrderTempOpenSent => 'Temporary open command sent!';
+
+  @override
+  String get custOrderReturning => 'Returning locker...';
+
+  @override
+  String get custOrderReturned => 'Locker returned!';
+
+  @override
+  String get custOrderPickupAddress => 'Pickup address';
+
+  @override
+  String get custOrderOriginLocker => 'Origin locker';
+
+  @override
+  String get custOrderLoadingShort => 'Loading...';
+
+  @override
+  String get custOrderDestinationLocker => 'Destination locker';
+
+  @override
+  String get custOrderRouteInfo => 'Route information';
+
+  @override
+  String custOrderPickedUpAt(Object toLocal) {
+    return 'Picked up: $toLocal';
+  }
+
+  @override
+  String get custOrderNotPickedUp => 'Picked up: not yet';
+
+  @override
+  String custOrderReceivedAt(Object toLocal) {
+    return 'Received: $toLocal';
+  }
+
+  @override
+  String get custOrderNotReceived => 'Received: not yet';
+
+  @override
+  String get custOrderReceiverInfo => 'Receiver information';
+
+  @override
+  String get custOrderFullName => 'Full name';
+
+  @override
+  String get custOrderPhone => 'Phone number';
+
+  @override
+  String get custOrderReceiverAddress => 'Delivery address';
+
+  @override
+  String get custOrderPickupPhotos => 'Pickup photos';
+
+  @override
+  String get custOrderMap => 'Map';
+
+  @override
+  String get custOrderMapFailed => 'Could not open the map.';
+
+  @override
+  String get custOrderAutoCancelling =>
+      'The order is being cancelled automatically because it is overdue.';
+
+  @override
+  String get custOrderStoreWaitTime => 'Time left to store the parcel';
+
+  @override
+  String get custOrderAutoCancelIn =>
+      'The order will be cancelled automatically in:';
+
+  @override
+  String get custOrderCodeFailed => 'Could not create a new code';
+
+  @override
+  String get dbLockerInactive => 'Not active';
+
+  @override
+  String get dbPadMaintenance => 'Landing pad under maintenance';
+
+  @override
+  String get dbPadFault => 'Landing pad faulty';
+
+  @override
+  String get forceOpenUnconfirmed =>
+      'The locker hasn\'t confirmed the box opened — it may still be closed. Please check at the locker and try again.';
 }

@@ -14379,4 +14379,296 @@ class AppLocalizationsVi extends AppLocalizations {
   String ordSendStoragePending(int hours, int pending) {
     return '$hours giờ (+$pending giờ chờ thanh toán)';
   }
+
+  @override
+  String custOrderMinutes(Object totalMinutes) {
+    return '$totalMinutes phút';
+  }
+
+  @override
+  String custOrderHours(Object hours) {
+    return '$hours giờ';
+  }
+
+  @override
+  String custOrderHoursMinutes(Object hours, Object minutes) {
+    return '$hours giờ $minutes phút';
+  }
+
+  @override
+  String get custOrderTitle => 'Chi tiết đơn hàng';
+
+  @override
+  String get custOrderLoading => 'Đang tải chi tiết đơn hàng...';
+
+  @override
+  String get custOrderUpdated => 'Đã cập nhật thông tin';
+
+  @override
+  String custOrderCode(Object orderCode) {
+    return 'Đơn hàng #$orderCode';
+  }
+
+  @override
+  String custOrderCreatedAt(Object toLocal) {
+    return 'Thời gian tạo đơn: $toLocal';
+  }
+
+  @override
+  String get custOrderOtpTitle => 'Mã mở tủ (OTP)';
+
+  @override
+  String get custOrderOtpHint => 'Dùng mã này để mở tủ tại Kiosk';
+
+  @override
+  String get custOrderLockerInfo => 'Thông tin tủ locker';
+
+  @override
+  String get custOrderLockerId => 'ID Tủ';
+
+  @override
+  String get custOrderBox => 'Ngăn tủ';
+
+  @override
+  String get custOrderLockerStatus => 'Trạng thái tủ';
+
+  @override
+  String get custOrderItemType => 'Loại mặt hàng';
+
+  @override
+  String get custOrderItemFood => 'Đồ ăn';
+
+  @override
+  String get custOrderItemOther => 'Hàng hóa khác';
+
+  @override
+  String get custOrderBoxList => 'Danh sách ngăn';
+
+  @override
+  String custOrderBoxCode(Object code) {
+    return 'Mã: $code';
+  }
+
+  @override
+  String get custOrderCostTitle => 'Chi phí & Thanh toán';
+
+  @override
+  String get custOrderRentalTitle => 'Chi tiết thuê';
+
+  @override
+  String get custOrderStart => 'Bắt đầu';
+
+  @override
+  String get custOrderExpectedEnd => 'Kết thúc dự kiến';
+
+  @override
+  String get custOrderCurrentRate => 'Giá thuê hiện tại';
+
+  @override
+  String get custOrderAccruedFee => 'Phí tích lũy';
+
+  @override
+  String get custOrderTotalCollected => 'Tổng đã thu';
+
+  @override
+  String get custOrderVoucher => 'Voucher áp dụng';
+
+  @override
+  String get custOrderRentedTime => 'Thời gian đã thuê';
+
+  @override
+  String get custOrderPayDebt => 'Thanh toán nợ phí';
+
+  @override
+  String get custOrderPaying => 'Đang xử lý thanh toán...';
+
+  @override
+  String get custOrderPaySuccess => 'Thanh toán thành công!';
+
+  @override
+  String get custOrderPaySuccessMsg =>
+      'Phí quá hạn đã được thanh toán. Bạn có thể mở tủ để lấy đồ.';
+
+  @override
+  String get custOrderPayFailed => 'Thanh toán thất bại';
+
+  @override
+  String get custOrderPayFailedMsg =>
+      'Thanh toán phí quá hạn không thành công. Vui lòng kiểm tra lại.';
+
+  @override
+  String get custOrderJamWarning => 'CẢNH BÁO: Cửa tủ bị kẹt!';
+
+  @override
+  String get custOrderJamWarningMsg =>
+      'Hệ thống ghi nhận ngăn tủ đang bị kẹt. Vui lòng liên hệ hỗ trợ kỹ thuật ngay hoặc kiểm tra lại ngăn tủ.';
+
+  @override
+  String get custOrderAutoCancelNote =>
+      'Lưu ý: Hệ thống sẽ tự động hủy đơn hàng nếu tài xế phải chờ quá lâu tại điểm lấy hàng.';
+
+  @override
+  String get custOrderTempOpen => 'Mở tủ tạm thời';
+
+  @override
+  String get custOrderReturn => 'Trả tủ';
+
+  @override
+  String get custOrderNewCode => 'Tạo mã mở tủ mới';
+
+  @override
+  String get custOrderCancel => 'Hủy đơn hàng';
+
+  @override
+  String get custOrderCancelConfirmTitle => 'Xác nhận hủy đơn';
+
+  @override
+  String get custOrderCancelConfirmMsg =>
+      'Bạn có chắc chắn muốn hủy đơn hàng này không? Hệ thống sẽ thu một khoản phí hủy và hoàn trả lại phần còn lại.';
+
+  @override
+  String get custOrderNo => 'Không';
+
+  @override
+  String get custOrderConfirm => 'Xác nhận';
+
+  @override
+  String get custOrderInvalidCode => 'Mã đơn không hợp lệ';
+
+  @override
+  String get custOrderCanceling => 'Đang hủy đơn hàng...';
+
+  @override
+  String get custOrderCanceled => 'Đã hủy đơn hàng thành công';
+
+  @override
+  String get custOrderCreatingCode => 'Đang tạo mã mới...';
+
+  @override
+  String get custOrderCodeCreated => 'Tạo mã thành công!';
+
+  @override
+  String get custOrderLockerNotFound => 'Không tìm thấy thông tin tủ';
+
+  @override
+  String get custOrderNoStation => 'Không có thông tin trạm tủ';
+
+  @override
+  String get custOrderLoadingLocker => 'Đang lấy thông tin tủ...';
+
+  @override
+  String get custOrderLockerDetailFallback =>
+      'Không lấy được thông tin chi tiết tủ, sử dụng ID';
+
+  @override
+  String get custOrderLockedForDebt =>
+      'Tủ đang bị khóa do nợ phí. Vui lòng thanh toán để tiếp tục sử dụng.';
+
+  @override
+  String get custOrderPayToOpen => 'Thanh toán để mở tủ';
+
+  @override
+  String get custOrderReturnConfirmTitle => 'Xác nhận trả tủ';
+
+  @override
+  String get custOrderReturnConfirmMsg =>
+      'Bạn có chắc chắn muốn trả tủ ngay bây giờ? Sau khi xác nhận, ngăn tủ sẽ được mở và phiên thuê sẽ kết thúc.';
+
+  @override
+  String get custOrderCancelAction => 'Hủy';
+
+  @override
+  String get custOrderOpening => 'Đang mở tủ...';
+
+  @override
+  String custOrderError(Object message) {
+    return 'Lỗi: $message';
+  }
+
+  @override
+  String get custOrderTempOpenSent => 'Đã gửi lệnh mở tủ tạm thời!';
+
+  @override
+  String get custOrderReturning => 'Đang xử lý trả tủ...';
+
+  @override
+  String get custOrderReturned => 'Trả tủ thành công!';
+
+  @override
+  String get custOrderPickupAddress => 'Địa chỉ lấy hàng';
+
+  @override
+  String get custOrderOriginLocker => 'Tủ gửi (Origin)';
+
+  @override
+  String get custOrderLoadingShort => 'Đang tải...';
+
+  @override
+  String get custOrderDestinationLocker => 'Tủ nhận (Destination)';
+
+  @override
+  String get custOrderRouteInfo => 'Thông tin lộ trình';
+
+  @override
+  String custOrderPickedUpAt(Object toLocal) {
+    return 'Đã lấy: $toLocal';
+  }
+
+  @override
+  String get custOrderNotPickedUp => 'Đã lấy: Chưa lấy hàng';
+
+  @override
+  String custOrderReceivedAt(Object toLocal) {
+    return 'Đã nhận: $toLocal';
+  }
+
+  @override
+  String get custOrderNotReceived => 'Đã nhận: Chưa nhận hàng';
+
+  @override
+  String get custOrderReceiverInfo => 'Thông tin người nhận';
+
+  @override
+  String get custOrderFullName => 'Họ tên';
+
+  @override
+  String get custOrderPhone => 'Số điện thoại';
+
+  @override
+  String get custOrderReceiverAddress => 'Địa chỉ nhận';
+
+  @override
+  String get custOrderPickupPhotos => 'Hình ảnh lấy hàng';
+
+  @override
+  String get custOrderMap => 'Bản đồ';
+
+  @override
+  String get custOrderMapFailed => 'Không mở được bản đồ.';
+
+  @override
+  String get custOrderAutoCancelling =>
+      'Đơn hàng đang được xử lý tự động hủy do quá hạn.';
+
+  @override
+  String get custOrderStoreWaitTime => 'Thời gian chờ cất hàng';
+
+  @override
+  String get custOrderAutoCancelIn => 'Đơn hàng sẽ tự động hủy sau:';
+
+  @override
+  String get custOrderCodeFailed => 'Không thể tạo mã mới';
+
+  @override
+  String get dbLockerInactive => 'Chưa hoạt động';
+
+  @override
+  String get dbPadMaintenance => 'Bãi đáp đang bảo trì';
+
+  @override
+  String get dbPadFault => 'Bãi đáp đang lỗi';
+
+  @override
+  String get forceOpenUnconfirmed =>
+      'Tủ chưa xác nhận đã mở ô — ô có thể chưa mở, vui lòng kiểm tra tại tủ rồi thử lại.';
 }

@@ -1,3 +1,5 @@
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
+
 /// Kết quả lệnh mở ô khẩn cấp (`POST /api/locker-technician/boxes/{id}/force-open`).
 ///
 /// Backend trả HTTP 200 cho cả hai trường hợp, nên không thể dựa vào việc
@@ -21,8 +23,7 @@ class ForceOpenResult {
   }
 
   /// Câu báo lỗi khi backend không gửi kèm `message`.
-  static const fallbackFailureMessage =
-      'Tủ chưa xác nhận đã mở ô — ô có thể chưa mở, vui lòng kiểm tra tại tủ rồi thử lại.';
+  static String get fallbackFailureMessage => L10n.current.forceOpenUnconfirmed;
 
   /// `true` khi tủ xác nhận đã mở ô (hoặc backend cũ không trả `accepted`).
   final bool accepted;
