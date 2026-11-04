@@ -58,25 +58,25 @@ class _CustomTextareaState extends State<CustomTextarea> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = ShadTheme.of(context);
+    final theme = ShadTheme.maybeOf(context);
 
     return Container(
       decoration: BoxDecoration(
-        color: widget.backgroundColor ?? theme.colorScheme.muted,
+        color: widget.backgroundColor ?? theme?.colorScheme.muted ?? Colors.white,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: widget.borderColor ?? theme.colorScheme.border,
+          color: widget.borderColor ?? theme?.colorScheme.border ?? Colors.grey.shade300,
         ),
       ),
       child: Center(
         child: Theme(
           data: Theme.of(context).copyWith(
             textSelectionTheme: TextSelectionThemeData(
-              selectionColor: theme.colorScheme.mutedForeground.withOpacity(
-                0.3,
+              selectionColor: (theme?.colorScheme.mutedForeground ?? Colors.grey).withValues(
+                alpha: 0.3,
               ),
-              selectionHandleColor: theme.colorScheme.mutedForeground,
-              cursorColor: theme.colorScheme.foreground,
+              selectionHandleColor: theme?.colorScheme.mutedForeground ?? Colors.grey,
+              cursorColor: theme?.colorScheme.foreground ?? Colors.black,
             ),
           ),
           child: TextField(
@@ -89,12 +89,13 @@ class _CustomTextareaState extends State<CustomTextarea> {
             onChanged: widget.onChanged,
             style:
                 widget.style ??
-                theme.textTheme.p.copyWith(color: theme.colorScheme.foreground),
+                theme?.textTheme.p.copyWith(color: theme.colorScheme.foreground) ??
+                const TextStyle(color: Colors.black, fontSize: 14),
             decoration: InputDecoration(
               hintText: widget.placeholder,
-              hintStyle: theme.textTheme.p.copyWith(
+              hintStyle: theme?.textTheme.p.copyWith(
                 color: theme.colorScheme.mutedForeground,
-              ),
+              ) ?? TextStyle(color: Colors.grey.shade400, fontSize: 14),
               border: InputBorder.none,
               enabledBorder: InputBorder.none,
               focusedBorder: InputBorder.none,

@@ -8,7 +8,6 @@ import 'package:go_router/go_router.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import 'package:smart_laundry_locker/core/config/business_config_provider.dart';
-import 'package:smart_laundry_locker/core/media/media.dart';
 import 'package:smart_laundry_locker/core/routing/app_router.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/presentation/widgets/drone_order_cancel.dart';
 import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
@@ -28,6 +27,7 @@ import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/or
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/order_status_timeline.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/pickup_code_share_actions.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/receiver_order_card.dart';
+import 'package:smart_laundry_locker/features/maintenance/presentation/pages/create_report_page.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/user_report_detail_sheet.dart';
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
 import 'package:smart_laundry_locker/shared/shared.dart';
@@ -625,7 +625,17 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
   }
 
   void _snack(String msg) {
-    SmartDialog.showToast(msg);
+    try {
+      if (FlutterSmartDialog.observer.navigator != null) {
+        SmartDialog.showToast(msg);
+        return;
+      }
+    } catch (_) {}
+    if (mounted) {
+      ScaffoldMessenger.maybeOf(context)?.showSnackBar(
+        SnackBar(content: Text(msg)),
+      );
+    }
   }
 
   Future<void> _runAction(
@@ -838,135 +848,51 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
     }
   }
 
-  Future<void> _reportDialog({
-    required int orderId,
-
-    /// Nhãn ô cho người đọc (`ô số 4`), đã tra sẵn từ sơ đồ tủ.
-    String? boxLabel,
+  Future<void> _openReportForOrder({
+    required Map<String, dynamic> order,
+    required int boxId,
   }) async {
-    boxLabel ??= context.l10n.boxThisLower;
-    final reasonCtrl = TextEditingController();
-    // Ảnh hiện trường stage REPORT — tối đa theo cấu hình admin.
-    final photos = PhotoPickerController(
-      maxPhotos: businessConfig.reportPhotosPerRequestReporter,
-    );
-    // Trạng thái dialog giữ ngoài builder để không bị reset khi dialog rebuild
-    // (vd. bàn phím bật lên).
-    var uploading = false;
-    String? dialogError;
-    List<Map<String, dynamic>> attachments = const [];
-    final confirmed = await showDialog<bool>(
-      context: context,
-      barrierDismissible: false,
-      // photos + reasonCtrl được huỷ khi dialog gỡ khỏi cây (sau hiệu ứng đóng).
-      builder: (ctx) => ControllerDisposer(
-        controllers: [photos, reasonCtrl],
-        child: StatefulBuilder(
-          builder: (ctx, setLocal) => AlertDialog(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20),
-            ),
-            title: Text(context.l10n.ordReportFaultyBox),
-            content: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  TextField(
-                    controller: reasonCtrl,
-                    maxLines: 3,
-                    enabled: !uploading,
-                    decoration: InputDecoration(
-                      hintText: context.l10n.ordDescribeIssueHint,
-                    ),
-                  ),
-                  const SizedBox(height: 14),
-                  Text(
-                    context.l10n.ordOnsitePhotosOptional(photos.maxPhotos),
-                    style: const TextStyle(
-                      fontSize: 12.5,
-                      fontWeight: FontWeight.w700,
-                      color: opsDark,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  PhotoPickerField(
-                    controller: photos,
-                    enabled: !uploading,
-                    thumbSize: 64,
-                    accentColor: AislBrand.navy,
-                    helperText: context.l10n.ordPhotosHelp,
-                  ),
-                  if (dialogError != null) ...[
-                    const SizedBox(height: 8),
-                    Text(
-                      dialogError!,
-                      style: const TextStyle(
-                        fontSize: 12,
-                        color: Color(0xFFDC2626),
-                      ),
-                    ),
-                  ],
-                ],
-              ),
-            ),
-            actions: [
-              TextButton(
-                onPressed: uploading ? null : () => Navigator.pop(ctx, false),
-                child: Text(context.l10n.commonCancel),
-              ),
-              FilledButton(
-                style: FilledButton.styleFrom(
-                  backgroundColor: const Color(0xFFDC2626),
-                ),
-                onPressed: uploading
-                    ? null
-                    : () async {
-                        if (reasonCtrl.text.trim().isEmpty && photos.isEmpty) {
-                          setLocal(
-                            () => dialogError =
-                                context.l10n.ordDescribeOrAttach,
-                          );
-                          return;
-                        }
-                        setLocal(() {
-                          uploading = true;
-                          dialogError = null;
-                        });
-                        try {
-                          attachments = await photos.uploadAll();
-                          if (ctx.mounted) Navigator.pop(ctx, true);
-                        } catch (e) {
-                          if (ctx.mounted) {
-                            setLocal(() {
-                              uploading = false;
-                              dialogError = LockerOpsService.errorMessage(e);
-                            });
-                          }
-                        }
-                      },
-                child: Text(uploading ? context.l10n.ordUploadingPhotos : context.l10n.ordSendReport),
-              ),
-            ],
-          ),
+    final orderId = _asInt(order['id']);
+    if (orderId == null) return;
+
+    final rawStatus = (order['status'] as String? ?? '').toUpperCase();
+    final isPickup = rawStatus == 'STORING' || rawStatus == 'RETURNED';
+    final lockerId = isPickup
+        ? _asInt(order['destinationLockerId'] ?? order['lockerId'])
+        : _asInt(order['lockerId'] ?? order['destinationLockerId']);
+
+    final lockerName = _lockerNameOf(order);
+    final lockerObj = _lockerOf(order);
+    final address = lockerObj?['address']?.toString();
+    final boxNumber =
+        (lockerId == null) ? null : _lockerBoxesMap[lockerId]?[boxId];
+    final boxLabel = _boxLabelFor(order, boxId);
+    final orderCode = order['orderCode']?.toString();
+
+    await Navigator.of(context).push<void>(
+      MaterialPageRoute<void>(
+        builder: (ctx) => CreateReportPage(
+          lockerId: lockerId != null ? '$lockerId' : '',
+          cabinetId: lockerId != null ? '$lockerId' : '',
+          lockerName: lockerName,
+          cabinetName: lockerName,
+          locationName: address,
+          initialBoxId: boxId,
+          isFromOrder: true,
+          orderId: orderId,
+          orderCode: orderCode,
+          boxNumber: boxNumber,
+          boxLabel: boxLabel,
+          service: _service,
+          onSuccess: () async {
+            await _load();
+            if (mounted) {
+              _snack(context.l10n.ordReportSentFor(boxLabel));
+            }
+          },
         ),
       ),
     );
-    final reason = reasonCtrl.text.trim();
-    if (confirmed == true && (reason.isNotEmpty || attachments.isNotEmpty)) {
-      try {
-        await _service.reportOrderFault(
-          orderId,
-          reason.isNotEmpty ? reason : L10n.current.ordBoxFaultDefault,
-          attachments: attachments,
-        );
-        await _load();
-        if (!mounted) return;
-        _snack(context.l10n.ordReportSentFor(boxLabel));
-      } catch (e) {
-        _snack(LockerOpsService.errorMessage(e));
-      }
-    }
   }
 
   Future<void> _showRentalCompletionGuide(Map<String, dynamic> order) async {
@@ -1714,9 +1640,9 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
               UserReportDetailSheet.show(context, report: open);
               return;
             }
-            await _reportDialog(
-              orderId: orderId,
-              boxLabel: _boxLabelFor(order, boxId),
+            await _openReportForOrder(
+              order: latest,
+              boxId: boxId,
             );
           },
           onCancel: (id) async {

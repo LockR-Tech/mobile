@@ -866,14 +866,12 @@ void main() {
     await tester.tap(find.text('Báo ô lỗi'));
     await tester.pumpAndSettle();
 
-    // Giới hạn ảnh hiện trường lấy từ cấu hình admin.
-    expect(
-      find.text('Ảnh hiện trường (không bắt buộc, tối đa 3)'),
-      findsOneWidget,
-    );
+    // Giao diện giống trang báo cáo sự cố với thông tin tủ và ô được khoá cố định theo đơn
+    expect(find.text('Báo cáo sự cố'), findsOneWidget);
+    expect(find.text('Cố định theo đơn'), findsNWidgets(2));
 
     await tester.enterText(find.byType(TextField).last, 'Ô không mở được');
-    await tester.tap(find.text('Gửi báo lỗi'));
+    await tester.tap(find.text('Gửi báo cáo'));
     await tester.pumpAndSettle();
 
     expect(service.reportOrderFaultCalls, 1);

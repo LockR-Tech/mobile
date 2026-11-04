@@ -15,7 +15,6 @@ import 'package:smart_laundry_locker/core/network/api_client.dart';
 import 'package:smart_laundry_locker/core/theme/shadcn_theme.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:smart_laundry_locker/features/maintenance/presentation/pages/create_report_page.dart';
-import 'package:smart_laundry_locker/shared/widgets/app_bar.dart';
 import 'package:smart_laundry_locker/shared/shared.dart';
 import 'package:flutter/material.dart';
 import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
@@ -1128,6 +1127,10 @@ class _CustomerOrderDetailPageState extends State<CustomerOrderDetailPage> {
 
     if (!context.mounted) return;
 
+    final boxLabel = locker != null
+        ? locker.displayPosition
+        : _fetchedLockerName ?? activeDetail.lockerLabel;
+
     Navigator.push(
       context,
       MaterialPageRoute<void>(
@@ -1140,6 +1143,14 @@ class _CustomerOrderDetailPageState extends State<CustomerOrderDetailPage> {
               : _fetchedLockerName ?? activeDetail.lockerLabel,
           locationName: cabinet?.locationName,
           initialBoxId: int.tryParse(lockerId),
+          isFromOrder: true,
+          orderId: int.tryParse(order.id) ?? int.tryParse(widget.orderId),
+          orderCode: order.orderCode,
+          boxLabel: boxLabel,
+          onSuccess: () async {
+            final currentId = widget.order?.id ?? widget.orderId;
+            await _provider.fetchOrderDetail(currentId);
+          },
         ),
       ),
     );
