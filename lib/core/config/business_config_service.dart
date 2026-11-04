@@ -204,6 +204,7 @@ class BusinessConfigService {
       locker: _rawScopes['locker'],
       loyalty: _rawScopes['loyalty'],
       store: _rawScopes['store'],
+      auth: _rawScopes['auth'],
     );
   }
 

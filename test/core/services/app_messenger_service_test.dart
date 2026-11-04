@@ -88,4 +88,37 @@ void main() {
     expect(find.text('snack 2'), findsOneWidget);
     await drain(tester);
   });
+
+  testWidgets('SnackBar có nút (vd. "Báo sự cố") vẫn tự tắt, không nằm mãi', (
+    tester,
+  ) async {
+    await pumpApp(tester);
+    ScaffoldMessenger.of(pageContext).showSnackBar(
+      SnackBar(
+        content: const Text('Ô số 2 đang hỏng'),
+        action: SnackBarAction(label: 'Báo sự cố', onPressed: () {}),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('Ô số 2 đang hỏng'), findsOneWidget);
+
+    await tester.pump(const Duration(seconds: 5));
+    await tester.pumpAndSettle();
+    expect(find.text('Ô số 2 đang hỏng'), findsNothing);
+  });
+
+  test('chỉ đổi persist, giữ nguyên các thuộc tính khác', () {
+    final original = SnackBar(
+      content: const Text('x'),
+      duration: const Duration(seconds: 7),
+      behavior: SnackBarBehavior.floating,
+      action: SnackBarAction(label: 'a', onPressed: () {}),
+    );
+    expect(original.persist, isTrue);
+    final fixed = autoDismissing(original);
+    expect(fixed.persist, isFalse);
+    expect(fixed.duration, const Duration(seconds: 7));
+    expect(fixed.behavior, SnackBarBehavior.floating);
+    expect(fixed.action, same(original.action));
+  });
 }

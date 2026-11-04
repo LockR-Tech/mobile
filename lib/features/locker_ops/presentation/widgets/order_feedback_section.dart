@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
@@ -112,9 +113,7 @@ class _OrderFeedbackSectionState extends State<OrderFeedbackSection> {
 
   void _snack(String msg) {
     if (!mounted) return;
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text(msg)));
+    SmartDialog.showToast(msg);
   }
 
   Future<void> _rate() async {

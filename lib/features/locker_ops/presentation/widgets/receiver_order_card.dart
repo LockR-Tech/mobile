@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
@@ -20,10 +21,7 @@ Future<bool> openReceiverOrderBox(
   required LockerOpsService service,
   required ReceiverOrder order,
 }) async {
-  final messenger = ScaffoldMessenger.of(context);
-  void snack(String msg) => messenger
-    ..hideCurrentSnackBar()
-    ..showSnackBar(SnackBar(content: Text(msg)));
+  void snack(String msg) => SmartDialog.showToast(msg);
 
   final lockerId = order.lockerId;
   final pin = order.pickupPin;
@@ -76,7 +74,6 @@ Future<void> openReceiverOrderDirections(
   BuildContext context,
   ReceiverOrder order,
 ) async {
-  final messenger = ScaffoldMessenger.of(context);
   final result = await openLockerDirectionsResult(
     latitude: order.lockerLatitude,
     longitude: order.lockerLongitude,
@@ -89,9 +86,7 @@ Future<void> openReceiverOrderDirections(
       L10n.current.ordCantOpenMapsApp,
   };
   if (msg != null) {
-    messenger
-      ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text(msg)));
+    SmartDialog.showToast(msg);
   }
 }
 

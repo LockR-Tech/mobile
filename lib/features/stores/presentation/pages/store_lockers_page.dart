@@ -1,3 +1,4 @@
+import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
@@ -1107,6 +1108,8 @@ class _LockerCardState extends State<_LockerCard> {
             lockerCode: widget.locker['code']?.toString(),
             storeName: widget.storeName,
             onCellTap: (cell) {
+              // Bấm sang ô khác ⇒ bỏ ngay thông báo của ô trước (vd. "Ô số 2 đang hỏng").
+              ScaffoldMessenger.of(context).removeCurrentSnackBar();
               // Tủ mất kết nối / bảo trì / tạm ngưng: không mở đặt ô, báo lý do.
               if (blockReason != null) {
                 _showBlocked(context, blockReason);
@@ -1121,9 +1124,7 @@ class _LockerCardState extends State<_LockerCard> {
   }
 
   void _showBlocked(BuildContext ctx, String reason) {
-    ScaffoldMessenger.of(ctx)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text(reason)));
+    SmartDialog.showToast(reason);
   }
 
   void _showFaultHint(BuildContext ctx, Map<String, dynamic> cell) {
@@ -1139,34 +1140,7 @@ class _LockerCardState extends State<_LockerCard> {
         ? context.l10n.lockerBoxUnavailable(boxLabel, state)
         : context.l10n.lockerBoxUnavailableReason(boxLabel, state, reason);
 
-    ScaffoldMessenger.of(ctx)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        SnackBar(
-          content: Text(message),
-          action: SnackBarAction(
-            label: context.l10n.commonReportIssue,
-            textColor: Colors.amberAccent,
-            onPressed: () {
-              Navigator.of(ctx, rootNavigator: true).push<void>(
-                MaterialPageRoute(
-                  builder: (_) => CreateReportPage(
-                    cabinetId: '$_lockerId',
-                    lockerId: '$_lockerId',
-                    cabinetName: _lockerName,
-                    lockerName: _lockerName,
-                    locationName: widget.storeName,
-                    initialBoxId: (cell['id'] as num?)?.toInt(),
-                    initialLayout: _layout,
-                    initialCells: (_layout?['cells'] as List?)
-                        ?.cast<Map<String, dynamic>>(),
-                  ),
-                ),
-              );
-            },
-          ),
-        ),
-      );
+    SmartDialog.showToast(message);
   }
 
   String _boxLabel(Map<String, dynamic> cell) {
@@ -1391,14 +1365,17 @@ class _CellGrid extends StatelessWidget {
               showScreen
                   ? _ScreenTile(
                       isOnline: isOnline,
-                      onTap: () => _showScreenDetailSheet(
-                        context,
-                        isOnline: isOnline,
-                        lockerId: lockerId,
-                        lockerName: lockerName,
-                        lockerCode: lockerCode,
-                        storeName: storeName,
-                      ),
+                      onTap: () {
+                        ScaffoldMessenger.of(context).removeCurrentSnackBar();
+                        _showScreenDetailSheet(
+                          context,
+                          isOnline: isOnline,
+                          lockerId: lockerId,
+                          lockerName: lockerName,
+                          lockerCode: lockerCode,
+                          storeName: storeName,
+                        );
+                      },
                     )
                   : null,
             ),

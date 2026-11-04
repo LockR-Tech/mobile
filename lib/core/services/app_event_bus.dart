@@ -90,6 +90,17 @@ class MaintenanceChangedEvent extends AppEvent {
   bool get isDevice => entity == device;
 }
 
+/// Người dùng chọn tab điều hướng hoặc chuyển branch dưới đáy màn hình.
+class NavigationTabSelectedEvent extends AppEvent {
+  const NavigationTabSelectedEvent({
+    required this.tabIndex,
+    this.branchIndex,
+  });
+
+  final int tabIndex;
+  final int? branchIndex;
+}
+
 // ── Singleton bus ─────────────────────────────────────────────────────────────
 
 /// App-wide synchronous event bus for domain events.

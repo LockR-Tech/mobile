@@ -76,6 +76,7 @@ class BusinessConfig {
     this.requireResolutionPhoto = false,
     this.droneLowBatteryPercent = 20,
     this.slaMaxHoursPerExtension = 24,
+    this.splashDurationMs = 1200,
   });
 
   // ---- Scope `order` ----
@@ -246,8 +247,12 @@ class BusinessConfig {
   /// Bán kính tìm cửa hàng gần đây mặc định (km).
   final double nearbyDefaultRadiusKm;
 
+  // ---- Scope `auth` ----
+  /// Thời gian hiển thị màn hình splash (ms), mặc định 1200 ms.
+  final int splashDurationMs;
+
   /// Các scope app đọc từ `/api/settings/{scope}/public`.
-  static const scopes = ['order', 'payment', 'locker', 'loyalty', 'store'];
+  static const scopes = ['order', 'payment', 'locker', 'loyalty', 'store', 'auth'];
 
   static const _defaults = BusinessConfig(
     sendBaseFee: 15000,
@@ -292,6 +297,7 @@ class BusinessConfig {
     requireResolutionPhoto: false,
     droneLowBatteryPercent: 20,
     slaMaxHoursPerExtension: 24,
+    splashDurationMs: 1200,
   );
 
   /// Giá trị mặc định = các giá trị app dùng trước khi có cấu hình admin.
@@ -305,6 +311,7 @@ class BusinessConfig {
     Map<String, dynamic>? locker,
     Map<String, dynamic>? loyalty,
     Map<String, dynamic>? store,
+    Map<String, dynamic>? auth,
   }) {
     const d = _defaults;
     final o = order ?? const <String, dynamic>{};
@@ -312,6 +319,7 @@ class BusinessConfig {
     final l = locker ?? const <String, dynamic>{};
     final y = loyalty ?? const <String, dynamic>{};
     final s = store ?? const <String, dynamic>{};
+    final a = auth ?? const <String, dynamic>{};
 
     // Thuê tủ: min ≤ mặc định ≤ max, nút nhanh nằm trong [min, max].
     var rentalMin = _int(o['app.order.rental-min-hours'], d.rentalMinHours, min: 1);
@@ -559,6 +567,11 @@ class BusinessConfig {
       nearbyDefaultRadiusKm: _double(
         s['app.store.nearby-default-radius-km'],
         d.nearbyDefaultRadiusKm,
+      ),
+      splashDurationMs: _int(
+        a['app.auth.splash-duration-ms'],
+        d.splashDurationMs,
+        min: 0,
       ),
     );
   }

@@ -1,3 +1,4 @@
+import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:smart_laundry_locker/core/utils/app_date_time.dart';
 import 'package:smart_laundry_locker/features/notifications/domain/entities/notification_model.dart';
 import 'package:smart_laundry_locker/features/notifications/presentation/providers/notification_provider.dart';
@@ -423,15 +424,7 @@ class _NotificationListPageState extends State<NotificationListPage> {
   }
 
   void _showSnack(String message, {bool isError = false}) {
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        SnackBar(
-          content: Text(message),
-          behavior: SnackBarBehavior.floating,
-          backgroundColor: isError ? Colors.red.shade700 : AislBrand.navy,
-        ),
-      );
+    SmartDialog.showToast(message);
   }
 
   /// Vuốt sang trái để xoá một thông báo (`DELETE /api/notifications/{id}`).

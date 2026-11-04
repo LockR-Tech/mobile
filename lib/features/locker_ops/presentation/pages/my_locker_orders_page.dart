@@ -1,3 +1,4 @@
+import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'dart:async';
 import 'package:smart_laundry_locker/core/utils/server_note_keys.dart';
 import 'package:smart_laundry_locker/core/services/app_event_bus.dart';
@@ -624,10 +625,7 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
   }
 
   void _snack(String msg) {
-    if (!mounted) return;
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text(msg)));
+    SmartDialog.showToast(msg);
   }
 
   Future<void> _runAction(
@@ -964,19 +962,7 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
         );
         await _load();
         if (!mounted) return;
-        ScaffoldMessenger.of(context)
-          ..hideCurrentSnackBar()
-          ..showSnackBar(
-            SnackBar(
-              content: Text(
-                context.l10n.ordReportSentFor(boxLabel),
-              ),
-              action: SnackBarAction(
-                label: context.l10n.commonView,
-                onPressed: () => context.push(AppRouter.myLockerReports),
-              ),
-            ),
-          );
+        _snack(context.l10n.ordReportSentFor(boxLabel));
       } catch (e) {
         _snack(LockerOpsService.errorMessage(e));
       }

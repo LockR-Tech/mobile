@@ -1,3 +1,4 @@
+import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:smart_laundry_locker/core/routing/app_router.dart';
 import 'package:smart_laundry_locker/core/utils/user_error_message.dart';
 import 'package:flutter/material.dart';
@@ -374,39 +375,15 @@ class _PromotionsPageState extends ConsumerState<PromotionsPage> {
 
   /// Lưu mã vào ví voucher (idempotent — lưu lại không lỗi).
   Future<void> _claimPromotion(BuildContext context, PromotionModel promo) async {
-    final messenger = ScaffoldMessenger.of(context);
     try {
       await VoucherRepository().claimPromotion(promo.id);
-      messenger.showSnackBar(
-        SnackBar(
-          content: Row(
-            children: [
-              const Icon(LucideIcons.bookmarkCheck,
-                  color: Colors.white, size: 16),
-              const SizedBox(width: 8),
-              Expanded(
-                  child: Text(
-                      L10n.current.promoSavedToMine(promo.code))),
-            ],
-          ),
-          backgroundColor: AislBrand.navy,
-          behavior: SnackBarBehavior.floating,
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-          duration: const Duration(seconds: 2),
-        ),
-      );
+      SmartDialog.showToast(L10n.current.promoSavedToMine(promo.code));
     } catch (e) {
-      messenger.showSnackBar(
-        SnackBar(
-          content: Text(
-            userErrorMessage(
-              e,
-              notFound: L10n.current.promoSaveNotSupported,
-              fallback: L10n.current.promoSaveFailed,
-            ),
-          ),
-          behavior: SnackBarBehavior.floating,
+      SmartDialog.showToast(
+        userErrorMessage(
+          e,
+          notFound: L10n.current.promoSaveNotSupported,
+          fallback: L10n.current.promoSaveFailed,
         ),
       );
     }
@@ -415,20 +392,6 @@ class _PromotionsPageState extends ConsumerState<PromotionsPage> {
   void _copyCode(BuildContext context, String code) {
     Clipboard.setData(ClipboardData(text: code));
     if (PlatformInfo.systemShowsCopyConfirmation) return; // Android 13+ đã tự báo "Đã sao chép".
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            const Icon(LucideIcons.check, color: Colors.white, size: 16),
-            const SizedBox(width: 8),
-            Text(context.l10n.promoCopiedCode(code)),
-          ],
-        ),
-        backgroundColor: AislBrand.navy,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-        duration: const Duration(seconds: 2),
-      ),
-    );
+    SmartDialog.showToast(context.l10n.promoCopiedCode(code));
   }
 }
