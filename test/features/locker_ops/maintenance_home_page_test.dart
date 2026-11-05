@@ -1,8 +1,11 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:smart_laundry_locker/core/config/business_config.dart';
 import 'package:smart_laundry_locker/core/l10n/l10n.dart';
+import 'package:smart_laundry_locker/core/services/app_event_bus.dart';
 import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/pages/maintenance_home_page.dart';
 import 'package:smart_laundry_locker/shared/widgets/adaptive_viewport.dart';
@@ -28,6 +31,7 @@ class _FakeMaintenanceService extends LockerOpsService {
   int? acceptedOrderId;
   int? acceptedDroneId;
   int? loadedOrderId;
+  Completer<void>? queueGate;
   int? loadedWeightGrams;
   String? loadedSealCode;
   int? launchedOrderId;
@@ -245,6 +249,9 @@ class _FakeMaintenanceService extends LockerOpsService {
   Future<List<Map<String, dynamic>>> droneOrderQueue({
     String? deliveryStage,
   }) async {
+    // Ảnh chụp trạng thái server LÚC GỌI; [queueGate] giữ phản hồi lại để giả lập lượt
+    // tải đã đọc dữ liệu từ trước thao tác nhưng về sau.
+    final loaded = loadedOrderId == 23;
     final items = [
       {
         'orderId': 21,
@@ -268,7 +275,7 @@ class _FakeMaintenanceService extends LockerOpsService {
       {
         'orderId': 23,
         'deliveryStage': 'ACCEPTED',
-        'missionStatus': 'AWAITING_LOADING',
+        'missionStatus': loaded ? 'READY_TO_LAUNCH' : 'AWAITING_LOADING',
         'assignedByUserId': 99,
         'droneCode': 'DRONE-10',
         'destinationLockerId': 6,
@@ -280,6 +287,8 @@ class _FakeMaintenanceService extends LockerOpsService {
       },
       ...extraQueue,
     ];
+    final gate = queueGate;
+    if (gate != null) await gate.future;
     if (deliveryStage == null) return items;
     return items
         .where((item) => item['deliveryStage'] == deliveryStage)
@@ -589,6 +598,75 @@ void main() {
     expect(service.loadedSealCode, isNull);
     expect(find.textContaining('NP-261010-SRVSEA'), findsOneWidget);
   });
+
+  test('so sánh danh sách đơn thấy cả missionStatus đổi (xác nhận nạp)', () {
+    final before = [
+      {'orderId': 23, 'deliveryStage': 'ACCEPTED', 'missionStatus': 'AWAITING_LOADING'},
+    ];
+    final after = [
+      {'orderId': 23, 'deliveryStage': 'ACCEPTED', 'missionStatus': 'READY_TO_LAUNCH'},
+    ];
+    expect(droneDeliveriesEqual(before, after), isFalse);
+    expect(
+      droneDeliveriesEqual(before, [Map<String, dynamic>.of(before.first)]),
+      isTrue,
+    );
+  });
+
+  testWidgets(
+    'xác nhận nạp xong thẻ đổi sang Phóng ngay, kể cả khi có lượt tải cũ đang chạy',
+    (tester) async {
+      _setPhoneViewport(tester);
+      final service = _FakeMaintenanceService();
+      final router = GoRouter(
+        routes: [
+          GoRoute(
+            path: '/',
+            builder: (context, state) => MaintenanceHomePage(service: service),
+          ),
+        ],
+      );
+
+      await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+      await tester.pumpAndSettle();
+      expect(find.text('Xác nhận nạp'), findsOneWidget);
+      expect(find.text('Phóng'), findsOneWidget); // đơn 22
+
+      await tester.tap(find.text('Xác nhận nạp'));
+      await tester.pumpAndSettle();
+      await tester.enterText(
+        find.byKey(const ValueKey('drone-loading-weight')),
+        '1450',
+      );
+      await tester.pump();
+      for (final checkbox in find.byType(Checkbox).evaluate()) {
+        await tester.tap(find.byWidget(checkbox.widget));
+        await tester.pump();
+      }
+
+      // Một lượt tải lại bắt đầu TRƯỚC khi server nhận xác nhận nạp (đọc AWAITING_LOADING)
+      // và về sau — trước đây lượt tải sau thao tác dùng lại đúng lượt cũ này.
+      service.queueGate = Completer<void>();
+      AppEventBus.instance.emit(const ReportUpdatedEvent());
+      await tester.pump();
+
+      await tester.tap(find.text('Xác nhận đã nạp'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 400));
+      expect(service.loadedOrderId, 23);
+      // Phản hồi server đã ghép vào thẻ: hết nút nạp, có nút phóng.
+      expect(find.text('Xác nhận nạp'), findsNothing);
+      expect(find.text('Phóng'), findsNWidgets(2));
+
+      final gate = service.queueGate!;
+      service.queueGate = null;
+      gate.complete();
+      await tester.pumpAndSettle();
+
+      expect(find.text('Xác nhận nạp'), findsNothing);
+      expect(find.text('Phóng'), findsNWidgets(2));
+    },
+  );
 
   testWidgets('shows loading validation inside the dialog', (tester) async {
     _setPhoneViewport(tester);

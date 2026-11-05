@@ -13,11 +13,67 @@ class _FakePresenceService extends LockerOpsService {
 
   final Map<String, dynamic> presenceData;
 
+  final calls = <String>[];
+
   @override
   Future<Map<String, dynamic>> getTechnicianPresence() async => presenceData;
+
+  @override
+  Future<Map<String, dynamic>> updateTechnicianPresence({
+    required bool onDuty,
+    double? latitude,
+    double? longitude,
+    double? accuracyM,
+    double? headingDeg,
+    double? speedMs,
+    double? altitudeM,
+    int? batteryLevel,
+    String? deviceInfo,
+  }) async {
+    calls.add('shift onDuty=$onDuty');
+    return {'onDuty': onDuty};
+  }
+
+  @override
+  Future<Map<String, dynamic>> updateDroneTechnicianPresence({
+    bool? onDuty,
+    double? latitude,
+    double? longitude,
+  }) async {
+    calls.add('pickup onDuty=$onDuty');
+    return {'onDuty': onDuty ?? false};
+  }
 }
 
 void main() {
+  testWidgets('KTV drone hết ca: tắt ca làm việc và tắt luôn nhận việc lấy hàng', (
+    tester,
+  ) async {
+    final fakeService = _FakePresenceService(presenceData: {'onDuty': true});
+    final changes = <bool>[];
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: TechnicianShiftCard(
+            service: fakeService,
+            isDrone: true,
+            onPresenceChanged: (data) => changes.add(data['onDuty'] == true),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Hết ca'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Kết thúc ca'));
+    await tester.pumpAndSettle();
+
+    expect(fakeService.calls, ['shift onDuty=false', 'pickup onDuty=false']);
+    expect(changes.last, isFalse);
+  });
+
+
   testWidgets('TechnicianShiftCard does not overflow when on duty with shift duration', (tester) async {
     // 360 x 800 standard mobile screen size
     tester.view.physicalSize = const Size(360, 800);

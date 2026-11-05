@@ -15,6 +15,9 @@ import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/te
 /// - Không quản lý chấm công ca trực (không đếm giờ/hiển thị thời gian chấm công).
 /// - Chỉ hiển thị trạng thái GPS thân thiện trên thanh chính (không hiện số toạ độ thô hay tên khu vực).
 /// - Thông tin toạ độ chi tiết được xem trong Modal khi cần kiểm tra kỹ thuật.
+/// - Với KTV drone, VÀO CA chỉ là trạng thái online làm việc (kèm toạ độ), KHÔNG bật nhận
+///   đơn lấy hàng tận nhà — việc đó do công tắc riêng "nhận việc lấy hàng" trên tab điều
+///   phối. HẾT CA thì tắt luôn nhận đơn lấy hàng: đã offline thì không được mời.
 class TechnicianShiftCard extends StatefulWidget {
   const TechnicianShiftCard({
     super.key,
@@ -165,18 +168,12 @@ class _TechnicianShiftCardState extends State<TechnicianShiftCard> {
     );
   }
 
-  Future<void> _syncDroneOrderPresenceIfNeeded({
-    required bool onDuty,
-    double? latitude,
-    double? longitude,
-  }) async {
+  /// Hết ca ⇒ tắt nhận đơn lấy hàng tận nhà (order-service). Vào ca KHÔNG bật nhận đơn:
+  /// KTV tự bật công tắc "nhận việc lấy hàng" khi sẵn sàng đi lấy hàng.
+  Future<void> _endDronePickupShiftIfNeeded() async {
     if (!widget.isDrone) return;
     try {
-      await _service.updateDroneTechnicianPresence(
-        onDuty: onDuty,
-        latitude: latitude,
-        longitude: longitude,
-      );
+      await _service.updateDroneTechnicianPresence(onDuty: false);
     } catch (_) {
       // Không chặn luồng chính nếu order-service chưa sẵn sàng
     }
@@ -198,11 +195,6 @@ class _TechnicianShiftCardState extends State<TechnicianShiftCard> {
           altitudeM: pos.altitude,
           speedMs: pos.speed,
           headingDeg: pos.heading,
-        );
-        await _syncDroneOrderPresenceIfNeeded(
-          onDuty: _onDuty,
-          latitude: pos.latitude,
-          longitude: pos.longitude,
         );
         if (!mounted) return;
         setState(() {
@@ -297,11 +289,7 @@ class _TechnicianShiftCardState extends State<TechnicianShiftCard> {
         speedMs: pos?.speed,
         headingDeg: pos?.heading,
       );
-      await _syncDroneOrderPresenceIfNeeded(
-        onDuty: nextOnDuty,
-        latitude: pos?.latitude,
-        longitude: pos?.longitude,
-      );
+      if (!nextOnDuty) await _endDronePickupShiftIfNeeded();
 
       if (!mounted) return;
       setState(() {

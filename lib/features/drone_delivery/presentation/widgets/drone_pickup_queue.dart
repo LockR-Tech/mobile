@@ -132,8 +132,11 @@ Future<(String reason, String? note)?> showDroneReasonDialog(
 /// Việc lấy hàng tận nhà của KTV drone: vào/ra ca, lời mời đang chờ trả lời, kiện đang
 /// đi lấy, và kiện đã lấy đang được mang tới drone để nạp trực tiếp.
 ///
-/// Hệ thống mời KTV đang trong ca, rảnh và gần người gửi nhất — nên vào ca phải kèm vị
-/// trí, và app gửi lại vị trí định kỳ trong lúc đang trong ca.
+/// Hệ thống mời KTV đang bật nhận việc lấy hàng, rảnh và gần người gửi nhất — nên bật
+/// phải kèm vị trí, và app gửi lại vị trí định kỳ trong lúc đang bật.
+///
+/// Công tắc này KHÁC nút "Vào ca" trên đầu trang: vào ca chỉ là trạng thái online làm
+/// việc; chỉ khi bật công tắc này KTV mới thấy lời mời và được nhận lấy hàng.
 class DronePickupQueue extends StatefulWidget {
   const DronePickupQueue({
     super.key,
@@ -142,11 +145,17 @@ class DronePickupQueue extends StatefulWidget {
     required this.onChanged,
     required this.onOpenDetail,
     required this.onAssignDrone,
+    this.shiftOnDuty,
     this.readPosition = readDevicePosition,
     this.locationInterval = const Duration(seconds: 60),
   });
 
   final LockerOpsService service;
+
+  /// KTV đã "Vào ca" (online làm việc) chưa; null = chưa biết (không chặn). Chưa vào ca
+  /// thì không bật nhận việc lấy hàng được; hết ca thì server đã tắt nhận việc nên nạp
+  /// lại trạng thái công tắc.
+  final bool? shiftOnDuty;
 
   /// Mọi đơn drone KTV này đang thấy (`/api/drone-technician/drone-orders`).
   final List<Map<String, dynamic>> deliveries;
@@ -187,6 +196,13 @@ class _DronePickupQueueState extends State<DronePickupQueue>
     _ticker = Timer.periodic(const Duration(seconds: 1), (_) {
       if (mounted && _offered.isNotEmpty) setState(() {});
     });
+  }
+
+  @override
+  void didUpdateWidget(covariant DronePickupQueue oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Vào / hết ca ở thẻ ca trên đầu trang: hết ca thì server đã tắt nhận việc lấy hàng.
+    if (oldWidget.shiftOnDuty != widget.shiftOnDuty) _loadPresence();
   }
 
   @override
@@ -269,6 +285,10 @@ class _DronePickupQueueState extends State<DronePickupQueue>
 
   Future<void> _setDuty(bool onDuty) async {
     if (_switching) return;
+    if (onDuty && widget.shiftOnDuty == false) {
+      _toast(L10n.current.dtPqNeedShift);
+      return;
+    }
     setState(() => _switching = true);
     try {
       LatLng? position;
@@ -703,7 +723,9 @@ class _DronePickupQueueState extends State<DronePickupQueue>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    final offered = _offered;
+    // Chưa bật nhận việc lấy hàng thì không thấy lời mời (thẻ trên chỉ báo số lời mời đang
+    // chờ). Việc đã nhận / kiện đang cầm vẫn hiện để làm cho xong.
+    final offered = _onDuty ? _offered : const <Map<String, dynamic>>[];
     final accepted = _accepted;
     final carrying = _carrying;
     // Không có gì để hiện (server cũ, chưa có việc) thì không chiếm chỗ trên màn điều phối.
@@ -748,15 +770,17 @@ class _DronePickupQueueState extends State<DronePickupQueue>
 
   Widget _dutyCard() {
     // Lời mời đang chờ cũng làm server tính KTV là "bận": báo đúng là có lời mời,
-    // không ghi "đang bận" ngay trên lời mời đó. Chưa vào ca mà có lời mời = điều
-    // phối viên giao thẳng.
+    // không ghi "đang bận" ngay trên lời mời đó. Chưa bật mà có lời mời (điều phối viên
+    // giao thẳng) thì chỉ báo số lượng, bật lên mới xem và trả lời được.
     final offers = _offered.length;
     final subtitle = offers > 0
         ? (_onDuty
               ? context.l10n.dtPqOffersWaiting(offers)
-              : context.l10n.dtPqOffersWaitingDirect(offers))
+              : context.l10n.dtPqOffersHiddenTurnOn(offers))
         : !_onDuty
-        ? context.l10n.dtPqTurnOnHint
+        ? (widget.shiftOnDuty == false
+              ? context.l10n.dtPqNeedShift
+              : context.l10n.dtPqTurnOnHint)
         : _busy
         ? context.l10n.dtPqBusy
         : _locationAt == null

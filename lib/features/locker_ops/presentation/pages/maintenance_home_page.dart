@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:smart_laundry_locker/core/utils/app_date_time.dart';
 import 'package:flutter/material.dart';
@@ -36,6 +37,25 @@ import 'package:smart_laundry_locker/shared/widgets/controller_disposer.dart';
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:smart_laundry_locker/core/l10n/l10n.dart';
+
+/// Hai danh sách đơn drone (JSON từ server) có giống hệt nhau không — poll dùng để bỏ qua
+/// lượt không đổi. Trước đây chỉ so `id` (server trả `orderId`, nên luôn null), chặng,
+/// trạng thái và `updatedAt` của đơn; xác nhận nạp hàng chỉ đổi `missionStatus`
+/// (AWAITING_LOADING → READY_TO_LAUNCH) nên poll coi như "không đổi" và thẻ kẹt ở nút
+/// "Xác nhận nạp" tới khi tải lại cả trang (test 2026-11-05).
+@visibleForTesting
+bool droneDeliveriesEqual(
+  List<Map<String, dynamic>> a,
+  List<Map<String, dynamic>> b,
+) {
+  if (identical(a, b)) return true;
+  if (a.length != b.length) return false;
+  try {
+    return jsonEncode(a) == jsonEncode(b);
+  } catch (_) {
+    return false;
+  }
+}
 
 /// Home for the DRONE_TECHNICIAN role (kỹ thuật viên drone): drone fleet only
 /// (delivery dispatch queue from the backend, fleet status/battery, mission
@@ -118,6 +138,10 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
   bool _loading = true;
   bool _refreshing = false;
   Future<void>? _loadInFlight;
+
+  /// Trạng thái "Vào ca" (online làm việc) từ thẻ ca; null = chưa tải xong. Khác công tắc
+  /// nhận việc lấy hàng trong [DronePickupQueue].
+  bool? _shiftOnDuty;
   String? _myUserId;
   String? _myUserName;
   String? _myUserEmail;
@@ -249,27 +273,48 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
     super.dispose();
   }
 
-  static bool _areDeliveriesEqual(
-    List<Map<String, dynamic>> a,
-    List<Map<String, dynamic>> b,
-  ) {
-    if (identical(a, b)) return true;
-    if (a.length != b.length) return false;
-    for (var i = 0; i < a.length; i++) {
-      if (a[i]['id'] != b[i]['id'] ||
-          a[i]['deliveryStage'] != b[i]['deliveryStage'] ||
-          a[i]['status'] != b[i]['status'] ||
-          a[i]['updatedAt'] != b[i]['updatedAt']) {
-        return false;
-      }
-    }
+  /// Số thứ tự lượt đọc danh sách đơn: lượt đọc cũ về sau lượt mới (poll chạy song song với
+  /// tải lại sau thao tác) thì bỏ, không ghi đè dữ liệu mới bằng dữ liệu trước thao tác.
+  int _deliveriesFetchSeq = 0;
+  int _deliveriesAppliedSeq = 0;
+
+  bool _acceptDeliveriesFetch(int seq) {
+    if (seq < _deliveriesAppliedSeq) return false;
+    _deliveriesAppliedSeq = seq;
     return true;
   }
 
+  /// Ghép kết quả thao tác (vd. DroneMissionResponse của xác nhận nạp) vào đơn đang hiện
+  /// để nút đổi ngay, không chờ lượt tải lại.
+  void _mergeDeliveryResult(int orderId, Map<String, dynamic> result) {
+    const keys = {
+      'missionStatus',
+      'deliveryStage',
+      'paymentStatus',
+      'weightSurcharge',
+      'sealCode',
+      'payloadWeightGrams',
+      'loadedAt',
+      'readyToLaunchAt',
+    };
+    final patch = {
+      for (final key in keys)
+        if (result[key] != null) key: result[key],
+    };
+    if (patch.isEmpty || !mounted) return;
+    setState(() {
+      _deliveries = [
+        for (final order in _deliveries)
+          _asInt(order['orderId']) == orderId ? {...order, ...patch} : order,
+      ];
+    });
+  }
+
   Future<void> _refreshDeliveries() async {
+    final seq = ++_deliveriesFetchSeq;
     try {
       final deliveries = await _service.droneOrderQueue();
-      if (!mounted) return;
+      if (!mounted || !_acceptDeliveriesFetch(seq)) return;
       // Thời tiết / lệnh dừng trạm đổi chậm: làm mới mỗi phút, không theo từng nhịp poll.
       if (DateTime.now().difference(_stationWeatherAt) >=
           const Duration(minutes: 1)) {
@@ -277,7 +322,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
         setState(() => _loadGeneration++);
       }
       // Chỉ cập nhật state khi danh sách đơn thực sự thay đổi để tránh nháy màn hình
-      if (!_areDeliveriesEqual(_deliveries, deliveries)) {
+      if (!droneDeliveriesEqual(_deliveries, deliveries)) {
         setState(() {
           _deliveries = deliveries;
           _deliveriesLoadError = null;
@@ -291,9 +336,23 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
     }
   }
 
-  /// Tải lại toàn bộ; gọi chồng nhau thì dùng chung một lần tải.
-  Future<void> _load() =>
-      _loadInFlight ??= _loadAll().whenComplete(() => _loadInFlight = null);
+  Future<void>? _loadQueued;
+
+  /// Tải lại toàn bộ. Gọi khi đang có lượt tải thì xếp MỘT lượt nữa chạy sau lượt đó (các
+  /// lời gọi chồng nhau dùng chung lượt xếp hàng): lượt đang chạy có thể đã đọc dữ liệu từ
+  /// trước thao tác vừa xong (vd. xác nhận nạp), dùng lại nó thì màn hình hiện trạng thái cũ.
+  Future<void> _load() {
+    final running = _loadInFlight;
+    if (running == null) {
+      return _loadInFlight = _loadAll().whenComplete(
+        () => _loadInFlight = null,
+      );
+    }
+    return _loadQueued ??= running.catchError((_) {}).then((_) {
+      _loadQueued = null;
+      return _load();
+    });
+  }
 
   Future<void> _loadAll() async {
     if (mounted) {
@@ -345,9 +404,10 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
   }
 
   Future<void> _loadDeliveries() async {
+    final seq = ++_deliveriesFetchSeq;
     try {
       final deliveries = await _service.droneOrderQueue();
-      if (!mounted) return;
+      if (!mounted || !_acceptDeliveriesFetch(seq)) return;
       setState(() {
         _deliveries = deliveries;
         _deliveriesLoadError = null;
@@ -1480,7 +1540,11 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                 service: _service,
                 isDrone: true,
                 margin: EdgeInsets.zero,
-                onPresenceChanged: (_) {
+                onPresenceChanged: (presence) {
+                  final onDuty = presence['onDuty'] == true;
+                  if (mounted && onDuty != _shiftOnDuty) {
+                    setState(() => _shiftOnDuty = onDuty);
+                  }
                   _refreshDeliveries();
                 },
               ),
@@ -1800,6 +1864,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
           DronePickupQueue(
             service: _service,
             deliveries: visibleDeliveries,
+            shiftOnDuty: _shiftOnDuty,
             onChanged: _load,
             onOpenDetail: _showDeliveryDetail,
             onAssignDrone: _acceptFlow,
@@ -4647,6 +4712,8 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
         idempotencyKey: _idempotencyKey('load', orderId),
       );
       _idempotencyKeys.remove('load-$orderId');
+      // Đổi thẻ sang "Phóng" ngay theo phản hồi server, không chờ lượt tải lại.
+      _mergeDeliveryResult(orderId, result);
       final surchargeRaw = result['weightSurcharge'];
       final surcharge = surchargeRaw is num
           ? surchargeRaw

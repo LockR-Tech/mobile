@@ -7340,9 +7340,9 @@
   "dtRdResolutionPhotosOptionalHint": "Không bắt buộc, dùng để lưu ảnh nghiệm thu.",
   "dtRdConfirmResolve": "Xác nhận hoàn tất",
   "dtPqNoteRequiredForReason": "Cần nhập ghi chú cho lý do này",
-  "dtPqNeedLocation": "Cần vị trí hiện tại để vào ca nhận việc lấy hàng.",
-  "dtPqOnDuty": "Đã vào ca. Bạn sẽ được mời khi có đơn gần bạn.",
-  "dtPqOffDuty": "Đã ra ca. Bạn sẽ không được mời lấy hàng.",
+  "dtPqNeedLocation": "Cần vị trí hiện tại để bật nhận việc lấy hàng.",
+  "dtPqOnDuty": "Đã bật nhận việc lấy hàng. Bạn sẽ được mời khi có đơn gần bạn.",
+  "dtPqOffDuty": "Đã tắt nhận việc lấy hàng. Bạn sẽ không được mời lấy hàng.",
   "dtPqDeclineTitle": "Từ chối lời mời lấy hàng?",
   "dtPqDeclineBody": "Đơn {order} sẽ được mời người khác và bạn không được mời lại đơn này trong một thời gian.",
   "@dtPqDeclineBody": {
@@ -7408,25 +7408,26 @@
       }
     }
   },
-  "dtPqOffersWaitingDirect": "Có {count} lời mời đang chờ bạn trả lời (điều phối viên giao trực tiếp).",
-  "@dtPqOffersWaitingDirect": {
+  "dtPqOffersHiddenTurnOn": "Có {count} lời mời lấy hàng đang chờ — bật nhận việc để xem và trả lời.",
+  "@dtPqOffersHiddenTurnOn": {
     "placeholders": {
       "count": {
         "type": "int"
       }
     }
   },
-  "dtPqTurnOnHint": "Bật để nhận lời mời lấy hàng tận nhà gần bạn.",
-  "dtPqBusy": "Đang trong ca · đang bận một việc nên chưa được mời thêm.",
-  "dtPqFree": "Đang trong ca · rảnh, sẽ được mời khi có đơn gần bạn.",
-  "dtPqFreeWithLocation": "Đang trong ca · rảnh, sẽ được mời khi có đơn gần bạn · vị trí lúc {time}.",
+  "dtPqTurnOnHint": "Bật để thấy và nhận lời mời lấy hàng tận nhà gần bạn.",
+  "dtPqNeedShift": "Vào ca làm việc trước, rồi bật nhận việc lấy hàng.",
+  "dtPqBusy": "Đang nhận việc · đang bận một việc nên chưa được mời thêm.",
+  "dtPqFree": "Đang nhận việc · rảnh, sẽ được mời khi có đơn gần bạn.",
+  "dtPqFreeWithLocation": "Đang nhận việc · rảnh, sẽ được mời khi có đơn gần bạn · vị trí lúc {time}.",
   "@dtPqFreeWithLocation": {
     "placeholders": {
       "time": {}
     }
   },
   "dtPqOnDutyTitle": "Đang nhận việc lấy hàng",
-  "dtPqOffDutyTitle": "Chưa vào ca lấy hàng",
+  "dtPqOffDutyTitle": "Chưa bật nhận việc lấy hàng",
   "dtPqPickupAt": "Lấy tại: {address}",
   "@dtPqPickupAt": {
     "placeholders": {

@@ -22720,19 +22720,19 @@ abstract class AppLocalizations {
   /// No description provided for @dtPqNeedLocation.
   ///
   /// In vi, this message translates to:
-  /// **'Cần vị trí hiện tại để vào ca nhận việc lấy hàng.'**
+  /// **'Cần vị trí hiện tại để bật nhận việc lấy hàng.'**
   String get dtPqNeedLocation;
 
   /// No description provided for @dtPqOnDuty.
   ///
   /// In vi, this message translates to:
-  /// **'Đã vào ca. Bạn sẽ được mời khi có đơn gần bạn.'**
+  /// **'Đã bật nhận việc lấy hàng. Bạn sẽ được mời khi có đơn gần bạn.'**
   String get dtPqOnDuty;
 
   /// No description provided for @dtPqOffDuty.
   ///
   /// In vi, this message translates to:
-  /// **'Đã ra ca. Bạn sẽ không được mời lấy hàng.'**
+  /// **'Đã tắt nhận việc lấy hàng. Bạn sẽ không được mời lấy hàng.'**
   String get dtPqOffDuty;
 
   /// No description provided for @dtPqDeclineTitle.
@@ -22903,34 +22903,40 @@ abstract class AppLocalizations {
   /// **'Có {count} lời mời đang chờ bạn trả lời.'**
   String dtPqOffersWaiting(int count);
 
-  /// No description provided for @dtPqOffersWaitingDirect.
+  /// No description provided for @dtPqOffersHiddenTurnOn.
   ///
   /// In vi, this message translates to:
-  /// **'Có {count} lời mời đang chờ bạn trả lời (điều phối viên giao trực tiếp).'**
-  String dtPqOffersWaitingDirect(int count);
+  /// **'Có {count} lời mời lấy hàng đang chờ — bật nhận việc để xem và trả lời.'**
+  String dtPqOffersHiddenTurnOn(int count);
 
   /// No description provided for @dtPqTurnOnHint.
   ///
   /// In vi, this message translates to:
-  /// **'Bật để nhận lời mời lấy hàng tận nhà gần bạn.'**
+  /// **'Bật để thấy và nhận lời mời lấy hàng tận nhà gần bạn.'**
   String get dtPqTurnOnHint;
+
+  /// No description provided for @dtPqNeedShift.
+  ///
+  /// In vi, this message translates to:
+  /// **'Vào ca làm việc trước, rồi bật nhận việc lấy hàng.'**
+  String get dtPqNeedShift;
 
   /// No description provided for @dtPqBusy.
   ///
   /// In vi, this message translates to:
-  /// **'Đang trong ca · đang bận một việc nên chưa được mời thêm.'**
+  /// **'Đang nhận việc · đang bận một việc nên chưa được mời thêm.'**
   String get dtPqBusy;
 
   /// No description provided for @dtPqFree.
   ///
   /// In vi, this message translates to:
-  /// **'Đang trong ca · rảnh, sẽ được mời khi có đơn gần bạn.'**
+  /// **'Đang nhận việc · rảnh, sẽ được mời khi có đơn gần bạn.'**
   String get dtPqFree;
 
   /// No description provided for @dtPqFreeWithLocation.
   ///
   /// In vi, this message translates to:
-  /// **'Đang trong ca · rảnh, sẽ được mời khi có đơn gần bạn · vị trí lúc {time}.'**
+  /// **'Đang nhận việc · rảnh, sẽ được mời khi có đơn gần bạn · vị trí lúc {time}.'**
   String dtPqFreeWithLocation(Object time);
 
   /// No description provided for @dtPqOnDutyTitle.
@@ -22942,7 +22948,7 @@ abstract class AppLocalizations {
   /// No description provided for @dtPqOffDutyTitle.
   ///
   /// In vi, this message translates to:
-  /// **'Chưa vào ca lấy hàng'**
+  /// **'Chưa bật nhận việc lấy hàng'**
   String get dtPqOffDutyTitle;
 
   /// No description provided for @dtPqPickupAt.

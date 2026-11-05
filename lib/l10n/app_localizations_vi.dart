@@ -13320,13 +13320,15 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get dtPqNeedLocation =>
-      'Cần vị trí hiện tại để vào ca nhận việc lấy hàng.';
+      'Cần vị trí hiện tại để bật nhận việc lấy hàng.';
 
   @override
-  String get dtPqOnDuty => 'Đã vào ca. Bạn sẽ được mời khi có đơn gần bạn.';
+  String get dtPqOnDuty =>
+      'Đã bật nhận việc lấy hàng. Bạn sẽ được mời khi có đơn gần bạn.';
 
   @override
-  String get dtPqOffDuty => 'Đã ra ca. Bạn sẽ không được mời lấy hàng.';
+  String get dtPqOffDuty =>
+      'Đã tắt nhận việc lấy hàng. Bạn sẽ không được mời lấy hàng.';
 
   @override
   String get dtPqDeclineTitle => 'Từ chối lời mời lấy hàng?';
@@ -13434,31 +13436,36 @@ class AppLocalizationsVi extends AppLocalizations {
   }
 
   @override
-  String dtPqOffersWaitingDirect(int count) {
-    return 'Có $count lời mời đang chờ bạn trả lời (điều phối viên giao trực tiếp).';
+  String dtPqOffersHiddenTurnOn(int count) {
+    return 'Có $count lời mời lấy hàng đang chờ — bật nhận việc để xem và trả lời.';
   }
 
   @override
-  String get dtPqTurnOnHint => 'Bật để nhận lời mời lấy hàng tận nhà gần bạn.';
+  String get dtPqTurnOnHint =>
+      'Bật để thấy và nhận lời mời lấy hàng tận nhà gần bạn.';
+
+  @override
+  String get dtPqNeedShift =>
+      'Vào ca làm việc trước, rồi bật nhận việc lấy hàng.';
 
   @override
   String get dtPqBusy =>
-      'Đang trong ca · đang bận một việc nên chưa được mời thêm.';
+      'Đang nhận việc · đang bận một việc nên chưa được mời thêm.';
 
   @override
   String get dtPqFree =>
-      'Đang trong ca · rảnh, sẽ được mời khi có đơn gần bạn.';
+      'Đang nhận việc · rảnh, sẽ được mời khi có đơn gần bạn.';
 
   @override
   String dtPqFreeWithLocation(Object time) {
-    return 'Đang trong ca · rảnh, sẽ được mời khi có đơn gần bạn · vị trí lúc $time.';
+    return 'Đang nhận việc · rảnh, sẽ được mời khi có đơn gần bạn · vị trí lúc $time.';
   }
 
   @override
   String get dtPqOnDutyTitle => 'Đang nhận việc lấy hàng';
 
   @override
-  String get dtPqOffDutyTitle => 'Chưa vào ca lấy hàng';
+  String get dtPqOffDutyTitle => 'Chưa bật nhận việc lấy hàng';
 
   @override
   String dtPqPickupAt(Object address) {

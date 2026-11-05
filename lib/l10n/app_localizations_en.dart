@@ -13654,15 +13654,15 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get dtPqNeedLocation =>
-      'Your current location is needed to start a pickup shift.';
+      'Your current location is needed to start taking pickup jobs.';
 
   @override
   String get dtPqOnDuty =>
-      'Shift started. You\'ll be invited when there\'s an order near you.';
+      'Pickup jobs on. You\'ll be invited when there\'s an order near you.';
 
   @override
   String get dtPqOffDuty =>
-      'Shift ended. You won\'t receive pickup invitations.';
+      'Pickup jobs off. You won\'t receive pickup invitations.';
 
   @override
   String get dtPqDeclineTitle => 'Decline this pickup invitation?';
@@ -13778,40 +13778,44 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String dtPqOffersWaitingDirect(int count) {
+  String dtPqOffersHiddenTurnOn(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
       other:
-          '$count invitations are waiting for your reply (assigned directly by a dispatcher).',
+          '$count pickup invitations are waiting — turn on pickup jobs to view and reply.',
       one:
-          '1 invitation is waiting for your reply (assigned directly by a dispatcher).',
+          '1 pickup invitation is waiting — turn on pickup jobs to view and reply.',
     );
     return '$_temp0';
   }
 
   @override
   String get dtPqTurnOnHint =>
-      'Turn on to receive home pickup invitations near you.';
+      'Turn on to see and receive home pickup invitations near you.';
+
+  @override
+  String get dtPqNeedShift =>
+      'Start your shift first, then turn on pickup jobs.';
 
   @override
   String get dtPqBusy =>
-      'On shift · busy with a job, so no more invitations for now.';
+      'Taking jobs · busy with a job, so no more invitations for now.';
 
   @override
   String get dtPqFree =>
-      'On shift · free, you\'ll be invited when there\'s an order near you.';
+      'Taking jobs · free, you\'ll be invited when there\'s an order near you.';
 
   @override
   String dtPqFreeWithLocation(Object time) {
-    return 'On shift · free, you\'ll be invited when there\'s an order near you · location at $time.';
+    return 'Taking jobs · free, you\'ll be invited when there\'s an order near you · location at $time.';
   }
 
   @override
   String get dtPqOnDutyTitle => 'Taking pickup jobs';
 
   @override
-  String get dtPqOffDutyTitle => 'Not on a pickup shift';
+  String get dtPqOffDutyTitle => 'Pickup jobs off';
 
   @override
   String dtPqPickupAt(Object address) {
