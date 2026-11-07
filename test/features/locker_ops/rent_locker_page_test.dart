@@ -1,7 +1,11 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:smart_laundry_locker/core/config/business_config.dart';
 import 'package:smart_laundry_locker/core/network/dio_client.dart';
+import 'package:smart_laundry_locker/core/services/locker_ble_open_service.dart';
+import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/order_ble_open.dart';
 import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/pages/rent_locker_page.dart';
 
@@ -63,6 +67,24 @@ class _FakeRentLockerOpsService extends LockerOpsService {
         'id': orderId,
         'paymentStatus': paid ? 'PAID' : 'UNPAID',
       };
+
+  int bleTokenCalls = 0;
+
+  /// Mã mở ô theo đơn qua Bluetooth (F3-G11); BLE thật được thay bằng [OrderBleOpen.debugOpener].
+  @override
+  Future<Map<String, dynamic>> bleOrderToken(int orderId) async {
+    bleTokenCalls++;
+    return {
+      'token': base64Url.encode(List<int>.filled(91, 1)),
+      'nonce': '0123456789abcdef',
+      'lockerId': 1,
+      'lockerCode': 'LK1',
+      'boxNumber': 4,
+      'deviceName': 'LOCKR_LK1',
+      'orderId': orderId,
+      'action': 'DROP',
+    };
+  }
 
   @override
   Future<Map<String, dynamic>> unlock(int lockerId, int boxId, String pinCode) async {
@@ -160,6 +182,11 @@ class _FakeRentLockerOpsService extends LockerOpsService {
 
 void main() {
   setUp(() {
+    OrderBleOpen.debugOpener = (ticket, onStep) async {
+      onStep(BleOpenStep.scanning);
+      return BleOpenOutcome.ok(ticket.boxNumber);
+    };
+    addTearDown(() => OrderBleOpen.debugOpener = null);
     DioClient.instance.init(baseUrl: kTestBaseUrl);
     mockSecureStorage({
       'access_token': makeFakeJwt(sub: '99', roles: ['CUSTOMER']),
@@ -366,11 +393,14 @@ void main() {
         .widget<InkWell>(find.ancestor(of: openButton, matching: find.byType(InkWell)).first)
         .onTap
         ?.call();
+    // Một nút "Mở ô": thử Bluetooth ngay; mở được thì xác nhận bắt đầu kỳ thuê.
     await tester.pump();
+    await tester.pumpAndSettle();
     await tester.pump(const Duration(milliseconds: 700));
     await tester.pumpAndSettle();
 
-    expect(service.unlockCalls, 1);
+    expect(service.bleTokenCalls, 1);
+    expect(service.unlockCalls, 0);
     expect(service.confirmDropCalls, 1);
     expect(service.lastConfirmOrderId, 81);
     expect(find.text('Tôi đã bỏ đồ — bắt đầu kỳ thuê'), findsNothing);

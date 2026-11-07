@@ -3663,25 +3663,6 @@ class AppLocalizationsVi extends AppLocalizations {
   }
 
   @override
-  String get unlockBlePermissionBlocked =>
-      'Quyền Bluetooth (Thiết bị lân cận) đang bị chặn. Mở Cài đặt để cho phép rồi quét lại.';
-
-  @override
-  String get unlockBlePermissionDenied =>
-      'App cần quyền Bluetooth để dò tủ. Bấm Quét lại và chọn Cho phép.';
-
-  @override
-  String get unlockBleOff =>
-      'Bluetooth của điện thoại đang tắt. Bật Bluetooth rồi bấm Quét lại.';
-
-  @override
-  String get unlockBleUnsupported =>
-      'Thiết bị này không hỗ trợ Bluetooth. Dùng Quét mã QR hoặc mã PIN.';
-
-  @override
-  String get unlockNoSignal => 'Chưa phát hiện sóng Bluetooth của tủ gần đây.';
-
-  @override
   String unlockOpenBox(Object box) {
     return 'Mở $box';
   }
@@ -3693,90 +3674,6 @@ class AppLocalizationsVi extends AppLocalizations {
   @override
   String get unlockEndsRental =>
       'Mở ô sẽ kết thúc kỳ thuê và giải phóng ô tủ. Vui lòng lấy hết đồ.';
-
-  @override
-  String get unlockScanQr => 'Quét QR';
-
-  @override
-  String get unlockPin => 'Mã PIN';
-
-  @override
-  String get unlockScanning => 'Đang quét sóng Bluetooth của tủ...';
-
-  @override
-  String unlockStandClose(Object locker) {
-    return 'Vui lòng đứng cách tủ $locker dưới 2m';
-  }
-
-  @override
-  String get unlockConnected => 'Đã kết nối Bluetooth tủ';
-
-  @override
-  String get unlockSimulateRpi => 'Mô phỏng RPi';
-
-  @override
-  String unlockDistanceSignal(Object distance, Object rssi) {
-    return 'Khoảng cách: $distance • Tín hiệu $rssi dBm';
-  }
-
-  @override
-  String unlockOpenAndReturn(Object box) {
-    return 'Mở $box & Trả tủ';
-  }
-
-  @override
-  String unlockOpenNow(Object box) {
-    return 'Mở $box ngay (1-chạm)';
-  }
-
-  @override
-  String get unlockNotFound => 'Không tìm thấy sóng Bluetooth của tủ';
-
-  @override
-  String get unlockEnsureBluetooth =>
-      'Đảm bảo điện thoại đã bật Bluetooth hoặc dùng Quét mã QR thay thế.';
-
-  @override
-  String get unlockScanAgain => 'Quét lại';
-
-  @override
-  String get unlockRescan => 'Dò sóng lại';
-
-  @override
-  String get unlockQrTitle => 'Xác thực qua tem QR trên tủ';
-
-  @override
-  String unlockQrBody(Object locker, Object box) {
-    return 'Dùng camera điện thoại quét mã QR dán trên thân tủ $locker để mở $box.';
-  }
-
-  @override
-  String get unlockStartCamera => 'Bật Camera quét tem QR';
-
-  @override
-  String get unlockKioskPinUpper => 'MÃ PIN MỞ TRÊN MÀN HÌNH KIOSK';
-
-  @override
-  String get unlockCodeCopied => 'Đã sao chép mã';
-
-  @override
-  String get unlockCopyPin => 'Sao chép mã PIN';
-
-  @override
-  String get unlockKioskGuide => 'Hướng dẫn mở tại màn hình Kiosk:';
-
-  @override
-  String unlockKioskStep1(Object locker) {
-    return 'Đến trước màn hình cảm ứng của $locker.';
-  }
-
-  @override
-  String get unlockKioskStep2 => 'Chọn nút \"Mở tủ\" hoặc \"Nhận đồ\".';
-
-  @override
-  String unlockKioskStep3(Object pin, Object box) {
-    return 'Nhập mã PIN $pin để cửa $box bung chốt.';
-  }
 
   @override
   String get extrasNotEligible => 'Đơn chưa đủ điều kiện áp mã này';
@@ -14695,4 +14592,54 @@ class AppLocalizationsVi extends AppLocalizations {
   String ordStoragePaidGoToCounter(Object amount) {
     return 'Đã thanh toán $amount. Quý khách tới quầy nhận đồ và đọc 4 số cuối điện thoại đã đăng ký để nhân viên đối chiếu. Nhân viên sẽ trao đồ và hoàn tất đơn.';
   }
+
+  @override
+  String get apiErrBleOrderForbidden =>
+      'Tài khoản này không được mở ô của đơn này.';
+
+  @override
+  String get apiErrBleOrderNotOpenable =>
+      'Đơn đang ở trạng thái không mở ô được.';
+
+  @override
+  String get apiErrOrderNotFound =>
+      'Không tìm thấy đơn (có thể đã bị huỷ hoặc thay đổi).';
+
+  @override
+  String get bleOrderIntro =>
+      'Điện thoại gửi mã mở ô thẳng cho tủ qua Bluetooth — đứng sát tủ (dưới 2 m).';
+
+  @override
+  String get bleOrderNotOpened => 'Chưa mở được bằng Bluetooth';
+
+  @override
+  String get bleOrderRetry => 'Thử lại Bluetooth';
+
+  @override
+  String get bleOrderTurnOn => 'Bật Bluetooth';
+
+  @override
+  String get bleOrderTurnOnIos =>
+      'Mở Trung tâm điều khiển hoặc Cài đặt để bật Bluetooth rồi bấm Thử lại Bluetooth.';
+
+  @override
+  String get bleOrderKioskBody =>
+      'Đưa mã QR này vào máy quét của kiosk hoặc nhập mã PIN trên màn hình kiosk.';
+
+  @override
+  String get bleOrderOtherWays => 'Hoặc chọn cách mở khác';
+
+  @override
+  String get bleOrderUseQr => 'Quét mã QR';
+
+  @override
+  String get bleOrderUseQrBody =>
+      'Quét tem QR dán trên tủ — ô mở qua Internet.';
+
+  @override
+  String get bleOrderUseOtp => 'Dùng mã OTP';
+
+  @override
+  String get bleOrderUseOtpBody =>
+      'Nhập mã OTP trên màn hình kiosk hoặc đưa mã QR của đơn vào máy quét.';
 }

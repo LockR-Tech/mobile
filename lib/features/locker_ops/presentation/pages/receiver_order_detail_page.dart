@@ -14,6 +14,7 @@ import 'package:smart_laundry_locker/features/locker_ops/data/receiver_order_det
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/ops_widgets.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/order_detail_widgets.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/receiver_order_card.dart';
+import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/order_ble_open.dart';
 import 'package:smart_laundry_locker/shared/widgets/app_lottie.dart';
 import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 import 'package:smart_laundry_locker/core/services/platform_info.dart';
@@ -118,7 +119,11 @@ class _ReceiverOrderDetailPageState extends State<ReceiverOrderDetailPage> {
       service: _service,
       order: _detail.order,
     );
-    if (opened && mounted) await _load();
+    if (!opened || !mounted) return;
+    await _load();
+    // Mở qua Bluetooth: server chuyển trạng thái đơn khi tủ báo về ⇒ tải lại thêm một lần.
+    await Future<void>.delayed(OrderBleOpen.lateRefreshDelay);
+    if (mounted) await _load();
   }
 
   bool _sendingEmail = false;

@@ -1,7 +1,11 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:smart_laundry_locker/core/config/business_config.dart';
 import 'package:smart_laundry_locker/core/network/dio_client.dart';
+import 'package:smart_laundry_locker/core/services/locker_ble_open_service.dart';
+import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/order_ble_open.dart';
 import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/pages/send_parcel_page.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/ops_widgets.dart';
@@ -132,6 +136,24 @@ class _FakeSendLockerOpsService extends LockerOpsService {
   Future<Map<String, dynamic>> order(int orderId) async =>
       {..._order, 'paymentStatus': paid ? 'PAID' : 'UNPAID'};
 
+  int bleTokenCalls = 0;
+
+  /// Mã mở ô theo đơn qua Bluetooth (F3-G11); BLE thật được thay bằng [OrderBleOpen.debugOpener].
+  @override
+  Future<Map<String, dynamic>> bleOrderToken(int orderId) async {
+    bleTokenCalls++;
+    return {
+      'token': base64Url.encode(List<int>.filled(91, 1)),
+      'nonce': '0123456789abcdef',
+      'lockerId': 1,
+      'lockerCode': 'LK1',
+      'boxNumber': 4,
+      'deviceName': 'LOCKR_LK1',
+      'orderId': orderId,
+      'action': 'DROP',
+    };
+  }
+
   @override
   Future<Map<String, dynamic>> unlock(int lockerId, int boxId, String pinCode) async {
     unlockCalls++;
@@ -164,6 +186,11 @@ class _FakeSendLockerOpsService extends LockerOpsService {
 
 void main() {
   setUp(() {
+    OrderBleOpen.debugOpener = (ticket, onStep) async {
+      onStep(BleOpenStep.scanning);
+      return BleOpenOutcome.ok(ticket.boxNumber);
+    };
+    addTearDown(() => OrderBleOpen.debugOpener = null);
     DioClient.instance.init(baseUrl: kTestBaseUrl);
     mockSecureStorage({
       'access_token': makeFakeJwt(sub: '99', roles: ['CUSTOMER']),
@@ -356,11 +383,16 @@ void main() {
     // PIN bỏ hàng là của người gửi — chưa có gì để chia sẻ cho người nhận.
     expect(find.text('Chia sẻ mã cho người nhận'), findsNothing);
 
+    // Một nút "Mở ô": thử Bluetooth ngay (mã theo đơn), không mở từ xa qua Internet.
     await tester.tap(find.text('Mở ô để bỏ hàng'));
     await tester.pump();
-    await tester.pump(const Duration(milliseconds: 600));
-    expect(service.unlockCalls, 1);
+    await tester.pumpAndSettle();
+    expect(service.bleTokenCalls, 1);
+    expect(service.unlockCalls, 0);
     expect(service.confirmDropCalls, 0);
+    // Làm mới đơn thêm một lần sau ~2 s (chờ tủ báo về server).
+    await tester.pump(const Duration(seconds: 2));
+    await tester.pumpAndSettle();
 
     await tester.tap(find.text('Tôi đã bỏ hàng vào ô'));
     await tester.pump();

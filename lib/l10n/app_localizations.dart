@@ -6500,36 +6500,6 @@ abstract class AppLocalizations {
   /// **'Tại: {name}'**
   String credAt(Object name);
 
-  /// No description provided for @unlockBlePermissionBlocked.
-  ///
-  /// In vi, this message translates to:
-  /// **'Quyền Bluetooth (Thiết bị lân cận) đang bị chặn. Mở Cài đặt để cho phép rồi quét lại.'**
-  String get unlockBlePermissionBlocked;
-
-  /// No description provided for @unlockBlePermissionDenied.
-  ///
-  /// In vi, this message translates to:
-  /// **'App cần quyền Bluetooth để dò tủ. Bấm Quét lại và chọn Cho phép.'**
-  String get unlockBlePermissionDenied;
-
-  /// No description provided for @unlockBleOff.
-  ///
-  /// In vi, this message translates to:
-  /// **'Bluetooth của điện thoại đang tắt. Bật Bluetooth rồi bấm Quét lại.'**
-  String get unlockBleOff;
-
-  /// No description provided for @unlockBleUnsupported.
-  ///
-  /// In vi, this message translates to:
-  /// **'Thiết bị này không hỗ trợ Bluetooth. Dùng Quét mã QR hoặc mã PIN.'**
-  String get unlockBleUnsupported;
-
-  /// No description provided for @unlockNoSignal.
-  ///
-  /// In vi, this message translates to:
-  /// **'Chưa phát hiện sóng Bluetooth của tủ gần đây.'**
-  String get unlockNoSignal;
-
   /// No description provided for @unlockOpenBox.
   ///
   /// In vi, this message translates to:
@@ -6547,144 +6517,6 @@ abstract class AppLocalizations {
   /// In vi, this message translates to:
   /// **'Mở ô sẽ kết thúc kỳ thuê và giải phóng ô tủ. Vui lòng lấy hết đồ.'**
   String get unlockEndsRental;
-
-  /// No description provided for @unlockScanQr.
-  ///
-  /// In vi, this message translates to:
-  /// **'Quét QR'**
-  String get unlockScanQr;
-
-  /// No description provided for @unlockPin.
-  ///
-  /// In vi, this message translates to:
-  /// **'Mã PIN'**
-  String get unlockPin;
-
-  /// No description provided for @unlockScanning.
-  ///
-  /// In vi, this message translates to:
-  /// **'Đang quét sóng Bluetooth của tủ...'**
-  String get unlockScanning;
-
-  /// No description provided for @unlockStandClose.
-  ///
-  /// In vi, this message translates to:
-  /// **'Vui lòng đứng cách tủ {locker} dưới 2m'**
-  String unlockStandClose(Object locker);
-
-  /// No description provided for @unlockConnected.
-  ///
-  /// In vi, this message translates to:
-  /// **'Đã kết nối Bluetooth tủ'**
-  String get unlockConnected;
-
-  /// No description provided for @unlockSimulateRpi.
-  ///
-  /// In vi, this message translates to:
-  /// **'Mô phỏng RPi'**
-  String get unlockSimulateRpi;
-
-  /// No description provided for @unlockDistanceSignal.
-  ///
-  /// In vi, this message translates to:
-  /// **'Khoảng cách: {distance} • Tín hiệu {rssi} dBm'**
-  String unlockDistanceSignal(Object distance, Object rssi);
-
-  /// No description provided for @unlockOpenAndReturn.
-  ///
-  /// In vi, this message translates to:
-  /// **'Mở {box} & Trả tủ'**
-  String unlockOpenAndReturn(Object box);
-
-  /// No description provided for @unlockOpenNow.
-  ///
-  /// In vi, this message translates to:
-  /// **'Mở {box} ngay (1-chạm)'**
-  String unlockOpenNow(Object box);
-
-  /// No description provided for @unlockNotFound.
-  ///
-  /// In vi, this message translates to:
-  /// **'Không tìm thấy sóng Bluetooth của tủ'**
-  String get unlockNotFound;
-
-  /// No description provided for @unlockEnsureBluetooth.
-  ///
-  /// In vi, this message translates to:
-  /// **'Đảm bảo điện thoại đã bật Bluetooth hoặc dùng Quét mã QR thay thế.'**
-  String get unlockEnsureBluetooth;
-
-  /// No description provided for @unlockScanAgain.
-  ///
-  /// In vi, this message translates to:
-  /// **'Quét lại'**
-  String get unlockScanAgain;
-
-  /// No description provided for @unlockRescan.
-  ///
-  /// In vi, this message translates to:
-  /// **'Dò sóng lại'**
-  String get unlockRescan;
-
-  /// No description provided for @unlockQrTitle.
-  ///
-  /// In vi, this message translates to:
-  /// **'Xác thực qua tem QR trên tủ'**
-  String get unlockQrTitle;
-
-  /// No description provided for @unlockQrBody.
-  ///
-  /// In vi, this message translates to:
-  /// **'Dùng camera điện thoại quét mã QR dán trên thân tủ {locker} để mở {box}.'**
-  String unlockQrBody(Object locker, Object box);
-
-  /// No description provided for @unlockStartCamera.
-  ///
-  /// In vi, this message translates to:
-  /// **'Bật Camera quét tem QR'**
-  String get unlockStartCamera;
-
-  /// No description provided for @unlockKioskPinUpper.
-  ///
-  /// In vi, this message translates to:
-  /// **'MÃ PIN MỞ TRÊN MÀN HÌNH KIOSK'**
-  String get unlockKioskPinUpper;
-
-  /// No description provided for @unlockCodeCopied.
-  ///
-  /// In vi, this message translates to:
-  /// **'Đã sao chép mã'**
-  String get unlockCodeCopied;
-
-  /// No description provided for @unlockCopyPin.
-  ///
-  /// In vi, this message translates to:
-  /// **'Sao chép mã PIN'**
-  String get unlockCopyPin;
-
-  /// No description provided for @unlockKioskGuide.
-  ///
-  /// In vi, this message translates to:
-  /// **'Hướng dẫn mở tại màn hình Kiosk:'**
-  String get unlockKioskGuide;
-
-  /// No description provided for @unlockKioskStep1.
-  ///
-  /// In vi, this message translates to:
-  /// **'Đến trước màn hình cảm ứng của {locker}.'**
-  String unlockKioskStep1(Object locker);
-
-  /// No description provided for @unlockKioskStep2.
-  ///
-  /// In vi, this message translates to:
-  /// **'Chọn nút \"Mở tủ\" hoặc \"Nhận đồ\".'**
-  String get unlockKioskStep2;
-
-  /// No description provided for @unlockKioskStep3.
-  ///
-  /// In vi, this message translates to:
-  /// **'Nhập mã PIN {pin} để cửa {box} bung chốt.'**
-  String unlockKioskStep3(Object pin, Object box);
 
   /// No description provided for @extrasNotEligible.
   ///
@@ -25038,6 +24870,90 @@ abstract class AppLocalizations {
   /// In vi, this message translates to:
   /// **'Đã thanh toán {amount}. Quý khách tới quầy nhận đồ và đọc 4 số cuối điện thoại đã đăng ký để nhân viên đối chiếu. Nhân viên sẽ trao đồ và hoàn tất đơn.'**
   String ordStoragePaidGoToCounter(Object amount);
+
+  /// No description provided for @apiErrBleOrderForbidden.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tài khoản này không được mở ô của đơn này.'**
+  String get apiErrBleOrderForbidden;
+
+  /// No description provided for @apiErrBleOrderNotOpenable.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đơn đang ở trạng thái không mở ô được.'**
+  String get apiErrBleOrderNotOpenable;
+
+  /// No description provided for @apiErrOrderNotFound.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không tìm thấy đơn (có thể đã bị huỷ hoặc thay đổi).'**
+  String get apiErrOrderNotFound;
+
+  /// No description provided for @bleOrderIntro.
+  ///
+  /// In vi, this message translates to:
+  /// **'Điện thoại gửi mã mở ô thẳng cho tủ qua Bluetooth — đứng sát tủ (dưới 2 m).'**
+  String get bleOrderIntro;
+
+  /// No description provided for @bleOrderNotOpened.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa mở được bằng Bluetooth'**
+  String get bleOrderNotOpened;
+
+  /// No description provided for @bleOrderRetry.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thử lại Bluetooth'**
+  String get bleOrderRetry;
+
+  /// No description provided for @bleOrderTurnOn.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bật Bluetooth'**
+  String get bleOrderTurnOn;
+
+  /// No description provided for @bleOrderTurnOnIos.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mở Trung tâm điều khiển hoặc Cài đặt để bật Bluetooth rồi bấm Thử lại Bluetooth.'**
+  String get bleOrderTurnOnIos;
+
+  /// No description provided for @bleOrderKioskBody.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đưa mã QR này vào máy quét của kiosk hoặc nhập mã PIN trên màn hình kiosk.'**
+  String get bleOrderKioskBody;
+
+  /// No description provided for @bleOrderOtherWays.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hoặc chọn cách mở khác'**
+  String get bleOrderOtherWays;
+
+  /// No description provided for @bleOrderUseQr.
+  ///
+  /// In vi, this message translates to:
+  /// **'Quét mã QR'**
+  String get bleOrderUseQr;
+
+  /// No description provided for @bleOrderUseQrBody.
+  ///
+  /// In vi, this message translates to:
+  /// **'Quét tem QR dán trên tủ — ô mở qua Internet.'**
+  String get bleOrderUseQrBody;
+
+  /// No description provided for @bleOrderUseOtp.
+  ///
+  /// In vi, this message translates to:
+  /// **'Dùng mã OTP'**
+  String get bleOrderUseOtp;
+
+  /// No description provided for @bleOrderUseOtpBody.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhập mã OTP trên màn hình kiosk hoặc đưa mã QR của đơn vào máy quét.'**
+  String get bleOrderUseOtpBody;
 }
 
 class _AppLocalizationsDelegate

@@ -11,7 +11,8 @@ import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 /// Các bước khi mở ô qua Bluetooth — trang thử hiện tiến trình theo bước.
 enum BleOpenStep { scanning, connecting, sending, waiting }
 
-/// Mã mở ô backend cấp (`POST /api/iot/ble-test/lockers/{id}/boxes/{n}/token`).
+/// Mã mở ô backend cấp: mã thử của admin (`POST /api/iot/ble-test/lockers/{id}/boxes/{n}/token`)
+/// hoặc mã theo đơn (`POST /api/iot/ble/orders/{orderId}/token`, có thêm [orderId], [action]).
 class BleOpenTicket {
   const BleOpenTicket({
     required this.token,
@@ -24,6 +25,8 @@ class BleOpenTicket {
     required this.openCharUuid,
     required this.resultCharUuid,
     this.boxStatus,
+    this.orderId,
+    this.action,
   });
 
   final List<int> token;
@@ -36,6 +39,12 @@ class BleOpenTicket {
   final String openCharUuid;
   final String resultCharUuid;
   final String? boxStatus;
+
+  /// Chỉ có ở mã theo đơn.
+  final int? orderId;
+
+  /// `DROP` | `RENTAL_ACCESS` | `PICKUP` — chỉ có ở mã theo đơn.
+  final String? action;
 
   factory BleOpenTicket.fromJson(Map<String, dynamic> json) {
     final raw = (json['token'] as String? ?? '').trim();
@@ -50,6 +59,8 @@ class BleOpenTicket {
       openCharUuid: json['openCharUuid'] as String? ?? '',
       resultCharUuid: json['resultCharUuid'] as String? ?? '',
       boxStatus: json['boxStatus'] as String?,
+      orderId: (json['orderId'] as num?)?.toInt(),
+      action: json['action'] as String?,
     );
   }
 }

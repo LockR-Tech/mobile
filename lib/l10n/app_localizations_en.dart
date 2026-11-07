@@ -3719,25 +3719,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get unlockBlePermissionBlocked =>
-      'Bluetooth (Nearby devices) permission is blocked. Open Settings to allow it, then scan again.';
-
-  @override
-  String get unlockBlePermissionDenied =>
-      'The app needs Bluetooth permission to find the locker. Tap Scan again and choose Allow.';
-
-  @override
-  String get unlockBleOff =>
-      'Your phone\'s Bluetooth is off. Turn it on and tap Scan again.';
-
-  @override
-  String get unlockBleUnsupported =>
-      'This device doesn\'t support Bluetooth. Use QR scan or the PIN.';
-
-  @override
-  String get unlockNoSignal => 'No locker Bluetooth signal detected nearby.';
-
-  @override
   String unlockOpenBox(Object box) {
     return 'Open $box';
   }
@@ -3749,90 +3730,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get unlockEndsRental =>
       'Opening the compartment will end the rental and release it. Please take all your items.';
-
-  @override
-  String get unlockScanQr => 'Scan QR';
-
-  @override
-  String get unlockPin => 'PIN';
-
-  @override
-  String get unlockScanning => 'Scanning for the locker\'s Bluetooth signal...';
-
-  @override
-  String unlockStandClose(Object locker) {
-    return 'Please stand within 2 m of locker $locker';
-  }
-
-  @override
-  String get unlockConnected => 'Connected to the locker via Bluetooth';
-
-  @override
-  String get unlockSimulateRpi => 'Simulate RPi';
-
-  @override
-  String unlockDistanceSignal(Object distance, Object rssi) {
-    return 'Distance: $distance • Signal $rssi dBm';
-  }
-
-  @override
-  String unlockOpenAndReturn(Object box) {
-    return 'Open $box & return locker';
-  }
-
-  @override
-  String unlockOpenNow(Object box) {
-    return 'Open $box now (one tap)';
-  }
-
-  @override
-  String get unlockNotFound => 'Locker Bluetooth signal not found';
-
-  @override
-  String get unlockEnsureBluetooth =>
-      'Make sure Bluetooth is on, or use QR scan instead.';
-
-  @override
-  String get unlockScanAgain => 'Scan again';
-
-  @override
-  String get unlockRescan => 'Search again';
-
-  @override
-  String get unlockQrTitle => 'Verify with the QR sticker on the locker';
-
-  @override
-  String unlockQrBody(Object locker, Object box) {
-    return 'Use your phone camera to scan the QR code on locker $locker to open $box.';
-  }
-
-  @override
-  String get unlockStartCamera => 'Turn on camera to scan QR sticker';
-
-  @override
-  String get unlockKioskPinUpper => 'PIN TO ENTER ON THE KIOSK SCREEN';
-
-  @override
-  String get unlockCodeCopied => 'Code copied';
-
-  @override
-  String get unlockCopyPin => 'Copy PIN';
-
-  @override
-  String get unlockKioskGuide => 'How to open at the kiosk screen:';
-
-  @override
-  String unlockKioskStep1(Object locker) {
-    return 'Go to the touchscreen of $locker.';
-  }
-
-  @override
-  String get unlockKioskStep2 => 'Tap \"Open locker\" or \"Pick up\".';
-
-  @override
-  String unlockKioskStep3(Object pin, Object box) {
-    return 'Enter PIN $pin to unlatch $box.';
-  }
 
   @override
   String get extrasNotEligible => 'This order isn\'t eligible for this code';
@@ -15064,4 +14961,54 @@ class AppLocalizationsEn extends AppLocalizations {
   String ordStoragePaidGoToCounter(Object amount) {
     return 'Paid $amount. Go to the counter and read out the last 4 digits of your registered phone so staff can verify you. Staff will hand over the items and complete the order.';
   }
+
+  @override
+  String get apiErrBleOrderForbidden =>
+      'This account can\'t open the box for this order.';
+
+  @override
+  String get apiErrBleOrderNotOpenable =>
+      'This order can\'t open its box in its current status.';
+
+  @override
+  String get apiErrOrderNotFound =>
+      'Order not found (it may have been cancelled or changed).';
+
+  @override
+  String get bleOrderIntro =>
+      'Your phone sends the open code straight to the locker over Bluetooth — stand right next to it (within 2 m).';
+
+  @override
+  String get bleOrderNotOpened => 'Couldn\'t open with Bluetooth';
+
+  @override
+  String get bleOrderRetry => 'Retry Bluetooth';
+
+  @override
+  String get bleOrderTurnOn => 'Turn on Bluetooth';
+
+  @override
+  String get bleOrderTurnOnIos =>
+      'Open Control Center or Settings to turn on Bluetooth, then tap Retry Bluetooth.';
+
+  @override
+  String get bleOrderKioskBody =>
+      'Hold this QR code to the kiosk scanner or enter the PIN on the kiosk screen.';
+
+  @override
+  String get bleOrderOtherWays => 'Or choose another way to open';
+
+  @override
+  String get bleOrderUseQr => 'Scan QR code';
+
+  @override
+  String get bleOrderUseQrBody =>
+      'Scan the QR sticker on the locker — the box opens over the Internet.';
+
+  @override
+  String get bleOrderUseOtp => 'Use OTP code';
+
+  @override
+  String get bleOrderUseOtpBody =>
+      'Enter the OTP on the kiosk screen or hold the order\'s QR code to its scanner.';
 }
