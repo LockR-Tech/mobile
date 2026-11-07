@@ -5,6 +5,7 @@ Do workflow `deploy-web.yml` tự ghi sau mỗi lần chạy, kể cả khi th�
 
 | Thời điểm (UTC) | Kết quả | Commit | Người đẩy | Ghi chú |
 |---|---|---|---|---|
+| 2026-11-07 04:25 | success | [`8d7834f`](https://github.com/LockR-Tech/mobile/commit/8d7834f82d4ccaa247178207fcf16e35a9eaf6a7) | @BaoHuy-Dev | build 57M |
 | 2026-11-05 08:37 | success | [`cf77754`](https://github.com/LockR-Tech/mobile/commit/cf77754a881c5c28ea38f06065cff859b5ac9344) | @Kimnha01 | build 57M |
 | 2026-11-04 14:30 | success | [`803e17a`](https://github.com/LockR-Tech/mobile/commit/803e17ad5fcba702fda5536a8ea7dc2f8a0244b0) | @TruongNguyenThaiBinh77 | build 57M |
 | 2026-11-04 12:20 | success | [`e3553e4`](https://github.com/LockR-Tech/mobile/commit/e3553e4cbbc5583481bc2abc6e0a4ec94792683b) | @LeThiYenVi | build 57M |
