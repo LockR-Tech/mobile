@@ -13,6 +13,7 @@ import 'package:smart_laundry_locker/features/locker_ops/domain/pickup_code_shar
 import 'package:smart_laundry_locker/features/locker_ops/presentation/utils/business_rules_text.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/locker_picker.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/loyalty_redeem_toggle.dart';
+import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/order_ble_open.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/ops_widgets.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/order_extras.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/pickup_code_share_actions.dart';
@@ -464,13 +465,50 @@ class _SendParcelPageState extends State<SendParcelPage>
     }
   }
 
+  /// "Mở ô để bỏ hàng": thử Bluetooth thật ngay (mã theo đơn ghi thẳng cho Pi); không được thì
+  /// khách chọn quét tem QR trên tủ (⇒ mở từ xa như trước) hoặc dùng mã OTP ở kiosk.
   Future<void> _openBox() async {
     final order = _order;
+    final orderId = order?['id'] as int?;
     final lockerId = order?['lockerId'] as int?;
     final boxId = order?['sendBoxId'] as int?;
     final pin = order?['pinCode'] as String?;
-    if (lockerId == null || boxId == null || pin == null || pin.isEmpty) {
+    if (order == null ||
+        orderId == null ||
+        lockerId == null ||
+        boxId == null ||
+        pin == null ||
+        pin.isEmpty) {
       _snack(context.l10n.ordNoBoxPinInfo);
+      return;
+    }
+    final listed = _listedLocker(order);
+    final listedName = listed?['name']?.toString().trim();
+    final rawBox = order['sendBoxNumber'];
+    final action = await OrderOpenSheet.show(
+      context,
+      orderId: orderId,
+      qrToken: order['qrToken'] as String?,
+      service: _service,
+      lockerName: (listedName == null || listedName.isEmpty)
+          ? (_lockerName ?? context.l10n.ordLockrLocker)
+          : listedName,
+      lockerCode: listed?['code']?.toString() ?? '',
+      lockerId: lockerId,
+      boxLabel: rawBox == null
+          ? context.l10n.boxOfOrder
+          : context.l10n.boxNumberLower(rawBox),
+      pin: pin,
+    );
+    if (action == null || !mounted) return;
+    if (action.method == OrderOpenMethod.bluetooth) {
+      _snack(L10n.current.sendBoxOpened);
+      await OrderBleOpen.refreshAfterOpen(
+        orderId: orderId,
+        reload: () async {
+          if (mounted) await _refreshOrder();
+        },
+      );
       return;
     }
     setState(() => _loading = true);

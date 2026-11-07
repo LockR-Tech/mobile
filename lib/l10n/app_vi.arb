@@ -1801,11 +1801,6 @@
       "name": {}
     }
   },
-  "unlockBlePermissionBlocked": "Quyền Bluetooth (Thiết bị lân cận) đang bị chặn. Mở Cài đặt để cho phép rồi quét lại.",
-  "unlockBlePermissionDenied": "App cần quyền Bluetooth để dò tủ. Bấm Quét lại và chọn Cho phép.",
-  "unlockBleOff": "Bluetooth của điện thoại đang tắt. Bật Bluetooth rồi bấm Quét lại.",
-  "unlockBleUnsupported": "Thiết bị này không hỗ trợ Bluetooth. Dùng Quét mã QR hoặc mã PIN.",
-  "unlockNoSignal": "Chưa phát hiện sóng Bluetooth của tủ gần đây.",
   "unlockOpenBox": "Mở {box}",
   "@unlockOpenBox": {
     "placeholders": {
@@ -1814,67 +1809,6 @@
   },
   "unlockOverdueRental": "Đơn thuê đã quá hạn. Đã ghi nhận xử lý phí quá giờ — mời bạn lấy đồ và đóng tủ để hoàn tất trả tủ.",
   "unlockEndsRental": "Mở ô sẽ kết thúc kỳ thuê và giải phóng ô tủ. Vui lòng lấy hết đồ.",
-  "unlockScanQr": "Quét QR",
-  "unlockPin": "Mã PIN",
-  "unlockScanning": "Đang quét sóng Bluetooth của tủ...",
-  "unlockStandClose": "Vui lòng đứng cách tủ {locker} dưới 2m",
-  "@unlockStandClose": {
-    "placeholders": {
-      "locker": {}
-    }
-  },
-  "unlockConnected": "Đã kết nối Bluetooth tủ",
-  "unlockSimulateRpi": "Mô phỏng RPi",
-  "unlockDistanceSignal": "Khoảng cách: {distance} • Tín hiệu {rssi} dBm",
-  "@unlockDistanceSignal": {
-    "placeholders": {
-      "distance": {},
-      "rssi": {}
-    }
-  },
-  "unlockOpenAndReturn": "Mở {box} & Trả tủ",
-  "@unlockOpenAndReturn": {
-    "placeholders": {
-      "box": {}
-    }
-  },
-  "unlockOpenNow": "Mở {box} ngay (1-chạm)",
-  "@unlockOpenNow": {
-    "placeholders": {
-      "box": {}
-    }
-  },
-  "unlockNotFound": "Không tìm thấy sóng Bluetooth của tủ",
-  "unlockEnsureBluetooth": "Đảm bảo điện thoại đã bật Bluetooth hoặc dùng Quét mã QR thay thế.",
-  "unlockScanAgain": "Quét lại",
-  "unlockRescan": "Dò sóng lại",
-  "unlockQrTitle": "Xác thực qua tem QR trên tủ",
-  "unlockQrBody": "Dùng camera điện thoại quét mã QR dán trên thân tủ {locker} để mở {box}.",
-  "@unlockQrBody": {
-    "placeholders": {
-      "locker": {},
-      "box": {}
-    }
-  },
-  "unlockStartCamera": "Bật Camera quét tem QR",
-  "unlockKioskPinUpper": "MÃ PIN MỞ TRÊN MÀN HÌNH KIOSK",
-  "unlockCodeCopied": "Đã sao chép mã",
-  "unlockCopyPin": "Sao chép mã PIN",
-  "unlockKioskGuide": "Hướng dẫn mở tại màn hình Kiosk:",
-  "unlockKioskStep1": "Đến trước màn hình cảm ứng của {locker}.",
-  "@unlockKioskStep1": {
-    "placeholders": {
-      "locker": {}
-    }
-  },
-  "unlockKioskStep2": "Chọn nút \"Mở tủ\" hoặc \"Nhận đồ\".",
-  "unlockKioskStep3": "Nhập mã PIN {pin} để cửa {box} bung chốt.",
-  "@unlockKioskStep3": {
-    "placeholders": {
-      "pin": {},
-      "box": {}
-    }
-  },
   "extrasNotEligible": "Đơn chưa đủ điều kiện áp mã này",
   "extrasCodeInvalid": "Mã không hợp lệ hoặc đã hết hạn",
   "extrasCodeApplied": "Đã áp mã \"{code}\"",
@@ -8200,5 +8134,19 @@
     "placeholders": {
       "amount": {}
     }
-  }
+  },
+  "apiErrBleOrderForbidden": "Tài khoản này không được mở ô của đơn này.",
+  "apiErrBleOrderNotOpenable": "Đơn đang ở trạng thái không mở ô được.",
+  "apiErrOrderNotFound": "Không tìm thấy đơn (có thể đã bị huỷ hoặc thay đổi).",
+  "bleOrderIntro": "Điện thoại gửi mã mở ô thẳng cho tủ qua Bluetooth — đứng sát tủ (dưới 2 m).",
+  "bleOrderNotOpened": "Chưa mở được bằng Bluetooth",
+  "bleOrderRetry": "Thử lại Bluetooth",
+  "bleOrderTurnOn": "Bật Bluetooth",
+  "bleOrderTurnOnIos": "Mở Trung tâm điều khiển hoặc Cài đặt để bật Bluetooth rồi bấm Thử lại Bluetooth.",
+  "bleOrderKioskBody": "Đưa mã QR này vào máy quét của kiosk hoặc nhập mã PIN trên màn hình kiosk.",
+  "bleOrderOtherWays": "Hoặc chọn cách mở khác",
+  "bleOrderUseQr": "Quét mã QR",
+  "bleOrderUseQrBody": "Quét tem QR dán trên tủ — ô mở qua Internet.",
+  "bleOrderUseOtp": "Dùng mã OTP",
+  "bleOrderUseOtpBody": "Nhập mã OTP trên màn hình kiosk hoặc đưa mã QR của đơn vào máy quét."
 }

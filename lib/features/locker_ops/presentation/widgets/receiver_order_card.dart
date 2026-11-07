@@ -5,21 +5,23 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
 import 'package:smart_laundry_locker/features/locker_ops/data/receiver_order.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/utils/locker_maps.dart';
-import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/locker_unlock_modal.dart';
+import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/order_ble_open.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/ops_widgets.dart';
 import 'package:smart_laundry_locker/shared/widgets/app_lottie.dart';
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
 import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
-/// Mở ô của một đơn mình là người nhận / người lấy hộ: xác nhận đang đứng tại tủ
-/// (Bluetooth hoặc quét tem QR trên tủ) rồi gọi `POST /api/iot/unlock-with-code`
-/// bằng mã lấy hàng. Chỉ báo "đã mở" khi server trả `accepted`.
+/// Mở ô của một đơn mình là người nhận / người lấy hộ: bảng mở ô thử Bluetooth thật trước
+/// (mã theo đơn ghi thẳng cho Pi); hoặc quét tem QR trên tủ rồi gọi
+/// `POST /api/iot/unlock-with-code` bằng mã lấy hàng (chỉ báo "đã mở" khi server trả `accepted`).
 ///
-/// Trả `true` khi ô đã mở.
+/// Trả `true` khi ô đã mở. Mở qua Bluetooth thì server cập nhật đơn sau khi tủ báo về, nên
+/// ~2 s sau còn phát [OrderChangedEvent] để các màn làm mới lần nữa.
 Future<bool> openReceiverOrderBox(
   BuildContext context, {
   required LockerOpsService service,
   required ReceiverOrder order,
+  BleOpener? bleOpener,
 }) async {
   void snack(String msg) => SmartDialog.showToast(msg);
 
@@ -30,19 +32,23 @@ Future<bool> openReceiverOrderBox(
     return false;
   }
 
-  final action = await LockerUnlockModal.show(
+  final action = await OrderOpenSheet.show(
     context,
+    orderId: order.id,
+    qrToken: order.qrToken,
+    service: service,
+    opener: bleOpener,
     lockerName: order.lockerName ?? L10n.current.ordLockrLocker,
     lockerCode: order.lockerCode ?? '',
     lockerId: lockerId,
-    boxId: order.boxId,
     boxLabel: order.boxLabel,
-    pinCode: pin,
+    pin: pin,
   );
-  if (action == null ||
-      (action.type != LockerUnlockActionType.openViaBle &&
-          action.type != LockerUnlockActionType.openViaQr)) {
-    return false;
+  if (action == null) return false;
+  if (action.method == OrderOpenMethod.bluetooth) {
+    snack(L10n.current.recvBoxOpenedPickup(order.boxLabel));
+    await OrderBleOpen.refreshAfterOpen(orderId: order.id);
+    return true;
   }
 
   snack(L10n.current.ordSendingOpenCommand(order.boxLabel));

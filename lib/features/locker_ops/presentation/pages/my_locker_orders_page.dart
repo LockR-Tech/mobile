@@ -18,7 +18,7 @@ import 'package:smart_laundry_locker/features/locker_ops/presentation/pages/rece
 import 'package:smart_laundry_locker/features/locker_ops/presentation/utils/business_rules_text.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/utils/locker_maps.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/delegate_order_dialog.dart';
-import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/locker_unlock_modal.dart';
+import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/order_ble_open.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/loyalty_redeem_toggle.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/ops_widgets.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/order_detail_widgets.dart';
@@ -1404,7 +1404,8 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
     }
   }
 
-  /// Gửi lệnh mở ô của đơn xuống cabinet qua mô hình Hybrid (GPS Geofencing + Quét QR).
+  /// Mở ô của đơn: bảng mở ô tự thử Bluetooth thật trước (mã theo đơn ghi thẳng cho Pi);
+  /// không được thì dùng mã QR/PIN ở kiosk hoặc quét tem QR trên tủ để mở từ xa.
   Future<void> _openLockerFlow(
     Map<String, dynamic> order, {
     bool isRentalReturning = false,
@@ -1423,7 +1424,12 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
         : _asInt(order['sendBoxId'] ?? order['receiveBoxId']);
 
     final pin = order['pinCode'] as String?;
-    if (lockerId == null || boxId == null || pin == null || pin.isEmpty) {
+    final orderId = _asInt(order['id']);
+    if (orderId == null ||
+        lockerId == null ||
+        boxId == null ||
+        pin == null ||
+        pin.isEmpty) {
       _snack(context.l10n.ordNoBoxPinInfo);
       return;
     }
@@ -1447,18 +1453,17 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
         rawStatus != 'COMPLETED' &&
         rawStatus != 'CANCELED';
 
-    // Hiển thị Modal 3 phương thức mở tủ:
-    // 1. Bluetooth BLE (Proximity 1-chạm kèm chế độ Mô phỏng RPi)
-    // 2. Quét tem mã QR trên thân tủ
-    // 3. Xem mã PIN / OTP nhập trực tiếp tại màn hình Kiosk
-    final action = await LockerUnlockModal.show(
+    // Thử Bluetooth ngay; không được mới cho chọn quét tem QR trên tủ / dùng mã OTP ở kiosk.
+    final action = await OrderOpenSheet.show(
       context,
+      orderId: orderId,
+      qrToken: order['qrToken'] as String?,
+      service: _service,
       lockerName: lockerName,
       lockerCode: lockerCode,
       lockerId: lockerId,
-      boxId: boxId,
       boxLabel: boxLabel,
-      pinCode: pin,
+      pin: pin,
       isRentalReturning: isRentalReturning && isRental && rawStatus == 'STORING',
       isOverdue: overdue,
       overdueNotice: overdue
@@ -1468,8 +1473,15 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
 
     if (action == null || !mounted) return;
 
-    if (action.type == LockerUnlockActionType.openViaBle ||
-        action.type == LockerUnlockActionType.openViaQr) {
+    if (action.method == OrderOpenMethod.bluetooth) {
+      _snack(L10n.current.ordBoxOpened(boxLabel));
+      await OrderBleOpen.refreshAfterOpen(
+        orderId: orderId,
+        reload: () async {
+          if (mounted) await _load();
+        },
+      );
+    } else {
       await _doPhysicalUnlock(lockerId, boxId, pin, boxLabel, order);
     }
   }

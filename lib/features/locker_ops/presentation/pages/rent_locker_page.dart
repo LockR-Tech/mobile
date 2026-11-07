@@ -11,6 +11,7 @@ import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service
 import 'package:smart_laundry_locker/features/locker_ops/presentation/utils/business_rules_text.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/locker_picker.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/loyalty_redeem_toggle.dart';
+import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/order_ble_open.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/ops_widgets.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/order_extras.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/order_payment_sheet.dart';
@@ -464,13 +465,38 @@ class _RentLockerPageState extends State<RentLockerPage>
       _snack(context.l10n.ordNoBoxPinInfo);
       return;
     }
+    // Thử Bluetooth thật ngay (mã theo đơn ghi thẳng cho Pi); không được thì khách chọn quét
+    // tem QR trên tủ (⇒ mở từ xa như trước) hoặc dùng mã OTP ở kiosk.
+    Map<String, dynamic>? listed;
+    for (final l in _lockers) {
+      if (l['id'] == lockerId) listed = l;
+    }
+    final listedName = listed?['name']?.toString().trim();
+    final action = await OrderOpenSheet.show(
+      context,
+      orderId: orderId,
+      qrToken: order?['qrToken'] as String?,
+      service: _service,
+      lockerName: (listedName == null || listedName.isEmpty)
+          ? (widget.initialLockerName ?? context.l10n.ordLockrLocker)
+          : listedName,
+      lockerCode: listed?['code']?.toString() ?? '',
+      lockerId: lockerId,
+      boxLabel: _resultBoxLabel(order!),
+      pin: pin,
+    );
+    if (action == null || !mounted) return;
+    final viaBle = action.method == OrderOpenMethod.bluetooth;
+
     setState(() => _loading = true);
-    bool unlockedSuccessfully = false;
-    try {
-      final res = await _service.unlock(lockerId, boxId, pin);
-      unlockedSuccessfully = res['accepted'] == true;
-    } catch (_) {
-      unlockedSuccessfully = false;
+    bool unlockedSuccessfully = viaBle;
+    if (!viaBle) {
+      try {
+        final res = await _service.unlock(lockerId, boxId, pin);
+        unlockedSuccessfully = res['accepted'] == true;
+      } catch (_) {
+        unlockedSuccessfully = false;
+      }
     }
 
     try {

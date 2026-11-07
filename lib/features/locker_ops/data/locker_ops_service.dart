@@ -109,6 +109,14 @@ class LockerOpsService {
   Future<Map<String, dynamic>> bleOpenToken(int lockerId, int boxNumber) =>
       _map('POST', '/api/iot/ble-test/lockers/$lockerId/boxes/$boxNumber/token');
 
+  // ---- Mở ô theo đơn qua Bluetooth (F3-G11) ----
+  /// Mã mở ô của đơn [orderId] (cùng dạng mã thử ở trên, kèm `orderId`, `action` = DROP |
+  /// RENTAL_ACCESS | PICKUP) để ghi cho Pi qua BLE. Server chỉ coi là "đã mở" khi Pi báo về.
+  /// Lỗi: `ORDER_NOT_FOUND`, `BLE_ORDER_FORBIDDEN`, `BLE_ORDER_NOT_OPENABLE` và các mã chặn mở
+  /// ô hiện có (`ORDER_UNPAID`, `RENTAL_EXPIRED`…).
+  Future<Map<String, dynamic>> bleOrderToken(int orderId) =>
+      _map('POST', '/api/iot/ble/orders/$orderId/token');
+
   // ---- Customer orders ----
   Future<List<Map<String, dynamic>>> myOrders() =>
       _list('/api/orders/my-orders');
@@ -1630,6 +1638,9 @@ class LockerOpsService {
   static Map<String, String> get _codeMessages => <String, String>{
     'BLE_TEST_NOT_GRANTED':
         L10n.current.apiErrBleTestNotGranted,
+    'BLE_ORDER_FORBIDDEN': L10n.current.apiErrBleOrderForbidden,
+    'BLE_ORDER_NOT_OPENABLE': L10n.current.apiErrBleOrderNotOpenable,
+    'ORDER_NOT_FOUND': L10n.current.apiErrOrderNotFound,
     'RESOLUTION_PHOTO_REQUIRED':
         L10n.current.apiErrResolutionPhotoRequired,
     'LANDING_PAD_ABSENT': L10n.current.apiErrLandingPadAbsent,
