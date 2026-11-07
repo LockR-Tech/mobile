@@ -1089,6 +1089,14 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
     final paymentStatus =
         (order['paymentStatus'] as String? ?? 'UNPAID').toUpperCase();
     final needsPayment = paymentStatus != 'PAID' && due > 0;
+    // Đơn lưu kho (EXPIRED): đồ đang ở quầy. App chỉ thu phí — nhân viên đối chiếu người nhận,
+    // trao đồ và chốt đơn tại quầy (server từ chối khách tự hoàn tất: ORDER_IN_STORAGE_PICKUP_AT_COUNTER).
+    final inStorage =
+        (order['status'] as String? ?? '').toUpperCase() == 'EXPIRED';
+    if (inStorage && !needsPayment) {
+      await _showCounterPickupInfo(context.l10n.ordPickupAtCounterBody);
+      return;
+    }
 
     if (needsPayment) {
       businessConfigService.refresh();
@@ -1122,6 +1130,14 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
           context.l10n.ordAwaitingPaymentConfirmPickup,
         );
         await _load();
+        return;
+      }
+      if (inStorage) {
+        await _load();
+        if (!mounted) return;
+        await _showCounterPickupInfo(
+          context.l10n.ordStoragePaidGoToCounter(fmtPrice(due)),
+        );
         return;
       }
     } else {
@@ -1210,6 +1226,35 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
       }
     }
     await _load();
+  }
+
+  /// Đơn lưu kho: báo khách tới quầy nhận đồ (đọc 4 số cuối SĐT để nhân viên đối chiếu).
+  Future<void> _showCounterPickupInfo(String message) {
+    return showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+        title: Row(
+          children: [
+            const Icon(LucideIcons.store, color: Color(0xFF2563EB)),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                context.l10n.ordPickupAtCounter,
+                style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 17),
+              ),
+            ),
+          ],
+        ),
+        content: Text(message, style: const TextStyle(fontSize: 14, height: 1.4)),
+        actions: [
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(context.l10n.commonGotIt),
+          ),
+        ],
+      ),
+    );
   }
 
   /// Chốt đơn đã lấy đồ: đơn thuê kết thúc kỳ thuê, đơn khác hoàn tất.
@@ -2596,9 +2641,10 @@ class _OrderCard extends StatelessWidget {
                               final BorderSide actionBorderSide;
 
                               if (rawStatus == 'EXPIRED') {
-                                actionLabel = needsPay
-                                    ? context.l10n.ordPayAndPickup
-                                    : context.l10n.ordConfirmPickup;
+                                // Đồ ở quầy: còn nợ thì trả phí trong app, xong thì tới quầy nhận.
+                                actionLabel = due > 0 && paymentStatus != 'PAID'
+                                    ? context.l10n.ordPayStorageFeeShort
+                                    : context.l10n.ordPickupAtCounter;
                                 actionBgColor = const Color(
                                   0xFFDC2626,
                                 ).withValues(alpha: 0.12);
@@ -4399,27 +4445,21 @@ class _DetailSheet extends StatelessWidget {
           onTap: () => onPay(id),
         ),
       if (rawStatus == 'EXPIRED') ...[
+        // Đồ đã rời ô vào kho tại quầy: chỉ trả phí trong app, nhân viên trao đồ và chốt đơn.
         if (canPay || orderAmountDue(order) > 0)
           OpsSheetAction(
             label:
-                context.l10n.ordPayAndCompletePickup(fmtPrice(orderAmountDue(order) > 0 ? orderAmountDue(order) : totalNum)),
-            icon: LucideIcons.circleCheck,
+                context.l10n.ordPayStorageFee(fmtPrice(orderAmountDue(order) > 0 ? orderAmountDue(order) : totalNum)),
+            icon: LucideIcons.creditCard,
             primary: true,
             onTap: () => onPayAndComplete?.call(id),
           )
         else
           OpsSheetAction(
-            label: context.l10n.ordIPickedUpCompleteOrder,
-            icon: LucideIcons.circleCheck,
+            label: context.l10n.ordPickupAtCounter,
+            icon: LucideIcons.store,
             primary: true,
             onTap: () => onPayAndComplete?.call(id),
-          ),
-        if (boxId != null)
-          OpsSheetAction(
-            label: context.l10n.ordOpenBoxToPickup(boxLabel),
-            icon: LucideIcons.doorOpen,
-            primary: false,
-            onTap: onOpenLocker,
           ),
         if (!isDroneDelivery)
           OpsSheetAction(

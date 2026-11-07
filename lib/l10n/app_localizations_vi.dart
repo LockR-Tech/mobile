@@ -2694,7 +2694,7 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String ordStorageExpiredTapPay(Object hours) {
-    return 'Đơn đã hết hạn lưu tủ $hours — Bấm để thanh toán & lấy đồ';
+    return 'Đồ đã chuyển vào kho $hours — Nhận lại tại quầy';
   }
 
   @override
@@ -2882,9 +2882,6 @@ class AppLocalizationsVi extends AppLocalizations {
   }
 
   @override
-  String get ordIPickedUpCompleteOrder => 'Tôi đã lấy đồ — Hoàn tất đơn';
-
-  @override
   String ordOpenBoxToPickup(Object box) {
     return 'Mở $box để lấy đồ';
   }
@@ -2942,12 +2939,12 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String ordStorageExpiredPay(Object hours) {
-    return 'Đơn đã quá hạn lưu tủ $hours. Ô tủ đã được giải phóng và đồ đã chuyển về bảo quản an toàn. Quý khách vui lòng thanh toán phí còn lại và bấm \"Thanh toán & lấy đồ\" để hoàn tất.';
+    return 'Đơn đã quá hạn lưu tủ $hours. Ô tủ đã được giải phóng và đồ đã chuyển về kho tại quầy. Quý khách vui lòng thanh toán phí còn lại trong app rồi tới quầy nhận đồ, mang theo điện thoại đã đăng ký để nhân viên đối chiếu.';
   }
 
   @override
   String ordStorageExpiredCheck(Object hours) {
-    return 'Đơn đã quá hạn lưu tủ $hours. Ô tủ đã được giải phóng và đồ đã chuyển về bảo quản an toàn. Quý khách vui lòng kiểm tra nhận đồ và bấm \"Tôi đã lấy đồ — Hoàn tất đơn\" để hoàn tất.';
+    return 'Đơn đã quá hạn lưu tủ $hours. Ô tủ đã được giải phóng và đồ đã chuyển về kho tại quầy. Quý khách vui lòng tới quầy nhận đồ, mang theo điện thoại đã đăng ký để nhân viên đối chiếu.';
   }
 
   @override
@@ -14678,4 +14675,24 @@ class AppLocalizationsVi extends AppLocalizations {
   @override
   String get forceOpenUnconfirmed =>
       'Tủ chưa xác nhận đã mở ô — ô có thể chưa mở, vui lòng kiểm tra tại tủ rồi thử lại.';
+
+  @override
+  String get ordPayStorageFeeShort => 'Thanh toán phí lưu kho';
+
+  @override
+  String ordPayStorageFee(Object amount) {
+    return 'Thanh toán phí lưu kho ($amount)';
+  }
+
+  @override
+  String get ordPickupAtCounter => 'Nhận đồ tại quầy';
+
+  @override
+  String get ordPickupAtCounterBody =>
+      'Đồ của đơn đang được giữ tại quầy. Quý khách tới quầy và đọc 4 số cuối điện thoại đã đăng ký để nhân viên đối chiếu. Nhân viên sẽ trao đồ và hoàn tất đơn.';
+
+  @override
+  String ordStoragePaidGoToCounter(Object amount) {
+    return 'Đã thanh toán $amount. Quý khách tới quầy nhận đồ và đọc 4 số cuối điện thoại đã đăng ký để nhân viên đối chiếu. Nhân viên sẽ trao đồ và hoàn tất đơn.';
+  }
 }
