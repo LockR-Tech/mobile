@@ -1658,6 +1658,7 @@ class LockerOpsService {
     'DRONE_PARCEL_CATEGORY_REQUIRED': L10n.current.apiErrDroneParcelCategoryRequired,
     'DRONE_PICKUP_NOT_OFFERED': L10n.current.apiErrDronePickupNotOffered,
     'DRONE_PICKUP_OFFER_EXPIRED': L10n.current.apiErrDronePickupOfferExpired,
+    'ORDER_IN_STORAGE_PICKUP_AT_COUNTER': L10n.current.ordPickupAtCounterBody,
     'DRONE_PICKUP_NOT_ASSIGNED_TO_USER':
         L10n.current.apiErrDronePickupNotAssignedToUser,
     'DRONE_PICKUP_NOT_FOUND':

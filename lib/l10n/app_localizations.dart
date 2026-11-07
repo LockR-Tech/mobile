@@ -4847,7 +4847,7 @@ abstract class AppLocalizations {
   /// No description provided for @ordStorageExpiredTapPay.
   ///
   /// In vi, this message translates to:
-  /// **'Đơn đã hết hạn lưu tủ {hours} — Bấm để thanh toán & lấy đồ'**
+  /// **'Đồ đã chuyển vào kho {hours} — Nhận lại tại quầy'**
   String ordStorageExpiredTapPay(Object hours);
 
   /// No description provided for @ordOverdueMayCharge.
@@ -5144,12 +5144,6 @@ abstract class AppLocalizations {
   /// **'Thanh toán ({amount}) & Lấy đồ hoàn tất'**
   String ordPayAndCompletePickup(Object amount);
 
-  /// No description provided for @ordIPickedUpCompleteOrder.
-  ///
-  /// In vi, this message translates to:
-  /// **'Tôi đã lấy đồ — Hoàn tất đơn'**
-  String get ordIPickedUpCompleteOrder;
-
   /// No description provided for @ordOpenBoxToPickup.
   ///
   /// In vi, this message translates to:
@@ -5249,13 +5243,13 @@ abstract class AppLocalizations {
   /// No description provided for @ordStorageExpiredPay.
   ///
   /// In vi, this message translates to:
-  /// **'Đơn đã quá hạn lưu tủ {hours}. Ô tủ đã được giải phóng và đồ đã chuyển về bảo quản an toàn. Quý khách vui lòng thanh toán phí còn lại và bấm \"Thanh toán & lấy đồ\" để hoàn tất.'**
+  /// **'Đơn đã quá hạn lưu tủ {hours}. Ô tủ đã được giải phóng và đồ đã chuyển về kho tại quầy. Quý khách vui lòng thanh toán phí còn lại trong app rồi tới quầy nhận đồ, mang theo điện thoại đã đăng ký để nhân viên đối chiếu.'**
   String ordStorageExpiredPay(Object hours);
 
   /// No description provided for @ordStorageExpiredCheck.
   ///
   /// In vi, this message translates to:
-  /// **'Đơn đã quá hạn lưu tủ {hours}. Ô tủ đã được giải phóng và đồ đã chuyển về bảo quản an toàn. Quý khách vui lòng kiểm tra nhận đồ và bấm \"Tôi đã lấy đồ — Hoàn tất đơn\" để hoàn tất.'**
+  /// **'Đơn đã quá hạn lưu tủ {hours}. Ô tủ đã được giải phóng và đồ đã chuyển về kho tại quầy. Quý khách vui lòng tới quầy nhận đồ, mang theo điện thoại đã đăng ký để nhân viên đối chiếu.'**
   String ordStorageExpiredCheck(Object hours);
 
   /// No description provided for @ordOverduePaidOpen.
@@ -25014,6 +25008,36 @@ abstract class AppLocalizations {
   /// In vi, this message translates to:
   /// **'Tủ chưa xác nhận đã mở ô — ô có thể chưa mở, vui lòng kiểm tra tại tủ rồi thử lại.'**
   String get forceOpenUnconfirmed;
+
+  /// No description provided for @ordPayStorageFeeShort.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thanh toán phí lưu kho'**
+  String get ordPayStorageFeeShort;
+
+  /// No description provided for @ordPayStorageFee.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thanh toán phí lưu kho ({amount})'**
+  String ordPayStorageFee(Object amount);
+
+  /// No description provided for @ordPickupAtCounter.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhận đồ tại quầy'**
+  String get ordPickupAtCounter;
+
+  /// No description provided for @ordPickupAtCounterBody.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đồ của đơn đang được giữ tại quầy. Quý khách tới quầy và đọc 4 số cuối điện thoại đã đăng ký để nhân viên đối chiếu. Nhân viên sẽ trao đồ và hoàn tất đơn.'**
+  String get ordPickupAtCounterBody;
+
+  /// No description provided for @ordStoragePaidGoToCounter.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã thanh toán {amount}. Quý khách tới quầy nhận đồ và đọc 4 số cuối điện thoại đã đăng ký để nhân viên đối chiếu. Nhân viên sẽ trao đồ và hoàn tất đơn.'**
+  String ordStoragePaidGoToCounter(Object amount);
 }
 
 class _AppLocalizationsDelegate

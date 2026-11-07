@@ -1231,7 +1231,7 @@
       "time": {}
     }
   },
-  "ordStorageExpiredTapPay": "Đơn đã hết hạn lưu tủ {hours} — Bấm để thanh toán & lấy đồ",
+  "ordStorageExpiredTapPay": "Đồ đã chuyển vào kho {hours} — Nhận lại tại quầy",
   "@ordStorageExpiredTapPay": {
     "placeholders": {
       "hours": {}
@@ -1366,7 +1366,6 @@
       "amount": {}
     }
   },
-  "ordIPickedUpCompleteOrder": "Tôi đã lấy đồ — Hoàn tất đơn",
   "ordOpenBoxToPickup": "Mở {box} để lấy đồ",
   "@ordOpenBoxToPickup": {
     "placeholders": {
@@ -1403,13 +1402,13 @@
   "ordCancelOrder": "Hủy đơn",
   "ordDirectionsToLocker": "Chỉ đường tới tủ",
   "ordRequestRefund": "Yêu cầu hoàn tiền",
-  "ordStorageExpiredPay": "Đơn đã quá hạn lưu tủ {hours}. Ô tủ đã được giải phóng và đồ đã chuyển về bảo quản an toàn. Quý khách vui lòng thanh toán phí còn lại và bấm \"Thanh toán & lấy đồ\" để hoàn tất.",
+  "ordStorageExpiredPay": "Đơn đã quá hạn lưu tủ {hours}. Ô tủ đã được giải phóng và đồ đã chuyển về kho tại quầy. Quý khách vui lòng thanh toán phí còn lại trong app rồi tới quầy nhận đồ, mang theo điện thoại đã đăng ký để nhân viên đối chiếu.",
   "@ordStorageExpiredPay": {
     "placeholders": {
       "hours": {}
     }
   },
-  "ordStorageExpiredCheck": "Đơn đã quá hạn lưu tủ {hours}. Ô tủ đã được giải phóng và đồ đã chuyển về bảo quản an toàn. Quý khách vui lòng kiểm tra nhận đồ và bấm \"Tôi đã lấy đồ — Hoàn tất đơn\" để hoàn tất.",
+  "ordStorageExpiredCheck": "Đơn đã quá hạn lưu tủ {hours}. Ô tủ đã được giải phóng và đồ đã chuyển về kho tại quầy. Quý khách vui lòng tới quầy nhận đồ, mang theo điện thoại đã đăng ký để nhân viên đối chiếu.",
   "@ordStorageExpiredCheck": {
     "placeholders": {
       "hours": {}
@@ -8186,5 +8185,20 @@
   "dbLockerInactive": "Chưa hoạt động",
   "dbPadMaintenance": "Bãi đáp đang bảo trì",
   "dbPadFault": "Bãi đáp đang lỗi",
-  "forceOpenUnconfirmed": "Tủ chưa xác nhận đã mở ô — ô có thể chưa mở, vui lòng kiểm tra tại tủ rồi thử lại."
+  "forceOpenUnconfirmed": "Tủ chưa xác nhận đã mở ô — ô có thể chưa mở, vui lòng kiểm tra tại tủ rồi thử lại.",
+  "ordPayStorageFeeShort": "Thanh toán phí lưu kho",
+  "ordPayStorageFee": "Thanh toán phí lưu kho ({amount})",
+  "@ordPayStorageFee": {
+    "placeholders": {
+      "amount": {}
+    }
+  },
+  "ordPickupAtCounter": "Nhận đồ tại quầy",
+  "ordPickupAtCounterBody": "Đồ của đơn đang được giữ tại quầy. Quý khách tới quầy và đọc 4 số cuối điện thoại đã đăng ký để nhân viên đối chiếu. Nhân viên sẽ trao đồ và hoàn tất đơn.",
+  "ordStoragePaidGoToCounter": "Đã thanh toán {amount}. Quý khách tới quầy nhận đồ và đọc 4 số cuối điện thoại đã đăng ký để nhân viên đối chiếu. Nhân viên sẽ trao đồ và hoàn tất đơn.",
+  "@ordStoragePaidGoToCounter": {
+    "placeholders": {
+      "amount": {}
+    }
+  }
 }

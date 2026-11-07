@@ -2735,7 +2735,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String ordStorageExpiredTapPay(Object hours) {
-    return 'Storage period expired $hours — Tap to pay & pick up';
+    return 'Items moved to storage $hours — collect at the counter';
   }
 
   @override
@@ -2925,9 +2925,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get ordIPickedUpCompleteOrder => 'I\'ve picked up — Complete order';
-
-  @override
   String ordOpenBoxToPickup(Object box) {
     return 'Open $box to pick up';
   }
@@ -2985,12 +2982,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String ordStorageExpiredPay(Object hours) {
-    return 'The storage period has expired $hours. The compartment was released and your items were moved to safe storage. Please pay the remaining fee and tap \"Pay & pick up\" to finish.';
+    return 'The storage period has expired $hours. The compartment was released and your items were moved to storage at the counter. Please pay the remaining fee in the app, then collect your items at the counter with your registered phone so staff can verify you.';
   }
 
   @override
   String ordStorageExpiredCheck(Object hours) {
-    return 'The storage period has expired $hours. The compartment was released and your items were moved to safe storage. Please check and collect your items, then tap \"I\'ve picked up — Complete order\" to finish.';
+    return 'The storage period has expired $hours. The compartment was released and your items were moved to storage at the counter. Please collect them at the counter with your registered phone so staff can verify you.';
   }
 
   @override
@@ -15047,4 +15044,24 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get forceOpenUnconfirmed =>
       'The locker hasn\'t confirmed the box opened — it may still be closed. Please check at the locker and try again.';
+
+  @override
+  String get ordPayStorageFeeShort => 'Pay storage fee';
+
+  @override
+  String ordPayStorageFee(Object amount) {
+    return 'Pay storage fee ($amount)';
+  }
+
+  @override
+  String get ordPickupAtCounter => 'Collect at the counter';
+
+  @override
+  String get ordPickupAtCounterBody =>
+      'Your items are being held at the counter. Go to the counter and read out the last 4 digits of your registered phone so staff can verify you. Staff will hand over the items and complete the order.';
+
+  @override
+  String ordStoragePaidGoToCounter(Object amount) {
+    return 'Paid $amount. Go to the counter and read out the last 4 digits of your registered phone so staff can verify you. Staff will hand over the items and complete the order.';
+  }
 }
