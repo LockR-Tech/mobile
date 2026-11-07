@@ -157,6 +157,14 @@ class FirebaseAuthService {
     void Function(String idToken)? onAutoVerified,
     PhoneCodeSession? resendFrom,
   }) async {
+    // SMS OTP của Firebase là mẫu cố định của Google, không sửa được câu chữ — chỉ chọn được ngôn ngữ.
+    // Đặt 'vi' để SMS ra tiếng Việt kèm tên hiển thị của project (Firebase Console → Project settings →
+    // Public-facing name = "Lock.R"). Lỗi đặt ngôn ngữ không được chặn việc gửi mã.
+    try {
+      await _firebaseAuth.setLanguageCode('vi');
+    } catch (e) {
+      debugPrint('Firebase setLanguageCode error: $e');
+    }
     if (kIsWeb) {
       try {
         final confirmation = await _firebaseAuth.signInWithPhoneNumber(
