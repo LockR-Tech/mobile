@@ -28,6 +28,8 @@
 	<true/>
 	<key>NSCameraUsageDescription</key>
 	<string>Lock.R cần dùng máy ảnh để chụp ảnh sự cố ô tủ, ảnh nghiệm thu sửa chữa và ảnh đại diện.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Lock.R lưu mã VietQR vào thư viện ảnh để bạn quét bằng app ngân hàng — số tài khoản, số tiền và nội dung chuyển khoản tự điền.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Lock.R cần truy cập thư viện ảnh để bạn chọn ảnh sự cố ô tủ và ảnh đại diện.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>

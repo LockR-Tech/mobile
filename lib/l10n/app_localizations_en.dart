@@ -7050,7 +7050,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get bankIntro =>
-      'Choose your banking app — the account number, amount and description are filled in, you just confirm.';
+      'Choose your banking app. Lock.R saves the QR code to your photo library — scan it from the photo in your banking app and the account, amount and description are filled in.';
 
   @override
   String get bankSearch => 'Search banks';
@@ -7058,6 +7058,45 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get bankLoadFailed =>
       'Couldn\'t load the banking apps.\nYou can scan the QR code with your banking app.';
+
+  @override
+  String bankOpenApp(String app) {
+    return 'Open $app';
+  }
+
+  @override
+  String get bankStepsSaved =>
+      'QR code saved to your photo library and transfer description copied.';
+
+  @override
+  String get bankStepsNotSaved =>
+      'Couldn\'t save the QR code. The transfer description has been copied.';
+
+  @override
+  String get bankStepScanQr => 'In your banking app, choose \"Scan QR\".';
+
+  @override
+  String get bankStepPickImage =>
+      'Tap the photo / gallery icon and pick the Lock.R QR code you just saved — account, amount and description fill in.';
+
+  @override
+  String bankStepConfirm(String amount) {
+    return 'Check the amount $amount, then confirm the transfer.';
+  }
+
+  @override
+  String bankStepManual(String amount, String account) {
+    return 'Transfer $amount to account $account.';
+  }
+
+  @override
+  String bankStepPaste(String content) {
+    return 'Paste the exact description: $content';
+  }
+
+  @override
+  String get bankStepsBack =>
+      'When done, come back to Lock.R — your order updates automatically.';
 
   @override
   String get bankNoMatch => 'No matching bank';

@@ -96,7 +96,7 @@ void main() {
   });
 
   group('bankApps', () {
-    test('chỉ giữ app autofill == 1, theo nền tảng, nhớ lại', () async {
+    test('giữ mọi app (kể cả autofill 0), theo nền tảng, nhớ lại', () async {
       final s = _service();
       s.adapter.onGet(
         'https://api.vietqr.io/v2/android-app-deeplinks',
@@ -116,7 +116,7 @@ void main() {
       );
 
       final apps = await s.service.bankApps(ios: false);
-      expect(apps.map((a) => a.appId), ['vcb', 'mb']);
+      expect(apps.map((a) => a.appId), ['vcb', 'old', 'mb']);
       expect(apps.first.appLogo, 'https://img/vcb.png');
       await s.service.bankApps(ios: false);
       expect(
