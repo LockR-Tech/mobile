@@ -624,18 +624,23 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
     return map.entries.toList();
   }
 
+  /// Toast chung của app (thẻ `AppToast` qua SmartDialog) như mọi màn khách.
+  /// Không còn hỏi `FlutterSmartDialog.observer.navigator`: trên máy thật giá
+  /// trị đó có lúc null nên màn này rơi về SnackBar đen mặc định. SnackBar chỉ
+  /// còn cho trường hợp SmartDialog chưa khởi tạo (test dựng trang rút gọn).
   void _snack(String msg) {
     try {
-      if (FlutterSmartDialog.observer.navigator != null) {
-        SmartDialog.showToast(msg);
-        return;
-      }
-    } catch (_) {}
-    if (mounted) {
-      ScaffoldMessenger.maybeOf(context)?.showSnackBar(
-        SnackBar(content: Text(msg)),
-      );
+      SmartDialog.showToast(msg).catchError((Object _) => _fallbackSnack(msg));
+    } catch (_) {
+      _fallbackSnack(msg);
     }
+  }
+
+  void _fallbackSnack(String msg) {
+    if (!mounted) return;
+    ScaffoldMessenger.maybeOf(context)?.showSnackBar(
+      SnackBar(content: Text(msg)),
+    );
   }
 
   Future<void> _runAction(
