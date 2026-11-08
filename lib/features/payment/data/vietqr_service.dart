@@ -98,7 +98,7 @@ class VietQrService {
     '970448': 'ocb', // OCB
   };
 
-  /// App ngân hàng hỗ trợ tự điền (`autofill == 1`), theo nền tảng.
+  /// App ngân hàng trong danh sách deeplink của VietQR, theo nền tảng.
   Future<List<VietQrBankApp>> bankApps({required bool ios}) async {
     final platform = ios ? 'ios' : 'android';
     final cached = _appsByPlatform[platform];
@@ -107,11 +107,13 @@ class VietQrService {
     final response = await _dio.get<dynamic>('$_apiBase/$platform-app-deeplinks');
     final data = response.data;
     final Object? list = data is Map ? (data['apps'] ?? data['data']) : data;
+    // Mọi app ngân hàng: trên Android link `dl.vietqr.io` không tự điền ở app
+    // nào cả, khách quét mã VietQR đã lưu vào Thư viện ảnh — nên không lọc
+    // theo `autofill` (cờ đó từng giấu Vietcombank).
     final apps = <VietQrBankApp>[
       if (list is List)
         for (final item in list)
-          if (VietQrBankApp.fromJson(item) case final app? when app.autofill)
-            app,
+          if (VietQrBankApp.fromJson(item) case final app?) app,
     ];
     if (apps.isNotEmpty) _appsByPlatform[platform] = apps;
     return apps;

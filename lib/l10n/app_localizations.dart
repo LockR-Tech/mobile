@@ -12095,7 +12095,7 @@ abstract class AppLocalizations {
   /// No description provided for @bankIntro.
   ///
   /// In vi, this message translates to:
-  /// **'Chọn app ngân hàng của bạn — số tài khoản, số tiền và nội dung chuyển khoản được điền sẵn, bạn chỉ cần xác nhận.'**
+  /// **'Chọn app ngân hàng của bạn. Lock.R lưu mã QR vào Thư viện ảnh — trong app ngân hàng, quét mã từ ảnh là số tài khoản, số tiền và nội dung tự điền.'**
   String get bankIntro;
 
   /// No description provided for @bankSearch.
@@ -12109,6 +12109,60 @@ abstract class AppLocalizations {
   /// In vi, this message translates to:
   /// **'Không tải được danh sách app ngân hàng.\nBạn có thể quét mã QR bằng app ngân hàng.'**
   String get bankLoadFailed;
+
+  /// No description provided for @bankOpenApp.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mở {app}'**
+  String bankOpenApp(String app);
+
+  /// No description provided for @bankStepsSaved.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã lưu mã QR vào Thư viện ảnh và sao chép nội dung chuyển khoản.'**
+  String get bankStepsSaved;
+
+  /// No description provided for @bankStepsNotSaved.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không lưu được mã QR vào máy. Nội dung chuyển khoản đã được sao chép.'**
+  String get bankStepsNotSaved;
+
+  /// No description provided for @bankStepScanQr.
+  ///
+  /// In vi, this message translates to:
+  /// **'Trong app ngân hàng, chọn \"Quét QR\".'**
+  String get bankStepScanQr;
+
+  /// No description provided for @bankStepPickImage.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bấm biểu tượng ảnh / Thư viện, chọn mã QR Lock.R vừa lưu — số tài khoản, số tiền, nội dung tự điền.'**
+  String get bankStepPickImage;
+
+  /// No description provided for @bankStepConfirm.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kiểm tra số tiền {amount} rồi xác nhận chuyển.'**
+  String bankStepConfirm(String amount);
+
+  /// No description provided for @bankStepManual.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chuyển {amount} tới tài khoản {account}.'**
+  String bankStepManual(String amount, String account);
+
+  /// No description provided for @bankStepPaste.
+  ///
+  /// In vi, this message translates to:
+  /// **'Dán đúng nội dung chuyển khoản: {content}'**
+  String bankStepPaste(String content);
+
+  /// No description provided for @bankStepsBack.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chuyển xong, quay lại Lock.R — đơn tự cập nhật.'**
+  String get bankStepsBack;
 
   /// No description provided for @bankNoMatch.
   ///

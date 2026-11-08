@@ -6945,7 +6945,7 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get bankIntro =>
-      'Chọn app ngân hàng của bạn — số tài khoản, số tiền và nội dung chuyển khoản được điền sẵn, bạn chỉ cần xác nhận.';
+      'Chọn app ngân hàng của bạn. Lock.R lưu mã QR vào Thư viện ảnh — trong app ngân hàng, quét mã từ ảnh là số tài khoản, số tiền và nội dung tự điền.';
 
   @override
   String get bankSearch => 'Tìm ngân hàng';
@@ -6953,6 +6953,44 @@ class AppLocalizationsVi extends AppLocalizations {
   @override
   String get bankLoadFailed =>
       'Không tải được danh sách app ngân hàng.\nBạn có thể quét mã QR bằng app ngân hàng.';
+
+  @override
+  String bankOpenApp(String app) {
+    return 'Mở $app';
+  }
+
+  @override
+  String get bankStepsSaved =>
+      'Đã lưu mã QR vào Thư viện ảnh và sao chép nội dung chuyển khoản.';
+
+  @override
+  String get bankStepsNotSaved =>
+      'Không lưu được mã QR vào máy. Nội dung chuyển khoản đã được sao chép.';
+
+  @override
+  String get bankStepScanQr => 'Trong app ngân hàng, chọn \"Quét QR\".';
+
+  @override
+  String get bankStepPickImage =>
+      'Bấm biểu tượng ảnh / Thư viện, chọn mã QR Lock.R vừa lưu — số tài khoản, số tiền, nội dung tự điền.';
+
+  @override
+  String bankStepConfirm(String amount) {
+    return 'Kiểm tra số tiền $amount rồi xác nhận chuyển.';
+  }
+
+  @override
+  String bankStepManual(String amount, String account) {
+    return 'Chuyển $amount tới tài khoản $account.';
+  }
+
+  @override
+  String bankStepPaste(String content) {
+    return 'Dán đúng nội dung chuyển khoản: $content';
+  }
+
+  @override
+  String get bankStepsBack => 'Chuyển xong, quay lại Lock.R — đơn tự cập nhật.';
 
   @override
   String get bankNoMatch => 'Không tìm thấy ngân hàng phù hợp';

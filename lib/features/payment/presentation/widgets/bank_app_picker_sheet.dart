@@ -1,5 +1,8 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:gal/gal.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:smart_laundry_locker/features/payment/data/vietqr_service.dart';
 import 'package:smart_laundry_locker/features/payment/domain/sepay_transfer.dart';
@@ -18,10 +21,38 @@ Future<bool> _launchExternal(Uri url) async {
   }
 }
 
-/// "Thanh toán bằng app ngân hàng": chọn app ngân hàng (danh sách deeplink của
-/// VietQR, chỉ app hỗ trợ tự điền) rồi mở app với STK, số tiền và nội dung
-/// chuyển khoản đã điền sẵn — khách chỉ cần xác nhận. Quay lại app, màn thanh
-/// toán tự kiểm tra lại trạng thái đơn.
+/// Lưu ảnh mã VietQR ở [url] vào Thư viện ảnh với tên [name]; `false` khi
+/// không lưu được (không cấp quyền, tải ảnh lỗi…).
+typedef QrGallerySaver = Future<bool> Function(String url, String name);
+
+Future<bool> _saveQrToGallery(String url, String name) async {
+  try {
+    if (!await Gal.hasAccess() && !await Gal.requestAccess()) return false;
+    final response = await Dio(
+      BaseOptions(
+        connectTimeout: const Duration(seconds: 10),
+        receiveTimeout: const Duration(seconds: 15),
+      ),
+    ).get<List<int>>(url, options: Options(responseType: ResponseType.bytes));
+    final bytes = response.data;
+    if (bytes == null || bytes.isEmpty) return false;
+    await Gal.putImageBytes(Uint8List.fromList(bytes), name: name);
+    return true;
+  } catch (e) {
+    debugPrint('Save VietQR to gallery failed: $e');
+    return false;
+  }
+}
+
+/// "Thanh toán bằng app ngân hàng": chọn app ngân hàng (danh sách của VietQR)
+/// rồi mở app đó.
+///
+/// Link `dl.vietqr.io/pay` trên Android chỉ MỞ app ngân hàng, không chuyển STK,
+/// số tiền, nội dung (kiểm 2026-11-07: MB, VCB, VietinBank, Techcombank…
+/// đều chuyển hướng tới `intent://#Intent;scheme=…` trống). Cách duy nhất để
+/// app ngân hàng tự điền đủ là quét chính mã VietQR — nên trước khi mở app,
+/// Lock.R lưu ảnh mã vào Thư viện ảnh, sao chép nội dung chuyển khoản và chỉ
+/// khách "Quét QR → chọn ảnh". Quay lại app, màn thanh toán tự kiểm tra đơn.
 ///
 /// Trả `true` khi đã mở được app ngân hàng.
 Future<bool> showBankAppPicker(
@@ -29,6 +60,7 @@ Future<bool> showBankAppPicker(
   required SepayTransfer transfer,
   VietQrService? service,
   ExternalUrlLauncher? launcher,
+  QrGallerySaver? saveQr,
 }) async {
   final opened = await showModalBottomSheet<bool>(
     context: context,
@@ -43,6 +75,7 @@ Future<bool> showBankAppPicker(
       transfer: transfer,
       service: service ?? VietQrService.instance,
       launcher: launcher ?? _launchExternal,
+      saveQr: saveQr ?? _saveQrToGallery,
     ),
   );
   return opened == true;
@@ -54,11 +87,13 @@ class BankAppPickerSheet extends StatefulWidget {
     required this.transfer,
     required this.service,
     required this.launcher,
+    required this.saveQr,
   });
 
   final SepayTransfer transfer;
   final VietQrService service;
   final ExternalUrlLauncher launcher;
+  final QrGallerySaver saveQr;
 
   @override
   State<BankAppPickerSheet> createState() => _BankAppPickerSheetState();
@@ -103,11 +138,29 @@ class _BankAppPickerSheetState extends State<BankAppPickerSheet> {
     if (code == null || !t.canOpenBankApp) {
       setState(() {
         _opening = false;
-        _error =
-            context.l10n.bankUnknown;
+        _error = context.l10n.bankUnknown;
       });
       return;
     }
+
+    // Chuẩn bị để app ngân hàng điền sẵn: ảnh mã VietQR trong Thư viện ảnh
+    // (quét từ ảnh ⇒ đủ STK, số tiền, nội dung) + nội dung trong bộ nhớ tạm.
+    final qr = t.qrImageUrl;
+    final saved = qr != null &&
+        await widget.saveQr(qr, 'LockR-${_safeName(t.transferContent!)}');
+    await Clipboard.setData(ClipboardData(text: t.transferContent!));
+    if (!mounted) return;
+
+    final go = await showDialog<bool>(
+      context: context,
+      builder: (_) => _BankStepsDialog(app: app, transfer: t, qrSaved: saved),
+    );
+    if (!mounted) return;
+    if (go != true) {
+      setState(() => _opening = false);
+      return;
+    }
+
     final url = buildVietQrPayDeeplink(
       appId: app.appId,
       accountNo: t.accountNo!,
@@ -123,10 +176,12 @@ class _BankAppPickerSheetState extends State<BankAppPickerSheet> {
     }
     setState(() {
       _opening = false;
-      _error =
-          context.l10n.bankCantOpen(app.appName);
+      _error = context.l10n.bankCantOpen(app.appName);
     });
   }
+
+  static String _safeName(String content) =>
+      content.replaceAll(RegExp(r'[^A-Za-z0-9_-]'), '_');
 
   @override
   Widget build(BuildContext context) {
@@ -254,6 +309,129 @@ class _BankAppPickerSheetState extends State<BankAppPickerSheet> {
         ),
       ),
     );
+  }
+}
+
+/// Các bước trong app ngân hàng, hiện ngay trước khi rời Lock.R.
+class _BankStepsDialog extends StatelessWidget {
+  const _BankStepsDialog({
+    required this.app,
+    required this.transfer,
+    required this.qrSaved,
+  });
+
+  final VietQrBankApp app;
+  final SepayTransfer transfer;
+  final bool qrSaved;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final amount = _fmtVnd(transfer.amount!);
+    final content = transfer.transferContent!;
+    final account = [
+      transfer.accountNo!,
+      if (transfer.accountName != null) transfer.accountName!,
+    ].join(' · ');
+    final steps = qrSaved
+        ? [
+            l10n.bankStepScanQr,
+            l10n.bankStepPickImage,
+            l10n.bankStepConfirm(amount),
+          ]
+        : [l10n.bankStepManual(amount, account), l10n.bankStepPaste(content)];
+    return AlertDialog(
+      title: Text(l10n.bankOpenApp(app.appName)),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: qrSaved
+                    ? const Color(0xFFF0FDF4)
+                    : const Color(0xFFFFF7ED),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(
+                    qrSaved ? LucideIcons.circleCheck : LucideIcons.info,
+                    size: 18,
+                    color: qrSaved
+                        ? const Color(0xFF15803D)
+                        : const Color(0xFFC2410C),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      qrSaved ? l10n.bankStepsSaved : l10n.bankStepsNotSaved,
+                      style: const TextStyle(fontSize: 13),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
+            for (var i = 0; i < steps.length; i++)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    CircleAvatar(
+                      radius: 11,
+                      backgroundColor: const Color(0xFF1E40AF),
+                      child: Text(
+                        '${i + 1}',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        steps[i],
+                        style: const TextStyle(fontSize: 14),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            const SizedBox(height: 4),
+            Text(
+              l10n.bankStepsBack,
+              style: const TextStyle(fontSize: 12.5, color: Color(0xFF64748B)),
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(false),
+          child: Text(l10n.commonCancel),
+        ),
+        FilledButton(
+          onPressed: () => Navigator.of(context).pop(true),
+          child: Text(l10n.bankOpenApp(app.appName)),
+        ),
+      ],
+    );
+  }
+
+  static String _fmtVnd(int amount) {
+    final digits = amount.toString();
+    final buf = StringBuffer();
+    for (var i = 0; i < digits.length; i++) {
+      if (i > 0 && (digits.length - i) % 3 == 0) buf.write('.');
+      buf.write(digits[i]);
+    }
+    return '$buf' 'đ';
   }
 }
 
