@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:smart_laundry_locker/core/services/locker_ble_open_service.dart';
 import 'package:smart_laundry_locker/features/locker/domain/utils/locker_layout_helper.dart';
@@ -152,8 +153,20 @@ class _BleTestPageState extends State<BleTestPage> {
         BleOpenStep.waiting => L10n.current.btWaiting,
       };
 
+  /// Toast chung của app (`AppToast`); SnackBar chỉ khi SmartDialog chưa khởi tạo (test).
   void _showSnack(String text) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(text)));
+    void fallback() {
+      if (!mounted) return;
+      ScaffoldMessenger.maybeOf(
+        context,
+      )?.showSnackBar(SnackBar(content: Text(text)));
+    }
+
+    try {
+      SmartDialog.showToast(text).catchError((Object _) => fallback());
+    } catch (_) {
+      fallback();
+    }
   }
 
   @override
