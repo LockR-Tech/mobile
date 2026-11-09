@@ -1,0 +1,131 @@
+name: Build APK
+
+# Mỗi lần code app vào main: chạy test, build APK release, đăng lên GitHub Release.
+#
+# Version: tên lấy từ `version:` trong pubspec.yaml (vd 1.0.0), số build = số lần chạy
+# workflow + 100 (tăng mãi, nên bản mới luôn cài đè được bản cũ; +100 để vượt số build
+# của các APK build tay trước đây). Muốn lên 1.1.0 thì sửa pubspec.yaml.
+#
+# Link luôn trỏ tới bản mới nhất:
+#   https://github.com/LockR-Tech/mobile/releases/latest/download/LockR-latest.apk
+#
+# Ký bằng khoá trong GitHub Secrets (ANDROID_KEYSTORE_BASE64, ANDROID_KEYSTORE_PASSWORD,
+# ANDROID_KEY_ALIAS, ANDROID_KEY_PASSWORD). Keystore KHÔNG bao giờ vào repo.
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - 'DEPLOY-LOG.md'
+      - 'docs/**'
+      - '**.md'
+  pull_request:              # chạy thử khi sửa chính workflow này: build, KHÔNG đăng release
+    paths:
+      - '.github/workflows/build-apk.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: mobile-build-apk-${{ github.event_name }}
+  cancel-in-progress: false   # mỗi lần push đều ra một bản, không bỏ bản nào
+
+permissions:
+  contents: write              # tạo release + tag
+
+env:
+  KEEP_RELEASES: 10            # chỉ giữ 10 bản APK gần nhất
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.44.2'   # khớp deploy-web.yml và máy dev
+          channel: stable
+          cache: true
+
+      - name: Cài dependency
+        run: flutter pub get
+
+      - name: Chạy test
+        run: flutter test --no-pub
+
+      - name: Tính version
+        id: ver
+        run: |
+          name=$(sed -n 's/^version:[[:space:]]*\([^+]*\).*/\1/p' pubspec.yaml | tr -d '[:space:]')
+          build=$(( ${{ github.run_number }} + 100 ))
+          echo "name=$name" >> "$GITHUB_OUTPUT"
+          echo "build=$build" >> "$GITHUB_OUTPUT"
+          echo "tag=apk-$name-$build" >> "$GITHUB_OUTPUT"
+          echo "file=LockR-$name-build$build.apk" >> "$GITHUB_OUTPUT"
+          echo "Version $name+$build"
+
+      - name: Nạp khoá ký
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          STORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          if [ -z "$KEYSTORE_BASE64" ]; then
+            echo "::error::Thiếu secret ANDROID_KEYSTORE_BASE64 — chưa nạp khoá ký" && exit 1
+          fi
+          echo "$KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/release.keystore"
+          {
+            echo "storeFile=$RUNNER_TEMP/release.keystore"
+            echo "storePassword=$STORE_PASSWORD"
+            echo "keyAlias=$KEY_ALIAS"
+            echo "keyPassword=$KEY_PASSWORD"
+          } > android/key.properties
+
+      - name: Build APK release
+        run: |
+          flutter build apk --release --no-pub \
+            --build-name=${{ steps.ver.outputs.name }} \
+            --build-number=${{ steps.ver.outputs.build }}
+          mkdir -p dist
+          cp build/app/outputs/flutter-apk/app-release.apk "dist/${{ steps.ver.outputs.file }}"
+          cp build/app/outputs/flutter-apk/app-release.apk dist/LockR-latest.apk
+
+      - name: Đăng GitHub Release
+        if: github.event_name != 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          {
+            echo "**Lock.R ${{ steps.ver.outputs.name }} (build ${{ steps.ver.outputs.build }})** — APK release, server production."
+            echo
+            echo "Commit: ${{ github.sha }}"
+            echo
+            git log -1 --format='%s' "${{ github.sha }}"
+          } > notes.md
+          gh release create "${{ steps.ver.outputs.tag }}" \
+            "dist/${{ steps.ver.outputs.file }}" dist/LockR-latest.apk \
+            --target "${{ github.sha }}" \
+            --title "Lock.R ${{ steps.ver.outputs.name }} (build ${{ steps.ver.outputs.build }})" \
+            --notes-file notes.md \
+            --latest
+
+      - name: Xoá bản APK cũ
+        if: github.event_name != 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release list --limit 200 --json tagName,createdAt \
+            --jq '[.[] | select(.tagName | startswith("apk-"))] | sort_by(.createdAt) | reverse | .[].tagName' |
+          tail -n +$(( KEEP_RELEASES + 1 )) |
+          while read -r tag; do
+            echo "Xoá $tag"
+            gh release delete "$tag" --cleanup-tag --yes
+          done
+
+      - name: Dọn khoá ký
+        if: always()
+        run: rm -f android/key.properties "$RUNNER_TEMP/release.keystore"
