@@ -10,6 +10,7 @@ abstract final class MediaPurpose {
   static const avatar = 'AVATAR';
   static const storeImage = 'STORE_IMAGE';
   static const promotionImage = 'PROMOTION_IMAGE';
+  static const installationPhoto = 'INSTALLATION_PHOTO';
 }
 
 /// Một phần tử `uploads[]` của phản hồi xin chữ ký: dùng cho đúng 1 file.

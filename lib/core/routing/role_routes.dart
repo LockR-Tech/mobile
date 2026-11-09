@@ -70,6 +70,7 @@ const _signInRoutes = <String>{
   // Trang theo vai trò
   AppRouter.technicianHome,
   AppRouter.technicianProfile,
+  AppRouter.technicianInstallations,
   AppRouter.maintenanceHome,
 };
 
@@ -106,6 +107,9 @@ String? routeRedirect(
     }
     return homeForRole(role);
   }
+  if (path == AppRouter.technicianInstallations) {
+    return role == AppRole.lockerTechnician ? null : homeForRole(role);
+  }
   if (path == AppRouter.technicianProfile) {
     return role == AppRole.lockerTechnician || role == AppRole.droneTechnician
         ? null
@@ -120,6 +124,7 @@ bool isRoleRestricted(String path) =>
     path == AppRouter.technicianHome ||
     path == AppRouter.maintenanceHome ||
     path == AppRouter.technicianProfile ||
+    path == AppRouter.technicianInstallations ||
     path.startsWith('$_droneToolsPrefix/');
 
 /// Tab dùng chung giữa hai trang KTV (cùng tên `?tab=`).
@@ -198,6 +203,12 @@ String technicianHomeLocation({String? tab, int? reportId, int? scheduleId}) =>
       }),
     ).toString();
 
+/// `/technician-installations?id=` — hồ sơ lắp đặt tủ của KTV tủ.
+String technicianInstallationsLocation({int? id}) => Uri(
+  path: AppRouter.technicianInstallations,
+  queryParameters: _nonEmpty({'id': id?.toString()}),
+).toString();
+
 /// `/maintenance-home?tab=&reportId=&scheduleId=&orderId=` (quy ước deep link
 /// KTV drone).
 String maintenanceHomeLocation({
@@ -241,6 +252,11 @@ String? technicianRouteForNotification(
       refType == 'DRONE_PARCEL_INCIDENT' ||
       refType == 'RECOVERY') {
     return technicianHomeLocation(tab: 'recovery');
+  }
+
+  // Lắp đặt tủ (F3-G12): admin giao hồ sơ / duyệt hoặc trả lại ⇒ mở thẳng hồ sơ
+  if (normalized.startsWith('locker.installation.') || refType == 'LOCKER_INSTALLATION') {
+    return technicianInstallationsLocation(id: id);
   }
 
   // Lịch bảo trì định kỳ tủ

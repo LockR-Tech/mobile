@@ -180,6 +180,38 @@ void main() {
     });
   });
 
+  group('lắp đặt tủ (F3-G12)', () {
+    String? redirect(String location, List<String> roles) =>
+        routeRedirect(Uri.parse(location), signedIn: true, roles: roles);
+
+    test('thông báo giao / duyệt hồ sơ lắp đặt mở thẳng hồ sơ', () {
+      expect(
+        technicianRouteForNotification(
+          'locker.installation.assigned',
+          referenceType: 'LOCKER_INSTALLATION',
+          referenceId: '12',
+        ),
+        '/technician-installations?id=12',
+      );
+      expect(
+        technicianRouteForNotification('locker.installation.reviewed', referenceId: '12'),
+        '/technician-installations?id=12',
+      );
+      // Backend gửi cùng routing key với giao phiếu: referenceType quyết định đích.
+      expect(
+        technicianRouteForNotification('locker.report.assigned', referenceType: 'LOCKER_INSTALLATION'),
+        '/technician-installations',
+      );
+    });
+
+    test('chỉ KTV tủ vào được trang lắp đặt', () {
+      expect(requiresSignIn('/technician-installations'), isTrue);
+      expect(redirect('/technician-installations?id=3', const ['LOCKER_TECHNICIAN']), isNull);
+      expect(redirect('/technician-installations', const ['CUSTOMER']), '/home');
+      expect(redirect('/technician-installations', const ['DRONE_TECHNICIAN']), '/maintenance-home');
+    });
+  });
+
   group('routeRedirect — chặn theo vai trò', () {
     String? redirect(String location, List<String> roles, {bool signedIn = true}) =>
         routeRedirect(Uri.parse(location), signedIn: signedIn, roles: roles);

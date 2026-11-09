@@ -30,6 +30,8 @@ import 'package:smart_laundry_locker/features/notifications/infrastructure/servi
 import 'package:smart_laundry_locker/features/locker/domain/utils/locker_layout_helper.dart';
 import 'package:smart_laundry_locker/features/maintenance/presentation/widgets/drone_recovery_queue.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/technician_shift_card.dart';
+import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/installation_jobs_banner.dart';
+import 'package:smart_laundry_locker/features/locker_ops/presentation/pages/installation_list_page.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/technician_location_permission_sheet.dart';
 import 'package:smart_laundry_locker/core/services/platform_info.dart';
 
@@ -1584,6 +1586,17 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                         Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
+                            // Lắp đặt tủ (F3-G12): hồ sơ admin giao, checklist nghiệm thu.
+                            Padding(
+                              padding: const EdgeInsets.only(right: 6),
+                              child: _headerActionButton(
+                                icon: Icons.construction_outlined,
+                                tooltip: context.l10n.instHomeButton,
+                                onTap: () => Navigator.of(context).push(
+                                  MaterialPageRoute<void>(builder: (_) => const InstallationListPage()),
+                                ),
+                              ),
+                            ),
                             // Trợ lý hỏi đáp — chỉ hiện khi trợ lý đang bật.
                             AssistantEntryGate(
                               builder: (context) => Padding(
@@ -1846,6 +1859,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
         padding: const EdgeInsets.all(16),
         children: [
           _sectionErrorBanner(const [_Section.lockers, _Section.myLockers]),
+          const InstallationJobsBanner(),
           // Tab "Thu hồi kiện" nằm cuối thanh tab, dễ khuất: có việc thì báo ngay tab đầu.
           if (_pendingRecoveryCount > 0) ...[
             InkWell(
