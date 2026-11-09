@@ -15050,4 +15050,286 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get bleOrderUseOtpBody =>
       'Enter the OTP on the kiosk screen or hold the order\'s QR code to its scanner.';
+
+  @override
+  String get instListTitle => 'Locker installation';
+
+  @override
+  String get instListEmpty => 'No installation jobs assigned to you.';
+
+  @override
+  String get instListHint =>
+      'Jobs assigned by the admin. A locker goes live only after the admin approves commissioning.';
+
+  @override
+  String get instHomeButton => 'Locker installation';
+
+  @override
+  String instHomeBanner(Object count) {
+    return 'You have $count open locker installation job(s)';
+  }
+
+  @override
+  String instScheduledAt(Object time) {
+    return 'Scheduled: $time';
+  }
+
+  @override
+  String instProgress(Object done, Object total) {
+    return '$done/$total steps done';
+  }
+
+  @override
+  String instReturnedReason(Object reason) {
+    return 'Returned by admin: $reason';
+  }
+
+  @override
+  String get instStatusScheduled => 'Scheduled';
+
+  @override
+  String get instStatusInProgress => 'In progress';
+
+  @override
+  String get instStatusSubmitted => 'Awaiting review';
+
+  @override
+  String get instStatusApproved => 'Approved';
+
+  @override
+  String get instStatusCancelled => 'Cancelled';
+
+  @override
+  String get instCheckPassed => 'Passed';
+
+  @override
+  String get instCheckFailed => 'Failed';
+
+  @override
+  String get instCheckNotApplicable => 'N/A';
+
+  @override
+  String get instCheckPending => 'Pending';
+
+  @override
+  String get instByAuto => 'Verified automatically from locker data';
+
+  @override
+  String get instByTechnician => 'Confirmed by technician';
+
+  @override
+  String get instByTechnicianPhoto =>
+      'Confirmed by technician — photo required';
+
+  @override
+  String instChecklistTitle(Object done, Object total) {
+    return 'Commissioning checklist ($done/$total)';
+  }
+
+  @override
+  String instPowerSource(Object value) {
+    return 'Power: $value';
+  }
+
+  @override
+  String instNetwork(Object value) {
+    return 'Network: $value';
+  }
+
+  @override
+  String instCabinet(Object value) {
+    return 'Cabinet: $value';
+  }
+
+  @override
+  String instSiteContact(Object value) {
+    return 'Contact: $value';
+  }
+
+  @override
+  String get instCall => 'Call';
+
+  @override
+  String get instScheduledHint =>
+      'Tap Start installation once on site. The locker is hidden from customers.';
+
+  @override
+  String get instSubmittedHint => 'Submitted — waiting for admin review.';
+
+  @override
+  String get instApprovedHint => 'Approved — the locker is live.';
+
+  @override
+  String get instCancelledHint => 'This job was cancelled.';
+
+  @override
+  String get instIotUnavailable =>
+      'Could not read locker data — automatic steps show the previous result. Pull to retry.';
+
+  @override
+  String get instStart => 'Start installation';
+
+  @override
+  String get instStarted => 'Installation started';
+
+  @override
+  String get instSubmit => 'Submit for review';
+
+  @override
+  String instSubmitNotReady(Object count) {
+    return '$count item(s) left';
+  }
+
+  @override
+  String get instSubmitTitle => 'Submit for review?';
+
+  @override
+  String get instSubmitBody =>
+      'The admin checks the checklist and photos, then approves to put the locker live.';
+
+  @override
+  String get instSubmitted => 'Submitted for review';
+
+  @override
+  String get instReasonHint => 'Enter a reason';
+
+  @override
+  String instFailReasonTitle(Object step) {
+    return 'Report failure: $step';
+  }
+
+  @override
+  String instNaReasonTitle(Object step) {
+    return 'Not applicable: $step';
+  }
+
+  @override
+  String instPhotosAdded(Object count) {
+    return 'Added $count photo(s)';
+  }
+
+  @override
+  String get instDeletePhotoTitle => 'Delete this photo?';
+
+  @override
+  String get instPairAction => 'Bind controller';
+
+  @override
+  String get instPairAgain => 'Bind again';
+
+  @override
+  String get instPairSent =>
+      'Bound — the locker is installing its layout and test-opening boxes';
+
+  @override
+  String get instPairTitle => 'Bind controller';
+
+  @override
+  String get instPairHint =>
+      'An unbound Pi shows a \"LOCKR-PI:…\" QR on its kiosk screen. Scan it, or pick the matching MAC from the online list.';
+
+  @override
+  String get instPairScan => 'Scan QR';
+
+  @override
+  String get instPairPick => 'Pick from list';
+
+  @override
+  String get instPairBinding => 'Binding…';
+
+  @override
+  String get instPairInvalidQr =>
+      'Not a controller pairing code — scan the QR on the locker\'s kiosk screen.';
+
+  @override
+  String get instPairNoCandidates =>
+      'No online unbound Pi found. Power it on, connect the network and wait about a minute.';
+
+  @override
+  String get instPairPickHint =>
+      'Match the MAC with the text under the kiosk QR.';
+
+  @override
+  String get instPairAlreadyThisLocker => 'Already bound to this locker';
+
+  @override
+  String instPairLastSeen(Object time) {
+    return 'Last seen $time';
+  }
+
+  @override
+  String get instPairBind => 'Bind';
+
+  @override
+  String get instLidOpen => 'Open lid';
+
+  @override
+  String get instLidClose => 'Close lid';
+
+  @override
+  String get instMarkNa => 'Not applicable';
+
+  @override
+  String get instUndoNa => 'Undo not applicable';
+
+  @override
+  String get instTakePhoto => 'Take photo';
+
+  @override
+  String get instConfirmPassed => 'Mark passed';
+
+  @override
+  String get instReportFailed => 'Report failure';
+
+  @override
+  String get instUndo => 'Undo';
+
+  @override
+  String instBoxOpened(Object number) {
+    return 'Box #$number opened';
+  }
+
+  @override
+  String instBoxOpenFailed(Object number, Object reason) {
+    return 'Box #$number did not open: $reason';
+  }
+
+  @override
+  String get instBoxTestHint =>
+      'Tap each box to test-open it, check the door pops and close it. Results come from the locker.';
+
+  @override
+  String get instBoxTestNeedController =>
+      'Bind the controller before testing boxes.';
+
+  @override
+  String get instBoxTestAll => 'Test-open remaining boxes one by one';
+
+  @override
+  String instSitePhotos(Object count) {
+    return 'Site photos ($count)';
+  }
+
+  @override
+  String get instSitePhotosHint =>
+      'At least 2 overview photos of the site are required. Long-press a photo to delete it.';
+
+  @override
+  String get instSitePhotosTitle => 'Site photos';
+
+  @override
+  String get instMissingTitle => 'Still missing before submitting';
+
+  @override
+  String instPhotoSheetTitle(Object step) {
+    return 'Photos: $step';
+  }
+
+  @override
+  String get instPhotoSheetHint => 'Up to 10 photos at a time';
+
+  @override
+  String instPhotoUpload(Object count) {
+    return 'Upload $count photo(s)';
+  }
 }

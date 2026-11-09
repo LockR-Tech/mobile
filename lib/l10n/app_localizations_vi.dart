@@ -14680,4 +14680,283 @@ class AppLocalizationsVi extends AppLocalizations {
   @override
   String get bleOrderUseOtpBody =>
       'Nhập mã OTP trên màn hình kiosk hoặc đưa mã QR của đơn vào máy quét.';
+
+  @override
+  String get instListTitle => 'Lắp đặt tủ';
+
+  @override
+  String get instListEmpty => 'Chưa có hồ sơ lắp đặt nào được giao cho bạn.';
+
+  @override
+  String get instListHint =>
+      'Hồ sơ admin giao cho bạn. Tủ chỉ hoạt động sau khi admin duyệt nghiệm thu.';
+
+  @override
+  String get instHomeButton => 'Lắp đặt tủ';
+
+  @override
+  String instHomeBanner(Object count) {
+    return 'Bạn có $count hồ sơ lắp đặt tủ đang mở';
+  }
+
+  @override
+  String instScheduledAt(Object time) {
+    return 'Lịch lắp: $time';
+  }
+
+  @override
+  String instProgress(Object done, Object total) {
+    return '$done/$total bước đã xong';
+  }
+
+  @override
+  String instReturnedReason(Object reason) {
+    return 'Admin trả lại: $reason';
+  }
+
+  @override
+  String get instStatusScheduled => 'Chờ lắp đặt';
+
+  @override
+  String get instStatusInProgress => 'Đang lắp đặt';
+
+  @override
+  String get instStatusSubmitted => 'Chờ duyệt';
+
+  @override
+  String get instStatusApproved => 'Đã nghiệm thu';
+
+  @override
+  String get instStatusCancelled => 'Đã huỷ';
+
+  @override
+  String get instCheckPassed => 'Đạt';
+
+  @override
+  String get instCheckFailed => 'Lỗi';
+
+  @override
+  String get instCheckNotApplicable => 'Không áp dụng';
+
+  @override
+  String get instCheckPending => 'Chưa xong';
+
+  @override
+  String get instByAuto => 'Hệ thống tự kiểm từ dữ liệu tủ';
+
+  @override
+  String get instByTechnician => 'KTV xác nhận';
+
+  @override
+  String get instByTechnicianPhoto => 'KTV xác nhận — bắt buộc ảnh';
+
+  @override
+  String instChecklistTitle(Object done, Object total) {
+    return 'Checklist nghiệm thu ($done/$total)';
+  }
+
+  @override
+  String instPowerSource(Object value) {
+    return 'Nguồn điện: $value';
+  }
+
+  @override
+  String instNetwork(Object value) {
+    return 'Mạng: $value';
+  }
+
+  @override
+  String instCabinet(Object value) {
+    return 'Tủ: $value';
+  }
+
+  @override
+  String instSiteContact(Object value) {
+    return 'Liên hệ: $value';
+  }
+
+  @override
+  String get instCall => 'Gọi';
+
+  @override
+  String get instScheduledHint =>
+      'Đến hiện trường rồi bấm Bắt đầu lắp đặt. Tủ chưa hiện với khách.';
+
+  @override
+  String get instSubmittedHint => 'Đã gửi duyệt — chờ admin nghiệm thu.';
+
+  @override
+  String get instApprovedHint => 'Admin đã duyệt, tủ đang hoạt động.';
+
+  @override
+  String get instCancelledHint => 'Hồ sơ đã bị huỷ.';
+
+  @override
+  String get instIotUnavailable =>
+      'Chưa đọc được dữ liệu tủ — các bước tự động đang hiện kết quả cũ. Kéo xuống để thử lại.';
+
+  @override
+  String get instStart => 'Bắt đầu lắp đặt';
+
+  @override
+  String get instStarted => 'Đã bắt đầu lắp đặt';
+
+  @override
+  String get instSubmit => 'Gửi duyệt nghiệm thu';
+
+  @override
+  String instSubmitNotReady(Object count) {
+    return 'Còn $count mục chưa xong';
+  }
+
+  @override
+  String get instSubmitTitle => 'Gửi hồ sơ nghiệm thu?';
+
+  @override
+  String get instSubmitBody =>
+      'Admin sẽ kiểm tra checklist và ảnh rồi duyệt để tủ bắt đầu hoạt động.';
+
+  @override
+  String get instSubmitted => 'Đã gửi duyệt';
+
+  @override
+  String get instReasonHint => 'Nhập lý do';
+
+  @override
+  String instFailReasonTitle(Object step) {
+    return 'Báo lỗi: $step';
+  }
+
+  @override
+  String instNaReasonTitle(Object step) {
+    return 'Không áp dụng: $step';
+  }
+
+  @override
+  String instPhotosAdded(Object count) {
+    return 'Đã thêm $count ảnh';
+  }
+
+  @override
+  String get instDeletePhotoTitle => 'Xoá ảnh này?';
+
+  @override
+  String get instPairAction => 'Gán bộ điều khiển';
+
+  @override
+  String get instPairAgain => 'Gán lại';
+
+  @override
+  String get instPairSent => 'Đã gán — tủ đang cài sơ đồ ô và mở thử từng ô';
+
+  @override
+  String get instPairTitle => 'Gán bộ điều khiển';
+
+  @override
+  String get instPairHint =>
+      'Màn kiosk của Pi chưa gán hiện mã QR \"LOCKR-PI:…\". Quét mã đó, hoặc chọn đúng MAC trong danh sách Pi đang online.';
+
+  @override
+  String get instPairScan => 'Quét QR';
+
+  @override
+  String get instPairPick => 'Chọn trong danh sách';
+
+  @override
+  String get instPairBinding => 'Đang gán…';
+
+  @override
+  String get instPairInvalidQr =>
+      'Không phải mã gán bộ điều khiển — quét QR trên màn kiosk của tủ.';
+
+  @override
+  String get instPairNoCandidates =>
+      'Không thấy Pi nào đang online chưa gán. Bật nguồn, nối mạng rồi chờ khoảng 1 phút.';
+
+  @override
+  String get instPairPickHint => 'So MAC với dòng chữ dưới mã QR trên kiosk.';
+
+  @override
+  String get instPairAlreadyThisLocker => 'Đã gắn với tủ này';
+
+  @override
+  String instPairLastSeen(Object time) {
+    return 'Liên lạc lần cuối $time';
+  }
+
+  @override
+  String get instPairBind => 'Gán';
+
+  @override
+  String get instLidOpen => 'Mở nắp';
+
+  @override
+  String get instLidClose => 'Đóng nắp';
+
+  @override
+  String get instMarkNa => 'Không áp dụng';
+
+  @override
+  String get instUndoNa => 'Bỏ đánh dấu không áp dụng';
+
+  @override
+  String get instTakePhoto => 'Chụp ảnh';
+
+  @override
+  String get instConfirmPassed => 'Xác nhận đạt';
+
+  @override
+  String get instReportFailed => 'Báo lỗi';
+
+  @override
+  String get instUndo => 'Bỏ xác nhận';
+
+  @override
+  String instBoxOpened(Object number) {
+    return 'Ô #$number đã mở';
+  }
+
+  @override
+  String instBoxOpenFailed(Object number, Object reason) {
+    return 'Ô #$number chưa mở được: $reason';
+  }
+
+  @override
+  String get instBoxTestHint =>
+      'Chạm từng ô để mở thử, kiểm tra cửa bật ra rồi đóng lại. Hệ thống ghi kết quả từ tủ.';
+
+  @override
+  String get instBoxTestNeedController =>
+      'Gán bộ điều khiển trước khi mở thử ô.';
+
+  @override
+  String get instBoxTestAll => 'Mở thử lần lượt các ô chưa đạt';
+
+  @override
+  String instSitePhotos(Object count) {
+    return 'Ảnh hiện trường ($count)';
+  }
+
+  @override
+  String get instSitePhotosHint =>
+      'Cần ít nhất 2 ảnh toàn cảnh vị trí đặt tủ. Nhấn giữ ảnh để xoá.';
+
+  @override
+  String get instSitePhotosTitle => 'Ảnh hiện trường';
+
+  @override
+  String get instMissingTitle => 'Còn thiếu để gửi duyệt';
+
+  @override
+  String instPhotoSheetTitle(Object step) {
+    return 'Ảnh: $step';
+  }
+
+  @override
+  String get instPhotoSheetHint => 'Tối đa 10 ảnh mỗi lần';
+
+  @override
+  String instPhotoUpload(Object count) {
+    return 'Tải lên $count ảnh';
+  }
 }

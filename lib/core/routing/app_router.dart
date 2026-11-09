@@ -42,6 +42,7 @@ import 'package:smart_laundry_locker/features/locker_ops/presentation/pages/admi
 import 'package:smart_laundry_locker/features/locker_ops/presentation/pages/maintenance_home_page.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/pages/technician_home_page.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/pages/technician_profile_page.dart';
+import 'package:smart_laundry_locker/features/locker_ops/presentation/pages/installation_list_page.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/pages/ble_test_page.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/pages/send_parcel_page.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/pages/rent_locker_page.dart';
@@ -94,6 +95,7 @@ class AppRouter {
   static const String maintenanceHome = '/maintenance-home';
   static const String technicianHome = '/technician-home';
   static const String technicianProfile = '/technician-profile';
+  static const String technicianInstallations = '/technician-installations';
   static const String adminWebNotice = '/admin-web-notice';
   static const String sendParcel = '/locker/send-parcel';
   static const String rentLocker = '/locker/rent';
@@ -420,6 +422,14 @@ class AppRouter {
             scheduleId: queryId(qp, 'scheduleId'),
           );
         },
+      ),
+      GoRoute(
+        path: technicianInstallations,
+        name: 'technician_installations',
+        // Deep link thông báo lắp đặt tủ: `?id=` mở thẳng hồ sơ.
+        builder: (context, state) => InstallationListPage(
+          initialInstallationId: queryId(state.uri.queryParameters, 'id'),
+        ),
       ),
       GoRoute(
         path: technicianProfile,

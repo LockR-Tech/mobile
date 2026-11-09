@@ -25008,6 +25008,468 @@ abstract class AppLocalizations {
   /// In vi, this message translates to:
   /// **'Nhập mã OTP trên màn hình kiosk hoặc đưa mã QR của đơn vào máy quét.'**
   String get bleOrderUseOtpBody;
+
+  /// No description provided for @instListTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lắp đặt tủ'**
+  String get instListTitle;
+
+  /// No description provided for @instListEmpty.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa có hồ sơ lắp đặt nào được giao cho bạn.'**
+  String get instListEmpty;
+
+  /// No description provided for @instListHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hồ sơ admin giao cho bạn. Tủ chỉ hoạt động sau khi admin duyệt nghiệm thu.'**
+  String get instListHint;
+
+  /// No description provided for @instHomeButton.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lắp đặt tủ'**
+  String get instHomeButton;
+
+  /// No description provided for @instHomeBanner.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bạn có {count} hồ sơ lắp đặt tủ đang mở'**
+  String instHomeBanner(Object count);
+
+  /// No description provided for @instScheduledAt.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lịch lắp: {time}'**
+  String instScheduledAt(Object time);
+
+  /// No description provided for @instProgress.
+  ///
+  /// In vi, this message translates to:
+  /// **'{done}/{total} bước đã xong'**
+  String instProgress(Object done, Object total);
+
+  /// No description provided for @instReturnedReason.
+  ///
+  /// In vi, this message translates to:
+  /// **'Admin trả lại: {reason}'**
+  String instReturnedReason(Object reason);
+
+  /// No description provided for @instStatusScheduled.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chờ lắp đặt'**
+  String get instStatusScheduled;
+
+  /// No description provided for @instStatusInProgress.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang lắp đặt'**
+  String get instStatusInProgress;
+
+  /// No description provided for @instStatusSubmitted.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chờ duyệt'**
+  String get instStatusSubmitted;
+
+  /// No description provided for @instStatusApproved.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã nghiệm thu'**
+  String get instStatusApproved;
+
+  /// No description provided for @instStatusCancelled.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã huỷ'**
+  String get instStatusCancelled;
+
+  /// No description provided for @instCheckPassed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đạt'**
+  String get instCheckPassed;
+
+  /// No description provided for @instCheckFailed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lỗi'**
+  String get instCheckFailed;
+
+  /// No description provided for @instCheckNotApplicable.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không áp dụng'**
+  String get instCheckNotApplicable;
+
+  /// No description provided for @instCheckPending.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa xong'**
+  String get instCheckPending;
+
+  /// No description provided for @instByAuto.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hệ thống tự kiểm từ dữ liệu tủ'**
+  String get instByAuto;
+
+  /// No description provided for @instByTechnician.
+  ///
+  /// In vi, this message translates to:
+  /// **'KTV xác nhận'**
+  String get instByTechnician;
+
+  /// No description provided for @instByTechnicianPhoto.
+  ///
+  /// In vi, this message translates to:
+  /// **'KTV xác nhận — bắt buộc ảnh'**
+  String get instByTechnicianPhoto;
+
+  /// No description provided for @instChecklistTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Checklist nghiệm thu ({done}/{total})'**
+  String instChecklistTitle(Object done, Object total);
+
+  /// No description provided for @instPowerSource.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nguồn điện: {value}'**
+  String instPowerSource(Object value);
+
+  /// No description provided for @instNetwork.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mạng: {value}'**
+  String instNetwork(Object value);
+
+  /// No description provided for @instCabinet.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tủ: {value}'**
+  String instCabinet(Object value);
+
+  /// No description provided for @instSiteContact.
+  ///
+  /// In vi, this message translates to:
+  /// **'Liên hệ: {value}'**
+  String instSiteContact(Object value);
+
+  /// No description provided for @instCall.
+  ///
+  /// In vi, this message translates to:
+  /// **'Gọi'**
+  String get instCall;
+
+  /// No description provided for @instScheduledHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đến hiện trường rồi bấm Bắt đầu lắp đặt. Tủ chưa hiện với khách.'**
+  String get instScheduledHint;
+
+  /// No description provided for @instSubmittedHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã gửi duyệt — chờ admin nghiệm thu.'**
+  String get instSubmittedHint;
+
+  /// No description provided for @instApprovedHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Admin đã duyệt, tủ đang hoạt động.'**
+  String get instApprovedHint;
+
+  /// No description provided for @instCancelledHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hồ sơ đã bị huỷ.'**
+  String get instCancelledHint;
+
+  /// No description provided for @instIotUnavailable.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa đọc được dữ liệu tủ — các bước tự động đang hiện kết quả cũ. Kéo xuống để thử lại.'**
+  String get instIotUnavailable;
+
+  /// No description provided for @instStart.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bắt đầu lắp đặt'**
+  String get instStart;
+
+  /// No description provided for @instStarted.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã bắt đầu lắp đặt'**
+  String get instStarted;
+
+  /// No description provided for @instSubmit.
+  ///
+  /// In vi, this message translates to:
+  /// **'Gửi duyệt nghiệm thu'**
+  String get instSubmit;
+
+  /// No description provided for @instSubmitNotReady.
+  ///
+  /// In vi, this message translates to:
+  /// **'Còn {count} mục chưa xong'**
+  String instSubmitNotReady(Object count);
+
+  /// No description provided for @instSubmitTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Gửi hồ sơ nghiệm thu?'**
+  String get instSubmitTitle;
+
+  /// No description provided for @instSubmitBody.
+  ///
+  /// In vi, this message translates to:
+  /// **'Admin sẽ kiểm tra checklist và ảnh rồi duyệt để tủ bắt đầu hoạt động.'**
+  String get instSubmitBody;
+
+  /// No description provided for @instSubmitted.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã gửi duyệt'**
+  String get instSubmitted;
+
+  /// No description provided for @instReasonHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhập lý do'**
+  String get instReasonHint;
+
+  /// No description provided for @instFailReasonTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Báo lỗi: {step}'**
+  String instFailReasonTitle(Object step);
+
+  /// No description provided for @instNaReasonTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không áp dụng: {step}'**
+  String instNaReasonTitle(Object step);
+
+  /// No description provided for @instPhotosAdded.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã thêm {count} ảnh'**
+  String instPhotosAdded(Object count);
+
+  /// No description provided for @instDeletePhotoTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xoá ảnh này?'**
+  String get instDeletePhotoTitle;
+
+  /// No description provided for @instPairAction.
+  ///
+  /// In vi, this message translates to:
+  /// **'Gán bộ điều khiển'**
+  String get instPairAction;
+
+  /// No description provided for @instPairAgain.
+  ///
+  /// In vi, this message translates to:
+  /// **'Gán lại'**
+  String get instPairAgain;
+
+  /// No description provided for @instPairSent.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã gán — tủ đang cài sơ đồ ô và mở thử từng ô'**
+  String get instPairSent;
+
+  /// No description provided for @instPairTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Gán bộ điều khiển'**
+  String get instPairTitle;
+
+  /// No description provided for @instPairHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Màn kiosk của Pi chưa gán hiện mã QR \"LOCKR-PI:…\". Quét mã đó, hoặc chọn đúng MAC trong danh sách Pi đang online.'**
+  String get instPairHint;
+
+  /// No description provided for @instPairScan.
+  ///
+  /// In vi, this message translates to:
+  /// **'Quét QR'**
+  String get instPairScan;
+
+  /// No description provided for @instPairPick.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chọn trong danh sách'**
+  String get instPairPick;
+
+  /// No description provided for @instPairBinding.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang gán…'**
+  String get instPairBinding;
+
+  /// No description provided for @instPairInvalidQr.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không phải mã gán bộ điều khiển — quét QR trên màn kiosk của tủ.'**
+  String get instPairInvalidQr;
+
+  /// No description provided for @instPairNoCandidates.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không thấy Pi nào đang online chưa gán. Bật nguồn, nối mạng rồi chờ khoảng 1 phút.'**
+  String get instPairNoCandidates;
+
+  /// No description provided for @instPairPickHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'So MAC với dòng chữ dưới mã QR trên kiosk.'**
+  String get instPairPickHint;
+
+  /// No description provided for @instPairAlreadyThisLocker.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã gắn với tủ này'**
+  String get instPairAlreadyThisLocker;
+
+  /// No description provided for @instPairLastSeen.
+  ///
+  /// In vi, this message translates to:
+  /// **'Liên lạc lần cuối {time}'**
+  String instPairLastSeen(Object time);
+
+  /// No description provided for @instPairBind.
+  ///
+  /// In vi, this message translates to:
+  /// **'Gán'**
+  String get instPairBind;
+
+  /// No description provided for @instLidOpen.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mở nắp'**
+  String get instLidOpen;
+
+  /// No description provided for @instLidClose.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đóng nắp'**
+  String get instLidClose;
+
+  /// No description provided for @instMarkNa.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không áp dụng'**
+  String get instMarkNa;
+
+  /// No description provided for @instUndoNa.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bỏ đánh dấu không áp dụng'**
+  String get instUndoNa;
+
+  /// No description provided for @instTakePhoto.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chụp ảnh'**
+  String get instTakePhoto;
+
+  /// No description provided for @instConfirmPassed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xác nhận đạt'**
+  String get instConfirmPassed;
+
+  /// No description provided for @instReportFailed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Báo lỗi'**
+  String get instReportFailed;
+
+  /// No description provided for @instUndo.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bỏ xác nhận'**
+  String get instUndo;
+
+  /// No description provided for @instBoxOpened.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ô #{number} đã mở'**
+  String instBoxOpened(Object number);
+
+  /// No description provided for @instBoxOpenFailed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ô #{number} chưa mở được: {reason}'**
+  String instBoxOpenFailed(Object number, Object reason);
+
+  /// No description provided for @instBoxTestHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chạm từng ô để mở thử, kiểm tra cửa bật ra rồi đóng lại. Hệ thống ghi kết quả từ tủ.'**
+  String get instBoxTestHint;
+
+  /// No description provided for @instBoxTestNeedController.
+  ///
+  /// In vi, this message translates to:
+  /// **'Gán bộ điều khiển trước khi mở thử ô.'**
+  String get instBoxTestNeedController;
+
+  /// No description provided for @instBoxTestAll.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mở thử lần lượt các ô chưa đạt'**
+  String get instBoxTestAll;
+
+  /// No description provided for @instSitePhotos.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ảnh hiện trường ({count})'**
+  String instSitePhotos(Object count);
+
+  /// No description provided for @instSitePhotosHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cần ít nhất 2 ảnh toàn cảnh vị trí đặt tủ. Nhấn giữ ảnh để xoá.'**
+  String get instSitePhotosHint;
+
+  /// No description provided for @instSitePhotosTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ảnh hiện trường'**
+  String get instSitePhotosTitle;
+
+  /// No description provided for @instMissingTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Còn thiếu để gửi duyệt'**
+  String get instMissingTitle;
+
+  /// No description provided for @instPhotoSheetTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ảnh: {step}'**
+  String instPhotoSheetTitle(Object step);
+
+  /// No description provided for @instPhotoSheetHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tối đa 10 ảnh mỗi lần'**
+  String get instPhotoSheetHint;
+
+  /// No description provided for @instPhotoUpload.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tải lên {count} ảnh'**
+  String instPhotoUpload(Object count);
 }
 
 class _AppLocalizationsDelegate
