@@ -14560,6 +14560,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get dtWxUnsafe => 'Not safe to fly';
 
   @override
+  String get dtWxCheckOff =>
+      'Weather check is off (testing) — flights are not blocked';
+
+  @override
+  String dtWxForecastStatus(Object status) {
+    return 'Forecast: $status';
+  }
+
+  @override
   String dtWxWind(Object value) {
     return 'Wind $value km/h';
   }

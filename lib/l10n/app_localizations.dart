@@ -24193,6 +24193,18 @@ abstract class AppLocalizations {
   /// **'Không an toàn để bay'**
   String get dtWxUnsafe;
 
+  /// No description provided for @dtWxCheckOff.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang tắt kiểm tra thời tiết (thử nghiệm) — không chặn bay'**
+  String get dtWxCheckOff;
+
+  /// No description provided for @dtWxForecastStatus.
+  ///
+  /// In vi, this message translates to:
+  /// **'Dự báo: {status}'**
+  String dtWxForecastStatus(Object status);
+
   /// No description provided for @dtWxWind.
   ///
   /// In vi, this message translates to:
