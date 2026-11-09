@@ -14192,6 +14192,15 @@ class AppLocalizationsVi extends AppLocalizations {
   String get dtWxUnsafe => 'Không an toàn để bay';
 
   @override
+  String get dtWxCheckOff =>
+      'Đang tắt kiểm tra thời tiết (thử nghiệm) — không chặn bay';
+
+  @override
+  String dtWxForecastStatus(Object status) {
+    return 'Dự báo: $status';
+  }
+
+  @override
   String dtWxWind(Object value) {
     return 'Gió $value km/h';
   }

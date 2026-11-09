@@ -152,4 +152,27 @@ void main() {
     expect(find.byKey(const ValueKey('drone-station-suspended-1')), findsNothing);
     expect(find.textContaining('Dự báo 45 phút tới'), findsNWidgets(2));
   });
+
+  testWidgets(
+    'admin tắt kiểm tra thời tiết: trời mưa vẫn hiện dự báo kèm nhãn thử nghiệm, KTV phóng được',
+    (tester) async {
+      final storm = {
+        ..._weather('UNSAFE'),
+        'safe': true,
+        'checkDisabled': true,
+      };
+      final weather = DroneWeather.fromJson(storm)!;
+      expect(weather.checkDisabled, isTrue);
+      expect(weather.canFly, isTrue);
+
+      await pump(tester, DroneWeatherSummary(weather: weather));
+
+      expect(find.textContaining('Đang tắt kiểm tra thời tiết'), findsOneWidget);
+      expect(find.byKey(const ValueKey('drone-weather-check-off')), findsOneWidget);
+      expect(find.text('Dự báo: Không an toàn để bay'), findsOneWidget);
+      expect(find.textContaining('Mưa rào'), findsOneWidget);
+      // Câu chặn bay của server không hiện khi đã tắt kiểm tra.
+      expect(find.textContaining('Không thể đặt chuyến bay'), findsNothing);
+    },
+  );
 }

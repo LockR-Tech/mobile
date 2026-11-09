@@ -5090,6 +5090,8 @@
   "dtWxFlyable": "OK to fly",
   "dtWxNoForecast": "No forecast yet",
   "dtWxUnsafe": "Not safe to fly",
+  "dtWxCheckOff": "Weather check is off (testing) — flights are not blocked",
+  "dtWxForecastStatus": "Forecast: {status}",
   "dtWxWind": "Wind {value} km/h",
   "dtWxGust": "Gusts {value} km/h",
   "dtWxRain": "Rain {value} mm",

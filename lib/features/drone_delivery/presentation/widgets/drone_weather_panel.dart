@@ -18,6 +18,7 @@ class DroneWeather {
     this.condition,
     this.windowMinutes = 30,
     this.flyable,
+    this.checkDisabled = false,
   });
 
   /// SAFE | UNSAFE | UNAVAILABLE.
@@ -37,6 +38,9 @@ class DroneWeather {
   /// Server cho bay hay không (`safe` của server). Admin có thể cho bay khi chưa có
   /// dự báo: lúc đó status UNAVAILABLE nhưng vẫn bay được.
   final bool? flyable;
+
+  /// Admin đang tắt kiểm tra thời tiết (thử nghiệm): `status` là dự báo thật nhưng không chặn bay.
+  final bool checkDisabled;
 
   bool get safe => status == 'SAFE';
   bool get canFly => flyable ?? safe;
@@ -70,6 +74,7 @@ class DroneWeather {
           ? num0(raw['windowMinutes']).round()
           : 30,
       flyable: raw['safe'] is bool ? raw['safe'] as bool : null,
+      checkDisabled: raw['checkDisabled'] == true,
     );
   }
 }
@@ -88,7 +93,19 @@ class DroneWeatherSummary extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final (Color tone, Color bg, IconData icon, String label) = weather.safe
+    final forecastLabel = weather.safe
+        ? context.l10n.dtWxFlyable
+        : weather.unavailable
+        ? context.l10n.dtWxNoForecast
+        : context.l10n.dtWxUnsafe;
+    final (Color tone, Color bg, IconData icon, String label) = weather.checkDisabled
+        ? (
+            const Color(0xFF92400E),
+            const Color(0xFFFFFBEB),
+            Icons.science_outlined,
+            context.l10n.dtWxCheckOff,
+          )
+        : weather.safe
         ? (
             const Color(0xFF15803D),
             const Color(0xFFF0FDF4),
@@ -143,6 +160,15 @@ class DroneWeatherSummary extends StatelessWidget {
                   label,
                   style: TextStyle(color: tone, fontWeight: FontWeight.w800),
                 ),
+                if (weather.checkDisabled)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 2),
+                    child: Text(
+                      context.l10n.dtWxForecastStatus(forecastLabel),
+                      key: const ValueKey('drone-weather-check-off'),
+                      style: TextStyle(fontSize: 12.5, color: tone),
+                    ),
+                  ),
                 if (facts.isNotEmpty)
                   Padding(
                     padding: const EdgeInsets.only(top: 2),
@@ -151,7 +177,7 @@ class DroneWeatherSummary extends StatelessWidget {
                       style: const TextStyle(fontSize: 12.5),
                     ),
                   ),
-                if (!weather.safe)
+                if (!weather.safe && !weather.checkDisabled)
                   Padding(
                     padding: const EdgeInsets.only(top: 2),
                     child: Text(

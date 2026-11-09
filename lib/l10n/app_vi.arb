@@ -7835,6 +7835,13 @@
   "dtWxFlyable": "Bay được",
   "dtWxNoForecast": "Chưa có dự báo",
   "dtWxUnsafe": "Không an toàn để bay",
+  "dtWxCheckOff": "Đang tắt kiểm tra thời tiết (thử nghiệm) — không chặn bay",
+  "dtWxForecastStatus": "Dự báo: {status}",
+  "@dtWxForecastStatus": {
+    "placeholders": {
+      "status": {}
+    }
+  },
   "dtWxWind": "Gió {value} km/h",
   "@dtWxWind": {
     "placeholders": {

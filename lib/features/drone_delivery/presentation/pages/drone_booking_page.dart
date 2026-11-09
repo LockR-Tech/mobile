@@ -1506,9 +1506,12 @@ class _QuoteWeather extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final checkOff = quote.weatherCheckDisabled;
     final safe = quote.weatherSafe;
     final unavailable = quote.weatherStatus == 'UNAVAILABLE';
-    final tone = safe
+    final tone = checkOff
+        ? const Color(0xFF92400E)
+        : safe
         ? const Color(0xFF166534)
         : unavailable
         ? const Color(0xFF475569)
@@ -1534,7 +1537,9 @@ class _QuoteWeather extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(12, 8, 4, 12),
       decoration: BoxDecoration(
-        color: safe
+        color: checkOff
+            ? const Color(0xFFFFFBEB)
+            : safe
             ? const Color(0xFFECFDF5)
             : unavailable
             ? const Color(0xFFF1F5F9)
@@ -1548,7 +1553,9 @@ class _QuoteWeather extends StatelessWidget {
           Row(
             children: [
               Icon(
-                safe
+                checkOff
+                    ? Icons.science_outlined
+                    : safe
                     ? Icons.wb_sunny_outlined
                     : unavailable
                     ? Icons.cloud_off_outlined
@@ -1559,7 +1566,9 @@ class _QuoteWeather extends StatelessWidget {
               const SizedBox(width: 7),
               Expanded(
                 child: Text(
-                  safe
+                  checkOff
+                      ? context.l10n.dtWxCheckOff
+                      : safe
                       ? context.l10n.dbWeatherOk
                       : unavailable
                       ? context.l10n.dbWeatherUnknown
@@ -1580,6 +1589,21 @@ class _QuoteWeather extends StatelessWidget {
             context.l10n.dbWeatherWindow(quote.weatherWindowMinutes, quote.sourceLockerName),
             style: const TextStyle(fontSize: 12, color: Color(0xFF475569)),
           ),
+          if (checkOff)
+            Padding(
+              padding: const EdgeInsets.only(top: 4),
+              child: Text(
+                context.l10n.dtWxForecastStatus(
+                  quote.weatherStatus == 'SAFE'
+                      ? context.l10n.dtWxFlyable
+                      : unavailable
+                      ? context.l10n.dtWxNoForecast
+                      : context.l10n.dtWxUnsafe,
+                ),
+                key: const ValueKey('drone-quote-weather-check-off'),
+                style: TextStyle(fontSize: 12.5, color: tone),
+              ),
+            ),
           if (facts.isNotEmpty)
             Padding(
               padding: const EdgeInsets.only(top: 4),

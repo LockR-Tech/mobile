@@ -116,6 +116,7 @@ class DroneQuote {
     this.weatherTemperatureC,
     this.weatherCondition,
     this.weatherWindowMinutes = 30,
+    this.weatherCheckDisabled = false,
   }) : _weatherMessage = weatherMessage;
 
   /// Tủ gửi (nơi drone cất cánh) — mã giảm giá theo tủ được kiểm theo tủ này.
@@ -134,6 +135,9 @@ class DroneQuote {
 
   /// Khoảng dự báo server đã xét (admin chỉnh, mặc định 30 phút).
   final int weatherWindowMinutes;
+
+  /// Admin đang tắt kiểm tra thời tiết (thử nghiệm): dự báo thật nhưng không chặn đặt đơn.
+  final bool weatherCheckDisabled;
   final String? _weatherMessage;
   String get weatherMessage => _weatherMessage ?? L10n.current.droneNoWeatherData;
   final DateTime? weatherCheckedAt;
@@ -190,6 +194,7 @@ class DroneQuote {
       weatherWindowMinutes: _int(weather['windowMinutes']) > 0
           ? _int(weather['windowMinutes'])
           : 30,
+      weatherCheckDisabled: weather['checkDisabled'] == true,
     );
   }
 
