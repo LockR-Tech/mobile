@@ -15294,6 +15294,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get instUndo => 'Undo';
 
   @override
+  String get instUndoFailed => 'Clear failure';
+
+  @override
+  String get instAddPhoto => 'Add photo';
+
+  @override
   String instBoxOpened(Object number) {
     return 'Box #$number opened';
   }

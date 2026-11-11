@@ -14921,6 +14921,12 @@ class AppLocalizationsVi extends AppLocalizations {
   String get instUndo => 'Bỏ xác nhận';
 
   @override
+  String get instUndoFailed => 'Bỏ báo lỗi';
+
+  @override
+  String get instAddPhoto => 'Thêm ảnh';
+
+  @override
   String instBoxOpened(Object number) {
     return 'Ô #$number đã mở';
   }

@@ -216,7 +216,7 @@ class _ControllerPairingSheetState extends State<ControllerPairingSheet> {
                       style: const TextStyle(fontFamily: 'monospace', fontWeight: FontWeight.w700)),
                   subtitle: Text(c.lockerId == widget.lockerId
                       ? l10n.instPairAlreadyThisLocker
-                      : l10n.instPairLastSeen(formatInstallationTime(c.lastSeenAt?.toLocal()))),
+                      : l10n.instPairLastSeen(formatInstallationTime(c.lastSeenAt))),
                   trailing: FilledButton(
                     onPressed: _binding ? null : () => _bind(c.macAddress),
                     child: Text(l10n.instPairBind),

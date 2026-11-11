@@ -107,6 +107,31 @@ void main() {
     expect(find.text('Ô số 2 đang hỏng'), findsNothing);
   });
 
+  testWidgets(
+    'app không dùng MaterialApp (ShadApp): ScaffoldMessenger.of() trả AppScaffoldMessenger, không ném ở debug',
+    (tester) async {
+      final key = GlobalKey<ScaffoldMessengerState>();
+      late BuildContext inner;
+      // Không có MaterialApp ⇒ không có ScaffoldMessenger "thường" nào ở trên, như cây của ShadApp.router.
+      await tester.pumpWidget(
+        Directionality(
+          textDirection: TextDirection.ltr,
+          child: AppScaffoldMessenger.wrap(
+            key: key,
+            child: Builder(
+              builder: (context) {
+                inner = context;
+                return const SizedBox.expand();
+              },
+            ),
+          ),
+        ),
+      );
+      expect(ScaffoldMessenger.of(inner), same(key.currentState));
+      expect(key.currentState.runtimeType.toString(), '_AppScaffoldMessengerState');
+    },
+  );
+
   test('chỉ đổi persist, giữ nguyên các thuộc tính khác', () {
     final original = SnackBar(
       content: const Text('x'),
