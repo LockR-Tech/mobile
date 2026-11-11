@@ -197,7 +197,8 @@ class AislApp extends StatelessWidget {
               // Toast/loading/dialog của SmartDialog nằm ngoài AdaptiveViewport:
               // nó tính chỗ tránh bàn phím bằng toạ độ màn hình thật.
               return AdaptiveViewport.clampTextScale(
-                child: AppScaffoldMessenger(
+                // ShadApp không có ScaffoldMessenger riêng như MaterialApp ⇒ dùng wrap (xem chú thích ở đó).
+                child: AppScaffoldMessenger.wrap(
                   key: AppMessengerService.scaffoldMessengerKey,
                   child:
                       FlutterSmartDialog.init(

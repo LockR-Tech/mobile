@@ -33,6 +33,8 @@ class _InstallationDetailPageState extends State<InstallationDetailPage> {
   bool _busy = false;
   Timer? _poll;
   final Map<int, String> _boxBusy = {};
+  // Giữa hai ô `_boxBusy` rỗng một nhịp ⇒ cần cờ riêng để nút "Mở thử lần lượt" không bấm chồng được.
+  bool _openingAll = false;
 
   InstallationApi get _api => widget.api;
 
@@ -94,34 +96,8 @@ class _InstallationDetailPageState extends State<InstallationDetailPage> {
       ));
   }
 
-  Future<String?> _askReason(String title) async {
-    final ctrl = TextEditingController();
-    final result = await showDialog<String>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(title),
-        content: TextField(
-          controller: ctrl,
-          autofocus: true,
-          maxLength: 500,
-          maxLines: 3,
-          decoration: InputDecoration(hintText: context.l10n.instReasonHint),
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(context.l10n.commonCancel)),
-          FilledButton(
-            onPressed: () {
-              final text = ctrl.text.trim();
-              if (text.isNotEmpty) Navigator.pop(ctx, text);
-            },
-            child: Text(context.l10n.commonConfirm),
-          ),
-        ],
-      ),
-    );
-    ctrl.dispose();
-    return result;
-  }
+  Future<String?> _askReason(String title) =>
+      showDialog<String>(context: context, builder: (_) => _ReasonDialog(title: title));
 
   Future<void> _setCheck(InstallationCheck check, String status, {bool askNote = false}) async {
     String? note;
@@ -192,9 +168,15 @@ class _InstallationDetailPageState extends State<InstallationDetailPage> {
   }
 
   Future<void> _openAllBoxes(Installation data, List<InstallationBoxResult> boxes) async {
-    for (final box in boxes.where((b) => b.status != InstallationCheckStatus.passed)) {
-      if (!mounted) return;
-      await _openBox(data, box);
+    if (_openingAll) return;
+    setState(() => _openingAll = true);
+    try {
+      for (final box in boxes.where((b) => b.status != InstallationCheckStatus.passed)) {
+        if (!mounted) return;
+        await _openBox(data, box);
+      }
+    } finally {
+      if (mounted) setState(() => _openingAll = false);
     }
   }
 
@@ -264,25 +246,32 @@ class _InstallationDetailPageState extends State<InstallationDetailPage> {
               children: [
                 RefreshIndicator(
                   onRefresh: _load,
-                  child: ListView(
+                  // Column, không dùng ListView: ListView ước lượng lại vị trí các thẻ đã cuộn khuất mỗi lần dữ
+                  // liệu làm mới; thẻ phía trên đổi chiều cao (vừa xác nhận xong, bớt một hàng nút) là nội dung
+                  // đang xem nhảy lên/xuống và bấm trượt sang nút khác. Trang chỉ ~10 thẻ.
+                  child: SingleChildScrollView(
+                    physics: const AlwaysScrollableScrollPhysics(),
                     padding: const EdgeInsets.fromLTRB(16, 12, 16, 120),
-                    children: [
-                      _header(data),
-                      const SizedBox(height: 12),
-                      ..._banners(data),
-                      Text(l10n.instChecklistTitle(data.doneCount, data.checks.length),
-                          style: const TextStyle(fontSize: 15.5, fontWeight: FontWeight.w800)),
-                      const SizedBox(height: 8),
-                      for (final check in data.checks) ...[
-                        _checkCard(data, check),
-                        const SizedBox(height: 10),
-                      ],
-                      _sitePhotos(data),
-                      if (data.editable && data.missing.isNotEmpty) ...[
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        _header(data),
                         const SizedBox(height: 12),
-                        _missing(data),
+                        ..._banners(data),
+                        Text(l10n.instChecklistTitle(data.doneCount, data.checks.length),
+                            style: const TextStyle(fontSize: 15.5, fontWeight: FontWeight.w800)),
+                        const SizedBox(height: 8),
+                        for (final check in data.checks) ...[
+                          _checkCard(data, check),
+                          const SizedBox(height: 10),
+                        ],
+                        _sitePhotos(data),
+                        if (data.editable && data.missing.isNotEmpty) ...[
+                          const SizedBox(height: 12),
+                          _missing(data),
+                        ],
                       ],
-                    ],
+                    ),
                   ),
                 ),
                 if (_busy) const Positioned(top: 0, left: 0, right: 0, child: LinearProgressIndicator(minHeight: 2)),
@@ -424,82 +413,94 @@ class _InstallationDetailPageState extends State<InstallationDetailPage> {
     final style = installationCheckStyle(check.status);
     final editable = data.editable && !_busy;
     final itemPhotos = data.photosOf(check.item);
-    final actions = <Widget>[];
+    // Nút chính (làm bước) một hàng; thao tác phụ / hoàn tác là nút chữ nhỏ cùng một kiểu ở hàng dưới.
+    final primary = <Widget>[];
+    final secondary = <Widget>[];
+    VoidCallback? when(VoidCallback action) => editable ? action : null;
+    Widget undo(String label) => _SecondaryAction(
+          icon: Icons.undo_rounded,
+          label: label,
+          onPressed: when(() => _setCheck(check, InstallationCheckStatus.pending)),
+        );
+    Widget markNa() => _SecondaryAction(
+          icon: Icons.do_not_disturb_on_outlined,
+          label: l10n.instMarkNa,
+          onPressed: when(() => _setCheck(check, InstallationCheckStatus.notApplicable, askNote: true)),
+        );
 
-    switch (check.item) {
-      case 'CONTROLLER':
-        if (data.editable) {
-          actions.add(FilledButton.tonalIcon(
-            onPressed: editable ? () => _pairController(data) : null,
-            icon: const Icon(Icons.qr_code_scanner, size: 18),
-            label: Text(data.controllerMac == null ? l10n.instPairAction : l10n.instPairAgain),
-          ));
-        }
-      case 'BOX_TEST':
-        break; // danh sách ô bên dưới
-      case 'LID':
-        if (data.editable) {
-          if (check.status == InstallationCheckStatus.notApplicable) {
-            actions.add(OutlinedButton(
-              onPressed: editable ? () => _setCheck(check, InstallationCheckStatus.pending) : null,
-              child: Text(l10n.instUndoNa),
+    if (data.editable) {
+      switch (check.item) {
+        case 'CONTROLLER':
+          if (data.controllerMac == null) {
+            primary.add(FilledButton.tonalIcon(
+              onPressed: when(() => _pairController(data)),
+              icon: const Icon(Icons.qr_code_scanner, size: 18),
+              label: Text(l10n.instPairAction),
             ));
           } else {
-            actions
+            secondary.add(_SecondaryAction(
+              icon: Icons.qr_code_scanner,
+              label: l10n.instPairAgain,
+              onPressed: when(() => _pairController(data)),
+            ));
+          }
+        case 'BOX_TEST':
+          break; // danh sách ô bên dưới
+        case 'LID':
+          if (check.status == InstallationCheckStatus.notApplicable) {
+            secondary.add(undo(l10n.instUndoNa));
+          } else {
+            primary
               ..add(OutlinedButton.icon(
-                onPressed: editable ? () => _lid(data, 'open') : null,
+                onPressed: when(() => _lid(data, 'open')),
                 icon: const Icon(Icons.arrow_upward, size: 18),
                 label: Text(l10n.instLidOpen),
               ))
               ..add(OutlinedButton.icon(
-                onPressed: editable ? () => _lid(data, 'close') : null,
+                onPressed: when(() => _lid(data, 'close')),
                 icon: const Icon(Icons.arrow_downward, size: 18),
                 label: Text(l10n.instLidClose),
-              ))
-              ..add(TextButton(
-                onPressed: editable
-                    ? () => _setCheck(check, InstallationCheckStatus.notApplicable, askNote: true)
-                    : null,
-                child: Text(l10n.instMarkNa),
               ));
+            if (check.status != InstallationCheckStatus.passed) secondary.add(markNa());
           }
-        }
-      default:
-        if (!check.auto && data.editable) {
-          if (check.photoRequired) {
-            actions.add(OutlinedButton.icon(
-              onPressed: editable ? () => _addPhotos(check.item, check.label) : null,
-              icon: const Icon(Icons.photo_camera_outlined, size: 18),
-              label: Text(l10n.instTakePhoto),
-            ));
-          }
-          if (check.status == InstallationCheckStatus.pending) {
-            actions.add(FilledButton.tonalIcon(
-              onPressed: editable && (!check.photoRequired || itemPhotos.isNotEmpty)
-                  ? () => _setCheck(check, InstallationCheckStatus.passed)
-                  : null,
-              icon: const Icon(Icons.check, size: 18),
-              label: Text(l10n.instConfirmPassed),
-            ));
-            actions.add(TextButton(
-              onPressed: editable ? () => _setCheck(check, InstallationCheckStatus.failed, askNote: true) : null,
-              child: Text(l10n.instReportFailed),
-            ));
-            if (check.notApplicableAllowed) {
-              actions.add(TextButton(
-                onPressed: editable
-                    ? () => _setCheck(check, InstallationCheckStatus.notApplicable, askNote: true)
+        default:
+          if (check.auto) break;
+          switch (check.status) {
+            case InstallationCheckStatus.pending:
+              if (check.photoRequired) {
+                primary.add(OutlinedButton.icon(
+                  onPressed: when(() => _addPhotos(check.item, check.label)),
+                  icon: const Icon(Icons.photo_camera_outlined, size: 18),
+                  label: Text(l10n.instTakePhoto),
+                ));
+              }
+              primary.add(FilledButton.tonalIcon(
+                onPressed: !check.photoRequired || itemPhotos.isNotEmpty
+                    ? when(() => _setCheck(check, InstallationCheckStatus.passed))
                     : null,
-                child: Text(l10n.instMarkNa),
+                icon: const Icon(Icons.check, size: 18),
+                label: Text(l10n.instConfirmPassed),
               ));
-            }
-          } else {
-            actions.add(TextButton(
-              onPressed: editable ? () => _setCheck(check, InstallationCheckStatus.pending) : null,
-              child: Text(l10n.instUndo),
-            ));
+              secondary.add(_SecondaryAction(
+                icon: Icons.error_outline,
+                label: l10n.instReportFailed,
+                color: const Color(0xFFB91C1C),
+                onPressed: when(() => _setCheck(check, InstallationCheckStatus.failed, askNote: true)),
+              ));
+              if (check.notApplicableAllowed) secondary.add(markNa());
+            case InstallationCheckStatus.notApplicable:
+              secondary.add(undo(l10n.instUndoNa));
+            default: // PASSED / FAILED
+              if (check.photoRequired) {
+                secondary.add(_SecondaryAction(
+                  icon: Icons.add_a_photo_outlined,
+                  label: l10n.instAddPhoto,
+                  onPressed: when(() => _addPhotos(check.item, check.label)),
+                ));
+              }
+              secondary.add(undo(check.status == InstallationCheckStatus.failed ? l10n.instUndoFailed : l10n.instUndo));
           }
-        }
+      }
     }
 
     return Container(
@@ -507,9 +508,13 @@ class _InstallationDetailPageState extends State<InstallationDetailPage> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: check.status == InstallationCheckStatus.failed
-            ? const Color(0xFFFCA5A5)
-            : const Color(0xFFE2E8F0)),
+        border: Border.all(
+          color: switch (check.status) {
+            InstallationCheckStatus.failed => const Color(0xFFFCA5A5),
+            InstallationCheckStatus.passed => const Color(0xFFBBF7D0),
+            _ => const Color(0xFFE2E8F0),
+          },
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -558,9 +563,17 @@ class _InstallationDetailPageState extends State<InstallationDetailPage> {
             const SizedBox(height: 8),
             _photoStrip(data, itemPhotos),
           ],
-          if (actions.isNotEmpty) ...[
-            const SizedBox(height: 8),
-            Wrap(spacing: 8, runSpacing: 4, children: actions),
+          if (primary.isNotEmpty) ...[
+            const SizedBox(height: 10),
+            Wrap(spacing: 8, runSpacing: 8, children: primary),
+          ],
+          if (secondary.isNotEmpty) ...[
+            SizedBox(height: primary.isEmpty ? 6 : 4),
+            // Lùi trái bằng padding của TextButton để chữ thẳng mép nội dung thẻ.
+            Transform.translate(
+              offset: const Offset(-8, 0),
+              child: Wrap(spacing: 4, children: secondary),
+            ),
           ],
         ],
       ),
@@ -594,7 +607,7 @@ class _InstallationDetailPageState extends State<InstallationDetailPage> {
           Padding(
             padding: const EdgeInsets.only(top: 6),
             child: OutlinedButton.icon(
-              onPressed: _boxBusy.isEmpty && !_busy ? () => _openAllBoxes(data, boxes) : null,
+              onPressed: _boxBusy.isEmpty && !_busy && !_openingAll ? () => _openAllBoxes(data, boxes) : null,
               icon: const Icon(Icons.playlist_play, size: 18),
               label: Text(l10n.instBoxTestAll),
             ),
@@ -702,6 +715,87 @@ class _InstallationDetailPageState extends State<InstallationDetailPage> {
             Text('• $item', style: const TextStyle(fontSize: 12.5, color: Color(0xFF475569), height: 1.4)),
         ],
       ),
+    );
+  }
+}
+
+/// Thao tác phụ của một bước (báo lỗi, không áp dụng, hoàn tác, thêm ảnh): nút chữ nhỏ cùng một kiểu
+/// để không lẫn với nút chính.
+class _SecondaryAction extends StatelessWidget {
+  const _SecondaryAction({required this.icon, required this.label, this.onPressed, this.color});
+
+  final IconData icon;
+  final String label;
+  final VoidCallback? onPressed;
+  final Color? color;
+
+  @override
+  Widget build(BuildContext context) {
+    return TextButton.icon(
+      onPressed: onPressed,
+      icon: Icon(icon, size: 17),
+      label: Text(label),
+      style: TextButton.styleFrom(
+        foregroundColor: color ?? const Color(0xFF475569),
+        visualDensity: VisualDensity.compact,
+        padding: const EdgeInsets.symmetric(horizontal: 8),
+        textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+      ),
+    );
+  }
+}
+
+/// Hỏi lý do (báo lỗi / không áp dụng). Controller thuộc State của dialog: nếu tạo ở trang rồi
+/// `dispose()` ngay khi `showDialog` trả về thì TextField còn đang chạy hiệu ứng đóng vẫn dùng nó
+/// ⇒ assert `_dependents.isEmpty` (màn đỏ ở bản debug).
+class _ReasonDialog extends StatefulWidget {
+  const _ReasonDialog({required this.title});
+
+  final String title;
+
+  @override
+  State<_ReasonDialog> createState() => _ReasonDialogState();
+}
+
+class _ReasonDialogState extends State<_ReasonDialog> {
+  final _ctrl = TextEditingController();
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  void _confirm() {
+    final text = _ctrl.text.trim();
+    if (text.isNotEmpty) Navigator.pop(context, text);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    return AlertDialog(
+      title: Text(widget.title),
+      content: TextField(
+        controller: _ctrl,
+        autofocus: true,
+        maxLength: 500,
+        maxLines: 3,
+        textInputAction: TextInputAction.done,
+        onSubmitted: (_) => _confirm(),
+        decoration: InputDecoration(hintText: l10n.instReasonHint),
+      ),
+      actions: [
+        TextButton(onPressed: () => Navigator.pop(context), child: Text(l10n.commonCancel)),
+        ListenableBuilder(
+          listenable: _ctrl,
+          builder: (context, _) => FilledButton(
+            // Chưa nhập lý do thì nút mờ (trước đây bấm không có phản hồi gì).
+            onPressed: _ctrl.text.trim().isEmpty ? null : _confirm,
+            child: Text(l10n.commonConfirm),
+          ),
+        ),
+      ],
     );
   }
 }

@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:smart_laundry_locker/core/network/dio_client.dart';
+import 'package:smart_laundry_locker/core/utils/app_date_time.dart';
 
 /// Lắp đặt & nghiệm thu tủ (F3-G12) — hồ sơ do admin lập, KTV tủ làm checklist.
 ///
@@ -37,7 +38,11 @@ String? parseControllerMac(String raw) {
   return [for (var i = 0; i < 12; i += 2) hex.substring(i, i + 2)].join(':');
 }
 
-DateTime? _time(Object? value) =>
+/// Mốc server tự ghi (`LocalDateTime.now()` trên container UTC) ⇒ chuỗi trần là UTC, đổi sang giờ máy.
+DateTime? _time(Object? value) => parseServerDateTime(value);
+
+/// Lịch lắp do admin nhập theo giờ Việt Nam và server giữ nguyên ⇒ đọc như giờ máy, không đổi múi.
+DateTime? _localTime(Object? value) =>
     value is String && value.isNotEmpty ? DateTime.tryParse(value) : null;
 
 int? _int(Object? value) => value is num ? value.toInt() : int.tryParse('${value ?? ''}');
@@ -230,7 +235,7 @@ class Installation {
       lockerCode: _str(json['lockerCode']),
       lockerName: _str(json['lockerName']),
       lockerStatus: _str(json['lockerStatus']),
-      scheduledAt: _time(json['scheduledAt']),
+      scheduledAt: _localTime(json['scheduledAt']),
       siteContactName: _str(json['siteContactName']),
       siteContactPhone: _str(json['siteContactPhone']),
       powerSource: _str(json['powerSource']),

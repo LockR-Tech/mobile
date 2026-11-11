@@ -28,6 +28,14 @@ class AppMessengerService {
 class AppScaffoldMessenger extends ScaffoldMessenger {
   const AppScaffoldMessenger({super.key, required super.child});
 
+  /// Dựng [AppScaffoldMessenger] làm messenger gốc khi app **không** dùng `MaterialApp` (app dùng
+  /// `ShadApp.router`). Ở bản debug, `ScaffoldMessenger.of()` assert phải có tổ tiên đúng **kiểu**
+  /// `ScaffoldMessenger` (`findAncestorWidgetOfExactType`) — lớp con không tính — nên thiếu lớp bọc ngoài
+  /// thì mọi `ScaffoldMessenger.of(context)` ném "No ScaffoldMessenger widget found". Lớp ngoài chỉ để qua
+  /// assert: `of()` vẫn trả messenger gần nhất, tức [AppScaffoldMessenger].
+  static Widget wrap({Key? key, required Widget child}) =>
+      ScaffoldMessenger(child: AppScaffoldMessenger(key: key, child: child));
+
   @override
   ScaffoldMessengerState createState() => _AppScaffoldMessengerState();
 }

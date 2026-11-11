@@ -88,6 +88,33 @@ void main() {
       expect(installation.photosOf(null).map((p) => p.id), [901]);
     });
 
+    test('scheduledAt giữ nguyên giờ Việt Nam, mốc server tự ghi đổi từ UTC sang giờ máy', () {
+      final installation = Installation.fromJson({
+        ...json,
+        'scheduledAt': '2026-11-12T09:00:00',
+        'checks': [
+          {
+            'item': 'MOUNTING',
+            'label': 'Lắp khung',
+            'status': 'PASSED',
+            'auto': false,
+            'photoRequired': true,
+            'notApplicableAllowed': false,
+            'checkedAt': '2026-11-11T16:25:00',
+          },
+        ],
+      });
+      final candidate = ControllerCandidate.fromJson(const {
+        'macAddress': '02:4C:52:00:00:02',
+        'online': true,
+        'lastSeenAt': '2026-11-11T16:11:00',
+      });
+
+      expect(installation.scheduledAt, DateTime(2026, 11, 12, 9));
+      expect(installation.check('MOUNTING')!.checkedAt, DateTime.utc(2026, 11, 11, 16, 25).toLocal());
+      expect(candidate.lastSeenAt, DateTime.utc(2026, 11, 11, 16, 11).toLocal());
+    });
+
     test('thiếu trường không làm vỡ màn hình', () {
       final installation = Installation.fromJson(const {'id': 1, 'lockerId': 2});
 
