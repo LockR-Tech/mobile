@@ -1,6 +1,8 @@
+import 'dart:async';
 import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:smart_laundry_locker/features/onboarding/presentation/onboarding_controller.dart';
 import 'package:smart_laundry_locker/core/routing/app_router.dart';
 import 'package:smart_laundry_locker/core/routing/role_routes.dart';
 import 'package:smart_laundry_locker/core/services/session_service.dart';
@@ -79,6 +81,8 @@ class PostLoginPrompts {
 
       await _remindMissingContact(profileProvider);
       _doneForUser = profile.id;
+      // Đã qua mọi bước bắt buộc ⇒ hướng dẫn lần đầu trên màn hình (F3-G13) tự mở nếu cần.
+      unawaited(OnboardingController.instance.maybeAutoOpen());
     } finally {
       _running = false;
     }

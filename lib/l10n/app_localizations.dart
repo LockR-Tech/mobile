@@ -25482,6 +25482,210 @@ abstract class AppLocalizations {
   /// In vi, this message translates to:
   /// **'Tải lên {count} ảnh'**
   String instPhotoUpload(Object count);
+
+  /// No description provided for @tourHeaderButton.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hướng dẫn'**
+  String get tourHeaderButton;
+
+  /// No description provided for @tourWelcomeTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chào {name}!'**
+  String tourWelcomeTitle(Object name);
+
+  /// No description provided for @tourWelcomeBody.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lần đầu dùng Lock.R? Xem nhanh {count} khu chức năng chính, mỗi khu vài bước.'**
+  String tourWelcomeBody(Object count);
+
+  /// No description provided for @tourSkip.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bỏ qua'**
+  String get tourSkip;
+
+  /// No description provided for @tourSkipForever.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bỏ qua vĩnh viễn'**
+  String get tourSkipForever;
+
+  /// No description provided for @tourStart.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xem hướng dẫn'**
+  String get tourStart;
+
+  /// No description provided for @tourChoose.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tự chọn nhóm muốn xem'**
+  String get tourChoose;
+
+  /// No description provided for @tourWhatsNewTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Có hướng dẫn mới'**
+  String get tourWhatsNewTitle;
+
+  /// No description provided for @tourWhatsNewBody.
+  ///
+  /// In vi, this message translates to:
+  /// **'Có {count} khu chức năng mới hoặc vừa thay đổi kể từ lần bạn xem trước.'**
+  String tourWhatsNewBody(Object count);
+
+  /// No description provided for @tourLater.
+  ///
+  /// In vi, this message translates to:
+  /// **'Để sau'**
+  String get tourLater;
+
+  /// No description provided for @tourStartNew.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xem phần mới'**
+  String get tourStartNew;
+
+  /// No description provided for @tourStatusNew.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mới'**
+  String get tourStatusNew;
+
+  /// No description provided for @tourStatusUpdated.
+  ///
+  /// In vi, this message translates to:
+  /// **'Có cập nhật'**
+  String get tourStatusUpdated;
+
+  /// No description provided for @tourStatusSeen.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã xem'**
+  String get tourStatusSeen;
+
+  /// No description provided for @tourPickerTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hướng dẫn sử dụng'**
+  String get tourPickerTitle;
+
+  /// No description provided for @tourPickerDescription.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chọn khu chức năng muốn xem lại. Hướng dẫn khoanh từng phần trên màn hình.'**
+  String get tourPickerDescription;
+
+  /// No description provided for @tourView.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xem'**
+  String get tourView;
+
+  /// No description provided for @tourOnlyOnWeb.
+  ///
+  /// In vi, this message translates to:
+  /// **'Trên web quản trị'**
+  String get tourOnlyOnWeb;
+
+  /// No description provided for @tourAutoShow.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tự mở hướng dẫn khi đăng nhập hoặc khi có nội dung mới'**
+  String get tourAutoShow;
+
+  /// No description provided for @tourViewNew.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xem {count} nhóm mới'**
+  String tourViewNew(Object count);
+
+  /// No description provided for @tourViewSelected.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xem {count} nhóm đã chọn'**
+  String tourViewSelected(Object count);
+
+  /// No description provided for @tourNext.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tiếp'**
+  String get tourNext;
+
+  /// No description provided for @tourPrev.
+  ///
+  /// In vi, this message translates to:
+  /// **'Quay lại'**
+  String get tourPrev;
+
+  /// No description provided for @tourDone.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xong'**
+  String get tourDone;
+
+  /// No description provided for @tourNextGroup.
+  ///
+  /// In vi, this message translates to:
+  /// **'Sang nhóm tiếp'**
+  String get tourNextGroup;
+
+  /// No description provided for @tourClose.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đóng hướng dẫn'**
+  String get tourClose;
+
+  /// No description provided for @tourProgress.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bước {step}/{steps} · Nhóm {group}/{groups}'**
+  String tourProgress(Object step, Object steps, Object group, Object groups);
+
+  /// No description provided for @tourMissing.
+  ///
+  /// In vi, this message translates to:
+  /// **'Phần này chưa hiện trên màn hình của bạn (có thể do chưa có dữ liệu).'**
+  String get tourMissing;
+
+  /// No description provided for @tourSettingsTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hướng dẫn sử dụng'**
+  String get tourSettingsTitle;
+
+  /// No description provided for @tourSettingsSubtitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xem lại hướng dẫn trên màn hình, bật/tắt tự mở'**
+  String get tourSettingsSubtitle;
+
+  /// No description provided for @tourRoleAdmin.
+  ///
+  /// In vi, this message translates to:
+  /// **'Quản trị viên'**
+  String get tourRoleAdmin;
+
+  /// No description provided for @tourRoleCustomer.
+  ///
+  /// In vi, this message translates to:
+  /// **'Khách hàng'**
+  String get tourRoleCustomer;
+
+  /// No description provided for @tourRoleLockerTech.
+  ///
+  /// In vi, this message translates to:
+  /// **'KTV tủ'**
+  String get tourRoleLockerTech;
+
+  /// No description provided for @tourRoleDroneTech.
+  ///
+  /// In vi, this message translates to:
+  /// **'KTV drone'**
+  String get tourRoleDroneTech;
 }
 
 class _AppLocalizationsDelegate

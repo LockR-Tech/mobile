@@ -18,6 +18,7 @@ import 'package:go_router/go_router.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
 import 'package:smart_laundry_locker/core/l10n/l10n.dart';
+import 'package:smart_laundry_locker/features/onboarding/presentation/tour_anchor.dart';
 
 class MainNavigationWrapper extends StatefulWidget {
   final StatefulNavigationShell? navigationShell;
@@ -262,7 +263,7 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper> {
           );
         },
         child: RepaintBoundary(
-          child: CustomBottomNavigationBar(
+          child: TourAnchor('nav-tabs', child: CustomBottomNavigationBar(
             currentIndex: _calculateSelectedIndex(context),
             onTap: _onItemTapped,
             items: [
@@ -308,7 +309,7 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper> {
                 route: AppRouter.profile,
               ),
             ],
-          ),
+          )),
         ),
       ),
     );

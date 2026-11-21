@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:smart_laundry_locker/features/onboarding/presentation/onboarding_controller.dart';
 import 'package:smart_laundry_locker/core/config/feature_flags.dart';
 import 'package:smart_laundry_locker/core/services/session_service.dart';
 import 'package:smart_laundry_locker/core/services/token_service.dart';
@@ -388,6 +389,13 @@ class _ProfilePageState extends State<ProfilePage>
               icon: LucideIcons.shield,
               title: l10n.profileSecurity,
               onTap: _handleSecurity,
+            ),
+            // Hướng dẫn trên màn hình (F3-G13): mở lại kể cả khi đã bỏ qua vĩnh viễn
+            ProfileMenuItem(
+              icon: LucideIcons.circleHelp,
+              title: l10n.tourSettingsTitle,
+              subtitle: l10n.tourSettingsSubtitle,
+              onTap: OnboardingController.instance.openGuide,
             ),
             // Kho voucher: `GET /api/promotions/vouchers/my` (mã đã lưu từ
             // trang "Ưu đãi").

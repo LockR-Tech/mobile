@@ -34,6 +34,8 @@ import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/in
 import 'package:smart_laundry_locker/features/locker_ops/presentation/pages/installation_list_page.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/technician_location_permission_sheet.dart';
 import 'package:smart_laundry_locker/core/services/platform_info.dart';
+import 'package:smart_laundry_locker/features/onboarding/presentation/onboarding_controller.dart';
+import 'package:smart_laundry_locker/features/onboarding/presentation/tour_anchor.dart';
 
 /// Home for the LOCKER_TECHNICIAN role (kỹ thuật viên tủ): physical locker
 /// maintenance (fault cells, work queue, preventive schedules, landing pad)
@@ -151,8 +153,9 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
-        // Kiểm tra và hỏi quyền vị trí lần đầu cho KTV
-        TechnicianLocationPermissionSheet.checkAndPrompt(context);
+        // Kiểm tra và hỏi quyền vị trí lần đầu cho KTV; xong mới tự mở hướng dẫn lần đầu (F3-G13)
+        TechnicianLocationPermissionSheet.checkAndPrompt(context)
+            .whenComplete(OnboardingController.instance.maybeAutoOpen);
         try {
           final profileProvider = context.read<ProfileProvider>();
           if (profileProvider.profile == null) {
@@ -1586,6 +1589,18 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                         Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
+                            // Hướng dẫn trên màn hình (F3-G13)
+                            TourAnchor(
+                              'app-guide-button',
+                              child: Padding(
+                                padding: const EdgeInsets.only(right: 6),
+                                child: _headerActionButton(
+                                  icon: Icons.help_outline_rounded,
+                                  tooltip: context.l10n.tourHeaderButton,
+                                  onTap: OnboardingController.instance.openGuide,
+                                ),
+                              ),
+                            ),
                             // Lắp đặt tủ (F3-G12): hồ sơ admin giao, checklist nghiệm thu.
                             Padding(
                               padding: const EdgeInsets.only(right: 6),
@@ -1684,7 +1699,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                     ),
                     const SizedBox(height: 14),
                     // Quick Cockpit HUD Bar
-                    Container(
+                    TourAnchor('tech-home-hud', child: Container(
                       padding: const EdgeInsets.all(4),
                       decoration: BoxDecoration(
                         color: Colors.white.withValues(alpha: 0.08),
@@ -1732,12 +1747,15 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                           ),
                         ],
                       ),
-                    ),
+                    )),
                     const SizedBox(height: 10),
-                    TechnicianShiftCard(
-                      service: _service,
-                      isDrone: false,
-                      margin: EdgeInsets.zero,
+                    TourAnchor(
+                      'tech-home-shift',
+                      child: TechnicianShiftCard(
+                        service: _service,
+                        isDrone: false,
+                        margin: EdgeInsets.zero,
+                      ),
                     ),
                   ],
                 ),
@@ -1777,7 +1795,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
             mineCount: mineCount,
             kioskSchedules: kioskSchedules,
           ),
-          Material(
+          TourAnchor('tech-home-tabs', child: Material(
             color: Colors.white,
             elevation: 1,
             shadowColor: Colors.black12,
@@ -1801,7 +1819,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                 Tab(text: context.l10n.techHomeTabParcelRecovery(_pendingRecoveryCount)),
               ],
             ),
-          ),
+          )),
           if (_loading && _loadedOnce)
             const LinearProgressIndicator(minHeight: 2, color: opsPrimary),
           Expanded(

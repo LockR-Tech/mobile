@@ -30,6 +30,8 @@ import 'package:smart_laundry_locker/shared/widgets/home_motion.dart';
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
 import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 import 'package:smart_laundry_locker/core/services/platform_info.dart';
+import 'package:smart_laundry_locker/features/onboarding/presentation/onboarding_controller.dart';
+import 'package:smart_laundry_locker/features/onboarding/presentation/tour_anchor.dart';
 
 class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key});
@@ -216,11 +218,17 @@ class _HomePageState extends ConsumerState<HomePage>
             const SizedBox(height: 12),
             RepaintBoundary(child: _buildDronePoster(context)),
             const SizedBox(height: 20),
-            RepaintBoundary(child: _buildQuickActionBadges(context)),
+            TourAnchor(
+              'home-quick-actions',
+              child: RepaintBoundary(child: _buildQuickActionBadges(context)),
+            ),
             if (_activeOrder != null) ...[
               const SizedBox(height: 20),
-              RepaintBoundary(
-                child: _buildActiveShipmentSection(context, _activeOrder!),
+              TourAnchor(
+                'home-active-shipment',
+                child: RepaintBoundary(
+                  child: _buildActiveShipmentSection(context, _activeOrder!),
+                ),
               ),
             ],
             const SizedBox(height: 24),
@@ -292,21 +300,49 @@ class _HomePageState extends ConsumerState<HomePage>
               ),
             ),
             const Spacer(),
-            // QR Scanner Button
-            GestureDetector(
-              onTap: () => context.push(AppRouter.qrScan),
-              behavior: HitTestBehavior.opaque,
-              child: Container(
-                width: 42,
-                height: 42,
-                decoration: BoxDecoration(
-                  color: isDark
-                      ? Colors.white.withValues(alpha: 0.08)
-                      : const Color(0xFFF1F5F9),
-                  shape: BoxShape.circle,
+            // Hướng dẫn trên màn hình (F3-G13): mở lại được bất cứ lúc nào
+            TourAnchor(
+              'app-guide-button',
+              child: Tooltip(
+                message: context.l10n.tourHeaderButton,
+                child: GestureDetector(
+                  onTap: OnboardingController.instance.openGuide,
+                  behavior: HitTestBehavior.opaque,
+                  child: Container(
+                    width: 42,
+                    height: 42,
+                    decoration: BoxDecoration(
+                      color: isDark
+                          ? Colors.white.withValues(alpha: 0.08)
+                          : const Color(0xFFF1F5F9),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Center(
+                      child: Icon(LucideIcons.circleHelp, size: 20, color: textColor),
+                    ),
+                  ),
                 ),
-                child: Center(
-                  child: Icon(LucideIcons.scanLine, size: 20, color: textColor),
+              ),
+            ),
+            const SizedBox(width: 8),
+            // QR Scanner Button
+            TourAnchor(
+              'home-scan',
+              child: GestureDetector(
+                onTap: () => context.push(AppRouter.qrScan),
+                behavior: HitTestBehavior.opaque,
+                child: Container(
+                  width: 42,
+                  height: 42,
+                  decoration: BoxDecoration(
+                    color: isDark
+                        ? Colors.white.withValues(alpha: 0.08)
+                        : const Color(0xFFF1F5F9),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Center(
+                    child: Icon(LucideIcons.scanLine, size: 20, color: textColor),
+                  ),
                 ),
               ),
             ),
@@ -315,7 +351,9 @@ class _HomePageState extends ConsumerState<HomePage>
             Consumer<NotificationProvider>(
               builder: (context, provider, _) {
                 final count = provider.unreadCount;
-                return GestureDetector(
+                return TourAnchor(
+                  'home-notifications',
+                  child: GestureDetector(
                   onTap: () => context.push(AppRouter.notifications),
                   behavior: HitTestBehavior.opaque,
                   child: Container(
@@ -346,6 +384,7 @@ class _HomePageState extends ConsumerState<HomePage>
                           ),
                       ],
                     ),
+                  ),
                   ),
                 );
               },

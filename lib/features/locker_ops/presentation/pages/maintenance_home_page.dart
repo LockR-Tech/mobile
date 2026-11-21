@@ -37,6 +37,8 @@ import 'package:smart_laundry_locker/shared/widgets/controller_disposer.dart';
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:smart_laundry_locker/core/l10n/l10n.dart';
+import 'package:smart_laundry_locker/features/onboarding/presentation/onboarding_controller.dart';
+import 'package:smart_laundry_locker/features/onboarding/presentation/tour_anchor.dart';
 
 /// Hai danh sách đơn drone (JSON từ server) có giống hệt nhau không — poll dùng để bỏ qua
 /// lượt không đổi. Trước đây chỉ so `id` (server trả `orderId`, nên luôn null), chặng,
@@ -197,7 +199,9 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      TechnicianLocationPermissionSheet.checkAndPrompt(context);
+      // Hỏi quyền vị trí xong mới tự mở hướng dẫn lần đầu (F3-G13)
+      TechnicianLocationPermissionSheet.checkAndPrompt(context)
+          .whenComplete(OnboardingController.instance.maybeAutoOpen);
       try {
         final profileProvider = context.read<ProfileProvider>();
         if (profileProvider.profile == null) profileProvider.loadProfile();
@@ -1443,6 +1447,18 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                       () => Navigator.of(context).maybePop(),
                     )
                   else ...[
+                    // Hướng dẫn trên màn hình (F3-G13)
+                    TourAnchor(
+                      'app-guide-button',
+                      child: Padding(
+                        padding: const EdgeInsets.only(right: 6),
+                        child: _droneHeaderAction(
+                          Icons.help_outline_rounded,
+                          context.l10n.tourHeaderButton,
+                          OnboardingController.instance.openGuide,
+                        ),
+                      ),
+                    ),
                     AssistantEntryGate(
                       builder: (context) => Padding(
                         padding: const EdgeInsets.only(right: 6),
@@ -1472,7 +1488,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                 ],
               ),
               const SizedBox(height: 14),
-              Container(
+              TourAnchor('drone-home-hud', child: Container(
                 padding: const EdgeInsets.all(4),
                 decoration: BoxDecoration(
                   color: Colors.white.withValues(alpha: 0.08),
@@ -1520,7 +1536,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                     ),
                   ],
                 ),
-              ),
+              )),
               if (inFlight > 0) ...[
                 const SizedBox(height: 8),
                 Align(
@@ -1536,7 +1552,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                 ),
               ],
               const SizedBox(height: 10),
-              TechnicianShiftCard(
+              TourAnchor('drone-home-shift', child: TechnicianShiftCard(
                 service: _service,
                 isDrone: true,
                 margin: EdgeInsets.zero,
@@ -1547,7 +1563,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                   }
                   _refreshDeliveries();
                 },
-              ),
+              )),
             ],
           ),
         ),
@@ -1670,7 +1686,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
       body: Column(
         children: [
           _buildDroneTechnicianHeader(),
-          Material(
+          TourAnchor('drone-home-tabs', child: Material(
             color: Colors.white,
             elevation: 1,
             shadowColor: Colors.black12,
@@ -1700,7 +1716,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                 Tab(text: context.l10n.dtTabFlightTools),
               ],
             ),
-          ),
+          )),
           // Tải lại không xoá giao diện: chỉ hiện thanh tiến trình mảnh.
           if (_refreshing && !_loading)
             const LinearProgressIndicator(

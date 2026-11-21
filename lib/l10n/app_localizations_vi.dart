@@ -14968,4 +14968,122 @@ class AppLocalizationsVi extends AppLocalizations {
   String instPhotoUpload(Object count) {
     return 'Tải lên $count ảnh';
   }
+
+  @override
+  String get tourHeaderButton => 'Hướng dẫn';
+
+  @override
+  String tourWelcomeTitle(Object name) {
+    return 'Chào $name!';
+  }
+
+  @override
+  String tourWelcomeBody(Object count) {
+    return 'Lần đầu dùng Lock.R? Xem nhanh $count khu chức năng chính, mỗi khu vài bước.';
+  }
+
+  @override
+  String get tourSkip => 'Bỏ qua';
+
+  @override
+  String get tourSkipForever => 'Bỏ qua vĩnh viễn';
+
+  @override
+  String get tourStart => 'Xem hướng dẫn';
+
+  @override
+  String get tourChoose => 'Tự chọn nhóm muốn xem';
+
+  @override
+  String get tourWhatsNewTitle => 'Có hướng dẫn mới';
+
+  @override
+  String tourWhatsNewBody(Object count) {
+    return 'Có $count khu chức năng mới hoặc vừa thay đổi kể từ lần bạn xem trước.';
+  }
+
+  @override
+  String get tourLater => 'Để sau';
+
+  @override
+  String get tourStartNew => 'Xem phần mới';
+
+  @override
+  String get tourStatusNew => 'Mới';
+
+  @override
+  String get tourStatusUpdated => 'Có cập nhật';
+
+  @override
+  String get tourStatusSeen => 'Đã xem';
+
+  @override
+  String get tourPickerTitle => 'Hướng dẫn sử dụng';
+
+  @override
+  String get tourPickerDescription =>
+      'Chọn khu chức năng muốn xem lại. Hướng dẫn khoanh từng phần trên màn hình.';
+
+  @override
+  String get tourView => 'Xem';
+
+  @override
+  String get tourOnlyOnWeb => 'Trên web quản trị';
+
+  @override
+  String get tourAutoShow =>
+      'Tự mở hướng dẫn khi đăng nhập hoặc khi có nội dung mới';
+
+  @override
+  String tourViewNew(Object count) {
+    return 'Xem $count nhóm mới';
+  }
+
+  @override
+  String tourViewSelected(Object count) {
+    return 'Xem $count nhóm đã chọn';
+  }
+
+  @override
+  String get tourNext => 'Tiếp';
+
+  @override
+  String get tourPrev => 'Quay lại';
+
+  @override
+  String get tourDone => 'Xong';
+
+  @override
+  String get tourNextGroup => 'Sang nhóm tiếp';
+
+  @override
+  String get tourClose => 'Đóng hướng dẫn';
+
+  @override
+  String tourProgress(Object step, Object steps, Object group, Object groups) {
+    return 'Bước $step/$steps · Nhóm $group/$groups';
+  }
+
+  @override
+  String get tourMissing =>
+      'Phần này chưa hiện trên màn hình của bạn (có thể do chưa có dữ liệu).';
+
+  @override
+  String get tourSettingsTitle => 'Hướng dẫn sử dụng';
+
+  @override
+  String get tourSettingsSubtitle =>
+      'Xem lại hướng dẫn trên màn hình, bật/tắt tự mở';
+
+  @override
+  String get tourRoleAdmin => 'Quản trị viên';
+
+  @override
+  String get tourRoleCustomer => 'Khách hàng';
+
+  @override
+  String get tourRoleLockerTech => 'KTV tủ';
+
+  @override
+  String get tourRoleDroneTech => 'KTV drone';
 }

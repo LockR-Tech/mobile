@@ -24,3 +24,14 @@ Repo này thuộc hệ thống **Lock.R** (org [LockR-Tech](https://github.com/L
 - **Không xoá** `assets/markdown/*.md` — `pubspec.yaml` khai báo làm asset.
 - Luồng tủ dùng `lib/features/locker_ops/data/locker_ops_service.dart` (endpoint `/api/...`). Nhiều màn hình legacy (`features/orders`, `features/delegations`) còn gọi endpoint không có `/api` — đừng mở rộng chúng.
 - Đăng nhập Google/Facebook cần SHA-1 và key hash của keystore đã khai trên Firebase / Facebook console.
+
+## Hướng dẫn lần đầu trên màn hình (F3-G13) — quy tắc duy trì
+
+Nội dung tour (nhóm, bước, chữ) dùng chung với web, nguồn duy nhất ở repo frontend `fe/public/onboarding/`; app tải bản mới nhất từ `https://admin.locker-drone.tech/onboarding/`, bản kèm trong `assets/onboarding/` chỉ để chạy khi mất mạng và để test. **Thêm / xoá / sửa một màn hình hay một nút thì cập nhật hướng dẫn NGAY:**
+
+1. Gắn hoặc sửa neo `TourAnchor('<neo>', child: …)` (cùng mã với `data-tour` trên web khi là cùng phần tử).
+2. Khai nhóm / bước ở `frontend/fe/public/onboarding/tours.json`: `platforms: ["mobile"]`, `mobileRoute` (route trong `AppRouter`), `placement`, `optional`, `openNav` (trang có ngăn kéo đăng ký `TourNav.register`).
+3. Đủ chữ ở `locales/vi.json` và `locales/en.json`; chữ giao diện của tour (nút, hộp thoại) ở `lib/l10n/app_*.arb` (khoá `tour…`).
+4. Đổi nội dung một nhóm ⇒ **TĂNG `version` của nhóm**.
+5. Chạy `bash tool/sync_onboarding.sh` để chép nội dung + bộ ca kiểm tra sang app, rồi `flutter test test/onboarding` phải xanh (quét neo, route, chữ vi/en, bản kèm khớp nguồn).
+6. Chụp lại ảnh HDSD của nhóm (`npm run hdsd:capture` ở repo frontend, chỉ dev/demo).
