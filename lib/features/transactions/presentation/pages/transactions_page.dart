@@ -14,6 +14,7 @@ import 'package:smart_laundry_locker/features/transactions/presentation/provider
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
 import 'package:smart_laundry_locker/shared/shared.dart';
 import 'package:smart_laundry_locker/core/l10n/l10n.dart';
+import 'package:smart_laundry_locker/features/onboarding/presentation/tour_anchor.dart';
 
 class TransactionsPage extends StatefulWidget {
   const TransactionsPage({super.key});
@@ -64,10 +65,10 @@ class _TransactionsPageState extends State<TransactionsPage> {
                   art: HeroArt.wallet,
                   title: context.l10n.txHistory,
                   subtitle: context.l10n.txSubtitle,
-                  trailing: BrandCircleIconButton(
+                  trailing: TourAnchor('my-tx-refresh', child: BrandCircleIconButton(
                     icon: Icons.refresh,
                     onTap: () => provider.fetchTransactions(refresh: true),
-                  ),
+                  )),
                 ),
                 Expanded(
                   child: RefreshIndicator(
@@ -88,7 +89,7 @@ class _TransactionsPageState extends State<TransactionsPage> {
                               const SizedBox(height: 16),
 
                               // Bộ lọc hình thức giao dịch (SePay; ví, rút tiền, VNPay/MoMo chỉ khi có giao dịch cũ)
-                              _PaymentMethodFilterBar(provider: provider),
+                              TourAnchor('my-tx-filter', child: _PaymentMethodFilterBar(provider: provider)),
 
                               const SizedBox(height: 8),
                             ],
@@ -196,7 +197,7 @@ class _SpendingStatsCardState extends State<_SpendingStatsCard> {
           const SizedBox(height: 12),
 
           // Period Segment Tabs
-          Container(
+          TourAnchor('my-tx-period', child: Container(
             padding: const EdgeInsets.all(3),
             decoration: BoxDecoration(
               color: const Color(0xFFF1F5F9),
@@ -210,11 +211,11 @@ class _SpendingStatsCardState extends State<_SpendingStatsCard> {
                 _buildPeriodTab(context.l10n.commonAll, 'ALL', period),
               ],
             ),
-          ),
+          )),
           const SizedBox(height: 16),
 
           // Summary Metrics Grid (Tổng chi, Tổng nạp, Biến động ròng)
-          Row(
+          TourAnchor('my-tx-metrics', child: Row(
             children: [
               Expanded(
                 child: _MetricItem(
@@ -236,7 +237,7 @@ class _SpendingStatsCardState extends State<_SpendingStatsCard> {
                 ),
               ),
             ],
-          ),
+          )),
           const SizedBox(height: 10),
 
           // Net summary row
@@ -291,7 +292,7 @@ class _SpendingStatsCardState extends State<_SpendingStatsCard> {
           const SizedBox(height: 14),
 
           // Breakdown header with toggle tabs: [Theo dịch vụ] [Theo hình thức]
-          Row(
+          TourAnchor('my-tx-breakdown', child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Expanded(
@@ -339,7 +340,7 @@ class _SpendingStatsCardState extends State<_SpendingStatsCard> {
                 ),
               ),
             ],
-          ),
+          )),
           const SizedBox(height: 12),
 
           // Services or Methods Breakdown List
@@ -1236,12 +1237,14 @@ class _TransactionsSliverList extends StatelessWidget {
           items.addAll(entry.value);
         }
 
+        final firstTx = items.indexWhere((e) => e is! String);
         return SliverList(
           delegate: SliverChildBuilderDelegate(
             (context, index) {
               final item = items[index];
               if (item is String) return _DateHeader(date: item);
-              return _MBStyleTransactionItem(transaction: item as Transaction);
+              final tile = _MBStyleTransactionItem(transaction: item as Transaction);
+              return index == firstTx ? TourAnchor('my-tx-first', child: tile) : tile;
             },
             childCount: items.length,
           ),

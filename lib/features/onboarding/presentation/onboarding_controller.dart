@@ -208,6 +208,7 @@ class OnboardingController {
         groups: groups,
         text: text,
         navigate: _navigate,
+        resetModals: closeModals,
         onGroupDone: (g) async {
           try {
             _state = await repository.markSeen(g.id, g.version);
@@ -222,6 +223,11 @@ class OnboardingController {
       ),
     );
     overlay.insert(_entry!);
+  }
+
+  /// Đóng bảng dưới / hộp thoại đang mở trên navigator gốc (không đụng các trang).
+  static void closeModals() {
+    AppRouter.navigatorKey.currentState?.popUntil((r) => r is! PopupRoute);
   }
 
   void _navigate(String route) {

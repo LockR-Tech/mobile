@@ -54,6 +54,7 @@ class TourGroup {
     this.order = 0,
     this.manualOnly = false,
     this.signedOut = false,
+    this.intro = false,
   });
 
   final String id;
@@ -68,6 +69,10 @@ class TourGroup {
   /// Màn hình trước khi đăng nhập (đăng nhập, đăng ký, OTP…); luôn kèm [manualOnly].
   final bool signedOut;
 
+  /// Nhóm tổng quan: tự chạy khi đăng nhập lần đầu và báo "Có hướng dẫn mới" khi tăng phiên bản. Nhóm khác chỉ mở khi
+  /// người dùng chọn. Nội dung không có nhóm nào đánh dấu ⇒ mọi nhóm đều tự chạy.
+  final bool intro;
+
   List<TourStep> stepsFor(String platform) => steps.where((s) => s.platforms.contains(platform)).toList();
 
   factory TourGroup.fromJson(Map<String, dynamic> j) => TourGroup(
@@ -76,6 +81,7 @@ class TourGroup {
         order: (j['order'] as num?)?.toInt() ?? 0,
         manualOnly: j['manualOnly'] == true,
         signedOut: j['signedOut'] == true,
+        intro: j['intro'] == true,
         roles: ((j['roles'] as List?) ?? const []).map((e) => '$e').toList(),
         steps: ((j['steps'] as List?) ?? const [])
             .map((e) => TourStep.fromJson(Map<String, dynamic>.from(e as Map)))

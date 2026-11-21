@@ -500,6 +500,10 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
 
   /// Banner lỗi của các phần [sections] (gộp câu trùng) kèm nút "Thử lại".
   /// Không có lỗi ⇒ không chiếm chỗ.
+  /// Bọc neo hướng dẫn (F3-G13) khi [on] — dùng cho mục đầu danh sách.
+  static Widget _tourIf(bool on, Widget Function(Widget) wrap, Widget child) =>
+      on ? wrap(child) : child;
+
   Widget _sectionErrorBanner(List<_Section> sections) {
     final messages = <String>{
       for (final s in sections)
@@ -621,7 +625,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                   ),
                 ),
                 const SizedBox(height: 16),
-                Row(
+                TourAnchor('tech-profile-sheet-identity', child: Row(
                   children: [
                     Stack(
                       children: [
@@ -697,12 +701,12 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                       ),
                     ),
                   ],
-                ),
+                )),
                 const SizedBox(height: 16),
                 const Divider(height: 1),
                 const SizedBox(height: 14),
                 // Work statistics grid
-                Row(
+                TourAnchor('tech-profile-sheet-stats', child: Row(
                   children: [
                     Expanded(
                       child: _buildProfileStatTile(context.l10n.techHomeStatReceived, '$myTotal', const Color(0xFF4F46E5)),
@@ -724,10 +728,10 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                       ),
                     ),
                   ],
-                ),
+                )),
                 const SizedBox(height: 14),
                 // SLA & Rating card
-                Container(
+                TourAnchor('tech-profile-sheet-quality', child: Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
                     color: const Color(0xFFF8FAFC),
@@ -811,9 +815,9 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                       ],
                     ],
                   ),
-                ),
+                )),
                 const SizedBox(height: 18),
-                Row(
+                TourAnchor('tech-profile-sheet-actions', child: Row(
                   children: [
                     Expanded(
                       child: ElevatedButton.icon(
@@ -851,7 +855,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                       label: Text(context.l10n.commonLogout, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13.5)),
                     ),
                   ],
-                ),
+                )),
                 const SizedBox(height: 8),
               ],
             ),
@@ -1445,7 +1449,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         // Avatar with glowing ring & online dot
-                        GestureDetector(
+                        TourAnchor('tech-home-avatar', child: GestureDetector(
                           onTap: () => _showKtvProfileSheet(displayName),
                           child: Stack(
                             clipBehavior: Clip.none,
@@ -1491,7 +1495,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                               ),
                             ],
                           ),
-                        ),
+                        )),
                         const SizedBox(width: 12),
                         // Technician Name, Greeting & Status
                         Expanded(
@@ -1557,7 +1561,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                                 overflow: TextOverflow.ellipsis,
                               ),
                               const SizedBox(height: 2),
-                              InkWell(
+                              TourAnchor('tech-home-sla', child: InkWell(
                                 onTap: () => _tabs.animateTo(2),
                                 borderRadius: BorderRadius.circular(6),
                                 child: Row(
@@ -1584,7 +1588,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                                     ),
                                   ],
                                 ),
-                              ),
+                              )),
                             ],
                           ),
                         ),
@@ -1596,31 +1600,31 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                             // Lắp đặt tủ (F3-G12): hồ sơ admin giao, checklist nghiệm thu.
                             Padding(
                               padding: const EdgeInsets.only(right: 6),
-                              child: _headerActionButton(
+                              child: TourAnchor('tech-home-installations', child: _headerActionButton(
                                 icon: Icons.construction_outlined,
                                 tooltip: context.l10n.instHomeButton,
                                 onTap: () => Navigator.of(context).push(
                                   MaterialPageRoute<void>(builder: (_) => const InstallationListPage()),
                                 ),
-                              ),
+                              )),
                             ),
                             // Trợ lý hỏi đáp — chỉ hiện khi trợ lý đang bật.
                             AssistantEntryGate(
                               builder: (context) => Padding(
                                 padding: const EdgeInsets.only(right: 6),
-                                child: _headerActionButton(
+                                child: TourAnchor('tech-home-assistant', child: _headerActionButton(
                                   icon: Icons.support_agent_rounded,
                                   tooltip: context.l10n.aiTitle,
                                   onTap: () =>
                                       context.push(AppRouter.assistant),
-                                ),
+                                )),
                               ),
                             ),
                             // Thông báo với badge số lượng chưa đọc
                             Consumer<NotificationProvider>(
                               builder: (context, notiProvider, _) {
                                 final unread = notiProvider.unreadCount;
-                                return Stack(
+                                return TourAnchor('tech-home-notifications', child: Stack(
                                   clipBehavior: Clip.none,
                                   children: [
                                     _headerActionButton(
@@ -1664,11 +1668,11 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                                         ),
                                       ),
                                   ],
-                                );
+                                ));
                               },
                             ),
                             const SizedBox(width: 6),
-                            _headerActionButton(
+                            TourAnchor('tech-home-profile', child: _headerActionButton(
                               icon: Icons.person_outline_rounded,
                               tooltip: context.l10n.techHomeProfileAndEdit,
                               onTap: () {
@@ -1678,13 +1682,13 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                                   ),
                                 );
                               },
-                            ),
+                            )),
                             const SizedBox(width: 6),
-                            _headerActionButton(
+                            TourAnchor('tech-home-logout', child: _headerActionButton(
                               icon: Icons.logout_rounded,
                               tooltip: context.l10n.commonLogout,
                               onTap: _logout,
-                            ),
+                            )),
                           ],
                         ),
                       ],
@@ -1803,12 +1807,12 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
               unselectedLabelColor: const Color(0xFF64748B),
               unselectedLabelStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
               tabs: [
-                Tab(text: context.l10n.techHomeTabInspect),
-                Tab(text: context.l10n.techHomeTabIncidents(openCount)),
-                Tab(text: context.l10n.techHomeTabMyWork(mineCount)),
-                Tab(text: context.l10n.techHomeTabRoutine(kioskSchedules.length)),
-                Tab(text: context.l10n.techHomeTabIotDevices(_devices.length)),
-                Tab(text: context.l10n.techHomeTabParcelRecovery(_pendingRecoveryCount)),
+                TourAnchor('tech-tab-inspect', child: Tab(text: context.l10n.techHomeTabInspect)),
+                TourAnchor('tech-tab-incidents', child: Tab(text: context.l10n.techHomeTabIncidents(openCount))),
+                TourAnchor('tech-tab-mine', child: Tab(text: context.l10n.techHomeTabMyWork(mineCount))),
+                TourAnchor('tech-tab-routine', child: Tab(text: context.l10n.techHomeTabRoutine(kioskSchedules.length))),
+                TourAnchor('tech-tab-iot', child: Tab(text: context.l10n.techHomeTabIotDevices(_devices.length))),
+                TourAnchor('tech-tab-recovery', child: Tab(text: context.l10n.techHomeTabParcelRecovery(_pendingRecoveryCount))),
               ],
             ),
           )),
@@ -1869,10 +1873,10 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
         padding: const EdgeInsets.all(16),
         children: [
           _sectionErrorBanner(const [_Section.lockers, _Section.myLockers]),
-          const InstallationJobsBanner(),
+          TourAnchor('tech-inspect-install-banner', child: const InstallationJobsBanner()),
           // Tab "Thu hồi kiện" nằm cuối thanh tab, dễ khuất: có việc thì báo ngay tab đầu.
           if (_pendingRecoveryCount > 0) ...[
-            InkWell(
+            TourAnchor('tech-inspect-recovery-banner', child: InkWell(
               key: const ValueKey('technician-recovery-banner'),
               borderRadius: BorderRadius.circular(14),
               onTap: () => _tabs.animateTo(5),
@@ -1882,7 +1886,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                 title: context.l10n.techHomeRecoveryBannerTitle(_pendingRecoveryCount),
                 text: context.l10n.techHomeRecoveryBannerHint,
               ),
-            ),
+            )),
             const SizedBox(height: 12),
           ],
           OpsSectionLabel(context.l10n.techHomePickLockerToInspect, icon: Icons.warehouse_outlined),
@@ -1921,11 +1925,11 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
               onRetry: () => _selectLocker(_selectedLockerId!),
             )
           else if (_layout != null) ...[
-            _layoutSummary(),
+            TourAnchor('tech-inspect-summary', child: _layoutSummary()),
             const SizedBox(height: 8),
-            _statusLegend(),
+            TourAnchor('tech-inspect-legend', child: _statusLegend()),
             const SizedBox(height: 12),
-            OpsCard(
+            TourAnchor('tech-inspect-cabinet', child: OpsCard(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -1955,12 +1959,12 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                   ),
                 ],
               ),
-            ),
+            )),
             const SizedBox(height: 12),
-            _boxHealthCard(),
+            TourAnchor('tech-inspect-box-health', child: _boxHealthCard()),
             if (_layout?['landingPad'] == true && _selectedLockerId != null) ...[
               const SizedBox(height: 12),
-              _landingPadCard(_selectedLockerId!),
+              TourAnchor('tech-inspect-landing-pad', child: _landingPadCard(_selectedLockerId!)),
             ],
           ],
         ],
@@ -2188,6 +2192,10 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
       rowsMap.putIfAbsent(r, () => []).add(c);
     }
     final sortedRowKeys = rowsMap.keys.toList()..sort();
+    // Ô đầu tiên của hàng đầu — neo hướng dẫn (F3-G13) để mở bảng thao tác ô.
+    final tourFirstCell = sortedRowKeys.isEmpty
+        ? null
+        : _sortCellsByColumn(rowsMap[sortedRowKeys.first]!).first;
 
     // Nếu không có ô XL thì render các hàng bình thường
     if (xlCells.isEmpty) {
@@ -2212,7 +2220,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
             Row(
               children: [
                 for (final c in _sortCellsByColumn(rowsMap[r]!))
-                  Expanded(child: _cellTile(c)),
+                  Expanded(child: identical(c, tourFirstCell) ? TourAnchor('tech-inspect-first-cell', child: _cellTile(c)) : _cellTile(c)),
               ],
             ),
             const SizedBox(height: 8),
@@ -2281,7 +2289,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                   Row(
                     children: [
                       for (final c in _sortCellsByColumn(rowsMap[r]!)) ...[
-                        Expanded(child: _cellTile(c)),
+                        Expanded(child: identical(c, tourFirstCell) ? TourAnchor('tech-inspect-first-cell', child: _cellTile(c)) : _cellTile(c)),
                       ],
                     ],
                   ),
@@ -2575,7 +2583,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                 ),
               ),
               const SizedBox(width: 8),
-              OutlinedButton.icon(
+              TourAnchor('tech-inspect-directions', child: OutlinedButton.icon(
                 onPressed: hasLocation ? () => _openDirections(locker) : null,
                 icon: const Icon(Icons.near_me_outlined, size: 14),
                 label: Text(context.l10n.commonDirections),
@@ -2589,7 +2597,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                   visualDensity: VisualDensity.compact,
                   textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
                 ),
-              ),
+              )),
             ],
           ),
           const SizedBox(height: 10),
@@ -3076,12 +3084,12 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
         }
 
         // Luôn có sẵn bất kể trạng thái — override khẩn cấp, luôn ghi audit log.
-        actions.add(tile(
+        actions.add(TourAnchor('tech-cell-sheet-force-open', child: tile(
           Icons.lock_open,
           context.l10n.techHomeEmergencyOpen,
           const Color(0xFFEA580C),
           () => _forceOpenFlow(boxId, boxNumber: cell['boxNumber']),
-        ));
+        )));
 
         return SafeArea(
           top: false,
@@ -3091,7 +3099,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
+                TourAnchor('tech-cell-sheet-head', child: Row(
                   children: [
                     Container(
                       width: 44,
@@ -3132,9 +3140,13 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                       ),
                     ),
                   ],
-                ),
+                )),
                 const SizedBox(height: 16),
-                ...actions,
+                TourAnchor('tech-cell-sheet-actions', child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: actions,
+                )),
               ],
             ),
           ),
@@ -3495,7 +3507,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
             _Section.myLockers,
             _Section.anomalies,
           ]),
-          SingleChildScrollView(
+          TourAnchor('tech-incidents-scope', child: SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: Row(
               children: [
@@ -3515,10 +3527,10 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                 ),
               ],
             ),
-          ),
+          )),
           if (!routedView) ...[
             const SizedBox(height: 8),
-            SingleChildScrollView(
+            TourAnchor('tech-incidents-status', child: SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child: Row(
                 children: [
@@ -3548,10 +3560,10 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                   ],
                 ],
               ),
-            ),
+            )),
           ],
           const SizedBox(height: 12),
-          if (!routedView) _boxAnomaliesSection(),
+          if (!routedView) TourAnchor('tech-incidents-anomalies', child: _boxAnomaliesSection()),
           if (routedView) ...[
             OpsBanner(
               tone: OpsBannerTone.info,
@@ -3568,7 +3580,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
           if (faults.isNotEmpty) ...[
             OpsSectionLabel(context.l10n.techHomePhysicalFaultsTitle, icon: Icons.warning_amber_rounded),
             for (final f in faults)
-              Padding(
+              _tourIf(identical(f, faults.first), (w) => TourAnchor('tech-incidents-first-fault', child: w), Padding(
                 padding: const EdgeInsets.only(bottom: 10),
                 child: OpsCard(
                   child: Column(
@@ -3653,7 +3665,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                     ],
                   ),
                 ),
-              ),
+              )),
             const SizedBox(height: 8),
           ],
 
@@ -3676,7 +3688,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
 
           // --- Banner tổng quan sự cố toàn hệ thống ---
           if (!routedView && _reports.isNotEmpty) ...[
-            Container(
+            TourAnchor('tech-incidents-summary', child: Container(
               margin: const EdgeInsets.only(bottom: 12),
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
               decoration: BoxDecoration(
@@ -3747,7 +3759,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                   ),
                 ],
               ),
-            ),
+            )),
           ],
 
           // --- Phiếu OPEN: chờ tiếp nhận ---
@@ -3793,7 +3805,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                 ),
               ),
             OpsSectionLabel(context.l10n.techHomeIncidentsAwaitingTitle, icon: Icons.fiber_new_rounded),
-            for (final r in openReports) _reportCard(r, isQueueView: true),
+            for (final r in openReports) _tourIf(identical(r, openReports.first), (w) => TourAnchor('tech-incidents-first-open', child: w), _reportCard(r, isQueueView: true)),
             const SizedBox(height: 8),
           ],
 
@@ -3840,7 +3852,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         OpsSectionLabel(context.l10n.techHomeShiftOverview, icon: Icons.dashboard_outlined),
-        Row(
+        TourAnchor('tech-mine-overview', child: Row(
           children: [
             Expanded(
               child: _MetricCard(
@@ -3880,24 +3892,24 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
               ),
             ),
           ],
-        ),
+        )),
         const SizedBox(height: 8),
-        OpsBanner(
+        TourAnchor('tech-mine-rating', child: OpsBanner(
           text: rating != null
               ? context.l10n.techHomeYourRating(rating)
               : context.l10n.techHomeNoCustomerRatings,
           icon: Icons.star_rate_rounded,
           tone: rating != null ? OpsBannerTone.success : OpsBannerTone.info,
-        ),
+        )),
         const SizedBox(height: 10),
-        _buildSlaPenaltyCard(),
+        TourAnchor('tech-mine-sla', child: _buildSlaPenaltyCard()),
         const SizedBox(height: 10),
-        OpsBanner(
+        TourAnchor('tech-mine-procedure', child: OpsBanner(
           text:
               context.l10n.techHomeStandardProcedure,
           icon: Icons.engineering,
           tone: OpsBannerTone.info,
-        ),
+        )),
       ],
     );
   }
@@ -4104,7 +4116,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
           // 2. Danh sách các phiếu sự cố KTV đang trực tiếp xử lý
           if (active.isNotEmpty) ...[
             OpsSectionLabel(context.l10n.techHomeActiveIncidentsTitle(active.length), icon: Icons.pending_actions_outlined),
-            for (final r in active) _reportCard(r, isQueueView: false),
+            for (final r in active) _tourIf(identical(r, active.first), (w) => TourAnchor('tech-mine-first-report', child: w), _reportCard(r, isQueueView: false, tourMineFirst: identical(r, active.first))),
             const SizedBox(height: 12),
           ],
 
@@ -4154,6 +4166,10 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
     due.sort(_compareSchedulesNewestFirst);
     final upcoming = displayed.where((s) => s['due'] != true).toList();
     upcoming.sort(_compareSchedulesNewestFirst);
+    // Thẻ lịch đầu tiên đang hiện — neo hướng dẫn (F3-G13).
+    final tourFirstSchedule = _scheduleFilter == 'ALL'
+        ? (due.isNotEmpty ? due.first : (upcoming.isNotEmpty ? upcoming.first : null))
+        : (displayed.isNotEmpty ? displayed.first : null);
 
     return RefreshIndicator(
       onRefresh: _load,
@@ -4161,15 +4177,15 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
         padding: const EdgeInsets.all(12),
         children: [
           _sectionErrorBanner(const [_Section.schedules]),
-          OpsBanner(
+          TourAnchor('tech-routine-intro', child: OpsBanner(
             tone: OpsBannerTone.info,
             icon: Icons.event_repeat,
             text: context.l10n.techHomeScheduleIntro,
-          ),
+          )),
           const SizedBox(height: 10),
 
           // Phạm vi: lịch giao cho mình / mọi lịch tủ
-          Row(
+          TourAnchor('tech-routine-scope', child: Row(
             children: [
               _buildScheduleChip(
                 label: context.l10n.techHomeMineWithCount(myKioskList.length),
@@ -4185,11 +4201,11 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                 onTap: () => setState(() => _mySchedulesOnly = false),
               ),
             ],
-          ),
+          )),
           const SizedBox(height: 8),
 
           // Thanh lọc theo hạn: Mọi hạn, Đến hạn, Sắp tới
-          SingleChildScrollView(
+          TourAnchor('tech-routine-due-filter', child: SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: Row(
               children: [
@@ -4216,7 +4232,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                 ),
               ],
             ),
-          ),
+          )),
           const SizedBox(height: 12),
 
           if (displayed.isEmpty && !_hasError(const [_Section.schedules]))
@@ -4236,15 +4252,15 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
           if (_scheduleFilter == 'ALL') ...[
             if (due.isNotEmpty) ...[
               OpsSectionLabel(context.l10n.techHomeDueWithCount(due.length), icon: Icons.warning_amber_rounded),
-              for (final s in due) _scheduleCard(s, due: true),
+              for (final s in due) _scheduleCard(s, due: true, tourFirst: identical(s, tourFirstSchedule)),
               const SizedBox(height: 8),
             ],
             if (upcoming.isNotEmpty) ...[
               OpsSectionLabel(context.l10n.techHomeUpcomingWithCount(upcoming.length), icon: Icons.schedule_outlined),
-              for (final s in upcoming) _scheduleCard(s, due: false),
+              for (final s in upcoming) _scheduleCard(s, due: false, tourFirst: identical(s, tourFirstSchedule)),
             ],
           ] else ...[
-            for (final s in displayed) _scheduleCard(s, due: s['due'] == true),
+            for (final s in displayed) _scheduleCard(s, due: s['due'] == true, tourFirst: identical(s, tourFirstSchedule)),
           ],
         ],
       ),
@@ -4328,7 +4344,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
     }
   }
 
-  Widget _scheduleCard(Map<String, dynamic> s, {required bool due}) {
+  Widget _scheduleCard(Map<String, dynamic> s, {required bool due, bool tourFirst = false}) {
     final lockerCode = s['lockerCode'];
     final lockerName = s['lockerName'];
     final targetLabel =
@@ -4348,7 +4364,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
-      child: Material(
+      child: _tourIf(tourFirst, (w) => TourAnchor('tech-routine-first-card', child: w), Material(
         color: Colors.transparent,
         child: InkWell(
           onTap: () => _showScheduleDetailModal(s),
@@ -4567,7 +4583,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                 // Hàng 5: Nút hành động
                 Row(
                   children: [
-                    OutlinedButton.icon(
+                    _tourIf(tourFirst, (w) => TourAnchor('tech-routine-first-details', child: w), OutlinedButton.icon(
                       onPressed: () => _showScheduleDetailModal(s),
                       icon: const Icon(Icons.info_outline, size: 14),
                       label: Text(context.l10n.commonDetails),
@@ -4581,10 +4597,10 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                         visualDensity: VisualDensity.compact,
                         textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
                       ),
-                    ),
+                    )),
                     const Spacer(),
                     if (pendingReportId != null)
-                      ElevatedButton.icon(
+                      _tourIf(tourFirst, (w) => TourAnchor('tech-routine-first-ticket', child: w), ElevatedButton.icon(
                         onPressed: () => _openReportById(pendingReportId),
                         icon: const Icon(Icons.assignment_turned_in_outlined, size: 15),
                         label: Text(context.l10n.techHomeHandleTicket(pendingReportId)),
@@ -4599,9 +4615,9 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
                           textStyle: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700),
                         ),
-                      )
+                      ))
                     else
-                      ElevatedButton.icon(
+                      _tourIf(tourFirst, (w) => TourAnchor('tech-routine-first-inspect', child: w), ElevatedButton.icon(
                         onPressed: id == null || blockedReason != null
                             ? null
                             : () => _showCompleteInspectionSheet(s),
@@ -4620,14 +4636,14 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 9),
                           textStyle: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700),
                         ),
-                      ),
+                      )),
                   ],
                 ),
               ],
             ),
           ),
         ),
-      ),
+      )),
     );
   }
 
@@ -5087,7 +5103,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
             )
           else
             for (final device in _devices)
-              Padding(
+              _tourIf(identical(device, _devices.first), (w) => TourAnchor('tech-iot-first-device', child: w), Padding(
                 padding: const EdgeInsets.only(bottom: 10),
                 child: OpsCard(
                   onTap: () => _deviceSheet(device),
@@ -5143,14 +5159,14 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                     ],
                   ),
                 ),
-              ),
+              )),
           const SizedBox(height: 8),
-          OpsBanner(
+          TourAnchor('tech-iot-hint', child: OpsBanner(
             tone: OpsBannerTone.info,
             icon: Icons.touch_app_outlined,
             text:
                 context.l10n.techHomeDevicesHint,
-          ),
+          )),
         ],
       ),
     );
@@ -5257,7 +5273,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
     ];
   }
 
-  Widget _reportCard(Map<String, dynamic> r, {bool isQueueView = false}) {
+  Widget _reportCard(Map<String, dynamic> r, {bool isQueueView = false, bool tourMineFirst = false}) {
     final status = r['status'] as String? ?? '';
     // Kiểm tra phiếu có đang được assign cho chính KTV này không
     final isAssignedToMe = _isAssignedToMe(r);
@@ -5574,7 +5590,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                         if (!isQueueView && status == 'IN_PROGRESS' && isAssignedToMe) ...[
                           // Nút gia hạn SLA nhanh — chỉ người được giao, còn lượt.
                           if (slaPolicy.visible)
-                            InkWell(
+                            _tourIf(tourMineFirst, (w) => TourAnchor('tech-mine-first-extend', child: w), InkWell(
                               onTap: slaPolicy.canExtend
                                   ? () => _openExtendSlaSheet(r)
                                   : null,
@@ -5616,8 +5632,8 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                                   ],
                                 ),
                               ),
-                            ),
-                          InkWell(
+                            )),
+                          _tourIf(tourMineFirst, (w) => TourAnchor('tech-mine-first-inspection', child: w), InkWell(
                             onTap: () => _inspectionFlow(r),
                             borderRadius: BorderRadius.circular(8),
                             child: Container(
@@ -5647,8 +5663,8 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                                 ],
                               ),
                             ),
-                          ),
-                          ElevatedButton.icon(
+                          )),
+                          _tourIf(tourMineFirst, (w) => TourAnchor('tech-mine-first-done', child: w), ElevatedButton.icon(
                             onPressed: () => _confirmResolveReport(r),
                             icon: const Icon(Icons.check, size: 13.5),
                             label: Text(
@@ -5666,7 +5682,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                               ),
                               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                             ),
-                          ),
+                          )),
                         ],
                         const Icon(Icons.chevron_right, size: 17, color: Color(0xFF94A3B8)),
                       ],
@@ -5798,7 +5814,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                   ),
                 ),
                 // Header
-                Padding(
+                TourAnchor('tech-report-sheet-head', child: Padding(
                   padding: const EdgeInsets.fromLTRB(18, 6, 8, 8),
                   child: Row(
                     children: [
@@ -5842,7 +5858,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                       ),
                     ],
                   ),
-                ),
+                )),
                 const Divider(height: 1),
                 // Scrollable body
                 Expanded(
@@ -5852,7 +5868,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         // Badges row
-                        Wrap(
+                        TourAnchor('tech-report-sheet-badges', child: Wrap(
                           spacing: 8,
                           runSpacing: 6,
                           children: [
@@ -5917,11 +5933,11 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                               ),
                             ..._ticketBadges(r),
                           ],
-                        ),
+                        )),
                         const SizedBox(height: 16),
 
                         // Location & Locker card
-                        Container(
+                        TourAnchor('tech-report-sheet-location', child: Container(
                           width: double.infinity,
                           padding: const EdgeInsets.all(14),
                           decoration: BoxDecoration(
@@ -5987,12 +6003,12 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                             ),
                           ],
                         ),
-                      ),
+                      )),
                       const SizedBox(height: 14),
 
                       // Reporter info card
                       if (reporterName.isNotEmpty || reporterPhone.isNotEmpty) ...[
-                        Container(
+                        TourAnchor('tech-report-sheet-reporter', child: Container(
                           width: double.infinity,
                           padding: const EdgeInsets.all(14),
                           decoration: BoxDecoration(
@@ -6038,16 +6054,16 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                                 ),
                             ],
                           ),
-                        ),
+                        )),
                         const SizedBox(height: 14),
                       ],
 
                       // Description & Ảnh người báo gửi
                       if (cleanedDesc.isNotEmpty || userReportPhotos.isNotEmpty) ...[
-                        Text(
+                        TourAnchor('tech-report-sheet-complaint', child: Text(
                           context.l10n.techHomeCustomerComplaint,
                           style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: opsDark),
-                        ),
+                        )),
                         const SizedBox(height: 6),
                         if (cleanedDesc.isNotEmpty)
                           Container(
@@ -6074,21 +6090,21 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
 
                       // Ảnh KTV đã gắn vào phiếu — xoá được ảnh tải nhầm.
                       if (status == 'IN_PROGRESS' && assignedToMe && _asInt(r['id']) != null) ...[
-                        _MyReportPhotosSection(
+                        TourAnchor('tech-report-sheet-my-photos', child: _MyReportPhotosSection(
                           reportId: _asInt(r['id'])!,
                           service: _service,
                           myUserId: _myUserId,
-                        ),
+                        )),
                         const SizedBox(height: 16),
                       ],
 
                       // Nhật ký & Lịch sử xử lý KTV (được chuyển từ hình 3 sang)
-                      _ReportLogsSection(
+                      TourAnchor('tech-report-sheet-logs', child: _ReportLogsSection(
                         reportId: _asInt(r['id']) ?? 0,
                         service: _service,
                         report: r,
                         canAddNote: status == 'IN_PROGRESS' && assignedToMe,
-                      ),
+                      )),
                       const SizedBox(height: 16),
                     ],
                   ),
@@ -6116,7 +6132,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                     children: [
                       // Hàng 1: Nút hành động nghiệp vụ chính (Primary Workflow)
                       if (status == 'OPEN') ...[
-                        SizedBox(
+                        TourAnchor('tech-report-claim', child: SizedBox(
                           width: double.infinity,
                           height: 42,
                           child: ElevatedButton.icon(
@@ -6144,12 +6160,12 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                               style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13.5),
                             ),
                           ),
-                        ),
+                        )),
                         const SizedBox(height: 6),
                       ],
                       // Chỉ KTV đang được giao mới hoàn tất được (server trả 403 nếu không).
                       if (status == 'IN_PROGRESS' && assignedToMe) ...[
-                        SizedBox(
+                        TourAnchor('tech-report-box-incident', child: SizedBox(
                           width: double.infinity,
                           height: 42,
                           child: ElevatedButton.icon(
@@ -6171,9 +6187,9 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                               style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
                             ),
                           ),
-                        ),
+                        )),
                         const SizedBox(height: 6),
-                        SizedBox(
+                        TourAnchor('tech-report-resolve', child: SizedBox(
                           width: double.infinity,
                           height: 40,
                           child: ElevatedButton.icon(
@@ -6195,9 +6211,9 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                               style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
                             ),
                           ),
-                        ),
+                        )),
                         const SizedBox(height: 6),
-                        SizedBox(
+                        TourAnchor('tech-report-reject', child: SizedBox(
                           width: double.infinity,
                           height: 40,
                           child: OutlinedButton.icon(
@@ -6218,9 +6234,9 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                               style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 12.5),
                             ),
                           ),
-                        ),
+                        )),
                         const SizedBox(height: 6),
-                        SizedBox(
+                        TourAnchor('tech-report-release', child: SizedBox(
                           width: double.infinity,
                           height: 36,
                           child: TextButton.icon(
@@ -6235,17 +6251,17 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                             ),
                             style: TextButton.styleFrom(foregroundColor: const Color(0xFF64748B)),
                           ),
-                        ),
+                        )),
                         const SizedBox(height: 4),
                       ],
                       if (status == 'IN_PROGRESS' && !assignedToMe) ...[
-                        OpsBanner(
+                        TourAnchor('tech-report-handled-by', child: OpsBanner(
                           tone: OpsBannerTone.info,
                           icon: Icons.engineering_outlined,
                           text: r['assignedToUserId'] != null
                               ? context.l10n.techHomeTicketHandledByName(_assigneeLabel(r))
                               : context.l10n.techHomeTicketBeingHandled,
-                        ),
+                        )),
                         const SizedBox(height: 6),
                       ],
 
@@ -6253,7 +6269,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                       Row(
                         children: [
                           Expanded(
-                            child: SizedBox(
+                            child: TourAnchor('tech-report-directions', child: SizedBox(
                               height: 36,
                               child: OutlinedButton.icon(
                                 onPressed: () {
@@ -6275,13 +6291,13 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                                   ),
                                 ),
                               ),
-                            ),
+                            )),
                           ),
                           // Chỉ KTV đang được giao phiếu mới gia hạn được (CONTRACTS §4).
                           if (slaPolicy.visible) ...[
                             const SizedBox(width: 8),
                             Expanded(
-                              child: SizedBox(
+                              child: TourAnchor('tech-report-extend', child: SizedBox(
                                 height: 36,
                                 child: OutlinedButton.icon(
                                   onPressed: slaPolicy.canExtend
@@ -6306,7 +6322,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                                     ),
                                   ),
                                 ),
-                              ),
+                              )),
                             ),
                           ],
                         ],
@@ -6771,7 +6787,7 @@ class _IotDeviceSheetState extends State<_IotDeviceSheet> {
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Row(
+                        TourAnchor('tech-device-head', child: Row(
                           children: [
                             const Icon(Icons.router_outlined, color: opsPrimary),
                             const SizedBox(width: 10),
@@ -6787,7 +6803,7 @@ class _IotDeviceSheetState extends State<_IotDeviceSheet> {
                             ),
                             _DeviceStatusBadge(device?['status'] as String?),
                           ],
-                        ),
+                        )),
                         const SizedBox(height: 12),
                         for (final row in rows)
                           Padding(
@@ -6818,10 +6834,10 @@ class _IotDeviceSheetState extends State<_IotDeviceSheet> {
                             ),
                           ),
                         const SizedBox(height: 6),
-                        Text(
+                        TourAnchor('tech-device-status-hint', child: Text(
                           context.l10n.techHomeDeviceStatusHint,
                           style: const TextStyle(fontSize: 11.5, color: opsMutedText),
-                        ),
+                        )),
                         const SizedBox(height: 12),
                         if (restart != null) ...[
                           OpsBanner(
@@ -6837,7 +6853,7 @@ class _IotDeviceSheetState extends State<_IotDeviceSheet> {
                           ),
                           const SizedBox(height: 12),
                         ],
-                        SizedBox(
+                        TourAnchor('tech-device-restart', child: SizedBox(
                           width: double.infinity,
                           child: ElevatedButton.icon(
                             onPressed: _busy ? null : _restart,
@@ -6863,9 +6879,9 @@ class _IotDeviceSheetState extends State<_IotDeviceSheet> {
                               ),
                             ),
                           ),
-                        ),
+                        )),
                         const SizedBox(height: 8),
-                        Row(
+                        TourAnchor('tech-device-mark', child: Row(
                           children: [
                             Expanded(
                               child: OutlinedButton(
@@ -6896,12 +6912,12 @@ class _IotDeviceSheetState extends State<_IotDeviceSheet> {
                               ),
                             ),
                           ],
-                        ),
+                        )),
                         const SizedBox(height: 12),
-                        OpsSectionLabel(
+                        TourAnchor('tech-device-logs', child: OpsSectionLabel(
                           context.l10n.techHomeActivityLog,
                           icon: Icons.history_edu_outlined,
-                        ),
+                        )),
                         if (_logsError != null)
                           Text(
                             context.l10n.techHomeLogLoadFailed(_logsError!),
@@ -7873,7 +7889,7 @@ class _ResolveVerificationSheetState extends State<_ResolveVerificationSheet> {
                 ),
               ),
               const SizedBox(height: 14),
-              Row(
+              TourAnchor('tech-resolve-head', child: Row(
                 children: [
                   Container(
                     padding: const EdgeInsets.all(8),
@@ -7907,14 +7923,14 @@ class _ResolveVerificationSheetState extends State<_ResolveVerificationSheet> {
                     ),
                   ),
                 ],
-              ),
+              )),
               const SizedBox(height: 16),
               Text(
                 context.l10n.techHomeScenePhotosBeforeAfter,
                 style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
               ),
               const SizedBox(height: 8),
-              _buildPhotoSection(
+              TourAnchor('tech-resolve-before', child: _buildPhotoSection(
                 title: context.l10n.techHomeBeforeRepair,
                 subtitle: _existingInspection.isNotEmpty
                     ? context.l10n.techHomeExistingScenePhotos(_existingInspection.length)
@@ -7940,9 +7956,9 @@ class _ResolveVerificationSheetState extends State<_ResolveVerificationSheet> {
                     ),
                   ],
                 ),
-              ),
+              )),
               const SizedBox(height: 10),
-              _buildPhotoSection(
+              TourAnchor('tech-resolve-during', child: _buildPhotoSection(
                 title: context.l10n.techHomeDuringRepair,
                 subtitle: context.l10n.techHomeDuringRepairHint,
                 satisfied: _existingProgress.isNotEmpty || _progressPhotos.isNotEmpty,
@@ -7966,9 +7982,9 @@ class _ResolveVerificationSheetState extends State<_ResolveVerificationSheet> {
                     ),
                   ],
                 ),
-              ),
+              )),
               const SizedBox(height: 10),
-              _buildPhotoSection(
+              TourAnchor('tech-resolve-after', child: _buildPhotoSection(
                 title: context.l10n.techHomeAfterRepair,
                 subtitle: BusinessConfigService
                         .instance.current.requireResolutionPhoto
@@ -7995,14 +8011,14 @@ class _ResolveVerificationSheetState extends State<_ResolveVerificationSheet> {
                     ),
                   ],
                 ),
-              ),
+              )),
               const SizedBox(height: 16),
               Text(
                 context.l10n.techHomeTechNotesTitle,
                 style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
               ),
               const SizedBox(height: 6),
-              TextField(
+              TourAnchor('tech-resolve-notes', child: TextField(
                 controller: _noteCtrl,
                 minLines: 2,
                 maxLines: 4,
@@ -8014,7 +8030,7 @@ class _ResolveVerificationSheetState extends State<_ResolveVerificationSheet> {
                     borderSide: const BorderSide(color: opsBorder),
                   ),
                 ),
-              ),
+              )),
               const SizedBox(height: 8),
               Wrap(
                 spacing: 6,
@@ -8046,7 +8062,7 @@ class _ResolveVerificationSheetState extends State<_ResolveVerificationSheet> {
                   ),
                 )
               else if (_testOpenAllowed)
-                Container(
+                TourAnchor('tech-resolve-test-open', child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                   decoration: BoxDecoration(
                     color: _quickFixAndUnlock ? const Color(0xFFF0FDF4) : const Color(0xFFF8FAFC),
@@ -8107,7 +8123,7 @@ class _ResolveVerificationSheetState extends State<_ResolveVerificationSheet> {
                       ),
                     ],
                   ),
-                )
+                ))
               else if (_testOpenBlockedReason != null)
                 Text(
                   context.l10n.techHomeTestOpenNotSuggested(_testOpenBlockedReason!),
@@ -8123,7 +8139,7 @@ class _ResolveVerificationSheetState extends State<_ResolveVerificationSheet> {
                 ),
               ],
               const SizedBox(height: 20),
-              SizedBox(
+              TourAnchor('tech-resolve-submit', child: SizedBox(
                 width: double.infinity,
                 child: ElevatedButton.icon(
                   onPressed: _submitting ? null : _submit,
@@ -8153,7 +8169,7 @@ class _ResolveVerificationSheetState extends State<_ResolveVerificationSheet> {
                         fontWeight: FontWeight.bold, fontSize: 14),
                   ),
                 ),
-              ),
+              )),
             ],
           ),
         ),
@@ -8282,16 +8298,16 @@ class _InspectionSheetState extends State<_InspectionSheet> {
                 style: const TextStyle(fontSize: 12, color: opsMutedText),
               ),
               const SizedBox(height: 12),
-              PhotoPickerField(
+              TourAnchor('tech-scene-photos', child: PhotoPickerField(
                 controller: _photos,
                 enabled: !_submitting,
                 thumbSize: 80,
                 accentColor: _accent,
                 addLabel: context.l10n.rfTakePhoto,
                 helperText: context.l10n.photoMax(_photos.maxPhotos),
-              ),
+              )),
               const SizedBox(height: 14),
-              TextField(
+              TourAnchor('tech-scene-note', child: TextField(
                 controller: _noteCtrl,
                 enabled: !_submitting,
                 minLines: 1,
@@ -8304,7 +8320,7 @@ class _InspectionSheetState extends State<_InspectionSheet> {
                     borderSide: const BorderSide(color: opsBorder),
                   ),
                 ),
-              ),
+              )),
               if (_error != null) ...[
                 const SizedBox(height: 12),
                 OpsBanner(
@@ -8314,7 +8330,7 @@ class _InspectionSheetState extends State<_InspectionSheet> {
                 ),
               ],
               const SizedBox(height: 18),
-              SizedBox(
+              TourAnchor('tech-scene-submit', child: SizedBox(
                 width: double.infinity,
                 child: ElevatedButton.icon(
                   onPressed: _submitting ? null : _submit,
@@ -8340,7 +8356,7 @@ class _InspectionSheetState extends State<_InspectionSheet> {
                         fontWeight: FontWeight.bold, fontSize: 14),
                   ),
                 ),
-              ),
+              )),
             ],
           ),
         ),
@@ -8799,7 +8815,7 @@ class _BoxIncidentResolutionSheetState
               if (widget.cells.isEmpty)
                 Text(context.l10n.techHomeKioskNoBoxes)
               else
-                Wrap(
+                TourAnchor('tech-box-incident-pick', child: Wrap(
                   spacing: 8,
                   runSpacing: 8,
                   children: widget.cells.map((c) {
@@ -8868,7 +8884,7 @@ class _BoxIncidentResolutionSheetState
                       ),
                     );
                   }).toList(),
-                ),
+                )),
               const SizedBox(height: 16),
 
               // BƯỚC 2: HIỆN TRẠNG Ô & PHƯƠNG ÁN XỬ LÝ
@@ -9086,12 +9102,12 @@ class _BoxIncidentResolutionSheetState
                 ],
                 const SizedBox(height: 14),
 
-                Text(
+                TourAnchor('tech-box-incident-options', child: Text(
                   _activeOrder != null
                       ? context.l10n.techHomeStep2PickGoodsOption
                       : context.l10n.techHomeStep2PickOption,
                   style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13.5),
-                ),
+                )),
                 const SizedBox(height: 6),
 
                 if (_activeOrder != null) ...[
@@ -9277,7 +9293,7 @@ class _BoxIncidentResolutionSheetState
                 ],
 
                 // NÚT CHỌN KHÓA Ô TỦ HAY KHÔNG (Switch)
-                Builder(
+                TourAnchor('tech-box-incident-lock', child: Builder(
                   builder: (context) {
                     final bool isLockOnly = _action == 'LOCK_ONLY';
                     final bool effectiveLockBox = isLockOnly ? true : _lockBox;
@@ -9356,15 +9372,15 @@ class _BoxIncidentResolutionSheetState
                       ),
                     );
                   },
-                ),
+                )),
               ],
               const SizedBox(height: 14),
 
               // BƯỚC 3: LÝ DO & GHI CHÚ
-              Text(
+              TourAnchor('tech-box-incident-notes', child: Text(
                 context.l10n.techHomeStep3ReasonNotes,
                 style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13.5),
-              ),
+              )),
               const SizedBox(height: 8),
 
               // 3.1: Hiển thị lý do sự cố từ User / Kiểm tra định kỳ (Read-only)
@@ -9455,10 +9471,10 @@ class _BoxIncidentResolutionSheetState
               const SizedBox(height: 14),
 
               // BƯỚC 4: ẢNH HIỆN TRƯỜNG
-              Text(
+              TourAnchor('tech-box-incident-photos', child: Text(
                 context.l10n.techHomeStep4ScenePhotos,
                 style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13.5),
-              ),
+              )),
               const SizedBox(height: 6),
               if (_existingInspection.isNotEmpty) ...[
                 Container(
@@ -9576,7 +9592,7 @@ class _BoxIncidentResolutionSheetState
               ],
               const SizedBox(height: 18),
 
-              SizedBox(
+              TourAnchor('tech-box-incident-submit', child: SizedBox(
                 width: double.infinity,
                 child: ElevatedButton.icon(
                   onPressed: _submitting ? null : _submit,
@@ -9604,7 +9620,7 @@ class _BoxIncidentResolutionSheetState
                         fontWeight: FontWeight.bold, fontSize: 14),
                   ),
                 ),
-              ),
+              )),
             ],
           ),
         ),
@@ -10094,7 +10110,7 @@ class _ExtendSlaSheetState extends State<_ExtendSlaSheet> {
                 ),
               ],
               const SizedBox(height: 12),
-              Container(
+              TourAnchor('tech-extend-due', child: Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
                   color: const Color(0xFFFFFBEB),
@@ -10139,7 +10155,7 @@ class _ExtendSlaSheetState extends State<_ExtendSlaSheet> {
                     ),
                   ],
                 ),
-              ),
+              )),
               const SizedBox(height: 14),
               Text(
                 maxHoursPerExtension != null
@@ -10149,7 +10165,7 @@ class _ExtendSlaSheetState extends State<_ExtendSlaSheet> {
                     fontSize: 13, fontWeight: FontWeight.bold, color: opsDark),
               ),
               const SizedBox(height: 8),
-              Wrap(
+              TourAnchor('tech-extend-hours', child: Wrap(
                 spacing: 6,
                 runSpacing: 6,
                 children: [
@@ -10163,13 +10179,13 @@ class _ExtendSlaSheetState extends State<_ExtendSlaSheet> {
                           : (_) => setState(() => _hours = h),
                     ),
                 ],
-              ),
+              )),
               const SizedBox(height: 14),
               Text(context.l10n.techHomeExtensionReasonLabel,
                   style: const TextStyle(
                       fontSize: 13, fontWeight: FontWeight.bold, color: opsDark)),
               const SizedBox(height: 6),
-              TextField(
+              TourAnchor('tech-extend-reason', child: TextField(
                 controller: _reasonCtrl,
                 enabled: !_submitting,
                 maxLines: 2,
@@ -10181,7 +10197,7 @@ class _ExtendSlaSheetState extends State<_ExtendSlaSheet> {
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                   contentPadding: const EdgeInsets.all(10),
                 ),
-              ),
+              )),
               Wrap(
                 spacing: 6,
                 runSpacing: 6,
@@ -10205,7 +10221,7 @@ class _ExtendSlaSheetState extends State<_ExtendSlaSheet> {
                 ),
               ],
               const SizedBox(height: 16),
-              SizedBox(
+              TourAnchor('tech-extend-submit', child: SizedBox(
                 width: double.infinity,
                 height: 46,
                 child: ElevatedButton.icon(
@@ -10227,7 +10243,7 @@ class _ExtendSlaSheetState extends State<_ExtendSlaSheet> {
                     style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
                   ),
                 ),
-              ),
+              )),
             ],
           ),
         ),

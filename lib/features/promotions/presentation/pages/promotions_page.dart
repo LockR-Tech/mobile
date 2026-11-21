@@ -14,6 +14,7 @@ import 'package:smart_laundry_locker/features/vouchers/data/repositories/voucher
 import 'package:smart_laundry_locker/shared/shared.dart';
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
 import 'package:smart_laundry_locker/core/l10n/l10n.dart';
+import 'package:smart_laundry_locker/features/onboarding/presentation/tour_anchor.dart';
 import 'package:smart_laundry_locker/core/services/platform_info.dart';
 
 class PromotionsPage extends ConsumerStatefulWidget {
@@ -58,10 +59,10 @@ class _PromotionsPageState extends ConsumerState<PromotionsPage> {
           subtitle: context.l10n.promoSubtitle,
           onBack: () => AppRouter.backOrHome(context),
           collapseProgress: collapse,
-          trailing: BrandCircleIconButton(
+          trailing: TourAnchor('my-promos-refresh', child: BrandCircleIconButton(
             icon: LucideIcons.refreshCw,
             onTap: () => ref.read(promotionNotifierProvider).load(),
-          ),
+          )),
         ),
         child: RefreshIndicator(
           color: AislBrand.navy,
@@ -113,7 +114,7 @@ class _PromotionsPageState extends ConsumerState<PromotionsPage> {
       separatorBuilder: (_, __) => Divider(height: 1, color: context.dividerColor),
       itemBuilder: (ctx, index) {
         final promo = provider.promotions[index];
-        return GestureDetector(
+        final card = GestureDetector(
           behavior: HitTestBehavior.opaque,
           onTap: () => Navigator.of(ctx).push<void>(
             MaterialPageRoute(
@@ -122,6 +123,7 @@ class _PromotionsPageState extends ConsumerState<PromotionsPage> {
           ),
           child: _buildPromoCard(promo, index),
         );
+        return index == 0 ? TourAnchor('my-promos-first', child: card) : card;
       },
     );
   }
@@ -284,7 +286,7 @@ class _PromotionsPageState extends ConsumerState<PromotionsPage> {
                           ),
                         ),
                       ),
-                      GestureDetector(
+                      _firstCode(index, GestureDetector(
                         onTap: () => _copyCode(context, promo.code),
                         child: Container(
                           padding: const EdgeInsets.symmetric(
@@ -314,11 +316,11 @@ class _PromotionsPageState extends ConsumerState<PromotionsPage> {
                             ],
                           ),
                         ),
-                      ),
+                      )),
                       const SizedBox(width: 6),
                       // Lưu vào ví voucher (promotion_claims) — xem lại ở
                       // "Ưu đãi của tôi", mã tự chuyển USED khi áp vào đơn.
-                      GestureDetector(
+                      _firstSave(index, GestureDetector(
                         onTap: () => _claimPromotion(context, promo),
                         child: Container(
                           padding: const EdgeInsets.symmetric(
@@ -346,7 +348,7 @@ class _PromotionsPageState extends ConsumerState<PromotionsPage> {
                             ],
                           ),
                         ),
-                      ),
+                      )),
                     ],
                   ),
                 ],
@@ -357,6 +359,13 @@ class _PromotionsPageState extends ConsumerState<PromotionsPage> {
       ),
     );
   }
+
+  /// Neo hướng dẫn (F3-G13) trên nút sao chép / lưu mã của ưu đãi đầu tiên.
+  static Widget _firstCode(int index, Widget child) =>
+      index == 0 ? TourAnchor('my-promos-first-code', child: child) : child;
+
+  static Widget _firstSave(int index, Widget child) =>
+      index == 0 ? TourAnchor('my-promos-first-save', child: child) : child;
 
   Widget _gradientPlaceholder(List<Color> colors) {
     return DecoratedBox(

@@ -15,6 +15,7 @@ import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
 import 'dart:async';
 import 'package:smart_laundry_locker/core/services/app_event_bus.dart';
 import 'package:smart_laundry_locker/core/l10n/l10n.dart';
+import 'package:smart_laundry_locker/features/onboarding/presentation/tour_anchor.dart';
 
 class LockerPage extends ConsumerStatefulWidget {
   const LockerPage({super.key});
@@ -408,12 +409,17 @@ class _LockerPageState extends ConsumerState<LockerPage> {
                 art: HeroArt.locker,
                 title: context.l10n.lockerLocationList,
                 subtitle: context.l10n.lockerPickLocation,
-                trailing: BrandCircleIconButton(
+                trailing: TourAnchor(
+                  'lockers-map-btn',
+                  child: BrandCircleIconButton(
                   icon: LucideIcons.mapPin,
                   onTap: _openMap,
+                  ),
                 ),
               ),
-              Padding(
+              TourAnchor(
+                'lockers-search',
+                child: Padding(
                 padding: const EdgeInsets.fromLTRB(20, 16, 20, 10),
                 child: TextField(
                   controller: _searchController,
@@ -456,9 +462,13 @@ class _LockerPageState extends ConsumerState<LockerPage> {
                     ),
                   ),
                 ),
+                ),
               ),
               if (state.locations.isNotEmpty) ...[
-                _buildKioskFilterChips(state.locations),
+                TourAnchor(
+                  'lockers-kiosk-chips',
+                  child: _buildKioskFilterChips(state.locations),
+                ),
               ],
               Expanded(child: _buildLocationsList(state)),
             ],
@@ -589,6 +599,8 @@ class _LockerPageState extends ConsumerState<LockerPage> {
         items.add(_LockerListItem.location(loc));
       }
     }
+    // Hướng dẫn trên màn hình (F3-G13): neo tủ đầu tiên để mở trang chi tiết tủ.
+    final firstLocationIndex = items.indexWhere((x) => !x.isHeader);
 
     return RefreshIndicator(
       onRefresh: () async {
@@ -628,7 +640,17 @@ class _LockerPageState extends ConsumerState<LockerPage> {
             children: [
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: LockerItem(
+                child: index == firstLocationIndex
+                    ? TourAnchor(
+                        'lockers-first-item',
+                        child: LockerItem(
+                          location: location,
+                          isMostUsed: isMostUsed,
+                          userPosition: _userPosition,
+                          onTap: () => _navigateToMap(location),
+                        ),
+                      )
+                    : LockerItem(
                   location: location,
                   isMostUsed: isMostUsed,
                   userPosition: _userPosition,

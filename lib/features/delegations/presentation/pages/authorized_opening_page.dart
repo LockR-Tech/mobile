@@ -8,6 +8,7 @@ import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/lo
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/ops_widgets.dart';
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
 import 'package:smart_laundry_locker/core/l10n/l10n.dart';
+import 'package:smart_laundry_locker/features/onboarding/presentation/tour_anchor.dart';
 
 /// "Mở tủ ủy quyền": người lấy hộ (hoặc người nhận) chọn tủ, nhập mã lấy hàng
 /// rồi mở ô qua `POST /api/iot/unlock-with-code {lockerId, code}` — server tự tra
@@ -158,10 +159,13 @@ class _AuthorizedOpeningPageState extends State<AuthorizedOpeningPage> {
             child: ListView(
               padding: const EdgeInsets.all(16),
               children: [
-                OpsBanner(
+                TourAnchor(
+                  'ao-intro',
+                  child: OpsBanner(
                   icon: LucideIcons.keyRound,
                   text:
                       context.l10n.aoIntro,
+                  ),
                 ),
                 if ((widget.orderCode ?? '').isNotEmpty) ...[
                   const SizedBox(height: 12),
@@ -197,19 +201,24 @@ class _AuthorizedOpeningPageState extends State<AuthorizedOpeningPage> {
                     ],
                   )
                 else
-                  LockerPickerField(
+                  TourAnchor(
+                    'ao-locker',
+                    child: LockerPickerField(
                     lockers: _lockers,
                     selectedId: _lockerId,
                     placeholder: context.l10n.aoTapToChoose,
                     onSelected: (l) =>
                         setState(() => _lockerId = (l['id'] as num?)?.toInt()),
+                    ),
                   ),
                 const SizedBox(height: 20),
                 OpsSectionLabel(
                   context.l10n.recvPickupCode,
                   icon: LucideIcons.keyRound,
                 ),
-                TextField(
+                TourAnchor(
+                  'ao-code',
+                  child: TextField(
                   controller: _codeCtrl,
                   enabled: !_opening,
                   keyboardType: TextInputType.number,
@@ -231,6 +240,7 @@ class _AuthorizedOpeningPageState extends State<AuthorizedOpeningPage> {
                       borderSide: const BorderSide(color: opsBorder),
                     ),
                   ),
+                  ),
                 ),
                 if (_result != null) ...[
                   const SizedBox(height: 12),
@@ -245,11 +255,14 @@ class _AuthorizedOpeningPageState extends State<AuthorizedOpeningPage> {
                   ),
                 ],
                 const SizedBox(height: 20),
-                OpsPrimaryButton(
+                TourAnchor(
+                  'ao-open',
+                  child: OpsPrimaryButton(
                   label: context.l10n.aoOpenBox,
                   icon: LucideIcons.doorOpen,
                   loading: _opening,
                   onPressed: _opening ? null : _open,
+                  ),
                 ),
               ],
             ),

@@ -18,6 +18,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
 import 'package:smart_laundry_locker/shared/shared.dart';
 import 'package:smart_laundry_locker/core/l10n/l10n.dart';
+import 'package:smart_laundry_locker/features/onboarding/presentation/tour_anchor.dart';
 
 /// Store detail screen: store info + customer ratings.
 ///
@@ -178,10 +179,13 @@ class _StoreDetailPageState extends State<StoreDetailPage> {
             onBack: () => Navigator.of(context).pop(),
             trailing: _store == null
                 ? null
-                : BrandCircleIconButton(
+                : TourAnchor(
+                    'store-detail-favorite',
+                    child: BrandCircleIconButton(
                     icon: _favorite ? Icons.favorite : Icons.favorite_border,
                     onTap: _toggleFavorite,
                     iconSize: 20,
+                    ),
                   ),
           ),
           Expanded(
@@ -228,9 +232,12 @@ class _StoreDetailPageState extends State<StoreDetailPage> {
           offset: const Offset(0, -24),
           child: Column(
             children: [
-              _buildInfoCard(store, summary),
+              TourAnchor('store-detail-info', child: _buildInfoCard(store, summary)),
               const SizedBox(height: 16),
-              _buildRatingsSection(summary),
+              TourAnchor(
+                'store-detail-reviews',
+                child: _buildRatingsSection(summary),
+              ),
               const SizedBox(height: 24),
             ],
           ),
@@ -339,7 +346,9 @@ class _StoreDetailPageState extends State<StoreDetailPage> {
           Row(
             children: [
               Expanded(
-                child: FilledButton.icon(
+                child: TourAnchor(
+                  'store-detail-directions',
+                  child: FilledButton.icon(
                   onPressed: _openDirections,
                   style: FilledButton.styleFrom(
                     backgroundColor: AISLShadcnTheme.navyPrimary,
@@ -347,11 +356,14 @@ class _StoreDetailPageState extends State<StoreDetailPage> {
                   ),
                   icon: const Icon(LucideIcons.map, size: 18),
                   label: Text(context.l10n.commonDirections),
+                  ),
                 ),
               ),
               const SizedBox(width: 12),
               Expanded(
-                child: OutlinedButton.icon(
+                child: TourAnchor(
+                  'store-detail-lockers',
+                  child: OutlinedButton.icon(
                   onPressed: () => Navigator.push<void>(
                     context,
                     MaterialPageRoute(
@@ -365,6 +377,7 @@ class _StoreDetailPageState extends State<StoreDetailPage> {
                   ),
                   icon: const Icon(LucideIcons.boxes, size: 18),
                   label: Text(context.l10n.storeViewLockers),
+                  ),
                 ),
               ),
             ],

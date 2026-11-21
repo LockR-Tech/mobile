@@ -86,10 +86,12 @@ AutoOpenDecision decideAutoOpen({
   if (!autoShow) return const AutoOpenDecision.none('skipped-forever');
   if (sessionSkipped) return const AutoOpenDecision.none('skipped-this-session');
   if (shownThisSession) return const AutoOpenDecision.none('already-shown');
-  final pending = pendingGroups(groups, seen);
+  // Có nhóm tổng quan (intro) ⇒ chỉ chúng tự chạy / tự báo; nhóm chi tiết để người dùng tự chọn.
+  final auto = groups.any((g) => g.intro) ? groups.where((g) => g.intro).toList() : groups;
+  final pending = pendingGroups(auto, seen);
   if (pending.isEmpty) return const AutoOpenDecision.none('nothing-new');
   final seenAny = groups.any((g) => (seen?[g.id] ?? 0) > 0);
-  return seenAny ? AutoOpenDecision('whatsNew', pending) : AutoOpenDecision('welcome', List.of(groups));
+  return seenAny ? AutoOpenDecision('whatsNew', pending) : AutoOpenDecision('welcome', List.of(auto));
 }
 
 /// "show" | "center" | "skip" | "missing"

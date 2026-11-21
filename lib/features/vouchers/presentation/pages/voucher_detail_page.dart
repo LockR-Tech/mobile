@@ -9,6 +9,7 @@ import 'package:smart_laundry_locker/features/promotions/data/models/promotion_m
 import 'package:smart_laundry_locker/features/promotions/presentation/widgets/promotion_scope_tag.dart';
 import '../../data/models/voucher_model.dart';
 import 'package:smart_laundry_locker/core/l10n/l10n.dart';
+import 'package:smart_laundry_locker/features/onboarding/presentation/tour_anchor.dart';
 import 'package:smart_laundry_locker/core/services/platform_info.dart';
 
 class VoucherDetailPage extends StatelessWidget {
@@ -69,28 +70,28 @@ class VoucherDetailPage extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  _TicketCard(voucher: voucher, accentColor: _accentColor),
+                  TourAnchor('my-voucher-detail-ticket', child: _TicketCard(voucher: voucher, accentColor: _accentColor)),
                   const SizedBox(height: 20),
-                  _CodeSection(
+                  TourAnchor('my-voucher-detail-code', child: _CodeSection(
                     code: voucher.code,
                     isActive: _isActive,
                     accentColor: _accentColor,
-                  ),
+                  )),
                   const SizedBox(height: 20),
-                  _InfoSection(
+                  TourAnchor('my-voucher-detail-info', child: _InfoSection(
                     rewardText: _rewardText,
                     statusLabel: _statusLabel,
                     statusBg: _statusBg,
                     statusFg: _statusFg,
                     voucher: voucher,
                     accentColor: _accentColor,
-                  ),
+                  )),
                   if (voucher.giftDescription.isNotEmpty) ...[
                     const SizedBox(height: 16),
                     _DescriptionCard(description: voucher.giftDescription),
                   ],
                   const SizedBox(height: 20),
-                  _HowToUseCard(
+                  TourAnchor('my-voucher-detail-howto', child: _HowToUseCard(
                     isActive: _isActive,
                     isExpired: _isExpired,
                     lockerName: promotionLockerDisplayName(
@@ -98,7 +99,7 @@ class VoucherDetailPage extends StatelessWidget {
                       lockerName: voucher.lockerName,
                       lockerCode: voucher.lockerCode,
                     ),
-                  ),
+                  )),
                 ],
               ),
             ),

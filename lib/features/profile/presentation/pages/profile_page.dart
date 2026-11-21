@@ -355,10 +355,13 @@ class _ProfilePageState extends State<ProfilePage>
         _buildMenuGroup(
           title: l10n.profileSectionAccount,
           items: [
-            ProfileMenuItem(
-              icon: LucideIcons.user,
-              title: l10n.profilePersonalInfo,
-              onTap: _handleEditProfile,
+            TourAnchor(
+              'profile-personal-info',
+              child: ProfileMenuItem(
+                icon: LucideIcons.user,
+                title: l10n.profilePersonalInfo,
+                onTap: _handleEditProfile,
+              ),
             ),
             TourAnchor(
               'profile-refund-account',
@@ -368,11 +371,14 @@ class _ProfilePageState extends State<ProfilePage>
                 onTap: () => context.push(AppRouter.refundBankAccount),
               ),
             ),
-            ProfileMenuItem(
-              icon: LucideIcons.sparkles,
-              title: l10n.profileLoyalty,
-              subtitle: l10n.profileLoyaltySubtitle,
-              onTap: _handleLoyalty,
+            TourAnchor(
+              'profile-loyalty',
+              child: ProfileMenuItem(
+                icon: LucideIcons.sparkles,
+                title: l10n.profileLoyalty,
+                subtitle: l10n.profileLoyaltySubtitle,
+                onTap: _handleLoyalty,
+              ),
             ),
             // Tạm ẩn: backend chưa có AI service (/api/auth/ai/* trả 500).
             if (FeatureFlags.faceRecognitionEnabled)
@@ -389,10 +395,13 @@ class _ProfilePageState extends State<ProfilePage>
                   );
                 },
               ),
-            ProfileMenuItem(
-              icon: LucideIcons.shield,
-              title: l10n.profileSecurity,
-              onTap: _handleSecurity,
+            TourAnchor(
+              'profile-security',
+              child: ProfileMenuItem(
+                icon: LucideIcons.shield,
+                title: l10n.profileSecurity,
+                onTap: _handleSecurity,
+              ),
             ),
             // Hướng dẫn trên màn hình (F3-G13): mở lại kể cả khi đã bỏ qua vĩnh viễn
             TourAnchor(
@@ -407,14 +416,17 @@ class _ProfilePageState extends State<ProfilePage>
             // Kho voucher: `GET /api/promotions/vouchers/my` (mã đã lưu từ
             // trang "Ưu đãi").
             if (FeatureFlags.vouchersEnabled)
-              ProfileMenuItem(
-                icon: LucideIcons.ticket,
-                title: l10n.profileVouchers,
-                onTap: _handleMyVouchers,
+              TourAnchor(
+                'profile-vouchers',
+                child: ProfileMenuItem(
+                  icon: LucideIcons.ticket,
+                  title: l10n.profileVouchers,
+                  onTap: _handleMyVouchers,
+                ),
               ),
             Consumer<NotificationProvider>(
               builder: (context, provider, child) {
-                return ProfileMenuItem(
+                return TourAnchor('profile-notifications', child: ProfileMenuItem(
                   icon: LucideIcons.bell,
                   title: l10n.commonNotifications,
                   onTap: () {
@@ -452,7 +464,7 @@ class _ProfilePageState extends State<ProfilePage>
                       ),
                     ],
                   ),
-                );
+                ));
               },
             ),
           ],
@@ -470,7 +482,7 @@ class _ProfilePageState extends State<ProfilePage>
                     .where((d) => d.isActive)
                     .toList();
 
-                return ProfileMenuItem(
+                return TourAnchor('profile-delegations', child: ProfileMenuItem(
                   icon: LucideIcons.packageOpen,
                   title: l10n.profileDelegations,
                   onTap: () => context.push(AppRouter.myDelegations),
@@ -506,50 +518,62 @@ class _ProfilePageState extends State<ProfilePage>
                       ),
                     ],
                   ),
-                );
+                ));
               },
             ),
-            ProfileMenuItem(
-              icon: LucideIcons.rotateCcw,
-              title: l10n.profileRefunds,
-              onTap: () => context.push(AppRouter.refundRequests),
+            TourAnchor(
+              'profile-refunds',
+              child: ProfileMenuItem(
+                icon: LucideIcons.rotateCcw,
+                title: l10n.profileRefunds,
+                onTap: () => context.push(AppRouter.refundRequests),
+              ),
             ),
             // Lịch sử thanh toán (`GET /api/wallet/transactions` gồm cả khoản SePay của đơn).
             if (FeatureFlags.transactionsEnabled)
-              ProfileMenuItem(
+              TourAnchor(
+                'profile-transactions',
+                child: ProfileMenuItem(
+                  leadingWidget: const SizedBox(
+                    width: 26,
+                    height: 26,
+                    child: AppLottie(
+                      AppLottieAssets.napVi,
+                      fit: BoxFit.contain,
+                    ),
+                  ),
+                  title: l10n.commonTransactions,
+                  onTap: () => context.push(AppRouter.transactions),
+                  trailing: const Icon(
+                    LucideIcons.chevronRight,
+                    size: 16,
+                    color: Colors.black54,
+                  ),
+                ),
+              ),
+            TourAnchor(
+              'profile-my-reports',
+              child: ProfileMenuItem(
                 leadingWidget: const SizedBox(
                   width: 26,
                   height: 26,
                   child: AppLottie(
-                    AppLottieAssets.napVi,
+                    AppLottieAssets.baoCao,
                     fit: BoxFit.contain,
                   ),
                 ),
-                title: l10n.commonTransactions,
-                onTap: () => context.push(AppRouter.transactions),
-                trailing: const Icon(
-                  LucideIcons.chevronRight,
-                  size: 16,
-                  color: Colors.black54,
-                ),
+                title: l10n.profileMyReports,
+                onTap: () => context.push(AppRouter.myReports),
               ),
-            ProfileMenuItem(
-              leadingWidget: const SizedBox(
-                width: 26,
-                height: 26,
-                child: AppLottie(
-                  AppLottieAssets.baoCao,
-                  fit: BoxFit.contain,
-                ),
-              ),
-              title: l10n.profileMyReports,
-              onTap: () => context.push(AppRouter.myReports),
             ),
             if (_bleTestAllowed)
-              ProfileMenuItem(
-                icon: LucideIcons.bluetooth,
-                title: l10n.profileBleTest,
-                onTap: () => context.push(AppRouter.bleTest),
+              TourAnchor(
+                'profile-ble-test',
+                child: ProfileMenuItem(
+                  icon: LucideIcons.bluetooth,
+                  title: l10n.profileBleTest,
+                  onTap: () => context.push(AppRouter.bleTest),
+                ),
               ),
           ],
         ),
@@ -560,34 +584,43 @@ class _ProfilePageState extends State<ProfilePage>
         _buildMenuGroup(
           title: l10n.profileSectionSettings,
           items: [
-            ProfileMenuItem(
-              icon: LucideIcons.languages,
-              title: l10n.profileLanguage,
-              subtitle: LocaleProvider.instance.isEnglish
-                  ? l10n.languageEnglish
-                  : l10n.languageVietnamese,
-              onTap: _handleLanguage,
-              trailing: Icon(
-                LucideIcons.chevronRight,
-                size: 16,
-                color: ShadTheme.of(context).colorScheme.mutedForeground,
+            TourAnchor(
+              'profile-language',
+              child: ProfileMenuItem(
+                icon: LucideIcons.languages,
+                title: l10n.profileLanguage,
+                subtitle: LocaleProvider.instance.isEnglish
+                    ? l10n.languageEnglish
+                    : l10n.languageVietnamese,
+                onTap: _handleLanguage,
+                trailing: Icon(
+                  LucideIcons.chevronRight,
+                  size: 16,
+                  color: ShadTheme.of(context).colorScheme.mutedForeground,
+                ),
               ),
             ),
-            ProfileMenuItem(
-              icon: LucideIcons.palette,
-              title: l10n.profileTheme,
-              onTap: _handleTheme,
-              trailing: Icon(
-                LucideIcons.chevronRight,
-                size: 16,
-                color: ShadTheme.of(context).colorScheme.mutedForeground,
+            TourAnchor(
+              'profile-theme',
+              child: ProfileMenuItem(
+                icon: LucideIcons.palette,
+                title: l10n.profileTheme,
+                onTap: _handleTheme,
+                trailing: Icon(
+                  LucideIcons.chevronRight,
+                  size: 16,
+                  color: ShadTheme.of(context).colorScheme.mutedForeground,
+                ),
               ),
             ),
-            ProfileMenuItem(
-              icon: LucideIcons.mapPin,
-              title: l10n.profileLocation,
-              subtitle: l10n.profileLocationSubtitle,
-              onTap: _handleLocation,
+            TourAnchor(
+              'profile-location',
+              child: ProfileMenuItem(
+                icon: LucideIcons.mapPin,
+                title: l10n.profileLocation,
+                subtitle: l10n.profileLocationSubtitle,
+                onTap: _handleLocation,
+              ),
             ),
           ],
         ),
@@ -598,7 +631,7 @@ class _ProfilePageState extends State<ProfilePage>
         _buildMenuGroup(
           title: l10n.profileSectionSupport,
           items: [
-            ProfileMenuItem(
+            TourAnchor('profile-assistant', child: ProfileMenuItem(
               leadingWidget: Container(
                 width: 38,
                 height: 38,
@@ -654,31 +687,43 @@ class _ProfilePageState extends State<ProfilePage>
                 ],
               ),
               onTap: () => context.push(AppRouter.assistant),
+            )),
+            TourAnchor(
+              'profile-quick-help',
+              child: ProfileMenuItem(
+                icon: LucideIcons.helpCircle,
+                title: l10n.profileQuickHelp,
+                subtitle: l10n.profileQuickHelpSubtitle,
+                onTap: _showQuickHelp,
+              ),
             ),
-            ProfileMenuItem(
-              icon: LucideIcons.helpCircle,
-              title: l10n.profileQuickHelp,
-              subtitle: l10n.profileQuickHelpSubtitle,
-              onTap: _showQuickHelp,
+            TourAnchor(
+              'profile-contact',
+              child: ProfileMenuItem(
+                icon: LucideIcons.messageCircle,
+                title: l10n.profileContact,
+                onTap: _handleContact,
+              ),
             ),
-            ProfileMenuItem(
-              icon: LucideIcons.messageCircle,
-              title: l10n.profileContact,
-              onTap: _handleContact,
+            TourAnchor(
+              'profile-terms',
+              child: ProfileMenuItem(
+                key: const ValueKey('profile-legal-terms'),
+                icon: LucideIcons.fileText,
+                title: l10n.profileTerms,
+                trailing: _legalConsentTrailing(),
+                onTap: () => LegalDocument.terms.open(context),
+              ),
             ),
-            ProfileMenuItem(
-              key: const ValueKey('profile-legal-terms'),
-              icon: LucideIcons.fileText,
-              title: l10n.profileTerms,
-              trailing: _legalConsentTrailing(),
-              onTap: () => LegalDocument.terms.open(context),
-            ),
-            ProfileMenuItem(
-              key: const ValueKey('profile-legal-privacy'),
-              icon: LucideIcons.shieldCheck,
-              title: l10n.commonPrivacyPolicy,
-              trailing: _legalConsentTrailing(),
-              onTap: () => LegalDocument.privacy.open(context),
+            TourAnchor(
+              'profile-privacy',
+              child: ProfileMenuItem(
+                key: const ValueKey('profile-legal-privacy'),
+                icon: LucideIcons.shieldCheck,
+                title: l10n.commonPrivacyPolicy,
+                trailing: _legalConsentTrailing(),
+                onTap: () => LegalDocument.privacy.open(context),
+              ),
             ),
           ],
         ),
@@ -688,12 +733,15 @@ class _ProfilePageState extends State<ProfilePage>
         // Account actions
         _buildMenuGroup(
           items: [
-            ProfileMenuItem(
-              icon: LucideIcons.doorOpen,
-              title: l10n.commonLogout,
-              onTap: _handleLogout,
-              textColor: ShadTheme.of(context).colorScheme.destructive,
-              iconColor: ShadTheme.of(context).colorScheme.destructive,
+            TourAnchor(
+              'profile-logout',
+              child: ProfileMenuItem(
+                icon: LucideIcons.doorOpen,
+                title: l10n.commonLogout,
+                onTap: _handleLogout,
+                textColor: ShadTheme.of(context).colorScheme.destructive,
+                iconColor: ShadTheme.of(context).colorScheme.destructive,
+              ),
             ),
           ],
         ),

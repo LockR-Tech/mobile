@@ -13,6 +13,7 @@ import 'package:smart_laundry_locker/features/profile/infrastructure/data_source
 import 'package:smart_laundry_locker/shared/shared.dart';
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
 import 'package:smart_laundry_locker/core/l10n/l10n.dart';
+import 'package:smart_laundry_locker/features/onboarding/presentation/tour_anchor.dart';
 
 /// "Điểm thưởng": điểm hiện có, hạng thành viên và lịch sử cộng/trừ điểm.
 /// Điểm do backend tự cộng khi đơn hoàn tất (mỗi đơn một lần); dùng điểm để
@@ -108,12 +109,12 @@ class _LoyaltyPageState extends State<LoyaltyPage>
             title: context.l10n.commonRewardPoints,
             subtitle: context.l10n.loySubtitle,
             onBack: () => Navigator.of(context).pop(),
-            trailing: BrandCircleIconButton(
+            trailing: TourAnchor('my-loyalty-refresh', child: BrandCircleIconButton(
               icon: LucideIcons.refreshCw,
               onTap: () {
                 if (!_loading) _load();
               },
-            ),
+            )),
           ),
           Expanded(child: _buildBody()),
         ],
@@ -160,18 +161,18 @@ class _LoyaltyPageState extends State<LoyaltyPage>
       child: ListView(
         padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
         children: [
-          _buildSummaryCard(summary),
+          TourAnchor('my-loyalty-summary', child: _buildSummaryCard(summary)),
           const SizedBox(height: 12),
-          _buildRulesCard(),
+          TourAnchor('my-loyalty-rules', child: _buildRulesCard()),
           const SizedBox(height: 18),
-          Text(
+          TourAnchor('my-loyalty-history', child: Text(
             context.l10n.loyHistory,
             style: TextStyle(
               fontSize: 15,
               fontWeight: FontWeight.w700,
               color: context.textPrimary,
             ),
-          ),
+          )),
           const SizedBox(height: 8),
           if (_historyError != null)
             Padding(

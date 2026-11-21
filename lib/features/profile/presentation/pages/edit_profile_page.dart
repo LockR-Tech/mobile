@@ -15,6 +15,7 @@ import 'package:provider/provider.dart';
 import 'package:smart_laundry_locker/shared/shared.dart';
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
 import 'package:smart_laundry_locker/core/l10n/l10n.dart';
+import 'package:smart_laundry_locker/features/onboarding/presentation/tour_anchor.dart';
 
 class EditProfilePage extends StatefulWidget {
   const EditProfilePage({super.key, this.profile});
@@ -265,7 +266,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                 builder: (context, provider, child) {
                   // Trên header sáng nút Lưu đảo màu: nền navy, chữ trắng.
                   final hero = BrandHeroColors.maybeOf(context);
-                  return GestureDetector(
+                  return TourAnchor('profile-edit-save', child: GestureDetector(
                     behavior: HitTestBehavior.opaque,
                     onTap: provider.isLoading ? null : _handleSave,
                     child: Container(
@@ -290,7 +291,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                         ),
                       ),
                     ),
-                  );
+                  ));
                 },
               ),
             ),
@@ -352,7 +353,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
 
                       // Avatar + nút đổi ảnh
                       Center(
-                        child: Stack(
+                        child: TourAnchor('profile-edit-avatar', child: Stack(
                           children: [
                             CircleAvatar(
                               radius: 56,
@@ -406,7 +407,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                               ),
                             ),
                           ],
-                        ),
+                        )),
                       ),
 
                       const SizedBox(height: 32),
@@ -421,7 +422,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                         ),
                       ),
                       const SizedBox(height: 8),
-                      TextFormField(
+                      TourAnchor('profile-edit-name', child: TextFormField(
                         controller: _fullNameController,
                         decoration: InputDecoration(
                           prefixIcon: const Icon(
@@ -442,7 +443,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                           }
                           return null;
                         },
-                      ),
+                      )),
 
                       const SizedBox(height: 20),
 
@@ -456,7 +457,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                         ),
                       ),
                       const SizedBox(height: 8),
-                      TextFormField(
+                      TourAnchor('profile-edit-phone', child: TextFormField(
                         controller: _phoneController,
                         keyboardType: TextInputType.phone,
                         decoration: InputDecoration(
@@ -487,7 +488,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                           }
                           return null;
                         },
-                      ),
+                      )),
 
                       const SizedBox(height: 20),
 
@@ -501,7 +502,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                         ),
                       ),
                       const SizedBox(height: 8),
-                      TextFormField(
+                      TourAnchor('profile-edit-email', child: TextFormField(
                         controller: _emailController,
                         keyboardType: TextInputType.emailAddress,
                         autocorrect: false,
@@ -527,7 +528,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                           }
                           return null;
                         },
-                      ),
+                      )),
                       const SizedBox(height: 10),
                       Text(
                         context.l10n.epLoginInfoNote,

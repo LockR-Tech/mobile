@@ -36,6 +36,7 @@ void main() {
         if (s.via != null && (!idPattern.hasMatch(s.via!) || s.anchor == null)) errors.add('${s.id}: via sai');
       }
       if (g.signedOut && !g.manualOnly) errors.add('${g.id}: signedOut phải kèm manualOnly');
+      if (g.intro && g.manualOnly) errors.add('${g.id}: intro không được là manualOnly');
     }
     expect(errors, isEmpty);
   });

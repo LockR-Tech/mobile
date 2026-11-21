@@ -11,6 +11,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:smart_laundry_locker/core/theme/shadcn_theme.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:smart_laundry_locker/core/l10n/l10n.dart';
+import 'package:smart_laundry_locker/features/onboarding/presentation/tour_anchor.dart';
 
 /// Reusable in-app directions screen: draws a driving route from the user's
 /// current location to [destination] on an OpenStreetMap map (via the public
@@ -272,7 +273,9 @@ class _DirectionsMapPageState extends State<DirectionsMapPage> {
             top: topPad + 10,
             left: 12,
             right: 12,
-            child: Row(
+            child: TourAnchor(
+              'directions-header',
+              child: Row(
               children: [
                 // Back button
                 _MapFab(
@@ -327,6 +330,7 @@ class _DirectionsMapPageState extends State<DirectionsMapPage> {
                   ),
                 ),
               ],
+              ),
             ),
           ),
 
@@ -380,12 +384,15 @@ class _DirectionsMapPageState extends State<DirectionsMapPage> {
             Positioned(
               right: 14,
               bottom: 220 + bottomPad,
-              child: _MapFab(
+              child: TourAnchor(
+                'directions-recenter',
+                child: _MapFab(
                 onTap: () => _mapController.move(_me!, 16),
                 child: const Icon(
                   LucideIcons.locate,
                   color: AISLShadcnTheme.navyPrimary,
                   size: 20,
+                ),
                 ),
               ),
             ),
@@ -393,7 +400,7 @@ class _DirectionsMapPageState extends State<DirectionsMapPage> {
           // ── Bottom info card ───────────────────────────────────────────────
           Align(
             alignment: Alignment.bottomCenter,
-            child: _buildInfoCard(bottomPad),
+            child: TourAnchor('directions-card', child: _buildInfoCard(bottomPad)),
           ),
         ],
       ),
@@ -462,7 +469,9 @@ class _DirectionsMapPageState extends State<DirectionsMapPage> {
 
           // ── Primary action button ────────────────────────────────────────
           if (_isNavigating)
-            Row(
+            TourAnchor(
+              'directions-start',
+              child: Row(
               children: [
                 Expanded(
                   child: FilledButton.icon(
@@ -485,9 +494,12 @@ class _DirectionsMapPageState extends State<DirectionsMapPage> {
                   ),
                 ),
               ],
+              ),
             )
           else ...[
-            SizedBox(
+            TourAnchor(
+              'directions-start',
+              child: SizedBox(
               width: double.infinity,
               child: FilledButton.icon(
                 onPressed: _me != null ? _startNavigation : _retryLocation,
@@ -505,9 +517,12 @@ class _DirectionsMapPageState extends State<DirectionsMapPage> {
                   _me != null ? context.l10n.mapStartNavigation : context.l10n.mapGetMyLocation,
                 ),
               ),
+              ),
             ),
             const SizedBox(height: 8),
-            SizedBox(
+            TourAnchor(
+              'directions-external',
+              child: SizedBox(
               width: double.infinity,
               child: OutlinedButton.icon(
                 onPressed: _openExternal,
@@ -527,6 +542,7 @@ class _DirectionsMapPageState extends State<DirectionsMapPage> {
                     fontSize: 13,
                   ),
                 ),
+              ),
               ),
             ),
           ],

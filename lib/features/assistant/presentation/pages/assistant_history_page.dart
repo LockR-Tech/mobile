@@ -8,6 +8,7 @@ import '../../data/assistant_service.dart';
 import '../../data/models/assistant_models.dart';
 import '../providers/assistant_chat_controller.dart';
 import 'package:smart_laundry_locker/core/l10n/l10n.dart';
+import 'package:smart_laundry_locker/features/onboarding/presentation/tour_anchor.dart';
 
 /// Lịch sử hỏi đáp của tôi. Chạm để mở lại, vuốt trái hoặc nhấn giữ để xoá.
 /// Luôn đóng bằng [AssistantHistoryResult] để màn chat biết hội thoại nào cần
@@ -121,10 +122,10 @@ class _AssistantHistoryPageState extends State<AssistantHistoryPage> {
               title: context.l10n.aiHistory,
               subtitle: context.l10n.aiHistorySubtitle,
               onBack: _close,
-              trailing: BrandCircleIconButton(
+              trailing: TourAnchor('app-assistant-history-refresh', child: BrandCircleIconButton(
                 icon: LucideIcons.refreshCw,
                 onTap: _load,
-              ),
+              )),
             ),
             Expanded(child: _buildBody()),
           ],
@@ -149,13 +150,13 @@ class _AssistantHistoryPageState extends State<AssistantHistoryPage> {
       );
     }
     if (_items.isEmpty) {
-      return _CenteredMessage(
+      return TourAnchor('app-assistant-history-empty', child: _CenteredMessage(
         icon: LucideIcons.messagesSquare,
         title: context.l10n.aiNoConversations,
         body: context.l10n.aiNoConversationsBody,
         actionLabel: context.l10n.aiAsk,
         onAction: _close,
-      );
+      ));
     }
     return RefreshIndicator(
       onRefresh: _load,
@@ -167,7 +168,7 @@ class _AssistantHistoryPageState extends State<AssistantHistoryPage> {
         separatorBuilder: (context, index) => const SizedBox(height: 10),
         itemBuilder: (context, index) {
           final item = _items[index];
-          return Dismissible(
+          final tile = Dismissible(
             key: ValueKey('assistant-conversation-${item.id}'),
             direction: DismissDirection.endToStart,
             confirmDismiss: (_) => _confirmAndDelete(item),
@@ -183,6 +184,9 @@ class _AssistantHistoryPageState extends State<AssistantHistoryPage> {
               },
             ),
           );
+          return index == 0
+              ? TourAnchor('app-assistant-history-first', child: tile)
+              : tile;
         },
       ),
     );

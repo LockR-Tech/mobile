@@ -8,6 +8,7 @@ import 'package:smart_laundry_locker/core/utils/app_date_time.dart';
 import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/complete_inspection_sheet.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/ops_widgets.dart';
+import 'package:smart_laundry_locker/features/onboarding/presentation/tour_anchor.dart';
 
 int? _asInt(dynamic value) {
   if (value is int) return value;
@@ -343,7 +344,7 @@ class _ScheduleDetailModalSheetState extends State<ScheduleDetailModalSheet> {
           ),
 
           // Header Modal
-          Padding(
+          TourAnchor('schedule-sheet-head', child: Padding(
             padding: const EdgeInsets.fromLTRB(18, 6, 8, 8),
             child: Row(
               children: [
@@ -434,7 +435,7 @@ class _ScheduleDetailModalSheetState extends State<ScheduleDetailModalSheet> {
                 ),
               ],
             ),
-          ),
+          )),
           const Divider(height: 1),
 
           // Scrollable Body
@@ -496,7 +497,7 @@ class _ScheduleDetailModalSheetState extends State<ScheduleDetailModalSheet> {
                   const SizedBox(height: 14),
 
                   // Dải Badges tổng quan các thuộc tính admin tạo
-                  Wrap(
+                  TourAnchor('schedule-sheet-badges', child: Wrap(
                     spacing: 8,
                     runSpacing: 6,
                     children: [
@@ -544,11 +545,11 @@ class _ScheduleDetailModalSheetState extends State<ScheduleDetailModalSheet> {
                             : opsMutedText,
                       ),
                     ],
-                  ),
+                  )),
                   const SizedBox(height: 16),
 
                   // 1. THIẾT BỊ KIOSK & VỊ TRÍ ĐẶT CỤ THỂ TRONG TOÀ NHÀ (Ảnh 1)
-                  Container(
+                  TourAnchor('schedule-sheet-location', child: Container(
                     width: double.infinity,
                     padding: const EdgeInsets.all(14),
                     decoration: BoxDecoration(
@@ -670,11 +671,11 @@ class _ScheduleDetailModalSheetState extends State<ScheduleDetailModalSheet> {
                         ),
                       ],
                     ),
-                  ),
+                  )),
                   const SizedBox(height: 14),
 
                   // 2. KẾ HOẠCH & THỜI HẠN KIỂM TRA (TẤT CẢ FIELDS ADMIN TẠO)
-                  Container(
+                  TourAnchor('schedule-sheet-plan', child: Container(
                     width: double.infinity,
                     padding: const EdgeInsets.all(14),
                     decoration: BoxDecoration(
@@ -756,11 +757,11 @@ class _ScheduleDetailModalSheetState extends State<ScheduleDetailModalSheet> {
                         ),
                       ],
                     ),
-                  ),
+                  )),
                   const SizedBox(height: 14),
 
                   // 3. BỘ TIÊU CHÍ KIỂM ĐỊNH KTV CẦN THỰC HIỆN (CHECKLIST SOP ADMIN TẠO)
-                  Container(
+                  TourAnchor('schedule-sheet-checklist', child: Container(
                     width: double.infinity,
                     padding: const EdgeInsets.all(14),
                     decoration: BoxDecoration(
@@ -851,12 +852,12 @@ class _ScheduleDetailModalSheetState extends State<ScheduleDetailModalSheet> {
                           ),
                       ],
                     ),
-                  ),
+                  )),
                   const SizedBox(height: 14),
 
                   // 4. HƯỚNG DẪN NGHIỆP VỤ CHO KTV (GHI CHÚ SOP TỪ ADMIN - Ảnh 1)
                   if (sopDescription.isNotEmpty) ...[
-                    Container(
+                    TourAnchor('schedule-sheet-sop', child: Container(
                       width: double.infinity,
                       padding: const EdgeInsets.all(14),
                       decoration: BoxDecoration(
@@ -898,12 +899,12 @@ class _ScheduleDetailModalSheetState extends State<ScheduleDetailModalSheet> {
                           ),
                         ],
                       ),
-                    ),
+                    )),
                     const SizedBox(height: 14),
                   ],
 
                   // 5. KẾT QUẢ KIỂM TRA LẦN TRƯỚC (HIỂN THỊ CHI TIẾT BIÊN BẢN KTV LÀM - HÌNH 2)
-                  Container(
+                  TourAnchor('schedule-sheet-history', child: Container(
                     width: double.infinity,
                     padding: const EdgeInsets.all(14),
                     decoration: BoxDecoration(
@@ -1446,14 +1447,14 @@ class _ScheduleDetailModalSheetState extends State<ScheduleDetailModalSheet> {
                         ],
                       ],
                     ),
-                  ),
+                  )),
                 ],
               ),
             ),
           ),
 
           // Bottom Action Buttons
-          SafeArea(
+          TourAnchor('schedule-sheet-actions', child: SafeArea(
             top: false,
             child: Container(
               padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
@@ -1538,7 +1539,7 @@ class _ScheduleDetailModalSheetState extends State<ScheduleDetailModalSheet> {
                 ],
               ),
             ),
-          ),
+          )),
         ],
       ),
     );

@@ -9,6 +9,7 @@ import 'package:smart_laundry_locker/core/media/photo_picker_controller.dart';
 import 'package:smart_laundry_locker/core/media/widgets/photo_picker_field.dart';
 import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/domain/entities/drone_incident_labels.dart';
+import 'package:smart_laundry_locker/features/onboarding/presentation/tour_anchor.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class DroneRecoveryQueue extends StatelessWidget {
@@ -35,7 +36,7 @@ class DroneRecoveryQueue extends StatelessWidget {
       physics: const AlwaysScrollableScrollPhysics(),
       padding: const EdgeInsets.all(12),
       children: [
-        const _Banner(),
+        TourAnchor('tech-recovery-banner', child: const _Banner()),
         const SizedBox(height: 12),
         if (error != null) ...[
           Container(
@@ -96,7 +97,7 @@ class DroneRecoveryQueue extends StatelessWidget {
           )
         else
           for (final item in items) ...[
-            _RecoveryCard(
+            _tourFirstCard(identical(item, items.first), _RecoveryCard(
               item: item,
               onTap: () async {
                 await showModalBottomSheet<void>(
@@ -114,13 +115,17 @@ class DroneRecoveryQueue extends StatelessWidget {
                 );
                 await onRefresh();
               },
-            ),
+            )),
             const SizedBox(height: 10),
           ],
       ],
     ),
   );
 }
+
+/// Neo hướng dẫn (F3-G13) cho thẻ nhiệm vụ đầu danh sách.
+Widget _tourFirstCard(bool first, Widget card) =>
+    first ? TourAnchor('tech-recovery-first-card', child: card) : card;
 
 class _Banner extends StatelessWidget {
   const _Banner();
@@ -359,7 +364,7 @@ class _DroneRecoveryDetailState extends State<DroneRecoveryDetail> {
           style: const TextStyle(color: Color(0xFF64748B)),
         ),
         const SizedBox(height: 12),
-        Wrap(
+        TourAnchor('tech-recovery-detail-status', child: Wrap(
           spacing: 8,
           runSpacing: 8,
           children: [
@@ -368,11 +373,11 @@ class _DroneRecoveryDetailState extends State<DroneRecoveryDetail> {
               droneParcelStateLabel(item['parcelStatus'], item['parcelCondition']),
             ),
           ],
-        ),
+        )),
         const SizedBox(height: 14),
-        _Info(title: context.l10n.techRecSituation, value: '${item['reason']}'),
+        TourAnchor('tech-recovery-detail-info', child: _Info(title: context.l10n.techRecSituation, value: '${item['reason']}')),
         const SizedBox(height: 10),
-        _Info(
+        TourAnchor('tech-recovery-detail-accuracy', child: _Info(
           title: context.l10n.techRecDataAccuracy,
           value: context.l10n.techRecAccuracyLine(
             _gpsSourceLabel(item['gpsSource']),
@@ -383,10 +388,10 @@ class _DroneRecoveryDetailState extends State<DroneRecoveryDetail> {
                 ? context.l10n.techRecTelemetryStale
                 : context.l10n.techRecTelemetryLive,
           ),
-        ),
+        )),
         if (item['dropLatitude'] != null) ...[
           const SizedBox(height: 10),
-          OutlinedButton.icon(
+          TourAnchor('tech-recovery-drop-directions', child: OutlinedButton.icon(
             onPressed: () => launchUrl(
               Uri.parse(
                 'https://www.google.com/maps/search/?api=1&query=${item['dropLatitude']},${item['dropLongitude']}',
@@ -395,14 +400,14 @@ class _DroneRecoveryDetailState extends State<DroneRecoveryDetail> {
             ),
             icon: const Icon(Icons.directions_outlined),
             label: Text(context.l10n.techRecDirectionsToDrop),
-          ),
+          )),
         ],
         if (evidence.isNotEmpty) ...[
           const SizedBox(height: 14),
-          Text(
+          TourAnchor('tech-recovery-evidence', child: Text(
             context.l10n.techRecEvidence,
             style: const TextStyle(fontWeight: FontWeight.w700),
-          ),
+          )),
           const SizedBox(height: 8),
           SizedBox(
             height: 100,
@@ -470,32 +475,32 @@ class _DroneRecoveryDetailState extends State<DroneRecoveryDetail> {
         // Trạm bay hệ thống điều phối kiện về lúc admin xác minh: KTV mang kiện tới đây, đơn giao lại bay từ đây.
         if (_stationName(item) != null) ...[
           const SizedBox(height: 14),
-          _RecoveryStationCard(
+          TourAnchor('tech-recovery-station', child: _RecoveryStationCard(
             incident: item,
             onDirections: _hasStationCoordinates(item)
                 ? () => _openStationDirections(item)
                 : null,
-          ),
+          )),
         ],
         const SizedBox(height: 18),
         if (status == 'ASSIGNED')
-          FilledButton(
+          TourAnchor('tech-recovery-action', child: FilledButton(
             onPressed: _busy ? null : () => _action('ACCEPT'),
             child: Text(context.l10n.techRecAccept),
-          ),
+          )),
         if (status == 'ACCEPTED')
-          FilledButton(
+          TourAnchor('tech-recovery-action', child: FilledButton(
             onPressed: _busy ? null : () => _action('START_SEARCHING'),
             child: Text(context.l10n.techRecStartSearch),
-          ),
+          )),
         if (status == 'SEARCHING')
-          FilledButton.icon(
+          TourAnchor('tech-recovery-action', child: TourAnchor('tech-recovery-record-result', child: FilledButton.icon(
             onPressed: _busy ? null : () => _submitSheet(item),
             icon: const Icon(Icons.fact_check_outlined),
             label: Text(context.l10n.techRecRecordResult),
-          ),
+          ))),
         if (status == 'VERIFIED' && item['recoveryOutcome'] == 'FOUND')
-          FilledButton(
+          TourAnchor('tech-recovery-action', child: FilledButton(
             onPressed: _busy ? null : _handover,
             child: Text(
               _stationName(item) == null
@@ -504,21 +509,21 @@ class _DroneRecoveryDetailState extends State<DroneRecoveryDetail> {
                       '${_stationName(item)}',
                     ),
             ),
-          ),
+          )),
         if (status == 'SUBMITTED')
-          _Info(
+          TourAnchor('tech-recovery-action', child: _Info(
             title: context.l10n.techRecSubmittedTitle,
             value: context.l10n.techRecSubmittedBody,
-          ),
+          )),
         if (status == 'CLOSED')
-          _Info(
+          TourAnchor('tech-recovery-action', child: _Info(
             title: context.l10n.techRecClosedTitle,
             value: _stationName(item) == null
                 ? context.l10n.techRecClosedHubBody
                 : context.l10n.techRecClosedStationBody(
                     '${_stationName(item)}',
                   ),
-          ),
+          )),
       ],
     );
   }
@@ -706,7 +711,7 @@ class _DroneRecoveryDetailState extends State<DroneRecoveryDetail> {
                   const SizedBox(height: 14),
 
                   // ---- Phần 1: Bấm xác nhận tọa độ hiện trường ----
-                  Container(
+                  TourAnchor('tech-recovery-gps', child: Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
                       color: confirmedPosition != null
@@ -901,11 +906,11 @@ class _DroneRecoveryDetailState extends State<DroneRecoveryDetail> {
                         ],
                       ],
                     ),
-                  ),
+                  )),
                   const SizedBox(height: 14),
 
                   // ---- Phần 2: Kết quả & Tình trạng kiện ----
-                  DropdownButtonFormField<String>(
+                  TourAnchor('tech-recovery-outcome', child: DropdownButtonFormField<String>(
                     initialValue: outcome,
                     decoration: InputDecoration(
                       labelText: context.l10n.techRecSearchResult,
@@ -927,10 +932,10 @@ class _DroneRecoveryDetailState extends State<DroneRecoveryDetail> {
                     ],
                     onChanged: (value) =>
                         setLocal(() => outcome = value ?? outcome),
-                  ),
+                  )),
                   if (outcome == 'FOUND') ...[
                     const SizedBox(height: 10),
-                    DropdownButtonFormField<String>(
+                    TourAnchor('tech-recovery-condition', child: DropdownButtonFormField<String>(
                       initialValue: condition,
                       decoration: InputDecoration(
                         labelText: context.l10n.cdiParcelState,
@@ -960,12 +965,12 @@ class _DroneRecoveryDetailState extends State<DroneRecoveryDetail> {
                       ],
                       onChanged: (value) =>
                           setLocal(() => condition = value ?? condition),
-                    ),
+                    )),
                   ],
                   const SizedBox(height: 12),
 
                   // ---- Phần 3: Ghi chú hiện trường ----
-                  TextField(
+                  TourAnchor('tech-recovery-note', child: TextField(
                     controller: note,
                     maxLines: 3,
                     decoration: InputDecoration(
@@ -973,7 +978,7 @@ class _DroneRecoveryDetailState extends State<DroneRecoveryDetail> {
                       hintText: context.l10n.techRecNoteHint,
                       border: const OutlineInputBorder(),
                     ),
-                  ),
+                  )),
                   const SizedBox(height: 6),
                   Wrap(
                     spacing: 6,
@@ -1015,7 +1020,7 @@ class _DroneRecoveryDetailState extends State<DroneRecoveryDetail> {
                   const SizedBox(height: 14),
 
                   // ---- Phần 4: Hình ảnh hiện trường ----
-                  AnimatedBuilder(
+                  TourAnchor('tech-recovery-photos', child: AnimatedBuilder(
                     animation: photos,
                     builder: (_, __) => PhotoPickerField(
                       controller: photos,
@@ -1023,7 +1028,7 @@ class _DroneRecoveryDetailState extends State<DroneRecoveryDetail> {
                       cameraOnly: true,
                       helperText: context.l10n.techRecPhotoHelper,
                     ),
-                  ),
+                  )),
                   const SizedBox(height: 16),
                   if (formError != null)
                     Padding(
@@ -1036,7 +1041,7 @@ class _DroneRecoveryDetailState extends State<DroneRecoveryDetail> {
                         ),
                       ),
                     ),
-                  FilledButton(
+                  TourAnchor('tech-recovery-submit', child: FilledButton(
                     onPressed: sending
                         ? null
                         : () async {
@@ -1112,7 +1117,7 @@ class _DroneRecoveryDetailState extends State<DroneRecoveryDetail> {
                     child: sending
                         ? const CircularProgressIndicator()
                         : Text(context.l10n.techRecSubmit),
-                  ),
+                  )),
                 ],
               ),
             ),

@@ -6,6 +6,7 @@ import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 import 'package:smart_laundry_locker/core/utils/app_date_time.dart';
 import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/technician_location_permission_sheet.dart';
+import 'package:smart_laundry_locker/features/onboarding/presentation/tour_anchor.dart';
 
 /// Thẻ hiển thị và điều khiển Ca trực & Vị trí GPS hiện tại của Kỹ thuật viên.
 ///
@@ -364,7 +365,7 @@ class _TechnicianShiftCardState extends State<TechnicianShiftCard> {
               ),
               const SizedBox(height: 16),
               // Header
-              Row(
+              TourAnchor('shift-sheet-status', child: Row(
                 children: [
                   Container(
                     padding: const EdgeInsets.all(10),
@@ -413,11 +414,11 @@ class _TechnicianShiftCardState extends State<TechnicianShiftCard> {
                     ),
                   ),
                 ],
-              ),
+              )),
               const SizedBox(height: 16),
               const Divider(),
               const SizedBox(height: 12),
-              Text(
+              TourAnchor('shift-sheet-gps', child: Text(
                 context.l10n.techUiDeviceGpsInfo,
                 style: const TextStyle(
                   fontSize: 11,
@@ -425,7 +426,7 @@ class _TechnicianShiftCardState extends State<TechnicianShiftCard> {
                   letterSpacing: 0.6,
                   color: Color(0xFF64748B),
                 ),
-              ),
+              )),
               const SizedBox(height: 10),
               if (_latitude != null && _longitude != null) ...[
                 _infoRow(
@@ -449,7 +450,7 @@ class _TechnicianShiftCardState extends State<TechnicianShiftCard> {
                       : context.l10n.techUiNotYet,
                 ),
                 const SizedBox(height: 16),
-                Row(
+                TourAnchor('shift-sheet-actions', child: Row(
                   children: [
                     Expanded(
                       child: OutlinedButton.icon(
@@ -484,7 +485,7 @@ class _TechnicianShiftCardState extends State<TechnicianShiftCard> {
                       ),
                     ),
                   ],
-                ),
+                )),
               ] else ...[
                 Container(
                   padding: const EdgeInsets.all(16),
@@ -510,7 +511,7 @@ class _TechnicianShiftCardState extends State<TechnicianShiftCard> {
                   ),
                 ),
                 const SizedBox(height: 16),
-                SizedBox(
+                TourAnchor('shift-sheet-actions', child: SizedBox(
                   width: double.infinity,
                   child: ElevatedButton.icon(
                     icon: const Icon(Icons.my_location_rounded),
@@ -524,10 +525,10 @@ class _TechnicianShiftCardState extends State<TechnicianShiftCard> {
                       _syncLocationOnly(silent: false);
                     },
                   ),
-                ),
+                )),
               ],
               const SizedBox(height: 16),
-              Container(
+              TourAnchor('shift-sheet-privacy', child: Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
                   color: const Color(0xFFF1F5F9),
@@ -549,7 +550,7 @@ class _TechnicianShiftCardState extends State<TechnicianShiftCard> {
                     ),
                   ],
                 ),
-              ),
+              )),
             ],
           ),
         ),
@@ -695,7 +696,7 @@ class _TechnicianShiftCardState extends State<TechnicianShiftCard> {
                 const SizedBox(width: 10),
                 // Center info: Trạng thái ca trực & Trạng thái GPS
                 Expanded(
-                  child: Column(
+                  child: TourAnchor('shift-card-status', child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -773,7 +774,7 @@ class _TechnicianShiftCardState extends State<TechnicianShiftCard> {
                         overflow: TextOverflow.ellipsis,
                       ),
                     ],
-                  ),
+                  )),
                 ),
                 const SizedBox(width: 6),
                 // Nút bị khoá trong lúc đang lấy GPS thì cú chạm không được rơi xuống
@@ -788,7 +789,7 @@ class _TechnicianShiftCardState extends State<TechnicianShiftCard> {
                     children: [
                 // Nút Cập nhật GPS nhanh khi đang trong ca
                 if (_onDuty) ...[
-                  IconButton(
+                  TourAnchor('shift-card-gps', child: IconButton(
                     icon: const Icon(Icons.my_location_rounded, size: 19),
                     tooltip: context.l10n.techUiRefreshGps,
                     color: const Color(0xFF38BDF8),
@@ -797,11 +798,11 @@ class _TechnicianShiftCardState extends State<TechnicianShiftCard> {
                         const BoxConstraints(minWidth: 30, minHeight: 30),
                     visualDensity: VisualDensity.compact,
                     onPressed: _updating ? null : () => _syncLocationOnly(silent: false),
-                  ),
+                  )),
                   const SizedBox(width: 4),
                 ],
                 // Toggle Button (Vào ca / Hết ca)
-                ElevatedButton(
+                TourAnchor('shift-card-toggle', child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
                     backgroundColor: _onDuty
                         ? const Color(0xFFEF4444).withValues(alpha: 0.9)
@@ -825,7 +826,7 @@ class _TechnicianShiftCardState extends State<TechnicianShiftCard> {
                       fontWeight: FontWeight.w700,
                     ),
                   ),
-                ),
+                )),
                     ],
                   ),
                 ),

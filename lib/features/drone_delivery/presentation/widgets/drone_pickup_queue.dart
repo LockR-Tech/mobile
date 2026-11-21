@@ -746,7 +746,11 @@ class _DronePickupQueueState extends State<DronePickupQueue>
             context.l10n.dtPqSecOffers(offered.length),
             icon: Icons.notifications_active_outlined,
           ),
-          for (final order in offered) _offerCard(order),
+          // Thẻ đầu mỗi nhóm mang neo hướng dẫn (F3-G13).
+          for (final (i, order) in offered.indexed)
+            i == 0
+                ? TourAnchor('drone-pickup-offer', child: _offerCard(order))
+                : _offerCard(order),
         ],
         if (accepted.isNotEmpty) ...[
           const SizedBox(height: 12),
@@ -754,7 +758,10 @@ class _DronePickupQueueState extends State<DronePickupQueue>
             context.l10n.dtPqSecAccepted(accepted.length),
             icon: Icons.directions_bike_outlined,
           ),
-          for (final order in accepted) _acceptedCard(order),
+          for (final (i, order) in accepted.indexed)
+            i == 0
+                ? TourAnchor('drone-pickup-accepted', child: _acceptedCard(order))
+                : _acceptedCard(order),
         ],
         if (carrying.isNotEmpty) ...[
           const SizedBox(height: 12),
@@ -762,7 +769,10 @@ class _DronePickupQueueState extends State<DronePickupQueue>
             context.l10n.dtPqSecCarrying(carrying.length),
             icon: Icons.inventory_2_outlined,
           ),
-          for (final order in carrying) _carryingCard(order),
+          for (final (i, order) in carrying.indexed)
+            i == 0
+                ? TourAnchor('drone-pickup-carrying', child: _carryingCard(order))
+                : _carryingCard(order),
         ],
         const SizedBox(height: 8),
       ],

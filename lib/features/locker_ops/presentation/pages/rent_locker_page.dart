@@ -22,6 +22,7 @@ import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
 import 'package:smart_laundry_locker/shared/shared.dart';
 import 'package:smart_laundry_locker/core/services/app_event_bus.dart';
 import 'package:smart_laundry_locker/core/l10n/l10n.dart';
+import 'package:smart_laundry_locker/features/onboarding/presentation/tour_anchor.dart';
 
 /// RENTAL flow: chọn tủ + loại ô + thời lượng, trả tiền theo giờ, PIN dùng
 /// nhiều lần tới hết hạn thuê (khớp `order-service` createRental/extend/end).
@@ -665,7 +666,9 @@ class _RentLockerPageState extends State<RentLockerPage>
             ),
           ],
         ),
-        child: Column(
+        child: TourAnchor(
+          'rent-bottom',
+          child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             _priceCard(),
@@ -677,6 +680,7 @@ class _RentLockerPageState extends State<RentLockerPage>
               onPressed: (_availableCounts?[_cellType] == 0) ? null : _create,
             ),
           ],
+          ),
         ),
       );
     }
@@ -719,9 +723,11 @@ class _RentLockerPageState extends State<RentLockerPage>
         const SizedBox(height: 20),
         OpsSectionLabel(context.l10n.commonChooseLocker, icon: LucideIcons.warehouse),
         if (widget.initialLockerId != null)
-          _lockedLockerCard()
+          TourAnchor('rent-locker', child: _lockedLockerCard())
         else
-          LockerPickerField(
+          TourAnchor(
+            'rent-locker',
+            child: LockerPickerField(
             lockers: _lockers,
             selectedId: _lockerId,
             onlyActive: true,
@@ -733,13 +739,16 @@ class _RentLockerPageState extends State<RentLockerPage>
               });
               if (newId != null) _loadLayout(newId);
             },
+            ),
           ),
         const SizedBox(height: 20),
         OpsSectionLabel(context.l10n.commonBoxType, icon: LucideIcons.boxes),
         if (widget.initialCellType != null)
-          _lockedCellTypeCard(_cellType)
+          TourAnchor('rent-type', child: _lockedCellTypeCard(_cellType))
         else
-          Row(
+          TourAnchor(
+            'rent-type',
+            child: Row(
             children: [
               _cellCard(
                 value: 'STANDARD',
@@ -757,14 +766,18 @@ class _RentLockerPageState extends State<RentLockerPage>
                 rate: rentalRateLabel(config, 'XL'),
               ),
             ],
+            ),
           ),
         const SizedBox(height: 20),
         OpsSectionLabel(context.l10n.rentDuration, icon: LucideIcons.timer),
         if (_maxDays(config) >= 1) ...[
-          _modeToggle(),
+          TourAnchor('rent-mode', child: _modeToggle()),
           const SizedBox(height: 12),
         ],
-        if (_byDay) _dayPicker(config) else _hourPicker(config),
+        TourAnchor(
+          'rent-duration',
+          child: _byDay ? _dayPicker(config) : _hourPicker(config),
+        ),
         const SizedBox(height: 6),
         Text(
           '${rentalDurationPolicyText(config, _cellType)} '
@@ -773,7 +786,9 @@ class _RentLockerPageState extends State<RentLockerPage>
         ),
         const SizedBox(height: 16),
         OpsSectionLabel(context.l10n.commonNote, icon: LucideIcons.stickyNote),
-        TextField(
+        TourAnchor(
+          'rent-note',
+          child: TextField(
           controller: _noteCtrl,
           maxLines: 2,
           decoration: InputDecoration(
@@ -785,12 +800,15 @@ class _RentLockerPageState extends State<RentLockerPage>
             enabledBorder: _border(opsBorder),
             focusedBorder: _border(opsPrimary, width: 1.6),
           ),
+          ),
         ),
         // Admin đặt 0 mã mỗi đơn ⇒ tắt nhập mã.
         if (config.maxVouchersPerOrder > 0) ...[
           const SizedBox(height: 16),
           OpsSectionLabel(context.l10n.commonDiscountCode, icon: LucideIcons.ticket),
-          PromoCodeField(
+          TourAnchor(
+            'rent-promo',
+            child: PromoCodeField(
             orderTotal: _price,
             lockerId: _lockerId,
             service: _service,
@@ -798,17 +816,21 @@ class _RentLockerPageState extends State<RentLockerPage>
               _discount = discount;
               _promoCode = code;
             }),
+            ),
           ),
         ],
         const SizedBox(height: 16),
         OpsSectionLabel(context.l10n.commonRewardPoints, icon: LucideIcons.sparkles),
-        LoyaltyRedeemToggle(
+        TourAnchor(
+          'rent-points',
+          child: LoyaltyRedeemToggle(
           orderTotal: _priceAfterVoucher,
           service: _service,
           onChanged: (points, discount) => setState(() {
             _pointsToUse = points;
             _pointsDiscount = discount;
           }),
+          ),
         ),
       ].animate(interval: 40.ms).fadeIn(duration: 250.ms).slideY(begin: 0.06),
     );
@@ -1253,7 +1275,9 @@ class _RentLockerPageState extends State<RentLockerPage>
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        OpsCard(
+        TourAnchor(
+          'rent-result-card',
+          child: OpsCard(
           child: Column(
             children: [
               Row(
@@ -1318,6 +1342,7 @@ class _RentLockerPageState extends State<RentLockerPage>
               ],
             ],
           ),
+          ),
         ).animate().fadeIn(duration: 300.ms).slideY(begin: 0.05),
         const SizedBox(height: 16),
         if (!started) ...[
@@ -1332,12 +1357,15 @@ class _RentLockerPageState extends State<RentLockerPage>
             text: context.l10n.rentEnterPinToOpen(_resultBoxLabel(order)),
           ),
           const SizedBox(height: 12),
-          OpsPrimaryButton(
+          TourAnchor(
+            'rent-open-box',
+            child: OpsPrimaryButton(
             label: context.l10n.rentOpenToDrop,
             icon: LucideIcons.lockKeyholeOpen,
             color: opsPrimary,
             loading: _loading,
             onPressed: _openBox,
+            ),
           ),
         ] else ...[
           if (unpaid) ...[
@@ -1348,18 +1376,24 @@ class _RentLockerPageState extends State<RentLockerPage>
                   context.l10n.rentExtensionUnpaid,
             ),
             const SizedBox(height: 12),
-            OpsPrimaryButton(
+            TourAnchor(
+              'rent-pay-extension',
+              child: OpsPrimaryButton(
               label: payLabel,
               icon: LucideIcons.qrCode,
               loading: _loading,
               onPressed: _pay,
+              ),
             ),
             const SizedBox(height: 12),
           ],
-          OpsPrimaryButton(
+          TourAnchor(
+            'rent-done',
+            child: OpsPrimaryButton(
             label: context.l10n.rentDoneSeeOrders,
             icon: LucideIcons.house,
             onPressed: _navigateToOrders,
+            ),
           ),
         ],
       ],

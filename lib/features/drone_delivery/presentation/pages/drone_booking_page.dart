@@ -20,6 +20,7 @@ import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/op
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/order_extras.dart';
 import 'package:smart_laundry_locker/features/profile/presentation/providers/profile_provider.dart';
 import 'package:smart_laundry_locker/core/l10n/l10n.dart';
+import 'package:smart_laundry_locker/features/onboarding/presentation/tour_anchor.dart';
 
 typedef DroneOrderCreator =
     Future<Map<String, dynamic>> Function(
@@ -834,8 +835,13 @@ class _DroneBookingPageState extends State<DroneBookingPage>
                   context.l10n.dbSuspended,
             ),
           ],
-          _section(context.l10n.dbPickupAt, Icons.home_outlined, [
-            _PickupTile(pickup: _pickup, onTap: _choosePickup),
+          TourAnchor(
+            'drone-book-pickup',
+            child: _section(context.l10n.dbPickupAt, Icons.home_outlined, [
+            TourAnchor(
+              'drone-book-pickup-tile',
+              child: _PickupTile(pickup: _pickup, onTap: _choosePickup),
+            ),
             const SizedBox(height: 10),
             _field(
               'drone-pickup-note',
@@ -845,7 +851,10 @@ class _DroneBookingPageState extends State<DroneBookingPage>
               maxLines: 2,
             ),
           ]),
-          _section(context.l10n.recvSender, Icons.person_outline, [
+          ),
+          TourAnchor(
+            'drone-book-sender',
+            child: _section(context.l10n.recvSender, Icons.person_outline, [
             _field('drone-sender-name', _senderName, context.l10n.dbSenderName),
             const SizedBox(height: 10),
             _field(
@@ -862,7 +871,10 @@ class _DroneBookingPageState extends State<DroneBookingPage>
               keyboard: TextInputType.emailAddress,
             ),
           ]),
-          _section(context.l10n.ordRecipient, Icons.person_pin_circle_outlined, [
+          ),
+          TourAnchor(
+            'drone-book-receiver',
+            child: _section(context.l10n.ordRecipient, Icons.person_pin_circle_outlined, [
             _field('drone-receiver-name', _receiverName, context.l10n.dbReceiverName),
             const SizedBox(height: 10),
             _field(
@@ -975,7 +987,10 @@ class _DroneBookingPageState extends State<DroneBookingPage>
               ),
             ],
           ]),
-          _section(context.l10n.ordParcel, Icons.inventory_2_outlined, [
+          ),
+          TourAnchor(
+            'drone-book-parcel',
+            child: _section(context.l10n.ordParcel, Icons.inventory_2_outlined, [
             Text(
               context.l10n.dbWeightField(
                 droneWeightShortLabel(businessConfig.droneMaxPayloadWeightGrams),
@@ -1093,7 +1108,10 @@ class _DroneBookingPageState extends State<DroneBookingPage>
               ],
             ),
           ]),
-          _section(context.l10n.dbRouteAndFee, Icons.route_outlined, [
+          ),
+          TourAnchor(
+            'drone-book-fee',
+            child: _section(context.l10n.dbRouteAndFee, Icons.route_outlined, [
             _QuotePanel(
               quote: _quote,
               quoting: _quoting,
@@ -1115,10 +1133,14 @@ class _DroneBookingPageState extends State<DroneBookingPage>
               ),
             ],
           ]),
+          ),
           // Mã giảm giá kiểm theo tủ gửi ⇒ chỉ mở khi đã biết drone cất cánh ở đâu.
-          if (_quote != null) _offersSection(_quote!),
+          if (_quote != null)
+            TourAnchor('drone-book-offers', child: _offersSection(_quote!)),
           const SizedBox(height: 8),
-          Row(
+          TourAnchor(
+            'drone-book-declare',
+            child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Checkbox(
@@ -1141,12 +1163,15 @@ class _DroneBookingPageState extends State<DroneBookingPage>
                 ),
               ),
             ],
+            ),
           ),
         ],
       ),
       // Nút đặt đơn luôn ở đáy màn: không phải kéo hết form mới thấy.
       bottomNavigationBar: _StickyActionBar(
-        child: FilledButton.icon(
+        child: TourAnchor(
+          'drone-book-submit',
+          child: FilledButton.icon(
           key: const ValueKey('drone-submit'),
           onPressed:
               _submitting ||
@@ -1177,6 +1202,7 @@ class _DroneBookingPageState extends State<DroneBookingPage>
                 ? context.l10n.dbCreateAndPay(fmtPrice(_netFee))
                 : context.l10n.dbCreateFree,
             style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+          ),
           ),
         ),
       ),

@@ -8,6 +8,7 @@ import 'package:smart_laundry_locker/features/drone_delivery/domain/entities/dro
 import 'package:smart_laundry_locker/features/drone_delivery/infrastructure/services/pickup_geocoder.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/presentation/widgets/drone_base_tile_layer.dart';
 import 'package:smart_laundry_locker/core/l10n/l10n.dart';
+import 'package:smart_laundry_locker/features/onboarding/presentation/tour_anchor.dart';
 
 /// Lấy vị trí hiện tại của thiết bị; null khi GPS tắt hoặc bị từ chối quyền (kèm lý do).
 typedef CurrentPositionReader = Future<(LatLng?, String?)> Function();
@@ -255,7 +256,9 @@ class _PickupLocationPickerPageState extends State<PickupLocationPickerPage> {
         children: [
           Padding(
             padding: const EdgeInsets.fromLTRB(12, 10, 12, 6),
-            child: TextField(
+            child: TourAnchor(
+              'pickup-search-field',
+              child: TextField(
               key: const ValueKey('pickup-search'),
               controller: _searchController,
               textInputAction: TextInputAction.search,
@@ -286,6 +289,7 @@ class _PickupLocationPickerPageState extends State<PickupLocationPickerPage> {
                       ),
                 isDense: true,
                 border: const OutlineInputBorder(),
+              ),
               ),
             ),
           ),
@@ -327,7 +331,9 @@ class _PickupLocationPickerPageState extends State<PickupLocationPickerPage> {
               ),
             ),
           Expanded(
-            child: Stack(
+            child: TourAnchor(
+              'pickup-map',
+              child: Stack(
               children: [
                 if (widget.showMap)
                   FlutterMap(
@@ -362,7 +368,9 @@ class _PickupLocationPickerPageState extends State<PickupLocationPickerPage> {
                 Positioned(
                   right: 12,
                   bottom: 12,
-                  child: FloatingActionButton.extended(
+                  child: TourAnchor(
+                    'pickup-current',
+                    child: FloatingActionButton.extended(
                     key: const ValueKey('pickup-current-location'),
                     heroTag: 'pickup-current-location',
                     onPressed: _locating ? null : _useCurrentLocation,
@@ -374,9 +382,11 @@ class _PickupLocationPickerPageState extends State<PickupLocationPickerPage> {
                           )
                         : const Icon(Icons.my_location),
                     label: Text(context.l10n.plCurrentLocation),
+                    ),
                   ),
                 ),
               ],
+              ),
             ),
           ),
           Material(
@@ -389,7 +399,9 @@ class _PickupLocationPickerPageState extends State<PickupLocationPickerPage> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    TextField(
+                    TourAnchor(
+                      'pickup-address-field',
+                      child: TextField(
                       key: const ValueKey('pickup-address'),
                       controller: _addressController,
                       minLines: 1,
@@ -416,6 +428,7 @@ class _PickupLocationPickerPageState extends State<PickupLocationPickerPage> {
                             : null,
                         border: const OutlineInputBorder(),
                       ),
+                      ),
                     ),
                     if (_message != null) ...[
                       const SizedBox(height: 6),
@@ -429,11 +442,14 @@ class _PickupLocationPickerPageState extends State<PickupLocationPickerPage> {
                       ),
                     ],
                     const SizedBox(height: 10),
-                    FilledButton.icon(
+                    TourAnchor(
+                      'pickup-confirm-btn',
+                      child: FilledButton.icon(
                       key: const ValueKey('pickup-confirm'),
                       onPressed: _confirm,
                       icon: const Icon(Icons.check),
                       label: Text(context.l10n.plPickupHere),
+                      ),
                     ),
                   ],
                 ),

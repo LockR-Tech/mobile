@@ -14,6 +14,7 @@ import '../domain/mission_item.dart';
 import 'widgets/waypoint_edit_sheet.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/presentation/widgets/drone_base_tile_layer.dart';
 import 'package:smart_laundry_locker/core/l10n/l10n.dart';
+import 'package:smart_laundry_locker/features/onboarding/presentation/tour_anchor.dart';
 
 /// Mission Planner — Flight Plan editor (Mảng 1). Draw waypoints on a map, set
 /// altitude/command per point, chain them into a route, then save/export to a
@@ -581,7 +582,7 @@ class _MissionPlannerPageState extends State<MissionPlannerPage> {
           Positioned(
             right: 12,
             bottom: 150,
-            child: Column(
+            child: TourAnchor('drone-mp-map-tools', child: Column(
               children: [
                 _MapFab(
                   icon: _located ? LucideIcons.locateFixed : LucideIcons.locate,
@@ -590,7 +591,7 @@ class _MissionPlannerPageState extends State<MissionPlannerPage> {
                 const SizedBox(height: 10),
                 _MapFab(icon: LucideIcons.maximize, onTap: _fitToMission),
               ],
-            ),
+            )),
           ),
           Align(alignment: Alignment.bottomCenter, child: _summaryBar()),
         ],
@@ -667,7 +668,7 @@ class _MissionPlannerPageState extends State<MissionPlannerPage> {
           _MapFab(icon: Icons.arrow_back_rounded, onTap: () => Navigator.maybePop(context)),
           const SizedBox(width: 10),
           Expanded(
-            child: GestureDetector(
+            child: TourAnchor('drone-mp-name', child: GestureDetector(
               onTap: _rename,
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
@@ -699,10 +700,10 @@ class _MissionPlannerPageState extends State<MissionPlannerPage> {
                   ],
                 ),
               ),
-            ),
+            )),
           ),
           const SizedBox(width: 10),
-          _MapFab(icon: LucideIcons.menu, onTap: _openMenu),
+          TourAnchor('drone-mp-menu', child: _MapFab(icon: LucideIcons.menu, onTap: _openMenu)),
         ],
       ),
     );
@@ -759,7 +760,7 @@ class _MissionPlannerPageState extends State<MissionPlannerPage> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Row(
+          TourAnchor('drone-mp-stats', child: Row(
             children: [
               _stat(LucideIcons.mapPin, '${_mission.waypointCount}', context.l10n.dtMpStatPoints),
               _statDivider(),
@@ -767,9 +768,9 @@ class _MissionPlannerPageState extends State<MissionPlannerPage> {
               _statDivider(),
               _stat(LucideIcons.clock, _duration(_mission.estimatedSeconds), context.l10n.dtMpStatEstimate),
             ],
-          ),
+          )),
           const SizedBox(height: 12),
-          Row(
+          TourAnchor('drone-mp-actions', child: Row(
             children: [
               Expanded(
                 child: OutlinedButton.icon(
@@ -798,7 +799,7 @@ class _MissionPlannerPageState extends State<MissionPlannerPage> {
                 ),
               ),
             ],
-          ),
+          )),
         ],
       ),
     );

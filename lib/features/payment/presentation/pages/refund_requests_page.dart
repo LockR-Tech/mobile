@@ -21,6 +21,7 @@ import 'package:smart_laundry_locker/features/payment/data/vietnamese_banks.dart
 import 'package:smart_laundry_locker/shared/widgets/app_cached_image.dart';
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
 import 'package:smart_laundry_locker/core/l10n/l10n.dart';
+import 'package:smart_laundry_locker/features/onboarding/presentation/tour_anchor.dart';
 import 'package:smart_laundry_locker/core/services/platform_info.dart';
 
 class RefundRequestsPage extends StatefulWidget {
@@ -374,7 +375,7 @@ class _RefundRequestsPageState extends State<RefundRequestsPage> {
             title: context.l10n.profileRefunds,
             subtitle: context.l10n.rfSubtitle,
             onBack: () => AppRouter.backOrHome(context),
-            trailing: Row(
+            trailing: TourAnchor('my-refunds-actions', child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
                 BrandCircleIconButton(
@@ -389,9 +390,9 @@ class _RefundRequestsPageState extends State<RefundRequestsPage> {
                   onTap: _showRulesDialog,
                 ),
               ],
-            ),
+            )),
           ),
-          Container(
+          TourAnchor('my-refunds-tabs', child: Container(
             margin: const EdgeInsets.fromLTRB(16, 12, 16, 8),
             padding: const EdgeInsets.all(3),
             decoration: BoxDecoration(
@@ -410,21 +411,23 @@ class _RefundRequestsPageState extends State<RefundRequestsPage> {
                   ),
                 ),
                 Expanded(
-                  child: _buildTabButton(
+                  child: TourAnchor('my-refunds-tab-new', child: _buildTabButton(
                     index: 1,
                     title: context.l10n.rfNewRequest,
                     icon: LucideIcons.plusCircle,
-                  ),
+                  )),
                 ),
               ],
             ),
-          ),
+          )),
           Expanded(
             child: _selectedTab == 0 ? _buildRefundsList() : _buildCreateRequestForm(),
           ),
         ],
       ),
-      bottomNavigationBar: _selectedTab == 1 ? _buildFixedSubmitBar() : null,
+      bottomNavigationBar: _selectedTab == 1
+          ? TourAnchor('my-refund-create-submit', child: _buildFixedSubmitBar())
+          : null,
     );
   }
 
@@ -717,7 +720,7 @@ class _RefundRequestsPageState extends State<RefundRequestsPage> {
             ),
             const SizedBox(height: 24),
             Center(
-              child: ElevatedButton.icon(
+              child: TourAnchor('my-refunds-empty', child: ElevatedButton.icon(
                 onPressed: () => setState(() => _selectedTab = 1),
                 icon: const Icon(LucideIcons.plus, size: 16),
                 label: Text(context.l10n.rfCreateNow),
@@ -727,7 +730,7 @@ class _RefundRequestsPageState extends State<RefundRequestsPage> {
                   padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                 ),
-              ),
+              )),
             ),
           ],
         ),
@@ -735,11 +738,12 @@ class _RefundRequestsPageState extends State<RefundRequestsPage> {
     }
 
     final items = _refundListItems;
+    final firstRefund = items.indexWhere((e) => !e.isHeader);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildRefundFilterChips(),
+        TourAnchor('my-refunds-filters', child: _buildRefundFilterChips()),
         Expanded(
           child: RefreshIndicator(
             onRefresh: _loadRefunds,
@@ -779,9 +783,12 @@ class _RefundRequestsPageState extends State<RefundRequestsPage> {
                         );
                       }
                       final rf = item.refund!;
+                      final card = _buildRefundCard(rf);
                       return Padding(
                         padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-                        child: _buildRefundCard(rf),
+                        child: index == firstRefund
+                            ? TourAnchor('my-refunds-first', child: card)
+                            : card,
                       );
                     },
                   ),
@@ -1183,7 +1190,7 @@ class _RefundRequestsPageState extends State<RefundRequestsPage> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         // Box số tiền nổi bật
-                        Container(
+                        TourAnchor('my-refund-detail-amount', child: Container(
                           width: double.infinity,
                           padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 14),
                           decoration: BoxDecoration(
@@ -1226,7 +1233,7 @@ class _RefundRequestsPageState extends State<RefundRequestsPage> {
                               ),
                             ],
                           ),
-                        ),
+                        )),
                         const SizedBox(height: 18),
 
                         // Section 1: Thông tin hoàn tiền
@@ -1239,7 +1246,7 @@ class _RefundRequestsPageState extends State<RefundRequestsPage> {
                           ),
                         ),
                         const SizedBox(height: 8),
-                        Container(
+                        TourAnchor('my-refund-detail-info', child: Container(
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
                             color: const Color(0xFFF8FAFC),
@@ -1315,20 +1322,20 @@ class _RefundRequestsPageState extends State<RefundRequestsPage> {
                                 ),
                             ],
                           ),
-                        ),
+                        )),
 
                         // Section 2: Chứng từ & Hình ảnh
                         if ((customerProof != null && customerProof.trim().isNotEmpty) ||
                             (adminProof != null && adminProof.trim().isNotEmpty)) ...[
                           const SizedBox(height: 18),
-                          Text(
+                          TourAnchor('my-refund-detail-evidence', child: Text(
                             context.l10n.rfEvidence,
                             style: TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.w700,
                               color: Color(0xFF0F172A),
                             ),
-                          ),
+                          )),
                           const SizedBox(height: 10),
                           if (customerProof != null && customerProof.trim().isNotEmpty)
                             _buildImageAttachmentBox(
@@ -1361,7 +1368,7 @@ class _RefundRequestsPageState extends State<RefundRequestsPage> {
                     color: Colors.white,
                     border: Border(top: BorderSide(color: Color(0xFFF1F5F9))),
                   ),
-                  child: SizedBox(
+                  child: TourAnchor('my-refund-detail-close', child: SizedBox(
                     width: double.infinity,
                     height: 46,
                     child: ElevatedButton(
@@ -1379,7 +1386,7 @@ class _RefundRequestsPageState extends State<RefundRequestsPage> {
                         style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
                       ),
                     ),
-                  ),
+                  )),
                 ),
               ],
             ),
@@ -1618,7 +1625,7 @@ class _RefundRequestsPageState extends State<RefundRequestsPage> {
             step: '1',
             title: context.l10n.rfChooseOrderTitle,
           ),
-          InkWell(
+          TourAnchor('my-refund-create-order', child: InkWell(
             onTap: _openOrderPicker,
             borderRadius: BorderRadius.circular(14),
             child: Container(
@@ -1780,7 +1787,7 @@ class _RefundRequestsPageState extends State<RefundRequestsPage> {
                 ],
               ),
             ),
-          ),
+          )),
           const SizedBox(height: 18),
 
           // 2. Tài khoản ngân hàng nhận tiền
@@ -1819,7 +1826,7 @@ class _RefundRequestsPageState extends State<RefundRequestsPage> {
                   )
                 : null,
           ),
-          Container(
+          TourAnchor('my-refund-create-bank', child: Container(
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
               color: Colors.white,
@@ -2005,7 +2012,7 @@ class _RefundRequestsPageState extends State<RefundRequestsPage> {
                 ),
               ],
             ),
-          ),
+          )),
           const SizedBox(height: 18),
 
           // 3. Lý do hoàn tiền
@@ -2013,7 +2020,7 @@ class _RefundRequestsPageState extends State<RefundRequestsPage> {
             step: '3',
             title: context.l10n.rfReasonTitle,
           ),
-          Wrap(
+          TourAnchor('my-refund-create-reason', child: Wrap(
             spacing: 8,
             runSpacing: 8,
             children: [
@@ -2022,7 +2029,7 @@ class _RefundRequestsPageState extends State<RefundRequestsPage> {
               _buildQuickReasonChip(context.l10n.rfQuickDoubleCharge),
               _buildQuickReasonChip(context.l10n.rfQuickLaundry),
             ],
-          ),
+          )),
           const SizedBox(height: 10),
           TextField(
             controller: _reasonController,
@@ -2057,7 +2064,7 @@ class _RefundRequestsPageState extends State<RefundRequestsPage> {
             step: '4',
             title: context.l10n.rfEvidenceOptional,
           ),
-          Container(
+          TourAnchor('my-refund-create-evidence', child: Container(
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
               color: Colors.white,
@@ -2171,7 +2178,7 @@ class _RefundRequestsPageState extends State<RefundRequestsPage> {
                       ),
                     ],
                   ),
-          ),
+          )),
           const SizedBox(height: 20),
         ],
       ),

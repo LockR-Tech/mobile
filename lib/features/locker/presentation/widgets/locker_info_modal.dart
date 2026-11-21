@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
 import 'package:smart_laundry_locker/core/l10n/l10n.dart';
+import 'package:smart_laundry_locker/features/onboarding/presentation/tour_anchor.dart';
 
 /// Modal hiển thị thông tin chi tiết của tủ trên bản đồ: tên, địa chỉ, trạng
 /// thái kết nối (`online` của server) và số ô trống theo loại ô (từ layout).
@@ -150,7 +151,9 @@ class LockerInfoModal extends StatelessWidget {
                 ),
               ),
             // CTA: đặt dịch vụ tại địa điểm này (Thuê tủ / Gửi hàng)
-            Padding(
+            TourAnchor(
+              'locker-detail-actions',
+              child: Padding(
               padding: EdgeInsets.fromLTRB(
                 horizontalPadding,
                 4,
@@ -196,6 +199,7 @@ class LockerInfoModal extends StatelessWidget {
                     ),
                   ],
                 ],
+              ),
               ),
             ),
             SizedBox(height: MediaQuery.of(context).padding.bottom),

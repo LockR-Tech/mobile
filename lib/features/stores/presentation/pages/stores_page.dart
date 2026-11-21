@@ -17,6 +17,7 @@ import 'package:smart_laundry_locker/features/stores/presentation/widgets/store_
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
 import 'package:smart_laundry_locker/shared/shared.dart';
 import 'package:smart_laundry_locker/core/l10n/l10n.dart';
+import 'package:smart_laundry_locker/features/onboarding/presentation/tour_anchor.dart';
 
 /// Customer-facing list of stores. Supports text search and "near me"
 /// sorting by distance. Mirrors the legacy RN `user/stores` screen.
@@ -195,7 +196,9 @@ class _StoresPageState extends State<StoresPage> {
             art: HeroArt.store,
             title: context.l10n.homeDropPoints,
             subtitle: context.l10n.storeListSubtitle,
-            trailing: Row(
+            trailing: TourAnchor(
+              'stores-header-actions',
+              child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
                 BrandCircleIconButton(
@@ -213,6 +216,7 @@ class _StoresPageState extends State<StoresPage> {
                   iconSize: 18,
                 ),
               ],
+              ),
             ),
           ),
           _buildSearchBar(),
@@ -228,7 +232,9 @@ class _StoresPageState extends State<StoresPage> {
       child: Row(
         children: [
           Expanded(
-            child: TextField(
+            child: TourAnchor(
+              'stores-search',
+              child: TextField(
               controller: _searchCtrl,
               onChanged: (_) => _applyFilter(),
               textInputAction: TextInputAction.search,
@@ -261,10 +267,13 @@ class _StoresPageState extends State<StoresPage> {
                   borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
                 ),
               ),
+              ),
             ),
           ),
           const SizedBox(width: 8),
-          Material(
+          TourAnchor(
+            'stores-nearby',
+            child: Material(
             color: AISLShadcnTheme.navyPrimary,
             borderRadius: BorderRadius.circular(14),
             child: InkWell(
@@ -287,6 +296,7 @@ class _StoresPageState extends State<StoresPage> {
                         size: 20,
                       ),
               ),
+            ),
             ),
           ),
         ],
@@ -328,7 +338,7 @@ class _StoresPageState extends State<StoresPage> {
         separatorBuilder: (_, __) => const SizedBox(height: 10),
         itemBuilder: (context, index) {
           final store = _visible[index];
-          return StoreCard(
+          final card = StoreCard(
             store: store,
             isFavorite: _favoriteIds.contains(store.id),
             onToggleFavorite: () => _toggleFavorite(store),
@@ -343,6 +353,9 @@ class _StoresPageState extends State<StoresPage> {
               }
             },
           );
+          return index == 0
+              ? TourAnchor('stores-first-item', child: card)
+              : card;
         },
       ),
     );

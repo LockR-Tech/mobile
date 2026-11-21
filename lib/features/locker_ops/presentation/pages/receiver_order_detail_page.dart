@@ -18,6 +18,7 @@ import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/or
 import 'package:smart_laundry_locker/shared/widgets/app_lottie.dart';
 import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 import 'package:smart_laundry_locker/core/services/platform_info.dart';
+import 'package:smart_laundry_locker/features/onboarding/presentation/tour_anchor.dart';
 
 /// Chi tiết một đơn phía người nhận ("Hàng chờ nhận") hoặc người lấy hộ ("Đơn
 /// ủy quyền"): mã lấy hàng, người gửi, người nhận/ủy quyền, tủ & ô, kiện hàng,
@@ -198,10 +199,13 @@ class _ReceiverOrderDetailPageState extends State<ReceiverOrderDetailPage> {
           style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 17),
         ),
         actions: [
-          IconButton(
+          TourAnchor(
+            'recv-detail-refresh',
+            child: IconButton(
             onPressed: _loading ? null : _load,
             icon: const Icon(LucideIcons.refreshCw, size: 18),
             tooltip: context.l10n.commonReload,
+            ),
           ),
         ],
         bottom: _loading
@@ -222,7 +226,10 @@ class _ReceiverOrderDetailPageState extends State<ReceiverOrderDetailPage> {
               _ErrorBanner(text: _error!, onRetry: _load),
               const SizedBox(height: 14),
             ],
-            _Header(detail: _detail, delegate: delegate),
+            TourAnchor(
+              'recv-detail-header',
+              child: _Header(detail: _detail, delegate: delegate),
+            ),
             const SizedBox(height: 18),
             ..._sections(delegate),
           ],
@@ -248,40 +255,54 @@ class _ReceiverOrderDetailPageState extends State<ReceiverOrderDetailPage> {
         footer: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            _pickupCodeBlock(delegate),
+            TourAnchor('recv-detail-code', child: _pickupCodeBlock(delegate)),
             const SizedBox(height: 12),
             if (o.canUnlockWithCode)
-              OpsSheetAction(
+              TourAnchor(
+                'recv-detail-unlock',
+                child: OpsSheetAction(
                 label: context.l10n.recvOpenBoxPickup(o.boxLabel),
                 icon: LucideIcons.doorOpen,
                 primary: true,
                 onTap: _unlock,
+                ),
               ),
             if (hasLocation && !finished)
-              OpsSheetAction(
+              TourAnchor(
+                'recv-detail-directions',
+                child: OpsSheetAction(
                 label: context.l10n.ordDirectionsToLocker,
                 icon: LucideIcons.map,
                 onTap: () => openReceiverOrderDirections(context, o),
+                ),
               ),
             if (d.droneTrackingAvailable)
-              OpsSheetAction(
+              TourAnchor(
+                'recv-detail-track',
+                child: OpsSheetAction(
                 label: finished ? context.l10n.ordReviewDroneJourney : context.l10n.recvTrackDrone,
                 icon: LucideIcons.navigation,
                 onTap: _trackDrone,
+                ),
               ),
             if (!finished)
-              OpsSheetAction(
+              TourAnchor(
+                'recv-detail-email',
+                child: OpsSheetAction(
                 key: const ValueKey('receiver-resend-email'),
                 label: _sendingEmail ? context.l10n.recvSendingEmail : context.l10n.recvResendEmail,
                 icon: LucideIcons.mail,
                 onTap: _resendEmail,
+                ),
               ),
           ],
         ),
       ),
 
       // 3. Người gửi / người ủy quyền.
-      OrderDetailSection(
+      TourAnchor(
+        'recv-detail-sender',
+        child: OrderDetailSection(
         title: ownerTitle,
         icon: LucideIcons.user,
         rows: [
@@ -305,6 +326,7 @@ class _ReceiverOrderDetailPageState extends State<ReceiverOrderDetailPage> {
               value: d.senderEmail!,
             ),
         ],
+        ),
       ),
 
       // 4. Người nhận & ủy quyền.

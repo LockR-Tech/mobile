@@ -25,6 +25,7 @@ import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
 import 'package:smart_laundry_locker/core/services/app_event_bus.dart';
 import 'package:smart_laundry_locker/features/profile/domain/constants/profile_constants.dart';
 import 'package:smart_laundry_locker/core/l10n/l10n.dart';
+import 'package:smart_laundry_locker/features/onboarding/presentation/tour_anchor.dart';
 
 /// SEND flow (gửi hàng C2C qua tủ).
 /// Stage 1: tạo đơn + nhận PIN bỏ hàng. Stage 2: thanh toán → mở ô → bỏ hàng →
@@ -710,7 +711,9 @@ class _SendParcelPageState extends State<SendParcelPage>
             ),
           ],
         ),
-        child: Column(
+        child: TourAnchor(
+          'send-bottom',
+          child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             _priceCard(),
@@ -722,6 +725,7 @@ class _SendParcelPageState extends State<SendParcelPage>
               onPressed: _noCellAvailable ? null : _create,
             ),
           ],
+          ),
         ),
       );
     }
@@ -962,9 +966,11 @@ class _SendParcelPageState extends State<SendParcelPage>
           const SizedBox(height: 20),
           OpsSectionLabel(context.l10n.commonChooseLocker, icon: LucideIcons.warehouse),
           if (widget.initialLockerId != null)
-            _lockedLockerCard()
+            TourAnchor('send-locker', child: _lockedLockerCard())
           else
-            LockerPickerField(
+            TourAnchor(
+              'send-locker',
+              child: LockerPickerField(
               lockers: _lockers,
               selectedId: _lockerId,
               onlyActive: true,
@@ -976,19 +982,23 @@ class _SendParcelPageState extends State<SendParcelPage>
                 });
                 if (newId != null) _loadLayout(newId);
               },
+              ),
             ),
           const SizedBox(height: 20),
           OpsSectionLabel(context.l10n.commonBoxType, icon: LucideIcons.boxes),
           if (widget.initialBoxId != null)
-            _lockedCellCard()
+            TourAnchor('send-size', child: _lockedCellCard())
           else
-            Row(
+            TourAnchor(
+              'send-size',
+              child: Row(
               children: [
                 for (final s in _sizes) ...[
                   if (s != _sizes.first) const SizedBox(width: 10),
                   _sizeCard(s),
                 ],
               ],
+              ),
             ),
           const SizedBox(height: 6),
           Text(
@@ -997,7 +1007,9 @@ class _SendParcelPageState extends State<SendParcelPage>
           ),
           const SizedBox(height: 20),
           OpsSectionLabel(context.l10n.ordRecipient, icon: LucideIcons.userRound),
-          _field(
+          TourAnchor(
+            'send-recipient',
+            child: _field(
             controller: _phoneCtrl,
             hint: context.l10n.sendRecipientPhoneHint,
             icon: LucideIcons.phone,
@@ -1007,6 +1019,7 @@ class _SendParcelPageState extends State<SendParcelPage>
               LengthLimitingTextInputFormatter(ProfileConstants.vnPhoneLength),
             ],
             validator: _validateReceiverPhone,
+            ),
           ),
           const SizedBox(height: 10),
           _field(
@@ -1015,7 +1028,9 @@ class _SendParcelPageState extends State<SendParcelPage>
             icon: LucideIcons.idCard,
           ),
           const SizedBox(height: 10),
-          _field(
+          TourAnchor(
+            'send-recipient-email',
+            child: _field(
             key: const ValueKey('send-receiver-email'),
             controller: _emailCtrl,
             hint: context.l10n.sendRecipientEmailHint,
@@ -1023,6 +1038,7 @@ class _SendParcelPageState extends State<SendParcelPage>
             keyboardType: TextInputType.emailAddress,
             // Bắt buộc: Lock.R báo người nhận qua email này, và người gửi gửi lại được từ chi tiết đơn.
             validator: _validateReceiverEmail,
+            ),
           ),
           const SizedBox(height: 8),
           // Nói rõ người nhận được báo lúc nào để người gửi khỏi nhắn trùng.
@@ -1036,16 +1052,19 @@ class _SendParcelPageState extends State<SendParcelPage>
             context.l10n.sendRecipientMessage,
             icon: LucideIcons.messageSquareText,
           ),
-          _field(
+          TourAnchor(
+            'send-message',
+            child: _field(
             controller: _noteCtrl,
             hint: context.l10n.sendMessageHint,
             icon: LucideIcons.pencil,
             maxLines: 2,
             maxLength: _noteMaxLength,
+            ),
           ),
           const SizedBox(height: 20),
           OpsSectionLabel(context.l10n.sendStorageTime, icon: LucideIcons.clock),
-          _storagePicker(),
+          TourAnchor('send-storage', child: _storagePicker()),
           const SizedBox(height: 12),
           OpsBanner(
             tone: OpsBannerTone.info,
@@ -1056,7 +1075,9 @@ class _SendParcelPageState extends State<SendParcelPage>
           if (businessConfig.maxVouchersPerOrder > 0) ...[
             const SizedBox(height: 20),
             OpsSectionLabel(context.l10n.commonDiscountCode, icon: LucideIcons.ticket),
-            PromoCodeField(
+            TourAnchor(
+              'send-promo',
+              child: PromoCodeField(
               orderTotal: _fee,
               lockerId: _lockerId,
               service: _service,
@@ -1064,17 +1085,21 @@ class _SendParcelPageState extends State<SendParcelPage>
                 _discount = discount;
                 _promoCode = code;
               }),
+              ),
             ),
           ],
           const SizedBox(height: 20),
           OpsSectionLabel(context.l10n.commonRewardPoints, icon: LucideIcons.sparkles),
-          LoyaltyRedeemToggle(
+          TourAnchor(
+            'send-points',
+            child: LoyaltyRedeemToggle(
             orderTotal: _feeAfterVoucher,
             service: _service,
             onChanged: (points, discount) => setState(() {
               _pointsToUse = points;
               _pointsDiscount = discount;
             }),
+            ),
           ),
         ].animate(interval: 40.ms).fadeIn(duration: 250.ms).slideY(begin: 0.06),
       ),
@@ -1340,7 +1365,9 @@ class _SendParcelPageState extends State<SendParcelPage>
       children: [
         _SendStepper(active: isDropped ? 2 : 1),
         const SizedBox(height: 16),
-        OpsCard(
+        TourAnchor(
+          'send-result-card',
+          child: OpsCard(
           child: Column(
             children: [
               Row(
@@ -1410,7 +1437,10 @@ class _SendParcelPageState extends State<SendParcelPage>
                 // là của người gửi.
                 if (receiverShare != null) ...[
                   const SizedBox(height: 14),
-                  PickupCodeShareActions(share: receiverShare),
+                  TourAnchor(
+                    'send-share',
+                    child: PickupCodeShareActions(share: receiverShare),
+                  ),
                 ],
               ],
               // Người nhận vừa nhập ở bước trước nhưng màn kết quả không hiện
@@ -1453,7 +1483,9 @@ class _SendParcelPageState extends State<SendParcelPage>
               ],
               if (isDropped && order['pickupDeadline'] != null) ...[
                 const SizedBox(height: 16),
-                OpsBanner(
+                TourAnchor(
+                  'send-deadline',
+                  child: OpsBanner(
                   tone: OpsBannerTone.warning,
                   icon: LucideIcons.clock,
                   text: context.l10n.sendPickupBefore(
@@ -1461,9 +1493,11 @@ class _SendParcelPageState extends State<SendParcelPage>
                     fmtRemaining(order['pickupDeadline']),
                     overtimePolicyText(config),
                   ),
+                  ),
                 ),
               ],
             ],
+          ),
           ),
         ).animate().fadeIn(duration: 300.ms).slideY(begin: 0.05),
         const SizedBox(height: 16),
@@ -1491,22 +1525,30 @@ class _SendParcelPageState extends State<SendParcelPage>
             text: context.l10n.sendDropInstructions,
           ),
           const SizedBox(height: 12),
-          OpsPrimaryButton(
+          TourAnchor(
+            'send-open-box',
+            child: OpsPrimaryButton(
             label: context.l10n.sendOpenToDrop,
             icon: LucideIcons.lockKeyholeOpen,
             color: opsPrimary,
             loading: _loading,
             onPressed: _openBox,
+            ),
           ),
           const SizedBox(height: 12),
-          OpsPrimaryButton(
+          TourAnchor(
+            'send-confirm-drop',
+            child: OpsPrimaryButton(
             label: context.l10n.sendIDropped,
             icon: LucideIcons.check,
             loading: _loading,
             onPressed: _confirmDrop,
+            ),
           ),
         ] else
-          OpsPrimaryButton(
+          TourAnchor(
+            'send-done',
+            child: OpsPrimaryButton(
             label: context.l10n.commonDone,
             icon: LucideIcons.house,
             onPressed: () {
@@ -1516,6 +1558,7 @@ class _SendParcelPageState extends State<SendParcelPage>
                 router.go(AppRouter.orders);
               });
             },
+            ),
           ),
       ],
     );

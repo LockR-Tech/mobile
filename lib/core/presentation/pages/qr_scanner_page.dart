@@ -14,6 +14,7 @@ import 'package:smart_laundry_locker/shared/widgets/unauthenticated_placeholder.
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:provider/provider.dart';
 import 'package:smart_laundry_locker/core/l10n/l10n.dart';
+import 'package:smart_laundry_locker/features/onboarding/presentation/tour_anchor.dart';
 
 /// Quét mã QR trên màn hình kiosk để đăng nhập tài khoản Lock.R tại tủ
 /// (CONTRACTS §1): QR `lockr://kiosk-login?sid=&code=` ⇒ hỏi xác nhận ⇒ gửi
@@ -269,7 +270,9 @@ class _QrScannerPageState extends State<QrScannerPage>
               onPressed: () => AppRouter.backOrHome(context),
             ),
             actions: [
-              IconButton(
+              TourAnchor(
+                'qr-torch',
+                child: IconButton(
                 icon: ValueListenableBuilder<MobileScannerState>(
                   valueListenable: _scannerController,
                   builder: (context, state, child) {
@@ -286,10 +289,14 @@ class _QrScannerPageState extends State<QrScannerPage>
                   },
                 ),
                 onPressed: () => _scannerController.toggleTorch(),
+                ),
               ),
-              IconButton(
+              TourAnchor(
+                'qr-home',
+                child: IconButton(
                 icon: const Icon(LucideIcons.house, color: Colors.white),
                 onPressed: () => AppRouter.goRoleHome(context),
+                ),
               ),
             ],
           ),
@@ -328,13 +335,18 @@ class _QrScannerPageState extends State<QrScannerPage>
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(
+                    TourAnchor(
+                      'qr-hint',
+                      child: Text(
                       context.l10n.qrAimHint,
                       textAlign: TextAlign.center,
                       style: TextStyle(color: Colors.white, fontSize: 13, height: 1.4),
+                      ),
                     ),
                     const SizedBox(height: 14),
-                    OutlinedButton.icon(
+                    TourAnchor(
+                      'qr-manual',
+                      child: OutlinedButton.icon(
                       key: const ValueKey('kiosk-qr-manual-entry'),
                       style: OutlinedButton.styleFrom(
                         foregroundColor: Colors.white,
@@ -347,6 +359,7 @@ class _QrScannerPageState extends State<QrScannerPage>
                       onPressed: _isProcessing ? null : _openManualEntry,
                       icon: const Icon(LucideIcons.keyboard, size: 18),
                       label: Text(context.l10n.qrEnterManually),
+                      ),
                     ),
                   ],
                 ),
@@ -574,7 +587,9 @@ class _ManualKioskCodeSheetState extends State<_ManualKioskCodeSheet> {
               style: TextStyle(fontSize: 13, color: Color(0xFF64748B)),
             ),
             const SizedBox(height: 14),
-            TextField(
+            TourAnchor(
+              'qr-manual-session',
+              child: TextField(
               key: const ValueKey('kiosk-qr-sid'),
               controller: _sidController,
               autocorrect: false,
@@ -582,9 +597,12 @@ class _ManualKioskCodeSheetState extends State<_ManualKioskCodeSheet> {
                 labelText: context.l10n.qrSessionCode,
                 border: OutlineInputBorder(),
               ),
+              ),
             ),
             const SizedBox(height: 12),
-            TextField(
+            TourAnchor(
+              'qr-manual-code',
+              child: TextField(
               key: const ValueKey('kiosk-qr-code'),
               controller: _codeController,
               autocorrect: false,
@@ -594,6 +612,7 @@ class _ManualKioskCodeSheetState extends State<_ManualKioskCodeSheet> {
                 border: OutlineInputBorder(),
               ),
               onSubmitted: (_) => _submit(),
+              ),
             ),
             if (_error != null) ...[
               const SizedBox(height: 10),
@@ -603,7 +622,9 @@ class _ManualKioskCodeSheetState extends State<_ManualKioskCodeSheet> {
               ),
             ],
             const SizedBox(height: 16),
-            FilledButton(
+            TourAnchor(
+              'qr-manual-submit',
+              child: FilledButton(
               key: const ValueKey('kiosk-qr-manual-submit'),
               style: FilledButton.styleFrom(
                 backgroundColor: AISLShadcnTheme.navyPrimary,
@@ -611,6 +632,7 @@ class _ManualKioskCodeSheetState extends State<_ManualKioskCodeSheet> {
               ),
               onPressed: _submit,
               child: Text(context.l10n.commonContinue),
+              ),
             ),
           ],
         ),

@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:smart_laundry_locker/features/onboarding/presentation/tour_anchor.dart';
 import 'user_ui_kit.dart';
 
 /// Builder function for custom icons
@@ -166,7 +167,9 @@ class CustomBottomNavigationBar extends StatelessWidget {
   Widget _buildProminent(NavigationItem item, int index) {
     return Expanded(
       child: Center(
-        child: GestureDetector(
+        child: TourAnchor(
+          'nav-assistant',
+          child: GestureDetector(
           behavior: HitTestBehavior.opaque,
           onTap: () => onTap(index),
           child: SizedBox(
@@ -175,6 +178,7 @@ class CustomBottomNavigationBar extends StatelessWidget {
             child: Center(
               child: _buildIcon(item.icon, AislBrand.navy, size: 52),
             ),
+          ),
           ),
         ),
       ),

@@ -14,6 +14,7 @@ import 'package:smart_laundry_locker/features/payment/presentation/widgets/payme
 import 'package:smart_laundry_locker/shared/shared.dart';
 import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 import 'package:smart_laundry_locker/core/services/platform_info.dart';
+import 'package:smart_laundry_locker/features/onboarding/presentation/tour_anchor.dart';
 
 /// Một lần thanh toán SePay (VietQR) cho một đơn — dùng chung cho thuê tủ, gửi
 /// hàng, gia hạn, phí quá hạn, đơn drone.
@@ -373,7 +374,9 @@ class InlineVietQrCard extends StatelessWidget {
             ),
           ),
           if (qr != null)
-            Padding(
+            TourAnchor(
+              'vietqr-code',
+              child: Padding(
               padding: const EdgeInsets.fromLTRB(16, 14, 16, 8),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(12),
@@ -416,6 +419,7 @@ class InlineVietQrCard extends StatelessWidget {
                   ),
                 ),
               ),
+              ),
             )
           else ...[
             const _NoQrHint(),
@@ -428,7 +432,9 @@ class InlineVietQrCard extends StatelessWidget {
                 ].join(' · '),
               ),
           ],
-          Padding(
+          TourAnchor(
+            'vietqr-amount',
+            child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -450,10 +456,13 @@ class InlineVietQrCard extends StatelessWidget {
                 ),
               ],
             ),
+            ),
           ),
           if (content != null) ...[
             const Divider(height: 1, indent: 16, endIndent: 16),
-            Padding(
+            TourAnchor(
+              'vietqr-content',
+              child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               child: Row(
                 children: [
@@ -502,9 +511,12 @@ class InlineVietQrCard extends StatelessWidget {
                   ),
                 ],
               ),
+              ),
             ),
           ],
-          Container(
+          TourAnchor(
+            'vietqr-waiting',
+            child: Container(
             margin: const EdgeInsets.fromLTRB(16, 8, 16, 16),
             padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 14),
             decoration: BoxDecoration(
@@ -546,6 +558,7 @@ class InlineVietQrCard extends StatelessWidget {
                 ),
               ],
             ),
+            ),
           ),
         ],
       ),
@@ -583,7 +596,9 @@ class SepayPaymentActions extends StatelessWidget {
         if (controller.paid || transfer == null) return const SizedBox.shrink();
         if (kIsWeb || !transfer.canOpenBankApp) return const SizedBox.shrink();
 
-        final button = OutlinedButton.icon(
+        final button = TourAnchor(
+          'vietqr-bank-app',
+          child: OutlinedButton.icon(
           onPressed: () => openBankApp(context, transfer: transfer),
           icon: const Icon(LucideIcons.landmark, size: 18),
           label: Text(context.l10n.sepayPayWithBankApp),
@@ -599,6 +614,7 @@ class SepayPaymentActions extends StatelessWidget {
               fontWeight: FontWeight.w700,
               fontSize: 15,
             ),
+          ),
           ),
         );
 

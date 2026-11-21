@@ -32,6 +32,8 @@ import 'package:smart_laundry_locker/features/vouchers/presentation/providers/vo
 import 'package:smart_laundry_locker/core/theme/theme_provider.dart';
 import 'package:smart_laundry_locker/shared/shared.dart';
 import 'package:smart_laundry_locker/features/onboarding/dev/capture_hooks.dart';
+import 'package:smart_laundry_locker/features/onboarding/presentation/onboarding_controller.dart';
+import 'package:smart_laundry_locker/features/onboarding/presentation/tour_anchor.dart';
 
 class _AislLoadingWidget extends StatelessWidget {
   final String msg;
@@ -151,7 +153,16 @@ void main() async {
   // Nút quay lại của điện thoại đi theo lịch sử trang (tab trước, trang trước), không thoát app.
   AppBackNavigation.instance.attach(AppRouter.router);
   // Script chụp ảnh HDSD mở thẳng một trang (chỉ bản web chạy ở localhost).
-  registerCaptureHooks(AppRouter.router.go);
+  registerCaptureHooks(
+    AppRouter.router.go,
+    reset: OnboardingController.closeModals,
+    reveal: (anchor) {
+      final ctx = TourAnchorRegistry.contextOf(anchor);
+      if (ctx == null || !ctx.mounted) return false;
+      Scrollable.ensureVisible(ctx, alignment: 0.5);
+      return true;
+    },
+  );
 
   AppMessengerService.configureToasts();
   await PlatformInfo.init();

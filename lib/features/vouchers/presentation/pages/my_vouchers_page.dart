@@ -14,6 +14,7 @@ import '../widgets/points_exchange_tab.dart';
 import '../../data/models/voucher_model.dart';
 import 'voucher_detail_page.dart';
 import 'package:smart_laundry_locker/core/l10n/l10n.dart';
+import 'package:smart_laundry_locker/features/onboarding/presentation/tour_anchor.dart';
 
 class MyVouchersPage extends StatefulWidget {
   const MyVouchersPage({super.key});
@@ -61,12 +62,12 @@ class _MyVouchersPageState extends State<MyVouchersPage>
             title: context.l10n.voucherMine,
             subtitle: context.l10n.voucherMineSubtitle,
             onBack: () => AppRouter.backOrHome(context),
-            trailing: BrandCircleIconButton(
+            trailing: TourAnchor('my-vouchers-refresh', child: BrandCircleIconButton(
               icon: LucideIcons.refreshCw,
               onTap: _reload,
-            ),
+            )),
           ),
-          Container(
+          TourAnchor('my-vouchers-tabs', child: Container(
             color: Colors.white,
             child: TabBar(
               controller: _tabController,
@@ -80,11 +81,11 @@ class _MyVouchersPageState extends State<MyVouchersPage>
               ),
               tabs: [
                 Tab(text: context.l10n.commonAvailable),
-                Tab(text: context.l10n.voucherExchangeTab),
+                TourAnchor('my-vouchers-tab-exchange', child: Tab(text: context.l10n.voucherExchangeTab)),
                 Tab(text: context.l10n.commonHistory),
               ],
             ),
-          ),
+          )),
           Expanded(
             child: Consumer<VoucherProvider>(
               builder: (context, provider, child) {
@@ -202,11 +203,17 @@ class _MyVouchersPageState extends State<MyVouchersPage>
                     ),
                   ),
                   const SizedBox(height: 12),
-                  TextButton.icon(
-                    onPressed: () => context.push(AppRouter.promotions),
-                    icon: const Icon(LucideIcons.ticket, size: 16),
-                    label: Text(context.l10n.voucherExploreAndSave),
-                  ),
+                  isInactive
+                      ? TextButton.icon(
+                          onPressed: () => context.push(AppRouter.promotions),
+                          icon: const Icon(LucideIcons.ticket, size: 16),
+                          label: Text(context.l10n.voucherExploreAndSave),
+                        )
+                      : TourAnchor('my-vouchers-empty', child: TextButton.icon(
+                          onPressed: () => context.push(AppRouter.promotions),
+                          icon: const Icon(LucideIcons.ticket, size: 16),
+                          label: Text(context.l10n.voucherExploreAndSave),
+                        )),
                 ],
               ),
             ),
@@ -223,7 +230,7 @@ class _MyVouchersPageState extends State<MyVouchersPage>
         separatorBuilder: (_, __) => const SizedBox(height: 12),
         itemBuilder: (context, index) {
           final voucher = vouchers[index];
-          return GestureDetector(
+          final card = GestureDetector(
             onTap: () => Navigator.of(context, rootNavigator: true).push<void>(
               MaterialPageRoute(
                 builder: (_) => VoucherDetailPage(voucher: voucher),
@@ -231,6 +238,9 @@ class _MyVouchersPageState extends State<MyVouchersPage>
             ),
             child: _buildVoucherCard(voucher, isInactive),
           );
+          return index == 0 && !isInactive
+              ? TourAnchor('my-vouchers-first', child: card)
+              : card;
         },
       ),
     );

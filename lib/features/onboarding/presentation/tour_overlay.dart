@@ -21,6 +21,7 @@ class TourOverlay extends StatefulWidget {
     required this.onGroupDone,
     required this.onClose,
     this.navigate,
+    this.resetModals,
     this.findTimeout = const Duration(milliseconds: 1800),
   });
 
@@ -31,6 +32,9 @@ class TourOverlay extends StatefulWidget {
   /// completed = đi hết mọi nhóm; false = đóng giữa chừng.
   final void Function(bool completed) onClose;
   final void Function(String route)? navigate;
+
+  /// Đóng bảng / hộp thoại còn mở (do `via` của nhóm trước) khi bắt đầu một nhóm mới.
+  final VoidCallback? resetModals;
   final Duration findTimeout;
 
   @override
@@ -117,6 +121,7 @@ class _TourOverlayState extends State<TourOverlay> {
     final token = ++_token;
     final step = _step!;
     _track?.cancel();
+    if (_si == 0) widget.resetModals?.call();
     setState(() {
       _phase = _Phase.searching;
       _rect = null;
@@ -155,6 +160,14 @@ class _TourOverlayState extends State<TourOverlay> {
       // Chưa thấy phần tử: chạm neo `via` (mục đầu danh sách, tab, nút "Chi tiết"…) một lần rồi tìm lại từ đầu.
       final via = step.via;
       if (via != null && !viaTapped && tries >= 4) {
+        final viaCtx = TourAnchorRegistry.contextOf(via);
+        if (viaCtx != null && viaCtx.mounted) {
+          // Tab / nút nằm ngoài màn hình (thanh tab cuộn ngang…): cuộn vào trước khi chạm.
+          try {
+            await Scrollable.ensureVisible(viaCtx, alignment: 0.5, duration: const Duration(milliseconds: 200));
+          } catch (_) {}
+          if (!mounted || token != _token) return;
+        }
         final target = TourAnchorRegistry.find(via);
         if (target != null && target.attached && target.hasSize) {
           viaTapped = true;

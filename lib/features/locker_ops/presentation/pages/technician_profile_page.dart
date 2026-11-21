@@ -16,6 +16,7 @@ import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/op
 import 'package:smart_laundry_locker/features/profile/infrastructure/data_sources/profile_remote_data_source_impl.dart';
 import 'package:smart_laundry_locker/features/profile/infrastructure/repositories/profile_repository_impl.dart';
 import 'package:smart_laundry_locker/features/profile/presentation/providers/profile_provider.dart';
+import 'package:smart_laundry_locker/features/onboarding/presentation/tour_anchor.dart';
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
 
 /// Trang xem và chỉnh sửa hồ sơ dùng chung cho KTV tủ và KTV drone: cập nhật
@@ -469,24 +470,24 @@ class _TechnicianProfilePageState extends State<TechnicianProfilePage> {
                       child: Center(child: CircularProgressIndicator(color: opsPrimary)),
                     )
                   else
-                    _buildShiftMetricsCard(
+                    TourAnchor('tech-profile-metrics', child: _buildShiftMetricsCard(
                       total: totalAssigned,
                       inProgress: inProgress,
                       resolved: resolved,
                       overdue: overdue,
                       rating: rating,
                       sla: sla,
-                    ),
+                    )),
 
                   const SizedBox(height: 16),
 
                   // Editable Information Form Card
-                  _buildFormCard(email: email),
+                  TourAnchor('tech-profile-form', child: _buildFormCard(email: email)),
 
                   const SizedBox(height: 20),
 
                   // Save Button
-                  ElevatedButton.icon(
+                  TourAnchor('tech-profile-save', child: ElevatedButton.icon(
                     onPressed: _isSaving ? null : _handleSave,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: opsPrimary,
@@ -513,17 +514,17 @@ class _TechnicianProfilePageState extends State<TechnicianProfilePage> {
                           : context.l10n.techUiSaveProfileChanges,
                       style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
                     ),
-                  ),
+                  )),
 
                   const SizedBox(height: 12),
 
                   // Ngôn ngữ giao diện (dùng chung sheet với Hồ sơ khách hàng)
-                  _buildLanguageTile(),
+                  TourAnchor('tech-profile-language', child: _buildLanguageTile()),
 
                   const SizedBox(height: 12),
 
                   // Logout button
-                  OutlinedButton.icon(
+                  TourAnchor('tech-profile-logout', child: OutlinedButton.icon(
                     onPressed: _logout,
                     style: OutlinedButton.styleFrom(
                       foregroundColor: const Color(0xFFDC2626),
@@ -538,7 +539,7 @@ class _TechnicianProfilePageState extends State<TechnicianProfilePage> {
                       context.l10n.techUiLogoutAccount,
                       style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
                     ),
-                  ),
+                  )),
 
                   const SizedBox(height: 30),
                 ],
@@ -659,7 +660,7 @@ class _TechnicianProfilePageState extends State<TechnicianProfilePage> {
               const SizedBox(height: 18),
 
               // Interactive Avatar with Camera Badge
-              GestureDetector(
+              TourAnchor('tech-profile-avatar', child: GestureDetector(
                 onTap: _handlePickAvatar,
                 child: Stack(
                   alignment: Alignment.center,
@@ -743,7 +744,7 @@ class _TechnicianProfilePageState extends State<TechnicianProfilePage> {
                     ),
                   ],
                 ),
-              ),
+              )),
 
               const SizedBox(height: 12),
 

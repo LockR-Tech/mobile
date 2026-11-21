@@ -8,6 +8,7 @@ import 'package:smart_laundry_locker/features/promotions/data/models/promotion_m
 import 'package:smart_laundry_locker/features/promotions/presentation/widgets/promotion_scope_tag.dart';
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
 import 'package:smart_laundry_locker/core/l10n/l10n.dart';
+import 'package:smart_laundry_locker/features/onboarding/presentation/tour_anchor.dart';
 import 'package:smart_laundry_locker/core/services/platform_info.dart';
 
 class PromotionDetailPage extends StatelessWidget {
@@ -53,21 +54,21 @@ class PromotionDetailPage extends StatelessWidget {
                 children: [
                   _ImageBanner(promo: promo, colors: _colors),
                   const SizedBox(height: 20),
-                  _TicketBanner(promo: promo, rewardText: _rewardText),
+                  TourAnchor('my-promo-detail-ticket', child: _TicketBanner(promo: promo, rewardText: _rewardText)),
                   const SizedBox(height: 20),
-                  _CodeSection(code: promo.code),
+                  TourAnchor('my-promo-detail-code', child: _CodeSection(code: promo.code)),
                   const SizedBox(height: 20),
-                  _InfoSection(promo: promo, rewardText: _rewardText),
+                  TourAnchor('my-promo-detail-info', child: _InfoSection(promo: promo, rewardText: _rewardText)),
                   if (promo.description != null &&
                       promo.description!.isNotEmpty) ...[
                     const SizedBox(height: 16),
                     _DescCard(text: promo.description!),
                   ],
                   const SizedBox(height: 20),
-                  _HowToUse(
+                  TourAnchor('my-promo-detail-howto', child: _HowToUse(
                     isExpired: promo.isExpired,
                     lockerName: promo.lockerDisplayName,
-                  ),
+                  )),
                 ],
               ),
             ),

@@ -6,6 +6,7 @@ import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:smart_laundry_locker/core/utils/phone_utils.dart';
 import 'package:smart_laundry_locker/features/auth/presentation/providers/login_provider.dart';
 import 'package:smart_laundry_locker/core/l10n/l10n.dart';
+import 'package:smart_laundry_locker/features/onboarding/presentation/tour_anchor.dart';
 
 /// Hộp thoại đăng nhập / đăng ký bằng số điện thoại (Firebase Phone Auth),
 /// dùng chung cho màn đăng nhập và bottom sheet đăng nhập.
@@ -154,7 +155,7 @@ class _PhoneOtpDialogState extends State<PhoneOtpDialog> {
             ),
             const SizedBox(height: 16),
             if (!codeSent) ...[
-              TextField(
+              TourAnchor('phone-otp-number', child: TextField(
                 controller: _phoneController,
                 keyboardType: TextInputType.phone,
                 autofocus: true,
@@ -172,7 +173,7 @@ class _PhoneOtpDialogState extends State<PhoneOtpDialog> {
                   hintText: '0912345678',
                   border: OutlineInputBorder(),
                 ),
-              ),
+              )),
               Padding(
                 padding: EdgeInsets.only(top: 6),
                 child: Text(
@@ -207,7 +208,7 @@ class _PhoneOtpDialogState extends State<PhoneOtpDialog> {
                 ),
               ),
             const SizedBox(height: 20),
-            SizedBox(
+            TourAnchor('phone-otp-send', child: SizedBox(
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: loading ? null : _submit,
@@ -230,7 +231,7 @@ class _PhoneOtpDialogState extends State<PhoneOtpDialog> {
                       )
                     : Text(codeSent ? context.l10n.commonConfirm : context.l10n.authSendOtp),
               ),
-            ),
+            )),
             if (codeSent)
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,

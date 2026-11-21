@@ -9,6 +9,7 @@ import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/op
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/receiver_order_card.dart';
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
 import 'package:smart_laundry_locker/core/l10n/l10n.dart';
+import 'package:smart_laundry_locker/features/onboarding/presentation/tour_anchor.dart';
 
 /// "Đơn ủy quyền": các đơn người khác ủy quyền cho mình lấy hộ (theo SĐT tài
 /// khoản), kèm mã lấy hàng khi hàng đã sẵn sàng, mở ô và chỉ đường.
@@ -42,10 +43,13 @@ class _MyDelegationsView extends StatelessWidget {
           subtitle: context.l10n.mdSubtitle,
           onBack: () => Navigator.of(context).maybePop(),
           collapseProgress: collapse,
-          trailing: BrandCircleIconButton(
+          trailing: TourAnchor(
+            'delegations-refresh',
+            child: BrandCircleIconButton(
             icon: LucideIcons.refreshCw,
             onTap: provider.fetchMyDelegations,
             iconSize: 18,
+            ),
           ),
         ),
         child: Builder(builder: (context) => _body(context, provider)),
@@ -118,7 +122,7 @@ class _MyDelegationsView extends StatelessWidget {
         separatorBuilder: (_, _) => const SizedBox(height: 10),
         itemBuilder: (ctx, i) {
           final ReceiverOrder order = sorted[i];
-          return ReceiverOrderCard(
+          final card = ReceiverOrderCard(
             order: order,
             delegatedView: true,
             onUnlock: () async {
@@ -140,6 +144,9 @@ class _MyDelegationsView extends StatelessWidget {
               await provider.fetchMyDelegations();
             },
           );
+          return i == 0
+              ? TourAnchor('delegations-first-item', child: card)
+              : card;
         },
       ),
     );
