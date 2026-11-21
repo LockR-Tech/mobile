@@ -22,7 +22,8 @@ Future<TourChoice> showWelcomeDialog(
     builder: (ctx) => AlertDialog(
       key: const ValueKey('tour-welcome'),
       icon: Icon(Icons.auto_awesome_rounded, color: Theme.of(ctx).colorScheme.primary),
-      title: Text(l10n.tourWelcomeTitle(name)),
+      // Chưa có tên (KTV: token không mang tên, hồ sơ chưa tải xong) ⇒ "Chào bạn!" thay vì "Chào !".
+      title: Text(name.trim().isEmpty ? l10n.tourWelcomeTitleNoName : l10n.tourWelcomeTitle(name.trim())),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,

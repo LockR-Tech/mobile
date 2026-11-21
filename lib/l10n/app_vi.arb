@@ -8268,6 +8268,7 @@
   "tourHeaderButton": "Hướng dẫn",
   "tourWelcomeTitle": "Chào {name}!",
   "@tourWelcomeTitle": {"placeholders": {"name": {}}},
+  "tourWelcomeTitleNoName": "Chào bạn!",
   "tourWelcomeBody": "Lần đầu dùng Lock.R? Xem nhanh {count} khu chức năng chính, mỗi khu vài bước.",
   "@tourWelcomeBody": {"placeholders": {"count": {}}},
   "tourSkip": "Bỏ qua",

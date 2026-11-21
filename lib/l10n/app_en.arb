@@ -5307,6 +5307,7 @@
   "instPhotoUpload": "Upload {count} photo(s)",
   "tourHeaderButton": "Guide",
   "tourWelcomeTitle": "Hi {name}!",
+  "tourWelcomeTitleNoName": "Hi there!",
   "tourWelcomeBody": "New to Lock.R? Take a quick look at the {count} main areas, a few steps each.",
   "tourSkip": "Skip",
   "tourSkipForever": "Don't show again",

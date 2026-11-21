@@ -15351,6 +15351,9 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get tourWelcomeTitleNoName => 'Hi there!';
+
+  @override
   String tourWelcomeBody(Object count) {
     return 'New to Lock.R? Take a quick look at the $count main areas, a few steps each.';
   }

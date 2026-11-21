@@ -25495,6 +25495,12 @@ abstract class AppLocalizations {
   /// **'Chào {name}!'**
   String tourWelcomeTitle(Object name);
 
+  /// No description provided for @tourWelcomeTitleNoName.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chào bạn!'**
+  String get tourWelcomeTitleNoName;
+
   /// No description provided for @tourWelcomeBody.
   ///
   /// In vi, this message translates to:
