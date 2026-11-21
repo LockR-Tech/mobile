@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+# Nhắc luật "đổi giao diện ⇒ cập nhật hướng dẫn trên màn hình + HDSD" (F3-G13) khi commit.
+# Chỉ nhắc, không chặn commit — CI ("Hướng dẫn trên màn hình") mới chặn PR.
+# Bật một lần cho mỗi bản clone: bash tool/setup_hooks.sh
+# Luật: https://github.com/LockR-Tech/docs/blob/main/04-engineering/huong-dan-giao-dien.md
+
+ui=() guide=0
+while IFS= read -r f; do
+  case "$f" in *_test.dart|test/*) continue ;; esac
+  case "$f" in
+    assets/onboarding/*) guide=1 ;;
+    lib/l10n/app_vi.arb|lib/l10n/app_en.arb|lib/core/routing/*|lib/core/presentation/*|lib/shared/widgets/*|lib/*/presentation/*|lib/*/*/presentation/*) ui+=("$f") ;;
+  esac
+done < <(git diff --cached --name-only --diff-filter=ACMRD)
+
+# Neo TourAnchor thêm / bớt trong commit cũng tính là đã làm phần hướng dẫn.
+if [ "$guide" -eq 0 ] && git diff --cached -U0 -- lib | grep -qE "^[+-].*TourAnchor\("; then guide=1; fi
+
+if [ "${#ui[@]}" -gt 0 ] && [ "$guide" -eq 0 ]; then
+  {
+    echo ""
+    echo "┌─ NHẮC: giao diện đổi ⇒ cập nhật hướng dẫn trên màn hình + HDSD (F3-G13) ─────────────"
+    for f in "${ui[@]:0:8}"; do echo "│  • $f"; done
+    [ "${#ui[@]}" -gt 8 ] && echo "│  … và $(( ${#ui[@]} - 8 )) file nữa"
+    echo "│  Commit này đổi giao diện app nhưng không đổi neo TourAnchor / assets/onboarding. Cần:"
+    echo "│   1. neo TourAnchor   2. tours.json + chữ vi/en ở repo frontend (fe/public/onboarding)"
+    echo "│   3. TĂNG version nhóm   4. bash tool/sync_onboarding.sh   5. flutter test test/onboarding"
+    echo "│   6. chụp lại ảnh HDSD (npm run hdsd:capture ở frontend)"
+    echo "│  Không ảnh hưởng hướng dẫn? Tick \"Không ảnh hưởng hướng dẫn — lý do\" trong PR."
+    echo "└──────────────────────────────────────────────────────────────────────────────────────"
+    echo ""
+  } >&2
+fi
+exit 0
