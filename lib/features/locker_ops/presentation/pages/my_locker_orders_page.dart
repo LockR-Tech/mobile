@@ -32,6 +32,7 @@ import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/us
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
 import 'package:smart_laundry_locker/shared/shared.dart';
 import 'package:smart_laundry_locker/core/l10n/l10n.dart';
+import 'package:smart_laundry_locker/features/onboarding/presentation/tour_anchor.dart';
 
 /// All locker orders of the signed-in customer, with the full action set gated
 /// to the backend state machine: confirm drop, pickup/complete, delegate,
@@ -1787,15 +1788,18 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
             ),
           ),
 
-          _ScopeTabs(
-            showIncoming: showIncoming,
-            incomingReadyCount: _incomingReadyCount,
-            onChanged: (incoming) => setState(() => _showIncoming = incoming),
+          TourAnchor(
+            'orders-scope-tabs',
+            child: _ScopeTabs(
+              showIncoming: showIncoming,
+              incomingReadyCount: _incomingReadyCount,
+              onChanged: (incoming) => setState(() => _showIncoming = incoming),
+            ),
           ),
 
           // ── Service type & status filter chips ────────────────────────────
           if (!showIncoming)
-            SingleChildScrollView(
+            TourAnchor('orders-filter-chips', child: SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.fromLTRB(16, 10, 16, 12),
               child: Row(
@@ -1852,7 +1856,7 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
                   ],
                 ],
               ),
-            )
+            ))
           else
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
@@ -1921,7 +1925,7 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
 
           // ── Grouped list ─────────────────────────────────────────────────
           Expanded(
-            child: showIncoming
+            child: TourAnchor('orders-list', child: showIncoming
                 ? _IncomingOrdersView(
                     orders: _incoming,
                     groups: _groupedIncomingOrders,
@@ -2007,7 +2011,7 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
                         );
                       },
                     ),
-                  ),
+                  )),
           ),
         ],
       ),

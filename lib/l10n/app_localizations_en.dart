@@ -15459,4 +15459,29 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tourRoleDroneTech => 'Drone technician';
+
+  @override
+  String get tourOpenManual => 'Open the user manual';
+
+  @override
+  String get tourManualView => 'Manual';
+
+  @override
+  String get tourManualTitle => 'User manual';
+
+  @override
+  String get tourManualSubtitle =>
+      'Each area has a one-line summary, a real screenshot with numbered red boxes, and one explanation per number.';
+
+  @override
+  String get tourManualOnWeb => 'On the admin web';
+
+  @override
+  String get tourManualOnApp => 'In the app';
+
+  @override
+  String get tourManualRunOnScreen => 'Show me on screen';
+
+  @override
+  String get tourManualNoImage => 'No screenshot for this part yet.';
 }

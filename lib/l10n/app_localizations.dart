@@ -25686,6 +25686,54 @@ abstract class AppLocalizations {
   /// In vi, this message translates to:
   /// **'KTV drone'**
   String get tourRoleDroneTech;
+
+  /// No description provided for @tourOpenManual.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mở trang HDSD'**
+  String get tourOpenManual;
+
+  /// No description provided for @tourManualView.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xem HDSD'**
+  String get tourManualView;
+
+  /// No description provided for @tourManualTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hướng dẫn sử dụng (HDSD)'**
+  String get tourManualTitle;
+
+  /// No description provided for @tourManualSubtitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mỗi khu chức năng: một câu tóm tắt, ảnh chụp màn hình thật có khoanh đỏ và đánh số, mỗi số một dòng giải thích.'**
+  String get tourManualSubtitle;
+
+  /// No description provided for @tourManualOnWeb.
+  ///
+  /// In vi, this message translates to:
+  /// **'Trên web quản trị'**
+  String get tourManualOnWeb;
+
+  /// No description provided for @tourManualOnApp.
+  ///
+  /// In vi, this message translates to:
+  /// **'Trên app'**
+  String get tourManualOnApp;
+
+  /// No description provided for @tourManualRunOnScreen.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xem trên màn hình'**
+  String get tourManualRunOnScreen;
+
+  /// No description provided for @tourManualNoImage.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa có ảnh minh hoạ cho phần này.'**
+  String get tourManualNoImage;
 }
 
 class _AppLocalizationsDelegate

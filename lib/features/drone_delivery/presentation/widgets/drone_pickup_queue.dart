@@ -18,6 +18,7 @@ import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service
 import 'package:smart_laundry_locker/features/locker_ops/presentation/utils/locker_maps.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/ops_widgets.dart';
 import 'package:smart_laundry_locker/core/l10n/l10n.dart';
+import 'package:smart_laundry_locker/features/onboarding/presentation/tour_anchor.dart';
 
 /// Hỏi lý do (và ghi chú) cho một thao tác đóng việc: KTV không lấy được hàng, hoặc
 /// điều phối viên xác nhận đơn giao không hoàn tất. [reasons] là (mã, nhãn, bắt buộc ghi chú).
@@ -738,7 +739,7 @@ class _DronePickupQueueState extends State<DronePickupQueue>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        if (_presenceKnown) _dutyCard(),
+        if (_presenceKnown) TourAnchor('drone-dispatch-duty', child: _dutyCard()),
         if (offered.isNotEmpty) ...[
           const SizedBox(height: 12),
           OpsSectionLabel(

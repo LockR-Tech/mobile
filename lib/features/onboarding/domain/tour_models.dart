@@ -95,3 +95,11 @@ class OnboardingState {
         },
       );
 }
+
+/// Một ô khoanh trên ảnh HDSD: số in trên ảnh ↔ mã bước (file `hdsd/<nhóm>.json` cạnh ảnh).
+class ManualMark {
+  const ManualMark(this.n, this.stepId);
+
+  final int n;
+  final String stepId;
+}

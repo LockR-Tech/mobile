@@ -43,9 +43,12 @@ class _TourAnchorState extends State<TourAnchor> {
   }
 
   @override
+  // explicitChildNodes: phần tử con bấm được (InkWell…) không gộp vào nút neo — nếu gộp, bản web coi nút là
+  // "group" và bỏ mất identifier (thẻ ca làm của KTV từng không tìm thấy vì vậy).
   Widget build(BuildContext context) => Semantics(
         identifier: 'tour:${widget.id}',
         container: true,
+        explicitChildNodes: true,
         child: KeyedSubtree(key: _key, child: widget.child),
       );
 }

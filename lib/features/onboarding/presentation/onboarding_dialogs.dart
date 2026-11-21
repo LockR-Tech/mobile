@@ -170,6 +170,7 @@ Future<List<TourGroup>> showGuidePicker(
   required Future<void> Function(bool value) onAutoShowChange,
   required TourText text,
   String platform = 'mobile',
+  void Function(TourGroup? group)? onOpenManual,
 }) async {
   final result = await showModalBottomSheet<List<TourGroup>>(
     context: context,
@@ -182,6 +183,7 @@ Future<List<TourGroup>> showGuidePicker(
       onAutoShowChange: onAutoShowChange,
       text: text,
       platform: platform,
+      onOpenManual: onOpenManual,
     ),
   );
   return result ?? const [];
@@ -195,6 +197,7 @@ class _GuidePicker extends StatefulWidget {
     required this.onAutoShowChange,
     required this.text,
     required this.platform,
+    this.onOpenManual,
   });
 
   final List<TourGroup> groups;
@@ -203,6 +206,9 @@ class _GuidePicker extends StatefulWidget {
   final Future<void> Function(bool value) onAutoShowChange;
   final TourText text;
   final String platform;
+
+  /// Mở trang HDSD (cả trang, hoặc cuộn tới một nhóm — nhóm chỉ có trên web xem qua ảnh).
+  final void Function(TourGroup? group)? onOpenManual;
 
   @override
   State<_GuidePicker> createState() => _GuidePickerState();
@@ -213,6 +219,11 @@ class _GuidePickerState extends State<_GuidePicker> {
   late bool _autoShow = widget.autoShow;
 
   bool _runnable(TourGroup g) => g.stepsFor(widget.platform).isNotEmpty;
+
+  void _manual(TourGroup? g) {
+    Navigator.of(context).pop(const <TourGroup>[]);
+    widget.onOpenManual?.call(g);
+  }
 
   String _roleLabel(String role) {
     final l10n = context.l10n;
@@ -286,10 +297,16 @@ class _GuidePickerState extends State<_GuidePicker> {
                               onPressed: () => Navigator.of(context).pop([g]),
                               child: Text(l10n.tourView),
                             )
-                          : Padding(
-                              padding: const EdgeInsets.only(top: 8, right: 8),
-                              child: Text(l10n.tourOnlyOnWeb, style: const TextStyle(fontSize: 12)),
-                            ),
+                          : widget.onOpenManual != null
+                              ? TextButton(
+                                  key: ValueKey('tour-manual-open-${g.id}'),
+                                  onPressed: () => _manual(g),
+                                  child: Text(l10n.tourManualView),
+                                )
+                              : Padding(
+                                  padding: const EdgeInsets.only(top: 8, right: 8),
+                                  child: Text(l10n.tourOnlyOnWeb, style: const TextStyle(fontSize: 12)),
+                                ),
                     ),
                 ],
               ],
@@ -310,6 +327,17 @@ class _GuidePickerState extends State<_GuidePicker> {
                       widget.onAutoShowChange(v);
                     },
                   ),
+                  if (widget.onOpenManual != null)
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: TextButton.icon(
+                        key: const ValueKey('tour-manual-open'),
+                        style: TextButton.styleFrom(padding: EdgeInsets.zero),
+                        onPressed: () => _manual(null),
+                        icon: const Icon(Icons.menu_book_rounded, size: 18),
+                        label: Text(l10n.tourOpenManual),
+                      ),
+                    ),
                   Row(
                     children: [
                       if (pending.isNotEmpty)

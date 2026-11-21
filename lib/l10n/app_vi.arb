@@ -8304,5 +8304,13 @@
   "tourRoleAdmin": "Quản trị viên",
   "tourRoleCustomer": "Khách hàng",
   "tourRoleLockerTech": "KTV tủ",
-  "tourRoleDroneTech": "KTV drone"
+  "tourRoleDroneTech": "KTV drone",
+  "tourOpenManual": "Mở trang HDSD",
+  "tourManualView": "Xem HDSD",
+  "tourManualTitle": "Hướng dẫn sử dụng (HDSD)",
+  "tourManualSubtitle": "Mỗi khu chức năng: một câu tóm tắt, ảnh chụp màn hình thật có khoanh đỏ và đánh số, mỗi số một dòng giải thích.",
+  "tourManualOnWeb": "Trên web quản trị",
+  "tourManualOnApp": "Trên app",
+  "tourManualRunOnScreen": "Xem trên màn hình",
+  "tourManualNoImage": "Chưa có ảnh minh hoạ cho phần này."
 }

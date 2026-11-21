@@ -15086,4 +15086,29 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get tourRoleDroneTech => 'KTV drone';
+
+  @override
+  String get tourOpenManual => 'Mở trang HDSD';
+
+  @override
+  String get tourManualView => 'Xem HDSD';
+
+  @override
+  String get tourManualTitle => 'Hướng dẫn sử dụng (HDSD)';
+
+  @override
+  String get tourManualSubtitle =>
+      'Mỗi khu chức năng: một câu tóm tắt, ảnh chụp màn hình thật có khoanh đỏ và đánh số, mỗi số một dòng giải thích.';
+
+  @override
+  String get tourManualOnWeb => 'Trên web quản trị';
+
+  @override
+  String get tourManualOnApp => 'Trên app';
+
+  @override
+  String get tourManualRunOnScreen => 'Xem trên màn hình';
+
+  @override
+  String get tourManualNoImage => 'Chưa có ảnh minh hoạ cho phần này.';
 }

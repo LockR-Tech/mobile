@@ -38,6 +38,7 @@ import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 import 'package:smart_laundry_locker/features/onboarding/presentation/onboarding_controller.dart';
+import 'package:smart_laundry_locker/features/onboarding/presentation/guide_button.dart';
 import 'package:smart_laundry_locker/features/onboarding/presentation/tour_anchor.dart';
 
 /// Hai danh sách đơn drone (JSON từ server) có giống hệt nhau không — poll dùng để bỏ qua
@@ -1390,6 +1391,9 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                             ),
                             const SizedBox(width: 6),
                             _droneRoleBadge(),
+                            // Hướng dẫn trên màn hình (F3-G13) — cạnh nhãn vai trò, không lấy chỗ của tên
+                            const SizedBox(width: 6),
+                            const TourGuideMiniButton(),
                           ],
                         ),
                         const SizedBox(height: 2),
@@ -1447,18 +1451,6 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                       () => Navigator.of(context).maybePop(),
                     )
                   else ...[
-                    // Hướng dẫn trên màn hình (F3-G13)
-                    TourAnchor(
-                      'app-guide-button',
-                      child: Padding(
-                        padding: const EdgeInsets.only(right: 6),
-                        child: _droneHeaderAction(
-                          Icons.help_outline_rounded,
-                          context.l10n.tourHeaderButton,
-                          OnboardingController.instance.openGuide,
-                        ),
-                      ),
-                    ),
                     AssistantEntryGate(
                       builder: (context) => Padding(
                         padding: const EdgeInsets.only(right: 6),
@@ -1872,10 +1864,13 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
       child: ListView(
         padding: const EdgeInsets.all(12),
         children: [
-          DroneLockerWeatherList(
-            load: _service.droneLockerWeather,
-            onLoaded: _onStationWeather,
-            refreshKey: _loadGeneration,
+          TourAnchor(
+            'drone-dispatch-weather',
+            child: DroneLockerWeatherList(
+              load: _service.droneLockerWeather,
+              onLoaded: _onStationWeather,
+              refreshKey: _loadGeneration,
+            ),
           ),
           DronePickupQueue(
             service: _service,

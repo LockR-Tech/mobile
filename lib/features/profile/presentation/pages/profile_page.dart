@@ -33,6 +33,7 @@ import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:smart_laundry_locker/core/l10n/l10n.dart';
+import 'package:smart_laundry_locker/features/onboarding/presentation/tour_anchor.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -275,7 +276,7 @@ class _ProfilePageState extends State<ProfilePage>
                       const SizedBox(height: 12),
 
                       if (_userData != null)
-                        ProfileHeader(
+                        TourAnchor('profile-header', child: ProfileHeader(
                           user: _userData!,
                           avatarVersion: 0,
                           localAvatarFile: localAvatarFile,
@@ -285,7 +286,7 @@ class _ProfilePageState extends State<ProfilePage>
                           onSaveAvatar: uploadAvatarImage,
                           onCancelAvatar: cancelAvatarSelection,
                           onEditProfile: _handleEditProfile,
-                        ),
+                        )),
 
                       const SizedBox(height: 16),
 
@@ -359,10 +360,13 @@ class _ProfilePageState extends State<ProfilePage>
               title: l10n.profilePersonalInfo,
               onTap: _handleEditProfile,
             ),
-            ProfileMenuItem(
-              icon: LucideIcons.landmark,
-              title: l10n.profileRefundAccount,
-              onTap: () => context.push(AppRouter.refundBankAccount),
+            TourAnchor(
+              'profile-refund-account',
+              child: ProfileMenuItem(
+                icon: LucideIcons.landmark,
+                title: l10n.profileRefundAccount,
+                onTap: () => context.push(AppRouter.refundBankAccount),
+              ),
             ),
             ProfileMenuItem(
               icon: LucideIcons.sparkles,
@@ -391,11 +395,14 @@ class _ProfilePageState extends State<ProfilePage>
               onTap: _handleSecurity,
             ),
             // Hướng dẫn trên màn hình (F3-G13): mở lại kể cả khi đã bỏ qua vĩnh viễn
-            ProfileMenuItem(
-              icon: LucideIcons.circleHelp,
-              title: l10n.tourSettingsTitle,
-              subtitle: l10n.tourSettingsSubtitle,
-              onTap: OnboardingController.instance.openGuide,
+            TourAnchor(
+              'profile-guide',
+              child: ProfileMenuItem(
+                icon: LucideIcons.circleHelp,
+                title: l10n.tourSettingsTitle,
+                subtitle: l10n.tourSettingsSubtitle,
+                onTap: OnboardingController.instance.openGuide,
+              ),
             ),
             // Kho voucher: `GET /api/promotions/vouchers/my` (mã đã lưu từ
             // trang "Ưu đãi").

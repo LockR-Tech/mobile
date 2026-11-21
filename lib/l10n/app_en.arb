@@ -5338,5 +5338,13 @@
   "tourRoleAdmin": "Administrator",
   "tourRoleCustomer": "Customer",
   "tourRoleLockerTech": "Locker technician",
-  "tourRoleDroneTech": "Drone technician"
+  "tourRoleDroneTech": "Drone technician",
+  "tourOpenManual": "Open the user manual",
+  "tourManualView": "Manual",
+  "tourManualTitle": "User manual",
+  "tourManualSubtitle": "Each area has a one-line summary, a real screenshot with numbered red boxes, and one explanation per number.",
+  "tourManualOnWeb": "On the admin web",
+  "tourManualOnApp": "In the app",
+  "tourManualRunOnScreen": "Show me on screen",
+  "tourManualNoImage": "No screenshot for this part yet."
 }

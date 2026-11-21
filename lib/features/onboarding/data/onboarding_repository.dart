@@ -39,6 +39,24 @@ class OnboardingRepository {
 
   Future<TourContent> loadContent() async => TourContent.fromJson(await _json('tours.json'));
 
+  /// Ảnh HDSD của một nhóm (chụp bằng `npm run hdsd:capture` ở repo frontend) — chỉ có trên web admin, không kèm app.
+  static String manualImageUrl(String group) => '$remoteBase/hdsd/$group.png';
+
+  /// Số thứ tự ↔ bước trên ảnh HDSD; `null` khi nhóm chưa có ảnh hoặc mất mạng.
+  Future<List<ManualMark>?> loadManualMarks(String group) async {
+    try {
+      final res = await _http.get<String>('$remoteBase/hdsd/$group.json');
+      final decoded = jsonDecode(res.data ?? '');
+      final marks = decoded is Map ? decoded['marks'] : null;
+      if (marks is! List) return null;
+      return [
+        for (final m in marks.whereType<Map>()) ManualMark((m['n'] as num).toInt(), '${m['stepId']}'),
+      ];
+    } catch (_) {
+      return null;
+    }
+  }
+
   Future<Map<String, Map<String, dynamic>>> loadTexts() async => {
         for (final lang in languages) lang: await _json('locales/$lang.json'),
       };

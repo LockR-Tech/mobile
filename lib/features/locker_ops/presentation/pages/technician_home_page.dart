@@ -35,6 +35,7 @@ import 'package:smart_laundry_locker/features/locker_ops/presentation/pages/inst
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/technician_location_permission_sheet.dart';
 import 'package:smart_laundry_locker/core/services/platform_info.dart';
 import 'package:smart_laundry_locker/features/onboarding/presentation/onboarding_controller.dart';
+import 'package:smart_laundry_locker/features/onboarding/presentation/guide_button.dart';
 import 'package:smart_laundry_locker/features/onboarding/presentation/tour_anchor.dart';
 
 /// Home for the LOCKER_TECHNICIAN role (kỹ thuật viên tủ): physical locker
@@ -1538,6 +1539,9 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                                       ),
                                     ),
                                   ),
+                                  // Hướng dẫn trên màn hình (F3-G13) — cạnh nhãn vai trò, không lấy chỗ của tên
+                                  const SizedBox(width: 6),
+                                  const TourGuideMiniButton(),
                                 ],
                               ),
                               const SizedBox(height: 2),
@@ -1589,18 +1593,6 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                         Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            // Hướng dẫn trên màn hình (F3-G13)
-                            TourAnchor(
-                              'app-guide-button',
-                              child: Padding(
-                                padding: const EdgeInsets.only(right: 6),
-                                child: _headerActionButton(
-                                  icon: Icons.help_outline_rounded,
-                                  tooltip: context.l10n.tourHeaderButton,
-                                  onTap: OnboardingController.instance.openGuide,
-                                ),
-                              ),
-                            ),
                             // Lắp đặt tủ (F3-G12): hồ sơ admin giao, checklist nghiệm thu.
                             Padding(
                               padding: const EdgeInsets.only(right: 6),
@@ -1902,17 +1894,20 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                   : context.l10n.techHomeNoLockers,
             )
           else
-            LockerPickerField(
-              lockers: lockerOptions,
-              selectedId: _selectedLockerId,
-              onSelected: (l) {
-                final id = _asInt(l['id']);
-                if (id != null) _selectLocker(id);
-              },
+            TourAnchor(
+              'tech-inspect-picker',
+              child: LockerPickerField(
+                lockers: lockerOptions,
+                selectedId: _selectedLockerId,
+                onSelected: (l) {
+                  final id = _asInt(l['id']);
+                  if (id != null) _selectLocker(id);
+                },
+              ),
             ),
           const SizedBox(height: 12),
           if (selectedLocker != null) ...[
-            _selectedLockerCard(selectedLocker, cells),
+            TourAnchor('tech-inspect-locker', child: _selectedLockerCard(selectedLocker, cells)),
             const SizedBox(height: 12),
           ],
           if (_layoutLoading)
@@ -2598,7 +2593,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
             ],
           ),
           const SizedBox(height: 10),
-          SizedBox(
+          TourAnchor('tech-inspect-report', child: SizedBox(
             width: double.infinity,
             child: OutlinedButton.icon(
               onPressed: _asInt(locker['id']) == null
@@ -2615,7 +2610,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                 textStyle: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700),
               ),
             ),
-          ),
+          )),
         ],
       ),
     );

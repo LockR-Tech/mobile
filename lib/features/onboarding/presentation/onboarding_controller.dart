@@ -10,6 +10,7 @@ import 'package:smart_laundry_locker/core/services/token_service.dart';
 import '../data/onboarding_repository.dart';
 import '../domain/tour_engine.dart';
 import '../domain/tour_models.dart';
+import 'guide_manual_page.dart';
 import 'onboarding_dialogs.dart';
 import 'tour_overlay.dart';
 
@@ -155,9 +156,12 @@ class OnboardingController {
     if (ctx == null || !ctx.mounted) return;
     final roles = normalizeRoles(await TokenService.getCurrentRoles());
     if (!ctx.mounted) return;
+    final visible = browseGroups(_content!, roles);
+    var manual = false;
+    TourGroup? manualFocus;
     final groups = await showGuidePicker(
       ctx,
-      groups: browseGroups(_content!, roles),
+      groups: visible,
       seen: _state?.seenGroups ?? const {},
       autoShow: _state?.autoShow ?? true,
       text: text,
@@ -166,8 +170,32 @@ class OnboardingController {
           _state = await repository.setAutoShow(v);
         } catch (_) {}
       },
+      onOpenManual: (g) {
+        manual = true;
+        manualFocus = g;
+      },
     );
-    if (groups.isNotEmpty) start(groups);
+    if (manual) {
+      openManual(visible, focus: manualFocus?.id);
+    } else if (groups.isNotEmpty) {
+      start(groups);
+    }
+  }
+
+  /// Trang HDSD: ảnh chụp có khoanh đỏ + giải thích từng số, cùng nguồn với hướng dẫn trên màn hình.
+  void openManual(List<TourGroup> groups, {String? focus}) {
+    final nav = AppRouter.navigatorKey.currentState;
+    if (nav == null) return;
+    unawaited(nav.push(MaterialPageRoute<void>(
+      builder: (_) => GuideManualPage(
+        groups: groups,
+        text: text,
+        repository: repository,
+        seen: _state?.seenGroups ?? const {},
+        focusGroup: focus,
+        onRun: (g) => start([g]),
+      ),
+    )));
   }
 
   void start(List<TourGroup> groups) {
