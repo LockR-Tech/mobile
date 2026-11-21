@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:provider/provider.dart';
 import 'package:smart_laundry_locker/core/l10n/l10n.dart';
+import 'package:smart_laundry_locker/features/onboarding/presentation/tour_anchor.dart';
 import 'package:smart_laundry_locker/core/routing/app_router.dart';
 import 'package:smart_laundry_locker/core/routing/role_routes.dart';
 import 'package:smart_laundry_locker/core/services/token_service.dart';
@@ -161,19 +162,19 @@ class _PolicyPageState extends State<PolicyPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  _buildDocumentSwitch(),
+                  TourAnchor('app-policy-switch', child: _buildDocumentSwitch()),
                   const SizedBox(height: 12),
                   if (consentKnown) ...[
-                    _ConsentStatusCard(
+                    TourAnchor('app-policy-consent-status', child: _ConsentStatusCard(
                       acceptedAt: profile.termsAcceptedAt,
                       accepted: !needsConsent,
-                    ),
+                    )),
                     const SizedBox(height: 12),
                   ],
                   _buildIntro(text),
                   if (text.sections.length > 1) ...[
                     const SizedBox(height: 12),
-                    _buildContents(text),
+                    TourAnchor('app-policy-contents', child: _buildContents(text)),
                   ],
                   for (var i = 0; i < text.sections.length; i++) ...[
                     const SizedBox(height: 12),
@@ -190,7 +191,9 @@ class _PolicyPageState extends State<PolicyPage> {
           },
         ),
       ),
-      bottomNavigationBar: showConsentBar ? _buildConsentBar(provider) : null,
+      bottomNavigationBar: showConsentBar
+          ? TourAnchor('app-policy-consent-bar', child: _buildConsentBar(provider))
+          : null,
     );
   }
 

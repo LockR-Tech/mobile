@@ -11,6 +11,7 @@ import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
 import '../../data/models/exchangeable_voucher_model.dart';
 import '../providers/voucher_provider.dart';
 import 'package:smart_laundry_locker/core/l10n/l10n.dart';
+import 'package:smart_laundry_locker/features/onboarding/presentation/tour_anchor.dart';
 
 final _number = NumberFormat.decimalPattern('vi_VN');
 
@@ -52,7 +53,7 @@ class PointsExchangeTab extends StatelessWidget {
           child: ListView(
             padding: const EdgeInsets.all(16),
             children: [
-              _BalanceCard(balance: balance),
+              TourAnchor('my-vouchers-balance', child: _BalanceCard(balance: balance)),
               const SizedBox(height: 16),
               if (provider.exchangeError != null)
                 _Message(
@@ -67,11 +68,14 @@ class PointsExchangeTab extends StatelessWidget {
                 )
               else
                 for (final voucher in provider.exchangeable) ...[
-                  _ExchangeCard(
-                    voucher: voucher,
-                    balance: balance,
-                    busy: provider.exchangingId == voucher.id,
-                    onExchange: () => _confirmAndExchange(context, voucher),
+                  _tourFirst(
+                    voucher == provider.exchangeable.first,
+                    _ExchangeCard(
+                      voucher: voucher,
+                      balance: balance,
+                      busy: provider.exchangingId == voucher.id,
+                      onExchange: () => _confirmAndExchange(context, voucher),
+                    ),
                   ),
                   const SizedBox(height: 12),
                 ],
@@ -81,6 +85,10 @@ class PointsExchangeTab extends StatelessWidget {
       },
     );
   }
+
+  /// Neo hướng dẫn (F3-G13) trên thẻ đổi điểm đầu tiên.
+  static Widget _tourFirst(bool first, Widget card) =>
+      first ? TourAnchor('my-vouchers-exchange-first', child: card) : card;
 
   Future<void> _confirmAndExchange(
     BuildContext context,

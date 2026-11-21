@@ -13,6 +13,7 @@ import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/us
 import 'package:smart_laundry_locker/features/maintenance/presentation/pages/create_report_page.dart';
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
 import 'package:smart_laundry_locker/core/l10n/l10n.dart';
+import 'package:smart_laundry_locker/features/onboarding/presentation/tour_anchor.dart';
 
 /// View of the customer's own locker fault reports
 /// (`GET /api/lockers/my-reports`), so they can see claim/resolve progress
@@ -291,7 +292,7 @@ class _MyReportsPageState extends State<MyReportsPage> {
             ),
             const SizedBox(height: 16),
             Center(
-              child: ElevatedButton.icon(
+              child: TourAnchor('my-reports-empty', child: ElevatedButton.icon(
                 onPressed: () => setState(() => _selectedTab = 1),
                 icon: const Icon(LucideIcons.plusCircle, size: 16),
                 label: Text(context.l10n.mrReportNow),
@@ -301,7 +302,7 @@ class _MyReportsPageState extends State<MyReportsPage> {
                   padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                 ),
-              ),
+              )),
             ),
           ],
         ),
@@ -350,6 +351,7 @@ class _MyReportsPageState extends State<MyReportsPage> {
         items.add(_ReportListItem.report(r));
       }
     }
+    final firstReport = items.indexWhere((e) => !e.isHeader);
 
     return RefreshIndicator(
       color: AislBrand.navy,
@@ -373,9 +375,12 @@ class _MyReportsPageState extends State<MyReportsPage> {
               ),
             );
           }
+          final card = _ReportCard(report: item.report!, onChanged: _load);
           return Padding(
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
-            child: _ReportCard(report: item.report!, onChanged: _load),
+            child: i == firstReport
+                ? TourAnchor('my-reports-first', child: card)
+                : card,
           );
         },
       ),
@@ -394,13 +399,13 @@ class _MyReportsPageState extends State<MyReportsPage> {
             title: context.l10n.profileMyReports,
             subtitle: context.l10n.mrSubtitle,
             onBack: () => Navigator.of(context).maybePop(),
-            trailing: BrandCircleIconButton(
+            trailing: TourAnchor('my-reports-refresh', child: BrandCircleIconButton(
               icon: LucideIcons.refreshCw,
               iconSize: 18,
               onTap: _load,
-            ),
+            )),
           ),
-          Container(
+          TourAnchor('my-reports-tabs', child: Container(
             margin: const EdgeInsets.fromLTRB(16, 12, 16, 8),
             padding: const EdgeInsets.all(3),
             decoration: BoxDecoration(
@@ -419,17 +424,17 @@ class _MyReportsPageState extends State<MyReportsPage> {
                   ),
                 ),
                 Expanded(
-                  child: _buildTabButton(
+                  child: TourAnchor('my-reports-tab-new', child: _buildTabButton(
                     index: 1,
                     title: context.l10n.mrNewReport,
                     icon: LucideIcons.plusCircle,
-                  ),
+                  )),
                 ),
               ],
             ),
-          ),
+          )),
           if (_selectedTab == 0 && _reports.isNotEmpty)
-            SingleChildScrollView(
+            TourAnchor('my-reports-filters', child: SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.fromLTRB(16, 4, 16, 10),
               child: Row(
@@ -479,7 +484,7 @@ class _MyReportsPageState extends State<MyReportsPage> {
                   ],
                 ],
               ),
-            ),
+            )),
           Expanded(
             child: _selectedTab == 0
                 ? _buildReportsList()

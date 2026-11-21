@@ -18,6 +18,7 @@ import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service
 import 'package:smart_laundry_locker/features/locker_ops/presentation/utils/locker_maps.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/ops_widgets.dart';
 import 'package:smart_laundry_locker/core/l10n/l10n.dart';
+import 'package:smart_laundry_locker/features/onboarding/presentation/tour_anchor.dart';
 
 /// Hỏi lý do (và ghi chú) cho một thao tác đóng việc: KTV không lấy được hàng, hoặc
 /// điều phối viên xác nhận đơn giao không hoàn tất. [reasons] là (mã, nhãn, bắt buộc ghi chú).
@@ -738,14 +739,18 @@ class _DronePickupQueueState extends State<DronePickupQueue>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        if (_presenceKnown) _dutyCard(),
+        if (_presenceKnown) TourAnchor('drone-dispatch-duty', child: _dutyCard()),
         if (offered.isNotEmpty) ...[
           const SizedBox(height: 12),
           OpsSectionLabel(
             context.l10n.dtPqSecOffers(offered.length),
             icon: Icons.notifications_active_outlined,
           ),
-          for (final order in offered) _offerCard(order),
+          // Thẻ đầu mỗi nhóm mang neo hướng dẫn (F3-G13).
+          for (final (i, order) in offered.indexed)
+            i == 0
+                ? TourAnchor('drone-pickup-offer', child: _offerCard(order))
+                : _offerCard(order),
         ],
         if (accepted.isNotEmpty) ...[
           const SizedBox(height: 12),
@@ -753,7 +758,10 @@ class _DronePickupQueueState extends State<DronePickupQueue>
             context.l10n.dtPqSecAccepted(accepted.length),
             icon: Icons.directions_bike_outlined,
           ),
-          for (final order in accepted) _acceptedCard(order),
+          for (final (i, order) in accepted.indexed)
+            i == 0
+                ? TourAnchor('drone-pickup-accepted', child: _acceptedCard(order))
+                : _acceptedCard(order),
         ],
         if (carrying.isNotEmpty) ...[
           const SizedBox(height: 12),
@@ -761,7 +769,10 @@ class _DronePickupQueueState extends State<DronePickupQueue>
             context.l10n.dtPqSecCarrying(carrying.length),
             icon: Icons.inventory_2_outlined,
           ),
-          for (final order in carrying) _carryingCard(order),
+          for (final (i, order) in carrying.indexed)
+            i == 0
+                ? TourAnchor('drone-pickup-carrying', child: _carryingCard(order))
+                : _carryingCard(order),
         ],
         const SizedBox(height: 8),
       ],

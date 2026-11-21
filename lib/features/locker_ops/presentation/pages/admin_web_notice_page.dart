@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:smart_laundry_locker/core/l10n/l10n.dart';
+import 'package:smart_laundry_locker/features/onboarding/presentation/tour_anchor.dart';
 import 'package:smart_laundry_locker/core/services/session_service.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/ops_widgets.dart';
 
@@ -56,7 +57,7 @@ class AdminWebNoticePage extends StatelessWidget {
                   style: const TextStyle(fontSize: 14, color: opsMutedText),
                 ),
                 const SizedBox(height: 28),
-                SizedBox(
+                TourAnchor('admin-notice-logout', child: SizedBox(
                   width: double.infinity,
                   child: ElevatedButton.icon(
                     onPressed: () => _logout(context),
@@ -71,7 +72,7 @@ class AdminWebNoticePage extends StatelessWidget {
                       ),
                     ),
                   ),
-                ),
+                )),
               ],
             ),
           ),

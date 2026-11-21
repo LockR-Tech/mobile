@@ -12,6 +12,7 @@ import 'package:smart_laundry_locker/core/routing/app_router.dart';
 import 'package:smart_laundry_locker/core/routing/notification_deep_link.dart';
 import 'package:smart_laundry_locker/core/services/token_service.dart';
 import 'package:smart_laundry_locker/core/l10n/l10n.dart';
+import 'package:smart_laundry_locker/features/onboarding/presentation/tour_anchor.dart';
 
 class NotificationListPage extends StatefulWidget {
   const NotificationListPage({super.key});
@@ -183,7 +184,7 @@ class _NotificationListPageState extends State<NotificationListPage> {
                     final showMarkAll = provider.unreadCount > 0 &&
                         provider.notifications.isNotEmpty;
                     final hero = BrandHeroColors.maybeOf(context);
-                    return Row(
+                    return TourAnchor('notif-inbox-actions', child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         if (provider.notifications.isNotEmpty) ...[
@@ -239,7 +240,7 @@ class _NotificationListPageState extends State<NotificationListPage> {
                               provider.loadNotifications(refresh: true),
                         ),
                       ],
-                    );
+                    ));
                   },
                 ),
               ),
@@ -257,7 +258,7 @@ class _NotificationListPageState extends State<NotificationListPage> {
                     }
 
                     if (provider.notifications.isEmpty) {
-                      return _buildEmptyState();
+                      return TourAnchor('notif-inbox-empty', child: _buildEmptyState());
                     }
 
                     return RefreshIndicator(
@@ -320,7 +321,10 @@ class _NotificationListPageState extends State<NotificationListPage> {
                           }
 
                           final notification = provider.notifications[index];
-                          return _buildDismissibleItem(notification);
+                          final item = _buildDismissibleItem(notification);
+                          return index == 0
+                              ? TourAnchor('notif-inbox-first', child: item)
+                              : item;
                         },
                       ),
                     );

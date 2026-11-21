@@ -4,6 +4,7 @@ import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
 
 import 'assistant_message_bubble.dart';
 import 'package:smart_laundry_locker/core/l10n/l10n.dart';
+import 'package:smart_laundry_locker/features/onboarding/presentation/tour_anchor.dart';
 
 /// Nhóm người hỏi — chỉ để chọn câu hỏi gợi ý. Tài liệu được dùng để trả lời
 /// do backend lọc theo vai trò trong JWT.
@@ -109,11 +110,16 @@ class AssistantIntro extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 8),
-        for (final question in assistantExampleQuestions(audience))
-          _ExampleQuestion(
-            question: question,
-            onTap: onExampleTap == null ? null : () => onExampleTap!(question),
-          ),
+        for (final (i, question) in assistantExampleQuestions(audience).indexed)
+          i == 0
+              ? TourAnchor('app-assistant-examples', child: _ExampleQuestion(
+                  question: question,
+                  onTap: onExampleTap == null ? null : () => onExampleTap!(question),
+                ))
+              : _ExampleQuestion(
+                  question: question,
+                  onTap: onExampleTap == null ? null : () => onExampleTap!(question),
+                ),
       ],
     );
   }

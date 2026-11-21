@@ -6,6 +6,7 @@ import 'package:smart_laundry_locker/features/payment/data/payment_service.dart'
 import 'package:smart_laundry_locker/features/payment/data/user_bank_account.dart';
 import 'package:smart_laundry_locker/features/payment/data/vietnamese_banks.dart';
 import 'package:smart_laundry_locker/core/l10n/l10n.dart';
+import 'package:smart_laundry_locker/features/onboarding/presentation/tour_anchor.dart';
 
 class RefundBankAccountPage extends StatefulWidget {
   const RefundBankAccountPage({super.key});
@@ -157,7 +158,7 @@ class _RefundBankAccountPageState extends State<RefundBankAccountPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // Card giải thích lợi ích
-                    Container(
+                    TourAnchor('my-refund-account-intro', child: Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
                         color: const Color(0xFFF0FDF4),
@@ -199,7 +200,7 @@ class _RefundBankAccountPageState extends State<RefundBankAccountPage> {
                           ),
                         ],
                       ),
-                    ),
+                    )),
                     const SizedBox(height: 24),
 
                     // Thông tin ngân hàng
@@ -212,7 +213,7 @@ class _RefundBankAccountPageState extends State<RefundBankAccountPage> {
                       ),
                     ),
                     const SizedBox(height: 8),
-                    InkWell(
+                    TourAnchor('my-refund-account-bank', child: InkWell(
                       onTap: _openBankPicker,
                       borderRadius: BorderRadius.circular(14),
                       child: Container(
@@ -271,7 +272,7 @@ class _RefundBankAccountPageState extends State<RefundBankAccountPage> {
                           ],
                         ),
                       ),
-                    ),
+                    )),
                     const SizedBox(height: 18),
 
                     // Số tài khoản
@@ -284,7 +285,7 @@ class _RefundBankAccountPageState extends State<RefundBankAccountPage> {
                       ),
                     ),
                     const SizedBox(height: 8),
-                    TextFormField(
+                    TourAnchor('my-refund-account-number', child: TextFormField(
                       controller: _accountNumberController,
                       keyboardType: TextInputType.number,
                       style: const TextStyle(
@@ -329,7 +330,7 @@ class _RefundBankAccountPageState extends State<RefundBankAccountPage> {
                         }
                         return null;
                       },
-                    ),
+                    )),
                     const SizedBox(height: 18),
 
                     // Tên chủ tài khoản
@@ -342,7 +343,7 @@ class _RefundBankAccountPageState extends State<RefundBankAccountPage> {
                       ),
                     ),
                     const SizedBox(height: 8),
-                    TextFormField(
+                    TourAnchor('my-refund-account-holder', child: TextFormField(
                       controller: _accountHolderController,
                       textCapitalization: TextCapitalization.characters,
                       style: const TextStyle(
@@ -394,11 +395,11 @@ class _RefundBankAccountPageState extends State<RefundBankAccountPage> {
                         }
                         return null;
                       },
-                    ),
+                    )),
                     const SizedBox(height: 32),
 
                     // Nút lưu
-                    SizedBox(
+                    TourAnchor('my-refund-account-save', child: SizedBox(
                       width: double.infinity,
                       height: 52,
                       child: ElevatedButton(
@@ -438,7 +439,7 @@ class _RefundBankAccountPageState extends State<RefundBankAccountPage> {
                                 ],
                               ),
                       ),
-                    ),
+                    )),
                     const SizedBox(height: 24),
                   ],
                 ),

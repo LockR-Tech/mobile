@@ -11,6 +11,7 @@ import 'package:smart_laundry_locker/features/drone_delivery/infrastructure/serv
 import 'package:smart_laundry_locker/features/drone_delivery/presentation/pages/pickup_location_picker_page.dart';
 import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
 import 'package:smart_laundry_locker/core/l10n/l10n.dart';
+import 'package:smart_laundry_locker/features/onboarding/presentation/tour_anchor.dart';
 
 /// Chọn tủ nhận drone. Tủ gửi và đường bay được hệ thống tự chọn sau khi KTV
 /// lấy kiện tại nhà; khách chỉ cần chọn nơi người nhận sẽ lấy hàng.
@@ -219,9 +220,12 @@ class _DroneLockerPickerSheetState extends State<_DroneLockerPickerSheet> {
             ),
           ),
           const SizedBox(height: 16),
-          Text(
+          TourAnchor(
+            'drone-picker-head',
+            child: Text(
             context.l10n.dbTitle,
             style: TextStyle(fontSize: 19, fontWeight: FontWeight.w800),
+            ),
           ),
           const SizedBox(height: 4),
           Text(
@@ -292,7 +296,7 @@ class _DroneLockerPickerSheetState extends State<_DroneLockerPickerSheet> {
           if (distKm != null) context.l10n.lpDistance(droneKmLabel(distKm)),
           if (address.isNotEmpty) address,
         ];
-        return Material(
+        final tile = Material(
           color: Colors.white,
           borderRadius: BorderRadius.circular(14),
           child: InkWell(
@@ -373,6 +377,7 @@ class _DroneLockerPickerSheetState extends State<_DroneLockerPickerSheet> {
             ),
           ),
         );
+        return i == 0 ? TourAnchor('drone-picker-first', child: tile) : tile;
       },
     );
   }

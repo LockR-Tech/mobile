@@ -9,6 +9,7 @@ import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:provider/provider.dart';
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
 import 'package:smart_laundry_locker/core/l10n/l10n.dart';
+import 'package:smart_laundry_locker/features/onboarding/presentation/tour_anchor.dart';
 
 class SecurityPage extends StatefulWidget {
   const SecurityPage({super.key});
@@ -129,8 +130,8 @@ class _SecurityPageState extends State<SecurityPage> {
                   return ListView(
                     padding: const EdgeInsets.fromLTRB(16, 20, 16, 32),
                     children: [
-                      _buildBiometricCard(),
-                      _buildPasswordCard(provider),
+                      TourAnchor('app-security-biometric', child: _buildBiometricCard()),
+                      TourAnchor('app-security-password', child: _buildPasswordCard(provider)),
                     ],
                   );
                 },

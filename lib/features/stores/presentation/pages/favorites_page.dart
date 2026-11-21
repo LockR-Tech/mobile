@@ -13,6 +13,7 @@ import 'package:smart_laundry_locker/features/stores/presentation/widgets/store_
 import 'package:smart_laundry_locker/shared/shared.dart';
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
 import 'package:smart_laundry_locker/core/l10n/l10n.dart';
+import 'package:smart_laundry_locker/features/onboarding/presentation/tour_anchor.dart';
 
 /// Favourite stores (device-only). Ported from the legacy RN `user/favorites`
 /// screen: resolves the saved favourite ids against the live store catalogue.
@@ -165,11 +166,14 @@ class _FavoritesPageState extends State<FavoritesPage> {
                 style: TextStyle(color: AislBrand.textMuted),
               ),
               const SizedBox(height: 20),
-              FilledButton.icon(
+              TourAnchor(
+                'favorites-explore',
+                child: FilledButton.icon(
                 onPressed: () => context.go(AppRouter.stores),
                 style: FilledButton.styleFrom(backgroundColor: AislBrand.navy),
                 icon: const Icon(LucideIcons.store, size: 16),
                 label: Text(context.l10n.storeExplore),
+                ),
               ),
             ],
           ),
@@ -185,7 +189,7 @@ class _FavoritesPageState extends State<FavoritesPage> {
         separatorBuilder: (_, __) => const SizedBox(height: 14),
         itemBuilder: (context, index) {
           final store = _favorites[index];
-          return StoreCard(
+          final card = StoreCard(
             store: store,
             isFavorite: _favoriteIds.contains(store.id),
             onToggleFavorite: () => _remove(store),
@@ -194,6 +198,9 @@ class _FavoritesPageState extends State<FavoritesPage> {
               if (mounted) _load();
             },
           );
+          return index == 0
+              ? TourAnchor('favorites-first-item', child: card)
+              : card;
         },
       ),
     );

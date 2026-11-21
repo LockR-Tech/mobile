@@ -4,6 +4,7 @@ import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 import 'package:smart_laundry_locker/core/media/media.dart';
 import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/ops_widgets.dart';
+import 'package:smart_laundry_locker/features/onboarding/presentation/tour_anchor.dart';
 
 /// Kết quả 1 mục checklist kiểm tra định kỳ (giá trị `result` gửi server).
 enum InspectionResult {
@@ -310,7 +311,7 @@ class _CompleteInspectionSheetState extends State<CompleteInspectionSheet> {
               const SizedBox(height: 14),
 
               // Thẻ thông tin tủ và chu kỳ
-              Container(
+              TourAnchor('inspection-sheet-info', child: Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
                   color: const Color(0xFFF8FAFC),
@@ -356,7 +357,7 @@ class _CompleteInspectionSheetState extends State<CompleteInspectionSheet> {
                     ),
                   ],
                 ),
-              ),
+              )),
               if (address.isNotEmpty) ...[
                 const SizedBox(height: 8),
                 Container(
@@ -406,7 +407,8 @@ class _CompleteInspectionSheetState extends State<CompleteInspectionSheet> {
                   ),
                 ),
                 const SizedBox(height: 8),
-                for (var i = 0; i < _items.length; i++) _itemTile(i),
+                for (var i = 0; i < _items.length; i++)
+                  i == 0 ? TourAnchor('inspection-sheet-items', child: _itemTile(i)) : _itemTile(i),
               ] else ...[
                 Text(
                   context.l10n.techUiNoChecklistPickOverall,
@@ -417,7 +419,7 @@ class _CompleteInspectionSheetState extends State<CompleteInspectionSheet> {
                   ),
                 ),
                 const SizedBox(height: 8),
-                Wrap(
+                TourAnchor('inspection-sheet-items', child: Wrap(
                   spacing: 6,
                   runSpacing: 6,
                   children: [
@@ -432,18 +434,18 @@ class _CompleteInspectionSheetState extends State<CompleteInspectionSheet> {
                         onTap: () => _setOverall(r),
                       ),
                   ],
-                ),
+                )),
               ],
               const SizedBox(height: 10),
-              _verdictBanner(intervalDays),
+              TourAnchor('inspection-sheet-verdict', child: _verdictBanner(intervalDays)),
               if (_failed && !isDrone && _lockerId != null) ...[
                 const SizedBox(height: 12),
-                _faultSection(),
+                TourAnchor('inspection-sheet-fault', child: _faultSection()),
               ],
               const SizedBox(height: 14),
 
               // Ghi chú biên bản
-              TextField(
+              TourAnchor('inspection-sheet-note', child: TextField(
                 controller: _noteCtrl,
                 enabled: !_submitting,
                 minLines: 2,
@@ -460,7 +462,7 @@ class _CompleteInspectionSheetState extends State<CompleteInspectionSheet> {
                     borderSide: const BorderSide(color: opsBorder),
                   ),
                 ),
-              ),
+              )),
               const SizedBox(height: 14),
 
               // Ảnh minh chứng (tuỳ chọn)
@@ -480,14 +482,14 @@ class _CompleteInspectionSheetState extends State<CompleteInspectionSheet> {
                 style: const TextStyle(fontSize: 11.5, color: opsMutedText),
               ),
               const SizedBox(height: 8),
-              PhotoPickerField(
+              TourAnchor('inspection-sheet-photos', child: PhotoPickerField(
                 controller: _photos,
                 enabled: !_submitting,
                 thumbSize: 76,
                 accentColor: _accent,
                 addLabel: context.l10n.rfTakePhoto,
                 helperText: context.l10n.photoMax(_photos.maxPhotos),
-              ),
+              )),
 
               if (_error != null) ...[
                 const SizedBox(height: 12),
@@ -499,7 +501,7 @@ class _CompleteInspectionSheetState extends State<CompleteInspectionSheet> {
               ],
               const SizedBox(height: 18),
 
-              Row(
+              TourAnchor('inspection-sheet-actions', child: Row(
                 children: [
                   Expanded(
                     child: OutlinedButton(
@@ -564,7 +566,7 @@ class _CompleteInspectionSheetState extends State<CompleteInspectionSheet> {
                     ),
                   ),
                 ],
-              ),
+              )),
             ],
           ),
         ),

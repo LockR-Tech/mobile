@@ -16,6 +16,7 @@ import 'flight_data_controller.dart';
 import 'widgets/attitude_indicator.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/presentation/widgets/drone_base_tile_layer.dart';
 import 'package:smart_laundry_locker/core/l10n/l10n.dart';
+import 'package:smart_laundry_locker/features/onboarding/presentation/tour_anchor.dart';
 
 /// Flight Data — live MAVLink telemetry & control (Mảng 2). Connects to a real
 /// ArduPilot/PX4 flight controller (or SITL) over UDP/TCP, shows the drone live
@@ -323,7 +324,7 @@ class _FlightDataPageState extends State<FlightDataPage> {
               _topBar(topPad, t),
               _safetyBanner(topPad),
               _hudPanel(topPad, t),
-              Align(alignment: Alignment.bottomCenter, child: _commandBar(t)),
+              Align(alignment: Alignment.bottomCenter, child: TourAnchor('drone-fd-commands', child: _commandBar(t))),
             ],
           );
         },
@@ -373,7 +374,7 @@ class _FlightDataPageState extends State<FlightDataPage> {
           _fab(Icons.arrow_back_rounded, () => Navigator.maybePop(context)),
           const SizedBox(width: 10),
           Expanded(
-            child: Container(
+            child: TourAnchor('drone-fd-status', child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
               decoration: BoxDecoration(
                 color: const Color(0xFF111A2E),
@@ -394,13 +395,13 @@ class _FlightDataPageState extends State<FlightDataPage> {
                   ),
                 ],
               ),
-            ),
+            )),
           ),
           const SizedBox(width: 10),
           if (_controller.isConnected)
-            _fab(LucideIcons.plugZap, _controller.disconnect, danger: true)
+            TourAnchor('drone-fd-connect', child: _fab(LucideIcons.plugZap, _controller.disconnect, danger: true))
           else
-            _fab(LucideIcons.plug, _openConnectSheet),
+            TourAnchor('drone-fd-connect', child: _fab(LucideIcons.plug, _openConnectSheet)),
         ],
       ),
     );
@@ -412,7 +413,7 @@ class _FlightDataPageState extends State<FlightDataPage> {
       top: topPad + 60,
       left: 12,
       right: 12,
-      child: Container(
+      child: TourAnchor('drone-fd-safety', child: Container(
         key: const ValueKey('flight-data-safety-banner'),
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
@@ -435,7 +436,7 @@ class _FlightDataPageState extends State<FlightDataPage> {
             ),
           ],
         ),
-      ),
+      )),
     );
   }
 
@@ -443,7 +444,7 @@ class _FlightDataPageState extends State<FlightDataPage> {
     return Positioned(
       top: topPad + 112,
       left: 12,
-      child: Container(
+      child: TourAnchor('drone-fd-hud', child: Container(
         width: 168,
         padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
@@ -479,7 +480,7 @@ class _FlightDataPageState extends State<FlightDataPage> {
             _readout('GPS', '${t.gpsFixLabel}${t.satellites == null ? '' : ' · ${t.satellites} sat'}'),
           ],
         ),
-      ),
+      )),
     );
   }
 

@@ -22,6 +22,7 @@ import 'package:smart_laundry_locker/shared/widgets/custom_textarea.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:smart_laundry_locker/core/l10n/l10n.dart';
+import 'package:smart_laundry_locker/features/onboarding/presentation/tour_anchor.dart';
 
 class CreateReportPage extends StatefulWidget {
   final String lockerId;
@@ -495,24 +496,24 @@ class _CreateReportPageState extends State<CreateReportPage> {
               _buildOrderInfoBanner(),
               const SizedBox(height: 16),
             ],
-            _buildTextField(
+            TourAnchor('my-report-create-title', child: _buildTextField(
               controller: _titleController,
               label: context.l10n.crTitleField,
               hint: context.l10n.crTitleHint,
-            ),
+            )),
             const SizedBox(height: 16),
-            _buildTextField(
+            TourAnchor('my-report-create-description', child: _buildTextField(
               controller: _descriptionController,
               label: context.l10n.crDescriptionField,
               hint: context.l10n.crDescriptionHint,
               maxLines: 4,
-            ),
+            )),
             const SizedBox(height: 16),
-            _buildLockerAddressDropdown(),
+            TourAnchor('my-report-create-locker', child: _buildLockerAddressDropdown()),
             const SizedBox(height: 16),
-            _buildBoxSelectionSection(),
+            TourAnchor('my-report-create-box', child: _buildBoxSelectionSection()),
             const SizedBox(height: 16),
-            _buildPhotoSection(),
+            TourAnchor('my-report-create-photos', child: _buildPhotoSection()),
             const SizedBox(height: 40),
           ],
         ),
@@ -521,7 +522,7 @@ class _CreateReportPageState extends State<CreateReportPage> {
         top: false,
         child: Padding(
           padding: const EdgeInsets.all(16),
-          child: Row(
+          child: TourAnchor('my-report-create-actions', child: Row(
             children: [
               Expanded(
                 child: OutlinedButton(
@@ -572,7 +573,7 @@ class _CreateReportPageState extends State<CreateReportPage> {
                 ),
               ),
             ],
-          ),
+          )),
         ),
       ),
     );

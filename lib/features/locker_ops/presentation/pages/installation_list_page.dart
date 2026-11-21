@@ -5,6 +5,7 @@ import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service
 import 'package:smart_laundry_locker/features/locker_ops/presentation/pages/installation_detail_page.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/installation_widgets.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/ops_widgets.dart';
+import 'package:smart_laundry_locker/features/onboarding/presentation/tour_anchor.dart';
 
 /// Hồ sơ lắp đặt tủ admin giao cho KTV (F3-G12). [initialInstallationId] (deep link từ thông báo) ⇒ mở
 /// thẳng hồ sơ đó.
@@ -77,7 +78,7 @@ class _InstallationListPageState extends State<InstallationListPage> {
             else if (_error != null && _items.isEmpty)
               InstallationNotice(icon: Icons.error_outline, color: const Color(0xFFDC2626), text: _error!)
             else if (_items.isEmpty)
-              Padding(
+              TourAnchor('tech-install-empty', child: Padding(
                 padding: const EdgeInsets.only(top: 64),
                 child: Column(
                   children: [
@@ -87,12 +88,14 @@ class _InstallationListPageState extends State<InstallationListPage> {
                         style: const TextStyle(color: Color(0xFF64748B))),
                   ],
                 ),
-              )
+              ))
             else ...[
-              Text(l10n.instListHint, style: const TextStyle(fontSize: 12.5, color: Color(0xFF64748B))),
+              TourAnchor('tech-install-hint', child: Text(l10n.instListHint, style: const TextStyle(fontSize: 12.5, color: Color(0xFF64748B)))),
               const SizedBox(height: 12),
               for (final item in _items) ...[
-                _InstallationCard(installation: item, onTap: () => _open(item.id)),
+                identical(item, _items.first)
+                    ? TourAnchor('tech-install-first-item', child: _InstallationCard(installation: item, onTap: () => _open(item.id)))
+                    : _InstallationCard(installation: item, onTap: () => _open(item.id)),
                 const SizedBox(height: 10),
               ],
             ],

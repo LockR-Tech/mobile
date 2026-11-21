@@ -21,6 +21,7 @@ import 'package:smart_laundry_locker/features/locker_ops/presentation/utils/busi
 import 'package:smart_laundry_locker/features/locker_ops/presentation/utils/locker_maps.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/ops_widgets.dart';
 import 'package:smart_laundry_locker/core/l10n/l10n.dart';
+import 'package:smart_laundry_locker/features/onboarding/presentation/tour_anchor.dart';
 
 /// Thời điểm thực tế từng mốc timeline đã đạt, suy từ nhật ký hành trình.
 ///
@@ -166,19 +167,24 @@ class DroneDeliveryDetail extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        _HeaderCard(status: status),
+        TourAnchor('drone-track-header', child: _HeaderCard(status: status)),
         if (stage.isDelayed || stage.isFailure) ...[
           const SizedBox(height: 16),
-          _StatusBanner(status: status),
+          TourAnchor('drone-track-status', child: _StatusBanner(status: status)),
         ],
         if (status.block != null && !stage.isFailure) ...[
           const SizedBox(height: 16),
-          _BlockBanner(status: status, forOperator: forOperator),
+          TourAnchor(
+            'drone-track-block',
+            child: _BlockBanner(status: status, forOperator: forOperator),
+          ),
         ],
         if (status.needsPaymentBeforeDispatch ||
             status.needsSurchargePayment) ...[
           const SizedBox(height: 16),
-          _UnpaidBanner(
+          TourAnchor(
+            'drone-track-unpaid',
+            child: _UnpaidBanner(
             status: status,
             forOperator: forOperator,
             // [viewerIsBooker] và [isSender] cùng nghĩa: thiếu một trong hai
@@ -186,41 +192,62 @@ class DroneDeliveryDetail extends StatelessWidget {
             viewerIsBooker: viewerIsBooker && isSender,
             onPay: onPay,
             onDeclineSurcharge: onDeclineSurcharge,
+            ),
           ),
         ],
         if (status.pickup != null && !stage.isFailure) ...[
           const SizedBox(height: 16),
-          _PickupCard(
+          TourAnchor(
+            'drone-track-home-pickup',
+            child: _PickupCard(
             status: status,
             forOperator: forOperator,
             isSender: isSender,
+            ),
           ),
         ],
         if (status.needsParcelDrop) ...[
           const SizedBox(height: 16),
-          _DropBanner(
+          TourAnchor(
+            'drone-track-drop',
+            child: _DropBanner(
             status: status,
             forOperator: forOperator,
             viewerIsBooker: viewerIsBooker && isSender,
             onConfirmDrop: onConfirmDrop,
+            ),
           ),
         ],
         if (status.parcelReturnPending == true ||
             status.parcelReturnedAt != null) ...[
           const SizedBox(height: 16),
-          _ParcelReturnBanner(status: status, forOperator: forOperator),
+          TourAnchor(
+            'drone-track-return',
+            child: _ParcelReturnBanner(status: status, forOperator: forOperator),
+          ),
         ],
         ...beforeRoute,
         if (!stage.isTerminal && !stage.isIncident) ...[
           const SizedBox(height: 16),
-          _StorageDeadlineCard(status: status, forOperator: forOperator),
+          TourAnchor(
+            'drone-track-deadline',
+            child: _StorageDeadlineCard(status: status, forOperator: forOperator),
+          ),
         ],
         const SizedBox(height: 16),
-        DroneRouteMapCard(status: status, forOperator: forOperator),
+        TourAnchor(
+          'drone-track-route-map',
+          child: DroneRouteMapCard(status: status, forOperator: forOperator),
+        ),
         const SizedBox(height: 16),
-        _RouteCard(status: status, forOperator: forOperator),
+        TourAnchor(
+          'drone-track-route',
+          child: _RouteCard(status: status, forOperator: forOperator),
+        ),
         const SizedBox(height: 16),
-        _Card(
+        TourAnchor(
+          'drone-track-progress',
+          child: _Card(
           title: context.l10n.ddProgress,
           icon: LucideIcons.listChecks,
           child: DroneDeliveryTimeline(
@@ -232,22 +259,32 @@ class DroneDeliveryDetail extends StatelessWidget {
               homePickup: status.pickup != null,
             ),
           ),
+          ),
         ),
         if (!forOperator &&
             isSender &&
             onCancel != null &&
             status.canCustomerCancel) ...[
           const SizedBox(height: 16),
-          _CancelCard(status: status, onCancel: onCancel!),
+          TourAnchor(
+            'drone-track-cancel',
+            child: _CancelCard(status: status, onCancel: onCancel!),
+          ),
         ],
         const SizedBox(height: 16),
-        _OrderCard(status: status),
+        TourAnchor('drone-track-order', child: _OrderCard(status: status)),
         const SizedBox(height: 16),
-        _PeopleCard(status: status, forOperator: forOperator),
+        TourAnchor(
+          'drone-track-people',
+          child: _PeopleCard(status: status, forOperator: forOperator),
+        ),
         const SizedBox(height: 16),
-        _MissionCard(status: status),
+        TourAnchor('drone-track-mission', child: _MissionCard(status: status)),
         const SizedBox(height: 16),
-        _JourneyCard(events: status.journeyEvents),
+        TourAnchor(
+          'drone-track-journey',
+          child: _JourneyCard(events: status.journeyEvents),
+        ),
       ],
     );
   }

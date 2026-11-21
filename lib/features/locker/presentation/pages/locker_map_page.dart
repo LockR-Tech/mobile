@@ -17,6 +17,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:smart_laundry_locker/shared/shared.dart';
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
 import 'package:smart_laundry_locker/core/l10n/l10n.dart';
+import 'package:smart_laundry_locker/features/onboarding/presentation/tour_anchor.dart';
 
 class LockerMapPage extends ConsumerStatefulWidget {
   const LockerMapPage({super.key});
@@ -196,20 +197,24 @@ class _LockerMapPageState extends ConsumerState<LockerMapPage>
               ),
               MarkerLayer(
                 markers: activeLocations.map((LockerLocation location) {
+                  final pin = GestureDetector(
+                    onTap: () {
+                      setState(() => _selectedLocation = location);
+                    },
+                    child: const Icon(
+                      Icons.location_on,
+                      color: Colors.red,
+                      size: 50,
+                    ),
+                  );
                   return Marker(
                     point: location.coordinate,
                     width: 50,
                     height: 50,
-                    child: GestureDetector(
-                      onTap: () {
-                        setState(() => _selectedLocation = location);
-                      },
-                      child: const Icon(
-                        Icons.location_on,
-                        color: Colors.red,
-                        size: 50,
-                      ),
-                    ),
+                    // Hướng dẫn trên màn hình (F3-G13): ghim đầu tiên mở thẻ xem nhanh.
+                    child: identical(location, activeLocations.first)
+                        ? TourAnchor('locker-map-first-marker', child: pin)
+                        : pin,
                   );
                 }).toList(),
               ),
@@ -265,11 +270,13 @@ class _LockerMapPageState extends ConsumerState<LockerMapPage>
 
       mapBody = Stack(
         children: [
-          innerMap,
+          TourAnchor('locker-map-view', child: innerMap),
           Positioned(
             bottom: 24,
             right: 16,
-            child: Material(
+            child: TourAnchor(
+              'locker-map-locate',
+              child: Material(
               color: Colors.white,
               borderRadius: BorderRadius.circular(24),
               elevation: 4,
@@ -316,6 +323,7 @@ class _LockerMapPageState extends ConsumerState<LockerMapPage>
                     ],
                   ),
                 ),
+              ),
               ),
             ),
           ),
@@ -382,9 +390,11 @@ class _LockerMapPageState extends ConsumerState<LockerMapPage>
             },
           ),
           if (_isLocating || (_currentAddress ?? '').isNotEmpty)
-            _buildAddressBar(context),
+            TourAnchor('locker-map-address', child: _buildAddressBar(context)),
           if (invalidCount > 0)
-            Material(
+            TourAnchor(
+              'locker-map-invalid',
+              child: Material(
               color: const Color(0xFFD8E8F4),
               child: Padding(
                 padding: const EdgeInsets.symmetric(
@@ -410,6 +420,7 @@ class _LockerMapPageState extends ConsumerState<LockerMapPage>
                     ),
                   ],
                 ),
+              ),
               ),
             ),
           Expanded(child: mapBody),
@@ -470,7 +481,9 @@ class _LockerMapPageState extends ConsumerState<LockerMapPage>
       child: AnimatedOpacity(
         duration: const Duration(milliseconds: 300),
         opacity: 1.0,
-        child: GestureDetector(
+        child: TourAnchor(
+          'locker-map-preview',
+          child: GestureDetector(
           onTap: () {
             Navigator.push(
               context,
@@ -530,6 +543,7 @@ class _LockerMapPageState extends ConsumerState<LockerMapPage>
                 const Icon(LucideIcons.scanLine, color: Colors.white, size: 20),
               ],
             ),
+          ),
           ),
         ),
       ),

@@ -11,6 +11,7 @@ import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/controller_pairing_sheet.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/installation_widgets.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/ops_widgets.dart';
+import 'package:smart_laundry_locker/features/onboarding/presentation/tour_anchor.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 /// Checklist lắp đặt một tủ (F3-G12). Bước máy kiểm được do hệ thống tự xác nhận — KTV làm việc thật
@@ -240,11 +241,11 @@ class _InstallationDetailPageState extends State<InstallationDetailPage> {
       appBar: AppBar(
         title: Text(data?.displayName ?? l10n.instListTitle),
         actions: [
-          IconButton(
+          TourAnchor('tech-install-reload', child: IconButton(
             tooltip: l10n.commonReload,
             onPressed: _loading || _busy ? null : _load,
             icon: const Icon(Icons.refresh),
-          ),
+          )),
         ],
       ),
       body: data == null
@@ -267,20 +268,20 @@ class _InstallationDetailPageState extends State<InstallationDetailPage> {
                   child: ListView(
                     padding: const EdgeInsets.fromLTRB(16, 12, 16, 120),
                     children: [
-                      _header(data),
+                      TourAnchor('tech-install-header', child: _header(data)),
                       const SizedBox(height: 12),
                       ..._banners(data),
-                      Text(l10n.instChecklistTitle(data.doneCount, data.checks.length),
-                          style: const TextStyle(fontSize: 15.5, fontWeight: FontWeight.w800)),
+                      TourAnchor('tech-install-checklist-title', child: Text(l10n.instChecklistTitle(data.doneCount, data.checks.length),
+                          style: const TextStyle(fontSize: 15.5, fontWeight: FontWeight.w800))),
                       const SizedBox(height: 8),
                       for (final check in data.checks) ...[
                         _checkCard(data, check),
                         const SizedBox(height: 10),
                       ],
-                      _sitePhotos(data),
+                      TourAnchor('tech-install-site-photos', child: _sitePhotos(data)),
                       if (data.editable && data.missing.isNotEmpty) ...[
                         const SizedBox(height: 12),
-                        _missing(data),
+                        TourAnchor('tech-install-missing', child: _missing(data)),
                       ],
                     ],
                   ),
@@ -314,7 +315,7 @@ class _InstallationDetailPageState extends State<InstallationDetailPage> {
     return SafeArea(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
-        child: SizedBox(height: 50, child: button),
+        child: TourAnchor('tech-install-bottom', child: SizedBox(height: 50, child: button)),
       ),
     );
   }
@@ -502,7 +503,7 @@ class _InstallationDetailPageState extends State<InstallationDetailPage> {
         }
     }
 
-    return Container(
+    final card = Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: Colors.white,
@@ -565,6 +566,14 @@ class _InstallationDetailPageState extends State<InstallationDetailPage> {
         ],
       ),
     );
+    // Neo hướng dẫn (F3-G13) cho từng loại bước.
+    return switch (check.item) {
+      'CONTROLLER' => TourAnchor('tech-install-controller', child: card),
+      'BOX_TEST' => TourAnchor('tech-install-box-test', child: card),
+      'LID' => TourAnchor('tech-install-lid', child: card),
+      'MOUNTING' => TourAnchor('tech-install-check-manual', child: card),
+      _ => card,
+    };
   }
 
   List<Widget> _boxTest(Installation data, InstallationCheck check) {

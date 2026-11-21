@@ -10,6 +10,7 @@ import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/op
 import 'package:smart_laundry_locker/shared/widgets/app_lottie.dart';
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
 import 'package:smart_laundry_locker/core/l10n/l10n.dart';
+import 'package:smart_laundry_locker/features/onboarding/presentation/tour_anchor.dart';
 
 /// Mở ô của một đơn mình là người nhận / người lấy hộ: bảng mở ô thử Bluetooth thật trước
 /// (mã theo đơn ghi thẳng cho Pi); hoặc quét tem QR trên tủ rồi gọi
@@ -106,7 +107,11 @@ class ReceiverOrderCard extends StatelessWidget {
     required this.onDirections,
     this.delegatedView = false,
     this.onTap,
+    this.tourFirst = false,
   });
+
+  /// Thẻ đầu danh sách "Hàng chờ nhận": gắn neo hướng dẫn trên màn hình (F3-G13).
+  final bool tourFirst;
 
   final ReceiverOrder order;
   final VoidCallback onUnlock;
@@ -169,7 +174,9 @@ class ReceiverOrderCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       // Order Code + Status Badge Row
-                      Row(
+                      _tour(
+                        'head',
+                        Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
@@ -215,6 +222,7 @@ class ReceiverOrderCard extends StatelessWidget {
                             ),
                           ),
                         ],
+                        ),
                       ),
                       const SizedBox(height: 6),
 
@@ -336,11 +344,14 @@ class ReceiverOrderCard extends StatelessWidget {
                         )
                       else if (order.isActive && (order.pickupPin ?? '').isNotEmpty) ...[
                         Center(
-                          child: AccessCredentials(
+                          child: _tour(
+                            'pin',
+                            AccessCredentials(
                             pin: order.pickupPin,
                             qrToken: order.qrToken,
                             caption: context.l10n.recvCredCaptionShort,
                             showSuccessAnimation: false,
+                            ),
                           ),
                         ),
                         const SizedBox(height: 10),
@@ -406,7 +417,9 @@ class ReceiverOrderCard extends StatelessWidget {
                                 );
                               }
 
-                              return GestureDetector(
+                              return _tour(
+                                'action',
+                                GestureDetector(
                                 onTap: () {
                                   if (order.canUnlockWithCode) {
                                     onUnlock();
@@ -434,6 +447,7 @@ class ReceiverOrderCard extends StatelessWidget {
                                       color: actionTextColor,
                                     ),
                                   ),
+                                ),
                                 ),
                               );
                             },
@@ -511,6 +525,18 @@ class ReceiverOrderCard extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+extension on ReceiverOrderCard {
+  /// Neo hướng dẫn chỉ gắn trên thẻ đầu danh sách (mã neo viết rõ để kiểm được bằng grep).
+  Widget _tour(String part, Widget child) {
+    if (!tourFirst) return child;
+    return switch (part) {
+      'head' => TourAnchor('recv-card-head', child: child),
+      'pin' => TourAnchor('recv-card-pin', child: child),
+      _ => TourAnchor('recv-card-action', child: child),
+    };
   }
 }
 

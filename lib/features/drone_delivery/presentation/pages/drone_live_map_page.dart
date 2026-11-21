@@ -18,6 +18,7 @@ import 'package:smart_laundry_locker/features/drone_delivery/presentation/widget
 import 'package:smart_laundry_locker/features/drone_delivery/presentation/widgets/drone_marker.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/presentation/widgets/drone_base_tile_layer.dart';
 import 'package:smart_laundry_locker/core/l10n/l10n.dart';
+import 'package:smart_laundry_locker/features/onboarding/presentation/tour_anchor.dart';
 
 /// Live map theo dõi drone real-time cho NGƯỜI NHẬN (Phase 2).
 ///
@@ -235,7 +236,9 @@ class _DroneLiveMapPageState extends ConsumerState<DroneLiveMapPage>
     return Scaffold(
       body: Stack(
         children: [
-          FlutterMap(
+          TourAnchor(
+            'drone-map-view',
+            child: FlutterMap(
             mapController: _mapController,
             options: MapOptions(
               initialCenter: _to ?? _defaultCenter,
@@ -311,6 +314,7 @@ class _DroneLiveMapPageState extends ConsumerState<DroneLiveMapPage>
                   ],
                 ),
             ],
+            ),
           ),
 
           _TopBar(orderId: widget.orderId, simulated: simulated),
@@ -327,7 +331,9 @@ class _DroneLiveMapPageState extends ConsumerState<DroneLiveMapPage>
           Positioned(
             right: 12,
             bottom: MediaQuery.of(context).padding.bottom + 250,
-            child: _MapFab(
+            child: TourAnchor(
+              'drone-map-follow',
+              child: _MapFab(
               icon: _followDrone ? LucideIcons.locateFixed : LucideIcons.locate,
               onTap: () {
                 setState(() => _followDrone = !_followDrone);
@@ -335,6 +341,7 @@ class _DroneLiveMapPageState extends ConsumerState<DroneLiveMapPage>
                   _moveCamera(LatLng(_latest!.lat, _latest!.lng));
                 }
               },
+              ),
             ),
           ),
 
@@ -364,7 +371,9 @@ class _TopBar extends StatelessWidget {
       top: topPad + 8,
       left: 12,
       right: 12,
-      child: Row(
+      child: TourAnchor(
+        'drone-map-top',
+        child: Row(
         children: [
           _CircleButton(
             icon: LucideIcons.arrowLeft,
@@ -399,6 +408,7 @@ class _TopBar extends StatelessWidget {
             ),
           ),
         ],
+        ),
       ),
     );
   }
@@ -417,7 +427,9 @@ class _SignalLostBanner extends StatelessWidget {
       top: topPad + 60,
       left: 12,
       right: 12,
-      child: Container(
+      child: TourAnchor(
+        'drone-map-signal',
+        child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
         decoration: BoxDecoration(
           color: const Color(0xFFF59E0B).withValues(alpha: 0.95),
@@ -438,6 +450,7 @@ class _SignalLostBanner extends StatelessWidget {
               ),
             ),
           ],
+        ),
         ),
       ),
     );
@@ -545,7 +558,9 @@ class _BottomStatusCard extends StatelessWidget {
       left: 12,
       right: 12,
       bottom: MediaQuery.of(context).padding.bottom + 16,
-      child: Container(
+      child: TourAnchor(
+        'drone-map-status',
+        child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: Colors.white,
@@ -628,6 +643,7 @@ class _BottomStatusCard extends StatelessWidget {
                   : context.l10n.lmLiveUpdates,
             ),
           ],
+        ),
         ),
       ),
     );

@@ -7,6 +7,7 @@ import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/ops_widgets.dart';
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
 import 'package:smart_laundry_locker/core/l10n/l10n.dart';
+import 'package:smart_laundry_locker/features/onboarding/presentation/tour_anchor.dart';
 
 /// Thử mở ô qua Bluetooth (F3-G11) — chỉ tài khoản admin đã cho thử ở trang chi tiết tủ.
 /// Chọn tủ, chọn ô bất kỳ, app xin mã mở ô từ máy chủ rồi ghi thẳng cho Pi của tủ qua BLE.
@@ -188,12 +189,12 @@ class _BleTestPageState extends State<BleTestPage> {
           ? null
           : SafeArea(
               minimum: const EdgeInsets.fromLTRB(16, 8, 16, 12),
-              child: OpsPrimaryButton(
+              child: TourAnchor('ble-test-open', child: OpsPrimaryButton(
                 label: _boxNumber == null ? context.l10n.btChooseBox : context.l10n.btOpenBox(_boxNumber!),
                 icon: LucideIcons.bluetooth,
                 loading: _opening,
                 onPressed: _boxNumber == null || _opening ? null : _open,
-              ),
+              )),
             ),
     );
   }
@@ -214,11 +215,11 @@ class _BleTestPageState extends State<BleTestPage> {
       );
     }
     if (_lockers.isEmpty) {
-      return OpsEmptyState(
+      return TourAnchor('ble-test-not-allowed', child: OpsEmptyState(
         icon: LucideIcons.bluetoothOff,
         title: context.l10n.btNotAllowed,
         subtitle: context.l10n.btNotAllowedBody,
-      );
+      ));
     }
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
@@ -246,10 +247,10 @@ class _BleTestPageState extends State<BleTestPage> {
               style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: opsDark),
             ),
           ),
-        OpsBanner(
+        TourAnchor('ble-test-hint', child: OpsBanner(
           icon: LucideIcons.bluetooth,
           text: context.l10n.btHint,
-        ),
+        )),
         const SizedBox(height: 16),
         OpsSectionLabel(context.l10n.btChooseBoxLabel),
         if (_layoutLoading)
@@ -260,14 +261,14 @@ class _BleTestPageState extends State<BleTestPage> {
         else if (_layoutError != null)
           OpsBanner(tone: OpsBannerTone.danger, text: _layoutError!)
         else
-          _BoxGrid(
+          TourAnchor('ble-test-boxes', child: _BoxGrid(
             cells: _cells,
             selected: _boxNumber,
             onTap: _opening ? null : (n) => setState(() {
                   _boxNumber = n;
                   _outcome = null;
                 }),
-          ),
+          )),
         if (_stepText != null) ...[
           const SizedBox(height: 16),
           OpsCard(

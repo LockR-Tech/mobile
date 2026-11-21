@@ -32,6 +32,7 @@ import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/us
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
 import 'package:smart_laundry_locker/shared/shared.dart';
 import 'package:smart_laundry_locker/core/l10n/l10n.dart';
+import 'package:smart_laundry_locker/features/onboarding/presentation/tour_anchor.dart';
 
 /// All locker orders of the signed-in customer, with the full action set gated
 /// to the backend state machine: confirm drop, pickup/complete, delegate,
@@ -1771,6 +1772,8 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
         items.add(_ListItem.order(entry.value[i]));
       }
     }
+    // Hướng dẫn trên màn hình (F3-G13): neo đơn đầu tiên để mở trang chi tiết đơn.
+    final firstOrderIndex = items.indexWhere((x) => !x.isHeader);
 
     return Scaffold(
       backgroundColor: context.pageBg,
@@ -1780,22 +1783,28 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
             art: HeroArt.order,
             title: context.l10n.homeLockerOrders,
             subtitle: context.l10n.ordMyOrdersSubtitle,
-            trailing: BrandCircleIconButton(
+            trailing: TourAnchor(
+              'orders-refresh',
+              child: BrandCircleIconButton(
               icon: LucideIcons.refreshCw,
               onTap: _refresh,
               iconSize: 18,
+              ),
             ),
           ),
 
-          _ScopeTabs(
-            showIncoming: showIncoming,
-            incomingReadyCount: _incomingReadyCount,
-            onChanged: (incoming) => setState(() => _showIncoming = incoming),
+          TourAnchor(
+            'orders-scope-tabs',
+            child: _ScopeTabs(
+              showIncoming: showIncoming,
+              incomingReadyCount: _incomingReadyCount,
+              onChanged: (incoming) => setState(() => _showIncoming = incoming),
+            ),
           ),
 
           // ── Service type & status filter chips ────────────────────────────
           if (!showIncoming)
-            SingleChildScrollView(
+            TourAnchor('orders-filter-chips', child: SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.fromLTRB(16, 10, 16, 12),
               child: Row(
@@ -1852,9 +1861,14 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
                   ],
                 ],
               ),
-            )
+            ))
           else
-            SingleChildScrollView(
+            TourAnchor(
+              'orders-incoming-filters',
+              // key riêng: cùng vị trí với neo orders-filter-chips ở nhánh trên — không có key Flutter dùng lại
+              // phần tử cũ và bản web giữ nhãn semantics cũ.
+              key: const ValueKey('tour-orders-incoming-filters'),
+              child: SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.fromLTRB(16, 10, 16, 12),
               child: Row(
@@ -1915,13 +1929,14 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
                   ],
                 ],
               ),
+              ),
             ),
 
           const SizedBox(height: 8),
 
           // ── Grouped list ─────────────────────────────────────────────────
           Expanded(
-            child: showIncoming
+            child: TourAnchor('orders-list', child: showIncoming
                 ? _IncomingOrdersView(
                     orders: _incoming,
                     groups: _groupedIncomingOrders,
@@ -1980,7 +1995,7 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
                         return Padding(
                           padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
                           child: RepaintBoundary(
-                            child: _OrderCard(
+                            child: _maybeTourFirst(i == firstOrderIndex, _OrderCard(
                               order: o,
                               faultReport: _incidentReportForOrder(o),
                               lockerName: _lockerNameOf(o),
@@ -2002,18 +2017,22 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
                                   UserReportDetailSheet.show(context, report: r);
                                 }
                               },
-                            ),
+                            )),
                           ),
                         );
                       },
                     ),
-                  ),
+                  )),
           ),
         ],
       ),
     );
   }
 }
+
+/// Thẻ đơn đầu danh sách mang neo hướng dẫn (F3-G13) — chạm vào mở chi tiết đơn.
+Widget _maybeTourFirst(bool first, Widget card) =>
+    first ? TourAnchor('orders-first-item', child: card) : card;
 
 /// Tải nhật ký KTV của phiếu gắn với đơn khi mở chi tiết, rồi dựng lại bảng chi
 /// tiết với nhật ký đó (dùng cho hồ sơ điều chuyển ô). Lỗi / chưa có ⇒ rỗng.
@@ -2186,6 +2205,7 @@ class _IncomingOrdersView extends StatelessWidget {
                   onUnlock: () => onUnlock(o),
                   onDirections: () => onDirections(o),
                   onTap: onOpen == null ? null : () => onOpen!(o),
+                  tourFirst: i == items.indexWhere((x) => !x.isHeader),
                 ),
               ),
             );
@@ -2215,6 +2235,7 @@ class _IncomingOrdersView extends StatelessWidget {
           onUnlock: () => onUnlock(sorted[i]),
           onDirections: () => onDirections(sorted[i]),
           onTap: onOpen == null ? null : () => onOpen!(sorted[i]),
+          tourFirst: i == 0,
         ),
       ),
     );
@@ -2246,8 +2267,7 @@ class _ScopeTabs extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     Widget tab(String label, bool selected, VoidCallback onTap, {int? badge}) {
-      return Expanded(
-        child: Material(
+      return Material(
           color: selected ? context.cardBg : Colors.transparent,
           borderRadius: BorderRadius.circular(12),
           child: InkWell(
@@ -2295,7 +2315,6 @@ class _ScopeTabs extends StatelessWidget {
               ),
             ),
           ),
-        ),
       );
     }
 
@@ -2311,12 +2330,22 @@ class _ScopeTabs extends StatelessWidget {
         ),
         child: Row(
           children: [
-            tab(context.l10n.ordMyOrders, !showIncoming, () => onChanged(false)),
-            tab(
-              context.l10n.ordIncoming,
-              showIncoming,
-              () => onChanged(true),
-              badge: incomingReadyCount,
+            Expanded(
+              child: TourAnchor(
+                'orders-tab-mine',
+                child: tab(context.l10n.ordMyOrders, !showIncoming, () => onChanged(false)),
+              ),
+            ),
+            Expanded(
+              child: TourAnchor(
+                'orders-tab-incoming',
+                child: tab(
+                  context.l10n.ordIncoming,
+                  showIncoming,
+                  () => onChanged(true),
+                  badge: incomingReadyCount,
+                ),
+              ),
             ),
           ],
         ),
@@ -4108,10 +4137,13 @@ class _MyLockerOrderDetailPageState extends State<_MyLockerOrderDetailPage> {
           style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 17),
         ),
         actions: [
-          IconButton(
+          TourAnchor(
+            'order-detail-refresh',
+            child: IconButton(
             onPressed: _refreshing ? null : _refresh,
             icon: const Icon(LucideIcons.refreshCw, size: 18),
             tooltip: context.l10n.commonReload,
+            ),
           ),
         ],
         bottom: _refreshing
@@ -4438,19 +4470,24 @@ class _DetailSheet extends StatelessWidget {
     final actions = <Widget>[
       // Đơn drone luôn mở được màn hành trình: đang giao thì theo dõi, đã xong/huỷ thì xem lại chuyến bay.
       if (isDroneDelivery)
-        OpsSheetAction(
+        TourAnchor(
+          'order-act-track',
+          child: OpsSheetAction(
           label: droneFlightFinished(rawStatus)
               ? context.l10n.ordReviewDroneJourney
               : context.l10n.ordTrackDrone,
           icon: LucideIcons.navigation,
           primary: !droneFlightFinished(rawStatus),
           onTap: () => onTrackDrone(id),
+          ),
         ),
       if (canPay &&
           rawStatus != 'EXPIRED' &&
           !(rawStatus == 'STORING' && needsPayOvertime) &&
           !(rawStatus == 'RETURNED' && needsPayOvertime))
-        OpsSheetAction(
+        TourAnchor(
+          'order-act-pay',
+          child: OpsSheetAction(
           label: pendingExtensionHours > 0
               ? context.l10n.ordPaySendExtension(
                   pendingExtensionHours,
@@ -4460,66 +4497,88 @@ class _DetailSheet extends StatelessWidget {
           icon: LucideIcons.creditCard,
           primary: true,
           onTap: () => onPay(id),
+          ),
         ),
       if (rawStatus == 'EXPIRED') ...[
         // Đồ đã rời ô vào kho tại quầy: chỉ trả phí trong app, nhân viên trao đồ và chốt đơn.
         if (canPay || orderAmountDue(order) > 0)
-          OpsSheetAction(
+          TourAnchor(
+            'order-act-storage',
+            child: OpsSheetAction(
             label:
                 context.l10n.ordPayStorageFee(fmtPrice(orderAmountDue(order) > 0 ? orderAmountDue(order) : totalNum)),
             icon: LucideIcons.creditCard,
             primary: true,
             onTap: () => onPayAndComplete?.call(id),
+            ),
           )
         else
-          OpsSheetAction(
+          TourAnchor(
+            'order-act-storage',
+            child: OpsSheetAction(
             label: context.l10n.ordPickupAtCounter,
             icon: LucideIcons.store,
             primary: true,
             onTap: () => onPayAndComplete?.call(id),
+            ),
           ),
         if (!isDroneDelivery)
-          OpsSheetAction(
+          TourAnchor(
+            'order-act-reorder',
+            child: OpsSheetAction(
             label: context.l10n.ordReorder,
             icon: LucideIcons.repeat,
             primary: false,
             onTap: () => onReorder(id),
+            ),
           ),
       ],
       // Đặt lại chỉ áp cho đơn gửi hàng / thuê ô (server từ chối đơn drone) ⇒ không hiện nút cho đơn drone.
       if ((rawStatus == 'COMPLETED' || rawStatus == 'CANCELED') &&
           rawStatus != 'EXPIRED' &&
           !isDroneDelivery)
-        OpsSheetAction(
+        TourAnchor(
+          'order-act-reorder',
+          child: OpsSheetAction(
           label: context.l10n.ordReorder,
           icon: LucideIcons.repeat,
           primary: true,
           onTap: () => onReorder(id),
+          ),
         ),
       if (canDrop)
-        OpsSheetAction(
+        TourAnchor(
+          'order-act-open',
+          child: OpsSheetAction(
           label: context.l10n.ordOpenBoxToDrop(boxLabel),
           icon: LucideIcons.doorOpen,
           primary: true,
           onTap: onOpenLocker,
+          ),
         ),
       if (rawStatus == 'INITIALIZED')
-        OpsSheetAction(
+        TourAnchor(
+          'order-act-confirm',
+          child: OpsSheetAction(
           label: context.l10n.ordIDroppedOff,
           icon: LucideIcons.packageCheck,
           primary: !canDrop,
           onTap: () => onConfirmDrop(id),
+          ),
         ),
       if (canUsePickupActions &&
           (rawStatus == 'RETURNED' ||
               (rawStatus == 'STORING' && !isRental))) ...[
         if (needsPayOvertime) ...[
-          OpsSheetAction(
+          TourAnchor(
+            'order-act-overtime',
+            child: OpsSheetAction(
             label:
                 context.l10n.ordPayAndCompletePickup(fmtPrice(orderAmountDue(order) > 0 ? orderAmountDue(order) : overtimeFee)),
             icon: LucideIcons.circleCheck,
             primary: true,
             onTap: () => onPayAndComplete?.call(id),
+            ),
           ),
           OpsSheetAction(
             label: context.l10n.ordPayOvertimeAndOpen(fmtPrice(overtimeFee)),
@@ -4528,28 +4587,37 @@ class _DetailSheet extends StatelessWidget {
             onTap: () => onPayOvertime(id, overtimeFee),
           ),
         ] else ...[
-          OpsSheetAction(
+          TourAnchor(
+            'order-act-open',
+            child: OpsSheetAction(
             label: context.l10n.ordOpenBoxToPickup(boxLabel),
             icon: LucideIcons.doorOpen,
             primary: true,
             onTap: onOpenLocker,
+            ),
           ),
-          OpsSheetAction(
+          TourAnchor(
+            'order-act-confirm',
+            child: OpsSheetAction(
             label: context.l10n.ordIPickedUpComplete,
             icon: LucideIcons.circleCheck,
             primary: false,
             onTap: () => onComplete(id),
+            ),
           ),
         ],
       ],
       if (isRental && rawStatus == 'STORING' && !boxIncident) ...[
         if (needsPayOvertime) ...[
-          OpsSheetAction(
+          TourAnchor(
+            'order-act-overtime',
+            child: OpsSheetAction(
             label:
                 context.l10n.ordPayAndCompletePickup(fmtPrice(orderAmountDue(order) > 0 ? orderAmountDue(order) : overtimeFee)),
             icon: LucideIcons.circleCheck,
             primary: true,
             onTap: () => onPayAndComplete?.call(id),
+            ),
           ),
           OpsSheetAction(
             label: context.l10n.ordPayOvertimeAndOpen(fmtPrice(overtimeFee)),
@@ -4558,33 +4626,45 @@ class _DetailSheet extends StatelessWidget {
             onTap: () => onPayOvertime(id, overtimeFee),
           ),
         ] else ...[
-          OpsSheetAction(
+          TourAnchor(
+            'order-act-open',
+            child: OpsSheetAction(
             label: context.l10n.ordOpenBoxToReturn(boxLabel),
             icon: LucideIcons.doorOpen,
             primary: true,
             onTap: onOpenLocker,
+            ),
           ),
         ],
         if (!feePaused)
-          OpsSheetAction(
+          TourAnchor(
+            'order-act-extend',
+            child: OpsSheetAction(
             label: context.l10n.ordExtendRental,
             icon: LucideIcons.timer,
             onTap: () => onExtend(id),
+            ),
           ),
-        OpsSheetAction(
+        TourAnchor(
+          'order-act-confirm',
+          child: OpsSheetAction(
           label: context.l10n.ordEndRentalPickup,
           icon: LucideIcons.logOut,
           onTap: () => onEndRental(id),
+          ),
         ),
       ],
       // Ủy quyền lấy hộ: server chỉ nhận khi đồ đang nằm trong ô (STORING/RETURNED).
       if (onDelegate != null &&
           !isDroneDelivery &&
           (rawStatus == 'STORING' || rawStatus == 'RETURNED'))
-        OpsSheetAction(
+        TourAnchor(
+          'order-act-delegate',
+          child: OpsSheetAction(
           label: context.l10n.ordDelegatePickup,
           icon: LucideIcons.userPlus,
           onTap: () => onDelegate!(id),
+          ),
         ),
       if (onResetPin != null &&
           !isDroneDelivery &&
@@ -4592,10 +4672,13 @@ class _DetailSheet extends StatelessWidget {
           (rawStatus == 'INITIALIZED' ||
               rawStatus == 'STORING' ||
               rawStatus == 'RETURNED'))
-        OpsSheetAction(
+        TourAnchor(
+          'order-act-pin',
+          child: OpsSheetAction(
           label: context.l10n.ordChangePin,
           icon: LucideIcons.keyRound,
           onTap: onResetPin!,
+          ),
         ),
       // Đơn gửi hàng: người gửi gia hạn giữ hàng (đang chờ trả lần trước thì nút thanh toán ở trên thay thế).
       if (type == 'SEND' &&
@@ -4603,11 +4686,14 @@ class _DetailSheet extends StatelessWidget {
           !feePaused &&
           pendingExtensionHours == 0 &&
           (rawStatus == 'INITIALIZED' || rawStatus == 'STORING'))
-        OpsSheetAction(
+        TourAnchor(
+          'order-act-extend',
+          child: OpsSheetAction(
           key: const ValueKey('send-extend-action'),
           label: context.l10n.ordExtendSend,
           icon: LucideIcons.timer,
           onTap: () => onExtend(id),
+          ),
         ),
       // Đơn gửi hàng: gửi lại mã cho người nhận qua email (hoặc thêm / đổi email khi chưa bỏ hàng).
       if (onReceiverEmail != null &&
@@ -4616,7 +4702,9 @@ class _DetailSheet extends StatelessWidget {
           (rawStatus == 'INITIALIZED' ||
               rawStatus == 'STORING' ||
               rawStatus == 'RETURNED'))
-        OpsSheetAction(
+        TourAnchor(
+          'order-act-email',
+          child: OpsSheetAction(
           key: const ValueKey('send-receiver-email-action'),
           label: (order['receiverEmail'] ?? '').toString().trim().isEmpty
               ? context.l10n.ordAddReceiverEmail
@@ -4625,6 +4713,7 @@ class _DetailSheet extends StatelessWidget {
                     : context.l10n.ordResendToReceiver),
           icon: LucideIcons.mailCheck,
           onTap: onReceiverEmail!,
+          ),
         ),
       // Đơn drone giữ sẵn ô nhận từ lúc đặt; chỉ báo ô lỗi được khi kiện đã nằm trong ô
       // (STORING) — trước đó khách chưa dùng ô nào.
@@ -4633,7 +4722,9 @@ class _DetailSheet extends StatelessWidget {
           rawStatus != 'COMPLETED' &&
           rawStatus != 'CANCELED' &&
           rawStatus != 'EXPIRED')
-        OpsSheetAction(
+        TourAnchor(
+          'order-act-report',
+          child: OpsSheetAction(
           label: context.l10n.ordReportFaultyBox,
           leading: const AppLottie(
             AppLottieAssets.baoSuCo,
@@ -4641,6 +4732,7 @@ class _DetailSheet extends StatelessWidget {
             height: 22,
           ),
           onTap: () => onReport(boxId),
+          ),
         ),
       // Đơn drone huỷ được tới khi kỹ thuật viên đã cầm kiện: còn chờ điều phối
       // (AWAITING_DISPATCH) hoặc kỹ thuật viên đang tới lấy (PICKUP_ASSIGNED).
@@ -4650,21 +4742,29 @@ class _DetailSheet extends StatelessWidget {
                 'AWAITING_DISPATCH',
                 'PICKUP_ASSIGNED',
               }.contains(status.toUpperCase())))
-        OpsSheetAction(
+        TourAnchor(
+          'order-act-cancel',
+          child: OpsSheetAction(
           label: context.l10n.ordCancelOrder,
           icon: LucideIcons.circleX,
           danger: true,
           onTap: () => onCancel(id),
+          ),
         ),
-      OpsSheetAction(
+      TourAnchor(
+        'order-act-directions',
+        child: OpsSheetAction(
         label: context.l10n.ordDirectionsToLocker,
         icon: LucideIcons.map,
         onTap: onDirections,
+        ),
       ),
       // Backend chỉ nhận yêu cầu hoàn cho đơn có khoản đã thu (ORDER_NOT_PAID nếu
       // chưa trả); đơn đang chờ hoàn / đã hoàn xem ở Hồ sơ › Yêu cầu hoàn tiền.
       if (paymentStatus == 'PAID')
-        OpsSheetAction(
+        TourAnchor(
+          'order-act-refund',
+          child: OpsSheetAction(
           label: context.l10n.ordRequestRefund,
           icon: LucideIcons.rotateCcw,
           onTap: () {
@@ -4677,6 +4777,7 @@ class _DetailSheet extends StatelessWidget {
               },
             );
           },
+          ),
         ),
     ];
 
@@ -4695,7 +4796,9 @@ class _DetailSheet extends StatelessWidget {
           ),
           const SizedBox(height: 12),
         ],
-        Row(
+        TourAnchor(
+          'order-detail-status',
+          child: Row(
           children: [
             Container(
               width: 48,
@@ -4742,6 +4845,7 @@ class _DetailSheet extends StatelessWidget {
             ),
             StatusChip(status),
           ],
+          ),
         ),
         const SizedBox(height: 16),
         if (feePaused)
@@ -4797,7 +4901,9 @@ class _DetailSheet extends StatelessWidget {
           const SizedBox(height: 14),
         ],
 
-        Container(
+        TourAnchor(
+          'order-detail-card',
+          child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
           decoration: BoxDecoration(
             color: opsSurface,
@@ -5099,6 +5205,7 @@ class _DetailSheet extends StatelessWidget {
                 ),
             ],
           ),
+          ),
         ),
         const SizedBox(height: 16),
         OrderDetailSection(
@@ -5173,9 +5280,12 @@ class _DetailSheet extends StatelessWidget {
               ),
             ),
           Center(
-            child: AccessCredentials(
+            child: TourAnchor(
+              'order-detail-pin',
+              child: AccessCredentials(
               pin: order['pinCode'] as String?,
               qrToken: order['qrToken'] as String?,
+              ),
             ),
           ),
           if (relocation.isRelocated)
@@ -5194,14 +5304,19 @@ class _DetailSheet extends StatelessWidget {
             ),
           if (receiverShare != null) ...[
             const SizedBox(height: 14),
-            PickupCodeShareActions(share: receiverShare),
+            TourAnchor(
+              'order-detail-share',
+              child: PickupCodeShareActions(share: receiverShare),
+            ),
           ],
         ],
         // Đơn drone lấy hàng tận nhà: mã người gửi đọc cho KTV khi KTV tới (server chỉ trả khi KTV
         // chưa cầm kiện). Trước đây chỉ có ở màn theo dõi (test 2026-10-29).
         if (isDroneDelivery && text('dronePickupCode') != null) ...[
           const SizedBox(height: 14),
-          Container(
+          TourAnchor(
+            'order-detail-drone-code',
+            child: Container(
             key: const ValueKey('order-drone-pickup-code'),
             width: double.infinity,
             padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 14),
@@ -5227,6 +5342,7 @@ class _DetailSheet extends StatelessWidget {
                 ),
               ],
             ),
+            ),
           ),
         ],
         const SizedBox(height: 16),
@@ -5234,12 +5350,15 @@ class _DetailSheet extends StatelessWidget {
         const SizedBox(height: 20),
         const Divider(height: 1, color: opsBorder),
         const SizedBox(height: 12),
-        OrderDetailSection(
+        TourAnchor(
+          'order-detail-timeline',
+          child: OrderDetailSection(
           title: context.l10n.ordTimeline,
           icon: LucideIcons.milestone,
           footer: milestones.isEmpty
               ? null
               : OrderMilestoneTimeline(milestones: milestones),
+          ),
         ),
         OrderStatusTimeline(orderId: id, service: service, refreshToken: order),
         const SizedBox(height: 12),
@@ -5252,7 +5371,10 @@ class _DetailSheet extends StatelessWidget {
         ),
         if (OrderFeedbackSection.appliesTo(rawStatus)) ...[
           const SizedBox(height: 8),
-          OrderFeedbackSection(orderId: id, status: rawStatus, service: service),
+          TourAnchor(
+            'order-detail-feedback',
+            child: OrderFeedbackSection(orderId: id, status: rawStatus, service: service),
+          ),
         ],
         const SizedBox(height: 8),
       ],

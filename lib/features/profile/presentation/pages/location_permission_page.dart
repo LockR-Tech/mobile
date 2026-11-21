@@ -6,6 +6,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:smart_laundry_locker/core/theme/shadcn_theme.dart';
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
 import 'package:smart_laundry_locker/core/l10n/l10n.dart';
+import 'package:smart_laundry_locker/features/onboarding/presentation/tour_anchor.dart';
 
 /// Trạng thái truy cập vị trí của app, gộp từ dịch vụ định vị + quyền.
 enum LocationAccess {
@@ -164,9 +165,9 @@ class _LocationPermissionPageState extends State<LocationPermissionPage>
             child: ListView(
               padding: const EdgeInsets.fromLTRB(16, 20, 16, 32),
               children: [
-                _buildStatusCard(),
+                TourAnchor('my-location-status', child: _buildStatusCard()),
                 const SizedBox(height: 16),
-                _buildUsageCard(),
+                TourAnchor('my-location-usage', child: _buildUsageCard()),
               ],
             ),
           ),

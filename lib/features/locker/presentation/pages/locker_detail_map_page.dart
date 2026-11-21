@@ -15,6 +15,7 @@ import 'package:smart_laundry_locker/features/promotions/presentation/widgets/lo
 import 'package:smart_laundry_locker/features/stores/presentation/pages/store_lockers_page.dart';
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
 import 'package:smart_laundry_locker/core/l10n/l10n.dart';
+import 'package:smart_laundry_locker/features/onboarding/presentation/tour_anchor.dart';
 
 /// Chi tiết một tủ trên bản đồ: vị trí, trạng thái kết nối và số ô trống theo
 /// loại ô (tải từ `GET /api/lockers/{id}/layout`).
@@ -250,7 +251,9 @@ class _LockerDetailMapPageState extends State<LockerDetailMapPage> {
           minChildSize: 0.15,
           maxChildSize: 0.8,
           builder: (context, scrollController) {
-            return LockerInfoModal(
+            return TourAnchor(
+              'locker-detail-info',
+              child: LockerInfoModal(
               location: widget.location,
               scrollController: scrollController,
               cellGroups: _cellGroups,
@@ -261,6 +264,7 @@ class _LockerDetailMapPageState extends State<LockerDetailMapPage> {
               bookingBlockReason: _blockReason,
               onOpenGrid: _openGrid,
               offers: _offersSection(),
+              ),
             );
           },
         ),
@@ -279,7 +283,9 @@ class _LockerDetailMapPageState extends State<LockerDetailMapPage> {
           Expanded(child: mapStack),
         ],
       ),
-      floatingActionButton: FloatingActionButton.extended(
+      floatingActionButton: TourAnchor(
+        'locker-detail-directions',
+        child: FloatingActionButton.extended(
         onPressed: () => context.push(
           AppRouter.directions,
           extra: {
@@ -292,6 +298,7 @@ class _LockerDetailMapPageState extends State<LockerDetailMapPage> {
         foregroundColor: Colors.white,
         icon: const Icon(Icons.directions_rounded),
         label: Text(context.l10n.commonDirections),
+        ),
       ),
     );
   }

@@ -13,6 +13,7 @@ import 'package:go_router/go_router.dart';
 import 'package:smart_laundry_locker/shared/shared.dart';
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
 import 'package:smart_laundry_locker/core/l10n/l10n.dart';
+import 'package:smart_laundry_locker/features/onboarding/presentation/tour_anchor.dart';
 
 class ProfileDetailPage extends StatefulWidget {
   const ProfileDetailPage({super.key});
@@ -59,7 +60,7 @@ class _ProfileDetailPageState extends State<ProfileDetailPage> {
               trailing: Consumer<ProfileProvider>(
                 builder: (context, provider, child) {
                   final enabled = !provider.isLoading && provider.profile != null;
-                  return BrandCircleIconButton(
+                  return TourAnchor('profile-detail-edit', child: BrandCircleIconButton(
                     icon: LucideIcons.pencil,
                     iconSize: 18,
                     onTap: () async {
@@ -77,7 +78,7 @@ class _ProfileDetailPageState extends State<ProfileDetailPage> {
                         }
                       }
                     },
-                  );
+                  ));
                 },
               ),
             ),
@@ -144,7 +145,7 @@ class _ProfileDetailPageState extends State<ProfileDetailPage> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     if (!profile.isActive) ...[
-                      Container(
+                      TourAnchor('profile-detail-disabled', child: Container(
                         width: double.infinity,
                         padding: const EdgeInsets.all(12),
                         margin: const EdgeInsets.only(bottom: 16),
@@ -172,13 +173,13 @@ class _ProfileDetailPageState extends State<ProfileDetailPage> {
                             ),
                           ],
                         ),
-                      ),
+                      )),
                     ],
 
                     const SizedBox(height: 16),
 
                     // Avatar + tên + trạng thái (khối nền header)
-                    Container(
+                    TourAnchor('profile-detail-card', child: Container(
                       width: double.infinity,
                       margin: const EdgeInsets.only(top: 4),
                       padding: const EdgeInsets.symmetric(
@@ -248,12 +249,12 @@ class _ProfileDetailPageState extends State<ProfileDetailPage> {
                           ],
                         ),
                       ),
-                    ),
+                    )),
 
                     const SizedBox(height: 24),
 
                     // Email
-                    ProfileInputCard(
+                    TourAnchor('profile-detail-email', child: ProfileInputCard(
                       label: context.l10n.pdYourEmail,
                       value: profile.email,
                       hintText: 'name@example.com',
@@ -273,12 +274,12 @@ class _ProfileDetailPageState extends State<ProfileDetailPage> {
                         },
                       ),
                       obscured: !_showEmail,
-                    ),
+                    )),
 
                     const SizedBox(height: 22),
 
                     // Phone
-                    ProfileInputCard(
+                    TourAnchor('profile-detail-phone', child: ProfileInputCard(
                       label: context.l10n.commonPhoneNumber,
                       value: profile.phoneNumber,
                       hintText: context.l10n.pdNotUpdated,
@@ -298,12 +299,12 @@ class _ProfileDetailPageState extends State<ProfileDetailPage> {
                         },
                       ),
                       obscured: !_showPhone,
-                    ),
+                    )),
 
                     const SizedBox(height: 22),
 
                     // Password
-                    GestureDetector(
+                    TourAnchor('profile-detail-password', child: GestureDetector(
                       onTap: () => context.push(AppRouter.security),
                       child: ProfileInputCard(
                         label: profile.hasPassword
@@ -319,7 +320,7 @@ class _ProfileDetailPageState extends State<ProfileDetailPage> {
                         ),
                         isPassword: true,
                       ),
-                    ),
+                    )),
 
                     const SizedBox(height: 24),
 

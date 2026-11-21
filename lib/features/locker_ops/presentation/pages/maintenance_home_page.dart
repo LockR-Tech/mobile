@@ -37,6 +37,9 @@ import 'package:smart_laundry_locker/shared/widgets/controller_disposer.dart';
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:smart_laundry_locker/core/l10n/l10n.dart';
+import 'package:smart_laundry_locker/features/onboarding/presentation/onboarding_controller.dart';
+import 'package:smart_laundry_locker/features/onboarding/presentation/guide_button.dart';
+import 'package:smart_laundry_locker/features/onboarding/presentation/tour_anchor.dart';
 
 /// Hai danh sách đơn drone (JSON từ server) có giống hệt nhau không — poll dùng để bỏ qua
 /// lượt không đổi. Trước đây chỉ so `id` (server trả `orderId`, nên luôn null), chặng,
@@ -197,7 +200,9 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      TechnicianLocationPermissionSheet.checkAndPrompt(context);
+      // Hỏi quyền vị trí xong mới tự mở hướng dẫn lần đầu (F3-G13)
+      TechnicianLocationPermissionSheet.checkAndPrompt(context)
+          .whenComplete(OnboardingController.instance.maybeAutoOpen);
       try {
         final profileProvider = context.read<ProfileProvider>();
         if (profileProvider.profile == null) profileProvider.loadProfile();
@@ -993,7 +998,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
               const SizedBox(height: 16),
               const Divider(height: 1),
               const SizedBox(height: 14),
-              Row(
+              TourAnchor('drone-psheet-stats', child: Row(
                 children: [
                   Expanded(
                     child: _profileStatTile(
@@ -1027,7 +1032,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                     ),
                   ),
                 ],
-              ),
+              )),
               if (performance == null && _performanceLoadError != null) ...[
                 const SizedBox(height: 8),
                 Text(
@@ -1036,7 +1041,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                 ),
               ],
               const SizedBox(height: 14),
-              Container(
+              TourAnchor('drone-psheet-quality', child: Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
                   color: const Color(0xFFF8FAFC),
@@ -1133,9 +1138,9 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                     ),
                   ],
                 ),
-              ),
+              )),
               const SizedBox(height: 18),
-              Row(
+              TourAnchor('drone-psheet-actions', child: Row(
                 children: [
                   Expanded(
                     child: ElevatedButton.icon(
@@ -1192,7 +1197,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                     ),
                   ),
                 ],
-              ),
+              )),
               const SizedBox(height: 8),
             ],
           ),
@@ -1319,7 +1324,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
             children: [
               Row(
                 children: [
-                  GestureDetector(
+                  TourAnchor('drone-home-avatar', child: GestureDetector(
                     onTap: () => _showDroneTechnicianProfile(displayName),
                     child: Stack(
                       clipBehavior: Clip.none,
@@ -1364,10 +1369,10 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                         ),
                       ],
                     ),
-                  ),
+                  )),
                   const SizedBox(width: 12),
                   Expanded(
-                    child: Column(
+                    child: TourAnchor('drone-home-identity', child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Row(
@@ -1386,6 +1391,9 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                             ),
                             const SizedBox(width: 6),
                             _droneRoleBadge(),
+                            // Hướng dẫn trên màn hình (F3-G13) — cạnh nhãn vai trò, không lấy chỗ của tên
+                            const SizedBox(width: 6),
+                            const TourGuideMiniButton(),
                           ],
                         ),
                         const SizedBox(height: 2),
@@ -1431,7 +1439,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                           ],
                         ),
                       ],
-                    ),
+                    )),
                   ),
                   // Chỉ khi chính trang này được mở chồng lên trang khác. context.canPop()
                   // tính cả sheet / hộp thoại đang mở (vd. sheet quyền vị trí lúc mở app)
@@ -1442,7 +1450,11 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                       context.l10n.commonBack,
                       () => Navigator.of(context).maybePop(),
                     )
-                  else ...[
+                  else
+                    // Neo hướng dẫn (F3-G13): Row co theo nội dung, bố cục không đổi.
+                    TourAnchor('drone-home-actions', child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
                     AssistantEntryGate(
                       builder: (context) => Padding(
                         padding: const EdgeInsets.only(right: 6),
@@ -1468,11 +1480,12 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                       context.l10n.commonLogout,
                       _logout,
                     ),
-                  ],
+                      ],
+                    )),
                 ],
               ),
               const SizedBox(height: 14),
-              Container(
+              TourAnchor('drone-home-hud', child: Container(
                 padding: const EdgeInsets.all(4),
                 decoration: BoxDecoration(
                   color: Colors.white.withValues(alpha: 0.08),
@@ -1508,6 +1521,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                       const Color(0xFFA78BFA),
                       false,
                       () => _tabs.animateTo(4),
+                      tour: (c) => TourAnchor('drone-hud-routine', child: c),
                     ),
                     const SizedBox(width: 4),
                     _droneHudChip(
@@ -1520,7 +1534,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                     ),
                   ],
                 ),
-              ),
+              )),
               if (inFlight > 0) ...[
                 const SizedBox(height: 8),
                 Align(
@@ -1536,7 +1550,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                 ),
               ],
               const SizedBox(height: 10),
-              TechnicianShiftCard(
+              TourAnchor('drone-home-shift', child: TechnicianShiftCard(
                 service: _service,
                 isDrone: true,
                 margin: EdgeInsets.zero,
@@ -1547,7 +1561,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                   }
                   _refreshDeliveries();
                 },
-              ),
+              )),
             ],
           ),
         ),
@@ -1604,10 +1618,11 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
     String label,
     Color accentColor,
     bool isAlert,
-    VoidCallback onTap,
-  ) {
+    VoidCallback onTap, {
+    Widget Function(Widget child)? tour,
+  }) {
     return Expanded(
-      child: InkWell(
+      child: _tourIf(tour != null, tour ?? (c) => c, InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(13),
         child: Container(
@@ -1654,9 +1669,14 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
             ],
           ),
         ),
-      ),
+      )),
     );
   }
+
+  /// Neo hướng dẫn (F3-G13) chỉ gắn khi [on] — vd. thẻ đầu tiên của danh sách. [anchor] là
+  /// `(c) => TourAnchor('<neo>', child: c)` để công cụ quét neo (parts.mjs, npm test) thấy mã neo.
+  Widget _tourIf(bool on, Widget Function(Widget child) anchor, Widget child) =>
+      on ? anchor(child) : child;
 
   void _selectDroneReportFilter(String filter) {
     setState(() => _droneReportStatusFilter = filter);
@@ -1670,7 +1690,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
       body: Column(
         children: [
           _buildDroneTechnicianHeader(),
-          Material(
+          TourAnchor('drone-home-tabs', child: Material(
             color: Colors.white,
             elevation: 1,
             shadowColor: Colors.black12,
@@ -1691,16 +1711,17 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                 fontSize: 13,
                 fontWeight: FontWeight.w500,
               ),
+              // Neo từng tab (F3-G13): nhóm hướng dẫn của tab bấm vào đây để mở tab.
               tabs: [
-                Tab(text: context.l10n.dtTabDispatch(_dispatchCount)),
-                Tab(text: context.l10n.dtTabFleet(_myDrones.length)),
-                Tab(text: context.l10n.dtTabIncidents(_activeDroneReportCount)),
-                Tab(text: context.l10n.dtTabMyWork(_activeMyWorkCount)),
+                TourAnchor('drone-tab-dispatch', child: Tab(text: context.l10n.dtTabDispatch(_dispatchCount))),
+                TourAnchor('drone-tab-fleet', child: Tab(text: context.l10n.dtTabFleet(_myDrones.length))),
+                TourAnchor('drone-tab-incidents', child: Tab(text: context.l10n.dtTabIncidents(_activeDroneReportCount))),
+                TourAnchor('drone-tab-my-work', child: Tab(text: context.l10n.dtTabMyWork(_activeMyWorkCount))),
                 Tab(text: context.l10n.dtTabRoutine(_schedules.length)),
-                Tab(text: context.l10n.dtTabFlightTools),
+                TourAnchor('drone-tab-flight-tools', child: Tab(text: context.l10n.dtTabFlightTools)),
               ],
             ),
-          ),
+          )),
           // Tải lại không xoá giao diện: chỉ hiện thanh tiến trình mảnh.
           if (_refreshing && !_loading)
             const LinearProgressIndicator(
@@ -1851,15 +1872,29 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
     final parcelReturns = _deliveries
         .where((d) => d['parcelReturnPending'] == true)
         .toList(growable: false);
+    // Thẻ đơn đầu tiên của tab mang neo hướng dẫn (F3-G13).
+    final tourOrder = [
+      ...awaiting,
+      ...awaitingLoading,
+      ...readyToLaunch,
+      ...launching,
+      ...inFlight,
+      ...delivered,
+      ...otherAssignedWork,
+      ...canceled,
+    ].firstOrNull;
     return RefreshIndicator(
       onRefresh: _load,
       child: ListView(
         padding: const EdgeInsets.all(12),
         children: [
-          DroneLockerWeatherList(
-            load: _service.droneLockerWeather,
-            onLoaded: _onStationWeather,
-            refreshKey: _loadGeneration,
+          TourAnchor(
+            'drone-dispatch-weather',
+            child: DroneLockerWeatherList(
+              load: _service.droneLockerWeather,
+              onLoaded: _onStationWeather,
+              refreshKey: _loadGeneration,
+            ),
           ),
           DronePickupQueue(
             service: _service,
@@ -1869,7 +1904,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
             onOpenDetail: _showDeliveryDetail,
             onAssignDrone: _acceptFlow,
           ),
-          _buildDispatchFilters(),
+          TourAnchor('drone-dispatch-filters', child: _buildDispatchFilters()),
           const SizedBox(height: 8),
           if (_deliveriesLoadError != null) ...[
             OpsBanner(
@@ -1887,7 +1922,12 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
               icon: Icons.assignment_return_outlined,
             ),
             const SizedBox(height: 8),
-            for (final order in parcelReturns) _parcelReturnCard(order),
+            for (final order in parcelReturns)
+              _tourIf(
+                identical(order, parcelReturns.first),
+                (c) => TourAnchor('drone-dispatch-return', child: c),
+                _parcelReturnCard(order),
+              ),
             const SizedBox(height: 8),
           ],
           if (awaiting.isNotEmpty) ...[
@@ -1897,7 +1937,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
             ),
             const SizedBox(height: 8),
             for (final order in awaiting)
-              _deliveryCard(order, action: _DeliveryAction.accept),
+              _deliveryCard(order, action: _DeliveryAction.accept, tour: identical(order, tourOrder)),
             const SizedBox(height: 8),
           ],
           if (awaitingLoading.isNotEmpty) ...[
@@ -1911,6 +1951,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                 order,
                 action: _DeliveryAction.load,
                 onCancel: () => _cancelDeliveryFlow(order),
+                tour: identical(order, tourOrder),
               ),
             const SizedBox(height: 8),
           ],
@@ -1925,6 +1966,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                 order,
                 action: _DeliveryAction.launch,
                 onCancel: () => _cancelDeliveryFlow(order),
+                tour: identical(order, tourOrder),
               ),
             const SizedBox(height: 8),
           ],
@@ -1935,7 +1977,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
             ),
             const SizedBox(height: 8),
             for (final order in launching)
-              _deliveryCard(order, action: _DeliveryAction.launching),
+              _deliveryCard(order, action: _DeliveryAction.launching, tour: identical(order, tourOrder)),
             const SizedBox(height: 8),
           ],
           if (inFlight.isNotEmpty) ...[
@@ -1945,7 +1987,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
             ),
             const SizedBox(height: 8),
             for (final order in inFlight)
-              _deliveryCard(order, action: _DeliveryAction.track),
+              _deliveryCard(order, action: _DeliveryAction.track, tour: identical(order, tourOrder)),
             const SizedBox(height: 8),
           ],
           if (delivered.isNotEmpty) ...[
@@ -1955,7 +1997,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
             ),
             const SizedBox(height: 8),
             for (final order in delivered)
-              _deliveryCard(order, action: _DeliveryAction.track),
+              _deliveryCard(order, action: _DeliveryAction.track, tour: identical(order, tourOrder)),
             const SizedBox(height: 8),
           ],
           if (otherAssignedWork.isNotEmpty) ...[
@@ -1965,7 +2007,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
             ),
             const SizedBox(height: 8),
             for (final order in otherAssignedWork)
-              _deliveryCard(order, action: _DeliveryAction.track),
+              _deliveryCard(order, action: _DeliveryAction.track, tour: identical(order, tourOrder)),
             const SizedBox(height: 8),
           ],
           if (canceled.isNotEmpty) ...[
@@ -1975,7 +2017,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
             ),
             const SizedBox(height: 8),
             for (final order in canceled)
-              _deliveryCard(order, action: _DeliveryAction.track),
+              _deliveryCard(order, action: _DeliveryAction.track, tour: identical(order, tourOrder)),
             const SizedBox(height: 8),
           ],
           if (awaiting.isNotEmpty ||
@@ -2002,11 +2044,11 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
               delivered.isEmpty &&
               otherAssignedWork.isEmpty &&
               canceled.isEmpty)
-            OpsEmptyState(
+            TourAnchor('drone-dispatch-empty', child: OpsEmptyState(
               icon: Icons.inbox_outlined,
               title: context.l10n.dtDispatchEmptyTitle,
               subtitle: context.l10n.dtDispatchEmptySubtitle,
-            ),
+            )),
         ],
       ),
     );
@@ -2357,21 +2399,21 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
         padding: const EdgeInsets.all(12),
         children: [
           if (_droneReportLoadError != null) ...[
-            OpsBanner(
+            TourAnchor('drone-incidents-banner', child: OpsBanner(
               tone: OpsBannerTone.danger,
               icon: Icons.cloud_off_outlined,
               text: _droneReportLoadError!,
-            ),
+            )),
             _retryButton(),
           ] else if (_incidentsLoadError != null) ...[
-            OpsBanner(
+            TourAnchor('drone-incidents-banner', child: OpsBanner(
               tone: OpsBannerTone.warning,
               icon: Icons.cloud_off_outlined,
               text: _incidentsLoadError!,
-            ),
+            )),
             _retryButton(),
           ] else
-            OpsBanner(
+            TourAnchor('drone-incidents-banner', child: OpsBanner(
               tone: openCount > 0 ? OpsBannerTone.warning : OpsBannerTone.info,
               icon: openCount > 0
                   ? Icons.warning_amber_rounded
@@ -2379,15 +2421,15 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
               text: openCount > 0
                   ? context.l10n.dtIncidentsWaitingBanner(openCount)
                   : context.l10n.dtIncidentsQueueBanner,
-            ),
+            )),
           const SizedBox(height: 10),
-          _buildSearchField(
+          TourAnchor('drone-incidents-search', child: _buildSearchField(
             controller: _droneReportSearchController,
             hint: context.l10n.dtReportSearchHint,
             onChanged: (_) => setState(() => _droneReportVisibleCount = 20),
-          ),
+          )),
           const SizedBox(height: 10),
-          SingleChildScrollView(
+          TourAnchor('drone-incidents-status', child: SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: Row(
               children: [
@@ -2429,9 +2471,9 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                 ],
               ],
             ),
-          ),
+          )),
           const SizedBox(height: 8),
-          _buildReportAdvancedFilters(),
+          TourAnchor('drone-incidents-filters', child: _buildReportAdvancedFilters()),
           const SizedBox(height: 12),
           if (visibleIncidents.any(droneIncidentNeedsManualReturn)) ...[
             const DroneManualReturnBanner(),
@@ -2443,15 +2485,15 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
               icon: Icons.report_gmailerrorred_outlined,
             ),
             const SizedBox(height: 8),
-            for (final incident in visibleIncidents)
-              DroneParcelIncidentCard(
+            for (final (i, incident) in visibleIncidents.indexed)
+              _tourIf(i == 0, (c) => TourAnchor('drone-incidents-drop', child: c), DroneParcelIncidentCard(
                 incident: incident,
                 onTap: () => DroneParcelIncidentSheet.show(
                   context,
                   incident: incident,
                   service: _service,
                 ),
-              ),
+              )),
             const SizedBox(height: 12),
           ],
           if (visibleDropOrders.isNotEmpty) ...[
@@ -2460,17 +2502,17 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
               icon: Icons.report_gmailerrorred_outlined,
             ),
             const SizedBox(height: 8),
-            for (final order in visibleDropOrders)
-              _deliveryCard(order, action: _DeliveryAction.track),
+            for (final (i, order) in visibleDropOrders.indexed)
+              _tourIf(i == 0 && visibleIncidents.isEmpty, (c) => TourAnchor('drone-incidents-drop', child: c), _deliveryCard(order, action: _DeliveryAction.track)),
             const SizedBox(height: 12),
           ],
           if (showRouted) ...[
-            OpsSectionLabel(
+            TourAnchor('drone-incidents-routed', child: OpsSectionLabel(
               context.l10n.dtSecRoutedToYou(_routedDroneReports.length),
               icon: Icons.assignment_ind_outlined,
-            ),
+            )),
             const SizedBox(height: 8),
-            for (final report in _routedDroneReports) _droneReportCard(report),
+            for (final (i, report) in _routedDroneReports.indexed) _tourIf(i == 0, (c) => TourAnchor('drone-incidents-first', child: c), _droneReportCard(report)),
             const SizedBox(height: 4),
             OpsSectionLabel(context.l10n.dtSecSharedQueue, icon: Icons.inbox_outlined),
             const SizedBox(height: 8),
@@ -2488,11 +2530,11 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
               !showRouted &&
               visibleIncidents.isEmpty &&
               visibleDropOrders.isEmpty)
-            OpsEmptyState(
+            TourAnchor('drone-incidents-empty', child: OpsEmptyState(
               icon: Icons.check_circle_outline,
               title: context.l10n.dtReportsEmptyTitle,
               subtitle: context.l10n.dtReportsEmptySubtitle,
-            )
+            ))
           else if (showRouted && reports.isEmpty)
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 8),
@@ -2502,7 +2544,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
               ),
             )
           else
-            for (final report in visibleReports) _droneReportCard(report),
+            for (final (i, report) in visibleReports.indexed) _tourIf(i == 0 && !showRouted, (c) => TourAnchor('drone-incidents-first', child: c), _droneReportCard(report)),
           if (reports.length > visibleReports.length)
             Center(
               child: OutlinedButton.icon(
@@ -2572,14 +2614,14 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
         padding: const EdgeInsets.all(12),
         children: [
           if (_droneReportLoadError != null) ...[
-            OpsBanner(
+            TourAnchor('drone-mywork-banner', child: OpsBanner(
               tone: OpsBannerTone.danger,
               icon: Icons.cloud_off_outlined,
               text: _droneReportLoadError!,
-            ),
+            )),
             _retryButton(),
           ] else
-            OpsBanner(
+            TourAnchor('drone-mywork-banner', child: OpsBanner(
               tone: filtered.isNotEmpty
                   ? OpsBannerTone.info
                   : OpsBannerTone.success,
@@ -2588,9 +2630,9 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                   : Icons.check_circle_outline,
               text:
                   context.l10n.dtMyWorkBanner,
-            ),
+            )),
           const SizedBox(height: 12),
-          Row(
+          TourAnchor('drone-mywork-metrics', child: Row(
             children: [
               Expanded(
                 child: _workMetric(
@@ -2616,15 +2658,15 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                 ),
               ),
             ],
-          ),
+          )),
           const SizedBox(height: 10),
-          _buildSearchField(
+          TourAnchor('drone-mywork-search', child: _buildSearchField(
             controller: _myWorkSearchController,
             hint: context.l10n.dtMyWorkSearchHint,
             onChanged: (_) => setState(() {}),
-          ),
+          )),
           const SizedBox(height: 8),
-          SingleChildScrollView(
+          TourAnchor('drone-mywork-type', child: SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: Row(
               children: [
@@ -2648,9 +2690,9 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                 ],
               ],
             ),
-          ),
+          )),
           const SizedBox(height: 6),
-          SingleChildScrollView(
+          TourAnchor('drone-mywork-status', child: SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: Row(
               children: [
@@ -2680,22 +2722,22 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                 ),
               ],
             ),
-          ),
+          )),
           const SizedBox(height: 12),
           if (filtered.isEmpty)
-            OpsEmptyState(
+            TourAnchor('drone-mywork-list', child: OpsEmptyState(
               icon: Icons.engineering_outlined,
               title: context.l10n.dtMyWorkEmptyTitle,
               subtitle: context.l10n.dtTryOtherFilters,
-            )
+            ))
           else
-            for (final task in filtered)
-              task.type == 'INCIDENT'
+            for (final (i, task) in filtered.indexed)
+              _tourIf(i == 0, (c) => TourAnchor('drone-mywork-list', child: c), task.type == 'INCIDENT'
                   ? _droneReportCard(task.data)
                   : _droneScheduleCard(
                       task.data,
                       due: task.data['due'] == true,
-                    ),
+                    )),
         ],
       ),
     );
@@ -3092,11 +3134,11 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
       child: ListView(
         padding: const EdgeInsets.all(12),
         children: [
-          OpsBanner(
+          TourAnchor('drone-fleet-banner', child: OpsBanner(
             tone: OpsBannerTone.info,
             icon: Icons.flight_outlined,
             text: context.l10n.dtFleetBanner,
-          ),
+          )),
           if (_dronesLoadError != null) ...[
             const SizedBox(height: 8),
             OpsBanner(
@@ -3108,20 +3150,20 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
           ],
           const SizedBox(height: 12),
           if (_myDrones.isEmpty && _dronesLoadError == null)
-            OpsEmptyState(
+            TourAnchor('drone-fleet-empty', child: OpsEmptyState(
               icon: Icons.flight_outlined,
               title: context.l10n.dtFleetEmptyTitle,
               subtitle: _unassignedDrones.isEmpty
                   ? context.l10n.dtFleetEmptyAssigned
                   : context.l10n.dtFleetEmptyPickBelow,
-            )
+            ))
           else
-            for (final d in _myDrones) _droneCard(d),
+            for (final (i, d) in _myDrones.indexed) _tourIf(i == 0, (c) => TourAnchor('drone-fleet-first', child: c), _droneCard(d)),
           // Trước đây tab chỉ liệt kê drone của mình nên nút "Nhận xử lý" (chỉ hiện với
           // drone chưa thuộc mình) không bao giờ mở được (test 2026-11-02).
           if (_unassignedDrones.isNotEmpty) ...[
             const SizedBox(height: 8),
-            Text(
+            TourAnchor('drone-fleet-unassigned', child: Text(
               context.l10n.dtUnassignedDrones(_unassignedDrones.length),
               key: const ValueKey('drone-unassigned-title'),
               style: const TextStyle(
@@ -3129,9 +3171,10 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                 fontSize: 14,
                 color: opsDark,
               ),
-            ),
+            )),
             const SizedBox(height: 8),
-            for (final d in _unassignedDrones) _droneCard(d),
+            for (final (i, d) in _unassignedDrones.indexed)
+              _tourIf(i == 0 && _myDrones.isEmpty, (c) => TourAnchor('drone-fleet-first', child: c), _droneCard(d)),
           ],
         ],
       ),
@@ -3181,11 +3224,11 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
       child: ListView(
         padding: const EdgeInsets.all(12),
         children: [
-          OpsBanner(
+          TourAnchor('drone-routine-banner', child: OpsBanner(
             tone: OpsBannerTone.info,
             icon: Icons.event_repeat,
             text: context.l10n.dtScheduleBanner,
-          ),
+          )),
           if (_scheduleLoadError != null) ...[
             const SizedBox(height: 8),
             OpsBanner(
@@ -3196,13 +3239,13 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
             _retryButton(),
           ],
           const SizedBox(height: 10),
-          _buildSearchField(
+          TourAnchor('drone-routine-search', child: _buildSearchField(
             controller: _scheduleSearchController,
             hint: context.l10n.dtScheduleSearchHint,
             onChanged: (_) => setState(() {}),
-          ),
+          )),
           const SizedBox(height: 8),
-          SingleChildScrollView(
+          TourAnchor('drone-routine-due', child: SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: Row(
               children: [
@@ -3232,9 +3275,9 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                 ],
               ],
             ),
-          ),
+          )),
           const SizedBox(height: 7),
-          Wrap(
+          TourAnchor('drone-routine-filters', child: Wrap(
             spacing: 8,
             runSpacing: 7,
             crossAxisAlignment: WrapCrossAlignment.center,
@@ -3269,10 +3312,10 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                   label: Text(context.l10n.dtReset),
                 ),
             ],
-          ),
+          )),
           const SizedBox(height: 12),
           if (schedules.isEmpty && _scheduleLoadError == null)
-            OpsEmptyState(
+            TourAnchor('drone-routine-list', child: OpsEmptyState(
               icon: Icons.event_available_outlined,
               title: _schedules.isEmpty
                   ? context.l10n.dtSchedulesEmptyTitle
@@ -3280,10 +3323,10 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
               subtitle: _schedules.isEmpty
                   ? context.l10n.dtSchedulesEmptySubtitle
                   : context.l10n.dtTryOtherFilters,
-            )
+            ))
           else
-            for (final s in schedules)
-              _droneScheduleCard(s, due: s['due'] == true),
+            for (final (i, s) in schedules.indexed)
+              _tourIf(i == 0, (c) => TourAnchor('drone-routine-list', child: c), _droneScheduleCard(s, due: s['due'] == true)),
         ],
       ),
     );
@@ -3296,19 +3339,19 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
       child: ListView(
         padding: const EdgeInsets.all(12),
         children: [
-          _droneToolCard(
+          TourAnchor('drone-tools-mission', child: _droneToolCard(
             icon: Icons.map_outlined,
             title: context.l10n.dtToolMissionTitle,
             subtitle: context.l10n.dtToolMissionSubtitle,
             onTap: () => context.push(AppRouter.droneMissionPlanner),
-          ),
+          )),
           const SizedBox(height: 10),
-          _droneToolCard(
+          TourAnchor('drone-tools-flight', child: _droneToolCard(
             icon: Icons.flight_takeoff,
             title: context.l10n.dtToolFlightTitle,
             subtitle: context.l10n.dtToolFlightSubtitle,
             onTap: () => context.push(AppRouter.droneFlightData),
-          ),
+          )),
         ],
       ),
     );
@@ -3571,6 +3614,8 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
     Map<String, dynamic> order, {
     required _DeliveryAction action,
     VoidCallback? onCancel,
+    // Thẻ đầu tiên của tab Điều phối: gắn neo hướng dẫn (F3-G13), không đổi giao diện.
+    bool tour = false,
   }) {
     final orderId = _asInt(order['orderId']);
     final lockerId = _asInt(order['destinationLockerId']);
@@ -3584,7 +3629,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
     );
     final boxNumber = _asInt(order['reservedBoxNumber']);
     final updatedAt = parseServerDateTime(order['updatedAt']);
-    return Padding(
+    return _tourIf(tour, (c) => TourAnchor('drone-dispatch-order', child: c), Padding(
       padding: const EdgeInsets.only(bottom: 10),
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
@@ -3624,7 +3669,8 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                   ),
                   const SizedBox(width: 10),
                   Expanded(
-                    child: Column(
+                    // Chạm vùng tên tuyến = chạm thẻ (mở chi tiết); nhóm hướng dẫn chi tiết bấm vào đây.
+                    child: _tourIf(tour, (c) => TourAnchor('drone-dispatch-order-open', child: c), Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
@@ -3652,7 +3698,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                           ),
                         ),
                       ],
-                    ),
+                    )),
                   ),
                   if (_orderBusy(orderId))
                     const Padding(
@@ -3665,7 +3711,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                   if (!((action == _DeliveryAction.load ||
                           action == _DeliveryAction.launch) &&
                       onCancel != null))
-                    FilledButton.icon(
+                    _tourIf(tour, (c) => TourAnchor('drone-dispatch-order-action', child: c), FilledButton.icon(
                       onPressed: _actionEnabled(action, orderId, order)
                           ? () => _handleDeliveryAction(order, action)
                           : null,
@@ -3705,7 +3751,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                           fontWeight: FontWeight.w700,
                         ),
                       ),
-                    ),
+                    )),
                 ],
               ),
               if ((action == _DeliveryAction.load ||
@@ -3718,7 +3764,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                   alignment: WrapAlignment.end,
                   children: [
                     if (action == _DeliveryAction.load)
-                      FilledButton.icon(
+                      _tourIf(tour, (c) => TourAnchor('drone-dispatch-order-action', child: c), FilledButton.icon(
                         onPressed: _actionEnabled(action, orderId, order)
                             ? () => _handleDeliveryAction(order, action)
                             : null,
@@ -3740,9 +3786,9 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                             fontWeight: FontWeight.w700,
                           ),
                         ),
-                      ),
+                      )),
                     if (action == _DeliveryAction.launch)
-                      FilledButton.icon(
+                      _tourIf(tour, (c) => TourAnchor('drone-dispatch-order-action', child: c), FilledButton.icon(
                         onPressed: _actionEnabled(action, orderId, order)
                             ? () => _handleDeliveryAction(order, action)
                             : null,
@@ -3764,8 +3810,8 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                             fontWeight: FontWeight.w700,
                           ),
                         ),
-                      ),
-                    OutlinedButton.icon(
+                      )),
+                    _tourIf(tour, (c) => TourAnchor('drone-dispatch-order-cancel', child: c), OutlinedButton.icon(
                       onPressed: _ownsMission(order) && !_orderBusy(orderId)
                           ? onCancel
                           : null,
@@ -3788,7 +3834,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                           fontWeight: FontWeight.w700,
                         ),
                       ),
-                    ),
+                    )),
                   ],
                 ),
               ],
@@ -3846,14 +3892,14 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
               if (_advanceLabel(order) != null &&
                   order['liveTracking'] == true) ...[
                 const SizedBox(height: 8),
-                _MiniPill(
+                _tourIf(tour, (c) => TourAnchor('drone-dispatch-order-advance', child: c), _MiniPill(
                   icon: Icons.sensors,
                   text: context.l10n.dtLiveTrackingPill,
                   color: Color(0xFF0F766E),
-                ),
+                )),
               ] else if (_advanceLabel(order) != null) ...[
                 const SizedBox(height: 10),
-                SizedBox(
+                _tourIf(tour, (c) => TourAnchor('drone-dispatch-order-advance', child: c), SizedBox(
                   width: double.infinity,
                   child: FilledButton.icon(
                     onPressed: _orderBusy(orderId)
@@ -3874,7 +3920,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                       ),
                     ),
                   ),
-                ),
+                )),
               ],
               if (order['block'] is Map) ...[
                 const SizedBox(height: 8),
@@ -3894,7 +3940,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
               ],
               if (_canChangeDrone(order)) ...[
                 const SizedBox(height: 8),
-                Wrap(
+                _tourIf(tour, (c) => TourAnchor('drone-dispatch-order-blocked', child: c), Wrap(
                   spacing: 8,
                   runSpacing: 8,
                   children: [
@@ -3915,11 +3961,11 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                       label: Text(context.l10n.dtFailDelivery),
                     ),
                   ],
-                ),
+                )),
               ],
               if (_canReportFailure(order)) ...[
                 const SizedBox(height: 8),
-                SizedBox(
+                _tourIf(tour, (c) => TourAnchor('drone-dispatch-order-failure', child: c), SizedBox(
                   width: double.infinity,
                   child: OutlinedButton.icon(
                     key: const ValueKey('drone-report-flight-failure'),
@@ -3942,7 +3988,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                       ),
                     ),
                   ),
-                ),
+                )),
               ],
               if (action == _DeliveryAction.accept && !_isPaid(order)) ...[
                 const SizedBox(height: 8),
@@ -3994,7 +4040,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
           ),
         ),
       ),
-    );
+    ));
   }
 
   String _lockerPointName(dynamic raw, dynamic fallbackId, String fallback) {
@@ -5108,8 +5154,8 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
         borderRadius: BorderRadius.vertical(top: Radius.circular(26)),
       ),
       builder: (sheetCtx) {
-        Widget tile(IconData icon, String label, Color c, VoidCallback onTap) {
-          return OpsSheetAction(
+        Widget tile(IconData icon, String label, Color c, VoidCallback onTap, [Widget Function(Widget)? tour]) {
+          return _tourIf(tour != null, tour ?? (c) => c, OpsSheetAction(
             icon: icon,
             label: label,
             color: c,
@@ -5122,7 +5168,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                 if (mounted) onTap();
               });
             },
-          );
+          ));
         }
 
         return SafeArea(
@@ -5133,7 +5179,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
+                TourAnchor('drone-actions-head', child: Row(
                   children: [
                     Expanded(
                       child: Text(
@@ -5147,7 +5193,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                     ),
                     _DroneStatusChip(status),
                   ],
-                ),
+                )),
                 const SizedBox(height: 4),
                 Text(
                   '${battery == null ? context.l10n.dtNoBatteryData : context.l10n.dtBatteryPercent(battery)}'
@@ -5164,6 +5210,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                       () => _service.claimDrone(droneId),
                       context.l10n.dtClaimedDrone,
                     ),
+                    (w) => TourAnchor('drone-actions-assign', child: w),
                   ),
                 if (assignedToMe)
                   tile(
@@ -5174,6 +5221,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                       () => _service.releaseDrone(droneId),
                       context.l10n.dtReleasedDrone,
                     ),
+                    (w) => TourAnchor('drone-actions-assign', child: w),
                   ),
                 if (assignedToMe) ...[
                   tile(
@@ -5185,12 +5233,14 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                     () => status == 'IN_FLIGHT'
                         ? _inFlightStatusGuide(drone)
                         : _changeDroneStatusFlow(drone),
+                    (w) => TourAnchor('drone-actions-status', child: w),
                   ),
                   tile(
                     Icons.battery_charging_full,
                     context.l10n.dtUpdateBattery,
                     const Color(0xFF0891B2),
                     () => _updateDroneBatteryFlow(drone),
+                    (w) => TourAnchor('drone-actions-battery', child: w),
                   ),
                 ],
                 tile(
@@ -5198,6 +5248,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                   context.l10n.dtMaintenanceLog,
                   opsMutedText,
                   () => _droneLogSheet(drone, canWrite: assignedToMe),
+                  (w) => TourAnchor('drone-actions-log', child: w),
                 ),
               ],
             ),
@@ -5825,10 +5876,10 @@ class _DroneOrderDetailSheetState extends State<_DroneOrderDetailSheet> {
       controller: widget.scrollController,
       padding: const EdgeInsets.fromLTRB(16, 4, 16, 28),
       children: [
-        Text(
+        TourAnchor('drone-order-detail-head', child: Text(
           context.l10n.dtMissionDetailTitle,
           style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
-        ),
+        )),
         const SizedBox(height: 4),
         Text(
           context.l10n.dtRealtimeUpdates,
@@ -5845,24 +5896,24 @@ class _DroneOrderDetailSheetState extends State<_DroneOrderDetailSheet> {
             const SizedBox(height: 14),
           ],
           if (status.stage.isInFlight) ...[
-            DroneJourneyCameraPanel(
+            TourAnchor('drone-order-detail-camera', child: DroneJourneyCameraPanel(
               orderId: widget.orderId,
               service: widget.service,
               onIncidentReported: () async {
                 await _refresh();
                 await widget.onChanged();
               },
-            ),
+            )),
             const SizedBox(height: 14),
           ],
           if (status.stage.needsRouteWeather) ...[
-            DroneRouteWeatherCard(
+            TourAnchor('drone-order-detail-weather', child: DroneRouteWeatherCard(
               orderId: widget.orderId,
               asTechnician: true,
               load: (id) =>
                   widget.service.droneRouteWeather(id, asTechnician: true),
               refreshKey: status.status,
-            ),
+            )),
             const SizedBox(height: 14),
           ],
           DroneDeliveryDetail(status: status, forOperator: true),

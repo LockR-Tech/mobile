@@ -85,6 +85,9 @@ flutter:
     - assets/icons/
     - assets/images/
     - assets/markdown/
+    # Hướng dẫn lần đầu (F3-G13): bản kèm app của fe/public/onboarding — chép bằng tool/sync_onboarding.sh
+    - assets/onboarding/
+    - assets/onboarding/locales/
 
   # Đóng gói Roboto (Google Fonts, OFL — assets/fonts/OFL.txt) để chữ trên mọi
   # máy giống máy ảo Pixel: OPPO/Samsung… có font hệ thống riêng, rộng và cao

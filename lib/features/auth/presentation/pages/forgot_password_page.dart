@@ -7,6 +7,7 @@ import 'package:smart_laundry_locker/core/network/api_client.dart';
 import 'package:smart_laundry_locker/features/auth/presentation/providers/auth_injection.dart';
 import 'package:smart_laundry_locker/features/auth/presentation/providers/forgot_password_provider.dart';
 import 'package:smart_laundry_locker/core/l10n/l10n.dart';
+import 'package:smart_laundry_locker/features/onboarding/presentation/tour_anchor.dart';
 
 // Palette đồng bộ với LoginScreen để hai màn auth nhìn như một sản phẩm.
 const Color _kNavyDark = Color(0xFF001F2D);
@@ -186,7 +187,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                   ),
                 ),
               const SizedBox(height: 16),
-              SizedBox(
+              TourAnchor('app-forgot-submit', child: SizedBox(
                 height: 52,
                 child: ElevatedButton(
                   onPressed: _provider.isLoading
@@ -218,7 +219,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                           ),
                         ),
                 ),
-              ),
+              )),
               if (otpStep)
                 TextButton(
                   onPressed: _provider.isLoading ? null : _sendOtp,
@@ -242,13 +243,13 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
     return [
       _fieldLabel('Email'),
       const SizedBox(height: 8),
-      TextField(
+      TourAnchor('app-forgot-email', child: TextField(
         controller: _emailController,
         keyboardType: TextInputType.emailAddress,
         textInputAction: TextInputAction.done,
         onSubmitted: (_) => _sendOtp(),
         decoration: _inputDecoration('email@example.com', LucideIcons.mail),
-      ),
+      )),
     ];
   }
 

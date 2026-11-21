@@ -30,6 +30,8 @@ import 'package:smart_laundry_locker/shared/widgets/home_motion.dart';
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
 import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 import 'package:smart_laundry_locker/core/services/platform_info.dart';
+import 'package:smart_laundry_locker/features/onboarding/presentation/onboarding_controller.dart';
+import 'package:smart_laundry_locker/features/onboarding/presentation/tour_anchor.dart';
 
 class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key});
@@ -214,13 +216,22 @@ class _HomePageState extends ConsumerState<HomePage>
           children: [
             _buildTopAppBar(context),
             const SizedBox(height: 12),
-            RepaintBoundary(child: _buildDronePoster(context)),
+            TourAnchor(
+              'home-drone-banner',
+              child: RepaintBoundary(child: _buildDronePoster(context)),
+            ),
             const SizedBox(height: 20),
-            RepaintBoundary(child: _buildQuickActionBadges(context)),
+            TourAnchor(
+              'home-quick-actions',
+              child: RepaintBoundary(child: _buildQuickActionBadges(context)),
+            ),
             if (_activeOrder != null) ...[
               const SizedBox(height: 20),
-              RepaintBoundary(
-                child: _buildActiveShipmentSection(context, _activeOrder!),
+              TourAnchor(
+                'home-active-shipment',
+                child: RepaintBoundary(
+                  child: _buildActiveShipmentSection(context, _activeOrder!),
+                ),
               ),
             ],
             const SizedBox(height: 24),
@@ -292,21 +303,49 @@ class _HomePageState extends ConsumerState<HomePage>
               ),
             ),
             const Spacer(),
-            // QR Scanner Button
-            GestureDetector(
-              onTap: () => context.push(AppRouter.qrScan),
-              behavior: HitTestBehavior.opaque,
-              child: Container(
-                width: 42,
-                height: 42,
-                decoration: BoxDecoration(
-                  color: isDark
-                      ? Colors.white.withValues(alpha: 0.08)
-                      : const Color(0xFFF1F5F9),
-                  shape: BoxShape.circle,
+            // Hướng dẫn trên màn hình (F3-G13): mở lại được bất cứ lúc nào
+            TourAnchor(
+              'app-guide-button',
+              child: Tooltip(
+                message: context.l10n.tourHeaderButton,
+                child: GestureDetector(
+                  onTap: OnboardingController.instance.openGuide,
+                  behavior: HitTestBehavior.opaque,
+                  child: Container(
+                    width: 42,
+                    height: 42,
+                    decoration: BoxDecoration(
+                      color: isDark
+                          ? Colors.white.withValues(alpha: 0.08)
+                          : const Color(0xFFF1F5F9),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Center(
+                      child: Icon(LucideIcons.circleHelp, size: 20, color: textColor),
+                    ),
+                  ),
                 ),
-                child: Center(
-                  child: Icon(LucideIcons.scanLine, size: 20, color: textColor),
+              ),
+            ),
+            const SizedBox(width: 8),
+            // QR Scanner Button
+            TourAnchor(
+              'home-scan',
+              child: GestureDetector(
+                onTap: () => context.push(AppRouter.qrScan),
+                behavior: HitTestBehavior.opaque,
+                child: Container(
+                  width: 42,
+                  height: 42,
+                  decoration: BoxDecoration(
+                    color: isDark
+                        ? Colors.white.withValues(alpha: 0.08)
+                        : const Color(0xFFF1F5F9),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Center(
+                    child: Icon(LucideIcons.scanLine, size: 20, color: textColor),
+                  ),
                 ),
               ),
             ),
@@ -315,7 +354,9 @@ class _HomePageState extends ConsumerState<HomePage>
             Consumer<NotificationProvider>(
               builder: (context, provider, _) {
                 final count = provider.unreadCount;
-                return GestureDetector(
+                return TourAnchor(
+                  'home-notifications',
+                  child: GestureDetector(
                   onTap: () => context.push(AppRouter.notifications),
                   behavior: HitTestBehavior.opaque,
                   child: Container(
@@ -347,12 +388,15 @@ class _HomePageState extends ConsumerState<HomePage>
                       ],
                     ),
                   ),
+                  ),
                 );
               },
             ),
             const SizedBox(width: 12),
             // Profile Circular Avatar
-            GestureDetector(
+            TourAnchor(
+              'home-avatar',
+              child: GestureDetector(
               onTap: () => context.push(AppRouter.profile),
               behavior: HitTestBehavior.opaque,
               child: Container(
@@ -380,6 +424,7 @@ class _HomePageState extends ConsumerState<HomePage>
                         )
                       : _avatarFallback(name),
                 ),
+              ),
               ),
             ),
           ],
@@ -516,13 +561,16 @@ class _HomePageState extends ConsumerState<HomePage>
             textColor: textColor,
             onTap: () => context.go(AppRouter.orders),
           ),
-          _buildQuickBadgeItem(
+          TourAnchor(
+            'home-utilities',
+            child: _buildQuickBadgeItem(
             context: context,
             icon: LucideIcons.ellipsis,
             label: context.l10n.homeUtilities,
             isPrimary: false,
             textColor: textColor,
             onTap: () => _showMoreUtilitiesSheet(context),
+            ),
           ),
         ],
       ),
@@ -676,7 +724,9 @@ class _HomePageState extends ConsumerState<HomePage>
                   letterSpacing: -0.3,
                 ),
               ),
-              GestureDetector(
+              TourAnchor(
+                'home-active-see-all',
+                child: GestureDetector(
                 onTap: () => context.go(AppRouter.orders),
                 behavior: HitTestBehavior.opaque,
                 child: Row(
@@ -692,6 +742,7 @@ class _HomePageState extends ConsumerState<HomePage>
                     const SizedBox(width: 4),
                     Icon(LucideIcons.chevronRight, size: 14, color: subColor),
                   ],
+                ),
                 ),
               ),
             ],
@@ -1209,7 +1260,7 @@ class _HomePageState extends ConsumerState<HomePage>
                   spacing: 16,
                   runSpacing: 16,
                   children: [
-                    _buildUtilityItem(
+                    TourAnchor('home-util-offers', child: _buildUtilityItem(
                       ctx,
                       icon: LucideIcons.gift,
                       lottieAsset: AppLottieAssets.uuDai,
@@ -1219,8 +1270,8 @@ class _HomePageState extends ConsumerState<HomePage>
                         Navigator.pop(ctx);
                         context.push(AppRouter.promotions);
                       },
-                    ),
-                    _buildUtilityItem(
+                    )),
+                    TourAnchor('home-util-report', child: _buildUtilityItem(
                       ctx,
                       icon: LucideIcons.triangleAlert,
                       lottieAsset: AppLottieAssets.baoSuCo,
@@ -1230,8 +1281,8 @@ class _HomePageState extends ConsumerState<HomePage>
                         Navigator.pop(ctx);
                         context.push(AppRouter.createReport);
                       },
-                    ),
-                    _buildUtilityItem(
+                    )),
+                    TourAnchor('home-util-reports', child: _buildUtilityItem(
                       ctx,
                       icon: LucideIcons.clipboardList,
                       lottieAsset: AppLottieAssets.baoCao,
@@ -1241,8 +1292,8 @@ class _HomePageState extends ConsumerState<HomePage>
                         Navigator.pop(ctx);
                         context.push(AppRouter.myReports);
                       },
-                    ),
-                    _buildUtilityItem(
+                    )),
+                    TourAnchor('home-util-stores', child: _buildUtilityItem(
                       ctx,
                       icon: LucideIcons.store,
                       lottieAsset: AppLottieAssets.cuaHang,
@@ -1252,8 +1303,8 @@ class _HomePageState extends ConsumerState<HomePage>
                         Navigator.pop(ctx);
                         context.push(AppRouter.stores);
                       },
-                    ),
-                    _buildUtilityItem(
+                    )),
+                    TourAnchor('home-util-favorites', child: _buildUtilityItem(
                       ctx,
                       icon: LucideIcons.heart,
                       label: context.l10n.commonFavorites,
@@ -1262,8 +1313,8 @@ class _HomePageState extends ConsumerState<HomePage>
                         Navigator.pop(ctx);
                         context.push(AppRouter.favoriteStores);
                       },
-                    ),
-                    _buildUtilityItem(
+                    )),
+                    TourAnchor('home-util-drone', child: _buildUtilityItem(
                       ctx,
                       icon: Icons.flight_takeoff_rounded,
                       lottieAsset: AppLottieAssets.airplaneBox,
@@ -1273,8 +1324,8 @@ class _HomePageState extends ConsumerState<HomePage>
                         Navigator.pop(ctx);
                         showDroneLockerPicker(context);
                       },
-                    ),
-                    _buildUtilityItem(
+                    )),
+                    TourAnchor('home-util-notifications', child: _buildUtilityItem(
                       ctx,
                       icon: LucideIcons.bell,
                       label: context.l10n.commonNotifications,
@@ -1283,7 +1334,7 @@ class _HomePageState extends ConsumerState<HomePage>
                         Navigator.pop(ctx);
                         context.push(AppRouter.notifications);
                       },
-                    ),
+                    )),
                   ],
                 ),
               ],
@@ -1356,7 +1407,9 @@ class _HomePageState extends ConsumerState<HomePage>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Padding(
+        TourAnchor(
+          'home-kiosk-header',
+          child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20),
           child: BrandSectionHeader(
             icon: LucideIcons.store,
@@ -1365,9 +1418,10 @@ class _HomePageState extends ConsumerState<HomePage>
             highlightColor: const Color(0xFF0F172A),
             highlightRollColor: const Color(0xFF020617),
           ),
+          ),
         ),
         const SizedBox(height: 14),
-        _buildLockerHorizontalList(context),
+        TourAnchor('home-kiosk-list', child: _buildLockerHorizontalList(context)),
       ],
     );
   }

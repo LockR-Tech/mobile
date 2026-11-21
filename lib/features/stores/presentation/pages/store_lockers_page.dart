@@ -19,6 +19,7 @@ import 'package:smart_laundry_locker/core/services/app_event_bus.dart';
 import 'package:smart_laundry_locker/features/notifications/infrastructure/services/realtime_notification_service.dart';
 import 'package:smart_laundry_locker/shared/widgets/user_ui_kit.dart';
 import 'package:smart_laundry_locker/core/l10n/l10n.dart';
+import 'package:smart_laundry_locker/features/onboarding/presentation/tour_anchor.dart';
 
 /// Hiển thị lưới ô tủ locker.
 ///
@@ -296,33 +297,45 @@ class _StoreLockerGridPageState extends State<StoreLockerGridPage> {
             title: context.l10n.lockerLockerTitle,
             subtitle: _currentLockerName ?? widget.store.name,
             onBack: () => Navigator.pop(context),
-            trailing: BrandCircleIconButton(
+            trailing: TourAnchor(
+              'locker-grid-report',
+              child: BrandCircleIconButton(
               child: const AppLottie(
                 AppLottieAssets.baoSuCo,
                 width: 22,
                 height: 22,
               ),
               onTap: () => _openReportLocker(),
+              ),
             ),
           ),
           // 1. Thanh vị trí chính xác của tủ (đồng bộ từ admin/lockers/5)
           if (lockerAddr != null && lockerAddr.isNotEmpty)
-            _AddressBar(
+            TourAnchor(
+              'locker-grid-address',
+              child: _AddressBar(
               label: context.l10n.lockerPhysicalLocation,
               address: lockerAddr,
               onDirections: hasCoord ? _openDirections : null,
+              ),
             ),
           // 2. Thanh vị trí điểm đặt Kiosk (vị trí hiện tại được giữ lại nhưng đặt riêng biệt)
           if (hasKioskInfo)
-            _KioskLocationBar(
+            TourAnchor(
+              'locker-grid-kiosk',
+              child: _KioskLocationBar(
               kioskName: widget.store.name,
               kioskAddress: widget.store.address,
               onDirections: widget.store.hasLocation
                   ? _openKioskDirections
                   : null,
+              ),
             ),
           if (!_loading && _error == null && _lockers.isNotEmpty)
-            _SummaryBanner(count: _lockers.length),
+            TourAnchor(
+              'locker-grid-summary',
+              child: _SummaryBanner(count: _lockers.length),
+            ),
           if (widget.droneHint && !_loading && _error == null)
             const _DroneHintBanner(),
           Expanded(child: _buildBody()),
@@ -359,6 +372,7 @@ class _StoreLockerGridPageState extends State<StoreLockerGridPage> {
           storeName: widget.store.name,
           service: _service,
           initiallyExpanded: _lockers.length == 1,
+          tourFirst: i == 0,
           storeLatLng: widget.store.hasLocation
               ? LatLng(widget.store.latitude!, widget.store.longitude!)
               : const LatLng(10.762622, 106.660172),
@@ -707,6 +721,7 @@ class _LockerCard extends StatefulWidget {
     required this.service,
     required this.storeLatLng,
     this.initiallyExpanded = false,
+    this.tourFirst = false,
   });
 
   final Map<String, dynamic> locker;
@@ -714,6 +729,9 @@ class _LockerCard extends StatefulWidget {
   final LockerOpsService service;
   final LatLng storeLatLng;
   final bool initiallyExpanded;
+
+  /// Thẻ tủ đầu danh sách: gắn neo hướng dẫn trên màn hình (F3-G13).
+  final bool tourFirst;
 
   @override
   State<_LockerCard> createState() => _LockerCardState();
@@ -850,6 +868,13 @@ class _LockerCardState extends State<_LockerCard> {
       status: statusStr,
       online: _online,
     );
+    final header = _buildHeader(
+      isActive: isActive,
+      isMaintenance: isMaintenance,
+      isDisconnected: isDisconnected,
+      available: available,
+      totalCells: totalCells,
+    );
 
     return Container(
       decoration: BoxDecoration(
@@ -865,13 +890,9 @@ class _LockerCardState extends State<_LockerCard> {
       ),
       child: Column(
         children: [
-          _buildHeader(
-            isActive: isActive,
-            isMaintenance: isMaintenance,
-            isDisconnected: isDisconnected,
-            available: available,
-            totalCells: totalCells,
-          ),
+          widget.tourFirst
+              ? TourAnchor('locker-grid-card', child: header)
+              : header,
           if (isDisconnected)
             _StateNotice(
               icon: LucideIcons.wifiOff,
@@ -1107,6 +1128,7 @@ class _LockerCardState extends State<_LockerCard> {
             lockerName: _lockerName,
             lockerCode: widget.locker['code']?.toString(),
             storeName: widget.storeName,
+            tourFirst: widget.tourFirst,
             onCellTap: (cell) {
               // Bấm sang ô khác ⇒ bỏ ngay thông báo của ô trước (vd. "Ô số 2 đang hỏng").
               ScaffoldMessenger.of(context).removeCurrentSnackBar();
@@ -1299,8 +1321,12 @@ class _CellGrid extends StatelessWidget {
     required this.storeName,
     this.lockerCode,
     this.isOnline = true,
+    this.tourFirst = false,
   });
   final List<Map<String, dynamic>> cells;
+
+  /// Sơ đồ của thẻ tủ đầu danh sách: gắn neo hướng dẫn (F3-G13).
+  final bool tourFirst;
   final ValueChanged<Map<String, dynamic>> onCellTap;
   final ValueChanged<Map<String, dynamic>> onFaultTap;
   final bool isOnline;
@@ -1324,6 +1350,28 @@ class _CellGrid extends StatelessWidget {
     child: SizedBox(height: height, child: child),
   );
 
+  /// Ô trống đầu tiên khách đặt được (ưu tiên ô thường) — neo để hướng dẫn mở bảng đặt ô.
+  Map<String, dynamic>? get _firstFreeCell {
+    if (!tourFirst) return null;
+    bool free(Map<String, dynamic> c) =>
+        (c['status'] as String?)?.toUpperCase() == 'AVAILABLE' &&
+        !LockerLayoutHelper.isDrone(c);
+    for (final c in cells) {
+      if (free(c) && !LockerLayoutHelper.isXl(c)) return c;
+    }
+    for (final c in cells) {
+      if (free(c)) return c;
+    }
+    return null;
+  }
+
+  Widget _tile(Map<String, dynamic> cell, Map<String, dynamic>? firstFree) {
+    final tile = _CellTile(cell: cell, onTap: _tapFor(cell));
+    return identical(cell, firstFree)
+        ? TourAnchor('locker-grid-free-cell', child: tile)
+        : tile;
+  }
+
   @override
   Widget build(BuildContext context) {
     if (cells.isEmpty) return const SizedBox.shrink();
@@ -1346,6 +1394,7 @@ class _CellGrid extends StatelessWidget {
     }
 
     var screenPlaced = false;
+    final firstFree = _firstFreeCell;
     final columns = <Widget>[];
     for (var col = minCol; col <= maxCol; col++) {
       final colChildren = <Widget>[];
@@ -1363,7 +1412,9 @@ class _CellGrid extends StatelessWidget {
             _sized(
               _rowHeight,
               showScreen
-                  ? _ScreenTile(
+                  ? TourAnchor(
+                      'locker-grid-screen',
+                      child: _ScreenTile(
                       isOnline: isOnline,
                       onTap: () {
                         ScaffoldMessenger.of(context).removeCurrentSnackBar();
@@ -1376,6 +1427,7 @@ class _CellGrid extends StatelessWidget {
                           storeName: storeName,
                         );
                       },
+                      ),
                     )
                   : null,
             ),
@@ -1393,7 +1445,7 @@ class _CellGrid extends StatelessWidget {
         colChildren.add(
           _sized(
             _rowHeight * span + _gap * (span - 1),
-            _CellTile(cell: cell, onTap: _tapFor(cell)),
+            _tile(cell, firstFree),
           ),
         );
       }
@@ -1407,17 +1459,20 @@ class _CellGrid extends StatelessWidget {
       );
     }
 
+    final gridView = Padding(
+      padding: const EdgeInsets.fromLTRB(14, 4, 14, 16),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: columns,
+      ),
+    );
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const _GridLegend(),
-        Padding(
-          padding: const EdgeInsets.fromLTRB(14, 4, 14, 16),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: columns,
-          ),
-        ),
+        tourFirst
+            ? const TourAnchor('locker-grid-legend', child: _GridLegend())
+            : const _GridLegend(),
+        tourFirst ? TourAnchor('locker-grid-cells', child: gridView) : gridView,
       ],
     );
   }
@@ -1425,6 +1480,7 @@ class _CellGrid extends StatelessWidget {
   /// Layout thiếu toạ độ ô (dữ liệu cũ): xếp theo số ô, 3 cột.
   Widget _buildFlow(BuildContext context) {
     const perRow = 3;
+    final firstFree = _firstFreeCell;
     final rows = <Widget>[];
     for (var i = 0; i < cells.length; i += perRow) {
       final slice = cells.skip(i).take(perRow).toList();
@@ -1437,9 +1493,7 @@ class _CellGrid extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(horizontal: 3),
                   child: _sized(
                     _rowHeight,
-                    j < slice.length
-                        ? _CellTile(cell: slice[j], onTap: _tapFor(slice[j]))
-                        : null,
+                    j < slice.length ? _tile(slice[j], firstFree) : null,
                   ),
                 ),
               ),
@@ -1447,14 +1501,17 @@ class _CellGrid extends StatelessWidget {
         ),
       );
     }
+    final gridView = Padding(
+      padding: const EdgeInsets.fromLTRB(14, 4, 14, 16),
+      child: Column(children: rows),
+    );
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const _GridLegend(),
-        Padding(
-          padding: const EdgeInsets.fromLTRB(14, 4, 14, 16),
-          child: Column(children: rows),
-        ),
+        tourFirst
+            ? const TourAnchor('locker-grid-legend', child: _GridLegend())
+            : const _GridLegend(),
+        tourFirst ? TourAnchor('locker-grid-cells', child: gridView) : gridView,
       ],
     );
   }
@@ -2462,7 +2519,9 @@ class _BookingSheet extends StatelessWidget {
           const SizedBox(height: 16),
 
           // Cell info card
-          Container(
+          TourAnchor(
+            'locker-sheet-info',
+            child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
             decoration: BoxDecoration(
               color: const Color(0xFFF8FAFC),
@@ -2491,6 +2550,7 @@ class _BookingSheet extends StatelessWidget {
                 ),
               ],
             ),
+            ),
           ),
           const SizedBox(height: 20),
 
@@ -2508,7 +2568,9 @@ class _BookingSheet extends StatelessWidget {
           Row(
             children: [
               Expanded(
-                child: _ServiceButton(
+                child: TourAnchor(
+                  'locker-sheet-rent',
+                  child: _ServiceButton(
                   lottieAsset: AppLottieAssets.box,
                   label: context.l10n.homeRentLocker,
                   sublabel: context.l10n.lockerRentSubtitle,
@@ -2518,12 +2580,15 @@ class _BookingSheet extends StatelessWidget {
                     end: Alignment.bottomRight,
                   ),
                   onTap: onRent,
+                  ),
                 ),
               ),
               if (onSend != null) ...[
                 const SizedBox(width: 12),
                 Expanded(
-                  child: _ServiceButton(
+                  child: TourAnchor(
+                    'locker-sheet-send',
+                    child: _ServiceButton(
                     lottieAsset: AppLottieAssets.box,
                     label: context.l10n.lockerSendParcel,
                     sublabel: context.l10n.lockerSendSubtitle,
@@ -2533,6 +2598,7 @@ class _BookingSheet extends StatelessWidget {
                       end: Alignment.bottomRight,
                     ),
                     onTap: onSend!,
+                    ),
                   ),
                 ),
               ],
@@ -2547,7 +2613,9 @@ class _BookingSheet extends StatelessWidget {
             ),
           ],
           const SizedBox(height: 12),
-          TextButton.icon(
+          TourAnchor(
+            'locker-sheet-report',
+            child: TextButton.icon(
             onPressed: () {
               Navigator.pop(context);
               Navigator.of(context, rootNavigator: true).push<void>(
@@ -2576,6 +2644,7 @@ class _BookingSheet extends StatelessWidget {
                 color: Color(0xFFEF4444),
                 fontWeight: FontWeight.w600,
               ),
+            ),
             ),
           ),
         ],

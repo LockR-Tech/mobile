@@ -13,6 +13,7 @@ import '../providers/assistant_chat_controller.dart';
 import '../widgets/assistant_intro.dart';
 import '../widgets/assistant_message_bubble.dart';
 import 'package:smart_laundry_locker/core/l10n/l10n.dart';
+import 'package:smart_laundry_locker/features/onboarding/presentation/tour_anchor.dart';
 
 /// Màn "Trợ lý hỏi đáp" (mọi vai trò): hỏi bằng tiếng Việt, trợ lý trả lời từ
 /// tài liệu chính thức của Lock.R kèm nguồn trích dẫn.
@@ -112,21 +113,21 @@ class _AssistantChatPageState extends State<AssistantChatPage> {
             trailing: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Tooltip(
+                TourAnchor('app-assistant-history-button', child: Tooltip(
                   message: context.l10n.aiHistory,
                   child: BrandCircleIconButton(
                     icon: LucideIcons.history,
                     onTap: _openHistory,
                   ),
-                ),
+                )),
                 const SizedBox(width: 8),
-                Tooltip(
+                TourAnchor('app-assistant-new-button', child: Tooltip(
                   message: context.l10n.aiNewConversation,
                   child: BrandCircleIconButton(
                     icon: LucideIcons.squarePen,
                     onTap: _startNew,
                   ),
-                ),
+                )),
               ],
             ),
           ),
@@ -197,27 +198,27 @@ class _AssistantChatPageState extends State<AssistantChatPage> {
 
   Widget _buildBottom(AssistantStatus? status) {
     if (status != null && !status.enabled) {
-      return _StatusNotice(
+      return TourAnchor('app-assistant-status', child: _StatusNotice(
         icon: LucideIcons.powerOff,
         title: context.l10n.aiDisabledTitle,
         body: context.l10n.aiDisabledBody,
-      );
+      ));
     }
     if (status != null && !status.configured) {
-      return _StatusNotice(
+      return TourAnchor('app-assistant-status', child: _StatusNotice(
         icon: LucideIcons.construction,
         title: context.l10n.aiNotReadyTitle,
         body:
             context.l10n.aiNotReadyBody,
-      );
+      ));
     }
-    return _Composer(
+    return TourAnchor('app-assistant-composer', child: _Composer(
       controller: _input,
       focusNode: _inputFocus,
       enabled: !_chat.busy,
       sending: _chat.sending,
       onSend: _send,
-    );
+    ));
   }
 }
 

@@ -15341,4 +15341,150 @@ class AppLocalizationsEn extends AppLocalizations {
   String instPhotoUpload(Object count) {
     return 'Upload $count photo(s)';
   }
+
+  @override
+  String get tourHeaderButton => 'Guide';
+
+  @override
+  String tourWelcomeTitle(Object name) {
+    return 'Hi $name!';
+  }
+
+  @override
+  String tourWelcomeBody(Object count) {
+    return 'New to Lock.R? Take a quick look at the $count main areas, a few steps each.';
+  }
+
+  @override
+  String get tourSkip => 'Skip';
+
+  @override
+  String get tourSkipForever => 'Don\'t show again';
+
+  @override
+  String get tourStart => 'Start the guide';
+
+  @override
+  String get tourChoose => 'Pick the sections to see';
+
+  @override
+  String get tourWhatsNewTitle => 'New guides available';
+
+  @override
+  String tourWhatsNewBody(Object count) {
+    return '$count areas are new or have changed since you last looked.';
+  }
+
+  @override
+  String get tourLater => 'Later';
+
+  @override
+  String get tourStartNew => 'See what\'s new';
+
+  @override
+  String get tourStatusNew => 'New';
+
+  @override
+  String get tourStatusUpdated => 'Updated';
+
+  @override
+  String get tourStatusSeen => 'Seen';
+
+  @override
+  String get tourPickerTitle => 'User guide';
+
+  @override
+  String get tourPickerDescription =>
+      'Pick an area to replay. The guide highlights each part of the screen.';
+
+  @override
+  String get tourView => 'View';
+
+  @override
+  String get tourOnlyOnWeb => 'On the admin web';
+
+  @override
+  String get tourAutoShow =>
+      'Open guides automatically after sign-in or when there is something new';
+
+  @override
+  String tourViewNew(Object count) {
+    return 'View $count new';
+  }
+
+  @override
+  String tourViewSelected(Object count) {
+    return 'View $count selected';
+  }
+
+  @override
+  String get tourNext => 'Next';
+
+  @override
+  String get tourPrev => 'Back';
+
+  @override
+  String get tourDone => 'Done';
+
+  @override
+  String get tourNextGroup => 'Next section';
+
+  @override
+  String get tourClose => 'Close guide';
+
+  @override
+  String tourProgress(Object step, Object steps, Object group, Object groups) {
+    return 'Step $step/$steps · Section $group/$groups';
+  }
+
+  @override
+  String get tourMissing =>
+      'This part isn\'t on your screen right now (there may be no data yet).';
+
+  @override
+  String get tourSettingsTitle => 'User guide';
+
+  @override
+  String get tourSettingsSubtitle =>
+      'Replay the on-screen guide, turn automatic guides on or off';
+
+  @override
+  String get tourRoleAdmin => 'Administrator';
+
+  @override
+  String get tourRoleCustomer => 'Customer';
+
+  @override
+  String get tourRoleLockerTech => 'Locker technician';
+
+  @override
+  String get tourRoleDroneTech => 'Drone technician';
+
+  @override
+  String get tourOpenManual => 'Open the user manual';
+
+  @override
+  String get tourManualView => 'Manual';
+
+  @override
+  String get tourManualTitle => 'User manual';
+
+  @override
+  String get tourManualSubtitle =>
+      'Each area has a one-line summary, a real screenshot with numbered red boxes, and one explanation per number.';
+
+  @override
+  String get tourManualOnWeb => 'On the admin web';
+
+  @override
+  String get tourManualOnApp => 'In the app';
+
+  @override
+  String get tourManualRunOnScreen => 'Show me on screen';
+
+  @override
+  String get tourManualNoImage => 'No screenshot for this part yet.';
+
+  @override
+  String get tourManualOnKiosk => 'At the locker (kiosk)';
 }

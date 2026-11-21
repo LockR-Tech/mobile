@@ -24,6 +24,7 @@ import 'package:smart_laundry_locker/features/profile/presentation/providers/pro
 import 'package:smart_laundry_locker/shared/shared.dart';
 import 'package:smart_laundry_locker/shared/widgets/app_lottie.dart';
 import 'package:smart_laundry_locker/core/l10n/l10n.dart';
+import 'package:smart_laundry_locker/features/onboarding/presentation/tour_anchor.dart';
 
 /// Brand palette shared by the login + register flows so both halves of the
 /// auth screen feel like one product.
@@ -268,7 +269,7 @@ class _LoginScreenState extends State<LoginScreen>
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          _buildTabSwitch(),
+                          TourAnchor('app-login-tabs', child: _buildTabSwitch()),
                           const SizedBox(height: 24),
                           AnimatedSize(
                             duration: const Duration(milliseconds: 200),
@@ -279,9 +280,9 @@ class _LoginScreenState extends State<LoginScreen>
                                 : _buildRegisterForm(),
                           ),
                           const SizedBox(height: 20),
-                          _buildSocialSection(),
+                          TourAnchor('app-login-social', child: _buildSocialSection()),
                           const SizedBox(height: 20),
-                          _buildPrimaryButton(),
+                          TourAnchor('app-login-submit', child: _buildPrimaryButton()),
                           const SizedBox(height: 16),
                           _buildSwitchPrompt(),
                         ],
@@ -322,7 +323,7 @@ class _LoginScreenState extends State<LoginScreen>
             left: -50,
             child: _circle(160, _kCyan.withValues(alpha: 0.08)),
           ),
-          const Positioned(top: -12, right: 0, child: LanguageToggle()),
+          const Positioned(top: -12, right: 0, child: TourAnchor('app-login-language', child: LanguageToggle())),
           Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -432,15 +433,14 @@ class _LoginScreenState extends State<LoginScreen>
       child: Row(
         children: [
           _tabButton(context.l10n.authLogin, _isLoginTab, () => _switchTab(true)),
-          _tabButton(context.l10n.authRegister, !_isLoginTab, () => _switchTab(false)),
+          _tabButton(context.l10n.authRegister, !_isLoginTab, () => _switchTab(false), register: true),
         ],
       ),
     );
   }
 
-  Widget _tabButton(String label, bool active, VoidCallback onTap) {
-    return Expanded(
-      child: GestureDetector(
+  Widget _tabButton(String label, bool active, VoidCallback onTap, {bool register = false}) {
+    final button = GestureDetector(
         onTap: onTap,
         behavior: HitTestBehavior.opaque,
         child: AnimatedContainer(
@@ -476,7 +476,9 @@ class _LoginScreenState extends State<LoginScreen>
             ),
           ),
         ),
-      ),
+      );
+    return Expanded(
+      child: register ? TourAnchor('app-login-tab-register', child: button) : button,
     );
   }
 
@@ -490,7 +492,7 @@ class _LoginScreenState extends State<LoginScreen>
       children: [
         _fieldLabel(context.l10n.authEmailOrPhone),
         const SizedBox(height: 8),
-        TextField(
+        TourAnchor('app-login-identifier', child: TextField(
           controller: _identifierController,
           keyboardType: TextInputType.emailAddress,
           textInputAction: TextInputAction.next,
@@ -498,11 +500,11 @@ class _LoginScreenState extends State<LoginScreen>
             'email@example.com',
             icon: LucideIcons.user,
           ),
-        ),
+        )),
         const SizedBox(height: 16),
         _fieldLabel(context.l10n.commonPassword),
         const SizedBox(height: 8),
-        TextField(
+        TourAnchor('app-login-password', child: TextField(
           controller: _loginPasswordController,
           obscureText: _obscureLoginPassword,
           textInputAction: TextInputAction.done,
@@ -516,8 +518,8 @@ class _LoginScreenState extends State<LoginScreen>
                   ),
                 ),
               ),
-        ),
-        Row(
+        )),
+        TourAnchor('app-login-links', child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             TextButton(
@@ -553,7 +555,7 @@ class _LoginScreenState extends State<LoginScreen>
               ),
             ),
           ],
-        ),
+        )),
         _buildError(_loginError ?? _loginProvider.error),
       ],
     );
@@ -571,7 +573,7 @@ class _LoginScreenState extends State<LoginScreen>
         children: [
           _fieldLabel(context.l10n.commonFullName),
           const SizedBox(height: 8),
-          TextFormField(
+          TourAnchor('app-register-name', child: TextFormField(
             controller: _fullNameController,
             textCapitalization: TextCapitalization.words,
             textInputAction: TextInputAction.next,
@@ -581,11 +583,11 @@ class _LoginScreenState extends State<LoginScreen>
             ),
             validator: (v) =>
                 (v == null || v.trim().isEmpty) ? context.l10n.authEnterFullName : null,
-          ),
+          )),
           const SizedBox(height: 16),
           _fieldLabel('Email'),
           const SizedBox(height: 8),
-          TextFormField(
+          TourAnchor('app-register-email', child: TextFormField(
             controller: _emailController,
             keyboardType: TextInputType.emailAddress,
             textInputAction: TextInputAction.next,
@@ -598,11 +600,11 @@ class _LoginScreenState extends State<LoginScreen>
               if (!v.contains('@')) return context.l10n.authInvalidEmail;
               return null;
             },
-          ),
+          )),
           const SizedBox(height: 16),
           _fieldLabel(context.l10n.commonPhoneNumber),
           const SizedBox(height: 8),
-          TextFormField(
+          TourAnchor('app-register-phone', child: TextFormField(
             controller: _phoneController,
             keyboardType: TextInputType.phone,
             textInputAction: TextInputAction.next,
@@ -613,11 +615,11 @@ class _LoginScreenState extends State<LoginScreen>
             validator: (v) => (v == null || v.trim().isEmpty)
                 ? context.l10n.authEnterPhone
                 : null,
-          ),
+          )),
           const SizedBox(height: 16),
           _fieldLabel(context.l10n.commonPassword),
           const SizedBox(height: 8),
-          TextFormField(
+          TourAnchor('app-register-password', child: TextFormField(
             controller: _registerPasswordController,
             obscureText: _obscureRegisterPassword,
             textInputAction: TextInputAction.done,
@@ -635,9 +637,9 @@ class _LoginScreenState extends State<LoginScreen>
               if (v.trim().length < 6) return context.l10n.authPasswordMin6;
               return null;
             },
-          ),
+          )),
           const SizedBox(height: 12),
-          _buildTermsCheckbox(),
+          TourAnchor('app-register-terms', child: _buildTermsCheckbox()),
           _buildError(_registerProvider.error),
         ],
       ),
@@ -720,12 +722,12 @@ class _LoginScreenState extends State<LoginScreen>
           onTap: _busy ? null : _loginProvider.loginWithFacebook,
         ),
       if (options.phone)
-        _socialButton(
+        TourAnchor('app-login-social-phone', child: _socialButton(
           icon: Icons.phone_android,
           iconColor: _kBlue,
           label: context.l10n.commonPhoneShort,
           onTap: _busy ? null : _showPhoneOtpDialog,
-        ),
+        )),
     ];
     return Column(
       children: [

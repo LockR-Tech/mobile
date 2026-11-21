@@ -15,6 +15,7 @@ import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service
 import 'package:smart_laundry_locker/features/locker_ops/presentation/utils/locker_maps.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/ops_widgets.dart';
 import 'package:smart_laundry_locker/core/l10n/l10n.dart';
+import 'package:smart_laundry_locker/features/onboarding/presentation/tour_anchor.dart';
 import 'package:smart_laundry_locker/core/services/platform_info.dart';
 
 const _maxReportPhotosPerReport = 10;
@@ -460,7 +461,7 @@ class _UserReportDetailSheetState extends State<UserReportDetailSheet> {
             ),
           ),
           // Header
-          Padding(
+          TourAnchor('my-report-detail-head', child: Padding(
             padding: const EdgeInsets.fromLTRB(18, 6, 8, 8),
             child: Row(
               children: [
@@ -504,7 +505,7 @@ class _UserReportDetailSheetState extends State<UserReportDetailSheet> {
                 ),
               ],
             ),
-          ),
+          )),
           const Divider(height: 1),
 
           // Scrollable body
@@ -576,7 +577,7 @@ class _UserReportDetailSheetState extends State<UserReportDetailSheet> {
                   const SizedBox(height: 16),
 
                   // Location & Locker Card
-                  Container(
+                  TourAnchor('my-report-detail-locker', child: Container(
                     width: double.infinity,
                     padding: const EdgeInsets.all(14),
                     decoration: BoxDecoration(
@@ -641,7 +642,7 @@ class _UserReportDetailSheetState extends State<UserReportDetailSheet> {
                         ),
                       ],
                     ),
-                  ),
+                  )),
                   const SizedBox(height: 14),
 
                   // Reporter info card
@@ -696,7 +697,7 @@ class _UserReportDetailSheetState extends State<UserReportDetailSheet> {
 
                   // Description card & Ảnh người báo gửi
                   if (cleanedDesc.isNotEmpty || userReportPhotos.isNotEmpty || canAddPhotos) ...[
-                    Row(
+                    TourAnchor('my-report-detail-content', child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
@@ -717,7 +718,7 @@ class _UserReportDetailSheetState extends State<UserReportDetailSheet> {
                             ),
                           ),
                       ],
-                    ),
+                    )),
                     const SizedBox(height: 6),
                     if (cleanedDesc.isNotEmpty)
                       Container(
@@ -744,10 +745,10 @@ class _UserReportDetailSheetState extends State<UserReportDetailSheet> {
                   ],
 
                   // Timeline tiến trình xử lý
-                  Text(
+                  TourAnchor('my-report-detail-progress', child: Text(
                     context.l10n.urdProgressTitle,
                     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12.5, color: opsDark),
-                  ),
+                  )),
                   const SizedBox(height: 8),
                   _buildTimeline(
                     status,
@@ -811,10 +812,10 @@ class _UserReportDetailSheetState extends State<UserReportDetailSheet> {
 
                   // Rating section khi đã giải quyết
                   if (isResolved && reportId != null) ...[
-                    _ReportRatingSection(
+                    TourAnchor('my-report-detail-rating', child: _ReportRatingSection(
                       reportId: reportId,
                       service: _service,
-                    ),
+                    )),
                     const SizedBox(height: 16),
                   ],
                 ],
@@ -831,7 +832,7 @@ class _UserReportDetailSheetState extends State<UserReportDetailSheet> {
                 color: Colors.white,
                 border: Border(top: BorderSide(color: Colors.grey.shade200)),
               ),
-              child: SizedBox(
+              child: TourAnchor('my-report-detail-close', child: SizedBox(
                 width: double.infinity,
                 height: 44,
                 child: ElevatedButton(
@@ -845,7 +846,7 @@ class _UserReportDetailSheetState extends State<UserReportDetailSheet> {
                   ),
                   child: Text(context.l10n.commonClose, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
                 ),
-              ),
+              )),
             ),
           ),
         ],

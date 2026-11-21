@@ -22,6 +22,7 @@ import 'package:smart_laundry_locker/features/drone_delivery/presentation/widget
 import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
 import 'package:smart_laundry_locker/features/maintenance/presentation/widgets/customer_drone_incident_card.dart';
 import 'package:smart_laundry_locker/core/l10n/l10n.dart';
+import 'package:smart_laundry_locker/features/onboarding/presentation/tour_anchor.dart';
 
 /// Màn theo dõi đơn giao bằng drone cho khách (người đặt hoặc người nhận):
 /// timeline tự làm mới, bản đồ hành trình, thao tác theo vai trò người xem.
@@ -182,7 +183,9 @@ class _DroneDeliveryTrackingPageState
     final actions = DroneCustomerActions.of(status, role);
     final bar = _stickyActions(status, role, actions);
     if (!bar.pay && !bar.cancel) return null;
-    return DecoratedBox(
+    return TourAnchor(
+      'drone-track-actions',
+      child: DecoratedBox(
       key: const ValueKey('drone-tracking-actions'),
       decoration: const BoxDecoration(
         color: Colors.white,
@@ -240,6 +243,7 @@ class _DroneDeliveryTrackingPageState
             ],
           ),
         ),
+      ),
       ),
     );
   }
@@ -420,19 +424,28 @@ class _TrackingBody extends StatelessWidget {
       physics: const AlwaysScrollableScrollPhysics(),
       padding: const EdgeInsets.all(20),
       children: [
-        _LiveIndicator(reconnecting: reconnecting),
+        TourAnchor(
+          'drone-track-live',
+          child: _LiveIndicator(reconnecting: reconnecting),
+        ),
         const SizedBox(height: 12),
         if (int.tryParse(orderId) case final parsed?)
-          CustomerDroneIncidentCard(
+          TourAnchor(
+            'drone-track-incident',
+            child: CustomerDroneIncidentCard(
             orderId: parsed,
             // Chặng đổi (vd. vừa báo rơi kiện) ⇒ tải lại thẻ sự cố.
             refreshKey: status.status,
             expectIncident: status.stage.isIncident,
+            ),
           ),
         // Đơn còn chạy: người gửi / người nhận thấy cùng dự báo mà hệ thống dùng để cho bay.
         if (status.stage.needsRouteWeather)
           if (int.tryParse(orderId) case final parsed?) ...[
-            DroneRouteWeatherCard(orderId: parsed, refreshKey: status.status),
+            TourAnchor(
+              'drone-track-weather',
+              child: DroneRouteWeatherCard(orderId: parsed, refreshKey: status.status),
+            ),
             const SizedBox(height: 12),
           ],
         DroneDeliveryDetail(
@@ -446,11 +459,16 @@ class _TrackingBody extends StatelessWidget {
           beforeRoute: [
             if (pickup != DronePickupAction.none) ...[
               const SizedBox(height: 16),
-              _PickupCard(action: pickup, onPickup: onPickup),
+              TourAnchor(
+                'drone-track-ready',
+                child: _PickupCard(action: pickup, onPickup: onPickup),
+              ),
             ],
             if (canTrackOnMap) ...[
               const SizedBox(height: 16),
-              SizedBox(
+              TourAnchor(
+                'drone-track-map-btn',
+                child: SizedBox(
                 width: double.infinity,
                 child: FilledButton.icon(
                   style: FilledButton.styleFrom(
@@ -465,6 +483,7 @@ class _TrackingBody extends StatelessWidget {
                         ? context.l10n.dtMapSimulated
                         : context.l10n.dtMap,
                   ),
+                ),
                 ),
               ),
             ],
