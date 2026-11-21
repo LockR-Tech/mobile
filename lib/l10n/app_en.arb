@@ -5346,5 +5346,6 @@
   "tourManualOnWeb": "On the admin web",
   "tourManualOnApp": "In the app",
   "tourManualRunOnScreen": "Show me on screen",
-  "tourManualNoImage": "No screenshot for this part yet."
+  "tourManualNoImage": "No screenshot for this part yet.",
+  "tourManualOnKiosk": "At the locker (kiosk)"
 }

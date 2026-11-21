@@ -31,6 +31,7 @@ import 'package:smart_laundry_locker/features/home/data/repositories/home_reposi
 import 'package:smart_laundry_locker/features/vouchers/presentation/providers/voucher_provider.dart';
 import 'package:smart_laundry_locker/core/theme/theme_provider.dart';
 import 'package:smart_laundry_locker/shared/shared.dart';
+import 'package:smart_laundry_locker/features/onboarding/dev/capture_hooks.dart';
 
 class _AislLoadingWidget extends StatelessWidget {
   final String msg;
@@ -149,6 +150,8 @@ void main() async {
 
   // Nút quay lại của điện thoại đi theo lịch sử trang (tab trước, trang trước), không thoát app.
   AppBackNavigation.instance.attach(AppRouter.router);
+  // Script chụp ảnh HDSD mở thẳng một trang (chỉ bản web chạy ở localhost).
+  registerCaptureHooks(AppRouter.router.go);
 
   AppMessengerService.configureToasts();
   await PlatformInfo.init();

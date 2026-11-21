@@ -199,8 +199,9 @@ class OnboardingController {
   }
 
   void start(List<TourGroup> groups) {
+    groups = groups.where((g) => runnable(g, 'mobile')).toList();
     final overlay = AppRouter.navigatorKey.currentState?.overlay;
-    if (overlay == null) return;
+    if (overlay == null || groups.isEmpty) return;
     _entry?.remove();
     _entry = OverlayEntry(
       builder: (_) => TourOverlay(

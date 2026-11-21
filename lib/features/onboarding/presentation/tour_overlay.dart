@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:math' as math;
 
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:smart_laundry_locker/core/l10n/l10n.dart';
@@ -50,6 +51,8 @@ class _TourOverlayState extends State<TourOverlay> {
   _Phase _phase = _Phase.searching;
   Rect? _rect;
   Timer? _track;
+  bool _passThrough = false;
+  static int _pointer = 9000;
   final FocusNode _focus = FocusNode(debugLabel: 'tour-overlay');
 
   TourStep? get _step => _plan.isEmpty ? null : _plan[_gi].$2[_si];
@@ -118,9 +121,11 @@ class _TourOverlayState extends State<TourOverlay> {
       _phase = _Phase.searching;
       _rect = null;
     });
-    if (step.mobileRoute != null) widget.navigate?.call(step.mobileRoute!);
-    if (step.openNav) TourNav.openDrawer();
     final anchor = step.anchor;
+    // Bước có `via` mà phần tử đã có trên màn hình (đang ở màn chi tiết) thì không quay về trang danh sách.
+    final alreadyThere = step.via != null && anchor != null && TourAnchorRegistry.find(anchor) != null;
+    if (step.mobileRoute != null && !alreadyThere) widget.navigate?.call(step.mobileRoute!);
+    if (step.openNav) TourNav.openDrawer();
     if (anchor == null) {
       setState(() => _phase = _Phase.center);
       _focus.requestFocus();
@@ -129,6 +134,7 @@ class _TourOverlayState extends State<TourOverlay> {
     // Đếm lần thử (mỗi lần 100 ms) thay vì đồng hồ thật: đúng cả trong widget test (thời gian giả lập).
     final maxTries = (widget.findTimeout.inMilliseconds / 100).ceil();
     var tries = 0;
+    var viaTapped = false;
     while (mounted && token == _token) {
       if (TourAnchorRegistry.find(anchor) != null) {
         final ctx = TourAnchorRegistry.contextOf(anchor);
@@ -146,6 +152,18 @@ class _TourOverlayState extends State<TourOverlay> {
         _track = Timer.periodic(const Duration(milliseconds: 200), (_) => _measure(anchor));
         return;
       }
+      // Chưa thấy phần tử: chạm neo `via` (mục đầu danh sách, tab, nút "Chi tiết"…) một lần rồi tìm lại từ đầu.
+      final via = step.via;
+      if (via != null && !viaTapped && tries >= 4) {
+        final target = TourAnchorRegistry.find(via);
+        if (target != null && target.attached && target.hasSize) {
+          viaTapped = true;
+          tries = 0;
+          await _tap(target.localToGlobal(target.size.center(Offset.zero)));
+          if (!mounted || token != _token) return;
+          continue;
+        }
+      }
       if (++tries > maxTries) {
         if (resolveStep(step, false) == 'skip') {
           if (_dir == -1 && !_isFirst) {
@@ -161,6 +179,18 @@ class _TourOverlayState extends State<TourOverlay> {
       }
       await Future<void>.delayed(const Duration(milliseconds: 100));
     }
+  }
+
+  /// Chạm giả lập vào trang phía sau: tạm cho lớp phủ không nhận chạm trong lúc gửi sự kiện.
+  Future<void> _tap(Offset position) async {
+    setState(() => _passThrough = true);
+    await WidgetsBinding.instance.endOfFrame;
+    final pointer = ++_pointer;
+    GestureBinding.instance
+      ..handlePointerEvent(PointerDownEvent(pointer: pointer, position: position))
+      ..handlePointerEvent(PointerUpEvent(pointer: pointer, position: position));
+    await WidgetsBinding.instance.endOfFrame;
+    if (mounted) setState(() => _passThrough = false);
   }
 
   void _measure(String anchor) {
@@ -304,7 +334,9 @@ class _TourOverlayState extends State<TourOverlay> {
       focusNode: _focus,
       autofocus: true,
       onKeyEvent: _onKey,
-      child: Stack(
+      child: IgnorePointer(
+        ignoring: _passThrough,
+        child: Stack(
         children: [
           // Chặn bấm vào trang phía sau.
           Positioned.fill(
@@ -324,6 +356,7 @@ class _TourOverlayState extends State<TourOverlay> {
               ),
             ),
         ],
+        ),
       ),
     );
   }

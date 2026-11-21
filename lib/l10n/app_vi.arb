@@ -8312,5 +8312,6 @@
   "tourManualOnWeb": "Trên web quản trị",
   "tourManualOnApp": "Trên app",
   "tourManualRunOnScreen": "Xem trên màn hình",
-  "tourManualNoImage": "Chưa có ảnh minh hoạ cho phần này."
+  "tourManualNoImage": "Chưa có ảnh minh hoạ cho phần này.",
+  "tourManualOnKiosk": "Tại tủ (kiosk)"
 }

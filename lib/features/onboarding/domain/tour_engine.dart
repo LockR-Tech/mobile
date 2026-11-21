@@ -3,7 +3,8 @@
 import 'tour_models.dart';
 
 const tourRoles = ['ADMIN', 'CUSTOMER', 'LOCKER_TECHNICIAN', 'DRONE_TECHNICIAN'];
-const tourPlatforms = ['web', 'mobile'];
+/// kiosk = màn hình cảm ứng tại tủ (repo iot) — chỉ có trong trang HDSD (nhóm manualOnly).
+const tourPlatforms = ['web', 'mobile', 'kiosk'];
 const tourPlacements = ['auto', 'top', 'bottom', 'left', 'right'];
 const autoOpenDelay = Duration(milliseconds: 1000);
 final idPattern = RegExp(r'^[a-z0-9][a-z0-9-]{0,63}$');
@@ -33,9 +34,12 @@ int _byOrder(TourGroup a, TourGroup b) {
   return c != 0 ? c : a.id.compareTo(b.id);
 }
 
-/// Nhóm người dùng tự chạy được trên nền tảng này: đúng vai trò và có ít nhất một bước ở nền tảng đó.
+/// Chạy được trên màn hình ở nền tảng này: có bước ở nền tảng đó và không phải nhóm chỉ có trong HDSD.
+bool runnable(TourGroup group, String platform) => !group.manualOnly && group.stepsFor(platform).isNotEmpty;
+
+/// Nhóm người dùng tự chạy được trên nền tảng này: đúng vai trò và chạy được trên màn hình.
 List<TourGroup> ownGroups(TourContent content, List<String> roles, String platform) =>
-    content.groups.where((g) => g.roles.any(roles.contains) && g.stepsFor(platform).isNotEmpty).toList()
+    content.groups.where((g) => g.roles.any(roles.contains) && runnable(g, platform)).toList()
       ..sort(_byOrder);
 
 /// Nhóm được XEM (danh sách, HDSD): ADMIN xem mọi vai trò, người khác chỉ vai trò mình.

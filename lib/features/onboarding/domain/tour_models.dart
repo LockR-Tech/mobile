@@ -10,6 +10,7 @@ class TourStep {
     this.placement = 'auto',
     this.optional = false,
     this.openNav = false,
+    this.via,
   });
 
   final String id;
@@ -27,6 +28,10 @@ class TourStep {
   /// Mở menu ngăn kéo trước khi khoanh.
   final bool openNav;
 
+  /// Neo cần chạm trước khi tìm phần tử của bước (mục đầu danh sách, tab, nút "Chi tiết"…) để mở màn hình chi tiết,
+  /// tab hay bảng chứa phần tử. Chỉ chạm khi chưa thấy phần tử; đã ở đúng chỗ thì không đổi trang.
+  final String? via;
+
   factory TourStep.fromJson(Map<String, dynamic> j) => TourStep(
         id: j['id'] as String,
         anchor: j['anchor'] as String?,
@@ -35,6 +40,7 @@ class TourStep {
         placement: (j['placement'] as String?) ?? 'auto',
         optional: j['optional'] == true,
         openNav: j['openNav'] == true,
+        via: j['via'] as String?,
         platforms: ((j['platforms'] as List?) ?? const []).map((e) => '$e').toList(),
       );
 }
@@ -46,6 +52,8 @@ class TourGroup {
     required this.roles,
     required this.steps,
     this.order = 0,
+    this.manualOnly = false,
+    this.signedOut = false,
   });
 
   final String id;
@@ -54,12 +62,20 @@ class TourGroup {
   final List<String> roles;
   final List<TourStep> steps;
 
+  /// Chỉ có ở trang HDSD: không tự mở, không chạy trên màn hình.
+  final bool manualOnly;
+
+  /// Màn hình trước khi đăng nhập (đăng nhập, đăng ký, OTP…); luôn kèm [manualOnly].
+  final bool signedOut;
+
   List<TourStep> stepsFor(String platform) => steps.where((s) => s.platforms.contains(platform)).toList();
 
   factory TourGroup.fromJson(Map<String, dynamic> j) => TourGroup(
         id: j['id'] as String,
         version: (j['version'] as num).toInt(),
         order: (j['order'] as num?)?.toInt() ?? 0,
+        manualOnly: j['manualOnly'] == true,
+        signedOut: j['signedOut'] == true,
         roles: ((j['roles'] as List?) ?? const []).map((e) => '$e').toList(),
         steps: ((j['steps'] as List?) ?? const [])
             .map((e) => TourStep.fromJson(Map<String, dynamic>.from(e as Map)))

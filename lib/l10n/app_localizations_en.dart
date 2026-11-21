@@ -15484,4 +15484,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tourManualNoImage => 'No screenshot for this part yet.';
+
+  @override
+  String get tourManualOnKiosk => 'At the locker (kiosk)';
 }

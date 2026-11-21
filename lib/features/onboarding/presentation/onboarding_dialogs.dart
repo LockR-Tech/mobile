@@ -218,7 +218,7 @@ class _GuidePickerState extends State<_GuidePicker> {
   final Set<String> _selected = {};
   late bool _autoShow = widget.autoShow;
 
-  bool _runnable(TourGroup g) => g.stepsFor(widget.platform).isNotEmpty;
+  bool _runnable(TourGroup g) => runnable(g, widget.platform);
 
   void _manual(TourGroup? g) {
     Navigator.of(context).pop(const <TourGroup>[]);

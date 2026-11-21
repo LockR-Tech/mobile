@@ -33,7 +33,9 @@ void main() {
         if (s.platforms.isEmpty || s.platforms.any((p) => !tourPlatforms.contains(p))) errors.add('${s.id}: platforms');
         if (!tourPlacements.contains(s.placement)) errors.add('${s.id}: placement');
         if (s.anchor != null && !idPattern.hasMatch(s.anchor!)) errors.add('${s.id}: neo sai');
+        if (s.via != null && (!idPattern.hasMatch(s.via!) || s.anchor == null)) errors.add('${s.id}: via sai');
       }
+      if (g.signedOut && !g.manualOnly) errors.add('${g.id}: signedOut phải kèm manualOnly');
     }
     expect(errors, isEmpty);
   });
@@ -58,11 +60,12 @@ void main() {
         .where((f) => f.path.endsWith('.dart'))
         .map((f) => f.readAsStringSync())
         .join('\n');
-    final missing = steps
-        .where((s) => s.platforms.contains('mobile') && s.anchor != null)
-        .where((s) => !RegExp("TourAnchor\\(\\s*(id:\\s*)?['\"]${RegExp.escape(s.anchor!)}['\"]").hasMatch(dart))
-        .map((s) => '${s.id} → TourAnchor(\'${s.anchor}\')')
-        .toList();
+    // Cả neo `via` (chạm trước để mở màn chi tiết / tab) cũng phải có.
+    final missing = [
+      for (final s in steps.where((s) => s.platforms.contains('mobile')))
+        for (final a in [s.anchor, s.via].whereType<String>())
+          if (!RegExp("TourAnchor\\(\\s*(id:\\s*)?['\"]${RegExp.escape(a)}['\"]").hasMatch(dart)) '${s.id} → TourAnchor(\'$a\')',
+    ];
     expect(missing, isEmpty);
   });
 

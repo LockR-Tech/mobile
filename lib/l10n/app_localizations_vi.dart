@@ -15111,4 +15111,7 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get tourManualNoImage => 'Chưa có ảnh minh hoạ cho phần này.';
+
+  @override
+  String get tourManualOnKiosk => 'Tại tủ (kiosk)';
 }

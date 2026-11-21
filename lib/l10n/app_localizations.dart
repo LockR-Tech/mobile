@@ -25734,6 +25734,12 @@ abstract class AppLocalizations {
   /// In vi, this message translates to:
   /// **'Chưa có ảnh minh hoạ cho phần này.'**
   String get tourManualNoImage;
+
+  /// No description provided for @tourManualOnKiosk.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tại tủ (kiosk)'**
+  String get tourManualOnKiosk;
 }
 
 class _AppLocalizationsDelegate

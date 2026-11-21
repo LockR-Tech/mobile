@@ -106,7 +106,7 @@ class _GuideManualPageState extends State<GuideManualPage> {
                   status: groupStatus(g, widget.seen),
                   marks: _marks[g.id]!,
                   showImage: widget.showImages,
-                  onRun: widget.onRun != null && g.stepsFor('mobile').isNotEmpty
+                  onRun: widget.onRun != null && runnable(g, 'mobile')
                       ? () {
                           Navigator.of(context).pop();
                           widget.onRun!(g);
@@ -144,7 +144,8 @@ class _GroupManual extends StatelessWidget {
     final l10n = context.l10n;
     final theme = Theme.of(context);
     final onWeb = group.steps.any((s) => s.platforms.contains('web'));
-    final platform = onWeb ? 'web' : 'mobile';
+    final onApp = !onWeb && group.steps.any((s) => s.platforms.contains('mobile'));
+    final platform = onWeb ? 'web' : (onApp ? 'mobile' : 'kiosk');
     return Card(
       key: ValueKey('tour-manual-${group.id}'),
       margin: const EdgeInsets.only(top: 12),
@@ -174,7 +175,10 @@ class _GroupManual extends StatelessWidget {
                   crossAxisAlignment: WrapCrossAlignment.center,
                   children: [
                     Text(text('groups.${group.id}.title'), style: theme.textTheme.titleMedium),
-                    _Chip(onWeb ? l10n.tourManualOnWeb : l10n.tourManualOnApp, outlined: true),
+                    _Chip(
+                      onWeb ? l10n.tourManualOnWeb : (onApp ? l10n.tourManualOnApp : l10n.tourManualOnKiosk),
+                      outlined: true,
+                    ),
                     if (status != 'seen') _Chip(status == 'new' ? l10n.tourStatusNew : l10n.tourStatusUpdated),
                   ],
                 ),
