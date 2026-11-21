@@ -14978,6 +14978,9 @@ class AppLocalizationsVi extends AppLocalizations {
   }
 
   @override
+  String get tourWelcomeTitleNoName => 'Chào bạn!';
+
+  @override
   String tourWelcomeBody(Object count) {
     return 'Lần đầu dùng Lock.R? Xem nhanh $count khu chức năng chính, mỗi khu vài bước.';
   }
