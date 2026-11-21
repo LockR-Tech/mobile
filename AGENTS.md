@@ -15,6 +15,7 @@ Repo này thuộc hệ thống **Lock.R** (org [LockR-Tech](https://github.com/L
 - Nhánh `<type>/<gap-id>-<mo-ta>`; commit và tiêu đề PR theo Conventional Commits; footer `Refs: F2-G01`.
 - Không commit secret, `.env` thật, file build. Không thêm trailer `Co-Authored-By` của công cụ AI.
 - Việc chỉ xong khi tài liệu ở `../docs` đã cập nhật (STATUS, file luồng, sơ đồ nếu đổi trạng thái).
+- **Đổi giao diện ⇒ cập nhật hướng dẫn trên màn hình + HDSD trong cùng PR** ([luật](https://github.com/LockR-Tech/docs/blob/main/04-engineering/huong-dan-giao-dien.md), mục cuối file). Check CI "Hướng dẫn trên màn hình" chặn merge nếu quên.
 
 ## Riêng repo này
 
@@ -25,7 +26,15 @@ Repo này thuộc hệ thống **Lock.R** (org [LockR-Tech](https://github.com/L
 - Luồng tủ dùng `lib/features/locker_ops/data/locker_ops_service.dart` (endpoint `/api/...`). Nhiều màn hình legacy (`features/orders`, `features/delegations`) còn gọi endpoint không có `/api` — đừng mở rộng chúng.
 - Đăng nhập Google/Facebook cần SHA-1 và key hash của keystore đã khai trên Firebase / Facebook console.
 
-## Hướng dẫn lần đầu trên màn hình (F3-G13) — quy tắc duy trì
+## Hướng dẫn lần đầu trên màn hình (F3-G13) — LUẬT bắt buộc
+
+Áp dụng cho mọi người và AI agent ([luật đầy đủ](https://github.com/LockR-Tech/docs/blob/main/04-engineering/huong-dan-giao-dien.md)). Bạn được nhắc ở mọi bước:
+
+- **Claude Code**: `.claude/settings.json` (đã commit) có hook nhắc luật khi mở phiên, khi sửa file giao diện, và cuối lượt nếu giao diện đổi mà hướng dẫn chưa đổi.
+- **Git**: `.githooks/pre-commit` nhắc khi commit file giao diện mà không kèm neo `TourAnchor` hay `assets/onboarding/`. Bật một lần cho mỗi bản clone: `bash tool/setup_hooks.sh`.
+- **PR**: mẫu PR có mục "Hướng dẫn trên màn hình". Check CI **"Hướng dẫn trên màn hình"** (`.github/workflows/huong-dan.yml`) **đỏ** nếu PR đổi giao diện (`lib/**/presentation/`, `lib/shared/widgets/`, `lib/core/routing|presentation/`, `lib/l10n/app_{vi,en}.arb`) mà không có ít nhất một trong các việc sau: thêm / bớt `TourAnchor`, đổi `assets/onboarding/`, tick "Đã cập nhật hướng dẫn" kèm link PR frontend, tick "Không ảnh hưởng hướng dẫn — lý do: …".
+
+Các bước phải làm:
 
 Nội dung tour (nhóm, bước, chữ) dùng chung với web, nguồn duy nhất ở repo frontend `fe/public/onboarding/`; app tải bản mới nhất từ `https://admin.locker-drone.tech/onboarding/`, bản kèm trong `assets/onboarding/` chỉ để chạy khi mất mạng và để test. **Thêm / xoá / sửa một màn hình hay một nút thì cập nhật hướng dẫn NGAY:**
 
