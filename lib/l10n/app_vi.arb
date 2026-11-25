@@ -8248,6 +8248,8 @@
   "instConfirmPassed": "Xác nhận đạt",
   "instReportFailed": "Báo lỗi",
   "instUndo": "Bỏ xác nhận",
+  "instUndoFailed": "Bỏ báo lỗi",
+  "instAddPhoto": "Thêm ảnh",
   "instBoxOpened": "Ô #{number} đã mở",
   "@instBoxOpened": {"placeholders": {"number": {}}},
   "instBoxOpenFailed": "Ô #{number} chưa mở được: {reason}",

@@ -5293,6 +5293,8 @@
   "instConfirmPassed": "Mark passed",
   "instReportFailed": "Report failure",
   "instUndo": "Undo",
+  "instUndoFailed": "Clear failure",
+  "instAddPhoto": "Add photo",
   "instBoxOpened": "Box #{number} opened",
   "instBoxOpenFailed": "Box #{number} did not open: {reason}",
   "instBoxTestHint": "Tap each box to test-open it, check the door pops and close it. Results come from the locker.",

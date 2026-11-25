@@ -25411,6 +25411,18 @@ abstract class AppLocalizations {
   /// **'Bỏ xác nhận'**
   String get instUndo;
 
+  /// No description provided for @instUndoFailed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bỏ báo lỗi'**
+  String get instUndoFailed;
+
+  /// No description provided for @instAddPhoto.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thêm ảnh'**
+  String get instAddPhoto;
+
   /// No description provided for @instBoxOpened.
   ///
   /// In vi, this message translates to:
