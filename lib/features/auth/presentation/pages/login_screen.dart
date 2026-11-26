@@ -185,7 +185,8 @@ class _LoginScreenState extends State<LoginScreen>
       unawaited(
         FirebaseMessagingService.instance.updateBackendDeviceToken(ApiClient()),
       );
-      unawaited(UserLanguageSync.sync());
+      // Ngôn ngữ đi theo tài khoản: đăng nhập máy khác dùng lại ngôn ngữ đã chọn (F3-G15).
+      await UserLanguageSync.adoptAccountLanguage();
       if (!mounted) return;
       context.go(homeForRoles(roles));
     } catch (_) {
