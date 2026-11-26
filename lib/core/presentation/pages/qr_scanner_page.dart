@@ -113,7 +113,7 @@ class _QrScannerPageState extends State<QrScannerPage>
     try {
       final result = await LockerOpsService().testOpenBox(qr.lockerId, qr.boxId);
       ok = result['accepted'] == true;
-      message = '${result['message'] ?? (ok ? 'Đã gửi lệnh mở ô' : 'Tủ không nhận lệnh mở ô')}';
+      message = '${result['message'] ?? (ok ? L10n.current.qrTestOpenSent : L10n.current.qrTestOpenRejected)}';
     } catch (error) {
       ok = false;
       message = LockerOpsService.errorMessage(error);

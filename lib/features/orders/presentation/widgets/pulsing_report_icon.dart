@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 class PulsingReportIcon extends StatefulWidget {
   final VoidCallback onPressed;
@@ -49,7 +50,7 @@ class _PulsingReportIconState extends State<PulsingReportIcon>
           size: 24,
         ),
         onPressed: widget.onPressed,
-        tooltip: 'Báo cáo sự cố',
+        tooltip: L10n.current.crTitle,
       ),
     );
   }

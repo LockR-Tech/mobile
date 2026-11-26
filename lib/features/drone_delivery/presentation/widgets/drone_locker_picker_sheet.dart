@@ -286,7 +286,7 @@ class _DroneLockerPickerSheetState extends State<_DroneLockerPickerSheet> {
           landingPad: hasLandingPad,
           landingPadStatus: locker['landingPadStatus'],
         );
-        final name = '${locker['name'] ?? locker['code'] ?? 'Tủ'}';
+        final name = '${locker['name'] ?? locker['code'] ?? L10n.current.commonLocker}';
         final address = '${locker['address'] ?? ''}'.trim();
         final lockerId = _asInt(locker['id']);
         final slots = lockerId == null ? null : _availableDroneSlots[lockerId];

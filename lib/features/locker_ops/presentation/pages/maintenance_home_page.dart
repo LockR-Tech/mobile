@@ -40,6 +40,7 @@ import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 import 'package:smart_laundry_locker/features/onboarding/presentation/onboarding_controller.dart';
 import 'package:smart_laundry_locker/features/onboarding/presentation/guide_button.dart';
 import 'package:smart_laundry_locker/features/onboarding/presentation/tour_anchor.dart';
+import 'package:smart_laundry_locker/features/profile/domain/utils/person_name.dart';
 
 /// Hai danh sách đơn drone (JSON từ server) có giống hệt nhau không — poll dùng để bỏ qua
 /// lượt không đổi. Trước đây chỉ so `id` (server trả `orderId`, nên luôn null), chặng,
@@ -842,7 +843,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
   String _resolvedTechnicianName(BuildContext context) {
     try {
       final name = context.watch<ProfileProvider>().profile?.fullName.trim();
-      if (name != null && name.isNotEmpty && name != 'Người dùng') return name;
+      if (name != null && !isPlaceholderName(name)) return name;
     } catch (_) {}
     if (_myUserName != null && _myUserName!.trim().isNotEmpty) {
       return _myUserName!.trim();
@@ -873,8 +874,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
     try {
       final profile = context.read<ProfileProvider>().profile;
       if (profile != null) {
-        if (profile.fullName.trim().isNotEmpty &&
-            profile.fullName.trim() != 'Người dùng') {
+        if (!isPlaceholderName(profile.fullName)) {
           profileName = profile.fullName.trim();
         }
         if (profile.email.trim().isNotEmpty) {

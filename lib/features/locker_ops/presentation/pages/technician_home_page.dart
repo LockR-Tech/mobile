@@ -37,6 +37,7 @@ import 'package:smart_laundry_locker/core/services/platform_info.dart';
 import 'package:smart_laundry_locker/features/onboarding/presentation/onboarding_controller.dart';
 import 'package:smart_laundry_locker/features/onboarding/presentation/guide_button.dart';
 import 'package:smart_laundry_locker/features/onboarding/presentation/tour_anchor.dart';
+import 'package:smart_laundry_locker/features/profile/domain/utils/person_name.dart';
 
 /// Home for the LOCKER_TECHNICIAN role (kỹ thuật viên tủ): physical locker
 /// maintenance (fault cells, work queue, preventive schedules, landing pad)
@@ -582,7 +583,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
     try {
       final profile = context.read<ProfileProvider>().profile;
       if (profile != null) {
-        if (profile.fullName.trim().isNotEmpty && profile.fullName.trim() != 'Người dùng') {
+        if (!isPlaceholderName(profile.fullName)) {
           profileName = profile.fullName.trim();
         }
         if (profile.email.trim().isNotEmpty) {
@@ -1189,7 +1190,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
     try {
       final profile = context.watch<ProfileProvider>().profile;
       final pName = profile?.fullName.trim();
-      if (pName != null && pName.isNotEmpty && pName != 'Người dùng') {
+      if (pName != null && !isPlaceholderName(pName)) {
         return pName;
       }
     } catch (_) {}

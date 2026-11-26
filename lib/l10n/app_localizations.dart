@@ -25758,6 +25758,60 @@ abstract class AppLocalizations {
   /// In vi, this message translates to:
   /// **'Tại tủ (kiosk)'**
   String get tourManualOnKiosk;
+
+  /// No description provided for @crOrderToReport.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đơn hàng cần báo cáo'**
+  String get crOrderToReport;
+
+  /// No description provided for @crLockerOfOrder.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tủ của đơn hàng'**
+  String get crLockerOfOrder;
+
+  /// No description provided for @crFixedByOrder.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cố định theo đơn'**
+  String get crFixedByOrder;
+
+  /// No description provided for @crBoxOfOrder.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ô của đơn hàng'**
+  String get crBoxOfOrder;
+
+  /// No description provided for @crBoxInUseByOrder.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ô đang được sử dụng bởi đơn hàng này'**
+  String get crBoxInUseByOrder;
+
+  /// No description provided for @galleryCapturedAt.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chụp lúc'**
+  String get galleryCapturedAt;
+
+  /// No description provided for @galleryUploadedAt.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tải lên lúc'**
+  String get galleryUploadedAt;
+
+  /// No description provided for @qrTestOpenSent.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã gửi lệnh mở ô'**
+  String get qrTestOpenSent;
+
+  /// No description provided for @qrTestOpenRejected.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tủ không nhận lệnh mở ô'**
+  String get qrTestOpenRejected;
 }
 
 class _AppLocalizationsDelegate

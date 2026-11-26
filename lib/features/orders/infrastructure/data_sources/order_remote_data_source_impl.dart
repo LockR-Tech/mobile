@@ -3,6 +3,7 @@ import 'package:smart_laundry_locker/features/orders/infrastructure/data_sources
 import 'package:smart_laundry_locker/features/orders/infrastructure/models/order_model.dart';
 import 'package:smart_laundry_locker/features/orders/infrastructure/models/responses/orders_response.dart';
 import 'package:dio/dio.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 /// Implementation của OrderRemoteDataSource
 /// Sử dụng ApiClient để gọi API endpoints.
@@ -97,7 +98,7 @@ class OrderRemoteDataSourceImpl implements OrderRemoteDataSource {
       return (data['amountPaid'] as num).toDouble();
     }
 
-    throw ServerException(data['message']?.toString() ?? 'Thanh toán thất bại');
+    throw ServerException(data['message']?.toString() ?? L10n.current.paymentFailed);
   }
 
   @override

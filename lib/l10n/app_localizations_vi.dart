@@ -15123,4 +15123,31 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get tourManualOnKiosk => 'Tại tủ (kiosk)';
+
+  @override
+  String get crOrderToReport => 'Đơn hàng cần báo cáo';
+
+  @override
+  String get crLockerOfOrder => 'Tủ của đơn hàng';
+
+  @override
+  String get crFixedByOrder => 'Cố định theo đơn';
+
+  @override
+  String get crBoxOfOrder => 'Ô của đơn hàng';
+
+  @override
+  String get crBoxInUseByOrder => 'Ô đang được sử dụng bởi đơn hàng này';
+
+  @override
+  String get galleryCapturedAt => 'Chụp lúc';
+
+  @override
+  String get galleryUploadedAt => 'Tải lên lúc';
+
+  @override
+  String get qrTestOpenSent => 'Đã gửi lệnh mở ô';
+
+  @override
+  String get qrTestOpenRejected => 'Tủ không nhận lệnh mở ô';
 }

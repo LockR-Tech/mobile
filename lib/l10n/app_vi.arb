@@ -8316,5 +8316,14 @@
   "tourManualOnApp": "Trên app",
   "tourManualRunOnScreen": "Xem trên màn hình",
   "tourManualNoImage": "Chưa có ảnh minh hoạ cho phần này.",
-  "tourManualOnKiosk": "Tại tủ (kiosk)"
+  "tourManualOnKiosk": "Tại tủ (kiosk)",
+  "crOrderToReport": "Đơn hàng cần báo cáo",
+  "crLockerOfOrder": "Tủ của đơn hàng",
+  "crFixedByOrder": "Cố định theo đơn",
+  "crBoxOfOrder": "Ô của đơn hàng",
+  "crBoxInUseByOrder": "Ô đang được sử dụng bởi đơn hàng này",
+  "galleryCapturedAt": "Chụp lúc",
+  "galleryUploadedAt": "Tải lên lúc",
+  "qrTestOpenSent": "Đã gửi lệnh mở ô",
+  "qrTestOpenRejected": "Tủ không nhận lệnh mở ô"
 }
