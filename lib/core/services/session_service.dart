@@ -40,7 +40,8 @@ class SessionService {
 
     await TokenService.clearTokens();
     UserLanguageSync.reset();
-    await ActiveRole.clear();
+    // Không chờ ghi bộ nhớ máy (test/thiết bị không có plugin vẫn đăng xuất được); biến trong bộ nhớ xoá ngay.
+    unawaited(ActiveRole.clear());
   }
 
   static Future<T?> _quietly<T>(Future<T> call) async {
