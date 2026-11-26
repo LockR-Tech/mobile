@@ -30,6 +30,8 @@ import 'package:smart_laundry_locker/features/notifications/infrastructure/servi
 import 'package:smart_laundry_locker/features/locker/domain/utils/locker_layout_helper.dart';
 import 'package:smart_laundry_locker/features/maintenance/presentation/widgets/drone_recovery_queue.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/technician_shift_card.dart';
+import 'package:smart_laundry_locker/features/locker_ops/data/installation_api.dart';
+import 'package:smart_laundry_locker/features/locker_ops/presentation/pages/installation_detail_page.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/installation_jobs_banner.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/pages/installation_list_page.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/technician_location_permission_sheet.dart';
@@ -83,6 +85,7 @@ enum _Section {
 class _TechnicianHomePageState extends State<TechnicianHomePage>
     with SingleTickerProviderStateMixin {
   final _service = LockerOpsService();
+  late final _installationApi = InstallationApi();
   late final TabController _tabs = TabController(
     length: 6,
     vsync: this,
@@ -127,6 +130,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
   String? _layoutError;
   // Box-health (GAP 2): trạng thái phần cứng cửa từ iot-service cho tủ đang chọn.
   List<Map<String, dynamic>> _boxHealth = [];
+  Installation? _selectedLockerInstallation;
 
   // IoT devices tab state
   List<Map<String, dynamic>> _devices = [];
@@ -476,6 +480,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
       _layoutLoading = true;
       _layoutError = null;
       _boxHealth = [];
+      _selectedLockerInstallation = null;
     });
     try {
       final layout = await _service.layout(lockerId);
@@ -486,6 +491,12 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
         final health = await _service.boxHealth(lockerId);
         if (mounted && _selectedLockerId == lockerId) {
           setState(() => _boxHealth = health);
+        }
+      } catch (_) {}
+      try {
+        final inst = await _installationApi.latestForLocker(lockerId);
+        if (mounted && _selectedLockerId == lockerId) {
+          setState(() => _selectedLockerInstallation = inst);
         }
       } catch (_) {}
     } catch (e) {
@@ -2458,6 +2469,14 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
     Map<String, dynamic> locker,
     List<Map<String, dynamic>> cells,
   ) {
+    final lockerId = _asInt(locker['id']);
+    final assignedTechId = _asInt(locker['assignedTechnicianId']);
+    final canManageWholeLocker =
+        assignedTechId == null || '$assignedTechId' == _myUserId;
+    final inst = _selectedLockerInstallation != null &&
+            _selectedLockerInstallation!.lockerId == lockerId
+        ? _selectedLockerInstallation
+        : null;
     final status = locker['status']?.toString();
     final address = locker['address']?.toString();
     final reserved = _countCells(cells, 'RESERVED');
@@ -2611,44 +2630,135 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
             ],
           ),
           const SizedBox(height: 10),
-          TourAnchor('tech-inspect-report', child: SizedBox(
-            width: double.infinity,
-            child: OutlinedButton.icon(
-              onPressed: _asInt(locker['id']) == null
-                  ? null
-                  : () => _reportLockerFlow(locker),
-              icon: const Icon(Icons.report_gmailerrorred_outlined, size: 16),
-              label: Text(context.l10n.techHomeReportWholeLocker),
-              style: OutlinedButton.styleFrom(
-                foregroundColor: const Color(0xFFDC2626),
-                side: const BorderSide(color: Color(0xFFFCA5A5)),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
+          if (inst != null) ...[
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                onPressed: () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => InstallationDetailPage(
+                      installationId: inst.id,
+                      lockerId: lockerId,
+                      initialData: inst,
+                      api: _installationApi,
+                    ),
+                  ),
                 ),
-                textStyle: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700),
+                icon: const Icon(Icons.construction_outlined, size: 15),
+                label: Text(
+                  context.l10n.techHomeViewInstallationRecord(
+                    switch (inst.status) {
+                      InstallationStatus.approved => context.l10n.instStatusApproved,
+                      InstallationStatus.submitted => context.l10n.instStatusSubmitted,
+                      InstallationStatus.inProgress => context.l10n.instStatusInProgress,
+                      InstallationStatus.cancelled => context.l10n.instStatusCancelled,
+                      _ => context.l10n.instStatusScheduled,
+                    },
+                  ),
+                ),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: const Color(0xFF0369A1),
+                  side: const BorderSide(color: Color(0xFFBAE6FD)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                  textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
+                ),
               ),
             ),
+            const SizedBox(height: 8),
+          ],
+          if (!canManageWholeLocker) ...[
+            Text(
+              context.l10n.techHomeOtherTechLockerHint,
+              style: const TextStyle(fontSize: 11.5, color: Color(0xFFB45309)),
+            ),
+            const SizedBox(height: 6),
+          ],
+          TourAnchor('tech-inspect-report', child: Row(
+            children: [
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: lockerId == null || !canManageWholeLocker
+                      ? null
+                      : () => _reportLockerFlow(locker, maintenanceMode: true),
+                  icon: const Icon(Icons.build_outlined, size: 15),
+                  label: Text(
+                    context.l10n.techHomeMaintainWholeLocker,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: const Color(0xFFD97706),
+                    side: BorderSide(
+                      color: canManageWholeLocker
+                          ? const Color(0xFFFCD34D)
+                          : const Color(0xFFE2E8F0),
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                    textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: lockerId == null || !canManageWholeLocker
+                      ? null
+                      : () => _reportLockerFlow(locker),
+                  icon: const Icon(Icons.report_gmailerrorred_outlined, size: 15),
+                  label: Text(
+                    context.l10n.techHomeReportWholeLocker,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: const Color(0xFFDC2626),
+                    side: BorderSide(
+                      color: canManageWholeLocker
+                          ? const Color(0xFFFCA5A5)
+                          : const Color(0xFFE2E8F0),
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                    textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
+                  ),
+                ),
+              ),
+            ],
           )),
         ],
       ),
     );
   }
 
-  /// "Báo sự cố cả tủ" (không gắn ô): tiêu đề, mô tả, ảnh và tuỳ chọn chặn cả
-  /// tủ (MAINTENANCE — ngưng nhận đơn tới khi phiếu hoàn tất).
-  Future<void> _reportLockerFlow(Map<String, dynamic> locker) async {
+  /// "Bảo trì tủ" / "Báo sự cố cả tủ" (không gắn ô): tiêu đề, mô tả, ảnh và tuỳ
+  /// chọn chặn cả tủ (MAINTENANCE — ngưng nhận đơn tới khi phiếu hoàn tất).
+  Future<void> _reportLockerFlow(
+    Map<String, dynamic> locker, {
+    bool maintenanceMode = false,
+  }) async {
     final lockerId = _asInt(locker['id']);
     if (lockerId == null) return;
-    final titleCtrl = TextEditingController();
+    final lockerCode = '${locker['code'] ?? '#$lockerId'}';
+    final titleCtrl = TextEditingController(
+      text: maintenanceMode
+          ? context.l10n.techHomeMaintainLockerDefaultTitle(lockerCode)
+          : '',
+    );
     final descCtrl = TextEditingController();
     final photos = PhotoPickerController(
       maxPhotos:
           BusinessConfigService.instance.current.reportPhotosPerRequestReporter,
     );
-    var blocking = false;
+    var blocking = maintenanceMode;
     var submitting = false;
     String? dialogError;
-    final lockerLabel = '${locker['name'] ?? context.l10n.commonLocker} · ${locker['code'] ?? '#$lockerId'}';
+    final lockerLabel = '${locker['name'] ?? context.l10n.commonLocker} · $lockerCode';
 
     final created = await showDialog<Map<String, dynamic>>(
       context: context,
@@ -2659,7 +2769,11 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
         child: StatefulBuilder(
           builder: (ctx, setLocal) => AlertDialog(
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-            title: Text(context.l10n.techHomeReportWholeLocker),
+            title: Text(
+              maintenanceMode
+                  ? context.l10n.techHomeMaintainWholeLocker
+                  : context.l10n.techHomeReportWholeLocker,
+            ),
             content: SingleChildScrollView(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -2675,7 +2789,9 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                     enabled: !submitting,
                     decoration: InputDecoration(
                       labelText: context.l10n.crTitleField,
-                      hintText: context.l10n.techHomeLockerIncidentTitleHint,
+                      hintText: maintenanceMode
+                          ? context.l10n.techHomeLockerMaintenanceTitleHint
+                          : context.l10n.techHomeLockerIncidentTitleHint,
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -2731,7 +2847,9 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
               ),
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFDC2626),
+                  backgroundColor: maintenanceMode
+                      ? const Color(0xFFD97706)
+                      : const Color(0xFFDC2626),
                   foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 ),
@@ -2755,6 +2873,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                             title,
                             desc,
                             blocking: blocking,
+                            ticketType: maintenanceMode ? 'LOCKER_MAINTENANCE' : null,
                             attachments: attachments,
                           );
                           if (ctx.mounted) Navigator.pop(ctx, report);
@@ -3499,11 +3618,20 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
     // "Tủ tôi phụ trách": phiếu OPEN server định tuyến cho mình + ô lỗi của các tủ đó.
     final routedView = _queueView == 'ROUTED';
     final myLockerIds = _myLockerIds;
+    final otherTechLockerIds = {
+      for (final l in _lockers)
+        if (_asInt(l['id']) != null &&
+            l['assignedTechnicianId'] != null &&
+            '${l['assignedTechnicianId']}' != _myUserId)
+          _asInt(l['id'])!,
+    };
     final faults = routedView
         ? _faults
             .where((f) => myLockerIds.contains(_asInt(f['lockerId'])))
             .toList()
-        : _faults;
+        : _faults
+            .where((f) => !otherTechLockerIds.contains(_asInt(f['lockerId'])))
+            .toList();
 
     return RefreshIndicator(
       onRefresh: _load,

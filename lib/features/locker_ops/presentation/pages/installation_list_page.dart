@@ -22,8 +22,15 @@ class InstallationListPage extends StatefulWidget {
 class _InstallationListPageState extends State<InstallationListPage> {
   late final InstallationApi _api = widget.api ?? InstallationApi();
   List<Installation> _items = const [];
+  bool _showClosed = false;
   bool _loading = true;
   String? _error;
+
+  static const _openStatuses = {
+    InstallationStatus.scheduled,
+    InstallationStatus.inProgress,
+    InstallationStatus.submitted,
+  };
 
   @override
   void initState() {
@@ -41,9 +48,15 @@ class _InstallationListPageState extends State<InstallationListPage> {
       _error = null;
     });
     try {
-      final items = await _api.mine();
+      final items = await _api.mine(includeClosed: true);
       if (!mounted) return;
-      setState(() => _items = items);
+      final hasOpen = items.any((i) => _openStatuses.contains(i.status));
+      setState(() {
+        _items = items;
+        if (!hasOpen && items.isNotEmpty) {
+          _showClosed = true;
+        }
+      });
     } catch (e) {
       if (!mounted) return;
       setState(() => _error = LockerOpsService.errorMessage(e));
@@ -62,6 +75,9 @@ class _InstallationListPageState extends State<InstallationListPage> {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
+    final openItems = _items.where((i) => _openStatuses.contains(i.status)).toList(growable: false);
+    final closedItems = _items.where((i) => !_openStatuses.contains(i.status)).toList(growable: false);
+    final displayed = _showClosed ? closedItems : openItems;
     return Scaffold(
       backgroundColor: const Color(0xFFF6F8FA),
       appBar: AppBar(title: Text(l10n.instListTitle)),
@@ -90,14 +106,40 @@ class _InstallationListPageState extends State<InstallationListPage> {
                 ),
               ))
             else ...[
+              Row(
+                children: [
+                  ChoiceChip(
+                    label: Text(l10n.instFilterOpenCount(openItems.length)),
+                    selected: !_showClosed,
+                    onSelected: (_) => setState(() => _showClosed = false),
+                  ),
+                  const SizedBox(width: 8),
+                  ChoiceChip(
+                    label: Text(l10n.instFilterClosedCount(closedItems.length)),
+                    selected: _showClosed,
+                    onSelected: (_) => setState(() => _showClosed = true),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
               TourAnchor('tech-install-hint', child: Text(l10n.instListHint, style: const TextStyle(fontSize: 12.5, color: Color(0xFF64748B)))),
               const SizedBox(height: 12),
-              for (final item in _items) ...[
-                identical(item, _items.first)
-                    ? TourAnchor('tech-install-first-item', child: _InstallationCard(installation: item, onTap: () => _open(item.id)))
-                    : _InstallationCard(installation: item, onTap: () => _open(item.id)),
-                const SizedBox(height: 10),
-              ],
+              if (displayed.isEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(top: 40),
+                  child: Text(
+                    l10n.instListEmpty,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(color: Color(0xFF64748B)),
+                  ),
+                )
+              else
+                for (final item in displayed) ...[
+                  identical(item, displayed.first)
+                      ? TourAnchor('tech-install-first-item', child: _InstallationCard(installation: item, onTap: () => _open(item.id)))
+                      : _InstallationCard(installation: item, onTap: () => _open(item.id)),
+                  const SizedBox(height: 10),
+                ],
             ],
           ],
         ),

@@ -779,7 +779,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
 
   /// Chạy 1 thao tác + báo kết quả + reload danh sách (giữ tên cũ để không
   /// đổi các flow drone gọi tới).
-  Future<void> _runCellAction(
+  Future<bool> _runCellAction(
     Future<dynamic> Function() action,
     String successMsg,
   ) async {
@@ -787,10 +787,12 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
       await action();
       _showSnack(successMsg);
       await _load();
+      return true;
     } catch (e) {
       _showSnack(droneTechnicianErrorMessage(e));
       // Trạng thái server có thể đã khác bản đang hiện (vd. drone vừa có phiếu).
       unawaited(_load());
+      return false;
     }
   }
 
@@ -5143,6 +5145,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
     if (droneId == null) return;
     final status = drone['status'] as String? ?? 'IDLE';
     final battery = _asInt(drone['batteryPercent']);
+    final openReports = _openReportsForDrone(droneId);
     final assignedToMe =
         drone['assignedTechnicianId'] != null &&
         '${drone['assignedTechnicianId']}' == _myUserId;
@@ -5175,7 +5178,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
 
         return SafeArea(
           top: false,
-          child: Padding(
+          child: SingleChildScrollView(
             padding: const EdgeInsets.fromLTRB(20, 4, 20, 12),
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -5203,6 +5206,15 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                   style: const TextStyle(fontSize: 12, color: opsMutedText),
                 ),
                 const SizedBox(height: 16),
+                for (final report in openReports)
+                  tile(
+                    Icons.assignment_outlined,
+                    report['status'] == 'OPEN'
+                        ? context.l10n.dtOpenReportTile('${report['id']}')
+                        : context.l10n.dtHandleReportTile('${report['id']}'),
+                    const Color(0xFFD97706),
+                    () => _showDroneReportDetail(report),
+                  ),
                 if (!assignedToMe)
                   tile(
                     Icons.assignment_ind_outlined,
@@ -5368,12 +5380,29 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                     ),
                   ),
                 ],
-                if (selected == 'FAULT') ...[
-                  const SizedBox(height: 12),
+                if (selected == 'FAULT' || selected == 'MAINTENANCE') ...[
+                  const SizedBox(height: 10),
+                  Text(
+                    selected == 'MAINTENANCE'
+                        ? context.l10n.dtMaintenanceTicketHint
+                        : context.l10n.dtFaultTicketHint,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: selected == 'MAINTENANCE'
+                          ? const Color(0xFFB45309)
+                          : const Color(0xFFDC2626),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
                   TextField(
                     controller: reasonCtrl,
                     decoration: InputDecoration(
-                      labelText: context.l10n.dtReasonRequired,
+                      labelText: selected == 'MAINTENANCE'
+                          ? context.l10n.dtMaintenanceReasonOptional
+                          : context.l10n.dtReasonRequired,
+                      hintText: selected == 'MAINTENANCE'
+                          ? context.l10n.dtMaintenanceReasonHint
+                          : null,
                       isDense: true,
                     ),
                   ),
@@ -5402,8 +5431,9 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
       ),
     );
     final isFault = result == 'FAULT';
-    // Lý do chỉ có ý nghĩa với FAULT — bỏ qua text sót lại nếu đổi sang trạng thái khác.
-    final reason = isFault ? reasonCtrl.text.trim() : '';
+    final isMaintenance = result == 'MAINTENANCE';
+    final needsTicket = isFault || isMaintenance;
+    final reason = needsTicket ? reasonCtrl.text.trim() : '';
     if (result == null) return;
     // Không gọi API nếu chọn lại đúng trạng thái cũ (trừ FAULT — cho phép cập nhật lý do mới).
     if (result == (drone['status'] as String?) && !isFault) {
@@ -5428,8 +5458,16 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
         result,
         reason: reason.isEmpty ? null : reason,
       ),
-      L10n.current.dtStatusChanged,
-    );
+      needsTicket
+          ? L10n.current.dtStatusChangedWithTicket
+          : L10n.current.dtStatusChanged,
+    ).then((ok) {
+      if (!ok || !needsTicket || !mounted) return;
+      final refreshedOpen = _openReportsForDrone(droneId);
+      if (refreshedOpen.isNotEmpty) {
+        _showDroneReportDetail(refreshedOpen.first);
+      }
+    });
   }
 
   /// Dialog nhập % pin hiện tại (nhập tay, chưa có telemetry thật).

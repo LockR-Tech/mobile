@@ -18,19 +18,29 @@ import 'package:url_launcher/url_launcher.dart';
 /// (quét QR gán Pi, bấm mở thử từng ô, chạy nắp) rồi server đọc kết quả từ tủ; KTV chỉ tự xác nhận bước
 /// làm tay (lắp khung, kiosk — bắt buộc ảnh; Bluetooth) và chụp ảnh hiện trường.
 class InstallationDetailPage extends StatefulWidget {
-  const InstallationDetailPage({super.key, required this.installationId, required this.api});
+  const InstallationDetailPage({
+    super.key,
+    required this.installationId,
+    required this.api,
+    this.lockerId,
+    this.initialData,
+  });
 
   final int installationId;
   final InstallationApi api;
+  /// Nếu truyền [lockerId], dùng endpoint `/api/locker-technician/lockers/{lockerId}/installation` để
+  /// KTV đang bảo trì tủ vẫn xem được hồ sơ lắp đặt đã nghiệm thu kể cả khi KTV khác lắp trước đây.
+  final int? lockerId;
+  final Installation? initialData;
 
   @override
   State<InstallationDetailPage> createState() => _InstallationDetailPageState();
 }
 
 class _InstallationDetailPageState extends State<InstallationDetailPage> {
-  Installation? _data;
+  late Installation? _data = widget.initialData;
   String? _error;
-  bool _loading = true;
+  late bool _loading = widget.initialData == null;
   bool _busy = false;
   Timer? _poll;
   final Map<int, String> _boxBusy = {};
@@ -58,10 +68,12 @@ class _InstallationDetailPageState extends State<InstallationDetailPage> {
   Future<void> _load({bool silent = false}) async {
     if (!silent) setState(() => _loading = true);
     try {
-      final data = await _api.detail(widget.installationId);
+      final data = widget.lockerId != null
+          ? await _api.latestForLocker(widget.lockerId!)
+          : await _api.detail(widget.installationId);
       if (!mounted) return;
       setState(() {
-        _data = data;
+        if (data != null) _data = data;
         _error = null;
       });
     } catch (e) {
@@ -316,6 +328,7 @@ class _InstallationDetailPageState extends State<InstallationDetailPage> {
     final l10n = context.l10n;
     final rows = <(IconData, String)>[
       if (data.scheduledAt != null) (Icons.event_outlined, l10n.instScheduledAt(formatInstallationTime(data.scheduledAt))),
+      if (data.approvedAt != null) (Icons.verified_outlined, l10n.instApprovedAt(formatInstallationTime(data.approvedAt))),
       if (data.powerSource != null) (Icons.power_outlined, l10n.instPowerSource(data.powerSource!)),
       if (data.networkType != null || data.networkNote != null)
         (Icons.wifi, l10n.instNetwork([data.networkType, data.networkNote].whereType<String>().join(' · '))),

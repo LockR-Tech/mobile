@@ -179,6 +179,9 @@ class Installation {
     this.cabinetSerial,
     this.notes,
     this.returnReason,
+    this.startedAt,
+    this.submittedAt,
+    this.approvedAt,
     this.controllerMac,
     this.controllerOnline,
     this.iotAvailable = true,
@@ -204,6 +207,9 @@ class Installation {
   final String? cabinetSerial;
   final String? notes;
   final String? returnReason;
+  final DateTime? startedAt;
+  final DateTime? submittedAt;
+  final DateTime? approvedAt;
   final String? controllerMac;
   final bool? controllerOnline;
   final bool iotAvailable;
@@ -245,6 +251,9 @@ class Installation {
       cabinetSerial: _str(json['cabinetSerial']),
       notes: _str(json['notes']),
       returnReason: _str(json['returnReason']),
+      startedAt: _time(json['startedAt']),
+      submittedAt: _time(json['submittedAt']),
+      approvedAt: _time(json['approvedAt']),
       controllerMac: _str(json['controllerMac']),
       controllerOnline: json['controllerOnline'] is bool ? json['controllerOnline'] as bool : null,
       iotAvailable: json['iotAvailable'] != false,
@@ -285,11 +294,22 @@ class InstallationApi {
     return Installation.fromJson(data is Map ? Map<String, dynamic>.from(data) : const {});
   }
 
-  Future<List<Installation>> mine() async {
-    final res = await _dio.get<dynamic>(_base);
+  Future<List<Installation>> mine({bool includeClosed = false}) async {
+    final res = await _dio.get<dynamic>(
+      _base,
+      queryParameters: {if (includeClosed) 'includeClosed': true},
+    );
     final data = res.data is Map ? (res.data as Map)['data'] : null;
     if (data is! List) return const [];
     return data.whereType<Map>().map((e) => Installation.fromJson(Map<String, dynamic>.from(e))).toList();
+  }
+
+  /// Hồ sơ lắp đặt mới nhất của tủ để KTV tra cứu thông số kỹ thuật sau khi đã nghiệm thu.
+  Future<Installation?> latestForLocker(int lockerId) async {
+    final res = await _dio.get<dynamic>('/api/locker-technician/lockers/$lockerId/installation');
+    final data = res.data is Map ? (res.data as Map)['data'] : null;
+    if (data is! Map) return null;
+    return Installation.fromJson(Map<String, dynamic>.from(data));
   }
 
   /// Đọc lại hồ sơ; server cập nhật các bước tự động từ dữ liệu tủ.
