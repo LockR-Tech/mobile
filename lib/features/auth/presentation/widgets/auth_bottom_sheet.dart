@@ -6,6 +6,7 @@ import 'package:smart_laundry_locker/core/constants/app_colors.dart';
 import 'package:smart_laundry_locker/core/network/api_client.dart';
 import 'package:smart_laundry_locker/core/routing/app_router.dart';
 import 'package:smart_laundry_locker/core/routing/role_routes.dart';
+import 'package:smart_laundry_locker/core/routing/role_switch.dart';
 import 'package:smart_laundry_locker/core/services/token_service.dart';
 import 'package:smart_laundry_locker/features/auth/presentation/providers/auth_injection.dart';
 import 'package:smart_laundry_locker/features/auth/presentation/providers/login_provider.dart';
@@ -97,10 +98,13 @@ class _AuthBottomSheetState extends State<AuthBottomSheet> {
     // Lấy roles từ token và navigate đến trang phù hợp
     try {
       final roles = await TokenService.getCurrentRoles();
+      await ActiveRole.clear();
       // Sử dụng AppRouter.navigatorKey để navigate ngay cả khi sheet đã dispose
       final navContext = AppRouter.navigatorKey.currentContext;
       if (navContext != null && navContext.mounted) {
-        navContext.go(homeForRoles(roles));
+        // Tài khoản nhiều vai trò: hỏi vào với vai trò nào (F3-G15).
+        final role = await chooseRoleAfterLogin(navContext, roles);
+        if (navContext.mounted) navContext.go(homeForRole(role));
       }
     } catch (_) {
       // fallback: không navigate, ProfilePage sẽ tự reload

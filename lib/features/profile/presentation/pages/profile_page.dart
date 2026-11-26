@@ -17,6 +17,7 @@ import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service
 import 'package:smart_laundry_locker/core/theme/shadcn_theme.dart';
 import 'package:smart_laundry_locker/core/theme/theme_provider.dart';
 import 'package:smart_laundry_locker/core/l10n/language_picker.dart';
+import 'package:smart_laundry_locker/core/routing/role_switch.dart';
 import 'package:smart_laundry_locker/core/l10n/locale_provider.dart';
 import 'package:smart_laundry_locker/features/assistant/presentation/providers/assistant_availability.dart';
 import 'package:smart_laundry_locker/features/profile/presentation/mixins/profile_image_actions_mixin.dart';
@@ -584,6 +585,23 @@ class _ProfilePageState extends State<ProfilePage>
         _buildMenuGroup(
           title: l10n.profileSectionSettings,
           items: [
+            // Tài khoản nhiều vai trò (vd. khách kiêm KTV): đổi vai trò (F3-G15).
+            RoleSwitchGate(
+              builder: (context, current) => TourAnchor(
+                'profile-switch-role',
+                child: ProfileMenuItem(
+                  icon: LucideIcons.repeat,
+                  title: l10n.roleSwitchTitle,
+                  subtitle: l10n.roleSwitchSubtitle(roleName(context, current)),
+                  onTap: () => switchRoleFromProfile(context),
+                  trailing: Icon(
+                    LucideIcons.chevronRight,
+                    size: 16,
+                    color: ShadTheme.of(context).colorScheme.mutedForeground,
+                  ),
+                ),
+              ),
+            ),
             TourAnchor(
               'profile-language',
               child: ProfileMenuItem(

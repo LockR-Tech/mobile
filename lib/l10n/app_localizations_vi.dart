@@ -15220,4 +15220,53 @@ class AppLocalizationsVi extends AppLocalizations {
   String txNetWithCount(String amount, int count) {
     return '$amount ($count GD)';
   }
+
+  @override
+  String get roleSwitchTitle => 'Đổi vai trò';
+
+  @override
+  String roleSwitchSubtitle(String role) {
+    return 'Đang dùng: $role';
+  }
+
+  @override
+  String get rolePickerTitle => 'Chọn vai trò';
+
+  @override
+  String get rolePickerMessage =>
+      'Tài khoản này có nhiều vai trò. Chọn vai trò để tiếp tục — đổi lại bất cứ lúc nào trong Hồ sơ.';
+
+  @override
+  String get roleCurrentBadge => 'Đang dùng';
+
+  @override
+  String get roleNameCustomer => 'Khách hàng';
+
+  @override
+  String get roleNameLockerTech => 'Kỹ thuật viên tủ';
+
+  @override
+  String get roleNameDroneTech => 'Kỹ thuật viên drone';
+
+  @override
+  String get roleNameAdmin => 'Quản trị viên';
+
+  @override
+  String get roleDescCustomer => 'Gửi hàng, thuê ô, nhận hàng và theo dõi đơn.';
+
+  @override
+  String get roleDescLockerTech =>
+      'Bảo trì ô tủ, thiết bị IoT và xử lý phiếu sự cố tại tủ.';
+
+  @override
+  String get roleDescDroneTech =>
+      'Điều phối, bảo trì drone và xử lý phiếu sự cố drone.';
+
+  @override
+  String get roleDescAdmin => 'Quản trị hệ thống trên web admin.';
+
+  @override
+  String roleSwitched(String role) {
+    return 'Đã chuyển sang vai trò $role';
+  }
 }

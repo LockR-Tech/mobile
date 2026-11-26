@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'package:smart_laundry_locker/core/routing/role_routes.dart';
+import 'package:smart_laundry_locker/core/routing/role_switch.dart';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
@@ -523,6 +525,14 @@ class _TechnicianProfilePageState extends State<TechnicianProfilePage> {
 
                   const SizedBox(height: 12),
 
+                  // Tài khoản nhiều vai trò (vd. KTV kiêm khách hàng): đổi vai trò (F3-G15).
+                  RoleSwitchGate(
+                    builder: (context, current) => Padding(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: TourAnchor('tech-profile-switch-role', child: _buildRoleTile(current)),
+                    ),
+                  ),
+
                   // Logout button
                   TourAnchor('tech-profile-logout', child: OutlinedButton.icon(
                     onPressed: _logout,
@@ -546,6 +556,47 @@ class _TechnicianProfilePageState extends State<TechnicianProfilePage> {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  /// Dòng "Đổi vai trò" — chỉ hiện với tài khoản nhiều vai trò.
+  Widget _buildRoleTile(AppRole current) {
+    return Material(
+      key: const ValueKey('technician-role-tile'),
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(14),
+      child: InkWell(
+        onTap: () => switchRoleFromProfile(context),
+        borderRadius: BorderRadius.circular(14),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: const Color(0xFFE2E8F0)),
+          ),
+          child: Row(
+            children: [
+              const Icon(Icons.swap_horiz_rounded, size: 20, color: opsPrimary),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  context.l10n.roleSwitchTitle,
+                  style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: opsDark),
+                ),
+              ),
+              Flexible(
+                child: Text(
+                  roleName(context, current),
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(fontSize: 13, color: opsMutedText),
+                ),
+              ),
+              const SizedBox(width: 4),
+              const Icon(Icons.chevron_right_rounded, size: 20, color: opsMutedText),
+            ],
+          ),
         ),
       ),
     );

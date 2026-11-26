@@ -15593,4 +15593,54 @@ class AppLocalizationsEn extends AppLocalizations {
   String txNetWithCount(String amount, int count) {
     return '$amount ($count txns)';
   }
+
+  @override
+  String get roleSwitchTitle => 'Switch role';
+
+  @override
+  String roleSwitchSubtitle(String role) {
+    return 'Current: $role';
+  }
+
+  @override
+  String get rolePickerTitle => 'Choose a role';
+
+  @override
+  String get rolePickerMessage =>
+      'This account has several roles. Choose one to continue — you can switch any time in Profile.';
+
+  @override
+  String get roleCurrentBadge => 'Current';
+
+  @override
+  String get roleNameCustomer => 'Customer';
+
+  @override
+  String get roleNameLockerTech => 'Locker technician';
+
+  @override
+  String get roleNameDroneTech => 'Drone technician';
+
+  @override
+  String get roleNameAdmin => 'Administrator';
+
+  @override
+  String get roleDescCustomer =>
+      'Send parcels, rent boxes, pick up and track orders.';
+
+  @override
+  String get roleDescLockerTech =>
+      'Maintain locker boxes and IoT devices, handle locker tickets.';
+
+  @override
+  String get roleDescDroneTech =>
+      'Dispatch and maintain drones, handle drone tickets.';
+
+  @override
+  String get roleDescAdmin => 'Manage the system on the web console.';
+
+  @override
+  String roleSwitched(String role) {
+    return 'Switched to $role';
+  }
 }

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:smart_laundry_locker/core/routing/role_routes.dart';
 
 import 'package:flutter/foundation.dart';
 import 'package:smart_laundry_locker/core/l10n/user_language_sync.dart';
@@ -39,6 +40,7 @@ class SessionService {
 
     await TokenService.clearTokens();
     UserLanguageSync.reset();
+    await ActiveRole.clear();
   }
 
   static Future<T?> _quietly<T>(Future<T> call) async {

@@ -8377,5 +8377,21 @@
   "qrTestOpenSent": "Đã gửi lệnh mở ô",
   "qrTestOpenRejected": "Tủ không nhận lệnh mở ô",
   "txNetWithCount": "{amount} ({count} GD)",
-  "@txNetWithCount": {"placeholders": {"amount": {"type": "String"}, "count": {"type": "int"}}}
+  "@txNetWithCount": {"placeholders": {"amount": {"type": "String"}, "count": {"type": "int"}}},
+  "roleSwitchTitle": "Đổi vai trò",
+  "roleSwitchSubtitle": "Đang dùng: {role}",
+  "@roleSwitchSubtitle": {"placeholders": {"role": {"type": "String"}}},
+  "rolePickerTitle": "Chọn vai trò",
+  "rolePickerMessage": "Tài khoản này có nhiều vai trò. Chọn vai trò để tiếp tục — đổi lại bất cứ lúc nào trong Hồ sơ.",
+  "roleCurrentBadge": "Đang dùng",
+  "roleNameCustomer": "Khách hàng",
+  "roleNameLockerTech": "Kỹ thuật viên tủ",
+  "roleNameDroneTech": "Kỹ thuật viên drone",
+  "roleNameAdmin": "Quản trị viên",
+  "roleDescCustomer": "Gửi hàng, thuê ô, nhận hàng và theo dõi đơn.",
+  "roleDescLockerTech": "Bảo trì ô tủ, thiết bị IoT và xử lý phiếu sự cố tại tủ.",
+  "roleDescDroneTech": "Điều phối, bảo trì drone và xử lý phiếu sự cố drone.",
+  "roleDescAdmin": "Quản trị hệ thống trên web admin.",
+  "roleSwitched": "Đã chuyển sang vai trò {role}",
+  "@roleSwitched": {"placeholders": {"role": {"type": "String"}}}
 }

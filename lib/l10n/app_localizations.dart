@@ -25908,6 +25908,90 @@ abstract class AppLocalizations {
   /// In vi, this message translates to:
   /// **'{amount} ({count} GD)'**
   String txNetWithCount(String amount, int count);
+
+  /// No description provided for @roleSwitchTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đổi vai trò'**
+  String get roleSwitchTitle;
+
+  /// No description provided for @roleSwitchSubtitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang dùng: {role}'**
+  String roleSwitchSubtitle(String role);
+
+  /// No description provided for @rolePickerTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chọn vai trò'**
+  String get rolePickerTitle;
+
+  /// No description provided for @rolePickerMessage.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tài khoản này có nhiều vai trò. Chọn vai trò để tiếp tục — đổi lại bất cứ lúc nào trong Hồ sơ.'**
+  String get rolePickerMessage;
+
+  /// No description provided for @roleCurrentBadge.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang dùng'**
+  String get roleCurrentBadge;
+
+  /// No description provided for @roleNameCustomer.
+  ///
+  /// In vi, this message translates to:
+  /// **'Khách hàng'**
+  String get roleNameCustomer;
+
+  /// No description provided for @roleNameLockerTech.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kỹ thuật viên tủ'**
+  String get roleNameLockerTech;
+
+  /// No description provided for @roleNameDroneTech.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kỹ thuật viên drone'**
+  String get roleNameDroneTech;
+
+  /// No description provided for @roleNameAdmin.
+  ///
+  /// In vi, this message translates to:
+  /// **'Quản trị viên'**
+  String get roleNameAdmin;
+
+  /// No description provided for @roleDescCustomer.
+  ///
+  /// In vi, this message translates to:
+  /// **'Gửi hàng, thuê ô, nhận hàng và theo dõi đơn.'**
+  String get roleDescCustomer;
+
+  /// No description provided for @roleDescLockerTech.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bảo trì ô tủ, thiết bị IoT và xử lý phiếu sự cố tại tủ.'**
+  String get roleDescLockerTech;
+
+  /// No description provided for @roleDescDroneTech.
+  ///
+  /// In vi, this message translates to:
+  /// **'Điều phối, bảo trì drone và xử lý phiếu sự cố drone.'**
+  String get roleDescDroneTech;
+
+  /// No description provided for @roleDescAdmin.
+  ///
+  /// In vi, this message translates to:
+  /// **'Quản trị hệ thống trên web admin.'**
+  String get roleDescAdmin;
+
+  /// No description provided for @roleSwitched.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã chuyển sang vai trò {role}'**
+  String roleSwitched(String role);
 }
 
 class _AppLocalizationsDelegate

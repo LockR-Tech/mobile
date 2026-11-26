@@ -5410,5 +5410,19 @@
   "galleryUploadedAt": "Uploaded at",
   "qrTestOpenSent": "Open command sent",
   "qrTestOpenRejected": "The locker did not accept the open command",
-  "txNetWithCount": "{amount} ({count} txns)"
+  "txNetWithCount": "{amount} ({count} txns)",
+  "roleSwitchTitle": "Switch role",
+  "roleSwitchSubtitle": "Current: {role}",
+  "rolePickerTitle": "Choose a role",
+  "rolePickerMessage": "This account has several roles. Choose one to continue — you can switch any time in Profile.",
+  "roleCurrentBadge": "Current",
+  "roleNameCustomer": "Customer",
+  "roleNameLockerTech": "Locker technician",
+  "roleNameDroneTech": "Drone technician",
+  "roleNameAdmin": "Administrator",
+  "roleDescCustomer": "Send parcels, rent boxes, pick up and track orders.",
+  "roleDescLockerTech": "Maintain locker boxes and IoT devices, handle locker tickets.",
+  "roleDescDroneTech": "Dispatch and maintain drones, handle drone tickets.",
+  "roleDescAdmin": "Manage the system on the web console.",
+  "roleSwitched": "Switched to {role}"
 }
