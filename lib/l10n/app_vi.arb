@@ -8325,5 +8325,7 @@
   "galleryCapturedAt": "Chụp lúc",
   "galleryUploadedAt": "Tải lên lúc",
   "qrTestOpenSent": "Đã gửi lệnh mở ô",
-  "qrTestOpenRejected": "Tủ không nhận lệnh mở ô"
+  "qrTestOpenRejected": "Tủ không nhận lệnh mở ô",
+  "txNetWithCount": "{amount} ({count} GD)",
+  "@txNetWithCount": {"placeholders": {"amount": {"type": "String"}, "count": {"type": "int"}}}
 }

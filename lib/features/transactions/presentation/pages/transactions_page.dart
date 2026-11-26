@@ -274,7 +274,7 @@ class _SpendingStatsCardState extends State<_SpendingStatsCard> {
                   ],
                 ),
                 Text(
-                  '${isNetPositive ? '+' : '-'}$netFmt (${stats.transactionCount} GD)',
+                  context.l10n.txNetWithCount('${isNetPositive ? '+' : '-'}$netFmt', stats.transactionCount),
                   style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w700,
