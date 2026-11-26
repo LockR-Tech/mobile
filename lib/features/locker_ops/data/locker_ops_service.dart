@@ -398,24 +398,6 @@ class LockerOpsService {
   Future<Map<String, dynamic>> cancelOrder(int orderId) =>
       _map('PUT', '/api/orders/$orderId/cancel');
 
-  /// Ủy quyền người khác lấy hộ (chỉ đơn STORING/RETURNED của chính mình). Server
-  /// cấp PIN mới — PIN cũ hết hiệu lực — và người được ủy quyền thấy đơn ở
-  /// [delegatedToMe].
-  Future<Map<String, dynamic>> delegate(
-    int orderId, {
-    required String phone,
-    String? name,
-    String? note,
-  }) => _map(
-    'POST',
-    '/api/orders/$orderId/delegate',
-    body: {
-      'phone': phone,
-      if (name != null && name.trim().isNotEmpty) 'name': name.trim(),
-      if (note != null && note.trim().isNotEmpty) 'note': note.trim(),
-    },
-  );
-
   /// Đơn mà tôi là người nhận (`ReceiverOrderResponse`): có `pickupPin`/`qrToken`
   /// khi `readyForPickup`.
   Future<List<Map<String, dynamic>>> incomingOrders({
@@ -426,23 +408,10 @@ class LockerOpsService {
     query: {'activeOnly': activeOnly, if (limit != null) 'limit': limit},
   );
 
-  /// Đơn người khác ủy quyền cho tôi lấy hộ (cùng DTO với [incomingOrders]).
-  Future<List<Map<String, dynamic>>> delegatedToMe({bool activeOnly = false}) =>
-      _list('/api/orders/delegated-to-me', query: {'activeOnly': activeOnly});
-
-  /// Chi tiết một đơn gửi tới tôi / ủy quyền cho tôi (`ReceiverOrderDetailResponse`):
-  /// liên hệ người gửi, kiện hàng, tủ/ô, mốc thời gian, hành trình drone. Hai
-  /// đường cùng quy tắc quyền; [delegated] chỉ chọn đường khớp với màn đang mở.
-  /// Đơn không thuộc danh sách của mình ⇒ server trả 404 `NOT_FOUND`.
-  Future<Map<String, dynamic>> receiverOrderDetail(
-    int orderId, {
-    bool delegated = false,
-  }) => _map(
-    'GET',
-    delegated
-        ? '/api/orders/delegated-to-me/$orderId'
-        : '/api/orders/incoming/$orderId',
-  );
+  /// Chi tiết một đơn gửi tới tôi (`ReceiverOrderDetailResponse`): liên hệ người gửi, kiện hàng, tủ/ô,
+  /// mốc thời gian, hành trình drone. Đơn không thuộc danh sách của mình ⇒ server trả 404 `NOT_FOUND`.
+  Future<Map<String, dynamic>> receiverOrderDetail(int orderId) =>
+      _map('GET', '/api/orders/incoming/$orderId');
 
   /// Người gửi đơn gửi hàng thêm / đổi email người nhận ([email] null = giữ email đang có) rồi gửi lại thư
   /// cho người nhận: hàng đã vào tủ ⇒ kèm mã mở tủ; đã thanh toán, chưa bỏ hàng ⇒ thư báo có đơn (không mã);
@@ -456,17 +425,10 @@ class LockerOpsService {
   /// Gửi lại thông tin đơn nhận (kèm mã mở tủ khi hàng đã vào tủ) tới email tài khoản của mình.
   /// Trả `{maskedEmail, includesPickupCode, sentAt}`. Lỗi: `RECEIVER_EMAIL_MISSING` (tài khoản chưa có
   /// email), `RECEIVER_EMAIL_TOO_SOON` (bấm lại trong 1 phút), `RECEIVER_EMAIL_FAILED`.
-  Future<Map<String, dynamic>> resendReceiverEmail(
-    int orderId, {
-    bool delegated = false,
-  }) => _map(
-    'POST',
-    delegated
-        ? '/api/orders/delegated-to-me/$orderId/email'
-        : '/api/orders/incoming/$orderId/email',
-  );
+  Future<Map<String, dynamic>> resendReceiverEmail(int orderId) =>
+      _map('POST', '/api/orders/incoming/$orderId/email');
 
-  /// Mở ô chỉ bằng mã (PIN/QR/mã ủy quyền) — server tự tra ô theo mã.
+  /// Mở ô chỉ bằng mã (PIN/QR) — server tự tra ô theo mã.
   /// Trả `{accepted, message, boxId…}`; `accepted == false` là chưa mở.
   Future<Map<String, dynamic>> unlockWithCode(int lockerId, String code) =>
       _map(

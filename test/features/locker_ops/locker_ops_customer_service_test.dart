@@ -14,7 +14,7 @@ void main() {
     service = LockerOpsService(dio: mock.dio);
   });
 
-  group('Hàng chờ nhận / ủy quyền', () {
+  group('Hàng chờ nhận', () {
     test('incomingOrders() gọi /api/orders/incoming', () async {
       adapter.onGet(
         '/api/orders/incoming',
@@ -30,50 +30,12 @@ void main() {
       expect(list.single['pickupPin'], '123456');
     });
 
-    test('delegatedToMe() gọi /api/orders/delegated-to-me', () async {
+    test('receiverOrderDetail() gọi /incoming/{id}', () async {
       adapter.onGet(
-        '/api/orders/delegated-to-me',
-        (server) => server.reply(
-          200,
-          apiOk([
-            {'id': 4},
-          ]),
-        ),
-        queryParameters: {'activeOnly': false},
+        '/api/orders/incoming/90',
+        (server) => server.reply(200, apiOk({'id': 90, 'viewerRole': 'RECEIVER'})),
       );
-      expect(await service.delegatedToMe(), hasLength(1));
-    });
-
-    test('delegate() chỉ gửi trường có giá trị', () async {
-      adapter.onPost(
-        '/api/orders/9/delegate',
-        (server) => server.reply(200, apiOk({'id': 9, 'pinCode': '654321'})),
-        data: {'phone': '0909000000', 'name': 'Bình'},
-      );
-      final res = await service.delegate(
-        9,
-        phone: '0909000000',
-        name: ' Bình ',
-        note: '  ',
-      );
-      expect(res['pinCode'], '654321');
-    });
-
-    test('receiverOrderDetail() gọi /incoming/{id} hoặc /delegated-to-me/{id}', () async {
-      adapter
-        ..onGet(
-          '/api/orders/incoming/90',
-          (server) => server.reply(200, apiOk({'id': 90, 'viewerRole': 'RECEIVER'})),
-        )
-        ..onGet(
-          '/api/orders/delegated-to-me/91',
-          (server) => server.reply(200, apiOk({'id': 91, 'viewerRole': 'DELEGATE'})),
-        );
       expect((await service.receiverOrderDetail(90))['viewerRole'], 'RECEIVER');
-      expect(
-        (await service.receiverOrderDetail(91, delegated: true))['viewerRole'],
-        'DELEGATE',
-      );
     });
 
     test('unlockWithCode() gửi {lockerId, code}', () async {

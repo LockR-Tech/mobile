@@ -5,10 +5,7 @@ import 'package:smart_laundry_locker/core/config/feature_flags.dart';
 import 'package:smart_laundry_locker/core/services/session_service.dart';
 import 'package:smart_laundry_locker/core/services/token_service.dart';
 import 'package:smart_laundry_locker/features/notifications/presentation/providers/notification_provider.dart';
-import 'package:smart_laundry_locker/core/network/api_client.dart';
 import 'package:smart_laundry_locker/features/profile/presentation/providers/profile_provider.dart';
-import 'package:smart_laundry_locker/features/delegations/presentation/providers/delegation_provider.dart';
-import 'package:smart_laundry_locker/features/delegations/presentation/providers/delegation_injection.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -64,16 +61,11 @@ class _ProfilePageState extends State<ProfilePage>
   /// hết hạn thật (401 không làm mới được) thì AuthInterceptor tự đăng xuất.
   String? _loadError;
   late ProfileProvider _profileProvider;
-  late DelegationProvider _delegationProvider;
 
   @override
   void initState() {
     super.initState();
-    final apiClient = ApiClient();
     _profileProvider = context.read<ProfileProvider>();
-    _delegationProvider = DelegationInjection.provideDelegationProvider(
-      apiClient,
-    );
     TokenService.authState.addListener(_onAuthStateChanged);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadUserProfile();
@@ -98,7 +90,6 @@ class _ProfilePageState extends State<ProfilePage>
   @override
   void dispose() {
     TokenService.authState.removeListener(_onAuthStateChanged);
-    _delegationProvider.dispose();
     super.dispose();
   }
 
@@ -149,7 +140,6 @@ class _ProfilePageState extends State<ProfilePage>
       // Nạp trước trạng thái trợ lý cho mục "Trợ giúp" (không chờ).
       AssistantAvailability.instance.refresh();
       _loadBleTestAccess();
-      await _delegationProvider.fetchMyDelegations();
     }
     if (!mounted) return;
 
@@ -249,57 +239,54 @@ class _ProfilePageState extends State<ProfilePage>
 
     return Scaffold(
       backgroundColor: context.pageBg,
-      body: MultiProvider(
-        providers: [ChangeNotifierProvider.value(value: _delegationProvider)],
-        child: Column(
-          children: [
-            BrandHeroHeader(
-              art: HeroArt.profile,
-              title: context.l10n.profileTitle,
-              subtitle: context.l10n.profileSubtitle,
-              trailing: BrandCircleIconButton(
-                icon: LucideIcons.pencil,
-                onTap: _handleEditProfile,
-                iconSize: 16,
-              ),
+      body: Column(
+        children: [
+          BrandHeroHeader(
+            art: HeroArt.profile,
+            title: context.l10n.profileTitle,
+            subtitle: context.l10n.profileSubtitle,
+            trailing: BrandCircleIconButton(
+              icon: LucideIcons.pencil,
+              onTap: _handleEditProfile,
+              iconSize: 16,
             ),
-            Expanded(
-              child: RefreshIndicator(
-                onRefresh: () async {
-                  await _loadUserProfile(forceRefresh: true);
-                },
-                color: const Color.fromARGB(255, 191, 199, 209),
-                backgroundColor: const Color.fromARGB(255, 220, 228, 238),
-                child: SingleChildScrollView(
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  child: Column(
-                    children: [
-                      const SizedBox(height: 12),
+          ),
+          Expanded(
+            child: RefreshIndicator(
+              onRefresh: () async {
+                await _loadUserProfile(forceRefresh: true);
+              },
+              color: const Color.fromARGB(255, 191, 199, 209),
+              backgroundColor: const Color.fromARGB(255, 220, 228, 238),
+              child: SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                child: Column(
+                  children: [
+                    const SizedBox(height: 12),
 
-                      if (_userData != null)
-                        TourAnchor('profile-header', child: ProfileHeader(
-                          user: _userData!,
-                          avatarVersion: 0,
-                          localAvatarFile: localAvatarFile,
-                          isAvatarSyncing: isAvatarSyncing,
-                          showSaveAvatarButton: localAvatarFile != null,
-                          onEditAvatar: handleAvatarSelection,
-                          onSaveAvatar: uploadAvatarImage,
-                          onCancelAvatar: cancelAvatarSelection,
-                          onEditProfile: _handleEditProfile,
-                        )),
+                    if (_userData != null)
+                      TourAnchor('profile-header', child: ProfileHeader(
+                        user: _userData!,
+                        avatarVersion: 0,
+                        localAvatarFile: localAvatarFile,
+                        isAvatarSyncing: isAvatarSyncing,
+                        showSaveAvatarButton: localAvatarFile != null,
+                        onEditAvatar: handleAvatarSelection,
+                        onSaveAvatar: uploadAvatarImage,
+                        onCancelAvatar: cancelAvatarSelection,
+                        onEditProfile: _handleEditProfile,
+                      )),
 
-                      const SizedBox(height: 16),
+                    const SizedBox(height: 16),
 
-                      _buildMenuSection(),
-                      const SizedBox(height: 100),
-                    ],
-                  ),
+                    _buildMenuSection(),
+                    const SizedBox(height: 100),
+                  ],
                 ),
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -477,51 +464,6 @@ class _ProfilePageState extends State<ProfilePage>
         _buildMenuGroup(
           title: l10n.profileSectionManage,
           items: [
-            Consumer<DelegationProvider>(
-              builder: (context, provider, child) {
-                final delegations = provider.myDelegations
-                    .where((d) => d.isActive)
-                    .toList();
-
-                return TourAnchor('profile-delegations', child: ProfileMenuItem(
-                  icon: LucideIcons.packageOpen,
-                  title: l10n.profileDelegations,
-                  onTap: () => context.push(AppRouter.myDelegations),
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      if (delegations.isNotEmpty)
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 6,
-                            vertical: 2,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.blue,
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: Text(
-                            delegations.length > 99
-                                ? '99+'
-                                : '${delegations.length}',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 10,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      const SizedBox(width: 8),
-                      Icon(
-                        LucideIcons.chevronRight,
-                        size: 16,
-                        color: context.textMuted,
-                      ),
-                    ],
-                  ),
-                ));
-              },
-            ),
             TourAnchor(
               'profile-refunds',
               child: ProfileMenuItem(

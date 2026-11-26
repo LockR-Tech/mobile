@@ -271,10 +271,10 @@ void main() {
       );
     });
 
-    test('được ủy quyền lấy hộ mở Đơn ủy quyền', () {
+    test('tin cũ "được ủy quyền lấy hộ" mở Hàng chờ nhận (ủy quyền đã gỡ, F3-G15)', () {
       expect(
         link('ORDER_DELEGATED_TO_YOU', role, referenceId: '12'),
-        '/my-delegations?orderId=12',
+        '/locker/my-orders?tab=incoming',
       );
     });
 

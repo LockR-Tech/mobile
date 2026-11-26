@@ -66,14 +66,9 @@ class _FakeService extends LockerOpsService {
   /// Lần gọi thứ i trả phần tử i (Map ⇒ dữ liệu, Object khác ⇒ ném lỗi).
   final List<Object> responses;
   int calls = 0;
-  bool? lastDelegated;
 
   @override
-  Future<Map<String, dynamic>> receiverOrderDetail(
-    int orderId, {
-    bool delegated = false,
-  }) async {
-    lastDelegated = delegated;
+  Future<Map<String, dynamic>> receiverOrderDetail(int orderId) async {
     final next =
         responses[calls < responses.length ? calls : responses.length - 1];
     calls++;
@@ -84,15 +79,10 @@ class _FakeService extends LockerOpsService {
   /// Kết quả "Gửi lại qua email": Map ⇒ trả về, Object khác ⇒ ném lỗi.
   Object emailResult = const {'maskedEmail': 'bi***@example.com', 'includesPickupCode': true};
   int emailCalls = 0;
-  bool? emailDelegated;
 
   @override
-  Future<Map<String, dynamic>> resendReceiverEmail(
-    int orderId, {
-    bool delegated = false,
-  }) async {
+  Future<Map<String, dynamic>> resendReceiverEmail(int orderId) async {
     emailCalls++;
-    emailDelegated = delegated;
     final result = emailResult;
     if (result is Map<String, dynamic>) return result;
     throw result;
@@ -119,7 +109,6 @@ Future<void> _pump(
   WidgetTester tester,
   LockerOpsService service, {
   Map<String, dynamic> listItem = _listItem,
-  bool delegatedView = false,
 }) async {
   await tester.binding.setSurfaceSize(const Size(390, 3200));
   addTearDown(() => tester.binding.setSurfaceSize(null));
@@ -130,7 +119,6 @@ Future<void> _pump(
       home: ReceiverOrderDetailPage(
         order: ReceiverOrder.tryParse(listItem)!,
         service: service,
-        delegatedView: delegatedView,
       ),
     ),
   );
@@ -150,7 +138,6 @@ void main() {
     await _pump(tester, service);
 
     expect(service.calls, 1);
-    expect(service.lastDelegated, isFalse);
     expect(find.text('Chi tiết đơn nhận'), findsOneWidget);
     expect(find.text('#ORD-90'), findsOneWidget);
     expect(find.text('Bạn là người nhận của đơn này.'), findsOneWidget);
@@ -266,7 +253,7 @@ void main() {
     expect(find.text('Order not found: 90'), findsNothing);
   });
 
-  testWidgets('đơn drone ủy quyền: đúng đường, chặng, hành trình, sự cố', (
+  testWidgets('đơn drone: đúng chặng, hành trình, sự cố', (
     tester,
   ) async {
     const droneItem = {
@@ -279,15 +266,11 @@ void main() {
       'lockerId': 7,
       'lockerName': 'Tủ thư viện',
       'readyForPickup': false,
-      'delegated': true,
-      'delegateName': 'Người Lấy Hộ',
-      'delegateNote': 'Lấy giúp trước 6h',
     };
     final service = _FakeService([
       {
         ...droneItem,
-        'viewerRole': 'DELEGATE',
-        'delegatePhone': '0907654321',
+        'viewerRole': 'RECEIVER',
         'sourceLockerName': 'Tủ nguồn',
         'sourceLockerCode': 'CAB-NGUON',
         'routeDistanceMeters': 1200,
@@ -317,13 +300,9 @@ void main() {
         ],
       },
     ]);
-    await _pump(tester, service, listItem: droneItem, delegatedView: true);
+    await _pump(tester, service, listItem: droneItem);
 
-    expect(service.lastDelegated, isTrue);
-    expect(find.text('Chi tiết đơn lấy hộ'), findsOneWidget);
-    expect(find.text('Người ủy quyền'), findsOneWidget);
-    expect(find.text('Người Lấy Hộ (bạn)'), findsOneWidget);
-    expect(find.text('Lấy giúp trước 6h'), findsOneWidget);
+    expect(find.text('Chi tiết đơn nhận'), findsOneWidget);
     expect(find.text('Tủ nguồn (CAB-NGUON)'), findsOneWidget);
     expect(find.text('1,2 km'), findsOneWidget);
     expect(find.text('800 g'), findsOneWidget);
@@ -376,7 +355,6 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(service.emailCalls, 1);
-    expect(service.emailDelegated, isFalse);
     expect(find.text('Đã gửi thông tin đơn kèm mã mở tủ tới bi***@example.com.'), findsOneWidget);
     await drainToasts(tester);
   });

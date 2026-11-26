@@ -103,9 +103,6 @@ class AppLocalizationsVi extends AppLocalizations {
   String get profileSectionManage => 'Quản lý';
 
   @override
-  String get profileDelegations => 'Đơn ủy quyền';
-
-  @override
   String get profileRefunds => 'Hoàn tiền';
 
   @override
@@ -2535,16 +2532,6 @@ class AppLocalizationsVi extends AppLocalizations {
       'Đơn thuê đã quá hạn. Đã ghi nhận xử lý phí quá giờ — mời bạn mở ô lấy đồ và đóng tủ để hoàn tất.';
 
   @override
-  String ordDelegatedTo(Object to) {
-    return 'Đã ủy quyền lấy hộ$to. Mã PIN cũ đã hết hiệu lực.';
-  }
-
-  @override
-  String ordDelegatedToPhone(Object phone) {
-    return ' cho $phone';
-  }
-
-  @override
   String get ordChangePinQuestion => 'Đổi mã PIN?';
 
   @override
@@ -2914,9 +2901,6 @@ class AppLocalizationsVi extends AppLocalizations {
   String get ordEndRentalPickup => 'Kết thúc thuê & lấy đồ';
 
   @override
-  String get ordDelegatePickup => 'Ủy quyền lấy hộ';
-
-  @override
   String get ordChangePin => 'Đổi mã PIN';
 
   @override
@@ -3015,15 +2999,6 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get ordRecipientEmail => 'Email người nhận';
-
-  @override
-  String get ordDelegatedToLabel => 'Ủy quyền lấy hộ cho';
-
-  @override
-  String get ordDelegatee => 'Người được ủy quyền';
-
-  @override
-  String get ordDelegationMessage => 'Lời nhắn ủy quyền';
 
   @override
   String get ordDelegatedAt => 'Ủy quyền lúc';
@@ -4522,13 +4497,7 @@ class AppLocalizationsVi extends AppLocalizations {
   }
 
   @override
-  String get recvDelegatorColon => 'Người ủy quyền:';
-
-  @override
   String get recvSenderColon => 'Người gửi:';
-
-  @override
-  String get recvDelegatedPickup => 'Lấy hộ';
 
   @override
   String get recvIncomingParcel => 'Hàng nhận';
@@ -4597,29 +4566,10 @@ class AppLocalizationsVi extends AppLocalizations {
   String get parcelNoProhibited => 'Cam kết không hàng cấm';
 
   @override
-  String get delegateTitle => 'Ủy quyền lấy hộ';
-
-  @override
-  String get delegateBody =>
-      'Người được ủy quyền thấy đơn và mã mở ô trong mục \"Đơn ủy quyền\" của app (theo số điện thoại). Mã PIN hiện tại sẽ được đổi mới.';
-
-  @override
   String get delegatePhone => 'Số điện thoại người lấy hộ';
 
   @override
   String get delegateName => 'Tên người lấy hộ (không bắt buộc)';
-
-  @override
-  String get delegateMessage => 'Lời nhắn (không bắt buộc)';
-
-  @override
-  String get delegateInvalidPhone => 'Nhập số điện thoại hợp lệ (9–11 số).';
-
-  @override
-  String get delegateNotSupported => 'Máy chủ chưa hỗ trợ ủy quyền lấy hộ.';
-
-  @override
-  String get delegateAction => 'Ủy quyền';
 
   @override
   String get shareCopiedMessage =>
@@ -6413,14 +6363,6 @@ class AppLocalizationsVi extends AppLocalizations {
       'Không thấy đơn này trong hàng chờ nhận của bạn. Có thể đơn đã được lấy, hoặc mã nhận hàng được gửi cho số điện thoại khác.';
 
   @override
-  String psDelegated(Object name) {
-    return 'Bạn đã ủy quyền cho $name lấy hộ đơn này nên mã nhận hàng đã chuyển cho người được ủy quyền.';
-  }
-
-  @override
-  String get psSomeoneElse => 'người khác';
-
-  @override
   String get psNotReady =>
       'Mã nhận hàng chưa sẵn sàng. Mã sẽ có khi kiện đã vào ô tủ nhận.';
 
@@ -7903,56 +7845,6 @@ class AppLocalizationsVi extends AppLocalizations {
   @override
   String get qlNotSupported =>
       'Máy chủ chưa hỗ trợ đăng nhập kiosk bằng mã QR. Vui lòng đăng nhập bằng số điện thoại trên kiosk.';
-
-  @override
-  String get aoChooseLocker => 'Vui lòng chọn tủ.';
-
-  @override
-  String get aoEnterCode => 'Vui lòng nhập mã lấy hàng.';
-
-  @override
-  String get aoPickupBox => 'ô lấy hàng';
-
-  @override
-  String get aoOpened => 'Tủ đã mở ô — lấy hàng rồi đóng cửa tủ lại.';
-
-  @override
-  String aoOpenFailed(Object detail) {
-    return 'Không mở được ô$detail';
-  }
-
-  @override
-  String get aoTitle => 'Mở tủ ủy quyền';
-
-  @override
-  String get aoSubtitle => 'Lấy hàng bằng mã được gửi cho bạn';
-
-  @override
-  String get aoIntro =>
-      'Nhập mã lấy hàng (PIN) bạn nhận được — mã có trong mục \"Đơn ủy quyền\" hoặc do người gửi chuyển cho bạn. Bạn cần đứng tại tủ để mở ô.';
-
-  @override
-  String get aoOrder => 'Đơn';
-
-  @override
-  String get aoTapToChoose => 'Chạm để chọn tủ lấy hàng';
-
-  @override
-  String get aoOpenBox => 'Mở ô lấy hàng';
-
-  @override
-  String get mdSubtitle => 'Đơn người khác nhờ bạn lấy hộ';
-
-  @override
-  String get mdEmpty => 'Chưa có đơn ủy quyền';
-
-  @override
-  String get mdEmptyHint =>
-      'Khi ai đó ủy quyền bạn lấy hộ (theo số điện thoại của bạn), đơn sẽ hiện ở đây.';
-
-  @override
-  String get mdNotSupported =>
-      'Máy chủ chưa hỗ trợ mục Đơn ủy quyền. Vui lòng thử lại sau.';
 
   @override
   String get dnTitleEnRoute => 'Drone đang giao hàng';

@@ -1,6 +1,6 @@
 # Terms of service
 
-Version 03/11/2026 · Applies to the Lock.R app, the Lock.R website and the kiosks at our lockers.
+Version 27/11/2026 · Applies to the Lock.R app, the Lock.R website and the kiosks at our lockers.
 
 These Terms are an agreement between you and Lock.R ("we") for using our smart locker and drone delivery service. Tapping "Agree" in the app means you have read, understood and accepted these Terms together with the [Privacy policy](privacy_policy).
 
@@ -16,7 +16,6 @@ These Terms are an agreement between you and Lock.R ("we") for using our smart l
 - **Locker rental:** hold a box for the time you choose to store your things; you can extend it in the app.
 - **Sending through a locker:** you put the parcel in a box and we send the pickup code to the recipient by app, email or SMS.
 - **Drone delivery:** a drone carries the parcel from the sending locker to a receiving locker with a landing pad; you can follow the flight in the app.
-- **Pickup on your behalf:** the order owner can issue a separate code for someone else to collect the parcel.
 - **Assistant:** answers questions about the service and your orders. Answers are AI-generated and for reference only; the order details and official notifications always take precedence.
 
 ## 3. Parcels

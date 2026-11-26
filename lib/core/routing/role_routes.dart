@@ -124,10 +124,8 @@ const _signInRoutes = <String>{
   AppRouter.createReport,
   AppRouter.myReports,
   AppRouter.myLockerReports,
-  // Thông báo, ủy quyền, ưu đãi đã lưu
+  // Thông báo, ưu đãi đã lưu
   AppRouter.notifications,
-  AppRouter.myDelegations,
-  AppRouter.authorizedOpening,
   AppRouter.myVouchers,
   // Hồ sơ cá nhân
   AppRouter.profileDetail,

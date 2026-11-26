@@ -224,7 +224,6 @@ enum HeroArt {
   favorite,
   profile,
   security,
-  delegation,
   location,
   chat,
 }
@@ -462,7 +461,6 @@ class _HeroArtwork extends StatelessWidget {
         HeroArt.favorite => LucideIcons.heart,
         HeroArt.profile => LucideIcons.user,
         HeroArt.security => LucideIcons.shieldCheck,
-        HeroArt.delegation => LucideIcons.keyRound,
         HeroArt.location => LucideIcons.mapPin,
         HeroArt.chat => LucideIcons.messageCircle,
         HeroArt.locker || HeroArt.none => LucideIcons.box,

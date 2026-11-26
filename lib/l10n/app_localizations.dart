@@ -278,12 +278,6 @@ abstract class AppLocalizations {
   /// **'Quản lý'**
   String get profileSectionManage;
 
-  /// No description provided for @profileDelegations.
-  ///
-  /// In vi, this message translates to:
-  /// **'Đơn ủy quyền'**
-  String get profileDelegations;
-
   /// No description provided for @profileRefunds.
   ///
   /// In vi, this message translates to:
@@ -4580,18 +4574,6 @@ abstract class AppLocalizations {
   /// **'Đơn thuê đã quá hạn. Đã ghi nhận xử lý phí quá giờ — mời bạn mở ô lấy đồ và đóng tủ để hoàn tất.'**
   String get ordOverdueRentalNotice;
 
-  /// No description provided for @ordDelegatedTo.
-  ///
-  /// In vi, this message translates to:
-  /// **'Đã ủy quyền lấy hộ{to}. Mã PIN cũ đã hết hiệu lực.'**
-  String ordDelegatedTo(Object to);
-
-  /// No description provided for @ordDelegatedToPhone.
-  ///
-  /// In vi, this message translates to:
-  /// **' cho {phone}'**
-  String ordDelegatedToPhone(Object phone);
-
   /// No description provided for @ordChangePinQuestion.
   ///
   /// In vi, this message translates to:
@@ -5192,12 +5174,6 @@ abstract class AppLocalizations {
   /// **'Kết thúc thuê & lấy đồ'**
   String get ordEndRentalPickup;
 
-  /// No description provided for @ordDelegatePickup.
-  ///
-  /// In vi, this message translates to:
-  /// **'Ủy quyền lấy hộ'**
-  String get ordDelegatePickup;
-
   /// No description provided for @ordChangePin.
   ///
   /// In vi, this message translates to:
@@ -5371,24 +5347,6 @@ abstract class AppLocalizations {
   /// In vi, this message translates to:
   /// **'Email người nhận'**
   String get ordRecipientEmail;
-
-  /// No description provided for @ordDelegatedToLabel.
-  ///
-  /// In vi, this message translates to:
-  /// **'Ủy quyền lấy hộ cho'**
-  String get ordDelegatedToLabel;
-
-  /// No description provided for @ordDelegatee.
-  ///
-  /// In vi, this message translates to:
-  /// **'Người được ủy quyền'**
-  String get ordDelegatee;
-
-  /// No description provided for @ordDelegationMessage.
-  ///
-  /// In vi, this message translates to:
-  /// **'Lời nhắn ủy quyền'**
-  String get ordDelegationMessage;
 
   /// No description provided for @ordDelegatedAt.
   ///
@@ -7898,23 +7856,11 @@ abstract class AppLocalizations {
   /// **'Tủ {code}'**
   String recvLockerWithCode(Object code);
 
-  /// No description provided for @recvDelegatorColon.
-  ///
-  /// In vi, this message translates to:
-  /// **'Người ủy quyền:'**
-  String get recvDelegatorColon;
-
   /// No description provided for @recvSenderColon.
   ///
   /// In vi, this message translates to:
   /// **'Người gửi:'**
   String get recvSenderColon;
-
-  /// No description provided for @recvDelegatedPickup.
-  ///
-  /// In vi, this message translates to:
-  /// **'Lấy hộ'**
-  String get recvDelegatedPickup;
 
   /// No description provided for @recvIncomingParcel.
   ///
@@ -8030,18 +7976,6 @@ abstract class AppLocalizations {
   /// **'Cam kết không hàng cấm'**
   String get parcelNoProhibited;
 
-  /// No description provided for @delegateTitle.
-  ///
-  /// In vi, this message translates to:
-  /// **'Ủy quyền lấy hộ'**
-  String get delegateTitle;
-
-  /// No description provided for @delegateBody.
-  ///
-  /// In vi, this message translates to:
-  /// **'Người được ủy quyền thấy đơn và mã mở ô trong mục \"Đơn ủy quyền\" của app (theo số điện thoại). Mã PIN hiện tại sẽ được đổi mới.'**
-  String get delegateBody;
-
   /// No description provided for @delegatePhone.
   ///
   /// In vi, this message translates to:
@@ -8053,30 +7987,6 @@ abstract class AppLocalizations {
   /// In vi, this message translates to:
   /// **'Tên người lấy hộ (không bắt buộc)'**
   String get delegateName;
-
-  /// No description provided for @delegateMessage.
-  ///
-  /// In vi, this message translates to:
-  /// **'Lời nhắn (không bắt buộc)'**
-  String get delegateMessage;
-
-  /// No description provided for @delegateInvalidPhone.
-  ///
-  /// In vi, this message translates to:
-  /// **'Nhập số điện thoại hợp lệ (9–11 số).'**
-  String get delegateInvalidPhone;
-
-  /// No description provided for @delegateNotSupported.
-  ///
-  /// In vi, this message translates to:
-  /// **'Máy chủ chưa hỗ trợ ủy quyền lấy hộ.'**
-  String get delegateNotSupported;
-
-  /// No description provided for @delegateAction.
-  ///
-  /// In vi, this message translates to:
-  /// **'Ủy quyền'**
-  String get delegateAction;
 
   /// No description provided for @shareCopiedMessage.
   ///
@@ -11150,18 +11060,6 @@ abstract class AppLocalizations {
   /// **'Không thấy đơn này trong hàng chờ nhận của bạn. Có thể đơn đã được lấy, hoặc mã nhận hàng được gửi cho số điện thoại khác.'**
   String get psNotInQueue;
 
-  /// No description provided for @psDelegated.
-  ///
-  /// In vi, this message translates to:
-  /// **'Bạn đã ủy quyền cho {name} lấy hộ đơn này nên mã nhận hàng đã chuyển cho người được ủy quyền.'**
-  String psDelegated(Object name);
-
-  /// No description provided for @psSomeoneElse.
-  ///
-  /// In vi, this message translates to:
-  /// **'người khác'**
-  String get psSomeoneElse;
-
   /// No description provided for @psNotReady.
   ///
   /// In vi, this message translates to:
@@ -13789,96 +13687,6 @@ abstract class AppLocalizations {
   /// In vi, this message translates to:
   /// **'Máy chủ chưa hỗ trợ đăng nhập kiosk bằng mã QR. Vui lòng đăng nhập bằng số điện thoại trên kiosk.'**
   String get qlNotSupported;
-
-  /// No description provided for @aoChooseLocker.
-  ///
-  /// In vi, this message translates to:
-  /// **'Vui lòng chọn tủ.'**
-  String get aoChooseLocker;
-
-  /// No description provided for @aoEnterCode.
-  ///
-  /// In vi, this message translates to:
-  /// **'Vui lòng nhập mã lấy hàng.'**
-  String get aoEnterCode;
-
-  /// No description provided for @aoPickupBox.
-  ///
-  /// In vi, this message translates to:
-  /// **'ô lấy hàng'**
-  String get aoPickupBox;
-
-  /// No description provided for @aoOpened.
-  ///
-  /// In vi, this message translates to:
-  /// **'Tủ đã mở ô — lấy hàng rồi đóng cửa tủ lại.'**
-  String get aoOpened;
-
-  /// No description provided for @aoOpenFailed.
-  ///
-  /// In vi, this message translates to:
-  /// **'Không mở được ô{detail}'**
-  String aoOpenFailed(Object detail);
-
-  /// No description provided for @aoTitle.
-  ///
-  /// In vi, this message translates to:
-  /// **'Mở tủ ủy quyền'**
-  String get aoTitle;
-
-  /// No description provided for @aoSubtitle.
-  ///
-  /// In vi, this message translates to:
-  /// **'Lấy hàng bằng mã được gửi cho bạn'**
-  String get aoSubtitle;
-
-  /// No description provided for @aoIntro.
-  ///
-  /// In vi, this message translates to:
-  /// **'Nhập mã lấy hàng (PIN) bạn nhận được — mã có trong mục \"Đơn ủy quyền\" hoặc do người gửi chuyển cho bạn. Bạn cần đứng tại tủ để mở ô.'**
-  String get aoIntro;
-
-  /// No description provided for @aoOrder.
-  ///
-  /// In vi, this message translates to:
-  /// **'Đơn'**
-  String get aoOrder;
-
-  /// No description provided for @aoTapToChoose.
-  ///
-  /// In vi, this message translates to:
-  /// **'Chạm để chọn tủ lấy hàng'**
-  String get aoTapToChoose;
-
-  /// No description provided for @aoOpenBox.
-  ///
-  /// In vi, this message translates to:
-  /// **'Mở ô lấy hàng'**
-  String get aoOpenBox;
-
-  /// No description provided for @mdSubtitle.
-  ///
-  /// In vi, this message translates to:
-  /// **'Đơn người khác nhờ bạn lấy hộ'**
-  String get mdSubtitle;
-
-  /// No description provided for @mdEmpty.
-  ///
-  /// In vi, this message translates to:
-  /// **'Chưa có đơn ủy quyền'**
-  String get mdEmpty;
-
-  /// No description provided for @mdEmptyHint.
-  ///
-  /// In vi, this message translates to:
-  /// **'Khi ai đó ủy quyền bạn lấy hộ (theo số điện thoại của bạn), đơn sẽ hiện ở đây.'**
-  String get mdEmptyHint;
-
-  /// No description provided for @mdNotSupported.
-  ///
-  /// In vi, this message translates to:
-  /// **'Máy chủ chưa hỗ trợ mục Đơn ủy quyền. Vui lòng thử lại sau.'**
-  String get mdNotSupported;
 
   /// No description provided for @dnTitleEnRoute.
   ///

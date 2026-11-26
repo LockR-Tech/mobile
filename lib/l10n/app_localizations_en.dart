@@ -102,9 +102,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get profileSectionManage => 'Manage';
 
   @override
-  String get profileDelegations => 'Delegated orders';
-
-  @override
   String get profileRefunds => 'Refunds';
 
   @override
@@ -2574,16 +2571,6 @@ class AppLocalizationsEn extends AppLocalizations {
       'The rental is overdue. The overtime fee has been recorded — please open the compartment, take your items and close the locker to finish.';
 
   @override
-  String ordDelegatedTo(Object to) {
-    return 'Pickup delegated$to. The old PIN no longer works.';
-  }
-
-  @override
-  String ordDelegatedToPhone(Object phone) {
-    return ' to $phone';
-  }
-
-  @override
   String get ordChangePinQuestion => 'Change PIN?';
 
   @override
@@ -2957,9 +2944,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get ordEndRentalPickup => 'End rental & pick up';
 
   @override
-  String get ordDelegatePickup => 'Delegate pickup';
-
-  @override
   String get ordChangePin => 'Change PIN';
 
   @override
@@ -3058,15 +3042,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get ordRecipientEmail => 'Recipient email';
-
-  @override
-  String get ordDelegatedToLabel => 'Pickup delegated to';
-
-  @override
-  String get ordDelegatee => 'Delegate';
-
-  @override
-  String get ordDelegationMessage => 'Delegation message';
 
   @override
   String get ordDelegatedAt => 'Delegated at';
@@ -4590,13 +4565,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get recvDelegatorColon => 'Delegated by:';
-
-  @override
   String get recvSenderColon => 'Sender:';
-
-  @override
-  String get recvDelegatedPickup => 'Delegated';
 
   @override
   String get recvIncomingParcel => 'Incoming';
@@ -4666,31 +4635,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get parcelNoProhibited => 'No prohibited items declared';
 
   @override
-  String get delegateTitle => 'Delegate pickup';
-
-  @override
-  String get delegateBody =>
-      'The delegate will see the order and the opening code under \"Delegated orders\" in the app (matched by phone number). The current PIN will be replaced.';
-
-  @override
   String get delegatePhone => 'Delegate\'s phone number';
 
   @override
   String get delegateName => 'Delegate\'s name (optional)';
-
-  @override
-  String get delegateMessage => 'Message (optional)';
-
-  @override
-  String get delegateInvalidPhone =>
-      'Enter a valid phone number (9–11 digits).';
-
-  @override
-  String get delegateNotSupported =>
-      'The server doesn\'t support pickup delegation yet.';
-
-  @override
-  String get delegateAction => 'Delegate';
 
   @override
   String get shareCopiedMessage =>
@@ -6519,14 +6467,6 @@ class AppLocalizationsEn extends AppLocalizations {
       'This order isn\'t in your incoming list. It may have been picked up, or the pickup code was sent to another phone number.';
 
   @override
-  String psDelegated(Object name) {
-    return 'You delegated pickup of this order to $name, so the pickup code has moved to them.';
-  }
-
-  @override
-  String get psSomeoneElse => 'someone else';
-
-  @override
   String get psNotReady =>
       'The pickup code isn\'t ready yet. It will be available once the parcel is in the receiving compartment.';
 
@@ -8019,57 +7959,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get qlNotSupported =>
       'The server doesn\'t support kiosk login by QR code yet. Please log in with your phone number on the kiosk.';
-
-  @override
-  String get aoChooseLocker => 'Please choose a locker.';
-
-  @override
-  String get aoEnterCode => 'Please enter the pickup code.';
-
-  @override
-  String get aoPickupBox => 'the pickup compartment';
-
-  @override
-  String get aoOpened =>
-      'The compartment is open — take your parcel and close the door.';
-
-  @override
-  String aoOpenFailed(Object detail) {
-    return 'Couldn\'t open the compartment$detail';
-  }
-
-  @override
-  String get aoTitle => 'Delegated locker opening';
-
-  @override
-  String get aoSubtitle => 'Pick up with the code sent to you';
-
-  @override
-  String get aoIntro =>
-      'Enter the pickup code (PIN) you received — it\'s under \"Delegated orders\" or was sent to you by the sender. You need to be at the locker to open the compartment.';
-
-  @override
-  String get aoOrder => 'Order';
-
-  @override
-  String get aoTapToChoose => 'Tap to choose the pickup locker';
-
-  @override
-  String get aoOpenBox => 'Open compartment to pick up';
-
-  @override
-  String get mdSubtitle => 'Orders others asked you to pick up';
-
-  @override
-  String get mdEmpty => 'No delegated orders yet';
-
-  @override
-  String get mdEmptyHint =>
-      'When someone delegates a pickup to you (by your phone number), the order will appear here.';
-
-  @override
-  String get mdNotSupported =>
-      'The server doesn\'t support Delegated orders yet. Please try again later.';
 
   @override
   String get dnTitleEnRoute => 'Drone delivering';
