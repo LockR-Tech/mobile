@@ -585,6 +585,7 @@ class LockerOpsService {
     String description, {
     bool blocking = false,
     int? boxId,
+    String? ticketType,
     List<Map<String, dynamic>>? attachments,
   }) => _map(
     'POST',
@@ -593,6 +594,7 @@ class LockerOpsService {
       'title': title,
       'description': description,
       if (boxId != null) 'boxId': boxId,
+      if (ticketType != null && ticketType.isNotEmpty) 'ticketType': ticketType,
       if (attachments != null && attachments.isNotEmpty)
         'attachments': attachments,
       if (blocking) 'blocking': true,

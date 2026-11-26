@@ -9523,6 +9523,27 @@ class AppLocalizationsEn extends AppLocalizations {
   String get techHomeReportWholeLocker => 'Report whole-locker incident';
 
   @override
+  String get techHomeOtherTechLockerHint =>
+      'This locker is assigned to another technician — you can still report individual box faults if noticed on site.';
+
+  @override
+  String techHomeViewInstallationRecord(Object status) {
+    return 'Installation dossier ($status)';
+  }
+
+  @override
+  String get techHomeMaintainWholeLocker => 'Maintain locker';
+
+  @override
+  String techHomeMaintainLockerDefaultTitle(Object code) {
+    return 'Maintenance for Kiosk $code';
+  }
+
+  @override
+  String get techHomeLockerMaintenanceTitleHint =>
+      'E.g. power servicing, door inspection, reader cleanup...';
+
+  @override
   String get techHomeLockerIncidentTitleHint =>
       'E.g. kiosk screen won\'t turn on, power loss...';
 
@@ -13171,6 +13192,35 @@ class AppLocalizationsEn extends AppLocalizations {
   String get dtReasonRequired => 'Reason (required)';
 
   @override
+  String get dtMaintenanceReasonOptional => 'Maintenance details / reason';
+
+  @override
+  String get dtMaintenanceReasonHint =>
+      'E.g. inspect battery, replace propellers, calibrate sensors...';
+
+  @override
+  String get dtMaintenanceTicketHint =>
+      'Switching to Maintenance creates a maintenance ticket assigned to you.';
+
+  @override
+  String get dtFaultTicketHint =>
+      'Switching to Fault creates a repair/incident ticket assigned to you.';
+
+  @override
+  String get dtStatusChangedWithTicket =>
+      'Drone status updated and ticket created for you';
+
+  @override
+  String dtOpenReportTile(Object id) {
+    return 'View ticket RPT-$id';
+  }
+
+  @override
+  String dtHandleReportTile(Object id) {
+    return 'Handle ticket RPT-$id';
+  }
+
+  @override
   String get dtStatusUnchanged => 'Status unchanged';
 
   @override
@@ -15107,6 +15157,21 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get instStatusCancelled => 'Cancelled';
+
+  @override
+  String instFilterOpenCount(Object count) {
+    return 'Open ($count)';
+  }
+
+  @override
+  String instFilterClosedCount(Object count) {
+    return 'Completed ($count)';
+  }
+
+  @override
+  String instApprovedAt(Object time) {
+    return 'Approved at $time';
+  }
 
   @override
   String get instCheckPassed => 'Passed';

@@ -49,6 +49,42 @@ class _FakeMaintenanceService extends LockerOpsService {
   List<Map<String, dynamic>>? customSchedules;
   int? advancedOrderId;
   String? advancedExpectedStage;
+  int? updatedDroneId;
+  String? updatedDroneStatus;
+  String? updatedDroneStatusReason;
+
+  @override
+  Future<List<Map<String, dynamic>>> droneOrdersByTicket(
+    int ticketId, {
+    bool lockerTechnician = false,
+  }) async => const [];
+
+  @override
+  Future<Map<String, dynamic>> updateDroneStatus(
+    int id,
+    String status, {
+    String? reason,
+  }) async {
+    updatedDroneId = id;
+    updatedDroneStatus = status;
+    updatedDroneStatusReason = reason;
+    if (status == 'MAINTENANCE' || status == 'FAULT') {
+      final created = {
+        'id': 777,
+        'title': status == 'MAINTENANCE' ? 'Bảo trì Drone DRONE-09' : 'Drone DRONE-09 lỗi',
+        'description': reason ?? 'Đưa drone vào bảo trì',
+        'status': 'IN_PROGRESS',
+        'category': 'DRONE',
+        'ticketType': status == 'MAINTENANCE' ? 'DRONE_MAINTENANCE' : null,
+        'droneUnitId': id,
+        'droneCode': 'DRONE-09',
+        'assignedToUserId': 99,
+        'createdAt': '2026-10-10T08:00:00Z',
+      };
+      customReports = [created, ...(customReports ?? const [])];
+    }
+    return {'id': id, 'status': status};
+  }
 
   @override
   Future<List<Map<String, dynamic>>> droneIncidents() async => incidents;
@@ -1518,6 +1554,138 @@ void main() {
 
       // Không còn toggle chip "Của tôi" / "Tất cả"
       expect(find.text('Của tôi (1)'), findsNothing);
+    },
+  );
+
+  testWidgets(
+    'chuyển drone sang Bảo trì hiển thị gợi ý tạo phiếu và gửi lý do bảo trì',
+    (tester) async {
+      _setPhoneViewport(tester);
+      final service = _FakeMaintenanceService()
+        ..customDrones = [
+          {
+            'id': 9,
+            'code': 'DRONE-09',
+            'status': 'IDLE',
+            'batteryPercent': 88,
+            'assignedTechnicianId': 99,
+            'assignedTechnicianName': 'KTV 99',
+          },
+        ]
+        ..customReports = [];
+
+      final router = GoRouter(
+        routes: [
+          GoRoute(
+            path: '/',
+            builder: (context, state) => MaintenanceHomePage(service: service),
+          ),
+        ],
+      );
+
+      await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Đội bay (1)'));
+      await tester.pumpAndSettle();
+
+      await tester.ensureVisible(find.text('DRONE-09'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('DRONE-09'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Đổi trạng thái'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(
+        find.widgetWithText(ChoiceChip, L10n.current.dtDroneStatusMaintenance),
+      );
+      await tester.pumpAndSettle();
+
+      expect(
+        find.text(L10n.current.dtMaintenanceTicketHint),
+        findsOneWidget,
+      );
+
+      await tester.enterText(find.byType(TextField), 'Kiểm tra pin định kỳ');
+      await tester.tap(find.text('Xác nhận'));
+      await tester.pump();
+      await tester.pump(const Duration(seconds: 1));
+      await tester.pump(const Duration(seconds: 4));
+
+      expect(service.updatedDroneId, 9);
+      expect(service.updatedDroneStatus, 'MAINTENANCE');
+      expect(service.updatedDroneStatusReason, 'Kiểm tra pin định kỳ');
+      // Sau khi đổi sang Bảo trì, phiếu vừa tạo được mở lên ngay trong sheet chi tiết.
+      expect(
+        find.text('Hồ sơ chi tiết phiếu sự cố kỹ thuật Drone'),
+        findsOneWidget,
+      );
+      expect(find.text('Ảnh hồ sơ theo giai đoạn'), findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    'bấm vào drone đang có phiếu mở hiển thị nút mở thẳng chi tiết phiếu',
+    (tester) async {
+      _setPhoneViewport(tester);
+      final service = _FakeMaintenanceService()
+        ..customDrones = [
+          {
+            'id': 9,
+            'code': 'DRONE-09',
+            'status': 'MAINTENANCE',
+            'batteryPercent': 88,
+            'assignedTechnicianId': 99,
+            'assignedTechnicianName': 'KTV 99',
+          },
+        ]
+        ..customReports = [
+          {
+            'id': 555,
+            'title': 'Bảo trì Drone DRONE-09',
+            'description': 'Kiểm tra motor',
+            'status': 'IN_PROGRESS',
+            'category': 'DRONE',
+            'ticketType': 'DRONE_MAINTENANCE',
+            'droneUnitId': 9,
+            'droneCode': 'DRONE-09',
+            'assignedToUserId': 99,
+            'createdAt': '2026-10-10T08:00:00Z',
+          },
+        ];
+
+      final router = GoRouter(
+        routes: [
+          GoRoute(
+            path: '/',
+            builder: (context, state) => MaintenanceHomePage(service: service),
+          ),
+        ],
+      );
+
+      await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Đội bay (1)'));
+      await tester.pumpAndSettle();
+
+      await tester.ensureVisible(find.text('DRONE-09'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('DRONE-09'));
+      await tester.pumpAndSettle();
+
+      expect(find.text(L10n.current.dtHandleReportTile('555')), findsOneWidget);
+      await tester.tap(find.text(L10n.current.dtHandleReportTile('555')));
+      await tester.pump();
+      await tester.pump(const Duration(seconds: 1));
+      await tester.pump(const Duration(seconds: 4));
+
+      expect(
+        find.text('Hồ sơ chi tiết phiếu sự cố kỹ thuật Drone'),
+        findsOneWidget,
+      );
+      expect(find.text('Ảnh hồ sơ theo giai đoạn'), findsOneWidget);
     },
   );
 }

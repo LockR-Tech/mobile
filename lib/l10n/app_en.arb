@@ -2838,6 +2838,21 @@
   "techHomeYourLocker": "Your locker",
   "techHomeVisualCheckHint": "Visually check each compartment and only report a fault once you've confirmed a physical issue at the locker.",
   "techHomeReportWholeLocker": "Report whole-locker incident",
+  "techHomeOtherTechLockerHint": "This locker is assigned to another technician — you can still report individual box faults if noticed on site.",
+  "techHomeViewInstallationRecord": "Installation dossier ({status})",
+  "@techHomeViewInstallationRecord": {
+    "placeholders": {
+      "status": {}
+    }
+  },
+  "techHomeMaintainWholeLocker": "Maintain locker",
+  "techHomeMaintainLockerDefaultTitle": "Maintenance for Kiosk {code}",
+  "@techHomeMaintainLockerDefaultTitle": {
+    "placeholders": {
+      "code": {}
+    }
+  },
+  "techHomeLockerMaintenanceTitleHint": "E.g. power servicing, door inspection, reader cleanup...",
   "techHomeLockerIncidentTitleHint": "E.g. kiosk screen won't turn on, power loss...",
   "techHomeScenePhotosOptional": "On-site photos (optional, up to {max})",
   "@techHomeScenePhotosOptional": {
@@ -4711,6 +4726,23 @@
   "dtChangeDroneStatusTitle": "Change drone status",
   "dtDroneHasOpenReports": "The drone still has open tickets {tickets}: complete them before switching to Ready or Charging.",
   "dtReasonRequired": "Reason (required)",
+  "dtMaintenanceReasonOptional": "Maintenance details / reason",
+  "dtMaintenanceReasonHint": "E.g. inspect battery, replace propellers, calibrate sensors...",
+  "dtMaintenanceTicketHint": "Switching to Maintenance creates a maintenance ticket assigned to you.",
+  "dtFaultTicketHint": "Switching to Fault creates a repair/incident ticket assigned to you.",
+  "dtStatusChangedWithTicket": "Drone status updated and ticket created for you",
+  "dtOpenReportTile": "View ticket RPT-{id}",
+  "@dtOpenReportTile": {
+    "placeholders": {
+      "id": {}
+    }
+  },
+  "dtHandleReportTile": "Handle ticket RPT-{id}",
+  "@dtHandleReportTile": {
+    "placeholders": {
+      "id": {}
+    }
+  },
   "dtStatusUnchanged": "Status unchanged",
   "dtFaultReasonRequired": "A reason is required when switching to FAULT",
   "dtStatusChanged": "Drone status changed",
@@ -5241,6 +5273,24 @@
   "instStatusSubmitted": "Awaiting review",
   "instStatusApproved": "Approved",
   "instStatusCancelled": "Cancelled",
+  "instFilterOpenCount": "Open ({count})",
+  "@instFilterOpenCount": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "instFilterClosedCount": "Completed ({count})",
+  "@instFilterClosedCount": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "instApprovedAt": "Approved at {time}",
+  "@instApprovedAt": {
+    "placeholders": {
+      "time": {}
+    }
+  },
   "instCheckPassed": "Passed",
   "instCheckFailed": "Failed",
   "instCheckNotApplicable": "N/A",

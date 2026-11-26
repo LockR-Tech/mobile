@@ -16256,6 +16256,36 @@ abstract class AppLocalizations {
   /// **'Báo sự cố cả tủ'**
   String get techHomeReportWholeLocker;
 
+  /// No description provided for @techHomeOtherTechLockerHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tủ này do KTV khác phụ trách — bạn chỉ báo lỗi từng ô nếu phát hiện sự cố tại chỗ.'**
+  String get techHomeOtherTechLockerHint;
+
+  /// No description provided for @techHomeViewInstallationRecord.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hồ sơ lắp đặt ({status})'**
+  String techHomeViewInstallationRecord(Object status);
+
+  /// No description provided for @techHomeMaintainWholeLocker.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bảo trì tủ'**
+  String get techHomeMaintainWholeLocker;
+
+  /// No description provided for @techHomeMaintainLockerDefaultTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bảo trì Kiosk {code}'**
+  String techHomeMaintainLockerDefaultTitle(Object code);
+
+  /// No description provided for @techHomeLockerMaintenanceTitleHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'VD: Bảo dưỡng nguồn, kiểm tra cửa tủ, vệ sinh đầu đọc...'**
+  String get techHomeLockerMaintenanceTitleHint;
+
   /// No description provided for @techHomeLockerIncidentTitleHint.
   ///
   /// In vi, this message translates to:
@@ -21919,6 +21949,48 @@ abstract class AppLocalizations {
   /// **'Lý do (bắt buộc)'**
   String get dtReasonRequired;
 
+  /// No description provided for @dtMaintenanceReasonOptional.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nội dung / lý do bảo trì'**
+  String get dtMaintenanceReasonOptional;
+
+  /// No description provided for @dtMaintenanceReasonHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'VD: kiểm tra pin, thay cánh quạt, hiệu chuẩn cảm biến...'**
+  String get dtMaintenanceReasonHint;
+
+  /// No description provided for @dtMaintenanceTicketHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chuyển sang Bảo trì sẽ tạo phiếu bảo trì và giao cho bạn xử lý.'**
+  String get dtMaintenanceTicketHint;
+
+  /// No description provided for @dtFaultTicketHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chuyển sang Lỗi sẽ tạo phiếu sửa chữa/sự cố và giao cho bạn xử lý.'**
+  String get dtFaultTicketHint;
+
+  /// No description provided for @dtStatusChangedWithTicket.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã đổi trạng thái drone và tạo phiếu cho bạn xử lý'**
+  String get dtStatusChangedWithTicket;
+
+  /// No description provided for @dtOpenReportTile.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xem phiếu RPT-{id}'**
+  String dtOpenReportTile(Object id);
+
+  /// No description provided for @dtHandleReportTile.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xử lý phiếu RPT-{id}'**
+  String dtHandleReportTile(Object id);
+
   /// No description provided for @dtStatusUnchanged.
   ///
   /// In vi, this message translates to:
@@ -25098,6 +25170,24 @@ abstract class AppLocalizations {
   /// In vi, this message translates to:
   /// **'Đã huỷ'**
   String get instStatusCancelled;
+
+  /// No description provided for @instFilterOpenCount.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang mở ({count})'**
+  String instFilterOpenCount(Object count);
+
+  /// No description provided for @instFilterClosedCount.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã hoàn tất ({count})'**
+  String instFilterClosedCount(Object count);
+
+  /// No description provided for @instApprovedAt.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nghiệm thu lúc {time}'**
+  String instApprovedAt(Object time);
 
   /// No description provided for @instCheckPassed.
   ///

@@ -4802,6 +4802,21 @@
   "techHomeYourLocker": "Tủ bạn phụ trách",
   "techHomeVisualCheckHint": "Kiểm tra trực quan từng ô rồi chỉ báo hỏng khi xác nhận lỗi vật lý tại tủ.",
   "techHomeReportWholeLocker": "Báo sự cố cả tủ",
+  "techHomeOtherTechLockerHint": "Tủ này do KTV khác phụ trách — bạn chỉ báo lỗi từng ô nếu phát hiện sự cố tại chỗ.",
+  "techHomeViewInstallationRecord": "Hồ sơ lắp đặt ({status})",
+  "@techHomeViewInstallationRecord": {
+    "placeholders": {
+      "status": {}
+    }
+  },
+  "techHomeMaintainWholeLocker": "Bảo trì tủ",
+  "techHomeMaintainLockerDefaultTitle": "Bảo trì Kiosk {code}",
+  "@techHomeMaintainLockerDefaultTitle": {
+    "placeholders": {
+      "code": {}
+    }
+  },
+  "techHomeLockerMaintenanceTitleHint": "VD: Bảo dưỡng nguồn, kiểm tra cửa tủ, vệ sinh đầu đọc...",
   "techHomeLockerIncidentTitleHint": "VD: Màn hình kiosk không lên, mất nguồn...",
   "techHomeScenePhotosOptional": "Ảnh hiện trường (tuỳ chọn, tối đa {max})",
   "@techHomeScenePhotosOptional": {
@@ -7066,6 +7081,23 @@
     }
   },
   "dtReasonRequired": "Lý do (bắt buộc)",
+  "dtMaintenanceReasonOptional": "Nội dung / lý do bảo trì",
+  "dtMaintenanceReasonHint": "VD: kiểm tra pin, thay cánh quạt, hiệu chuẩn cảm biến...",
+  "dtMaintenanceTicketHint": "Chuyển sang Bảo trì sẽ tạo phiếu bảo trì và giao cho bạn xử lý.",
+  "dtFaultTicketHint": "Chuyển sang Lỗi sẽ tạo phiếu sửa chữa/sự cố và giao cho bạn xử lý.",
+  "dtStatusChangedWithTicket": "Đã đổi trạng thái drone và tạo phiếu cho bạn xử lý",
+  "dtOpenReportTile": "Xem phiếu RPT-{id}",
+  "@dtOpenReportTile": {
+    "placeholders": {
+      "id": {}
+    }
+  },
+  "dtHandleReportTile": "Xử lý phiếu RPT-{id}",
+  "@dtHandleReportTile": {
+    "placeholders": {
+      "id": {}
+    }
+  },
   "dtStatusUnchanged": "Trạng thái không thay đổi",
   "dtFaultReasonRequired": "Cần nhập lý do khi chuyển sang FAULT",
   "dtStatusChanged": "Đã đổi trạng thái drone",
@@ -8186,6 +8218,24 @@
   "instStatusSubmitted": "Chờ duyệt",
   "instStatusApproved": "Đã nghiệm thu",
   "instStatusCancelled": "Đã huỷ",
+  "instFilterOpenCount": "Đang mở ({count})",
+  "@instFilterOpenCount": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "instFilterClosedCount": "Đã hoàn tất ({count})",
+  "@instFilterClosedCount": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "instApprovedAt": "Nghiệm thu lúc {time}",
+  "@instApprovedAt": {
+    "placeholders": {
+      "time": {}
+    }
+  },
   "instCheckPassed": "Đạt",
   "instCheckFailed": "Lỗi",
   "instCheckNotApplicable": "Không áp dụng",

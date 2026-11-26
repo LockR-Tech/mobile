@@ -9348,6 +9348,27 @@ class AppLocalizationsVi extends AppLocalizations {
   String get techHomeReportWholeLocker => 'Báo sự cố cả tủ';
 
   @override
+  String get techHomeOtherTechLockerHint =>
+      'Tủ này do KTV khác phụ trách — bạn chỉ báo lỗi từng ô nếu phát hiện sự cố tại chỗ.';
+
+  @override
+  String techHomeViewInstallationRecord(Object status) {
+    return 'Hồ sơ lắp đặt ($status)';
+  }
+
+  @override
+  String get techHomeMaintainWholeLocker => 'Bảo trì tủ';
+
+  @override
+  String techHomeMaintainLockerDefaultTitle(Object code) {
+    return 'Bảo trì Kiosk $code';
+  }
+
+  @override
+  String get techHomeLockerMaintenanceTitleHint =>
+      'VD: Bảo dưỡng nguồn, kiểm tra cửa tủ, vệ sinh đầu đọc...';
+
+  @override
   String get techHomeLockerIncidentTitleHint =>
       'VD: Màn hình kiosk không lên, mất nguồn...';
 
@@ -12849,6 +12870,35 @@ class AppLocalizationsVi extends AppLocalizations {
   String get dtReasonRequired => 'Lý do (bắt buộc)';
 
   @override
+  String get dtMaintenanceReasonOptional => 'Nội dung / lý do bảo trì';
+
+  @override
+  String get dtMaintenanceReasonHint =>
+      'VD: kiểm tra pin, thay cánh quạt, hiệu chuẩn cảm biến...';
+
+  @override
+  String get dtMaintenanceTicketHint =>
+      'Chuyển sang Bảo trì sẽ tạo phiếu bảo trì và giao cho bạn xử lý.';
+
+  @override
+  String get dtFaultTicketHint =>
+      'Chuyển sang Lỗi sẽ tạo phiếu sửa chữa/sự cố và giao cho bạn xử lý.';
+
+  @override
+  String get dtStatusChangedWithTicket =>
+      'Đã đổi trạng thái drone và tạo phiếu cho bạn xử lý';
+
+  @override
+  String dtOpenReportTile(Object id) {
+    return 'Xem phiếu RPT-$id';
+  }
+
+  @override
+  String dtHandleReportTile(Object id) {
+    return 'Xử lý phiếu RPT-$id';
+  }
+
+  @override
   String get dtStatusUnchanged => 'Trạng thái không thay đổi';
 
   @override
@@ -14737,6 +14787,21 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get instStatusCancelled => 'Đã huỷ';
+
+  @override
+  String instFilterOpenCount(Object count) {
+    return 'Đang mở ($count)';
+  }
+
+  @override
+  String instFilterClosedCount(Object count) {
+    return 'Đã hoàn tất ($count)';
+  }
+
+  @override
+  String instApprovedAt(Object time) {
+    return 'Nghiệm thu lúc $time';
+  }
 
   @override
   String get instCheckPassed => 'Đạt';
