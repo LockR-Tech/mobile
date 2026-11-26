@@ -5,7 +5,7 @@
       "summary": "Menu bên trái, đường dẫn trang, tìm nhanh, thông báo, ngôn ngữ, giao diện sáng/tối và nút mở lại hướng dẫn."
     },
     "admin-dashboard": {
-      "title": "Dashboard",
+      "title": "Tổng quan",
       "summary": "Số liệu chính trong ngày và trong tháng, xu hướng đơn – doanh thu theo năm, công suất các tủ và địa điểm hiệu quả nhất."
     },
     "admin-orders": {
@@ -206,7 +206,7 @@
     },
     "admin-order-detail": {
       "title": "Chi tiết đơn – thông tin chính",
-      "summary": "Mã đơn, băng trạng thái, thông tin như app khách, mốc thời gian, phí, kiện hàng và lịch sử trạng thái."
+      "summary": "Mã đơn, băng trạng thái, thông tin đơn theo loại (như app khách), phí, kiện hàng và lịch sử trạng thái."
     },
     "admin-order-detail-side": {
       "title": "Chi tiết đơn – khách, tủ, mã, thanh toán",
@@ -226,11 +226,7 @@
     },
     "admin-user-detail": {
       "title": "Hồ sơ người dùng",
-      "summary": "Thông tin cá nhân sửa được, ảnh đại diện, vai trò, tài khoản, điều khoản và số liệu đơn, chi tiêu, ví, điểm."
-    },
-    "admin-user-wallet": {
-      "title": "Ví người dùng",
-      "summary": "Xem số dư và cộng / trừ tiền ví của một người dùng, kèm lý do."
+      "summary": "Thông tin cá nhân sửa được, ảnh đại diện, vai trò, tài khoản, điều khoản và số liệu đơn, chi tiêu, điểm."
     },
     "admin-user-tab-orders": {
       "title": "Hồ sơ – các tab hoạt động",
@@ -238,11 +234,7 @@
     },
     "admin-user-tab-payments": {
       "title": "Hồ sơ – tab Thanh toán",
-      "summary": "Mọi giao dịch của người dùng, kể cả nạp ví; mở chi tiết giao dịch ngay trong hồ sơ."
-    },
-    "admin-user-tab-wallet": {
-      "title": "Hồ sơ – tab Ví",
-      "summary": "Lịch sử cộng / trừ tiền ví của người dùng."
+      "summary": "Mọi giao dịch thanh toán đơn của người dùng; mở chi tiết giao dịch ngay trong hồ sơ."
     },
     "admin-user-tab-loyalty": {
       "title": "Hồ sơ – tab Điểm thưởng",
@@ -262,23 +254,7 @@
     },
     "admin-payment-detail": {
       "title": "Chi tiết giao dịch",
-      "summary": "Thông tin thu tiền, đơn liên quan, hoàn tiền, biến động ví và đổi trạng thái giao dịch."
-    },
-    "admin-payments-wallet": {
-      "title": "Thanh toán – Biến động ví",
-      "summary": "Mọi lần cộng / trừ ví của toàn bộ khách, lọc theo chiều, nguồn và ngày."
-    },
-    "admin-payments-withdrawals": {
-      "title": "Thanh toán – Yêu cầu rút tiền",
-      "summary": "Khách rút tiền ví về ngân hàng; admin chuyển khoản thật rồi duyệt hoặc từ chối."
-    },
-    "admin-withdrawal-approve": {
-      "title": "Duyệt yêu cầu rút tiền",
-      "summary": "Hộp thoại xác nhận đã chuyển tiền cho một yêu cầu rút tiền."
-    },
-    "admin-withdrawal-reject": {
-      "title": "Từ chối yêu cầu rút tiền",
-      "summary": "Hộp thoại từ chối rút tiền: nhập lý do, tiền tự hoàn về ví khách."
+      "summary": "Thông tin thu tiền, đơn liên quan, hoàn tiền và đổi trạng thái giao dịch."
     },
     "admin-refunds-history": {
       "title": "Hoàn tiền – Lịch sử",
@@ -674,7 +650,7 @@
     },
     "customer-profile-manage": {
       "title": "Thông báo và quản lý",
-      "summary": "Thông báo, đơn ủy quyền, hoàn tiền, giao dịch và báo cáo sự cố."
+      "summary": "Thông báo, hoàn tiền, giao dịch và báo cáo sự cố."
     },
     "customer-profile-settings": {
       "title": "Cài đặt",
@@ -873,16 +849,8 @@
       "summary": "Nút trong chi tiết đơn đổi theo trạng thái: thanh toán, mở ô, xác nhận, gia hạn."
     },
     "customer-order-more": {
-      "title": "Uỷ quyền, mã PIN & hỗ trợ",
-      "summary": "Nhờ người lấy hộ, đổi PIN, email người nhận, báo ô lỗi, huỷ đơn, chỉ đường và hoàn tiền."
-    },
-    "customer-delegations": {
-      "title": "Đơn ủy quyền",
-      "summary": "Đơn người khác nhờ bạn lấy hộ."
-    },
-    "customer-authorized-opening": {
-      "title": "Mở tủ ủy quyền",
-      "summary": "Lấy hàng bằng mã được gửi cho bạn, ngay tại tủ."
+      "title": "Mã PIN & hỗ trợ",
+      "summary": "Đổi PIN, email người nhận, báo ô lỗi, huỷ đơn, chỉ đường và hoàn tiền."
     },
     "customer-qr-scan": {
       "title": "Đăng nhập kiosk bằng QR",
@@ -1328,7 +1296,7 @@
     },
     "customer-orders-list": {
       "title": "Danh sách đơn",
-      "body": "Đơn xếp theo ngày; thẻ có cảnh báo khi quá hạn, phí tạm dừng vì sự cố ô hay đồ đã về kho. Bấm một đơn để xem PIN/QR, thanh toán, uỷ quyền."
+      "body": "Đơn xếp theo ngày; thẻ có cảnh báo khi quá hạn, phí tạm dừng vì sự cố ô hay đồ đã về kho. Bấm một đơn để xem PIN/QR và thanh toán."
     },
     "customer-profile-header": {
       "title": "Hồ sơ của bạn",
@@ -2088,19 +2056,15 @@
     },
     "admin-order-detail-info": {
       "title": "Thông tin đơn",
-      "body": "Đúng các dòng khách thấy trên app: hạn lấy, giờ dự kiến nhận, người nhận, người được uỷ quyền lấy hộ, phí quá hạn, sự cố và các mốc đã qua."
-    },
-    "admin-order-detail-milestones": {
-      "title": "Mốc thời gian",
-      "body": "Giờ tạo, thanh toán, hạn lấy, nhận thực tế, hoàn thành, trả hàng, lần nhắc gần nhất. Ô trống là mốc chưa xảy ra."
+      "body": "Đúng các dòng khách thấy trên app, theo loại đơn: thuê ô có thời gian thuê, hết giờ thuê, lúc bỏ đồ; gửi hàng có thời gian giữ, hạn người nhận lấy, lúc người gửi bỏ hàng; drone có hạn lấy ở tủ nhận, tủ gửi và quãng bay. Dòng phụ (hoàn tất, nhắc lấy hàng…) chỉ hiện khi có, kèm uỷ quyền lấy hộ, phí quá hạn, sự cố và các mốc khách thấy."
     },
     "admin-order-detail-fees": {
       "title": "Chi tiết phí",
-      "body": "Phí gốc, giữ ô, lưu, giao, phí quá hạn, giảm giá, điểm thưởng đã dùng và tổng phải trả; kèm mã khuyến mãi đã áp."
+      "body": "Các khoản thực tính (phí gốc, lưu, giao, phí quá hạn), giảm giá, điểm thưởng đã dùng và tổng phải trả; khoản bằng 0 không hiện. Kèm mã khuyến mãi đã áp."
     },
     "admin-order-detail-parcel": {
       "title": "Kiện hàng & ghi chú",
-      "body": "Khai báo kiện của khách (mô tả, loại, cân nặng, kích thước, giá trị), dịch vụ đã chọn, ghi chú khách / nhân viên, bước tiếp theo và lý do huỷ."
+      "body": "Khai báo kiện của khách, đồ gửi kèm, ghi chú khách / nhân viên, bước tiếp theo (khi đơn còn mở) và lý do huỷ. Đơn không có gì để ghi thì khối này ẩn."
     },
     "admin-order-detail-history": {
       "title": "Lịch sử trạng thái",
@@ -2108,11 +2072,11 @@
     },
     "admin-order-detail-side-customer": {
       "title": "Khách hàng",
-      "body": "Người gửi (tên, SĐT, email, trạng thái tài khoản) và người nhận; người nhận có tài khoản Lock.R thì hiện thêm tài khoản đó."
+      "body": "Người gửi (đơn thuê ô: người thuê) — tên, SĐT, email, trạng thái tài khoản — và người nhận (không có ở đơn thuê ô); người nhận có tài khoản Lock.R thì hiện thêm tài khoản đó."
     },
     "admin-order-detail-side-locker": {
       "title": "Tủ & ô",
-      "body": "Tủ gửi / tủ đích, địa chỉ, ô gửi – nhận – giữ chỗ, cửa hàng và SĐT liên hệ. Đơn quá hạn có giờ dời vào kho và liên kết \"Xem danh sách đồ lưu kho\"; đơn đã trao ở quầy có \"Biên bản trao trả\"."
+      "body": "Tủ, địa chỉ và ô của đơn: đơn gửi hàng chỉ một ô (người gửi bỏ, người nhận lấy cùng ô), đơn thuê ô là ô đang thuê; cửa hàng và SĐT liên hệ. Đơn quá hạn có giờ dời vào kho và liên kết \"Xem danh sách đồ lưu kho\"; đơn đã trao ở quầy có \"Biên bản trao trả\"."
     },
     "admin-order-detail-side-code": {
       "title": "Mã lấy hàng",
@@ -2129,10 +2093,6 @@
     "admin-order-detail-side-refunds": {
       "title": "Hoàn tiền của đơn",
       "body": "Từng phiếu hoàn: số tiền, trạng thái, lý do, mã giao dịch, giờ yêu cầu và giờ xử lý. Duyệt phiếu ở trang Hoàn tiền."
-    },
-    "admin-order-detail-side-links": {
-      "title": "Tóm tắt liên kết",
-      "body": "Tên tủ, cửa hàng, số ô và loại đơn gọn một chỗ. Mọi giờ trên trang theo giờ Việt Nam, giống app khách."
     },
     "admin-order-detail-drone-fees": {
       "title": "Phí đơn drone",
@@ -2200,7 +2160,7 @@
     },
     "admin-users-row-menu": {
       "title": "Menu dòng",
-      "body": "Nút \"…\": \"Xem chi tiết\", \"Ví\" (xem và cộng / trừ số dư) và \"Xóa\" (bắt buộc lý do). Chỉ muốn chặn đăng nhập thì tắt công tắc thay vì xoá."
+      "body": "Nút \"…\": \"Xem chi tiết\" và \"Xóa\" (bắt buộc lý do). Chỉ muốn chặn đăng nhập thì tắt công tắc thay vì xoá."
     },
     "admin-users-create-name": {
       "title": "Tên và họ",
@@ -2236,7 +2196,7 @@
     },
     "admin-user-detail-actions": {
       "title": "Nút thao tác",
-      "body": "\"Ví\" mở hộp thoại số dư; \"Hồ sơ kỹ thuật viên\" (chỉ KTV) mở trang KTV; nhãn \"Đang hoạt động\" / \"Đã khóa\". Khi bạn sửa thông tin, nơi này đổi thành \"Hủy\" và \"Lưu thay đổi\"."
+      "body": "\"Hồ sơ kỹ thuật viên\" (chỉ KTV) mở trang KTV; nhãn \"Đang hoạt động\" / \"Đã khóa\". Khi bạn sửa thông tin, nơi này đổi thành \"Hủy\" và \"Lưu thay đổi\"."
     },
     "admin-user-detail-avatar": {
       "title": "Ảnh đại diện",
@@ -2260,31 +2220,11 @@
     },
     "admin-user-detail-stats": {
       "title": "Số liệu nhanh",
-      "body": "Số đơn và tổng chi tiêu 12 tháng gần nhất (tiền thực thu), số dư ví và điểm thưởng hiện có."
-    },
-    "admin-user-wallet-open": {
-      "title": "Mở ví",
-      "body": "Bấm \"Ví\" trên hồ sơ (hoặc \"Ví\" trong menu \"…\" của danh sách) để mở hộp thoại ví."
-    },
-    "admin-user-wallet-balance": {
-      "title": "Số dư hiện tại",
-      "body": "Số dư ví Lock.R của người dùng lúc mở hộp thoại."
-    },
-    "admin-user-wallet-amount": {
-      "title": "Số tiền điều chỉnh",
-      "body": "Nhập số tiền dương (VND)."
-    },
-    "admin-user-wallet-reason": {
-      "title": "Lý do",
-      "body": "Tuỳ chọn, ví dụ hoàn tiền, khuyến mãi, điều chỉnh — được lưu kèm biến động ví."
-    },
-    "admin-user-wallet-actions": {
-      "title": "Cộng hoặc trừ",
-      "body": "\"Cộng tiền\" nạp thêm vào ví, \"Trừ tiền\" rút bớt; số dư cập nhật ngay và có dòng mới ở tab \"Ví\"."
+      "body": "Số đơn và tổng chi tiêu 12 tháng gần nhất (tiền thực thu) và điểm thưởng hiện có."
     },
     "admin-user-tab-orders-tabs": {
       "title": "Các tab hoạt động",
-      "body": "\"Đơn đã đặt\", \"Đơn nhận\", \"Thanh toán\", \"Hoàn tiền\", \"Ví\", \"Điểm thưởng\", \"Đánh giá\", \"Báo cáo sự cố\", \"Thông báo\", \"Trợ lý AI\". Tab đang mở nằm trên địa chỉ trang nên quay lại vẫn đúng chỗ."
+      "body": "\"Đơn đã đặt\", \"Đơn nhận\", \"Thanh toán\", \"Hoàn tiền\", \"Điểm thưởng\", \"Đánh giá\", \"Báo cáo sự cố\", \"Thông báo\", \"Trợ lý AI\". Tab đang mở nằm trên địa chỉ trang nên quay lại vẫn đúng chỗ."
     },
     "admin-user-tab-orders-panel": {
       "title": "Đơn đã đặt",
@@ -2296,15 +2236,7 @@
     },
     "admin-user-tab-payments-panel": {
       "title": "Danh sách giao dịch",
-      "body": "Bấm mã thanh toán để mở hộp thoại chi tiết, bấm mã đơn để mở đơn; có loại (đơn / nạp ví), phương thức, số tiền, trạng thái. Tab \"Hoàn tiền\" bên cạnh liệt kê phiếu hoàn của người này."
-    },
-    "admin-user-tab-wallet-tab": {
-      "title": "Tab Ví",
-      "body": "Bấm để xem biến động ví của người dùng."
-    },
-    "admin-user-tab-wallet-panel": {
-      "title": "Biến động ví",
-      "body": "Nguồn (nạp ví, thanh toán đơn, hoàn tiền, điều chỉnh tay, rút tiền), chiều cộng / trừ, số tiền, số dư sau, đơn liên quan (bấm để mở) và mô tả."
+      "body": "Bấm mã thanh toán để mở hộp thoại chi tiết, bấm mã đơn để mở đơn; có phương thức, số tiền, trạng thái. Tab \"Hoàn tiền\" bên cạnh liệt kê phiếu hoàn của người này."
     },
     "admin-user-tab-loyalty-tab": {
       "title": "Tab Điểm thưởng",
@@ -2344,15 +2276,11 @@
     },
     "admin-payments-breakdown": {
       "title": "Theo trạng thái / phương thức",
-      "body": "Số giao dịch và số tiền từng trạng thái, từng phương thức (SePay chuyển khoản, nạp ví qua SePay, tiền mặt…). Bấm một dòng để lọc bảng."
-    },
-    "admin-payments-tabs": {
-      "title": "Ba tab",
-      "body": "\"Giao dịch\" là mọi lần thu tiền; \"Biến động ví\" là cộng / trừ ví khách; \"Yêu cầu rút tiền\" để duyệt rút về ngân hàng."
+      "body": "Số giao dịch và số tiền từng trạng thái, từng phương thức (SePay chuyển khoản, tiền mặt, phương thức cũ). Bấm một dòng để lọc bảng."
     },
     "admin-payments-list-filters": {
       "title": "Tìm và lọc",
-      "body": "Tìm theo mã tham chiếu, mô tả, mã giao dịch hoặc mã đơn; lọc \"Trạng thái\", \"Phương thức\", loại (đơn và nạp ví / chỉ thu theo đơn / chỉ nạp ví) và chọn thứ tự sắp xếp."
+      "body": "Tìm theo mã tham chiếu, mô tả, mã giao dịch hoặc mã đơn; lọc \"Trạng thái\", \"Phương thức\" và chọn thứ tự sắp xếp."
     },
     "admin-payments-list-dates": {
       "title": "Khoảng ngày",
@@ -2382,77 +2310,13 @@
       "title": "Hoàn tiền",
       "body": "Các lần hoàn của giao dịch: trạng thái, số tiền, lý do, mã giao dịch hoàn, người xử lý. Tạo hoàn tiền không tự đổi trạng thái giao dịch."
     },
-    "admin-payment-detail-wallet": {
-      "title": "Biến động ví",
-      "body": "Cộng / trừ ví sinh ra từ giao dịch này và số dư sau."
-    },
     "admin-payment-detail-others": {
       "title": "Giao dịch khác của đơn",
       "body": "Các lần thanh toán khác của cùng đơn, ví dụ lần trước bị lỗi."
     },
     "admin-payment-detail-status": {
       "title": "Cập nhật trạng thái",
-      "body": "Chọn trạng thái rồi \"Lưu trạng thái\". Bị khoá với giao dịch nạp ví hoặc đã thành công / thất bại — cần trả tiền cho khách thì dùng Hoàn tiền."
-    },
-    "admin-payments-wallet-tab": {
-      "title": "Tab Biến động ví",
-      "body": "Bấm để xem biến động ví của mọi khách."
-    },
-    "admin-payments-wallet-filters": {
-      "title": "Tìm và lọc",
-      "body": "Tìm theo mã tham chiếu hoặc nội dung; lọc \"Chiều\" (cộng / trừ) và \"Nguồn\" (nạp ví, thanh toán đơn, hoàn tiền, điều chỉnh tay, rút tiền)."
-    },
-    "admin-payments-wallet-dates": {
-      "title": "Khoảng ngày",
-      "body": "Chọn khoảng ngày hoặc mốc nhanh; để trống là mọi thời điểm."
-    },
-    "admin-payments-wallet-table": {
-      "title": "Bảng biến động",
-      "body": "Mã biến động và ví, khách, chiều, nguồn, số tiền (xanh cộng / đỏ trừ) kèm số dư sau, đơn liên quan (bấm để mở), tham chiếu, thời điểm; có phân trang."
-    },
-    "admin-payments-withdrawals-tab": {
-      "title": "Tab Yêu cầu rút tiền",
-      "body": "Bấm để xem các yêu cầu rút tiền."
-    },
-    "admin-payments-withdrawals-status": {
-      "title": "Lọc trạng thái",
-      "body": "\"Tất cả\", \"Chờ duyệt\" (kèm số đang chờ), \"Đã chuyển\", \"Từ chối\"."
-    },
-    "admin-payments-withdrawals-search": {
-      "title": "Tìm và tải lại",
-      "body": "Tìm theo mã, tên, số tài khoản, ngân hàng; nút mũi tên xoay tải lại danh sách."
-    },
-    "admin-payments-withdrawals-table": {
-      "title": "Bảng yêu cầu",
-      "body": "Mã yêu cầu, khách, tài khoản thụ hưởng (ngân hàng, số TK, chủ TK), số tiền rút, trạng thái, giờ tạo / duyệt, lý do từ chối."
-    },
-    "admin-payments-withdrawals-actions": {
-      "title": "Duyệt hoặc từ chối",
-      "body": "Chỉ yêu cầu \"Chờ duyệt\" có nút. \"Duyệt\" sau khi đã chuyển khoản thật (không hoàn tác được); \"Từ chối\" phải nhập lý do và tiền tự trả lại ví khách."
-    },
-    "admin-withdrawal-approve-info": {
-      "title": "Kiểm tra thông tin",
-      "body": "Mã yêu cầu, số tiền, ngân hàng, số tài khoản, chủ tài khoản — đối chiếu trước khi chuyển."
-    },
-    "admin-withdrawal-approve-warning": {
-      "title": "Cảnh báo",
-      "body": "Duyệt đánh dấu giao dịch \"đã chuyển tiền\" và không thể hoàn tác."
-    },
-    "admin-withdrawal-approve-actions": {
-      "title": "Xác nhận",
-      "body": "\"Xác nhận đã chuyển & Duyệt\" chỉ bấm khi tiền đã chuyển; \"Hủy\" để quay lại."
-    },
-    "admin-withdrawal-reject-info": {
-      "title": "Yêu cầu bị từ chối",
-      "body": "Mã yêu cầu và số tiền sẽ được hoàn lại ví khách."
-    },
-    "admin-withdrawal-reject-reason": {
-      "title": "Lý do từ chối",
-      "body": "Bắt buộc, ví dụ sai tên chủ tài khoản; khách thấy lý do này."
-    },
-    "admin-withdrawal-reject-actions": {
-      "title": "Xác nhận từ chối",
-      "body": "\"Xác nhận từ chối & Hoàn tiền ví\" cộng trả số tiền vào ví ngay."
+      "body": "Chọn trạng thái rồi \"Lưu trạng thái\". Bị khoá khi giao dịch đã thành công / thất bại / hoàn tiền — cần trả tiền cho khách thì dùng Hoàn tiền."
     },
     "admin-refunds-header": {
       "title": "Lối tắt",
@@ -4159,8 +4023,8 @@
       "body": "SLA xử lý sự cố, ngưỡng phạt, ảnh nghiệm thu, giữ ô và drone."
     },
     "admin-settings-scopes-payment": {
-      "title": "\"Thanh toán & ví\"",
-      "body": "Hạn mức nạp ví, mệnh giá gợi ý và phương thức thanh toán."
+      "title": "\"Thanh toán\"",
+      "body": "Phương thức thanh toán, hoàn tiền và chế độ giả lập thanh toán."
     },
     "admin-settings-scopes-iot": {
       "title": "\"Thiết bị IoT\"",
@@ -4444,7 +4308,7 @@
     },
     "admin-mobile-notice-logout": {
       "title": "Đăng xuất",
-      "body": "Bấm \"Đăng xuất\" rồi đăng nhập bằng tài khoản khách hoặc kỹ thuật viên nếu cần dùng app."
+      "body": "Bấm \"Đăng xuất\" rồi đăng nhập bằng tài khoản khách hoặc kỹ thuật viên nếu cần dùng app (tài khoản có nhiều vai trò thì dùng \"Đổi vai trò\")."
     },
     "customer-profile-info": {
       "title": "Thông tin cá nhân",
@@ -4533,10 +4397,6 @@
     "customer-profile-manage-notifications": {
       "title": "Thông báo",
       "body": "Mở danh sách thông báo; số đỏ là số thông báo chưa đọc."
-    },
-    "customer-profile-manage-delegations": {
-      "title": "Đơn ủy quyền",
-      "body": "Xem các đơn người khác nhờ bạn lấy hộ; số xanh là số đơn ủy quyền còn hiệu lực."
     },
     "customer-profile-manage-refunds": {
       "title": "Hoàn tiền",
@@ -4684,7 +4544,7 @@
     },
     "customer-transactions-filter": {
       "title": "Lọc theo hình thức",
-      "body": "Lọc danh sách: \"Tất cả hình thức\", \"Cổng SePay\"; ví, VNPay, MoMo, rút tiền chỉ hiện khi có giao dịch cũ."
+      "body": "Lọc danh sách: \"Tất cả hình thức\", \"Cổng SePay\"; các phương thức cũ chỉ hiện khi có giao dịch cũ."
     },
     "customer-transactions-first": {
       "title": "Một giao dịch",
@@ -5220,7 +5080,7 @@
     },
     "customer-payment-vietqr-bank": {
       "title": "App ngân hàng",
-      "body": "Trên điện thoại, bấm “Thanh toán bằng app ngân hàng” để chọn app và mở lệnh chuyển khoản điền sẵn."
+      "body": "Trên điện thoại (app hoặc trình duyệt), bấm “Thanh toán bằng app ngân hàng” rồi chọn app: app ghi “Tự điền…” mở ra đã có số tài khoản, số tiền và nội dung — bạn chỉ cần xác nhận."
     },
     "customer-payment-vietqr-leave": {
       "title": "Huỷ khi chưa trả",
@@ -5552,7 +5412,7 @@
     },
     "customer-order-detail-info": {
       "title": "Thông tin đơn",
-      "body": "Tủ, địa chỉ, ô, ngày đặt, thời gian thuê/giữ hàng, hạn lấy, phí quá giờ, người nhận, uỷ quyền, giá, giảm giá, thanh toán và mã giao dịch."
+      "body": "Tủ, địa chỉ, ô, ngày đặt, thời gian thuê/giữ hàng, hạn lấy, phí quá giờ, người nhận, giá, giảm giá, thanh toán và mã giao dịch."
     },
     "customer-order-detail-timeline": {
       "title": "Mốc thời gian",
@@ -5594,10 +5454,6 @@
       "title": "Đặt lại đơn",
       "body": "Tạo nhanh đơn mới giống đơn này (không áp dụng cho đơn drone)."
     },
-    "customer-order-more-delegate": {
-      "title": "Ủy quyền lấy hộ",
-      "body": "Đồ đang trong ô: nhập số điện thoại người lấy hộ, tên và lời nhắn. Họ thấy đơn trong “Đơn ủy quyền”; PIN hiện tại được đổi mới."
-    },
     "customer-order-more-pin": {
       "title": "Đổi mã PIN",
       "body": "App hỏi “Đổi mã PIN?”: mã hiện tại hết hiệu lực ngay và được thay mã mới; đơn gửi hàng nhớ gửi lại mã cho người nhận."
@@ -5621,34 +5477,6 @@
     "customer-order-more-refund": {
       "title": "Yêu cầu hoàn tiền",
       "body": "Đơn đã thanh toán: gửi yêu cầu hoàn tiền, theo dõi ở Hồ sơ › Yêu cầu hoàn tiền."
-    },
-    "customer-delegations-intro": {
-      "title": "Lấy hộ người khác",
-      "body": "Khi ai đó uỷ quyền cho số điện thoại của bạn, đơn hiện ở đây kèm mã lấy hàng. Chưa có thì trang báo “Chưa có đơn ủy quyền”."
-    },
-    "customer-delegations-refresh": {
-      "title": "Làm mới",
-      "body": "Tải lại danh sách, hoặc kéo xuống."
-    },
-    "customer-delegations-first": {
-      "title": "Thẻ đơn lấy hộ",
-      "body": "Người uỷ quyền, tủ và ô, hạn lấy, PIN/QR nhập ở kiosk và nút “Mở … lấy hàng”. Bấm thẻ để xem chi tiết đơn lấy hộ."
-    },
-    "customer-authorized-opening-intro": {
-      "title": "Mã được gửi cho bạn",
-      "body": "Dùng mã lấy hàng (PIN) trong mục “Đơn ủy quyền” hoặc do người gửi chuyển. Bạn cần đứng tại tủ."
-    },
-    "customer-authorized-opening-locker": {
-      "title": "Chọn tủ",
-      "body": "Chạm để chọn tủ đang giữ hàng."
-    },
-    "customer-authorized-opening-code": {
-      "title": "Mã lấy hàng",
-      "body": "Nhập mã số, ít nhất 4 chữ số."
-    },
-    "customer-authorized-opening-open": {
-      "title": "Mở ô lấy hàng",
-      "body": "App yêu cầu quét tem QR trên tủ để chắc bạn đang ở đúng tủ, rồi mở ô và báo kết quả."
     },
     "customer-qr-scan-intro": {
       "title": "Quét mã ở kiosk",
@@ -5988,7 +5816,7 @@
     },
     "kiosk-open-code-intro": {
       "title": "Dùng mã nào?",
-      "body": "Mã gửi hàng, mã nhận hàng (người gửi chia sẻ cho bạn), mã uỷ quyền lấy hộ hoặc mã của ô đang thuê. Mã của bạn nằm trong mục Đơn tủ của app Lock.R."
+      "body": "Mã gửi hàng, mã nhận hàng (người gửi chia sẻ cho bạn) hoặc mã của ô đang thuê. Mã của bạn nằm trong mục Đơn tủ của app Lock.R."
     },
     "kiosk-open-code-locker": {
       "title": "Tủ hiện tại",
@@ -6129,10 +5957,6 @@
     "kiosk-boxes-manage-end": {
       "title": "\"Kết thúc thuê & trả ô\"",
       "body": "Lấy hết đồ, đóng cửa rồi bấm; kiosk hỏi lại trước khi trả ô và hoàn tất đơn."
-    },
-    "kiosk-boxes-manage-delegate": {
-      "title": "\"Ủy quyền người khác lấy hộ\"",
-      "body": "Nhờ người khác lấy đồ: làm trên app Lock.R; người được uỷ quyền nhập mã uỷ quyền ở \"Mở Tủ / Nhận Đồ\"."
     },
     "kiosk-boxes-manage-report": {
       "title": "\"Báo ô lỗi\"",
@@ -7109,6 +6933,22 @@
     "admin-settings-simulation-confirm": {
       "title": "Xác nhận",
       "body": "Hộp xác nhận liệt kê đúng các mục sẽ đổi trước khi lưu."
+    },
+    "customer-profile-settings-switch-role": {
+      "title": "Đổi vai trò",
+      "body": "Chỉ hiện khi tài khoản có nhiều vai trò (vd. vừa là khách vừa là kỹ thuật viên): chọn vai trò khác để mở trang của vai trò đó. Đăng nhập lần sau app hỏi lại vào với vai trò nào."
+    },
+    "locker-tech-profile-switch-role": {
+      "title": "Đổi vai trò",
+      "body": "Chỉ hiện khi tài khoản có nhiều vai trò (vd. vừa là khách vừa là kỹ thuật viên): chọn vai trò khác để mở trang của vai trò đó. Đăng nhập lần sau app hỏi lại vào với vai trò nào."
+    },
+    "drone-tech-profile-switch-role": {
+      "title": "Đổi vai trò",
+      "body": "Chỉ hiện khi tài khoản có nhiều vai trò (vd. vừa là khách vừa là kỹ thuật viên): chọn vai trò khác để mở trang của vai trò đó. Đăng nhập lần sau app hỏi lại vào với vai trò nào."
+    },
+    "admin-mobile-notice-switch-role": {
+      "title": "Đổi vai trò",
+      "body": "Tài khoản quản trị kiêm kỹ thuật viên hoặc khách: bấm \"Đổi vai trò\" để dùng app với vai trò đó, không cần đăng xuất."
     }
   }
 }
