@@ -282,7 +282,7 @@ class _AttachmentViewerState extends State<_AttachmentViewer> {
       if (current.caption != null && current.caption!.trim().isNotEmpty)
         current.caption!.trim(),
       if (time != null)
-        '${current.capturedAt != null ? 'Chụp lúc' : 'Tải lên lúc'} ${_fmtDateTime(time)}',
+        '${current.capturedAt != null ? L10n.current.galleryCapturedAt : L10n.current.galleryUploadedAt} ${_fmtDateTime(time)}',
       if (current.hasLocation)
         context.l10n.attachmentLocation(current.latitude!.toStringAsFixed(5), current.longitude!.toStringAsFixed(5)),
     ];

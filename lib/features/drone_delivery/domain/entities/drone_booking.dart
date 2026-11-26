@@ -181,7 +181,7 @@ class DroneQuote {
       weatherSafe: weather['safe'] is bool ? weather['safe'] as bool : false,
       weatherStatus: '${weather['status'] ?? 'UNAVAILABLE'}',
       weatherMessage:
-          '${weather['message'] ?? 'Không thể xác nhận thời tiết tuyến bay.'}',
+          '${weather['message'] ?? L10n.current.dtWxCantConfirm}',
       weatherCheckedAt: DateTime.tryParse('${weather['checkedAt'] ?? ''}'),
       weatherMaxWindKmh: _double(weather['maxWindSpeedKmh']),
       weatherMaxGustKmh: _double(weather['maxWindGustKmh']),

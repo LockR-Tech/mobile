@@ -32,6 +32,7 @@ import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 import 'package:smart_laundry_locker/core/services/platform_info.dart';
 import 'package:smart_laundry_locker/features/onboarding/presentation/onboarding_controller.dart';
 import 'package:smart_laundry_locker/features/onboarding/presentation/tour_anchor.dart';
+import 'package:smart_laundry_locker/features/profile/domain/utils/person_name.dart';
 
 class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key});
@@ -452,7 +453,7 @@ class _HomePageState extends ConsumerState<HomePage>
   String _resolveDisplayName(UserProfile? profile) {
     if (profile == null) return context.l10n.commonYou;
     final name = profile.fullName.trim();
-    if (name.isNotEmpty && name.toLowerCase() != 'người dùng') {
+    if (!isPlaceholderName(name)) {
       return _capitalizeWords(name);
     }
     final email = profile.email.trim();

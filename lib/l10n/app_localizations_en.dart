@@ -15496,4 +15496,31 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tourManualOnKiosk => 'At the locker (kiosk)';
+
+  @override
+  String get crOrderToReport => 'Order to report';
+
+  @override
+  String get crLockerOfOrder => 'The order\'s locker';
+
+  @override
+  String get crFixedByOrder => 'Set by the order';
+
+  @override
+  String get crBoxOfOrder => 'The order\'s box';
+
+  @override
+  String get crBoxInUseByOrder => 'This box is in use by this order';
+
+  @override
+  String get galleryCapturedAt => 'Taken at';
+
+  @override
+  String get galleryUploadedAt => 'Uploaded at';
+
+  @override
+  String get qrTestOpenSent => 'Open command sent';
+
+  @override
+  String get qrTestOpenRejected => 'The locker did not accept the open command';
 }

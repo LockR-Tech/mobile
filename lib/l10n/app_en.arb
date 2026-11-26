@@ -5350,5 +5350,14 @@
   "tourManualOnApp": "In the app",
   "tourManualRunOnScreen": "Show me on screen",
   "tourManualNoImage": "No screenshot for this part yet.",
-  "tourManualOnKiosk": "At the locker (kiosk)"
+  "tourManualOnKiosk": "At the locker (kiosk)",
+  "crOrderToReport": "Order to report",
+  "crLockerOfOrder": "The order's locker",
+  "crFixedByOrder": "Set by the order",
+  "crBoxOfOrder": "The order's box",
+  "crBoxInUseByOrder": "This box is in use by this order",
+  "galleryCapturedAt": "Taken at",
+  "galleryUploadedAt": "Uploaded at",
+  "qrTestOpenSent": "Open command sent",
+  "qrTestOpenRejected": "The locker did not accept the open command"
 }

@@ -101,7 +101,7 @@ String passwordChangeErrorMessage(String raw) {
   if (upper.contains('AUTH_NEW_PASSWORD_REQUIRED')) {
     return L10n.current.pwEnterNew;
   }
-  if (m.isEmpty || m == 'Đã xảy ra lỗi.') {
+  if (m.isEmpty || m == L10n.current.apiErrGeneric) {
     return L10n.current.pwChangeFailed;
   }
   return m;

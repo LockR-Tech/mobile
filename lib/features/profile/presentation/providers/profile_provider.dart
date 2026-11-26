@@ -80,7 +80,7 @@ class ProfileProvider extends ChangeNotifier {
           if (userName != null || userEmail != null) {
             _profile = UserProfile(
               id: userId ?? '',
-              fullName: userName ?? userEmail?.split('@').first ?? 'Người dùng',
+              fullName: userName ?? userEmail?.split('@').first ?? L10n.current.commonUser,
               email: userEmail ?? '',
               phoneNumber: '',
               status: UserStatus.ACTIVE,

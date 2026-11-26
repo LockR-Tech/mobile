@@ -127,7 +127,7 @@ String firebaseLoginBackendMessage(String raw) {
       upper.contains('INVALID FIREBASE ID TOKEN')) {
     return L10n.current.authSessionVerifyFailed;
   }
-  if (m.isEmpty || m == 'Đã xảy ra lỗi.') {
+  if (m.isEmpty || m == L10n.current.apiErrGeneric) {
     return L10n.current.authLoginFailedRetry;
   }
   return m;

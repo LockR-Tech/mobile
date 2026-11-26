@@ -26,5 +26,5 @@ String userErrorMessage(
     _ => '',
   };
   final clean = message.trim();
-  return clean.isEmpty || clean == 'Đã xảy ra lỗi.' ? fallback : clean;
+  return clean.isEmpty || clean == L10n.current.apiErrGeneric ? fallback : clean;
 }

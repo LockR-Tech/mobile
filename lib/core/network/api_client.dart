@@ -196,7 +196,7 @@ class ApiClient {
       } catch (_) {}
     }
 
-    String message = 'Đã xảy ra lỗi.';
+    String message = L10n.current.apiErrGeneric;
     if (data is Map<String, dynamic>) {
       final msg = data['message'];
       if (msg is String) {
@@ -239,7 +239,7 @@ class ApiClient {
         final hasBusinessCode =
             data is Map<String, dynamic> && data['code'] is String;
         return AuthorizationException(
-          hasBusinessCode && cleanMessage != 'Đã xảy ra lỗi.'
+          hasBusinessCode && cleanMessage != L10n.current.apiErrGeneric
               ? cleanMessage
               : L10n.current.errorForbidden,
         );
@@ -253,7 +253,7 @@ class ApiClient {
         final rawHttpPhrase = RegExp(r'^[A-Za-z ]+$').hasMatch(cleanMessage);
         final errorMessage = rawHttpPhrase
             ? L10n.current.errorSystemBusy
-            : cleanMessage.isNotEmpty && cleanMessage != 'Đã xảy ra lỗi.'
+            : cleanMessage.isNotEmpty && cleanMessage != L10n.current.apiErrGeneric
             ? cleanMessage
             : L10n.current.errorServer;
         return ServerException(errorMessage);

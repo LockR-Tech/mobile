@@ -1,5 +1,6 @@
 import 'package:smart_laundry_locker/features/profile/domain/entities/user_profile.dart';
 import 'package:json_annotation/json_annotation.dart';
+import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
 part 'user_profile_model.g.dart';
 
@@ -63,7 +64,7 @@ class UserProfileModel {
   UserProfile toEntity() {
     return UserProfile(
       id: id ?? '',
-      fullName: fullName ?? 'Người dùng',
+      fullName: fullName ?? L10n.current.commonUser,
       firstName: firstName ?? '',
       lastName: lastName ?? '',
       email: email ?? '',

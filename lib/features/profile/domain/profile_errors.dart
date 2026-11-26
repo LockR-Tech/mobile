@@ -18,7 +18,7 @@ String profileUpdateErrorMessage(String raw) {
   if (upper == 'AUTH_SYNC_FAILED') {
     return L10n.current.profErrLoginUpdate;
   }
-  if (m.isEmpty || m == 'Đã xảy ra lỗi.') {
+  if (m.isEmpty || m == L10n.current.apiErrGeneric) {
     return L10n.current.profErrUpdateFailed;
   }
   return m;

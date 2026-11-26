@@ -651,9 +651,9 @@ class _CreateReportPageState extends State<CreateReportPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Đơn hàng cần báo cáo',
-                  style: TextStyle(
+                Text(
+                  context.l10n.crOrderToReport,
+                  style: const TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w600,
                     color: Color(0xFF15803D),
@@ -682,7 +682,7 @@ class _CreateReportPageState extends State<CreateReportPage> {
       final address = widget.locationName;
       final displayLocker = name.isNotEmpty
           ? name
-          : (widget.lockerId.isNotEmpty ? 'Tủ #${widget.lockerId}' : 'Tủ của đơn hàng');
+          : (widget.lockerId.isNotEmpty ? context.l10n.lockerHash(widget.lockerId) : context.l10n.crLockerOfOrder);
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -710,12 +710,12 @@ class _CreateReportPageState extends State<CreateReportPage> {
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
-                  children: const [
-                    Icon(LucideIcons.lock, size: 11, color: Color(0xFF64748B)),
-                    SizedBox(width: 4),
+                  children: [
+                    const Icon(LucideIcons.lock, size: 11, color: Color(0xFF64748B)),
+                    const SizedBox(width: 4),
                     Text(
-                      'Cố định theo đơn',
-                      style: TextStyle(
+                      context.l10n.crFixedByOrder,
+                      style: const TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w600,
                         color: Color(0xFF64748B),
@@ -866,7 +866,7 @@ class _CreateReportPageState extends State<CreateReportPage> {
     if (widget.isFromOrder) {
       final boxNum = widget.boxNumber;
       final label = widget.boxLabel ??
-          (boxNum != null ? 'Ô số $boxNum' : (widget.initialBoxId != null ? 'Ô #${widget.initialBoxId}' : 'Ô của đơn hàng'));
+          (boxNum != null ? context.l10n.boxNumberLabel(boxNum) : (widget.initialBoxId != null ? context.l10n.boxHash(widget.initialBoxId!) : context.l10n.crBoxOfOrder));
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -894,12 +894,12 @@ class _CreateReportPageState extends State<CreateReportPage> {
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
-                  children: const [
-                    Icon(LucideIcons.lock, size: 11, color: Color(0xFF64748B)),
-                    SizedBox(width: 4),
+                  children: [
+                    const Icon(LucideIcons.lock, size: 11, color: Color(0xFF64748B)),
+                    const SizedBox(width: 4),
                     Text(
-                      'Cố định theo đơn',
-                      style: TextStyle(
+                      context.l10n.crFixedByOrder,
+                      style: const TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w600,
                         color: Color(0xFF64748B),
@@ -949,7 +949,7 @@ class _CreateReportPageState extends State<CreateReportPage> {
                       ),
                       const SizedBox(height: 3),
                       Text(
-                        'Ô đang được sử dụng bởi đơn hàng này',
+                        context.l10n.crBoxInUseByOrder,
                         style: TextStyle(
                           fontSize: 12,
                           color: Colors.grey.shade600,
