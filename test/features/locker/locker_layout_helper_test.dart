@@ -88,4 +88,13 @@ void main() {
     expect(const Store(id: 1, name: 'A', latitude: 120, longitude: 10).hasLocation, isFalse);
     expect(const Store(id: 1, name: 'A').hasLocation, isFalse);
   });
+
+  test('ô tắt cờ hoạt động không hiện là ô trống (F3-G15)', () {
+    final cells = LockerLayoutHelper.enrichCells([
+      {'id': 33, 'boxNumber': 5, 'status': 'AVAILABLE', 'active': false},
+      {'id': 34, 'boxNumber': 6, 'status': 'AVAILABLE', 'active': true},
+      {'id': 35, 'boxNumber': 7, 'status': 'OCCUPIED', 'active': false},
+    ]);
+    expect(cells.map((c) => c['status']), ['OUT_OF_SERVICE', 'AVAILABLE', 'OCCUPIED']);
+  });
 }
