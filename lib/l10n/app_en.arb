@@ -1999,7 +1999,7 @@
   "bankUnknown": "Couldn't identify the receiving bank. Please scan the QR code with your banking app.",
   "bankCantOpen": "Couldn't open {app}. It may not be installed — please scan the QR code with your banking app.",
   "bankTitle": "Pay with banking app",
-  "bankIntro": "Choose your banking app. Lock.R saves the QR code to your photo library — scan it from the photo in your banking app and the account, amount and description are filled in.",
+  "bankIntro": "Choose your banking app. Apps marked \"Fills in…\" open with the account, amount and memo already filled — you just confirm.",
   "bankSearch": "Search banks",
   "bankLoadFailed": "Couldn't load the banking apps.\nYou can scan the QR code with your banking app.",
   "bankOpenApp": "Open {app}",
@@ -5424,5 +5424,6 @@
   "roleDescLockerTech": "Maintain locker boxes and IoT devices, handle locker tickets.",
   "roleDescDroneTech": "Dispatch and maintain drones, handle drone tickets.",
   "roleDescAdmin": "Manage the system on the web console.",
-  "roleSwitched": "Switched to {role}"
+  "roleSwitched": "Switched to {role}",
+  "bankAutofill": "Fills in account, amount and memo"
 }

@@ -7050,7 +7050,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get bankIntro =>
-      'Choose your banking app. Lock.R saves the QR code to your photo library — scan it from the photo in your banking app and the account, amount and description are filled in.';
+      'Choose your banking app. Apps marked \"Fills in…\" open with the account, amount and memo already filled — you just confirm.';
 
   @override
   String get bankSearch => 'Search banks';
@@ -15643,4 +15643,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String roleSwitched(String role) {
     return 'Switched to $role';
   }
+
+  @override
+  String get bankAutofill => 'Fills in account, amount and memo';
 }

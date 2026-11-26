@@ -12095,7 +12095,7 @@ abstract class AppLocalizations {
   /// No description provided for @bankIntro.
   ///
   /// In vi, this message translates to:
-  /// **'Chọn app ngân hàng của bạn. Lock.R lưu mã QR vào Thư viện ảnh — trong app ngân hàng, quét mã từ ảnh là số tài khoản, số tiền và nội dung tự điền.'**
+  /// **'Chọn app ngân hàng của bạn. App ghi \"Tự điền…\" mở ra đã có sẵn số tài khoản, số tiền và nội dung — bạn chỉ cần xác nhận.'**
   String get bankIntro;
 
   /// No description provided for @bankSearch.
@@ -25992,6 +25992,12 @@ abstract class AppLocalizations {
   /// In vi, this message translates to:
   /// **'Đã chuyển sang vai trò {role}'**
   String roleSwitched(String role);
+
+  /// No description provided for @bankAutofill.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tự điền số tài khoản, số tiền, nội dung'**
+  String get bankAutofill;
 }
 
 class _AppLocalizationsDelegate

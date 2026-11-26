@@ -6945,7 +6945,7 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get bankIntro =>
-      'Chọn app ngân hàng của bạn. Lock.R lưu mã QR vào Thư viện ảnh — trong app ngân hàng, quét mã từ ảnh là số tài khoản, số tiền và nội dung tự điền.';
+      'Chọn app ngân hàng của bạn. App ghi \"Tự điền…\" mở ra đã có sẵn số tài khoản, số tiền và nội dung — bạn chỉ cần xác nhận.';
 
   @override
   String get bankSearch => 'Tìm ngân hàng';
@@ -15269,4 +15269,7 @@ class AppLocalizationsVi extends AppLocalizations {
   String roleSwitched(String role) {
     return 'Đã chuyển sang vai trò $role';
   }
+
+  @override
+  String get bankAutofill => 'Tự điền số tài khoản, số tiền, nội dung';
 }

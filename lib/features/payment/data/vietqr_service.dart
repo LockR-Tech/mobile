@@ -36,23 +36,37 @@ class VietQrBankApp {
   }
 }
 
+/// Trang trả về sau khi chuyển khoản xong (tham số `url` của VietQR).
+const String vietQrReturnUrl = 'https://app.locker-drone.tech/';
+
 /// Link mở app ngân hàng [appId] với tài khoản nhận, số tiền và nội dung đã
 /// điền sẵn — khách chỉ cần xác nhận chuyển khoản.
 ///
-/// `https://dl.vietqr.io/pay?app=<appId>&ba=<stk>@<mã ngân hàng>&am=<số tiền>&tn=<nội dung>`
+/// `https://dl.vietqr.io/pay?app=<appId>&am=<số tiền>&tn=<nội dung>&ba=<stk>@<mã ngân hàng>&bn=<tên TK>&url=<trang trả về>`
+///
+/// Theo tài liệu VietQR (vietqr.io/deeplink) `url` là BẮT BUỘC: thiếu nó, dl.vietqr.io chuyển thẳng sang
+/// `intent://` trống (app ngân hàng mở ra không có gì — lỗi đã gặp 2026-11-07); có `url` thì trang trung
+/// gian của VietQR nhận thông tin rồi mới mở app với STK, số tiền, nội dung điền sẵn (app `autofill = 1`).
+/// `@` trong `ba` và giá trị `url` giữ nguyên, phần còn lại mã hoá query (dấu cách → `+`).
 String buildVietQrPayDeeplink({
   required String appId,
   required String accountNo,
   required String bankCode,
   required int amount,
   required String transferContent,
+  String? accountName,
+  String returnUrl = vietQrReturnUrl,
 }) {
-  String enc(String v) => Uri.encodeComponent(v.trim());
+  String enc(String v) => Uri.encodeQueryComponent(v.trim());
+  final name = accountName?.trim();
+  final bn = name == null || name.isEmpty ? '' : '&bn=${enc(name)}';
   return 'https://dl.vietqr.io/pay'
       '?app=${enc(appId)}'
-      '&ba=${enc(accountNo)}@${enc(bankCode.toLowerCase())}'
       '&am=$amount'
-      '&tn=${enc(transferContent)}';
+      '&tn=${enc(transferContent)}'
+      '&ba=${enc(accountNo)}@${enc(bankCode.toLowerCase())}'
+      '$bn'
+      '&url=$returnUrl';
 }
 
 /// Gọi API công khai của VietQR (danh sách app ngân hàng, bảng BIN → mã ngân
@@ -107,13 +121,16 @@ class VietQrService {
     final response = await _dio.get<dynamic>('$_apiBase/$platform-app-deeplinks');
     final data = response.data;
     final Object? list = data is Map ? (data['apps'] ?? data['data']) : data;
-    // Mọi app ngân hàng: trên Android link `dl.vietqr.io` không tự điền ở app
-    // nào cả, khách quét mã VietQR đã lưu vào Thư viện ảnh — nên không lọc
-    // theo `autofill` (cờ đó từng giấu Vietcombank).
-    final apps = <VietQrBankApp>[
+    // Mọi app ngân hàng (không lọc theo `autofill` — cờ đó từng giấu Vietcombank); app tự điền được xếp
+    // lên đầu, giữ thứ tự của VietQR trong từng nhóm. App không tự điền thì khách quét mã VietQR đã lưu.
+    final all = <VietQrBankApp>[
       if (list is List)
         for (final item in list)
           if (VietQrBankApp.fromJson(item) case final app?) app,
+    ];
+    final apps = [
+      ...all.where((a) => a.autofill),
+      ...all.where((a) => !a.autofill),
     ];
     if (apps.isNotEmpty) _appsByPlatform[platform] = apps;
     return apps;

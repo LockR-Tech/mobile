@@ -14,6 +14,9 @@ typedef ExternalUrlLauncher = Future<bool> Function(Uri url);
 
 Future<bool> _launchExternal(Uri url) async {
   try {
+    // Bản web trên điện thoại: mở ngay trong tab này (mở tab mới sau `await` hay bị chặn popup); trang
+    // VietQR mở app ngân hàng, chuyển xong quay về Lock.R.
+    if (kIsWeb) return await launchUrl(url, webOnlyWindowName: '_self');
     return await launchUrl(url, mode: LaunchMode.externalApplication);
   } catch (e) {
     debugPrint('Open bank app failed: $e');
@@ -47,12 +50,12 @@ Future<bool> _saveQrToGallery(String url, String name) async {
 /// "Thanh toán bằng app ngân hàng": chọn app ngân hàng (danh sách của VietQR)
 /// rồi mở app đó.
 ///
-/// Link `dl.vietqr.io/pay` trên Android chỉ MỞ app ngân hàng, không chuyển STK,
-/// số tiền, nội dung (kiểm 2026-11-07: MB, VCB, VietinBank, Techcombank…
-/// đều chuyển hướng tới `intent://#Intent;scheme=…` trống). Cách duy nhất để
-/// app ngân hàng tự điền đủ là quét chính mã VietQR — nên trước khi mở app,
-/// Lock.R lưu ảnh mã vào Thư viện ảnh, sao chép nội dung chuyển khoản và chỉ
-/// khách "Quét QR → chọn ảnh". Quay lại app, màn thanh toán tự kiểm tra đơn.
+/// - App có `autofill = 1` (MB, VietinBank, BIDV, ACB…): mở thẳng link
+///   `dl.vietqr.io/pay` đủ tham số (kể cả `url`) — app ngân hàng mở ra đã điền
+///   STK, số tiền, nội dung; khách chỉ xác nhận (F3-G15).
+/// - App không tự điền (vd. Vietcombank): như trước — lưu ảnh mã VietQR vào
+///   Thư viện ảnh, sao chép nội dung, chỉ khách "Quét QR → chọn ảnh".
+/// Quay lại app, màn thanh toán tự kiểm tra đơn.
 ///
 /// Trả `true` khi đã mở được app ngân hàng.
 Future<bool> showBankAppPicker(
@@ -123,8 +126,9 @@ class _BankAppPickerSheetState extends State<BankAppPickerSheet> {
     super.dispose();
   }
 
+  // Bản web: defaultTargetPlatform theo trình duyệt (Safari iPhone ⇒ iOS).
   Future<List<VietQrBankApp>> _loadApps() => widget.service.bankApps(
-    ios: !kIsWeb && defaultTargetPlatform == TargetPlatform.iOS,
+    ios: defaultTargetPlatform == TargetPlatform.iOS,
   );
 
   Future<void> _open(VietQrBankApp app) async {
@@ -143,12 +147,31 @@ class _BankAppPickerSheetState extends State<BankAppPickerSheet> {
       return;
     }
 
-    // Chuẩn bị để app ngân hàng điền sẵn: ảnh mã VietQR trong Thư viện ảnh
-    // (quét từ ảnh ⇒ đủ STK, số tiền, nội dung) + nội dung trong bộ nhớ tạm.
-    final qr = t.qrImageUrl;
-    final saved = qr != null &&
-        await widget.saveQr(qr, 'LockR-${_safeName(t.transferContent!)}');
+    final url = buildVietQrPayDeeplink(
+      appId: app.appId,
+      accountNo: t.accountNo!,
+      bankCode: code,
+      amount: t.amount!,
+      transferContent: t.transferContent!,
+      accountName: t.accountName,
+      returnUrl: kIsWeb ? '${Uri.base.origin}/' : vietQrReturnUrl,
+    );
+    // Nội dung chuyển khoản luôn có sẵn trong bộ nhớ tạm (dự phòng app không điền).
     await Clipboard.setData(ClipboardData(text: t.transferContent!));
+    if (!mounted) return;
+
+    // App tự điền: mở luôn, app ngân hàng đã có STK, số tiền, nội dung.
+    if (app.autofill) {
+      await _launch(app, url);
+      return;
+    }
+
+    // App không tự điền: ảnh mã VietQR trong Thư viện ảnh (quét từ ảnh ⇒ đủ STK,
+    // số tiền, nội dung) + nội dung trong bộ nhớ tạm. Bản web không lưu ảnh được.
+    final qr = t.qrImageUrl;
+    final saved = !kIsWeb &&
+        qr != null &&
+        await widget.saveQr(qr, 'LockR-${_safeName(t.transferContent!)}');
     if (!mounted) return;
 
     final go = await showDialog<bool>(
@@ -160,14 +183,10 @@ class _BankAppPickerSheetState extends State<BankAppPickerSheet> {
       setState(() => _opening = false);
       return;
     }
+    await _launch(app, url);
+  }
 
-    final url = buildVietQrPayDeeplink(
-      appId: app.appId,
-      accountNo: t.accountNo!,
-      bankCode: code,
-      amount: t.amount!,
-      transferContent: t.transferContent!,
-    );
+  Future<void> _launch(VietQrBankApp app, String url) async {
     final ok = await widget.launcher(Uri.parse(url));
     if (!mounted) return;
     if (ok) {
@@ -297,6 +316,15 @@ class _BankAppPickerSheetState extends State<BankAppPickerSheet> {
                           app.appName,
                           style: const TextStyle(fontWeight: FontWeight.w600),
                         ),
+                        subtitle: app.autofill
+                            ? Text(
+                                context.l10n.bankAutofill,
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  color: Color(0xFF15803D),
+                                ),
+                              )
+                            : null,
                         trailing: const Icon(LucideIcons.chevronRight, size: 18),
                         onTap: () => _open(app),
                       );

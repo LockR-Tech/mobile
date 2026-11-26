@@ -3528,7 +3528,7 @@
     }
   },
   "bankTitle": "Thanh toán bằng app ngân hàng",
-  "bankIntro": "Chọn app ngân hàng của bạn. Lock.R lưu mã QR vào Thư viện ảnh — trong app ngân hàng, quét mã từ ảnh là số tài khoản, số tiền và nội dung tự điền.",
+  "bankIntro": "Chọn app ngân hàng của bạn. App ghi \"Tự điền…\" mở ra đã có sẵn số tài khoản, số tiền và nội dung — bạn chỉ cần xác nhận.",
   "bankSearch": "Tìm ngân hàng",
   "bankLoadFailed": "Không tải được danh sách app ngân hàng.\nBạn có thể quét mã QR bằng app ngân hàng.",
   "bankOpenApp": "Mở {app}",
@@ -8393,5 +8393,6 @@
   "roleDescDroneTech": "Điều phối, bảo trì drone và xử lý phiếu sự cố drone.",
   "roleDescAdmin": "Quản trị hệ thống trên web admin.",
   "roleSwitched": "Đã chuyển sang vai trò {role}",
-  "@roleSwitched": {"placeholders": {"role": {"type": "String"}}}
+  "@roleSwitched": {"placeholders": {"role": {"type": "String"}}},
+  "bankAutofill": "Tự điền số tài khoản, số tiền, nội dung"
 }
