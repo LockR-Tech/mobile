@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 import 'package:smart_laundry_locker/core/l10n/locale_provider.dart';
+import 'package:smart_laundry_locker/core/l10n/user_language_sync.dart';
 import 'package:smart_laundry_locker/core/services/app_restart_service.dart';
 
 /// Nút gạt VI | EN cho màn chưa đăng nhập (khách nước ngoài cần đổi ngôn ngữ
@@ -10,12 +11,22 @@ class LanguageToggle extends StatelessWidget {
 
   Future<void> _select(BuildContext context, Locale locale) async {
     if (locale.languageCode == L10n.locale.languageCode) return;
+    UserLanguageSync.markChosenBeforeLogin();
     await LocaleProvider.instance.setLocale(locale);
     if (context.mounted) RestartableApp.restartApp(context);
   }
 
   @override
   Widget build(BuildContext context) {
+    // Nút được dựng `const` trên màn đăng nhập và `context.l10n` đọc biến tĩnh, nên màn cha dựng lại không
+    // làm nút đổi ô sáng ⇒ tự nghe LocaleProvider để VI/EN sáng đúng ngay khi đổi ngôn ngữ.
+    return ListenableBuilder(
+      listenable: LocaleProvider.instance,
+      builder: (context, _) => _buildToggle(context),
+    );
+  }
+
+  Widget _buildToggle(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(3),
       decoration: BoxDecoration(

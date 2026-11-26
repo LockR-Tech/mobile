@@ -30,6 +30,12 @@ class LockerLayoutHelper {
       final type = cellType(map);
       map['cellType'] = type;
       map['isDrone'] = type == 'DRONE';
+      // Ô tắt cờ hoạt động thì server không cho đặt ⇒ không hiện là ô trống (lỗi cũ: bấm ô "trống" lại
+      // bị báo "Ô vừa được đặt"). Server mới đã tự báo OUT_OF_SERVICE; đây là lưới an toàn (F3-G15).
+      if (map['active'] == false &&
+          (map['status'] as String?)?.toUpperCase() == 'AVAILABLE') {
+        map['status'] = 'OUT_OF_SERVICE';
+      }
       return map;
     }).toList();
 

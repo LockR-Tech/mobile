@@ -91,17 +91,16 @@ void main() {
 
     expect(find.text('Vietcombank'), findsOneWidget);
     expect(find.text('Techcombank'), findsOneWidget);
-    // Link dl.vietqr.io không tự điền ở app nào trên Android ⇒ không lọc theo autofill.
+    // Không lọc theo autofill; app tự điền có dòng ghi chú.
     expect(find.text('Không tự điền'), findsOneWidget);
+    expect(find.textContaining('Tự điền số tài khoản'), findsNWidgets(2));
 
     await tester.enterText(find.byType(TextField), 'tech');
     await tester.pumpAndSettle();
     expect(find.text('Vietcombank'), findsNothing);
   });
 
-  testWidgets('chọn app ⇒ lưu mã QR, hiện các bước quét từ ảnh rồi mới mở app', (
-    tester,
-  ) async {
+  testWidgets('app tự điền ⇒ mở ngay link đủ tham số, không cần quét ảnh (F3-G15)', (tester) async {
     final opened = <Uri>[];
     final saved = <String>[];
     bool? result;
@@ -118,20 +117,42 @@ void main() {
     await tester.tap(find.text('Techcombank'));
     await tester.pumpAndSettle();
 
+    expect(saved, isEmpty);
+    expect(
+      opened.single.toString(),
+      'https://dl.vietqr.io/pay?app=tcb&am=20000&tn=LKR81&ba=0123456789@mb'
+      '&url=https://app.locker-drone.tech/',
+    );
+    expect(result, isTrue);
+    expect(find.text('Thanh toán bằng app ngân hàng'), findsNothing);
+  });
+
+  testWidgets('app không tự điền ⇒ lưu mã QR, hiện các bước quét từ ảnh rồi mới mở app', (
+    tester,
+  ) async {
+    final opened = <Uri>[];
+    final saved = <String>[];
+    await _pump(
+      tester,
+      (url) async {
+        opened.add(url);
+        return true;
+      },
+      savedNames: saved,
+    );
+
+    await tester.tap(find.text('Không tự điền'));
+    await tester.pumpAndSettle();
+
     expect(saved, ['LockR-LKR81']);
     expect(opened, isEmpty, reason: 'chưa mở app trước khi khách đọc các bước');
     expect(find.textContaining('Đã lưu mã QR vào Thư viện ảnh'), findsOneWidget);
     expect(find.textContaining('Quét QR'), findsOneWidget);
     expect(find.textContaining('20.000đ'), findsOneWidget);
 
-    await tester.tap(find.widgetWithText(FilledButton, 'Mở Techcombank'));
+    await tester.tap(find.widgetWithText(FilledButton, 'Mở Không tự điền'));
     await tester.pumpAndSettle();
-    expect(
-      opened.single.toString(),
-      'https://dl.vietqr.io/pay?app=tcb&ba=0123456789@mb&am=20000&tn=LKR81',
-    );
-    expect(result, isTrue);
-    expect(find.text('Thanh toán bằng app ngân hàng'), findsNothing);
+    expect(opened.single.queryParameters['app'], 'xyz');
   });
 
   testWidgets('không lưu được mã QR ⇒ hướng dẫn chuyển tay kèm nội dung', (
@@ -139,7 +160,7 @@ void main() {
   ) async {
     await _pump(tester, (_) async => true, saveQr: (_, __) async => false);
 
-    await tester.tap(find.text('Vietcombank'));
+    await tester.tap(find.text('Không tự điền'));
     await tester.pumpAndSettle();
 
     expect(find.textContaining('Không lưu được mã QR'), findsOneWidget);
@@ -154,7 +175,7 @@ void main() {
       return true;
     });
 
-    await tester.tap(find.text('Vietcombank'));
+    await tester.tap(find.text('Không tự điền'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Hủy'));
     await tester.pumpAndSettle();
@@ -167,8 +188,6 @@ void main() {
     await _pump(tester, (_) async => false);
 
     await tester.tap(find.text('Vietcombank'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.widgetWithText(FilledButton, 'Mở Vietcombank'));
     await tester.pumpAndSettle();
 
     expect(find.textContaining('hãy quét mã QR'), findsOneWidget);

@@ -1,6 +1,6 @@
 # Chính sách bảo mật
 
-Phiên bản 03/11/2026 · Áp dụng cho ứng dụng Lock.R, trang web Lock.R và kiosk tại tủ.
+Phiên bản 27/11/2026 · Áp dụng cho ứng dụng Lock.R, trang web Lock.R và kiosk tại tủ.
 
 Chính sách này giải thích Lock.R ("chúng tôi") thu thập dữ liệu cá nhân nào, dùng vào việc gì, chia sẻ với ai và bạn có những quyền gì. Chính sách đi cùng [Điều khoản dịch vụ](terms_of_service).
 
@@ -9,7 +9,7 @@ Chính sách này giải thích Lock.R ("chúng tôi") thu thập dữ liệu c�
 - **Tài khoản:** họ tên, số điện thoại, email, ảnh đại diện, mật khẩu (chỉ lưu dạng đã mã hoá bcrypt).
 - **Đăng nhập bằng Google, Facebook hoặc số điện thoại:** tên hiển thị, email, ảnh đại diện công khai và mã định danh do nhà cung cấp cấp. Chúng tôi không bao giờ nhận mật khẩu tài khoản mạng xã hội của bạn.
 - **Đơn hàng:** tủ và ô đã dùng, thời gian, mã đơn, trạng thái, khối lượng kiện, hành trình drone, lịch sử thanh toán và hoàn tiền.
-- **Người nhận và người được uỷ quyền:** họ tên, số điện thoại, email do người gửi nhập để giao mã lấy hàng. Người gửi cần có sự đồng ý của họ trước khi cung cấp.
+- **Người nhận:** họ tên, số điện thoại, email do người gửi nhập để giao mã lấy hàng. Người gửi cần có sự đồng ý của họ trước khi cung cấp.
 - **Thanh toán:** số tiền, mã tham chiếu và kết quả giao dịch chuyển khoản. Chúng tôi không lưu số thẻ hay thông tin đăng nhập ngân hàng.
 - **Vị trí:** khi bạn cho phép, để tìm tủ gần bạn, chỉ đường và gắn vị trí vào ảnh báo sự cố. Với kỹ thuật viên, vị trí chỉ được lấy trong ca làm việc.
 - **Máy ảnh, ảnh và Bluetooth:** chỉ khi bạn dùng tính năng tương ứng: quét mã QR, chụp ảnh sự cố hoặc ảnh đại diện, mở ô tủ ở gần bằng Bluetooth.
@@ -19,7 +19,7 @@ Chính sách này giải thích Lock.R ("chúng tôi") thu thập dữ liệu c�
 ## 2. Mục đích sử dụng
 
 - Tạo, xác thực và bảo vệ tài khoản.
-- Thực hiện dịch vụ: thuê ô, gửi và nhận hàng, giao drone, uỷ quyền, gửi mã mở tủ.
+- Thực hiện dịch vụ: thuê ô, gửi và nhận hàng, giao drone, gửi mã mở tủ.
 - Xử lý thanh toán, hoàn tiền, sự cố và bồi thường.
 - Gửi thông báo về đơn hàng, mã lấy hàng, nhắc hạn và thay đổi tài khoản.
 - Hỗ trợ khách hàng và trả lời câu hỏi qua trợ lý.

@@ -19,8 +19,6 @@ class DronePickupInfo {
     this.pickupDeadline,
     this.readyForPickup = false,
     this.pickupPin,
-    this.delegated = false,
-    this.delegateName,
     this.senderName,
   });
 
@@ -46,8 +44,6 @@ class DronePickupInfo {
       pickupDeadline: parseServerDateTime(json['pickupDeadline']),
       readyForPickup: json['readyForPickup'] == true,
       pickupPin: text(json['pickupPin']),
-      delegated: json['delegated'] == true,
-      delegateName: text(json['delegateName']),
       senderName: text(json['senderName']),
     );
   }
@@ -63,12 +59,8 @@ class DronePickupInfo {
   final DateTime? pickupDeadline;
   final bool readyForPickup;
 
-  /// Chỉ có khi đơn sẵn sàng lấy và chưa ủy quyền cho người khác.
+  /// Chỉ có khi đơn sẵn sàng lấy.
   final String? pickupPin;
-
-  /// Người nhận gốc đã ủy quyền lấy hộ ⇒ không còn PIN.
-  final bool delegated;
-  final String? delegateName;
   final String? senderName;
 
   bool get hasCoordinates {

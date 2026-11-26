@@ -1,13 +1,81 @@
+import 'package:flutter/foundation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:smart_laundry_locker/core/routing/app_router.dart';
 
 /// Vai trò chính của tài khoản trên mobile. Thứ tự ưu tiên khi một tài khoản
-/// mang nhiều role: ADMIN > LOCKER_TECHNICIAN > DRONE_TECHNICIAN > khách.
+/// mang nhiều role: ADMIN > LOCKER_TECHNICIAN > DRONE_TECHNICIAN > khách —
+/// trừ khi người dùng đã chọn vai trò khác ([ActiveRole], F3-G15).
 enum AppRole { admin, lockerTechnician, droneTechnician, customer }
 
 bool _hasRole(List<String> roles, String role) =>
     roles.contains(role) || roles.contains('ROLE_$role');
 
+/// Mọi vai trò app phục vụ mà tài khoản có, theo thứ tự ưu tiên. Khách chỉ có
+/// khi tài khoản mang role CUSTOMER (hoặc không mang role nào khác).
+List<AppRole> accountRoles(List<String> roles) {
+  final out = <AppRole>[
+    if (_hasRole(roles, 'ADMIN')) AppRole.admin,
+    if (_hasRole(roles, 'LOCKER_TECHNICIAN')) AppRole.lockerTechnician,
+    if (_hasRole(roles, 'DRONE_TECHNICIAN')) AppRole.droneTechnician,
+    if (_hasRole(roles, 'CUSTOMER') || _hasRole(roles, 'USER'))
+      AppRole.customer,
+  ];
+  return out.isEmpty ? const [AppRole.customer] : out;
+}
+
+/// Tài khoản có nhiều vai trò (một email vừa là KTV vừa là khách…) ⇒ được đổi vai trò.
+bool canSwitchRole(List<String> roles) => accountRoles(roles).length > 1;
+
+/// Vai trò người dùng đã chọn cho tài khoản nhiều vai trò (F3-G15). Lưu trên máy để mở lại app vẫn vào
+/// đúng vai trò; xoá khi đăng xuất. `null` = theo thứ tự ưu tiên.
+class ActiveRole {
+  ActiveRole._();
+
+  static const _key = 'active_role';
+  static AppRole? _chosen;
+
+  static AppRole? get chosen => _chosen;
+
+  /// Gọi trong `main()` trước `runApp`.
+  static Future<void> restore() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      _chosen = _parse(prefs.getString(_key));
+    } catch (_) {
+      _chosen = null;
+    }
+  }
+
+  static Future<void> choose(AppRole role) async {
+    _chosen = role;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(_key, role.name);
+    } catch (_) {}
+  }
+
+  static Future<void> clear() async {
+    _chosen = null;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove(_key);
+    } catch (_) {}
+  }
+
+  static AppRole? _parse(String? name) {
+    for (final role in AppRole.values) {
+      if (role.name == name) return role;
+    }
+    return null;
+  }
+
+  @visibleForTesting
+  static set chosenForTest(AppRole? role) => _chosen = role;
+}
+
 AppRole primaryRole(List<String> roles) {
+  final chosen = ActiveRole.chosen;
+  if (chosen != null && accountRoles(roles).contains(chosen)) return chosen;
   if (_hasRole(roles, 'ADMIN')) return AppRole.admin;
   if (_hasRole(roles, 'LOCKER_TECHNICIAN')) return AppRole.lockerTechnician;
   if (_hasRole(roles, 'DRONE_TECHNICIAN')) return AppRole.droneTechnician;
@@ -56,10 +124,8 @@ const _signInRoutes = <String>{
   AppRouter.createReport,
   AppRouter.myReports,
   AppRouter.myLockerReports,
-  // Thông báo, ủy quyền, ưu đãi đã lưu
+  // Thông báo, ưu đãi đã lưu
   AppRouter.notifications,
-  AppRouter.myDelegations,
-  AppRouter.authorizedOpening,
   AppRouter.myVouchers,
   // Hồ sơ cá nhân
   AppRouter.profileDetail,
@@ -255,13 +321,15 @@ String? technicianRouteForNotification(
   }
 
   // Lắp đặt tủ (F3-G12): admin giao hồ sơ / duyệt hoặc trả lại ⇒ mở thẳng hồ sơ
-  if (normalized.startsWith('locker.installation.') || refType == 'LOCKER_INSTALLATION') {
+  if (normalized.startsWith('locker.installation.') ||
+      refType == 'LOCKER_INSTALLATION') {
     return technicianInstallationsLocation(id: id);
   }
 
   // Lịch bảo trì định kỳ tủ
   if (normalized == 'locker.schedule.due' ||
-      (normalized == 'locker.report.assigned' && refType == 'MAINTENANCE_SCHEDULE') ||
+      (normalized == 'locker.report.assigned' &&
+          refType == 'MAINTENANCE_SCHEDULE') ||
       refType == 'MAINTENANCE_SCHEDULE' ||
       refType == 'SCHEDULE') {
     return technicianHomeLocation(tab: 'schedules', scheduleId: id);

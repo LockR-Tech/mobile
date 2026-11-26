@@ -105,7 +105,6 @@ class ReceiverOrderCard extends StatelessWidget {
     required this.order,
     required this.onUnlock,
     required this.onDirections,
-    this.delegatedView = false,
     this.onTap,
     this.tourFirst = false,
   });
@@ -116,9 +115,6 @@ class ReceiverOrderCard extends StatelessWidget {
   final ReceiverOrder order;
   final VoidCallback onUnlock;
   final VoidCallback onDirections;
-
-  /// `true` ở màn "Đơn ủy quyền" (mình là người lấy hộ).
-  final bool delegatedView;
 
   /// Chạm thẻ ⇒ mở chi tiết đơn.
   final VoidCallback? onTap;
@@ -234,7 +230,7 @@ class ReceiverOrderCard extends StatelessWidget {
                         children: [
                           if ((order.senderName ?? '').isNotEmpty) ...[
                             Text(
-                              delegatedView ? context.l10n.recvDelegatorColon : context.l10n.recvSenderColon,
+                              context.l10n.recvSenderColon,
                               style: TextStyle(
                                 fontSize: 12.5,
                                 color: context.textMuted,
@@ -255,7 +251,7 @@ class ReceiverOrderCard extends StatelessWidget {
                             Text(
                               isDrone
                                   ? context.l10n.recvDroneDelivery
-                                  : (delegatedView ? context.l10n.recvDelegatedPickup : context.l10n.recvIncomingParcel),
+                                  : context.l10n.recvIncomingParcel,
                               style: TextStyle(
                                 fontSize: 12.5,
                                 color: context.textMuted,
@@ -287,19 +283,6 @@ class ReceiverOrderCard extends StatelessWidget {
                           ],
                         ],
                       ),
-                      if (delegatedView && (order.delegateNote ?? '').isNotEmpty) ...[
-                        const SizedBox(height: 4),
-                        Text(
-                          order.delegateNote!,
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontStyle: FontStyle.italic,
-                            color: context.textMuted,
-                          ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ],
                       const SizedBox(height: 12),
 
                       // Route: Tủ and Ô
@@ -335,7 +318,7 @@ class ReceiverOrderCard extends StatelessWidget {
                       ),
                       const SizedBox(height: 14),
 
-                      if (!delegatedView && order.delegated)
+                      if (order.delegated)
                         OpsBanner(
                           tone: OpsBannerTone.info,
                           icon: LucideIcons.userCheck,
@@ -492,7 +475,7 @@ class ReceiverOrderCard extends StatelessWidget {
               ),
 
             // Delegated notice banner (if delegated)
-            if (!delegatedView && order.delegated)
+            if (order.delegated)
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.symmetric(

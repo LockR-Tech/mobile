@@ -129,11 +129,38 @@ class AuthInterceptor extends Interceptor {
     }
   }
 
-  Future<void> _forceLogout() async {
+  /// Đang đăng xuất vì hết phiên — các 401 khác về cùng lúc không đăng xuất / báo lại.
+  static Future<void>? _loggingOut;
+
+  /// Hết phiên thật (đang có token mà làm mới thất bại) ⇒ đăng xuất và báo MỘT lần (F3-G15). Trước đây mỗi
+  /// request 401 đều báo: mở app lúc phiên đã hết, hay để màn tự làm mới chạy sau khi đã đăng xuất, là
+  /// "Phiên đăng nhập hết hạn" hiện liên tục — kể cả với khách chưa đăng nhập.
+  Future<void> _forceLogout() => _loggingOut ??= _logoutOnce().whenComplete(() => _loggingOut = null);
+
+  Future<void> _logoutOnce() async {
+    if (!await TokenService.isLoggedIn()) return;
     debugPrint('AuthInterceptor: cannot refresh, logging out.');
     await TokenService.clearTokens();
     DioClient.instance.clearAuthToken();
-    SmartDialog.showToast(L10n.current.errorSessionExpired);
+    sessionExpiredNotice(
+      showToast: () => SmartDialog.showToast(L10n.current.errorSessionExpired),
+    );
     AppRouter.router.go(AppRouter.onboarding);
   }
+
+  static DateTime? _lastNotice;
+
+  /// Chặn báo trùng trong 30 giây (vd. đăng nhập lại rồi một request cũ còn treo trả 401).
+  @visibleForTesting
+  static bool sessionExpiredNotice({required void Function() showToast, DateTime? now}) {
+    final at = now ?? DateTime.now();
+    final last = _lastNotice;
+    if (last != null && at.difference(last) < const Duration(seconds: 30)) return false;
+    _lastNotice = at;
+    showToast();
+    return true;
+  }
+
+  @visibleForTesting
+  static void resetNotice() => _lastNotice = null;
 }

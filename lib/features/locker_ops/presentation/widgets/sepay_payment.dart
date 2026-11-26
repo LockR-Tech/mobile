@@ -587,6 +587,10 @@ class SepayPaymentActions extends StatelessWidget {
   /// Cố định ở đáy màn hình kèm padding Safe Area.
   final bool isPinned;
 
+  static bool get _onPhone =>
+      defaultTargetPlatform == TargetPlatform.android ||
+      defaultTargetPlatform == TargetPlatform.iOS;
+
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
@@ -594,7 +598,9 @@ class SepayPaymentActions extends StatelessWidget {
       builder: (context, _) {
         final transfer = controller.transfer;
         if (controller.paid || transfer == null) return const SizedBox.shrink();
-        if (kIsWeb || !transfer.canOpenBankApp) return const SizedBox.shrink();
+        // App ngân hàng chỉ có trên điện thoại: app Android/iOS và bản web mở bằng trình duyệt điện thoại
+        // (trước F3-G15 bản web luôn ẩn nút này).
+        if (!transfer.canOpenBankApp || !_onPhone) return const SizedBox.shrink();
 
         final button = TourAnchor(
           'vietqr-bank-app',

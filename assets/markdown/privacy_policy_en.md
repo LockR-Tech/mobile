@@ -1,6 +1,6 @@
 # Privacy policy
 
-Version 03/11/2026 · Applies to the Lock.R app, the Lock.R website and the kiosks at our lockers.
+Version 27/11/2026 · Applies to the Lock.R app, the Lock.R website and the kiosks at our lockers.
 
 This policy explains what personal data Lock.R ("we") collects, what we use it for, who we share it with and what rights you have. It goes together with the [Terms of service](terms_of_service).
 
@@ -9,7 +9,7 @@ This policy explains what personal data Lock.R ("we") collects, what we use it f
 - **Account:** name, phone number, email, profile photo, password (stored only as a bcrypt hash).
 - **Sign-in with Google, Facebook or phone number:** display name, email, public profile photo and the identifier issued by the provider. We never receive your social account password.
 - **Orders:** lockers and boxes used, times, order codes, status, parcel weight, drone flight path, payment and refund history.
-- **Recipients and delegates:** name, phone number and email entered by the sender so we can deliver the pickup code. Senders must have their consent before providing them.
+- **Recipients:** name, phone number and email entered by the sender so we can deliver the pickup code. Senders must have their consent before providing them.
 - **Payments:** amount, reference code and result of the bank transfer. We do not store card numbers or bank login details.
 - **Location:** when you allow it, to find lockers near you, give directions and tag incident photos. For technicians, location is only collected during their shift.
 - **Camera, photos and Bluetooth:** only when you use the related feature: scanning QR codes, taking incident or profile photos, opening a nearby box over Bluetooth.
@@ -19,7 +19,7 @@ This policy explains what personal data Lock.R ("we") collects, what we use it f
 ## 2. How we use it
 
 - Create, authenticate and protect your account.
-- Provide the service: locker rental, sending and receiving parcels, drone delivery, delegation, sending box codes.
+- Provide the service: locker rental, sending and receiving parcels, drone delivery, sending box codes.
 - Handle payments, refunds, incidents and compensation.
 - Send notifications about orders, pickup codes, deadlines and account changes.
 - Support you and answer questions through the assistant.

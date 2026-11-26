@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:smart_laundry_locker/core/routing/app_router.dart';
-import 'package:smart_laundry_locker/core/theme/shadcn_theme.dart';
 import 'package:smart_laundry_locker/core/utils/app_date_time.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/infrastructure/data_sources/drone_pickup_remote_datasource.dart';
 import 'package:smart_laundry_locker/core/l10n/l10n.dart';
@@ -146,14 +145,6 @@ class _DronePickupSheetState extends State<_DronePickupSheet> {
         color: Color(0xFF64748B),
         text:
             context.l10n.psNotInQueue,
-      );
-    }
-    if (info.delegated) {
-      return _Message(
-        icon: LucideIcons.userCheck,
-        color: AISLShadcnTheme.navyPrimary,
-        text:
-            context.l10n.psDelegated(info.delegateName ?? context.l10n.psSomeoneElse),
       );
     }
     final pin = info.pickupPin;

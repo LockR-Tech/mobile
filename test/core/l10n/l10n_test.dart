@@ -131,5 +131,9 @@ void main() {
 
     expect(L10n.isEnglish, isTrue);
     expect(find.text('Home'), findsOneWidget);
+    // Nút dựng `const` vẫn phải sáng đúng ô đang chọn (lỗi cũ: chữ đã sang EN mà ô VI vẫn sáng).
+    Color? colorOf(String label) => tester.widget<Text>(find.text(label)).style?.color;
+    expect(colorOf('EN'), const Color(0xFF003D5B));
+    expect(colorOf('VI'), Colors.white);
   });
 }
