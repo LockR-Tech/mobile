@@ -15523,4 +15523,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get qrTestOpenRejected => 'The locker did not accept the open command';
+
+  @override
+  String txNetWithCount(String amount, int count) {
+    return '$amount ($count txns)';
+  }
 }

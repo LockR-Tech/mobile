@@ -5359,5 +5359,6 @@
   "galleryCapturedAt": "Taken at",
   "galleryUploadedAt": "Uploaded at",
   "qrTestOpenSent": "Open command sent",
-  "qrTestOpenRejected": "The locker did not accept the open command"
+  "qrTestOpenRejected": "The locker did not accept the open command",
+  "txNetWithCount": "{amount} ({count} txns)"
 }

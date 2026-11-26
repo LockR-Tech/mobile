@@ -15150,4 +15150,9 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get qrTestOpenRejected => 'Tủ không nhận lệnh mở ô';
+
+  @override
+  String txNetWithCount(String amount, int count) {
+    return '$amount ($count GD)';
+  }
 }

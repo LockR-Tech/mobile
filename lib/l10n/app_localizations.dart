@@ -25812,6 +25812,12 @@ abstract class AppLocalizations {
   /// In vi, this message translates to:
   /// **'Tủ không nhận lệnh mở ô'**
   String get qrTestOpenRejected;
+
+  /// No description provided for @txNetWithCount.
+  ///
+  /// In vi, this message translates to:
+  /// **'{amount} ({count} GD)'**
+  String txNetWithCount(String amount, int count);
 }
 
 class _AppLocalizationsDelegate
