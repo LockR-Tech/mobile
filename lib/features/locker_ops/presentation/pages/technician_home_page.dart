@@ -117,6 +117,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
   String? _jwtUserEmail;
   Map<String, dynamic>? _ratingAverage;
   Map<String, dynamic>? _myPerformance;
+  bool? _onDuty;
 
   // Inspection tab state
   List<Map<String, dynamic>> _lockers = [];
@@ -1752,6 +1753,14 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                         service: _service,
                         isDrone: false,
                         margin: EdgeInsets.zero,
+                        onPresenceChanged: (data) {
+                          final nextOnDuty = data['onDuty'] == true;
+                          final changed = _onDuty != null && _onDuty != nextOnDuty;
+                          _onDuty = nextOnDuty;
+                          if (changed && mounted) {
+                            _load(silent: true);
+                          }
+                        },
                       ),
                     ),
                   ],
@@ -6139,11 +6148,11 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                           child: ElevatedButton.icon(
                             onPressed: () async {
                               Navigator.pop(ctx);
-                              await _run(
+                              final success = await _run(
                                 () => _service.claimReport(r['id'] as int),
                                 context.l10n.techHomeClaimSuccess,
                               );
-                              if (mounted) {
+                              if (success && mounted) {
                                 _tabs.animateTo(2);
                               }
                             },

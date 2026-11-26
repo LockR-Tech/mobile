@@ -1556,8 +1556,10 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                 margin: EdgeInsets.zero,
                 onPresenceChanged: (presence) {
                   final onDuty = presence['onDuty'] == true;
-                  if (mounted && onDuty != _shiftOnDuty) {
+                  final changed = mounted && onDuty != _shiftOnDuty;
+                  if (changed) {
                     setState(() => _shiftOnDuty = onDuty);
+                    _loadDroneReports();
                   }
                   _refreshDeliveries();
                 },
