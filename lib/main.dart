@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:smart_laundry_locker/core/presentation/map/app_base_tile_layer.dart';
 import 'package:smart_laundry_locker/core/config/business_config_service.dart';
 import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 import 'package:smart_laundry_locker/core/l10n/locale_provider.dart';
@@ -16,7 +17,6 @@ import 'package:smart_laundry_locker/firebase_options.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
-import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
@@ -134,11 +134,9 @@ void main() async {
 
   if (!kIsWeb) {
     // Cache tile bản đồ là singleton, tạo sớm để mọi TileLayer dùng chung cấu
-    // hình. OSM chỉ cho max-age ~1 ngày; quá hạn thì flutter_map chờ OSM xác
-    // nhận lại từng tile (0.6–3s) rồi mới vẽ. Chính sách OSM cho phép giữ 7 ngày.
-    BuiltInMapCachingProvider.getOrCreateInstance(
-      overrideFreshAge: const Duration(days: 7),
-    );
+    // hình: giữ 30 ngày (F3-G16) — máy chủ ô chỉ cho max-age ~1 ngày, quá hạn thì
+    // flutter_map chờ xác nhận lại từng ô (0.6–3s) rồi mới vẽ.
+    initMapTileCache();
   }
 
   DioClient.instance.init();

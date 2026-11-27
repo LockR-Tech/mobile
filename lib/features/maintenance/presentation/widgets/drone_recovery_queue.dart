@@ -10,7 +10,6 @@ import 'package:smart_laundry_locker/core/media/widgets/photo_picker_field.dart'
 import 'package:smart_laundry_locker/features/locker_ops/data/locker_ops_service.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/domain/entities/drone_incident_labels.dart';
 import 'package:smart_laundry_locker/features/onboarding/presentation/tour_anchor.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 class DroneRecoveryQueue extends StatelessWidget {
   const DroneRecoveryQueue({
@@ -392,11 +391,17 @@ class _DroneRecoveryDetailState extends State<DroneRecoveryDetail> {
         if (item['dropLatitude'] != null) ...[
           const SizedBox(height: 10),
           TourAnchor('tech-recovery-drop-directions', child: OutlinedButton.icon(
-            onPressed: () => launchUrl(
-              Uri.parse(
-                'https://www.google.com/maps/search/?api=1&query=${item['dropLatitude']},${item['dropLongitude']}',
+            // Bản đồ chỉ đường trong app (F3-G16), như chỉ đường tới trạm thu hồi bên dưới.
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(
+                builder: (_) => DirectionsMapPage(
+                  destination: LatLng(
+                    (item['dropLatitude'] as num).toDouble(),
+                    (item['dropLongitude'] as num).toDouble(),
+                  ),
+                  title: context.l10n.techRecDirectionsToDrop,
+                ),
               ),
-              mode: LaunchMode.externalApplication,
             ),
             icon: const Icon(Icons.directions_outlined),
             label: Text(context.l10n.techRecDirectionsToDrop),

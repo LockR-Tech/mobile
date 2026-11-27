@@ -4,16 +4,33 @@ import 'package:flutter/services.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:smart_laundry_locker/core/theme/shadcn_theme.dart';
 import 'package:smart_laundry_locker/features/drone_delivery/domain/entities/drone_route_geometry.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:latlong2/latlong.dart';
+import 'package:smart_laundry_locker/core/presentation/pages/directions_map_page.dart';
 import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 import 'package:smart_laundry_locker/core/services/platform_info.dart';
 
-/// Google Maps ghim đúng điểm toạ độ (có địa chỉ thực tế bên dưới).
-Uri droneGoogleMapsUri(double latitude, double longitude) => Uri.parse(
-  'https://www.google.com/maps/search/?api=1&query=$latitude,$longitude',
-);
+/// Mở bản đồ chỉ đường TRONG APP tới một toạ độ (giống chỉ đường tới tủ của đơn thuê / gửi) —
+/// không nhảy sang Google Maps (F3-G16). Trang chỉ đường vẫn có nút mở app bản đồ của máy nếu
+/// người dùng muốn dẫn đường từng ngã rẽ.
+void openInAppDirections(
+  BuildContext context, {
+  required double latitude,
+  required double longitude,
+  required String title,
+  String? subtitle,
+}) {
+  Navigator.of(context).push(
+    MaterialPageRoute<void>(
+      builder: (_) => DirectionsMapPage(
+        destination: LatLng(latitude, longitude),
+        title: title,
+        subtitle: subtitle,
+      ),
+    ),
+  );
+}
 
-/// Một dòng toạ độ: bấm vào số mở Google Maps tại điểm đó, nút bên phải copy nguyên chuỗi.
+/// Một dòng toạ độ: bấm vào số mở bản đồ trong app tại điểm đó, nút bên phải copy nguyên chuỗi.
 class DroneCoordinatesLine extends StatelessWidget {
   const DroneCoordinatesLine({
     super.key,
@@ -28,14 +45,14 @@ class DroneCoordinatesLine extends StatelessWidget {
   /// Số lấy từ đâu (drone gửi về lúc…, mô phỏng, tại tủ nhận…).
   final String note;
 
-  Future<void> _openMap(BuildContext context) async {
-    final opened = await launchUrl(
-      droneGoogleMapsUri(latitude, longitude),
-      mode: LaunchMode.externalApplication,
+  void _openMap(BuildContext context) {
+    openInAppDirections(
+      context,
+      latitude: latitude,
+      longitude: longitude,
+      title: droneCoordinateLabel(latitude, longitude),
+      subtitle: context.l10n.clDronePosition(note),
     );
-    if (!opened && context.mounted) {
-      SmartDialog.showToast(context.l10n.clCantOpenMaps);
-    }
   }
 
   Future<void> _copy(BuildContext context, String text) async {
@@ -111,7 +128,7 @@ String journeyLocationSourceLabel(String? source) => switch (source) {
   _ => L10n.current.clAtEvent,
 };
 
-/// Dòng toạ độ gọn dưới một mốc hành trình: kiện ở đâu lúc mốc xảy ra. Bấm mở Google Maps,
+/// Dòng toạ độ gọn dưới một mốc hành trình: kiện ở đâu lúc mốc xảy ra. Bấm mở bản đồ trong app,
 /// giữ lâu để copy `vĩ độ, kinh độ`.
 class JourneyLocationLine extends StatelessWidget {
   const JourneyLocationLine({
@@ -133,15 +150,13 @@ class JourneyLocationLine extends StatelessWidget {
       child: InkWell(
         key: const ValueKey('journey-location'),
         borderRadius: BorderRadius.circular(6),
-        onTap: () async {
-          final opened = await launchUrl(
-            droneGoogleMapsUri(latitude, longitude),
-            mode: LaunchMode.externalApplication,
-          );
-          if (!opened && context.mounted) {
-            SmartDialog.showToast(context.l10n.clCantOpenMaps);
-          }
-        },
+        onTap: () => openInAppDirections(
+          context,
+          latitude: latitude,
+          longitude: longitude,
+          title: journeyLocationSourceLabel(source),
+          subtitle: text,
+        ),
         onLongPress: () async {
           await Clipboard.setData(ClipboardData(text: text));
           if (PlatformInfo.systemShowsCopyConfirmation) return; // Android 13+ đã tự báo "Đã sao chép".
