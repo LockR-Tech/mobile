@@ -133,11 +133,11 @@ Future<(String reason, String? note)?> showDroneReasonDialog(
 /// Việc lấy hàng tận nhà của KTV drone: vào/ra ca, lời mời đang chờ trả lời, kiện đang
 /// đi lấy, và kiện đã lấy đang được mang tới drone để nạp trực tiếp.
 ///
-/// Hệ thống mời KTV đang bật nhận việc lấy hàng, rảnh và gần người gửi nhất — nên bật
-/// phải kèm vị trí, và app gửi lại vị trí định kỳ trong lúc đang bật.
+/// Hệ thống mời KTV đang trong ca, rảnh và gần người gửi nhất — app gửi lại vị trí định kỳ
+/// trong lúc đang trong ca.
 ///
-/// Công tắc này KHÁC nút "Vào ca" trên đầu trang: vào ca chỉ là trạng thái online làm
-/// việc; chỉ khi bật công tắc này KTV mới thấy lời mời và được nhận lấy hàng.
+/// Vào ca ở thẻ "Ca trực" trên đầu trang là nhận việc lấy hàng luôn (F3-G16, không còn công tắc
+/// riêng); thẻ ở đây chỉ báo trạng thái và các đơn cần lấy.
 class DronePickupQueue extends StatefulWidget {
   const DronePickupQueue({
     super.key,
@@ -147,16 +147,20 @@ class DronePickupQueue extends StatefulWidget {
     required this.onOpenDetail,
     required this.onAssignDrone,
     this.shiftOnDuty,
+    this.presenceRevision = 0,
     this.readPosition = readDevicePosition,
     this.locationInterval = const Duration(seconds: 60),
   });
 
   final LockerOpsService service;
 
-  /// KTV đã "Vào ca" (online làm việc) chưa; null = chưa biết (không chặn). Chưa vào ca
-  /// thì không bật nhận việc lấy hàng được; hết ca thì server đã tắt nhận việc nên nạp
-  /// lại trạng thái công tắc.
+  /// KTV đã "Vào ca" chưa; null = chưa biết. Đổi ca ⇒ nạp lại trạng thái nhận việc từ server
+  /// (thẻ ca đã bật / tắt nhận việc lấy hàng cùng lúc).
   final bool? shiftOnDuty;
+
+  /// Tăng mỗi khi thẻ ca trực vừa đổi trạng thái nhận việc ở server (vd mở app đang trong ca thì tự
+  /// bật lại) ⇒ đọc lại trạng thái nhận việc.
+  final int presenceRevision;
 
   /// Mọi đơn drone KTV này đang thấy (`/api/drone-technician/drone-orders`).
   final List<Map<String, dynamic>> deliveries;
@@ -184,7 +188,6 @@ class _DronePickupQueueState extends State<DronePickupQueue>
 
   /// Server có luồng lấy hàng tận nhà và đã trả trạng thái ca của KTV này.
   bool _presenceKnown = false;
-  bool _switching = false;
   bool _acting = false;
   Timer? _heartbeat;
   Timer? _ticker;
@@ -202,8 +205,12 @@ class _DronePickupQueueState extends State<DronePickupQueue>
   @override
   void didUpdateWidget(covariant DronePickupQueue oldWidget) {
     super.didUpdateWidget(oldWidget);
-    // Vào / hết ca ở thẻ ca trên đầu trang: hết ca thì server đã tắt nhận việc lấy hàng.
-    if (oldWidget.shiftOnDuty != widget.shiftOnDuty) _loadPresence();
+    // Vào / hết ca ở thẻ ca trên đầu trang (bật / tắt nhận việc lấy hàng cùng lúc), hoặc thẻ ca
+    // vừa tự bật lại nhận việc: đọc lại trạng thái nhận việc để thẻ luôn khớp server.
+    if (oldWidget.shiftOnDuty != widget.shiftOnDuty ||
+        oldWidget.presenceRevision != widget.presenceRevision) {
+      _loadPresence();
+    }
   }
 
   @override
@@ -281,45 +288,6 @@ class _DronePickupQueueState extends State<DronePickupQueue>
       );
     } catch (_) {
       // Lượt sau gửi lại.
-    }
-  }
-
-  Future<void> _setDuty(bool onDuty) async {
-    if (_switching) return;
-    if (onDuty && widget.shiftOnDuty == false) {
-      _toast(L10n.current.dtPqNeedShift);
-      return;
-    }
-    setState(() => _switching = true);
-    try {
-      LatLng? position;
-      if (onDuty) {
-        final (read, problem) = await widget.readPosition();
-        if (read == null) {
-          _toast(
-            problem ?? L10n.current.dtPqNeedLocation,
-          );
-          return;
-        }
-        position = read;
-      }
-      _applyPresence(
-        await widget.service.updateDroneTechnicianPresence(
-          onDuty: onDuty,
-          latitude: position?.latitude,
-          longitude: position?.longitude,
-        ),
-      );
-      _toast(
-        onDuty
-            ? L10n.current.dtPqOnDuty
-            : L10n.current.dtPqOffDuty,
-      );
-      await widget.onChanged();
-    } catch (error) {
-      _toast(LockerOpsService.errorMessage(error));
-    } finally {
-      if (mounted) setState(() => _switching = false);
     }
   }
 
@@ -724,9 +692,9 @@ class _DronePickupQueueState extends State<DronePickupQueue>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    // Chưa bật nhận việc lấy hàng thì không thấy lời mời (thẻ trên chỉ báo số lời mời đang
-    // chờ). Việc đã nhận / kiện đang cầm vẫn hiện để làm cho xong.
-    final offered = _onDuty ? _offered : const <Map<String, dynamic>>[];
+    // Vào ca là thấy ngay các đơn cần lấy; lời mời admin giao thẳng khi chưa vào ca cũng hiện để
+    // KTV biết. Việc đã nhận / kiện đang cầm luôn hiện để làm cho xong.
+    final offered = _offered;
     final accepted = _accepted;
     final carrying = _carrying;
     // Không có gì để hiện (server cũ, chưa có việc) thì không chiếm chỗ trên màn điều phối.
@@ -781,17 +749,12 @@ class _DronePickupQueueState extends State<DronePickupQueue>
 
   Widget _dutyCard() {
     // Lời mời đang chờ cũng làm server tính KTV là "bận": báo đúng là có lời mời,
-    // không ghi "đang bận" ngay trên lời mời đó. Chưa bật mà có lời mời (điều phối viên
-    // giao thẳng) thì chỉ báo số lượng, bật lên mới xem và trả lời được.
+    // không ghi "đang bận" ngay trên lời mời đó.
     final offers = _offered.length;
     final subtitle = offers > 0
-        ? (_onDuty
-              ? context.l10n.dtPqOffersWaiting(offers)
-              : context.l10n.dtPqOffersHiddenTurnOn(offers))
+        ? context.l10n.dtPqOffersWaiting(offers)
         : !_onDuty
-        ? (widget.shiftOnDuty == false
-              ? context.l10n.dtPqNeedShift
-              : context.l10n.dtPqTurnOnHint)
+        ? context.l10n.dtPqNeedShift
         : _busy
         ? context.l10n.dtPqBusy
         : _locationAt == null
@@ -828,11 +791,6 @@ class _DronePickupQueueState extends State<DronePickupQueue>
                 ),
               ],
             ),
-          ),
-          Switch(
-            key: const ValueKey('drone-duty-switch'),
-            value: _onDuty,
-            onChanged: _switching ? null : _setDuty,
           ),
         ],
       ),

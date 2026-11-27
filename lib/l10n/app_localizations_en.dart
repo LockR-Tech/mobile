@@ -1365,6 +1365,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get commonStatusSuspended => 'Suspended';
 
   @override
+  String get lockerPausedNoTechnician =>
+      'No assigned technician — not taking orders';
+
+  @override
+  String get lockerPausedNoOrders => 'Not taking orders';
+
+  @override
   String get commonDisconnected => 'Disconnected';
 
   @override
@@ -5382,6 +5389,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get blockSuspended => 'suspended';
+
+  @override
+  String get blockNoTechnician => 'no assigned technician — not taking orders';
 
   @override
   String get blockNoPad => 'no drone landing pad';
@@ -13636,18 +13646,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get dtPqNoteRequiredForReason => 'A note is required for this reason';
 
   @override
-  String get dtPqNeedLocation =>
-      'Your current location is needed to start taking pickup jobs.';
-
-  @override
-  String get dtPqOnDuty =>
-      'Pickup jobs on. You\'ll be invited when there\'s an order near you.';
-
-  @override
-  String get dtPqOffDuty =>
-      'Pickup jobs off. You won\'t receive pickup invitations.';
-
-  @override
   String get dtPqDeclineTitle => 'Decline this pickup invitation?';
 
   @override
@@ -13761,25 +13759,8 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String dtPqOffersHiddenTurnOn(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other:
-          '$count pickup invitations are waiting — turn on pickup jobs to view and reply.',
-      one:
-          '1 pickup invitation is waiting — turn on pickup jobs to view and reply.',
-    );
-    return '$_temp0';
-  }
-
-  @override
-  String get dtPqTurnOnHint =>
-      'Turn on to see and receive home pickup invitations near you.';
-
-  @override
   String get dtPqNeedShift =>
-      'Start your shift first, then turn on pickup jobs.';
+      'Tap \"Start shift\" on the Shift card above to take pickup jobs — you\'ll be invited to waiting orders near you right away.';
 
   @override
   String get dtPqBusy =>
@@ -13795,10 +13776,10 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get dtPqOnDutyTitle => 'Taking pickup jobs';
+  String get dtPqOnDutyTitle => 'On shift · taking pickup jobs';
 
   @override
-  String get dtPqOffDutyTitle => 'Pickup jobs off';
+  String get dtPqOffDutyTitle => 'Off shift · not taking pickup jobs';
 
   @override
   String dtPqPickupAt(Object address) {

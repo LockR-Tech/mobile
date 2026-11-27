@@ -5,7 +5,9 @@ import 'package:smart_laundry_locker/core/utils/app_date_time.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:smart_laundry_locker/core/config/business_config_service.dart';
+import 'package:smart_laundry_locker/core/network/api_client.dart';
 import 'package:smart_laundry_locker/core/routing/app_router.dart';
+import 'package:smart_laundry_locker/core/services/firebase_messaging_service.dart';
 import 'package:smart_laundry_locker/core/services/session_service.dart';
 import 'package:smart_laundry_locker/core/services/token_service.dart';
 import 'package:smart_laundry_locker/core/services/app_event_bus.dart';
@@ -146,6 +148,8 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
   /// Trạng thái "Vào ca" (online làm việc) từ thẻ ca; null = chưa tải xong. Khác công tắc
   /// nhận việc lấy hàng trong [DronePickupQueue].
   bool? _shiftOnDuty;
+  /// Tăng khi thẻ ca trực đổi trạng thái nhận việc lấy hàng ⇒ hàng chờ lấy hàng đọc lại.
+  int _pickupDutyRevision = 0;
   String? _myUserId;
   String? _myUserName;
   String? _myUserEmail;
@@ -207,6 +211,13 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
       try {
         final profileProvider = context.read<ProfileProvider>();
         if (profileProvider.profile == null) profileProvider.loadProfile();
+      } catch (_) {}
+      // Đăng ký máy nhận thông báo đẩy mỗi lần mở trang KTV drone (như trang KTV tủ) — trước đây
+      // chỉ đăng ký lúc đăng nhập nên mở lại app / token xoay vòng là KTV drone mất thông báo đẩy.
+      try {
+        unawaited(FirebaseMessagingService.instance
+            .updateBackendDeviceToken(ApiClient())
+            .catchError((_) {}));
       } catch (_) {}
     });
     _load();
@@ -1558,12 +1569,18 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                 margin: EdgeInsets.zero,
                 onPresenceChanged: (presence) {
                   final onDuty = presence['onDuty'] == true;
+                  final wasKnown = _shiftOnDuty != null;
                   final changed = mounted && onDuty != _shiftOnDuty;
                   if (changed) {
                     setState(() => _shiftOnDuty = onDuty);
                     _loadDroneReports();
+                    // Vừa bấm "Vào ca": mở tab Điều phối để thấy ngay các đơn cần lấy hàng.
+                    if (onDuty && wasKnown) _tabs.animateTo(0);
                   }
                   _refreshDeliveries();
+                },
+                onPickupDutyChanged: () {
+                  if (mounted) setState(() => _pickupDutyRevision++);
                 },
               )),
             ],
@@ -1904,6 +1921,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
             service: _service,
             deliveries: visibleDeliveries,
             shiftOnDuty: _shiftOnDuty,
+            presenceRevision: _pickupDutyRevision,
             onChanged: _load,
             onOpenDetail: _showDeliveryDetail,
             onAssignDrone: _acceptFlow,
