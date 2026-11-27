@@ -163,104 +163,49 @@ void main() {
     await tester.pump();
   }
 
-  testWidgets('bật nhận việc phải kèm vị trí hiện tại; tắt thì thôi được mời', (
+  testWidgets('không còn công tắc riêng: trạng thái nhận việc đi theo ca trực', (
     tester,
   ) async {
-    await pump(tester, const [], shiftOnDuty: true);
-    expect(find.text('Chưa bật nhận việc lấy hàng'), findsOneWidget);
-
-    await tester.tap(find.byKey(const ValueKey('drone-duty-switch')));
-    await tester.pump();
-    await tester.pump();
-
-    expect(service.calls, ['presence onDuty=true lat=10.7001 lng=106.7001']);
-    expect(find.text('Đang nhận việc lấy hàng'), findsOneWidget);
-    await drainToasts(tester);
-
-    await tester.tap(find.byKey(const ValueKey('drone-duty-switch')));
-    await tester.pump();
-    await tester.pump();
-    expect(service.calls.last, 'presence onDuty=false lat=null lng=null');
-    await drainToasts(tester);
+    await pump(tester, const [], shiftOnDuty: false);
+    expect(find.byType(Switch), findsNothing);
+    expect(find.text('Chưa vào ca · chưa nhận việc lấy hàng'), findsOneWidget);
+    expect(
+      find.text(
+        'Bấm "Vào ca" ở thẻ Ca trực phía trên để nhận việc lấy hàng — hệ thống mời ngay đơn đang chờ gần bạn.',
+      ),
+      findsOneWidget,
+    );
+    // Thẻ chỉ đọc trạng thái, không tự bật / tắt nhận việc.
+    expect(service.calls, isEmpty);
   });
 
   testWidgets(
-    'chưa vào ca làm việc thì không bật nhận việc lấy hàng được, không gọi server',
+    'vào ca là thấy ngay lời mời lấy hàng; việc đã nhận luôn hiện',
     (tester) async {
-      await pump(tester, const [], shiftOnDuty: false);
-      expect(
-        find.text('Vào ca làm việc trước, rồi bật nhận việc lấy hàng.'),
-        findsOneWidget,
-      );
-
-      await tester.tap(find.byKey(const ValueKey('drone-duty-switch')));
-      await tester.pump();
-      await tester.pump();
-
-      expect(service.calls, isEmpty);
-      expect(find.text('Chưa bật nhận việc lấy hàng'), findsOneWidget);
-      await drainToasts(tester);
-    },
-  );
-
-  testWidgets(
-    'chưa bật nhận việc: không thấy lời mời, chỉ báo số lời mời đang chờ',
-    (tester) async {
+      service.presence = {'onDuty': true, 'busy': false};
       await pump(tester, [
         _order(21, 'OFFERED', 'AWAITING_DISPATCH'),
         _order(23, 'ACCEPTED', 'PICKUP_ASSIGNED'),
       ], shiftOnDuty: true);
 
-      expect(find.byKey(const ValueKey('drone-pickup-accept-21')), findsNothing);
-      expect(find.textContaining('Lời mời lấy hàng ('), findsNothing);
-      expect(
-        find.text(
-          'Có 1 lời mời lấy hàng đang chờ — bật nhận việc để xem và trả lời.',
-        ),
-        findsOneWidget,
-      );
-      // Việc đã nhận vẫn hiện để làm cho xong.
-      expect(find.text('Đang đi lấy hàng (1)'), findsOneWidget);
-
-      await tester.tap(find.byKey(const ValueKey('drone-duty-switch')));
-      await tester.pump();
-      await tester.pump();
+      expect(find.text('Đang trong ca · nhận việc lấy hàng'), findsOneWidget);
       expect(find.byKey(const ValueKey('drone-pickup-accept-21')), findsOneWidget);
-      await drainToasts(tester);
+      expect(find.text('Lời mời lấy hàng (1)'), findsOneWidget);
+      expect(find.text('Đang đi lấy hàng (1)'), findsOneWidget);
     },
   );
 
-  testWidgets('hết ca ở thẻ ca: nạp lại trạng thái nhận việc từ server', (
+  testWidgets('đổi ca ở thẻ ca: nạp lại trạng thái nhận việc từ server', (
     tester,
   ) async {
     service.presence = {'onDuty': true, 'busy': false};
     await pump(tester, const [], shiftOnDuty: true);
-    expect(find.text('Đang nhận việc lấy hàng'), findsOneWidget);
+    expect(find.text('Đang trong ca · nhận việc lấy hàng'), findsOneWidget);
 
     // Thẻ ca đã tắt nhận việc ở server khi hết ca.
     service.presence = {'onDuty': false, 'busy': false};
     await pump(tester, const [], shiftOnDuty: false);
-    expect(find.text('Chưa bật nhận việc lấy hàng'), findsOneWidget);
-  });
-
-  testWidgets('không có GPS thì không vào ca được', (tester) async {
-    await pump(
-      tester,
-      const [],
-      position: (null, 'Dịch vụ vị trí đang tắt. Vui lòng bật GPS.'),
-    );
-
-    await tester.tap(find.byKey(const ValueKey('drone-duty-switch')));
-    await tester.pump();
-    await tester.pump();
-
-    expect(service.calls, isEmpty);
-    expect(
-      find.text('Dịch vụ vị trí đang tắt. Vui lòng bật GPS.'),
-      findsOneWidget,
-    );
-    expect(find.text('Chưa bật nhận việc lấy hàng'), findsOneWidget);
-    await drainToasts(tester);
+    expect(find.text('Chưa vào ca · chưa nhận việc lấy hàng'), findsOneWidget);
   });
 
   testWidgets(

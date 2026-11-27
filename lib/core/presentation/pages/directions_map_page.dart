@@ -1,4 +1,5 @@
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
+import 'package:smart_laundry_locker/core/presentation/map/app_base_tile_layer.dart';
 import 'dart:async';
 import 'dart:convert';
 
@@ -226,10 +227,7 @@ class _DirectionsMapPageState extends State<DirectionsMapPage> {
               initialZoom: 14,
             ),
             children: [
-              TileLayer(
-                urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                userAgentPackageName: 'com.aisl.app',
-              ),
+              appBaseTileLayer(),
               if (_routePoints.isNotEmpty)
                 PolylineLayer(
                   polylines: [

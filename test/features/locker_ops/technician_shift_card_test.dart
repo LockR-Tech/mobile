@@ -9,11 +9,20 @@ import '../../helpers/test_helpers.dart';
 class _FakePresenceService extends LockerOpsService {
   _FakePresenceService({
     required this.presenceData,
+    this.pickupOn = true,
+    this.pickupOffError,
   }) : super(dio: createMockDio().dio);
 
   final Map<String, dynamic> presenceData;
+  bool pickupOn;
+
+  /// Server từ chối tắt nhận việc (vd KTV còn việc lấy hàng đã nhận).
+  final Object? pickupOffError;
 
   final calls = <String>[];
+
+  @override
+  Future<Map<String, dynamic>> droneTechnicianPresence() async => {'onDuty': pickupOn};
 
   @override
   Future<Map<String, dynamic>> getTechnicianPresence() async => presenceData;
@@ -41,12 +50,14 @@ class _FakePresenceService extends LockerOpsService {
     double? longitude,
   }) async {
     calls.add('pickup onDuty=$onDuty');
-    return {'onDuty': onDuty ?? false};
+    if (onDuty == false && pickupOffError != null) throw pickupOffError!;
+    pickupOn = onDuty ?? pickupOn;
+    return {'onDuty': pickupOn};
   }
 }
 
 void main() {
-  testWidgets('KTV drone hết ca: tắt ca làm việc và tắt luôn nhận việc lấy hàng', (
+  testWidgets('KTV drone hết ca: thôi nhận việc lấy hàng trước rồi mới hết ca', (
     tester,
   ) async {
     final fakeService = _FakePresenceService(presenceData: {'onDuty': true});
@@ -69,8 +80,54 @@ void main() {
     await tester.tap(find.text('Kết thúc ca'));
     await tester.pumpAndSettle();
 
-    expect(fakeService.calls, ['shift onDuty=false', 'pickup onDuty=false']);
+    expect(fakeService.calls, ['pickup onDuty=false', 'shift onDuty=false']);
     expect(changes.last, isFalse);
+  });
+
+  testWidgets('KTV drone còn việc lấy hàng đã nhận: server từ chối thì ca giữ nguyên', (
+    tester,
+  ) async {
+    final fakeService = _FakePresenceService(
+      presenceData: {'onDuty': true},
+      pickupOffError: Exception('Finish or report the pickup you accepted before going off duty'),
+    );
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: TechnicianShiftCard(service: fakeService, isDrone: true),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Hết ca'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Kết thúc ca'));
+    await tester.pumpAndSettle();
+
+    expect(fakeService.calls, ['pickup onDuty=false']);
+    expect(find.text('ĐANG TRONG CA'), findsOneWidget);
+    await tester.pump(const Duration(seconds: 4));
+  });
+
+  testWidgets('KTV drone đang trong ca mà nhận việc lấy hàng đang tắt: mở thẻ là bật lại cho khớp', (
+    tester,
+  ) async {
+    final fakeService = _FakePresenceService(
+      presenceData: {'onDuty': true, 'latitude': 10.84, 'longitude': 106.81},
+      pickupOn: false,
+    );
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: TechnicianShiftCard(service: fakeService, isDrone: true),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(fakeService.calls, ['pickup onDuty=true']);
+    expect(fakeService.pickupOn, isTrue);
   });
 
 

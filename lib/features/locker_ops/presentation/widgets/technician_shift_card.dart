@@ -16,9 +16,9 @@ import 'package:smart_laundry_locker/features/onboarding/presentation/tour_ancho
 /// - Không quản lý chấm công ca trực (không đếm giờ/hiển thị thời gian chấm công).
 /// - Chỉ hiển thị trạng thái GPS thân thiện trên thanh chính (không hiện số toạ độ thô hay tên khu vực).
 /// - Thông tin toạ độ chi tiết được xem trong Modal khi cần kiểm tra kỹ thuật.
-/// - Với KTV drone, VÀO CA chỉ là trạng thái online làm việc (kèm toạ độ), KHÔNG bật nhận
-///   đơn lấy hàng tận nhà — việc đó do công tắc riêng "nhận việc lấy hàng" trên tab điều
-///   phối. HẾT CA thì tắt luôn nhận đơn lấy hàng: đã offline thì không được mời.
+/// - Với KTV drone, VÀO CA là nhận việc lấy hàng tận nhà luôn (F3-G16, không còn công tắc
+///   riêng): hệ thống mời ngay các đơn đang chờ gần KTV. HẾT CA thì thôi nhận việc; đang cầm
+///   việc lấy hàng đã nhận thì phải làm xong (hoặc báo không lấy được) mới hết ca được.
 class TechnicianShiftCard extends StatefulWidget {
   const TechnicianShiftCard({
     super.key,
@@ -26,12 +26,16 @@ class TechnicianShiftCard extends StatefulWidget {
     this.isDrone = false,
     this.margin,
     this.onPresenceChanged,
+    this.onPickupDutyChanged,
   });
 
   final LockerOpsService? service;
   final bool isDrone;
   final EdgeInsetsGeometry? margin;
   final ValueChanged<Map<String, dynamic>>? onPresenceChanged;
+
+  /// KTV drone: trạng thái nhận việc lấy hàng ở server vừa đổi (vào / hết ca, tự bật lại khi mở app).
+  final VoidCallback? onPickupDutyChanged;
 
   @override
   State<TechnicianShiftCard> createState() => _TechnicianShiftCardState();
@@ -73,6 +77,8 @@ class _TechnicianShiftCardState extends State<TechnicianShiftCard> {
       // Nếu đang trong ca trực, khởi động timer định kỳ cập nhật toạ độ GPS
       if (_onDuty) {
         _startPeriodicLocationSync();
+        // Đang trong ca mà nhận việc lấy hàng đang tắt (bản app cũ, máy khác) ⇒ bật lại cho khớp.
+        unawaited(_syncDronePickupDuty(true, silent: true));
       }
     } catch (_) {
       if (!mounted) return;
@@ -169,14 +175,28 @@ class _TechnicianShiftCardState extends State<TechnicianShiftCard> {
     );
   }
 
-  /// Hết ca ⇒ tắt nhận đơn lấy hàng tận nhà (order-service). Vào ca KHÔNG bật nhận đơn:
-  /// KTV tự bật công tắc "nhận việc lấy hàng" khi sẵn sàng đi lấy hàng.
-  Future<void> _endDronePickupShiftIfNeeded() async {
-    if (!widget.isDrone) return;
+  /// KTV drone: vào ca = nhận việc lấy hàng tận nhà (order-service), hết ca = thôi nhận.
+  /// Trả lỗi để hết ca bị chặn khi KTV còn việc lấy hàng đã nhận (server từ chối ra ca).
+  /// [silent]: đồng bộ ngầm lúc mở app — lỗi thì bỏ qua, lần sau thử lại.
+  Future<bool> _syncDronePickupDuty(bool onDuty, {bool silent = false, Position? position}) async {
+    if (!widget.isDrone) return true;
     try {
-      await _service.updateDroneTechnicianPresence(onDuty: false);
-    } catch (_) {
-      // Không chặn luồng chính nếu order-service chưa sẵn sàng
+      if (onDuty) {
+        final current = await _service.droneTechnicianPresence();
+        if (current['onDuty'] == true && position == null) return true;
+      }
+      await _service.updateDroneTechnicianPresence(
+        onDuty: onDuty,
+        latitude: position?.latitude ?? (onDuty ? _latitude : null),
+        longitude: position?.longitude ?? (onDuty ? _longitude : null),
+      );
+      widget.onPickupDutyChanged?.call();
+      return true;
+    } catch (e) {
+      if (!silent) {
+        _showSnackBar(LockerOpsService.errorMessage(e), isError: true);
+      }
+      return false;
     }
   }
 
@@ -271,6 +291,12 @@ class _TechnicianShiftCardState extends State<TechnicianShiftCard> {
 
     setState(() => _updating = true);
     try {
+      // KTV drone hết ca: thôi nhận việc lấy hàng TRƯỚC — còn việc đã nhận thì server từ chối và
+      // ca vẫn giữ nguyên, tránh cảnh hết ca mà vẫn được mời lấy hàng.
+      if (!nextOnDuty && !await _syncDronePickupDuty(false)) {
+        if (mounted) setState(() => _updating = false);
+        return;
+      }
       Position? pos;
       if (nextOnDuty) {
         // Vào ca: bắt buộc lấy vị trí GPS
@@ -290,7 +316,8 @@ class _TechnicianShiftCardState extends State<TechnicianShiftCard> {
         speedMs: pos?.speed,
         headingDeg: pos?.heading,
       );
-      if (!nextOnDuty) await _endDronePickupShiftIfNeeded();
+      // KTV drone vào ca: nhận việc lấy hàng luôn, hệ thống mời ngay đơn đang chờ gần đây.
+      if (nextOnDuty) await _syncDronePickupDuty(true, position: pos);
 
       if (!mounted) return;
       setState(() {

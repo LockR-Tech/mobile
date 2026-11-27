@@ -2510,6 +2510,18 @@ abstract class AppLocalizations {
   /// **'Tạm ngưng'**
   String get commonStatusSuspended;
 
+  /// No description provided for @lockerPausedNoTechnician.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa có kỹ thuật viên phụ trách — tạm ngưng nhận đơn'**
+  String get lockerPausedNoTechnician;
+
+  /// No description provided for @lockerPausedNoOrders.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tạm ngưng nhận đơn'**
+  String get lockerPausedNoOrders;
+
   /// No description provided for @commonDisconnected.
   ///
   /// In vi, this message translates to:
@@ -9211,6 +9223,12 @@ abstract class AppLocalizations {
   /// In vi, this message translates to:
   /// **'tạm ngưng'**
   String get blockSuspended;
+
+  /// No description provided for @blockNoTechnician.
+  ///
+  /// In vi, this message translates to:
+  /// **'chưa có kỹ thuật viên phụ trách — tạm ngưng nhận đơn'**
+  String get blockNoTechnician;
 
   /// No description provided for @blockNoPad.
   ///
@@ -22477,24 +22495,6 @@ abstract class AppLocalizations {
   /// **'Cần nhập ghi chú cho lý do này'**
   String get dtPqNoteRequiredForReason;
 
-  /// No description provided for @dtPqNeedLocation.
-  ///
-  /// In vi, this message translates to:
-  /// **'Cần vị trí hiện tại để bật nhận việc lấy hàng.'**
-  String get dtPqNeedLocation;
-
-  /// No description provided for @dtPqOnDuty.
-  ///
-  /// In vi, this message translates to:
-  /// **'Đã bật nhận việc lấy hàng. Bạn sẽ được mời khi có đơn gần bạn.'**
-  String get dtPqOnDuty;
-
-  /// No description provided for @dtPqOffDuty.
-  ///
-  /// In vi, this message translates to:
-  /// **'Đã tắt nhận việc lấy hàng. Bạn sẽ không được mời lấy hàng.'**
-  String get dtPqOffDuty;
-
   /// No description provided for @dtPqDeclineTitle.
   ///
   /// In vi, this message translates to:
@@ -22663,22 +22663,10 @@ abstract class AppLocalizations {
   /// **'Có {count} lời mời đang chờ bạn trả lời.'**
   String dtPqOffersWaiting(int count);
 
-  /// No description provided for @dtPqOffersHiddenTurnOn.
-  ///
-  /// In vi, this message translates to:
-  /// **'Có {count} lời mời lấy hàng đang chờ — bật nhận việc để xem và trả lời.'**
-  String dtPqOffersHiddenTurnOn(int count);
-
-  /// No description provided for @dtPqTurnOnHint.
-  ///
-  /// In vi, this message translates to:
-  /// **'Bật để thấy và nhận lời mời lấy hàng tận nhà gần bạn.'**
-  String get dtPqTurnOnHint;
-
   /// No description provided for @dtPqNeedShift.
   ///
   /// In vi, this message translates to:
-  /// **'Vào ca làm việc trước, rồi bật nhận việc lấy hàng.'**
+  /// **'Bấm \"Vào ca\" ở thẻ Ca trực phía trên để nhận việc lấy hàng — hệ thống mời ngay đơn đang chờ gần bạn.'**
   String get dtPqNeedShift;
 
   /// No description provided for @dtPqBusy.
@@ -22702,13 +22690,13 @@ abstract class AppLocalizations {
   /// No description provided for @dtPqOnDutyTitle.
   ///
   /// In vi, this message translates to:
-  /// **'Đang nhận việc lấy hàng'**
+  /// **'Đang trong ca · nhận việc lấy hàng'**
   String get dtPqOnDutyTitle;
 
   /// No description provided for @dtPqOffDutyTitle.
   ///
   /// In vi, this message translates to:
-  /// **'Chưa bật nhận việc lấy hàng'**
+  /// **'Chưa vào ca · chưa nhận việc lấy hàng'**
   String get dtPqOffDutyTitle;
 
   /// No description provided for @dtPqPickupAt.

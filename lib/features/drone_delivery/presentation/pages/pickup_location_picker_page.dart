@@ -105,6 +105,7 @@ class _PickupLocationPickerPageState extends State<PickupLocationPickerPage> {
     if (initial != null) {
       _point = LatLng(initial.latitude, initial.longitude);
       _addressController.text = initial.address;
+      _showInSearchBar(initial.address);
     } else {
       // Mở lần đầu: thử lấy luôn vị trí hiện tại cho người gửi.
       WidgetsBinding.instance.addPostFrameCallback(
@@ -163,6 +164,7 @@ class _PickupLocationPickerPageState extends State<PickupLocationPickerPage> {
     }
     if (knownAddress != null) {
       _addressController.text = knownAddress;
+      _showInSearchBar(knownAddress);
       return;
     }
     final address = await _geocoder.addressOf(point.latitude, point.longitude);
@@ -171,11 +173,21 @@ class _PickupLocationPickerPageState extends State<PickupLocationPickerPage> {
       _resolving = false;
       if (address != null) {
         _addressController.text = address;
+        _showInSearchBar(address);
       } else if (_addressController.text.trim().isEmpty) {
         _message =
             context.l10n.plNoAddressForPoint;
       }
     });
+  }
+
+  /// Điểm đã chọn (gợi ý, chạm bản đồ, vị trí hiện tại) hiện luôn trên ô tìm kiếm (F3-G16) để người
+  /// gửi thấy ngay mình đã chọn đâu. Gán chữ bằng code không gọi `onChanged` ⇒ không tra lại.
+  void _showInSearchBar(String address) {
+    _searchController.value = TextEditingValue(
+      text: address,
+      selection: TextSelection.collapsed(offset: address.length),
+    );
   }
 
   /// Gõ tới đâu gợi ý tới đó: chờ người dùng ngừng gõ một nhịp rồi mới tra, để không

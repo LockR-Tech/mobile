@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:smart_laundry_locker/core/presentation/map/app_base_tile_layer.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
@@ -150,10 +151,7 @@ class _LocationPickerState extends State<LocationPicker> {
               },
             ),
             children: [
-              TileLayer(
-                urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                userAgentPackageName: 'com.aisl.app',
-              ),
+              appBaseTileLayer(),
               MarkerLayer(
                 markers: [
                   Marker(

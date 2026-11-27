@@ -63,6 +63,11 @@ void main() {
     await tester.pumpAndSettle();
   }
 
+  String searchText(WidgetTester tester) => tester
+      .widget<TextField>(find.byKey(const ValueKey('pickup-search')))
+      .controller!
+      .text;
+
   testWidgets('mở lần đầu lấy luôn vị trí hiện tại và tra địa chỉ của nó', (
     tester,
   ) async {
@@ -75,6 +80,8 @@ void main() {
           .text,
       '12 Nguyễn Huệ, Quận 1, TP.HCM',
     );
+    // Địa chỉ đã chọn hiện luôn trên ô tìm kiếm (F3-G16).
+    expect(searchText(tester), '12 Nguyễn Huệ, Quận 1, TP.HCM');
     await tester.tap(find.byKey(const ValueKey('pickup-confirm')));
     await tester.pumpAndSettle();
 
@@ -131,6 +138,9 @@ void main() {
     );
     await tester.tap(find.text('45 Lê Lợi, Quận 1'));
     await tester.pumpAndSettle();
+    // Chọn gợi ý: ô tìm kiếm hiện đúng địa chỉ đã chọn, danh sách gợi ý đóng, không tra lại.
+    expect(searchText(tester), '45 Lê Lợi, Quận 1');
+    expect(geocoder.searched, ['45 Lê Lợi']);
     await tester.tap(find.byKey(const ValueKey('pickup-confirm')));
     await tester.pumpAndSettle();
 
@@ -174,6 +184,7 @@ void main() {
           address: 'Nhà bạn A',
         ),
       );
+      expect(searchText(tester), 'Nhà bạn A');
       await tester.tap(find.byKey(const ValueKey('pickup-confirm')));
       await tester.pumpAndSettle();
 

@@ -83,6 +83,9 @@ class LockerRemoteDataSourceImpl implements LockerRemoteDataSource {
           isOnline == false || rawStatus == 'DISCONNECTED';
 
       final status = isDisconnected ? 'DISCONNECTED' : rawStatus;
+      final pausedNoTechnician = status == 'ACTIVE' &&
+          item['acceptingOrders'] == false &&
+          '${item['orderPauseReason'] ?? ''}'.toUpperCase() == 'NO_TECHNICIAN';
 
       final store = storeId != null ? storeMap[storeId] : null;
       final storeName = store?['name']?.toString();
@@ -117,8 +120,9 @@ class LockerRemoteDataSourceImpl implements LockerRemoteDataSource {
         'address': addr.isNotEmpty ? addr : (storeAddress ?? ''),
         'latitude': lockerLat,
         'longitude': lockerLng,
-        'isActive': status == 'ACTIVE',
-        'description': status,
+        // Tủ chưa có KTV phụ trách: vẫn hiện nhưng không nhận đơn mới (F3-G16).
+        'isActive': status == 'ACTIVE' && !pausedNoTechnician,
+        'description': pausedNoTechnician ? 'PAUSED' : status,
         if (storeId != null) 'storeId': storeId,
         if (isOnline != null) 'online': isOnline,
         if (storeImg != null && storeImg.isNotEmpty) 'imageUrl': storeImg,

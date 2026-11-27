@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:smart_laundry_locker/core/presentation/map/app_base_tile_layer.dart';
 import 'package:smart_laundry_locker/core/services/app_event_bus.dart';
 import 'package:smart_laundry_locker/features/notifications/infrastructure/services/realtime_notification_service.dart';
 import 'package:smart_laundry_locker/features/locker/domain/entities/locker_location.dart';
@@ -225,10 +226,7 @@ class _LockerDetailMapPageState extends State<LockerDetailMapPage> {
             onTap: (tapPosition, point) => _onMapTap(),
           ),
           children: [
-            TileLayer(
-              urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-              userAgentPackageName: 'com.example.aisl_app',
-            ),
+            appBaseTileLayer(),
             MarkerLayer(
               markers: [
                 Marker(

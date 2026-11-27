@@ -1,4 +1,6 @@
 import 'package:smart_laundry_locker/core/l10n/l10n.dart';
+import 'package:smart_laundry_locker/core/presentation/pages/directions_map_page.dart';
+import 'package:latlong2/latlong.dart';
 import 'dart:async';
 import 'package:smart_laundry_locker/core/services/app_event_bus.dart';
 import 'package:smart_laundry_locker/features/orders/domain/entities/order.dart';
@@ -24,7 +26,6 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:provider/provider.dart';
 import 'package:smart_laundry_locker/core/utils/enum_translator.dart';
 import 'package:smart_laundry_locker/features/orders/presentation/widgets/order_status_colors.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 class CustomerOrderDetailPage extends StatefulWidget {
   final Order? order;
@@ -1684,15 +1685,13 @@ class _CustomerOrderDetailPageState extends State<CustomerOrderDetailPage> {
     );
   }
 
-  Future<void> _launchMap(double lat, double lng, String title) async {
-    final Uri uri = Uri.parse(
-      'https://www.google.com/maps/dir/?api=1&destination=$lat,$lng',
+  /// Chỉ đường trong app tới tủ gửi / tủ nhận (F3-G16) — như đơn thuê / gửi, không nhảy sang Google Maps.
+  void _launchMap(double lat, double lng, String title) {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => DirectionsMapPage(destination: LatLng(lat, lng), title: title),
+      ),
     );
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
-    } else {
-      SmartDialog.showToast(L10n.current.custOrderMapFailed);
-    }
   }
 }
 

@@ -520,6 +520,8 @@
   "commonReports": "Báo cáo",
   "commonStatusActive": "Hoạt động",
   "commonStatusSuspended": "Tạm ngưng",
+  "lockerPausedNoTechnician": "Chưa có kỹ thuật viên phụ trách — tạm ngưng nhận đơn",
+  "lockerPausedNoOrders": "Tạm ngưng nhận đơn",
   "commonDisconnected": "Mất kết nối",
   "commonOnline": "Trực tuyến",
   "commonInUseShort": "Đang dùng",
@@ -2572,6 +2574,7 @@
   "blockDisconnected": "mất kết nối",
   "blockMaintenance": "đang bảo trì",
   "blockSuspended": "tạm ngưng",
+  "blockNoTechnician": "chưa có kỹ thuật viên phụ trách — tạm ngưng nhận đơn",
   "blockNoPad": "chưa có bãi đáp drone",
   "blockPadMaintenance": "bãi đáp đang bảo trì",
   "blockPadFault": "bãi đáp đang lỗi",
@@ -7266,9 +7269,6 @@
   "dtRdResolutionPhotosOptionalHint": "Không bắt buộc, dùng để lưu ảnh nghiệm thu.",
   "dtRdConfirmResolve": "Xác nhận hoàn tất",
   "dtPqNoteRequiredForReason": "Cần nhập ghi chú cho lý do này",
-  "dtPqNeedLocation": "Cần vị trí hiện tại để bật nhận việc lấy hàng.",
-  "dtPqOnDuty": "Đã bật nhận việc lấy hàng. Bạn sẽ được mời khi có đơn gần bạn.",
-  "dtPqOffDuty": "Đã tắt nhận việc lấy hàng. Bạn sẽ không được mời lấy hàng.",
   "dtPqDeclineTitle": "Từ chối lời mời lấy hàng?",
   "dtPqDeclineBody": "Đơn {order} sẽ được mời người khác và bạn không được mời lại đơn này trong một thời gian.",
   "@dtPqDeclineBody": {
@@ -7334,16 +7334,7 @@
       }
     }
   },
-  "dtPqOffersHiddenTurnOn": "Có {count} lời mời lấy hàng đang chờ — bật nhận việc để xem và trả lời.",
-  "@dtPqOffersHiddenTurnOn": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "dtPqTurnOnHint": "Bật để thấy và nhận lời mời lấy hàng tận nhà gần bạn.",
-  "dtPqNeedShift": "Vào ca làm việc trước, rồi bật nhận việc lấy hàng.",
+  "dtPqNeedShift": "Bấm \"Vào ca\" ở thẻ Ca trực phía trên để nhận việc lấy hàng — hệ thống mời ngay đơn đang chờ gần bạn.",
   "dtPqBusy": "Đang nhận việc · đang bận một việc nên chưa được mời thêm.",
   "dtPqFree": "Đang nhận việc · rảnh, sẽ được mời khi có đơn gần bạn.",
   "dtPqFreeWithLocation": "Đang nhận việc · rảnh, sẽ được mời khi có đơn gần bạn · vị trí lúc {time}.",
@@ -7352,8 +7343,8 @@
       "time": {}
     }
   },
-  "dtPqOnDutyTitle": "Đang nhận việc lấy hàng",
-  "dtPqOffDutyTitle": "Chưa bật nhận việc lấy hàng",
+  "dtPqOnDutyTitle": "Đang trong ca · nhận việc lấy hàng",
+  "dtPqOffDutyTitle": "Chưa vào ca · chưa nhận việc lấy hàng",
   "dtPqPickupAt": "Lấy tại: {address}",
   "@dtPqPickupAt": {
     "placeholders": {

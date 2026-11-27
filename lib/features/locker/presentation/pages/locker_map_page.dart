@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:smart_laundry_locker/core/presentation/map/app_base_tile_layer.dart';
 import 'package:smart_laundry_locker/core/routing/app_router.dart';
 import 'package:smart_laundry_locker/features/locker/domain/entities/locker_location.dart';
 import 'package:smart_laundry_locker/features/locker/presentation/pages/locker_detail_map_page.dart';
@@ -191,10 +192,7 @@ class _LockerMapPageState extends ConsumerState<LockerMapPage>
               },
             ),
             children: [
-              TileLayer(
-                urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                userAgentPackageName: 'com.huynqb.laundrylocker',
-              ),
+              appBaseTileLayer(),
               MarkerLayer(
                 markers: activeLocations.map((LockerLocation location) {
                   final pin = GestureDetector(

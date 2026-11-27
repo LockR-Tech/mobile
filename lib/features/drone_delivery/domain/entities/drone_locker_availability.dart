@@ -1,17 +1,29 @@
 import 'package:smart_laundry_locker/features/drone_delivery/domain/entities/drone_route_geometry.dart';
 import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 
+/// Tủ chưa có kỹ thuật viên phụ trách thì không nhận đơn mới (F3-G16) — server báo bằng
+/// `acceptingOrders: false` + `orderPauseReason: NO_TECHNICIAN` trong `LockerResponse`.
+bool lockerPausedForNoTechnician(Map<String, dynamic> locker) =>
+    locker['acceptingOrders'] == false &&
+    '${locker['orderPauseReason'] ?? ''}'.toUpperCase() == 'NO_TECHNICIAN';
+
 String? droneDestinationBlockReason({
   Object? status,
   Object? online,
   Object? landingPad,
   Object? landingPadStatus,
+  Object? acceptingOrders,
+  Object? orderPauseReason,
 }) {
   if (online == false) return L10n.current.blockDisconnected;
 
   final lockerStatus = '${status ?? 'ACTIVE'}'.trim().toUpperCase();
   if (lockerStatus != 'ACTIVE') {
     return lockerStatus == 'MAINTENANCE' ? L10n.current.blockMaintenance : L10n.current.blockSuspended;
+  }
+  if (acceptingOrders == false &&
+      '${orderPauseReason ?? ''}'.toUpperCase() == 'NO_TECHNICIAN') {
+    return L10n.current.blockNoTechnician;
   }
 
   if (landingPad == false) return L10n.current.blockNoPad;
