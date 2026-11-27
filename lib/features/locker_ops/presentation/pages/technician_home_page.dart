@@ -2802,18 +2802,20 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                     maxLines: 4,
                     decoration: InputDecoration(labelText: context.l10n.crDescriptionField),
                   ),
-                  const SizedBox(height: 12),
-                  Text(
-                    context.l10n.techHomeScenePhotosOptional(photos.maxPhotos),
-                    style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 8),
-                  PhotoPickerField(
-                    controller: photos,
-                    enabled: !submitting,
-                    thumbSize: 64,
-                    accentColor: opsPrimary,
-                  ),
+                  if (!maintenanceMode) ...[
+                    const SizedBox(height: 12),
+                    Text(
+                      context.l10n.techHomeScenePhotosOptional(photos.maxPhotos),
+                      style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 8),
+                    PhotoPickerField(
+                      controller: photos,
+                      enabled: !submitting,
+                      thumbSize: 64,
+                      accentColor: opsPrimary,
+                    ),
+                  ],
                   const SizedBox(height: 8),
                   SwitchListTile(
                     contentPadding: EdgeInsets.zero,
@@ -2867,16 +2869,28 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                           dialogError = null;
                         });
                         try {
-                          final attachments = await photos.uploadAll();
-                          final report = await _service.reportLocker(
-                            lockerId,
-                            title,
-                            desc,
-                            blocking: blocking,
-                            ticketType: maintenanceMode ? 'LOCKER_MAINTENANCE' : null,
-                            attachments: attachments,
-                          );
-                          if (ctx.mounted) Navigator.pop(ctx, report);
+                          if (maintenanceMode) {
+                            final schedule = await _service.createMaintenanceSchedule(
+                              lockerId: lockerId,
+                              title: title,
+                              description: desc,
+                              intervalDays: 0,
+                              priority: 'HIGH',
+                              firstDueDate: DateTime.now().toUtc(),
+                              putInMaintenance: blocking,
+                            );
+                            if (ctx.mounted) Navigator.pop(ctx, schedule);
+                          } else {
+                            final attachments = await photos.uploadAll();
+                            final report = await _service.reportLocker(
+                              lockerId,
+                              title,
+                              desc,
+                              blocking: blocking,
+                              attachments: attachments,
+                            );
+                            if (ctx.mounted) Navigator.pop(ctx, report);
+                          }
                         } catch (e) {
                           if (ctx.mounted) {
                             setLocal(() {
@@ -2895,6 +2909,21 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
     );
     if (created == null || !mounted) return;
     final id = created['id'];
+    if (maintenanceMode) {
+      _showInfo(
+        id != null
+            ? (blocking
+                ? context.l10n.techHomeScheduleCreatedBlocked('$id', lockerLabel)
+                : context.l10n.techHomeScheduleCreated('$id', lockerLabel))
+            : context.l10n.techHomeLockerIncidentSent(lockerLabel),
+      );
+      setState(() => _mySchedulesOnly = true);
+      await _load();
+      if (!mounted) return;
+      _tabs.animateTo(3);
+      _showScheduleDetailModal(created);
+      return;
+    }
     _showInfo(
       id != null
           ? (blocking
@@ -4671,7 +4700,9 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
                       ),
                     _MiniPill(
                       icon: Icons.sync_rounded,
-                      text: context.l10n.techHomeCycleEveryDays('${s['intervalDays']}'),
+                      text: (_asInt(s['intervalDays']) ?? 0) <= 0
+                          ? context.l10n.techHomeScheduleOneTime
+                          : context.l10n.techHomeCycleEveryDays('${s['intervalDays']}'),
                       color: const Color(0xFF475569),
                     ),
                     if (assignedToMe)
@@ -4846,7 +4877,7 @@ class _TechnicianHomePageState extends State<TechnicianHomePage>
               ? context.l10n.techHomeInspectionFailedTicket(pendingReportId)
               : failed
                   ? context.l10n.techHomeInspectionFailedRecorded('${s['title'] ?? context.l10n.techHomeKioskLocker}')
-                  : nextDue != null
+                  : nextDue != null && result['active'] != false
                       ? context.l10n.techHomeInspectionPassedNextDue('${s['title'] ?? context.l10n.techHomeKioskLocker}', nextDue)
                       : context.l10n.techHomeInspectionPassedRecorded('${s['title'] ?? context.l10n.techHomeKioskLocker}'),
         ),

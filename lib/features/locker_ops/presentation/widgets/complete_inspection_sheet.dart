@@ -347,7 +347,9 @@ class _CompleteInspectionSheetState extends State<CompleteInspectionSheet> {
                         border: Border.all(color: const Color(0xFFFDE68A)),
                       ),
                       child: Text(
-                        context.l10n.techUiCycleDays(intervalDays),
+                        intervalDays <= 0
+                            ? context.l10n.techHomeScheduleOneTime
+                            : context.l10n.techUiCycleDays(intervalDays),
                         style: const TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.bold,
@@ -722,7 +724,11 @@ class _CompleteInspectionSheetState extends State<CompleteInspectionSheet> {
     return OpsBanner(
       tone: OpsBannerTone.success,
       icon: Icons.verified_outlined,
-      text: context.l10n.techUiResultPass(intervalDays),
+      text: intervalDays <= 0
+          ? context.l10n.techHomeInspectionPassedRecorded(
+              '${widget.schedule['title'] ?? context.l10n.techUiKioskLocker}',
+            )
+          : context.l10n.techUiResultPass(intervalDays),
     );
   }
 

@@ -2877,6 +2877,21 @@
       "locker": {}
     }
   },
+  "techHomeScheduleCreated": "Created maintenance ticket #{id} for {locker}.",
+  "@techHomeScheduleCreated": {
+    "placeholders": {
+      "id": {},
+      "locker": {}
+    }
+  },
+  "techHomeScheduleCreatedBlocked": "Created maintenance ticket #{id} for {locker} — the locker is paused until inspection passes.",
+  "@techHomeScheduleCreatedBlocked": {
+    "placeholders": {
+      "id": {},
+      "locker": {}
+    }
+  },
+  "techHomeScheduleOneTime": "One-time maintenance",
   "techHomeLockerIncidentSent": "Incident report sent for {locker}.",
   "@techHomeLockerIncidentSent": {
     "placeholders": {
@@ -4743,6 +4758,25 @@
       "id": {}
     }
   },
+  "dtOpenScheduleTile": "Inspect maintenance #{id}",
+  "@dtOpenScheduleTile": {
+    "placeholders": {
+      "id": {}
+    }
+  },
+  "dtMaintenanceScheduleCreated": "Drone moved to Maintenance and maintenance ticket #{id} created",
+  "@dtMaintenanceScheduleCreated": {
+    "placeholders": {
+      "id": {}
+    }
+  },
+  "dtMaintenanceScheduleDefaultTitle": "Maintenance for Drone {code}",
+  "@dtMaintenanceScheduleDefaultTitle": {
+    "placeholders": {
+      "code": {}
+    }
+  },
+  "dtMaintenanceDefaultDesc": "Put drone into maintenance for operational check",
   "dtStatusUnchanged": "Status unchanged",
   "dtFaultReasonRequired": "A reason is required when switching to FAULT",
   "dtStatusChanged": "Drone status changed",

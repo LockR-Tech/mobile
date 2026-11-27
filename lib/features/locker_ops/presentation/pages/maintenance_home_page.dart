@@ -3414,7 +3414,9 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                 _MiniPill(icon: Icons.flight_takeoff, text: droneLabel),
                 _MiniPill(
                   icon: Icons.repeat,
-                  text: context.l10n.dtEveryDays('${s['intervalDays']}'),
+                  text: (_asInt(s['intervalDays']) ?? 0) <= 0
+                      ? context.l10n.techHomeScheduleOneTime
+                      : context.l10n.dtEveryDays('${s['intervalDays']}'),
                 ),
                 if (nextDue != null)
                   _MiniPill(icon: Icons.event, text: context.l10n.dtDueAt(nextDue)),
@@ -5146,6 +5148,7 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
     final status = drone['status'] as String? ?? 'IDLE';
     final battery = _asInt(drone['batteryPercent']);
     final openReports = _openReportsForDrone(droneId);
+    final pendingSchedules = _pendingSchedulesForDrone(droneId);
     final assignedToMe =
         drone['assignedTechnicianId'] != null &&
         '${drone['assignedTechnicianId']}' == _myUserId;
@@ -5206,6 +5209,13 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
                   style: const TextStyle(fontSize: 12, color: opsMutedText),
                 ),
                 const SizedBox(height: 16),
+                for (final schedule in pendingSchedules)
+                  tile(
+                    Icons.fact_check_outlined,
+                    context.l10n.dtOpenScheduleTile('${schedule['id']}'),
+                    const Color(0xFF0284C7),
+                    () => _showDroneScheduleDetail(schedule),
+                  ),
                 for (final report in openReports)
                   tile(
                     Icons.assignment_outlined,
@@ -5279,6 +5289,16 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
         (r) =>
             _asInt(r['droneUnitId']) == droneId &&
             (r['status'] == 'OPEN' || r['status'] == 'IN_PROGRESS'),
+      )
+      .toList(growable: false);
+
+  /// Lịch / phiếu bảo trì đang chờ kiểm tra của một drone — hiển thị trực
+  /// tiếp trong sheet chi tiết drone để KTV mở và hoàn tất kiểm tra.
+  List<Map<String, dynamic>> _pendingSchedulesForDrone(int droneId) => _schedules
+      .where(
+        (s) =>
+            _asInt(s['droneUnitId']) == droneId &&
+            (s['lastDoneAt'] == null || s['due'] == true),
       )
       .toList(growable: false);
 
@@ -5452,17 +5472,48 @@ class _MaintenanceHomePageState extends State<MaintenanceHomePage>
       }
       return;
     }
+    if (isMaintenance) {
+      final droneCode = '${drone['code'] ?? '#$droneId'}';
+      Map<String, dynamic>? createdSchedule;
+      await _runCellAction(
+        () async {
+          createdSchedule = await _service.createMaintenanceSchedule(
+            droneUnitId: droneId,
+            title: L10n.current.dtMaintenanceScheduleDefaultTitle(droneCode),
+            description: reason.isNotEmpty
+                ? reason
+                : L10n.current.dtMaintenanceDefaultDesc,
+            intervalDays: 0,
+            priority: 'HIGH',
+            firstDueDate: DateTime.now().toUtc(),
+            putInMaintenance: true,
+          );
+        },
+        L10n.current.dtStatusChanged,
+      ).then((ok) {
+        if (!ok || createdSchedule == null || !mounted) return;
+        final created = createdSchedule!;
+        final id = created['id'];
+        if (id != null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(L10n.current.dtMaintenanceScheduleCreated('$id'))),
+          );
+        }
+        _showDroneScheduleDetail(created);
+      });
+      return;
+    }
     await _runCellAction(
       () => _service.updateDroneStatus(
         droneId,
         result,
         reason: reason.isEmpty ? null : reason,
       ),
-      needsTicket
+      isFault
           ? L10n.current.dtStatusChangedWithTicket
           : L10n.current.dtStatusChanged,
     ).then((ok) {
-      if (!ok || !needsTicket || !mounted) return;
+      if (!ok || !isFault || !mounted) return;
       final refreshedOpen = _openReportsForDrone(droneId);
       if (refreshedOpen.isNotEmpty) {
         _showDroneReportDetail(refreshedOpen.first);

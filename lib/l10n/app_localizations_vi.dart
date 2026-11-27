@@ -9398,6 +9398,19 @@ class AppLocalizationsVi extends AppLocalizations {
   }
 
   @override
+  String techHomeScheduleCreated(Object id, Object locker) {
+    return 'Đã tạo phiếu bảo trì #$id cho $locker.';
+  }
+
+  @override
+  String techHomeScheduleCreatedBlocked(Object id, Object locker) {
+    return 'Đã tạo phiếu bảo trì #$id cho $locker — tủ tạm ngưng nhận đơn tới khi kiểm tra đạt.';
+  }
+
+  @override
+  String get techHomeScheduleOneTime => 'Bảo trì 1 lần';
+
+  @override
   String techHomeLockerIncidentSent(Object locker) {
     return 'Đã gửi báo sự cố cho $locker.';
   }
@@ -12897,6 +12910,25 @@ class AppLocalizationsVi extends AppLocalizations {
   String dtHandleReportTile(Object id) {
     return 'Xử lý phiếu RPT-$id';
   }
+
+  @override
+  String dtOpenScheduleTile(Object id) {
+    return 'Kiểm tra phiếu bảo trì #$id';
+  }
+
+  @override
+  String dtMaintenanceScheduleCreated(Object id) {
+    return 'Đã chuyển drone sang Bảo trì và mở phiếu bảo trì #$id';
+  }
+
+  @override
+  String dtMaintenanceScheduleDefaultTitle(Object code) {
+    return 'Bảo trì Drone $code';
+  }
+
+  @override
+  String get dtMaintenanceDefaultDesc =>
+      'Đưa drone vào bảo trì và kiểm tra vận hành';
 
   @override
   String get dtStatusUnchanged => 'Trạng thái không thay đổi';
