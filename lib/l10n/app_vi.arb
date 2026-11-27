@@ -35,7 +35,6 @@
   "profileSecurity": "Bảo mật",
   "profileVouchers": "Ưu đãi & Quà tặng",
   "profileSectionManage": "Quản lý",
-  "profileDelegations": "Đơn ủy quyền",
   "profileRefunds": "Hoàn tiền",
   "profileMyReports": "Báo cáo của tôi",
   "profileBleTest": "Thử mở ô qua Bluetooth",
@@ -1144,18 +1143,6 @@
   },
   "ordNoBoxPinInfo": "Đơn chưa có thông tin ô/PIN để mở tủ.",
   "ordOverdueRentalNotice": "Đơn thuê đã quá hạn. Đã ghi nhận xử lý phí quá giờ — mời bạn mở ô lấy đồ và đóng tủ để hoàn tất.",
-  "ordDelegatedTo": "Đã ủy quyền lấy hộ{to}. Mã PIN cũ đã hết hiệu lực.",
-  "@ordDelegatedTo": {
-    "placeholders": {
-      "to": {}
-    }
-  },
-  "ordDelegatedToPhone": " cho {phone}",
-  "@ordDelegatedToPhone": {
-    "placeholders": {
-      "phone": {}
-    }
-  },
   "ordChangePinQuestion": "Đổi mã PIN?",
   "ordChangePinReceiver": "Mã PIN hiện tại sẽ hết hiệu lực. Người nhận cần mã mới để lấy hàng — hãy gửi lại mã mới cho họ.",
   "ordChangePinNow": "Mã PIN hiện tại sẽ hết hiệu lực ngay và được thay bằng mã mới.",
@@ -1396,7 +1383,6 @@
     }
   },
   "ordEndRentalPickup": "Kết thúc thuê & lấy đồ",
-  "ordDelegatePickup": "Ủy quyền lấy hộ",
   "ordChangePin": "Đổi mã PIN",
   "ordAddReceiverEmail": "Thêm email người nhận",
   "ordChangeReceiverEmail": "Đổi email người nhận",
@@ -1456,9 +1442,6 @@
   "ordDueToOpen": "Cần nộp để mở ô",
   "ordRecipient": "Người nhận",
   "ordRecipientEmail": "Email người nhận",
-  "ordDelegatedToLabel": "Ủy quyền lấy hộ cho",
-  "ordDelegatee": "Người được ủy quyền",
-  "ordDelegationMessage": "Lời nhắn ủy quyền",
   "ordDelegatedAt": "Ủy quyền lúc",
   "ordExpectedPickup": "Dự kiến người nhận lấy",
   "ordDeliveryAddress": "Địa chỉ giao",
@@ -2233,9 +2216,7 @@
       "code": {}
     }
   },
-  "recvDelegatorColon": "Người ủy quyền:",
   "recvSenderColon": "Người gửi:",
-  "recvDelegatedPickup": "Lấy hộ",
   "recvIncomingParcel": "Hàng nhận",
   "recvStorageBox": "Ô lưu đồ",
   "recvCodeMovedShort": "Chủ đơn đã ủy quyền người khác lấy hộ nên mã lấy hàng không còn hiện ở đây.",
@@ -2270,14 +2251,8 @@
   "parcelFragileYes": "Có — nhẹ tay",
   "parcelDeclaredValue": "Giá trị khai báo",
   "parcelNoProhibited": "Cam kết không hàng cấm",
-  "delegateTitle": "Ủy quyền lấy hộ",
-  "delegateBody": "Người được ủy quyền thấy đơn và mã mở ô trong mục \"Đơn ủy quyền\" của app (theo số điện thoại). Mã PIN hiện tại sẽ được đổi mới.",
   "delegatePhone": "Số điện thoại người lấy hộ",
   "delegateName": "Tên người lấy hộ (không bắt buộc)",
-  "delegateMessage": "Lời nhắn (không bắt buộc)",
-  "delegateInvalidPhone": "Nhập số điện thoại hợp lệ (9–11 số).",
-  "delegateNotSupported": "Máy chủ chưa hỗ trợ ủy quyền lấy hộ.",
-  "delegateAction": "Ủy quyền",
   "shareCopiedMessage": "Đã sao chép tin nhắn, dán vào Zalo, Messenger hoặc SMS để gửi cho người nhận.",
   "shareCantOpenSheet": "Không mở được bảng chia sẻ",
   "shareCantOpenSms": "Không mở được ứng dụng tin nhắn",
@@ -3278,13 +3253,6 @@
   "psLoadFailed": "Không tải được mã nhận hàng. Vui lòng thử lại.",
   "psReceivingLocker": "Tủ nhận hàng",
   "psNotInQueue": "Không thấy đơn này trong hàng chờ nhận của bạn. Có thể đơn đã được lấy, hoặc mã nhận hàng được gửi cho số điện thoại khác.",
-  "psDelegated": "Bạn đã ủy quyền cho {name} lấy hộ đơn này nên mã nhận hàng đã chuyển cho người được ủy quyền.",
-  "@psDelegated": {
-    "placeholders": {
-      "name": {}
-    }
-  },
-  "psSomeoneElse": "người khác",
   "psNotReady": "Mã nhận hàng chưa sẵn sàng. Mã sẽ có khi kiện đã vào ô tủ nhận.",
   "psPin": "Mã PIN mở ô",
   "psEnterAtKiosk": "Nhập mã này trên màn hình kiosk tại tủ để mở ô.",
@@ -3531,7 +3499,7 @@
     }
   },
   "bankTitle": "Thanh toán bằng app ngân hàng",
-  "bankIntro": "Chọn app ngân hàng của bạn. Lock.R lưu mã QR vào Thư viện ảnh — trong app ngân hàng, quét mã từ ảnh là số tài khoản, số tiền và nội dung tự điền.",
+  "bankIntro": "Chọn app ngân hàng của bạn. App ghi \"Tự điền…\" mở ra đã có sẵn số tài khoản, số tiền và nội dung — bạn chỉ cần xác nhận.",
   "bankSearch": "Tìm ngân hàng",
   "bankLoadFailed": "Không tải được danh sách app ngân hàng.\nBạn có thể quét mã QR bằng app ngân hàng.",
   "bankOpenApp": "Mở {app}",
@@ -3972,26 +3940,6 @@
   "qlTooFast": "Thao tác quá nhanh. Vui lòng thử lại sau ít phút.",
   "qlNoConnection": "Không kết nối được máy chủ. Kiểm tra mạng rồi thử lại.",
   "qlNotSupported": "Máy chủ chưa hỗ trợ đăng nhập kiosk bằng mã QR. Vui lòng đăng nhập bằng số điện thoại trên kiosk.",
-  "aoChooseLocker": "Vui lòng chọn tủ.",
-  "aoEnterCode": "Vui lòng nhập mã lấy hàng.",
-  "aoPickupBox": "ô lấy hàng",
-  "aoOpened": "Tủ đã mở ô — lấy hàng rồi đóng cửa tủ lại.",
-  "aoOpenFailed": "Không mở được ô{detail}",
-  "@aoOpenFailed": {
-    "placeholders": {
-      "detail": {}
-    }
-  },
-  "aoTitle": "Mở tủ ủy quyền",
-  "aoSubtitle": "Lấy hàng bằng mã được gửi cho bạn",
-  "aoIntro": "Nhập mã lấy hàng (PIN) bạn nhận được — mã có trong mục \"Đơn ủy quyền\" hoặc do người gửi chuyển cho bạn. Bạn cần đứng tại tủ để mở ô.",
-  "aoOrder": "Đơn",
-  "aoTapToChoose": "Chạm để chọn tủ lấy hàng",
-  "aoOpenBox": "Mở ô lấy hàng",
-  "mdSubtitle": "Đơn người khác nhờ bạn lấy hộ",
-  "mdEmpty": "Chưa có đơn ủy quyền",
-  "mdEmptyHint": "Khi ai đó ủy quyền bạn lấy hộ (theo số điện thoại của bạn), đơn sẽ hiện ở đây.",
-  "mdNotSupported": "Máy chủ chưa hỗ trợ mục Đơn ủy quyền. Vui lòng thử lại sau.",
   "dnTitleEnRoute": "Drone đang giao hàng",
   "dnTitleApproaching": "Drone sắp đến",
   "dnTitleArrived": "Drone đã đến nơi",
@@ -8368,5 +8316,22 @@
   "qrTestOpenSent": "Đã gửi lệnh mở ô",
   "qrTestOpenRejected": "Tủ không nhận lệnh mở ô",
   "txNetWithCount": "{amount} ({count} GD)",
-  "@txNetWithCount": {"placeholders": {"amount": {"type": "String"}, "count": {"type": "int"}}}
+  "@txNetWithCount": {"placeholders": {"amount": {"type": "String"}, "count": {"type": "int"}}},
+  "roleSwitchTitle": "Đổi vai trò",
+  "roleSwitchSubtitle": "Đang dùng: {role}",
+  "@roleSwitchSubtitle": {"placeholders": {"role": {"type": "String"}}},
+  "rolePickerTitle": "Chọn vai trò",
+  "rolePickerMessage": "Tài khoản này có nhiều vai trò. Chọn vai trò để tiếp tục — đổi lại bất cứ lúc nào trong Hồ sơ.",
+  "roleCurrentBadge": "Đang dùng",
+  "roleNameCustomer": "Khách hàng",
+  "roleNameLockerTech": "Kỹ thuật viên tủ",
+  "roleNameDroneTech": "Kỹ thuật viên drone",
+  "roleNameAdmin": "Quản trị viên",
+  "roleDescCustomer": "Gửi hàng, thuê ô, nhận hàng và theo dõi đơn.",
+  "roleDescLockerTech": "Bảo trì ô tủ, thiết bị IoT và xử lý phiếu sự cố tại tủ.",
+  "roleDescDroneTech": "Điều phối, bảo trì drone và xử lý phiếu sự cố drone.",
+  "roleDescAdmin": "Quản trị hệ thống trên web admin.",
+  "roleSwitched": "Đã chuyển sang vai trò {role}",
+  "@roleSwitched": {"placeholders": {"role": {"type": "String"}}},
+  "bankAutofill": "Tự điền số tài khoản, số tiền, nội dung"
 }

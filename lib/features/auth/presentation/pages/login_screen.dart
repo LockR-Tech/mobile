@@ -11,6 +11,7 @@ import 'package:smart_laundry_locker/core/l10n/user_language_sync.dart';
 import 'package:smart_laundry_locker/core/network/api_client.dart';
 import 'package:smart_laundry_locker/core/routing/app_router.dart';
 import 'package:smart_laundry_locker/core/routing/role_routes.dart';
+import 'package:smart_laundry_locker/core/routing/role_switch.dart';
 import 'package:smart_laundry_locker/core/services/firebase_messaging_service.dart';
 import 'package:smart_laundry_locker/core/services/token_service.dart';
 import 'package:smart_laundry_locker/features/auth/presentation/providers/auth_injection.dart';
@@ -181,13 +182,19 @@ class _LoginScreenState extends State<LoginScreen>
     final profileProvider = context.read<ProfileProvider>();
     try {
       final roles = await TokenService.getCurrentRoles();
-      if (primaryRole(roles) != AppRole.customer) profileProvider.loadProfile();
+      // Ngôn ngữ đi theo tài khoản: đăng nhập máy khác dùng lại ngôn ngữ đã chọn (F3-G15) — trước khi hỏi
+      // vai trò để hộp chọn và trang chủ đã đúng ngôn ngữ.
+      await UserLanguageSync.adoptAccountLanguage();
+      // Tài khoản nhiều vai trò: hỏi vào với vai trò nào (F3-G15).
+      await ActiveRole.clear();
+      if (!mounted) return;
+      final role = await chooseRoleAfterLogin(context, roles);
+      if (role != AppRole.customer) profileProvider.loadProfile();
       unawaited(
         FirebaseMessagingService.instance.updateBackendDeviceToken(ApiClient()),
       );
-      unawaited(UserLanguageSync.sync());
       if (!mounted) return;
-      context.go(homeForRoles(roles));
+      context.go(homeForRole(role));
     } catch (_) {
       if (mounted) context.go(homeForRoles(const []));
     }

@@ -9,13 +9,8 @@ import 'package:smart_laundry_locker/features/auth/presentation/pages/splash_scr
 import 'package:smart_laundry_locker/features/home/presentation/pages/home_page.dart';
 import 'package:smart_laundry_locker/features/locker/presentation/pages/locker_page.dart';
 import 'package:smart_laundry_locker/features/locker/presentation/pages/locker_map_page.dart';
-import 'package:smart_laundry_locker/features/delegations/presentation/pages/authorized_opening_page.dart';
-import 'package:smart_laundry_locker/features/delegations/presentation/pages/my_delegations_page.dart';
-import 'package:smart_laundry_locker/features/delegations/presentation/providers/delegation_injection.dart';
 import 'package:smart_laundry_locker/features/maintenance/presentation/pages/create_report_page.dart';
 import 'package:smart_laundry_locker/features/maintenance/presentation/pages/report_list_page.dart';
-import 'package:smart_laundry_locker/core/network/api_client.dart';
-import 'package:provider/provider.dart';
 import 'package:smart_laundry_locker/features/profile/domain/entities/user_profile.dart';
 import 'package:smart_laundry_locker/features/profile/domain/legal_document.dart';
 import 'package:smart_laundry_locker/features/profile/presentation/pages/policy_page.dart';
@@ -85,11 +80,9 @@ class AppRouter {
   static const String qrScan = '/qr-scan';
   static const String notifications = '/notifications';
   static const String faceVerify = '/auth/face-verify';
-  static const String authorizedOpening = '/authorized-opening';
   static const String faceRegistration = '/profile/face-registration';
   static const String bleTest = '/profile/ble-test';
   static const String orderDetail = '/orders/detail';
-  static const String myDelegations = '/my-delegations';
   static const String myVouchers = '/my-vouchers';
   static const String promotions = '/promotions';
   static const String maintenanceHome = '/maintenance-home';
@@ -372,29 +365,6 @@ class AppRouter {
         path: faceRegistration,
         name: 'face_registration',
         builder: (context, state) => const FaceRegistrationPage(),
-      ),
-      GoRoute(
-        path: authorizedOpening,
-        name: 'authorized_opening',
-        builder: (context, state) {
-          final Map<String, dynamic>? params =
-              state.extra as Map<String, dynamic>?;
-          return ChangeNotifierProvider(
-            create: (_) =>
-                DelegationInjection.provideDelegationProvider(ApiClient()),
-            child: AuthorizedOpeningPage(
-              orderId: params?['orderId'] as String?,
-              orderCode: params?['orderCode'] as String?,
-              lockerId: params?['lockerId'] as String?,
-              accessCode: params?['accessCode'] as String?,
-            ),
-          );
-        },
-      ),
-      GoRoute(
-        path: myDelegations,
-        name: 'my_delegations',
-        builder: (context, state) => const MyDelegationsPage(),
       ),
       GoRoute(
         path: maintenanceHome,

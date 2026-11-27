@@ -4,6 +4,7 @@ import 'package:smart_laundry_locker/core/presentation/map/app_base_tile_layer.d
 import 'package:smart_laundry_locker/core/config/business_config_service.dart';
 import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 import 'package:smart_laundry_locker/core/l10n/locale_provider.dart';
+import 'package:smart_laundry_locker/core/routing/role_routes.dart';
 import 'package:smart_laundry_locker/core/network/dio_client.dart';
 import 'package:smart_laundry_locker/core/routing/app_router.dart';
 import 'package:smart_laundry_locker/core/routing/app_back_navigation.dart';
@@ -142,6 +143,8 @@ void main() async {
   DioClient.instance.init();
   // Ngôn ngữ đã chọn (mặc định tiếng Việt) phải có trước khung hình đầu.
   await LocaleProvider.instance.restore();
+  // Tài khoản nhiều vai trò: vào lại đúng vai trò đã chọn lần trước (F3-G15).
+  await ActiveRole.restore();
   // Initialize token service from secure storage
   await TokenService.initializeFromStorage();
   // Quy tắc nghiệp vụ (giá, phí, giới hạn) do admin cấu hình: khôi phục

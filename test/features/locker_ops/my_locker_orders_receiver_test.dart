@@ -13,8 +13,6 @@ class _FakeService extends LockerOpsService {
   _FakeService({this.incomingError}) : super(dio: createMockDio().dio);
 
   final Object? incomingError;
-  int delegateCalls = 0;
-  String? delegatedPhone;
   int resetPinCalls = 0;
 
   @override
@@ -81,10 +79,7 @@ class _FakeService extends LockerOpsService {
   int detailCalls = 0;
 
   @override
-  Future<Map<String, dynamic>> receiverOrderDetail(
-    int orderId, {
-    bool delegated = false,
-  }) async {
+  Future<Map<String, dynamic>> receiverOrderDetail(int orderId) async {
     detailCalls++;
     return {
       'id': orderId,
@@ -102,18 +97,6 @@ class _FakeService extends LockerOpsService {
       'pickupPin': '246810',
       'parcel': {'description': 'Hộp quà sinh nhật'},
     };
-  }
-
-  @override
-  Future<Map<String, dynamic>> delegate(
-    int orderId, {
-    required String phone,
-    String? name,
-    String? note,
-  }) async {
-    delegateCalls++;
-    delegatedPhone = phone;
-    return {'id': orderId, 'receiverPhone': phone};
   }
 
   @override
@@ -259,34 +242,6 @@ void main() {
     },
   );
 
-  testWidgets('ủy quyền lấy hộ từ chi tiết đơn gọi POST /delegate', (
-    tester,
-  ) async {
-    final service = _FakeService();
-    await _pump(tester, service);
-
-    await tester.tap(find.text('Tủ kiểm thử'));
-    await tester.pumpAndSettle();
-
-    await tester.ensureVisible(find.text('Ủy quyền lấy hộ'));
-    await tester.tap(find.text('Ủy quyền lấy hộ'));
-    await tester.pumpAndSettle();
-
-    // SĐT sai ⇒ báo lỗi tại chỗ, chưa gọi server.
-    await tester.enterText(find.byType(TextField).first, '0909');
-    await tester.tap(find.text('Ủy quyền'));
-    await tester.pumpAndSettle();
-    expect(service.delegateCalls, 0);
-    expect(find.textContaining('số điện thoại hợp lệ'), findsOneWidget);
-
-    await tester.enterText(find.byType(TextField).first, '0909123456');
-    await tester.tap(find.text('Ủy quyền'));
-    await tester.pumpAndSettle();
-    expect(service.delegateCalls, 1);
-    expect(service.delegatedPhone, '0909123456');
-    await drainToasts(tester);
-  });
-
   testWidgets('đổi mã PIN hỏi xác nhận rồi gọi POST /reset-pin', (
     tester,
   ) async {
@@ -307,7 +262,7 @@ void main() {
     await drainToasts(tester);
   });
 
-  testWidgets('đơn đã ủy quyền lấy hộ ⇒ không có nút gửi lại cho người nhận', (
+  testWidgets('đơn đã ủy quyền trước khi gỡ tính năng ⇒ không có nút gửi lại cho người nhận', (
     tester,
   ) async {
     await _pump(tester, _RichSenderService());
@@ -339,7 +294,7 @@ void main() {
     }
   });
 
-  testWidgets('chi tiết Đơn của tôi có kiện hàng, ủy quyền, mốc thời gian', (
+  testWidgets('chi tiết Đơn của tôi có kiện hàng, mốc thời gian — không còn mục ủy quyền (F3-G15)', (
     tester,
   ) async {
     await _pump(tester, _RichSenderService());
@@ -349,9 +304,8 @@ void main() {
 
     await tester.ensureVisible(find.text('Email người nhận'));
     expect(find.text('binh@example.com'), findsOneWidget);
-    expect(find.text('Ủy quyền lấy hộ cho'), findsOneWidget);
-    expect(find.text('Chị Hoa · 0933444555'), findsOneWidget);
-    expect(find.text('Lấy giúp em'), findsOneWidget);
+    expect(find.text('Ủy quyền lấy hộ cho'), findsNothing);
+    expect(find.text('Ủy quyền lấy hộ'), findsNothing);
     expect(find.text('Thanh toán lúc'), findsOneWidget);
 
     await tester.ensureVisible(find.text('Hộp bánh'));

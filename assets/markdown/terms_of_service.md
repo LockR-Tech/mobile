@@ -1,6 +1,6 @@
 # Điều khoản dịch vụ
 
-Phiên bản 03/11/2026 · Áp dụng cho ứng dụng Lock.R, trang web Lock.R và kiosk tại tủ.
+Phiên bản 27/11/2026 · Áp dụng cho ứng dụng Lock.R, trang web Lock.R và kiosk tại tủ.
 
 Điều khoản này là thoả thuận giữa bạn và Lock.R ("chúng tôi") khi bạn dùng dịch vụ tủ khoá thông minh và giao hàng bằng drone. Bấm "Đồng ý" trong ứng dụng nghĩa là bạn đã đọc, hiểu và chấp nhận Điều khoản này cùng [Chính sách bảo mật](privacy_policy).
 
@@ -16,7 +16,6 @@ Phiên bản 03/11/2026 · Áp dụng cho ứng dụng Lock.R, trang web Lock.R 
 - **Thuê ô tủ:** giữ một ô trong thời gian bạn chọn để cất đồ, có thể gia hạn trong ứng dụng.
 - **Gửi hàng qua tủ:** bạn bỏ hàng vào ô, hệ thống gửi mã lấy hàng cho người nhận qua ứng dụng, email hoặc SMS.
 - **Giao hàng bằng drone:** drone chở kiện từ tủ gửi tới tủ nhận có bãi đáp; bạn theo dõi hành trình trong ứng dụng.
-- **Uỷ quyền nhận hộ:** chủ đơn cấp mã riêng cho người khác lấy hàng.
 - **Trợ lý hỏi đáp:** trả lời câu hỏi về dịch vụ và đơn của bạn. Câu trả lời do AI tạo, chỉ để tham khảo; thông tin trên đơn hàng và thông báo chính thức luôn được ưu tiên.
 
 ## 3. Hàng gửi

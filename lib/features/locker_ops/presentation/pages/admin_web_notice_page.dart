@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:smart_laundry_locker/core/l10n/l10n.dart';
+import 'package:smart_laundry_locker/core/routing/role_switch.dart';
 import 'package:smart_laundry_locker/features/onboarding/presentation/tour_anchor.dart';
 import 'package:smart_laundry_locker/core/services/session_service.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/ops_widgets.dart';
@@ -57,6 +58,26 @@ class AdminWebNoticePage extends StatelessWidget {
                   style: const TextStyle(fontSize: 14, color: opsMutedText),
                 ),
                 const SizedBox(height: 28),
+                // Admin kiêm KTV/khách: dùng app với vai trò khác (F3-G15).
+                RoleSwitchGate(
+                  builder: (context, current) => Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: TourAnchor('admin-notice-switch-role', child: SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton.icon(
+                        key: const ValueKey('admin-notice-switch-role'),
+                        onPressed: () => switchRoleFromProfile(context),
+                        icon: const Icon(Icons.swap_horiz_rounded, size: 18),
+                        label: Text(context.l10n.roleSwitchTitle),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: opsPrimary,
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                        ),
+                      ),
+                    )),
+                  ),
+                ),
                 TourAnchor('admin-notice-logout', child: SizedBox(
                   width: double.infinity,
                   child: ElevatedButton.icon(

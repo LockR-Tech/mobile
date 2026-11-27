@@ -1,5 +1,6 @@
-import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
 import 'package:smart_laundry_locker/core/l10n/l10n.dart';
+import 'package:smart_laundry_locker/core/l10n/locale_provider.dart';
 import 'package:smart_laundry_locker/core/network/api_client.dart';
 import 'package:smart_laundry_locker/core/services/token_service.dart';
 
@@ -27,8 +28,51 @@ class UserLanguageSync {
     }
   }
 
+  /// Người dùng tự bấm VI/EN ở màn đăng nhập ⇒ lần đăng nhập kế tiếp giữ lựa chọn đó thay vì ngôn ngữ đã
+  /// lưu của tài khoản.
+  static bool _chosenBeforeLogin = false;
+
+  static void markChosenBeforeLogin() => _chosenBeforeLogin = true;
+
+  /// Vừa đăng nhập (F3-G15): tài khoản đã có ngôn ngữ — chọn trên máy khác hoặc web — mà khác máy này ⇒
+  /// dùng ngôn ngữ của tài khoản. Tài khoản chưa có, hoặc người dùng vừa tự chọn ở màn đăng nhập ⇒ báo
+  /// server ngôn ngữ của máy này. Gọi trước khi mở trang chủ để trang đầu đã đúng ngôn ngữ.
+  static Future<void> adoptAccountLanguage({
+    ApiClient? apiClient,
+    Future<void> Function(Locale locale)? apply,
+  }) async {
+    final chosen = _chosenBeforeLogin;
+    _chosenBeforeLogin = false;
+    final client = apiClient ?? ApiClient();
+    if (!chosen) {
+      try {
+        final res = await client
+            .get<dynamic>('/api/user/profile')
+            .timeout(const Duration(seconds: 4));
+        final account = _languageOf(res.data);
+        if (account != null && account != L10n.current.localeName) {
+          _lastSynced = account;
+          await (apply ?? LocaleProvider.instance.setLocale)(Locale(account));
+          return;
+        }
+      } catch (e) {
+        debugPrint('UserLanguageSync.adopt: $e');
+      }
+    }
+    await sync(apiClient: client);
+  }
+
+  static String? _languageOf(Object? body) {
+    final data = body is Map && body['data'] is Map ? body['data'] as Map : body;
+    final language = data is Map ? data['language']?.toString() : null;
+    return language == 'en' || language == 'vi' ? language : null;
+  }
+
   /// Đăng xuất: tài khoản kế tiếp phải được báo lại.
-  static void reset() => _lastSynced = null;
+  static void reset() {
+    _lastSynced = null;
+    _chosenBeforeLogin = false;
+  }
 
   @visibleForTesting
   static String? get lastSynced => _lastSynced;

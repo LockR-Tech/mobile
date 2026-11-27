@@ -30,8 +30,26 @@ void main() {
           amount: 20000,
           transferContent: 'LKR81',
         ),
-        'https://dl.vietqr.io/pay?app=vcb&ba=0123456789@mb&am=20000&tn=LKR81',
+        'https://dl.vietqr.io/pay?app=vcb&am=20000&tn=LKR81&ba=0123456789@mb'
+        '&url=https://app.locker-drone.tech/',
       );
+    });
+
+    test('kèm tên tài khoản và trang trả về — thiếu url thì VietQR không tự điền (F3-G15)', () {
+      final url = buildVietQrPayDeeplink(
+        appId: 'mb',
+        accountNo: '0123456789',
+        bankCode: 'mb',
+        amount: 20000,
+        transferContent: 'LKR81',
+        accountName: 'CONG TY LOCKR',
+        returnUrl: 'https://app.locker-drone.tech/',
+      );
+      expect(url, contains('&bn=CONG+TY+LOCKR'));
+      // `@` trong ba và giá trị url giữ nguyên như tài liệu VietQR.
+      expect(url, contains('&ba=0123456789@mb'));
+      expect(url, endsWith('&url=https://app.locker-drone.tech/'));
+      expect(Uri.parse(url).queryParameters['bn'], 'CONG TY LOCKR');
     });
 
     test('mã hoá ký tự đặc biệt trong nội dung', () {
@@ -42,7 +60,7 @@ void main() {
         amount: 5000,
         transferContent: 'LKR 42&x',
       );
-      expect(url, endsWith('&tn=LKR%2042%26x'));
+      expect(url, contains('&tn=LKR+42%26x&'));
       expect(Uri.parse(url).queryParameters['tn'], 'LKR 42&x');
     });
   });
@@ -116,7 +134,8 @@ void main() {
       );
 
       final apps = await s.service.bankApps(ios: false);
-      expect(apps.map((a) => a.appId), ['vcb', 'old', 'mb']);
+      // App tự điền lên đầu, giữ thứ tự VietQR trong từng nhóm.
+      expect(apps.map((a) => a.appId), ['vcb', 'mb', 'old']);
       expect(apps.first.appLogo, 'https://img/vcb.png');
       await s.service.bankApps(ios: false);
       expect(

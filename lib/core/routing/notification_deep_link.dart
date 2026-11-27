@@ -6,8 +6,7 @@
 /// - KTV tủ: `/technician-home?tab=<inspect|incidents|mine|schedules|devices|recovery>&reportId=&scheduleId=`
 /// - KTV drone: `/maintenance-home?tab=<dispatch|fleet|incidents|mine|schedules|tools>&reportId=&scheduleId=&orderId=`
 /// - Khách: đơn `/locker/my-orders?orderId=`, phiếu `/locker/my-reports?reportId=`,
-///   chuyến drone `/drone-delivery?orderId=`, đơn được ủy quyền lấy hộ
-///   `/my-delegations?orderId=`.
+///   chuyến drone `/drone-delivery?orderId=`.
 ///
 /// KTV drone không bao giờ bị đưa sang trang KTV tủ (kể cả khi backend cũ còn
 /// gửi type `locker.*` cho phiếu drone).
@@ -128,9 +127,10 @@ String? _customerLocation(
   if (type == 'wallet.updated') return AppRouter.transactions;
   // Admin điều chỉnh điểm ⇒ hồ sơ (mục Điểm thưởng).
   if (type == 'loyalty.points.changed') return AppRouter.profile;
-  // Người khác ủy quyền cho mình lấy hộ (referenceId = orderId) ⇒ "Đơn ủy quyền".
+  // Ủy quyền lấy hộ đã gỡ (F3-G15). Tin cũ: người được ủy quyền đã là người nhận của đơn ⇒ "Hàng chờ nhận"
+  // (không mở theo orderId như đơn của chính mình — đơn đó không thuộc người này).
   if (type == 'ORDER_DELEGATED_TO_YOU') {
-    return _withId(AppRouter.myDelegations, 'orderId', orderId ?? referenceId);
+    return Uri(path: AppRouter.myLockerOrders, queryParameters: {'tab': 'incoming'}).toString();
   }
   if (type.startsWith('locker.report.') ||
       referenceType == 'LOCKER_REPORT' ||

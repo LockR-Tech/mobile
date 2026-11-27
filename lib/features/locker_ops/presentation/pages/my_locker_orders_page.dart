@@ -17,7 +17,6 @@ import 'package:smart_laundry_locker/features/locker_ops/domain/pickup_code_shar
 import 'package:smart_laundry_locker/features/locker_ops/presentation/pages/receiver_order_detail_page.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/utils/business_rules_text.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/utils/locker_maps.dart';
-import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/delegate_order_dialog.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/order_ble_open.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/loyalty_redeem_toggle.dart';
 import 'package:smart_laundry_locker/features/locker_ops/presentation/widgets/ops_widgets.dart';
@@ -35,7 +34,7 @@ import 'package:smart_laundry_locker/core/l10n/l10n.dart';
 import 'package:smart_laundry_locker/features/onboarding/presentation/tour_anchor.dart';
 
 /// All locker orders of the signed-in customer, with the full action set gated
-/// to the backend state machine: confirm drop, pickup/complete, delegate,
+/// to the backend state machine: confirm drop, pickup/complete,
 /// extend/end rental, report fault, cancel — plus "Hàng chờ nhận" (orders sent
 /// to me, `GET /api/orders/incoming`).
 class MyLockerOrdersPage extends StatefulWidget {
@@ -1492,26 +1491,6 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
     }
   }
 
-  /// "Ủy quyền lấy hộ": server đổi PIN và người được ủy quyền thấy đơn ở mục
-  /// "Đơn ủy quyền" của họ.
-  Future<void> _delegateOrder(int orderId) async {
-    final res = await showDelegateOrderDialog(
-      context,
-      service: _service,
-      orderId: orderId,
-    );
-    if (res == null || !mounted) return;
-    final phone = res['receiverPhone']?.toString();
-    _snack(
-      context.l10n.ordDelegatedTo(
-        phone == null || phone.isEmpty
-            ? ''
-            : context.l10n.ordDelegatedToPhone(phone),
-      ),
-    );
-    await _load();
-  }
-
   /// "Đổi mã PIN": cấp PIN mới, PIN cũ hết hiệu lực.
   Future<void> _resetPin(Map<String, dynamic> order) async {
     final orderId = _asInt(order['id']);
@@ -1742,9 +1721,6 @@ class _MyLockerOrdersPageState extends State<MyLockerOrdersPage>
           onTrackDrone: (id) {
             Navigator.pop(ctx);
             context.go(AppRouter.droneDeliveryTracking, extra: '$id');
-          },
-          onDelegate: (id) async {
-            await _delegateOrder(id);
           },
           onResetPin: () async {
             await _resetPin(order);
@@ -4061,7 +4037,6 @@ class _MyLockerOrderDetailPage extends StatefulWidget {
     required this.onOpenLocker,
     required this.onTrackDrone,
     this.onPayAndComplete,
-    this.onDelegate,
     this.onResetPin,
     this.onReceiverEmail,
     this.onChanged,
@@ -4089,7 +4064,6 @@ class _MyLockerOrderDetailPage extends StatefulWidget {
   final VoidCallback onOpenLocker;
   final void Function(int orderId) onTrackDrone;
   final void Function(int orderId)? onPayAndComplete;
-  final Future<void> Function(int orderId)? onDelegate;
   final Future<void> Function()? onResetPin;
   final Future<void> Function()? onReceiverEmail;
   final Future<void> Function()? onChanged;
@@ -4188,12 +4162,6 @@ class _MyLockerOrderDetailPageState extends State<_MyLockerOrderDetailPage> {
               onPayAndComplete: widget.onPayAndComplete,
               onOpenLocker: widget.onOpenLocker,
               onTrackDrone: widget.onTrackDrone,
-              onDelegate: widget.onDelegate == null
-                  ? null
-                  : (id) async {
-                      await widget.onDelegate!(id);
-                      if (mounted) await _refresh();
-                    },
               onResetPin: widget.onResetPin == null
                   ? null
                   : () async {
@@ -4239,7 +4207,6 @@ class _DetailSheet extends StatelessWidget {
     required this.onOpenLocker,
     required this.onTrackDrone,
     this.onPayAndComplete,
-    this.onDelegate,
     this.onResetPin,
     this.onReceiverEmail,
     this.onChanged,
@@ -4271,9 +4238,6 @@ class _DetailSheet extends StatelessWidget {
   final VoidCallback onOpenLocker;
   final void Function(int orderId) onTrackDrone;
   final void Function(int orderId)? onPayAndComplete;
-
-  /// "Ủy quyền lấy hộ" (đơn STORING/RETURNED).
-  final void Function(int orderId)? onDelegate;
 
   /// "Đổi mã PIN".
   final VoidCallback? onResetPin;
@@ -4372,19 +4336,13 @@ class _DetailSheet extends StatelessWidget {
     ].join(' · ');
     final customerNote = (order['customerNote'] as String?)?.trim();
     // Phần chi tiết bổ sung của OrderResponse (cùng nguồn với chi tiết đơn phía
-    // người nhận): kiện hàng, mốc thời gian, ủy quyền, liên hệ, đơn drone.
+    // người nhận): kiện hàng, mốc thời gian, liên hệ, đơn drone.
     String? text(String key) {
       final v = order[key]?.toString().trim();
       return v == null || v.isEmpty ? null : v;
     }
 
     final receiverEmail = text('receiverEmail');
-    final delegateNote = text('delegateNote');
-    final delegateLabel = [
-      text('delegateName'),
-      text('delegatePhone'),
-    ].whereType<String>().join(' · ');
-    final delegatedAt = order['delegatedAt'];
     final intendedReceiveAt = order['intendedReceiveAt'];
     final paidAt = order['paidAt'];
     final routeDistance = _asInt(order['routeDistanceMeters']);
@@ -4654,18 +4612,6 @@ class _DetailSheet extends StatelessWidget {
           ),
         ),
       ],
-      // Ủy quyền lấy hộ: server chỉ nhận khi đồ đang nằm trong ô (STORING/RETURNED).
-      if (onDelegate != null &&
-          !isDroneDelivery &&
-          (rawStatus == 'STORING' || rawStatus == 'RETURNED'))
-        TourAnchor(
-          'order-act-delegate',
-          child: OpsSheetAction(
-          label: context.l10n.ordDelegatePickup,
-          icon: LucideIcons.userPlus,
-          onTap: () => onDelegate!(id),
-          ),
-        ),
       if (onResetPin != null &&
           !isDroneDelivery &&
           '${order['pinCode'] ?? ''}'.isNotEmpty &&
@@ -4695,7 +4641,8 @@ class _DetailSheet extends StatelessWidget {
           onTap: () => onExtend(id),
           ),
         ),
-      // Đơn gửi hàng: gửi lại mã cho người nhận qua email (hoặc thêm / đổi email khi chưa bỏ hàng).
+      // Đơn gửi hàng: gửi lại mã cho người nhận qua email (hoặc thêm / đổi email khi chưa bỏ hàng). Đơn đã
+      // ủy quyền trước khi gỡ tính năng (F3-G15) thì không gửi: PIN mới thuộc người được ủy quyền.
       if (onReceiverEmail != null &&
           type == 'SEND' &&
           (order['delegatedAt'] == null && (order['delegatePhone'] ?? '').toString().isEmpty) &&
@@ -5060,27 +5007,6 @@ class _DetailSheet extends StatelessWidget {
                   label: context.l10n.ordRecipientEmail,
                   value: receiverEmail,
                 ),
-              if (delegatedAt != null) ...[
-                OpsInfoRow(
-                  icon: LucideIcons.userPlus,
-                  label: context.l10n.ordDelegatedToLabel,
-                  value: delegateLabel.isEmpty
-                      ? context.l10n.ordDelegatee
-                      : delegateLabel,
-                  valueColor: const Color(0xFF7C3AED),
-                ),
-                if (delegateNote != null)
-                  OpsInfoRow(
-                    icon: LucideIcons.messageSquareText,
-                    label: context.l10n.ordDelegationMessage,
-                    value: delegateNote,
-                  ),
-                OpsInfoRow(
-                  icon: LucideIcons.clock,
-                  label: context.l10n.ordDelegatedAt,
-                  value: fmtDateTime(delegatedAt),
-                ),
-              ],
               if (intendedReceiveAt != null)
                 OpsInfoRow(
                   icon: LucideIcons.calendarClock,

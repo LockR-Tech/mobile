@@ -154,7 +154,7 @@ void main() {
   });
 
   group('requiresSignIn — màn cần đăng nhập', () {
-    test('gửi/thuê tủ, đơn, báo sự cố, thông báo, ủy quyền, ưu đãi đã lưu', () {
+    test('gửi/thuê tủ, đơn, báo sự cố, thông báo, ưu đãi đã lưu', () {
       for (final path in const [
         '/locker/send-parcel',
         '/locker/rent',
@@ -162,7 +162,6 @@ void main() {
         '/locker/my-reports',
         '/maintenance/create-report',
         '/notifications',
-        '/my-delegations',
         '/my-vouchers',
         '/drone-delivery',
         '/maintenance-home',

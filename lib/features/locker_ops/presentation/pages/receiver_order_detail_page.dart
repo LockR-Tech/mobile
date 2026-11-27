@@ -25,33 +25,27 @@ import 'package:smart_laundry_locker/features/onboarding/presentation/tour_ancho
 /// thời gian, hành trình drone và sự cố.
 ///
 /// Mở ngay bằng bản ghi của danh sách rồi tải bản đầy đủ từ
-/// `GET /api/orders/incoming/{id}` (hoặc `/delegated-to-me/{id}`). Tải lỗi thì
+/// `GET /api/orders/incoming/{id}`. Tải lỗi thì
 /// vẫn hiện phần đã có, kèm thông báo và nút thử lại; kéo xuống để tải lại.
 class ReceiverOrderDetailPage extends StatefulWidget {
   const ReceiverOrderDetailPage({
     super.key,
     required this.order,
     this.service,
-    this.delegatedView = false,
   });
 
   final ReceiverOrder order;
   final LockerOpsService? service;
 
-  /// Mở từ "Đơn ủy quyền" (mình là người lấy hộ).
-  final bool delegatedView;
-
   static Future<void> open(
     BuildContext context, {
     required ReceiverOrder order,
     LockerOpsService? service,
-    bool delegatedView = false,
   }) => Navigator.of(context).push<void>(
     MaterialPageRoute<void>(
       builder: (_) => ReceiverOrderDetailPage(
         order: order,
         service: service,
-        delegatedView: delegatedView,
       ),
     ),
   );
@@ -81,10 +75,7 @@ class _ReceiverOrderDetailPageState extends State<ReceiverOrderDetailPage> {
       _error = null;
     });
     try {
-      final raw = await _service.receiverOrderDetail(
-        widget.order.id,
-        delegated: widget.delegatedView,
-      );
+      final raw = await _service.receiverOrderDetail(widget.order.id);
       final parsed = ReceiverOrderDetail.tryParse(raw);
       if (!mounted) return;
       setState(() {
@@ -134,10 +125,7 @@ class _ReceiverOrderDetailPageState extends State<ReceiverOrderDetailPage> {
     if (_sendingEmail) return;
     setState(() => _sendingEmail = true);
     try {
-      final result = await _service.resendReceiverEmail(
-        _detail.order.id,
-        delegated: _detail.loaded ? _detail.isDelegateView : widget.delegatedView,
-      );
+      final result = await _service.resendReceiverEmail(_detail.order.id);
       final masked = result['maskedEmail']?.toString();
       final withCode = result['includesPickupCode'] == true;
       SmartDialog.showToast(
@@ -184,9 +172,8 @@ class _ReceiverOrderDetailPageState extends State<ReceiverOrderDetailPage> {
 
   @override
   Widget build(BuildContext context) {
-    final delegate = _detail.loaded
-        ? _detail.isDelegateView
-        : widget.delegatedView;
+    // Đơn đã ủy quyền trước khi gỡ tính năng (F3-G15): server vẫn báo người xem là người lấy hộ.
+    final delegate = _detail.loaded && _detail.isDelegateView;
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
