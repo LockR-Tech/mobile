@@ -334,6 +334,8 @@ class _StatusChip extends StatelessWidget {
     final s = status?.toUpperCase();
     final isMaintenance = s == 'MAINTENANCE';
     final isDisconnected = s == 'DISCONNECTED';
+    // Tủ chưa có KTV phụ trách: tạm ngưng nhận đơn (F3-G16).
+    final isPaused = s == 'PAUSED';
 
     final Color dotColor;
     final String text;
@@ -343,9 +345,9 @@ class _StatusChip extends StatelessWidget {
       dotColor = const Color(0xFFEF4444);
       text = context.l10n.commonDisconnected;
       borderColor = const Color(0xFFEF4444).withValues(alpha: 0.5);
-    } else if (isMaintenance) {
+    } else if (isMaintenance || isPaused) {
       dotColor = const Color(0xFFF59E0B);
-      text = context.l10n.enumMaintenance;
+      text = isPaused ? context.l10n.lockerPausedNoOrders : context.l10n.enumMaintenance;
       borderColor = const Color(0xFFF59E0B).withValues(alpha: 0.5);
     } else if (active) {
       dotColor = const Color(0xFF22C55E);
@@ -357,7 +359,7 @@ class _StatusChip extends StatelessWidget {
       borderColor = Colors.white.withValues(alpha: 0.22);
     }
 
-    final hasGlow = active || isMaintenance || isDisconnected;
+    final hasGlow = active || isMaintenance || isPaused || isDisconnected;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),

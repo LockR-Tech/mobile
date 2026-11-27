@@ -439,6 +439,7 @@ class _DroneBookingPageState extends State<DroneBookingPage>
     if (locker['online'] == false ||
         locker['landingPad'] != true ||
         '${locker['status']}'.toUpperCase() != 'ACTIVE' ||
+        lockerPausedForNoTechnician(locker) ||
         !_hasCoordinates(locker)) {
       return false;
     }
@@ -487,6 +488,9 @@ class _DroneBookingPageState extends State<DroneBookingPage>
     final status = '${locker['status']}'.toUpperCase();
     if (status != 'ACTIVE') {
       return '$distPrefix${status == 'MAINTENANCE' ? context.l10n.lockerStatusMaintenance : context.l10n.dbLockerInactive}';
+    }
+    if (lockerPausedForNoTechnician(locker)) {
+      return '$distPrefix${context.l10n.lockerPausedNoTechnician}';
     }
     if (locker['landingPad'] != true) {
       return '$distPrefix${context.l10n.dbNoPad}';

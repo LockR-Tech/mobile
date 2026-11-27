@@ -285,6 +285,8 @@ class _DroneLockerPickerSheetState extends State<_DroneLockerPickerSheet> {
           online: locker['online'],
           landingPad: hasLandingPad,
           landingPadStatus: locker['landingPadStatus'],
+          acceptingOrders: locker['acceptingOrders'],
+          orderPauseReason: locker['orderPauseReason'],
         );
         final name = '${locker['name'] ?? locker['code'] ?? L10n.current.commonLocker}';
         final address = '${locker['address'] ?? ''}'.trim();

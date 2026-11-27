@@ -1540,19 +1540,23 @@ class _HomePageState extends ConsumerState<HomePage>
                   child: BrandStatusBadge(
                     label: location.status == 'MAINTENANCE'
                         ? context.l10n.enumMaintenance
+                        : location.status == 'PAUSED'
+                        ? context.l10n.lockerPausedNoOrders
                         : (location.status == 'DISCONNECTED'
                               ? context.l10n.commonDisconnected
                               : (location.isActive
                                     ? context.l10n.commonStatusActive
                                     : context.l10n.commonStatusSuspended)),
-                    dotColor: location.status == 'MAINTENANCE'
+                    dotColor: location.status == 'MAINTENANCE' ||
+                            location.status == 'PAUSED'
                         ? const Color(0xFFF59E0B)
                         : (location.status == 'DISCONNECTED'
                               ? const Color(0xFFEF4444)
                               : (location.isActive
                                     ? AislBrand.statusGreen
                                     : Colors.grey)),
-                    textColor: location.status == 'MAINTENANCE'
+                    textColor: location.status == 'MAINTENANCE' ||
+                            location.status == 'PAUSED'
                         ? const Color(0xFFB45309)
                         : (location.status == 'DISCONNECTED'
                               ? const Color(0xFFDC2626)
