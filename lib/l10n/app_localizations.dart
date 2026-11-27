@@ -16154,6 +16154,24 @@ abstract class AppLocalizations {
   /// **'Đã tạo phiếu RPT-{id} cho {locker} — tủ tạm ngưng nhận đơn.'**
   String techHomeLockerTicketCreatedBlocked(Object id, Object locker);
 
+  /// No description provided for @techHomeScheduleCreated.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã tạo phiếu bảo trì #{id} cho {locker}.'**
+  String techHomeScheduleCreated(Object id, Object locker);
+
+  /// No description provided for @techHomeScheduleCreatedBlocked.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã tạo phiếu bảo trì #{id} cho {locker} — tủ tạm ngưng nhận đơn tới khi kiểm tra đạt.'**
+  String techHomeScheduleCreatedBlocked(Object id, Object locker);
+
+  /// No description provided for @techHomeScheduleOneTime.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bảo trì 1 lần'**
+  String get techHomeScheduleOneTime;
+
   /// No description provided for @techHomeLockerIncidentSent.
   ///
   /// In vi, this message translates to:
@@ -21816,6 +21834,30 @@ abstract class AppLocalizations {
   /// In vi, this message translates to:
   /// **'Xử lý phiếu RPT-{id}'**
   String dtHandleReportTile(Object id);
+
+  /// No description provided for @dtOpenScheduleTile.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kiểm tra phiếu bảo trì #{id}'**
+  String dtOpenScheduleTile(Object id);
+
+  /// No description provided for @dtMaintenanceScheduleCreated.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã chuyển drone sang Bảo trì và mở phiếu bảo trì #{id}'**
+  String dtMaintenanceScheduleCreated(Object id);
+
+  /// No description provided for @dtMaintenanceScheduleDefaultTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bảo trì Drone {code}'**
+  String dtMaintenanceScheduleDefaultTitle(Object code);
+
+  /// No description provided for @dtMaintenanceDefaultDesc.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đưa drone vào bảo trì và kiểm tra vận hành'**
+  String get dtMaintenanceDefaultDesc;
 
   /// No description provided for @dtStatusUnchanged.
   ///

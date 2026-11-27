@@ -1003,6 +1003,38 @@ class LockerOpsService {
     );
   }
 
+  /// Tạo phiếu / kế hoạch bảo trì cho Kiosk ([lockerId]) hoặc Drone ([droneUnitId]).
+  /// [intervalDays] = 0 ⇒ bảo trì đột xuất 1 lần; [putInMaintenance] ⇒ đưa Kiosk
+  /// vào MAINTENANCE ngay tới khi hoàn tất kiểm tra đạt.
+  Future<Map<String, dynamic>> createMaintenanceSchedule({
+    int? lockerId,
+    int? droneUnitId,
+    required String title,
+    String? description,
+    int intervalDays = 0,
+    String priority = 'HIGH',
+    DateTime? firstDueDate,
+    String? checklist,
+    bool putInMaintenance = true,
+  }) => _map(
+    'POST',
+    '/api/maintenance/schedules',
+    body: {
+      if (lockerId != null) 'lockerId': lockerId,
+      if (droneUnitId != null) 'droneUnitId': droneUnitId,
+      'title': title,
+      'intervalDays': intervalDays,
+      'priority': priority,
+      if (description != null && description.trim().isNotEmpty)
+        'description': description.trim(),
+      if (checklist != null && checklist.trim().isNotEmpty)
+        'checklist': checklist.trim(),
+      if (firstDueDate != null)
+        'firstDueDate': firstDueDate.toIso8601String(),
+      'putInMaintenance': putInMaintenance,
+    },
+  );
+
   /// Lấy nhật ký các lần kiểm tra của lịch định kỳ (kèm checklist, ảnh, KTV thực hiện).
   Future<List<Map<String, dynamic>>> scheduleInspectionLogs(int scheduleId) =>
       _list('/api/maintenance/schedules/$scheduleId/logs');

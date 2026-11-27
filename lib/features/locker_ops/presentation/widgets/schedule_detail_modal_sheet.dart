@@ -520,9 +520,11 @@ class _ScheduleDetailModalSheetState extends State<ScheduleDetailModalSheet> {
                       ),
                       _buildMiniPill(
                         icon: Icons.repeat,
-                        text: context.l10n.techUiCycleEveryDays(
-                          '${s['intervalDays']}',
-                        ),
+                        text: (_asInt(s['intervalDays']) ?? 0) <= 0
+                            ? context.l10n.techHomeScheduleOneTime
+                            : context.l10n.techUiCycleEveryDays(
+                                '${s['intervalDays']}',
+                              ),
                         color: const Color(0xFF475569),
                       ),
                       if (timeSlot.isNotEmpty)
@@ -723,9 +725,11 @@ class _ScheduleDetailModalSheetState extends State<ScheduleDetailModalSheet> {
                         _buildDetailRow(
                           icon: Icons.repeat,
                           label: context.l10n.techUiRepeatCycleLabel,
-                          value: context.l10n.techUiEveryDaysOnce(
-                            '${s['intervalDays']}',
-                          ),
+                          value: (_asInt(s['intervalDays']) ?? 0) <= 0
+                              ? context.l10n.techHomeScheduleOneTime
+                              : context.l10n.techUiEveryDaysOnce(
+                                  '${s['intervalDays']}',
+                                ),
                         ),
                         const SizedBox(height: 8),
                         _buildDetailRow(

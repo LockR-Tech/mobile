@@ -4792,6 +4792,21 @@
       "locker": {}
     }
   },
+  "techHomeScheduleCreated": "Đã tạo phiếu bảo trì #{id} cho {locker}.",
+  "@techHomeScheduleCreated": {
+    "placeholders": {
+      "id": {},
+      "locker": {}
+    }
+  },
+  "techHomeScheduleCreatedBlocked": "Đã tạo phiếu bảo trì #{id} cho {locker} — tủ tạm ngưng nhận đơn tới khi kiểm tra đạt.",
+  "@techHomeScheduleCreatedBlocked": {
+    "placeholders": {
+      "id": {},
+      "locker": {}
+    }
+  },
+  "techHomeScheduleOneTime": "Bảo trì 1 lần",
   "techHomeLockerIncidentSent": "Đã gửi báo sự cố cho {locker}.",
   "@techHomeLockerIncidentSent": {
     "placeholders": {
@@ -7049,6 +7064,25 @@
       "id": {}
     }
   },
+  "dtOpenScheduleTile": "Kiểm tra phiếu bảo trì #{id}",
+  "@dtOpenScheduleTile": {
+    "placeholders": {
+      "id": {}
+    }
+  },
+  "dtMaintenanceScheduleCreated": "Đã chuyển drone sang Bảo trì và mở phiếu bảo trì #{id}",
+  "@dtMaintenanceScheduleCreated": {
+    "placeholders": {
+      "id": {}
+    }
+  },
+  "dtMaintenanceScheduleDefaultTitle": "Bảo trì Drone {code}",
+  "@dtMaintenanceScheduleDefaultTitle": {
+    "placeholders": {
+      "code": {}
+    }
+  },
+  "dtMaintenanceDefaultDesc": "Đưa drone vào bảo trì và kiểm tra vận hành",
   "dtStatusUnchanged": "Trạng thái không thay đổi",
   "dtFaultReasonRequired": "Cần nhập lý do khi chuyển sang FAULT",
   "dtStatusChanged": "Đã đổi trạng thái drone",

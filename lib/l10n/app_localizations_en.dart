@@ -9474,6 +9474,19 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String techHomeScheduleCreated(Object id, Object locker) {
+    return 'Created maintenance ticket #$id for $locker.';
+  }
+
+  @override
+  String techHomeScheduleCreatedBlocked(Object id, Object locker) {
+    return 'Created maintenance ticket #$id for $locker — the locker is paused until inspection passes.';
+  }
+
+  @override
+  String get techHomeScheduleOneTime => 'One-time maintenance';
+
+  @override
   String techHomeLockerIncidentSent(Object locker) {
     return 'Incident report sent for $locker.';
   }
@@ -13118,6 +13131,25 @@ class AppLocalizationsEn extends AppLocalizations {
   String dtHandleReportTile(Object id) {
     return 'Handle ticket RPT-$id';
   }
+
+  @override
+  String dtOpenScheduleTile(Object id) {
+    return 'Inspect maintenance #$id';
+  }
+
+  @override
+  String dtMaintenanceScheduleCreated(Object id) {
+    return 'Drone moved to Maintenance and maintenance ticket #$id created';
+  }
+
+  @override
+  String dtMaintenanceScheduleDefaultTitle(Object code) {
+    return 'Maintenance for Drone $code';
+  }
+
+  @override
+  String get dtMaintenanceDefaultDesc =>
+      'Put drone into maintenance for operational check';
 
   @override
   String get dtStatusUnchanged => 'Status unchanged';

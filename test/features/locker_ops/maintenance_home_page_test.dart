@@ -52,6 +52,52 @@ class _FakeMaintenanceService extends LockerOpsService {
   int? updatedDroneId;
   String? updatedDroneStatus;
   String? updatedDroneStatusReason;
+  int? createdScheduleDroneId;
+  int? createdScheduleLockerId;
+  String? createdScheduleTitle;
+  String? createdScheduleDescription;
+  int? createdScheduleIntervalDays;
+
+  @override
+  Future<Map<String, dynamic>> createMaintenanceSchedule({
+    int? lockerId,
+    int? droneUnitId,
+    required String title,
+    String? description,
+    int intervalDays = 0,
+    String priority = 'HIGH',
+    DateTime? firstDueDate,
+    String? checklist,
+    bool putInMaintenance = true,
+  }) async {
+    createdScheduleLockerId = lockerId;
+    createdScheduleDroneId = droneUnitId;
+    createdScheduleTitle = title;
+    createdScheduleDescription = description;
+    createdScheduleIntervalDays = intervalDays;
+    final created = {
+      'id': 888,
+      if (lockerId != null) 'lockerId': lockerId,
+      if (droneUnitId != null) 'droneUnitId': droneUnitId,
+      if (droneUnitId != null) 'droneCode': 'DRONE-09',
+      'title': title,
+      'description': description ?? '',
+      'intervalDays': intervalDays,
+      'priority': priority,
+      'assignedTechnicianId': 99,
+      'assignedTechnicianName': 'KTV 99',
+      'active': true,
+      'due': true,
+      'nextDueAt': '2026-11-27T04:00:00Z',
+    };
+    customSchedules = [created, ...(customSchedules ?? const [])];
+    if (droneUnitId != null && customDrones != null) {
+      customDrones = customDrones!
+          .map((d) => d['id'] == droneUnitId ? {...d, 'status': 'MAINTENANCE'} : d)
+          .toList();
+    }
+    return created;
+  }
 
   @override
   Future<List<Map<String, dynamic>>> droneOrdersByTicket(
@@ -1613,15 +1659,77 @@ void main() {
       await tester.pump(const Duration(seconds: 1));
       await tester.pump(const Duration(seconds: 4));
 
-      expect(service.updatedDroneId, 9);
-      expect(service.updatedDroneStatus, 'MAINTENANCE');
-      expect(service.updatedDroneStatusReason, 'Kiểm tra pin định kỳ');
-      // Sau khi đổi sang Bảo trì, phiếu vừa tạo được mở lên ngay trong sheet chi tiết.
-      expect(
-        find.text('Hồ sơ chi tiết phiếu sự cố kỹ thuật Drone'),
-        findsOneWidget,
+      expect(service.updatedDroneId, isNull);
+      expect(service.createdScheduleDroneId, 9);
+      expect(service.createdScheduleIntervalDays, 0);
+      expect(service.createdScheduleDescription, 'Kiểm tra pin định kỳ');
+      // Sau khi đổi sang Bảo trì, phiếu/lịch bảo trì vừa tạo mở ngay trong sheet chi tiết.
+      expect(find.text(L10n.current.techUiRepeatCycleLabel), findsOneWidget);
+      expect(find.text(L10n.current.techHomeScheduleOneTime), findsWidgets);
+    },
+  );
+
+  testWidgets(
+    'bấm vào drone đang có lịch bảo trì hiển thị nút kiểm tra phiếu bảo trì',
+    (tester) async {
+      _setPhoneViewport(tester);
+      final service = _FakeMaintenanceService()
+        ..customDrones = [
+          {
+            'id': 9,
+            'code': 'DRONE-09',
+            'status': 'MAINTENANCE',
+            'batteryPercent': 88,
+            'assignedTechnicianId': 99,
+            'assignedTechnicianName': 'KTV 99',
+          },
+        ]
+        ..customReports = []
+        ..customSchedules = [
+          {
+            'id': 888,
+            'droneUnitId': 9,
+            'droneCode': 'DRONE-09',
+            'title': 'Bảo trì Drone DRONE-09',
+            'description': 'Kiểm tra motor định kỳ',
+            'intervalDays': 0,
+            'priority': 'HIGH',
+            'assignedTechnicianId': 99,
+            'assignedTechnicianName': 'KTV 99',
+            'active': true,
+            'due': true,
+            'nextDueAt': '2026-11-27T04:00:00Z',
+          },
+        ];
+
+      final router = GoRouter(
+        routes: [
+          GoRoute(
+            path: '/',
+            builder: (context, state) => MaintenanceHomePage(service: service),
+          ),
+        ],
       );
-      expect(find.text('Ảnh hồ sơ theo giai đoạn'), findsOneWidget);
+
+      await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Đội bay (1)'));
+      await tester.pumpAndSettle();
+
+      await tester.ensureVisible(find.text('DRONE-09'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('DRONE-09'));
+      await tester.pumpAndSettle();
+
+      expect(find.text(L10n.current.dtOpenScheduleTile('888')), findsOneWidget);
+      await tester.tap(find.text(L10n.current.dtOpenScheduleTile('888')));
+      await tester.pump();
+      await tester.pump(const Duration(seconds: 1));
+      await tester.pump(const Duration(seconds: 4));
+
+      expect(find.text(L10n.current.techUiRepeatCycleLabel), findsOneWidget);
+      expect(find.text(L10n.current.techHomeScheduleOneTime), findsWidgets);
     },
   );
 
